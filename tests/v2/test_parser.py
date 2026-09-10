@@ -675,12 +675,39 @@ def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
         title: str) -> None:
     # The licence's one invariant, as a contract: P5 lifts the reserve
     # behind a title run exactly when H1 keeps the one word after that
-    # run a given name. Both key the run through _title_key; if either
-    # side's key construction drifted, a run P5 licensed that H1 then
-    # read as title-plus-family would hand the joined pair to the
+    # run a given name. Both ask _run_addresses_by_given, of the
+    # LEADING run, for the whole run's key or the run's last word's
+    # (#489); if either side's read drifted, a run P5 licensed that H1
+    # then read as title-plus-family would hand the joined pair to the
     # family. So "no family" must agree, run by run.
     assert (parse(f"{title} John").family == "") == \
         (parse(f"{title} abdul rahman").family == "")
+    # The same invariant with a trailing title behind the pair, and
+    # stated the way rules.md#H5's transparency clause states it
+    # rather than as agreement between the two halves: `X Prof.` is
+    # `X` plus a title, so adding the title moves NEITHER field. That
+    # is what discriminates. Comparing the two spellings' "no family"
+    # to each other passes under the composite keying this replaced,
+    # where H1 read the TITLE role -- both ends of the name by then --
+    # as one run: `sir prof` addresses by neither word, so both
+    # spellings handed their name words to the family together and
+    # agreed while both were wrong. Pinned by mutation: restore the
+    # whole-`titles` key and every given-name-title row below fails
+    # here (2026-09-09).
+    #
+    # The NICKNAME spellings are here because the first fix for this
+    # split the run at the first token of another role, which a
+    # nickname written in front of the titles satisfies -- so
+    # "'Smitty' Sir Jones Prof." found no leading run and read family
+    # 'Jones' where "'Smitty' Sir Jones" reads given. What decides is
+    # the name WORD, H1's rationale saying in as many words that a
+    # nickname beside it does not decide the reading, and only these
+    # rows can tell the two splits apart.
+    for suffixless in (f"{title} John", f"{title} abdul rahman",
+                       f"'Smitty' {title} John",
+                       f"'Smitty' {title} abdul rahman"):
+        plain, titled = parse(suffixless), parse(f"{suffixless} Prof.")
+        assert (titled.given, titled.family) == (plain.given, plain.family)
 
 
 # The first three reach the chain loop and decline inside it: the piece
@@ -694,10 +721,30 @@ def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
 # different reasons, one output, and neither may start reporting a fork.
 @pytest.mark.parametrize("text", [
     "Do Van Jr.", "Do Van MD", "St Van Jr.",
-    "Dr. Van Jr.", "Dr. Van MD", "Dr. Do Jr.",
+    "Dr. Van Jr.", "Dr. Van MD",
 ])
 def test_no_op_prefix_chain_is_not_a_fork(text: str) -> None:
-    assert _overlap_parser().parse(text).ambiguities == ()
+    assert not _overlap_parser().parse(text).ambiguities
+
+
+def test_dr_do_jr_reports_the_word_left_standing() -> None:
+    """Since #489 this one reports from somewhere else entirely.
+
+    It was the sixth row of the parametrization above until the
+    2026-09-09 review, where carrying it made that test assert "no
+    fork EXCEPT this one" and so stopped saying the thing it exists
+    to say. The leading peel's floor gives 'Do' back as the name word
+    (the run stood in front of nothing but 'Jr.'), so 'Dr. Do Jr.'
+    reads family 'Do', suffix 'Jr.' and H4's title half claims the
+    lone name word, which happens to be title vocabulary here. That
+    report is about the word left standing, not about a chain that
+    never chained -- PARTICLE_OR_GIVEN is still absent, which is what
+    the kind tuple below pins.
+    """
+    n = _overlap_parser().parse("Dr. Do Jr.")
+    assert (n.family, n.suffix) == ("Do", "Jr.")
+    assert tuple(a.kind for a in n.ambiguities) == (
+        AmbiguityKind.TITLE_OR_NAME,)
 
 
 def test_a_fork_is_reported_by_exactly_one_stage() -> None:

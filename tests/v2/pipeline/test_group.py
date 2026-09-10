@@ -604,13 +604,16 @@ def test_the_licence_still_needs_two_name_words() -> None:
     assert _piece_texts(out) == [["sir", "abdul", "jr"]]
 
 
-def test_the_title_run_is_one_key_as_h1_reads_it() -> None:
-    # post_rules looks the WHOLE title run up as one key, so "mr sir"
-    # is not "sir". P5 has to read the run the same way: if it joined
-    # here, H1 would then read the joined piece as the family name --
-    # the two rules would disagree about what the same run asserts.
+def test_the_title_run_is_read_as_h1_reads_it() -> None:
+    # P5 and post_rules ask ONE predicate of the run
+    # (_run_addresses_by_given), so they cannot disagree about what the
+    # same run asserts: if P5 joined where H1 then read the joined
+    # piece as the family name, one run would have two readings. The
+    # run "mr sir" is #369's own example and it moved with #489 -- the
+    # whole run is no entry, its LAST word is, so the run addresses by
+    # given name and the licence fires.
     out = _grouped("mr sir abdul rahman", lexicon=_GIVEN_NAME_TITLE_LEX)
-    assert _piece_texts(out) == [["mr", "sir", "abdul", "rahman"]]
+    assert _piece_texts(out) == [["mr", "sir", "abdul rahman"]]
 
 
 def test_the_licence_joins_a_word_not_a_particle_chain() -> None:
@@ -636,7 +639,8 @@ def test_the_licence_takes_a_name_word_not_a_suffix() -> None:
     assert _piece_texts(out) == [["sir", "abdul", "jr", "rahman"]]
 
 
-def test_a_conjunction_joined_title_run_is_keyed_whole() -> None:
+def test_a_conjunction_joined_title_run_is_keyed_over_every_token_of_the_piece(
+) -> None:
     # A conjunction-merged title is one multi-token PIECE. The key is
     # built from every token of every title piece, as post_rules
     # builds it from every title token; keyed on first tokens alone,

@@ -213,7 +213,6 @@ class HumanNameConjunctionTestCase(HumanNameTestBase):
         self.m(hn.title, "His Excellency Lord", hn)
         self.m(hn.last, "Duncan", hn)
 
-    @pytest.mark.xfail(reason="#489")
     def test_conjunction_in_an_address_with_a_first_name_title(self) -> None:
         hn = HumanName("Her Majesty Queen Elizabeth")
         self.m(hn.title, "Her Majesty Queen", hn)

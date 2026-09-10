@@ -11,6 +11,7 @@ from nameparser._lexicon import (
     _title_key,
 )
 from nameparser._policy import Script, _SCRIPT_RANGES
+from nameparser.config.suffixes import SUFFIX_ACRONYMS, SUFFIX_WORDS
 
 
 def test_entries_are_normalized_at_construction() -> None:
@@ -237,6 +238,22 @@ def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:
         Lexicon(suffix_acronyms_ambiguous=frozenset({"ma"}))
 
 
+def test_the_shipped_suffix_sets_are_disjoint() -> None:
+    # suffixes.py asserts this at import; the assert is stripped under
+    # `python -O`, so the invariant gets a named test as well. The two
+    # sets normalize differently -- the word test strips only edge
+    # periods, the acronym test strips all of them -- so a word in both
+    # is matched by two rules and which one fired is unreadable from
+    # outside. The last overlap, 'esq', left the acronyms 2026-09-08
+    # (decisions.md#suffix-acronym-collisions).
+    #
+    # The SHIPPED sets only: Lexicon has no such invariant, and a
+    # caller who wants the overlap in their own vocabulary keeps it.
+    assert SUFFIX_ACRONYMS & SUFFIX_WORDS == frozenset()
+    default = Lexicon.default()
+    assert default.suffix_acronyms & default.suffix_words == frozenset()
+
+
 def test_given_name_titles_may_hold_a_multi_word_phrase() -> None:
     # given_name_titles is looked up against the SPACE-JOINED title run
     # (_pipeline/_post_rules.py), not per token, so "grand duke" is a
@@ -256,13 +273,36 @@ def test_given_name_titles_folds_per_word_so_abbreviations_match(
     # 'lt. col' verbatim kept the interior period and matched nothing --
     # a silent no-op on the config surface, the failure this field is
     # most prone to (it has no validation by design).
+    #
+    # It is the whole-run arm that matches here, and only that arm:
+    # `col` alone is not a given-name title, so #489's last-word arm
+    # must not have replaced the phrase lookup.
     base = Lexicon.default()
     lex = dataclasses.replace(
         base,
         titles=base.titles | {"lt", "col"},
         given_name_titles=base.given_name_titles | {spelling})
     assert "lt col" in lex.given_name_titles
+    assert "col" not in lex.given_name_titles
     assert Parser(lexicon=lex).parse("Lt. Col. Smith").given == "Smith"
+
+
+def test_the_shipped_given_name_titles_are_every_one_a_single_word() -> None:
+    # The invariant that makes the whole-run arm dead for the shipped
+    # vocabulary: it can only ever match a one-word run, which the
+    # last-word arm reads the same way (#489). A phrase entry here
+    # would give that arm reach the docstring says it has not.
+    assert not any(" " in t for t in Lexicon.default().given_name_titles)
+
+
+def test_a_run_matches_by_its_last_word_when_the_whole_run_does_not() -> None:
+    # The other arm's premise, on the shipped vocabulary: 'dr sir' is
+    # no entry and never could be, and `sir` is the run's last word
+    # (#489). What the parse then reads is the `Dr. Sir John` case
+    # row's, and is not asserted twice.
+    lex = Lexicon.default()
+    assert "dr sir" not in lex.given_name_titles
+    assert "sir" in lex.given_name_titles
 
 
 @pytest.mark.parametrize("entry", ["lt .", "lt . col", ". col", ". ."])

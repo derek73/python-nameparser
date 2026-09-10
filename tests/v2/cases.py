@@ -358,13 +358,53 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "Esq"},
          notes="the suffix_words branch of the delimited-content "
                "escape (v1 parity, pinned live 2026-07-17)"),
-    Case("suffix_acronym_multidot_spelling", "John Smith E.S.Q.",
-         {"given": "John", "family": "Smith", "suffix": "E.S.Q."},
-         notes="'esq' is in BOTH suffix_acronyms and suffix_words on "
-               "purpose, and the two are not redundant: the word test "
-               "strips only EDGE periods, the acronym test strips all "
-               "of them, so only the acronym membership matches the "
-               "multi-dot spelling (v1 parity, pinned live 2026-07-19)"),
+    Case("suffix_acronym_multidot_spelling_is_a_name_word",
+         "John Smith E.S.Q.",
+         {"given": "John", "middle": "Smith", "family": "E.S.Q."},
+         classification="fix(suffix-acronym-collisions)",
+         notes="a BEHAVIOR CHANGE rather than a fix -- a deliberate "
+               "2.x parity break, every release from 1.4.0 read "
+               "suffix 'E.S.Q.' here. 'esq' left SUFFIX_ACRONYMS "
+               "2026-09-08: Esquire is a contraction, not an "
+               "initialism, the entry arrived in the 2019 bulk "
+               "post-nominal import (af5bdab, #93), and the multi-dot "
+               "spelling was its only unique coverage. Same criterion "
+               "as the rai/cha rows above -- "
+               "decisions.md#suffix-acronym-collisions -- asked of the "
+               "machinery instead of a surname: does the entry "
+               "describe the WORD or the set's normalization. The "
+               "classification is a slug and not an issue number "
+               "because no issue asked for it; the bundle that "
+               "carried it is #489/#316"),
+    Case("suffix_acronym_multidot_after_a_family_comma",
+         "Smith, E.S.Q.",
+         {"given": "E.S.Q.", "family": "Smith"},
+         classification="parity",
+         notes="the other path the same removal moves, and the one "
+               "that RESTORES v1: with 'esq' in SUFFIX_ACRONYMS the "
+               "multi-dot spelling was a suffix piece, so the "
+               "post-comma segment held no name word and read suffix "
+               "'E.S.Q.' (2.0.0 through 2.2.0). Out of the set, it is "
+               "an ordinary name word and the walk's first non-title "
+               "piece is ALWAYS the given -- which is what 1.4.0 read "
+               "here, first 'E.S.Q.' / last 'Smith' (measured "
+               "2026-09-09), so this row is parity where its no-comma "
+               "sibling above is a parity BREAK. Same entry, opposite "
+               "directions, because v1 read the two paths "
+               "differently"),
+    Case("suffix_word_esq_still_reads_as_a_suffix", "John Smith Esq",
+         {"given": "John", "family": "Smith", "suffix": "Esq"},
+         notes="the other half of the row above, and what the removal "
+               "rests on: the SUFFIX_WORDS membership carries every "
+               "single-token spelling on its own, so it stops being "
+               "inert rather than becoming dead. Deleting 'esq' there "
+               "too is what this row refuses. 'Esquire' rides the "
+               "same membership and is deliberately unpinned, being "
+               "one more word in a set rather than a fork "
+               "(mechanisms.md#VOCABULARY-EXERCISES-FORKS); the "
+               "dotted 'John Smith Esq.', the comma form 'Smith, "
+               "Esq.' and the leading 'Esq. Smith' each have a row of "
+               "their own below"),
     Case("bound_given_whole_segment", "salem, abdul salam",
          {"given": "abdul salam", "family": "salem"},
          notes="v1 joins bound given names freely in the post-comma "
@@ -2322,21 +2362,132 @@ CASES: tuple[Case, ...] = (
                "gives the same reading and the same kind. The site was "
                "H1's retag until the family-first orders were measured "
                "silent there"),
-    Case("title_run_then_a_credential_reports_nothing", "Dr. King MD",
-         {"title": "Dr. King", "family": "MD"}, classification="parity",
-         notes="rules.md#H4's boundary, both halves -- the title peel "
-               "took `Dr. King` and left no name word at all, so the "
-               "credential is the name by the bare-suffix carve-out -- "
-               "which is scoped to a run no title preceded, and the "
-               "title half needs a name word left standing. Neither "
-               "claims it"),
-    Case("title_run_then_a_bare_generational_reports_nothing",
-         "Dr King Jr", {"title": "Dr King", "family": "Jr"},
+    Case("title_run_then_a_credential_reports_the_name_word",
+         "Dr. King MD",
+         {"title": "Dr.", "family": "King", "suffix": "MD"},
+         ambiguities=("title-or-name",), classification="fix(#489)",
+         notes="rules.md#H3's floor: everything behind the run is a "
+               "suffix piece and `King` is not one, so the run gives "
+               "it back and the credential is a credential. `king` "
+               "being title vocabulary, the word left standing is "
+               "H4's title half -- the same reading `Dr. King, Jr.` "
+               "has always had"),
+    Case("title_run_then_a_bare_generational_reports_the_name_word",
+         "Dr King Jr", {"title": "Dr", "family": "King", "suffix": "Jr"},
+         ambiguities=("title-or-name",), classification="fix(#489)",
+         notes="v1 wanted exactly this reading and the 2026-09-01 "
+               "triage pinned the old one as NOT FIXED; rules.md#S2's "
+               "descriptive note said a change toward S2's prediction "
+               "would be an improvement, and this is it"),
+    Case("title_run_floor_gives_back_a_given_name_title",
+         "Dr Jr", {"given": "Dr", "suffix": "Jr"},
+         ambiguities=("title-or-name",), classification="fix(#489)",
+         notes="the accepted edge: with `Dr` given back and `Jr` "
+               "peeled as the suffix, no title is left to make the "
+               "reading H1's, so the lone name word is H4's -- "
+               "`dr` is title vocabulary and the word standing is it. "
+               "This shape is what rules.md#S2's descriptive note "
+               "named, in its `Sir Jr` spelling, as the reading it "
+               "predicted and did not get; once the floor empties the "
+               "run no branch reads `vocab:given-title` at all, so "
+               "`Sir Jr` is this row in every part -- same roles, same "
+               "kind, the detail naming a different word -- and it is "
+               "not pinned twice"),
+    Case("title_run_floor_gives_back_the_last_of_a_run",
+         "Lord Chancellor Jr",
+         {"title": "Lord", "family": "Chancellor", "suffix": "Jr"},
+         ambiguities=("title-or-name",), classification="fix(#489)",
+         notes="the floor takes back ONE word, the run's last, and "
+               "`Lord Chancellor` is the input decisions.md#H4 already "
+               "uses for the all-titles convention"),
+    Case("title_run_floor_keeps_a_joined_title_unit",
+         "Prince of Wales Jr",
+         {"title": "Prince of Wales", "family": "Jr"},
          classification="parity",
-         notes="the same boundary in the shape the assign comment "
-               "names: `Dr King` peels whole, `Jr` is read as the name "
-               "for want of another, and after a title that reading is "
-               "H1's rather than either of H4's conventions"),
+         notes="the floor gives back its last piece only when that "
+               "piece is ONE WORD: a joined unit led by a title is a "
+               "title run, and handing it back would turn a title into "
+               "a given name and leave the name with no title at all"),
+    Case("title_run_floor_declines_an_all_suffix_input", "MD DDS",
+         {"title": "MD", "family": "DDS"}, classification="parity",
+         notes="negative control: the word the run would give back is "
+               "`MD`, which IS suffix vocabulary, so the floor "
+               "declines. `md` is title vocabulary too, so the run is "
+               "`MD` and H1's fold claims `DDS` -- not the bare-suffix "
+               "carve-out, which reads the FIRST word as the name and "
+               "reports `suffix-or-name` (`DDS MD`). Nothing reports "
+               "here"),
+    Case("title_run_floor_declines_a_split_credential", "Jr. Ph. D.",
+         {"title": "Jr.", "suffix": "Ph. D."}, classification="parity",
+         notes="negative control: `Jr.` is suffix vocabulary wearing "
+               "H2's opening-abbreviation shape, so the floor declines "
+               "there too"),
+    Case("title_run_floor_declines_an_all_title_input",
+         "Marquess of Bath", {"title": "Marquess of Bath"},
+         classification="parity",
+         notes="negative control: nothing stands behind the run, so "
+               "there is no all-suffix rest for the floor to see"),
+    Case("title_run_addresses_by_its_last_title",
+         "Her Majesty Queen Elizabeth",
+         {"title": "Her Majesty Queen", "given": "Elizabeth"},
+         classification="fix(#489)",
+         notes="rules.md#H1 -- `queen` is a given-name title and it is "
+               "the last word of the run, so the run addresses as it "
+               "does; the empty family is H1's Accepted outcome"),
+    Case("title_run_addresses_by_its_last_title_with_a_suffix",
+         "Her Majesty Queen Elizabeth II",
+         {"title": "Her Majesty Queen", "given": "Elizabeth",
+          "suffix": "II"}, classification="fix(#489)",
+         notes="the suffix peel runs first and does not decide H1"),
+    Case("title_run_addresses_by_its_last_title_clerical",
+         "Reverend Mother Teresa",
+         {"title": "Reverend Mother", "given": "Teresa"},
+         classification="fix(#489)",
+         notes="`mother` is a given-name title, `reverend` is not"),
+    Case("title_run_addresses_by_its_last_title_dotted",
+         "Dr. Sir John", {"title": "Dr. Sir", "given": "John"},
+         classification="fix(#489)",
+         notes="the whole run keyed 'dr sir', which the shipped "
+               "vocabulary has no entry for; the last word is `sir`"),
+    Case("title_run_addresses_by_its_last_title_bare", "Mr Sir John",
+         {"title": "Mr Sir", "given": "John"},
+         classification="fix(#489)",
+         notes="the 2026-08-22 #369 entry's own example -- 'mr sir' is "
+               "not a given-name title to either site, and now the "
+               "LAST word is what both sites read"),
+    Case("title_run_addresses_by_its_last_title_unlisted_first",
+         "Xyz. Sir John", {"title": "Xyz. Sir", "given": "John"},
+         classification="fix(#489)",
+         notes="H2's unlisted abbreviation joins the run: it sits "
+               "inside the whole-run key, which the shipped "
+               "vocabulary has no entry for, and an unlisted word can "
+               "never match as a last-word key either -- `sir` is "
+               "what this run is read by"),
+    Case("title_run_licences_the_bound_join_by_its_last_title",
+         "Sir Sheikh abdul rahman",
+         {"title": "Sir Sheikh", "given": "abdul rahman"},
+         classification="fix(#489)",
+         notes="rules.md#P5's licence keys the same way H1 does, the "
+               "invariant the #369 entry set: behind a given-name "
+               "title there is no family to spare"),
+    Case("title_run_does_not_address_by_a_non_given_name_title",
+         "His Excellency Lord Duncan",
+         {"title": "His Excellency Lord", "family": "Duncan"},
+         classification="parity",
+         notes="negative control: `lord` is not a given-name title, so "
+               "the run's last word does not address by given name"),
+    Case("title_run_princess_is_vocabulary_scope",
+         "Her Royal Highness Princess Anne",
+         {"title": "Her Royal Highness Princess", "family": "Anne"},
+         classification="parity",
+         notes="negative control: `princess` is not a given-name title "
+               "either -- a vocabulary question with its own frequency "
+               "argument (Prince Harry, Lady Gaga), deliberately out"),
+    Case("title_and_two_name_words_is_not_h1s", "Sir John Smith",
+         {"title": "Sir", "given": "John", "family": "Smith"},
+         classification="parity",
+         notes="negative control: H1 never fires with two name words, "
+               "whatever the run keys to"),
     Case("all_suffix_input_reports_suffix_or_name", "Rinpoche",
          {"given": "Rinpoche"}, ambiguities=("suffix-or-name",),
          classification="feat(#491)",
@@ -3058,24 +3209,25 @@ CASES: tuple[Case, ...] = (
     # the ONLY audit words that lose SUFFIX membership; every other
     # audit word keeps its suffix membership, so trailing position is
     # untouched for them.
-    Case("audit_dr_trailing_joins_the_title_word_gap", "John Smith Dr.",
-         {"given": "John", "middle": "Smith", "family": "Dr."},
-         classification="fix(#296)",
-         notes="'dr' left SUFFIX_WORDS, so a trailing 'Dr.' is no "
-               "longer suffix vocabulary and falls to the positional "
-               "read, taking the family name with it. NOT a new defect "
-               "class -- no trailing title word routes to title on the "
-               "no-comma path, so 'John Smith Prof.' and 'John Smith "
-               "Mr.' already read this way (both pinned below; #316 is "
-               "the open question). The v1-residue suffix entry was the "
-               "only thing making 'dr' behave unlike every other "
-               "title-only word. This row records that 'dr' JOINED the "
-               "existing behavior, not that the behavior is right"),
+    Case("audit_dr_trailing_is_a_title", "John Smith Dr.",
+         {"title": "Dr.", "given": "John", "family": "Smith"},
+         classification="fix(#316)",
+         notes="'dr' left SUFFIX_WORDS, so a trailing 'Dr.' stopped "
+               "being suffix vocabulary and fell to the positional "
+               "read, taking the family name with it -- the reading "
+               "every other title-only word already had, which this "
+               "row recorded 'dr' JOINING rather than endorsing. #316 "
+               "answers the class, so it leaves that reading with "
+               "them: the trailing walk takes the word to the title "
+               "and 'Smith' is the family again"),
     Case("audit_sra_trailing_joins_the_title_word_gap", "John Smith Sra",
          {"given": "John", "middle": "Smith", "family": "Sra"},
          classification="fix(#296)",
          notes="the same move for the other word losing suffix "
-               "membership"),
+               "membership -- and, since #316, the pair's contrast: "
+               "'Dr.' wears the period the trailing walk reads and has "
+               "gone to the title, 'Sra' bare wears no shape at all "
+               "and a bare trailing title word is a name word"),
     Case("family_comma_lone_generational_suffix", "Smith, Jr.",
          {"family": "Smith", "suffix": "Jr."},
          classification="fix(#296)",
@@ -3261,16 +3413,30 @@ CASES: tuple[Case, ...] = (
                "generation it looks like. This row is what makes "
                "#432's fix a period test rather than a numeral test"),
     Case("family_comma_title_resets_the_credential_run", "Smith, PSM Dr. I",
-         {"given": "PSM", "middle": "Dr.", "family": "Smith",
+         {"title": "Dr.", "given": "PSM", "family": "Smith",
           "suffix": "I"},
-         notes="THE RESET, and unchanged since 1.4.0. A title ends the "
-               "run: what follows a bare title is not continuing a "
-               "credential, so the numeral behind it does not join and "
-               "the segment is no run at all. Removing that one line "
-               "left the whole suite green while this became title "
-               "'Dr.' + suffix 'PSM I' -- the reset fires 60 times "
-               "across the suite and until this row no input observed "
-               "it, which is the inert-measurement shape"),
+         classification="fix(#316)",
+         notes="THE RESET. A title ends the run: what follows a bare "
+               "title is not continuing a credential, so the numeral "
+               "behind it does not join and the segment is no run at "
+               "all. Removing that one line leaves the whole suite "
+               "green while this becomes title 'Dr.' + suffix 'PSM "
+               "I' -- the reset fires across the suite and until this "
+               "row no input observed it, which is the "
+               "inert-measurement shape. Since #316 the word it "
+               "resets ON is a title here rather than a middle name: "
+               "'I' is what this segment reads as its suffix, so "
+               "'Dr.' is the trailing piece and the walk takes it. "
+               "Transparency does NOT reach this row, and that is the "
+               "reset itself: 'Smith, PSM I' reads suffix 'PSM I' "
+               "with no given name at all (measured 2026-09-09), "
+               "because with no title between them the numeral "
+               "CONTINUES the credential run. Removing the title "
+               "removes the reset, so the shorter spelling is a "
+               "different reading and not this one minus a word. "
+               "1.4.0 read suffix 'Dr., I' -- 'dr' was still "
+               "postnominal vocabulary before #296's audit, so the "
+               "row's old parity claim had outlived it"),
     Case("family_comma_run_numeral_after_a_split_credential",
          "Smith, Ph. D. I",
          {"family": "Smith", "suffix": "Ph. D. I"},
@@ -3408,14 +3574,13 @@ CASES: tuple[Case, ...] = (
                "applies to the pre-comma name as it does to 'John "
                "Smith' alone -- deliberate",
          shape=4),
-    Case("title_word_trailing_is_not_a_title", "John Smith Prof.",
-         {"given": "John", "middle": "Smith", "family": "Prof."},
-         notes="the pre-existing behavior the audit_dr_trailing and "
-               "audit_sra_trailing rows join, pinned so the pair reads "
-               "as consistency rather than as damage -- and so the "
-               "general fix (#316) has a row to flip when it lands. "
-               "Contrast 'Smith, Prof.', which the comma path DOES "
-               "route to title: the two paths disagree today"),
+    Case("title_word_trailing_is_a_title", "John Smith Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith"},
+         classification="fix(#316)",
+         notes="rules.md#H5 -- after the trailing suffix run, a "
+               "period-marked title word chains into the title from "
+               "the end. The comma path already read it this way "
+               "('Smith, Prof.'); the two paths agree now"),
     Case("ja_honorific_glued_family_comma_title_only", "田中さん, Dr.",
          {"title": "Dr.", "family": "田中さん"},
          classification="fix(#296)",
@@ -3426,8 +3591,378 @@ CASES: tuple[Case, ...] = (
                "the honorific stays glued, joining master's '田中さん, "
                "Mr.'. Master peeled it through the suffix-comma route",
          tolerated=True),
-    Case("title_word_trailing_is_not_a_title_mr", "John Smith Mr.",
-         {"given": "John", "middle": "Smith", "family": "Mr."}),
+    Case("title_word_trailing_is_a_title_mr", "John Smith Mr.",
+         {"title": "Mr.", "given": "John", "family": "Smith"},
+         classification="fix(#316)"),
+
+    # -- #316(a): the trailing title RUN. The leading slot has a SHAPE
+    # rule that outranks vocabulary (H2); the trailing slot has no
+    # shape rule and reads vocabulary only. #316(b), the bare-safe
+    # subset ('Smith Dr'), is deliberately out.
+    Case("title_word_trailing_run_chains", "John Smith Prof. Dr.",
+         {"title": "Prof. Dr.", "given": "John", "family": "Smith"},
+         classification="fix(#316)",
+         notes="a RUN, mirroring H3 -- one word only would leave "
+               "'Prof.' a name word"),
+    Case("title_word_trailing_joins_the_leading_run_in_input_order",
+         "Dr. John Smith Prof.",
+         {"title": "Dr. Prof.", "given": "John", "family": "Smith"},
+         classification="fix(#316)",
+         notes="the title view joins TITLE tokens in token order, so "
+               "leading then trailing needs no rendering change"),
+    Case("title_word_trailing_leaves_one_name_word", "Smith Prof.",
+         {"title": "Prof.", "family": "Smith"},
+         classification="fix(#316)",
+         notes="the floor: the walk stops with one name piece "
+               "standing, and H1 then names it the family. Nothing is "
+               "reported -- the trailing title is a Role.TITLE by the "
+               "time the lone-name-word emitter looks, so H1 decided "
+               "the field and O5's convention did not, the same answer "
+               "'Dr. Smith' gets"),
+    Case("title_word_trailing_behind_a_peeled_suffix",
+         "John Smith Prof. Jr.",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "Jr."}, classification="fix(#316)",
+         notes="the suffix peel takes its run first and the title "
+               "walk reads what it left"),
+    Case("title_word_trailing_ahead_of_a_suffix_word",
+         "John Smith Jr. Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "Jr."}, classification="fix(#316)",
+         notes="the same reading with the two words swapped, and the "
+               "reason the first peel is PROVISIONAL: 'Prof.' stood "
+               "behind 'Jr.', so that peel halted there, and the walk "
+               "then removed the very word that had stopped it. The "
+               "walk's piece is spliced out and one peel runs over "
+               "what stands, reading 'Jr.' the suffix it is; a single "
+               "pass promoted a generational suffix to the family "
+               "name"),
+    Case("title_word_trailing_is_transparent_to_the_suffix_peel",
+         "John Smith MA Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "MA"}, ambiguities=("suffix-or-name",),
+         classification="fix(#316)",
+         notes="the principle the two peels serve: 'X Prof. Y' reads "
+               "exactly as 'X Y' reads, plus the title. This is "
+               "'John Smith MA' -- suffix 'MA', ONE report -- because "
+               "the reports come from the single peel over the "
+               "spliced pieces. Collecting both peels' picks instead "
+               "reported the same coin flip twice"),
+    Case("title_word_trailing_run_is_read_to_a_fixed_point",
+         "John Prof. MA Prof.",
+         {"title": "Prof. Prof.", "given": "John", "family": "MA"},
+         ambiguities=("suffix-or-name",), classification="fix(#316)",
+         notes="transparency for a SECOND title, which peel and chain "
+               "reading to a FIXED POINT buys and one re-peel did "
+               "not: the chain takes the last 'Prof.', the peel over "
+               "what is left un-peels 'MA' and re-exposes the first "
+               "'Prof.', and only asking the chain again takes it. "
+               "Iterating once read title 'Prof.', given 'John', "
+               "family 'Prof.', suffix 'MA' -- which is 'John Prof. "
+               "MA' plus a title in no reading at all. Found by the "
+               "/simplify round on the bundle, 2026-09-09; 1.4.0 read "
+               "first 'John' / middle 'Prof. MA' / last 'Prof.' "
+               "(measured 2026-09-09), so the row is #316's parity "
+               "break either way and the round decided only which "
+               "reading it is"),
+    Case("title_word_trailing_keeps_the_bare_acronym_reserve",
+         "John Prof. MA",
+         {"title": "Prof.", "given": "John", "family": "MA"},
+         ambiguities=("suffix-or-name",), classification="fix(#316)",
+         notes="the same principle where the peel's answer DEPENDS on "
+               "the spliced list: S2's reserve keeps a bare ambiguous "
+               "acronym the family of a two-word name, so this is "
+               "'John MA' plus a title and reads exactly as 'Prof. "
+               "John MA' does. Laying a second peel's roles over the "
+               "first peel's read family 'John', suffix 'MA'"),
+    Case("title_word_trailing_between_two_numerals",
+         "John Smith V Prof. VI",
+         {"title": "Prof.", "given": "John", "middle": "Smith V",
+          "family": "VI"}, classification="fix(#316)",
+         notes="'John Smith V VI' plus a title, reports and all. The "
+               "numeral fork reads the piece BEFORE the numeral, and "
+               "over the spliced list that piece is 'V', an initial "
+               "shape, so the fork declines and nothing is reported. "
+               "Two peels each reporting their own last piece read "
+               "suffix 'V VI' and reported the fork twice"),
+    Case("title_word_trailing_unlisted_abbreviation_is_a_name_word",
+         "John Smith Xyz.",
+         {"given": "John", "middle": "Smith", "family": "Xyz."},
+         classification="parity",
+         notes="negative control, and the doctrine: the leading slot "
+               "has a SHAPE rule that outranks vocabulary (H2), the "
+               "trailing slot reads vocabulary only"),
+    Case("title_word_trailing_bare_is_a_name_word", "John Smith Sir",
+         {"given": "John", "middle": "Smith", "family": "Sir"},
+         classification="parity",
+         notes="negative control: no period, so no claim -- TITLES "
+               "holds ordinary surnames and a bare trailing title word "
+               "is a name word (#316(b), deliberately out)"),
+    Case("title_word_trailing_ordinary_surname_is_a_name_word",
+         "Mary Jane King", {"given": "Mary", "middle": "Jane",
+                            "family": "King"},
+         classification="parity",
+         notes="negative control: decisions.md's trailing-position "
+               "rule that must NOT be adopted, still not adopted"),
+    Case("title_word_trailing_credential_is_a_suffix",
+         "John Smith Esq.",
+         {"given": "John", "family": "Smith", "suffix": "Esq."},
+         classification="parity",
+         notes="negative control: the suffix peel runs first, so a "
+               "period-marked post-nominal never reaches the walk"),
+    Case("title_word_trailing_leading_slot_is_unchanged", "Esq. Smith",
+         {"title": "Esq.", "family": "Smith"},
+         classification="parity",
+         notes="negative control: H2 stays unconditional and S2's 'a "
+               "suffix never opens the string' stands (#316 open "
+               "question 2 declined)"),
+    Case("title_word_trailing_in_a_parenthetical",
+         "Andrew Perkins (Mgr.)",
+         {"title": "Mgr.", "given": "Andrew", "family": "Perkins"},
+         classification="fix(#316)",
+         notes="the fifth corpus name the walk reaches, found by "
+               "measurement: the trailing period keeps the "
+               "parenthetical out of nickname parsing and 'mgr' is "
+               "title vocabulary, so the word arrives in the trailing "
+               "slot as any other piece would"),
+    Case("title_word_trailing_leaves_a_joined_title_unit_standing",
+         "John of Prince Prof.",
+         {"title": "Prof.", "family": "John of Prince"},
+         ambiguities=("title-or-name",), classification="fix(#316)",
+         notes="H4's join clause, reached through the trailing walk: "
+               "the unit left standing is the one H4 already reports "
+               "for on its own ('John of Prince'), and the walk is "
+               "what makes it the only one. The single-word half of "
+               "H4 cannot be reached this way -- a lone title-"
+               "vocabulary word in front of a trailing title is taken "
+               "by the LEADING run first ('King Prof.' reads title "
+               "'King')"),
+    Case("title_word_trailing_after_a_family_comma",
+         "Smith, John Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith"},
+         classification="fix(#316)",
+         notes="the comma path's walk gets the same rule: a name word "
+               "in segment 1 keeps the gate from reading the segment "
+               "as a credential run, so the trailing title had no "
+               "route to 'title' there either. Contrast the no-name "
+               "segment ('Smith, Dr.', pinned above as "
+               "family_comma_lone_title): that shape routes through "
+               "the no-name gate, a different mechanism, untouched"),
+    Case("title_word_trailing_after_a_family_comma_run",
+         "Smith, John Prof. Dr.",
+         {"title": "Prof. Dr.", "given": "John", "family": "Smith"},
+         classification="fix(#316)"),
+    Case("title_word_trailing_after_a_family_comma_ahead_of_a_suffix",
+         "Smith, John Prof. Jr.",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "Jr."}, classification="fix(#316)",
+         notes="'Smith, John Jr.' plus a title. The walk's candidates "
+               "are the pieces this segment does NOT read as a "
+               "suffix, which is this path's answer to the peel the "
+               "no-comma path runs first, so the walk reaches 'Prof.' "
+               "past the postnominal behind it; over every piece it "
+               "found no title at all"),
+    Case("title_word_trailing_after_a_family_comma_ahead_of_a_numeral",
+         "Smith, John Prof. V",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "V"}, classification="fix(#316)",
+         notes="the same, through the LENIENT tail test (#144) rather "
+               "than the strict one: 'V' is what this segment reads "
+               "as its suffix, so it is not a candidate either and "
+               "'Smith, John Prof. V' is 'Smith, John V' plus a "
+               "title. Filtering the candidates on the strict suffix "
+               "test alone left this a middle 'Prof.'"),
+    Case("title_word_trailing_after_a_family_comma_behind_a_numeral",
+         "Smith, John V Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "V"}, classification="fix(#316)",
+         notes="the mirror of the row above, and what makes the "
+               "lenient test read the pieces as if the title were "
+               "absent: the walk took the last piece, so 'V' is where "
+               "this segment's name ends and the test applies to it. "
+               "Against the segment's literal last piece, 'V' was a "
+               "middle initial here and a suffix one word earlier"),
+    Case("title_word_trailing_after_a_family_comma_behind_an_initial",
+         "Smith, John V. Prof.",
+         {"title": "Prof.", "given": "John", "middle": "V.",
+          "family": "Smith"}, classification="fix(#316)",
+         notes="the boundary of the row above, kept: #432 reads the "
+               "period as the abbreviation mark it is, so 'V.' is a "
+               "middle initial -- 'Smith, John V.' plus a title"),
+    Case("title_word_trailing_ahead_of_a_reserved_acronym",
+         "John Smith Prof. MA",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "MA"}, ambiguities=("suffix-or-name",),
+         classification="fix(#316)",
+         notes="'John Smith MA' plus a title, from the other "
+               "direction: S2's peel takes the acronym BEFORE the "
+               "walk here, so the title is the trailing piece and the "
+               "spliced peel reads the same suffix it reads without "
+               "it. The comma path parts company here and is left "
+               "alone -- after a family comma a bare ambiguous "
+               "acronym has been a MIDDLE name since 2.0 ('Smith, "
+               "John MA'), so in 'Smith, John Prof. MA' a name word "
+               "stands behind 'Prof.' and no title is in trailing "
+               "position at all"),
+    Case("cjk_trailing_latin_title_keeps_the_script_order",
+         "毛 泽东 Dr.",
+         {"title": "Dr.", "given": "泽东", "family": "毛"},
+         classification="fix(#316)",
+         notes="why the walk runs BEFORE the positional read: a Latin "
+               "title at the back of a wholly-Han name is the one "
+               "piece that would make the piece set look "
+               "mixed-script, and a mixed set declines the script "
+               "order. Taken first, the pieces the script test sees "
+               "are all Han and the Han order stands -- this is "
+               "'毛 泽东' plus a title. 1.4.0 read first '毛' / last "
+               "'泽东' / suffix 'Dr.' and master family 'Dr.' "
+               "(measured 2026-09-09)",
+         tolerated=True),
+    Case("title_word_trailing_behind_a_bound_given_pair",
+         "Prof. abdul rahman Prof.",
+         {"title": "Prof. Prof.", "given": "abdul", "family": "rahman"},
+         classification="fix(#316)",
+         notes="P5's reserve counts the name words assign will leave, "
+               "and a trailing title word is not one of them: this is "
+               "'Prof. abdul rahman' plus a title, which reads given "
+               "'abdul' / family 'rahman' because two name words "
+               "alone do not join. Counting the title word as a word "
+               "to spare joined the pair and read family 'abdul "
+               "rahman' (measured on the bundle's third commit). "
+               "1.4.0 read title 'Prof.' / first 'abdul rahman' / "
+               "last 'Prof.'"),
+    Case("title_word_trailing_behind_a_bound_pair_at_the_peel_reserve",
+         "abdul rahman MA Prof.",
+         {"title": "Prof.", "given": "abdul", "family": "rahman",
+          "suffix": "MA"}, ambiguities=("suffix-or-name",),
+         classification="fix(#316)",
+         notes="the row above's shape at S2's bare-ambiguous reserve, "
+               "which is the one place the reserve's own model of "
+               "assign's reading and assign's reading disagreed. This "
+               "is 'abdul rahman MA' plus a title, and that reads "
+               "given 'abdul' / family 'rahman' / suffix 'MA': the "
+               "join declines because peeling the acronym unjoined "
+               "and not joined is a suffix reading the join would "
+               "change. Modelling the peel and the chain as a "
+               "subtraction, the reserve counted 'MA' a name word to "
+               "spare here and not without the title, so the join "
+               "fired and read given 'abdul rahman', family 'MA'. One "
+               "shared reading of the tail is what makes the two "
+               "agree -- found by the /simplify round on the bundle, "
+               "2026-09-09 (decisions.md#H5). 1.4.0 read first 'abdul "
+               "rahman' / middle 'MA' / last 'Prof.' (measured "
+               "2026-09-09)"),
+    Case("title_word_trailing_behind_a_licensed_bound_pair",
+         "Sir abdul rahman Prof.",
+         {"title": "Sir Prof.", "given": "abdul rahman"},
+         classification="fix(#316)",
+         notes="the licensed half of the row above, and transparent "
+               "at both ends: the join fires ('sir' asserts a given "
+               "name follows) and the joined pair stays the GIVEN "
+               "name, which is what 'Sir abdul rahman' reads without "
+               "the trailing title. Two fixes were needed and this "
+               "row took both. P5's reserve had counted the trailing "
+               "title word as a name word to spare, which made the "
+               "join fire for the wrong reason; with that corrected "
+               "the join is right and the field was still wrong, H1 "
+               "reading the TITLE ROLE -- both ends of the name by "
+               "then -- as one run keyed 'sir prof', which addresses "
+               "by neither word, so the pair became the family. H1 "
+               "now asks the LEADING run, and 'Sir John Prof.' "
+               "against 'Sir John' is the same movement in one word "
+               "(rules.md#H1, both are examples there). 1.4.0 read "
+               "title 'Sir' / first 'abdul rahman' / last 'Prof.' "
+               "(measured 2026-09-09)"),
+    Case("title_word_trailing_behind_a_bound_pair_after_a_comma",
+         "Berg, abdul Prof.",
+         {"given": "abdul Prof.", "family": "Berg"},
+         notes="the recorded GAP in rules.md#H5's P5 clause, pinned "
+               "here rather than by an example there so that "
+               "recording it does not make it normative. After a "
+               "family comma the reserve reads no peel (rules.md#P5), "
+               "so the bound join fires over the trailing title word "
+               "and takes it into the given name; the trailing walk "
+               "never sees it. The comma-less spelling is "
+               "transparent -- 'Sir abdul rahman Prof.' above -- and "
+               "so is this segment with an ordinary given name, "
+               "'Smith, John Prof.' reading title 'Prof.'. PARITY, "
+               "which is why it is not a fix row: 1.4.0 read first "
+               "'abdul Prof.', last 'Berg' too (measured 2026-09-09). "
+               "Tracked as part of #316"),
+    Case("title_run_leading_addresses_over_a_trailing_title",
+         "Sir John Prof.",
+         {"title": "Sir Prof.", "given": "John"},
+         classification="fix(#316)",
+         notes="rules.md#H1's clause in one word: the run BEFORE the "
+               "one name word addresses, so this is 'Sir John' plus a "
+               "title and the given name survives the title being "
+               "added. Keying every TITLE token as one run gave 'sir "
+               "prof', which addresses by neither, and read family "
+               "'John'. 1.4.0 read title 'Sir' / first 'John' / last "
+               "'Prof.' (measured 2026-09-09)"),
+    Case("title_run_leading_addresses_over_a_trailing_given_name_title",
+         "Dr. Smith Sir.",
+         {"title": "Dr. Sir.", "family": "Smith"},
+         classification="fix(#316)",
+         notes="the mirror, and the reading the clause's ordering "
+               "decides: a trailing given-name title does NOT lift "
+               "the leading run's reading, so this is 'Dr. Smith' "
+               "plus a title and the family stands. The composite key "
+               "'dr sir' matched on 'sir' and read given 'Smith'. "
+               "Where NO run stands in front the trailing one does "
+               "decide -- 'Smith Sir.' reads given 'Smith', a "
+               "rules.md#H1 example unchanged by this. 1.4.0 read "
+               "title 'Dr.' / first 'Smith' / last 'Sir.' (measured "
+               "2026-09-09)"),
+    Case("title_word_trailing_after_a_maiden_take",
+         "Mary Smith née Jones Prof.",
+         {"given": "Mary", "family": "Smith", "maiden": "Jones Prof."},
+         classification="fix(#274)",
+         notes="negative control for the trailing walk, and rules.md#"
+               "H5's M2 boundary: M2's take runs to the name's end "
+               "and the title is inside what it takes, so no title "
+               "word is in trailing position at all. Unchanged by "
+               "#316/#489 -- master reads the same (measured "
+               "2026-09-09). 1.4.0 had no maiden support and read "
+               "first 'Mary' / middle 'Smith née Jones' / last "
+               "'Prof.'"),
+    Case("title_word_trailing_ahead_of_a_maiden_marker",
+         "Mary Jones Prof. née Smith",
+         {"title": "Prof.", "given": "Mary", "family": "Jones",
+          "maiden": "Smith"},
+         classification="fix(#316)",
+         notes="the mirror: with the marker BEHIND it the title is "
+               "the last piece the walk sees, so it is taken and "
+               "'Mary Jones née Smith' is what is left. Master read "
+               "middle 'Jones' / family 'Prof.'; 1.4.0 read first "
+               "'Mary' / middle 'Jones Prof. née' / last 'Smith' "
+               "(measured 2026-09-09)"),
+    Case("title_word_trailing_in_a_conjunction_unit",
+         "John Smith Prof. and Dr.",
+         {"given": "John", "middle": "Smith",
+          "family": "Prof. and Dr."},
+         classification="parity",
+         notes="negative control for the ONE-WORD-per-piece gate: the "
+               "conjunction merge made 'Prof. and Dr.' one piece, and "
+               "the tokens of a joined unit are not each a title "
+               "word. The row that PINS that gate -- with it deleted "
+               "the walk takes the unit, because the shape test then "
+               "runs on the piece's first token and 'Prof.' wears the "
+               "period ('John de la Prof.' reads 0 either way; both "
+               "measured 2026-09-09 in test_pieces.py)"),
+    Case("family_comma_then_a_lone_suffix_word_segment",
+         "Smith, John, Prof.",
+         {"given": "John", "family": "Smith", "suffix": "Prof."},
+         ambiguities=("comma-structure",),
+         classification="parity",
+         notes="the trailing slot is a segment away: a second comma "
+               "makes the last part its own segment, which the tail "
+               "consumes as a suffix before any trailing walk reads a "
+               "piece -- so 'prof' leaving the suffix vocabulary "
+               "(#296) does not reach this shape and 'Smith, John, "
+               "Prof.' still reads suffix 'Prof.' where 'Smith, John "
+               "Prof.' reads title. Unmoved by this bundle and by "
+               "1.4.0 alike (measured 2026-09-09)"),
 
     # -- #271: script-scoped order + segmentation (amendment 2026-07-27)
     Case("ko_unspaced_default", "김민준",

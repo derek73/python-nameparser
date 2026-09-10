@@ -152,27 +152,31 @@ class SuffixesTestCase(HumanNameTestBase):
         # 'king' stays in the titles vocabulary, because removing it breaks
         # the addressing forms it is there for ("King Charles").
         # decisions.md#vocabulary-collisions cuts toward keeping it, so the
-        # title chain takes 'Dr King'. The comma format is the road to the
-        # surname reading, pinned below.
-        # RECORDED, NOT ENDORSED: what becomes of the leftover 'Jr'.
-        # rules.md#S2 has a trailing suffix-vocabulary word read as a suffix,
-        # and its Accepted clause consumes one even when that leaves no family
-        # at all, so S2 predicts suffix 'Jr', family ''. Once the title
-        # chain has eaten two words, H1 claims the one that remains and it
-        # reads family 'Jr' instead. Compare 'Dr Smith Jr', which reads
-        # family 'Smith', suffix 'Jr' exactly as S2 states. A change moving
-        # this toward S2's prediction is an IMPROVEMENT that updates this
-        # pin, not a regression.
+        # title chain reaches 'King' at all. The comma format reads the
+        # surname without any of that, and is pinned below as the contrast.
+        # WHAT BECOMES OF THE LEFTOVER 'Jr': the improvement this pin
+        # anticipated, taken 2026-09-08 (#489, decisions.md#H3). The title
+        # chain used to eat two words and leave 'Jr' to be the name, against
+        # rules.md#S2, which reads a trailing suffix-vocabulary word as a
+        # suffix -- and against 'Dr Smith Jr', which reads family 'Smith',
+        # suffix 'Jr' exactly as S2 states. The leading peel now leaves a
+        # name word a suffix cannot be: everything behind the run is a
+        # suffix piece and 'King' is not one, so the run gives it back.
+        # Every field below is now what 'Dr Smith Jr' reads, so what
+        # 'king' being title vocabulary still buys this row is the
+        # 'title-or-name' report on the word left standing -- which is a
+        # 2.0 surface this v1 facade test does not assert.
         hn = HumanName("Dr King Jr")
-        self.m(hn.title, "Dr King", hn)
+        self.m(hn.title, "Dr", hn)
         self.m(hn.first, "", hn)
         self.m(hn.middle, "", hn)
-        self.m(hn.last, "Jr", hn)
-        self.m(hn.suffix, "", hn)
+        self.m(hn.last, "King", hn)
+        self.m(hn.suffix, "Jr", hn)
 
     def test_king_as_a_family_name_via_the_comma_format(self) -> None:
-        # The workaround test_king's decision rests on: writing the family
-        # first defeats the title chain and reads 'King' as the family.
+        # The contrast: writing the family first defeats the title chain
+        # outright, and reads 'King' as the family without needing the peel
+        # floor above. Unchanged by #489 -- both roads now arrive together.
         hn = HumanName("King, Dr Jr")
         self.m(hn.title, "Dr", hn)
         self.m(hn.last, "King", hn)

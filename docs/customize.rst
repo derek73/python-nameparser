@@ -55,7 +55,10 @@ exceptions, so a multi-word entry like ``titles={"grand moff"}`` can
 never match; the constructor warns when it sees one
 (``capitalization_exceptions`` keys included — they are looked up per
 word too). The exceptions are ``given_name_titles``, looked up as the
-space-joined run of words already read as titles, and
+space-joined run of words already read as titles or as that run's last
+word — several titles written together are one form of address and the
+last one does the addressing, so ``"Her Majesty Queen Elizabeth"`` is
+read by ``queen`` — and
 ``maiden_markers``, matched by lookahead over the words as written:
 ``maiden_markers={"z domu"}`` matches the pair and neither word alone,
 which is how the shipped Polish entry works. The words have to stand
@@ -102,9 +105,9 @@ field too, so add to both and remove from the marker first. The last
 three enforce that: anything else raises ``ValueError`` naming the
 orphans rather than leaving a marker entry that no rule will ever
 consult. ``given_name_titles`` is deliberately unchecked — a title run
-is matched as one space-joined string, so a legitimate entry like
-``"sir and dame"`` is no single word in ``titles`` — and an orphan
-there is inert rather than harmful.
+is matched as one space-joined string, or by that run's last word, so a
+legitimate entry like ``"sir and dame"`` is no single word in
+``titles`` — and an orphan there is inert rather than harmful.
 
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

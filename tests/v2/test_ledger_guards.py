@@ -962,6 +962,49 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
         ("Attorney General of Minnesota Smith",
          "Deputy Secretary of State Jones", "Prince of Wales",
          "Duke of Edinburgh"),
+    # The 2.3 title-run bundle's four rules, all literal-anchored, so
+    # these probes are the wall _CORPUS_CLAIMS cannot be: a reach this
+    # small can be widened into names the corpora lack without moving
+    # a claim count.
+    #
+    # The run rule's boundary is the vocabulary the SHAPE needs: a
+    # one-word run addresses nobody by given name, and a run whose
+    # last word is title vocabulary that is NOT given-name vocabulary
+    # keeps its family name -- which is the question filed as #519 and
+    # deliberately not answered here.
+    "fix(#489) a title run addresses by its last title":
+        ("Sir John Smith", "His Excellency Lord Duncan",
+         "Her Royal Highness Princess Anne", "Dr. Smith"),
+    # The floor's boundary is the word it gives back having to be a
+    # NAME candidate: 'MD DDS' and 'Jr. Ph. D.' are the two all-suffix
+    # rests it declines, 'Marquess of Bath' the all-title input with
+    # no rest to read at all, and 'Dr Smith Jr' the ordinary titled
+    # name where the piece behind the run was never a suffix.
+    "fix(#489) the title peel leaves a name word a suffix cannot be":
+        ("Dr Smith Jr", "MD DDS", "Marquess of Bath", "Prince of Wales Jr"),
+    # The trailing rule's boundaries are the three readings that did
+    # NOT move -- an unlisted abbreviation, a bare title word, a
+    # post-nominal -- plus the comma shape whose segment holds no name
+    # word and which segment_suffix_reading has always routed by a
+    # different gate.
+    "fix(#316) a trailing period-marked title word reads as a title":
+        ("John Smith Xyz.", "John Smith Sir", "Mary Jane King",
+         "John Smith Esq.", "Smith, Prof."),
+    # The CJK member of the same argument is its own literal rule --
+    # an alternation holding a script-classified member belongs to the
+    # honorific pin -- so a reach of 1 is one _CORPUS_CLAIMS cannot
+    # police on its own, and these are the wall. All three are
+    # tolerated CJK corpus names the rule must not take: a Latin
+    # post-nominal behind a comma, the comma spelling of this very
+    # shape (routed by the segment gate), and a spaced Latin
+    # post-nominal that is not title vocabulary.
+    "fix(#316) a trailing Latin title on a native-script name is a title":
+        ("王先生, V.", "田中さん, Dr.", "田中さん II"),
+    # The esq boundary is every spelling SUFFIX_WORDS still carries,
+    # in each of the three positions the corpora write it in.
+    "change(suffix-acronym-collisions) esq leaves the acronym set":
+        ("John Smith Esq", "John Smith Esq.", "Esq. Smith", "Smith, Esq.",
+         "Esq. van Gogh"),
 }
 
 
@@ -1721,6 +1764,53 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # CONJUNCTIONS -- "e." is no entry, and matching it against the
     # vocabulary would be a false claim of correspondence.
     frozenset({"[EY]", "[EeYy]\\."}),
+    # #489's run movers, one corpus name per alternative -- a list of
+    # names, not a copy of GIVEN_NAME_TITLES. The rule's subject is a
+    # SHAPE the vocabulary participates in (a multi-word title run
+    # whose LAST word is a given-name title), and a member copying the
+    # wordlist would reach 'Sir John Smith' and 'Dr. Smith', which do
+    # not move -- the run has to be multi-word before the last word is
+    # asked about at all. One set, identical in all four ledgers.
+    frozenset({r"Dr\. Sir John", "Her Majesty Queen Elizabeth"}),
+    # #489's peel-floor movers, one corpus name per alternative -- a
+    # list of names, and NOT a copy of either wordlist the floor
+    # consults. A member copying TITLES would reach 'Marquess of Bath'
+    # and every titled name besides; a member copying SUFFIX_WORDS
+    # would reach 'MD DDS' and 'Jr. Ph. D.', which are the inputs the
+    # floor DECLINES. What selects these four is the shape: a title
+    # run with nothing but post-nominal pieces behind it, whose own
+    # last word is not one of those. One set, identical in all four
+    # ledgers.
+    frozenset({"Dr Jr", "Dr King Jr", r"Dr\. King MD", "Sir Jr"}),
+    # #316's trailing-title movers, one corpus name per alternative --
+    # a list of names, not a copy of TITLES. The rule's subject is a
+    # SHAPE the vocabulary participates in (a trailing run of
+    # period-marked LISTED title words), and a member copying the
+    # wordlist would reach the BARE 'Mary Jane King' and 'John Smith
+    # Sir', which do not move, while a member spelled as the shape --
+    # a trailing dotted word -- would reach 'John Smith Xyz.', the
+    # unlisted abbreviation this slot deliberately does not infer
+    # from. 'Mary Jane King\.' and 'Smith Sir\.' joined in the
+    # 2026-09-09 review of the docs commit, as rules.md examples: the
+    # first is the period-marked spelling of the very name the
+    # wordlist test above uses, which is the point of it -- the bare
+    # word is protected and the abbreviated one is not, and the member
+    # says so by carrying the period. 'Sir John Prof\.' and
+    # 'Dr\. Smith Sir\.' joined in the SECOND review round the same
+    # day, as the rules.md examples of H1's leading-run clause: both
+    # move `title` -- the walk takes the trailing word out of the name
+    # -- which is what puts them here rather than on the #489 run
+    # rule, whose `fields` reach no title role at all. 'Andrew Perkins \x28Mgr\.\x29'
+    # carries the ledger's \x28/\x29 spelling of the parentheses,
+    # without which this whole alternation would be invisible to
+    # _alternations above. One set, identical in all four ledgers.
+    frozenset({r"Andrew Perkins \x28Mgr\.\x29", r"Dr\. John Smith Prof\.",
+               r"Dr\. Smith Sir\.", r"John Prof\. MA", r"John Smith Dr\.",
+               r"John Smith Jr\. Prof\.", r"John Smith Mr\.",
+               r"John Smith Prof\.", r"John Smith Prof\. Dr\.",
+               r"John Smith Prof\. Jr\.", r"John Smith Rev\.",
+               r"Mary Jane King\.", r"Sir John Prof\.", r"Smith Prof\.",
+               r"Smith Sir\.", r"Smith, John Prof\."}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -2168,9 +2258,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(108, ('family', 'given', 'middle'), "9a814f70c2dc", None),
+            _Claim(109, ('family', 'given', 'middle'), "864f9cffa977", None),
         "fix(#274) maiden markers consumed":
-            _Claim(32, ('family', 'maiden', 'middle'), "06d199ceb249", None),
+            _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8", None),
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
@@ -2196,16 +2286,32 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # #486 had to AUTHOR -- 'John Smith Jr., PhD' and
         # 'Kennedy, John (Jack)' -- and neither diffs at this baseline
         # either, so all four names are reach without absorption.
+        # 288 -> 289 on 2026-09-08: 'Smith, John Prof.' joined the
+        # rules corpus with the 2.3 title-run bundle and matches on
+        # the bare comma, like the 288 before it. It does not diff
+        # on this rule's roles at any baseline -- {title, middle} --
+        # so this is reach without absorption, as the paragraph
+        # above records for the four names before it.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(288, ('given', 'suffix', 'title'), "10c78dd0f2d2", None),
+            _Claim(289, ('given', 'suffix', 'title'), "837dc1177415", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
             _Claim(2, ('family', 'given', 'suffix'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('given', 'middle', 'title'), "263d5957cfc1", None),
+        # `middle` left the ROLES in the same edit, at the gate's
+        # own OVER-DECLARED insistence: with 'John Smith Dr.' gone,
+        # no name the rule still explains moves a middle name.
+        # 11 -> 12 on 2026-09-08: the 2.3 title-run bundle put
+        # 'John Smith Prof. Dr.' in the rules corpus, and the
+        # trailing-`dr` regex reaches any name ending in " Dr.".
+        # Reach, not explanation -- the rule explains NEITHER of
+        # the two 'Dr.' names now, both having moved to the #316
+        # rule at the end of the ledger, and the comment there
+        # records the handover.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6", None),
+            _Claim(13, ('family', 'suffix'), "fb9c68f36d0b", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('family', 'given', 'suffix', 'title'), "3f983ff71dee", None),
         "fix(#296) a lone post-comma credential is a suffix":
@@ -2216,8 +2322,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('suffix', 'title'), "f025c5f70a4e", None),
         "fix(#367) an inferred title no longer displaces a leading particle either":
             _Claim(1, ('family', 'given'), "d8ee9cd5da5f", None),
+        # 288 -> 289 with fix(comma-family) above and for the same
+        # one name, both rules matching on the bare comma.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(288, ('family', 'given'), "10c78dd0f2d2", None),
+            _Claim(289, ('family', 'given'), "837dc1177415", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -2316,8 +2424,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the acronym and M.A. rules reach exactly what they explain.
         "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`":
             _Claim(4, ('family', 'suffix'), "fc52089dfa8e", None),
+        # 5 -> 7 on 2026-09-08: 'Dr Jr' and 'Sir Jr' joined the
+        # rules corpus with the 2.3 title-run bundle. Both are
+        # two-token names ending in `jr`, so the regex reaches
+        # them; neither diff fits {family, suffix} -- each moves
+        # `title` and `given` too -- so both fall through to the
+        # peel-floor rule at the end of the ledger, and the surplus
+        # is the one the paragraph above says these four carry.
+        # 7 -> 6 on 2026-09-09, in the /simplify round: `Sir Jr` left
+        # rules.md and so left the corpus; `Dr Jr` reads the same way
+        # and pins the shape alone.
         "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`":
-            _Claim(5, ('family', 'suffix'), "602e2d83a23b", None),
+            _Claim(6, ('family', 'suffix'), "dd3fc23d90a1", None),
         "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
             _Claim(2, ('family', 'suffix'), "ed72c9672214", None),
         "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-do)":
@@ -2343,14 +2461,55 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
+        # 96 -> 97 on 2026-09-08: 'Prince of Wales Jr' joined the
+        # rules corpus with the 2.3 title-run bundle -- a parity
+        # row, kept as the boundary the peel floor declines -- and
+        # `of` is a connective. Reach, not explanation.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(96, ('_initials',), "fa69850d2cd4", ('DEFAULT',)),
+            _Claim(97, ('_initials',), "6af5338ad4d5", ('DEFAULT',)),
         "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
             _Claim(41, ('_initials',), "e99f56c955d5", ('DEFAULT',)),
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(108, ('_initials',), "45f0b2c1a7d4", ('DEFAULT',)),
+            _Claim(109, ('_initials',), "ae9c8f674e0c", ('DEFAULT',)),
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
             _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
+        # The 2.3 title-run bundle's five rules, last in every
+        # ledger. All five are anchored on NAMES, so the reach IS the
+        # mover list: 2 names for the run keying, 1 for the esq drop,
+        # 3 for the peel floor, 16 for the trailing title and 1 for
+        # the trailing title on a native-script name, which is the
+        # same argument on the one name a script-classified
+        # alternation may not hold. Twenty-three in all, and every one
+        # of them is explained by the rule that names it -- these are
+        # the rare rows where reach and explanation coincide, which is
+        # what an anchored name list buys. A widening past those names
+        # moves the digest here before it can reach the gate.
+        # 24 -> 23 on 2026-09-09, in the /simplify round: `Sir Jr`
+        # left rules.md, where it pinned nothing `Dr Jr` does not,
+        # and so left the rules corpus and the peel floor's reach.
+        "fix(#489) a title run addresses by its last title":
+            _Claim(2, ('family', 'given'), "e14159a4d48f", None),
+        "change(suffix-acronym-collisions) esq leaves the acronym set":
+            _Claim(1, ('family', 'middle', 'suffix'), "ef9c8cfc56d8", None),
+        # `_ambiguities` is in the ROLES at the three 2.x baselines and
+        # not at 1.4.0, which has no ambiguity surface to compare
+        # (compare.py's _RULE_FIELDS). Same regex, so the reach and the
+        # digest are identical in all four ledgers and only the roles
+        # move.
+        "fix(#489) the title peel leaves a name word a suffix cannot be":
+            _Claim(3, ('family', 'given', 'suffix', 'title'), "07b02286cd81", None),
+        "fix(#316) a trailing period-marked title word reads as a title":
+            _Claim(16, ('family', 'given', 'middle', 'suffix', 'title'),
+                   "562e0e82a22b", None),
+        # The CJK member of the same argument, its own literal rule
+        # (an alternation holding a script-classified member belongs
+        # to the honorific pin above). ONE corpus name, and the roles
+        # are the one thing that differs by ledger here: this baseline
+        # read the Latin word as a post-nominal and the Han words
+        # given-first, so all four move.
+        "fix(#316) a trailing Latin title on a native-script name is a title":
+            _Claim(1, ('family', 'given', 'suffix', 'title'),
+                   "567f09dc9b45", None),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -2449,7 +2608,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(108, ('_ambiguities', 'family', 'given', 'middle'), "9a814f70c2dc", None),
+            _Claim(109, ('_ambiguities', 'family', 'given', 'middle'), "864f9cffa977", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -2510,8 +2669,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1", None),
+        # `middle` left the ROLES in the same edit, and the reach
+        # grew with the rules corpus; the 1.4.0 roster above carries
+        # both, and says the same at the other two baselines.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6", None),
+            _Claim(13, ('family', 'suffix'), "fb9c68f36d0b", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('suffix', 'title'), "3f983ff71dee", None),
         "fix(#296) a lone post-comma credential is a suffix":
@@ -2579,6 +2741,30 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # regex is the same string in each.
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
             _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
+        # The 2.3 title-run bundle's five rules, last in every
+        # ledger, and the same reach at all four: the 1.4.0 roster
+        # above carries the argument.
+        "fix(#489) a title run addresses by its last title":
+            _Claim(2, ('family', 'given'), "e14159a4d48f", None),
+        "change(suffix-acronym-collisions) esq leaves the acronym set":
+            _Claim(1, ('family', 'middle', 'suffix'), "ef9c8cfc56d8", None),
+        # `_ambiguities` is in the ROLES at the three 2.x baselines and
+        # not at 1.4.0, which has no ambiguity surface to compare
+        # (compare.py's _RULE_FIELDS). Same regex, so the reach and the
+        # digest are identical in all four ledgers and only the roles
+        # move.
+        "fix(#489) the title peel leaves a name word a suffix cannot be":
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "07b02286cd81", None),
+        "fix(#316) a trailing period-marked title word reads as a title":
+            _Claim(16, ('family', 'given', 'middle', 'suffix', 'title'),
+                   "562e0e82a22b", None),
+        # The CJK member of the same argument, its own literal rule
+        # (an alternation holding a script-classified member belongs
+        # to the honorific pin above). ONE corpus name; this baseline
+        # reads as 1.4.0 does, so the roles are the same four.
+        "fix(#316) a trailing Latin title on a native-script name is a title":
+            _Claim(1, ('family', 'given', 'suffix', 'title'),
+                   "567f09dc9b45", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -2664,6 +2850,32 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('suffix',), "1b67339cf744", None),
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
             _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
+        # The 2.3 title-run bundle's five rules, last in every
+        # ledger, and the same reach at all four: the 1.4.0 roster
+        # above carries the argument.
+        "fix(#489) a title run addresses by its last title":
+            _Claim(2, ('family', 'given'), "e14159a4d48f", None),
+        "change(suffix-acronym-collisions) esq leaves the acronym set":
+            _Claim(1, ('family', 'middle', 'suffix'), "ef9c8cfc56d8", None),
+        # `_ambiguities` is in the ROLES at the three 2.x baselines and
+        # not at 1.4.0, which has no ambiguity surface to compare
+        # (compare.py's _RULE_FIELDS). Same regex, so the reach and the
+        # digest are identical in all four ledgers and only the roles
+        # move.
+        "fix(#489) the title peel leaves a name word a suffix cannot be":
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "07b02286cd81", None),
+        "fix(#316) a trailing period-marked title word reads as a title":
+            _Claim(16, ('family', 'given', 'middle', 'suffix', 'title'),
+                   "562e0e82a22b", None),
+        # The CJK member of the same argument, its own literal rule
+        # (an alternation holding a script-classified member belongs
+        # to the honorific pin above). ONE corpus name; 2.2.0 took
+        # `dr` out of the post-nominal vocabulary, so the Latin word
+        # was a name word there and `suffix` is empty on both sides
+        # while `middle` moves instead.
+        "fix(#316) a trailing Latin title on a native-script name is a title":
+            _Claim(1, ('family', 'given', 'middle', 'title'),
+                   "567f09dc9b45", None),
     },
     "expected_since_2.1.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -2813,8 +3025,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
             _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1", None),
+        # `middle` left the ROLES in the same edit, and the reach
+        # grew with the rules corpus; the 1.4.0 roster above carries
+        # both, and says the same at the other two baselines.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
-            _Claim(11, ('family', 'middle', 'suffix'), "b9cfc0d88bf6", None),
+            _Claim(13, ('family', 'suffix'), "fb9c68f36d0b", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
             _Claim(2, ('suffix', 'title'), "3f983ff71dee", None),
         "fix(#296) a lone post-comma credential is a suffix":
@@ -2874,6 +3089,32 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # in every 2.x wheel, so the baseline makes no difference.
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
             _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
+        # The 2.3 title-run bundle's five rules, last in every
+        # ledger, and the same reach at all four: the 1.4.0 roster
+        # above carries the argument.
+        "fix(#489) a title run addresses by its last title":
+            _Claim(2, ('family', 'given'), "e14159a4d48f", None),
+        "change(suffix-acronym-collisions) esq leaves the acronym set":
+            _Claim(1, ('family', 'middle', 'suffix'), "ef9c8cfc56d8", None),
+        # `_ambiguities` is in the ROLES at the three 2.x baselines and
+        # not at 1.4.0, which has no ambiguity surface to compare
+        # (compare.py's _RULE_FIELDS). Same regex, so the reach and the
+        # digest are identical in all four ledgers and only the roles
+        # move.
+        "fix(#489) the title peel leaves a name word a suffix cannot be":
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "07b02286cd81", None),
+        "fix(#316) a trailing period-marked title word reads as a title":
+            _Claim(16, ('family', 'given', 'middle', 'suffix', 'title'),
+                   "562e0e82a22b", None),
+        # The CJK member of the same argument, its own literal rule
+        # (an alternation holding a script-classified member belongs
+        # to the honorific pin above). ONE corpus name, and the FEWEST
+        # roles of any ledger: 2.1.0 shipped the Han family-first
+        # order, so only the Latin word moves, out of `suffix` and
+        # into `title`.
+        "fix(#316) a trailing Latin title on a native-script name is a title":
+            _Claim(1, ('suffix', 'title'),
+                   "567f09dc9b45", None),
     },
 }
 
@@ -4464,7 +4705,19 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
         ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
          "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`", 1),
     ],
-    "expected_since_2.0.0.toml": [],
+    # The 2.0.0 list was EMPTY until 2026-09-08, and what put a row in
+    # it was a narrowing rather than a widening: #316 took 'John Smith
+    # Dr.' off the dr rule, the gate's OVER-DECLARED check then took
+    # `middle` out of that rule's `fields`, and {family, suffix} is a
+    # strict subset of the glued-honorific rule's three roles where
+    # {middle, family, suffix} was not. The one contested name,
+    # '田中さん, Dr.', produces no diff at this baseline at all, so the
+    # pair is latent; the ledger's [[change.precedes_narrower]] block
+    # carries the argument.
+    "expected_since_2.0.0.toml": [
+        ("fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix",
+         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word", 1),
+    ],
     "expected_since_2.1.0.toml": [],
     "expected_since_2.2.0.toml": [],
 }

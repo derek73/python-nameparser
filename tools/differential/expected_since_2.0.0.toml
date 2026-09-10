@@ -379,6 +379,37 @@ issue = "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into s
 name_regex = "(?<=[^\\s,])(?<!박사)(?<!선생)(?<!교수)(?:박사님|선생님|교수님|박사|씨|님|先生|女士|小姐|教授|様|さん|さま|くん|ちゃん)\\.?(?=$|[ ,])"
 fields = ["given", "family", "suffix"]
 
+[[change.precedes_narrower]]
+issue = "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word"
+why = """
+LATENT at this baseline, and the only exemption this file carries.
+'田中さん, Dr.' is the one name both regexes reach -- this rule on its
+glued さん, the dr rule on the ' Dr.' the string ends with -- and it
+produces NO diff against the 2.0.0 wheel at all, so file order decides
+nothing here today. It does diff at 1.4.0 and at 2.1.0, and at neither
+of those is this pair a contest: the 1.4 ledger carries this regex
+under a different issue with different `fields`, and the 2.1 ledger has
+no glued-honorific rule to contest with.
+
+The pair became a contest on 2026-09-08, and not because either rule
+was widened. #316 took 'John Smith Dr.' off the dr rule -- a trailing
+period-marked title word now routes to `title`, which that rule's
+comment records -- and the gate's own OVER-DECLARED check then narrowed
+it from {middle, family, suffix} to {family, suffix}, the three names
+it still explains moving no middle name. {family, suffix} is a strict
+subset of the three roles here where the old list was not, and the
+hazard appeared with the subset.
+
+The declaration says this rule stays first. What it describes is the
+COMPOUND: an honorific written against the name is split off its token
+and routed to `suffix`, and the peeled name then goes through the
+ordinary machinery, which is why `given` and `family` move beside it.
+The dr rule describes one vocabulary removal at the END of a string and
+knows nothing about the honorific. If '田中さん, Dr.' ever starts
+diffing at this baseline, the honorific peel is what its diff is about
+and this is the label to read it under.
+"""
+
 [[change]]
 issue = "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix"
 # '王小明 先生', '김민준 씨', '田中 太郎 様', '田中 殿': #307 ships the
@@ -794,18 +825,36 @@ fields = ["title", "given", "middle", "_ambiguities"]
 
 [[change]]
 issue = "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word"
-# 'John Smith Dr.' and 'dr Vincent van Gogh dr' with its #100 siblings
-# (and, at 2.x only, 'Smith Dr', which 1.4.0 already read as the
-# family): 'dr' left SUFFIX_WORDS, where it was v1
-# residue -- 'Dr.' is not a postnominal in any tradition -- so a
-# trailing bare 'Dr' is no longer suffix vocabulary and falls to the
-# positional read, taking the family name with it. NOT a new class:
-# no trailing title-only word routes to title on the no-comma path
-# ('John Smith Prof.' reads family 'Prof.' at every baseline), and
-# the suffix entry was the only thing making 'dr' the exception. #316
-# is the open question for the class.
+# 'dr Vincent van Gogh dr' with its #100 siblings (and, at 2.x only,
+# 'Smith Dr', which 1.4.0 already read as the family): 'dr' left
+# SUFFIX_WORDS, where it was v1 residue -- 'Dr.' is not a postnominal
+# in any tradition -- so a trailing bare 'Dr' is no longer suffix
+# vocabulary and falls to the positional read, taking the family name
+# with it.
+#
+# 2026-09-08: 'John Smith Dr.' has LEFT this rule, and the sentence
+# that used to close this comment has been retracted with it. It read
+# "NOT a new class: no trailing title-only word routes to title on
+# the no-comma path ('John Smith Prof.' reads family 'Prof.' at every
+# baseline) ... #316 is the open question for the class". #316 is
+# answered: a trailing PERIOD-MARKED listed title word now routes to
+# title, so 'John Smith Dr.' moves {title, suffix} against this
+# baseline and {title, middle, family} against 2.2.0, neither of them
+# a subset of the three roles below, and the bundle rule `fix(#316) a
+# trailing period-marked title word reads as a title` at the end of
+# this file claims it. What stays here is the BARE spelling, which
+# #316(b) leaves open: 'Smith Dr' and the 'dr ... dr' names wear no
+# abbreviation period and the trailing walk never sees them. This
+# rule is narrower than that one and stands first, so the DIFF
+# decides which of the two claims a name, not file order.
+#
+# `middle` left the field list in the same edit: it was there for
+# 'John Smith Dr.', whose middle name moved, and the three names the
+# rule still explains move `family` and `suffix` alone. The gate said
+# so itself -- OVER-DECLARED, "classify() matches by SUBSET, so the
+# excess is not inert" (#452).
 name_regex = "(?i)\\sdr\\.?$"
-fields = ["middle", "family", "suffix"]
+fields = ["family", "suffix"]
 
 [[change]]
 issue = "fix(#296) a credential-only comma string reads a name and its postnominal"
@@ -1717,3 +1766,263 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 name_regex = "(?:^|[\\s,])(?:[EY]|[EeYy]\\.)(?=[\\s,]|$)"
 fields = ["_initials"]
 orders = ["DEFAULT"]
+
+# ---------------------------------------------------------------
+# THE 2.3 TITLE-RUN BUNDLE: #489 (a title run addresses by its last
+# title), #316 (a trailing period-marked title word reads as a
+# title), the leading peel's name-word floor, and the `esq` acronym
+# drop that shipped beside them. Five rules, four of them one per
+# ARGUMENT rather
+# than one per name, plus a fifth that is #316's argument again on
+# the one name a script-classified alternation cannot hold. Over
+# twenty-four corpus names.
+#
+# LAST in the file, and that is narrow-first rather than a
+# preference: every rule already here that REACHES one of the
+# twenty-four declares `fields` that are a strict subset of the bundle
+# rule claiming that name, and a wide rule sitting AHEAD of a
+# narrower one it shares a corpus name with is an order-decided
+# contest the run refuses (#382). Measured 2026-09-08, all four
+# ledgers: at 1.4.0 fix(#296)'s trailing `dr` reaches 'John Smith
+# Dr.' and 'John Smith Prof. Dr.', the two comma routings reach
+# 'Smith, John Prof.', and the two-token `jr` rule reaches 'Dr Jr'
+# and 'Sir Jr'; at 2.0.0 and 2.1.0 only fix(#296) reaches any of
+# them; at 2.2.0 none does. Not one of those rules ADMITS the diff
+# it reaches -- every shape is outside its field list, measured --
+# so nothing below takes a name off a rule that was explaining it,
+# and no [[change.precedes_narrower]] block is needed anywhere.
+#
+# `_initials` appears in none of the four field lists although the
+# initials of several of the twenty-four do move. The derived view
+# enters a diff only where every ROLE and every ambiguity kind
+# agrees (compare.py's _RULE_FIELDS, main()'s roles-identical
+# guard), and all twenty-four move roles -- so no run can produce a
+# shape here carrying it, and validate_rules refuses it beside
+# another field in any case.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#489) a title run addresses by its last title"
+# 'Her Majesty Queen Elizabeth' and 'Dr. Sir John': the
+# given_name_titles lookup was keyed on the WHOLE run, and 'her
+# majesty queen' is in no vocabulary and never could be, so the one
+# name word behind the run stayed the family. Both sites that ask --
+# rules.md#H1's retag and rules.md#P5's licence -- now test the whole
+# run's key OR the last word's, and 'queen' and 'sir' are
+# GIVEN_NAME_TITLES entries. The name word behind the run becomes the
+# GIVEN name and the family empties, which is H1's Accepted outcome.
+# Both roles move together and `fields` declares both. `title` is
+# deliberately OUT: the run itself is unchanged, only what it
+# addresses as, so a name whose TITLE moved arrives UNEXPLAINED, as
+# it should.
+#
+# 'Reverend Mother Teresa', 'Mr Sir John', 'Xyz. Sir John' and 'Sir
+# Sheikh abdul rahman' move the same way and are NOT members: none of
+# them is in any corpus file, so a member for one would be a rule
+# reaching nothing.
+#
+# An anchored alternation of the two NAMES rather than a shape. What
+# selects them is a SHAPE -- a multi-word title run whose LAST word
+# is a given-name title -- and a member copying GIVEN_NAME_TITLES
+# would reach 'Sir John Smith' and 'Dr. Smith', which do not move.
+# The members are a list of names and copy no wordlist, which is what
+# _NOT_A_VOCABULARY_COPY in tests/v2/test_ledger_guards.py records;
+# _CORPUS_CLAIMS pins the reach at 2 with its digest, and
+# _MUST_NOT_MATCH carries three boundaries: a ONE-word run ('Sir John
+# Smith'), and two runs whose last word is title vocabulary that is
+# not given-name vocabulary ('His Excellency Lord Duncan', 'Her Royal
+# Highness Princess Anne' -- the open vocabulary question, #519). One
+# set, identical in all four ledgers.
+name_regex = "^(?:Dr\\. Sir John|Her Majesty Queen Elizabeth)$"
+fields = ["family", "given"]
+
+[[change]]
+issue = "change(suffix-acronym-collisions) esq leaves the acronym set"
+# 'John Smith E.S.Q.': 'esq' left SUFFIX_ACRONYMS, where the 2019 bulk
+# post-nominal import put it (af5bdab, #93) -- esquire is a
+# contraction, not an initialism -- so the multi-dot spelling stops
+# being credential vocabulary and falls to the positional read: given
+# 'John', middle 'Smith', family 'E.S.Q.', where every release since
+# 1.4.0 read family 'Smith', suffix 'E.S.Q.'.
+#
+# A BEHAVIOR CHANGE rather than a fix, which is what the `change` tag
+# says: this is a deliberate parity break at all four baselines, and
+# the entry that argues it is decisions.md#suffix-acronym-collisions
+# -- there is no issue number to cite, and the release-log bullet
+# carries none either. It is not NOT WANTED: that spelling is for a
+# reading nobody wants, and this reading is the one the decision
+# chose.
+#
+# Literal, no alternation, and exactly as wide as the diff: 'esq'
+# keeps its SUFFIX_WORDS membership, so the acronym entry's only
+# unique coverage was this one spelling and this one corpus name.
+# _MUST_NOT_MATCH carries the three spellings that did NOT move --
+# 'John Smith Esq' (the word list still reads it), 'Esq. Smith'
+# (rules.md#H2's leading inference) and 'Smith, Esq.' (the lone
+# post-comma credential).
+name_regex = "^John Smith E\\.S\\.Q\\.$"
+fields = ["family", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#489) the title peel leaves a name word a suffix cannot be"
+# 'Dr King Jr', 'Dr. King MD', 'Dr Jr' and 'Sir Jr': the leading title
+# peel's only floor was "leave one piece", so it peeled 'Dr King'
+# whole and left the post-nominal to be the name -- title 'Dr King',
+# family 'Jr', no suffix at all. leading_titles now also refuses to
+# leave a word that is nothing but suffix vocabulary standing as the
+# name and gives the run's last word back (rules.md#H3,
+# decisions.md#H3), so 'Dr King Jr' reads title 'Dr', family 'King',
+# suffix 'Jr' -- what the comma spelling 'King, Dr Jr' always read.
+#
+# FOUR roles, and no single name moves all four. The two three-word
+# names move `title`, `family` and `suffix`; 'Dr Jr' and 'Sir Jr'
+# move `given` as well, or instead of `family`, the word given back
+# standing alone with the credential peeled off it. At the 2.x
+# baselines `_ambiguities` joins the list -- with the title given
+# back there is no title left to make the reading H1's, so all four
+# report title-or-name through rules.md#H4 -- and it is absent at
+# 1.4.0, which has no ambiguity surface to compare (compare.py's
+# _RULE_FIELDS).
+#
+# An anchored alternation of the four NAMES rather than a shape. What
+# selects them is a SHAPE -- a title run with nothing but post-nominal
+# pieces behind it, whose own last word is not one of those -- and a
+# member copying TITLES or SUFFIX_WORDS would reach 'MD DDS', 'Jr.
+# Ph. D.' and 'Marquess of Bath', every one of which the floor
+# declines and every one of which is a _MUST_NOT_MATCH probe, with
+# 'Dr Smith Jr' beside them for the ordinary titled name the floor
+# never sees. The members are a list of names and copy no wordlist,
+# which is what _NOT_A_VOCABULARY_COPY records. THREE of the four are
+# corpus names, not four: 'Sir Jr' left corpus_rules.jsonl on
+# 2026-09-09, when the rules.md example pinning it was dropped as a
+# duplicate of 'Dr Jr' (decisions.md#H5), and it stays in the
+# alternation because a name_regex names INPUTS rather than corpus
+# rows. _CORPUS_CLAIMS pins the reach at 3 with its digest. One set,
+# identical in all four ledgers; only the `fields` differ, as the
+# paragraph above says.
+name_regex = "^(?:Dr Jr|Dr King Jr|Dr\\. King MD|Sir Jr)$"
+fields = ["_ambiguities", "family", "given", "suffix", "title"]
+
+[[change]]
+issue = "fix(#316) a trailing period-marked title word reads as a title"
+# 'John Smith Prof.' and thirteen more: a trailing run of period-marked
+# LISTED title words is peeled as a title, so the surname behind it
+# stops being lost -- title 'Prof.', given 'John', family 'Smith',
+# where every baseline read middle 'Smith', family 'Prof.'. A RUN,
+# mirroring the leading peel: 'John Smith Prof. Dr.' gives title
+# 'Prof. Dr.' and 'Dr. John Smith Prof.' gives 'Dr. Prof.' in input
+# order. The family-comma segment takes the same walk, so 'Smith,
+# John Prof.' agrees with the bare spelling at last. And the trailing
+# title is TRANSPARENT to the post-nominal peel that follows it:
+# 'John Smith Jr. Prof.' keeps suffix 'Jr.' rather than promoting the
+# generational suffix to the family name, and 'John Prof. MA' reads
+# family 'MA' by rules.md#S2's reserve.
+#
+# Five roles, the union of what the sixteen move; no name moves all
+# five (four is the most, 'John Smith Jr. Prof.'), and two move only
+# two at every baseline -- 'Smith, John Prof.' {title, middle} and
+# 'Smith Sir.' {title, family} -- with 'Mary Jane King.' moving three.
+# A third joins them at 1.4.0, 2.0.0 and 2.1.0, 'John Smith Dr.'
+# {title, suffix}, which moves {title, middle, family} at 2.2.0
+# instead: 'dr' was suffix vocabulary until 2.2, so the role it
+# vacates differs by baseline (measured 2026-09-09 against all four
+# wheels). `_ambiguities` is not among the five, and it is not
+# because no name reports one: 'John Prof. MA' reports
+# `suffix-or-name`, which is S2's bare-acronym reserve and not this
+# rule. None of the sixteen reports `title-or-name` -- the walk
+# leaves a title standing, so H4's title half never fires -- and the
+# derived view cannot enter a diff here in any case, every one of the
+# sixteen moving roles (compare.py's _RULE_FIELDS).
+#
+# TWO of the sixteen end in ' Dr.' and are also reached by
+# fix(#296)'s trailing-`dr` rule above -- 'John Smith Dr.', which
+# that rule used to explain, and 'John Smith Prof. Dr.'. That rule
+# declares {middle, family, suffix} and neither diff fits it now, so
+# both fall through to here; its comment records the handover, and
+# narrow-first placement is what keeps the pair out of contest. The
+# BARE trailing spelling stays with fix(#296): 'Smith Dr' and the 'dr
+# ... dr' names wear no abbreviation period and the walk never sees
+# them (#316(b), left open).
+#
+# The last two members arrived with the 2026-09-09 review of the
+# docs commit, which added two rules.md examples: 'Mary Jane King.',
+# the H5 Accepted clause's collision example (title 'King.', given
+# 'Mary', family 'Jane', where every baseline read family 'King.'
+# behind middle 'Jane'), and 'Smith Sir.', which is an H1 example.
+# 'Smith Sir.' is HERE and not on the fix(#489) run rule above
+# because the DIFF decides: it moves {title, family}, the walk
+# taking 'Sir.' out of the name, while its given/family reading is
+# what every baseline already gave ('Smith' stays the given name on
+# both sides). The #489 rule declares {family, given} and does not
+# reach a title role at all, so it could not claim the diff even
+# placed ahead of this one.
+#
+# An anchored alternation of the sixteen NAMES rather than a shape.
+# What selects them is a SHAPE -- period-marked, listed, trailing --
+# and a member copying TITLES would reach the BARE 'Mary Jane King'
+# and 'John Smith Sir', which do not move; the period-marked
+# 'Mary Jane King.' is a member precisely because it does, which is
+# the line the period draws and the whole of what it draws. A member
+# spelled as the shape (a trailing dotted word) would reach 'John
+# Smith Xyz.', which is the boundary the leading slot's H2 inference
+# is deliberately NOT given here. Those three and 'Smith, Prof.' --
+# the comma shape whose segment holds no name word and which reads
+# by a different gate -- are the _MUST_NOT_MATCH probes. The members
+# are a list of names and copy no wordlist, which is what
+# _NOT_A_VOCABULARY_COPY records; _CORPUS_CLAIMS pins the reach at
+# 14 with its digest.
+#
+# 'Andrew Perkins (Mgr.)' is spelled with \\x28 and \\x29 rather than
+# the \\( and \\) the paren-bearing rules above use. Escaped or not, a
+# literal parenthesis inside an alternation body hides the WHOLE
+# group from test_ledger_guards._alternations -- its member pattern
+# excludes '(' and ')' -- and a sixteen-member alternation should not
+# be invisible to the discovery pass that demands every alternation
+# declare what it copies. The two spellings match the same string.
+# One set, identical in all four ledgers.
+name_regex = "^(?:Andrew Perkins \\x28Mgr\\.\\x29|Dr\\. John Smith Prof\\.|Dr\\. Smith Sir\\.|John Prof\\. MA|John Smith Dr\\.|John Smith Jr\\. Prof\\.|John Smith Mr\\.|John Smith Prof\\.|John Smith Prof\\. Dr\\.|John Smith Prof\\. Jr\\.|John Smith Rev\\.|Mary Jane King\\.|Sir John Prof\\.|Smith Prof\\.|Smith Sir\\.|Smith, John Prof\\.)$"
+fields = ["family", "given", "middle", "suffix", "title"]
+
+[[change]]
+issue = "fix(#316) a trailing Latin title on a native-script name is a title"
+# '毛 泽东 Dr.': the rule above's walk, on the one corpus name it
+# reaches that is not Latin-only. The walk runs BEFORE the positional
+# read, so the pieces the script test sees are all Han and the
+# family-first order stands -- this is '毛 泽东' plus a title, and
+# it reads title 'Dr.', given '泽东', family '毛'. A Latin title at
+# the back of a wholly-Han name is the one piece that would make the
+# piece set look mixed-script, which is what the ordering of the two
+# buys.
+#
+# ITS OWN rule rather than a seventeenth alternative above, and not by
+# preference: an alternation holding a script-classified member is
+# claimed by the honorific pin in tests/v2/test_ledger_guards.py,
+# which requires such an alternation's members to BE the config's CJK
+# honorific entries. So this stands alone, literal-anchored, reaching
+# exactly one corpus name (_CORPUS_CLAIMS carries the 1) with
+# _MUST_NOT_MATCH probes for the boundary -- the same shape the four
+# #436/#437 CJK rules above take, and for the same reason.
+#
+# Classified 2026-09-09, in the review round that fixed which title
+# run H1 addresses by; the reading itself is untouched by that fix.
+# The name is RADAR tier (corpus_cjk_tolerated.jsonl, tolerated since
+# the 2026-09-01 CJK demotion) and it had been printing UNCLASSIFIED
+# at all four gates since the trailing walk landed. Radar never
+# blocks, so nothing failed -- and this bundle's convention is that
+# every gate line reads `radar unclassified: 0`, which is the whole
+# reason the row is here rather than left to print.
+#
+# FOUR roles here, and NOT the same four at every baseline, which is
+# why this is the one bundle rule whose `fields` differ per ledger.
+# This baseline reads as 1.4.0 does -- first '毛', last '泽东',
+# suffix 'Dr.' -- so `title`, `given`, `family` and `suffix` all move.
+#
+# Literal and anchored, so the reach cannot widen into the other
+# twenty-nine tolerated CJK names. _MUST_NOT_MATCH carries three of
+# them as probes: '王先生, V.' (a Latin post-nominal behind a
+# comma, which the trailing walk never sees), '田中さん, Dr.' (the
+# comma spelling of this very shape, routed by the segment gate) and
+# '田中さん II' (a spaced Latin post-nominal that is not title
+# vocabulary).
+name_regex = "^毛 泽东 Dr\\.$"
+fields = ["family", "given", "suffix", "title"]

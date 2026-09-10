@@ -11,7 +11,7 @@ import dataclasses
 import functools
 import sys
 import warnings
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Set
 from dataclasses import dataclass, field
 from types import FrameType, MappingProxyType
 from typing import cast
@@ -83,7 +83,11 @@ _SUBSET_FIELDS = (
 #: The two are not the same mechanism, and the difference is why the
 #: exemption is a list rather than a rule. A given_name_titles run is
 #: identified per word FIRST -- 'lt' and 'col' are each title
-#: vocabulary -- and only then joined and looked up. A maiden marker
+#: vocabulary -- and only then looked up, as the whole run's key or as
+#: its LAST word's (_run_addresses_by_given, #489). The whole-run arm
+#: is the one a phrase entry is matched by; the last-word arm is a
+#: single word and cannot reach a phrase, so storage stays what it was
+#: (the two are asked together, not in precedence). A maiden marker
 #: phrase has no such per-word foothold: 'z' and 'domu' are not markers
 #: individually, and adding them separately (which this warning used to
 #: advise) reads 'Maria Kowalska z domu Nowak' as maiden 'domu Nowak'
@@ -123,26 +127,97 @@ def _normalize(word: str) -> str:
         word = stripped
 
 
-def _title_key(words: Iterable[str]) -> str:
-    """The given_name_titles lookup key for a run of title words.
+def _fold_words(words: Iterable[str]) -> list[str]:
+    """The words of a title run, folded for storage and lookup.
 
     A multi-word title is matched as one key ('lt col'), so the fold has
-    to run per word and rejoin -- _normalize on the whole phrase would
-    leave interior periods. Defined once because it is built at match
-    time (post_rules for H1, group for the P5 licence -- which must
-    agree, see #369) and at translation time (the v1 facade's
-    first_name_titles), and a divergence between them fails silently:
-    the entry simply stops matching.
+    to run per word -- _normalize on the whole phrase would leave
+    interior periods.
 
-    Words that fold away are DROPPED, not joined as empty. Keeping the
-    gap makes the fold non-idempotent -- 'lt .' would store 'lt ', which
-    match time can never build (post_rules joins token texts, and a lone
-    '.' is not a title token), so the entry is inert. Storage re-runs
-    this fold on unpickle and on every dataclasses.replace, so a value
-    that changes under a second pass is one Lexicon later rejects as
+    Words that fold away are DROPPED, not kept as empty. Keeping the
+    gap makes the key non-idempotent -- 'lt .' would store 'lt ', which
+    match time can never build: a run CAN carry a lone '.' (the
+    conjunction merge puts one there), but the fold drops the empty
+    word, so the key is 'lt' and the stored entry is inert. Storage
+    re-runs this fold on unpickle and on every dataclasses.replace, so a
+    value that changes under a second pass is one Lexicon later rejects as
     "not written by this version". _normalize converges for the same
-    reason; so must anything built on top of it."""
-    return " ".join(filter(None, (_normalize(w) for w in words)))
+    reason; so must anything built on top of it.
+
+    A LIST, so that _run_addresses_by_given's last-word arm can be the
+    last word of this fold rather than a re-split of the joined key --
+    "the last word of the FOLDED key" is then structural, and the two
+    arms read one fold between them.
+
+    map/filter rather than a comprehension: both are C calls where a
+    comprehension is a Python frame on 3.11, and this runs on the parse
+    path for every name carrying a title run (decisions.md#parse-cost).
+    """
+    return list(filter(None, map(_normalize, words)))
+
+
+def _title_key(words: Iterable[str]) -> str:
+    """The given_name_titles lookup key for a run of title words: the
+    folded words, space-joined.
+
+    Defined once because it is built at match time
+    (_run_addresses_by_given, which is how post_rules' H1 and group's
+    P5 licence both reach it) and at translation time (_config_shim's
+    first_name_titles), and a divergence between them fails silently:
+    the entry simply stops matching."""
+    return " ".join(_fold_words(words))
+
+
+def _run_addresses_by_given(words: Iterable[str],
+                            vocabulary: Set[str]) -> bool:
+    """Whether a run of title words addresses by the GIVEN name.
+
+    Two sites ask it and they must agree -- post_rules for H1, group
+    for the P5 licence -- because a run read two ways is a rule
+    contradicting itself (decisions.md#P5, the 2026-08-22 #369 entry).
+    One predicate, so they cannot drift.
+
+    The WHOLE run's key, or that key's LAST word (#489): a run is
+    written as several titles and addresses the way its final one does,
+    so 'Her Majesty Queen' addresses by given name because 'queen'
+    does. The two arms are asked of one key and neither is the other's
+    fallback -- the `or` short-circuits but decides nothing, since for
+    a one-word run the key IS its last word. Both arms read one
+    _fold_words list, so the last word is the last word of the FOLDED
+    key by construction rather than by agreement, and a run token that
+    folds away cannot empty that arm: the conjunction merge can put a
+    lone '.' in the run ('Sir and . John'), and the fold drops it.
+    What the drop leaves as the last word can then be the CONJUNCTION
+    -- 'Sir and . John' keys 'sir and' and reads family 'John', where
+    'Sir and Dame John' keys 'sir and dame' and reads given. Harmless
+    on the shipped vocabulary, which holds no entry ending in a
+    connective, and a caller who stored one would be asking for it
+    (measured 2026-09-09).
+
+    The whole-run arm is what keeps a caller's multi-word phrase entry
+    working: 'lt col' is stored as one key and matched as one run. Over
+    the SHIPPED vocabulary it is dead -- every shipped entry is a single
+    word (asserted in test_lexicon.py), so it can only ever match a
+    one-word run, which is a run the last-word arm reads the same way.
+
+    H2's unlisted abbreviations ride in the run. One can never match as
+    the last-word key, being in no vocabulary by definition -- written
+    as the inputs that produce those runs, 'Xyz. Sir John' keys 'xyz
+    sir', matches on 'sir' and reads given 'John', while 'Sir Xyz.
+    John' keys 'sir xyz', matches on neither arm and reads family
+    'John'. It CAN sit inside a whole-run key that matches, because
+    given_name_titles is deliberately not validated against titles: a
+    caller who stores 'sir xyz' makes 'Sir Xyz. John' read given.
+
+    The vocabulary is passed in rather than read off a default: a
+    caller's own Lexicon is the one that has to be consulted, and this
+    module is where Lexicon is defined."""
+    folded = _fold_words(words)
+    if not folded:
+        # every word folded away, so there is no key and no last word:
+        # the joined spelling built "" here, which matched nothing
+        return False
+    return " ".join(folded) in vocabulary or folded[-1] in vocabulary
 
 
 def _reject_buffer(value: object, label: str, plural: str) -> None:
@@ -327,10 +402,11 @@ class Lexicon:
     stripped -- so matching is case-insensitive. Vocabulary entries are
     single words -- a multi-word entry warns at construction and can
     never match. Two fields are exempt, and they differ in HOW they
-    match: ``given_name_titles`` is looked up as the space-joined run
-    of words the parse has ALREADY read as titles, while
-    ``maiden_markers`` is matched by lookahead, longest first, over
-    words that need not be markers on their own (``"z domu"``).
+    match: ``given_name_titles`` is looked up against the run of words
+    the parse has ALREADY read as titles -- the whole run space-joined,
+    or that run's last word -- while ``maiden_markers`` is matched by
+    lookahead, longest first, over words that need not be markers on
+    their own (``"z domu"``).
     Field docs below show examples, not full
     contents; inspect any field's shipped vocabulary directly, e.g.
     ``Lexicon.default().conjunctions``."""

@@ -29,27 +29,58 @@ The marker's unit is the whole rule, because that is the unit `tools/differentia
 
 ## Titles & honorifics (H)
 
-Background: an honorific title precedes a name and is not itself part of it; it addresses or ranks the person. Most titles address by surname ("Mr. Johnson"), but a few — knighthoods, some clerical and courtesy titles — address by given name ("Sir John"). The library keeps a vocabulary of titles and, separately, of these given-name titles. What a TRAILING title-vocabulary word should do is unresolved (#316): today "John Smith Prof." keeps Prof. a name word while "Smith, Prof." reads it as a title — the two comma paths disagree, and TITLES holding ordinary surnames (king, judge, bishop) is what bars the blanket vocabulary-wins answer. An input the title peel eats down to one last title-vocabulary word is H4's, and what it does with that word is a convention rather than a reading of the vocabulary. Two criteria govern two different questions here. Membership in the given-name-title list follows HOW THE TITLE ADDRESSES: a title that precedes and addresses by the given name belongs (Sir, Sheikh, the Arabic honorifics الدكتور/الشيخ — which qualify even though those traditions fully retain family names). Whether an EMPTY FAMILY is correct output is the separate question, governed by surname retention: renunciation abolishes the surname, so for Swami, Guru, Baba or Lama family="" is right (#346), while rabbi and imam traditions keep surnames — "Rabbi Cohen" addresses by title and keeps family "Cohen". Conflating the two criteria either ejects the Arabic entries or sweeps in titles that break
+Background: an honorific title precedes a name and is not itself part of it; it addresses or ranks the person. Most titles address by surname ("Mr. Johnson"), but a few — knighthoods, some clerical and courtesy titles — address by given name ("Sir John"). The library keeps a vocabulary of titles and, separately, of these given-name titles. A period-marked word is claimed by SHAPE at the front and by VOCABULARY at the back. At the front an unlisted abbreviation is a title (H2), the shape outranking the vocabulary; at the back there is no shape rule, so only a listed title word chains into the title (H5) and an unlisted abbreviation stays a name word. A BARE title word at the back is a name word too, TITLES holding ordinary surnames — king, judge, bishop — which is what bars the blanket vocabulary-wins answer (#316, decided 2026-09-08). An input the title peel eats down to one last title-vocabulary word is H4's, and what it does with that word is a convention rather than a reading of the vocabulary. Two criteria govern two different questions here. Membership in the given-name-title list follows HOW THE TITLE ADDRESSES: a title that precedes and addresses by the given name belongs (Sir, Sheikh, the Arabic honorifics الدكتور/الشيخ — which qualify even though those traditions fully retain family names). Whether an EMPTY FAMILY is correct output is the separate question, governed by surname retention: renunciation abolishes the surname, so for Swami, Guru, Baba or Lama family="" is right (#346), while rabbi and imam traditions keep surnames — "Rabbi Cohen" addresses by title and keeps family "Cohen". Conflating the two criteria either ejects the Arabic entries or sweeps in titles that break
 "Rabbi Cohen".
 
 H1. Rationale: a title normally addresses by surname, so a title
     followed by a single name word usually names the family; but a
-    given-name title addresses by given name. What stands beside
-    that word — a suffix, a nickname, a maiden name — does not make
-    the name any longer, so it does not decide this reading.
+    given-name title addresses by given name. Several titles written
+    together are one form of address, and the one that does the
+    addressing is the last — the words in front of it rank the
+    person rather than name them. What stands beside the name word —
+    a suffix, a nickname, a maiden name — does not make the name any
+    longer, so it does not decide this reading. And a run written
+    BEHIND the one name word is the same form of address written on
+    the other side of it, so where no title run stands in front of
+    that word it decides the same reading. Where one does stand in
+    front, that run addresses: a title written behind the name is
+    the name plus that title (H5), and adding it cannot change how
+    the words in front of the name are read. Which side a title is
+    on is decided by the NAME WORD and by nothing else standing
+    beside it, so a run written around a nickname is one run: the
+    name Dr. 'Smitty' Sir John reads as Dr. Sir John does.
     A title followed by exactly one name word makes that word the
     family name, whatever suffix, nickname or maiden name stands
     beside it, unless the title is a given-name title, which keeps
-    it the given name.
+    it the given name; a run of several titles addresses as its last
+    title does, and where a run stands BEFORE the one name word it
+    is the run that addresses, a run standing behind it deciding
+    that word's field only when none stands before.
       "Mr. Johnson"               →  family="Johnson"
       "Mrs. Garcia"               →  family="Garcia"
       "Dr. Smith née Jones"       →  family="Smith"
+      "Her Majesty Queen Elizabeth"  →  given="Elizabeth"
+      "Dr. Sir John"              →  given="John"
+      "Smith Sir."                →  given="Smith"
+      "Sir John Prof."            →  given="John"
+      "Dr. Smith Sir."            →  family="Smith"
+      "His Excellency Lord Duncan"  →  family="Duncan"
       "Sir John"                  →  given="John"  · boundary
     Accepted: a given-name title plus one name word leaves the
     family empty — the input names no family, and inventing one
-    would be worse.
+    would be worse. A run whose last title is a given-name title
+    reads the same way, `queen` doing the addressing where `her
+    majesty` only ranks.
       "Sir John"                  →  family=""
-    history: decisions.md#H1 · interacts: P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
+      "Her Majesty Queen Elizabeth"  →  family=""
+      "Smith Sir."                →  family=""
+    Accepted: a title word in the run that no vocabulary knows does
+    not change what the run addresses by, the last word being the
+    one asked — `His Excellency Lord Duncan` reads family `Duncan`
+    because `lord` is not a given-name title, not because the run is
+    long, and `Her Royal Highness Princess Anne` reads family `Anne`
+    for the same reason.
+    history: decisions.md#H1 · interacts: H3, H5, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a
     title — "Rev.", "Ing.", "Mag." — and no vocabulary can list
@@ -86,22 +117,42 @@ H2. Rationale: before a name, an abbreviation is almost always a
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions.md#H2 · interacts: C1, P4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
+    history: decisions.md#H2 · interacts: C1, P4, H5 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is
-    just a name word.
+    just a name word. And a title addresses somebody, so the run
+    leaves somebody there to address: a post-nominal is written
+    about a name rather than being one, so it cannot be the name the
+    run left.
     Successive title words at the start of the part carrying the
     given name chain into one title; a title word elsewhere in the
-    name does not.
+    name does not. The run leaves one NAME word standing, and a word
+    of the suffix vocabulary is not that word — where everything
+    behind the run is post-nominal, the run gives its last word back
+    to the name, provided that word stands alone and is not itself
+    suffix vocabulary.
       "Asst. Vice Chancellor John Smith"  →  title="Asst. Vice Chancellor"
       "Marquess of Bath"          →  title="Marquess of Bath"
       "Morse, Det. Insp. Jane"    →  title="Det. Insp."
+      "Dr King Jr"                →  family="King"
+      "Dr King Jr"                →  suffix="Jr"
+      "MD DDS"                    →  family="DDS"
       "John Doctor Smith"         →  middle="Doctor"  · boundary
     Accepted: before a family comma the pre-comma text is wholly the
     family name (C1), title words included.
       "Dr. Smith, John"           →  family="Dr. Smith"
-    interacts: C1 · implemented: nameparser/_pipeline/_pieces.py
+    Accepted: the word given back must stand alone, so a title
+    written as one joined unit stays whole and the post-nominal
+    behind it is the name — turning the unit into a name and leaving
+    no title at all is the worse of the two readings.
+      "Prince of Wales Jr"        →  title="Prince of Wales"
+    Accepted: where the run's whole content is the word given back,
+    no title is left to make the reading H1's, so the word stands as
+    the name and the parse reports the doubt (H4).
+      "Dr Jr"                     →  given="Dr"
+      "Dr Jr"                     →  ambiguities=("title-or-name",)
+    history: decisions.md#H3 · interacts: C1, H1, H4, H5, S2 · implemented: nameparser/_pipeline/_pieces.py
 
 H4. Rationale: this is a name parser, not a title parser. Handed a
     string the title peel eats down to one last word which is itself
@@ -123,6 +174,7 @@ H4. Rationale: this is a name parser, not a title parser. Handed a
       "The Right Hon. the President of the Queen's Bench Division"  →  family="Division"
       "The Right Hon. the President of the Queen's Bench Division"  →  ambiguities=("title-or-name",)
       "Dr. King"                  →  ambiguities=("title-or-name",)
+      "Dr. King MD"               →  ambiguities=("title-or-name",)
       "Dr."                       →  title="Dr."  · boundary
       "Dr."                       →  ambiguities=()
       "Dr. Smith"                 →  ambiguities=()
@@ -135,9 +187,12 @@ H4. Rationale: this is a name parser, not a title parser. Handed a
     kind is reported either way.
     Accepted: the suffix half is reached only where no title was
     peeled first, so a title in front of the run takes the input out
-    of this rule and leaves it H1's — "Dr. King MD" reports nothing,
-    the credential having been read as the name after a title peel
-    rather than for want of one.
+    of that half. What it does NOT do is take the input out of the
+    rule: the title run leaves a name word standing (H3), and where
+    that word is title vocabulary the TITLE half claims it —
+    `Dr. King MD` reports `title-or-name` on `King`, while `MD DDS`
+    reports nothing, `DDS` being no title.
+      "MD DDS"                    →  ambiguities=()
       "Rinpoche"                  →  ambiguities=("suffix-or-name",)
       "QC MP"                     →  given="QC"
       "Jr."                       →  title="Jr."
@@ -185,7 +240,88 @@ H4. Rationale: this is a name parser, not a title parser. Handed a
     which FIELD the unit takes and none of them whether the word
     inside it is a title. The other measured inputs are pinned in the
     case table rather than here.
-    history: decisions.md#H4 · interacts: H1, H2, H3, S2, O5 · implemented: nameparser/_pipeline/_assign.py
+    history: decisions.md#H4 · interacts: H1, H2, H3, H5, S2, O5 · implemented: nameparser/_pipeline/_assign.py
+
+H5. Rationale: a word abbreviated with a period at the END of a name
+    is standing where a post-nominal stands, and the parts of a name
+    that get abbreviated are the ones outside it. There is no shape
+    rule there — H2's belongs to the front slot — so only a word the
+    vocabulary knows as a title is one, and a bare title word is a
+    name word, TITLES holding ordinary surnames.
+    After the trailing suffix run has been taken, successive single
+    words that wear the abbreviation shape and are title vocabulary
+    chain into the title from the end, leaving one name word
+    standing. A bare title word there is a name word, and an
+    unlisted abbreviation there is a name word. The title is
+    TRANSPARENT to the suffix reading: where two or more name words
+    stand, what stands once the chain is taken reads exactly as it
+    would read written without the title, plus the title. Where the
+    chain leaves ONE name word and no title run stands in front of
+    it, there is no second reading for it to be transparent to, and
+    the title behind that word decides its field as a title in front
+    of it would (H1). Where a run DOES stand in front, that run
+    addresses and the chained title only joins the title field, so
+    the transparency holds for the one-word name too.
+      "John Smith Prof."          →  title="Prof."
+      "John Smith Prof."          →  family="Smith"
+      "John Smith Prof. Dr."      →  title="Prof. Dr."
+      "Dr. John Smith Prof."      →  title="Dr. Prof."
+      "Smith, John Prof."         →  title="Prof."
+      "Smith Prof."               →  family="Smith"
+      "John Smith Sir"            →  family="Sir"
+      "Mary Jane King"            →  family="King"
+      "John Smith Esq."           →  suffix="Esq."
+      "John Smith Xyz."           →  family="Xyz."  · boundary
+    Accepted: the trailing title words join the title field in input
+    order after any leading run, because the title view reads the
+    tokens in the order they were written.
+      "Dr. John Smith Prof."      →  family="Smith"
+    Accepted: transparency is what makes the suffix reading proof
+    against a title standing among the post-nominals — a title AHEAD
+    of a suffix word is taken all the same, and the suffix reading
+    is then taken over what stands, not over what stood.
+      "John Smith Prof. Jr."      →  suffix="Jr."
+      "John Smith Jr. Prof."      →  suffix="Jr."
+      "John Prof. MA"             →  family="MA"
+    Accepted: the reach is the whole title vocabulary, the ordinary
+    surnames in it included. TITLES holds king, judge and bishop,
+    and a period written behind one of them is enough to make it the
+    title and take it out of the name: `Mary Jane King.` reads title
+    `King.` with family `Jane`, where the bare spelling keeps family
+    `King`. That is a cost accepted under the premise that the input
+    is a name (H Background), not a case this rule prevents — the
+    period is a writing convention rather than evidence about the
+    word, so every title whose spelling wears the abbreviation shape
+    is reachable this way, and the BARE spelling is what the
+    trailing slot is protected from.
+      "Mary Jane King."           →  title="King."
+      "Mary Jane King."           →  family="Jane"
+    Accepted: no fork is reported. Under the premise that the input
+    is a name, a period-marked word the title vocabulary knows is
+    not a reading a reader would hesitate over — where the doubt is
+    real it is the word left STANDING that carries it, which is H4's
+    report and not this rule's.
+    Accepted: the chain reads PIECES, so a join that ran earlier
+    puts the word out of reach. A particle chain (P2) has already
+    taken the trailing word into the family name, and a maiden
+    marker (M2) has already taken it into the maiden name; in
+    neither is a title word standing in the trailing slot at all.
+      "John van der Berg Prof."   →  family="van der Berg Prof."
+      "Mary Smith née Jones Prof." →  maiden="Jones Prof."
+    Accepted: what the chain leaves is also what counts as a name
+    word to spare (P5). A trailing title word is not one, so a bound
+    given-name word behind one joins exactly as it joins with the
+    title absent — and lands in the same field, the run in FRONT of
+    the joined pair being the run H1 asks about. Said of the
+    comma-less writing, which is where the chain runs before the
+    reserve is read. After a family comma the reserve reads no peel
+    at all (P5), so the join there takes the trailing title word into
+    the given name and the chain never sees it, where the same
+    segment writing with an ordinary given name reads the title. A
+    gap in the segment path rather than a boundary of this rule, and
+    tracked as part of #316. Pinned by a case row rather than by an
+    example here, so recording the gap does not make it normative.
+    history: decisions.md#H5 · interacts: H1, H2, H3, H4, M2, P2, P5, S2, C1 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
 
 ## Particles & surname prefixes (P)
 
@@ -318,7 +454,7 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions.md#P2 · interacts: P1, P4, M2, S2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
@@ -385,8 +521,9 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     given-name title, which asserts that a given name follows (H1):
     there the two words join and the name has no family — two name
     WORDS, so neither a particle chain (P2), which is the family
-    name, nor a suffix word is joined. The title run is read as one
-    key, as H1 reads it. Where the join fires, a bound word that is
+    name, nor a suffix word is joined. A run of several titles is
+    read as H1 reads it, by the title that does the addressing,
+    which is its last. Where the join fires, a bound word that is
     also a particle is read as the bound word: the join outranks the
     leading-position reading (P4) and no fork is reported; where the
     reserve blocks the join, P4's reading and its fork stand. Where
@@ -412,9 +549,13 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     particle's attachment (P6) sees the name. What
     there is to spare is what
     assign will leave: the join is tried on the pieces as it would
-    leave them, assign's trailing peel (S2) is read over that, and
-    the name words it leaves are the words to spare — a trailing
-    roman numeral, or a bare acronym the peel takes, is no
+    leave them, and the same reading assign runs over them — its
+    trailing peel (S2) and its trailing title run (H5), each read
+    over what the other leaves until neither takes anything more —
+    is read over that view, the name words it leaves being the words
+    to spare. A trailing
+    roman numeral, or a bare acronym the peel takes, or a trailing
+    title word the run takes, is no
     word to spare. The join joins two name words into one and
     changes no suffix reading: a word the peel reads as a suffix
     unjoined must read so joined, or the join declines. After a
@@ -468,7 +609,7 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "Sheik abdul salam"  family-first  →  family="abdul salam"
       "Sheik abdul salam"  family-first  →  given=""
       "Sheik abdul salam"  family-first-given-last  →  family="abdul salam"
-    history: decisions.md#P5 · interacts: S2, M2, H1, P2, P4, P6 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P5 · interacts: S2, M2, H1, H5, P2, P4, P6 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. What it
@@ -685,22 +826,27 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Jack Wei Ma"               →  suffix="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "Smith Jr."                 →  family=""
-    Note, DESCRIPTIVE and not promised: where a title chain consumes
-    every word but one, the word left over is claimed by H1's
-    one-word reading before this rule's trailing-suffix reading
-    reaches it — as the family ordinarily, as the given name behind
-    a given-name title (`Sir Jr` reads given `Jr`). `Dr King
-    Jr` reads title `Dr King`, family `Jr`, empty suffix — not the
-    suffix `Jr` with an empty family the Accepted clause above
-    predicts — because `king` is title vocabulary and H1 then takes
-    the one remaining word. The contrast that isolates the cause is
-    `Dr Smith Jr`, which reads family `Smith`, suffix `Jr` as
-    stated. Only the vocabulary half is decided
-    (decisions.md#v1-xfail-triage: `king` stays a title, for the
-    addressing forms); the leftover reading is recorded as today's
-    rather than endorsed, and a change moving it toward this rule's
-    prediction is an improvement, to be argued here.
-    interacts: H1, H2, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    Accepted: the title chain no longer takes the word this rule
+    needs, and the argument a descriptive note here asked for is
+    made. A title run leaves one NAME word standing and a
+    post-nominal cannot be it (H3, decided 2026-09-08), so `Dr King
+    Jr` reads family `King`, suffix `Jr` exactly as this rule
+    states, where it read title `Dr King`, family `Jr` before —
+    `Dr Smith Jr`, which always read as stated, was the contrast
+    that isolated the cause and now reads like its neighbour rather
+    than against it. What the floor cannot reach stays descriptive
+    and is small: where the run's whole content is the word given
+    back, no title is left to name anybody, so the word stands as
+    the name rather than as the family — `Dr Jr` reads given `Dr`,
+    suffix `Jr`, reporting `title-or-name` (H4), and `Sir Jr`, the
+    spelling this note first named, reads by the same branches —
+    given `Sir`, suffix `Jr`, the same kind reported — the run
+    being empty by then and no branch reading `vocab:given-title`.
+    The vocabulary half is decided
+    and unchanged (decisions.md#v1-xfail-triage: `king` stays a
+    title, for the addressing forms).
+      "Dr Jr"                     →  suffix="Jr"
+    interacts: H1, H2, H3, H5, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -861,7 +1007,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     is maiden text all the same — the count it needs includes the
     very words the marker removes, so the reading is left to assign.
       "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
-    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2, H1 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
     maiden, but a recognized marker word inside it does — the clause
