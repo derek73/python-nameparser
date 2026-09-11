@@ -108,6 +108,17 @@ H2. Rationale: before a name, an abbreviation is almost always a
     word, and only vocabulary can recognize it — which is what #343
     and #344 supply for Bengali and Devanagari.
       "প্রকৌশলী. Sen"             →  given="প্রকৌশলী."
+    Accepted: the shape reads a Latin convention, and a script with
+    no initials has no period abbreviations either, so a period-
+    marked opening word carrying a Han, kana or hangul character —
+    as the script table classifies them; halfwidth katakana sits
+    outside it and still reads by the Latin shape, the limit
+    decisions.md#cjk-full-stops records — is a name word and never a
+    title by shape (#323; decisions.md#cjk-full-stops) — the same
+    veto that keeps 씨. from reading as an initial. The Latin
+    reading is unchanged, and W3's example block carries the CJK
+    reading this clause vetoes into.
+      "Smith. John"               →  title="Smith."
     Accepted: before a family comma the pre-comma text is wholly the
     family name (C1), so no shape or vocabulary reading makes a
     title there.
@@ -117,7 +128,7 @@ H2. Rationale: before a name, an abbreviation is almost always a
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions.md#H2 · interacts: C1, P4, H5 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
+    history: decisions.md#H2 · interacts: C1, P4, H5, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is
@@ -1338,7 +1349,7 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
 
 ## Scripts & writing systems (W)
 
-Background: script-conditional behavior is permitted exactly where the writing system itself — not statistics about it — settles the convention; a language can never be inferred from Latin-script text, because transliteration destroys the signal. The facts this section builds on: Chinese and Japanese both write the family name first in native script, so the script settles the order without knowing the language. Hangul is written by exactly one language and Korean family names are a small closed census set. Han text does not identify its language — a Chinese surname list would divide Japanese 高橋一郎 as 高 + 橋一郎 — which is why Han division is opt-in and there is no Korean pack to opt into. Hiragana never transcribes a foreign name (transcriptions are katakana alone), so kanji-plus-kana is a Japanese name in Japanese order, while wholly-katakana is predominantly a transcribed foreign name already in given-first order. Real Chinese text is unspaced (毛泽东); the spaced 毛 泽东 is an artifact. A fuller narrative lives in docs/usage.rst's East Asian section. One fact carries its own consequence: none of the three writing systems marks the family name with a comma — position in the written form is what identifies it, so a comma standing between the family name and the given name is a listing convention carried in from elsewhere rather than a form the script produces. That is why the rule reading one (W3) is tolerated rather than normative. CLDR's own locale data says the same where a contrary convention would have had to appear: across its ko, zh and ja personName patterns not one of the 126 pattern strings carries a comma of any width, the surname-first referring patterns separating surname from given by a single space, and the only comma in reach belongs to the locale-neutral root's sorting format — a list-ordering format, which ko and zh override comma-free and ja all but one inherited slot (decisions.md#cjk-comma-demotion carries the pull verbatim, with its URLs, its commit and its date).
+Background: script-conditional behavior is permitted exactly where the writing system itself — not statistics about it — settles the convention; a language can never be inferred from Latin-script text, because transliteration destroys the signal. The facts this section builds on: Chinese and Japanese both write the family name first in native script, so the script settles the order without knowing the language. Hangul is written by exactly one language and Korean family names are a small closed census set. Han text does not identify its language — a Chinese surname list would divide Japanese 高橋一郎 as 高 + 橋一郎 — which is why Han division is opt-in and there is no Korean pack to opt into. Hiragana never transcribes a foreign name (transcriptions are katakana alone), so kanji-plus-kana is a Japanese name in Japanese order, while wholly-katakana is predominantly a transcribed foreign name already in given-first order. Real Chinese text is unspaced (毛泽东); the spaced 毛 泽东 is an artifact. A fuller narrative lives in docs/usage.rst's East Asian section. One fact carries its own consequence: none of the three writing systems marks the family name with a comma — position in the written form is what identifies it, so a comma standing between the family name and the given name is a listing convention carried in from elsewhere rather than a form the script produces. That is why the rule reading one (W3) is tolerated rather than normative. CLDR's own locale data says the same where a contrary convention would have had to appear: across its ko, zh and ja personName patterns not one of the 126 pattern strings carries a comma of any width, the surname-first referring patterns separating surname from given by a single space, and the only comma in reach belongs to the locale-neutral root's sorting format — a list-ordering format, which ko and zh override comma-free and ja all but one inherited slot (decisions.md#cjk-comma-demotion carries the pull verbatim, with its URLs, its commit and its date). A full stop of any width — the ASCII period, the fullwidth ．, the ideographic 。 and its halfwidth ｡ — glued after a script-written word is punctuation and not part of the word: it is invisible to the script reading and to the vocabulary, and it stays in the text on the word it arrived with, because no East Asian script writes an initial or an abbreviation with a period (#322, #323; decisions.md#cjk-full-stops). A stop glued BEFORE the word is punctuation to the vocabulary lookup, which folds both edges away, so .씨 is still the honorific. The classification fold that feeds the two division sites reads the trailing edge only, so a word wearing a leading stop is given no script at all and never becomes a surname site: .김민준 stays one whole word, given, no script rule reaching it. The honorific peel (W2) is not gated by that fold — the tail alone is its license — so it reads such a token regardless of a leading stop, and its own trailing-edge fold is what decides there: .김민준씨 peels to .김민준 and 씨, and .김민준씨. peels to .김민준 and 씨. (tests/v2/pipeline/test_script_segment.py's test_the_peel_reads_the_trailing_stop_only).
 
 W1. Rationale: hangul is monoglot Korean and its surnames are a
     closed census set, so an unspaced hangul name divides at a
@@ -1416,14 +1427,18 @@ W3. Rationale: a family name declared by a comma is the writer's
     vocabulary alone and taken with no punctuation anywhere in the
     input; a period on a SEPARATE post-nominal word rides along into
     the suffix and moves no division (田中さん 様. divides where
-    田中さん 様 does). A period glued to the honorific's OWN word is
-    read instead, and decides against the split-off: the listed tail
-    no longer ends that word, so nothing peels and the text goes on
-    whole — 田中さん. and 김민준씨. each read as a title, measured
-    2026-09-05. Neither string is a case row or a corpus line, so no
-    row pins those two readings and they can move without the suite
-    or the differential saying so; the sentence reports them rather
-    than promising them, even by this rule's standard.
+    田中さん 様 does). A period glued to the honorific's OWN word
+    rides with the honorific: the split-off matches the listed tail
+    through it and cuts before it, so 田中さん. and 김민준씨. divide
+    where 田中さん and 김민준씨 do (#323; until 2026-09-10 each read
+    as a title, measured 2026-09-05 and pinned by nothing, which is
+    why the move was free), and a period-marked Han opener divides
+    as its stop-less spelling does, 田中. 太郎 reading family-first
+    — the reading H2's Accepted clause vetoes a title into, carried
+    here because an edge full stop makes it tolerated input like the
+    rest of this block. All three are case rows now, tolerated, and
+    the sentence reports them rather than promising them, even by
+    this rule's standard.
     decisions.md#cjk-comma-demotion carries the parses.
       "남궁민수"                  →  family="남궁"
       "지훈, 남궁민수"            →  given="남궁민수"
@@ -1431,8 +1446,10 @@ W3. Rationale: a family name declared by a comma is the writer's
       "田中さん, Dr."             →  family="田中さん"
       "田中さん, PhD"             →  suffix="さん, PhD"
       "田中さん 様."              →  suffix="さん 様."
-    tolerated: native CJK writing has neither a family-comma convention nor a period standing after an honorific, so the four comma lines above and the period line under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All five stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
-    history: decisions.md#W3 · interacts: W1, W2, C1 · implemented: nameparser/_pipeline/_script_segment.py
+      "김민준씨."                 →  suffix="씨."
+      "田中. 太郎"                →  family="田中."
+    tolerated: native CJK writing has neither a family-comma convention nor an edge full stop of any width on a name word, so the four comma lines above and the three period lines under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All seven stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
+    history: decisions.md#W3 · interacts: W1, W2, C1, H2 · implemented: nameparser/_pipeline/_script_segment.py
 
 W4. Rationale: Chinese, Japanese and Korean all write the family
     name first in native script — the script settles the order
@@ -1548,14 +1565,17 @@ R1. Rationale: a field is a way of reading the parse, not a stored
     revises back to itself wherever the value's words read as the
     whole name read them — a glued CJK honorific peels off an initial
     in a bare value where the whole name kept it glued, one corpus
-    name of the 368 with a suffix (decisions.md#C1, 2026-09-06). A
-    delimiter the configuration names parts a value only where the
-    value's own words, read as a name, give it a tail segment for the
-    core to be dropped on; a run of post-nominals has none, with or
-    without a comma of its own, so there the delimiter stays a word of
-    the run — write a comma at the boundary instead. Stated without an
-    example line because every line here names an input string, and
-    this shape needs a field revised after the parse.
+    name of the 372 with a suffix (decisions.md#C1, 2026-09-06, which
+    counted 368 of 1117 then; re-measured 2026-09-10 with this
+    bundle's rows in the corpora, 372 of 1156 distinct names and the
+    same single failure). A delimiter the configuration names parts a
+    value only where the value's own words, read as a name, give it a
+    tail segment for the core to be dropped on; a run of post-nominals
+    has none, with or without a comma of its own, so there the
+    delimiter stays a word of the run — write a comma at the boundary
+    instead. Stated without an example line because every line here
+    names an input string, and this shape needs a field revised after
+    the parse.
     history: decisions.md#C1 · interacts: O3, P6, R3 · implemented: nameparser/_parser.py, nameparser/_pipeline/_post_rules.py, nameparser/_types.py
 
 R2. Rationale: callers need the surname with and without its

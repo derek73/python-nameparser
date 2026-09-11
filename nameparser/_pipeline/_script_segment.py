@@ -39,11 +39,16 @@ Implements rules W1 (the vocabulary/segmenter division), W2 (the
 glued-honorific peel) and W3 (the writer's divisions are respected)
 of docs/design/rules.md, cited at their code below; the decision
 chain (#308, #312, #319, the vetting bars, the measured
-spaced-honorific trade) is decisions.md#W1, #W2 and #W3. Both splits make sub-slices of one token,
-rewriting nothing -- spans still index the original exactly, so the
-anti-#100 invariant holds by construction. The peel runs FIRST, so
-suffix classification can claim the tail and the surname match or
-segmenter consult sees the name rather than name-plus-honorific; its
+spaced-honorific trade) is decisions.md#W1, #W2 and #W3. Both splits
+make sub-slices of one token, rewriting nothing -- spans still index
+the original exactly, so the anti-#100 invariant holds by
+construction. Both also match on the token's CORE, its
+text.rstrip(FULL_STOPS) (#323) -- rstrip and never strip, because
+both offsets are measured from the text's START, so the core has to
+stay a prefix of the text for the offset the match yields to land
+where the match did. The peel runs FIRST, so suffix classification
+can claim the tail and the surname match or segmenter consult sees
+the name rather than name-plus-honorific; its
 ASCII bail sits above everything here, so a caller-added LATIN tail
 fires only on a name carrying at least one non-ASCII character (see
 the bail's own comment, and honorific_tails' field note).
@@ -54,6 +59,7 @@ import dataclasses
 import functools
 from collections.abc import Sequence
 
+from nameparser._lexicon import FULL_STOPS
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
 )
@@ -244,8 +250,9 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
 def _peel_site(state: ParseState, flat: Sequence[int],
                tails: frozenset[str]) -> tuple[int, int] | None:
     """Where a peel would land in the token run `flat`: the index of the
-    token to cut and the LENGTH of the listed tail to take off it, or
-    None where that run offers no peel.
+    token to cut and the OFFSET to cut it at (the listed tail, and any
+    full stops riding behind it, are what comes off the end), or None
+    where that run offers no peel.
 
     Two callers, one answer, which is the point of naming it. The peel
     itself asks it once, of the runs it decided to scan. The gate above
@@ -274,13 +281,26 @@ def _peel_site(state: ParseState, flat: Sequence[int],
         # nothing but post-nominals, or no tokens at all
         return None
     text = state.tokens[i].text
+    # The tail is matched on the token's core (#323): a stop glued after
+    # the honorific ('김민준씨.', '田中さん.') stands between the listed
+    # tail and the token's end and used to defeat the match. What the
+    # text read instead depended on the stop: the ASCII spelling went to
+    # a title downstream (H2's shape is ASCII-period-only), while a
+    # fullwidth or ideographic stop left the whole text a lone name word
+    # ('田中さん。' read given). The cut lands BEFORE the tail, so the
+    # stops ride with the honorific piece and the token text is never
+    # rewritten. TRAILING only: a leading stop is not between the name
+    # and its honorific, and the offset returned below is the core's
+    # length less the tail's, one subtraction.
+    core = text.rstrip(FULL_STOPS)
     # range/cap construction identical to the surname match below, and
     # for the same two reasons: longest-first, and a len-1 cap that
-    # makes the offset interior by construction (_split's contract).
-    cap = min(_longest_entry(tails), len(text) - 1)
+    # makes the offset interior by construction (_split's contract). An
+    # empty or one-character core caps below 1 and the loop is empty.
+    cap = min(_longest_entry(tails), len(core) - 1)
     for length in range(cap, 0, -1):
-        if text[-length:] in tails:
-            return i, length
+        if core[-length:] in tails:
+            return i, len(core) - length
     return None
 
 
@@ -290,19 +310,20 @@ def _peel_site(state: ParseState, flat: Sequence[int],
 # That the peel also reaches ACROSS a family comma is stated at
 # rules.md#W3 instead, which is a tolerated rule since the
 # 2026-09-01 comma demotion -- the crossing is what the parser does
-# today, not something W2 promises. W3 also took, on 2026-09-05, the
-# reading of a period a listing leaves behind
-# (decisions.md#cjk-comma-demotion): a period on a SEPARATE
+# today, not something W2 promises. W3 also carries the reading of a
+# period a listing leaves behind (decisions.md#cjk-comma-demotion,
+# amended by decisions.md#cjk-full-stops): a period on a SEPARATE
 # post-nominal word rides into the suffix and moves nothing ('様.'
 # is post-nominal-strict and the scan steps past it as it steps past
-# '様'), while a period glued to the honorific's OWN token stands
-# between the honorific and that token's end, so no listed tail
-# matches, the peel declines, and the whole text reads as a title
-# downstream ('田中さん.', '김민준씨.') -- measured 2026-09-05 and
-# pinned by nothing, since neither string is a case row or a corpus
-# line, so that reading can move with nothing reporting it. Neither
-# is a promise; the step past the post-nominal word itself is W2's,
-# above, and is.
+# '様'), and since #323 a period glued to the honorific's OWN token
+# rides with the honorific too -- _peel_site matches the tail through
+# the trailing stop and cuts before it, so '田中さん.' divides where
+# '田中さん' does, and '김민준씨.' where '김민준씨' does (both are
+# case rows now; before 2026-09-10 they read as a title, measured
+# 2026-09-05 and pinned by nothing, and for one commit of the #323
+# branch the surname site read '김민준씨.' as 김 + 민준씨.). Neither
+# reading is a promise; the step past the post-nominal word itself
+# is W2's, above, and is.
 def _peel_honorific_tail(state: ParseState) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
@@ -466,20 +487,21 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     runs = state.segments[:1]
     if state.structure is Structure.FAMILY_COMMA:
         second = [state.tokens[j].text for j in state.segments[1]]
+        # a site here is asked about, not used: the offset it carries is
+        # >= 1 by the cap, so a site is always truthy and None never is
         if not (is_wholly_suffix(second, state.lexicon, state.policy)
                 and _peel_site(state, state.segments[0], tails)):
             runs = state.segments[:2]
     site = _peel_site(state, [j for seg in runs for j in seg], tails)
     if site is None:
         return state
-    i, length = site
+    i, offset = site
     # The tail carries a tag because this stage MANUFACTURED it. The
     # segmenter's neighbour test below needs to tell it from a token
     # somebody wrote, and no vocabulary question can: the two spellings
     # put the same word in the same place, and only the provenance
     # differs.
-    return _split(state, i, (len(state.tokens[i].text) - length,), None,
-                  tail_tag=_PEELED_TAG)
+    return _split(state, i, (offset,), None, tail_tag=_PEELED_TAG)
 
 
 def _split_surname_site(state: ParseState) -> ParseState:
@@ -525,26 +547,39 @@ def _split_surname_site(state: ParseState) -> ParseState:
     token = state.tokens[i]
     text = token.text
     surnames = state.lexicon.surnames
+    # The vocabulary match reads the token's CORE (#323). Without it
+    # the stop WAS the remainder: '김.' matched its own head and became
+    # 김 + '.'; the stop rides with the remainder instead, so '김민준.'
+    # divides as 김 + '민준.'. A leading stop never reaches THIS site --
+    # the classification fold in front rstrips too
+    # (_vocab._normalized_for_script) and hides such a token before it
+    # arrives -- while the peel above has no such gate in front of it
+    # and its own rstrip is what does the work there.
+    core = text.rstrip(FULL_STOPS)
     # A token that IS a surname never splits: a bare "남궁" must not
     # become 남 + 궁 just because the single-syllable surname also
     # matches -- there is nothing to split off, and a lone token's
-    # role is the order resolution's call.
-    if text in surnames:
+    # role is the order resolution's call, stop or no stop.
+    if core in surnames:
         return state
     # Longest-first (compound-before-single falls out of it), capped
     # so the remainder is never empty. Direct membership, no
-    # _normalize: the script gate admits only CJK text, which the
-    # storage fold stores unchanged. An empty vocabulary skips the
-    # match rather than bailing the stage (_longest_entry's max() has
-    # nothing to take): a surname-less lexicon declines every token,
-    # which is exactly the condition the segmenter is consulted on, so
-    # an early bail would make a configured segmenter silently inert
-    # under Lexicon.empty() -- the JA pack's own shape.
+    # _normalize: the script gate admits only CJK text, and a CJK
+    # entry's stored form is its NFC composition with no case or
+    # edge-stop change (#322) -- so an entry AUTHORED in NFD is
+    # composed on the way in, raw NFD input matches nothing here, and
+    # the name goes unsplit, which is the no-split rules.md#W1 already
+    # accepts for NFD text. An empty vocabulary skips the match rather
+    # than bailing the stage (_longest_entry's max() has nothing to
+    # take): a surname-less lexicon declines every token, which is
+    # exactly the condition the segmenter is consulted on, so an early
+    # bail would make a configured segmenter silently inert under
+    # Lexicon.empty() -- the JA pack's own shape.
     matches: list[int] = []
     if surnames:
-        cap = min(_longest_entry(surnames), len(text) - 1)
+        cap = min(_longest_entry(surnames), len(core) - 1)
         matches = [length for length in range(cap, 0, -1)
-                   if text[:length] in surnames]
+                   if core[:length] in surnames]
     if matches:
         take = matches[0]
         detail = None
@@ -617,7 +652,12 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # asked it, which is a fact about the CONTENT, not a broken
     # protocol. Bounded like every message here: the type's NAME, never
     # its contents.
-    answer = state.segmenter(text)
+    # The CORE, not the raw token (#323): handed the raw token, a
+    # segmenter answering len-1 would make the stop a piece of its own
+    # ('田中太郎' + '。'), where against the core the trailing stops
+    # ride with the last piece -- '山田太郎.' answered at 2 divides as
+    # 山田 + '太郎.'.
+    answer = state.segmenter(core)
     if answer is not None and not isinstance(answer, Segmentation):
         # a duck-typed answer carrying a .splits of its own would
         # otherwise wander into the split path and surface as a
@@ -634,10 +674,14 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # piece. Declining silently here (as this did before the review)
     # made an off-by-one segmenter undebuggable: every answer it gave
     # vanished, and the parse merely looked unsegmented.
-    if answer.splits[-1] >= len(text):
+    # The bound is the CORE's length, the string the segmenter was
+    # actually handed: an offset it could not have derived from its own
+    # input is the same author bug whether or not `text` is longer.
+    if answer.splits[-1] >= len(core):
         raise ValueError(
             f"segmenter returned splits beyond the token: last offset "
-            f"{answer.splits[-1]}, token length {len(text)}")
+            f"{answer.splits[-1]}, the segmenter was given "
+            f"{len(core)} characters")
     conf = answer.confidence
     detail = None
     if conf is not None and conf < _SEGMENTER_CONFIDENCE_FLOOR:

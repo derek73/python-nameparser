@@ -5,13 +5,15 @@ its predicates were reached only end to end through the case table.
 These pin the two contracts that shape cannot reach: a defensive branch
 no parse can produce, and the stability its readers rest on.
 """
+import pytest
+
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._group import group
 from nameparser._pipeline._pieces import (
-    _numeral_behind_the_initial_veto, leading_titles, peel_trailing,
-    peel_walk, segment_suffix_reading, trailing_titles,
+    _numeral_behind_the_initial_veto, is_leading_title, leading_titles,
+    peel_trailing, peel_walk, segment_suffix_reading, trailing_titles,
 )
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
@@ -231,3 +233,20 @@ def test_the_trailing_run_refuses_a_joined_piece() -> None:
     """
     assert _trailing("John de la Prof.") == 2
     assert _trailing("John Smith Prof. and Dr.") == 3
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Xyz.", True),        # H2 (rules.md): an unlisted Latin abbreviation
+    ("김민준.", False),     # #323: hangul has no period abbreviations
+    ("田中.", False),       # nor Han
+    ("たなか.", False),     # nor kana
+    ("Kim김.", False),        # contains-any, not wholly-of: one CJK char vetoes
+    ("J.", False),          # a bare initial never was (H2 boundary)
+])
+def test_leading_title_shape_refuses_an_initialless_script(
+        text: str, expected: bool) -> None:
+    # Xyz. rather than Rev. for the Latin side: Rev. is LISTED, so
+    # is_title_piece claims it before the shape is asked
+    state = _through_group(text + " Smith")
+    assert is_leading_title(state.pieces[0][0], state.piece_tags[0][0],
+                            state.tokens) is expected

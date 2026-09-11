@@ -10,6 +10,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import sys
+import unicodedata
 import warnings
 from collections.abc import Iterable, Mapping, Set
 from dataclasses import dataclass, field
@@ -98,13 +99,44 @@ _SUBSET_FIELDS = (
 _PHRASE_FIELDS = ("given_name_titles", "maiden_markers")
 
 
+#: Every character the parser reads as a full stop at a WORD'S EDGE
+#: (#322/#323): the ASCII period, the fullwidth FULL STOP U+FF0E, the
+#: IDEOGRAPHIC FULL STOP U+3002 and its halfwidth form U+FF61. One
+#: string, four readers -- the lookup fold below, _vocab's script
+#: classification fold, _script_segment's surname site and honorific
+#: tail match -- so that "which characters are a period" is answered
+#: once; the bundle's fifth site, _pieces' opening-abbreviation shape,
+#: reads no stop set at all but the no-initials repertoire
+#: (_policy._NO_INITIALS) that licenses every reader here. NFKC is
+#: NOT a substitute for listing them: it folds U+FF0E to '.' and
+#: U+FF61 to U+3002, and leaves U+3002 as it is.
+#: Not every period test reads this set, and the ones that do not are
+#: named so the claim is checkable: the interior-period shapes -- the
+#: dotted acronym 'M.A.' and the split 'Ph. D.' (_vocab) -- and FOUR
+#: ASCII-only edge tests on Latin shapes, across THREE modules -- the
+#: initial 'J.' (_vocab), the bracketed credential '(Mgr.)' and the
+#: word-internal apostrophe rule (_extract), and the trailing
+#: middle-initial carve-out 'V.' (_assign) -- stay ASCII. That is a
+#: fact about those TESTS and not about this set's reach: the fold
+#: below is script-agnostic, so a LATIN word wearing a wide stop
+#: reaches vocabulary the ASCII veto would have taken it out of.
+#: 'V。' folds to 'v' and does not end in the ASCII period the
+#: trailing-suffix carve-out tests (_assign, not is_initial), so
+#: it is roman five -- suffix -- where 'V.' stays a middle
+#: initial through that same carve-out; 'Jr。' simply reaches its
+#: entry, and 'Dr。' its title.
+#: decisions.md#cjk-full-stops carries the measurements.
+FULL_STOPS = ".．。｡"
+
+
 def _normalize(word: str) -> str:
-    """Lowercase, strip whitespace and EDGE periods -- v1's lc()
-    semantics. Interior periods survive on purpose: 'J.R.' must not
-    collapse to 'jr' and hit the periodless vocabulary (v1 parity,
-    pinned live 2026-07-17). Suffix-ACRONYM membership alone uses the
-    period-free form (see _vocab.suffix_as_written), mirroring v1's
-    is_suffix, which removed periods only for the acronym test.
+    """Lowercase, NFC-compose, strip whitespace and EDGE full stops
+    (FULL_STOPS, not the ASCII period alone -- #322). Interior periods
+    survive on purpose: 'J.R.' must not collapse to 'jr' and hit the
+    periodless vocabulary (v1 parity, pinned live 2026-07-17).
+    Suffix-ACRONYM membership alone uses the period-free form (see
+    _vocab.suffix_as_written), mirroring v1's is_suffix, which removed
+    periods only for the acronym test.
 
     lower(), NOT casefold(): casefold's caseless-matching folds mutate
     the stored vocabulary itself -- 'κος' becomes the misspelling 'κοσ'
@@ -114,14 +146,26 @@ def _normalize(word: str) -> str:
     match-time lookups, so matching stays symmetric either way; lower()
     is what v1's lc() used, preserving which cross-spellings match.
 
-    Strips to a FIXED POINT. A single strip().strip(".") leaves
-    periods-around-whitespace half done ('. a .' -> ' a '), so a value
+    NFC, since #322, and only for a non-ASCII word (ASCII is already
+    NFC, and this runs per token on the parse path --
+    decisions.md#parse-cost). NFD hangul decomposes to jamo and missed
+    every vocabulary entry; composing at lookup AND at storage keeps
+    the two symmetric, and no shipped entry changes under it (measured
+    2026-09-09: fold every string member of every Lexicon.default()
+    field through NFC and count the changes; zero of 1735). This is
+    the same NFC composition script classification already applies
+    (_vocab._normalized_for_script); token text is never rewritten.
+
+    Strips to a FIXED POINT. A single strip().strip(FULL_STOPS) leaves
+    stops-around-whitespace half done ('. a .' -> ' a '), so a value
     that is re-normalized later -- on unpickle, or by a second add() --
     would change under its owner. v1 never re-normalized, so this only
     matters now that storage and match-time share one fold."""
     word = word.lower()
+    if not word.isascii():
+        word = unicodedata.normalize("NFC", word)
     while True:
-        stripped = word.strip().strip(".")
+        stripped = word.strip().strip(FULL_STOPS)
         if stripped == word:
             return word
         word = stripped
@@ -301,7 +345,7 @@ def _normset(
         if not n:
             raise ValueError(
                 f"Lexicon.{field_name} entry {w!r} normalizes to empty "
-                f"(lowercase + strip periods/whitespace leaves nothing)"
+                f"(lowercase + strip full stops/whitespace leaves nothing)"
             )
         # Every field outside _PHRASE_FIELDS is matched one word at a
         # time, so a multi-word entry can never match -- the library
@@ -376,7 +420,7 @@ def _normpairs(
         if not normalized_key:
             raise ValueError(
                 f"capitalization_exceptions key {k!r} normalizes to "
-                f"empty (lowercase + strip periods/whitespace leaves "
+                f"empty (lowercase + strip full stops/whitespace leaves "
                 f"nothing)"
             )
         # capitalized() looks words up one at a time (the _WORD regex
@@ -398,15 +442,15 @@ class Lexicon:
     Start from :meth:`default` (the shipped vocabulary) or
     :meth:`empty`, derive variants with :meth:`add` / :meth:`remove` /
     ``|`` (union), and pass the result to ``Parser(lexicon=...)``.
-    Entries are normalized at construction -- lowercased, edge periods
-    stripped -- so matching is case-insensitive. Vocabulary entries are
-    single words -- a multi-word entry warns at construction and can
-    never match. Two fields are exempt, and they differ in HOW they
-    match: ``given_name_titles`` is looked up against the run of words
-    the parse has ALREADY read as titles -- the whole run space-joined,
-    or that run's last word -- while ``maiden_markers`` is matched by
-    lookahead, longest first, over words that need not be markers on
-    their own (``"z domu"``).
+    Entries are normalized at construction -- lowercased, NFC-composed,
+    edge full stops stripped -- so matching is case-insensitive.
+    Vocabulary entries are single words -- a multi-word entry warns at
+    construction and can never match. Two fields are exempt, and they
+    differ in HOW they match: ``given_name_titles`` is looked up
+    against the run of words the parse has ALREADY read as titles --
+    the whole run space-joined, or that run's last word -- while
+    ``maiden_markers`` is matched by lookahead, longest first, over
+    words that need not be markers on their own (``"z domu"``).
     Field docs below show examples, not full
     contents; inspect any field's shipped vocabulary directly, e.g.
     ``Lexicon.default().conjunctions``."""

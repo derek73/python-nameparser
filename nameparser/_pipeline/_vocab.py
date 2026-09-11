@@ -30,7 +30,7 @@ import re
 import unicodedata
 from collections.abc import Callable, Iterable, Sequence
 
-from nameparser._lexicon import Lexicon, _normalize
+from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
 
@@ -39,7 +39,7 @@ from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
 # sync by hand; layering forbids importing the config package here.
 # "Verbatim" is a promise about the PATTERN, not about the predicate:
 # since #320 is_initial is this SHAPE test ANDed with a repertoire test
-# (_in_initialless_script, below), so _INITIAL.fullmatch(text) and
+# (in_initialless_script, below), so _INITIAL.fullmatch(text) and
 # is_initial(text) are no longer the same question -- '씨.' answers yes
 # to the first and no to the second. Call is_initial; the bare pattern
 # is not the thing to ask. The narrowing lives in the predicate
@@ -86,7 +86,12 @@ _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 # contains-any, not whole=True: the shape half has already admitted the
 # trailing period, so the text reaching here is '씨.' rather than '씨'
 # and a wholly-of match would be False for every case this exists for.
-_in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
+# The second caller, _pieces.is_leading_title, admits two or more
+# characters, so contains-any there means one CJK character anywhere
+# vetoes the whole word -- 'Kim김.' is refused as a title along with
+# '田中.' -- and that is deliberate: a word carrying a script with no
+# abbreviations is not wearing an abbreviation's period.
+in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
 
 
 def is_initial_shaped(text: str) -> bool:
@@ -136,7 +141,7 @@ def is_initial(text: str) -> bool:
     'vocab:suffix' either way, and is_suffix_lenient took it either way
     too. Downstream of that one strict-test No, the glued honorific in
     a name carrying such a token went unpeeled ('田中さん 様.')."""
-    return is_initial_shaped(text) and not _in_initialless_script(text)
+    return is_initial_shaped(text) and not in_initialless_script(text)
 
 
 _DOTTED = re.compile(r"(?:[^\W\d_]\.)+")
@@ -398,12 +403,43 @@ def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
 
 
 def _normalized_for_script(text: str) -> str | None:
-    """The guard AND the NFC normalization single_script and
+    """The guard AND the two normalizations single_script and
     effective_script's license path both need, single-sourced so they
-    cannot drift: None for the two shapes neither ever classifies
-    (empty, and the common all-ASCII Latin token -- skipped before
+    cannot drift: trailing full stops are dropped (FULL_STOPS, #323),
+    then None for the two shapes neither ever classifies (nothing
+    left, and the common all-ASCII Latin token -- skipped before
     normalizing, since ASCII is already NFC and every _SCRIPT_RANGES
     entry is non-ASCII regardless), else an NFC-normalized copy.
+
+    Trailing stops, not raw: a period glued to a script-written token
+    ('양.', '太郎.') is not a character of any script, so classifying
+    raw text handed the token no script at all, and three readers
+    spent that None -- the surname site stepped past the family name
+    onto the given name ('양. 지훈' cut 지훈 in half), the order rule
+    fell back to positional ('양 지훈.' lost family-first), and the
+    segmenter's neighbour precondition missed a writer-drawn boundary
+    ('山田太郎 田中.' consulted the segmenter on 山田太郎 as if it stood
+    alone). The scripts this classifies -- every _SCRIPT_RANGES entry,
+    which today coincide with _policy._NO_INITIALS (#320), a
+    coincidence _policy says a new member must not inherit -- have no
+    initials and no period abbreviations, so a stop on such a token
+    carries no information about the word; ASCII text is stripped too,
+    but the guard below returns None for it regardless, so 'Smith.'
+    never classifies. TRAILING only, matching the surname site's own
+    rstrip in _script_segment (the same arithmetic, not a shared
+    gate -- this fold decides only whether the surname site, the order
+    rule and the segmenter ever see the token): a leading stop is not
+    a shape any script writes before a name word, and HIDING such a
+    token from those three readers -- no script, so no surname site,
+    which is what the tree before #323 did -- is safer than admitting
+    it. Admitted, '.김민준' classifies as hangul, becomes a surname
+    site, is declined by the head match (which rstrips) and falls
+    through to a configured segmenter, which answering offset 1
+    divides it into the stop and the name. The peel is not gated by
+    this fold; its own rstrip carries a leading-stop token, see
+    _script_segment. The vocabulary fold alone reads BOTH edges
+    (_lexicon._normalize): '.씨' is still the honorific, and a lookup
+    divides nothing.
 
     NFC, not raw: NFD input decomposes precomposed katakana onto a
     base character plus a COMBINING mark (U+3099/U+309A, which sit in
@@ -412,16 +448,19 @@ def _normalized_for_script(text: str) -> str | None:
     also decomposes Hangul syllables onto bare jamo (U+1100-U+11FF),
     entirely outside the HANGUL range, so raw NFD Korean input misses
     the shipped family-first order rule rather than merely misfiring.
-    Normalizing first fixes both. This is classification-only and
-    read-only: the returned copy is never what gets tokenized, so
-    token text and spans stay exactly what the caller wrote.
+    Normalizing first fixes both. Classification-only and read-only:
+    the returned copy is never what gets tokenized, so token text and
+    spans stay exactly what the caller wrote.
 
-    MATCHING (is_initial, suffix lookups, etc.) deliberately stays on
-    raw text elsewhere in this module -- unlike script classification,
-    NFD only ever costs a match there (a suffix word written NFD fails
-    to match its NFC vocabulary entry), never wrong-matches, so the
-    asymmetry is safe: one direction needs a fix, the other doesn't.
+    Vocabulary MATCHING composes NFC too, since #322
+    (_lexicon._normalize folds every lookup and every stored entry the
+    same way), so an NFD suffix word reaches its NFC entry. What stays
+    raw is SEGMENTATION -- the surname site's direct membership test
+    and the peel's tail slice index the token's own text -- where NFD
+    degrades to no-split, never to a wrong split (decisions.md#W1,
+    the 2026-07-29 ja amendment).
     """
+    text = text.rstrip(FULL_STOPS)
     if not text or text.isascii():
         return None
     return unicodedata.normalize("NFC", text)

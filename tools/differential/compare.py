@@ -572,7 +572,8 @@ _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 #: decision when a corpus is added, the way the Script tables do.
 _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
-    "corpus_cjk.jsonl": 67,     # 70 today, generated from the case table.
+    "corpus_cjk.jsonl": 67,     # 70 today (2026-09-10, `wc -l`),
+                                # generated from the case table.
                                 # LOWERED 95 -> 70 on 2026-09-01,
                                 # deliberately: the CJK comma demotion
                                 # moved 25 tolerated texts out of this
@@ -585,54 +586,45 @@ _CORPUS_FLOORS = {
                                 # the trailing-period honorifics
                                 # ('田中さん 様.' and its two twins) are
                                 # the listing artifact the first
-                                # sweep's criterion could not see
-    "corpus_cjk_tolerated.jsonl": 22,  # 29 today, the tolerated half of
-                                # the same generator: composed and
-                                # wrapped CJK forms (comma listings,
-                                # Latin titles and credentials,
-                                # trailing ASCII periods) whose
-                                # handling the contract stopped
-                                # promising on 2026-09-01. 25 on the
-                                # day it was created; the 26th is
-                                # '지훈, 남궁민수', which had no case
-                                # row until rules.md#W3 was demoted
-                                # and the rules corpus stopped
-                                # carrying it -- the row was written
-                                # so the text moved tiers instead of
-                                # leaving the harness. 29 since
-                                # 2026-09-05, the three period rows.
-                                # Floor left at 22: it guards against
-                                # the file emptying, and this half only
-                                # grows as the contract narrows
+                                # sweep's criterion could not see.
+                                # UNMOVED by the #322/#323 full-stop
+                                # bundle (2026-09-10): every row it
+                                # added is tolerated, so all seventeen
+                                # of its names landed in the file below
+    "corpus_cjk_tolerated.jsonl": 22,  # 47 today (2026-09-10, `wc -l`),
+                                # the tolerated half of the same
+                                # generator: composed and wrapped CJK
+                                # forms (comma listings, Latin titles
+                                # and credentials, trailing ASCII
+                                # periods) whose handling the contract
+                                # stopped promising on 2026-09-01. 47
+                                # since 2026-09-10, the #322/#323
+                                # bundle's seventeen names, every one
+                                # tolerated and so every one on the
+                                # radar tier; floor left at 22, which
+                                # guards against the file emptying,
+                                # this half only growing as the
+                                # contract narrows
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 249 today, generated from rules.md.
-                                # 248 until 2026-09-05, when W2's
-                                # trailing-period example moved into
-                                # the tolerated W3 and the builder
-                                # stopped harvesting it -- the seventh
-                                # text a CJK demotion has taken out of
-                                # this file, and (measured 2026-09-05)
-                                # the last CJK example anywhere outside
-                                # W3 that carried a non-space ASCII
-                                # character. 247 -> 249 later the same
-                                # day, when the review round restored
-                                # W2's second half and witnessed it
-                                # with '김민준 박사님' and '선생님' --
-                                # both already in corpus_cjk.jsonl, so
-                                # the file grew and the deduped pool
-                                # did not.
-                                # 252 until 2026-09-01, when W3 took
-                                # rules.md's `tolerated:` marker and
-                                # build_rules_corpus.py stopped
-                                # harvesting a marked rule: six comma
-                                # texts left (W3's two, W2's two, C1's
-                                # two) and two pure ones arrived with
-                                # the W2 swap. Every one of the six is
-                                # still compared and classified, from
-                                # corpus_cjk_tolerated.jsonl above.
-                                # Floor left at 150: it guards against
-                                # the file emptying, and a demotion
-                                # this size is nowhere near it
+    "corpus_rules.jsonl": 150,  # 287 today (2026-09-10, `wc -l`),
+                                # generated from rules.md -- the "249"
+                                # this line read was measured on
+                                # 2026-09-05 and never re-measured as
+                                # the document grew (286 the day
+                                # before). The one row this bundle
+                                # adds is 'Smith. John', H2's Latin
+                                # witness for the #323 veto's fork;
+                                # the CJK witness is W3's, and a
+                                # tolerated rule's examples are not
+                                # harvested here. The file tracks the
+                                # document, so a demotion shrinks it --
+                                # a marked rule stops being harvested
+                                # and its texts move to
+                                # corpus_cjk_tolerated.jsonl above,
+                                # still compared and classified; floor
+                                # left at 150, which guards against the
+                                # file emptying and is nowhere near any
+                                # demotion this document has seen
     "corpus_shapes.jsonl": 35,  # 37 today, generated from shape-tagged
                                 # case rows. Ratcheted 27 -> 35 on
                                 # 2026-09-01 with the shape 6/7

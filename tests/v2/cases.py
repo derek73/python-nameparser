@@ -32,6 +32,7 @@ this paragraph, if the two ever disagree).
 """
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 
 from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
@@ -126,8 +127,9 @@ class Case:
     #: tag -- mutually exclusive with `shape`, since a shape ADMITS a
     #: text to the contract and tolerated deliberately does not. Every
     #: composed/wrapped CJK form (a comma listing, a Latin title or
-    #: credential around a CJK name, and since 2026-09-05 a trailing
-    #: ASCII period on an honorific) is this table's ground for it,
+    #: credential around a CJK name, since 2026-09-05 a trailing ASCII
+    #: period on an honorific, and since #323 an edge full stop of any
+    #: width on any CJK name word) is this table's ground for it,
     #: not shapes 6/7's. Restricted to CJK-bearing text (`_has_cjk`):
     #: it exists to demote composed/wrapped CJK forms specifically, and
     #: a Latin row asking for it is a smell until some future arc
@@ -4528,6 +4530,267 @@ CASES: tuple[Case, ...] = (
                "listing artifact no writing system produces. The row "
                "still pins #320's mechanism at HEAD",
          tolerated=True),
+    Case("ko_honorific_with_a_fullwidth_full_stop", "김민준 씨．",
+         {"family": "김", "given": "민준", "suffix": "씨．"},
+         classification="fix(#322)",
+         notes="U+FF0E, the stop a Japanese or Chinese IME produces by "
+               "default. The lookup fold reads it as an edge period "
+               "(_lexicon.FULL_STOPS), so 씨． reaches the suffix entry "
+               "the ASCII spelling already reached; the token text "
+               "keeps its stop. Pins the fold on the one stop NFKC "
+               "would ALSO have folded -- the row beside it pins the "
+               "one it would not -- and earns its place as a member "
+               "of a set the library SHIPS, which "
+               "mechanisms.md#VOCABULARY-EXERCISES-FORKS says is "
+               "caller-visible behavior wanting a row per member, "
+               "unlike caller-configured vocabulary. 2.2.0 read given "
+               "김, middle 민준, family 씨．.",
+         tolerated=True),
+    Case("ko_honorific_with_an_ideographic_full_stop", "김민준 씨。",
+         {"family": "김", "given": "민준", "suffix": "씨。"},
+         classification="fix(#322)",
+         notes="U+3002, which NFKC leaves alone -- the row that shows "
+               "the stop SET is what fixes #322, not a Unicode "
+               "normalization. 2.2.0 read given 김, middle 민준, "
+               "family 씨。.",
+         tolerated=True),
+    Case("ko_honorific_with_a_halfwidth_ideographic_full_stop",
+         "김민준 씨｡",
+         {"family": "김", "given": "민준", "suffix": "씨｡"},
+         classification="fix(#322)",
+         notes="U+FF61, which NFKC folds to U+3002 and no further -- "
+               "so even under NFKC this spelling needs the set. 2.2.0 "
+               "read given 김, middle 민준, family 씨｡.",
+         tolerated=True),
+    Case("ko_honorific_written_nfd_after_a_family_comma",
+         unicodedata.normalize("NFD", "김민준, 씨."),
+         {"family": unicodedata.normalize("NFD", "김민준"),
+          "suffix": unicodedata.normalize("NFD", "씨.")},
+         classification="fix(#322)",
+         notes="the lookup fold composes NFC, so decomposed 씨. reaches "
+               "the suffix entry (2.2.0 read title 씨.). The family "
+               "stays WHOLE and stays NFD: segmentation matches raw "
+               "text on purpose (decisions.md#W1, 2026-07-29 ja "
+               "amendment), so NFD degrades to no-split, never to a "
+               "wrong split, and no "
+               "token text is rewritten. Contrast 'NFD(田中さん, 様.)', "
+               "which matched before: Han does not decompose. NEITHER "
+               "tolerated NOR shape-tagged, deliberately: this table's "
+               "_has_cjk reads raw codepoints (jamo sit outside "
+               "_SCRIPT_RANGES), so a decomposed text is not CJK to the "
+               "purity gate and reaches no corpus; the row is a HEAD "
+               "pin only."),
+    Case("latin_title_written_nfd_is_still_a_title",
+         unicodedata.normalize("NFD", "Señor Juan Garcia"),
+         {"title": unicodedata.normalize("NFD", "Señor"),
+          "given": "Juan", "family": "Garcia"},
+         classification="fix(#322)",
+         notes="the Latin side of the NFC fork: the lookup fold "
+               "composes every non-ASCII word, not hangul alone, so a "
+               "decomposed spelling of a shipped diacritic entry "
+               "(señor, née, attaché) reaches it. 2.2.0 read given "
+               "Señor, middle Juan, family Garcia. The token keeps its "
+               "NFD text; only the lookup composes."),
+    Case("ko_leading_honorific_surname_with_a_period_keeps_the_given_name",
+         "양. 지훈",
+         {"family": "양.", "given": "지훈"},
+         classification="fix(#323)",
+         notes="the issue's own input. effective_script('양.') is "
+               "HANGUL once the classification fold drops the edge "
+               "stop, so the surname site lands on 양. -- which is "
+               "post-nominal vocabulary in the LEADING position, "
+               "which _is_post_nominal's docstring says the surname "
+               "site reads as an ANSWER rather than a token to step "
+               "past -- and declines, leaving 지훈 whole. The stop "
+               "stays on the token: nothing rewrites text (rules.md T "
+               "Background). 2.2.0 read given 양., middle 지, family "
+               "훈.",
+         tolerated=True),
+    Case("ko_leading_family_name_with_a_period_keeps_the_given_name",
+         "김. 민준",
+         {"family": "김.", "given": "민준"},
+         classification="fix(#323)",
+         notes="the non-honorific twin of the row above, and the row "
+               "that decides between #323's two candidate fixes: "
+               "consulting is_suffix_strict at the surname site would "
+               "have rescued 양. and left this one cut (김 is no "
+               "suffix), so the fix is the classification fold. The "
+               "site lands on 김. and matches on its CORE: 김 is itself "
+               "a listed surname, so nothing splits and the stop stays "
+               "on the family name (matched on the raw text, 김 was a "
+               "listed HEAD and the stop was the remainder, cutting "
+               "김 + '.'). 2.2.0 read given 김., middle 민, "
+               "family 준.",
+         tolerated=True),
+    Case("ko_trailing_period_keeps_the_family_first_order", "양 지훈.",
+         {"family": "양", "given": "지훈."},
+         classification="fix(#323)",
+         notes="the ORDER reader of the same None: assign's script "
+               "walk returns the declared order the moment one piece "
+               "has no script, so a stop on the LAST token flipped "
+               "the name to given-first. rules.md#W4's family-first "
+               "reading survives the stop now. 2.2.0 read given 양, "
+               "family 지훈..",
+         tolerated=True),
+    Case("ko_glued_honorific_with_a_period_peels", "김민준씨.",
+         {"family": "김", "given": "민준", "suffix": "씨."},
+         classification="fix(#323)",
+         notes="the W3 reading that was pinned by nothing (measured "
+               "2026-09-05 as title 김민준씨.): the peel now matches "
+               "its tail through the trailing stop and cuts before it, "
+               "so this divides exactly as '김민준 씨.' does and the "
+               "stop stays on the honorific. Peel first, then the "
+               "surname site divides 김민준. 2.2.0 read title 김민준씨.",
+         tolerated=True),
+    Case("ja_glued_honorific_with_a_period_peels", "田中さん.",
+         {"family": "田中", "suffix": "さん."},
+         classification="fix(#323)",
+         notes="the Japanese twin, and the one where nothing follows "
+               "the peel: 田中 is a lone Han token under the default "
+               "policy, so no division runs and the family stands "
+               "whole, as it does for '田中さん'. 2.2.0 read title "
+               "田中さん.",
+         tolerated=True),
+    Case("ko_lone_name_with_a_period_is_not_a_title", "김민준.",
+         {"family": "김", "given": "민준."},
+         classification="fix(#323)",
+         notes="reads this way since the surname site learned the "
+               "core match, NOT through H2's veto: HANGUL segmentation "
+               "is on by default and script_segment runs before "
+               "assign, so 김민준. is divided into 김 + 민준. before "
+               "any period-marked opening word exists for H2 to see. "
+               "Kept as the hangul reading of the shape; the veto's "
+               "own witness is the Han row below, where no default "
+               "segmentation stands in front. The stop rides with the "
+               "given name -- nothing rewrites text. 2.2.0 read title "
+               "김민준.",
+         tolerated=True),
+    Case("ko_period_marked_first_word_then_a_name_word", "김민준. 지훈",
+         {"family": "김", "given": "민준.", "middle": "지훈"},
+         classification="fix(#323)",
+         notes="the two-word hangul shape, divided by the surname "
+               "site before assign as the row above is: family 김, "
+               "given 민준., middle 지훈 -- the reading of '김민준 "
+               "지훈' with the stop kept. H2's veto is not what "
+               "decides it (see the row above); the Han two-word row "
+               "below is where the veto is the whole difference. "
+               "2.2.0 read title 김민준., family 지, given 훈 -- "
+               "hangul segmentation ran on the trailing word.",
+         tolerated=True),
+    Case("ja_lone_name_with_a_period_is_not_a_title", "田中.",
+         {"family": "田中."},
+         classification="fix(#323)",
+         notes="the H2 veto's witness: Han has no default segmentation, "
+               "so the period-marked word reaches assign whole, and "
+               "rules.md#H2's shape -- a Latin convention, an "
+               "abbreviation's period -- declines it because Han has "
+               "no period abbreviations (the #320 veto, extended from "
+               "is_initial to H2). A lone name word is the family "
+               "name. Remove the veto and this reads title 田中. "
+               "again, which is what 2.2.0 read.",
+         tolerated=True),
+    Case("ja_period_marked_first_word_then_a_name_word", "田中. 太郎",
+         {"family": "田中.", "given": "太郎"},
+         classification="fix(#323)",
+         notes="the two-word Han shape, where the veto is the whole "
+               "difference: without it H2 fires on 田中. and 太郎 "
+               "becomes the entire name. With it the pair reads as "
+               "'田中 太郎' does, family-first by script (rules.md#W4), "
+               "with the stop kept. The stop stays on 田中, the word "
+               "that carried it: family 田中., given 太郎. 2.2.0 read "
+               "title 田中., family 太郎. Stays tolerated like its "
+               "three #323 siblings, H2's Accepted clause being "
+               "illustrated in W3's tolerated example block rather "
+               "than by promoting this row, per the 2026-09-05 "
+               "precedent recorded in tools/differential/compare.py: "
+               "marking the row alone would leave the name enforced "
+               "and documented as demoted.",
+         tolerated=True),
+    Case("ja_katakana_lone_name_with_a_period_is_not_a_title", "マイケル.",
+         {"given": "マイケル."}, ambiguities=("given-or-family",),
+         classification="fix(#323)",
+         notes="the katakana arm of the H2 veto, and the one where it "
+               "cuts across rules.md#W4 -- a wholly-katakana name keeps "
+               "the declared order, so the lone word is the GIVEN name "
+               "-- the veto decides title-or-name, the order rule "
+               "decides which name. 2.2.0 read title マイケル.",
+         tolerated=True),
+    Case("latin_period_marked_opening_word_is_still_a_title",
+         "Smith. John",
+         {"title": "Smith.", "family": "John"},
+         classification="parity",
+         notes="the Latin side of the #323 veto's fork, pinned so the "
+               "veto can never widen onto Latin: Latin has "
+               "period abbreviations, H2's shape fires, and an "
+               "unlisted period-marked opening word is a title even "
+               "when it is a surname."),
+    Case("cyrillic_period_marked_opening_word_is_still_a_title",
+         "Проф. Иванов",
+         {"title": "Проф.", "family": "Иванов"},
+         classification="parity",
+         notes="the alphabet _policy._NO_INITIALS's own comment names "
+               "as the one it would be wrong to add: Cyrillic has "
+               "initials and abbreviations, so H2's shape fires and "
+               "the #323 veto stays out of its way. Pins the veto's "
+               "repertoire at the four CJK scripts from the other "
+               "side."),
+    Case("ko_name_with_a_period_in_a_bracketed_credential",
+         "(김민준.) John Smith",
+         {"given": "김", "middle": "민준. John", "family": "Smith"},
+         classification="fix(#323)",
+         notes="a recorded DEGRADATION, pinned so it cannot move "
+               "silently. rules.md#S1's bracketed-credential escape in "
+               "_extract calls a clause suffix-shaped when it ends in "
+               "an ASCII period -- an unwidened test, deliberately -- "
+               "so the brackets are dropped and the content reads as "
+               "if written bare. Bare, '김민준. John Smith' used to "
+               "reach H2 and give title 김민준. (2.2.0's reading); "
+               "since #323 the veto declines a period-marked opening "
+               "word written in an initialless script, so 김민준. is "
+               "name text, the surname site divides it, and the pieces "
+               "spread across the Latin name -- given 김, middle "
+               "'민준. John', family Smith. The TRAILING spelling "
+               "degrades the same way ('John Smith (김민준.)' reads "
+               "given John, middle 'Smith 김', family 민준., where "
+               "2.2.0 read given John, middle Smith, family 김민준.); "
+               "one row is enough, the mechanism being the unwrap in "
+               "front rather than the position. Latin wrapped around a "
+               "CJK name is the 2026-09-01 demotion's own ground, so "
+               "the row is tolerated and the degradation is recorded "
+               "in decisions.md#cjk-full-stops rather than fixed here",
+         tolerated=True),
+    Case("latin_suffix_with_an_ideographic_full_stop", "John Smith, Jr。",
+         {"given": "John", "family": "Smith", "suffix": "Jr。"},
+         classification="fix(#322)",
+         notes="the stop set is script-agnostic at the lookup fold, so "
+               "the reach it bought is not CJK-only: _normalize strips "
+               "any of the four FULL_STOPS off any word, and a LATIN "
+               "suffix wearing the ideographic stop now folds to its "
+               "entry. 2.2.0 read given 'Jr。' / family 'John Smith' -- "
+               "the stop defeated the lookup and the credential became "
+               "name text. Not tolerated and carrying no shape: the "
+               "text is Latin, which _has_cjk does not see, and the "
+               "row is a HEAD pin on the fold's Latin reach"),
+    Case("latin_roman_numeral_with_an_ideographic_full_stop",
+         "Smith, John V。",
+         {"given": "John", "family": "Smith", "suffix": "V。"},
+         classification="fix(#322)",
+         notes="the same reach where it costs something, and the "
+               "asymmetry worth pinning: 'Smith, John V.' still reads "
+               "middle 'V.', because _reads_as_a_trailing_suffix's "
+               "carve-out (_assign) tests an ASCII period ending the "
+               "piece's own text -- text.endswith('.') -- and nothing "
+               "else; is_initial is not the decider: is_initial('V') "
+               "is True, yet 'Smith, John V', no period at all, still "
+               "reads suffix 'V'. The WIDE stop does not end the text "
+               "in an ASCII period, so the carve-out never fires, the "
+               "fold takes the stop off, and 'v' is roman five -- "
+               "suffix. 2.2.0 read middle 'V。', the whole word being "
+               "unfoldable then. Neither reading was designed; the "
+               "bundle widened the stop set and this is where the "
+               "widening lands on Latin text, which "
+               "decisions.md#cjk-full-stops records as an unasked-for "
+               "reach rather than a promise"),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
          classification="fix(#307) + fix(#271)",
@@ -4999,6 +5262,65 @@ CASES: tuple[Case, ...] = (
                "which is why this row is one token before the comma; "
                "_peel_site's docstring derives the bound. "
                "1.4.0 gave first 'J.씨' / last 선생님",
+         tolerated=True),
+    Case("ko_honorific_glued_family_comma_stop_on_the_first_run",
+         "김민준씨., J.씨",
+         {"family": "김민준", "suffix": "씨., J.씨"},
+         classification="fix(#323)",
+         notes="the stop-bearing spelling of "
+               "ko_honorific_glued_family_comma_site_in_both_runs, "
+               "here because the FAMILY_COMMA decline is a gate of TWO "
+               "conjuncts and a trailing stop reaches exactly one of "
+               "them. Measured on this tree and on d37b8ec: the first "
+               "conjunct, is_wholly_suffix of the post-comma run, is "
+               "True on both -- the stop is not there. The SECOND, "
+               "segments[0] holding a peel site, is what the stop "
+               "flipped, False before #323 (the tail match ran on the "
+               "raw text and 김민준씨. ends in a stop, not in 씨) and "
+               "True now. So the decline stands, 씨. peels off 김민준씨. "
+               "and 'J.씨' is consumed whole. Agrees with the stop-less "
+               "twin field for field, the stop riding on the honorific "
+               "piece it arrived with (family 김민준, suffix '씨, J.씨' "
+               "there). 2.2.0 read given 'J.', family 김민준씨., suffix "
+               "씨 -- the junk 씨 peeled off 'J.씨' while the person's "
+               "own honorific stayed in the family name",
+         tolerated=True),
+    Case("ja_honorific_glued_family_comma_stop_on_the_first_run",
+         "田中さん., V.",
+         {"given": "V.", "family": "田中", "suffix": "さん."},
+         classification="fix(#323)",
+         notes="the kana twin of the row above, and the same conjunct: "
+               "is_wholly_suffix(['V.']) is True on both trees under "
+               "the lenient default, and the segments[0] site is False "
+               "before #323 and True now. Before, the gate therefore "
+               "did not decline, the scan crossed to 'V.', which ends "
+               "in no tail, and the peel was abandoned with さん. left "
+               "in the family name -- 2.2.0 read given 'V.', family "
+               "田中さん., no suffix at all. Agrees with "
+               "ja_honorific_glued_family_comma_suffixy_second_run "
+               "field for field (given 'V.', family 田中, suffix さん "
+               "there), the stop riding on the honorific",
+         tolerated=True),
+    Case("ko_honorific_glued_family_comma_stop_beyond_the_comma",
+         "이, J.씨.",
+         {"given": "J.", "family": "이", "suffix": "씨."},
+         classification="fix(#323)",
+         notes="the stop on the OTHER side of the comma, and the row "
+               "that keeps the two rows above from reading as 'a stop "
+               "moves the gate'. Measured on this tree and on d37b8ec, "
+               "NEITHER conjunct moves: the post-comma run is wholly "
+               "suffix-shaped on both, and segments[0] -- the lone 이 "
+               "-- holds no peel site on either, so the gate declines "
+               "nothing and the scan crosses the comma under #312 both "
+               "times. What the stop moved is the site scan itself. "
+               "'J.씨.' ended in no listed tail before #323, so the "
+               "peel found no site at all and the whole run went to "
+               "suffix (2.2.0 read family 이, suffix 'J.씨.'); now the "
+               "tail matches through the stop and the cut lands before "
+               "it. Agrees with "
+               "ko_honorific_glued_family_comma_site_only_beyond_the_"
+               "comma field for field (given 'J.', family 이, suffix "
+               "씨 there), the stop riding on 씨",
          tolerated=True),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
