@@ -919,6 +919,17 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#346) a renunciate title and one name word leave the name a given name":
         ("Swami Vivekananda Saraswati", "Guru Gobind Singh",
          "Rabbi Cohen", "Swami", "Mr Guru Nanak"),
+    # #519's rule is a literal alternation, so a widening reaching
+    # only names the corpora lack would leave _CORPUS_CLAIMS unmoved.
+    # These probes are the wall: two name words behind the title (H1
+    # does not fold), the joined run that addresses by its last word
+    # `wales`, the word standing last as an ordinary surname, a
+    # surname-addressing title that stayed out, the bare title, and
+    # 'Mr Prince Charles', which the anchored regex rejects but an
+    # alternation that lost its left anchor would claim.
+    "fix(#519) prince and princess join the given-name titles":
+        ("Prince Harry Windsor", "Prince of Wales Jr", "Robert Prince",
+         "Lord Byron", "Prince", "Mr Prince Charles"),
     # #449's six rules. The five CJK ones are literal-anchored on one
     # corpus name each, so _CORPUS_CLAIMS cannot move under a widening
     # that reaches only names the corpora lack; these probes are the
@@ -970,8 +981,11 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # The run rule's boundary is the vocabulary the SHAPE needs: a
     # one-word run addresses nobody by given name, and a run whose
     # last word is title vocabulary that is NOT given-name vocabulary
-    # keeps its family name -- which is the question filed as #519 and
-    # deliberately not answered here.
+    # keeps its family name. 'Her Royal Highness Princess Anne' was
+    # that shape when this wall was built and stopped being it on
+    # 2026-09-10, when #519 made `princess` given-name vocabulary: it
+    # now MOVES, under fix(#519)'s rule and not this one, and it stays
+    # here because #489's regex must still not reach it.
     "fix(#489) a title run addresses by its last title":
         ("Sir John Smith", "His Excellency Lord Duncan",
          "Her Royal Highness Princess Anne", "Dr. Smith"),
@@ -1741,6 +1755,14 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # move. One set, identical in all four ledgers.
     frozenset({"Baba Ramdev", "Guru Nanak", "Lama Zopa",
                "Swami Vivekananda"}),
+    # #519's movers, one corpus name per alternative -- a list of
+    # names, not a copy of any wordlist. The rule's subject is a
+    # SHAPE the vocabulary participates in (a royal title plus
+    # exactly one name word), and a member copying GIVEN_NAME_TITLES
+    # would reach 'Prince Harry Windsor', which does not move. One
+    # set, identical in all four ledgers.
+    frozenset({"Her Royal Highness Princess Anne", "Prince Charles",
+               "Prince Fielder"}),
     # #342's movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary
     # for it to drift from. The rule's subject is what two REMOVED
@@ -2374,6 +2396,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # before it reached the gate.
         "fix(#346) a renunciate title and one name word leave the name a given name":
             _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
+        # #519's alternation. Three corpus names, `family` and `given`
+        # together: the fold moves both roles at once, so a widening
+        # taking one alone would change the roles here before it
+        # reached the gate.
+        "fix(#519) prince and princess join the given-name titles":
+            _Claim(3, ('family', 'given'), "ca37331f9803", None),
         # #342's alternation. Five corpus names and four roles: the
         # comma forms move `given` where the bare forms move `middle`,
         # so a widening taking one shape alone would change the roles
@@ -2746,6 +2774,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # before it reached the gate.
         "fix(#346) a renunciate title and one name word leave the name a given name":
             _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
+        # #519's alternation. Three corpus names, `family` and `given`
+        # together: the fold moves both roles at once, so a widening
+        # taking one alone would change the roles here before it
+        # reached the gate.
+        "fix(#519) prince and princess join the given-name titles":
+            _Claim(3, ('family', 'given'), "ca37331f9803", None),
         # #342's alternation. Five corpus names and four roles: the
         # comma forms move `given` where the bare forms move `middle`,
         # so a widening taking one shape alone would change the roles
@@ -3014,6 +3048,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # before it reached the gate.
         "fix(#346) a renunciate title and one name word leave the name a given name":
             _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
+        # #519's alternation. Three corpus names, `family` and `given`
+        # together: the fold moves both roles at once, so a widening
+        # taking one alone would change the roles here before it
+        # reached the gate.
+        "fix(#519) prince and princess join the given-name titles":
+            _Claim(3, ('family', 'given'), "ca37331f9803", None),
         # #342's alternation. Five corpus names and four roles: the
         # comma forms move `given` where the bare forms move `middle`,
         # so a widening taking one shape alone would change the roles
@@ -3134,6 +3174,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # before it reached the gate.
         "fix(#346) a renunciate title and one name word leave the name a given name":
             _Claim(4, ('family', 'given'), "a3399ee7b21e", None),
+        # #519's alternation. Three corpus names, `family` and `given`
+        # together: the fold moves both roles at once, so a widening
+        # taking one alone would change the roles here before it
+        # reached the gate.
+        "fix(#519) prince and princess join the given-name titles":
+            _Claim(3, ('family', 'given'), "ca37331f9803", None),
         # #342's alternation. Five corpus names and four roles: the
         # comma forms move `given` where the bare forms move `middle`,
         # so a widening taking one shape alone would change the roles

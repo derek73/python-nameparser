@@ -65,6 +65,7 @@ H1. Rationale: a title normally addresses by surname, so a title
       "Sir John Prof."            →  given="John"
       "Dr. Smith Sir."            →  family="Smith"
       "His Excellency Lord Duncan"  →  family="Duncan"
+      "Her Royal Highness Princess Anne"  →  given="Anne"
       "Sir John"                  →  given="John"  · boundary
     Accepted: a given-name title plus one name word leaves the
     family empty — the input names no family, and inventing one
@@ -78,8 +79,12 @@ H1. Rationale: a title normally addresses by surname, so a title
     not change what the run addresses by, the last word being the
     one asked — `His Excellency Lord Duncan` reads family `Duncan`
     because `lord` is not a given-name title, not because the run is
-    long, and `Her Royal Highness Princess Anne` reads family `Anne`
-    for the same reason.
+    long. `lord` and `lady` stay out of that list by decision
+    (#519): each addresses by given name only as a courtesy style for
+    children of the senior ranks (`Lord Peter`, `Lady Diana`) and by
+    title or surname for every peer and every wife (`Lord Byron`,
+    `Lady Thatcher`), and the text does not say which the bearer is,
+    which the list cannot express; `prince` and `princess` are in it.
     history: decisions.md#H1 · interacts: H3, H5, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a
