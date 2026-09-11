@@ -450,12 +450,28 @@ def test_normalize_folds_every_full_stop_and_composes_nfd() -> None:
     assert _normalize("씨．") == "씨"
     assert _normalize("씨。") == "씨"
     assert _normalize("씨｡") == "씨"
+    # the fold is script-agnostic, so the reach is not CJK-only: a
+    # LATIN word wearing an ideographic stop folds to its entry too,
+    # and 'Dr。' consequently reads as a title where before it read as
+    # a name word. Pinned here because it is the shape the tests
+    # elsewhere in this bundle deliberately leave in ASCII.
+    assert _normalize("Dr。") == "dr"
     assert _normalize(unicodedata.normalize("NFD", "씨.")) == "씨"
     assert _normalize("J.R.") == "j.r"
     assert _normalize("김.민준") == "김.민준"
-    # an INTERIOR ideographic stop survives too -- what an NFKC fold
-    # would not keep
+    # an INTERIOR ideographic stop survives too: the fold composes NFC,
+    # which leaves U+3002 exactly where it is, so this pins the
+    # interior survival the ASCII row above pins for '.'
     assert _normalize("김。민준") == "김。민준"
+    # NFC, NOT NFKC, and this is the row that separates them. NFKC
+    # folds every fullwidth character to its ASCII compatibility form,
+    # so it would give 'm.b.a' here -- whose period-free form is 'mba',
+    # a shipped suffix acronym (_vocab.suffix_as_written strips
+    # periods for the acronym test alone). Folding widths at the
+    # lookup would therefore make a fullwidth-written credential match
+    # the ASCII vocabulary, which is a decision this bundle did not
+    # take: the stop set was widened, the letters were not.
+    assert _normalize("Ｍ．Ｂ．Ａ．") == "ｍ．ｂ．ａ"
 
 
 def test_an_entry_that_is_only_full_stops_is_rejected() -> None:

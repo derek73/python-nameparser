@@ -586,8 +586,8 @@ issue = "fix(#316) a trailing Latin title on a native-script name is a title"
 # `given`, `middle` and `family` move; `suffix` is empty on both sides.
 #
 # Literal and anchored, so the reach cannot widen into the other
-# forty-two tolerated CJK names (twenty-nine until this bundle's
-# thirteen rows joined the file). _MUST_NOT_MATCH carries three of
+# forty-six tolerated CJK names (twenty-nine until this bundle's
+# seventeen rows joined the file). _MUST_NOT_MATCH carries three of
 # them as probes: '王先生, V.' (a Latin post-nominal behind a
 # comma, which the trailing walk never sees), '田中さん, Dr.' (the
 # comma spelling of this very shape, routed by the segment gate) and
@@ -604,22 +604,28 @@ fields = ["family", "given", "middle", "title"]
 # word -- invisible to the script reading and to the vocabulary,
 # and left in the text on the word it arrived with -- because no
 # East Asian script writes an initial or an abbreviation with a
-# period. A leading stop folds away for the vocabulary lookup and
-# the script reading alike; only the two division sites read it
-# raw, indexing the word's own spelling from its start: '.김민준'
-# takes the hangul order rule and still divides nowhere
-# (rules.md's W Background, decisions.md#cjk-full-stops).
+# period. A leading stop folds away for the vocabulary lookup,
+# which reads both edges; the script reading folds the TRAILING
+# edge only, matching the two division sites, which index a word's
+# own spelling from its start. So a word wearing a leading stop is
+# given no script and reaches neither site: '.김민준' takes no
+# script rule and divides nowhere (rules.md's W Background,
+# decisions.md#cjk-full-stops).
 #
-# THIRTEEN members, the same set and the same regex as
+# SEVENTEEN members, the same set and the same regex as
 # expected_since_2.1.0.toml: nothing between 2.1.0 and 2.2.0 touched
 # any of these readings, so the two ledgers report the same diffs --
-# twelve CJK plus the katakana 'マイケル.', a #323 mover added
-# 2026-09-10 in the whole-branch review. The 1.4.0 and 2.0.0 ledgers
-# carry ten, those baselines predating the hangul segmentation that
-# puts '김. 민준', '양 지훈.' and '양. 지훈' in this bundle's hands
-# rather than the native-script rule's.
+# twelve CJK, the katakana 'マイケル.' (a #323 mover added 2026-09-10
+# in the whole-branch review), the three stop-bearing FAMILY_COMMA
+# rows and the bracketed '(김민준.) John Smith', all four from the
+# review round after it. The 1.4.0 and 2.0.0 ledgers carry eleven,
+# those baselines predating the hangul segmentation that puts
+# '김. 민준', '양 지훈.' and '양. 지훈' in this bundle's hands rather
+# than the native-script rule's, and answering the three comma rows
+# with no diff (2.0.0) or with their own broad comma rules
+# (1.4.0).
 #
-# No earlier rule in this file reaches any of the thirteen, so LAST
+# No earlier rule in this file reaches any of the seventeen, so LAST
 # is uniformity with the other three ledgers rather than a
 # narrow-first ordering (#382) against anything: order_contests
 # reports no pair here in either arrangement.
@@ -627,10 +633,16 @@ fields = ["family", "given", "middle", "title"]
 # An anchored alternation of the NAMES rather than a shape, and the
 # two criteria a shape could be written on both reach names this
 # rule must not claim. "An edge full stop on a word carrying a
-# classified character" reaches 18 corpus names, measured
-# 2026-09-10: the bundle's thirteen movers and FIVE that do not move
-# ('田中さん 様.', '田中さん, 様.', '김민준 씨.', '김민준 양.',
-# '김민준, 씨.'). A character class of the four stops would be a hand
+# classified character" reaches 22 corpus names, measured
+# 2026-09-10: the bundle's seventeen movers and FIVE that do not
+# move ('田中さん 様.', '田中さん, 様.', '김민준 씨.', '김민준 양.',
+# '김민준, 씨.'). Measured with the TOKENIZER and not a whitespace
+# split -- two of the movers wear their stop before a comma
+# ('김민준씨.,', '田中さん.,'), which a whitespace split does not
+# see -- plus the bracketed '(김민준.) John Smith' by hand, its stop
+# sitting inside the clause until rules.md#S1 unwraps it; an 18
+# recorded earlier the same day came from the split, over a corpus
+# four names smaller. A character class of the four stops would be a hand
 # copy of nameparser._lexicon.FULL_STOPS besides, and would reach
 # the looser population of "an ASCII period anywhere in a CJK-
 # bearing name" -- 20 distinct names on 21 corpus rows before this
@@ -641,7 +653,7 @@ fields = ["family", "given", "middle", "title"]
 # do not exist; decisions.md#cjk-full-stops carries both counts and
 # the recompute. The members copy no wordlist,
 # which _NOT_A_VOCABULARY_COPY in tests/v2/test_ledger_guards.py
-# records; _CORPUS_CLAIMS pins the reach at 13 with its digest, and
+# records; _CORPUS_CLAIMS pins the reach at 17 with its digest, and
 # _MUST_NOT_MATCH pins the four readings the bundle left alone.
 #
 # Script-classified members inside an ALTERNATION are new here --
@@ -655,5 +667,5 @@ fields = ["family", "given", "middle", "title"]
 # _SCRIPT_RANGES, so the empty set stands.
 [[change]]
 issue = "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token"
-name_regex = "^(?:マイケル\\.|田中\\.|田中\\. 太郎|田中さん\\.|김\\. 민준|김민준 씨。|김민준 씨．|김민준 씨｡|김민준\\.|김민준\\. 지훈|김민준씨\\.|양 지훈\\.|양\\. 지훈)$"
+name_regex = "^(?:\\x28김민준\\.\\x29 John Smith|マイケル\\.|田中\\.|田中\\. 太郎|田中さん\\.|田中さん\\., V\\.|김\\. 민준|김민준 씨。|김민준 씨．|김민준 씨｡|김민준\\.|김민준\\. 지훈|김민준씨\\.|김민준씨\\., J\\.씨|양 지훈\\.|양\\. 지훈|이, J\\.씨\\.)$"
 fields = ["_ambiguities", "family", "given", "middle", "suffix", "title"]

@@ -589,9 +589,9 @@ _CORPUS_FLOORS = {
                                 # sweep's criterion could not see.
                                 # UNMOVED by the #322/#323 full-stop
                                 # bundle (2026-09-10): every row it
-                                # added is tolerated, so all thirteen
+                                # added is tolerated, so all seventeen
                                 # of its names landed in the file below
-    "corpus_cjk_tolerated.jsonl": 22,  # 43 today (2026-09-10, `wc -l`), the tolerated half of
+    "corpus_cjk_tolerated.jsonl": 22,  # 47 today (2026-09-10, `wc -l`), the tolerated half of
                                 # the same generator: composed and
                                 # wrapped CJK forms (comma listings,
                                 # Latin titles and credentials,
@@ -608,14 +608,18 @@ _CORPUS_FLOORS = {
                                 # 2026-09-05, the three period rows --
                                 # corrected from the 29 this line used
                                 # to read; the 29 -> 30 step itself
-                                # went unrecorded. 43 since 2026-09-10,
+                                # went unrecorded. 47 since 2026-09-10,
                                 # the #322/#323 full-stop bundle's
-                                # thirteen names (twelve landing with
+                                # seventeen names (twelve landing with
                                 # the bundle, the katakana 'マイケル.'
                                 # joining the same day in the
-                                # whole-branch review that follows it)
+                                # whole-branch review that follows it,
+                                # and four more in the review round
+                                # after that -- three stop-bearing
+                                # FAMILY_COMMA spellings and the
+                                # bracketed '(김민준.) John Smith')
                                 # joining the 30 the file held that
-                                # day -- every one of the thirteen
+                                # day -- every one of the seventeen
                                 # tolerated, and so every one of them
                                 # on the radar tier.
                                 # Floor left at 22: it guards against

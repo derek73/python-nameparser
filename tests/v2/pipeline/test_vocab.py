@@ -162,6 +162,20 @@ def test_strict_suffix_initial_veto() -> None:
     assert is_suffix_strict("Jr", _LEX)
 
 
+def test_a_wide_stop_on_a_latin_word_reaches_the_vocabulary() -> None:
+    # #322's unasked-for Latin reach, pinned rather than argued: the
+    # fold strips all four FULL_STOPS off any word, while the initial
+    # veto reads an ASCII-period pattern alone. So the WIDE spelling of
+    # a Latin word gets past a veto its ASCII twin does not -- 'V。'
+    # folds to 'v', is not initial-shaped, and reads as roman five,
+    # where 'V.' stays a middle initial. 'Jr。' needs no veto argument
+    # and simply reaches its entry.
+    d = Lexicon.default()
+    assert is_suffix_strict("Jr。", d)
+    assert is_suffix_strict("V。", d)
+    assert not is_suffix_strict("V.", d)
+
+
 def test_ambiguous_acronym_needs_periods_and_beats_the_veto() -> None:
     assert is_suffix_strict("M.A.", _LEX)
     assert not is_suffix_strict("Ma", _LEX)
@@ -398,16 +412,24 @@ def test_script_classification_ignores_edge_full_stops() -> None:
     # its script and must not remove the token from classification --
     # the surname site, the order rule and the segmenter's neighbour
     # precondition all read this answer. Each of the four stops
-    # trailing and each leading; the remainder still has to be
-    # classifiable on its own.
+    # trailing; the remainder still has to be classifiable on its own.
     assert effective_script("양.") is Script.HANGUL
     assert effective_script("양．") is Script.HANGUL
     assert effective_script("양。") is Script.HANGUL
     assert effective_script("양｡") is Script.HANGUL
-    assert effective_script(".양") is Script.HANGUL
-    assert effective_script("．양") is Script.HANGUL
-    assert effective_script("。양") is Script.HANGUL
-    assert effective_script("｡양") is Script.HANGUL
+    # TRAILING ONLY, and each of the four leading pins it. This fold
+    # feeds the two division sites, which index a word from its start,
+    # so a leading stop is the one edge classification must not hide:
+    # classified, '.김민준' becomes a surname site whose head match
+    # (rstrip, so it never matches through a leading stop) declines,
+    # and a configured segmenter is then handed the raw token and can
+    # answer offset 1 -- '.' as the given name, the name as the family.
+    # No script means no site, which is the pre-#323 reading and the
+    # no-split rules.md#W1 already accepts.
+    assert effective_script(".양") is None
+    assert effective_script("．양") is None
+    assert effective_script("。양") is None
+    assert effective_script("｡양") is None
     assert single_script("太郎.") is Script.HAN
     assert effective_script("高橋みなみ。") is Script.HIRAGANA  # license survives
     # nothing left, or ASCII left: no script, as before

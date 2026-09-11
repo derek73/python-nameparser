@@ -1062,10 +1062,15 @@ def test_revise_reads_a_glued_honorific_on_its_own() -> None:
     assert p.revise(n, suffix=n.suffix).suffix == "씨, J. 씨"
 
 
-#: The one suffix-bearing corpus name whose suffix does not revise back
-#: to itself: the honorific peel pinned just above. Named here so the
-#: guard below fails on a NEW exception and not on the known one.
-_HONORIFIC_PEEL = frozenset({"김민준씨, J.씨"})
+#: The suffix-bearing corpus names whose suffix does not revise back
+#: to itself: the honorific peel pinned just above, and since
+#: 2026-09-10 its stop-bearing spelling, which parses to the same
+#: suffix with a stop on the first word ('씨., J.씨' revising to
+#: '씨., J. 씨'). One limit, two writings of one name -- the stop
+#: rides on 씨 and reaches neither the sub-parse's peel nor the entry
+#: join. Named here so the guard below fails on a NEW exception and
+#: not on the known one.
+_HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨"})
 
 
 def _suffix_bearing_corpus_names() -> list[str]:

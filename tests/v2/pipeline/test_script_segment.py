@@ -352,9 +352,16 @@ def test_out_of_bounds_split_raises() -> None:
                              r"token: last offset 5, token length 2"):
         _run("山田", policy=_JA, segmenter=_fake((5,)))
     # 2 on a two-character token is the boundary itself: the check is
-    # >=, not >, since a cut at len(text) would leave an empty piece
+    # >=, not >, since a cut at len(core) would leave an empty piece
     with pytest.raises(ValueError, match="last offset 2, token length 2"):
         _run("山田", policy=_JA, segmenter=_fake((2,)))
+    # #323: the bound is the CORE's length, which is what the segmenter
+    # was handed -- 2 is past the end of '山田' whether or not the token
+    # wears a stop, and the message reports the core's length too.
+    # Against len(text) this answer would pass the check and make the
+    # stop a piece of its own ('山田' + '.').
+    with pytest.raises(ValueError, match="last offset 2, token length 2"):
+        _run("山田.", policy=_JA, segmenter=_fake((2,)))
 
 
 def test_family_comma_gates_the_segmenter_too() -> None:
@@ -424,17 +431,27 @@ def test_a_period_marked_neighbour_still_blocks_the_consult() -> None:
     assert _texts(out) == ["山田太郎", "田中."]
 
 
-def test_a_consulted_segmenter_receives_the_stop_with_the_token() -> None:
-    # the recorded limit, not a promise: a pluggable segmenter gets the
-    # raw token, stop included -- the surname site strips the stop for
-    # ITS match only. The shipped ja pack declines such a token on its
-    # own repertoire test; a caller's segmenter has to cope.
+def test_a_consulted_segmenter_receives_the_core_without_the_stop() -> None:
+    # #323: the segmenter is handed the same CORE the vocabulary match
+    # reads, not the raw token -- so a repertoire test like the ja
+    # pack's _wholly_japanese sees a string the stop cannot spoil, and
+    # no answer of the segmenter's can make the stop a piece of its
+    # own. A head is a prefix, so the offsets come back valid for the
+    # whole token and the stop rides with the last piece.
     asked: list[str] = []
     def seg(text: str) -> Segmentation | None:
         asked.append(text)
         return None
     _run("山田太郎.", policy=_JA, lexicon=Lexicon.empty(), segmenter=seg)
-    assert asked == ["山田太郎."]
+    assert asked == ["山田太郎"]
+
+    out = _run("山田太郎.", policy=_JA, lexicon=Lexicon.empty(),
+               segmenter=_fake((2,)))
+    assert _texts(out) == ["山田", "太郎."]
+    assert [(t.span.start, t.span.end) for t in out.tokens] == [
+        (0, 2), (2, 5)]
+    assert all(out.original[t.span.start:t.span.end] == t.text
+               for t in out.tokens)
 
 
 def test_only_a_manufactured_tail_does_not_block_the_consult() -> None:
@@ -512,6 +529,21 @@ def test_peels_a_listed_tail_through_a_trailing_full_stop(stop: str) -> None:
                for t in out.tokens)
 
 
+def test_the_peel_reads_the_trailing_stop_only() -> None:
+    # the rstrip in _peel_site is not strip, and this is what the
+    # difference costs: a LEADING stop is not between the name and its
+    # honorific, so folding it away would shorten the token the split
+    # arithmetic measures from and cut two characters early
+    # ('.김민' + '준씨'). The peel is licensed by the tail, not by the
+    # script, so it fires here whatever the classification fold said.
+    out = _run(".김민준씨", lexicon=_LEX_TAILS)
+    assert _texts(out) == [".김민준", "씨"]
+    assert [(t.span.start, t.span.end) for t in out.tokens] == [
+        (0, 4), (4, 5)]
+    assert all(out.original[t.span.start:t.span.end] == t.text
+               for t in out.tokens)
+
+
 def test_a_token_that_is_only_full_stops_offers_no_peel_site() -> None:
     # pins the len(core) - 1 arithmetic staying inert, not a reading:
     # the scan-back stops at the first non-post-nominal token, which is
@@ -528,12 +560,20 @@ def test_surname_site_matches_through_a_trailing_full_stop() -> None:
     # with the remainder rather than BEING the remainder
     assert _texts(_run("김민준.", policy=_HANGUL,
                        lexicon=_LEX)) == ["김", "민준."]
-    # a token whose core IS a surname never splits, stop or no stop
+    # a token whose core IS a surname never splits, stop or no stop:
+    # 남궁 is a compound surname and 남 a single one, so the head match
+    # would find 남 and leave 궁. -- the whole-token guard has to read
+    # the CORE, not the text, or the stop takes 남궁. out of it
+    assert _texts(_run("남궁.", policy=_HANGUL, lexicon=_LEX)) == ["남궁."]
+    # the one-character cap carries these two: len(core) - 1 is 0, so
+    # the match loop never runs whatever the guard above did
     assert _texts(_run("김.", policy=_HANGUL, lexicon=_LEX)) == ["김."]
     assert _texts(_run("김", policy=_HANGUL, lexicon=_LEX)) == ["김"]
-    # a LEADING stop is not re-sliced: the site rstrips, so the token
-    # is its own core's prefix only when the stop trails; the accepted
-    # degradation is no split
+    # a LEADING stop is not a site at all: the classification fold in
+    # front rstrips too (_vocab._normalized_for_script), so '.김민준'
+    # classifies as no script and never reaches this stage. The rstrip
+    # here is belt and braces -- were the token to arrive, the text is
+    # its own core's prefix only when the stop trails.
     assert _texts(_run(".김민준", policy=_HANGUL, lexicon=_LEX)) == [".김민준"]
 
 

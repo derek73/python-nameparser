@@ -1006,7 +1006,7 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "change(suffix-acronym-collisions) esq leaves the acronym set":
         ("John Smith Esq", "John Smith Esq.", "Esq. Smith", "Smith, Esq.",
          "Esq. van Gogh"),
-    # The #322/#323 rule is a literal alternation of thirteen names at
+    # The #322/#323 rule is a literal alternation of seventeen names at
     # most, so _CORPUS_CLAIMS cannot see a widening into names the
     # corpora lack and these probes are the wall. Each is a reading
     # the bundle deliberately left where it was: the ASCII spelling
@@ -1853,8 +1853,16 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # first entry here read by the CJK honorific pin rather than by
     # its Latin twin, every member carrying a classified codepoint.
     # A list of names, not a copy of GLUED_HONORIFICS or SUFFIX_WORDS:
-    # five of the ten carry no honorific at all ('田中.',
-    # '田中. 太郎', '김민준.', '김민준. 지훈', 'マイケル.'), and a
+    # six of the eleven carry no CJK honorific at all ('田中.',
+    # '田中. 太郎', '김민준.', '김민준. 지훈', 'マイケル.',
+    # '(김민준.) John Smith'), and seven of the seventeen, '김. 민준'
+    # being the one of the three hangul order rows that joins them --
+    # 양 is itself SUFFIX_WORDS, so '양 지훈.' and '양. 지훈' are not
+    # in that count. Measured against the CLASSIFIED entries of
+    # suffix_words | honorific_tails, the same script derivation the
+    # honorific pin above makes: over the whole of either field the
+    # roman numeral 'i' is a substring of 'Smith' and the count is
+    # one lower in each. A
     # member copying either wordlist would reach '김민준씨', '田中さん'
     # and the tolerated CJK names that carry a period and do NOT move.
     # Nor is it a copy of FULL_STOPS: spelled as the shape -- an edge
@@ -1865,7 +1873,7 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # WHY THE ROSTER KEYS ON THE EXACT MEMBER SET and not on a test of
     # what a member LOOKS like. The obvious cheaper spelling is "a
     # member carrying a space or a period is a literal name, so let it
-    # through", which would have exempted these twenty-three members
+    # through", which would have exempted these twenty-eight members
     # without anyone enumerating them -- and would equally have
     # exempted '(?:씨\.|님\.|선생\.)', a period-suffixed hand copy of
     # GLUED_HONORIFICS, from the pin that exists to keep such a copy
@@ -1887,20 +1895,34 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # alone.
     #
     # Two sets, because the ledgers group the movers differently.
-    # 1.4.0 and 2.0.0 take the ten whose diff carries a `title` or a
-    # `suffix` move (nine CJK plus the katakana 'マイケル.', a #323
-    # mover added 2026-09-10); 2.1.0 and 2.2.0 take those plus the
-    # three whose {given, middle, family} move the older ledgers hand
-    # to their native-script CJK rule instead -- a rule the 2.x
-    # ledgers have no counterpart to, 2.1.0 being the release that
-    # shipped it.
+    # 1.4.0 and 2.0.0 take the eleven whose diff carries a `title` or a
+    # `suffix` move (nine CJK, the katakana 'マイケル.' and the
+    # bracketed '(김민준.) John Smith', #323 movers added 2026-09-10);
+    # 2.1.0 and 2.2.0 take those plus the three whose {given, middle,
+    # family} move the older ledgers hand to their native-script CJK
+    # rule instead -- a rule the 2.x ledgers have no counterpart to,
+    # 2.1.0 being the release that shipped it -- and the three
+    # stop-bearing FAMILY_COMMA rows, which diff from 2.1.0 on and
+    # not before.
+    #
+    # The bracketed member is spelled with \x28 and \x29 rather than
+    # \( and \), and that is load-bearing rather than taste: _ALTERNATION
+    # reads a group body as [^()|]+, so an escaped paren INSIDE a member
+    # makes the whole alternation invisible to it -- both pins then skip
+    # the rule and this roster's key goes unused, with the suite green.
+    # Measured 2026-09-10 by writing the member the other way: all four
+    # ledgers dropped to zero CJK alternations. The Latin roster below
+    # already spells 'Andrew Perkins \x28Mgr\.\x29' this way.
     frozenset({r"田中\.", r"田中\. 太郎", r"田中さん\.", "김민준 씨。",
                "김민준 씨．", "김민준 씨｡", r"김민준\.", r"김민준\. 지훈",
-               r"김민준씨\.", r"マイケル\."}),
-    frozenset({r"田中\.", r"田中\. 太郎", r"田中さん\.", r"김\. 민준",
+               r"김민준씨\.", r"マイケル\.",
+               r"\x28김민준\.\x29 John Smith"}),
+    frozenset({r"田中\.", r"田中\. 太郎", r"田中さん\.", r"田中さん\., V\.",
+               r"김\. 민준",
                "김민준 씨。", "김민준 씨．", "김민준 씨｡", r"김민준\.",
-               r"김민준\. 지훈", r"김민준씨\.", r"양 지훈\.",
-               r"양\. 지훈", r"マイケル\."}),
+               r"김민준\. 지훈", r"김민준씨\.", r"김민준씨\., J\.씨",
+               r"양 지훈\.", r"양\. 지훈", r"이, J\.씨\.", r"マイケル\.",
+               r"\x28김민준\.\x29 John Smith"}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -2353,7 +2375,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#432) a dotted numeral behind a name is a middle initial, not the generation":
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(122, ('family', 'given', 'middle'), "04aa747fbc56", None),
+            _Claim(126, ('family', 'given', 'middle'), "a3053e6567fb", None),
         "fix(#274) maiden markers consumed":
             _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -2436,9 +2458,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "cf370e856ae7", None),
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
-            _Claim(23, ('given', 'suffix'), "344de804e2c6", None),
+            _Claim(26, ('given', 'suffix'), "7145d3aa16ca", None),
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(23, ('family', 'given', 'suffix', 'title'), "344de804e2c6", None),
+            _Claim(26, ('family', 'given', 'suffix', 'title'), "7145d3aa16ca", None),
         # 37 -> 35 with the 2026-09-05 narrowing, which is a rule
         # NARROWING and not corpus movement: the three negative
         # lookbehinds stop the regex matching a listed honorific
@@ -2454,7 +2476,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # stay UNCLASSIFIED (radar) at this baseline: they carry a
         # title role this rule's fields do not.
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(37, ('family', 'given', 'suffix'), "e867f3c46bb2", None),
+            _Claim(40, ('family', 'given', 'suffix'), "4d7bacfc28a4", None),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745", None),
         "feat(#269) non-Latin titles/conjunctions recognized":
@@ -2624,8 +2646,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # took a sixth would change the row here before it reached the
         # gate.
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
-            _Claim(10, ('family', 'given', 'middle', 'suffix', 'title'),
-                   "5b49fec1deb8", None),
+            _Claim(11, ('family', 'given', 'middle', 'suffix', 'title'),
+                   "671c6c89cf61", None),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -2724,7 +2746,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(122, ('_ambiguities', 'family', 'given', 'middle'), "04aa747fbc56", None),
+            _Claim(126, ('_ambiguities', 'family', 'given', 'middle'), "a3053e6567fb", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -2735,7 +2757,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # stay UNCLASSIFIED (radar) at this baseline: they carry a
         # title role this rule's fields do not.
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(37, ('family', 'given', 'suffix'), "e867f3c46bb2", None),
+            _Claim(40, ('family', 'given', 'suffix'), "4d7bacfc28a4", None),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2", None),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
@@ -2895,8 +2917,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # katakana mover carries a GIVEN_OR_FAMILY ambiguity that only
         # a v2-surface comparison sees.
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
-            _Claim(10, ('_ambiguities', 'family', 'given', 'middle',
-                        'suffix', 'title'), "5b49fec1deb8", None),
+            _Claim(11, ('_ambiguities', 'family', 'given', 'middle',
+                        'suffix', 'title'), "671c6c89cf61", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -3017,8 +3039,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # joins the roles here as it does at 2.0.0, for the same
         # katakana mover.
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
-            _Claim(13, ('_ambiguities', 'family', 'given', 'middle',
-                        'suffix', 'title'), "e5302be44ec3", None),
+            _Claim(17, ('_ambiguities', 'family', 'given', 'middle',
+                        'suffix', 'title'), "ef4a7afe791a", None),
     },
     "expected_since_2.1.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3263,8 +3285,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # above -- the same thirteen-member regex, nothing between
         # 2.1.0 and 2.2.0 having touched any of these readings.
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
-            _Claim(13, ('_ambiguities', 'family', 'given', 'middle',
-                        'suffix', 'title'), "e5302be44ec3", None),
+            _Claim(17, ('_ambiguities', 'family', 'given', 'middle',
+                        'suffix', 'title'), "ef4a7afe791a", None),
     },
 }
 
@@ -4612,7 +4634,14 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
         # shape-2 slot the same matrix opened, 'Kennedy, John (Jack)',
         # which is the paren spelling of that clause after a family
         # comma and costs the entry nothing for the same reason.
-        _Excluded(57, "35ac9a8c4195", ()),
+        # 57 -> 58 on 2026-09-10 for the tolerated
+        # '(김민준.) John Smith', whose bracketed clause this shape
+        # matches -- and which costs the entry nothing again, the
+        # clause reading as a CREDENTIAL rather than a nickname at
+        # every baseline (rules.md#S1's escape unwraps it), so the
+        # #322/#323 rule carries the name's diff and this exclusion
+        # silences none of it.
+        _Excluded(58, "57618fbebc6b", ()),
 }
 
 
@@ -4849,7 +4878,7 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
         ("fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set",
          "feat(#273) typographic nickname delimiters recognized by default", 1),
         ("fix(cjk-comma-compound) comma routing compounds with the CJK order flip",
-         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 17),
+         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 20),
         ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
          "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`", 1),
         ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",

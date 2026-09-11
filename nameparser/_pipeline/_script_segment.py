@@ -544,9 +544,12 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # the core cuts the text, and the stop rides with the remainder
     # ('김민준.' divides as 김 + 민준.). Without this the stop WAS the
     # remainder: '김.' matched its own head and became 김 + '.'. The
-    # segmenter below still receives `text` whole, stop included.
+    # core is what the segmenter below is handed too, for the same
+    # prefix reason and against the same failure on the other side.
     # rstrip, not strip: a LEADING stop would break the prefix
-    # argument, and '.김민준' stays unsplit by design.
+    # argument. Belt and braces only -- the classification fold in
+    # front rstrips as well (_vocab._normalized_for_script), so a
+    # token wearing a leading stop reaches no site at all.
     core = text.rstrip(FULL_STOPS)
     # A token that IS a surname never splits: a bare "남궁" must not
     # become 남 + 궁 just because the single-syllable surname also
@@ -644,7 +647,14 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # asked it, which is a fact about the CONTENT, not a broken
     # protocol. Bounded like every message here: the type's NAME, never
     # its contents.
-    answer = state.segmenter(text)
+    # The CORE, not the raw token (#323): a head is a prefix, so every
+    # offset the segmenter reports against the core cuts `text` in the
+    # same place and the trailing stops ride with the last piece --
+    # '山田太郎.' answered at 2 divides as 山田 + 太郎. Handed the raw
+    # token, a segmenter answering len-1 would make the stop a piece
+    # of its own ('田中太郎' + '。'), which is the trailing twin of the
+    # leading-stop slice the classification fold in front rules out.
+    answer = state.segmenter(core)
     if answer is not None and not isinstance(answer, Segmentation):
         # a duck-typed answer carrying a .splits of its own would
         # otherwise wander into the split path and surface as a
@@ -661,10 +671,13 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # piece. Declining silently here (as this did before the review)
     # made an off-by-one segmenter undebuggable: every answer it gave
     # vanished, and the parse merely looked unsegmented.
-    if answer.splits[-1] >= len(text):
+    # The bound is the CORE's length, the string the segmenter was
+    # actually handed: an offset it could not have derived from its own
+    # input is the same author bug whether or not `text` is longer.
+    if answer.splits[-1] >= len(core):
         raise ValueError(
             f"segmenter returned splits beyond the token: last offset "
-            f"{answer.splits[-1]}, token length {len(text)}")
+            f"{answer.splits[-1]}, token length {len(core)}")
     conf = answer.confidence
     detail = None
     if conf is not None and conf < _SEGMENTER_CONFIDENCE_FLOOR:

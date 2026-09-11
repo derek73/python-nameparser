@@ -112,13 +112,18 @@ _PHRASE_FIELDS = ("given_name_titles", "maiden_markers")
 #: U+FF61 to U+3002, and leaves U+3002 as it is.
 #: Not every period test reads this set, and the ones that do not are
 #: named so the claim is checkable: the interior-period shapes -- the
-#: dotted acronym 'M.A.' and the split 'Ph. D.' (_vocab) -- and three
-#: ASCII-only edge tests on Latin shapes -- the initial 'J.' (_vocab),
-#: the bracketed credential '(Mgr.)' and the word-internal apostrophe
-#: rule (_extract), and the trailing middle-initial carve-out 'V.'
-#: (_assign) -- stay ASCII: a fullwidth stop on a Latin credential
-#: ('Ｍ．Ｂ．Ａ．', 'V。') is a fullwidth-Latin question this set does
-#: not raise.
+#: dotted acronym 'M.A.' and the split 'Ph. D.' (_vocab) -- and FOUR
+#: ASCII-only edge tests on Latin shapes, across THREE modules -- the
+#: initial 'J.' (_vocab), the bracketed credential '(Mgr.)' and the
+#: word-internal apostrophe rule (_extract), and the trailing
+#: middle-initial carve-out 'V.' (_assign) -- stay ASCII. That is a
+#: fact about those TESTS and not about this set's reach: the fold
+#: below is script-agnostic, so a LATIN word wearing a wide stop
+#: reaches vocabulary the ASCII veto would have taken it out of.
+#: 'V。' folds to 'v' and is not the ASCII-period shape is_initial
+#: reads, so it is roman five -- suffix -- where 'V.' stays a middle
+#: initial; 'Jr。' simply reaches its entry, and 'Dr。' its title.
+#: decisions.md#cjk-full-stops carries the measurements.
 FULL_STOPS = ".．。｡"
 
 
