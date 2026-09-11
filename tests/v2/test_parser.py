@@ -1080,6 +1080,29 @@ def _suffix_bearing_corpus_names() -> list[str]:
             if p.parse(n).suffix and n not in _HONORIFIC_PEEL]
 
 
+def test_the_known_round_trip_exceptions_are_one_limit() -> None:
+    # What makes the two spellings ONE limit rather than two names
+    # somebody enrolled: each one's parsed suffix carries a word that
+    # ENDS in a listed honorific_tails entry without BEING one ('J.씨'
+    # ends in 씨), which is exactly the shape the sub-parse peels and
+    # the whole-name parse leaves glued. A genuinely different
+    # round-trip failure added to the frozenset by the same gesture
+    # fails here rather than riding in on the exemption. The
+    # characterization selects the two members and nothing else in the
+    # suffix-bearing corpus, measured 2026-09-10.
+    p = Parser()
+    tails = Lexicon.default().honorific_tails
+
+    def ends_in_a_tail_without_being_one(name: str) -> bool:
+        return any(word not in tails
+                   and any(word.endswith(tail) for tail in tails)
+                   for word in p.parse(name).suffix.split())
+
+    assert all(ends_in_a_tail_without_being_one(n) for n in _HONORIFIC_PEEL)
+    assert not [n for n in _suffix_bearing_corpus_names()
+                if ends_in_a_tail_without_being_one(n)]
+
+
 def test_the_suffix_bearing_corpus_is_not_empty() -> None:
     # 367 on 2026-09-06; a floor, so a filter that empties the
     # parametrization below fails here instead of skipping there

@@ -93,8 +93,12 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
     # word, not a title -- a lone '田中.' is the family name (#323).
     # _PERIOD_ABBREV stays ASCII-period only: a word wearing '。' never
     # matched it, and the veto is what makes the ASCII spelling agree.
+    # ASCII text can carry no _NO_INITIALS character (every range sits
+    # above U+3000), so the C-level test declines before the regex
+    # search runs -- four frames per unlisted-abbreviation opener per
+    # parse, is_leading_title running four times per piece.
     return (bool(_PERIOD_ABBREV.match(text))
-            and not in_initialless_script(text))
+            and (text.isascii() or not in_initialless_script(text)))
 
 
 def leading_titles(pieces: Sequence[Sequence[int]],
@@ -428,6 +432,10 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     while k > 1:
         idx = rest[k - 1]
         piece = pieces[idx]
+        # no #323 veto on the shape here, unlike is_leading_title's:
+        # the shape is ANDed with is_title_piece, so the word is listed
+        # vocabulary, and a listed CJK title wearing a stop should read
+        # as a title.
         if (len(piece) == 1
                 and _PERIOD_ABBREV.match(tokens[piece[0]].text)
                 and is_title_piece(piece, ptags[idx], tokens)):

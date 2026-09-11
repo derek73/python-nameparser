@@ -2001,8 +2001,9 @@ issue = "fix(#316) a trailing Latin title on a native-script name is a title"
 # member is claimed by the honorific pin in
 # tests/v2/test_ledger_guards.py, which requires such an
 # alternation's members to BE the config's CJK honorific entries --
-# and until #322/#323 opened the _NOT_A_VOCABULARY_COPY escape that
-# was every such alternation. So this stands alone, literal-anchored,
+# and until #322/#323 taught that pin to ask whether the members FOLD
+# into that vocabulary, that was every such alternation. So this
+# stands alone, literal-anchored,
 # reaching exactly one corpus name (_CORPUS_CLAIMS carries the 1)
 # with _MUST_NOT_MATCH probes for the boundary -- the same shape the
 # four #436/#437 CJK rules above take, and for the same reason.
@@ -2104,8 +2105,10 @@ fields = ["family", "given", "suffix", "title"]
 # do diff against the older baselines -- 19 of the twenty at
 # 1.4.0) or to no rule at all; decisions.md#cjk-full-stops
 # carries both counts and the recompute. The members copy no wordlist,
-# which _NOT_A_VOCABULARY_COPY in tests/v2/test_ledger_guards.py
-# records; _CORPUS_CLAIMS pins the reach at 11 with its digest, and
+# which the honorific pin in tests/v2/test_ledger_guards.py DERIVES
+# rather than taking on trust -- no member of this alternation folds
+# into the CJK honorific vocabulary, bare or wearing a full stop;
+# _CORPUS_CLAIMS pins the reach at 11 with its digest, and
 # _MUST_NOT_MATCH pins the four readings the bundle left alone. One
 # regex, identical at 1.4.0 and here; expected_since_2.1.0.toml and
 # expected_since_2.2.0.toml carry the seventeen-member spelling

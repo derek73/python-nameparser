@@ -563,8 +563,9 @@ issue = "fix(#316) a trailing Latin title on a native-script name is a title"
 # member is claimed by the honorific pin in
 # tests/v2/test_ledger_guards.py, which requires such an
 # alternation's members to BE the config's CJK honorific entries --
-# and until #322/#323 opened the _NOT_A_VOCABULARY_COPY escape that
-# was every such alternation. So this stands alone, literal-anchored,
+# and until #322/#323 taught that pin to ask whether the members FOLD
+# into that vocabulary, that was every such alternation. So this
+# stands alone, literal-anchored,
 # reaching exactly one corpus name (_CORPUS_CLAIMS carries the 1)
 # with _MUST_NOT_MATCH probes for the boundary -- the same shape the
 # four #436/#437 CJK rules above take, and for the same reason.
@@ -655,16 +656,19 @@ fields = ["family", "given", "middle", "title"]
 # do diff against the older baselines -- 19 of the twenty at
 # 1.4.0) or to no rule at all; decisions.md#cjk-full-stops
 # carries both counts and the recompute. The members copy no wordlist,
-# which _NOT_A_VOCABULARY_COPY in tests/v2/test_ledger_guards.py
-# records; _CORPUS_CLAIMS pins the reach at 17 with its digest, and
+# which the honorific pin in tests/v2/test_ledger_guards.py DERIVES
+# rather than taking on trust -- no member of this alternation folds
+# into the CJK honorific vocabulary, bare or wearing a full stop;
+# _CORPUS_CLAIMS pins the reach at 17 with its digest, and
 # _MUST_NOT_MATCH pins the four readings the bundle left alone.
 #
 # Script-classified members inside an ALTERNATION are new here --
 # every other CJK rule in the four ledgers is a lone literal, and
 # the only classified alternations are the honorific rules' hand
 # copies of GLUED_HONORIFICS and SUFFIX_WORDS, which the honorific
-# pin owns. That pin reads a declared non-copy the way its Latin
-# twin already does, which is what _NOT_A_VOCABULARY_COPY records.
+# pin owns. That pin passes over this one on a MEASUREMENT rather
+# than a declaration: no member of it folds into the honorific
+# vocabulary, bare or wearing a full stop.
 # The _SPAN_BEARING_RULES note in this file's header still holds
 # either way: the members are literal names, not a hand copy of
 # _SCRIPT_RANGES, so the empty set stands.

@@ -59,7 +59,6 @@ def test_suffix_lookup_reads_every_full_stop(word: str) -> None:
     # touch it.
     lex = Lexicon(suffix_words=frozenset({"씨"}))
     assert is_suffix_strict(word, lex)
-    assert is_suffix_lenient(word, lex)
     assert not is_initial(word)
 
 

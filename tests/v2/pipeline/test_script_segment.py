@@ -349,18 +349,21 @@ def test_out_of_bounds_split_raises() -> None:
     # every answer vanished and the name merely looked undivided.
     with pytest.raises(ValueError,
                        match=r"segmenter returned splits beyond the "
-                             r"token: last offset 5, token length 2"):
+                             r"token: last offset 5, the segmenter was "
+                             r"given 2 characters"):
         _run("山田", policy=_JA, segmenter=_fake((5,)))
     # 2 on a two-character token is the boundary itself: the check is
     # >=, not >, since a cut at len(core) would leave an empty piece
-    with pytest.raises(ValueError, match="last offset 2, token length 2"):
+    with pytest.raises(ValueError,
+                       match="last offset 2, the segmenter was given 2"):
         _run("山田", policy=_JA, segmenter=_fake((2,)))
     # #323: the bound is the CORE's length, which is what the segmenter
     # was handed -- 2 is past the end of '山田' whether or not the token
     # wears a stop, and the message reports the core's length too.
     # Against len(text) this answer would pass the check and make the
     # stop a piece of its own ('山田' + '.').
-    with pytest.raises(ValueError, match="last offset 2, token length 2"):
+    with pytest.raises(ValueError,
+                       match="last offset 2, the segmenter was given 2"):
         _run("山田.", policy=_JA, segmenter=_fake((2,)))
 
 
