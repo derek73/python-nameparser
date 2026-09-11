@@ -321,7 +321,9 @@ listed below.
      - ``frozenset[PatronymicRule]``
      - Reorders patronymic-shaped names via opt-in detectors — East
        Slavic formal order (``EAST_SLAVIC``) or Turkic reversed order
-       (``TURKIC``). Defaults to empty.
+       (``TURKIC``) — but stands down under a declared
+       ``FAMILY_FIRST`` or ``FAMILY_FIRST_GIVEN_LAST`` ``name_order``.
+       Defaults to empty.
    * - ``middle_as_family``
      - ``bool``
      - Folds ``middle`` into ``family`` instead of splitting them —

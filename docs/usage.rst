@@ -331,6 +331,10 @@ syllable held as its separate jamo rather than as one codepoint. macOS
 filenames are the common source. Everything above works on decomposed
 input: script classification normalizes to NFC before deciding, so a
 decomposed name gets the same order rule as its composed twin.
+Vocabulary lookup does the same before matching a word against
+titles, honorifics and the rest, so a decomposed ``Señor`` or ``née``
+— macOS-origin data again — is recognized as readily as its composed
+spelling.
 
 Splitting is the exception. An unspaced decomposed hangul name is
 ordered correctly but not split, because surname matching runs against
@@ -392,6 +396,19 @@ before the name is split or ordered, so those rules see the name
 without it. That is why ``김민준씨`` still divides into family 김 and
 given 민준, and why a configured Japanese segmenter is handed 山田太郎
 rather than 山田太郎様.
+
+The stop can be any width: the fullwidth ``．`` a Japanese or
+Chinese input method produces by default, the ideographic ``。`` and
+the halfwidth ``｡`` all reach the honorific vocabulary as an ASCII
+period does, so ``김민준 씨．`` gives suffix ``씨．``, family 김, given
+민준. A period glued to an ordinary name word, not an honorific, is
+likewise left where it was written rather than breaking the
+segmentation that follows it:
+
+.. doctest::
+
+    >>> parse("양. 지훈").family, parse("양. 지훈").given
+    ('양.', '지훈')
 
 Commas and Latin wrappers around a CJK name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

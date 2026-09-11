@@ -607,7 +607,10 @@ class Policy:
     #: disable one.
     segment_scripts: frozenset[Script] = frozenset({Script.HANGUL})
     #: Opt-in detectors that reorder patronymic-shaped names
-    #: (EAST_SLAVIC, TURKIC); usually set via a locale pack.
+    #: (EAST_SLAVIC, TURKIC); usually set via a locale pack. A rotation
+    #: restores the given-first reading a family-first listing hides, so
+    #: under a declared FAMILY_FIRST or FAMILY_FIRST_GIVEN_LAST name_order
+    #: it stands down and the declaration decides.
     patronymic_rules: frozenset[PatronymicRule] = frozenset()
     #: Folds middle into family instead of splitting them (v1's
     #: middle_name_as_last) -- for data where unrecognized interior
