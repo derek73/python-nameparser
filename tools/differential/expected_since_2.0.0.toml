@@ -221,14 +221,16 @@ fields = ["family", "given"]
 # the family is empty, where every baseline read it as the family.
 # Both roles move together and `fields` declares both.
 #
-# Two corpus names, both from the radar-tier corpus_issues.jsonl and
-# both moving the same way. 'Prince Fielder' moves too and is wrong
-# either way -- Prince is his given name, which is #348's collision
-# and not this rule's subject. The boundary is pinned by
-# _MUST_NOT_MATCH probes: two name words behind the title ('Prince
-# Harry Windsor'), the chained run 'Prince of Wales Jr' (addresses
-# by `wales`), the trailing 'Robert Prince', 'Lord Byron' (`lord`
-# stays out) and the bare 'Prince'.
+# Three corpus names: 'Prince Charles' and 'Prince Fielder' from the
+# radar-tier corpus_issues.jsonl, and the contract-tier rules.md
+# example 'Her Royal Highness Princess Anne' (corpus_rules.jsonl), all
+# moving the same way. 'Prince Fielder' moves too and is wrong either
+# way -- Prince is his given name, which is #348's collision and not
+# this rule's subject. The boundary is pinned by _MUST_NOT_MATCH
+# probes: two name words behind the title ('Prince Harry Windsor'),
+# the chained run 'Prince of Wales Jr' (addresses by `wales`), the
+# trailing 'Robert Prince', 'Lord Byron' (`lord` stays out) and the
+# bare 'Prince'.
 #
 # An anchored alternation of the NAMES rather than a shape, under
 # the ledger discipline expected_since_1.4.0.toml's header states:
@@ -237,7 +239,7 @@ fields = ["family", "given"]
 # _CORPUS_CLAIMS pins the reach with its digest.
 [[change]]
 issue = "fix(#519) prince and princess join the given-name titles"
-name_regex = "^(?:Prince Charles|Prince Fielder)$"
+name_regex = "^(?:Her Royal Highness Princess Anne|Prince Charles|Prince Fielder)$"
 fields = ["family", "given"]
 
 [[change]]
