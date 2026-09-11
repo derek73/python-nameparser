@@ -120,9 +120,11 @@ _PHRASE_FIELDS = ("given_name_titles", "maiden_markers")
 #: fact about those TESTS and not about this set's reach: the fold
 #: below is script-agnostic, so a LATIN word wearing a wide stop
 #: reaches vocabulary the ASCII veto would have taken it out of.
-#: 'V。' folds to 'v' and is not the ASCII-period shape is_initial
-#: reads, so it is roman five -- suffix -- where 'V.' stays a middle
-#: initial; 'Jr。' simply reaches its entry, and 'Dr。' its title.
+#: 'V。' folds to 'v' and does not end in the ASCII period the
+#: trailing-suffix carve-out tests (_assign, not is_initial), so
+#: it is roman five -- suffix -- where 'V.' stays a middle
+#: initial through that same carve-out; 'Jr。' simply reaches its
+#: entry, and 'Dr。' its title.
 #: decisions.md#cjk-full-stops carries the measurements.
 FULL_STOPS = ".．。｡"
 

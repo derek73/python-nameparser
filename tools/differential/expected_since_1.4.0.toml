@@ -3175,12 +3175,13 @@ fields = ["family", "given", "suffix", "title"]
 # and left in the text on the word it arrived with -- because no
 # East Asian script writes an initial or an abbreviation with a
 # period. A leading stop folds away for the vocabulary lookup,
-# which reads both edges; the script reading folds the TRAILING
-# edge only, matching the two division sites, which index a word's
-# own spelling from its start. So a word wearing a leading stop is
-# given no script and reaches neither site: '.김민준' takes no
-# script rule and divides nowhere (rules.md's W Background,
-# decisions.md#cjk-full-stops).
+# which reads both edges; the classification fold that feeds the
+# surname site reads the TRAILING edge only, so a word wearing a
+# leading stop is given no script and never becomes a surname
+# site: '.김민준' stays one whole word, given. The honorific peel
+# is not gated by that fold -- the tail alone licenses it -- so a
+# leading stop does not stop it: '.김민준씨' peels to '.김민준'
+# and '씨' (rules.md's W Background, decisions.md#cjk-full-stops).
 #
 # The eleven names here are the ones whose diff carries a `title`
 # or a `suffix` move -- nine CJK, the katakana 'マイケル.' (a #323
@@ -3189,9 +3190,10 @@ fields = ["family", "given", "suffix", "title"]
 # in the review round after that, whose diff carries the `title`
 # the unwrapped clause used to take. SIX MORE of the bundle's
 # seventeen movers are absent on purpose, and for one reason in two
-# shapes. '김. 민준', '양 지훈.' and '양. 지훈' move {given, middle,
-# family} alone at this baseline, which the native-script CJK rule
-# above already declares. The three stop-bearing FAMILY_COMMA rows
+# shapes. '김. 민준', '양 지훈.' and '양. 지훈' move within {given,
+# middle, family} at this baseline -- {family, given}, as it
+# happens -- which the native-script CJK rule above already
+# declares. The three stop-bearing FAMILY_COMMA rows
 # the same review round added are the other shape: '田中さん., V.' and '이, J.씨.'
 # are claimed here by the broad 'fix(cjk-comma-compound)' and
 # 'fix(cjk-comma-honorific-peel)' rules above, and '김민준씨., J.씨'
@@ -3227,10 +3229,12 @@ fields = ["family", "given", "suffix", "title"]
 # bearing name" -- 20 distinct names on 21 corpus rows before this
 # bundle ('Dr 김민준씨, Jr.' being the name on two of them), wider
 # because it sweeps in periods sitting on LATIN tokens inside a CJK
-# name ('毛 泽东 Dr.', '田中さん, V.'). Neither the five nor the
-# twenty moves, which is why a shape spelling would claim diffs that
-# do not exist; decisions.md#cjk-full-stops carries both counts and
-# the recompute. The members copy no wordlist,
+# name ('毛 泽东 Dr.', '田中さん, V.'). None of the five or the
+# twenty is moved BY THIS BUNDLE, so a shape spelling would
+# reach names whose diffs belong to other rules (most of them
+# do diff against the older baselines -- 19 of the twenty at
+# 1.4.0) or to no rule at all; decisions.md#cjk-full-stops
+# carries both counts and the recompute. The members copy no wordlist,
 # which _NOT_A_VOCABULARY_COPY in tests/v2/test_ledger_guards.py
 # records; _CORPUS_CLAIMS pins the reach at 11 with its digest, and
 # _MUST_NOT_MATCH pins the four readings the bundle left alone.

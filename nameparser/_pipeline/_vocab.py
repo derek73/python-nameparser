@@ -425,17 +425,24 @@ def _normalized_for_script(text: str) -> str | None:
     initials and no period abbreviations, so a stop on such a token
     carries no information about the word; ASCII text is stripped too,
     but the guard below returns None for it regardless, so 'Smith.'
-    never classifies. TRAILING only, matching the two division sites
-    in _script_segment, which rstrip for the same arithmetic: a
-    leading stop is not a shape any script writes before a name word,
-    and HIDING such a token from the sites -- no script, so no site,
-    which is what the tree before #323 did -- is safer than admitting
-    it. Admitted, '.김민준' classifies as hangul, becomes a surname
-    site, is declined by the head match (which rstrips) and falls
-    through to a configured segmenter, which answering offset 1
-    divides it into the stop and the name. The vocabulary fold alone
-    reads BOTH edges (_lexicon._normalize): '.씨' is still the
-    honorific, and a lookup divides nothing.
+    never classifies. TRAILING only, matching the surname site's own
+    rstrip in _script_segment (the same arithmetic, not a shared
+    gate -- the honorific peel reads no script at all, so this fold
+    decides only whether the surname site, the order rule and the
+    segmenter ever see the token): a leading stop is not a shape any
+    script writes before a name word, and HIDING such a token from
+    those three readers -- no script, so no surname site, which is
+    what the tree before #323 did -- is safer than admitting it.
+    Admitted, '.김민준' classifies as hangul, becomes a surname site,
+    is declined by the head match (which rstrips) and falls through
+    to a configured segmenter, which answering offset 1 divides it
+    into the stop and the name. The honorific peel needs none of
+    this hiding: unconditioned by classification, it matches its own
+    tail on the token's trailing edge regardless, so '.김민준씨'
+    peels to '.김민준' and '씨' whether or not the token ever
+    classifies. The vocabulary fold alone reads BOTH edges
+    (_lexicon._normalize): '.씨' is still the honorific, and a lookup
+    divides nothing.
 
     NFC, not raw: NFD input decomposes precomposed katakana onto a
     base character plus a COMBINING mark (U+3099/U+309A, which sit in

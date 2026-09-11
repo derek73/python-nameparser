@@ -1898,10 +1898,11 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # 1.4.0 and 2.0.0 take the eleven whose diff carries a `title` or a
     # `suffix` move (nine CJK, the katakana 'マイケル.' and the
     # bracketed '(김민준.) John Smith', #323 movers added 2026-09-10);
-    # 2.1.0 and 2.2.0 take those plus the three whose {given, middle,
-    # family} move the older ledgers hand to their native-script CJK
-    # rule instead -- a rule the 2.x ledgers have no counterpart to,
-    # 2.1.0 being the release that shipped it -- and the three
+    # 2.1.0 and 2.2.0 take those plus the three whose diff moves
+    # within {given, middle, family} -- {family, given}, as it
+    # happens -- which the older ledgers hand to their native-script
+    # CJK rule instead -- a rule the 2.x ledgers have no counterpart
+    # to, 2.1.0 being the release that shipped it -- and the three
     # stop-bearing FAMILY_COMMA rows, which diff from 2.1.0 on and
     # not before.
     #
@@ -2470,11 +2471,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # same digest. Only '김민준 박사님' changed hands -- it goes to
         # fix(cjk-honorific-suffix) here -- '선생님' having been the
         # order rule's all along.
-        # 37 since #323 because '김민준씨.' and '田中さん.' entered the
-        # corpus -- the regex already carried the optional stop, so
-        # the count moves on membership, not on the fix. Both diffs
-        # stay UNCLASSIFIED (radar) at this baseline: they carry a
-        # title role this rule's fields do not.
+        # 37 since #323 because '김민준씨.' and '田中さん.' entered the corpus
+        # -- the regex already carried the optional stop, so the count
+        # moves on membership, not on the fix. Neither diff is claimed
+        # by this rule -- both carry a title role its fields do not
+        # admit -- so the #322/#323 rule at the foot of the ledger
+        # explains them instead; `radar unclassified` stays 0.
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
             _Claim(40, ('family', 'given', 'suffix'), "4d7bacfc28a4", None),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
@@ -2635,16 +2637,20 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#316) a trailing Latin title on a native-script name is a title":
             _Claim(1, ('family', 'given', 'suffix', 'title'),
                    "567f09dc9b45", None),
-        # #322/#323, last in every ledger. TEN corpus names here and
-        # at 2.0.0, THIRTEEN at the two 2.x ledgers below (nine/twelve
-        # CJK movers plus the katakana 'マイケル.', a #323 mover added
-        # 2026-09-10): '김. 민준', '양 지훈.' and '양. 지훈' move
-        # {given, middle, family} at this baseline, which
-        # fix(#271/#272/#298) above declares, so they are not members
-        # of this rule's regex at all and the reach is smaller by
-        # three. Five roles, the union over the ten: a widening that
-        # took a sixth would change the row here before it reached the
-        # gate.
+        # #322/#323, last in every ledger. ELEVEN corpus names here
+        # and at 2.0.0, SEVENTEEN at the two 2.x ledgers below (nine
+        # CJK movers, the katakana 'マイケル.', and the bracketed '(김민준.)
+        # John Smith', the last two added 2026-09-10 in the
+        # whole-branch and follow-up review rounds): '김. 민준', '양 지훈.'
+        # and '양. 지훈' move within {given, middle, family} at this
+        # baseline -- {family, given}, as it happens -- which
+        # fix(#271/#272/#298) above declares, and the three
+        # stop-bearing FAMILY_COMMA rows the same later review round
+        # added produce no diff at this baseline at all -- so none of
+        # the six are members of this rule's regex here, and the reach
+        # is smaller by six. Five roles, the union over the eleven: a
+        # widening that took a sixth would change the row here before
+        # it reached the gate.
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
             _Claim(11, ('family', 'given', 'middle', 'suffix', 'title'),
                    "671c6c89cf61", None),
@@ -2751,11 +2757,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
         # fix(#307/#308/#320) -- the label its title states.
-        # 37 since #323 because '김민준씨.' and '田中さん.' entered the
-        # corpus -- the regex already carried the optional stop, so
-        # the count moves on membership, not on the fix. Both diffs
-        # stay UNCLASSIFIED (radar) at this baseline: they carry a
-        # title role this rule's fields do not.
+        # 37 since #323 because '김민준씨.' and '田中さん.' entered the corpus
+        # -- the regex already carried the optional stop, so the count
+        # moves on membership, not on the fix. Neither diff is claimed
+        # by this rule -- both carry a title role its fields do not
+        # admit -- so the #322/#323 rule at the foot of the ledger
+        # explains them instead; `radar unclassified` stays 0.
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
             _Claim(40, ('family', 'given', 'suffix'), "4d7bacfc28a4", None),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
@@ -2911,8 +2918,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given', 'suffix', 'title'),
                    "567f09dc9b45", None),
         # #322/#323. Reach and digest as in the 1.4.0 mapping, the
-        # same ten-member regex over the same corpus; that entry
-        # carries why three of the bundle's twelve movers are absent.
+        # same eleven-member regex over the same corpus; that entry
+        # carries why six of the bundle's seventeen movers are absent
+        # here (all seventeen are members at 2.1.0/2.2.0).
         # `_ambiguities` joins the roles here and not at 1.4.0: the
         # katakana mover carries a GIVEN_OR_FAMILY ambiguity that only
         # a v2-surface comparison sees.
@@ -3031,13 +3039,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#316) a trailing Latin title on a native-script name is a title":
             _Claim(1, ('family', 'given', 'middle', 'title'),
                    "567f09dc9b45", None),
-        # #322/#323, and THIRTEEN names rather than the ten the 1.4.0
-        # and 2.0.0 mappings record: 2.1.0 shipped the hangul
+        # #322/#323, and SEVENTEEN names rather than the eleven the
+        # 1.4.0 and 2.0.0 mappings record: 2.1.0 shipped the hangul
         # segmentation and the script order rule, so from that
-        # baseline on '김. 민준', '양 지훈.' and '양. 지훈' are this
-        # bundle's diffs and no older rule declares them. `_ambiguities`
-        # joins the roles here as it does at 2.0.0, for the same
-        # katakana mover.
+        # baseline on '김. 민준', '양 지훈.' and '양. 지훈' are this bundle's
+        # diffs and no older rule declares them, and the three
+        # stop-bearing FAMILY_COMMA rows the review round added diff
+        # from 2.1.0 on too -- six more members, not three.
+        # `_ambiguities` joins the roles here as it does at 2.0.0, for
+        # the same katakana mover.
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
             _Claim(17, ('_ambiguities', 'family', 'given', 'middle',
                         'suffix', 'title'), "ef4a7afe791a", None),
@@ -3282,7 +3292,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('suffix', 'title'),
                    "567f09dc9b45", None),
         # #322/#323. Reach, roles and digest as in the 2.2.0 mapping
-        # above -- the same thirteen-member regex, nothing between
+        # above -- the same seventeen-member regex, nothing between
         # 2.1.0 and 2.2.0 having touched any of these readings.
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
             _Claim(17, ('_ambiguities', 'family', 'given', 'middle',

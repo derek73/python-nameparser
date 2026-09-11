@@ -276,14 +276,16 @@ def _peel_site(state: ParseState, flat: Sequence[int],
         return None
     text = state.tokens[i].text
     # The tail is matched on the token with its trailing full stops
-    # removed (#323): a stop glued after the honorific ('김민준씨.',
-    # '田中さん。') stands between the listed tail and the token's end
-    # and used to defeat the match, sending the whole text to a title
-    # reading downstream. The cut lands BEFORE the tail, so the stops
-    # ride with the honorific piece and the token text is never
-    # rewritten. TRAILING only: a leading stop is not between the name
-    # and its honorific, and rstrip keeps the split arithmetic below
-    # one subtraction.
+    # removed (#323): a stop glued after the honorific ('김민준씨.', '田中さん.')
+    # stands between the listed tail and the token's end and used to
+    # defeat the match. What the text read instead depended on the stop:
+    # the ASCII spelling went to a title downstream (H2's shape is
+    # ASCII-period-only), while a fullwidth or ideographic stop left the
+    # whole text a lone name word ('田中さん。' read given). The cut lands
+    # BEFORE the tail, so the stops ride with the honorific piece and the
+    # token text is never rewritten. TRAILING only: a leading stop is not
+    # between the name and its honorific, and rstrip keeps the split
+    # arithmetic below one subtraction.
     core = text.rstrip(FULL_STOPS)
     stops = len(text) - len(core)
     # range/cap construction identical to the surname match below, and
@@ -547,9 +549,13 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # core is what the segmenter below is handed too, for the same
     # prefix reason and against the same failure on the other side.
     # rstrip, not strip: a LEADING stop would break the prefix
-    # argument. Belt and braces only -- the classification fold in
-    # front rstrips as well (_vocab._normalized_for_script), so a
-    # token wearing a leading stop reaches no site at all.
+    # argument. That case is unreachable here today, but not because
+    # this rstrip covers it: the classification fold in front already
+    # rstrips (_vocab._normalized_for_script) and hides such a token
+    # before it ever reaches THIS site. The peel above has no such
+    # gate in front of it -- it reads no script at all -- so its own
+    # rstrip is what actually does the work there: '.김민준씨' still
+    # peels to '.김민준' and '씨'.
     core = text.rstrip(FULL_STOPS)
     # A token that IS a surname never splits: a bare "남궁" must not
     # become 남 + 궁 just because the single-syllable surname also
