@@ -28,6 +28,20 @@ GIVEN_NAME_TITLES = frozenset({
     'master',
     'mother',
     'pope',
+    # #519: prince and princess address by the GIVEN name ("Prince
+    # Harry", "Princess Anne"), which is what membership here means
+    # (rules.md#H Background); both were in the TITLES-only block
+    # until 2026-09-10. 'lord' and 'lady' stay there, decided rather
+    # than deferred: both split by the bearer's rank, which the text
+    # does not carry -- the given-name form is a courtesy style for
+    # children of the senior ranks alone ("Lord Peter", "Lady Diana"),
+    # and every peer and every wife takes the title or surname ("Lord
+    # Byron", "Lady Thatcher") -- and this set has no way to say
+    # "sometimes" (the 'venerable' reasoning above). Membership decides only which field the one word
+    # behind the title takes: "Prince Fielder" is #348's collision
+    # either way.
+    'prince',
+    'princess',
     'queen',
     'sir',
     'sister',
@@ -584,8 +598,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'primate',
     'prime',
     'prin',
-    'prince',
-    'princess',
     'principal',
     'printer',
     'printmaker',

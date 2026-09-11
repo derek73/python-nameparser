@@ -2478,13 +2478,58 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="negative control: `lord` is not a given-name title, so "
                "the run's last word does not address by given name"),
-    Case("title_run_princess_is_vocabulary_scope",
+    # -- #519: prince and princess join the given-name titles. The
+    # criterion is rules.md#H Background's: a title that precedes and
+    # addresses by the GIVEN name belongs. "Prince Harry", "Princess
+    # Anne" address by given name and no surname reading of the word
+    # behind them exists. lord and lady stay out, decided: both split
+    # by the bearer's rank, given name for children of the senior
+    # ranks (Lord Peter, Lady Diana) and title or surname for every
+    # peer and every wife (Lord Byron, Lady Thatcher), and the set
+    # has no way to say "sometimes" -- the reason `venerable` stayed
+    # out.
+    Case("title_run_princess_addresses_by_given_name",
          "Her Royal Highness Princess Anne",
-         {"title": "Her Royal Highness Princess", "family": "Anne"},
-         classification="parity",
-         notes="negative control: `princess` is not a given-name title "
-               "either -- a vocabulary question with its own frequency "
-               "argument (Prince Harry, Lady Gaga), deliberately out"),
+         {"title": "Her Royal Highness Princess", "given": "Anne"},
+         classification="fix(#519)",
+         notes="was the #489 bundle's negative control for the "
+               "vocabulary question it filed as #519; `princess` now "
+               "IS a given-name title, so the run's last word "
+               "addresses by given name and the family is empty"),
+    Case("prince_and_one_name_word_is_a_given_name", "Prince Harry",
+         {"title": "Prince", "given": "Harry"},
+         classification="fix(#519)",
+         notes="the name the release note advertises: 1.4.0 through "
+               "2.2.0 read family 'Harry'. H1's fold is pinned by the "
+               "Sir John rows; this pins the membership"),
+    Case("prince_licences_the_bound_given_join", "Prince abdul Rahman",
+         {"title": "Prince", "given": "abdul Rahman"},
+         classification="fix(#519)",
+         notes="the second site that reads the set, rules.md#P5's "
+               "licence: behind a given-name title there is no family "
+               "to spare, so the bound word joins forward as it does "
+               "behind Sir. Read family 'Rahman' before #519"),
+    Case("prince_as_a_given_name_is_still_the_collision", "Prince Fielder",
+         {"title": "Prince", "given": "Fielder"},
+         classification="fix(#519)",
+         notes="wrong either way -- Prince is his given name (#348). "
+               "Membership only decides which field the one word "
+               "behind the title takes; it does not decide whether "
+               "the word IS a title, and that is #348's question, "
+               "not this one's"),
+    Case("lord_stays_a_surname_title", "Lord Byron",
+         {"title": "Lord", "family": "Byron"},
+         notes="negative control for #519: `lord` addresses a duke's "
+               "or marquess's younger son by given name (Lord Peter) "
+               "and every peer by title (Lord Byron); the set cannot "
+               "say 'sometimes', so it stays out and H1 families the "
+               "one word"),
+    Case("lady_stays_a_surname_title", "Lady Gaga",
+         {"title": "Lady", "family": "Gaga"},
+         notes="negative control for #519: `lady` addresses by given "
+               "name for a peer's daughter (Lady Diana) and by "
+               "surname for a wife (Lady Thatcher); the set cannot "
+               "say 'sometimes', so it stays out as `lord` does"),
     Case("title_and_two_name_words_is_not_h1s", "Sir John Smith",
          {"title": "Sir", "given": "John", "family": "Smith"},
          classification="parity",
