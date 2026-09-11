@@ -4,9 +4,11 @@ Consumes: tokens, comma_offsets (with token roles, the two halves of
 the structural-boundary test the marker pass applies -- see
 _tag_marker_runs).
 Produces: tokens with vocabulary tags added (text/span/role unchanged).
-Reads: every Lexicon vocabulary field; no Policy FIELD is consulted
-(is_initial does consult the _policy module's _NO_INITIALS constant,
-which is not configuration -- nothing here varies by Policy value).
+Reads: every Lexicon vocabulary field except surnames and
+honorific_tails, which script_segment consumes upstream; no Policy
+FIELD is consulted (is_initial does consult the _policy module's
+_NO_INITIALS constant, which is not configuration -- nothing here
+varies by Policy value).
 
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",
