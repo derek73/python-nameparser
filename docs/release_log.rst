@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 2.4.0 - Unreleased
+
+    nameparser 2.4 is under development.
+
 * 2.3.0 - September 12, 2026
 
     nameparser 2.3 is parsing fixes and new honorific vocabulary;

@@ -354,9 +354,8 @@ _SPAN_BEARING_RULES: dict[str, frozenset[str]] = {
         "fix(#298)",                        # the 间隔号 lookahead
     }),
     "expected_since_2.1.0.toml": frozenset(),   # 2.2 cycle: no span-bearing rule
-    # open cycle: its one rule, fix(#462), is a Latin letter shape and
-    # copies no script range
-    "expected_since_2.2.0.toml": frozenset(),
+    "expected_since_2.2.0.toml": frozenset(),   # 2.3 cycle: no span-bearing rule
+    "expected_since_2.3.0.toml": frozenset(),   # open cycle, no rules yet
 }
 
 #: The leading `fix(...)`/`feat(...)` tag of a rule's `issue`, which is
@@ -3367,6 +3366,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(17, ('_ambiguities', 'family', 'given', 'middle',
                         'suffix', 'title'), "ef4a7afe791a", None),
     },
+    "expected_since_2.3.0.toml": {},   # open cycle, no rules yet
 }
 
 
@@ -3467,8 +3467,9 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: default-order only, the blind spot `orders` (#468) opened. One copy
 #: of each fact, since two means one of them goes quietly stale.
 _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
-    # open cycle: one rule, so nothing for a second one to contest
     "expected_since_2.2.0.toml": {},
+    # open cycle: no rules, so no contest
+    "expected_since_2.3.0.toml": {},
     "expected_since_1.4.0.toml": {
         # Spelled out since #508: the bare `fix(comma-family)` this row
         # carried is a prefix of THREE rules in this ledger (measured
@@ -4978,6 +4979,7 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
     ],
     "expected_since_2.1.0.toml": [],
     "expected_since_2.2.0.toml": [],
+    "expected_since_2.3.0.toml": [],   # open cycle, no rules yet
 }
 
 
