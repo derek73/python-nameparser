@@ -31,7 +31,7 @@ HERE = Path(__file__).resolve().parent
 FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
           "maiden")
 
-DEFAULT_BASELINE = "2.2.0"
+DEFAULT_BASELINE = "2.3.0"
 REPO_ROOT = HERE.parents[1]
 #: The v2 API's names for the same seven roles FIELDS names in v1
 #: vocabulary. Both are compared from baseline 2.0 on.
@@ -1746,8 +1746,9 @@ class _ShapeMismatch(NamedTuple):
 #: every run. 'Nguyen, Van' is classified by nothing only because it
 #: diffs from nothing.
 _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
-    # open cycle: one rule, so nothing for a second one to contest
     "expected_since_2.2.0.toml": {},
+    # open cycle: no rules, so nothing for a second one to contest
+    "expected_since_2.3.0.toml": {},
     "expected_since_1.4.0.toml": {
         "Andrews, M.D.": ("given", "suffix"),
         "田中, 太郎さん": ("given", "suffix"),
@@ -2151,6 +2152,7 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "Smith, John E, III, Jr": ("_initials",),
     },
+    "expected_since_2.3.0.toml": {},   # open cycle, no watched name yet
 }
 
 

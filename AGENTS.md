@@ -172,14 +172,17 @@ uv run sphinx-build -b html docs dist/docs
 #    covers those is _CORPUS_CLAIMS, which records what every rule claims
 #    -- its regex's corpus reach, its roles, and which names -- and so
 #    needs no notion of how a copy is spelled.
-#    FOUR rosters are keyed by FILENAME and checked by EQUALITY, so a new
+#    SIX rosters are keyed by FILENAME and checked by EQUALITY, so a new
 #    ledger must be enrolled in every one of them on the day it lands, even
-#    empty -- each fails loudly and names itself, but that is four separate
-#    red runs if you add them one at a time. Three sit in the test module
-#    and one in tools/differential/compare.py; a fifth, compare.py's
-#    _RECORDED_DIFFS, is enrolled transitively, since the guard holds
-#    set(_RECORDED_DIFFS) == set(_CROSS_RULE_WINNERS). Two more are keyed
-#    by rule CONTENT and apply only where such a rule exists.
+#    empty -- each fails loudly and names itself, but that is six separate
+#    red runs if you add them one at a time. Four sit in the test module
+#    and two in tools/differential/compare.py. Faster than reading this
+#    list: create the ledger, move DEFAULT_BASELINE, and run
+#    tests/v2/test_ledger_guards.py once -- every roster still missing the
+#    file fails by name. (Opening the 2.4 cycle found _ORDER_EXEMPTION_EFFECT
+#    that way; it landed with f478fb0 after this list was last written.)
+#    Two more are keyed by rule CONTENT and apply only where such a rule
+#    exists.
 #    Required, by filename:
 #      - _SPAN_BEARING_RULES: add the filename, mapped to the set of issue
 #        tags whose rules carry a script-span class (empty set if none).
@@ -201,6 +204,11 @@ uv run sphinx-build -b html docs dist/docs
 #        run itself refuses, pre-worker, a ledger missing from either
 #        shape roster -- an empty section is a statement, a missing one is
 #        nobody having looked -- so the guard and the run agree on it.
+#      - _ORDER_EXEMPTION_EFFECT: add the filename mapped to [] while the
+#        ledger has no order-decided contest. It is the recorded negative
+#        control for precedes_narrower -- every contest measured with
+#        exemptions ignored -- so a row appears when two rules land that
+#        file order alone arbitrates, whether or not one declares it.
 #    Conditional, by rule content:
 #      - _HONORIFIC_SOURCES: if the ledger has a CJK honorific rule, add a
 #        substring of its issue (keyed that way, not by tag) mapped to the
