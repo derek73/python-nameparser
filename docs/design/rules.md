@@ -1701,6 +1701,7 @@ R4. Rationale: case repair is a display concern, applied only on
       "ANH DO"                    →  capitalized="Anh Do"
       "anh van do"                →  capitalized="Anh Van Do"
       "john smith phd"            →  capitalized="John Smith Ph.D."
+      "john smith mba"            →  capitalized="John Smith MBA"
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
     Accepted: the clause reaches a part the parser read. A field
     spliced in as raw text after the parse carries no reading of its
