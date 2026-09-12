@@ -1,8 +1,23 @@
 Release Log
 ===========
-* 2.3.0 - Unreleased
+* 2.3.0 - September 12, 2026
 
-    nameparser 2.3 is under development.
+    nameparser 2.3 is parsing fixes and new honorific vocabulary;
+    nothing in the API is removed or renamed.
+
+    The fixes cluster around post-nominals and titles. A space-separated
+    run of post-nominals keeps the spacing the writer typed, and the
+    acronyms that are also surnames -- Rai, Cha, Ba -- no longer take a
+    name's family name. A run of titles addresses by its last, and a
+    trailing abbreviated title reads as a title. CJK names and honorifics
+    written with a full stop of any width now parse. The additions are
+    renunciate and royal given-name titles, Devanagari and the first
+    Bengali honorifics, and two ``AmbiguityKind`` members that report a
+    reading nothing in the name decided.
+
+    One incompatibility: a ``Lexicon`` pickled by 2.1.x or 2.2.x with a
+    caller-added wide-stop or NFD entry no longer loads; the full-stop
+    bullet below has the remedy.
 
     **Behavior Changes**
 
