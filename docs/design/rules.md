@@ -1670,13 +1670,20 @@ R4. Rationale: case repair is a display concern, applied only on
     conventions rather than by the bearer's. A spelling written in a
     single case is repaired even where its bearer meant it, because
     nothing in the text marks it as a choice; where the text does
-    mark one, R5 defers to it.
+    mark one, R5 defers to it. A credential acronym the exceptions map
+    does not carry is an initialism, so a single-case word the parse
+    put in the suffix role from the acronym vocabulary repairs to its
+    all-caps spelling rather than a title-cased one; a word in that
+    vocabulary that parsed as an ordinary name word repairs as that
+    name word, and a suffix word that is not an acronym -- the
+    generational `jr`, `sr` -- keeps its title case.
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "Juan McDonald"             →  capitalized_forced="Juan McDonald"
       "ANH DO"                    →  capitalized="Anh Do"
       "anh van do"                →  capitalized="Anh Van Do"
       "john smith phd"            →  capitalized="John Smith Ph.D."
       "john smith mba"            →  capitalized="John Smith MBA"
+      "john smith jr"             →  capitalized="John Smith Jr"  · boundary
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
     Accepted: the clause reaches a part the parser read. A field
     spliced in as raw text after the parse carries no reading of its

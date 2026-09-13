@@ -142,7 +142,6 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Anh Van Do', hn)
 
-
     # Leaving already-capitalized names alone
     def test_no_change_to_mixed_chase(self) -> None:
         hn = HumanName('Shirley Maclaine')

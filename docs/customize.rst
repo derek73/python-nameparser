@@ -157,7 +157,7 @@ Fixing the case of a particular word
 
 ``capitalization_exceptions`` is the one pair-valued field — each entry
 maps a lowercase key to its exact-cased replacement (``"phd"`` →
-``"PhD"``), so it isn't a fit for ``add()``/``remove()``. Change it with
+``"Ph.D."``), so it isn't a fit for ``add()``/``remove()``. Change it with
 ``dataclasses.replace()`` instead, and pass the result to
 ``capitalized()``:
 
@@ -165,17 +165,17 @@ maps a lowercase key to its exact-cased replacement (``"phd"`` →
 
     >>> import dataclasses
     >>> from nameparser import parse
-    >>> str(parse("jane smith dds").capitalized())
-    'Jane Smith Dds'
+    >>> str(parse("jane smith dphil").capitalized())
+    'Jane Smith Dphil'
     >>> default = Lexicon.default()
     >>> lex = dataclasses.replace(
     ...     default,
     ...     capitalization_exceptions=tuple(default.capitalization_exceptions)
-    ...     + (("dds", "DDS"),))
-    >>> str(parse("jane smith dds").capitalized(lex))
-    'Jane Smith DDS'
+    ...     + (("dphil", "DPhil"),))
+    >>> str(parse("jane smith dphil").capitalized(lex))
+    'Jane Smith DPhil'
 
-Note the ``tuple(...) + ...``: assigning a bare ``(("dds", "DDS"),)``
+Note the ``tuple(...) + ...``: assigning a bare ``(("dphil", "DPhil"),)``
 would *replace* the default exceptions rather than extend them, so
 ``"phd"`` and the rest would stop being fixed.
 
