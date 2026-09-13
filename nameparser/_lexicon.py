@@ -66,9 +66,10 @@ _VOCAB_FIELDS = (
 #: Two fields are deliberately NOT here and have no check of their own.
 #: given_name_titles -- see the note in __post_init__ for why every
 #: attempt at one rejected working configurations. conjunctions_ambiguous
-#: -- an orphan is never consulted because the classify fork tests
-#: conjunctions first, so it is inert rather than harmful, and
-#: AGENTS.md's invariants rule guards harm, not no-ops.
+#: -- an orphan is never consulted because both the classify fork and
+#: its ambiguity emitter require the base entry as well, so an orphan
+#: decides nothing, and AGENTS.md's invariants rule guards harm, not
+#: no-ops.
 _SUBSET_FIELDS = (
     ("particles_ambiguous", "particles",
      "an orphan emits a spurious particle-or-given ambiguity"),

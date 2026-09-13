@@ -658,3 +658,38 @@ def test_render_malformed_specs_surface_raw_format_errors() -> None:
         pn.render("{}")
     with pytest.raises(ValueError):
         pn.render("{given!q}")
+
+
+def test_capitalized_one_case_connective_that_reads_as_an_initial() -> None:
+    """#383/#479, the half no differential gate can see (decisions.md#R4).
+
+    Repair lowercases a CONJUNCTION even inside a part it otherwise
+    capitalizes (rules.md#R4's carve-out). Once a marked single letter
+    in a one-case name is read as an INITIAL instead, that carve-out no
+    longer reaches it and the letter capitalizes like any name word.
+    The 'y' line is the control: it stays the connective, so it stays
+    lowercase, and the two together show the carve-out itself is
+    untouched.
+    """
+    assert str(parse("john e jones").capitalized()) == "John E Jones"
+    assert str(parse("john e smith").capitalized()) == "John E Smith"
+    assert str(parse("juan garcia y lopez").capitalized()) \
+        == "Juan Garcia y Lopez"
+    # R5's gate: mixed-case input is the writer's choice and repair
+    # defers to it, so this one is not repaired at all
+    assert str(parse("John e Smith").capitalized()) == "John e Smith"
+
+
+def test_facade_initials_do_not_yet_follow_the_one_case_fork() -> None:
+    """The core's initials() follows the parse's tags: 'e' in a
+    one-case name is an INITIAL (rules.md#P3), so R3's "each given,
+    middle, and base family word" reaches it and it initials.
+    HumanName.initials() does not go through the parse at all --
+    `_facade._process_initial` re-derives "conjunction" from the
+    lexicon and the part's raw text/shape, not from the token's tag --
+    so it keeps 1.4.0 parity here. The split is recorded at
+    decisions.md#P3 and closing it is a follow-up issue's job, not
+    this one's.
+    """
+    assert parse("john e smith").initials() == "j. e. s."
+    assert HumanName("john e smith").initials() == "j. s."

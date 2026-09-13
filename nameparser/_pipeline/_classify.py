@@ -3,7 +3,8 @@
 Consumes: tokens, comma_offsets (with token roles, the two halves of
 the structural-boundary test the marker pass applies -- see
 _tag_marker_runs).
-Produces: tokens with vocabulary tags added (text/span/role unchanged).
+Produces: tokens with vocabulary tags added (text/span/role unchanged),
+plus ambiguities (SUFFIX_OR_NICKNAME, CONJUNCTION_OR_INITIAL).
 Reads: every Lexicon vocabulary field except surnames and
 honorific_tails, which script_segment consumes upstream; no Policy
 FIELD is consulted (is_initial does consult the _policy module's
@@ -40,8 +41,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    _longest_marker, is_initial, maiden_marker_head, maiden_marker_run,
-    period_joined_vocab, suffix_as_written,
+    _longest_marker, is_initial, is_one_case, maiden_marker_head,
+    maiden_marker_run, period_joined_vocab, suffix_as_written,
 )
 
 
@@ -55,12 +56,19 @@ from nameparser._pipeline._vocab import (
 # bare ambiguous acronym is consumed only when the name has words to
 # spare"
 def _tags_for(token: WorkToken, n: str, state: ParseState,
-              marker_tag: str | None) -> frozenset[str]:
+              marker_tag: str | None, one_case_own: bool) -> frozenset[str]:
     """`n` is _normalize(token.text), folded once by the caller and
     shared with the marker pass; `marker_tag` is what that pass decided
     for this token, or None. The marker DECISION is entirely
     _tag_marker_runs'; only the writing happens here, so the two tokens
-    of a phrase are built once rather than replaced twice."""
+    of a phrase are built once rather than replaced twice.
+
+    `one_case_own` is true when the whole name is written in one case
+    AND this token is one of the name's own words -- a maiden clause
+    and any delimited (nickname) content are not, so the fork never
+    reads them either (rules.md#P3): a clause's words are not the
+    name's own words, and appending one must not change how THIS token
+    reads."""
     lex = state.lexicon
     tags = set(token.tags)
     if marker_tag is not None:
@@ -79,10 +87,36 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("particle")
     if n in lex.particles_ambiguous:
         tags.add("vocab:particle-ambiguous")
-    if n in lex.conjunctions and not is_initial(token.text):
-        # v1's is_conjunction excludes initials: 'e.' in 'john e. smith'
-        # is a middle initial, not the Spanish conjunction 'e'
-        tags.add("conjunction")
+    # rules.md#P3: "a single-letter connective reads as an initial
+    # where the writing says so: written as a bare Latin capital in a
+    # name that is not written wholly in one case, or — in a name
+    # written wholly in one case, where nothing says so — where the
+    # letter is one the vocabulary marks as reading both ways"
+    # (#383/#479; history: decisions.md#P3)
+    cased_single = (len(token.text) == 1
+                    and token.text.upper() != token.text.lower()
+                    and n in lex.conjunctions)
+    if cased_single and one_case_own:
+        # No case evidence, so the vocabulary decides. No namespaced
+        # tag beside it: the emitted ambiguity IS the record of the
+        # decision (mechanisms.md#MARK-DONT-STRIP is satisfied by the
+        # report) -- mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE says
+        # emit where the branch is taken, not where an ambiguous tag
+        # sits, and a vocab: tag records MEMBERSHIP, not the branch
+        # taken, so it is the wrong shape of record here.
+        if n in lex.conjunctions_ambiguous:
+            tags.add("initial")
+        else:
+            # a bare capital y joins here, where mixed case vetoes it
+            tags.add("conjunction")
+    else:
+        # today's rule, verbatim. v1's is_conjunction excludes
+        # initials: 'e.' in 'john e. smith' is a middle initial, not
+        # the Spanish conjunction 'e'
+        if n in lex.conjunctions and not is_initial(token.text):
+            tags.add("conjunction")
+        if is_initial(token.text):
+            tags.add("initial")
     if n in lex.bound_given_names:
         tags.add("vocab:bound-given")
     # maiden markers are NOT tagged here: an entry may be a phrase whose
@@ -90,8 +124,6 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # token with no neighbours. _tag_marker_runs below does the whole
     # field, single words included, so there is one place that decides
     # it (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
-    if is_initial(token.text):
-        tags.add("initial")
     # v1's period-joined derivation (parse_pieces): a token with a
     # period not at the end, ANY of whose period chunks is a title, is
     # a title as a whole ('Lt.Gov.', and by the ANY rule 'Mr.Smith');
@@ -204,12 +236,50 @@ def _tag_marker_runs(state: ParseState,
 def classify(state: ParseState) -> ParseState:
     # One fold per token, shared by the marker pass and the vocabulary
     # tags -- the shape suffix_as_written already asks for ("n is
-    # _normalize(text), passed in so callers normalize once").
-    folded = [_normalize(t.text) for t in state.tokens]
+    # _normalize(text), passed in so callers normalize once"). `texts`
+    # is built once and reused for `folded`: a generator handed to
+    # is_one_case instead costs one profiler frame per RESUME, i.e. per
+    # token, on every parse (#475's frame-count band caught this).
+    texts = [t.text for t in state.tokens]
+    folded = [_normalize(x) for x in texts]
     marker_tags = _tag_marker_runs(state, folded)
+    # rules.md#P3 says a maiden marker, taken as one, and the words it
+    # takes, are not among the name's own words -- so clause_at is the
+    # smallest index tagged as a marker HEAD, and everything from there
+    # on is the clause. A plain loop, not a generator handed to min():
+    # marker_tags is almost always empty, and its keys arrive in index
+    # order (_tag_marker_runs walks left to right), so the first head a
+    # forward walk finds is already the smallest. Filtering on the HEAD
+    # tag specifically (never "-cont") is what makes that answer right
+    # independent of _tag_marker_runs's insertion order too: every
+    # matching entry is a clause start, so a min() over them in any
+    # order would agree with this walk -- the walk just takes the
+    # cheaper path given the order this dict happens to arrive in.
+    clause_at = len(texts)
+    for i, tag in marker_tags.items():
+        if tag == "vocab:maiden-marker":
+            clause_at = i
+            break
+    # ONE fact per parse, taken over the name's OWN words (rules.md#P3):
+    # not a delimited clause's tokens, which arrive with `role` already
+    # set by extract (WorkToken.role's docstring), and not the maiden
+    # clause itself, which starts at clause_at. Appending a clause must
+    # not flip the reading of words that did not change. Not stored on
+    # ParseState: nothing downstream reads it today, and #289/#516 can
+    # promote it the way `order` was recorded rather than recomputed.
+    own = [texts[i] for i, t in enumerate(state.tokens)
+           if i < clause_at and t.role is None]
+    one_case = is_one_case(own)
+    # The fork itself must not read a clause's words either: `own_word`
+    # is the same "own words" test as `own` above, applied per token so
+    # the fork and its emitter agree with the case class they consult.
+    # No extra frame -- it is one more boolean in a comprehension
+    # that already walks every token.
     tokens = tuple(
         dataclasses.replace(
-            t, tags=_tags_for(t, folded[i], state, marker_tags.get(i)))
+            t, tags=_tags_for(t, folded[i], state, marker_tags.get(i),
+                              one_case and i < clause_at
+                              and t.role is None))
         for i, t in enumerate(state.tokens))
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->
@@ -225,6 +295,40 @@ def classify(state: ParseState) -> ParseState:
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "
                 f"as a nickname rather than a suffix",
+                (i,)))
+        # #383/#479: narrows the fork's own "initial" tag with the same
+        # inputs the fork used, rather than re-deciding from scratch.
+        # Only the casedness test is inherited from the tag --
+        # `is_initial(token.text)` also tags a bare capital "initial"
+        # in the fork's else branch, so the tag alone does not tell
+        # this apart from that.
+        #
+        # Of the two clauses beside it, one is load-bearing and one is
+        # not. `conjunctions_ambiguous` is IMPLIED by the others for a
+        # fresh parse: "initial" plus len 1 forces an ASCII capital,
+        # hence cased, hence the fork's branch was taken. It is kept
+        # only because `_tags_for` starts from `set(token.tags)`, so
+        # this clause is what keeps the emitter honest if a runner ever
+        # hands classify tokens it did not build; no such path exists
+        # today. `conjunctions` is the clause doing real work: it keeps
+        # an orphan marker (a conjunctions_ambiguous entry no longer in
+        # conjunctions) inert rather than reported (decisions.md#P3).
+        # `i < clause_at and token.role is None` mirrors the fork's own
+        # "own words" test above, for the same reason (rules.md#P3): a
+        # clause's words were never eligible for the fork, so they must
+        # never be eligible to report either. Emitted at the decision
+        # site (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE), per
+        # token -- 'e and e' reports twice.
+        if (one_case and "initial" in token.tags
+                and len(token.text) == 1
+                and folded[i] in state.lexicon.conjunctions_ambiguous
+                and folded[i] in state.lexicon.conjunctions
+                and i < clause_at and token.role is None):
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.CONJUNCTION_OR_INITIAL,
+                f"{token.text!r} is both a connective and an initial; "
+                f"the name is written in one case, so nothing marks "
+                f"which, and it is read as an initial",
                 (i,)))
     return dataclasses.replace(state, tokens=tokens,
                                ambiguities=tuple(ambiguities))

@@ -1000,6 +1000,215 @@ CASES: tuple[Case, ...] = (
     Case("initial_shaped_not_conjunction", "john e. smith",
          {"given": "john", "middle": "e.", "family": "smith"},
          notes="v1 is_conjunction excludes initials at classify too"),
+    # #383/#479: a single-letter connective joins only on positive
+    # evidence, and a name written wholly in one case has none. These
+    # 17 rows pin the FORK, not the wordlist
+    # (mechanisms.md#VOCABULARY-EXERCISES-FORKS).
+    #
+    # The 12 Latin e/y rows, plainly: 'e' at four words carries
+    # one-case-lower ('jose e maria santos'), one-case-upper ('JOSE E
+    # MARIA SANTOS'), mixed-lower where 'e' joins ('Jose e Maria
+    # Santos'), and mixed-upper where 'E' is an initial ('Jose E Maria
+    # Santos') -- four spellings, because within a mixed-case name the
+    # letter's OWN case still decides which reading it gets. 'e' at
+    # three words carries the same one-case-lower/one-case-upper/mixed-
+    # lower trio ('john e smith' / 'JOHN E SMITH' / 'John e Smith');
+    # its mixed-upper twin ('John E Smith') is absent because it would
+    # pin nothing these rows do not -- the three-word carve-out already
+    # keeps 'e' a name word either way, exactly as row 5 does. 'y'
+    # carries one-case-upper and one-case-lower at four words ('JUAN
+    # GARCIA Y LOPEZ' / 'juan garcia y lopez'), mixed-upper at four
+    # words where 'Y' still vetoes ('Juan Garcia Y Lopez'), and one-
+    # case-upper/one-case-lower at three words where the carve-out
+    # already held ('JUAN Y GARCIA' / 'juan y garcia'). 'Juan Garcia y
+    # Lopez' (mixed-lower, four words) is absent for the same reason as
+    # 'John E Smith': it pins the same BRANCH the mixed-lower 'e' row
+    # already demonstrates, a different JOIN though -- 'Garcia y Lopez'
+    # into the family where 'Jose e Maria' joins into the given run.
+    # 'Juan Y Garcia' (mixed-UPPER, three words) is absent because its
+    # control lives beside the capitalize() pin instead, in
+    # tests/test_capitalization.py::test_a_one_letter_conjunction_is_case_sensitive_to_repair;
+    # 'Juan y Garcia' (mixed-lower, three words) is absent everywhere as
+    # an input.
+    #
+    # The other five rows are three DIFFERENT reasons a row does not
+    # move, not "three scripts that must not enter the fork": the
+    # Cyrillic pair DOES enter the fork -- 'и' is cased conjunction
+    # vocabulary and takes the non-member branch exactly as 'y' does,
+    # joining without a report -- the Catalan pair's 'i' is Latin script
+    # but is not conjunction vocabulary AT ALL, so it never reaches
+    # `cased_single` in the first place (a different, earlier exclusion
+    # than Cyrillic's, and #397's before-picture); only the Arabic row
+    # is genuinely caseless and so never enters the fork on that
+    # ground.
+    #
+    # All 17 rows are shape-tagged so build_shapes_corpus.py projects
+    # them into the contract corpus -- measured 2026-09-13, no corpus
+    # file held a uniform-case name with a single-letter connective
+    # beyond the eight already there, and none held a standalone و at
+    # all, so without these the fork is invisible to every future gate
+    # run.
+    Case("one_case_lower_e_reads_as_an_initial", "jose e maria santos",
+         {"given": "jose", "middle": "e maria", "family": "santos"},
+         classification="fix(#479)",
+         ambiguities=("conjunction-or-initial",),
+         notes="#479 row 1, the defect. 1.4.0 and 2.0-2.3 alike read "
+               "'e' as the connective and gave given 'jose e maria'. "
+               "A lowercase letter in an all-lowercase name is no more "
+               "evidence than an uppercase one in an all-uppercase "
+               "name, so the vocabulary decides and 'e' is marked",
+         shape=1),
+    Case("one_case_upper_e_reads_as_an_initial", "JOSE E MARIA SANTOS",
+         {"given": "JOSE", "middle": "E MARIA", "family": "SANTOS"},
+         ambiguities=("conjunction-or-initial",),
+         notes="#479 row 4. The READING is unchanged from 1.4.0 and "
+               "from 2.3 -- what is new is the report: an all-upper "
+               "name's capital is not the evidence a mixed-case name's "
+               "capital is, so the same fork was being called silently",
+         shape=1),
+    Case("mixed_case_lower_e_is_the_connective", "Jose e Maria Santos",
+         {"given": "Jose e Maria", "family": "Santos"},
+         notes="the mixed-case control for the row above: here the "
+               "lowercase letter IS evidence, because the rest of the "
+               "name is not lowercase, so 'e' joins and nothing is in "
+               "doubt",
+         shape=1),
+    Case("mixed_case_upper_e_is_an_initial", "Jose E Maria Santos",
+         {"given": "Jose", "middle": "E Maria", "family": "Santos"},
+         notes="the other mixed-case control: a bare capital among "
+               "mixed case is how an initial is written, unchanged "
+               "since 1.4.0 and unreported",
+         shape=1),
+    Case("one_case_three_word_e_is_an_initial", "john e smith",
+         {"given": "john", "middle": "e", "family": "smith"},
+         ambiguities=("conjunction-or-initial",),
+         notes="P3's three-word carve-out is untouched -- 'e' stays a "
+               "name word either way -- so the ROLES do not move and "
+               "the visible change is the tag: ParsedName.initials() "
+               "(the v2 view this table exercises) gives 'j. e. s.' "
+               "where 2.3 gave 'j. s.', and capitalize() gives 'John E "
+               "Smith' where 2.3 gave 'John e Smith', pinned in "
+               "tests/v2/test_render.py. Measured 2026-09-13: the v1 "
+               "facade's HumanName.initials() does not yet follow this "
+               "fork and still gives 'j. s.' -- "
+               "test_facade_initials_do_not_yet_follow_the_one_case_fork "
+               "in tests/v2/test_render.py pins the split; closing it "
+               "is a follow-up issue's job. This table asserts roles",
+         shape=1),
+    Case("one_case_upper_three_word_e_is_an_initial", "JOHN E SMITH",
+         {"given": "JOHN", "middle": "E", "family": "SMITH"},
+         ambiguities=("conjunction-or-initial",),
+         notes="the all-upper spelling of the row above: same reading, "
+               "and the report is what is new",
+         shape=1),
+    Case("mixed_case_three_word_e_is_the_connective", "John e Smith",
+         {"given": "John", "middle": "e", "family": "Smith"},
+         notes="the mixed-case control at three words. The carve-out "
+               "means the ROLE is the same as the row above; the "
+               "difference is the tag, and so the initials -- 'J. S.' "
+               "here against 'J. E. S.' for 'JOHN E SMITH'",
+         shape=1),
+    Case("one_case_upper_y_joins_as_a_bare_capital", "JUAN GARCIA Y LOPEZ",
+         {"given": "JUAN", "family": "GARCIA Y LOPEZ"},
+         classification="fix(#383)",
+         notes="#383 answered with 'bless', and this is the half that "
+               "moves: 1.4.0 through 2.3 vetoed a bare Latin capital "
+               "into an initial and gave middle 'GARCIA Y'. An "
+               "all-upper name's capital is not evidence, 'y' is not "
+               "marked as reading both ways, so it joins -- and "
+               "reports nothing, because nothing about it is in doubt",
+         shape=1),
+    Case("one_case_lower_y_joins", "juan garcia y lopez",
+         {"given": "juan", "family": "garcia y lopez"},
+         notes="the parity half of the pair above: a lowercase 'y' "
+               "joined before this change and joins after it",
+         shape=1),
+    Case("mixed_case_upper_y_is_an_initial", "Juan Garcia Y Lopez",
+         {"given": "Juan", "middle": "Garcia Y", "family": "Lopez"},
+         notes="the mixed-case control: here the capital IS evidence, "
+               "so the bare 'Y' reads as an initial exactly as it "
+               "always has, and the join does not happen",
+         shape=1),
+    Case("one_case_upper_y_keeps_the_three_word_carveout", "JUAN Y GARCIA",
+         {"given": "JUAN", "middle": "Y", "family": "GARCIA"},
+         notes="the boundary between the two exceptions: 'Y' is now "
+               "conjunction-tagged rather than initial-tagged, and the "
+               "three-word carve-out still refuses the join, so the "
+               "ROLE is unchanged. What moves is initials() -- "
+               "ParsedName.initials() gives 'J. G.' where 2.3 gave "
+               "'J. Y. G.', a conjunction contributing none "
+               "(rules.md#R3) -- while the v1 facade's "
+               "HumanName.initials() still gives 'J. Y. G.', the same "
+               "split the 'john e smith' row records, running the "
+               "other way "
+               "(test_facade_initials_do_not_yet_follow_the_one_case_fork "
+               "in tests/v2/test_render.py) -- which is why this row "
+               "needs the lowercase twin below to be readable",
+         shape=1),
+    Case("one_case_lower_y_keeps_the_three_word_carveout", "juan y garcia",
+         {"given": "juan", "middle": "y", "family": "garcia"},
+         notes="the twin of the row above, unchanged in every release: "
+               "lowercase 'y' was already the connective at three "
+               "words, and the carve-out already kept it a name word",
+         shape=1),
+    Case("one_case_upper_cyrillic_connective_joins", "ХОСЕ И МАРИЯ САНТОС",
+         {"given": "ХОСЕ И МАРИЯ", "family": "САНТОС"},
+         classification="feat(#269)",
+         notes="#267's blessing survives the #383 rewrite, and for a "
+               "different reason than it had: 'И' joins because 'и' is "
+               "not in conjunctions_ambiguous, not because the veto "
+               "tested a LATIN shape. No report -- the reading is not "
+               "in doubt. 1.4.0 has no Cyrillic conjunction vocabulary "
+               "at all and reads 'И' as a middle word (first ХОСЕ, "
+               "middle И МАРИЯ, last САНТОС -- measured on the 1.4.0 "
+               "wheel); #269 is what joins it, and this PR only adds "
+               "the one-case spellings to the roster #269 already "
+               "ships",
+         shape=1),
+    Case("one_case_lower_cyrillic_connective_joins", "хосе и мария сантос",
+         {"given": "хосе и мария", "family": "сантос"},
+         classification="feat(#269)",
+         notes="the lowercase spelling of the row above; both cases "
+               "read alike, which is the point of making the rule "
+               "about evidence rather than about capitals. 1.4.0 reads "
+               "'и' as a middle word here too (measured on the 1.4.0 "
+               "wheel: first хосе, middle и мария, last сантос) for "
+               "the same reason -- no Cyrillic conjunction vocabulary "
+               "-- and #269 is what joins it",
+         shape=1),
+    Case("caseless_connective_never_enters_the_fork", "محمد و علي",
+         {"given": "محمد", "middle": "و", "family": "علي"},
+         notes="Arabic و has no case at all, so the fork's cased-token "
+               "test is false and today's rule stands whatever the "
+               "name's case class is. The first standalone و in any "
+               "corpus -- measured 2026-09-13, none held one -- and "
+               "the three-word carve-out keeps it a name word, as it "
+               "does for 'juan y garcia'. shape=1 measured accepted by "
+               "Case.__post_init__ (2026-09-13): the row instantiates "
+               "shape 1's given-first arrangement under the default "
+               "order, exactly as the Cyrillic twins above do -- a "
+               "shape tag asserts the ARRANGEMENT, not a script "
+               "(tools/differential/shapes.py)",
+         shape=1),
+    Case("catalan_i_is_not_connective_vocabulary_upper",
+         "JOSEP CAROD I ROVIRA",
+         {"given": "JOSEP", "middle": "CAROD I", "family": "ROVIRA"},
+         notes="pinned at TODAY's reading so #397 shows its move: 'i' "
+               "is not in CONJUNCTIONS at all, so the bare capital is "
+               "an initial by shape and this row never reaches the "
+               "fork. When #397 adds 'i' it ships in "
+               "conjunctions_ambiguous too, and this row changes",
+         shape=1),
+    Case("catalan_i_is_not_connective_vocabulary_lower",
+         "josep carod i rovira",
+         {"given": "josep", "middle": "carod i", "family": "rovira"},
+         notes="the lowercase twin: 'i' is an ordinary name word, not "
+               "vocabulary, so nothing joins and nothing reports. This "
+               "row pins NOTHING today -- both readings are what every "
+               "release including 1.4.0 already gives -- and is kept "
+               "anyway as the other half of #397's before-picture, "
+               "beside its upper twin above",
+         shape=1),
     Case("family_comma_lenient_trailing", "Smith, John V",
          {"given": "John", "family": "Smith", "suffix": "V"},
          notes="v1 #144: the trailing piece of a two-part comma name "

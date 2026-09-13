@@ -32,3 +32,132 @@
 # There is deliberately no `change = []` line. TOML forbids appending a
 # [[change]] table to a statically defined array, so that line would
 # block the first entry.
+
+# ---------------------------------------------------------------
+# #383/#479: A SINGLE-LETTER CONNECTIVE JOINS ONLY ON CASE EVIDENCE.
+# The first rules this ledger carries, and the cleanest picture of
+# the change there is: 2.3.0 is the previous release, so every diff
+# below is 2.4's own and nothing else's. Ten names, three rules --
+# the two whose ROLES move, the seven that gain (or exchange) a
+# REPORT, and the one whose derived VIEW moves alone.
+#
+# rules.md#P3 states the rule: a single letter reads as an initial
+# where the writing says so -- written as a bare LATIN capital in a
+# name that is not written wholly in one case, or, in a name written
+# wholly in one case where nothing says so, where the letter is one
+# the vocabulary marks as reading both ways
+# (`Lexicon.conjunctions_ambiguous`, shipping `{"e"}`). So in a
+# one-case name 'e' reads as an initial and reports the call, and
+# 'y' joins as the connective it always was. Mixed case is untouched
+# in both directions, which every _MUST_NOT_MATCH probe on these
+# three rules pins. History: the 2026-09-13 entry of decisions.md#P3.
+#
+# The whole population this change can reach is the seventeen corpus
+# names written wholly in one case that carry a cased single-letter
+# connective (measured 2026-09-13 over the 1174-name corpus).
+# Ten of the seventeen diff here. Of the seven that do not:
+# 'juan garcia y lopez' and 'juan y garcia' already read that way;
+# 'johnny y', 'der, y van' and 'juan q. xavier velasquez y garcia
+# iii' DO reach the fork -- each is one-case and carries a cased
+# single letter -- and it takes the non-member branch, 'y' being no
+# `conjunctions_ambiguous` entry, which tags the letter a connective
+# exactly as the old veto-free path did and emits no report; and the
+# Cyrillic pair reads its 'и' through vocabulary that has decided it
+# since 2.0.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#383/#479) a single-letter connective joins only on case evidence"
+# The two names whose ROLES move. 'jose e maria santos' read given
+# 'jose e maria' at 2.3.0 -- the connective joined its neighbours
+# into one part -- and reads given 'jose', middle 'e maria' now that
+# the letter is an initial. 'JUAN GARCIA Y LOPEZ' read middle
+# 'GARCIA Y', family 'LOPEZ', because 2.3.0 vetoed a join on any
+# single-letter connective written as a bare Latin capital; that veto
+# is gone, so the connective joins and the family is 'GARCIA Y
+# LOPEZ'. One rule and not two: it is one sentence of rules.md#P3
+# read in its two directions, and both names are examples of it.
+#
+# `_ambiguities` is in the fields because ONE of the two carries the
+# new report: 'jose e maria santos' reports conjunction-or-initial,
+# 'JUAN GARCIA Y LOPEZ' reports nothing, nothing about 'y' having
+# been in doubt. The declaration is the union of the two diffs and
+# #452's over-declaration check recomputes it on every run.
+#
+# Literal-anchored to the two names. The class is wide -- every
+# one-case name carrying a cased single-letter connective -- and
+# fifteen of its seventeen members do not move a role, so a regex for
+# the class would stand ready to explain a regression on any of them.
+# _MUST_NOT_MATCH in tests/v2/test_ledger_guards.py carries the
+# probes, every one a MIXED-case spelling of a name this rule claims:
+# mixed case is where the writing decides, nothing moved there, and a
+# rule reaching one would be absorbing a regression in the half of
+# rules.md#P3 this change did not touch.
+name_regex = "^(?:jose e maria santos|JUAN GARCIA Y LOPEZ)$"
+fields = ["given", "middle", "family", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#383/#479) a marked connective letter in a one-case name is reported"
+# 'JOSE E MARIA SANTOS', 'JOHN E SMITH', 'john e smith', 'john e
+# jones', 'jones, john e', 'e j smith', 'e and e': every role is
+# identical -- the letter was already read as an initial, or
+# rules.md#P3's three-word carve-out keeps it a name word either way
+# -- and what is new is that the CALL is now reported as
+# conjunction-or-initial, because a one-case name gives the reader
+# nothing to decide it by. 'e and e' EXCHANGES a report rather than
+# gaining one: its two 'e's become initial-tagged words, so O5's
+# lone-word branch no longer fires and the given-or-family report it
+# made at 2.3.0 is replaced by conjunction-or-initial. Its roles and
+# its initials are unchanged.
+#
+# The core's initials() moves for 'john e smith' ('j. s.' -> 'j. e.
+# s.'), 'john e jones' and 'jones, john e' (both 'j. j.' -> 'j. e.
+# j.'), and `_initials` is deliberately absent from the fields: the
+# derived view enters a diff only where every role AND every
+# ambiguity kind agrees (#484, compare.py main()), and the report
+# moved on each of them, so no run can produce a shape here carrying
+# it. That movement is visible nowhere else either -- the v1 facade
+# re-derives the connective decision from vocabulary and shape
+# instead of reading the parse's tags, so `HumanName.initials()` does
+# not move at all and the 1.4.0
+# ledger, which compares the facade alone, has nothing to classify.
+# decisions.md#P3 records the split.
+name_regex = "^(?:JOSE E MARIA SANTOS|JOHN E SMITH|john e smith|john e jones|jones, john e|e j smith|e and e)$"
+fields = ["_ambiguities"]
+orders = ["DEFAULT"]
+
+# ---------------------------------------------------------------------
+# The `_initials` rule (#484) -- see the block of the same name at the
+# end of expected_since_1.4.0.toml for what the pseudo-field is. One
+# rule, because exactly one name of this change's population moves the
+# derived view with no report beside it to suppress it.
+# ---------------------------------------------------------------------
+
+[[change]]
+issue = "fix(#383/#479) a bare capital connective in an all-upper name stops initialing"
+# 'JUAN Y GARCIA': 'y' is not marked as reading both ways, so in a
+# name written wholly in one case it joins rather than being vetoed
+# into an initial -- and rules.md#P3's three-word carve-out then
+# refuses the join, leaving given 'JUAN', middle 'Y', family 'GARCIA'
+# exactly as they were. What moves is the derived view alone, 'J. Y.
+# G.' -> 'J. G.', a connective contributing no initial (rules.md#R3).
+# No report: nothing about 'y' was in doubt, which is why this name
+# reaches `_initials` where the 'e' names do not.
+#
+# It has a rule of its own HERE and at no other baseline. At 2.0.0,
+# 2.1.0 and 2.2.0 the same name also moves the FACADE's view, in the
+# opposite direction and for the opposite reason (#462's fix keeps
+# the initial-shaped capital the older facades dropped), and
+# `_initials` is one field -- so `fix(#462)` explains both halves
+# there as one move, and its comment in those three ledgers says so.
+# That fix has shipped at this baseline, so the facade agrees and
+# only the core moves.
+#
+# Literal, one name: the shape would be "an all-upper three-word name
+# whose middle word is an unmarked single-letter connective", which
+# reaches 'JUAN GARCIA Y LOPEZ' (roles, the first rule above) and
+# 'juan y garcia' (unchanged) the moment it is written as a regex.
+name_regex = "^JUAN Y GARCIA$"
+fields = ["_initials"]
+orders = ["DEFAULT"]

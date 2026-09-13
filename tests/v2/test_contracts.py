@@ -9,9 +9,9 @@ from nameparser._types import STABLE_TAGS, AmbiguityKind
 
 _AMBIGUITY_TRIGGERS: dict[AmbiguityKind, str | None] = {
     AmbiguityKind.PARTICLE_OR_GIVEN: "Van Johnson",
-    # no emitter yet -- arrives with the classify fork in this same PR
-    # (#383/#479); flipped to "JOSE E MARIA SANTOS" there
-    AmbiguityKind.CONJUNCTION_OR_INITIAL: None,
+    # #479 row 1, all-upper: 'E' is a marked single-letter connective
+    # and the name's one case says nothing about which reading is meant
+    AmbiguityKind.CONJUNCTION_OR_INITIAL: "JOSE E MARIA SANTOS",
     AmbiguityKind.UNBALANCED_DELIMITER: 'Jon "Nick Smith',
     AmbiguityKind.COMMA_STRUCTURE: "Smith, John, Extra, Jr.",
     AmbiguityKind.SUFFIX_OR_NICKNAME: "JEFFREY (JD) BRICKEN",
