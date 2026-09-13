@@ -553,18 +553,34 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     initial, the shape the veto always tested, which is why #267's
     Cyrillic reading is untouched — and answered with evidence for
     the one-case half, where the vocabulary decides.
-    A maiden marker the marker pass declines (left as a word, M2) is
-    nonetheless excluded from the case class, which shows only when
-    the marker word is the only differently-cased token — "JUAN Y
-    GARCIA née" joins where "JUAN Y GARCIA née Jones" keeps "Y" a
-    name word — accepted rather than repaired, since classify cannot
-    know what group will decline.
+    A maiden marker's run and every word after it are outside the
+    name's own words from the moment classify tags the marker, and
+    they stay outside whether or not the marker pass later declines
+    the marker and leaves it a word (M2). A declined marker therefore
+    does two things at once. It still does not count toward the case
+    class, which shows when it is the only differently-cased token,
+    so "JUAN Y GARCIA née" joins where "JUAN Y GARCIA née Jones"
+    keeps "Y" a name word. And it leaves any connective standing
+    after it to the mixed-case rule rather than to the one-case fork,
+    so a bare Latin capital there reads as an initial while its
+    lowercase spelling joins — the one shape in which the name's OWN
+    words read differently in its two one-case spellings. So "JUAN
+    NÉE JR Y LOPEZ" reads middle "NÉE JR Y" with its "Y" an initial,
+    while "juan née jr y lopez" reads family "jr y lopez" with its
+    own "y" joined. A clause's words are read as they always were,
+    and that is not an exception to this: such a letter still takes
+    a different tag in the two spellings, so its case repair can
+    differ between them, which is a repair difference and not a
+    reading of the name's own words.
+    Accepted rather than repaired: classify cannot know what group
+    will decline, and a clause's words are read by the clause's own
+    rules.
       "Хосе И Мария Сантос"       →  given="Хосе И Мария"
     H1 is the counting rule that shows the one-word clause today: a
     title plus the join reads the whole join as the family, where the
     same two words unjoined are two name words and H1 does not fire.
-    P1's leading run becomes the second once #395 lands — its run
-    must take the "Vega y Santos" join whole or stop before it.
+    P1's leading run is the second (#395, landed): its run takes
+    the "Vega y Santos" join whole or stops before it.
     history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
@@ -1721,10 +1737,13 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     line because every line here names an input string, and this
     shape needs a field edited after the parse.
     Accepted: the unsettled given-group answer above is neither rare
-    nor hypothetical — 25 of the corpus names carry a conjunction
-    among the given names, every one of them reachable from the
-    default vocabulary, and it has initialed since 1.4.0. It carries
-    no marked deviation, for the reason that mechanism exists: a
+    nor hypothetical — 26 of the corpus names carry a conjunction
+    among the given names (measured 2026-09-13; recompute by parsing
+    the deduped corpus*.jsonl glob and keeping every name with a
+    GIVEN-role token tagged "conjunction"), every one of them
+    reachable from the default vocabulary, and it has initialed since
+    1.4.0. It carries no marked deviation, for the reason that
+    mechanism exists: a
     marker states the INTENDED value, and one name, "John and Jane
     Smith", has four candidates. Today gives "J. a. J. S."; the
     carve-out read as written gives "J. J. S."; P3's one-name-word

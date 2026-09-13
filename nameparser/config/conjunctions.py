@@ -64,10 +64,14 @@ not a connective, in a name written wholly in one case.
 assert_normalized("CONJUNCTIONS", CONJUNCTIONS)
 
 # Guard the invariant the docstring promises, so a future edit that
-# breaks it fails at import time (same rationale as suffixes.py). Note
-# `assert` is stripped under `python -O`; Lexicon re-checks the
-# relationship at construction, which is what protects a caller's own
-# vocabulary.
+# breaks it fails at import time (same rationale as suffixes.py).
+# This holds the SHIPPED constant and nothing else, and two things
+# follow. `assert` is stripped under `python -O`, so under -O even
+# that much is gone. And unlike the other marker subsets, the pair is
+# deliberately absent from Lexicon's subset checks, so a CALLER'S
+# orphan is never rejected -- it is inert instead, the classify fork
+# and its emitter both requiring the base entry before they read the
+# marker (see decisions.md#P3, the 2026-09-13 entries).
 assert CONJUNCTIONS_AMBIGUOUS <= CONJUNCTIONS, \
     "CONJUNCTIONS_AMBIGUOUS must stay a subset of CONJUNCTIONS"
 assert all(len(w) == 1 and w.upper() != w.lower()
