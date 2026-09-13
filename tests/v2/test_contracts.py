@@ -9,6 +9,9 @@ from nameparser._types import STABLE_TAGS, AmbiguityKind
 
 _AMBIGUITY_TRIGGERS: dict[AmbiguityKind, str | None] = {
     AmbiguityKind.PARTICLE_OR_GIVEN: "Van Johnson",
+    # no emitter yet -- arrives with the classify fork in this same PR
+    # (#383/#479); flipped to "JOSE E MARIA SANTOS" there
+    AmbiguityKind.CONJUNCTION_OR_INITIAL: None,
     AmbiguityKind.UNBALANCED_DELIMITER: 'Jon "Nick Smith',
     AmbiguityKind.COMMA_STRUCTURE: "Smith, John, Extra, Jr.",
     AmbiguityKind.SUFFIX_OR_NICKNAME: "JEFFREY (JD) BRICKEN",
@@ -241,3 +244,8 @@ def test_the_documented_replacements_for_an_in_place_edit_work() -> None:
     # recipe 2: an extended Lexicon for the 2.0 API
     parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
     assert parser.parse("Dean Smith").title == "Dean"
+
+
+def test_conjunction_or_initial_is_a_stable_string() -> None:
+    # A StrEnum member IS its value; the value is API and never changes.
+    assert AmbiguityKind.CONJUNCTION_OR_INITIAL == "conjunction-or-initial"

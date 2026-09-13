@@ -989,11 +989,13 @@ class Constants:
         singleton -- only direct attribute mutation is on the 3.0
         removal path.
         """
+        from nameparser.config.conjunctions import CONJUNCTIONS_AMBIGUOUS
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
         from nameparser.config.suffixes import GLUED_HONORIFICS
         from nameparser.config.surnames import KOREAN_SURNAMES
         acronyms = frozenset(self.suffix_acronyms)
         particles = frozenset(self.prefixes)
+        conjunctions = frozenset(self.conjunctions)
         bound = frozenset(self.bound_first_names)
         ambiguous_acronyms = frozenset(self.suffix_acronyms_ambiguous) & acronyms
         # Drop any ambiguous acronym from the word set rather than the
@@ -1062,7 +1064,15 @@ class Constants:
             particles_ambiguous=(
                 particles - frozenset(self.non_first_name_prefixes))
             | (bound & particles),
-            conjunctions=frozenset(self.conjunctions),
+            conjunctions=conjunctions,
+            # no v1 manager of its own: the ambiguous-connective
+            # subset is 2.4 behavior (#383/#479), so it rides in the
+            # snapshot only. Intersect with the conjunction set, the
+            # same rule honorific_tails gets against suffix_words below:
+            # Lexicon enforces the subset, and v1 semantics are that
+            # deleting the base word turns the behavior off -- a
+            # lingering marker simply stops mattering.
+            conjunctions_ambiguous=CONJUNCTIONS_AMBIGUOUS & conjunctions,
             bound_given_names=bound,
             # v1 Constants has no manager for these (#274 is 2.0
             # behavior); the data module is the only source

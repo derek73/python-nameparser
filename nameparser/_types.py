@@ -450,6 +450,27 @@ class AmbiguityKind(StrEnum):
     #: is the family and nothing about this, so the fork is real and
     #: ``detail`` names the word it turned on.
     PARTICLE_OR_GIVEN = "particle-or-given"
+    #: A single-letter connective in a name written wholly in ONE case
+    #: -- all upper or all lower alike -- where the writing therefore
+    #: says nothing about which reading was meant. The letter is read as
+    #: an INITIAL and this reports the fork: "jose e maria santos" gives
+    #: middle "e maria" and "JOSE E MARIA SANTOS" middle "E MARIA",
+    #: both flagged. Only a letter the vocabulary marks both ways
+    #: reports -- ``Lexicon.conjunctions_ambiguous``, "e" by default --
+    #: because a letter outside it is not in doubt: "JUAN GARCIA Y
+    #: LOPEZ" joins into family "GARCIA Y LOPEZ" and reports nothing,
+    #: as does the Cyrillic "ХОСЕ И МАРИЯ САНТОС".
+    #: Three things never reach the fork. MIXED-case input decides on
+    #: the writing instead, so "Jose E Maria Santos" reads the capital
+    #: as an initial and "John e Smith" the lowercase letter as the
+    #: connective, neither reporting. A CASELESS letter has no case to
+    #: read, so Arabic "محمد و علي" keeps its connective silently. And a
+    #: MULTI-letter connective ("and", "та", "και") or a symbol ("&") is
+    #: no initial's shape at any casing.
+    #: ``detail`` names the token, the kind naming neither the field nor
+    #: the letter: which field the reading lands in follows the name's
+    #: shape and its ``name_order``, the PARTICLE_OR_GIVEN precedent.
+    CONJUNCTION_OR_INITIAL = "conjunction-or-initial"
     #: A name of one name word that nothing else decided had to be read
     #: as one field or the other, and both readings fit it equally well
     #: -- "Andrew", "Smith". The convention picks the given name under
