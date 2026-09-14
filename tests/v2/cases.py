@@ -1039,7 +1039,7 @@ CASES: tuple[Case, ...] = (
     # vocabulary and takes the non-member branch exactly as 'y' does,
     # joining without a report -- the Catalan pair's 'i' is Latin script
     # but is not conjunction vocabulary AT ALL, so it never reaches
-    # `cased_single` in the first place (a different, earlier exclusion
+    # `single_letter_connective` in the first place (a different, earlier exclusion
     # than Cyrillic's, and #397's before-picture); only the Arabic row
     # is genuinely caseless and so never enters the fork on that
     # ground.
