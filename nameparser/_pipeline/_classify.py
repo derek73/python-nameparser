@@ -93,10 +93,10 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # written wholly in one case, where nothing says so — where the
     # letter is one the vocabulary marks as reading both ways"
     # (#383/#479; history: decisions.md#P3)
-    cased_single = (len(token.text) == 1
-                    and token.text.upper() != token.text.lower()
-                    and n in lex.conjunctions)
-    if cased_single and one_case_own:
+    single_letter_connective = (len(token.text) == 1
+                                and token.text.upper() != token.text.lower()
+                                and n in lex.conjunctions)
+    if single_letter_connective and one_case_own:
         # No case evidence, so the vocabulary decides. No namespaced
         # tag beside it: the emitted ambiguity IS the record of the
         # decision (mechanisms.md#MARK-DONT-STRIP is satisfied by the
@@ -113,9 +113,10 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # the mixed-case rule, unchanged. v1's is_conjunction excludes
         # initials: 'e.' in 'john e. smith' is a middle initial, not
         # the Spanish conjunction 'e'
-        if n in lex.conjunctions and not is_initial(token.text):
+        initial = is_initial(token.text)
+        if n in lex.conjunctions and not initial:
             tags.add("conjunction")
-        if is_initial(token.text):
+        if initial:
             tags.add("initial")
     if n in lex.bound_given_names:
         tags.add("vocab:bound-given")
@@ -236,13 +237,8 @@ def _tag_marker_runs(state: ParseState,
 def classify(state: ParseState) -> ParseState:
     # One fold per token, shared by the marker pass and the vocabulary
     # tags -- the shape suffix_as_written already asks for ("n is
-    # _normalize(text), passed in so callers normalize once"). `texts`
-    # is a LIST, not a generator, because `own` below indexes it by
-    # position (`texts[i]`); is_one_case's own `Sequence` parameter is
-    # where the frame-cost argument for passing a built sequence lives
-    # (_vocab.py, #475).
-    texts = [t.text for t in state.tokens]
-    folded = [_normalize(x) for x in texts]
+    # _normalize(text), passed in so callers normalize once").
+    folded = [_normalize(t.text) for t in state.tokens]
     marker_tags = _tag_marker_runs(state, folded)
     # rules.md#P3 says a maiden marker, taken as one, and the words it
     # takes, are not among the name's own words -- so clause_at is the
@@ -256,7 +252,7 @@ def classify(state: ParseState) -> ParseState:
     # matching entry is a clause start, so a min() over them in any
     # order would agree with this walk -- the walk just takes the
     # cheaper path given the order this dict happens to arrive in.
-    clause_at = len(texts)
+    clause_at = len(state.tokens)
     for i, tag in marker_tags.items():
         # A marker word already carrying a role arrived pre-set by
         # extract (WorkToken.role's docstring) -- it is the CLAUSE's
@@ -276,14 +272,15 @@ def classify(state: ParseState) -> ParseState:
     # not flip the reading of words that did not change. Not stored on
     # ParseState: nothing downstream reads it today, and #289/#516 can
     # promote it the way `order` was recorded rather than recomputed.
-    own = [texts[i] for i, t in enumerate(state.tokens)
-           if i < clause_at and t.role is None]
+    # is_one_case's own `Sequence` parameter is where the frame-cost
+    # argument for handing it a built list lives (_vocab.py, #475).
+    own = [t.text for t in state.tokens[:clause_at] if t.role is None]
     one_case = is_one_case(own)
-    # The fork itself must not read a clause's words either: `own_word`
-    # is the same "own words" test as `own` above, applied per token so
-    # the fork and its emitter agree with the case class they consult.
-    # No extra frame -- it is one more boolean in a comprehension
-    # that already walks every token.
+    # The fork itself must not read a clause's words either, so the
+    # `one_case and ...` argument below repeats `own`'s membership test
+    # per token, and the fork and its emitter then agree with the case
+    # class they consult. No extra frame -- it is one more boolean in a
+    # comprehension that already walks every token.
     tokens = tuple(
         dataclasses.replace(
             t, tags=_tags_for(t, folded[i], state, marker_tags.get(i),
