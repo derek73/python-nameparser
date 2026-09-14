@@ -275,8 +275,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
 # rules.md#P3: "a recognized connective joins its neighbors into one
 # name part, connective runs included — except a single-letter
 # connective in a three-word name, which stays a name word, and a
-# single-letter connective written as a bare Latin capital, which
-# reads as an initial and never joins" (history: decisions.md#P3)
+# single-letter connective that reads as an initial instead, which
+# never joins" (history: decisions.md#P3)
 def _is_conj_piece(piece: Sequence[int], ptags: Set[str],
                    tokens: Sequence[WorkToken]) -> bool:
     if "conjunction" in ptags:

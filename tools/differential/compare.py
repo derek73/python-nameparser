@@ -1747,7 +1747,10 @@ class _ShapeMismatch(NamedTuple):
 #: diffs from nothing.
 _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     "expected_since_2.2.0.toml": {},
-    # open cycle: no rules, so nothing for a second one to contest
+    # The open cycle carries #383/#479's three rules since
+    # 2026-09-13, and no contest among them: each is a literal name
+    # or alternation of names, and no two reach the same corpus
+    # name, so the run finds no contested diff to adjudicate.
     "expected_since_2.3.0.toml": {},
     "expected_since_1.4.0.toml": {
         "Andrews, M.D.": ("given", "suffix"),
@@ -1934,8 +1937,8 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: 'Carod i' diffs under the default order at 1.4.0 only, where its
 #: contest row stands, and 'MD, PHD' carries a contest row at every one
 #: of the three baselines it diffs at since #501 pinned its 2.x pair.
-#: That is why the population is 51 names where the tests/-only scan
-#: says 53.
+#: That is why the population is 48 names where the tests/-only scan
+#: says 50.
 #: Recounted 2026-09-07 with #342, which moved three names across the
 #: literal clause at once: 'Aishwarya Rai' gained a case row and left
 #: the population, while 'Lala Lajpat Rai' and 'John Smith, RAI' are
@@ -1955,6 +1958,29 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: that list to twenty-three, 'Sir Jr' leaving rules.md and so the
 #: rules corpus; it was a cases.py literal and never in this
 #: population, so the row counts are unmoved by that too.
+#: Recounted 2026-09-13 with #383/#479, which moved three names across
+#: the literal clause the way 'Aishwarya Rai' moved across it in #342:
+#: 'Jose e Maria Santos' and 'JOSE E MARIA SANTOS' gained cases.py
+#: rows and entered the CONTRACT corpora with them (corpus_rules.jsonl
+#: and corpus_shapes.jsonl), and 'Juan Garcia y Lopez' became a string
+#: literal in tests/v2/test_render.py -- so all three fail the literal
+#: clause, two of them the radar-corpus clause as well, and all three
+#: left the population. FIVE rows were RETIRED with them: 'Jose e
+#: Maria Santos' and 'Juan Garcia y Lopez' at 1.4.0, and 'JOSE E MARIA
+#: SANTOS' at 2.0.0, 2.1.0 and 2.2.0 -- that last row having been
+#: re-recorded ("_initials",) -> ("_ambiguities",) earlier the same
+#: day, before the population question was put to it. Nothing goes
+#: unwatched by the retirement, which is the Aishwarya precedent's
+#: whole point: each name now carries a case row asserting its entire
+#: parse, and the three #383/#479 rules classify every diff the five
+#: rows recorded.
+#: One row the recount does NOT retire is worth naming, because
+#: without it the per-file line below reads as a partition it is not:
+#: 'QC MP' sits in corpus_rules.jsonl, a CONTRACT corpus, as well as
+#: in corpus_issues.jsonl, and has done since before this change. By
+#: the population clause above it does not belong here. It is left
+#: alone rather than retired blind -- retiring a row removes a guard,
+#: and nothing in this change made this one wrong.
 #: 'John Smith Rev.' is named NOWHERE under
 #: tests/, so it
 #: counts in both scans -- the every-file figures in the RECOMPUTE
@@ -1962,14 +1988,15 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: else: it did not re-derive the population clause above, so the
 #: equality sentence that follows is dated 2026-09-07 and is not
 #: restated for today.
-#: The counts: 38 / 34 / 33 / 8 rows, 113 in all, over those 52 names
+#: The counts: 36 / 33 / 32 / 7 rows, 108 in all, over those 49 names
 #: -- and as of 2026-09-07 the roster was exactly the population, the
 #: five contest rows beyond it having gone to _RECORDED_DIFFS with #501
 #: and five more with #498, which left the population by gaining a
 #: _RECORDED_DIFFS key rather than by ceasing to be watched anywhere.
-#: 50 of the 52 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
-#: 'dr Vincent van Gogh dr' in both, so the per-file counts overlap by
-#: one and are not a partition. Every row is a default-order shape,
+#: 47 of the 49 sit in corpus_issues.jsonl, 3 in corpus.jsonl and 1 in
+#: corpus_rules.jsonl, with 'dr Vincent van Gogh dr' and 'QC MP' each
+#: in two of them, so the per-file counts overlap by two and are not a
+#: partition. Every row is a default-order shape,
 #: as the roster above's are, so no row here is a declared-order-only
 #: diff for NOT CHECKED to name.
 #:
@@ -1978,14 +2005,14 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: calls whose order is None and whose rule is not None; apply the
 #: four clauses above with the literal set from ast.walk over
 #: tests/**/*.py EXCLUDING test_ledger_guards.py, as the POPULATION
-#: clause says -- run over every file it yields 25 / 23 / 22 / 5 rows
-#: rather than 38 / 34 / 33 / 8, since _CROSS_RULE_WINNERS' keys and
+#: clause says -- run over every file it yields 24 / 23 / 22 / 5 rows
+#: rather than 36 / 33 / 32 / 7, since _CROSS_RULE_WINNERS' keys and
 #: a few guard literals then score as watchers, and #498's fourteen
 #: keys are exactly that kind of literal -- as are #342's two
 #: 2026-09-07 arrivals, both named in _NOT_A_VOCABULARY_COPY. The
 #: every-file figures are the strict ones MINUS the roster names that
 #: are named as an exact string literal in test_ledger_guards.py and
-#: nowhere else under tests/ (13 / 11 / 11 / 3 today), which is a
+#: nowhere else under tests/ (12 / 10 / 10 / 2 today), which is a
 #: derivation a reader can run in one pass over this dict and that
 #: file -- no baseline wheel needed -- and it is how the pair was
 #: recomputed on 2026-09-09. That recount RETRACTS the pair recorded
@@ -2040,8 +2067,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "John of the Doe": ("_initials",),
         "Jong van der": ("_initials",),
         "Jong, van der": ("_initials",),
-        "Jose e Maria Santos": ("_initials",),
-        "Juan Garcia y Lopez": ("_initials",),
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "Mesnil Garcia van": ("_initials",),
         "Mohamad X": ("family", "suffix"),
@@ -2074,7 +2099,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Dr. Do Van Johnson, MD": ("family", "given"),
         "E Anne D,Leonardo": ("_initials",),
         "Esq. van Gogh": ("_ambiguities", "family", "given"),
-        "JOSE E MARIA SANTOS": ("_initials",),
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
@@ -2116,7 +2140,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Dr. Do Van Johnson, MD": ("family", "given"),
         "E Anne D,Leonardo": ("_initials",),
         "Esq. van Gogh": ("_ambiguities", "family", "given"),
-        "JOSE E MARIA SANTOS": ("_initials",),
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
@@ -2144,7 +2167,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     },
     "expected_since_2.2.0.toml": {
         "E Anne D,Leonardo": ("_initials",),
-        "JOSE E MARIA SANTOS": ("_initials",),
         "Joe E. Smith": ("_initials",),
         "John Smith Rev.": ("family", "middle", "title"),
         "John Smith, RAI": ("family", "given", "suffix"),
@@ -2152,7 +2174,12 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "Smith, John E, III, Jr": ("_initials",),
     },
-    "expected_since_2.3.0.toml": {},   # open cycle, no watched name yet
+    # Still empty on 2026-09-13, and now for a reason rather than for
+    # want of diffs: all TEN of the open cycle's movers are named by a
+    # string literal under tests/ outside test_ledger_guards.py -- a
+    # cases.py row, a render pin or a v1 bank -- so not one of them
+    # meets the population's literal clause and none takes a row here.
+    "expected_since_2.3.0.toml": {},
 }
 
 

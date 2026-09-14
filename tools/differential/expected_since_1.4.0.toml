@@ -2776,9 +2776,10 @@ fields = ["family", "suffix"]
 # on parse().initials() -- renders for a parse whose fields did not
 # move.
 #
-# The order the file has them in: the two literal name LISTS first
-# (fix(#385/#402), fix(#360)), then the three VOCABULARY rules --
-# connective, bound-given, particle chain -- then the Ph. D. merge.
+# The order the file has them in: the three literal name LISTS first
+# (fix(#385/#402), fix(#360), feat(#269)), then the three VOCABULARY
+# rules -- connective, bound-given, particle chain -- then the Ph. D.
+# merge.
 # Only the bound-given/particle-chain pair is ordered by narrowness,
 # and by measured reach rather than by reading: 41 corpus names
 # against 107 (measured 2026-09-02 at this baseline, and recorded in
@@ -2791,6 +2792,18 @@ fields = ["family", "suffix"]
 # facade at all -- main() passes empty dicts for it -- so an
 # `_initials` diff under a declared order could only come from the
 # CORE, and must not be absorbed by a rule whose prose says "facade".
+#
+# #383/#479 has NO rule in this block, and the absence is a measured
+# finding rather than an omission. The change moves what
+# `parse(...).initials()` renders for 'john e smith', 'john e jones',
+# 'jones, john e' and 'JUAN Y GARCIA' -- but `HumanName.initials()`
+# re-derives the connective decision from vocabulary and initial shape
+# on the raw text instead of reading the parse's tags, so the FACADE's
+# view does not move at all, and the facade is the only surface
+# compared below 2.0. Measured 2026-09-13: not one of those four names
+# diffs here. The core's movement is classified at the 2.x baselines,
+# where the core is compared (decisions.md#P3 records the facade split
+# and the follow-up it owes).
 
 [[change]]
 issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
@@ -2820,6 +2833,34 @@ issue = "fix(#360) los joined the particles, so it no longer initials"
 # changed is that 'los' is now a particle and contributes no initial
 # ('l. S.' -> 'S.'). One name, literal.
 name_regex = "(?i)^de los santos$"
+fields = ["_initials"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "feat(#269) a recognized non-Latin connective contributes no initial"
+# 'محمد و علي': #269 (2.0) put the non-Latin connectives into
+# CONJUNCTIONS, and `و` has been read as one ever since -- the roles
+# agree with 1.4.0 word for word (given 'محمد', middle 'و', family
+# 'علي'), because 1.4.0 already put the lone letter in the middle;
+# what moved is that a connective contributes no initial
+# (rules.md#R3), so 'م. و. ع.' became 'م. ع.'. That is the same
+# recognition the two `feat(#269)` ROLE rules above classify, read
+# from the derived view, and it needs a rule of its own because a
+# rule listing `_initials` may list nothing else (#484).
+#
+# It is being classified now, three minors late, because the name
+# only just entered a corpus: it is a rules.md#P3 example (the
+# caseless control -- a script with one case carries no case evidence
+# and never reaches the #383/#479 fork) and arrived with that rule's
+# case-table rows on 2026-09-13. Nothing about it moves in 2.4;
+# measured the same day, its parse and both its initials views are
+# byte-identical before and after the fork.
+#
+# Literal, one name: the shape -- "a name whose only connective is a
+# caseless one" -- reaches every Arabic and Cyrillic corpus name the
+# moment one carries a `و` or an `и`, and the two Cyrillic names that
+# do move here move their ROLES and belong to the rule above.
+name_regex = "^محمد و علي$"
 fields = ["_initials"]
 orders = ["DEFAULT"]
 
@@ -3272,3 +3313,68 @@ fields = ["family", "given", "suffix", "title"]
 issue = "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token"
 name_regex = "^(?:\\x28김민준\\.\\x29 John Smith|マイケル\\.|田中\\.|田中\\. 太郎|田中さん\\.|김민준 씨。|김민준 씨．|김민준 씨｡|김민준\\.|김민준\\. 지훈|김민준씨\\.)$"
 fields = ["family", "given", "middle", "suffix", "title"]
+
+# ---------------------------------------------------------------
+# #383/#479: A SINGLE-LETTER CONNECTIVE JOINS ONLY ON CASE EVIDENCE.
+# One rule, and the count is the finding. Seventeen corpus names are
+# written wholly in one case AND carry a cased single-letter
+# connective -- the whole population this change can reach, measured
+# 2026-09-13 over the 1174-name corpus by folding every one-letter
+# token of every one-case name against CONJUNCTIONS -- and exactly
+# two of them move a ROLE BECAUSE OF THIS CHANGE. Of the fifteen
+# others, thirteen move no role at all and the Cyrillic pair move
+# theirs for #269's reason -- vocabulary that has decided their 'и'
+# since 2.0, nothing to do with the fork -- so four names in the
+# population move a role against this baseline and only two of the
+# four are this rule's. The other two are classified by
+# `feat(#269) non-Latin titles/conjunctions recognized` above, whose
+# reach the population grew by exactly those two.
+# The report the change also emits is a v2
+# surface that does not exist below 2.0, while the derived view moved
+# only in the CORE, which is not compared here either (the note in
+# the `_initials` block above). So this is the whole of 2.4's
+# #383/#479 blast radius at 1.4.0.
+#
+# LAST in the file: every diff it claims reported UNEXPLAINED on the
+# run that preceded it (measured 2026-09-13), so no rule above
+# already claims one, and nothing below can be shadowed by a literal
+# alternation of two names.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#383/#479) a single-letter connective joins only on case evidence"
+# 'jose e maria santos' and 'JUAN GARCIA Y LOPEZ', both rules.md#P3
+# examples. A name written wholly in one case carries no case
+# evidence about any letter in it, so the reading comes from the
+# vocabulary: 'e' is marked as reading both ways and reads as an
+# initial, 'y' is not and joins. Both directions are v1 parity BREAKS
+# and both are deliberate -- 1.4.0 gives 'jose e maria santos' first
+# 'jose e maria' and 'JUAN GARCIA Y LOPEZ' middle 'GARCIA Y'
+# (measured from the 1.4.0 wheel, 2026-09-13). See rules.md#P3 and
+# the 2026-09-13 entry of decisions.md#P3.
+#
+# The two names move DISJOINT role pairs and the declaration is their
+# union: 'jose e maria santos' moves `given` and `middle` (the joined
+# run splits, and what is past the letter becomes the middle name),
+# 'JUAN GARCIA Y LOPEZ' moves `middle` and `family` (the letter now
+# joins, so the middle empties into the family). `#452`'s
+# over-declaration check recomputes that union on every run, so a
+# third role here would fail rather than stand as a claim on a future
+# diff.
+#
+# Literal-anchored to the two names: the class is wide (every one-case
+# name with a cased single-letter connective) but the corpora carry
+# only these two at a role-moving shape, and a regex for the class
+# would claim the fifteen OTHER names of that population (the section
+# comment above counts them) whose roles this change does not move
+# -- including 'juan garcia y lopez', which already joined, and
+# 'JUAN Y GARCIA', whose three-word carve-out keeps the letter a name
+# word in both directions.
+# _MUST_NOT_MATCH in tests/v2/test_ledger_guards.py carries the probes,
+# every one of them a MIXED-case spelling: mixed case is where the
+# writing decides, nothing moved there at all, and a rule reaching one
+# would be absorbing a regression in the half of rules.md#P3 this
+# change did not touch.
+name_regex = "^(?:jose e maria santos|JUAN GARCIA Y LOPEZ)$"
+fields = ["given", "middle", "family"]
+orders = ["DEFAULT"]

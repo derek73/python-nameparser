@@ -342,11 +342,13 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # read E as a conjunction, only the facade's render did -- so this is
 # `_initials` alone (#484). The shape: a bare capital E or Y, or a
 # dotted E./Y. of either case, standing as its own word. Lowercase
-# bare e/y is the connective and does not move. The regex reaches 18
-# corpus names, of which 14 diffed when the rule was written
-# (2026-09-02); _CORPUS_CLAIMS in tests/v2/test_ledger_guards.py pins
-# that reach as _Claim(18, ...) and fails if it moves, so the REACH
-# digit is checked rather than remembered. The 14 is not: it is a
+# bare e/y is the connective and does not move. The regex reaches 22
+# corpus names -- 18 until #383/#479's case rows and rules.md#P3
+# examples arrived on 2026-09-13 -- of which 14 diffed when the rule
+# was written (2026-09-02); _CORPUS_CLAIMS in
+# tests/v2/test_ledger_guards.py pins that reach as _Claim(22, ...)
+# and fails if it moves, so the REACH digit is checked rather than
+# remembered. The 14 is not: it is a
 # dated snapshot of what diffed that day and nothing re-runs it.
 # The names it reaches and does not move are
 # what the gap IS, and the invariant behind it is a GROUP rather than
@@ -354,6 +356,12 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # they carry the E/Y in the GIVEN group, which has always initialed
 # every word it holds whatever the vocabulary says, so there was
 # nothing for the fix to restore.
+#
+# 2026-09-13, #383/#479: 'JUAN Y GARCIA' now diffs here for TWO
+# reasons at once -- the facade's, which is this rule's own, and the
+# core's, which is new -- and this rule explains both as one
+# `_initials` move. expected_since_2.0.0.toml's copy of this rule
+# carries the account; it is the same at all three baselines.
 name_regex = "(?:^|[\\s,])(?:[EY]|[EeYy]\\.)(?=[\\s,]|$)"
 fields = ["_initials"]
 orders = ["DEFAULT"]
@@ -703,3 +711,88 @@ fields = ["family", "given", "middle", "title"]
 issue = "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token"
 name_regex = "^(?:\\x28김민준\\.\\x29 John Smith|マイケル\\.|田中\\.|田中\\. 太郎|田中さん\\.|田中さん\\., V\\.|김\\. 민준|김민준 씨。|김민준 씨．|김민준 씨｡|김민준\\.|김민준\\. 지훈|김민준씨\\.|김민준씨\\., J\\.씨|양 지훈\\.|양\\. 지훈|이, J\\.씨\\.)$"
 fields = ["_ambiguities", "family", "given", "middle", "suffix", "title"]
+
+# ---------------------------------------------------------------
+# #383/#479: A SINGLE-LETTER CONNECTIVE JOINS ONLY ON CASE EVIDENCE.
+# Two rules where 1.4.0 needs one, and the split is the pseudo-field
+# rule (#484) rather than two behaviors: from 2.0 on the v2 surface
+# is compared, so the new CONJUNCTION_OR_INITIAL report enters the
+# diff -- on one of the two names whose roles move ('JUAN GARCIA Y
+# LOPEZ' reports nothing, nothing about 'y' having been in doubt)
+# and on six more whose roles do not -- and a role move and a
+# report can co-occur while a role move and `_initials` cannot.
+#
+# The derived view is deliberately absent from both rules. The core's
+# initials() DOES move for 'john e smith', 'john e jones' and
+# 'jones, john e' ('j. j.' -> 'j. e. j.'), but `_initials` enters a
+# diff only where every role AND every ambiguity kind agrees (#484,
+# compare.py main()), and the report moved on each of them -- so at
+# this baseline those names classify on the report alone. 'JUAN Y
+# GARCIA' is the one name of the population whose view moves with no
+# report beside it, and at this baseline it is already claimed:
+# fix(#462) reaches it and admits `_initials`, because the FACADE's
+# view moves there too (the 2.3 facade fix has not shipped at 2.2.0).
+# That rule's comment records the double reason; a competing rule
+# here would be an equal-`fields` contest decided by file order,
+# which is what _CROSS_RULE_WINNERS exists to stop rather than to
+# create. It is classified on its own at 2.3.0, where the facade
+# agrees and only the core moves.
+#
+# LAST in the file: every diff these two claim reported UNEXPLAINED
+# on the run that preceded them (measured 2026-09-13), so no rule
+# above already claims one.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#383/#479) a single-letter connective joins only on case evidence"
+# The 2.x view of the 1.4.0 rule of the same name: 'jose e maria
+# santos' reads given 'jose', middle 'e maria' where 2.2.0 joined,
+# and 'JUAN GARCIA Y LOPEZ' reads family 'GARCIA Y LOPEZ' where
+# 2.2.0's bare-Latin-capital veto gave middle 'GARCIA Y'. A name
+# written wholly in one case carries no case evidence about any
+# letter in it, so the vocabulary decides: 'e' is marked as reading
+# both ways and reads as an initial, 'y' is not and joins. Both are
+# rules.md#P3 examples; see the 2026-09-13 entry of decisions.md#P3.
+#
+# `_ambiguities` is in the fields here and cannot be at 1.4.0 -- the
+# report is a v2 surface -- and only ONE of the two names carries it:
+# 'jose e maria santos' reports conjunction-or-initial, 'JUAN GARCIA
+# Y LOPEZ' reports nothing, because nothing about 'y' was ever in
+# doubt. The declaration is the union of the two diffs and #452's
+# over-declaration check recomputes it every run.
+#
+# Literal-anchored to the two names, as at 1.4.0: the class is every
+# one-case name carrying a cased single-letter connective, seventeen
+# corpus names, and fifteen of them do not move a role.
+# _MUST_NOT_MATCH carries the mixed-case probes.
+name_regex = "^(?:jose e maria santos|JUAN GARCIA Y LOPEZ)$"
+fields = ["given", "middle", "family", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#383/#479) a marked connective letter in a one-case name is reported"
+# 'JOSE E MARIA SANTOS', 'JOHN E SMITH', 'john e smith', 'john e
+# jones', 'jones, john e', 'e j smith': every role is identical --
+# the letter was already read as an initial, or rules.md#P3's
+# three-word carve-out keeps it a name word either way -- and what is
+# new is that the CALL is reported as conjunction-or-initial, because
+# a one-case name gives the reader nothing to decide it by.
+#
+# The initials of 'john e smith' ('j. s.' -> 'j. e. s.'), 'john e
+# jones' and 'jones, john e' (both 'j. j.' -> 'j. e. j.') move as
+# well, and the view is deliberately not in the fields: see the
+# section comment above for why no run can produce it here.
+#
+# 'e and e' is NOT in the alternation although it is in the same
+# population and its report moves too (it LOSES given-or-family and
+# gains conjunction-or-initial, both inside `_ambiguities`). At this
+# baseline `feat(#449) a lone name word reports given-or-family`
+# names it literally and admits the diff, so adding it here would
+# create an equal-`fields` contest that only file order decides --
+# the class `precedes_narrower` cannot express and _CROSS_RULE_WINNERS
+# has to pin. The name is radar tier, so nothing is hidden by leaving
+# it where it is; 2.3.0's copy of this rule does claim it, that
+# ledger carrying no #449 rule.
+name_regex = "^(?:JOSE E MARIA SANTOS|JOHN E SMITH|john e smith|john e jones|jones, john e|e j smith)$"
+fields = ["_ambiguities"]
+orders = ["DEFAULT"]

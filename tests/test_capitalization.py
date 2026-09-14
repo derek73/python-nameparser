@@ -218,16 +218,16 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # ignore the input's case entirely -- one name, one repaired
     # string, however it was written.
     #
-    # Measured over the 1094-name differential corpus (2026-08-29),
-    # because the promise is nearly true and the exceptions are the
-    # whole story. On THIS surface -- `HumanName.capitalize()` and
-    # `str()`, which is what the test below uses -- forcing repair
-    # differs from uppercasing the input and calling `capitalize()`
-    # for 62 of the 1094, and from lowercasing it for 16, so
-    # UPPERCASE IS THE WORSE DIRECTION, not the clean one. Nor are
-    # the misses merely parse-level: of the 62, only 25 move a role,
-    # and the other 37 parse byte-identically and differ inside the
-    # repair itself. Through the v2 core --
+    # Measured 2026-08-29, before the #383/#479 fork, on the
+    # 1094-name corpus, because the promise is nearly true and the
+    # exceptions are the whole story. On THIS surface --
+    # `HumanName.capitalize()` and `str()`, which is what the test
+    # below uses -- forcing repair differs from uppercasing the input
+    # and calling `capitalize()` for 62 of the 1094, and from
+    # lowercasing it for 16, so UPPERCASE IS THE WORSE DIRECTION, not
+    # the clean one. Nor are the misses merely parse-level: of the 62,
+    # only 25 move a role, and the other 37 parse byte-identically and
+    # differ inside the repair itself. Through the v2 core --
     # `parse(n).capitalized(force=True)`, rendering all seven roles
     # -- the counts are 63 and 38, which is what decisions.md#R5
     # states. The one name the facade cannot see is
@@ -235,19 +235,45 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # MAIDEN name: `str(HumanName)` renders the default spec, and
     # that spec omits the field. Recompute by running both forms over
     # the corpus files deduped and diffing, on whichever surface
-    # you name.
+    # you name. The #383/#479 fork removes the one-letter-conjunction
+    # mechanism behind the uppercase direction (below), and a
+    # re-measurement on this tree REVERSES the headline: the uppercase
+    # count collapses and the direction flips, uppercase now differing
+    # on fewer names than lowercase rather than more. The dated
+    # re-measurement and its recipe (with the actual counts) live
+    # under decisions.md#R5.
     #
-    # The mechanism is v1's initial carve-out, taken in the PARSE
-    # since #458 and read off the tag by the repair: a word of the
-    # conjunction vocabulary is not tagged one where it is written
-    # initial-shaped, and initial-shaped means one CAPITAL letter
-    # (nameparser/_pipeline/_classify.py, and the tests beside it --
-    # the repair no longer asks). Uppercase a name and
-    # every one-letter conjunction becomes an initial; lowercase one
-    # and a middle initial `E` becomes the Italian conjunction. So
-    # the property is pinned over names carrying no single-letter
-    # word whose class case decides, and the exception is pinned
-    # beside it as data rather than left to be rediscovered.
+    # THROUGH 2.3.0 the mechanism was v1's initial carve-out, taken in
+    # the PARSE since #458 and read off the tag by the repair: a word
+    # of the conjunction vocabulary was not tagged one where it was
+    # written initial-shaped, and initial-shaped meant one CAPITAL
+    # letter, full stop -- uppercase a name and every one-letter
+    # conjunction became an initial; lowercase one and a middle
+    # initial `E` became the Italian conjunction. `Velasquez y Garcia,
+    # Dr. Juan Q.` forced kept `y`; uppercased then repaired gave `Y`
+    # (decisions.md#R5).
+    #
+    # #383/#479 (rules.md#P3, decisions.md#P3) removed "one CAPITAL
+    # letter" as the whole test: a name written wholly in one case
+    # carries no case evidence, so the vocabulary decides instead of
+    # the shape. Only the letters `Lexicon.conjunctions_ambiguous`
+    # marks (just 'e' today) still read as an initial in a one-case
+    # name, upper or lower alike -- so a middle initial `E` lowercased
+    # into a one-case name stays an initial rather than becoming the
+    # connective. A plain conjunction like 'y' now joins in a one-case
+    # name the same way whichever case it is written in. This worked
+    # example
+    # has no bare `E`, so only the uppercase half is gone for IT --
+    # measured, `HumanName('VELASQUEZ Y GARCIA, DR. JUAN Q.').capitalize()`
+    # now agrees with the forced and lowercased forms, all three
+    # giving `Dr. Juan Q. Velasquez y Garcia`; the lowercase half is
+    # shown instead by `john e smith`
+    # (tests/v2/test_render.py::test_capitalized_one_case_connective_that_reads_as_an_initial).
+    # decisions.md#R5 carries the dated amendment for this. So the
+    # property is pinned over names
+    # carrying no single-letter word whose class case decides, and the
+    # `conjunctions_ambiguous` exception is pinned beside it as data
+    # rather than left to be rediscovered.
     def test_forcing_repair_ignores_the_case_it_was_given(self) -> None:
         for name in ('shirley maclaine', 'juan de la vega', 'anh van do',
                      'donovan mcnabb-smith', 'jane smith phd',
@@ -261,19 +287,41 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
             self.m(str(upper), str(forced), upper)
             self.m(str(lower), str(forced), lower)
 
-    # The recorded exception to the property above, and the reason it
-    # is scoped rather than universal. 1.4.0 does exactly this too
-    # (measured on the released wheel: 'JUAN Y GARCIA' capitalizes to
-    # 'Juan Y Garcia'), so it is inherited behavior and not a 2.x
-    # regression -- recorded here, deliberately not fixed here.
+    # This WAS the recorded exception to the property above through
+    # 2.3, and the reason it was scoped rather than universal. The
+    # #383/#479 fork (rules.md#P3, decisions.md#P3) reads a bare
+    # capital single-letter conjunction in a one-case name as the
+    # connective -- no case evidence says otherwise -- so
+    # 'JUAN Y GARCIA' and 'juan y garcia' now repair to the same
+    # string and the property above holds for them too. 1.4.0's
+    # 'Juan Y Garcia' (measured on the released wheel) is the parity
+    # break decisions.md#R5's 2026-09-13 amendment records; no ledger
+    # compares case repair, which is why this test is the pin.
+    #
+    # The name is kept for the blame trail even though it now
+    # overstates: what decides repair is the NAME's case class, not
+    # the conjunction letter's own case -- 'y' reads the same way
+    # whichever case it is itself written in, as long as the name
+    # around it is one-case.
     def test_a_one_letter_conjunction_is_case_sensitive_to_repair(self) -> None:
         lowered = HumanName('juan y garcia')
         lowered.capitalize(force=True)
         self.m(str(lowered), 'Juan y Garcia', lowered)
         uppered = HumanName('JUAN Y GARCIA')
         uppered.capitalize()
-        # 'Y' is initial-shaped, so the conjunction rule declines it
-        self.m(str(uppered), 'Juan Y Garcia', uppered)
+        # #383/#479 fork, no longer inherited 1.4.0 behavior: 'JUAN Y
+        # GARCIA' is written wholly in one case, so its bare capital
+        # 'Y' carries no case evidence -- 'y' is not in
+        # conjunctions_ambiguous, so it reads as the connective rather
+        # than as an initial, and R4's carve-out lowercases it exactly
+        # as it lowercases the all-lower spelling above (decisions.md#P3)
+        self.m(str(uppered), 'Juan y Garcia', uppered)
+        # mixed-case control: here the capital IS evidence, so 'Y'
+        # reads as an initial exactly as it always has and repair
+        # declines to touch it
+        mixed = HumanName('Juan Y Garcia')
+        mixed.capitalize()
+        self.m(str(mixed), 'Juan Y Garcia', mixed)
 
     # The v1 parity this rests on, at the surface v1 users have. An
     # ASSIGNED field is spliced in as raw text and never classified, so

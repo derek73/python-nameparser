@@ -438,7 +438,7 @@ def post_rules(state: ParseState) -> ParseState:
     # no corpus name and is not this change's to make
     # (decisions.md#M4).
     # rules.md#M4: "a word the vocabulary has claimed as a given name
-    # keeps that reading, and so does a word written as an initial"
+    # keeps that reading, and so does a word read as an initial"
     # -- read off the tags classify already recorded rather than a
     # predicate of this rule's own, because this rule changes what
     # POSITION decided and must not reach what a word IS

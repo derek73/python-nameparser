@@ -355,7 +355,9 @@ _SPAN_BEARING_RULES: dict[str, frozenset[str]] = {
     }),
     "expected_since_2.1.0.toml": frozenset(),   # 2.2 cycle: no span-bearing rule
     "expected_since_2.2.0.toml": frozenset(),   # 2.3 cycle: no span-bearing rule
-    "expected_since_2.3.0.toml": frozenset(),   # open cycle, no rules yet
+    # The open cycle's rules (#383/#479, 2026-09-13) are literal
+    # names or alternations of names, and copy no script range.
+    "expected_since_2.3.0.toml": frozenset(),
 }
 
 #: The leading `fix(...)`/`feat(...)` tag of a rule's `issue`, which is
@@ -879,12 +881,31 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # rather than be absorbed as per-word grouping. That is what the
     # case-sensitivity buys, and it is why this roster keeps probing
     # for it after the bug is gone.
+    #
+    # Re-read 2026-09-13 against #383/#479 and left exactly as it is.
+    # The case-sensitivity argument is about the #462 shapes, which
+    # are MIXED case, and this change touched only one-case names. The
+    # sentence above still holds literally for both uppercase probes:
+    # measured at 1.4.0 that day, neither 'JOSE E MARIA SANTOS' nor
+    # 'Jose E Maria Santos' diffs at all, the facade's initials being
+    # what this baseline compares and #383/#479 moving only the core's.
     "a connective run initials": ("Jose E Maria Santos",
                                   "JOSE E MARIA SANTOS",
                                   "Scott E. Werner", "Amy E Maid"),
     # fix(#462)'s boundary: lowercase bare e/y is the connective;
     # 'E.T.' is a run of initials the rule has no view on; a bare I
     # is not conjunction vocabulary at all.
+    #
+    # 2026-09-13: 'john e smith' stopped being a name that does not
+    # diff. #383/#479 makes it report conjunction-or-initial at every
+    # 2.x baseline and moves the CORE's initials as well, so this
+    # probe now guards a LIVE diff rather than a dormant shape -- and
+    # that is a stronger reason to keep it, not a reason to re-read
+    # it as stale. If this rule ever lost its lowercase exclusion the
+    # regex would reach the name, and the only thing left refusing the
+    # claim would be the field narrowing (`_initials` against a
+    # measured `_ambiguities`), which is a thinner wall than the
+    # regex and would vanish the moment the report stopped moving.
     "fix(#462)": ("john e smith", "maria y lopez", "E.T. Smith",
                   "Maier, Amy I, Jr."),
     # #436/#437's rules are literal-anchored, so _CORPUS_CLAIMS'
@@ -1029,6 +1050,57 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # abbreviation the initialless-script veto never touches.
     "fix(#322/#323)": ("김민준 씨.", "田中さん 様.", "김민준, 씨.",
                        "Smith. John"),
+    # #383/#479's three rules are literal-anchored alternations, so
+    # _CORPUS_CLAIMS cannot see a widening that reaches only names the
+    # corpora lack -- these probes are the wall, and they are keyed by
+    # the FULL issue string because "fix(#383/#479)" matches three
+    # rules and each one's boundary is another's claim.
+    #
+    # Almost every probe is a MIXED-CASE spelling of a name the rule
+    # does claim. Mixed case is where the writing itself decides the
+    # letter (rules.md#P3), nothing moved there at all, and a rule that
+    # ever reached one would be absorbing a regression in the half of
+    # P3 this change did not touch. The rest are one-case names in the
+    # same population whose ROLES this change leaves alone -- 'JUAN
+    # Y GARCIA' keeps given, middle and family while its tag and its
+    # initials both move, which is why it probes the role rule.
+    "fix(#383/#479) a single-letter connective joins only on case evidence":
+        ("Jose e Maria Santos", "Jose E Maria Santos",
+         "Juan Garcia y Lopez", "Juan Garcia Y Lopez", "John e Smith",
+         "juan garcia y lopez", "JUAN Y GARCIA",
+         # a title counts toward the case class the same as any other
+         # of the name's own words (unlike a clause) -- "Dr." beside
+         # an all-upper name makes the whole name mixed case, so 'Y'
+         # is evidence-backed and stays an initial; the literal rule
+         # must never claim this
+         "Dr. JUAN GARCIA Y LOPEZ"),
+    # 'john e jones, III' is the probe worth understanding: the
+    # trailing uppercase III makes the whole name mixed-case, so it
+    # keeps today's reading and no rule of this change may ever claim
+    # it. 'johnny y' and 'der, y van' are one-case names carrying an
+    # unmarked letter, which reports nothing. 'e and e' is NOT a probe:
+    # this rule claims it at 2.3.0 and leaves it to feat(#449) at the
+    # three older baselines.
+    "fix(#383/#479) a marked connective letter in a one-case name is reported":
+        ("John e Smith", "John E Smith", "john e. smith",
+         "john e jones, III", "johnny y", "der, y van"),
+    # The view-only rule's boundary: the mixed-case spelling where the
+    # capital Y is an initial and stays one, the all-lower spelling
+    # that already read this way, and the sibling name whose ROLES move
+    # (the first rule above claims that one).
+    "fix(#383/#479) a bare capital connective in an all-upper name stops initialing":
+        ("Juan Y Garcia", "juan y garcia", "JUAN GARCIA Y LOPEZ",
+         "juan q. xavier velasquez y garcia iii"),
+    # The third feat(#269) rule, and the only one keyed on a derived
+    # view. Its boundary is the other two: the prefix chain and the
+    # Cyrillic pair are #269 recognitions as well, and both move ROLES,
+    # so an alternation that grew to reach them would be taking names
+    # off the rules that describe what actually happened to them.
+    "feat(#269) a recognized non-Latin connective contributes no initial":
+        ("محمد بن سلمان",
+         "ХОСЕ И МАРИЯ САНТОС",
+         "хосе и мария сантос",
+         "محمد و علي السيد"),
 }
 
 
@@ -1968,6 +2040,25 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # whole rule claims, with a digest, so a widened regex fails on
     # the count or the digest, and _MUST_NOT_MATCH names the readings
     # the bundle deliberately left alone.
+    #
+    # #383/#479's movers, one corpus name per alternative -- lists of
+    # names, not copies of CONJUNCTIONS. The rule's subject is a SHAPE
+    # the vocabulary participates in twice over: the name must be
+    # written wholly in one case, and the letter must be (or not be) a
+    # `conjunctions_ambiguous` member. A member drawn from either
+    # wordlist would reach every corpus name carrying a connective at
+    # all -- 'Juan y Eva Garcia', 'juan garcia y lopez', 'Rob And Beth
+    # Edmunds' -- and seventeen names are one-case with a cased
+    # single-letter connective while only ten of them move. Three sets
+    # because the ledgers group the movers differently: the role pair
+    # is the same in all five, and the report rule claims 'e and e' at
+    # 2.3.0 alone, feat(#449) having it at the three older baselines.
+    frozenset({"jose e maria santos", "JUAN GARCIA Y LOPEZ"}),
+    frozenset({"JOSE E MARIA SANTOS", "JOHN E SMITH", "john e smith",
+               "john e jones", "jones, john e", "e j smith"}),
+    frozenset({"JOSE E MARIA SANTOS", "JOHN E SMITH", "john e smith",
+               "john e jones", "jones, john e", "e j smith",
+               "e and e"}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -2535,8 +2626,19 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(40, ('family', 'given', 'suffix'), "4d7bacfc28a4", None),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745", None),
+        # 4 -> 6 on 2026-09-13: 'ХОСЕ И МАРИЯ САНТОС' and 'хосе и
+        # мария сантос' entered corpus_shapes.jsonl with #383/#479's
+        # case rows, as the one-case control for a script whose
+        # connective the vocabulary has decided since 2.0. Both move
+        # ROLES against this baseline, which read 'И' as a middle
+        # word, so the pair is this rule's rather than #383/#479's --
+        # the fork RUNS on them (one-case, and 'И'/'и' is a cased
+        # single letter) and takes the non-member branch, so the tag
+        # is the one the old path produced and no report is emitted,
+        # and nothing about their reading moved in 2.4. Reach and
+        # explanation both, unusually: the run classifies six here.
         "feat(#269) non-Latin titles/conjunctions recognized":
-            _Claim(4, ('given', 'middle', 'title'), "e86eeb13eeb2", None),
+            _Claim(6, ('given', 'middle', 'title'), "20cde5535c9a", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
@@ -2639,12 +2741,28 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
+        # #269's derived-view rule, added 2026-09-13. One corpus name,
+        # `_initials` alone: 'محمد و علي' entered the corpora with
+        # #383/#479's case rows and brought a 2.0-era view change with
+        # it -- a recognized connective contributes no initial -- which
+        # nothing had classified because no corpus name had exercised
+        # it. Literal and caseless, so a second name here means the
+        # alternation grew.
+        "feat(#269) a recognized non-Latin connective contributes no initial":
+            _Claim(1, ('_initials',), "770ce7374f32", ('DEFAULT',)),
         # 96 -> 97 on 2026-09-08: 'Prince of Wales Jr' joined the
         # rules corpus with the 2.3 title-run bundle -- a parity
         # row, kept as the boundary the peel floor declines -- and
         # `of` is a connective. Reach, not explanation.
+        # 97 -> 101 on 2026-09-13: 'john e smith', 'jose e maria
+        # santos', 'John e Smith' and 'juan y garcia' arrived with
+        # #383/#479's case rows and rules.md#P3 examples, each
+        # carrying a lowercase connective this regex reaches. Reach,
+        # not explanation again: the facade's view does not move for
+        # any of them at this baseline, which is why #383/#479 has no
+        # `_initials` rule here at all.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(97, ('_initials',), "6af5338ad4d5", ('DEFAULT',)),
+            _Claim(101, ('_initials',), "e91031622dca", ('DEFAULT',)),
         "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
             _Claim(41, ('_initials',), "e99f56c955d5", ('DEFAULT',)),
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
@@ -2708,6 +2826,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
             _Claim(11, ('family', 'given', 'middle', 'suffix', 'title'),
                    "671c6c89cf61", None),
+        # #383/#479's role rule, last in this ledger as in the file.
+        # TWO corpus names, `family`, `given` and `middle` together --
+        # and the two names move DISJOINT pairs of those three, which
+        # is why the declaration is their union and why a widening
+        # taking a fourth role would change this row before it reached
+        # the gate. The regex is a literal alternation of the two, so
+        # a THIRD name appearing here means the alternation grew:
+        # seventeen corpus names sit in the class it describes and
+        # fifteen of them do not move a role.
+        "fix(#383/#479) a single-letter connective joins only on case evidence":
+            _Claim(2, ('family', 'given', 'middle'), "ec00806a06f0",
+                   ('DEFAULT',)),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -2945,8 +3075,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # re-roles the whole run into the FAMILY group, and it moves.
         # The digest is the same in all three 2.x ledgers because the
         # regex is the same string in each.
+        # 18 -> 22 on 2026-09-13: four #383/#479 names entered the
+        # corpora carrying a bare capital E or Y this regex reaches.
+        # expected_since_2.0.0.toml's copy of this rule says which
+        # four, and why only one of them diffs.
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
-            _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
+            _Claim(22, ('_initials',), "7386690d2928", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
         # ledger, and the same reach at all four: the 1.4.0 roster
         # above carries the argument.
@@ -2983,6 +3117,24 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
             _Claim(11, ('_ambiguities', 'family', 'given', 'middle',
                         'suffix', 'title'), "671c6c89cf61", None),
+        # #383/#479's two rules, last in this ledger as in the file.
+        # The role rule reaches TWO corpus names and declares four
+        # fields, which is the union of two disjoint diffs plus the
+        # report ONE of them carries -- 'jose e maria santos' moves
+        # `given` and `middle` and reports, 'JUAN GARCIA Y LOPEZ'
+        # moves `middle` and `family` and reports nothing. Its digest
+        # is the 1.4.0 rule's, the same literal alternation over the
+        # same corpora; its roles are not, the report being a v2
+        # surface. The report rule reaches SIX, `_ambiguities` alone:
+        # every role is identical on all six and only the CALL is new.
+        # Both regexes are literal alternations, so a new name here
+        # means one of them grew -- seventeen corpus names sit in the
+        # class they describe and only ten of those move at all.
+        "fix(#383/#479) a single-letter connective joins only on case evidence":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'middle'),
+                   "ec00806a06f0", ('DEFAULT',)),
+        "fix(#383/#479) a marked connective letter in a one-case name is reported":
+            _Claim(6, ('_ambiguities',), "03de2830707e", ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -3072,8 +3224,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('suffix',), "6edfa4394c33", None),
         "fix(#436/#437) the glued honorific and the generational suffix are one post-nominal run":
             _Claim(1, ('suffix',), "1b67339cf744", None),
+        # 18 -> 22 on 2026-09-13: four #383/#479 names entered the
+        # corpora carrying a bare capital E or Y this regex reaches.
+        # expected_since_2.0.0.toml's copy of this rule says which
+        # four, and why only one of them diffs.
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
-            _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
+            _Claim(22, ('_initials',), "7386690d2928", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
         # ledger, and the same reach at all four: the 1.4.0 roster
         # above carries the argument.
@@ -3113,6 +3269,24 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
             _Claim(17, ('_ambiguities', 'family', 'given', 'middle',
                         'suffix', 'title'), "ef4a7afe791a", None),
+        # #383/#479's two rules, last in this ledger as in the file.
+        # The role rule reaches TWO corpus names and declares four
+        # fields, which is the union of two disjoint diffs plus the
+        # report ONE of them carries -- 'jose e maria santos' moves
+        # `given` and `middle` and reports, 'JUAN GARCIA Y LOPEZ'
+        # moves `middle` and `family` and reports nothing. Its digest
+        # is the 1.4.0 rule's, the same literal alternation over the
+        # same corpora; its roles are not, the report being a v2
+        # surface. The report rule reaches SIX, `_ambiguities` alone:
+        # every role is identical on all six and only the CALL is new.
+        # Both regexes are literal alternations, so a new name here
+        # means one of them grew -- seventeen corpus names sit in the
+        # class they describe and only ten of those move at all.
+        "fix(#383/#479) a single-letter connective joins only on case evidence":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'middle'),
+                   "ec00806a06f0", ('DEFAULT',)),
+        "fix(#383/#479) a marked connective letter in a one-case name is reported":
+            _Claim(6, ('_ambiguities',), "03de2830707e", ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3330,8 +3504,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # fix(#462), reach and digest as in the 2.0.0 mapping: the same
         # regex over the same corpora, and the facade bug it fixes is
         # in every 2.x wheel, so the baseline makes no difference.
+        # 18 -> 22 on 2026-09-13: four #383/#479 names entered the
+        # corpora carrying a bare capital E or Y this regex reaches.
+        # expected_since_2.0.0.toml's copy of this rule says which
+        # four, and why only one of them diffs.
         "fix(#462) the facade keeps an initial-shaped conjunction letter":
-            _Claim(18, ('_initials',), "3dd0e0276be6", ('DEFAULT',)),
+            _Claim(22, ('_initials',), "7386690d2928", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
         # ledger, and the same reach at all four: the 1.4.0 roster
         # above carries the argument.
@@ -3365,8 +3543,49 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token":
             _Claim(17, ('_ambiguities', 'family', 'given', 'middle',
                         'suffix', 'title'), "ef4a7afe791a", None),
+        # #383/#479's two rules, last in this ledger as in the file.
+        # The role rule reaches TWO corpus names and declares four
+        # fields, which is the union of two disjoint diffs plus the
+        # report ONE of them carries -- 'jose e maria santos' moves
+        # `given` and `middle` and reports, 'JUAN GARCIA Y LOPEZ'
+        # moves `middle` and `family` and reports nothing. Its digest
+        # is the 1.4.0 rule's, the same literal alternation over the
+        # same corpora; its roles are not, the report being a v2
+        # surface. The report rule reaches SIX, `_ambiguities` alone:
+        # every role is identical on all six and only the CALL is new.
+        # Both regexes are literal alternations, so a new name here
+        # means one of them grew -- seventeen corpus names sit in the
+        # class they describe and only ten of those move at all.
+        "fix(#383/#479) a single-letter connective joins only on case evidence":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'middle'),
+                   "ec00806a06f0", ('DEFAULT',)),
+        "fix(#383/#479) a marked connective letter in a one-case name is reported":
+            _Claim(6, ('_ambiguities',), "03de2830707e", ('DEFAULT',)),
     },
-    "expected_since_2.3.0.toml": {},   # open cycle, no rules yet
+    "expected_since_2.3.0.toml": {
+        # #383/#479's three rules, the first this ledger carries. The
+        # role rule is the 2.x shape of the 1.4.0 rule of the same
+        # name -- two corpus names, the union of two disjoint role
+        # diffs plus the report one of them carries -- and its digest
+        # is that rule's, the same literal alternation over the same
+        # corpora. The report rule reaches SEVEN here where it reaches
+        # six at the older baselines: 'e and e' is in the alternation
+        # only in this ledger, feat(#449) claiming it at 2.0.0-2.2.0,
+        # so the count and the digest both differ by that one name.
+        # The view rule reaches ONE and exists only here, fix(#462)
+        # explaining the same name's `_initials` move at the three
+        # older baselines where the facade moves too. All three are
+        # literal alternations, so a new name in any of them means the
+        # alternation grew; seventeen corpus names sit in the class
+        # they describe and ten of those move.
+        "fix(#383/#479) a single-letter connective joins only on case evidence":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'middle'),
+                   "ec00806a06f0", ('DEFAULT',)),
+        "fix(#383/#479) a marked connective letter in a one-case name is reported":
+            _Claim(7, ('_ambiguities',), "2eb6eff33836", ('DEFAULT',)),
+        "fix(#383/#479) a bare capital connective in an all-upper name stops initialing":
+            _Claim(1, ('_initials',), "7ff29af96914", ('DEFAULT',)),
+    },
 }
 
 
@@ -3468,7 +3687,10 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: of each fact, since two means one of them goes quietly stale.
 _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     "expected_since_2.2.0.toml": {},
-    # open cycle: no rules, so no contest
+    # The open cycle carries #383/#479's three rules since
+    # 2026-09-13 and still no contest: literal names or alternations
+    # of names, reaching no corpus name in common, so no diff is
+    # claimed twice.
     "expected_since_2.3.0.toml": {},
     "expected_since_1.4.0.toml": {
         # Spelled out since #508: the bare `fix(comma-family)` this row
@@ -4979,7 +5201,10 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
     ],
     "expected_since_2.1.0.toml": [],
     "expected_since_2.2.0.toml": [],
-    "expected_since_2.3.0.toml": [],   # open cycle, no rules yet
+    # The open cycle's three rules (#383/#479, 2026-09-13) nest with
+    # nothing: no two of them share a corpus name, so no pair is a
+    # contest at all, let alone a wide-first one.
+    "expected_since_2.3.0.toml": [],
 }
 
 

@@ -24,8 +24,8 @@ from typing import cast
 _VOCAB_FIELDS = (
     "titles", "given_name_titles", "suffix_acronyms", "suffix_words",
     "suffix_acronyms_ambiguous", "particles", "particles_ambiguous",
-    "conjunctions", "bound_given_names", "maiden_markers", "surnames",
-    "honorific_tails",
+    "conjunctions", "conjunctions_ambiguous", "bound_given_names",
+    "maiden_markers", "surnames", "honorific_tails",
 )
 
 #: (marker, base, why) triples. Each marker QUALIFIES how entries of
@@ -63,9 +63,13 @@ _VOCAB_FIELDS = (
 #:   SHIPPED vocabulary to the invariant, as it is the only thing that
 #:   ever held a caller's own.
 #:
-#: given_name_titles is deliberately NOT here and has no check of its
-#: own -- see the note in __post_init__ for why every attempt at one
-#: rejected working configurations.
+#: Two fields are deliberately NOT here and have no check of their own.
+#: given_name_titles -- see the note in __post_init__ for why every
+#: attempt at one rejected working configurations. conjunctions_ambiguous
+#: -- an orphan is never consulted because both the classify fork and
+#: its ambiguity emitter require the base entry as well, so an orphan
+#: decides nothing, and AGENTS.md's invariants rule guards harm, not
+#: no-ops.
 _SUBSET_FIELDS = (
     ("particles_ambiguous", "particles",
      "an orphan emits a spurious particle-or-given ambiguity"),
@@ -509,6 +513,20 @@ class Lexicon:
     #: ("and", "&", "y", "и", ...). Full default list:
     #: :data:`~nameparser.config.conjunctions.CONJUNCTIONS`.
     conjunctions: frozenset[str] = frozenset()
+    #: Subset of conjunctions that read as an INITIAL rather than a
+    #: connective in a name written wholly in one case ("e": "jose e
+    #: maria santos" reads middle "e maria", where "juan garcia y
+    #: lopez" joins because "y" is not a member). Mixed-case input is
+    #: decided by the writing instead and never consults this set, and
+    #: neither does a caseless letter (Arabic و), which has no case to
+    #: read. A member additionally reports
+    #: :attr:`~nameparser.AmbiguityKind.CONJUNCTION_OR_INITIAL`; a
+    #: non-member reports nothing, its reading not being in doubt.
+    #: Full default list:
+    #: :data:`~nameparser.config.conjunctions.CONJUNCTIONS_AMBIGUOUS`.
+    #: Entries need not also be in ``conjunctions``; one that is not is
+    #: simply never consulted, so it is inert rather than an error.
+    conjunctions_ambiguous: frozenset[str] = frozenset()
     #: Given-name prefixes that bind to the following word to form one
     #: given name ("abdul" -> "Abdul Salam"); never standalone names.
     #: Full default list:
@@ -786,7 +804,8 @@ def _default_lexicon() -> Lexicon:
     # v1 data modules are the single source of vocabulary through 2.x.
     from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
     from nameparser.config.capitalization import CAPITALIZATION_EXCEPTIONS
-    from nameparser.config.conjunctions import CONJUNCTIONS
+    from nameparser.config.conjunctions import (
+        CONJUNCTIONS, CONJUNCTIONS_AMBIGUOUS)
     from nameparser.config.maiden_markers import MAIDEN_MARKERS
     from nameparser.config.particles import NON_GIVEN_NAME_PARTICLES, PARTICLES
     from nameparser.config.suffixes import (
@@ -817,6 +836,7 @@ def _default_lexicon() -> Lexicon:
         # may-be-given subset (migration: complement translation).
         particles_ambiguous=PARTICLES - NON_GIVEN_NAME_PARTICLES,
         conjunctions=CONJUNCTIONS,
+        conjunctions_ambiguous=CONJUNCTIONS_AMBIGUOUS,
         bound_given_names=BOUND_GIVEN_NAMES,
         maiden_markers=MAIDEN_MARKERS,
         surnames=KOREAN_SURNAMES,

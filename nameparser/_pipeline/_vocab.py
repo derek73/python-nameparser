@@ -144,6 +144,39 @@ def is_initial(text: str) -> bool:
     return is_initial_shaped(text) and not in_initialless_script(text)
 
 
+def is_one_case(texts: Sequence[str]) -> bool:
+    """Whether a name is written wholly in ONE case -- all upper or all
+    lower alike -- and so carries no case EVIDENCE about any letter in
+    it (rules.md#P3, #383/#479). The caller passes the name's OWN
+    words: a maiden marker's clause and any delimited (nickname)
+    content are not among them, and appending one must not flip the
+    reading of words that did not change.
+
+    Mirrors the SHAPE of the comparison the R5 gate in
+    `_render.capitalized` makes, not its SPAN: R5 joins every token,
+    nickname and maiden content included, while classify's caller hands
+    in only the name's own words (rules.md#P3's own-words doctrine, see
+    above) -- so a clause-bearing name can be one-case to this function
+    and mixed to R5 (measured: `'JUAN GARCIA Y LOPEZ née Jones'` is one
+    case here, mixed there). Not shared by import today -- render is a
+    layer this module does not reach into, and #492 is where the two
+    spans are reconciled if they ever need to be.
+
+    `Sequence`, not `Iterable`: the caller passes a list it already
+    built rather than a fresh generator, so `is_one_case` costs one
+    profiler frame per parse rather than one per token (#475).
+
+    A CASELESS script answers True, harmlessly: `'محمد و علي'.upper()`
+    is the string itself, so the comparison holds, and the only caller
+    also requires a token whose own `upper()` and `lower()` differ --
+    which a caseless letter's never do. So a caseless name never
+    reaches the decision this gates, and "one case" is the honest
+    verdict for text that has only one.
+    """
+    joined = " ".join(texts)
+    return joined in (joined.upper(), joined.lower())
+
+
 _DOTTED = re.compile(r"(?:[^\W\d_]\.)+")
 
 

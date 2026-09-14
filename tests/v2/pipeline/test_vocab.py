@@ -4,9 +4,9 @@ import pytest
 
 from nameparser._lexicon import Lexicon, _normalize, _title_key
 from nameparser._pipeline._vocab import (
-    effective_script, is_initial, is_initial_shaped, is_suffix_lenient,
-    is_suffix_strict, is_wholly_suffix, maiden_marker_run,
-    resolve_script_set, single_script,
+    effective_script, is_initial, is_initial_shaped, is_one_case,
+    is_suffix_lenient, is_suffix_strict, is_wholly_suffix,
+    maiden_marker_run, resolve_script_set, single_script,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
                                 _SCRIPT_RANGES)
@@ -510,3 +510,22 @@ def test_script_ranges_are_pairwise_disjoint() -> None:
             assert hi < other_lo or other_hi < lo, (
                 f"{script} range ({lo:#x}, {hi:#x}) overlaps {other} "
                 f"range ({other_lo:#x}, {other_hi:#x})")
+
+
+def test_is_one_case() -> None:
+    assert is_one_case(["jose", "e", "maria", "santos"])
+    assert is_one_case(["JOSE", "E", "MARIA", "SANTOS"])
+    assert not is_one_case(["Jose", "e", "Maria", "Santos"])
+    assert not is_one_case(["john", "e", "jones", "III"])
+    # a caseless script is "one case" harmlessly: the fork that reads
+    # this ALSO requires a cased token, so a caseless letter never
+    # enters it (rules.md#P3, decisions.md#P3)
+    assert is_one_case(["محمد", "و", "علي"])
+    assert is_one_case(["山田", "太郎"])
+    # the empty and single-token edges
+    assert is_one_case([])
+    assert is_one_case(["e"])
+    # the comparison is over the SPACE-JOINED text, R5's own gate, so a
+    # token that is caseless does not break a Latin name's verdict
+    assert is_one_case(["john", "e", "山田"])
+    assert not is_one_case(["John", "e", "山田"])

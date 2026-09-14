@@ -28,6 +28,9 @@ def test_default_sources_v1_vocabulary() -> None:
     # flipped model: 'dos' is never-given in v1, so NOT ambiguous here
     assert "dos" in lex.particles and "dos" not in lex.particles_ambiguous
     assert "van" in lex.particles_ambiguous
+    # the policy is 'e' and not 'y' (decisions.md#P3): a bare E initial is
+    # common, where 'y' between two surnames is the commonest Hispanic compound
+    assert "e" in lex.conjunctions_ambiguous and "y" not in lex.conjunctions_ambiguous
     # v1's CAPITALIZATION_EXCEPTIONS maps 'phd' -> 'Ph.D.' (verbatim, not
     # normalized -- only keys are lowercased/period-stripped at
     # construction, values pass through unchanged).
@@ -421,6 +424,16 @@ def test_removing_a_title_leaves_its_given_name_marker_alone() -> None:
     assert lean.given_name_titles == frozenset({"sheikh"})
 
 
+def test_removing_a_conjunction_leaves_its_ambiguous_marker_alone() -> None:
+    # conjunctions_ambiguous is the same shape as given_name_titles: not
+    # in _SUBSET_FIELDS, so an orphan is inert rather than rejected --
+    # the marker is never consulted once its base entry is gone
+    # (decisions.md#P3).
+    lean = Lexicon.default().remove(conjunctions={"e"})
+    assert "e" not in lean.conjunctions
+    assert "e" in lean.conjunctions_ambiguous
+
+
 @pytest.mark.parametrize("word", [
     "dr.", " Dr. ", ". a .", ".  .", "..x..", "  .b.  ",
     # the three non-ASCII full stops (#322), alone and mixed with
@@ -501,7 +514,7 @@ def test_every_shipped_entry_is_already_nfc() -> None:
     # authored. A data module written in NFD would fail here.
     #
     # The roster is _VOCAB_FIELDS, which is the roster __post_init__
-    # and __setstate__ normalize -- so a thirteenth vocabulary field
+    # and __setstate__ normalize -- so a fourteenth vocabulary field
     # has to join it for add/remove to work at all, and joining it
     # gets the field checked here for free (#322/#323 review).
     lex = Lexicon.default()

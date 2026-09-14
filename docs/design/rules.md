@@ -474,20 +474,42 @@ P2. Rationale: a particle is written as part of the surname it
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
-    likely an initial than a connective.
+    likely an initial than a connective, and where a name is written
+    in more than one case, a bare Latin capital standing alone is how
+    an initial is marked and a bare lowercase letter is how it is
+    not.
     A recognized connective joins its neighbors into one name part,
     connective runs included — except a single-letter connective in
     a three-word name, which stays a name word, and a single-letter
-    connective written as a bare Latin capital, which reads as an
-    initial and never joins. The joined part is ONE name word
-    wherever another rule counts them, so a rule taking "one name
-    word" takes the whole join and never half of it. The three-word
-    count is of the name's own words: a maiden marker taken as one,
-    and the words it takes (M2), are not among them, so a maiden
-    clause does not change whether the connective joins. A marker
-    left as a word (M2) is a word, and counts.
+    connective that reads as an initial instead, which never joins.
+    A single-letter connective reads as an initial where the writing
+    says so: written as a bare Latin capital in a name that is not written
+    wholly in one case, or — in a name written wholly in one case,
+    where nothing says so — where the letter is one the vocabulary
+    marks as reading both ways.
+    A letter the vocabulary marks as reading both ways, read as an
+    initial in a name written wholly in one case, is a call that could
+    have gone the other way, and is reported.
+    The joined part is ONE name word wherever another rule counts
+    them, so a rule taking "one name word" takes the whole join and
+    never half of it.
+    Both questions this rule asks of a name — how many words it has,
+    and whether it is written in one case — are asked of the name's
+    OWN words: a maiden marker taken as one, and the words it takes
+    (M2), are not among them, and neither is a delimited clause (N1,
+    M1). So a clause beside the name changes neither whether the
+    connective joins nor how a letter in the name reads, and a letter
+    inside such a clause is the clause's word, read as it always was
+    and not by this rule. The two questions part at one point: a
+    marker the pass declines and leaves as a word (M2) is a word, and
+    counts toward the three — but its case is still not asked.
       "Juan y Eva Garcia"         →  given="Juan y Eva"
       "Jose E Maria Santos"       →  middle="E Maria"
+      "jose e maria santos"       →  middle="e maria"
+      "Jose e Maria Santos"       →  given="Jose e Maria"
+      "JUAN GARCIA Y LOPEZ"       →  family="GARCIA Y LOPEZ"
+      "juan garcia y lopez"       →  family="garcia y lopez"
+      "john e smith"              →  middle="e"
       "Juan y Garcia"             →  middle="y"  · boundary
       "Juan y Garcia née Jones"   →  middle="y"
       "Juan and Garcia"           →  given="Juan and Garcia"
@@ -498,19 +520,68 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     three-word carve-out counts letters, so a symbol connective joins
     at any length, and it reaches every single-letter connective the
     vocabulary holds — Cyrillic и/і/й and Arabic و as well as y and
-    e. Which single letters a tradition actually wants joined differs
-    by language, and no locale gets its own answer today.
-    Accepted: the initial veto is a LATIN shape — a Cyrillic
-    capital joins ("И".isupper() is true, so this is not a
-    Unicode-uppercase rule); #267's closure blessed the Cyrillic
-    side, and whether the Latin-capital half should stand is #383.
+    e. The initial reading counts letters too, and asks one more
+    question of them: a letter with no case at all (و) can be written
+    against nothing, so it never reads as an initial. A Cyrillic
+    capital has case but is not the shape an initial is written in —
+    Cyrillic abbreviates with a dotted letter — so in a name of more
+    than one case it joins, the reading #267 blessed, and in a name
+    of one case it takes the vocabulary's answer like any other cased
+    letter.
+    Which single letters a tradition actually wants joined differs by
+    language, and the marked set is where that answer lives: "y" is
+    the commonest Hispanic compound and stays out of it, "e" is a
+    common bare initial and is the one entry shipped. A caller with
+    Portuguese data removes it; a caller with Dutch data adds "y".
+    The initial reading is visible beyond the fields, on the two
+    derived views: parse("john e smith").initials() gives "j. e. s."
+    and .capitalized() gives "John E Smith", where the connective
+    reading gave "j. s." and "John e Smith" — a connective
+    contributing no initial (R3) and keeping its lowercase (R4),
+    where an initial does neither. The v1 facade's initials() still
+    reads the letter by vocabulary and written shape rather than by
+    the parse's reading, so HumanName("john e smith").initials()
+    stays "j. s." for now; decisions.md#P3 records the split.
+    Accepted: two 1.4.0 parity breaks, one in each direction. A bare
+    capital in a name written wholly in upper case no longer reads as
+    an initial, so "JUAN GARCIA Y LOPEZ" joins where 1.4.0 and
+    2.0–2.3 read middle "GARCIA Y"; and a marked lowercase letter in
+    a name written wholly in lower case no longer joins, so "jose e
+    maria santos" reads middle "e maria" where they read given "jose
+    e maria". That is #383 answered with "bless" for the mixed-case
+    half — a bare Latin capital among mixed case still reads as an
+    initial, the shape the veto always tested, which is why #267's
+    Cyrillic reading is untouched — and answered with evidence for
+    the one-case half, where the vocabulary decides.
+    A maiden marker's run and every word after it are outside the
+    name's own words from the moment classify tags the marker, and
+    they stay outside whether or not the marker pass later declines
+    the marker and leaves it a word (M2). A declined marker therefore
+    does two things at once. It still does not count toward the case
+    class, which shows when it is the only differently-cased token,
+    so "JUAN Y GARCIA née" joins where "JUAN Y GARCIA née Jones"
+    keeps "Y" a name word. And it leaves any connective standing
+    after it to the mixed-case rule rather than to the one-case fork,
+    so a bare Latin capital there reads as an initial while its
+    lowercase spelling joins — the one shape in which the name's OWN
+    words read differently in its two one-case spellings. So "JUAN
+    NÉE JR Y LOPEZ" reads middle "NÉE JR Y" with its "Y" an initial,
+    while "juan née jr y lopez" reads family "jr y lopez" with its
+    own "y" joined. A clause's words are read as they always were,
+    and that is not an exception to this: such a letter still takes
+    a different tag in the two spellings, so its case repair can
+    differ between them, which is a repair difference and not a
+    reading of the name's own words.
+    Accepted rather than repaired: classify cannot know what group
+    will decline, and a clause's words are read by the clause's own
+    rules.
       "Хосе И Мария Сантос"       →  given="Хосе И Мария"
     H1 is the counting rule that shows the one-word clause today: a
     title plus the join reads the whole join as the family, where the
     same two words unjoined are two name words and H1 does not fire.
-    P1's leading run becomes the second once #395 lands — its run
-    must take the "Vega y Santos" join whole or stop before it.
-    history: decisions.md#P3 · interacts: H1, P1, M2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    P1's leading run is the second (#395, landed): its run takes
+    the "Vega y Santos" join whole or stops before it.
+    history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -1078,7 +1149,7 @@ M4. Rationale: a maiden name is a FORMER family name, and a former
     decided, so it cannot overrule what a word already IS
     (mechanisms.md#TWO-LAYER-ASSIGN). A word the vocabulary has
     claimed as a given name keeps that reading, and so does a word
-    written as an initial, which is nobody's family name. A name
+    read as an initial, which is nobody's family name. A name
     carrying a TITLE is H1's rather than this rule's, H1's
     given-name-title carve-out included, which keeps the word a
     given name. A nickname holds nothing off: where N3 has already
@@ -1666,10 +1737,13 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     line because every line here names an input string, and this
     shape needs a field edited after the parse.
     Accepted: the unsettled given-group answer above is neither rare
-    nor hypothetical — 25 of the corpus names carry a conjunction
-    among the given names, every one of them reachable from the
-    default vocabulary, and it has initialed since 1.4.0. It carries
-    no marked deviation, for the reason that mechanism exists: a
+    nor hypothetical — 26 of the corpus names carry a conjunction
+    among the given names (measured 2026-09-13; recompute by parsing
+    the deduped corpus*.jsonl glob and keeping every name with a
+    GIVEN-role token tagged "conjunction"), every one of them
+    reachable from the default vocabulary, and it has initialed since
+    1.4.0. It carries no marked deviation, for the reason that
+    mechanism exists: a
     marker states the INTENDED value, and one name, "John and Jane
     Smith", has four candidates. Today gives "J. a. J. S."; the
     carve-out read as written gives "J. J. S."; P3's one-name-word

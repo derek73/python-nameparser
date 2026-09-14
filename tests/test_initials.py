@@ -262,7 +262,10 @@ class InitialsTestCase(HumanNameTestBase):
 
     def test_initials_still_drop_a_lowercase_conjunction(self) -> None:
         # the boundary #462 leaves alone: a bare lowercase e/y IS the
-        # connective, and 1.4.0 and 2.x agree
+        # connective, and 1.4.0 and 2.x agree -- true of this facade
+        # surface only since #383/#479: the core's parse().initials()
+        # now reads a one-case 'e' as an initial instead
+        # (tests/v2/test_render.py::test_facade_initials_do_not_yet_follow_the_one_case_fork)
         hn = HumanName("john e smith")
         self.m(hn.initials(), "j. s.", hn)
         hn = HumanName("maria y lopez")

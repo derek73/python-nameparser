@@ -99,15 +99,20 @@ Removing works the same way, and drops the word from recognition:
 
 A few fields mark a subset of another — ``given_name_titles`` over
 ``titles``, ``particles_ambiguous`` over ``particles``,
-``suffix_acronyms_ambiguous`` over ``suffix_acronyms``, and
+``suffix_acronyms_ambiguous`` over ``suffix_acronyms``,
+``conjunctions_ambiguous`` over ``conjunctions``, and
 ``honorific_tails`` over ``suffix_words``. Entries belong in the base
-field too, so add to both and remove from the marker first. The last
-three enforce that: anything else raises ``ValueError`` naming the
-orphans rather than leaving a marker entry that no rule will ever
-consult. ``given_name_titles`` is deliberately unchecked — a title run
-is matched as one space-joined string, or by that run's last word, so a
-legitimate entry like ``"sir and dame"`` is no single word in
-``titles`` — and an orphan there is inert rather than harmful.
+field too, so add to both and remove from the marker first. Three of
+them enforce that — ``particles_ambiguous``, ``suffix_acronyms_ambiguous``
+and ``honorific_tails`` raise ``ValueError`` naming the orphans, because
+an orphan in each of those does real harm rather than nothing. The
+other two are deliberately unchecked because an orphan there is inert:
+``given_name_titles`` matches a title run as one space-joined string, or
+by that run's last word, so a legitimate entry like ``"sir and dame"``
+is no single word in ``titles``; and a ``conjunctions_ambiguous`` entry
+is only ever read for a word that is a conjunction, so
+``remove(conjunctions={"e"})`` simply works and the stale marker entry
+is never consulted.
 
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,11 +192,13 @@ each way a source might punctuate it.
 Words that are also ordinary names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Two fields — ``suffix_acronyms_ambiguous`` and ``particles_ambiguous``
-— mark entries from ``suffix_acronyms`` and ``particles`` that are also
-plausible as ordinary name words on their own (an acronym suffix that
-doubles as a nickname, a particle that doubles as a given name). They
-don't add new vocabulary by themselves; they narrow how an existing
+Three fields — ``suffix_acronyms_ambiguous``, ``particles_ambiguous``
+and ``conjunctions_ambiguous`` — mark entries from ``suffix_acronyms``,
+``particles`` and ``conjunctions`` that are also plausible as ordinary
+name words on their own (an acronym suffix that doubles as a nickname,
+a particle that doubles as a given name, a connective letter that
+doubles as an initial). They don't add new vocabulary by themselves;
+they narrow how an existing
 entry is read when it appears alone. If you're not sure whether a word
 you're adding is one of these ambiguous cases, weigh how often it is a
 name against how often it is the credential. Marking it ambiguous is
@@ -269,6 +276,49 @@ ambiguity is recorded and it becomes part of the surname — under any
     >>> lex = Lexicon.default().remove(particles_ambiguous={"van"})
     >>> Parser(lexicon=lex).parse("van Gogh").family
     'van Gogh'
+
+``conjunctions_ambiguous`` is the same idea for one-letter connectives.
+A single letter written against the name's own case is an initial and
+one written with it is the connective — but a name written wholly in
+one case, all upper or all lower, says nothing either way, and this is
+the set that decides it there. ``e`` is the one entry shipped: a bare
+``E`` initial is common where an ``e`` between two surnames is rare, and
+``y`` runs the other way, so ``y`` joins even written as a bare capital.
+
+.. doctest::
+
+    >>> parse("jose e maria santos").middle       # 'e' reads as an initial
+    'e maria'
+    >>> parse("JUAN GARCIA Y LOPEZ").family       # 'y' joins
+    'GARCIA Y LOPEZ'
+    >>> parse("Jose e Maria Santos").given        # mixed case decides itself
+    'Jose e Maria'
+
+A member also reports the fork, so a caller can see which reading was
+taken:
+
+.. doctest::
+
+    >>> [a.kind for a in parse("jose e maria santos").ambiguities]
+    [<AmbiguityKind.CONJUNCTION_OR_INITIAL: 'conjunction-or-initial'>]
+
+If your data is Portuguese, where ``e`` links surnames the way ``y``
+does in Spanish, take it out and the connective reading comes back:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().remove(conjunctions_ambiguous={"e"})
+    >>> Parser(lexicon=lex).parse("jose e maria santos").given
+    'jose e maria'
+
+If your data is Dutch, where a bare single letter is an initial and
+never a connective, add the other one instead:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().add(conjunctions_ambiguous={"y"})
+    >>> Parser(lexicon=lex).parse("juan garcia y lopez").middle
+    'garcia y'
 
 Bound given names
 ~~~~~~~~~~~~~~~~~~

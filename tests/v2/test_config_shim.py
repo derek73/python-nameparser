@@ -499,6 +499,27 @@ def test_snapshot_removing_a_honorific_word_turns_the_peel_off() -> None:
     assert (name.first, name.last, name.suffix) == ("민준씨", "김", "")
 
 
+def test_snapshot_removing_a_conjunction_turns_the_marker_off() -> None:
+    # The deciding case for conjunctions_ambiguous, which has no v1
+    # manager of its own: the snapshot intersects CONJUNCTIONS_AMBIGUOUS
+    # with the v1 conjunction set, so deleting 'e' from the one v1 knob
+    # that reaches it must make the marking stop mattering rather than
+    # raise the subset error or leave 'e' reading as an initial on a
+    # word the parse no longer treats as a connective at all. With the
+    # default config the intersection is a no-op, so the default-equality
+    # test above pins nothing here.
+    c = Constants()
+    assert HumanName("john e smith", constants=c).middle == "e"   # baseline
+    c.conjunctions.remove("e")
+    lexicon, _, _ = c._snapshot()                             # must not raise
+    assert "e" not in lexicon.conjunctions_ambiguous
+    # 'e' is no vocabulary at all now: a bare lowercase letter is not
+    # initial-shaped, so it is an ordinary middle name word
+    name = HumanName("john e smith", constants=c)
+    assert (name.first, name.middle, name.last) == ("john", "e", "smith")
+    assert name.initials() == "j. e. s."
+
+
 def test_snapshot_field_translation() -> None:
     c = Constants()
     lexicon, policy, defaults = c._snapshot()
