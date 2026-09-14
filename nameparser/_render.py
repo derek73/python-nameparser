@@ -46,7 +46,8 @@ _SKIP_TAGS = frozenset({"particle", "conjunction"})
 # the empty alternative) -- layering forbids importing the pipeline here;
 # keep in sync with _pipeline/_vocab.py by hand.
 # Its one reader is _reads_as_conjunction below, and that reader only
-# ever sees text the parse never classified: for anything the
+# ever sees text handed over as a bare string -- a spliced field, or a
+# direct string call -- never a classified token: for anything the
 # parser DID see, the tag is the answer and this pattern is not asked.
 # So the two copies no longer decide the same question about the same
 # token -- _vocab's says what the parse decided, this one says what it

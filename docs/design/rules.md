@@ -1733,18 +1733,19 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     name gives "j. v.". Case repair IS handed a vocabulary, so it falls
     back for the one question a word can answer on its own, and R4
     says which. Revising the field through the parser classifies it
-    and matches the parse in both views. Stated without an example
-    line because every line here names an input string, and this
-    shape needs a field edited after the parse.
+    and matches the parse in both of the parsed name's views. Stated
+    without an example line because every line here names an input
+    string, and this shape needs a field edited after the parse.
     The v1 facade's HumanName.initials() is a second view of this
     question and IS handed a vocabulary: it reads the parse's reading
     wherever a word is backed by a parsed token, and falls back
     wherever a word is not — a field set as raw text, or a name
-    restored from a v1 pickle. It falls back on BOTH questions there,
-    not one: the connective question through the same helper case
-    repair uses, and the particle question through a live vocabulary
-    lookup, so a family spliced to "de la vega" initials "j. v." on
-    this view against "j. d. l. v." on the parsed name's own. So the
+    restored from a v1 pickle. The connective question falls back to
+    the same helper case repair uses; the particle question was never
+    asked of the parse in this view at all — `_is_particle` is a live
+    vocabulary lookup for every word, backed or spliced alike — so a
+    family spliced to "de la vega" initials "j. v." on this view
+    against "j. d. l. v." on the parsed name's own. So the
     two views agree on WHICH WORDS initial in a parsed name; what
     still differs there is GROUPING, the facade initialing a joined
     run as one element, which is where the name "Ph. D., John" gives
@@ -1823,14 +1824,15 @@ R4. Rationale: case repair is a display concern, applied only on
     because the two answer oppositely. The parsed name's own view is
     handed no vocabulary at all, so it falls back on neither question
     and a spliced field's every word initials. The v1 facade's view IS
-    handed one and falls back on BOTH: the connective question through
-    the helper this rule uses, and the particle question through a
-    live vocabulary lookup, so a family spliced to "de la vega"
-    initials "j. v." there against the parsed view's "j. d. l. v.".
-    revise() classifies the
-    value and crosses both questions, in both views: a middle revised
-    to "e-f" repairs to "E-F" as the parsed name does, where splicing
-    the same text in gives "e-F".
+    handed one: the connective question falls back to the helper this
+    rule uses, while the particle question is never asked of the
+    parse in this view at all — a live vocabulary lookup for every
+    word, backed or spliced alike — so a family spliced to "de la
+    vega" initials "j. v." there against the parsed view's "j. d. l.
+    v.". revise() classifies the value and crosses both questions, in
+    both of the parsed name's views: a middle revised to "e-f"
+    repairs to "E-F" as the parsed name does, where splicing the same
+    text in gives "e-F".
     history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name

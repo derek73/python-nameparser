@@ -501,8 +501,9 @@ class HumanName:
         #
         # UNCLASSIFIED_TAG is the one case with no parse to honor: the
         # words were spliced into a field as raw text, by `hn.middle =
-        # ...` (ParsedName.replace) or by the v1 pickle load in
-        # __setstate__. They carry no reading, so the vocabulary
+        # ...` (ParsedName.replace) or restored via __setstate__ -- a
+        # pickle load, or a copy.copy/copy.deepcopy, which go through
+        # the same state hooks. They carry no reading, so the vocabulary
         # answers -- the same fallback _render._cap_word takes for the
         # same tokens and through the same helper, which is why the
         # helper is imported rather than the predicate rewritten
@@ -510,8 +511,8 @@ class HumanName:
         # word is a connective is a fact the word can answer alone,
         # whether a particle is acting as one is a fact about the part).
         #
-        # _resolve() first, as _is_particle above does: an unpickled
-        # instance has no _lexicon until resolved.
+        # _resolve() first, as _is_particle above does: an unpickled or
+        # copied instance has no _lexicon until resolved.
         self._resolve()
         if UNCLASSIFIED_TAG in tok.tags:
             return _render._reads_as_conjunction(tok.text, self._lexicon)
@@ -581,19 +582,22 @@ class HumanName:
         # call drops, leaves the override reading `name_part`, which on
         # this path is "", so every group initials to "" and initials()
         # returns "" without raising (measured 2026-09-13).
-        # split() rather than split(" ") because split(" ") yields ''
-        # between repeated spaces and `word[0]` below would raise
-        # IndexError on it (#232). v1 stated the reason as `*_list`
-        # attributes bypassing whitespace normalization, which no
-        # longer holds -- the `*_list` properties are read-only in 2.x,
-        # and assignment through `hn.middle = ...` normalizes -- but a
-        # doubled space anywhere in a part still reaches here.
         #
         # Particles are NOT decided per token: _is_particle stays a
         # live vocabulary lookup, as _render._cap_word keeps it --
         # rules.md#R4 draws this boundary per question, not per field.
         self._resolve()
         if tokens is None:
+            # STRING PATH. split() rather than split(" ") because
+            # split(" ") yields '' between repeated spaces and
+            # `word[0]` below would raise IndexError on it (#232). v1
+            # stated the reason as `*_list` attributes bypassing
+            # whitespace normalization, which no longer holds -- the
+            # `*_list` properties are read-only in 2.x, and assignment
+            # through `hn.middle = ...` normalizes -- but a doubled
+            # space in a bare string handed directly to this method
+            # (`_process_initial(name_part, ...)` with no `tokens=`)
+            # still reaches here.
             words: tuple[str, ...] = tuple(name_part.split())
             # No parse read this text, so every word takes the same
             # fallback _token_is_conjunction takes for a spliced one.
@@ -815,8 +819,8 @@ class HumanName:
         # ("Ph. D.", "Q.C. M.P."), and re-splitting the joined string on
         # whitespace would promote each word to its own entry, which the
         # suffix view then renders comma-separated ("Ph., D."). Marking
-        # continuation words "joined" is the inverse of _list_for's heal,
-        # so list -> pickle -> list is the identity v1 gave us.
+        # continuation words "joined" is the inverse of _list_tokens_for's
+        # heal, so list -> pickle -> list is the identity v1 gave us.
         tokens: list[Token] = []
         for member in _MEMBERS:
             role = Role(_V2_FIELD.get(member, member))
