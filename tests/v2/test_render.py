@@ -701,6 +701,12 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
     # nothing moved on either surface
     assert HumanName("John E Smith").initials() == "J. E. S."
     assert HumanName("Juan Y. Garcia").initials() == "J. Y. G."
+    # 'maria y lopez' is a ONE-CASE control, not a mixed-case one: written
+    # wholly in lowercase, its 'y' is outside the marked set (rules.md#P3),
+    # so it stays the connective and drops on both surfaces -- unmoved,
+    # like the mixed-case names above, but for the vocabulary's reason
+    # rather than the writing's (tests/v2/test_ledger_guards.py's
+    # "one-case controls" wording, around line 1118).
     assert HumanName("maria y lopez").initials() == "m. l."
     # The one corpus name where the two views still differ, and it is
     # not this rule's: the facade merges 'Ph.' + 'D.' into one list
@@ -708,3 +714,20 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
     # (fix(initials-per-word) the Ph. D. merge, decisions.md#phd-merge)
     assert HumanName("Ph. D., John").initials() == "J. P D."
     assert parse("Ph. D., John").initials() == "J. P. D."
+
+
+def test_initials_separator_is_honored_on_the_live_token_path() -> None:
+    # tests/test_initials.py's two "Van Berg" separator tests call
+    # _process_initial("Van Berg", firstname=True) directly -- v1's
+    # string path, with tokens=None -- which #528 kept working but no
+    # longer the path HumanName.initials() itself takes. This pins
+    # initials_separator on the live TOKEN path (tokens= passed by
+    # _initials_lists), so a regression that reads initials_separator
+    # only on the string branch would pass those two tests and fail
+    # here. Measured.
+    assert HumanName("Ph. D., John", initials_separator="-").initials() \
+        == "J. P-D."
+    assert HumanName("Ph. D., John", initials_separator="").initials() \
+        == "J. PD."
+    assert HumanName("Ph. D., John", initials_separator="") \
+        .initials_list() == ["J", "PD"]

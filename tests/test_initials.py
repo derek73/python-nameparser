@@ -141,6 +141,10 @@ class InitialsTestCase(HumanNameTestBase):
         # Non-empty custom separator exercising _process_initial on a multi-word
         # token. "Van Berg" is a single name part whose two words produce two initials
         # joined by initials_separator.
+        # This calls _process_initial directly with a bare string (tokens=None),
+        # which is the v1 string path -- HumanName.initials() itself no longer
+        # takes it (#528). See test_initials_separator_is_honored_on_the_live_
+        # token_path in tests/v2/test_render.py for the live token path's pin.
         hn = HumanName("", initials_separator="-", initials_delimiter=".")
         result = hn._process_initial("Van Berg", firstname=True)
         self.assertEqual(result, "V-B")
@@ -196,6 +200,8 @@ class InitialsTestCase(HumanNameTestBase):
     def test_initials_separator_kwarg_multiword_part(self) -> None:
         # Regression: initials_separator kwarg must flow into _process_initial
         # for multi-word name parts, not just into the initials() join calls.
+        # Direct string call (tokens=None), the v1 path -- see the comment on
+        # test_initials_separator_custom_value above.
         hn = HumanName("", initials_separator="")
         result = hn._process_initial("Van Berg", firstname=True)
         self.assertEqual(result, "VB")
@@ -279,3 +285,13 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.initials(), "j. e. s.", hn)
         hn = HumanName("maria y lopez")
         self.m(hn.initials(), "m. l.", hn)
+        # These two back the 1.4.0 ledger rule and its _CROSS_RULE_WINNERS /
+        # _RECORDED_DIFFS rows (tools/differential/expected_since_1.4.0.toml).
+        # "jones, john e" is the comma form, where 'e' ends the string --
+        # the connective-run regex that reads a trailing letter's neighbors
+        # never reaches it, so it is a distinct shape from the space-written
+        # "john e jones" even though both give the same answer.
+        hn = HumanName("john e jones")
+        self.m(hn.initials(), "j. e. j.", hn)
+        hn = HumanName("jones, john e")
+        self.m(hn.initials(), "j. e. j.", hn)

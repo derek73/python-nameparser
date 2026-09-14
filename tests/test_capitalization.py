@@ -413,7 +413,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # smith' also diverge on a round trip now, for the same reason and
     # through the same fallback, whether the reader is capitalize() or
     # (since #528) initials() -- pinned at
-    # tests/v2/test_facade.py::test_initials_of_an_unpickled_name_ask_the_vocabulary_too.
+    # tests/v2/test_facade.py::test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too.
     def test_a_pickle_round_trip_loses_the_e_f_reading(self) -> None:
         direct = HumanName('juan e-f smith')
         direct.capitalize(force=True)

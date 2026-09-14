@@ -1,4 +1,5 @@
 """The 2.0 HumanName facade (mechanisms.md#FACADE-CONTRACT)."""
+import copy
 import pickle
 import warnings
 from pathlib import Path
@@ -178,9 +179,9 @@ def test_suffix_list_heals_joined_continuations() -> None:  # v1 fix_phd
 
 def test_the_joined_tag_never_reaches_a_title(  # #429 regression guard
 ) -> None:
-    """The "joined" tag is role-BLIND and _list_for heals it for every
-    role, so a tag placed for the suffix view is read by the title view
-    too.
+    """The "joined" tag is role-BLIND and _list_tokens_for heals it for
+    every role (_list_for is only the string view built from that walk),
+    so a tag placed for the suffix view is read by the title view too.
 
     So the pass that writes it (post_rules' R1 entry pass, #436) walks
     the SUFFIX tokens alone and reads every other role as transparent
@@ -643,7 +644,8 @@ def test_list_tokens_for_carries_the_list_view_s_own_elements() -> None:
     #
     # Verified at review (2026-09-13): 0 mismatches between
     # _list_tokens_for's join and _list_for's own output over the
-    # full corpus, 1173 names x 7 members = 8211 pairs. That sweep
+    # full corpus, 1173 non-empty names (the glob holds 1174 distinct
+    # names, one of them empty) x 7 members = 8211 pairs. That sweep
     # can't fail by construction -- _list_for IS DEFINED as that join
     # -- so it does not stand as a test by itself. What a per-token
     # walk COULD get wrong is the element BOUNDARIES, so this pins the
@@ -655,19 +657,24 @@ def test_list_tokens_for_carries_the_list_view_s_own_elements() -> None:
     folded_c.middle_name_as_last = True
     spliced = HumanName("john smith")
     spliced.middle = "e f"
-    cases: list[tuple[HumanName, str, list[list[str]]]] = [
+    cases: list[tuple[HumanName, str, list[list[str]], list[str]]] = [
         (HumanName("Hassan, Mohamad Ahmad Ali", constants=folded_c), "last",
-         [["Ahmad"], ["Ali"], ["Hassan"]]),           # folded middle, first
+         [["Ahmad"], ["Ali"], ["Hassan"]],             # folded middle, first
+         ["Ahmad", "Ali", "Hassan"]),
         (HumanName("Ph. D., John"), "last",
-         [["Ph.", "D."]]),                            # "joined" continuation
-        (spliced, "middle", [["e"], ["f"]]),          # spliced field
+         [["Ph.", "D."]],                              # "joined" continuation
+         ["Ph. D."]),
+        (spliced, "middle", [["e"], ["f"]],            # spliced field
+         ["e", "f"]),
     ]
-    for n, member, expected_shape in cases:
+    for n, member, expected_shape, expected_str in cases:
         groups = n._list_tokens_for(member)
         assert [[t.text for t in g] for g in groups] == expected_shape, \
             (n.original, member)
-        assert [" ".join(t.text for t in g) for g in groups] \
-            == n._list_for(member), (n.original, member)
+        # Asserted against its own literal, not against _list_for(member) --
+        # _list_for IS DEFINED as this same join, so comparing the two
+        # can't fail by construction (measured; see the comment above).
+        assert n._list_for(member) == expected_str, (n.original, member)
 
     for name in ("Ph. D., John", "Dr. Juan Q. Xavier de la Vega III",
                  "der, y van", "JUAN GARCIA Y LOPEZ", "Doe, John A."):
@@ -675,7 +682,13 @@ def test_list_tokens_for_carries_the_list_view_s_own_elements() -> None:
         for member in ("title", "first", "middle", "last", "suffix",
                        "nickname", "maiden"):
             groups = n._list_tokens_for(member)
-            assert all(g for g in groups), (name, member)
+            # `all(g for g in groups)` cannot fail by construction either --
+            # _list_tokens_for never emits an empty group, vacuously true
+            # (including over the empty list every unused member here
+            # returns). What IS worth pinning is that the walk is
+            # deterministic: calling it again over the same parse gives
+            # the identical grouping, not a fresh (if equal-looking) one.
+            assert n._list_tokens_for(member) == groups, (name, member)
 
 
 def test_token_is_conjunction_reads_the_tag_then_the_vocabulary() -> None:
@@ -831,7 +844,7 @@ def test_initials_freeze_the_connective_answer_at_parse_time() -> None:
     assert name.initials() == "j. y. g."
 
 
-def test_initials_of_an_unpickled_name_ask_the_vocabulary_too() -> None:
+def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> None:
     # __setstate__ is the second producer of UNCLASSIFIED_TAG tokens: a
     # v1 pickle carries the *_list STRINGS and no tags, so a restored
     # name is spliced text throughout and takes the fallback above.
@@ -840,12 +853,21 @@ def test_initials_of_an_unpickled_name_ask_the_vocabulary_too() -> None:
     # capitalize() has done since the tag was introduced, for the same
     # reason and through the same helper. Pinned rather than left to
     # prose; decisions.md#R3 records it.
+    #
+    # copy.copy and copy.deepcopy go through the same __getstate__/
+    # __setstate__ hooks as pickle (nameparser/_types.py's guarded pair),
+    # so a copied name takes the identical vocabulary fallback -- measured,
+    # not assumed.
     for name, live_initials, restored_initials, live_cap, restored_cap in (
             ("JUAN Y GARCIA", "J. G.", "J. Y. G.",
              "Juan y Garcia", "Juan Y Garcia"),
             ("john e smith", "j. e. s.", "j. s.",
              "John E Smith", "John e Smith")):
         assert HumanName(name).initials() == live_initials
+        deep = copy.deepcopy(HumanName(name))
+        assert deep.initials() == restored_initials
+        shallow = copy.copy(HumanName(name))
+        assert shallow.initials() == restored_initials
         restored = pickle.loads(pickle.dumps(HumanName(name)))
         assert restored.initials() == restored_initials
         live = HumanName(name)
