@@ -1740,9 +1740,10 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     question and IS handed a vocabulary: it reads the parse's reading
     wherever a word is backed by a parsed token, and falls back
     wherever a word is not — a field set as raw text, or a name
-    restored from a v1 pickle. The connective question falls back to
-    the same helper case repair uses; the particle question was never
-    asked of the parse in this view at all — `_is_particle` is a live
+    restored from a v1 pickle or copied through the same state hooks.
+    The connective question falls back to the same helper case repair
+    uses; the particle question was never asked of the parse in this
+    view at all — `_is_particle` is a live
     vocabulary lookup for every word, backed or spliced alike — so a
     family spliced to "de la vega" initials "j. v." on this view
     against "j. d. l. v." on the parsed name's own. So the
