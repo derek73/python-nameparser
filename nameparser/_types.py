@@ -84,9 +84,12 @@ class Span(NamedTuple):
 #: NOT to reproduce `family_particles`, which since #404 also consults
 #: UNJOINED_TAG and excludes a particle standing alone in its part
 #: ("Anh Do" has a particle-tagged family word and no family
-#: particles); "conjunction" a joining word ("and", "y"); "initial" an
-#: initial-shaped word in a script that HAS initials -- "J." or "А.",
-#: never "씨." (#320);
+#: particles); "conjunction" a joining word ("and", "y"); "initial" a
+#: word READ as an initial -- initial-shaped in a script that HAS
+#: initials ("J." or "А.", never "씨.", #320), or a marked
+#: single-letter connective in a name written in one case (rules.md#P3
+#: says a single-letter connective reads as an initial where the
+#: writing says so -- see CONJUNCTION_OR_INITIAL);
 #: "joined" a continuation of the token before it -- within one
 #: merged piece the tag is role-blind and every view joins the pair
 #: with a space ("Ph." + "D."; 'Smith, Ph. D. Smith' gives first_list
@@ -459,14 +462,20 @@ class AmbiguityKind(StrEnum):
     #: reports -- ``Lexicon.conjunctions_ambiguous``, "e" by default --
     #: because a letter outside it is not in doubt: "JUAN GARCIA Y
     #: LOPEZ" joins into family "GARCIA Y LOPEZ" and reports nothing,
-    #: as does the Cyrillic "ХОСЕ И МАРИЯ САНТОС".
-    #: Three things never reach the fork. MIXED-case input decides on
+    #: as does the Cyrillic "ХОСЕ И МАРИЯ САНТОС" -- whose join lands
+    #: in GIVEN "ХОСЕ И МАРИЯ" rather than FAMILY, but reports nothing
+    #: all the same.
+    #: Four things never reach the fork. MIXED-case input decides on
     #: the writing instead, so "Jose E Maria Santos" reads the capital
     #: as an initial and "John e Smith" the lowercase letter as the
     #: connective, neither reporting. A CASELESS letter has no case to
-    #: read, so Arabic "محمد و علي" keeps its connective silently. And a
+    #: read, so Arabic "محمد و علي" keeps its connective silently. A
     #: MULTI-letter connective ("and", "та", "και") or a symbol ("&") is
-    #: no initial's shape at any casing.
+    #: no initial's shape at any casing. And a letter inside a maiden or
+    #: delimited clause never reaches the fork either (the own-words
+    #: doctrine, rules.md#P3): appending " née Jones" or a nickname
+    #: changes no report, because the clause's words were never
+    #: eligible for it.
     #: ``detail`` names the token, the kind naming neither the field nor
     #: the letter: which field the reading lands in follows the name's
     #: shape and its ``name_order``, the PARTICLE_OR_GIVEN precedent.

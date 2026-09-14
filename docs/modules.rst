@@ -49,9 +49,11 @@ Results
    stable API: ``particle`` (a word from the particle vocabulary,
    "de"/"van", wherever it lands — combine with ``Role.FAMILY`` for
    actual family particles),
-   ``conjunction`` (a joining word, "and"/"y"), ``initial`` (an
-   initial-shaped word in a script that HAS initials — "J." or "А.",
-   never "씨."), and ``joined`` (a continuation of the token before it
+   ``conjunction`` (a joining word, "and"/"y"), ``initial`` (a word
+   READ as an initial — initial-shaped in a script that HAS initials,
+   "J." or "А.", never "씨.", or a marked single-letter connective in
+   a name written in one case, rules.md#P3), and ``joined`` (a
+   continuation of the token before it
    — within one merged piece the tag is role-blind and every view
    joins the pair with a space, so it renders "Ph. D." as one
    credential and ``Smith, Ph. D. Smith`` gives ``first_list``

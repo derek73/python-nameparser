@@ -47,10 +47,10 @@ CONJUNCTIONS_AMBIGUOUS = frozenset({
     # blessed their joining and nothing here narrows it.
     #
     # 'i' (Catalan) is NOT here because it is not conjunction vocabulary
-    # at all yet; it ships in this subset when #397 adds it, a bare I
+    # at all yet; it ships in this subset if #397 adds it, a bare I
     # initial being as common as a bare E.
     #
-    # A caller edits the policy rather than a switch: remove 'e' to
+    # A caller edits the vocabulary rather than a switch: remove 'e' to
     # restore joining for Portuguese data, add 'y' for a Dutch-style
     # "every single letter is an initial".
     'e',

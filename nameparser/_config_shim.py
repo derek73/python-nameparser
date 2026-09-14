@@ -1067,11 +1067,13 @@ class Constants:
             conjunctions=conjunctions,
             # no v1 manager of its own: the ambiguous-connective
             # subset is 2.4 behavior (#383/#479), so it rides in the
-            # snapshot only. Intersect with the conjunction set, the
-            # same rule honorific_tails gets against suffix_words below:
-            # Lexicon enforces the subset, and v1 semantics are that
-            # deleting the base word turns the behavior off -- a
-            # lingering marker simply stops mattering.
+            # snapshot only. Lexicon does NOT check this pair -- unlike
+            # honorific_tails against suffix_words below -- so the
+            # intersection is a provable no-op, kept only for
+            # `_snapshot() == Lexicon.default()` legibility; the v1
+            # knob (deleting the conjunction) turns the marking off
+            # through the fork's own base-vocabulary test rather than
+            # through this intersection.
             conjunctions_ambiguous=CONJUNCTIONS_AMBIGUOUS & conjunctions,
             bound_given_names=bound,
             # v1 Constants has no manager for these (#274 is 2.0

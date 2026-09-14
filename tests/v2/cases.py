@@ -1015,7 +1015,8 @@ CASES: tuple[Case, ...] = (
     # lower trio ('john e smith' / 'JOHN E SMITH' / 'John e Smith');
     # its mixed-upper twin ('John E Smith') is absent because it would
     # pin nothing these rows do not -- the three-word carve-out already
-    # keeps 'e' a name word either way, exactly as row 5 does. 'y'
+    # keeps 'e' a name word either way, exactly as
+    # one_case_three_word_e_is_an_initial does. 'y'
     # carries one-case-upper and one-case-lower at four words ('JUAN
     # GARCIA Y LOPEZ' / 'juan garcia y lopez'), mixed-upper at four
     # words where 'Y' still vetoes ('Juan Garcia Y Lopez'), and one-
@@ -1028,8 +1029,9 @@ CASES: tuple[Case, ...] = (
     # 'Juan Y Garcia' (mixed-UPPER, three words) is absent because its
     # control lives beside the capitalize() pin instead, in
     # tests/test_capitalization.py::test_a_one_letter_conjunction_is_case_sensitive_to_repair;
-    # 'Juan y Garcia' (mixed-lower, three words) is absent everywhere as
-    # an input.
+    # 'Juan y Garcia' (mixed-lower, three words) is absent from this
+    # table because rules.md#P3 carries it as its boundary example and
+    # test_render.py pins its initials.
     #
     # The other five rows are three DIFFERENT reasons a row does not
     # move, not "three scripts that must not enter the fork": the
@@ -1196,7 +1198,7 @@ CASES: tuple[Case, ...] = (
          notes="pinned at TODAY's reading so #397 shows its move: 'i' "
                "is not in CONJUNCTIONS at all, so the bare capital is "
                "an initial by shape and this row never reaches the "
-               "fork. When #397 adds 'i' it ships in "
+               "fork. If #397 adds 'i' it ships in "
                "conjunctions_ambiguous too, and this row changes",
          shape=1),
     Case("catalan_i_is_not_connective_vocabulary_lower",

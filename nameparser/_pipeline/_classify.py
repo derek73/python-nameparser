@@ -63,8 +63,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     _tag_marker_runs'; only the writing happens here, so the two tokens
     of a phrase are built once rather than replaced twice.
 
-    `one_case_own` is true when the whole name is written in one case
-    AND this token is one of the name's own words -- a maiden clause
+    `one_case_own` is true when the name's OWN words are written in one
+    case AND this token is one of the name's own words -- a maiden clause
     and any delimited (nickname) content are not, so the fork never
     reads them either (rules.md#P3): a clause's words are not the
     name's own words, and appending one must not change how THIS token
@@ -110,7 +110,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             # a bare capital y joins here, where mixed case vetoes it
             tags.add("conjunction")
     else:
-        # today's rule, verbatim. v1's is_conjunction excludes
+        # the mixed-case rule, unchanged. v1's is_conjunction excludes
         # initials: 'e.' in 'john e. smith' is a middle initial, not
         # the Spanish conjunction 'e'
         if n in lex.conjunctions and not is_initial(token.text):
@@ -237,9 +237,10 @@ def classify(state: ParseState) -> ParseState:
     # One fold per token, shared by the marker pass and the vocabulary
     # tags -- the shape suffix_as_written already asks for ("n is
     # _normalize(text), passed in so callers normalize once"). `texts`
-    # is built once and reused for `folded`: a generator handed to
-    # is_one_case instead costs one profiler frame per RESUME, i.e. per
-    # token, on every parse (#475's frame-count band caught this).
+    # is a LIST, not a generator, because `own` below indexes it by
+    # position (`texts[i]`); is_one_case's own `Sequence` parameter is
+    # where the frame-cost argument for passing a built sequence lives
+    # (_vocab.py, #475).
     texts = [t.text for t in state.tokens]
     folded = [_normalize(x) for x in texts]
     marker_tags = _tag_marker_runs(state, folded)
@@ -257,7 +258,15 @@ def classify(state: ParseState) -> ParseState:
     # cheaper path given the order this dict happens to arrive in.
     clause_at = len(texts)
     for i, tag in marker_tags.items():
-        if tag == "vocab:maiden-marker":
+        # A marker word already carrying a role arrived pre-set by
+        # extract (WorkToken.role's docstring) -- it is the CLAUSE's
+        # word, not a bare one opening a new clause, so it must not
+        # move clause_at: a delimited/maiden clause's own marker
+        # content is excluded from "own" by its role already, and
+        # letting it also set clause_at truncates the OWN words that
+        # follow the clause ("JUAN (NEE JONES) GARCIA Y LOPEZ"'s
+        # trailing "GARCIA Y LOPEZ" is such own text).
+        if tag == "vocab:maiden-marker" and state.tokens[i].role is None:
             clause_at = i
             break
     # ONE fact per parse, taken over the name's OWN words (rules.md#P3):
@@ -305,9 +314,13 @@ def classify(state: ParseState) -> ParseState:
         #
         # Of the two clauses beside it, one is load-bearing and one is
         # not. `conjunctions_ambiguous` is IMPLIED by the others for a
-        # fresh parse: "initial" plus len 1 forces an ASCII capital,
-        # hence cased, hence the fork's branch was taken. It is kept
-        # only because `_tags_for` starts from `set(token.tags)`, so
+        # fresh parse -- the contrapositive of what it looks like:
+        # `is_initial` matches an ASCII capital only, so ONLY the
+        # fork's branch can tag a bare LOWERCASE letter "initial"
+        # ("jose e maria santos" tags a lowercase e), and it does so
+        # only for a conjunctions_ambiguous member. So for a letter of
+        # EITHER case, "initial" plus len 1 implies membership. It is
+        # kept only because `_tags_for` starts from `set(token.tags)`, so
         # this clause is what keeps the emitter honest if a runner ever
         # hands classify tokens it did not build; no such path exists
         # today. `conjunctions` is the clause doing real work: it keeps

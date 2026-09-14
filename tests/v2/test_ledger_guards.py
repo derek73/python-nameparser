@@ -1067,7 +1067,13 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#383/#479) a single-letter connective joins only on case evidence":
         ("Jose e Maria Santos", "Jose E Maria Santos",
          "Juan Garcia y Lopez", "Juan Garcia Y Lopez", "John e Smith",
-         "juan garcia y lopez", "JUAN Y GARCIA"),
+         "juan garcia y lopez", "JUAN Y GARCIA",
+         # a title counts toward the case class the same as any other
+         # of the name's own words (unlike a clause) -- "Dr." beside
+         # an all-upper name makes the whole name mixed case, so 'Y'
+         # is evidence-backed and stays an initial; the literal rule
+         # must never claim this
+         "Dr. JUAN GARCIA Y LOPEZ"),
     # 'john e jones, III' is the probe worth understanding: the
     # trailing uppercase III makes the whole name mixed-case, so it
     # keeps today's reading and no rule of this change may ever claim

@@ -693,3 +693,16 @@ def test_facade_initials_do_not_yet_follow_the_one_case_fork() -> None:
     """
     assert parse("john e smith").initials() == "j. e. s."
     assert HumanName("john e smith").initials() == "j. s."
+
+
+def test_y_side_initials_of_the_one_case_fork() -> None:
+    """The other direction of the split above, pinned on 'y' rather
+    than 'e': the core follows the fork ('Y' is a plain conjunction in
+    a one-case name and contributes no initial, rules.md#R3), and the
+    facade still does not.
+    """
+    assert parse("JUAN Y GARCIA").initials() == "J. G."
+    assert parse("JUAN GARCIA Y LOPEZ").initials() == "J. G. L."
+    # the split, the other direction: the facade's HumanName still
+    # reads a bare capital connective as an initial (1.4.0 parity)
+    assert HumanName("JUAN Y GARCIA").initials() == "J. Y. G."

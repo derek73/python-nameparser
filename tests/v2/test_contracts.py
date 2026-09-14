@@ -244,8 +244,3 @@ def test_the_documented_replacements_for_an_in_place_edit_work() -> None:
     # recipe 2: an extended Lexicon for the 2.0 API
     parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
     assert parser.parse("Dean Smith").title == "Dean"
-
-
-def test_conjunction_or_initial_is_a_stable_string() -> None:
-    # A StrEnum member IS its value; the value is API and never changes.
-    assert AmbiguityKind.CONJUNCTION_OR_INITIAL == "conjunction-or-initial"

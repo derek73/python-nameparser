@@ -27,7 +27,11 @@ _LEX = Lexicon(
     conjunctions=frozenset({"and", "e", "y", "й"}),
     conjunctions_ambiguous=frozenset({"e"}),
     bound_given_names=frozenset({"abdul"}),
-    maiden_markers=frozenset({"née"}),
+    # "née" and the unaccented "nee" are both shipped (English writes
+    # the French marker either way, AGENTS.md); a clause-truncation
+    # test below needs the unaccented spelling since _normalize does
+    # not fold accents away.
+    maiden_markers=frozenset({"née", "nee"}),
 )
 
 
@@ -184,9 +188,16 @@ def test_an_orphan_marker_is_inert_even_in_the_emitter() -> None:
 
 def test_a_caseless_connective_never_enters_the_fork() -> None:
     # Arabic و has no case, so token.upper() == token.lower() and
-    # today's rule stands whatever the name's case class is.
+    # today's rule stands whatever the name's case class is. Marked
+    # as well -- the only configuration where the casedness gate
+    # decides anything: without this, و is absent from
+    # conjunctions_ambiguous the same way every other shipped
+    # conjunction but 'e' is, so the test would pass even if the
+    # casedness check were deleted outright.
     lex = dataclasses.replace(
-        _LEX, conjunctions=_LEX.conjunctions | frozenset({"و"}))
+        _LEX,
+        conjunctions=_LEX.conjunctions | frozenset({"و"}),
+        conjunctions_ambiguous=_LEX.conjunctions_ambiguous | frozenset({"و"}))
     out = _classified_with("محمد و علي", lex)
     assert "conjunction" in _tags(out, "و")
     assert out.ambiguities == ()
@@ -268,3 +279,81 @@ def test_a_word_after_the_maiden_marker_reads_as_plain_vocabulary() -> None:
     assert "conjunction" in _tags(out, "e")
     assert "initial" not in _tags(out, "e")
     assert out.ambiguities == ()
+
+
+def test_a_clauses_own_marker_word_does_not_truncate_the_own_words() -> None:
+    # #527 review: _tag_marker_runs walks every token, so a maiden
+    # marker WORD that arrives already ROLED (parenthesised clause
+    # content, extract's doing -- WorkToken.role's docstring) is the
+    # CLAUSE's own word, not a bare marker opening a new clause, and
+    # must not move clause_at. Before the fix, "NEE"'s match truncated
+    # "own" at its own index, excluding the trailing "GARCIA Y LOPEZ"
+    # from the case class and misreading 'Y' as an initial instead of
+    # joining the family (rules.md#P4).
+    out = _classified("JUAN (NEE JONES) GARCIA Y LOPEZ")
+    nee = next(t for t in out.tokens if t.text == "NEE")
+    # the parenthesised clause opens as Role.NICKNAME (parens are a
+    # nickname delimiter by default) and extract promotes it to
+    # Role.MAIDEN once the marker word is recognized inside it (M1/M3)
+    assert nee.role is Role.MAIDEN
+    assert "conjunction" in _tags(out, "Y")
+    assert "initial" not in _tags(out, "Y")
+    assert out.ambiguities == ()
+
+
+def test_a_clauses_own_marker_word_does_not_skew_the_case_class() -> None:
+    # the mixed-case sibling of the test above: excluding "Santos" (a
+    # trailing capitalized own word) from "own" made the truncated
+    # prefix "jose e maria" look uniformly lowercase, so 'e' wrongly
+    # took the one-case fork and reported.
+    out = _classified('jose e maria "Nee" Santos')
+    nee = next(t for t in out.tokens if t.text == "Nee")
+    # a lone marker word in the clause: no content follows it inside
+    # the quotes, so nothing promotes NICKNAME to MAIDEN (M3) -- the
+    # fix does not care which role a clause carries, only that it
+    # carries one at all (WorkToken.role is not None)
+    assert nee.role is Role.NICKNAME
+    assert "conjunction" in _tags(out, "e")
+    assert "initial" not in _tags(out, "e")
+    assert out.ambiguities == ()
+
+
+def test_a_title_counts_toward_the_case_class_unlike_a_clause() -> None:
+    # a title is one of the name's own words, unlike a clause: "Dr."
+    # beside an all-upper name makes the WHOLE name mixed case, so 'Y'
+    # is evidence-backed and stays an initial; "DR." (itself all-caps)
+    # leaves the name one-case and 'Y' joins as the plain connective.
+    mixed = _classified("Dr. JUAN GARCIA Y LOPEZ")
+    assert "initial" in _tags(mixed, "Y")
+    assert "conjunction" not in _tags(mixed, "Y")
+    assert mixed.ambiguities == ()
+    one_case = _classified("DR. JUAN GARCIA Y LOPEZ")
+    assert "conjunction" in _tags(one_case, "Y")
+    assert "initial" not in _tags(one_case, "Y")
+    assert one_case.ambiguities == ()
+
+
+def test_the_emitter_runs_per_token() -> None:
+    # each cased single-letter connective gets its OWN report, keyed by
+    # its own index -- 'e and e' in the corpus is the other witness.
+    out = _classified("jose e maria e santos")
+    kinds = [a.kind for a in out.ambiguities]
+    assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL,
+                      AmbiguityKind.CONJUNCTION_OR_INITIAL]
+    assert out.ambiguities[0].indices == (1,)
+    assert out.ambiguities[1].indices == (3,)
+
+
+def test_classify_is_per_token_independent_of_the_comma() -> None:
+    # classify runs before the comma settles any structural question,
+    # so the case class and the fork read the same whether the comma
+    # is there or not.
+    family_comma = _classified("SANTOS, JOSE E MARIA")
+    assert "initial" in _tags(family_comma, "E")
+    kinds = [a.kind for a in family_comma.ambiguities]
+    assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL]
+
+    suffix_comma = _classified("GARCIA Y LOPEZ, JUAN")
+    assert "conjunction" in _tags(suffix_comma, "Y")
+    assert "initial" not in _tags(suffix_comma, "Y")
+    assert suffix_comma.ambiguities == ()

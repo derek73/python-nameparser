@@ -241,7 +241,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # count collapses and the direction flips, uppercase now differing
     # on fewer names than lowercase rather than more. The dated
     # re-measurement and its recipe (with the actual counts) live
-    # under decisions.md#R5, written in commit C.
+    # under decisions.md#R5.
     #
     # THROUGH 2.3.0 the mechanism was v1's initial carve-out, taken in
     # the PARSE since #458 and read off the tag by the repair: a word
@@ -295,7 +295,8 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # 'JUAN Y GARCIA' and 'juan y garcia' now repair to the same
     # string and the property above holds for them too. 1.4.0's
     # 'Juan Y Garcia' (measured on the released wheel) is the parity
-    # break this PR's ledgers classify.
+    # break decisions.md#R5's 2026-09-13 amendment records; no ledger
+    # compares case repair, which is why this test is the pin.
     #
     # The name is kept for the blame trail even though it now
     # overstates: what decides repair is the NAME's case class, not

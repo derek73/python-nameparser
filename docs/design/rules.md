@@ -1149,7 +1149,7 @@ M4. Rationale: a maiden name is a FORMER family name, and a former
     decided, so it cannot overrule what a word already IS
     (mechanisms.md#TWO-LAYER-ASSIGN). A word the vocabulary has
     claimed as a given name keeps that reading, and so does a word
-    written as an initial, which is nobody's family name. A name
+    read as an initial, which is nobody's family name. A name
     carrying a TITLE is H1's rather than this rule's, H1's
     given-name-title carve-out included, which keeps the word a
     given name. A nickname holds nothing off: where N3 has already
