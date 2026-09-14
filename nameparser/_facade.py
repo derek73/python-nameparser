@@ -345,26 +345,39 @@ class HumanName:
         self._parsed = self._parsed.replace(
             **{_V2_FIELD.get(member, member): joined})
 
-    def _list_for(self, member: str) -> list[str]:
+    def _list_tokens_for(self, member: str) -> list[tuple[Token, ...]]:
         # A "joined" continuation token ("Ph." + "D.") belongs to its
         # predecessor's part, matching v1's fix_phd (suffix_list had ONE
         # "Ph. D." element). ParsedName._text_for heals only the suffix
         # string view (the ", " join); the facade list view heals for
         # every role -- a continuation is never its own list element.
         role = Role(_V2_FIELD.get(member, member))
-        parts: list[str] = []
-        folded: list[str] = []
+        parts: list[list[Token]] = []
+        folded: list[list[Token]] = []
         for tok in self._parsed.tokens_for(role):
             if "joined" in tok.tags and parts:
-                parts[-1] += " " + tok.text
+                parts[-1].append(tok)
             elif FOLDED_TAG in tok.tags:
                 # middle_as_family fold: v1 PREPENDED middle_list to
                 # last_list -- keep the list view consistent with the
                 # string view (_text_for orders folded-first too)
-                folded.append(tok.text)
+                folded.append([tok])
             else:
-                parts.append(tok.text)
-        return folded + parts
+                parts.append([tok])
+        return [tuple(group) for group in folded + parts]
+
+    def _list_for(self, member: str) -> list[str]:
+        # The STRING view of the walk above, which is the v1 `*_list`
+        # shape. Two views off one walk rather than two walks: the
+        # initials view needs each element's backing tokens (#528) and
+        # every other reader needs its text, and a second walk could
+        # drift from this one on exactly the element boundaries the
+        # comment above exists to hold. Not on the parse path --
+        # measured 2026-09-13, HumanName(name) never reaches it -- so
+        # the tuple building is off the benchmarked budget
+        # (tests/v2/test_benchmark.py budgets parse() and HumanName()).
+        return [" ".join(tok.text for tok in group)
+                for group in self._list_tokens_for(member)]
 
     @property
     def title(self) -> str:
@@ -472,9 +485,37 @@ class HumanName:
         self._resolve()
         return _normalize(text) in self._lexicon.particles
 
-    def _is_conjunction(self, text: str) -> bool:
+    def _token_is_conjunction(self, tok: Token) -> bool:
+        # #528: the PARSE's answer, not the vocabulary's. A token the
+        # parser classified carries its reading in its tags, which is
+        # the source the core's initials() has always read
+        # (mechanisms.md#RENDER-HONORS-THE-PARSE), so a bare capital
+        # 'Y' in a one-case name contributes no initial where its tag
+        # says connective, and a one-case 'e' contributes one where its
+        # tag says initial. Before #528 this was computed from the raw
+        # word instead -- "in the conjunctions set AND NOT
+        # _render._INITIAL" (v1's is_conjunction, restored by #462) --
+        # a shape test standing in for a tag, which stopped agreeing
+        # with the parse the moment #383/#479 gave the classifier a
+        # fork the shape cannot see.
+        #
+        # UNCLASSIFIED_TAG is the one case with no parse to honor: the
+        # words were spliced into a field as raw text, by `hn.middle =
+        # ...` (ParsedName.replace) or by the v1 pickle load in
+        # __setstate__. They carry no reading, so the vocabulary
+        # answers -- the same fallback _render._cap_word takes for the
+        # same tokens and through the same helper, which is why the
+        # helper is imported rather than the predicate rewritten
+        # (decisions.md#R4 for why one question and not two: whether a
+        # word is a connective is a fact the word can answer alone,
+        # whether a particle is acting as one is a fact about the part).
+        #
+        # _resolve() first, as _is_particle above does: an unpickled
+        # instance has no _lexicon until resolved.
         self._resolve()
-        return _normalize(text) in self._lexicon.conjunctions
+        if UNCLASSIFIED_TAG in tok.tags:
+            return _render._reads_as_conjunction(tok.text, self._lexicon)
+        return "conjunction" in tok.tags
 
     def _split_last(self) -> tuple[list[str], list[str]]:
         # rules.md#R2: "a name part whose every word is particle
@@ -511,34 +552,55 @@ class HumanName:
 
     # -- initials -------------------------------------------------------------
 
-    def _process_initial(self, name_part: str, firstname: bool = False) -> str:
+    def _process_initial(self, name_part: str,
+                         firstname: bool = False,
+                         tokens: tuple[Token, ...] | None = None) -> str:
         # after v1 parser.py:427, not verbatim: particles and
         # conjunctions are filtered from initials unless the part is a
-        # first name. split() rather than split(" ") because split(" ")
-        # yields '' between repeated spaces and `part[0]` below would
-        # raise IndexError on it (#232). v1 stated the reason as
-        # `*_list` attributes bypassing whitespace normalization, which
-        # no longer holds -- the `*_list` properties are read-only in
-        # 2.x, and assignment through `hn.middle = ...` normalizes --
-        # but a doubled space anywhere in a part still reaches here.
-        parts = name_part.split()
+        # first name.
+        #
+        # TWO WAYS IN. `tokens` is the part's backing tokens, which
+        # _initials_lists always has and passes; `name_part` is v1's
+        # signature, kept because subclasses and tests call this
+        # directly with a string (tests/test_initials.py), and there
+        # the words come from splitting it. `tokens` supersedes
+        # `name_part` entirely when given -- the words are the tokens'
+        # own text rather than a re-split of the joined element, so a
+        # two-word element and its tokens cannot fall out of step.
+        # STATED BREAK: _initials_lists always calls with `tokens=`, so
+        # a subclass overriding with v1's two-argument signature
+        # (name_part, firstname=False) now raises TypeError the first
+        # time initials() runs, rather than being silently skipped. The
+        # alternative -- a string wrapper kept over a token core --
+        # would make such an override silently ineffective instead,
+        # which hides the override rather than breaking it loudly.
+        # split() rather than split(" ") because split(" ") yields ''
+        # between repeated spaces and `word[0]` below would raise
+        # IndexError on it (#232). v1 stated the reason as `*_list`
+        # attributes bypassing whitespace normalization, which no
+        # longer holds -- the `*_list` properties are read-only in 2.x,
+        # and assignment through `hn.middle = ...` normalizes -- but a
+        # doubled space anywhere in a part still reaches here.
+        #
+        # Particles are NOT decided per token: _is_particle stays a
+        # live vocabulary lookup, as _render._cap_word keeps it --
+        # rules.md#R4 draws this boundary per question, not per field.
+        self._resolve()
+        if tokens is None:
+            words: tuple[str, ...] = tuple(name_part.split())
+            # No parse read this text, so every word takes the same
+            # fallback _token_is_conjunction takes for a spliced one.
+            conjunctions: tuple[bool, ...] = tuple(
+                _render._reads_as_conjunction(word, self._lexicon)
+                for word in words)
+        else:
+            words = tuple(tok.text for tok in tokens)
+            conjunctions = tuple(self._token_is_conjunction(tok)
+                                 for tok in tokens)
         initials = []
-        for part in parts:
-            # v1 parser.py:771 (1.4.0): is_conjunction was "in the
-            # conjunctions set AND NOT is_an_initial", so a dotted or
-            # bare-capital E/Y is the initial it looks like rather
-            # than the connective. The 2.0 facade dropped that half
-            # and lost the middle initial of 'Scott E. Werner' (#462).
-            # _render._INITIAL is v1's `initial` shape, kept in step
-            # with the pipeline's copy by tests/v2/test_regex_sync.py;
-            # the facade may import _render but not _pipeline
-            # (tests/v2/test_layering.py). Scoped here rather than in
-            # _is_conjunction: this is the only caller, and a future
-            # one should not inherit a decision made for initials.
-            conjunction = (self._is_conjunction(part)
-                           and not _render._INITIAL.fullmatch(part))
-            if not (self._is_particle(part) or conjunction) or firstname:
-                initials.append(part[0])
+        for word, conjunction in zip(words, conjunctions):
+            if not (self._is_particle(word) or conjunction) or firstname:
+                initials.append(word[0])
         if len(initials) > 0:
             return self.initials_separator.join(initials)
         # Return '' (never empty_attribute_default, which may be None)
@@ -556,12 +618,18 @@ class HumanName:
         strings -- except a part that is wholly PARTICLES, whose words
         initial as ordinary name words since #404, so the prefix-only
         middle name "de la" is no longer an example of the dropping.
+
+        Each group is walked as TOKENS rather than as the strings of
+        the `*_list` view (#528), so every word carries the reading the
+        parse gave it; the elements are the list view's own, folded
+        first and continuations merged, because one walk builds both.
         """
-        def group_initials(names: list[str],
-                            firstname: bool = False) -> list[str]:
-            got = [i for i in (self._process_initial(n, firstname)
-                                for n in names if n) if i]
-            words = [w for n in names if n for w in n.split()]
+        def group_initials(groups: list[tuple[Token, ...]],
+                           firstname: bool = False) -> list[str]:
+            got = [i for i in (
+                self._process_initial("", firstname=firstname, tokens=group)
+                for group in groups) if i]
+            words = [tok.text for group in groups for tok in group]
             if got or not words or not all(self._is_particle(w)
                                            for w in words):
                 return got
@@ -579,9 +647,9 @@ class HumanName:
             # already applies the same guard to the base, which is why
             # last_base was never empty here.
             return [w[0] for w in words]
-        return (group_initials(self.first_list, True),
-                group_initials(self.middle_list),
-                group_initials(self.last_list))
+        return (group_initials(self._list_tokens_for("first"), True),
+                group_initials(self._list_tokens_for("middle")),
+                group_initials(self._list_tokens_for("last")))
 
     def initials_list(self) -> list[str]:
         first, middle, last = self._initials_lists()

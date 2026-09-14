@@ -1091,11 +1091,13 @@ CASES: tuple[Case, ...] = (
                "where 2.3 gave 'j. s.', and capitalize() gives 'John E "
                "Smith' where 2.3 gave 'John e Smith', pinned in "
                "tests/v2/test_render.py. Measured 2026-09-13: the v1 "
-               "facade's HumanName.initials() does not yet follow this "
-               "fork and still gives 'j. s.' -- "
-               "test_facade_initials_do_not_yet_follow_the_one_case_fork "
-               "in tests/v2/test_render.py pins the split; closing it "
-               "is a follow-up issue's job. This table asserts roles",
+               "facade's HumanName.initials() did not follow this fork "
+               "that morning and still gave 'j. s.'; #528 closed the "
+               "split the same day by making that view read the "
+               "parse's tags, so both surfaces give 'j. e. s.' now and "
+               "test_facade_initials_follow_the_one_case_fork in "
+               "tests/v2/test_render.py pins the agreement where a "
+               "test pinned the split. This table asserts roles",
          shape=1),
     Case("one_case_upper_three_word_e_is_an_initial", "JOHN E SMITH",
          {"given": "JOHN", "middle": "E", "family": "SMITH"},
@@ -1139,12 +1141,13 @@ CASES: tuple[Case, ...] = (
                "ROLE is unchanged. What moves is initials() -- "
                "ParsedName.initials() gives 'J. G.' where 2.3 gave "
                "'J. Y. G.', a conjunction contributing none "
-               "(rules.md#R3) -- while the v1 facade's "
-               "HumanName.initials() still gives 'J. Y. G.', the same "
-               "split the 'john e smith' row records, running the "
-               "other way "
-               "(test_facade_initials_do_not_yet_follow_the_one_case_fork "
-               "in tests/v2/test_render.py) -- which is why this row "
+               "(rules.md#R3) -- and the v1 facade's "
+               "HumanName.initials() gave 'J. Y. G.' until #528 made "
+               "it read the same tags on 2026-09-13, the same split "
+               "the 'john e smith' row records, running the other way "
+               "and closed the same day "
+               "(test_facade_initials_follow_the_one_case_fork in "
+               "tests/v2/test_render.py) -- which is why this row "
                "needs the lowercase twin below to be readable",
          shape=1),
     Case("one_case_lower_y_keeps_the_three_word_carveout", "juan y garcia",

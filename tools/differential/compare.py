@@ -1784,6 +1784,17 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Abu Bakr Al Baghdadi, MD": ("_initials",),
         "abu bakr al baghdadi": ("_initials",),
         "Berg, abdul van": ("_initials",),
+        # #528's two, adjudicated 2026-09-13. Both are contested by
+        # `fix(#528) the facade's initials follow the parse's
+        # connective tags` against `fix(initials-per-word) a
+        # connective run initials each word`: equal `fields`, so
+        # neither is narrower, `precedes_narrower` has no narrower
+        # rule to name, and file order is the whole decision. The
+        # shapes are this run's, not guessed -- the gate reported the
+        # pair as an unpinned contest and these are the diffs it
+        # measured. The winners are pinned in _CROSS_RULE_WINNERS.
+        "john e smith": ("_initials",),
+        "john e jones": ("_initials",),
         # #498's fourteen, adjudicated 2026-09-05: every 1.4.0 diff
         # two or more rules admitted, where the winner beats a loser
         # by neither narrow-first nesting nor a `precedes_narrower`

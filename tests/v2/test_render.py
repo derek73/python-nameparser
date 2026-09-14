@@ -680,29 +680,31 @@ def test_capitalized_one_case_connective_that_reads_as_an_initial() -> None:
     assert str(parse("John e Smith").capitalized()) == "John e Smith"
 
 
-def test_facade_initials_do_not_yet_follow_the_one_case_fork() -> None:
-    """The core's initials() follows the parse's tags: 'e' in a
-    one-case name is an INITIAL (rules.md#P3), so R3's "each given,
-    middle, and base family word" reaches it and it initials.
-    HumanName.initials() does not go through the parse at all --
-    `_facade._process_initial` re-derives "conjunction" from the
-    lexicon and the part's raw text/shape, not from the token's tag --
-    so it keeps 1.4.0 parity here. The split is recorded at
-    decisions.md#P3 and closing it is a follow-up issue's job, not
-    this one's.
+def test_facade_initials_follow_the_one_case_fork() -> None:
+    """Both surfaces read the same letter the same way (#528).
+
+    The core's initials() follows the parse's tags: in a name written
+    wholly in one case an 'e' is an INITIAL and a 'y' is the connective
+    (rules.md#P3), so R3's "each given, middle, and base family word"
+    reaches the first and not the second. Until #528 HumanName.initials()
+    re-derived that from the lexicon and the part's raw shape instead,
+    and kept 1.4.0's answer on both letters; it now reads the same tags,
+    so the two views of one parse agree. decisions.md#R3 records it.
     """
     assert parse("john e smith").initials() == "j. e. s."
-    assert HumanName("john e smith").initials() == "j. s."
-
-
-def test_y_side_initials_of_the_one_case_fork() -> None:
-    """The other direction of the split above, pinned on 'y' rather
-    than 'e': the core follows the fork ('Y' is a plain conjunction in
-    a one-case name and contributes no initial, rules.md#R3), and the
-    facade still does not.
-    """
+    assert HumanName("john e smith").initials() == "j. e. s."
     assert parse("JUAN Y GARCIA").initials() == "J. G."
+    assert HumanName("JUAN Y GARCIA").initials() == "J. G."
     assert parse("JUAN GARCIA Y LOPEZ").initials() == "J. G. L."
-    # the split, the other direction: the facade's HumanName still
-    # reads a bare capital connective as an initial (1.4.0 parity)
-    assert HumanName("JUAN Y GARCIA").initials() == "J. Y. G."
+    assert HumanName("JUAN GARCIA Y LOPEZ").initials() == "J. G. L."
+    # The mixed-case controls, where the writing decides the letter and
+    # nothing moved on either surface
+    assert HumanName("John E Smith").initials() == "J. E. S."
+    assert HumanName("Juan Y. Garcia").initials() == "J. Y. G."
+    assert HumanName("maria y lopez").initials() == "m. l."
+    # The one corpus name where the two views still differ, and it is
+    # not this rule's: the facade merges 'Ph.' + 'D.' into one list
+    # element and renders it with no inner delimiter
+    # (fix(initials-per-word) the Ph. D. merge, decisions.md#phd-merge)
+    assert HumanName("Ph. D., John").initials() == "J. P D."
+    assert parse("Ph. D., John").initials() == "J. P. D."

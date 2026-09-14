@@ -117,12 +117,18 @@ issue = "fix(#383/#479) a marked connective letter in a one-case name is reporte
 # derived view enters a diff only where every role AND every
 # ambiguity kind agrees (#484, compare.py main()), and the report
 # moved on each of them, so no run can produce a shape here carrying
-# it. That movement is visible nowhere else either -- the v1 facade
-# re-derives the connective decision from vocabulary and shape
-# instead of reading the parse's tags, so `HumanName.initials()` does
-# not move at all and the 1.4.0
-# ledger, which compares the facade alone, has nothing to classify.
-# decisions.md#P3 records the split.
+# it. That movement was visible nowhere else either, on the morning
+# this rule was written: the v1 facade re-derived the connective
+# decision from vocabulary and shape instead of reading the parse's
+# tags, so `HumanName.initials()` did not move at all and the 1.4.0
+# ledger, which compares the facade alone, had nothing to classify.
+# #528 closed that split the same day (2026-09-13) -- the facade
+# reads the tags now and moves with the core -- so the 1.4.0 ledger
+# carries `fix(#528) the facade's initials follow the parse's
+# connective tags` over these three names and 'JUAN Y GARCIA'.
+# Nothing here changes: the report still moves on each of them, so
+# `_initials` still cannot enter a shape at THIS baseline.
+# decisions.md#P3 records the split and decisions.md#R3 its closing.
 name_regex = "^(?:JOSE E MARIA SANTOS|JOHN E SMITH|john e smith|john e jones|jones, john e|e j smith|e and e)$"
 fields = ["_ambiguities"]
 orders = ["DEFAULT"]
@@ -151,8 +157,14 @@ issue = "fix(#383/#479) a bare capital connective in an all-upper name stops ini
 # the initial-shaped capital the older facades dropped), and
 # `_initials` is one field -- so `fix(#462)` explains both halves
 # there as one move, and its comment in those three ledgers says so.
-# That fix has shipped at this baseline, so the facade agrees and
-# only the core moves.
+# That fix has shipped at this baseline, so the facade agreed with
+# the core here and, when this rule was written, only the core moved.
+# Since #528 BOTH surfaces move, and the same way: this baseline's
+# wheel gives 'J. Y. G.' from HumanName.initials() and 'J. Y. G.'
+# from parse(...).initials(), the tree gives 'J. G.' from each
+# (measured 2026-09-13). One `_initials` field and one move, so the
+# rule is unchanged and only this sentence is; decisions.md#R3
+# records why the facade started following the tags.
 #
 # Literal, one name: the shape would be "an all-upper three-word name
 # whose middle word is an unmarked single-letter connective", which

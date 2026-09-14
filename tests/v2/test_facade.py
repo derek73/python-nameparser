@@ -7,7 +7,7 @@ import pytest
 
 from nameparser._config_shim import CONSTANTS, Constants
 from nameparser._facade import HumanName
-from nameparser._types import Role
+from nameparser._types import UNCLASSIFIED_TAG, Role
 
 _DATA_DIR = Path(__file__).parent / "data"
 
@@ -633,3 +633,191 @@ def test_facade_parses_unspaced_korean_by_default() -> None:
     # lexicon mirrors Lexicon.default() via the shim snapshot)
     n = HumanName("김민준")
     assert (n.last, n.first) == ("김", "민준")
+
+
+def test_list_tokens_for_carries_the_list_view_s_own_elements() -> None:
+    # #528: the initials view needs the TOKEN behind each word, and the
+    # element boundaries are the whole point -- a "joined" continuation
+    # belongs to its predecessor's part and a folded middle sorts first.
+    # One walk builds both views so they cannot drift apart.
+    #
+    # Verified at review (2026-09-13): 0 mismatches between
+    # _list_tokens_for's join and _list_for's own output over the
+    # full corpus, 1173 names x 7 members = 8211 pairs. That sweep
+    # can't fail by construction -- _list_for IS DEFINED as that join
+    # -- so it does not stand as a test by itself. What a per-token
+    # walk COULD get wrong is the element BOUNDARIES, so this pins the
+    # three shapes where that could diverge by name: a folded middle
+    # (reordered ahead of the other parts), a "joined" continuation
+    # (two tokens sharing one element), and a spliced field
+    # (UNCLASSIFIED_TAG tokens from replace(), no STABLE tag to walk).
+    folded_c = Constants()
+    folded_c.middle_name_as_last = True
+    spliced = HumanName("john smith")
+    spliced.middle = "e f"
+    cases: list[tuple[HumanName, str, list[list[str]]]] = [
+        (HumanName("Hassan, Mohamad Ahmad Ali", constants=folded_c), "last",
+         [["Ahmad"], ["Ali"], ["Hassan"]]),           # folded middle, first
+        (HumanName("Ph. D., John"), "last",
+         [["Ph.", "D."]]),                            # "joined" continuation
+        (spliced, "middle", [["e"], ["f"]]),          # spliced field
+    ]
+    for n, member, expected_shape in cases:
+        groups = n._list_tokens_for(member)
+        assert [[t.text for t in g] for g in groups] == expected_shape, \
+            (n.original, member)
+        assert [" ".join(t.text for t in g) for g in groups] \
+            == n._list_for(member), (n.original, member)
+
+    for name in ("Ph. D., John", "Dr. Juan Q. Xavier de la Vega III",
+                 "der, y van", "JUAN GARCIA Y LOPEZ", "Doe, John A."):
+        n = HumanName(name)
+        for member in ("title", "first", "middle", "last", "suffix",
+                       "nickname", "maiden"):
+            groups = n._list_tokens_for(member)
+            assert all(g for g in groups), (name, member)
+
+
+def test_token_is_conjunction_reads_the_tag_then_the_vocabulary() -> None:
+    # #528, the two-way decision. A token the parser classified answers
+    # from its tags -- the source the core's initials() reads
+    # (mechanisms.md#RENDER-HONORS-THE-PARSE) -- so a one-case 'e' that
+    # rules.md#P3 tagged `initial` is a name word and a bare capital 'Y'
+    # that P3 tagged `conjunction` is not, which is the reverse of what
+    # the vocabulary-and-shape test said about either.
+    parsed = HumanName("JUAN Y GARCIA")
+    tags = {t.text: t for t in parsed._parsed.tokens}
+    assert parsed._token_is_conjunction(tags["Y"]) is True
+    assert parsed._token_is_conjunction(tags["JUAN"]) is False
+
+    fork = HumanName("john e smith")
+    e = {t.text: t for t in fork._parsed.tokens}["e"]
+    assert fork._token_is_conjunction(e) is False
+
+    # A field spliced in as raw text was read by no parse, so there is
+    # no tag to honor and the vocabulary answers -- the same fallback
+    # rules.md#R4's case repair takes, through the same helper.
+    spliced = HumanName("john smith")
+    spliced.middle = "e"
+    lower = spliced._parsed.tokens_for(Role.MIDDLE)[0]
+    assert UNCLASSIFIED_TAG in lower.tags
+    assert spliced._token_is_conjunction(lower) is True
+    spliced.middle = "E"
+    upper = spliced._parsed.tokens_for(Role.MIDDLE)[0]
+    assert spliced._token_is_conjunction(upper) is False
+
+
+def test_process_initial_direct_call_keeps_the_v1_string_path() -> None:
+    # tests/test_initials.py calls this with a bare string and no
+    # tokens, which is v1's shape and stays supported: with no tokens
+    # there is no parse to honor, so every word takes the spliced-text
+    # fallback -- the reading this method had for every word before
+    # #528. These five are measured, not predicted. _process_initial
+    # joins with initials_separator only (never initials_delimiter --
+    # that is applied by the caller in initials()), so the bare-string
+    # probes with the default Constants come back undotted: 'j s' and
+    # 'J Y G', not 'j. s.' / 'J. Y. G.'.
+    hn = HumanName("", initials_separator="-", initials_delimiter=".")
+    assert hn._process_initial("Van Berg", firstname=True) == "V-B"
+    hn2 = HumanName("", initials_separator="")
+    assert hn2._process_initial("Van Berg", firstname=True) == "VB"
+    hn3 = HumanName("")
+    assert hn3._process_initial("john e smith") == "j s"
+    assert hn3._process_initial("JUAN Y GARCIA") == "J Y G"
+    assert hn3._process_initial("de la") == ""
+
+
+def test_process_initial_with_tokens_reads_the_parse() -> None:
+    # The same two name parts, this time handed the tokens the parse
+    # built: the answer flips on both, which is #528 in one assertion.
+    hn = HumanName("JUAN Y GARCIA")
+    middle = hn._list_tokens_for("middle")[0]
+    assert hn._process_initial("", firstname=False, tokens=middle) == ""
+    fork = HumanName("john e smith")
+    fork_middle = fork._list_tokens_for("middle")[0]
+    assert fork._process_initial("", firstname=False,
+                                 tokens=fork_middle) == "e"
+
+
+def test_v1_signature_override_raises_from_initials() -> None:
+    # The stated break (Derek, 2026-09-13): _initials_lists always
+    # calls _process_initial with `tokens=`, so a subclass overriding
+    # it with v1's two-argument signature (name_part, firstname=False)
+    # raises TypeError the moment initials() runs, rather than being
+    # silently skipped. Accepted over the alternative -- a string
+    # wrapper kept over a token core -- which would make such an
+    # override silently ineffective instead: the override would look
+    # like it works and never actually run. Cited by the docs commit
+    # as the accepted cost of #528's move to tokens.
+    class LegacyOverride(HumanName):
+        # Deliberately v1's narrower signature -- the incompatibility
+        # IS the break under test, not a typing slip.
+        def _process_initial(self, name_part: str,  # type: ignore[override]
+                             firstname: bool = False) -> str:
+            return super()._process_initial(name_part, firstname)
+
+    hn = LegacyOverride("John Smith")
+    with pytest.raises(TypeError, match="tokens"):
+        hn.initials()
+
+
+def test_initials_of_a_spliced_field_ask_the_vocabulary() -> None:
+    # A field assigned after the parse is raw text: ParsedName.replace()
+    # stamps UNCLASSIFIED_TAG on it, which says the words were read by
+    # nothing rather than read and found plain. There is no tag to
+    # honor, so this view falls back to the vocabulary for the one
+    # question a word can answer alone -- the same fallback and the
+    # same helper as rules.md#R4's case repair. The lowercase spelling
+    # reads as the connective and drops; the capital is initial-shaped
+    # and stays, keeping the letter's case as every initial does.
+    lower = HumanName("john smith")
+    lower.middle = "e"
+    assert lower.initials() == "j. s."
+    upper = HumanName("john smith")
+    upper.middle = "E"
+    assert upper.initials() == "j. E. s."
+
+
+def test_initials_freeze_the_connective_answer_at_parse_time() -> None:
+    # The accepted cost of #528 (Derek, 2026-09-13): for a word backed
+    # by a token, "is this the connective" is decided when the name is
+    # parsed, exactly as capitalize()'s answer already was. A
+    # vocabulary edit after the parse therefore takes effect on the
+    # next full_name assignment, not on the next initials() call.
+    # A local Constants, never CONSTANTS: the shared singleton would
+    # leak the removal into every later test in the process.
+    constants = Constants()
+    name = HumanName("juan y garcia", constants=constants)
+    assert name.initials() == "j. g."
+    constants.conjunctions.remove("y")
+    assert name.initials() == "j. g."           # frozen at parse time
+    # capitalize() has behaved this way all along, which is the
+    # precedent this cost was accepted on
+    name.capitalize()
+    assert str(name) == "Juan y Garcia"
+    name.full_name = "juan y garcia"            # re-parse applies it
+    assert name.initials() == "j. y. g."
+
+
+def test_initials_of_an_unpickled_name_ask_the_vocabulary_too() -> None:
+    # __setstate__ is the second producer of UNCLASSIFIED_TAG tokens: a
+    # v1 pickle carries the *_list STRINGS and no tags, so a restored
+    # name is spliced text throughout and takes the fallback above.
+    # That makes it disagree with a live parse of the same string on
+    # the two names rules.md#P3's one-case fork moved -- which
+    # capitalize() has done since the tag was introduced, for the same
+    # reason and through the same helper. Pinned rather than left to
+    # prose; decisions.md#R3 records it.
+    for name, live_initials, restored_initials, live_cap, restored_cap in (
+            ("JUAN Y GARCIA", "J. G.", "J. Y. G.",
+             "Juan y Garcia", "Juan Y Garcia"),
+            ("john e smith", "j. e. s.", "j. s.",
+             "John E Smith", "John e Smith")):
+        assert HumanName(name).initials() == live_initials
+        restored = pickle.loads(pickle.dumps(HumanName(name)))
+        assert restored.initials() == restored_initials
+        live = HumanName(name)
+        live.capitalize()
+        assert str(live) == live_cap
+        restored.capitalize()
+        assert str(restored) == restored_cap

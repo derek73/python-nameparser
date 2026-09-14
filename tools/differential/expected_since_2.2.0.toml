@@ -357,11 +357,14 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # every word it holds whatever the vocabulary says, so there was
 # nothing for the fix to restore.
 #
-# 2026-09-13, #383/#479: 'JUAN Y GARCIA' now diffs here for TWO
-# reasons at once -- the facade's, which is this rule's own, and the
-# core's, which is new -- and this rule explains both as one
-# `_initials` move. expected_since_2.0.0.toml's copy of this rule
-# carries the account; it is the same at all three baselines.
+# 2026-09-13, #383/#479 then #528: 'JUAN Y GARCIA' diffed here for
+# TWO reasons at once that morning -- the facade's, which is this
+# rule's own, and the core's, which was new -- and #528 closed the
+# facade's half the same day, the facade now reading the parse's tags
+# and agreeing with this baseline's 'J. G.' again. The core's half
+# remains and this rule still explains it, one `_initials` move.
+# expected_since_2.0.0.toml's copy of this rule carries the account;
+# it is the same at all three baselines.
 name_regex = "(?:^|[\\s,])(?:[EY]|[EeYy]\\.)(?=[\\s,]|$)"
 fields = ["_initials"]
 orders = ["DEFAULT"]
@@ -730,13 +733,15 @@ fields = ["_ambiguities", "family", "given", "middle", "suffix", "title"]
 # this baseline those names classify on the report alone. 'JUAN Y
 # GARCIA' is the one name of the population whose view moves with no
 # report beside it, and at this baseline it is already claimed:
-# fix(#462) reaches it and admits `_initials`, because the FACADE's
-# view moves there too (the 2.3 facade fix has not shipped at 2.2.0).
-# That rule's comment records the double reason; a competing rule
-# here would be an equal-`fields` contest decided by file order,
+# fix(#462) reaches it and admits `_initials`. That rule's comment
+# records what moved and when: the FACADE's view moved there too on
+# the morning #383/#479 landed, the 2.3 facade fix not having shipped
+# at 2.2.0, and #528 closed the facade's half the same day
+# (2026-09-13), leaving the core's as the whole diff. A competing
+# rule here would be an equal-`fields` contest decided by file order,
 # which is what _CROSS_RULE_WINNERS exists to stop rather than to
-# create. It is classified on its own at 2.3.0, where the facade
-# agrees and only the core moves.
+# create. It is classified on its own at 2.3.0, where BOTH surfaces
+# now move, and the same way.
 #
 # LAST in the file: every diff these two claim reported UNEXPLAINED
 # on the run that preceded them (measured 2026-09-13), so no rule

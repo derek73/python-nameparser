@@ -58,7 +58,16 @@ _SKIP_TAGS = frozenset({"particle", "conjunction"})
 # caller-added CJK conjunction spliced into a field, since no shipped
 # vocabulary carries one, and it costs nothing there: CJK is caseless,
 # so the carve-out's lower() and the fall-through's capitalize() return
-# the same string, and case repair is now this pattern's only reader.
+# the same string. Since #528 this pattern is read by more than case
+# repair: through _reads_as_conjunction below, asking it only about
+# text no parse read -- case repair's spliced field, and the v1
+# facade's initials view, both where a token carries UNCLASSIFIED_TAG
+# (_facade._token_is_conjunction) and where there is no token at all
+# (_process_initial's bare-string path, a direct call with no parse
+# behind it). For initials the CJK divergence would decide whether
+# such a spliced connective contributes a letter rather than which
+# case it renders in -- still unreachable from any shipped vocabulary,
+# and still not worth the import layering forbids.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
 
@@ -68,10 +77,14 @@ def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
     A token the parse classified carries its reading in its tags and
     this is not consulted. A token carrying UNCLASSIFIED_TAG was
     spliced into a field as raw text -- by replace(), or by the
-    facade's v1 pickle load -- and carries no reading, so case repair
-    falls back to the vocabulary, which gives the answer the parser
-    would have given, the initial carve-out included ('E.' assigned to
-    middle is an initial, not the Italian conjunction).
+    facade's v1 pickle load -- and carries no reading, so the two
+    views that hold a vocabulary fall back to this: case repair, and
+    since #528 the v1 facade's initials view. It gives the answer the
+    parser would have given, the initial carve-out included ('E.'
+    assigned to middle is an initial, not the Italian conjunction).
+    What it cannot give is an answer the parse reached by looking at
+    the whole NAME -- rules.md#P3's one-case fork is the live example
+    -- which is why it is the fallback and the tags are the rule.
     """
     return bool(_normalize(word) in lex.conjunctions
                 and not _INITIAL.fullmatch(word))

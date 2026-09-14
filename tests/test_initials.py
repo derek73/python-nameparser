@@ -260,13 +260,22 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("Хосе Мария И Сантос")
         self.m(hn.initials(), "Х. М. С.", hn)
 
-    def test_initials_still_drop_a_lowercase_conjunction(self) -> None:
-        # the boundary #462 leaves alone: a bare lowercase e/y IS the
-        # connective, and 1.4.0 and 2.x agree -- true of this facade
-        # surface only since #383/#479: the core's parse().initials()
-        # now reads a one-case 'e' as an initial instead
-        # (tests/v2/test_render.py::test_facade_initials_do_not_yet_follow_the_one_case_fork)
+    def test_initials_follow_the_one_case_fork_on_both_letters(self) -> None:
+        # Renamed from test_initials_still_drop_a_lowercase_conjunction
+        # (#528): that name described only 'y''s half, which is the one
+        # half this change does NOT move -- keeping it would have hidden
+        # that 'e''s half now moves. The two halves of the fork, on the
+        # facade. 'y' is not marked
+        # as reading both ways, so in a name written wholly in one case
+        # it is the connective and drops -- 1.4.0's answer, unmoved.
+        # 'e' IS marked, so the same name shape reads it as an initial
+        # and it contributes: 'j. s.' through 2.3.0, 'j. e. s.' since
+        # #528 made this view read the parse's tags instead of
+        # re-deriving from vocabulary and shape. The core's
+        # parse(...).initials() has given 'j. e. s.' since #383/#479
+        # and the two agree now; decisions.md#P3 and decisions.md#R3
+        # carry the split and its closing.
         hn = HumanName("john e smith")
-        self.m(hn.initials(), "j. s.", hn)
+        self.m(hn.initials(), "j. e. s.", hn)
         hn = HumanName("maria y lopez")
         self.m(hn.initials(), "m. l.", hn)
