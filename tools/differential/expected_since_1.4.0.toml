@@ -2805,12 +2805,24 @@ fields = ["family", "suffix"]
 # not one of the four diffed here. #528 closed the split; the facade
 # reads the tags now, the same four names move here, and
 # `fix(#528) the facade's initials follow the parse's connective tags`
-# below classifies them. The two role-moving names of the same change
-# ('jose e maria santos', 'JUAN GARCIA Y LOPEZ') are NOT among them:
-# their roles move against this baseline, so `_initials` never enters
-# their diff (compare.py's roles-identical guard) and the role rule at
-# the end of this file explains what happened to them. decisions.md#P3
-# records the split and decisions.md#R3 its closing.
+# below classifies them.
+#
+# THE FOUR ARE NOT THE CHANGE'S WHOLE POPULATION, and this is the
+# one place in this file that says which names it leaves out.
+# Measured 2026-09-13 over the corpus glob, driving the facade before
+# and after #528: SIX one-case names' `HumanName.initials()` move for
+# the tag reason, and the two that are missing above
+# ('jose e maria santos', 'JUAN GARCIA Y LOPEZ') move their ROLES
+# against this baseline as well, so `_initials` never enters their
+# diff (compare.py's roles-identical guard) and the role rule at the
+# end of this file explains what happened to them. Scoped to that
+# reason deliberately: other corpus names' facade initials move
+# against 1.4.0 for other reasons and are no part of the six --
+# 'e and e' ('e a e.' -> 'e. a. e.') and 'juan garcia y lopez'
+# ('j. g l.' -> 'j. g. l.'), both measured from the wheel the same
+# day, move on the 2.0.0 per-word GROUPING the `fix(initials-per-word)`
+# rules below describe. decisions.md#P3 records the split and
+# decisions.md#R3 its closing.
 #
 # THE #528 RULE SITS AHEAD OF THE VOCABULARY RULES, with the literal
 # name lists, and the position is load-bearing rather than tidy: the
@@ -2891,18 +2903,18 @@ issue = "fix(#528) the facade's initials follow the parse's connective tags"
 # wholly in one case a marked 'e' is an initial and an unmarked 'y'
 # joins -- so from 2.4's #527 until #528 the two views of one parse
 # disagreed about the same letter. They agree now, and the facade's
-# answer is the core's: 'j. s.' -> 'j. e. s.' on the three e-names
-# (1.4.0's values measured from the wheel, 2026-09-13) and 'J. Y. G.'
-# -> 'J. G.' on the capital one. No role moves on any of the four --
-# P3's three-word carve-out is untouched -- which is exactly why the
-# derived view is the whole diff here.
+# answer is the core's. Name by name, with 1.4.0's values measured
+# from the wheel on 2026-09-13: 'john e smith' goes 'j. s.' ->
+# 'j. e. s.'; 'john e jones' and 'jones, john e' both go 'j. j.' ->
+# 'j. e. j.', the two e-names whose family initial is a `j` and not
+# an `s`; and 'JUAN Y GARCIA' goes 'J. Y. G.' -> 'J. G.', the
+# capital one losing a letter where the other three gain one. No
+# role moves on any of the four -- P3's three-word carve-out is untouched -- which
+# is exactly why the derived view is the whole diff here.
 #
-# LITERAL, four names, and the four are not the change's whole
-# population: six corpus names move `HumanName.initials()`, and
-# 'jose e maria santos' and 'JUAN GARCIA Y LOPEZ' move their ROLES
-# against this baseline as well, so `_initials` never enters their
-# diff and the #383/#479 role rule at the end of this file explains
-# them. A regex for the class -- "a one-case name whose single-letter
+# LITERAL, four names; which two of the change's movers they leave
+# out, and why, is the block header above.
+# A regex for the class -- "a one-case name whose single-letter
 # connective the parse read against 1.4.0's reading" -- is not
 # writable over the raw string at all, the reading being the parse's.
 # _MUST_NOT_MATCH in tests/v2/test_ledger_guards.py carries the
@@ -2917,12 +2929,7 @@ issue = "fix(#528) the facade's initials follow the parse's connective tags"
 # Two of the four -- 'john e smith' and 'john e jones' -- were
 # EXPLAINED BY THE CONNECTIVE RULE BELOW before this rule existed
 # (measured 2026-09-13 at this baseline: both sat in its classified
-# list). Its regex reaches them through their lowercase ' e ', its
-# `fields` are these, and equal `fields` is not a `precedes_narrower`
-# pair -- so file order is the whole instrument and this rule takes
-# them by sitting first. That is the right answer on the merits: what
-# moved on those two names is the READING of the letter, not the
-# per-word GROUPING of an element that rule describes.
+# list). Why this rule takes them instead: the block header above.
 # _CROSS_RULE_WINNERS pins it and _RECORDED_DIFFS carries the shapes.
 name_regex = "^(?:john e smith|john e jones|jones, john e|JUAN Y GARCIA)$"
 fields = ["_initials"]

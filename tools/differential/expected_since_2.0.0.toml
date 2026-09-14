@@ -1806,10 +1806,11 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # contributes no initial, 'J. Y. G.' -> 'J. G.' (rules.md#P3 for
 # which letters are connectives and rules.md#R3 for what a connective
 # contributes). #528 then made the facade read the parse's tags like
-# the core, so the facade's half CLOSED: the wheel gives 'J. G.' and
-# the tree gives 'J. G.' again, agreeing with this baseline, and the
-# core's half is the whole diff. Measured 2026-09-13 on the 2.0.0,
-# 2.1.0 and 2.2.0 wheels and on the tree.
+# the core, so the facade's half CLOSED: the WHEEL'S FACADE gives
+# 'J. G.' and the tree's facade gives 'J. G.' again, agreeing with
+# this baseline, and the core's half is the whole diff -- the wheel's
+# CORE gives 'J. Y. G.', which is the half that still moves. Measured
+# 2026-09-13 on the 2.0.0, 2.1.0 and 2.2.0 wheels and on the tree.
 # One rule still takes it, for the reason two halves needed one:
 # `_initials` is ONE field, and this rule's regex reaches the name.
 # That is also why #383/#479's section at the end of this file writes

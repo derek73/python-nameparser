@@ -882,23 +882,21 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # case-sensitivity buys, and it is why this roster keeps probing
     # for it after the bug is gone.
     #
-    # Re-read 2026-09-13 against #383/#479 and left exactly as it is.
-    # The case-sensitivity argument is about the #462 shapes, which
-    # are MIXED case, and this change touched only one-case names. The
-    # sentence above still holds literally for both uppercase probes:
-    # measured at 1.4.0 that day, neither 'JOSE E MARIA SANTOS' nor
-    # 'Jose E Maria Santos' diffs at all, the facade's initials being
-    # what this baseline compares and #383/#479 moving only the core's.
-    #
-    # Re-read 2026-09-13 after #528, which made the facade follow the
-    # tags: #383/#479 no longer moves the core alone, and the four
-    # names whose facade view it moved are now claimed by
+    # Re-read 2026-09-13 against #383/#479 and then again after #528,
+    # and left exactly as it is both times. The case-sensitivity
+    # argument is about the #462 shapes, which are MIXED case, and
+    # #383/#479 touched only one-case names. The sentence above still
+    # holds literally for both uppercase probes: measured at 1.4.0
+    # that day, neither 'JOSE E MARIA SANTOS' nor 'Jose E Maria
+    # Santos' diffs at all, the facade's initials being what this
+    # baseline compares and #383/#479 having moved only the core's --
+    # a clause #528 retired the same day by making the facade follow
+    # the tags too, without moving either probe (re-measured after it;
+    # an all-upper and a capital-E mixed-case spelling, and neither
+    # surface moves on either). What #528 added is a claimant: the
+    # four names whose facade view it moved now go to
     # `fix(#528) the facade's initials follow the parse's connective
-    # tags`, written ahead of this rule. Both probes above still do
-    # not diff -- measured the same day, they are an all-upper and a
-    # capital-E mixed-case spelling and neither surface moves on
-    # either -- so the case-sensitivity argument is untouched and so
-    # is the roster.
+    # tags`, written ahead of this rule.
     "a connective run initials": ("Jose E Maria Santos",
                                   "JOSE E MARIA SANTOS",
                                   "Scott E. Werner", "Amy E Maid"),
@@ -1113,7 +1111,7 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # corpora lack -- these probes are the wall, and the key is the
     # FULL issue string for the same reason the #383/#479 keys are.
     #
-    # The first four are MIXED-CASE spellings: mixed case is where the
+    # The first five are MIXED-CASE spellings: mixed case is where the
     # writing decides the letter (rules.md#P3), neither surface moved
     # there, and a rule reaching one would be absorbing a regression
     # in the half of P3 that change did not touch -- 'Scott E. Werner'
@@ -2104,9 +2102,16 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # which READING the parse gave a letter, and the same four strings
     # would be claimed by a connective-shaped member together with
     # every other corpus name carrying a connective ('Juan y Eva
-    # Garcia', 'juan garcia y lopez', 'Rob And Beth Edmunds'). Four of
-    # the six names whose HumanName.initials() move, the other two
-    # moving roles as well so that `_initials` never enters their diff.
+    # Garcia', 'juan garcia y lopez', 'Rob And Beth Edmunds').
+    # Measured 2026-09-13 over the corpus glob, driving the facade
+    # before and after #528: six one-case names' HumanName.initials()
+    # move for the TAG reason, and these are the four of them whose
+    # roles hold still. The other two, 'jose e maria santos' and
+    # 'JUAN GARCIA Y LOPEZ', move a role against 1.4.0 as well, so
+    # `_initials` never enters their diff and no `_initials` rule can
+    # list them. Scoped to that reason: facade initials that move
+    # against 1.4.0 for OTHER reasons -- 'e and e' and 'juan garcia y
+    # lopez', on the 2.0.0 per-word grouping -- are no part of the six.
     frozenset({"john e smith", "john e jones", "jones, john e",
                "JUAN Y GARCIA"}),
 })
@@ -2802,8 +2807,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_initials',), "770ce7374f32", ('DEFAULT',)),
         # #528's literal name list, added 2026-09-13 and sitting ahead
         # of the three vocabulary rules below because it shares their
-        # `_initials` field and two of their corpus names. Four corpus
-        # names, `_initials` alone: the roles move on none of them,
+        # `_initials` field, and because the first of them -- the
+        # connective rule -- reaches two of its corpus names.
+        # Four corpus names, `_initials` alone: the roles move on none,
         # which is what leaves the derived view as the whole diff. A
         # fifth name here means the alternation grew.
         "fix(#528) the facade's initials follow the parse's connective tags":
@@ -3842,10 +3848,14 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         # reaches both names through their lowercase ' e ' (measured
         # 2026-09-13) and describes the 2.0.0 per-word GROUPING change,
         # which is not what moved: what moved is the reading of the
-        # letter, and #528's rule says so. 'jones, john e' and
-        # 'JUAN Y GARCIA' are not contested -- the connective rule's
-        # regex wants whitespace after the letter and is case-sensitive
-        # on it -- so neither has a row.
+        # letter, and #528's rule says so. The other two of #528's four
+        # are not contested, each kept out by a different half of that
+        # regex (measured 2026-09-13): 'jones, john e' ends on its 'e',
+        # and the alternation wants whitespace AFTER the letter, so a
+        # letter at end of string never matches; 'JUAN Y GARCIA' has
+        # the whitespace but a capital 'Y', and the alternation is
+        # CASE-SENSITIVE, carrying only the lowercase letter. Neither
+        # has a row.
         "john e smith":
             "fix(#528) the facade's initials follow the parse's "
             "connective tags",
