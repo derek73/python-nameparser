@@ -7,7 +7,7 @@ import pytest
 
 from nameparser._config_shim import CONSTANTS, Constants
 from nameparser._facade import HumanName
-from nameparser._types import UNCLASSIFIED_TAG, Role
+from nameparser._types import UNCLASSIFIED_TAG, Role, Token
 
 _DATA_DIR = Path(__file__).parent / "data"
 
@@ -759,6 +759,38 @@ def test_v1_signature_override_raises_from_initials() -> None:
     hn = LegacyOverride("John Smith")
     with pytest.raises(TypeError, match="tokens"):
         hn.initials()
+
+
+def test_an_override_that_forwards_tokens_keeps_working() -> None:
+    # The remedy for the break above, pinned because the OBVIOUS
+    # remedy is wrong in the quiet direction: widening the signature
+    # alone -- `**kwargs`, or a `tokens=None` the super() call drops --
+    # leaves the override reading `name_part`, which the token path
+    # passes as "", so every group initials to "" and initials()
+    # returns "" without raising. Accepting AND FORWARDING is what
+    # restores the answer. decisions.md#R3's 2026-09-13 entry and the
+    # 2.4.0 release note both state the two-part remedy; this pins
+    # both halves so neither can be written as one again.
+    class Forwards(HumanName):
+        def _process_initial(self, name_part: str,
+                             firstname: bool = False,
+                             tokens: tuple[Token, ...] | None = None) -> str:
+            return super()._process_initial(name_part, firstname,
+                                            tokens=tokens)
+
+    class WidensOnly(HumanName):
+        # The recorded negative control. `**kwargs` is the spelling a
+        # reader reaches for first, and mypy rejects it here -- worth
+        # noting, since a typed caller is warned and an untyped one is
+        # not, which is who this control is written for.
+        def _process_initial(self, name_part: str,  # type: ignore[override]
+                             firstname: bool = False,
+                             **kwargs: object) -> str:
+            return super()._process_initial(name_part, firstname)
+
+    assert HumanName("John Quincy Smith").initials() == "J. Q. S."
+    assert Forwards("John Quincy Smith").initials() == "J. Q. S."
+    assert WidensOnly("John Quincy Smith").initials() == ""
 
 
 def test_initials_of_a_spliced_field_ask_the_vocabulary() -> None:

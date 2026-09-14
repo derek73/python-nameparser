@@ -574,6 +574,13 @@ class HumanName:
         # alternative -- a string wrapper kept over a token core --
         # would make such an override silently ineffective instead,
         # which hides the override rather than breaking it loudly.
+        # Such an override must ACCEPT `tokens` AND FORWARD it:
+        # super()._process_initial(name_part, firstname, tokens=tokens).
+        # Widening the signature alone is the silent failure the break
+        # exists to avoid -- `**kwargs`, or a `tokens=None` the super()
+        # call drops, leaves the override reading `name_part`, which on
+        # this path is "", so every group initials to "" and initials()
+        # returns "" without raising (measured 2026-09-13).
         # split() rather than split(" ") because split(" ") yields ''
         # between repeated spaces and `word[0]` below would raise
         # IndexError on it (#232). v1 stated the reason as `*_list`

@@ -252,7 +252,7 @@ the default-order entry it was measured on, fatal on a contract name
 and printed under `MOVED SHAPE (radar)` on a radar one. Measured
 2026-09-03, before the rule was written, MOST of the contest rows in
 `_RECORDED_DIFFS['expected_since_1.4.0.toml']` sat on radar-tier names
--- 21 of 31, and 32 of the 45 today, the fourteen #498 pinned on
+-- 21 of 31, and 32 of the 45 there were on 2026-09-05, the fourteen #498 pinned on
 2026-09-05 adding ten radar rows and four contract ones on top of the
 2026-09-05 period-class demotion, which moved `'김민준 씨.'` from the
 contract CJK corpus to the tolerated one (measured 2026-09-05;

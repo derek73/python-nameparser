@@ -1736,6 +1736,23 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     and matches the parse in both views. Stated without an example
     line because every line here names an input string, and this
     shape needs a field edited after the parse.
+    The v1 facade's HumanName.initials() is a second view of this
+    question and IS handed a vocabulary: it reads the parse's reading
+    wherever a word is backed by a parsed token, and falls back
+    wherever a word is not — a field set as raw text, or a name
+    restored from a v1 pickle. It falls back on BOTH questions there,
+    not one: the connective question through the same helper case
+    repair uses, and the particle question through a live vocabulary
+    lookup, so a family spliced to "de la vega" initials "j. v." on
+    this view against "j. d. l. v." on the parsed name's own. So the
+    two views agree on WHICH WORDS initial in a parsed name; what
+    still differs there is GROUPING, the facade initialing a joined
+    run as one element, which is where the name "Ph. D., John" gives
+    a run-together "J. P D." on this view against "J. P. D." on the
+    other. Stated in prose and not as example lines because both
+    shapes need a field edited after the parse, or a rendering the
+    other view does not have. decisions.md#R3 carries what all of it
+    costs and where it is pinned.
     Accepted: the unsettled given-group answer above is neither rare
     nor hypothetical — 26 of the corpus names carry a conjunction
     among the given names (measured 2026-09-13; recompute by parsing
@@ -1802,9 +1819,15 @@ R4. Rationale: case repair is a display concern, applied only on
     needs a reading on every word of the part, and a spliced field
     has none on any, so that half falls through to particle treatment
     and the "de la" boundary above stands. Initials are the contrast
-    worth knowing, and R3 states it: that view is handed no
-    vocabulary at all, so it falls back on neither question and a
-    spliced field's every word initials. revise() classifies the
+    worth knowing, and R3 states it — but ask which initials view,
+    because the two answer oppositely. The parsed name's own view is
+    handed no vocabulary at all, so it falls back on neither question
+    and a spliced field's every word initials. The v1 facade's view IS
+    handed one and falls back on BOTH: the connective question through
+    the helper this rule uses, and the particle question through a
+    live vocabulary lookup, so a family spliced to "de la vega"
+    initials "j. v." there against the parsed view's "j. d. l. v.".
+    revise() classifies the
     value and crosses both questions, in both views: a middle revised
     to "e-f" repairs to "E-F" as the parsed name does, where splicing
     the same text in gives "e-F".

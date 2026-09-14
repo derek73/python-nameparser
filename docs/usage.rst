@@ -910,10 +910,14 @@ no longer knows ``de la`` are particles, so ``family_particles``
 empties and ``family_base`` takes the whole field.
 
 A token the parse never saw carries no decision to honor, so a view
-that is *handed* a vocabulary can fall back to it —
-:meth:`~nameparser.ParsedName.capitalized` is the one that is, and it
-falls back for one question only: whether a word is a conjunction or
-an initial, which a word answers on its own. Whether a particle is
+that is *handed* a vocabulary can fall back to it — of the parsed
+name's own views, :meth:`~nameparser.ParsedName.capitalized` is the
+one that is, and it falls back for one question only: whether a word
+is a conjunction or an initial, which a word answers on its own.
+(The v1 :class:`~nameparser.parser.HumanName` facade's ``initials()``
+is the other view that is handed one, and takes the same fallback for
+spliced text; it is not a method of the parsed name and is not what
+this section describes.) Whether a particle is
 acting as a particle is a fact about the whole part, and there is no
 reading on any word of a spliced field to derive it from, so a family
 set to ``de la`` stays lowercase where the same words parsed are
