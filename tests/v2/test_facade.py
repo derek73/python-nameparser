@@ -779,11 +779,19 @@ def test_an_override_that_forwards_tokens_keeps_working() -> None:
     # remedy is wrong in the quiet direction: widening the signature
     # alone -- `**kwargs`, or a `tokens=None` the super() call drops --
     # leaves the override reading `name_part`, which the token path
-    # passes as "", so every group initials to "" and initials()
-    # returns "" without raising. Accepting AND FORWARDING is what
-    # restores the answer. decisions.md#R3's 2026-09-13 entry and the
-    # 2.4.0 release note both state the two-part remedy; this pins
-    # both halves so neither can be written as one again.
+    # now passes as the group's own text (Derek, 2026-09-14 -- #528
+    # passed "" here originally), so a widen-only override takes the
+    # STRING path instead of raising or going silent: it gets the
+    # PRE-#528 answer, computed from the vocabulary fallback rather
+    # than the parse. "john e smith" is where the two views disagree
+    # -- the parse reads the middle "e" as initial-shaped
+    # (test_process_initial_with_tokens_reads_the_parse), but the
+    # bare-word vocabulary fallback reads lowercase "e" as the
+    # connective and drops it -- so WidensOnly keeps working but
+    # without #528's fix. Accepting AND FORWARDING `tokens` is still
+    # the only way to receive the fix. decisions.md#R3's 2026-09-13
+    # entry (amended 2026-09-14) and the 2.4.0 release note both
+    # state this.
     class Forwards(HumanName):
         def _process_initial(self, name_part: str,
                              firstname: bool = False,
@@ -801,9 +809,9 @@ def test_an_override_that_forwards_tokens_keeps_working() -> None:
                              **kwargs: object) -> str:
             return super()._process_initial(name_part, firstname)
 
-    assert HumanName("John Quincy Smith").initials() == "J. Q. S."
-    assert Forwards("John Quincy Smith").initials() == "J. Q. S."
-    assert WidensOnly("John Quincy Smith").initials() == ""
+    assert HumanName("john e smith").initials() == "j. e. s."
+    assert Forwards("john e smith").initials() == "j. e. s."
+    assert WidensOnly("john e smith").initials() == "j. s."
 
 
 def test_initials_of_a_spliced_field_ask_the_vocabulary() -> None:

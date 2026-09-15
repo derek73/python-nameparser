@@ -577,11 +577,19 @@ class HumanName:
         # which hides the override rather than breaking it loudly.
         # Such an override must ACCEPT `tokens` AND FORWARD it:
         # super()._process_initial(name_part, firstname, tokens=tokens).
-        # Widening the signature alone is the silent failure the break
-        # exists to avoid -- `**kwargs`, or a `tokens=None` the super()
-        # call drops, leaves the override reading `name_part`, which on
-        # this path is "", so every group initials to "" and initials()
-        # returns "" without raising (measured 2026-09-13).
+        # That is still the only way to RECEIVE #528's fix. Widening
+        # the signature alone -- `**kwargs`, or a `tokens=None` the
+        # super() call drops -- does not raise and does not go silent
+        # either: `name_part` on this path is the group's own text
+        # (Derek, 2026-09-14), so the override takes the STRING path
+        # below and keeps working, just without the fix -- the
+        # PRE-#528 answer, computed from the vocabulary fallback
+        # instead of the parse (measured 2026-09-14:
+        # `WidensOnly("john e smith").initials()` is "j. s.", where a
+        # forwarding override and the library itself give "j. e. s.").
+        # Real text was chosen over the empty placeholder precisely so
+        # an override that ignores the keyword behaves as it did
+        # before the upgrade, rather than going quietly blank.
         #
         # Particles are NOT decided per token: _is_particle stays a
         # live vocabulary lookup, as _render._cap_word keeps it --
@@ -638,7 +646,9 @@ class HumanName:
         def group_initials(groups: list[tuple[Token, ...]],
                            firstname: bool = False) -> list[str]:
             got = [i for i in (
-                self._process_initial("", firstname=firstname, tokens=group)
+                self._process_initial(
+                    " ".join(tok.text for tok in group),
+                    firstname=firstname, tokens=group)
                 for group in groups) if i]
             words = [tok.text for group in groups for tok in group]
             if got or not words or not all(self._is_particle(w)
