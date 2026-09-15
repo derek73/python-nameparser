@@ -512,7 +512,12 @@ class HumanName:
         # whether a particle is acting as one is a fact about the part).
         #
         # _resolve() first, as _is_particle above does: an unpickled or
-        # copied instance has no _lexicon until resolved.
+        # copied instance has no _lexicon until resolved -- and neither
+        # does a keyword-constructed one (`HumanName(first=..., middle=
+        # "y", last=...)`), which never runs the full-string parse path
+        # other callers rely on to have called _resolve() already.
+        # LOAD-BEARING for exactly those caller shapes: do not delete
+        # this call as dead just because most callers arrive resolved.
         self._resolve()
         if UNCLASSIFIED_TAG in tok.tags:
             return _render._reads_as_conjunction(tok.text, self._lexicon)
@@ -591,6 +596,16 @@ class HumanName:
         # an override that ignores the keyword behaves as it did
         # before the upgrade, rather than going quietly blank.
         #
+        # An overridden PUBLIC `first_list`/`middle_list`/`last_list`
+        # property lands here the same way: _initials_lists (above)
+        # detects the override and calls this method for that member
+        # with no `tokens=` at all, so it takes the STRING path below
+        # regardless of what `tokens=` a WidensOnly-style override
+        # might otherwise forward -- the override supplies strings,
+        # not tokens, so there is nothing to forward. Same degradation,
+        # same pre-#528 vocabulary answer, for the same reason: no
+        # tokens exist to read a parse's tag from.
+        #
         # Particles are NOT decided per token: _is_particle stays a
         # live vocabulary lookup, as _render._cap_word keeps it --
         # rules.md#R4 draws this boundary per question, not per field.
@@ -617,7 +632,7 @@ class HumanName:
             conjunctions = tuple(self._token_is_conjunction(tok)
                                  for tok in tokens)
         initials = []
-        for word, conjunction in zip(words, conjunctions):
+        for word, conjunction in zip(words, conjunctions, strict=True):
             if not (self._is_particle(word) or conjunction) or firstname:
                 initials.append(word[0])
         if len(initials) > 0:
@@ -642,15 +657,17 @@ class HumanName:
         the `*_list` view (#528), so every word carries the reading the
         parse gave it; the elements are the list view's own, folded
         first and continuations merged, because one walk builds both.
+        A member whose PUBLIC `first_list`/`middle_list`/`last_list`
+        property is overridden is the one exception: `first`/`middle`/
+        `last` (the private token walk this method otherwise uses) do
+        not consult that override, so honoring it means reading the
+        override's own strings instead -- the pre-#528 walk, degraded
+        to the vocabulary fallback exactly as a widen-only
+        `_process_initial` override is (STATED BREAK, below): the
+        override supplies strings, not tokens, so there is nothing to
+        forward even if it accepted `tokens=`.
         """
-        def group_initials(groups: list[tuple[Token, ...]],
-                           firstname: bool = False) -> list[str]:
-            got = [i for i in (
-                self._process_initial(
-                    " ".join(tok.text for tok in group),
-                    firstname=firstname, tokens=group)
-                for group in groups) if i]
-            words = [tok.text for group in groups for tok in group]
+        def all_particle_guard(got: list[str], words: list[str]) -> list[str]:
             if got or not words or not all(self._is_particle(w)
                                            for w in words):
                 return got
@@ -668,9 +685,43 @@ class HumanName:
             # already applies the same guard to the base, which is why
             # last_base was never empty here.
             return [w[0] for w in words]
-        return (group_initials(self._list_tokens_for("first"), True),
-                group_initials(self._list_tokens_for("middle")),
-                group_initials(self._list_tokens_for("last")))
+
+        def group_initials(groups: list[tuple[Token, ...]],
+                           firstname: bool = False) -> list[str]:
+            got = [i for i in (
+                self._process_initial(
+                    " ".join(tok.text for tok in group),
+                    firstname=firstname, tokens=group)
+                for group in groups) if i]
+            words = [tok.text for group in groups for tok in group]
+            return all_particle_guard(got, words)
+
+        def group_initials_from_list(names: list[str],
+                                     firstname: bool = False) -> list[str]:
+            # PRE-#528 walk (`git show 338daf7:nameparser/_facade.py`),
+            # reproduced exactly: no tokens exist to walk here, only
+            # the override's own strings, so each element goes through
+            # `_process_initial` with no `tokens=` -- the STRING path,
+            # answered from the vocabulary rather than the parse.
+            got = [i for i in (self._process_initial(n, firstname=firstname)
+                               for n in names if n) if i]
+            words = [w for n in names if n for w in n.split()]
+            return all_particle_guard(got, words)
+
+        def initials_for(member: str, firstname: bool) -> list[str]:
+            # One class-attribute identity check per member (cheap: no
+            # parse involved) decides which walk honors that member's
+            # public property.
+            overridden = (getattr(type(self), f"{member}_list")
+                         is not getattr(HumanName, f"{member}_list"))
+            if overridden:
+                return group_initials_from_list(
+                    getattr(self, f"{member}_list"), firstname)
+            return group_initials(self._list_tokens_for(member), firstname)
+
+        return (initials_for("first", True),
+                initials_for("middle", False),
+                initials_for("last", False))
 
     def initials_list(self) -> list[str]:
         first, middle, last = self._initials_lists()

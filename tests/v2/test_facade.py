@@ -720,6 +720,19 @@ def test_token_is_conjunction_reads_the_tag_then_the_vocabulary() -> None:
     assert spliced._token_is_conjunction(upper) is False
 
 
+def test_token_is_conjunction_resolves_an_unresolved_instance() -> None:
+    # _token_is_conjunction calls self._resolve() before reading
+    # self._lexicon (see the comment on that call). Pinning that it is
+    # load-bearing, not defensive dead code: a keyword-constructed
+    # HumanName never runs the full-string parse path other callers
+    # rely on to have resolved already, so _lexicon is absent here
+    # until this method's own _resolve() call builds it.
+    hn = HumanName(first="John", middle="y", last="Smith")
+    assert not hasattr(hn, "_lexicon")
+    tok = hn._list_tokens_for("middle")[0][0]
+    assert hn._token_is_conjunction(tok) is True
+
+
 def test_process_initial_direct_call_keeps_the_v1_string_path() -> None:
     # tests/test_initials.py calls this with a bare string and no
     # tokens, which is v1's shape and stays supported: with no tokens
@@ -812,6 +825,68 @@ def test_an_override_that_forwards_tokens_keeps_working() -> None:
     assert HumanName("john e smith").initials() == "j. e. s."
     assert Forwards("john e smith").initials() == "j. e. s."
     assert WidensOnly("john e smith").initials() == "j. s."
+
+    # The multi-token-group pin: "Ph." + "D." is a "joined" continuation
+    # (_list_tokens_for), the only producer of a group with more than one
+    # token, so it is the one place the join's SHAPE -- space-separated,
+    # both words -- is observable at all. A join without the separator,
+    # or with only one token, gives "J. P." / "J. D." and passes every
+    # single-token name; this is what actually exercises `zip(words,
+    # conjunctions, strict=True)` over more than one element per group.
+    # Measured 2026-09-14.
+    assert HumanName("Ph. D., John").initials() == "J. P D."
+    assert Forwards("Ph. D., John").initials() == "J. P D."
+    assert WidensOnly("Ph. D., John").initials() == "J. P D."
+    assert (WidensOnly("Ph. D., John", initials_separator="-").initials()
+            == "J. P-D.")
+
+
+def test_initials_honor_an_overridden_list_property() -> None:
+    # F1, second review round: before #528, _initials_lists read
+    # self.first_list/middle_list/last_list -- public properties a v1
+    # subclass may override -- and #528 switched it to the private
+    # token walk (_list_tokens_for) directly, which does not consult
+    # such an override. last_base/surnames/given_names still honor it
+    # (they route through _split_last, which reads self.last_list), so
+    # initials() alone went silently stale. The fix detects an
+    # overridden property per member (a cheap class-attribute identity
+    # check) and, for that member only, takes the pre-#528 STRING path
+    # over the override's own strings -- same degradation a
+    # WidensOnly-style _process_initial override gets, and the same
+    # pre-#528 answer. Measured 2026-09-14 against `git show
+    # 338daf7:nameparser/_facade.py` (before #528): both values below
+    # are that package's answer for the same construction.
+    class Sub(HumanName):
+        @property
+        def first_list(self) -> list[str]:
+            return [p.upper() for p in super().first_list]
+
+        @property
+        def middle_list(self) -> list[str]:
+            return [p for p in super().middle_list if not p.startswith("X")]
+
+        @property
+        def last_list(self) -> list[str]:
+            return ["Zorro"]
+
+    sub = Sub("john Xavier smith")
+    assert sub.initials() == "J. Z."
+    # last_base/surnames already honored the override before this fix;
+    # pinned here so a future change can't silently regress it back
+    # into agreement with initials() for the wrong reason.
+    assert sub.last_base == "Zorro"
+    assert sub.surnames == "Zorro"
+
+    class SubLastOnly(HumanName):
+        @property
+        def last_list(self) -> list[str]:
+            return ["Zorro"]
+
+    # Only ONE property overridden: first/middle are un-overridden and
+    # must keep the (post-#528) TOKEN path -- the middle "e" is "e."
+    # because the parse tagged it an initial, not the connective -- and
+    # only last takes the string path and the override's "Zorro".
+    assert SubLastOnly("john e smith").initials() == "j. e. Z."
 
 
 def test_initials_of_a_spliced_field_ask_the_vocabulary() -> None:
