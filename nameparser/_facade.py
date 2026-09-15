@@ -658,9 +658,9 @@ class HumanName:
         parse gave it; the elements are the list view's own, folded
         first and continuations merged, because one walk builds both.
         A member whose PUBLIC `first_list`/`middle_list`/`last_list`
-        property is overridden is the one exception: `first`/`middle`/
-        `last` (the private token walk this method otherwise uses) do
-        not consult that override, so honoring it means reading the
+        property is overridden is the one exception: `_list_tokens_for`
+        (the private token walk this method otherwise uses) does not
+        consult that override, so honoring it means reading the
         override's own strings instead -- the pre-#528 walk, degraded
         to the vocabulary fallback exactly as a widen-only
         `_process_initial` override is (STATED BREAK, below): the
