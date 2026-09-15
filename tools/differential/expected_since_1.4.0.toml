@@ -2776,10 +2776,10 @@ fields = ["family", "suffix"]
 # on parse().initials() -- renders for a parse whose fields did not
 # move.
 #
-# The order the file has them in: the three literal name LISTS first
-# (fix(#385/#402), fix(#360), feat(#269)), then the three VOCABULARY
-# rules -- connective, bound-given, particle chain -- then the Ph. D.
-# merge.
+# The order the file has them in: the four literal name LISTS first
+# (fix(#385/#402), fix(#360), feat(#269), fix(#528) -- the last added
+# 2026-09-13), then the three VOCABULARY rules -- connective,
+# bound-given, particle chain -- then the Ph. D. merge.
 # Only the bound-given/particle-chain pair is ordered by narrowness,
 # and by measured reach rather than by reading: 41 corpus names
 # against 107 (measured 2026-09-02 at this baseline, and recorded in
@@ -2793,17 +2793,46 @@ fields = ["family", "suffix"]
 # `_initials` diff under a declared order could only come from the
 # CORE, and must not be absorbed by a rule whose prose says "facade".
 #
-# #383/#479 has NO rule in this block, and the absence is a measured
-# finding rather than an omission. The change moves what
-# `parse(...).initials()` renders for 'john e smith', 'john e jones',
-# 'jones, john e' and 'JUAN Y GARCIA' -- but `HumanName.initials()`
-# re-derives the connective decision from vocabulary and initial shape
-# on the raw text instead of reading the parse's tags, so the FACADE's
-# view does not move at all, and the facade is the only surface
-# compared below 2.0. Measured 2026-09-13: not one of those four names
-# diffs here. The core's movement is classified at the 2.x baselines,
-# where the core is compared (decisions.md#P3 records the facade split
-# and the follow-up it owes).
+# #383/#479 HAD no rule in this block, and #528 gave it one. Recorded
+# as a pair because the absence was itself a measured finding and the
+# reason it stopped holding is the whole of #528. The change moved
+# what `parse(...).initials()` renders for 'john e smith', 'john e
+# jones', 'jones, john e' and 'JUAN Y GARCIA' -- and on 2026-09-13
+# `HumanName.initials()` re-derived the connective decision from
+# vocabulary and initial shape on the raw text instead of reading the
+# parse's tags, so the FACADE's view did not move at all and the
+# facade is the only surface compared below 2.0. Measured that day:
+# not one of the four diffed here. #528 closed the split; the facade
+# reads the tags now, the same four names move here, and
+# `fix(#528) the facade's initials follow the parse's connective tags`
+# below classifies them.
+#
+# THE FOUR ARE NOT THE CHANGE'S WHOLE POPULATION, and this is the
+# one place in this file that says which names it leaves out.
+# Measured 2026-09-13 over the corpus glob, driving the facade before
+# and after #528: SIX one-case names' `HumanName.initials()` move for
+# the tag reason, and the two that are missing above
+# ('jose e maria santos', 'JUAN GARCIA Y LOPEZ') move their ROLES
+# against this baseline as well, so `_initials` never enters their
+# diff (compare.py's roles-identical guard) and the role rule at the
+# end of this file explains what happened to them. Scoped to that
+# reason deliberately: other corpus names' facade initials move
+# against 1.4.0 for other reasons and are no part of the six --
+# 'e and e' ('e a e.' -> 'e. a. e.') and 'juan garcia y lopez'
+# ('j. g l.' -> 'j. g. l.'), both measured from the wheel the same
+# day, move on the 2.0.0 per-word GROUPING the `fix(initials-per-word)`
+# rules below describe. decisions.md#P3 records the split and
+# decisions.md#R3 its closing.
+#
+# THE #528 RULE SITS AHEAD OF THE VOCABULARY RULES, with the literal
+# name lists, and the position is load-bearing rather than tidy: the
+# connective rule below carries `fields = ["_initials"]` too, its
+# regex reaches 'john e smith' and 'john e jones' (measured
+# 2026-09-13), and equal `fields` puts the pair outside
+# `precedes_narrower` -- which leaves file order deciding, with
+# _CROSS_RULE_WINNERS in tests/v2/test_ledger_guards.py pinning the
+# answer. Written first, the narrower rule wins, which is this file's
+# convention.
 
 [[change]]
 issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
@@ -2861,6 +2890,48 @@ issue = "feat(#269) a recognized non-Latin connective contributes no initial"
 # moment one carries a `و` or an `и`, and the two Cyrillic names that
 # do move here move their ROLES and belong to the rule above.
 name_regex = "^محمد و علي$"
+fields = ["_initials"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#528) the facade's initials follow the parse's connective tags"
+# 'john e smith', 'john e jones', 'jones, john e' and 'JUAN Y GARCIA'.
+# `HumanName.initials()` decided "is this word the connective" from
+# the lexicon plus v1's initial SHAPE on the part's raw text, where
+# the core's initials() reads the tag the parse recorded. #383/#479
+# gave rules.md#P3 a fork the shape cannot see -- in a name written
+# wholly in one case a marked 'e' is an initial and an unmarked 'y'
+# joins -- so from 2.4's #527 until #528 the two views of one parse
+# disagreed about the same letter. They agree now, and the facade's
+# answer is the core's. Name by name, with 1.4.0's values measured
+# from the wheel on 2026-09-13: 'john e smith' goes 'j. s.' ->
+# 'j. e. s.'; 'john e jones' and 'jones, john e' both go 'j. j.' ->
+# 'j. e. j.', the two e-names whose family initial is a `j` and not
+# an `s`; and 'JUAN Y GARCIA' goes 'J. Y. G.' -> 'J. G.', the
+# capital one losing a letter where the other three gain one. No
+# role moves on any of the four -- P3's three-word carve-out is untouched -- which
+# is exactly why the derived view is the whole diff here.
+#
+# LITERAL, four names; which two of the change's movers they leave
+# out, and why, is the block header above.
+# A regex for the class -- "a one-case name whose single-letter
+# connective the parse read against 1.4.0's reading" -- is not
+# writable over the raw string at all, the reading being the parse's.
+# _MUST_NOT_MATCH in tests/v2/test_ledger_guards.py carries the
+# probes: the mixed-case spellings, where the writing decides the
+# letter and nothing moved on either surface; 'maria y lopez', whose
+# lowercase 'y' was the connective before and after; and
+# 'Ph. D., John', the one corpus name whose two initials views still
+# disagree -- the facade merges the credential into one list element
+# and renders 'P D' with no inner delimiter, which is
+# fix(initials-per-word) the Ph. D. merge below and not this.
+#
+# Two of the four -- 'john e smith' and 'john e jones' -- were
+# EXPLAINED BY THE CONNECTIVE RULE BELOW before this rule existed
+# (measured 2026-09-13 at this baseline: both sat in its classified
+# list). Why this rule takes them instead: the block header above.
+# _CROSS_RULE_WINNERS pins it and _RECORDED_DIFFS carries the shapes.
+name_regex = "^(?:john e smith|john e jones|jones, john e|JUAN Y GARCIA)$"
 fields = ["_initials"]
 orders = ["DEFAULT"]
 

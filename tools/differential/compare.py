@@ -1704,12 +1704,13 @@ class _ShapeMismatch(NamedTuple):
 #: Default-order shapes only, because the roster classifies with no
 #: order. recorded_diff_mismatches below says what that leaves out.
 #:
-#: PROVENANCE. The 45 rows at 1.4.0 are measured against the 1.4.0
-#: wheel, as the roster always claimed, and all 45 still agree -- the
+#: PROVENANCE. The 47 rows at 1.4.0 are measured against the 1.4.0
+#: wheel, as the roster always claimed, and all 47 still agree -- the
 #: original 31 re-measured 2026-09-03, the fourteen #498 added measured
-#: 2026-09-05 by the sweep that found them, and every one of the 45
-#: checked by the same recompute: drive main() at all four baselines and
-#: feed its `diffing` and its post-skip corpus to
+#: 2026-09-05 by the sweep that found them, #528's two measured
+#: 2026-09-13 by the run that reported their contest, and every one of
+#: the 47 checked by the same recompute: drive main() at all four
+#: baselines and feed its `diffing` and its post-skip corpus to
 #: recorded_diff_mismatches, wrapping _run_worker to
 #: capture the post-skip entries and dormant_rules to capture `diffing`,
 #: since both receive exactly what main() built.
@@ -1806,6 +1807,19 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Smith, Ph. D. MD": ("suffix", "title"),
         "Smith, Ph.D. Jr.": ("given", "suffix"),
         "Smith, PhD Jr.": ("given", "suffix", "title"),
+        # #528's two, adjudicated 2026-09-13, and kept BELOW #498's
+        # block so the three cohorts read down the dict in the order
+        # the PROVENANCE note above tells them. Both are contested by
+        # `fix(#528) the facade's initials follow the parse's
+        # connective tags` against `fix(initials-per-word) a
+        # connective run initials each word`: equal `fields`, so
+        # neither is narrower, `precedes_narrower` has no narrower
+        # rule to name, and file order is the whole decision. The
+        # shapes are this run's, not guessed -- the gate reported the
+        # pair as an unpinned contest and these are the diffs it
+        # measured. The winners are pinned in _CROSS_RULE_WINNERS.
+        "john e smith": ("_initials",),
+        "john e jones": ("_initials",),
     },
     # #501's six, moved here from _WATCHED_DIFFS with their shapes
     # unchanged. The four CJK rows sit at 2.0.0 alone: the honorific

@@ -141,6 +141,10 @@ class InitialsTestCase(HumanNameTestBase):
         # Non-empty custom separator exercising _process_initial on a multi-word
         # token. "Van Berg" is a single name part whose two words produce two initials
         # joined by initials_separator.
+        # This calls _process_initial directly with a bare string (tokens=None),
+        # which is the v1 string path -- HumanName.initials() itself no longer
+        # takes it (#528). See test_initials_separator_is_honored_on_the_live_
+        # token_path in tests/v2/test_render.py for the live token path's pin.
         hn = HumanName("", initials_separator="-", initials_delimiter=".")
         result = hn._process_initial("Van Berg", firstname=True)
         self.assertEqual(result, "V-B")
@@ -196,6 +200,8 @@ class InitialsTestCase(HumanNameTestBase):
     def test_initials_separator_kwarg_multiword_part(self) -> None:
         # Regression: initials_separator kwarg must flow into _process_initial
         # for multi-word name parts, not just into the initials() join calls.
+        # Direct string call (tokens=None), the v1 path -- see the comment on
+        # test_initials_separator_custom_value above.
         hn = HumanName("", initials_separator="")
         result = hn._process_initial("Van Berg", firstname=True)
         self.assertEqual(result, "VB")
@@ -260,13 +266,42 @@ class InitialsTestCase(HumanNameTestBase):
         hn = HumanName("Хосе Мария И Сантос")
         self.m(hn.initials(), "Х. М. С.", hn)
 
-    def test_initials_still_drop_a_lowercase_conjunction(self) -> None:
-        # the boundary #462 leaves alone: a bare lowercase e/y IS the
-        # connective, and 1.4.0 and 2.x agree -- true of this facade
-        # surface only since #383/#479: the core's parse().initials()
-        # now reads a one-case 'e' as an initial instead
-        # (tests/v2/test_render.py::test_facade_initials_do_not_yet_follow_the_one_case_fork)
+    def test_initials_follow_the_one_case_fork_on_both_letters(self) -> None:
+        # Renamed from test_initials_still_drop_a_lowercase_conjunction
+        # (#528): that name described only 'y''s half, which is the one
+        # half this change does NOT move -- keeping it would have hidden
+        # that 'e''s half now moves. The two halves of the fork, on the
+        # facade. 'y' is not marked
+        # as reading both ways, so in a name written wholly in one case
+        # it is the connective and drops -- 1.4.0's answer, unmoved.
+        # 'e' IS marked, so the same name shape reads it as an initial
+        # and it contributes: 'j. s.' through 2.3.0, 'j. e. s.' since
+        # #528 made this view read the parse's tags instead of
+        # re-deriving from vocabulary and shape. The core's
+        # parse(...).initials() has given 'j. e. s.' since #383/#479
+        # and the two agree now; decisions.md#P3 and decisions.md#R3
+        # carry the split and its closing.
         hn = HumanName("john e smith")
-        self.m(hn.initials(), "j. s.", hn)
+        self.m(hn.initials(), "j. e. s.", hn)
         hn = HumanName("maria y lopez")
         self.m(hn.initials(), "m. l.", hn)
+        # These two are among #528's four movers, and the #528 ledger
+        # rule's own name_regex (a literal alternation, in
+        # tools/differential/expected_since_1.4.0.toml) covers all four
+        # names by itself -- but only "john e jones" also has a row in
+        # _CROSS_RULE_WINNERS (tests/v2/test_ledger_guards.py) and
+        # _RECORDED_DIFFS (tools/differential/compare.py): those two
+        # Python dicts, keyed by the LEDGER FILENAME rather than
+        # anything stored in the TOML, record that
+        # "fix(initials-per-word) a connective run initials each word"
+        # also reaches "john e jones" through its lowercase ' e ' and
+        # contests the name with #528's rule. "jones, john e" has no
+        # row in either: that connective-run rule's operative half is a
+        # `(?=\s)` lookahead requiring whitespace AFTER the letter, and
+        # a letter at the end of the string can never satisfy it -- so
+        # the comma form is a distinct shape from the space-written
+        # form even though both give the same initials() answer.
+        hn = HumanName("john e jones")
+        self.m(hn.initials(), "j. e. j.", hn)
+        hn = HumanName("jones, john e")
+        self.m(hn.initials(), "j. e. j.", hn)

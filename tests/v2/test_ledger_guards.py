@@ -882,13 +882,21 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # case-sensitivity buys, and it is why this roster keeps probing
     # for it after the bug is gone.
     #
-    # Re-read 2026-09-13 against #383/#479 and left exactly as it is.
-    # The case-sensitivity argument is about the #462 shapes, which
-    # are MIXED case, and this change touched only one-case names. The
-    # sentence above still holds literally for both uppercase probes:
-    # measured at 1.4.0 that day, neither 'JOSE E MARIA SANTOS' nor
-    # 'Jose E Maria Santos' diffs at all, the facade's initials being
-    # what this baseline compares and #383/#479 moving only the core's.
+    # Re-read 2026-09-13 against #383/#479 and then again after #528,
+    # and left exactly as it is both times. The case-sensitivity
+    # argument is about the #462 shapes, which are MIXED case, and
+    # #383/#479 touched only one-case names. The sentence above still
+    # holds literally for both uppercase probes: measured at 1.4.0
+    # that day, neither 'JOSE E MARIA SANTOS' nor 'Jose E Maria
+    # Santos' diffs at all, the facade's initials being what this
+    # baseline compares and #383/#479 having moved only the core's --
+    # a clause #528 retired the same day by making the facade follow
+    # the tags too, without moving either probe (re-measured after it;
+    # an all-upper and a capital-E mixed-case spelling, and neither
+    # surface moves on either). What #528 added is a claimant: the
+    # four names whose facade view it moved now go to
+    # `fix(#528) the facade's initials follow the parse's connective
+    # tags`, written ahead of this rule.
     "a connective run initials": ("Jose E Maria Santos",
                                   "JOSE E MARIA SANTOS",
                                   "Scott E. Werner", "Amy E Maid"),
@@ -906,6 +914,13 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # claim would be the field narrowing (`_initials` against a
     # measured `_ambiguities`), which is a thinner wall than the
     # regex and would vanish the moment the report stopped moving.
+    #
+    # 2026-09-13, after #528: the FACADE's initials move on this name
+    # too ('j. s.' -> 'j. e. s.'), so both surfaces do. At the three
+    # 2.x baselines that changes nothing here -- the measured
+    # `_ambiguities` diff still keeps `_initials` out of the name's
+    # diff entirely -- and the probe's job is unchanged: this rule's
+    # lowercase exclusion is what refuses the claim, and it must.
     "fix(#462)": ("john e smith", "maria y lopez", "E.T. Smith",
                   "Maier, Amy I, Jr."),
     # #436/#437's rules are literal-anchored, so _CORPUS_CLAIMS'
@@ -1091,6 +1106,28 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#383/#479) a bare capital connective in an all-upper name stops initialing":
         ("Juan Y Garcia", "juan y garcia", "JUAN GARCIA Y LOPEZ",
          "juan q. xavier velasquez y garcia iii"),
+    # #528's rule is a literal alternation of four names, so
+    # _CORPUS_CLAIMS cannot see a widening that reaches only names the
+    # corpora lack -- these probes are the wall, and the key is the
+    # FULL issue string for the same reason the #383/#479 keys are.
+    #
+    # The first five are MIXED-CASE spellings: mixed case is where the
+    # writing decides the letter (rules.md#P3), neither surface moved
+    # there, and a rule reaching one would be absorbing a regression
+    # in the half of P3 that change did not touch -- 'Scott E. Werner'
+    # most of all, being the name fix(#462) exists for. 'maria y lopez'
+    # and 'juan y garcia' are the one-case controls whose lowercase
+    # 'y' was the connective before and after. 'Ph. D., John' is the
+    # one corpus name whose two initials views still disagree, for the
+    # unrelated reason fix(initials-per-word) the Ph. D. merge names;
+    # this rule must never claim it. 'john e jones, III' is the probe
+    # worth understanding: the trailing uppercase III makes the whole
+    # name mixed-case, so its 'e' never entered the one-case fork and
+    # its initials do not move on either surface.
+    "fix(#528) the facade's initials follow the parse's connective tags":
+        ("John E Smith", "Juan Y. Garcia", "Juan y Garcia",
+         "Scott E. Werner", "Jose E Maria Santos", "maria y lopez",
+         "Ph. D., John", "john e jones, III", "juan y garcia"),
     # The third feat(#269) rule, and the only one keyed on a derived
     # view. Its boundary is the other two: the prefix chain and the
     # Cyrillic pair are #269 recognitions as well, and both move ROLES,
@@ -2059,6 +2096,24 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"JOSE E MARIA SANTOS", "JOHN E SMITH", "john e smith",
                "john e jones", "jones, john e", "e j smith",
                "e and e"}),
+    # #528's movers, one corpus name per alternative -- a list of
+    # names, not a copy of CONJUNCTIONS. The rule's subject is not
+    # expressible as a shape over the raw string at all: what moved is
+    # which READING the parse gave a letter, and the same four strings
+    # would be claimed by a connective-shaped member together with
+    # every other corpus name carrying a connective ('Juan y Eva
+    # Garcia', 'juan garcia y lopez', 'Rob And Beth Edmunds').
+    # Measured 2026-09-13 over the corpus glob, driving the facade
+    # before and after #528: six one-case names' HumanName.initials()
+    # move for the TAG reason, and these are the four of them whose
+    # roles hold still. The other two, 'jose e maria santos' and
+    # 'JUAN GARCIA Y LOPEZ', move a role against 1.4.0 as well, so
+    # `_initials` never enters their diff and no `_initials` rule can
+    # list them. Scoped to that reason: facade initials that move
+    # against 1.4.0 for OTHER reasons -- 'e and e' and 'juan garcia y
+    # lopez', on the 2.0.0 per-word grouping -- are no part of the six.
+    frozenset({"john e smith", "john e jones", "jones, john e",
+               "JUAN Y GARCIA"}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -2750,6 +2805,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # alternation grew.
         "feat(#269) a recognized non-Latin connective contributes no initial":
             _Claim(1, ('_initials',), "770ce7374f32", ('DEFAULT',)),
+        # #528's literal name list, added 2026-09-13 and sitting ahead
+        # of the three vocabulary rules below because it shares their
+        # `_initials` field, and because the first of them -- the
+        # connective rule -- reaches two of its corpus names.
+        # Four corpus names, `_initials` alone: the roles move on none,
+        # which is what leaves the derived view as the whole diff. A
+        # fifth name here means the alternation grew.
+        "fix(#528) the facade's initials follow the parse's connective tags":
+            _Claim(4, ('_initials',), "7cb6b2f5779e", ('DEFAULT',)),
         # 96 -> 97 on 2026-09-08: 'Prince of Wales Jr' joined the
         # rules corpus with the 2.3 title-run bundle -- a parity
         # row, kept as the boundary the peel floor declines -- and
@@ -2758,9 +2822,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # santos', 'John e Smith' and 'juan y garcia' arrived with
         # #383/#479's case rows and rules.md#P3 examples, each
         # carrying a lowercase connective this regex reaches. Reach,
-        # not explanation again: the facade's view does not move for
-        # any of them at this baseline, which is why #383/#479 has no
-        # `_initials` rule here at all.
+        # not explanation again: the facade's view did not move for
+        # any of them at this baseline, which is why #383/#479 had no
+        # `_initials` rule here. #528 gave it one on 2026-09-13 --
+        # `fix(#528) the facade's initials follow the parse's
+        # connective tags`, written ahead of this rule because they
+        # share a field and two corpus names -- and this rule's REACH
+        # is unmoved by it: the regex did not change, and reach is
+        # what this number counts.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
             _Claim(101, ('_initials',), "e91031622dca", ('DEFAULT',)),
         "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
@@ -3771,6 +3840,28 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
             "fix(#385/#402) an all-particle name part initials its words (R2)",
         "van ma van":
             "fix(#385/#402) an all-particle name part initials its words (R2)",
+        # The equal-`fields` contest #528 opened: both rules carry
+        # `fields = ["_initials"]`, so neither is narrower and
+        # `precedes_narrower` has nothing to declare -- classify()
+        # hands the name to whichever is written first, and this is
+        # where that answer is pinned. The connective rule's regex
+        # reaches both names through their lowercase ' e ' (measured
+        # 2026-09-13) and describes the 2.0.0 per-word GROUPING change,
+        # which is not what moved: what moved is the reading of the
+        # letter, and #528's rule says so. The other two of #528's four
+        # are not contested, each kept out by a different half of that
+        # regex (measured 2026-09-13): 'jones, john e' ends on its 'e',
+        # and the alternation wants whitespace AFTER the letter, so a
+        # letter at end of string never matches; 'JUAN Y GARCIA' has
+        # the whitespace but a capital 'Y', and the alternation is
+        # CASE-SENSITIVE, carrying only the lowercase letter. Neither
+        # has a row.
+        "john e smith":
+            "fix(#528) the facade's initials follow the parse's "
+            "connective tags",
+        "john e jones":
+            "fix(#528) the facade's initials follow the parse's "
+            "connective tags",
         # the glued/spaced boundary. 'Andersonさん' and '김민준씨' left
         # suffix-routing for a rule that names them; '김민준 씨.' is
         # spaced and stays on the spaced rule, which #372 taught to

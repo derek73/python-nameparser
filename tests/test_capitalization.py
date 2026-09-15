@@ -401,14 +401,19 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
             restored.capitalize(force=True)
             self.m(str(restored), want, restored)
 
-    # The ONE name a pickle round trip does change, pinned so it is not
-    # rediscovered as a bug. #458 moved the conjunction-versus-initial
-    # decision into the parse, and a pickle carries no tags, so the
-    # restored name is repaired the way 1.4.0 repaired everything --
-    # per word of the text, giving the Italian conjunction inside a
-    # hyphenated middle name. It is the pickle contract (strings only,
-    # never a re-parse) meeting the tag read, not a defect in either.
-    # 1.4.0 gave 'Juan e-F Smith' both ways.
+    # One of a CLASS of names a pickle round trip changes, pinned so it
+    # is not rediscovered as a bug. #458 moved the conjunction-versus-
+    # initial decision into the parse, and a pickle carries no tags, so
+    # the restored name is repaired the way 1.4.0 repaired everything
+    # -- per word of the text, giving the Italian conjunction inside a
+    # hyphenated middle name here. It is the pickle contract (strings
+    # only, never a re-parse) meeting the tag read, not a defect in
+    # either. 1.4.0 gave 'Juan e-F Smith' both ways. Since #383/#479
+    # the one-case fork widened this class: 'JUAN Y GARCIA' and 'john e
+    # smith' also diverge on a round trip now, for the same reason and
+    # through the same fallback, whether the reader is capitalize() or
+    # (since #528) initials() -- pinned at
+    # tests/v2/test_facade.py::test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too.
     def test_a_pickle_round_trip_loses_the_e_f_reading(self) -> None:
         direct = HumanName('juan e-f smith')
         direct.capitalize(force=True)

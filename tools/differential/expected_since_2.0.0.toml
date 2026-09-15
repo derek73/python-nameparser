@@ -1795,23 +1795,30 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # every word it holds whatever the vocabulary says, so there was
 # nothing for the fix to restore.
 #
-# 2026-09-13, #383/#479: 'JUAN Y GARCIA' now diffs here for TWO
-# reasons and this rule explains both, because they are one
-# `_initials` move. The FACADE's half is this rule's own -- a bare
-# capital 'Y' is initial-shaped, so the 2.3 fix keeps it where this
-# baseline dropped it ('J. G.' -> 'J. Y. G.', measured from the
-# wheel). The CORE's half is new: in a name written wholly in one
-# case nothing marks the letter as an initial, 'y' is not vocabulary
-# that reads both ways, so it is the connective and contributes no
-# initial ('J. Y. G.' -> 'J. G.', rules.md#P3 for which letters are
-# connectives and rules.md#R3 for what a connective contributes).
-# The two halves move the same pseudo-field in OPPOSITE directions on
-# the two surfaces, and `_initials` is one field, so one rule takes
-# it. That is why #383/#479's section at the end of this file writes
+# 2026-09-13, #383/#479 then #528: 'JUAN Y GARCIA' diffs here on
+# `_initials`, and it has had two different causes in one day.
+# #383/#479 gave it two at once. The FACADE's half was this rule's
+# own -- a bare capital 'Y' is initial-shaped, so the 2.3 fix kept it
+# where this baseline dropped it, 'J. G.' -> 'J. Y. G.', measured
+# from the wheel. The CORE's half was new: in a name written wholly
+# in one case nothing marks the letter as an initial, 'y' is not
+# vocabulary that reads both ways, so it is the connective and
+# contributes no initial, 'J. Y. G.' -> 'J. G.' (rules.md#P3 for
+# which letters are connectives and rules.md#R3 for what a connective
+# contributes). #528 then made the facade read the parse's tags like
+# the core, so the facade's half CLOSED: the WHEEL'S FACADE gives
+# 'J. G.' and the tree's facade gives 'J. G.' again, agreeing with
+# this baseline, and the core's half is the whole diff -- the wheel's
+# CORE gives 'J. Y. G.', which is the half that still moves. Measured
+# 2026-09-13 on the 2.0.0, 2.1.0 and 2.2.0 wheels and on the tree.
+# One rule still takes it, for the reason two halves needed one:
+# `_initials` is ONE field, and this rule's regex reaches the name.
+# That is also why #383/#479's section at the end of this file writes
 # no competing `_initials` rule -- an equal-`fields` contest decided
-# by nothing but file order. At 2.3.0, where this rule does not
-# exist because the facade fix has shipped, the core's half is
-# classified on its own.
+# by nothing but file order. At 2.3.0, where this rule does not exist
+# because the facade fix has shipped, the core's half is classified
+# on its own and BOTH surfaces move together since #528; that
+# ledger's comment says so.
 # This is the ONE full copy: the 2.1.0 and 2.2.0 ledgers and the
 # three _CORPUS_CLAIMS entries point here rather than restating it.
 name_regex = "(?:^|[\\s,])(?:[EY]|[EeYy]\\.)(?=[\\s,]|$)"
@@ -2188,13 +2195,15 @@ fields = ["_ambiguities", "family", "given", "middle", "suffix", "title"]
 # this baseline those names classify on the report alone. 'JUAN Y
 # GARCIA' is the one name of the population whose view moves with no
 # report beside it, and at this baseline it is already claimed:
-# fix(#462) reaches it and admits `_initials`, because the FACADE's
-# view moves there too (the 2.3 facade fix has not shipped at 2.0.0).
-# That rule's comment records the double reason; a competing rule
-# here would be an equal-`fields` contest decided by file order,
+# fix(#462) reaches it and admits `_initials`. That rule's comment
+# records what moved and when: the FACADE's view moved there too on
+# the morning #383/#479 landed, the 2.3 facade fix not having shipped
+# at 2.0.0, and #528 closed the facade's half the same day
+# (2026-09-13), leaving the core's as the whole diff. A competing
+# rule here would be an equal-`fields` contest decided by file order,
 # which is what _CROSS_RULE_WINNERS exists to stop rather than to
-# create. It is classified on its own at 2.3.0, where the facade
-# agrees and only the core moves.
+# create. It is classified on its own at 2.3.0, where BOTH surfaces
+# now move, and the same way.
 #
 # LAST in the file: every diff these two claim reported UNEXPLAINED
 # on the run that preceded them (measured 2026-09-13), so no rule
