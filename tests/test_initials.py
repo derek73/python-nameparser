@@ -285,12 +285,22 @@ class InitialsTestCase(HumanNameTestBase):
         self.m(hn.initials(), "j. e. s.", hn)
         hn = HumanName("maria y lopez")
         self.m(hn.initials(), "m. l.", hn)
-        # These two back the 1.4.0 ledger rule and its _CROSS_RULE_WINNERS /
-        # _RECORDED_DIFFS rows (tools/differential/expected_since_1.4.0.toml).
-        # "jones, john e" is the comma form, where 'e' ends the string --
-        # the connective-run regex that reads a trailing letter's neighbors
-        # never reaches it, so it is a distinct shape from the space-written
-        # "john e jones" even though both give the same answer.
+        # These two are among #528's four movers, and the #528 ledger
+        # rule's own name_regex (a literal alternation, in
+        # tools/differential/expected_since_1.4.0.toml) covers all four
+        # names by itself -- but only "john e jones" also has a row in
+        # _CROSS_RULE_WINNERS (tests/v2/test_ledger_guards.py) and
+        # _RECORDED_DIFFS (tools/differential/compare.py): those two
+        # Python dicts, keyed by the LEDGER FILENAME rather than
+        # anything stored in the TOML, record that
+        # "fix(initials-per-word) a connective run initials each word"
+        # also reaches "john e jones" through its lowercase ' e ' and
+        # contests the name with #528's rule. "jones, john e" has no
+        # row in either: that connective-run rule's operative half is a
+        # `(?=\s)` lookahead requiring whitespace AFTER the letter, and
+        # a letter at the end of the string can never satisfy it -- so
+        # the comma form is a distinct shape from the space-written
+        # form even though both give the same initials() answer.
         hn = HumanName("john e jones")
         self.m(hn.initials(), "j. e. j.", hn)
         hn = HumanName("jones, john e")

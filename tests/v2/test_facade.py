@@ -685,9 +685,12 @@ def test_list_tokens_for_carries_the_list_view_s_own_elements() -> None:
             # `all(g for g in groups)` cannot fail by construction either --
             # _list_tokens_for never emits an empty group, vacuously true
             # (including over the empty list every unused member here
-            # returns). What IS worth pinning is that the walk is
-            # deterministic: calling it again over the same parse gives
-            # the identical grouping, not a fresh (if equal-looking) one.
+            # returns). What IS worth pinning: a second call returns an
+            # EQUAL grouping. That is not a given for free -- a one-shot
+            # walk built over an exhausted iterator behind tokens_for()
+            # would return nothing at all the second time, not merely a
+            # fresh-but-equal list, so this assert would catch that shape
+            # of bug too.
             assert n._list_tokens_for(member) == groups, (name, member)
 
 
@@ -797,10 +800,13 @@ def test_an_override_that_forwards_tokens_keeps_working() -> None:
     # STRING path instead of raising or going silent: it gets the
     # PRE-#528 answer, computed from the vocabulary fallback rather
     # than the parse. "john e smith" is where the two views disagree
-    # -- the parse reads the middle "e" as initial-shaped
-    # (test_process_initial_with_tokens_reads_the_parse), but the
-    # bare-word vocabulary fallback reads lowercase "e" as the
-    # connective and drops it -- so WidensOnly keeps working but
+    # -- the parse TAGS the middle "e" an initial
+    # (test_process_initial_with_tokens_reads_the_parse); rules.md#P3's
+    # one-case fork reads it from the vocabulary, not from its shape,
+    # which is exactly why the bare-word vocabulary fallback below
+    # reads it the other way -- "e" is not initial-SHAPED by any
+    # pattern over the bare word, so a fallback with no parse behind it
+    # reads lowercase "e" as the
     # without #528's fix. Accepting AND FORWARDING `tokens` is still
     # the only way to receive the fix. decisions.md#R3's 2026-09-13
     # entry (amended 2026-09-14) and the 2.4.0 release note both
@@ -938,8 +944,10 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
     # prose; decisions.md#R3 records it.
     #
     # copy.copy and copy.deepcopy go through the same __getstate__/
-    # __setstate__ hooks as pickle (nameparser/_types.py's guarded pair),
-    # so a copied name takes the identical vocabulary fallback -- measured,
+    # __setstate__ hooks as pickle -- HumanName's own pair, defined
+    # right here in nameparser/_facade.py (not nameparser/_types.py's
+    # guarded pair, which belongs to a different set of classes) -- so
+    # a copied name takes the identical vocabulary fallback -- measured,
     # not assumed.
     for name, live_initials, restored_initials, live_cap, restored_cap in (
             ("JUAN Y GARCIA", "J. G.", "J. Y. G.",
