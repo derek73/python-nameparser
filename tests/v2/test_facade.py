@@ -848,13 +848,14 @@ def test_an_override_that_forwards_tokens_keeps_working() -> None:
 
 
 def test_initials_honor_an_overridden_list_property() -> None:
-    # F1, second review round: before #528, _initials_lists read
+    # Found in review: before #528, _initials_lists read
     # self.first_list/middle_list/last_list -- public properties a v1
     # subclass may override -- and #528 switched it to the private
     # token walk (_list_tokens_for) directly, which does not consult
-    # such an override. last_base/surnames/given_names still honor it
-    # (they route through _split_last, which reads self.last_list), so
-    # initials() alone went silently stale. The fix detects an
+    # such an override. last_base still honors it through _split_last,
+    # which reads self.last_list; surnames is middle_list + last_list
+    # and given_names is first_list + middle_list, so both read the
+    # properties directly. initials() alone went silently stale. The fix detects an
     # overridden property per member (a cheap class-attribute identity
     # check) and, for that member only, takes the pre-#528 STRING path
     # over the override's own strings -- same degradation a
@@ -949,6 +950,12 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
     # guarded pair, which belongs to a different set of classes) -- so
     # a copied name takes the identical vocabulary fallback -- measured,
     # not assumed.
+    #
+    # The keyword constructor is the third no-parse path: a name built
+    # from its fields never ran the full-string parse, so its tokens
+    # carry the same mark and take the same fallback. Rebuilt here from
+    # the live parse's own fields, so the strings are identical and
+    # only the missing parse explains the difference.
     for name, live_initials, restored_initials, live_cap, restored_cap in (
             ("JUAN Y GARCIA", "J. G.", "J. Y. G.",
              "Juan y Garcia", "Juan Y Garcia"),
@@ -962,7 +969,12 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
         restored = pickle.loads(pickle.dumps(HumanName(name)))
         assert restored.initials() == restored_initials
         live = HumanName(name)
+        built = HumanName(first=live.first, middle=live.middle,
+                          last=live.last)
+        assert built.initials() == restored_initials
         live.capitalize()
         assert str(live) == live_cap
         restored.capitalize()
         assert str(restored) == restored_cap
+        built.capitalize()
+        assert str(built) == restored_cap
