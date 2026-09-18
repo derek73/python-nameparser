@@ -88,10 +88,6 @@ def test_the_comma_path_reports_its_ambiguous_reading_once() -> None:
     # called. One per DECISION, in either direction, and never twice
     # for one name -- the structure decision reports where it is
     # taken and this one reports where the family comma stands.
-    # 'Smith, A.B.' joins this list once switch A lands (Task-C's own
-    # case row): today its token carries neither the listed tag nor
-    # the by-shape one, so it reports nothing at all and does not
-    # belong in a loop asserting exactly one report.
     #
     # The report tracks the FORK BEING CONSULTED, not the lean --
     # exactly as the trailing slot always has ('Jack MA' reported
@@ -103,8 +99,14 @@ def test_the_comma_path_reports_its_ambiguous_reading_once() -> None:
     # once through that same first-piece read (F4/F5 review finding,
     # 2026-09-17 -- reverses an earlier round's `ambiguous_lean(...)
     # is not None` gate, which wrongly excluded both).
+    # 'Smith, A.B.' is in the loop since `Policy.unlisted_dotted_
+    # suffixes` shipped: its token carries the by-shape tag, so the
+    # fork IS consulted at this comma and reports exactly once --
+    # which is also true with the switch OFF, the shape tag going on
+    # either way (its own case rows pin both).
     for text in ("Smith, MA", "Smith, Ma", "Smith, ma", "John Smith, MA",
-                 "John Smith, Ed", "毛泽东, MA", "Smith, MA PhD"):
+                 "John Smith, Ed", "毛泽东, MA", "Smith, MA PhD",
+                 "Smith, A.B."):
         kinds = [a.kind.value for a in _assigned(
             text, lexicon=Lexicon.default()).ambiguities]
         assert kinds.count("suffix-or-name") == 1, (text, kinds)
@@ -689,3 +691,30 @@ def test_a_mixed_post_comma_run_keeps_the_walk_order() -> None:
     out = _assigned("Smith, John Jr.")
     assert _by_role(out, Role.GIVEN) == "John"
     assert _by_role(out, Role.SUFFIX) == "Jr."
+
+
+def test_the_comma_report_says_which_way_it_read_the_word() -> None:
+    """The report's OTHER branch, verbatim (2026-09-18 review round).
+
+    `test_the_family_comma_report_detail_is_verbatim` above pins the
+    credential wording; only the string distinguishes the two
+    branches, the kind being the same either way and the roles
+    telling a caller which reading won only if it already knows which
+    field to look in. So the NAME branch needs its own row, and the
+    by-shape half with its switch OFF -- which takes that branch for a
+    fork the parser considered and declined -- is the second one.
+    """
+    detail = {
+        text: [a.detail for a in _assigned(
+            text, policy, lexicon=Lexicon.default()).ambiguities
+            if a.kind.value == "suffix-or-name"]
+        for text, policy in (("Smith, Ma", None),
+                             ("Smith, A.B.",
+                              Policy(unlisted_dotted_suffixes=False)))
+    }
+    assert detail["Smith, Ma"] == [
+        "'Ma' after the comma is also an ordinary name word; read as "
+        "the given name"]
+    assert detail["Smith, A.B."] == [
+        "'A.B.' after the comma is also an ordinary name word; read as "
+        "the given name"]

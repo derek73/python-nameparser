@@ -1179,7 +1179,18 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
         ("Jack M.A.", "John Smith M.A.", "Smith, A.B.C.",
          "Doe, John Msc.Ed.", "John Doe Msc.Ed.", "X.Y.Z. Smith",
          "J.R.R. Tolkien", "A.B. Vajpayee", "E.T. Smith",
-         "John Smith Xyz.", "John Smith 1.4", "Bridge (1.4)"),
+         "John Smith Xyz.", "John Smith 1.4", "Bridge (1.4)",
+         # 2026-09-18 review round: the three gates on the shape
+         # verdict that had no probe of their own, each a DIFFERENT
+         # conjunct. The initialless-script gate ('田.中.' -- a script
+         # that writes no abbreviations has nothing for interior
+         # periods to abbreviate); the `token.role is None` gate
+         # ('Bridge (A.B)' -- delimited content the escape kept as a
+         # nickname, where 'Bridge (1.4)' above declines one gate
+         # earlier and so cannot exercise this one); and the
+         # alphabetic-chunk gate at a COMMA ('John Smith, 1.4', the
+         # comma twin of the bare 'John Smith 1.4' already here).
+         "John Smith 田.中.", "Bridge (A.B)", "John Smith, 1.4"),
     # Policy.unlisted_caps_suffixes is OFF by default, so its whole
     # population is a probe here: the corpora run at the default, and
     # a rule of this arc reaching one of these names would mean the
@@ -2678,7 +2689,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # names this rule already described. Growth into new
         # corpus, not a widened regex.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(134, ('family', 'given', 'middle'), "fa99abf7fe10", None),
+            _Claim(135, ('family', 'given', 'middle'), "fd79e8e1e2ef", None),
         "fix(#274) maiden markers consumed":
             _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -3175,7 +3186,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # names this rule already described. Growth into new
         # corpus, not a widened regex.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(134, ('_ambiguities', 'family', 'given', 'middle'), "fa99abf7fe10", None),
+            _Claim(135, ('_ambiguities', 'family', 'given', 'middle'), "fd79e8e1e2ef", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule

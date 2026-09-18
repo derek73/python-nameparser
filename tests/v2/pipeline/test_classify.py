@@ -2,12 +2,16 @@ import dataclasses
 
 import pytest
 
+from nameparser import Parser
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
+from nameparser._pipeline import _classify as _classify_module
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
-from nameparser._pipeline._state import SHAPE_ACRONYM_TAG, ParseState
+from nameparser._pipeline._state import (
+    SHAPE_ACRONYM_TAG, ParseState, WorkToken,
+)
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, caps_shape_candidate,
@@ -596,6 +600,44 @@ def test_ambiguous_class_candidate_agrees_with_the_tag(
     assert candidate == ("vocab:suffix-ambiguous" in tags)
     shape_member = candidate and not ambiguous_class_member(word, lex)
     assert (SHAPE_ACRONYM_TAG in tags) == shape_member
+
+
+def test_the_caps_branch_reads_the_name_level_case_not_the_own_span(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The mutation control for #516's `one_case` vs `one_case_own`
+    split, run rather than described.
+
+    A maiden marker OPENING the name leaves `own_words` empty, so the
+    NAME-level fact is one-case and nothing may join the caps class.
+    `one_case_own` is a different question -- "one case AND this token
+    is one of the name's own words" -- and every token past the clause
+    cut answers it False by construction, so reading it here makes a
+    wholly one-case name look mixed for exactly those tokens.
+
+    The revert is applied at runtime: `_tags_for` is wrapped so the
+    caps branch sees `one_case_own` where it should see `one_case`.
+    Without the wrapper the reading below holds; with it, 'XYZ' joins
+    the class and the family name is lost.
+    """
+    on = Policy(unlisted_caps_suffixes=True)
+    parser = Parser(policy=on)
+    name = parser.parse("née JONES XYZ")
+    assert (name.given, name.middle, name.family) == ("née", "JONES", "XYZ")
+    assert name.ambiguities == ()
+
+    real = _classify_module._tags_for
+
+    def reverted(token: WorkToken, n: str, state: ParseState,
+                 marker_tag: str | None, one_case_own: bool,
+                 one_case: bool) -> frozenset[str]:
+        return real(token, n, state, marker_tag,
+                    one_case_own=one_case_own, one_case=one_case_own)
+
+    monkeypatch.setattr(_classify_module, "_tags_for", reverted)
+    broken = Parser(policy=on).parse("née JONES XYZ")
+    assert broken.family != "XYZ", (
+        "the revert changed nothing, so this control measures nothing: "
+        "check that classify's caps branch still reads `one_case`")
 
 
 def test_the_caps_shape_is_silent_until_its_switch_is_on() -> None:

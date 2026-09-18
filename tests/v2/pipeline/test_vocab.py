@@ -2,6 +2,7 @@ import unicodedata
 
 import pytest
 
+from nameparser import Parser
 from nameparser._lexicon import (
     Lexicon, _VOCAB_FIELDS, _normalize, _title_key,
 )
@@ -384,6 +385,26 @@ def test_a_listed_dotted_entry_is_not_read_by_shape() -> None:
     assert ambiguous_class_candidate("A.B.", Lexicon.default(), Policy())
 
 
+def test_a_callers_own_conjunction_marker_keeps_its_word_a_name() -> None:
+    # The exclusion end to end through a CALLER's vocabulary rather
+    # than the shipped one: `conjunctions_ambiguous` has no subset
+    # check of its own (an orphan decides nothing, _lexicon's own
+    # note), so a caller can list a word there alone -- and the caps
+    # shape test must still decline it. 'John Smith ZZQ' reads suffix
+    # 'ZZQ' with the switch on and the default vocabulary; one
+    # wordlist entry is the whole difference (2026-09-18 review
+    # round).
+    on = Policy(unlisted_caps_suffixes=True)
+    plain = Parser(policy=on).parse("John Smith ZZQ")
+    assert (plain.family, plain.suffix) == ("Smith", "ZZQ")
+    listed = Parser(
+        lexicon=Lexicon.default().add(conjunctions_ambiguous={"zzq"}),
+        policy=on).parse("John Smith ZZQ")
+    assert (listed.middle, listed.family, listed.suffix) == (
+        "Smith", "ZZQ", "")
+    assert listed.ambiguities == ()
+
+
 def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
     # The roster is `_lexicon._VOCAB_FIELDS`, not a list written into
     # the predicate, and this is what says so. The hand-written one it
@@ -453,6 +474,15 @@ def test_name_word_count_counts_names_not_tokens() -> None:
     # a plain name word and could flip a comma structure a listed
     # title of the same shape would not.
     assert name_word_count(["Xyz.", "Smith"], lex, pol) == 1
+    # 2026-09-18 review round: the two arms behind 'Mr Smith, Ma' and
+    # 'Smith Jr, Ma', neither of which had a unit row. A BARE title
+    # word and a BARE suffix word each count as no name -- the period
+    # is no part of either test -- so both parts hold ONE name word
+    # and neither comma flips. The parses are pinned in cases.py; the
+    # arms are pinned here, because a count of 1 for the wrong reason
+    # reads identically at the parse.
+    assert name_word_count(["Mr", "Smith"], lex, pol) == 1
+    assert name_word_count(["Smith", "Jr"], lex, pol) == 1
 
 
 # Stored form: space-joined, per-word normalized -- what _normset

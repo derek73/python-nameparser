@@ -466,3 +466,25 @@ def test_own_words_two_spellings_agree_on_the_one_case_verdict() -> None:
                            state.lexicon.maiden_markers)
         assert tagged == walked, text
         assert is_one_case(tagged[0]) == is_one_case(walked[0]), text
+
+
+def test_tag_marker_runs_answers_in_ascending_index_order() -> None:
+    """`own_words` depends on it, and nothing else said so.
+
+    Its own docstring states the requirement -- "`marker_tags`' keys
+    must arrive in index order for the walk below to find the SMALLEST
+    head in one pass" -- and then satisfies it by BREAKING at the first
+    head. So a map whose keys arrived out of order would cut the span
+    at whichever head happened to come first, silently, and every
+    caller's one-case verdict with it. The guarantee lives in
+    `tag_marker_runs`' left-to-right walk; this is the assertion that
+    holds it there (2026-09-18 review round).
+    """
+    for text in ("Anna z Nowak nee Jones", "Jane née Jones geb Schmidt",
+                 "Anna z domu Nowak nee Jones", "John Smith"):
+        state = _state_through("segment", text)
+        folded = [_normalize(t.text) for t in state.tokens]
+        keys = list(tag_marker_runs(state.tokens, state.comma_offsets,
+                                    state.lexicon.maiden_markers,
+                                    folded))
+        assert keys == sorted(keys), text

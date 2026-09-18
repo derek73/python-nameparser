@@ -249,6 +249,28 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # the fork wants, and 'Jane Smith née V' declines like 'Jane Smith
     # née PhD' -- nothing after the marker but a suffix, so the marker
     # stays a word -- as 1.4.0 read it.
+    #
+    # `one_case` is passed here and at the re-ask below and changes
+    # NOTHING, by construction rather than by corpus luck:
+    # `numeral_only` answers off `peeled.numeral`, and the numeral fork
+    # is decided before the peel ever reads a lean -- the fact reaches
+    # only the bare-acronym fork, which this reading discards. Measured
+    # anyway, 2026-09-18, because "by construction" is the claim this
+    # repository gets wrong most often: dropping the argument at these
+    # TWO sites alone moves 0 of 14,028 parses (2,338 names -- every
+    # `tools/differential/corpus*.jsonl` entry, every `cases.py` text,
+    # and `tests/test_variations.TEST_NAMES` with its comma
+    # permutations -- under six policies: the default, both
+    # family-first orders, strict commas, and each 2.4 switch flipped).
+    # It stays passed rather than spelled `None` because `None` is a
+    # different statement -- "nobody asked" -- and a future numeral
+    # fork that DID read the writing would then be wrong silently.
+    #
+    # The chain-tail measure below (`tail`, and the re-peel after the
+    # chain) is the opposite and the same sweep says so: dropping it
+    # there moves 18 of the 14,028, on 'John van der Berg Ma', 'John de
+    # Ma' and 'Freiherr von Berg MA' under every one of the six. A
+    # review round called all three sites inert together; two are.
     skip = frozenset(range(len(pieces))) - frozenset(seen)
     trailing = trailing_start(seen[m], pieces, ptags, tokens, skip,
                                numeral_only=True, one_case=one_case)

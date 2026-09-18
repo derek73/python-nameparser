@@ -139,6 +139,26 @@ _CORE_ONLY_IDS = frozenset({
     # turns it OFF is core-only, exactly as the caps rows above are.
     # Its default-policy twin is an ordinary row and runs here.
     "the_by_shape_tail_segment_is_flagged_with_the_switch_off",
+    # The same round's unpinned-branch rows, every one under a policy
+    # with no v1 spelling: the caps switch, and -- for the two strict
+    # comma rows -- `lenient_comma_suffixes`, which the block above
+    # already names two rows for.
+    "caps_switch_reads_the_name_level_case_past_a_clause",
+    "caps_one_case_comma_declines_a_single_token",
+    "caps_one_case_comma_declines_a_run",
+    "caps_run_needs_every_token_not_any",
+    "caps_run_declines_a_bound_given_head",
+    "caps_run_declines_a_conjunction",
+    "caps_switch_leaves_a_capitalized_title_a_title",
+    "strict_comma_reads_the_dotted_numeral_as_a_name_word",
+    "strict_comma_reads_the_bare_numeral_into_the_run",
+    "the_comma_flip_is_read_under_the_declared_order",
+    "two_caps_credentials_peel_as_a_run",
+    "the_caps_shape_is_script_agnostic_cyrillic",
+    "the_caps_shape_is_script_agnostic_accented",
+    "the_dotted_switch_off_still_reports_the_post_comma_fork",
+    "the_dotted_switch_off_leaves_a_lone_token_to_the_convention",
+    "the_dotted_switch_off_leaves_a_titled_token_a_name",
 })
 
 

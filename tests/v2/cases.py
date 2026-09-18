@@ -2142,6 +2142,262 @@ CASES: tuple[Case, ...] = (
                "shape test's OWN membership check too, so this one "
                "was already declining before this fix -- pinned "
                "beside its one-case sibling for the same guarantee"),
+    # The 2026-09-18 review round's unpinned branches: live code paths
+    # that no row named, found by reading the diff rather than by a
+    # failure. Nothing here moved; every value is measured.
+    Case("caps_switch_reads_the_name_level_case_past_a_clause",
+         "née JONES XYZ",
+         {"given": "née", "middle": "JONES", "family": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the positive half of the two NEE rows above, and the "
+               "row that fails if classify's caps branch is reverted "
+               "to `one_case_own`: a marker OPENING the name leaves "
+               "own_words EMPTY, so the name-level fact is one-case "
+               "and nothing in the clause can join the shape class. "
+               "Under `one_case_own` every token past the cut reads "
+               "as mixed and 'XYZ' becomes a credential. "
+               "test_classify.py monkeypatches the revert and asserts "
+               "this very reading breaks"),
+    Case("caps_one_case_comma_declines_a_single_token",
+         "JOHN SMITH, XYZ",
+         {"given": "XYZ", "family": "JOHN SMITH"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the comma control for the one-case gate: two name "
+               "words before the comma would flip the structure for a "
+               "LISTED member, but the caps class needs a case "
+               "contrast to be a member at all, and a wholly "
+               "upper-case name has none. No report either -- there "
+               "was no fork to call"),
+    Case("caps_one_case_comma_declines_a_run",
+         "JOHN SMITH, LEED AP",
+         {"given": "LEED", "middle": "AP", "family": "JOHN SMITH"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the multi-token twin: segment's run test asks "
+               "`caps_shape_candidate` of every token and then reads "
+               "the case fact ONCE, so a one-case name declines the "
+               "whole run rather than per token"),
+    Case("caps_run_needs_every_token_not_any",
+         "John Smith, LEED BA",
+         {"given": "LEED", "middle": "BA", "family": "John Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="pins `all()` rather than `any()`: 'BA' is a LISTED "
+               "ambiguous acronym, so the caps shape test excludes it "
+               "and the run is no caps run -- the structure stays the "
+               "listing form. The report is assign's post-comma one, "
+               "fired on 'LEED' alone, which carries the shape tag "
+               "from classify whatever segment made of the run"),
+    Case("the_comma_count_counts_names_not_words_behind_a_title",
+         "Mr Smith, Ma",
+         {"given": "Ma", "family": "Mr Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED. name_word_count's TITLE arm: 'Mr' is title "
+               "vocabulary, so the part before the comma holds ONE "
+               "name word and the count declines the flip. Without "
+               "that arm two tokens would read as two names and hand "
+               "the family to `given`"),
+    Case("the_comma_count_counts_names_not_words_behind_a_suffix",
+         "Smith Jr, Ma",
+         {"given": "Ma", "family": "Smith", "suffix": "Jr"},
+         ambiguities=("suffix-or-name",),
+         notes="the SUFFIX arm of the same count, and the shape "
+               "decisions.md#S2 names: 'Smith Jr., MA' is two tokens "
+               "and one name. The Title-case spelling declines where "
+               "the all-caps one flips, which is the pair rules.md#C1 "
+               "states"),
+    Case("strict_comma_reads_the_dotted_numeral_as_a_name_word",
+         "Smith V., Ma",
+         {"given": "Smith", "family": "V.", "suffix": "Ma"},
+         policy=Policy(lenient_comma_suffixes=False),
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED, and a known rough edge recorded rather than "
+               "repaired (decisions.md#S2, 2026-09-18). Under strict "
+               "the initial-shaped 'V.' fails the suffix test, so "
+               "name_word_count sees TWO name words before the comma, "
+               "flips the structure, and the positional read of "
+               "'Smith V.' gives given 'Smith', family 'V.'. "
+               "Consistent with master: 'Smith V., PhD' reads the "
+               "same way under the same knob, so this is the knob's "
+               "own reading of 'V.' and not the credential class's"),
+    Case("strict_comma_reads_the_bare_numeral_into_the_run",
+         "Smith V, Ma",
+         {"given": "Smith", "suffix": "V, Ma"},
+         policy=Policy(lenient_comma_suffixes=False),
+         ambiguities=("suffix-or-name", "suffix-or-name",
+                      "given-or-family"),
+         notes="the period is the whole difference from the row "
+               "above: bare 'V' is still initial-shaped and still "
+               "counts as a name word here, so the structure flips "
+               "the same way -- but the trailing peel then takes it "
+               "as the roman numeral, leaving 'Smith' the only name "
+               "word and reporting all three forks"),
+    Case("caps_run_declines_a_bound_given_head", "John Smith, ABDUL AP",
+         {"given": "ABDUL AP", "family": "John Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the exclusion end to end rather than at the "
+               "predicate: 'ABDUL' is bound-given vocabulary, so the "
+               "run is no caps run and the part after the comma is "
+               "the given name it would be at the default"),
+    Case("caps_run_declines_a_conjunction", "John Smith, AND AP",
+         {"given": "AND AP", "family": "John Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the same end to end for `conjunctions`, the row "
+               "test_classify.py's predicate table names as the one "
+               "that genuinely exercises that arm ('Y' declines at "
+               "the two-character gate first)"),
+    Case("caps_switch_leaves_a_capitalized_title_a_title",
+         "John Smith, MR",
+         {"title": "MR", "given": "John", "family": "Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="`titles` end to end: the post-comma part holds no "
+               "name word, so C1's no-name-word clause keeps the "
+               "pre-comma positional read and 'MR' is the title it "
+               "is at the default"),
+    Case("a_period_final_delimited_clause_joins_the_shape_class",
+         "Andrew Perkins (X.Y.Z.)",
+         {"given": "Andrew", "family": "Perkins", "suffix": "X.Y.Z."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED, and it NARROWS the note on "
+               "caps_switch_does_not_reach_delimited_content: "
+               "`_extract._suffix_shaped` releases period-final "
+               "delimited content with role None, so it is ordinary "
+               "trailing material by the time classify runs and the "
+               "shape class claims it -- matching '(M.D)', which the "
+               "escape already sent to `suffix`. What the "
+               "`token.role is None` guard keeps out is content the "
+               "escape did NOT release ('Bridge (A.B)', a nickname), "
+               "which is a different population from 'delimited "
+               "content' whole"),
+    Case("a_leading_period_is_not_the_dotted_shape", "John Smith .XY",
+         {"given": "John", "middle": "Smith", "family": ".XY"},
+         notes="`period_joined_vocab` splits on interior periods, so "
+               "a LEADING one leaves a single chunk and there is no "
+               "acronym shape to read -- name material, and no fork "
+               "was called, so nothing is reported"),
+    Case("a_caseless_name_word_leaves_the_count_to_decide", "毛泽东 MA",
+         {"given": "毛泽东", "family": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="the comma-less twin of the 毛泽东, MA row: one name "
+               "word before the acronym, so the peel's two-piece "
+               "floor declines it whatever the writing says, and the "
+               "fork is reported all the same. Han is caseless, so "
+               "the NAME is mixed-case (the all-caps 'MA' contrasts "
+               "with nothing that has a case) -- the lean reads "
+               "'credential' and the floor is what refuses it",
+         tolerated=True),
+    Case("a_digit_chunk_moves_the_trailing_slot_silently",
+         "John Smith 1.4.2",
+         {"given": "John", "middle": "Smith", "family": "1.4.2"},
+         classification="fix(#516)",
+         notes="ACCEPTED and SILENT, recorded at decisions.md#S2. "
+               "rules.md#S3's narrow retirement drops a dotted token "
+               "whose every matched chunk is a single ASCII "
+               "character, and the vocabulary's lone digit '2' is one "
+               "of them -- so the chunk claim goes, and the shape "
+               "class cannot take it either, its own gate wanting "
+               "every chunk ALPHABETIC. A version string read as a "
+               "credential was the same accident the retirement "
+               "removes, so it moves suffix -> family at every "
+               "policy with no report"),
+    Case("a_digit_chunk_moves_the_post_comma_slot_silently",
+         "Smith, 1.4.2",
+         {"given": "1.4.2", "family": "Smith"},
+         classification="fix(#516)",
+         notes="the comma twin: no candidate, so no flip and no "
+               "report -- the part after the comma is simply the "
+               "given name, where 2.3 read family 'Smith', suffix "
+               "'1.4.2'"),
+    Case("a_digit_chunk_moves_the_two_word_comma_slot_silently",
+         "John Smith, 1.4.2",
+         {"given": "1.4.2", "family": "John Smith"},
+         classification="fix(#516)",
+         notes="and with TWO name words before the comma, where a "
+               "real class member would flip the structure: '1.4.2' "
+               "is no member, so the listing form stands and the "
+               "whole pre-comma run is the family. The widest of the "
+               "three silent moves"),
+    Case("the_comma_flip_is_read_under_the_declared_order",
+         "John Smith, MA",
+         {"given": "Smith", "family": "John", "suffix": "MA"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED. The count flips the structure whatever the "
+               "order -- it counts NAME words, which no order changes "
+               "-- and the pre-comma run is then read positionally, "
+               "so the declared order decides which of 'John Smith' "
+               "is the family. The report's wording quotes the count, "
+               "not a role, so it reads the same under every order"),
+    Case("two_caps_credentials_peel_as_a_run",
+         "John MA XYZ",
+         {"given": "John", "suffix": "MA XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("given-or-family", "suffix-or-name",
+                      "suffix-or-name"),
+         notes="MEASURED, and the widest reading the switch reaches: "
+               "the peel walks from the END, so 'XYZ' goes first (two "
+               "pieces still stand behind it), and 'MA' then has "
+               "'John' alone behind it -- but its LISTED lean says "
+               "credential, which needs no words to spare. The name "
+               "loses its family name entirely and says so three "
+               "times. At the default it reads given John, middle MA, "
+               "family XYZ, silently"),
+    Case("the_caps_shape_is_script_agnostic_cyrillic",
+         "Иван Петр ИВАНОВ",
+         {"given": "Иван", "family": "Петр", "suffix": "ИВАНОВ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the switch's docstring claims `isupper()` is "
+               "script-agnostic, so the convention and the reason for "
+               "the default are the same in any script with a case "
+               "contrast. Measured rather than asserted in prose: a "
+               "Cyrillic all-caps surname joins the class exactly as "
+               "'Jean Pierre DUPONT' does, and is swallowed the same "
+               "way"),
+    Case("the_dotted_switch_off_still_reports_the_post_comma_fork",
+         "Smith, A.B.",
+         {"given": "A.B.", "family": "Smith"},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED. With the switch off the token never joins "
+               "the class, so the STRUCTURE cannot flip -- but "
+               "classify still writes SHAPE_ACRONYM_TAG (the fork was "
+               "real and the parser declined it), and assign's "
+               "post-comma report reads that tag directly. Exactly "
+               "ONE report: the shape tag is on one piece and the "
+               "reading is read off the first post-comma piece alone",
+         classification="fix(#516)"),
+    Case("the_dotted_switch_off_leaves_a_lone_token_to_the_convention",
+         "A.B.", {"given": "A.B."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         ambiguities=("given-or-family",),
+         notes="one piece, so the peel's two-piece floor refuses the "
+               "class before the switch is consulted at all, and what "
+               "is left is O5's lone-name-word convention. GIVEN_OR_"
+               "FAMILY and nothing else -- pinned because the shape "
+               "tag is present and must NOT produce a second report "
+               "where no fork was taken"),
+    Case("the_dotted_switch_off_leaves_a_titled_token_a_name",
+         "Dr. A.B.", {"title": "Dr.", "family": "A.B."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         notes="the title floor: the peel's walk starts after the "
+               "leading title run, so one piece is all it sees and "
+               "the fork is never consulted -- no report at all, the "
+               "same floor 'Mr MA' pins for the listed half"),
+    Case("the_caps_shape_is_script_agnostic_accented",
+         "Jean Pierre ÉCOLE",
+         {"given": "Jean", "family": "Pierre", "suffix": "ÉCOLE"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the other half of the same claim: a non-ASCII LATIN "
+               "letter. `isalpha()`/`isupper()` are Unicode-wide, so "
+               "an accented capital is admitted -- the docstring's "
+               "'Jean ÉCOLE' example, given the third word it needs "
+               "to have words to spare"),
     Case("catalan_i_is_not_connective_vocabulary_upper",
          "JOSEP CAROD I ROVIRA",
          {"given": "JOSEP", "middle": "CAROD I", "family": "ROVIRA"},
