@@ -371,14 +371,20 @@ class AmbiguityKind(StrEnum):
     existing values never change meaning.
 
     A kind names a FORK THE PARSE HAD TO CALL, not a word that could be
-    read two ways: the same token elsewhere in a name may present no
-    choice at all and is then reported by nothing. Reporting is also
+    read two ways, except where a member says otherwise: the same token
+    elsewhere in a name may present no choice at all and is then
+    reported by nothing. COMMA_STRUCTURE and UNBALANCED_DELIMITER are
+    the two that say otherwise -- each reports a shape the parse could
+    not recognize rather than a fork it chose between, and each says so
+    on its own member below. Reporting is also
     partial -- a kind listed here is not necessarily emitted everywhere
-    its fork occurs (the comma paths stay quiet by design, except at
-    the ambiguous credential class, where since 2.4 the reading taken
-    at the comma is reported either way -- #289), and coverage
-    grows over releases. A non-empty tuple is a signal to act on; an
-    empty one is not a guarantee of certainty."""
+    its fork occurs (the comma paths report no READING by design,
+    except at the ambiguous credential class, where since 2.4 the
+    reading taken at the comma is reported either way -- #289;
+    the two structural kinds above were never covered by that
+    silence), and coverage grows over releases. A non-empty tuple is
+    a signal to act on; an empty one is not a guarantee of
+    certainty."""
 
     #: Reserved: the name's field order itself is uncertain (e.g. a
     #: two-word name under a non-default name_order). Not yet emitted;

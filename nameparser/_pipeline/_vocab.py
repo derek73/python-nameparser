@@ -376,7 +376,10 @@ def splits_into_suffixes(text: str, cores: frozenset[str],
 
 
 # rules.md#S3: "a word with interior periods reads as a suffix when
-# any of its period-separated chunks is suffix vocabulary"
+# any of its period-separated chunks is suffix vocabulary — except
+# where every chunk the vocabulary matches is a single ASCII
+# character, the roman numerals and the lone digit the vocabulary
+# lists, which are about generations rather than credentials"
 def period_joined_vocab(
         text: str, lexicon: Lexicon,
 ) -> Literal["title", "suffix", "shape"] | None:
