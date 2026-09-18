@@ -654,6 +654,24 @@ class Policy:
     #: initial instead (family "John Smith", given "V"). Multi-letter
     #: suffixes ("III", "MD") parse the same either way.
     lenient_comma_suffixes: bool = True
+    #: Excludes emoji from tokenization: they appear in no token,
+    #: field, or rendered view. The original string keeps them (input
+    #: is never modified -- spans stay true).
+    strip_emoji: bool = True
+    #: Excludes bidirectional control characters from tokenization:
+    #: they appear in no token, field, or rendered view; the original
+    #: string keeps them.
+    strip_bidi: bool = True  # =False replaces v1's opt-out CONSTANTS.regexes.bidi = False
+    # -- fields added after 2.3 ------------------------------------------
+    # Policy is not kw_only, so a field's POSITION is API: a caller
+    # writing Policy(GIVEN_FIRST, ..., True, False) binds by position.
+    # The two 2.4 switches below first landed beside
+    # lenient_comma_suffixes, which re-bound every positional argument
+    # from `strip_emoji` on; they are appended here instead so 2.3's
+    # eleven positions keep their meaning
+    # (tests/v2/test_policy.py::test_the_2_3_positional_fields_did_not_move).
+    # A field added in a later cycle goes at the END for the same
+    # reason, whatever it is about.
     #: Reads an UNLISTED token of two or more period-separated chunks
     #: as a credential where the position allows it: "John Smith
     #: X.Y.Z." gives suffix ``X.Y.Z.`` and "Jack X.Y.Z." keeps family
@@ -697,14 +715,6 @@ class Policy:
     #: Cyrillic surname ("Иван ИВАНОВ") or an accented Latin one
     #: ("Jean ÉCOLE") joins this class exactly as an ASCII one does.
     unlisted_caps_suffixes: bool = False
-    #: Excludes emoji from tokenization: they appear in no token,
-    #: field, or rendered view. The original string keeps them (input
-    #: is never modified -- spans stay true).
-    strip_emoji: bool = True
-    #: Excludes bidirectional control characters from tokenization:
-    #: they appear in no token, field, or rendered view; the original
-    #: string keeps them.
-    strip_bidi: bool = True  # =False replaces v1's opt-out CONSTANTS.regexes.bidi = False
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -795,9 +805,17 @@ class Policy:
         # Truthy strings ("no", "false") would silently invert the
         # caller's intent downstream; bools are the one field kind the
         # coercing checks above can't cover.
-        for flag in ("middle_as_family", "lenient_comma_suffixes",
-                     "unlisted_dotted_suffixes", "unlisted_caps_suffixes",
-                     "strip_emoji", "strip_bidi"):
+        #
+        # The roster is DERIVED from the dataclass rather than written
+        # out: a hand-written list is a second place to remember, and
+        # the twin loop in tests/v2/test_policy.py proved it -- it still
+        # named 2.3's four flags after 2.4 added two, so the new
+        # switches shipped with no "must be a bool" coverage while the
+        # library validated them. `bool` is the whole test: every
+        # bool-annotated Policy field is a flag, and the annotation is
+        # a plain string here because of `from __future__ import
+        # annotations` (AGENTS.md's guard-the-whole-family rule).
+        for flag in _BOOL_FIELDS:
             value = getattr(self, flag)
             if not isinstance(value, bool):
                 raise TypeError(
@@ -832,6 +850,18 @@ class Policy:
         if not isinstance(patch, PolicyPatch):
             raise TypeError(f"patched() takes a PolicyPatch, got {patch!r}")
         return apply_patch(self, patch)
+
+
+#: Every bool-valued Policy field, read off the dataclass rather than
+#: listed: `__post_init__`'s bool check sweeps this, so a flag added to
+#: the class above is validated the day it lands and cannot ship
+#: unchecked the way `unlisted_dotted_suffixes` and
+#: `unlisted_caps_suffixes` did. `from __future__ import annotations`
+#: makes every annotation a string, so the comparison is against the
+#: SPELLING "bool" -- which is also what a reader of the class body
+#: sees, and a field annotated any other way is not a plain flag.
+_BOOL_FIELDS: tuple[str, ...] = tuple(
+    f.name for f in dataclasses.fields(Policy) if f.type == "bool")
 
 
 class _Unset(Enum):
@@ -875,10 +905,14 @@ class PolicyPatch:
     extra_suffix_delimiters: frozenset[str] | _Unset = field(
         default=UNSET, metadata=_UNION)
     lenient_comma_suffixes: bool | _Unset = UNSET
-    unlisted_dotted_suffixes: bool | _Unset = UNSET
-    unlisted_caps_suffixes: bool | _Unset = UNSET
     strip_emoji: bool | _Unset = UNSET
     strip_bidi: bool | _Unset = UNSET
+    # Appended, in Policy's order and for Policy's reason -- this class
+    # is positional too, and the parity test holds the two field
+    # sequences equal, so a field inserted on one side would have to be
+    # inserted on the other and both would re-bind together.
+    unlisted_dotted_suffixes: bool | _Unset = UNSET
+    unlisted_caps_suffixes: bool | _Unset = UNSET
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate

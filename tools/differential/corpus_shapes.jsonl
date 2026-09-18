@@ -35,7 +35,9 @@
 {"name": "John Smith XYZ", "shape": 1}
 {"name": "John Smith Xyz.", "shape": 1}
 {"name": "John V. Smith", "shape": 1}
+{"name": "John de Ma", "shape": 1}
 {"name": "John e Smith", "shape": 1}
+{"name": "John van der Berg Ma", "shape": 1}
 {"name": "Jose E Maria Santos", "shape": 1}
 {"name": "Jose e Maria Santos", "shape": 1}
 {"name": "Juan Garcia Y Lopez", "shape": 1}
@@ -48,6 +50,7 @@
 {"name": "X.Y.Z. Smith", "shape": 1}
 {"name": "abdul Smith Jr Ma", "shape": 1}
 {"name": "anh van do", "shape": 1}
+{"name": "anh van mc", "shape": 1}
 {"name": "jack ma", "shape": 1}
 {"name": "john e smith", "shape": 1}
 {"name": "john smith MA", "shape": 1}
@@ -87,6 +90,8 @@
 {"name": "John Smith, A.B.", "shape": 3}
 {"name": "John Smith, Ed", "shape": 3}
 {"name": "John Smith, MA", "shape": 3}
+{"name": "John Smith, MD, Ma", "shape": 3}
+{"name": "John Smith, MD, R.A.I.", "shape": 3}
 {"name": "John Smith, PhD", "shape": 3}
 {"name": "Steven Hardman, MD, DO, DDS", "shape": 3}
 {"name": "john smith, ma", "shape": 3}

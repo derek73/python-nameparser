@@ -2,7 +2,7 @@ import dataclasses
 
 import pytest
 
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
@@ -10,7 +10,7 @@ from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import SHAPE_ACRONYM_TAG, ParseState
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import (
-    ambiguous_class_candidate, ambiguous_class_member,
+    ambiguous_class_candidate, ambiguous_class_member, caps_shape_candidate,
 )
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
@@ -461,6 +461,35 @@ def test_the_switch_leaves_the_shape_tag_and_takes_the_membership() -> None:
     assert "vocab:suffix-ambiguous" not in off
 
 
+def test_no_listed_member_ever_carries_the_shape_tag() -> None:
+    # The invariant, stated over the TAGS rather than over a branch:
+    # SHAPE_ACRONYM_TAG says "the WRITING made this credential-shaped,
+    # the vocabulary did not", so a token whose normalized text IS a
+    # listed ambiguous acronym must never carry it -- the tag silences
+    # `_pieces.listed_lean`, which is the listing's whole effect.
+    #
+    # The custom lexicon is the case that was broken (review round,
+    # 2026-09-18): a DOTTED entry matches `suffix_acronyms_ambiguous`
+    # whole while `suffix_as_written`'s period-free acronym lookup
+    # ('ab') misses it, so the chunk view reached the shape branch and
+    # 'Jack A.B.' read family where 'Jack MA' reads suffix.
+    dotted = Lexicon.default().add(suffix_acronyms={"a.b"},
+                                   suffix_acronyms_ambiguous={"a.b"})
+    for lex, texts in ((Lexicon.default(),
+                        ("John Smith MA", "John Smith Ma", "Smith, MA",
+                         "John Smith BA", "John Smith X.Y.Z.")),
+                       (dotted,
+                        ("Jack A.B.", "John Smith A.B.", "Smith, A.B."))):
+        for policy in (Policy(), Policy(unlisted_caps_suffixes=True),
+                       Policy(unlisted_dotted_suffixes=False)):
+            for text in texts:
+                for word, tags in _tags_by_text(text, lexicon=lex,
+                                                policy=policy).items():
+                    if SHAPE_ACRONYM_TAG in tags:
+                        assert _normalize(word) not in \
+                            lex.suffix_acronyms_ambiguous, (text, word)
+
+
 def test_delimited_content_never_joins_the_shape_class() -> None:
     # A bracketed clause is decided by extract's escape, not by the
     # trailing slot. 'Bridge (1.4)' cannot exercise the `token.role is
@@ -490,8 +519,9 @@ def test_delimited_content_never_joins_the_shape_class() -> None:
     ("田.中.", Policy(), None),
     # #516's caps half: OFF is silent (matches the tag either way,
     # since the token never carries the fact); ON needs the REAL
-    # `one_case` fact passed in, since -- unlike the dotted shape --
-    # this membership question reads case.
+    # `one_case` fact, which these rows hand to `caps_shape_candidate`
+    # -- the predicate classify calls, and since the review round the
+    # only route into the caps half at all.
     ("XYZ", Policy(), None),
     ("XYZ", Policy(unlisted_caps_suffixes=True), False),
     ("MC", Policy(unlisted_caps_suffixes=True), False),
@@ -547,14 +577,24 @@ def test_ambiguous_class_candidate_agrees_with_the_tag(
     # assertion is what catches that: SHAPE_ACRONYM_TAG must appear
     # if and only if the class was joined BY SHAPE, never for a
     # listed member.
+    #
+    # `candidate` is spelled as the DISJUNCTION the two stages make
+    # between them, because that is what `segment` asks in two calls:
+    # `ambiguous_class_candidate` for the listed and dotted halves at
+    # its single-token test, and `caps_shape_candidate` for the caps
+    # half at its multi-token run test. The caps half used to hang off
+    # `ambiguous_class_candidate` behind an optional `one_case` no
+    # production caller passed, so it answered False for every name
+    # the library parsed and only this test reached it; the parameter
+    # is gone and the rows point at the live predicate instead.
     lex = Lexicon.default()
     tags = _tags_by_text(f"John Smith {word}", lexicon=lex,
                          policy=policy)[word]
-    assert (ambiguous_class_candidate(word, lex, policy, one_case=one_case)
-            == ("vocab:suffix-ambiguous" in tags))
-    shape_member = (ambiguous_class_candidate(word, lex, policy,
-                                              one_case=one_case)
-                    and not ambiguous_class_member(word, lex))
+    candidate = (ambiguous_class_candidate(word, lex, policy)
+                 or (policy.unlisted_caps_suffixes
+                     and caps_shape_candidate(word, lex, policy, one_case)))
+    assert candidate == ("vocab:suffix-ambiguous" in tags)
+    shape_member = candidate and not ambiguous_class_member(word, lex)
     assert (SHAPE_ACRONYM_TAG in tags) == shape_member
 
 

@@ -2,9 +2,12 @@ import unicodedata
 
 import pytest
 
-from nameparser._lexicon import Lexicon, _normalize, _title_key
+from nameparser._lexicon import (
+    Lexicon, _VOCAB_FIELDS, _normalize, _title_key,
+)
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
+    caps_shape_candidate,
     effective_script, is_initial, is_initial_shaped, is_one_case,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
     maiden_marker_run, name_word_count, period_joined_vocab,
@@ -362,6 +365,58 @@ def test_ambiguous_class_candidate_admits_a_by_shape_member() -> None:
     assert not ambiguous_class_candidate("A.B.C.", lex, pol)
     assert not ambiguous_class_candidate("M.A.", lex, pol)
     assert not ambiguous_class_candidate("Smith", lex, pol)
+
+
+def test_a_listed_dotted_entry_is_not_read_by_shape() -> None:
+    # Review round, 2026-09-18. A caller may list a DOTTED entry in
+    # `suffix_acronyms_ambiguous`, and then the whole token matches
+    # that set while `suffix_as_written`'s period-free acronym lookup
+    # ('ab') misses it -- so the chunk view reached the shape verdict
+    # and called a LISTED member by-shape, which silences the case
+    # lean everywhere downstream (`_pieces.listed_lean` declines
+    # wherever SHAPE_ACRONYM_TAG rides). Both halves of the class
+    # test the same membership now.
+    lex = Lexicon.default().add(suffix_acronyms={"a.b"},
+                                suffix_acronyms_ambiguous={"a.b"})
+    assert not ambiguous_class_candidate("A.B.", lex, Policy())
+    # the shipped vocabulary carries no dotted ambiguous entry, so
+    # nothing default moves
+    assert ambiguous_class_candidate("A.B.", Lexicon.default(), Policy())
+
+
+def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
+    # The roster is `_lexicon._VOCAB_FIELDS`, not a list written into
+    # the predicate, and this is what says so. The hand-written one it
+    # replaced named ELEVEN of the thirteen, leaving out `surnames`
+    # and `honorific_tails` -- so a caller who listed a word as a
+    # SURNAME still had it read as a credential, which is this
+    # switch's own worst failure arriving through the one wordlist
+    # that says "this is a family name".
+    #
+    # Measured per field rather than asserted about the source: each
+    # loop adds the same unlisted word to ONE field and checks the
+    # predicate declines it. A field whose exclusion is dropped fails
+    # here by name.
+    on = Policy(unlisted_caps_suffixes=True)
+    base = Lexicon.default()
+    assert caps_shape_candidate("ZZQX", base, on, False)
+    for field in _VOCAB_FIELDS:
+        extra: dict[str, set[str]] = {field: {"zzqx"}}
+        if field == "honorific_tails":
+            # honorific_tails ⊆ suffix_words is a Lexicon invariant,
+            # so this entry cannot be added alone -- which is also why
+            # the field was already excluded transitively, and why it
+            # joins the roster for completeness rather than for a
+            # behavior change
+            extra["suffix_words"] = {"zzqx"}
+        elif field == "given_name_titles":
+            extra["titles"] = {"zzqx"}       # ⊆ titles in practice
+        elif field == "particles_ambiguous":
+            extra["particles"] = {"zzqx"}    # enforced subset
+        elif field == "suffix_acronyms_ambiguous":
+            extra["suffix_acronyms"] = {"zzqx"}   # enforced subset
+        lex = base.add(**extra)               # type: ignore[arg-type]
+        assert not caps_shape_candidate("ZZQX", lex, on, False), field
 
 
 def test_is_title_shaped_is_h2_s_shape_alone() -> None:

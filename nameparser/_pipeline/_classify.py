@@ -50,7 +50,8 @@ import dataclasses
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._state import (
-    SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity, WorkToken,
+    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
+    WorkToken,
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
@@ -111,7 +112,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     if n in lex.suffix_words:
         tags.add("vocab:suffix-word")
     if n in lex.suffix_acronyms_ambiguous:
-        tags.add("vocab:suffix-ambiguous")
+        tags.add(AMBIGUOUS_ACRONYM_TAG)
     if n in lex.particles:
         tags.add("particle")
     if n in lex.particles_ambiguous:
@@ -165,7 +166,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add("vocab:title")
         elif derived == "suffix":
             tags.add("vocab:suffix")
-        elif derived == "shape" and token.role is None:
+        elif (derived == "shape" and token.role is None
+                and n not in lex.suffix_acronyms_ambiguous):
             # #516: the word is not in the vocabulary, so the claim is
             # about the WRITING and says so -- SHAPE_ACRONYM_TAG beside
             # the membership tag rather than instead of it, because
@@ -187,9 +189,23 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             # and has no tags to read yet -- kept from drifting by
             # `test_classify.test_ambiguous_class_candidate_agrees_with_the_tag`
             # rather than by this sentence alone.
+            #
+            # `n not in suffix_acronyms_ambiguous` is the third guard,
+            # and it is about a LISTED member rather than a role: a
+            # caller may list a dotted entry ('a.b'), and the whole
+            # token then matches the ambiguous set at the membership
+            # test above while `suffix_as_written`'s period-free
+            # acronym lookup ('ab') misses it, so the chunk view
+            # reaches here and called the word by-shape. That silences
+            # `_pieces.listed_lean`, which declines wherever
+            # SHAPE_ACRONYM_TAG rides -- the caller's own listing lost
+            # its case lean ('Jack A.B.' read family where 'Jack MA'
+            # reads suffix). One frozenset lookup, on a branch only a
+            # dotted token reaches; the shipped ambiguous vocabulary
+            # carries no periods, so nothing default changes.
             tags.add(SHAPE_ACRONYM_TAG)
             if state.policy.unlisted_dotted_suffixes:
-                tags.add("vocab:suffix-ambiguous")
+                tags.add(AMBIGUOUS_ACRONYM_TAG)
         elif (state.policy.unlisted_caps_suffixes and token.role is None
                 and caps_shape_candidate(token.text, lex, state.policy,
                                          one_case)):
@@ -215,7 +231,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             # the eleven-list roster and what each measured entry
             # would have cost unfixed; not repeated here.
             tags.add(SHAPE_ACRONYM_TAG)
-            tags.add("vocab:suffix-ambiguous")
+            tags.add(AMBIGUOUS_ACRONYM_TAG)
     return frozenset(tags)
 
 
@@ -263,7 +279,7 @@ def classify(state: ParseState) -> ParseState:
     ambiguities = list(state.ambiguities)
     for i, token in enumerate(tokens):
         if (token.role is Role.NICKNAME
-                and "vocab:suffix-ambiguous" in token.tags):
+                and AMBIGUOUS_ACRONYM_TAG in token.tags):
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NICKNAME,
                 f"delimited {token.text!r} is also a post-nominal; read "

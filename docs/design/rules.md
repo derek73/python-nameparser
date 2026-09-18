@@ -441,7 +441,9 @@ P2. Rationale: a particle is written as part of the surname it
     does, and so does a bare ambiguous acronym written in capitals in
     a mixed-case name, which needs no words to spare; the same
     acronym written Title-case in a mixed-case name ends nothing and
-    joins the chain as any name word does, words to spare or not —
+    joins the chain as any name word does, words to spare or not,
+    and the fork the chain called is reported there exactly as it is
+    where no particle stands (S2) —
     a maiden
     marker takes the
     words after it (M2), or the name ends. The final group reads as
@@ -461,6 +463,7 @@ P2. Rationale: a particle is written as part of the surname it
       "John van der Berg V"       →  family="van der Berg"
       "John van der Berg V"       →  suffix="V"
       "John van der Berg Ma"      →  family="van der Berg Ma"
+      "John van der Berg Ma"      →  ambiguities=("suffix-or-name",)
       "john van der berg ma"      →  suffix="ma"
       "John van der J. V"         →  family="van der J. V"  · boundary
       "Freiherr von Berg MA"      →  family="von Berg"
@@ -471,9 +474,12 @@ P2. Rationale: a particle is written as part of the surname it
     (vd, mc) is a suffix piece to the peel, so where it opens the
     trailing run the chain stops before it as before any suffix
     word, and the peel takes it; where it continues a prefix run,
-    the run takes it as a particle, as P6 reads it after a comma.
+    the run takes it as a particle, as P6 reads it after a comma —
+    and there the chain reports nothing, the particle reading being
+    P6's fork rather than S2's.
       "John Smith Mc V"           →  suffix="Mc V"
       "John van Mc"               →  family="van Mc"
+      "anh van do"                →  family="van do"  · boundary
     Accepted: a caller wanting the combined double-surname reading
     (#132's ask) has it as the surnames view rather than the
     family field.
@@ -1392,9 +1398,21 @@ C2. Rationale: text beyond the recognized comma parts should be
     flagged as a structural ambiguity rather than rejected — parsing
     never fails on content. An empty part between doubled commas is
     consumed silently.
+    A part the parse reads as a credential run by some route other
+    than the suffix vocabulary is recognized and is not flagged: a
+    run of ambiguous acronyms whose written case leans credential
+    (S2), and a run every word of which joins that class by SHAPE
+    (S3). This is the one place the ambiguous class QUIETS a report
+    rather than adding one, and it is narrow on purpose — a member
+    the writing does not lean, in a name that leans nothing, is
+    recognized by nothing here and keeps the flag.
       "John Smith, MD, Bart"      →  suffix="MD, Bart"
       "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
-    history: decisions.md#C1 · implemented: nameparser/_pipeline/_segment.py
+      "John Smith, MD, R.A.I."    →  suffix="MD, R.A.I."
+      "John Smith, MD, R.A.I."    →  ambiguities=()
+      "John Smith, MD, R.A.I."  unlisted_dotted_suffixes-off  →  ambiguities=("comma-structure",)
+      "John Smith, MD, Ma"        →  ambiguities=("comma-structure",)  · boundary
+    history: decisions.md#C1 · interacts: C1, S2, S3 · implemented: nameparser/_pipeline/_segment.py
 
 ## Name order (O)
 
@@ -1613,7 +1631,11 @@ W3. Rationale: a family name declared by a comma is the writer's
     name's end, and a glued honorific before the comma stays glued.
     The vocabulary question is C1's own, asked without C1's
     word-count condition: the two differ in what else they require,
-    not in what they ask of the words. A period the listing leaves
+    not in what they ask of the words — the written-case evidence
+    S2 reads included, so a post-comma acronym the case leans
+    credential declines the side it stands on here exactly as it
+    reads as the credential there, and one name written with two
+    credentials divides the same way. A period the listing leaves
     behind is not what licenses the step past a post-nominal word,
     and it is not ignored either. The step is W2's, taken on the
     vocabulary alone and taken with no punctuation anywhere in the
@@ -1637,10 +1659,11 @@ W3. Rationale: a family name declared by a comma is the writer's
       "남궁민수, 지훈"            →  family="남궁민수"  · boundary
       "田中さん, Dr."             →  family="田中さん"
       "田中さん, PhD"             →  suffix="さん, PhD"
+      "Kim김민준씨, MA"           →  suffix="씨, MA"
       "田中さん 様."              →  suffix="さん 様."
       "김민준씨."                 →  suffix="씨."
       "田中. 太郎"                →  family="田中."
-    tolerated: native CJK writing has neither a family-comma convention nor an edge full stop of any width on a name word, so the four comma lines above and the three period lines under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All seven stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
+    tolerated: native CJK writing has neither a family-comma convention nor an edge full stop of any width on a name word, so the five comma lines above and the three period lines under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All eight stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
     history: decisions.md#W3 · interacts: W1, W2, C1, H2 · implemented: nameparser/_pipeline/_script_segment.py
 
 W4. Rationale: Chinese, Japanese and Korean all write the family

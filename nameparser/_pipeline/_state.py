@@ -75,6 +75,16 @@ _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 #: ways and have one of them typo silently past the others.
 SHAPE_ACRONYM_TAG = "shape:acronym"
 
+#: The MEMBERSHIP half of the same class: classify's tag for a token
+#: the ambiguous credential vocabulary claims, by listing
+#: (`Lexicon.suffix_acronyms_ambiguous`) or -- where a Policy switch
+#: admits the by-shape half -- beside `SHAPE_ACRONYM_TAG`. Beside that
+#: constant and for its reason: the string was spelled out at eight
+#: sites across four modules, each of them a place for a typo to pass
+#: silently, since a tag that is never written is simply a tag no
+#: reader ever finds.
+AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
+
 
 class Structure(Enum):
     """segment's comma-structure decision."""
@@ -177,5 +187,14 @@ class ParseState:
     #: suffix slot, the post-comma slot and the tail-segment reading
     #: all consult it and must not disagree (#289/#516,
     #: decisions.md#S2).
+    #: A fact segment records SURVIVES script_segment, the one stage
+    #: that changes the token count, and survives it unrecomputed
+    #: because splitting a token cannot change the answer: the verdict
+    #: is `is_one_case` over the name's own words JOINED, and a split
+    #: only moves a space into a string whose upper/lower comparison
+    #: ignores spaces entirely -- '김민준씨' and '김민준 씨' fold alike.
+    #: So the field is carried through rather than invalidated, and
+    #: script_segment reads it (its suffix-run predicate takes the
+    #: lean) rather than asking again.
     one_case: bool | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()

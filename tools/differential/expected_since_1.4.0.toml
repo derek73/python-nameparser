@@ -2874,14 +2874,17 @@ issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
 # 1.4.0 contributed nothing for such a part ('Anh Do' -> 'A.'; the
 # tree gives 'A. D.'). The fields did not move, only the view, which
 # is why no rule could classify this until #484 gave the gate an
-# initials column. Reach exactly the 27 names that move (24 spellings,
-# three of them case variants), listed literally rather than shaped:
+# initials column. Reach exactly the 28 names that move (25 spellings,
+# three of them case variants), listed literally rather than shaped
+# -- 'anh van mc' joined on 2026-09-18 with the case row that
+# admitted it to the corpus, the unambiguous-vocabulary twin of the
+# 'anh van do' already here:
 # the shape is "a part of nothing but particles", which no regex over
 # the raw string can state, and the fix(#445) rule above set the
 # precedent for a name list in THIS ledger (fix(#410) and fix(#335)
 # are two more). 'de los Santos' is NOT here: its
 # initials moved for a different reason (the rule below).
-name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
+name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|anh van mc|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
 fields = ["_initials"]
 orders = ["DEFAULT"]
 
@@ -3575,7 +3578,7 @@ issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
 # rather than the acronym's half of it, and stands first -- so the
 # name is narrowed out rather than left to be decided by file order,
 # which the harness refuses to let go undeclared.
-name_regex = "^(?:Davis Royce, Ed|Freiherr von Berg MA|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John van der Berg Ma|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|abdul Smith Berg Ma|abdul Smith Jr Ma|abdul Smith Ma|john smith, ma)$"
+name_regex = "^(?:Davis Royce, Ed|Freiherr von Berg MA|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John de Ma|John van der Berg Ma|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|abdul Smith Berg Ma|abdul Smith Jr Ma|abdul Smith Ma|john smith, ma)$"
 fields = ["family", "given", "middle", "suffix"]
 orders = ["DEFAULT"]
 

@@ -53,9 +53,11 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence, Set
 from typing import NamedTuple
 
-from nameparser._pipeline._state import SHAPE_ACRONYM_TAG, WorkToken
+from nameparser._pipeline._state import (
+    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, WorkToken,
+)
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, ambiguous_lean, in_initialless_script,
+    _PERIOD_ABBREV, Lean, ambiguous_lean, in_initialless_script,
     is_trailing_numeral_suffix, tag_marker_runs,
 )
 
@@ -281,7 +283,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            ptags: Sequence[Set[str]],
                            tokens: Sequence[WorkToken],
                            lenient: bool,
-                           one_case: bool | None = None,
+                           one_case: bool | None,
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
@@ -344,7 +346,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         if is_suffix_piece(piece, tags, tokens):
             out.append(True)
         elif (len(piece) == 1
-                and "vocab:suffix-ambiguous" in tokens[piece[0]].tags
+                and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags
                 and listed_lean(tokens[piece[0]], one_case)
                 == "credential"):
             out.append(True)
@@ -399,7 +401,7 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]], tokens: Sequence[WorkToken],
                     skip: Set[int] = frozenset(),
                     numeral_only: bool = False,
-                    one_case: bool | None = None) -> int:
+                    *, one_case: bool | None) -> int:
     """Where assign's trailing suffix run begins, read over the pieces
     as they stand from `start`: the index of the first piece the S2
     peel takes, or len(pieces) when it takes none (#424). What P2's
@@ -436,12 +438,12 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
 # regardless of what is inside it, and the inline pre-check is what
 # keeps a non-member piece ("Smith, John"'s "John") from ever making
 # the call at all.
-def listed_lean(token: WorkToken, one_case: bool | None) -> str | None:
+def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     """`ambiguous_lean` for a LISTED bare-ambiguous token, or None if
     the token is not tagged a listed member, is admitted by SHAPE
     instead (`SHAPE_ACRONYM_TAG`, a switch's doing, not the writing's),
     or there is no case fact to ask at all."""
-    if (one_case is None or "vocab:suffix-ambiguous" not in token.tags
+    if (one_case is None or AMBIGUOUS_ACRONYM_TAG not in token.tags
             or SHAPE_ACRONYM_TAG in token.tags):
         return None
     return ambiguous_lean(token.text, one_case)
@@ -450,7 +452,7 @@ def listed_lean(token: WorkToken, one_case: bool | None) -> str | None:
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
                    tokens: Sequence[WorkToken],
-                   one_case: bool | None = None) -> Peel:
+                   one_case: bool | None) -> Peel:
     """The S2 trailing peel over `rest`, a peel_walk list. In the
     piece layer rather than in assign because group's bound-given
     reserve asks the same question of the view the join would leave
@@ -491,7 +493,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # left ("Smith PhD" -> suffix, a classified fix), because there
         # the vocabulary is not in doubt.
         bare_ambiguous = (len(piece) == 1
-                          and "vocab:suffix-ambiguous" in tokens[piece[0]].tags)
+                          and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags)
         # #516, switch off: the writing still makes this token
         # credential-SHAPED, and the parser is choosing the name
         # reading over that one -- the fork the caller asked to be
@@ -602,7 +604,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   ptags: Sequence[Set[str]],
                   tokens: Sequence[WorkToken],
-                  one_case: bool | None = None,
+                  one_case: bool | None,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what

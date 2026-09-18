@@ -133,6 +133,12 @@ _CORE_ONLY_IDS = frozenset({
     "caps_switch_run_test_declines_a_pure_listed_run",
     "caps_switch_does_not_claim_a_one_case_maiden_marker",
     "caps_switch_does_not_claim_a_mixed_case_maiden_marker",
+    # The 2026-09-18 review round's negative control for the
+    # tail-segment class test: `unlisted_dotted_suffixes` has no v1
+    # spelling either (v1 reads no token by shape), so the row that
+    # turns it OFF is core-only, exactly as the caps rows above are.
+    # Its default-policy twin is an ordinary row and runs here.
+    "the_by_shape_tail_segment_is_flagged_with_the_switch_off",
 })
 
 

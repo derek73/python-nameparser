@@ -48,11 +48,23 @@ from nameparser._pipeline._pieces import (
     leading_titles, peel_walk, tail_reading, trailing_start,
 )
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken,
+    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
+    Structure, WorkToken,
 )
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._types import AmbiguityKind, Role
+
+#: Either way a token joins the ambiguous credential class -- the
+#: vocabulary's claim and the writing's. The prefix chain's own
+#: SUFFIX_OR_NAME emitter tests BOTH, because both are forks the peel
+#: called and declined: a listed member the case lean read as a name
+#: ('John van der Berg Ma') and a by-shape member the count left
+#: standing ('Freiherr von Berg X.Y.I.'). A frozenset so the test is
+#: one `isdisjoint` -- a C call, no Python frame, on a branch every
+#: chained name reaches.
+_AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
+    {AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
 
 # the credential-pair regexes live in _vocab, whose own
 # is_wholly_suffix merges the same pair -- and since #319 that
@@ -647,6 +659,78 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         f"name piece; it is also a given name in other "
                         f"names",
                         (i,)))
+                # rules.md#S2: "A BARE ambiguous acronym is consumed
+                # only when the name has words to spare — as the second
+                # of two words it stays the family name — and either
+                # reading carries the ambiguity flag"
+                #
+                # The other half of SUFFIX_OR_NAME's declined branch,
+                # and it is here for the reason PARTICLE_OR_GIVEN's
+                # second emitter is: a fork whose branches are taken in
+                # different stages needs an emitter in each
+                # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE).
+                # `assign` reports from `peel_trailing`'s picks, and a
+                # pick reaches it only as a LONE piece -- the peel's own
+                # `len(piece) == 1` test -- so the moment this chain
+                # takes the acronym into the particle run, the token
+                # assign would have reported on no longer exists as a
+                # piece and NOBODY reports. Measured: 'John van der Berg
+                # Ma', 'John de Ma', 'Dr. John van Smith Ma', 'John van
+                # Smith Ma Jr.' and 'John Smith Mc Ma' each lost the
+                # report #289's own lean had just made true of them,
+                # while 'John Smith Ma' -- the same fork with no
+                # particle to chain -- kept it (review round).
+                #
+                # The DECLINED reading is what this reports, because
+                # this branch only runs over pieces the peel left
+                # standing: `tail` is the peel's own answer, the inner
+                # scan stops at `len(pieces) - tail`, and a piece the
+                # peel TOOK is behind that bound. Where the chain runs
+                # again with a smaller tail (the re-peel below), the
+                # first pass's appends are truncated with the pieces,
+                # so the surviving report is the surviving reading's.
+                #
+                # `j > k + 1` above is this test's floor too: a merge
+                # that folds a piece into itself chained nothing.
+                # Written inline against the tags rather than through a
+                # predicate, and no new walk: `pieces[j - 1]` is the
+                # last piece the merge is about to claim, one index and
+                # one frozenset test, so the ordinary chained name ('de
+                # la Vega') pays no frame for it.
+                #
+                # `not prefix(j - 1)` is the other floor, and it names
+                # WHICH of the two scans above claimed the piece. The
+                # first extends the PARTICLE run and the second takes
+                # name words up to the trailing suffix; only the second
+                # is taking a word the peel had looked at. A word in
+                # both vocabularies ('do', 'mc', 'vd') ends a particle
+                # run as a particle, which is P4's reading and P6's
+                # fork, not this one -- 'anh van do' has read family
+                # 'van do' silently since 1.4.0 and its case row says
+                # so.
+                #
+                # It is tested LAST for the reason the emitter above
+                # tests its tag first, and the cost is measured rather
+                # than assumed: `prefix` is a closure over
+                # `_is_prefix_piece`, so asking it is TWO frames, and
+                # asking it ahead of the tag test moved the reference
+                # name from 412 to 414 -- every chained name in the
+                # library paying for a question only an ambiguous
+                # acronym can make interesting. Behind the
+                # `isdisjoint` (a C call, no frame) almost nothing
+                # reaches it.
+                last = pieces[j - 1]
+                if (j > k + 1 and len(last) == 1
+                        and not tokens[last[0]].tags.isdisjoint(
+                            _AMBIGUOUS_CREDENTIAL_TAGS)
+                        and not prefix(j - 1)):
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                        f"{tokens[last[0]].text!r} is both a post-nominal "
+                        f"and an ordinary name; the particle chain took "
+                        f"it into the name rather than reading it as a "
+                        f"post-nominal",
+                        tuple(last)))
                 merge(k, j, drop={"prefix"})
                 k += 1
 

@@ -1784,9 +1784,9 @@ orders = ["FAMILY_FIRST_GIVEN_LAST"]
 issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
 # 'Anh Do' -> 'A. D.', 'Juan van der' -> 'J. v. d.': rules.md#R2/#R3,
 # shipped in 2.2.0, decisions.md#R2. Fields identical at this
-# baseline; only the view moved. The same 27-name literal list as the
+# baseline; only the view moved. The same 28-name literal list as the
 # 1.4.0 rule, for the same reason.
-name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
+name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|anh van mc|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
 fields = ["_initials"]
 orders = ["DEFAULT"]
 
@@ -2379,7 +2379,7 @@ issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
 # given baseline is simply one the reading already agreed with there.
 # `fields` is per-baseline, the union the run at THAT baseline
 # measures (#452).
-name_regex = "^(?:Davis Royce, Ed|Freiherr von Berg MA|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Prof\\. MA|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John van der Berg Ma|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|abdul Smith Berg Ma|abdul Smith Jr Ma|abdul Smith Ma|john smith, ma)$"
+name_regex = "^(?:Davis Royce, Ed|Freiherr von Berg MA|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Prof\\. MA|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John de Ma|John van der Berg Ma|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|abdul Smith Berg Ma|abdul Smith Jr Ma|abdul Smith Ma|john smith, ma)$"
 fields = ["family", "given", "middle", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -2457,4 +2457,30 @@ issue = "fix(#289/#516) the ambiguous credential class reports at slots that wer
 # 2.3.0 ledgers are where the loss is recorded.
 name_regex = "^(?:J\\.A\\. K\\.D\\.|Jack X\\.Y\\.Z\\.|John Smith J\\.u\\.n\\.i\\.o\\.r\\.|John Smith R\\.A\\.I\\.|Royce, Ed|Smith Jr\\., A\\.B\\.|Smith, A\\.B\\.|Smith, Ma)$"
 fields = ["_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#289/#516) the glued CJK honorific peel reads the case lean"
+# The suffix-run predicate the peel uses to decline a post-comma run
+# (rules.md#W3, asking C1's own vocabulary question) now reads the
+# same written-case evidence rule S2 reads, because `one_case` is
+# passed to it. Before, one name written with two credentials divided
+# two ways: a Kim-prefixed 김민준씨 input peeled its honorific when the
+# credential was 'PhD' and did not when it was 'MA', the only
+# difference being that 'MA' is an ambiguous acronym whose case lean
+# the predicate was not given.
+#
+# Every name here is a COMPOSED form -- a Latin wrapper and a family
+# comma around a CJK name -- which no East Asian writing system
+# produces, so all three are `tolerated` case rows on the radar tier
+# (decisions.md#cjk-comma-demotion). They are classified all the same:
+# a radar diff this arc INTENDED is one a release note may be written
+# from, and an unclassified one is not.
+#
+# `title` is in `fields` because 'Dr. 김민준씨, MA' had the whole
+# string for its family at these baselines, the title included; at
+# 2.0.0 and 2.1.0 'Jo김민준씨, DO' moves `title` instead of `given`,
+# and the union is what a per-baseline `fields` records (#452).
+name_regex = "^(?:Dr\\. 김민준씨, MA|Jo김민준씨, DO|Kim김민준씨, MA)$"
+fields = ["title", "given", "family", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]

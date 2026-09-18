@@ -87,7 +87,8 @@ def test_the_reading_is_positional_and_total() -> None:
     assign's gate and its router are what remain."""
     state = _through_group("Smith, MD PSM I")
     reading = segment_suffix_reading(
-        state.pieces[1], state.piece_tags[1], list(state.tokens), True)
+        state.pieces[1], state.piece_tags[1], list(state.tokens), True,
+        state.one_case)
     assert reading is not None
     assert len(reading) == len(state.pieces[1])
     assert all(isinstance(v, bool) for v in reading)
@@ -104,11 +105,12 @@ def test_the_reading_does_not_move_when_roles_are_assigned() -> None:
     """
     state = _through_group("Smith, PSM I")
     before = segment_suffix_reading(
-        state.pieces[1], state.piece_tags[1], list(state.tokens), True)
+        state.pieces[1], state.piece_tags[1], list(state.tokens), True,
+        state.one_case)
     after_state = assign(state)
     after = segment_suffix_reading(
         after_state.pieces[1], after_state.piece_tags[1],
-        list(after_state.tokens), True)
+        list(after_state.tokens), True, after_state.one_case)
     assert before == after == (True, True)
 
 
@@ -121,8 +123,8 @@ def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
     """
     state = _through_group("Smith, PSM I")
     args = (state.pieces[1], state.piece_tags[1], list(state.tokens))
-    assert segment_suffix_reading(*args, True) == (True, True)
-    assert segment_suffix_reading(*args, False) is None
+    assert segment_suffix_reading(*args, True, state.one_case) == (True, True)
+    assert segment_suffix_reading(*args, False, state.one_case) is None
 
 
 def _leading(text: str) -> int:
@@ -186,7 +188,7 @@ def _trailing(text: str) -> int:
     pieces, ptags = state.pieces[0], state.piece_tags[0]
     tokens = list(state.tokens)
     rest = peel_walk(leading_titles(pieces, ptags, tokens), ptags)
-    peeled = peel_trailing(rest, pieces, ptags, tokens)
+    peeled = peel_trailing(rest, pieces, ptags, tokens, state.one_case)
     return trailing_titles(rest[:peeled.names], pieces, ptags, tokens)
 
 

@@ -1956,14 +1956,15 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"Davis Royce, Ed", "Freiherr von Berg MA",
                "JOHN SMITH, MA", "Jack MA", r"Jack MA\.", "Jack Wei Ma",
                "John Smith Ma", "John Smith, Ed", "John Smith, MA",
-               "John Smith, Ma", "John van der Berg Ma",
+               "John Smith, Ma", "John de Ma", "John van der Berg Ma",
                r"Smith Jr\., MA", r"Smith Jr\., Ma", "Smith, MA",
                "abdul Smith Berg Ma", "abdul Smith Jr Ma",
                "abdul Smith Ma", "john smith, ma"}),
     frozenset({"Davis Royce, Ed", "Freiherr von Berg MA",
                "JOHN SMITH, MA", "Jack MA", r"Jack MA\.", "Jack Wei Ma",
                r"John Prof\. MA", "John Smith Ma", "John Smith, Ed",
-               "John Smith, MA", "John Smith, Ma", "John van der Berg Ma",
+               "John Smith, MA", "John Smith, Ma", "John de Ma",
+               "John van der Berg Ma",
                r"Smith Jr\., MA", r"Smith Jr\., Ma", "Smith, MA",
                "abdul Smith Berg Ma", "abdul Smith Jr Ma",
                "abdul Smith Ma", "john smith, ma"}),
@@ -2075,15 +2076,16 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # words; the same reason as fix(#400)'s pair above.
     frozenset({"^", "\\s"}),
     frozenset({"^", "[\\s,]"}),
-    # fix(#385/#402)'s 24 spellings: the 27 corpus names whose
+    # fix(#385/#402)'s 25 spellings: the 28 corpus names whose
     # all-particle part moved, listed because "a part of nothing but
     # particles" is not a property a regex over the raw string can
     # state. A list of names, the fix(#445) precedent -- that rule and
     # fix(#410) and fix(#335) are the 1.4.0 ledger's literal lists.
+    # 'anh van mc' joined 2026-09-18 with its case row.
     frozenset({"anh do", "smith van der", "yin le", "yin a le", "vai la",
                "jong van der", "jong, van der", "juan van der",
                "mesnil garcia de", "mesnil garcia van", "mesnil de",
-               "sander van", "van ma van", "anh van do",
+               "sander van", "van ma van", "anh van do", "anh van mc",
                "beethoven ludwig van", "berg jan de jr\\.", "john van mc",
                "jong anke de", "juan de", "ménil christophe de",
                "ménil de", "nguyen thi van", "nguyen, van le",
@@ -2676,7 +2678,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # names this rule already described. Growth into new
         # corpus, not a widened regex.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(131, ('family', 'given', 'middle'), "ba829dc8fc7a", None),
+            _Claim(134, ('family', 'given', 'middle'), "fa99abf7fe10", None),
         "fix(#274) maiden markers consumed":
             _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -2719,13 +2721,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # witnesses that the NAME-word count is asked before the
         # written case is.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(304, ('given', 'suffix', 'title'), "0d5c17662bc9", None),
+            _Claim(306, ('given', 'suffix', 'title'), "ef4e131d3453", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
             _Claim(2, ('family', 'given', 'suffix'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
-            _Claim(3, ('given', 'middle', 'title'), "263d5957cfc1", None),
+            _Claim(4, ('given', 'middle', 'title'), "ebd53fa48eb9", None),
         # `middle` left the ROLES in the same edit, at the gate's
         # own OVER-DECLARED insistence: with 'John Smith Dr.' gone,
         # no name the rule still explains moves a middle name.
@@ -2759,7 +2761,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-18, second round: 302 -> 304, the same two new comma
         # names as the rule above.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(304, ('family', 'given'), "0d5c17662bc9", None),
+            _Claim(306, ('family', 'given'), "ef4e131d3453", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -2778,10 +2780,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # case rows added ('毛泽东, MA', '田中 太郎, MA',
         # '마틴 킹, MA'). Growth into new corpus.
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
-            _Claim(29, ('given', 'suffix'), "05d0a47ae567", None),
+            _Claim(32, ('given', 'suffix'), "a11674bdc8f2", None),
         # 2026-09-18: 26 -> 29, the same three new CJK comma forms.
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(29, ('family', 'given', 'suffix', 'title'), "05d0a47ae567", None),
+            _Claim(32, ('family', 'given', 'suffix', 'title'), "a11674bdc8f2", None),
         # 37 -> 35 with the 2026-09-05 narrowing, which is a rule
         # NARROWING and not corpus movement: the three negative
         # lookbehinds stop the regex matching a listed honorific
@@ -2803,7 +2805,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # baseline at all. `radar unclassified` stays 0.
         # 2026-09-18: 40 -> 41. One new corpus name, 'J.씨'.
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(41, ('family', 'given', 'suffix'), "7f913a0dfb38", None),
+            _Claim(44, ('family', 'given', 'suffix'), "1587ce883dab", None),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745", None),
         # 4 -> 6 on 2026-09-13: 'ХОСЕ И МАРИЯ САНТОС' and 'хосе и
@@ -2922,7 +2924,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # ones are protected by the [[never]] entry above, which is
         # what _EXCLUSION_EFFECT's grown `absorbed_by` records.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
+            _Claim(28, ('_initials',), "8a5bda70cc42", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # #269's derived-view rule, added 2026-09-13. One corpus name,
@@ -3053,7 +3055,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # and 'Smith Jr., Ma', the Title-case halves of two minimal
         # pairs rules.md#C1 now states. No role joined the list.
         "fix(#289) a written case contrast decides a bare ambiguous acronym":
-            _Claim(18, ('family', 'given', 'middle', 'suffix'), "b1e0d71d82a5", ('DEFAULT',)),
+        # 2026-09-18, review round: 'John de Ma' joins, the
+        # one-particle spelling of 'John van der Berg Ma'. Its diff
+        # is the restored chain report at the 2.x baselines and the
+        # role move at 1.4.0 and 2.2/2.3; no role joined the list.
+            _Claim(19, ('family', 'given', 'middle', 'suffix'), "7465eef956d4", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -3169,7 +3175,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # names this rule already described. Growth into new
         # corpus, not a widened regex.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(131, ('_ambiguities', 'family', 'given', 'middle'), "ba829dc8fc7a", None),
+            _Claim(134, ('_ambiguities', 'family', 'given', 'middle'), "fa99abf7fe10", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -3178,7 +3184,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # entry carrying the arithmetic.
         # 2026-09-18: 40 -> 41. One new corpus name, 'J.씨'.
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(41, ('family', 'given', 'suffix'), "7f913a0dfb38", None),
+            _Claim(44, ('family', 'given', 'suffix'), "1587ce883dab", None),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2", None),
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
@@ -3241,7 +3247,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
             _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
-            _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1", None),
+            _Claim(4, ('_ambiguities', 'given', 'middle', 'title'), "ebd53fa48eb9", None),
         # `middle` left the ROLES in the same edit, and the reach
         # grew with the rules corpus; the 1.4.0 roster above carries
         # both, and says the same at the other two baselines.
@@ -3305,7 +3311,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # digests match the 1.4.0 ledger's, which is the point of
         # copying the list verbatim rather than restating it.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
+            _Claim(28, ('_initials',), "8a5bda70cc42", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # fix(#462) reaches more than it explains -- the reach is the
@@ -3393,7 +3399,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # and 'Smith Jr., Ma', the Title-case halves of two minimal
         # pairs rules.md#C1 now states. No role joined the list.
         "fix(#289) a written case contrast decides a bare ambiguous acronym":
-            _Claim(19, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "828b609b5314", ('DEFAULT',)),
+        # 2026-09-18, review round: 'John de Ma' joins, the
+        # one-particle spelling of 'John van der Berg Ma'. Its diff
+        # is the restored chain report at the 2.x baselines and the
+        # role move at 1.4.0 and 2.2/2.3; no role joined the list.
+            _Claim(20, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "fe5f68146005", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -3406,6 +3416,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rule whose whole subject is a report.
         "fix(#289/#516) the ambiguous credential class reports at slots that were silent":
             _Claim(8, ('_ambiguities',), "4f4844f54ba1", ('DEFAULT',)),
+        # The 2026-09-18 review round's honorific-peel rule: three
+        # composed CJK forms, radar tier, classified because the arc
+        # intended the move (the ledger comment carries the argument).
+        "fix(#289/#516) the glued CJK honorific peel reads the case lean":
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "4fb6dbdbccd4", ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -3572,7 +3587,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # and 'Smith Jr., Ma', the Title-case halves of two minimal
         # pairs rules.md#C1 now states. No role joined the list.
         "fix(#289) a written case contrast decides a bare ambiguous acronym":
-            _Claim(19, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "828b609b5314", ('DEFAULT',)),
+        # 2026-09-18, review round: 'John de Ma' joins, the
+        # one-particle spelling of 'John van der Berg Ma'. Its diff
+        # is the restored chain report at the 2.x baselines and the
+        # role move at 1.4.0 and 2.2/2.3; no role joined the list.
+            _Claim(20, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "fe5f68146005", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -3585,6 +3604,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rule whose whole subject is a report.
         "fix(#289/#516) the ambiguous credential class reports at slots that were silent":
             _Claim(9, ('_ambiguities',), "f89a7428e317", ('DEFAULT',)),
+        # The 2026-09-18 review round's honorific-peel rule: three
+        # composed CJK forms, radar tier, classified because the arc
+        # intended the move (the ledger comment carries the argument).
+        "fix(#289/#516) the glued CJK honorific peel reads the case lean":
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "4fb6dbdbccd4", ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3748,7 +3772,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
             _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
-            _Claim(3, ('_ambiguities', 'given', 'middle', 'title'), "263d5957cfc1", None),
+            _Claim(4, ('_ambiguities', 'given', 'middle', 'title'), "ebd53fa48eb9", None),
         # `middle` left the ROLES in the same edit, and the reach
         # grew with the rules corpus; the 1.4.0 roster above carries
         # both, and says the same at the other two baselines.
@@ -3812,7 +3836,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # baseline, and the reaches and digests agree because the two
         # files carry the same literal list.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(27, ('_initials',), "6b242c287db8", ('DEFAULT',)),
+            _Claim(28, ('_initials',), "8a5bda70cc42", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # fix(#462), reach and digest as in the 2.0.0 mapping: the same
@@ -3889,7 +3913,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # and 'Smith Jr., Ma', the Title-case halves of two minimal
         # pairs rules.md#C1 now states. No role joined the list.
         "fix(#289) a written case contrast decides a bare ambiguous acronym":
-            _Claim(19, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "828b609b5314", ('DEFAULT',)),
+        # 2026-09-18, review round: 'John de Ma' joins, the
+        # one-particle spelling of 'John van der Berg Ma'. Its diff
+        # is the restored chain report at the 2.x baselines and the
+        # role move at 1.4.0 and 2.2/2.3; no role joined the list.
+            _Claim(20, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "fe5f68146005", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -3902,6 +3930,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rule whose whole subject is a report.
         "fix(#289/#516) the ambiguous credential class reports at slots that were silent":
             _Claim(8, ('_ambiguities',), "4f4844f54ba1", ('DEFAULT',)),
+        # The 2026-09-18 review round's honorific-peel rule: three
+        # composed CJK forms, radar tier, classified because the arc
+        # intended the move (the ledger comment carries the argument).
+        "fix(#289/#516) the glued CJK honorific peel reads the case lean":
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "4fb6dbdbccd4", ('DEFAULT',)),
     },
     "expected_since_2.3.0.toml": {
         # #383/#479's three rules, the first this ledger carries. The
@@ -3937,7 +3970,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # and 'Smith Jr., Ma', the Title-case halves of two minimal
         # pairs rules.md#C1 now states. No role joined the list.
         "fix(#289) a written case contrast decides a bare ambiguous acronym":
-            _Claim(19, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "828b609b5314", ('DEFAULT',)),
+        # 2026-09-18, review round: 'John de Ma' joins, the
+        # one-particle spelling of 'John van der Berg Ma'. Its diff
+        # is the restored chain report at the 2.x baselines and the
+        # role move at 1.4.0 and 2.2/2.3; no role joined the list.
+            _Claim(20, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "fe5f68146005", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -3950,6 +3987,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rule whose whole subject is a report.
         "fix(#289/#516) the ambiguous credential class reports at slots that were silent":
             _Claim(9, ('_ambiguities',), "f89a7428e317", ('DEFAULT',)),
+        # The 2026-09-18 review round's honorific-peel rule: three
+        # composed CJK forms, radar tier, classified because the arc
+        # intended the move (the ledger comment carries the argument).
+        "fix(#289/#516) the glued CJK honorific peel reads the case lean":
+            _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "4fb6dbdbccd4", ('DEFAULT',)),
     },
 }
 
@@ -5594,8 +5636,15 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
          "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 1),
         ("fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set",
          "feat(#273) typographic nickname delimiters recognized by default", 1),
+        # 20 → 23 on 2026-09-18: the review round's three
+        # `tolerated=True` rows for the honorific peel behind a
+        # leaning credential ('Kim김민준씨, MA', 'Jo김민준씨, DO',
+        # 'Dr. 김민준씨, MA') put three more corpus names inside BOTH
+        # regexes. The pair is unchanged and no rule was widened --
+        # this counter is the shared corpus REACH, so it moves with
+        # every corpus addition that lands in the overlap.
         ("fix(cjk-comma-compound) comma routing compounds with the CJK order flip",
-         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 20),
+         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 23),
         ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
          "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`", 1),
         ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",

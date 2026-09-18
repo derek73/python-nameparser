@@ -70,8 +70,8 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure, WorkToken,
-    _NEVER_FLIPPED,
+    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
+    Structure, WorkToken, _NEVER_FLIPPED,
 )
 from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
@@ -561,7 +561,7 @@ def assign(state: ParseState) -> ParseState:
         if state.pieces[1] and len(state.pieces[1][0]) == 1:
             i = state.pieces[1][0][0]
             piece_tags = tokens[i].tags
-            if ("vocab:suffix-ambiguous" in piece_tags
+            if (AMBIGUOUS_ACRONYM_TAG in piece_tags
                     or SHAPE_ACRONYM_TAG in piece_tags):
                 chose = ("a credential" if reading and reading[0]
                          else "the given name")

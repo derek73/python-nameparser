@@ -34,8 +34,8 @@ from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket,
 )
 from nameparser._pipeline._vocab import (
-    ambiguous_class_candidate, caps_shape_candidate, is_one_case,
-    is_wholly_suffix, name_word_count,
+    ambiguous_class_candidate, ambiguous_class_member, caps_shape_candidate,
+    is_one_case, is_wholly_suffix, name_word_count,
 )
 from nameparser._types import AmbiguityKind
 
@@ -84,9 +84,13 @@ def segment(state: ParseState) -> ParseState:
     def case_class() -> bool:
         nonlocal one_case
         if one_case is None:
-            one_case = is_one_case(
-                own_words(state.tokens, state.comma_offsets,
-                          state.lexicon.maiden_markers)[0])
+            # `own, _` rather than `[0]`: the second element is the
+            # maiden clause's start index, which this stage has no use
+            # for, and saying so by name is what stops a reader having
+            # to go and look up what a bare subscript dropped.
+            own, _ = own_words(state.tokens, state.comma_offsets,
+                               state.lexicon.maiden_markers)
+            one_case = is_one_case(own)
         return one_case
 
     def texts(seg: tuple[int, ...]) -> list[str]:
@@ -110,6 +114,40 @@ def segment(state: ParseState) -> ParseState:
         return is_wholly_suffix([state.tokens[i].text for i in seg],
                                 state.lexicon, state.policy,
                                 one_case=case_class())
+
+    def class_run(seg: tuple[int, ...]) -> bool:
+        # Every token of the run joins the ambiguous credential class
+        # BY SHAPE -- a candidate that is not a LISTED member, which is
+        # the one half `is_wholly_suffix` cannot see (its own docstring
+        # says so, and the blindness is what keeps a by-shape token out
+        # of C1's legacy token-count disjunct). A tail segment is
+        # consumed as suffix either way, so what this decides is only
+        # whether the parse says it did not RECOGNIZE the segment -- and
+        # a run the parse itself reads as a credential run by shape is
+        # recognized. Without it, the narrow roman retirement
+        # (rules.md#S3) moved 'R.A.I.', 'X.Y.I.' and 'J.u.n.i.o.r.' out
+        # of the vocabulary verdict and into the shape class, and every
+        # one of them gained a COMMA_STRUCTURE flag in a third segment
+        # that 2.3 did not raise -- a report about the parser's own new
+        # reading rather than about the name (review round, #289/#516).
+        #
+        # The LISTED half is deliberately excluded rather than folded
+        # in: a listed member reaches this reading through the LEAN
+        # (`leaning_suffixy`, above), and that is the whole of what
+        # quiets it -- 'STEVEN HARDMAN, MD, DO, DDS' is written in one
+        # case, leans nothing, and keeps its flag, which is the
+        # recorded negative control for the lean's own effect here.
+        # Admitting membership alone would silence it and leave the
+        # control measuring nothing.
+        #
+        # Policy-sensitive by construction: with
+        # `unlisted_dotted_suffixes` off the token is name material, is
+        # no candidate, and the flag stands.
+        return all(ambiguous_class_candidate(state.tokens[i].text,
+                                             state.lexicon, state.policy)
+                   and not ambiguous_class_member(state.tokens[i].text,
+                                                  state.lexicon)
+                   for i in seg)
 
     # rules.md#C1: "the name reads as trailing suffixes when the part
     # after the first comma is entirely suffix words and more than one
@@ -261,7 +299,12 @@ def segment(state: ParseState) -> ParseState:
         # only when the case-free answer was False (measured
         # regression: `leaning_suffixy` forced the fact for every tail
         # segment, suffix or not).
-        if seg and not suffixy(seg) and not leaning_suffixy(seg):
+        # `class_run` last, for the same lazy reason and one step
+        # further out: it is the only one of the three that walks the
+        # by-shape class, and it is asked only of a run BOTH suffix
+        # readings have already declined.
+        if (seg and not suffixy(seg) and not leaning_suffixy(seg)
+                and not class_run(seg)):
             texts_joined = " ".join(texts(seg))
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.COMMA_STRUCTURE,

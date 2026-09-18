@@ -1772,6 +1772,131 @@ CASES: tuple[Case, ...] = (
                "material exactly as it did at dfb3170 -- no reading "
                "and no report",
          tolerated=True),
+    # The whole-PR review round, 2026-09-18. Three groups: the fork
+    # the prefix chain swallowed, the honorific peel that stopped
+    # asking for the lean, and the tail segment that started flagging
+    # its own new reading. Every row here is a REPORT moving, not a
+    # role -- which is exactly why none of them had a row before.
+    Case("the_chain_reports_the_acronym_it_takes",
+         "John van der Berg Ma",
+         {"given": "John", "family": "van der Berg Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#S2 says either reading carries the flag, and "
+               "this reading carried none. assign reports from the "
+               "peel's picks and a pick reaches it only as a LONE "
+               "piece, so once the prefix chain merged 'Ma' into the "
+               "family piece the token assign would have reported on "
+               "no longer existed. The roles are unchanged and were "
+               "never in doubt -- 'Ma' is Title-case in a mixed-case "
+               "name, so #289's lean declines it; what the review "
+               "round restored is the report, emitted at the chain's "
+               "own merge (mechanisms.md#AMBIGUITY-AT-THE-DECISION-"
+               "SITE)",
+         shape=1),
+    Case("the_chain_reports_at_one_particle_too", "John de Ma",
+         {"given": "John", "family": "de Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the shortest spelling of the row above: one particle, "
+               "one chained acronym. Kept beside it because the chain "
+               "reaches the merge by a different route here -- 'de' "
+               "takes the single following piece rather than a run -- "
+               "and the emitter's `j > k + 1` floor is what both have "
+               "to clear",
+         shape=1),
+    Case("a_particle_that_is_also_an_acronym_reports_nothing",
+         "anh van mc",
+         {"given": "anh", "family": "van mc"},
+         notes="the control the emitter above must NOT claim, and the "
+               "reason it asks `prefix(j - 1)` last. 'mc' is a "
+               "particle as well as suffix vocabulary, so the chain's "
+               "PARTICLE run takes it -- P4's reading and P6's fork, "
+               "not S2's -- and 1.4.0 read it this way in silence. "
+               "'anh van do' is the shipped twin (its own row above) "
+               "and this is its unambiguous-vocabulary sibling, which "
+               "the peel never even considers",
+         shape=1),
+    Case("the_glued_honorific_peels_behind_a_leaning_credential",
+         "Kim김민준씨, MA",
+         {"family": "Kim김민준", "suffix": "씨, MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="script_segment asked `is_wholly_suffix` of the "
+               "post-comma run WITHOUT the case fact segment had just "
+               "recorded, so 'MA' read as name material, the run was "
+               "scanned, its only peel site was 'MA' itself -- which "
+               "ends in no listed tail -- and the person's own 씨 went "
+               "unpeeled (family 'Kim김민준씨'). 'Kim김민준씨, PhD' "
+               "peeled all along, so one name in two credential "
+               "spellings parsed two ways. Passing the fact is the "
+               "whole fix (review round, 2026-09-18)",
+         tolerated=True),
+    Case("the_glued_honorific_peel_reads_the_lean_not_the_word",
+         "Jo김민준씨, DO",
+         {"family": "Jo김민준", "suffix": "씨, DO"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="a second member of the ambiguous set behind the same "
+               "comma, so the row above pins the mechanism rather "
+               "than the word 'MA' "
+               "(mechanisms.md#VOCABULARY-EXERCISES-FORKS is about "
+               "not doing this per entry; 'DO' is here because it is "
+               "ALSO particle vocabulary, which nothing else on this "
+               "path exercises)",
+         tolerated=True),
+    Case("the_glued_honorific_peel_behind_a_title_and_a_lean",
+         "Dr. 김민준씨, MA",
+         {"title": "Dr.", "family": "김민준", "suffix": "씨, MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the title is what makes this name MIXED-case at all "
+               "-- Hangul is caseless, so '김민준씨, MA' on its own is "
+               "one case, leans nothing and keeps today's reading "
+               "(given 'MA', family '김민준씨', unpeeled). Two rows, "
+               "one difference, and the difference is the case "
+               "contrast rather than the honorific",
+         tolerated=True),
+    Case("a_tail_segment_of_by_shape_credentials_is_not_flagged",
+         "John Smith, MD, R.A.I.",
+         {"given": "John", "family": "Smith", "suffix": "MD, R.A.I."},
+         classification="fix(#516)",
+         notes="rules.md#S3's narrow roman retirement moved 'R.A.I.' "
+               "out of the vocabulary verdict and into the shape "
+               "class, and segment's tail-segment test reads "
+               "`is_wholly_suffix`, which is blind to that class by "
+               "design -- so a third segment the parser itself reads "
+               "as a credential run gained a COMMA_STRUCTURE flag 2.3 "
+               "did not raise. A report about the parser's own new "
+               "reading rather than about the name (review round, "
+               "2026-09-18). Roles unchanged at every policy: a tail "
+               "segment is consumed as suffix either way",
+         shape=3),
+    Case("the_by_shape_tail_segment_is_flagged_with_the_switch_off",
+         "John Smith, MD, R.A.I.",
+         {"given": "John", "family": "Smith", "suffix": "MD, R.A.I."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         ambiguities=("comma-structure",),
+         notes="the negative control for the row above, and the "
+               "reason the test is policy-sensitive rather than a "
+               "blanket quiet: with the switch off 'R.A.I.' is name "
+               "material, is no candidate for the class, and the "
+               "segment genuinely is beyond the recognized comma "
+               "structures. Same fields, opposite report",
+         classification="fix(#516)"),
+    Case("a_listed_tail_segment_keeps_its_flag_where_nothing_leans",
+         "John Smith, MD, Ma",
+         {"given": "John", "family": "Smith", "suffix": "MD, Ma"},
+         ambiguities=("comma-structure",),
+         notes="the other boundary of the same test: the quiet is the "
+               "BY-SHAPE half's alone. A LISTED member reaches this "
+               "reading through the case lean "
+               "('Steven Hardman, MD, DO, DDS', "
+               "test_segment.py's own negative control), and 'Ma' "
+               "leans the other way, so the flag stands exactly as it "
+               "did at 1f78bef. Folding membership into the test "
+               "instead would have silenced the lean's own control",
+         shape=3),
     # #516's all-caps half, and it is OPT-IN. The rows come in pairs:
     # the same name under the DEFAULT policy, where nothing moves and
     # nothing is reported, and under Policy(unlisted_caps_suffixes=

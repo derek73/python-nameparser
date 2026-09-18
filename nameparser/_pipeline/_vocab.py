@@ -46,7 +46,9 @@ import unicodedata
 from collections.abc import Callable, Iterable, Sequence
 from typing import Literal
 
-from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
+from nameparser._lexicon import (
+    FULL_STOPS, Lexicon, _VOCAB_FIELDS, _normalize,
+)
 from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
 from nameparser._pipeline._state import WorkToken, comma_bucket
@@ -252,10 +254,24 @@ def is_one_case(texts: Sequence[str]) -> bool:
     return joined in (joined.upper(), joined.lower())
 
 
+#: Which way the WRITING leans for a member of the ambiguous
+#: credential class; None is no lean at all. Named so the two
+#: predicates that answer it -- `ambiguous_lean` here and
+#: `_pieces.listed_lean`, which wraps it -- carry the same three-value
+#: type rather than a bare `str`. Under mypy's `strict_equality` that
+#: makes a misspelled comparison (`== "credentail"`) an error at the
+#: two call sites that branch on the answer, where a `str` return
+#: leaves it silently False forever -- which is what the value is FOR:
+#: `_pieces.peel_trailing` peels or declines on it.
+#: `period_joined_vocab`'s own verdict is spelled inline for the same
+#: reason; it has one caller shape and no wrapper to keep in step.
+Lean = Literal["credential", "name"]
+
+
 # #289's credential lean: rules.md#S2 records the words-to-spare count
 # today; this predicate is the WRITING evidence that decides ahead of
 # it, in a mixed-case name only (history: decisions.md#S2).
-def ambiguous_lean(text: str, one_case: bool) -> str | None:
+def ambiguous_lean(text: str, one_case: bool) -> Lean | None:
     """Which way the WRITING leans for a member of the ambiguous
     credential set: "credential", "name", or None for no lean at all.
 
@@ -508,16 +524,18 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
 
 
 # #516's all-caps half, ONE PREDICATE for the shape test and its
-# ELEVEN-list exclusion, called from three sites that each needed the
-# identical question answered (classify's tag emission, this module's
-# `ambiguous_class_candidate` below, and `_segment.py`'s multi-token
-# run test) -- a quality-review finding: the shape test plus the
-# eleven-list membership check was spelled three times over, and the
-# usual reason for THAT (a shared call costing every default-policy
-# parse a frame it cannot use) does not apply here, because every
-# caller's own first conjunct is `policy.unlisted_caps_suffixes`
-# itself, False by default -- the call below is never reached at all
-# when the switch is off, so sharing it costs the default nothing.
+# WHOLE-VOCABULARY exclusion, called from three sites that each needed
+# the identical question answered (classify's tag emission,
+# `_segment.py`'s multi-token run test, and this module's own unit
+# tests) -- a quality-review finding: the shape test plus the
+# membership check was spelled three times over, and the usual reason
+# for THAT (a shared call costing every default-policy parse a frame it
+# cannot use) does not apply here, because every caller's own first
+# conjunct is `policy.unlisted_caps_suffixes` itself, False by default
+# -- the call below is never reached at all when the switch is off, so
+# sharing it costs the default nothing, and the loop inside it is off
+# the default path for the same reason (confirmed against the 412/449
+# frame band and the default comma harness).
 def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
                          one_case: bool | None) -> bool:
     """Whether TEXT is an UNLISTED all-caps credential candidate: two
@@ -528,57 +546,63 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     established", declines exactly as if the name were one case).
 
     UNLISTED means in NO wordlist at all, not merely "no whole-token
-    suffix vocabulary" -- eleven lists, checked directly against the
-    lexicon rather than through a caller's tags (this function's own
-    callers have none to read, `segment` running before `classify`):
-    `titles`, `given_name_titles`, `particles`, `particles_ambiguous`,
-    `conjunctions`, `conjunctions_ambiguous`, `bound_given_names`,
-    `suffix_acronyms`, `suffix_acronyms_ambiguous`, `suffix_words` and
-    `maiden_markers` -- measured, #516 review rounds: 56 particles, 33
-    ambiguous particles, 7 conjunctions, 6 bound-given heads, a
-    maiden marker ('NEE'/'GEB') and a title all join the shape by
-    capitalization alone if any one of the eleven is left unchecked.
-    `suffix_acronyms_ambiguous` also makes this predicate stand in for
-    `ambiguous_class_member` wherever a caller needs "and not already
-    a LISTED member" (undotted text's only path into that function is
-    the identical membership test) -- `_segment.py`'s run test relies
-    on exactly that rather than calling both.
+    suffix vocabulary", and the roster is `_lexicon._VOCAB_FIELDS`
+    itself rather than a list written out here -- checked directly
+    against the lexicon rather than through a caller's tags (this
+    function's own callers have none to read, `segment` running before
+    `classify`). A hand-written roster is a second place to remember,
+    and it had already gone wrong: it named eleven of the thirteen
+    fields, leaving `surnames` and `honorific_tails` out, so
+    `Lexicon.default().add(surnames={"dupont"})` still read
+    `Jean Pierre DUPONT` as suffix `DUPONT` -- a caller listing a word
+    as a SURNAME and getting it read as a credential is this switch's
+    own worst failure, arriving through the one wordlist that says
+    "this is a family name" (review round, #289/#516;
+    `honorific_tails` was already excluded transitively, being a
+    subset of `suffix_words` by Lexicon invariant, and joins the
+    roster for completeness rather than for a behavior change).
+    Measured, #516 review rounds: particles, ambiguous particles,
+    conjunctions, bound-given heads, a maiden marker ('NEE'/'GEB') and
+    a title all join the shape by capitalization alone if their field
+    is left unchecked.
+
+    `suffix_acronyms_ambiguous` is in the roster, which also makes
+    this predicate stand in for `ambiguous_class_member` wherever a
+    caller needs "and not already a LISTED member" (undotted text's
+    only path into that function is the identical membership test) --
+    `_segment.py`'s run test relies on exactly that rather than
+    calling both.
     """
     if not (policy.unlisted_caps_suffixes and one_case is False
             and len(text) >= 2 and text.isalpha() and text.isupper()):
         return False
     n = _normalize(text)
-    return not (n in lexicon.titles or n in lexicon.given_name_titles
-                or n in lexicon.particles or n in lexicon.particles_ambiguous
-                or n in lexicon.conjunctions
-                or n in lexicon.conjunctions_ambiguous
-                or n in lexicon.bound_given_names
-                or n in lexicon.suffix_acronyms
-                or n in lexicon.suffix_acronyms_ambiguous
-                or n in lexicon.suffix_words
-                or n in lexicon.maiden_markers)
+    for field in _VOCAB_FIELDS:
+        if n in getattr(lexicon, field):
+            return False
+    return True
 
 
 # The comma form's own candidate test (rules.md#C1, decisions.md#S2).
 def ambiguous_class_candidate(text: str, lexicon: Lexicon,
-                              policy: Policy,
-                              one_case: bool | None = None) -> bool:
+                              policy: Policy) -> bool:
     """Whether TEXT is a CANDIDATE for the ambiguous credential class
     at the comma form's own structure decision (`_segment.py`): the
     LISTED half (`ambiguous_class_member`, case-free) OR, where Policy
     admits it, the SHAPE an unlisted dotted token wears
-    (`period_joined_vocab`'s third verdict, #516) OR, since 2.4's
-    all-caps half (`Policy.unlisted_caps_suffixes`, #516), an unlisted
-    all-caps word in a name `one_case` says is written in more than
-    one case. The dotted shape is case-free -- the periods are the
-    signal, not the case, and the listed half's own case lean is asked
-    downstream of membership, not here -- but the CAPS shape is not:
-    'XYZ' is only credential-shaped where the name contrasts it, so
-    this is the one membership test on this function that reads
-    `one_case` at all. `one_case=None`, the default, is what every
-    caller with no fact to hand in gets, and it reads as "not
-    established" -- the caps half declines exactly as if the name were
-    one case, never as if it were mixed.
+    (`period_joined_vocab`'s third verdict, #516).
+
+    Case-free throughout, and the CAPS half of the class is
+    deliberately not here. It was, briefly, behind an optional
+    `one_case` parameter -- and no production caller ever passed one,
+    `segment` being the only one and having nothing to hand in at its
+    single-token test, so the branch answered False for every name the
+    library ever parsed and only the unit tests reached it
+    (review-round finding, #289/#516). The caps half's real site is
+    `_segment.py`'s multi-token run test, which calls
+    `caps_shape_candidate` directly because the run is a property of
+    that shape alone; a dead second route to the same predicate is a
+    place for the two to disagree, not a convenience.
 
     A period anywhere is the gate for even ASKING the shape question,
     checked before the shape's own two calls: `period_joined_vocab`
@@ -596,27 +620,22 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
     function's chunk-level view alone, oblivious to the WHOLE-token
     match `suffix_as_written` already settled -- the same precedence
     classify's own tag order gives it (`vocab:suffix` is set before
-    `period_joined_vocab` is even consulted). A period anywhere also
-    excludes the caps half outright ('MA.' is the dotted gate's
-    question, not this one's), so the two shapes stay disjoint by the
-    same early exit.
+    `period_joined_vocab` is even consulted).
 
-    The caps half delegates to `caps_shape_candidate`, above -- ONE
-    predicate for the shape test and its eleven-list exclusion, shared
-    with classify's `elif` and `_segment.py`'s run test rather than
-    spelled three times, because the usual reason for three separate
-    copies (a shared call costing the default-policy parse a frame it
-    cannot use) does not hold for this branch specifically: every
-    caller's own first conjunct is the switch itself, False by
-    default, so the shared call is never reached at the default
-    regardless of how many callers share it.
+    A LISTED member spelled with its periods is excluded from the
+    shape branch by the same test classify's own shape branch makes:
+    a caller who puts a dotted entry in `suffix_acronyms_ambiguous`
+    has said the word is a listed member of this class, and reading
+    it by shape instead loses the case lean the listing asks for
+    (review-round finding, #289/#516 -- `Jack A.B.` with 'a.b' listed).
+    It cannot change the answer for the shipped vocabulary, whose
+    ambiguous entries carry no period at all.
 
     This function and classify's tag emission (`_tags_for`'s
-    `derived == "shape"` branch, dotted, and `caps_shape_candidate`
-    call, caps) still ask the SAME questions twice OVERALL, of
+    `derived == "shape"` branch) still ask the SAME question twice, of
     necessity: `segment` runs before `classify` and has no tags to
-    read yet, so the two stages cannot share the call itself even
-    though the caps half now shares its BODY. Kept from drifting by
+    read yet, so the two stages cannot share the call. Kept from
+    drifting by
     `test_classify.test_ambiguous_class_candidate_agrees_with_the_tag`,
     which asks both of the same texts, rather than by a sentence
     alone.
@@ -624,23 +643,16 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
     if ambiguous_class_member(text, lexicon):
         return True
     if "." in text:
-        return (policy.unlisted_dotted_suffixes
-                and period_joined_vocab(text, lexicon) == "shape"
-                and not suffix_as_written(_normalize(text), text, lexicon))
-    # The policy conjunct stays INLINE here too, ahead of the call --
-    # measured, calling `caps_shape_candidate` unconditionally cost
-    # every UNDOTTED, unlisted text passing through this function a
-    # frame it could not use at the default (`policy.
-    # unlisted_caps_suffixes` is checked FIRST inside that function,
-    # but the CALL itself already happened by then): `"Smith, John"`,
-    # `"Smith, XYZ"` and `"John Smith, XYZ"` each moved +1 at the
-    # default policy (quality-review finding). `segment`'s own single-
-    # token call into this function carries no `one_case` and reaches
-    # this exact branch for the common "Smith, John" shape, so the
-    # short-circuit has to live here, not only at classify's and
-    # segment's own OTHER call sites, which already have it.
-    return policy.unlisted_caps_suffixes and caps_shape_candidate(
-        text, lexicon, policy, one_case)
+        # `_normalize` stays behind the shape verdict, where it always
+        # was: it is a call, and a dotted post-comma token that is not
+        # acronym-shaped at all ('Jr.') must not pay for it.
+        if not (policy.unlisted_dotted_suffixes
+                and period_joined_vocab(text, lexicon) == "shape"):
+            return False
+        n = _normalize(text)
+        return (n not in lexicon.suffix_acronyms_ambiguous
+                and not suffix_as_written(n, text, lexicon))
+    return False
 
 
 def name_word_count(texts: Sequence[str], lexicon: Lexicon,

@@ -1,6 +1,9 @@
 """Stage: script_segment (#271, #272, #308, #312).
 
-Consumes: tokens, segments, structure, interpunct_offsets, segmenter.
+Consumes: tokens, segments, structure, interpunct_offsets, segmenter,
+one_case (where segment recorded it; None everywhere else, which is
+what this stage's suffix-run predicate read for every name before
+2.4).
 Produces: tokens, by two independent splits into sub-slices -- a
 listed honorific peeled off the END of the name's last
 non-post-nominal token, in whichever of the name's runs that falls
@@ -487,9 +490,21 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     runs = state.segments[:1]
     if state.structure is Structure.FAMILY_COMMA:
         second = [state.tokens[j].text for j in state.segments[1]]
-        # a site here is asked about, not used: the offset it carries is
-        # >= 1 by the cap, so a site is always truthy and None never is
-        if not (is_wholly_suffix(second, state.lexicon, state.policy)
+        # `one_case` is passed for the reason the field exists: the
+        # credential lean is part of what "wholly suffix" MEANS since
+        # #289, and a stage that asks the question without it gets a
+        # different answer from `segment`, which asked it with the fact
+        # in hand one stage earlier. Left out, 'Kim김민준씨, MA' read
+        # 'MA' as name material, declined nothing, and scanned the
+        # second run -- where the site is 'MA' itself, which carries no
+        # listed tail -- so the person's own 씨 went unpeeled (family
+        # 'Kim김민준씨') while 'Kim김민준씨, PhD' peeled it, one name in
+        # two spellings parsed two ways (review round, #289/#516).
+        # `segment` records the fact only where a comma form could turn
+        # ON it, so this read is None for every other name and the
+        # predicate then behaves exactly as it did before 2.4.
+        if not (is_wholly_suffix(second, state.lexicon, state.policy,
+                                 one_case=state.one_case)
                 and _peel_site(state, state.segments[0], tails)):
             runs = state.segments[:2]
     site = _peel_site(state, [j for seg in runs for j in seg], tails)

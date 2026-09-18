@@ -6,7 +6,7 @@ import pytest
 from nameparser._policy import (
     DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
     GIVEN_FIRST, PatronymicRule, Policy, PolicyPatch, Script, UNSET,
-    _SCRIPT_RANGES, _script_matcher, apply_patch,
+    _BOOL_FIELDS, _SCRIPT_RANGES, _script_matcher, apply_patch,
 )
 from nameparser._types import Role
 
@@ -288,10 +288,50 @@ def test_unset_fields_are_distinguishable_from_defaults() -> None:
 def test_policy_rejects_non_bool_flags() -> None:
     # "no" and "false" are truthy: storing them would silently invert
     # the caller's intent downstream.
-    for flag in ("middle_as_family", "lenient_comma_suffixes",
-                 "strip_emoji", "strip_bidi"):
+    #
+    # Swept over the DATACLASS, not over a list written here. The list
+    # this replaced named 2.3's four flags and was never extended when
+    # 2.4 added `unlisted_dotted_suffixes` and `unlisted_caps_suffixes`,
+    # so both shipped with no coverage for the check the library was
+    # already making -- the drift AGENTS.md's guard-the-whole-family
+    # rule is about, in the test rather than in the guard.
+    assert set(_BOOL_FIELDS) == {
+        f.name for f in dataclasses.fields(Policy)
+        if isinstance(getattr(Policy(), f.name), bool)}
+    for flag in _BOOL_FIELDS:
         with pytest.raises(TypeError, match="must be a bool"):
             Policy(**{flag: "no"})  # type: ignore[arg-type]
+
+
+#: 2.3's Policy fields, in 2.3's order, read off the released tree with
+#: `git show 1f78bef:nameparser/_policy.py`. A dated snapshot of an
+#: immutable commit, so it cannot go stale (AGENTS.md's counting
+#: claims).
+_FIELDS_AT_2_3 = (
+    "name_order", "script_orders", "segment_scripts", "patronymic_rules",
+    "middle_as_family", "nickname_delimiters", "maiden_delimiters",
+    "extra_suffix_delimiters", "lenient_comma_suffixes", "strip_emoji",
+    "strip_bidi",
+)
+
+
+def test_the_2_3_positional_fields_did_not_move() -> None:
+    # Policy and PolicyPatch are not `kw_only`, so a field's POSITION
+    # is API: `Policy(GIVEN_FIRST, ..., True, False)` binds by
+    # position, and inserting a field mid-class silently re-binds every
+    # argument after it. 2.4's two switches were first written beside
+    # `lenient_comma_suffixes`, which moved `strip_emoji` and
+    # `strip_bidi` two places to the right; they are appended now, and
+    # this is what holds them there.
+    for cls in (Policy, PolicyPatch):
+        names = tuple(f.name for f in dataclasses.fields(cls))
+        assert names[:len(_FIELDS_AT_2_3)] == _FIELDS_AT_2_3, cls.__name__
+        assert names[len(_FIELDS_AT_2_3):] == (
+            "unlisted_dotted_suffixes", "unlisted_caps_suffixes"), cls.__name__
+    # the positional binding itself, not just the names
+    assert Policy(GIVEN_FIRST, (), frozenset(), frozenset(), False,
+                  frozenset(), frozenset(), frozenset(), True,
+                  False).strip_emoji is False
 
 
 def test_patronymic_rules_generator_errors_propagate_untouched() -> None:
