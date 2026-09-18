@@ -1308,9 +1308,10 @@ C1. Rationale: a credential run after the comma means the name is in
     count leaves the word a name — one name word before the comma —
     is the case read, capitals in a mixed-case name making it the
     credential there too (S2). A decision either way at this comma
-    is reported, which is the one place a comma path reports a
-    READING; C2's comma-structure flag reports what the parse could
-    not recognize, not a fork it called.
+    is reported, which is the one place the comma's own decision is
+    reported; an attachment decided after a family comma (P6)
+    reports on its own. C2's comma-structure flag reports what the
+    parse could not recognize, not a fork it called.
     By default a recognized suffix word counts
     even written like an initial ("V."), while strict mode vetoes
     initial-shaped words. In the listing form the part after the

@@ -183,10 +183,12 @@ def test_a_tail_segment_of_leaning_credentials_is_not_flagged() -> None:
 
 
 def test_the_structure_flip_reports_a_verbatim_detail() -> None:
-    # The first comma-path report OF A READING in the library (#289):
-    # C2's structural flag already reports on the comma path, but it
-    # reports what the parse could not recognize, not a fork it
-    # called. Pinned verbatim so a wording edit is a deliberate one,
+    # The first report of the comma's OWN decision in the library
+    # (#289): C2's structural flag already reports on the comma path,
+    # but it reports what the parse could not recognize, not a fork
+    # it called. P6's attachment fork has separately reported on a
+    # family-comma path since 2.3 ("Berg, Jan vd"). Pinned verbatim so
+    # a wording edit is a deliberate one,
     # not a silent drift the case table's looser `ambiguities=` tuple
     # check would never catch.
     state = _segmented("John Smith, MA")

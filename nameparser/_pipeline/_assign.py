@@ -542,11 +542,14 @@ def assign(state: ParseState) -> ParseState:
             state.pieces[1], state.piece_tags[1], tokens,
             state.policy.lenient_comma_suffixes, state.one_case)
         # rules.md#C1's exception, scoped to the ambiguous credential
-        # class: the comma paths stay quiet by design EXCEPT here,
-        # where the parse called a fork the writing left open. Emitted
-        # on the family-comma path only -- the structure decision
-        # reports itself in `segment`, where that branch is taken, so
-        # this DECISION is never reported twice; a second ambiguous
+        # class: this is the first report of the comma's OWN decision
+        # (listing or credential run), where the writing left the
+        # fork open and the comma stayed quiet by design until now.
+        # P6's attachment fork already reports on a family-comma path
+        # from post_rules, since 2.3 ("Berg, Jan vd") -- a different
+        # fork. Emitted on the family-comma path only -- the structure
+        # decision reports itself in `segment`, where that branch is
+        # taken, so this DECISION is never reported twice; a second ambiguous
         # token elsewhere in the name is a second fork and reports on
         # its own (#289, mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE).
         #

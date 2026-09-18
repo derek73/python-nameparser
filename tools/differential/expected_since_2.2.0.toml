@@ -955,9 +955,10 @@ issue = "fix(#289/#516) the ambiguous credential class reports at slots that wer
 # no new kind, and the report tracks the FORK BEING CONSULTED rather
 # than which way it went, as the trailing slot always has. These names
 # gain it with no role moving at any baseline: the fork was there all
-# along and was called silently. It is the first time a comma path
-# reports a READING (rules.md#C1); C2's structural flag was already
-# the first comma-path report of a shape.
+# along and was called silently. It is the first time the comma's
+# OWN decision is reported (rules.md#C1); P6's attachment fork has
+# reported on a family-comma path since 2.3 ('Berg, Jan vd'). C2's
+# structural flag was already the first comma-path report of a shape.
 #
 # 'Steven Hardman, MD, DO, DDS' goes the other way and LOSES its
 # comma-structure flag: its third segment now reads as the credential

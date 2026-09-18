@@ -1343,11 +1343,13 @@ CASES: tuple[Case, ...] = (
          notes="Derek's own reading of #289: positive evidence "
                "outranks position, so the credential lean fires with "
                "ONE word before the comma where the words-to-spare "
-               "count would not. The first comma-path report OF A "
-               "READING rides with it -- C2's structural flag already "
+               "count would not. The first report of the comma's OWN "
+               "decision rides with it -- C2's structural flag already "
                "reports on the comma path, but reports what the parse "
                "could not recognize, not a fork it called "
-               "(rules.md#C1's exception, scoped to this class)",
+               "(rules.md#C1's exception, scoped to this class; P6's "
+               "attachment fork has reported on a family-comma path "
+               "since 2.3, e.g. 'Berg, Jan vd')",
          shape=2),
     Case("the_surname_lean_keeps_the_post_comma_given", "Smith, Ma",
          {"given": "Ma", "family": "Smith"},

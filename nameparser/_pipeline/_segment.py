@@ -255,12 +255,15 @@ def segment(state: ParseState) -> ParseState:
         else Structure.FAMILY_COMMA)
     ambiguities = list(state.ambiguities)
     if candidate and structure is Structure.SUFFIX_COMMA:
-        # The first comma-path report of a READING in the library --
-        # C2's structural flag, below, already reports on the comma
-        # path, but it reports what the parse could not recognize, not
-        # a fork it called. This is the existing kind: the parse
-        # called a fork at this comma and the caller is told which way
-        # it went. Emitted for the branch taken HERE only -- the flip.
+        # The first report of the comma's OWN decision (listing or
+        # credential run) in the library -- C2's structural flag,
+        # below, already reports on the comma path, but it reports
+        # what the parse could not recognize, not a fork it called.
+        # P6's attachment fork already reports on a family-comma path,
+        # from post_rules, since 2.3 ("Berg, Jan vd"); this is a
+        # different fork, the comma's own structure call: the parse
+        # called it at this comma and the caller is told which way it
+        # went. Emitted for the branch taken HERE only -- the flip.
         # Where the structure did not move, the reading of that token
         # is still open and `assign` takes it on the family-comma
         # path, so it reports there, and this DECISION is never

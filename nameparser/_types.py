@@ -378,11 +378,14 @@ class AmbiguityKind(StrEnum):
     not recognize rather than a fork it chose between, and each says so
     on its own member below. Reporting is also
     partial -- a kind listed here is not necessarily emitted everywhere
-    its fork occurs (the comma paths report no READING by design,
-    except at the ambiguous credential class, where since 2.4 the
-    reading taken at the comma is reported either way -- #289;
-    the two structural kinds above were never covered by that
-    silence), and coverage grows over releases. A non-empty tuple is
+    its fork occurs (the comma's structure decision reports no
+    reading by design, except where it decides a member of the
+    ambiguous credential class, where since 2.4 that decision is
+    reported either way -- #289; an attachment decided AFTER a
+    family comma is a separate fork and has reported on its own
+    since 2.3, e.g. "Berg, Jan vd"; the two structural kinds above
+    were never covered by either silence), and coverage grows over
+    releases. A non-empty tuple is
     a signal to act on; an empty one is not a guarantee of
     certainty."""
 

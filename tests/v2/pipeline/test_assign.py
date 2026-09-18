@@ -82,12 +82,14 @@ def test_the_lean_reaches_the_post_comma_given_slot() -> None:
 
 
 def test_the_comma_path_reports_its_ambiguous_reading_once() -> None:
-    # The first comma-path report OF A READING in the library (#289)
-    # -- C2's structural flag already reports on the comma path, but
-    # it reports what the parse could not recognize, not a fork it
-    # called. One per DECISION, in either direction, and never twice
-    # for one name -- the structure decision reports where it is
-    # taken and this one reports where the family comma stands.
+    # The first report of the comma's OWN decision in the library
+    # (#289) -- C2's structural flag already reports on the comma
+    # path, but it reports what the parse could not recognize, not a
+    # fork it called. P6's attachment fork has separately reported on
+    # a family-comma path since 2.3 ("Berg, Jan vd"). One per
+    # DECISION, in either direction, and never twice for one name --
+    # the structure decision reports where it is taken and this one
+    # reports where the family comma stands.
     #
     # The report tracks the FORK BEING CONSULTED, not the lean --
     # exactly as the trailing slot always has ('Jack MA' reported
