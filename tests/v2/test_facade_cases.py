@@ -159,6 +159,14 @@ _CORE_ONLY_IDS = frozenset({
     "the_dotted_switch_off_still_reports_the_post_comma_fork",
     "the_dotted_switch_off_leaves_a_lone_token_to_the_convention",
     "the_dotted_switch_off_leaves_a_titled_token_a_name",
+    # The 2026-09-18 verification round's two unpinned-branch rows,
+    # both under a policy with no v1 spelling: the caps switch again,
+    # and `unlisted_dotted_suffixes` turned OFF, which is the only
+    # policy that makes the chain emitter's by-shape tag reachable
+    # (at the default, classify writes both tags and the listed one
+    # answers first).
+    "the_caps_shape_never_reaches_a_tail_segment",
+    "the_chain_reports_the_by_shape_half_too",
 })
 
 

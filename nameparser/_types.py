@@ -419,8 +419,9 @@ class AmbiguityKind(StrEnum):
     #: segments beyond it. They do NOT cover the trailing slot of the
     #: GIVEN part after a family comma: "Doe, John MA" reads middle
     #: ``MA`` and "Doe, John X.Y.Z." middle ``X.Y.Z.``, both silently,
-    #: as every release has. The fork is real there and nothing
-    #: reports it; decisions.md#S2 records it as open.
+    #: as every 2.x release has; 1.4.0 read "Doe, John MA" as a
+    #: suffix. The fork is real there and nothing reports it;
+    #: decisions.md#S2 records it as open.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that

@@ -477,10 +477,19 @@ P2. Rationale: a particle is written as part of the surname it
     the run takes it as a particle, as P6 reads it after a comma —
     and there the chain reports nothing, the particle reading being
     P6's fork rather than S2's.
+    The same carve-out covers `do`, the one word that is both a
+    particle and an AMBIGUOUS credential acronym: where a particle
+    run takes it, the word is the run's and the chain reports
+    nothing, whatever case it is written in — so `Anh van Do` is
+    silent where `Anh Do`, with no particle standing, reports.
+    A word that is both belongs to the particle run and to P6's
+    fork, not to S2's.
       "John Smith Mc V"           →  suffix="Mc V"
       "John van Mc"               →  family="van Mc"
       "anh van do"                →  family="van do"  · boundary
       "anh van do"                →  ambiguities=()  · boundary
+      "Anh van Do"                →  family="van Do"  · boundary
+      "Anh van Do"                →  ambiguities=()  · boundary
     Accepted: a caller wanting the combined double-surname reading
     (#132's ask) has it as the surnames view rather than the
     family field.
@@ -905,7 +914,11 @@ S2. Rationale: generational suffixes and credentials are recognized
     abbreviation shape any word can wear and does not. A
     BARE ambiguous acronym is consumed only when the name has words
     to spare — as the second of two words it stays the family
-    name — and either reading carries the ambiguity flag.
+    name — and at the slots that report, either reading carries the
+    ambiguity flag. Those slots are the trailing slot of a name, the
+    first slot after a family comma, and the segments beyond it; the
+    trailing slot of the GIVEN part after a family comma is not one
+    of them, and takes its reading in silence (S3).
     Written case is the other evidence, and it speaks only in a name
     written in more than one case: there a member of the ambiguous
     set written in capitals reads as the credential even with no
@@ -941,6 +954,8 @@ S2. Rationale: generational suffixes and credentials are recognized
       "John Smith Ma"             →  family="Ma"
       "Smith, MA"                 →  suffix="MA"
       "Smith, Ma"                 →  given="Ma"
+      "Doe, John MA"              →  middle="MA"  · boundary
+      "Doe, John MA"              →  ambiguities=()  · boundary
       "John Smith XYZ"            →  family="XYZ"
       "John Smith XYZ"  unlisted_caps_suffixes-on  →  suffix="XYZ"
       "Jean DUPONT"  unlisted_caps_suffixes-on  →  family="DUPONT"
@@ -1007,9 +1022,11 @@ S3. Rationale: credentials are often written run together with
     ambiguous acronym is (S2): a credential where the name has words
     to spare, a name word where it does not, either reading
     reported at the slots S2 reports at, and the same at a comma —
-    which means the part BEFORE a family comma and the part after it,
-    not a word trailing the given part, where this reading is taken
-    silently. Case says nothing here — the
+    which means the FIRST piece after a family comma and the part
+    before a SUFFIX comma. The part before a FAMILY comma never
+    reports, the comma having already named it the family; neither
+    does a word trailing the given part after one, where this
+    reading is taken silently. Case says nothing here — the
     periods are the evidence — and three shapes are outside it: a
     single trailing period is not this shape at all, a chunk that is
     not wholly alphabetic is no acronym letter, and a word carrying
@@ -1424,7 +1441,8 @@ C2. Rationale: text beyond the recognized comma parts should be
       "John Smith, MD, Ma"        →  ambiguities=("comma-structure",)  · boundary
       "Steven Hardman, MD, DO, DDS"  →  ambiguities=()
       "STEVEN HARDMAN, MD, DO, DDS"  →  ambiguities=("comma-structure",)  · boundary
-    history: decisions.md#C1 · interacts: C1, S2, S3 · implemented: nameparser/_pipeline/_segment.py
+      "John Smith, MD, XYZ"  unlisted_caps_suffixes-on  →  ambiguities=("comma-structure",)
+    history: decisions.md#C1, decisions.md#S2 · interacts: C1, S2, S3 · implemented: nameparser/_pipeline/_segment.py
 
 ## Name order (O)
 

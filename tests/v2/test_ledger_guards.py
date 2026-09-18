@@ -2732,7 +2732,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # witnesses that the NAME-word count is asked before the
         # written case is.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(308, ('given', 'suffix', 'title'), "757795269391", None),
+            _Claim(310, ('given', 'suffix', 'title'), "2803b1932de1", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -2772,7 +2772,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-18, second round: 302 -> 304, the same two new comma
         # names as the rule above.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(308, ('family', 'given'), "757795269391", None),
+            _Claim(310, ('family', 'given'), "2803b1932de1", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -2935,7 +2935,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # ones are protected by the [[never]] entry above, which is
         # what _EXCLUSION_EFFECT's grown `absorbed_by` records.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(28, ('_initials',), "8a5bda70cc42", ('DEFAULT',)),
+            _Claim(29, ('_initials',), "541df583f5fc", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # #269's derived-view rule, added 2026-09-13. One corpus name,
@@ -3077,6 +3077,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # probes and not this number are what bound it.
         "fix(#516) an unlisted dotted acronym is read by position":
             _Claim(9, ('family', 'given', 'middle', 'suffix'), "9bbaf4e84dc0", ('DEFAULT',)),
+        # 2026-09-18, verification round. ONE name, and a rule this PR
+        # did not earn: 'Doe, John MA' has read middle since 2.0.0 and
+        # reads suffix at 1.4.0, so the diff exists at this baseline
+        # alone. It entered the corpus as a rules.md#S2 boundary
+        # example line, which is what forced the classification.
+        # Literal-anchored, `orders` DEFAULT: the class is a SLOT, and
+        # a member spelled as the slot would claim every family-comma
+        # name whose given part ends in an ambiguous acronym --
+        # including the ones v1 read the same way.
+        "fix(given-part-trailing-slot) a credential acronym ending the given part of a family-comma listing reads as a middle name":
+            _Claim(1, ('middle', 'suffix'), "c164207a6725", ('DEFAULT',)),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3322,7 +3333,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # digests match the 1.4.0 ledger's, which is the point of
         # copying the list verbatim rather than restating it.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(28, ('_initials',), "8a5bda70cc42", ('DEFAULT',)),
+            _Claim(29, ('_initials',), "541df583f5fc", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # fix(#462) reaches more than it explains -- the reach is the
@@ -3847,7 +3858,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # baseline, and the reaches and digests agree because the two
         # files carry the same literal list.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(28, ('_initials',), "8a5bda70cc42", ('DEFAULT',)),
+            _Claim(29, ('_initials',), "541df583f5fc", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # fix(#462), reach and digest as in the 2.0.0 mapping: the same

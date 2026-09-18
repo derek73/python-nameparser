@@ -257,18 +257,21 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # only the bare-acronym fork, which this reading discards. Measured
     # anyway, 2026-09-18, because "by construction" is the claim this
     # repository gets wrong most often: dropping the argument at these
-    # TWO sites alone moves 0 of 14,028 parses (2,338 names -- every
-    # `tools/differential/corpus*.jsonl` entry, every `cases.py` text,
-    # and `tests/test_variations.TEST_NAMES` with its comma
-    # permutations -- under six policies: the default, both
-    # family-first orders, strict commas, and each 2.4 switch flipped).
+    # TWO sites alone moves 0 of 9,852 parses (1,642 names -- the
+    # distinct union of every `tools/differential/corpus*.jsonl`
+    # entry, every `cases.py` text, and
+    # `tests/test_variations.TEST_NAMES` with its comma permutations
+    # -- under six policies: the default, both family-first orders,
+    # strict commas, and each 2.4 switch flipped). The population
+    # figure is restated from the one first written here; the
+    # recompute recipe is in decisions.md#S2.
     # It stays passed rather than spelled `None` because `None` is a
     # different statement -- "nobody asked" -- and a future numeral
     # fork that DID read the writing would then be wrong silently.
     #
     # The chain-tail measure below (`tail`, and the re-peel after the
     # chain) is the opposite and the same sweep says so: dropping it
-    # there moves 18 of the 14,028, on 'John van der Berg Ma', 'John de
+    # there moves 18 of the 9,852, on 'John van der Berg Ma', 'John de
     # Ma' and 'Freiherr von Berg MA' under every one of the six. A
     # review round called all three sites inert together; two are.
     skip = frozenset(range(len(pieces))) - frozenset(seen)
@@ -683,8 +686,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         (i,)))
                 # rules.md#S2: "A BARE ambiguous acronym is consumed
                 # only when the name has words to spare — as the second
-                # of two words it stays the family name — and either
-                # reading carries the ambiguity flag"
+                # of two words it stays the family name — and at the
+                # slots that report, either reading carries the
+                # ambiguity flag"
                 #
                 # The other half of SUFFIX_OR_NAME's declined branch,
                 # and it is here for the reason PARTICLE_OR_GIVEN's

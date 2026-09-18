@@ -3631,3 +3631,41 @@ issue = "fix(#516) an unlisted dotted acronym is read by position"
 name_regex = "^(?:Jack X\\.Y\\.I\\.|John Smith B\\.Tech\\.|John Smith C\\.H\\.A\\.|John Smith E\\.S\\.Q\\.|John Smith Q\\.W\\.E\\.R\\.T\\.|John Smith X\\.Y\\.Z\\.|John Smith, A\\.B\\.|Smith, E\\.S\\.Q\\.|john smith x\\.y\\.z\\.)$"
 fields = ["family", "given", "middle", "suffix"]
 orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(given-part-trailing-slot) a credential acronym ending the given part of a family-comma listing reads as a middle name"
+# THIS PR DID NOT MOVE THIS READING, and the rule exists only because
+# the name entered the corpus here. 'Doe, John MA' reads suffix 'MA'
+# on the 1.4.0 wheel and middle 'MA' at 2.0.0, 2.1.0, 2.2.0, 2.3.0 and
+# on this tree alike -- a 2.0-era reading, so the diff is against v1
+# only and no 2.x ledger carries it. The name arrived as a rules.md#S2
+# boundary example line (the verification round of 2026-09-18), which
+# is why a reading five years old is being classified today.
+#
+# The mechanism is a SLOT rather than a vocabulary or a case lean:
+# assign's family-comma emitter reads the first piece after the comma,
+# so a class member standing at the END of the given part is never
+# asked about, and the positional reading takes it as a middle name in
+# silence. rules.md#S2 states which slots report and names this one as
+# the slot that does not; rules.md#S3 carries the same boundary for
+# the dotted spelling.
+#
+# The dotted sibling is NOT here and must not be folded in: 'Doe, John
+# X.Y.Z.' reads middle 'X.Y.Z.' at 1.4.0 too, so it produces no diff
+# at this baseline at all. One name, one reading, one spelling -- the
+# acronym half is the only half with a v1 disagreement.
+#
+# Whether to widen the emitter to this slot is open, recorded in
+# decisions.md#S2's 2026-09-18 comma-reach entry, which now carries
+# the 1.4.0 measurement as a PARITY question beside the noise one. If
+# that widening ever lands, the roles here stop moving and this rule
+# retires; a `suffix-or-name` report would be added on top and is not
+# a field this rule claims.
+#
+# Literal-anchored for the same reason the fix(#289) rule above gives:
+# the class is a slot, and a regex for the slot would claim every
+# family-comma name whose given part ends in an ambiguous acronym,
+# including the ones v1 agreed with.
+name_regex = "^Doe, John MA$"
+fields = ["middle", "suffix"]
+orders = ["DEFAULT"]

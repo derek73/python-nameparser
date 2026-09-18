@@ -50,11 +50,10 @@ ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491), and
 -- since #289 -- the FAMILY-COMMA path's own read of the first
-post-comma piece, which is the kind's first appearance on a comma
-path. The count said three until that fourth landed with no sweep of
-this sentence. A fifth emitter of the same kind lives in `_group.py`,
-where the prefix chain takes an acronym the peel declined; it is not
-assign's and is not counted here. And
+post-comma piece. The count said three until that fourth landed with
+no sweep of this sentence. Further emitters of the same kind live in
+`_segment.py`, `_group.py` and `_post_rules.py`; they are not
+assign's and are not counted here. And
 at the one site that places a LONE name word, GIVEN_OR_FAMILY for the
 field the convention picked (O5, #449) and TITLE_OR_NAME for the two
 shapes where the doubt is whether a word is a title instead (H4,

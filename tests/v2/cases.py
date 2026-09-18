@@ -1805,6 +1805,23 @@ CASES: tuple[Case, ...] = (
                "and the emitter's `j > k + 1` floor is what both have "
                "to clear",
          shape=1),
+    Case("the_chain_reports_the_by_shape_half_too",
+         "John van der Berg X.Y.Z.",
+         {"given": "John", "family": "van der Berg X.Y.Z."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         ambiguities=("suffix-or-name",),
+         classification="fix(#516)",
+         notes="the BY-SHAPE half of the chain emitter's two-tag "
+               "test, unpinned until the verification round "
+               "(2026-09-18): with the listed tag alone, all 8624 "
+               "tests still passed. The switch is what makes the "
+               "half reachable -- at the default, classify writes "
+               "BOTH tags, so the listed tag answers for this name "
+               "too and the shape tag's absence is invisible. Off, "
+               "only the shape tag is written, and dropping it from "
+               "`_AMBIGUOUS_CREDENTIAL_TAGS` silences this row, "
+               "'Freiherr von Berg X.Y.I.' and 'John van Berg A.B.' "
+               "at once"),
     Case("a_particle_that_is_also_an_acronym_reports_nothing",
          "anh van mc",
          {"given": "anh", "family": "van mc"},
@@ -1897,6 +1914,20 @@ CASES: tuple[Case, ...] = (
                "did at 1f78bef. Folding membership into the test "
                "instead would have silenced the lean's own control",
          shape=3),
+    Case("the_caps_shape_never_reaches_a_tail_segment",
+         "John Smith, MD, XYZ",
+         {"given": "John", "family": "Smith", "suffix": "MD, XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("comma-structure",),
+         classification="fix(#516)",
+         notes="the SECOND way C2's quiet is narrow, and the half its "
+               "examples did not pin until the verification round "
+               "(2026-09-18). The shape a tail segment is recognized "
+               "by is the DOTTED one alone, so turning the caps "
+               "switch on does not quiet 'XYZ' here -- the flag is "
+               "the same one the default policy raises. Folding "
+               "`caps_shape_candidate` into the class run would make "
+               "this row fail"),
     # #516's all-caps half, and it is OPT-IN. The rows come in pairs:
     # the same name under the DEFAULT policy, where nothing moves and
     # nothing is reported, and under Policy(unlisted_caps_suffixes=
