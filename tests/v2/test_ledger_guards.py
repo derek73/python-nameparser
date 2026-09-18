@@ -5034,7 +5034,13 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
         # every baseline (rules.md#S1's escape unwraps it), so the
         # #322/#323 rule carries the name's diff and this exclusion
         # silences none of it.
-        _Excluded(58, "57618fbebc6b", ()),
+        # 58 -> 59 on 2026-09-18 for 'Bridge (A.B)', added as the
+        # #516 review round's control for classify's `token.role is
+        # None` guard -- its bracketed clause matches this shape and
+        # costs the entry nothing: 1.4.0 reads the parenthesized pair
+        # as a nickname exactly as the tree does, so there is no diff
+        # to silence.
+        _Excluded(59, "572f5b8f850a", ()),
 }
 
 

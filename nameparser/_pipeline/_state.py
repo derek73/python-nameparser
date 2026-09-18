@@ -66,8 +66,8 @@ _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 
 #: The by-shape half of #289/#516's ambiguous credential class: a
 #: token classify admits to `vocab:suffix-ambiguous`'s READING by
-#: SHAPE rather than by the listed vocabulary (commit C's switch,
-#: `Policy.unlisted_dotted_suffixes`, is the first emitter). One
+#: SHAPE rather than by the listed vocabulary
+#: (`Policy.unlisted_dotted_suffixes` is the first emitter). One
 #: constant, not a string literal at each site, because the three
 #: readers that must tell a by-shape member apart from a listed one
 #: (`_pieces.peel_trailing`, `_pieces.segment_suffix_reading`,

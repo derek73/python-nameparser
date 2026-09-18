@@ -739,3 +739,39 @@ def test_policy_patch_one_shot_bad_tail_defers_without_silent_drop() -> None:
     with pytest.raises(TypeError,
                        match=r"script_orders entries must be .* got 5"):
         apply_patch(Policy(), patch)
+
+
+def test_unlisted_dotted_suffixes_is_a_validated_bool_defaulting_on() -> None:
+    # #516's dotted half is a switch, and it is ON: a token of two or
+    # more period-separated chunks that no vocabulary claims reads by
+    # position, which is what the periods are for.
+    assert Policy().unlisted_dotted_suffixes is True
+    assert Policy(unlisted_dotted_suffixes=False).unlisted_dotted_suffixes \
+        is False
+    with pytest.raises(TypeError, match="unlisted_dotted_suffixes"):
+        Policy(unlisted_dotted_suffixes="no")  # type: ignore[arg-type]
+    # the patch mirrors it as a SCALAR, override not merge
+    assert Policy().patched(
+        PolicyPatch(unlisted_dotted_suffixes=False)
+    ).unlisted_dotted_suffixes is False
+
+
+def test_unlisted_dotted_suffixes_off_reads_name_material() -> None:
+    # The switch's whole behavior, both directions, on one name --
+    # "name material" for a token no chunk claims; the roman-chunk
+    # retirement (rules.md#S3) and real chunk-level vocabulary
+    # ('Msc.Ed.', 'JD.CPA') are not behind this switch either way.
+    from nameparser import Parser
+
+    on = Parser().parse("John Smith X.Y.Z.")
+    off = Parser(policy=Policy(unlisted_dotted_suffixes=False)).parse(
+        "John Smith X.Y.Z.")
+    assert (on.family, on.suffix) == ("Smith", "X.Y.Z.")
+    assert (off.middle, off.family, off.suffix) == ("Smith", "X.Y.Z.", "")
+    # OFF still reports: the parser chose the name reading over a
+    # credential one, and that is the fork (#516)
+    assert [a.kind.value for a in off.ambiguities] == ["suffix-or-name"]
+    # and the vocabulary is untouched either way
+    for p in (Parser(), Parser(policy=Policy(unlisted_dotted_suffixes=False))):
+        assert p.parse("John Smith M.A.").suffix == "M.A."
+        assert p.parse("Doe, John Msc.Ed.").suffix == "Msc.Ed."

@@ -22,13 +22,13 @@ from nameparser._pipeline._pieces import (
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState, WorkToken
 from nameparser._pipeline._tokenize import tokenize
-from nameparser._pipeline._vocab import is_one_case, tag_marker_runs
+from nameparser._pipeline._vocab import is_one_case, is_title_shaped, tag_marker_runs
 from nameparser._policy import Policy
 
 
-def _through_group(text: str) -> ParseState:
+def _through_group(text: str, policy: Policy = Policy()) -> ParseState:
     state = ParseState(original=text, lexicon=Lexicon.default(),
-                       policy=Policy())
+                       policy=policy)
     for stage in (tokenize, segment, classify, group):
         state = stage(state)
     return state
@@ -253,9 +253,10 @@ def test_the_trailing_run_refuses_a_joined_piece() -> None:
     assert _trailing("John Smith Prof. and Dr.") == 3
 
 
-def _peel_inputs(text: str) -> tuple[list[int], Sequence[Sequence[int]],
-                                     Sequence[Set[str]],
-                                     Sequence[WorkToken]]:
+def _peel_inputs(text: str, policy: Policy = Policy()
+                 ) -> tuple[list[int], Sequence[Sequence[int]],
+                           Sequence[Set[str]],
+                           Sequence[WorkToken]]:
     """The trailing peel's own inputs for segment 0, run through
     `group` (#289/#516's `one_case` reaches the peel only after group
     has assigned tags, so the shorter `_through_group` fixture -- not
@@ -268,7 +269,7 @@ def _peel_inputs(text: str) -> tuple[list[int], Sequence[Sequence[int]],
     group-flagged suffix pieces), and 'Mr MA' needs the title excluded
     to reach the one-piece floor its own test pins.
     """
-    state = _through_group(text)
+    state = _through_group(text, policy)
     pieces, ptags = state.pieces[0], state.piece_tags[0]
     tokens = state.tokens
     start = leading_titles(pieces, ptags, tokens)
@@ -319,6 +320,30 @@ def test_peel_trailing_stops_at_a_declined_ambiguous_pick() -> None:
     assert peeled.names == len(rest)
 
 
+def test_a_shape_only_token_reports_without_being_taken() -> None:
+    # Switch A off: name material everywhere, as 2.3 read it -- and
+    # the fork is still reported, because the parser chose the name
+    # reading over a credential one and that is the call a caller
+    # wants told (#516).
+    rest, pieces, ptags, tokens = _peel_inputs(
+        "John Smith X.Y.Z.", Policy(unlisted_dotted_suffixes=False))
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case=False)
+    assert peeled.names == len(rest)
+    assert peeled.picks != ()
+
+
+def test_a_by_shape_token_takes_the_count_and_never_a_lean() -> None:
+    # A token admitted by SHAPE carries no writing convention to read,
+    # so the count decides it in either case spelling (#516).
+    for text, names in (("John Smith X.Y.Z.", 2),
+                        ("john smith x.y.z.", 2),
+                        ("Jack X.Y.Z.", 2)):
+        rest, pieces, ptags, tokens = _peel_inputs(text)
+        peeled = peel_trailing(rest, pieces, ptags, tokens, one_case=False)
+        assert peeled.names == names, text
+        assert peeled.picks != (), text
+
+
 @pytest.mark.parametrize("text, expected", [
     ("Xyz.", True),        # H2 (rules.md): an unlisted Latin abbreviation
     ("김민준.", False),     # #323: hangul has no period abbreviations
@@ -334,6 +359,28 @@ def test_leading_title_shape_refuses_an_initialless_script(
     state = _through_group(text + " Smith")
     assert is_leading_title(state.pieces[0][0], state.piece_tags[0][0],
                             state.tokens) is expected
+
+
+@pytest.mark.parametrize("text", [
+    "Xyz.", "Dr.", "Xyz", "X.", "田中.", "김민준.", "たなか.", "Kim김.", "J.",
+])
+def test_is_title_shaped_and_is_leading_title_agree(text: str) -> None:
+    # The two spellings of H2's shape test -- `is_title_shaped`'s own
+    # docstring and `is_leading_title`'s inline copy each point here --
+    # kept in step by a check over the UNION of both predicates' own
+    # example tables (this one and test_vocab.py's
+    # test_is_title_shaped_is_h2_s_shape_alone), rather than by a
+    # sentence alone (#289/#516 quality-review follow-up).
+    # 'Dr.' answers True through `is_leading_title`'s EARLIER
+    # `is_title_piece` (LISTED vocabulary) branch, not through the
+    # inline shape copy this test means to pin -- it stays in the
+    # union for parity with `is_title_shaped`'s own table (which
+    # answers True the same way, for the same reason: listed or not
+    # is a question neither predicate asks), not because it exercises
+    # the shape branch on either side.
+    state = _through_group(text + " Smith")
+    assert is_title_shaped(text) == is_leading_title(
+        state.pieces[0][0], state.piece_tags[0][0], state.tokens)
 
 
 def test_own_words_is_the_name_s_own_span_and_its_clause_cut() -> None:

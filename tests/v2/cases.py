@@ -360,40 +360,47 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "Esq"},
          notes="the suffix_words branch of the delimited-content "
                "escape (v1 parity, pinned live 2026-07-17)"),
-    Case("suffix_acronym_multidot_spelling_is_a_name_word",
+    Case("the_removed_esq_spelling_returns_as_a_credential",
          "John Smith E.S.Q.",
-         {"given": "John", "middle": "Smith", "family": "E.S.Q."},
-         classification="fix(suffix-acronym-collisions)",
-         notes="a BEHAVIOR CHANGE rather than a fix -- a deliberate "
-               "2.x parity break, every release from 1.4.0 read "
-               "suffix 'E.S.Q.' here. 'esq' left SUFFIX_ACRONYMS "
-               "2026-09-08: Esquire is a contraction, not an "
-               "initialism, the entry arrived in the 2019 bulk "
-               "post-nominal import (af5bdab, #93), and the multi-dot "
-               "spelling was its only unique coverage. Same criterion "
-               "as the rai/cha rows above -- "
-               "decisions.md#suffix-acronym-collisions -- asked of the "
-               "machinery instead of a surname: does the entry "
-               "describe the WORD or the set's normalization. The "
-               "classification is a slug and not an issue number "
-               "because no issue asked for it; the bundle that "
-               "carried it is #489/#316"),
+         {"given": "John", "family": "Smith", "suffix": "E.S.Q."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="1.4.0 RESTORED a SECOND time, by a different route "
+               "than it lost it. 'esq' left SUFFIX_ACRONYMS 2026-09-08: "
+               "Esquire is a contraction, not an initialism, the entry "
+               "arrived in the 2019 bulk post-nominal import "
+               "(af5bdab, #93), and the multi-dot spelling was its "
+               "only unique coverage -- so for one bundle this read "
+               "family 'E.S.Q.' (a deliberate 2.x parity break, "
+               "decisions.md#suffix-acronym-collisions; same criterion "
+               "as the rai/cha rows above, asked of the machinery "
+               "instead of a surname: does the entry describe the "
+               "WORD or the set's normalization; the bundle that "
+               "carried the removal is #489/#316). #516's by-shape "
+               "class reads it again now, with no wordlist entry at "
+               "all: an unlisted dotted token of three single-letter "
+               "chunks joins the ambiguous class by SHAPE and the "
+               "words-to-spare count reads it as the credential it is",
+         shape=1),
     Case("suffix_acronym_multidot_after_a_family_comma",
          "Smith, E.S.Q.",
          {"given": "E.S.Q.", "family": "Smith"},
          classification="parity",
-         notes="the other path the same removal moves, and the one "
-               "that RESTORES v1: with 'esq' in SUFFIX_ACRONYMS the "
-               "multi-dot spelling was a suffix piece, so the "
-               "post-comma segment held no name word and read suffix "
-               "'E.S.Q.' (2.0.0 through 2.2.0). Out of the set, it is "
-               "an ordinary name word and the walk's first non-title "
-               "piece is ALWAYS the given -- which is what 1.4.0 read "
-               "here, first 'E.S.Q.' / last 'Smith' (measured "
-               "2026-09-09), so this row is parity where its no-comma "
-               "sibling above is a parity BREAK. Same entry, opposite "
-               "directions, because v1 read the two paths "
-               "differently"),
+         ambiguities=("suffix-or-name",),
+         notes="the other path the same removal moved, once -- with "
+               "'esq' in SUFFIX_ACRONYMS the multi-dot spelling was a "
+               "suffix piece, so the post-comma segment held no name "
+               "word and read suffix 'E.S.Q.' (2.0.0 through 2.2.0); "
+               "out of the set it briefly restored 1.4.0 instead, "
+               "first 'E.S.Q.' / last 'Smith' (measured 2026-09-09). "
+               "#516's by-shape class now reads the SAME single "
+               "pre-comma word as a candidate for the ambiguous class "
+               "-- one word is never enough to flip the structure "
+               "(rules.md#C1), so the FIELDS stay at the 1.4.0 "
+               "reading, but the class is now considered, and the "
+               "consideration reports: the parity note above is about "
+               "the reading, not about whether a fork was called",
+         shape=2),
     Case("suffix_word_esq_still_reads_as_a_suffix", "John Smith Esq",
          {"given": "John", "family": "Smith", "suffix": "Esq"},
          notes="the other half of the row above, and what the removal "
@@ -507,16 +514,22 @@ CASES: tuple[Case, ...] = (
                "is the same shape and moves with it"),
     Case("removed_credential_loses_the_dotted_spelling_too",
          "John Smith C.H.A.",
-         {"given": "John", "middle": "Smith", "family": "C.H.A."},
-         classification="fix(#342)",
-         notes="the removal reaches the DOTTED spelling through S3's "
-               "period fold, which strips the periods to reach the "
-               "entry -- so with 'cha' gone this reads family. The "
-               "contrast is 'John Smith R.A.I.', which still reads "
-               "suffix and is an accident of 'i' being a SUFFIX_WORDS "
-               "numeral rather than a survival of the vocabulary, "
-               "deliberately unpinned "
-               "(decisions.md#suffix-acronym-collisions)"),
+         {"given": "John", "family": "Smith", "suffix": "C.H.A."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="for one bundle the removal reached the DOTTED spelling "
+               "through S3's period fold, which strips the periods to "
+               "reach the entry -- so with 'cha' gone this read family "
+               "(the contrast was 'John Smith R.A.I.', which kept "
+               "reading suffix as an accident of 'i' being a "
+               "SUFFIX_WORDS numeral rather than a survival of the "
+               "vocabulary, decisions.md#suffix-acronym-collisions). "
+               "#516's by-shape class now reads BOTH the same way, by "
+               "POSITION rather than by any chunk claim -- three "
+               "single-letter chunks, none of them vocabulary, still "
+               "join the ambiguous class by shape and the words-to-"
+               "spare count reads this one a credential too",
+         shape=1),
     # -- #342: 'ba' is the other half of the same decision. BA is a
     # common credential and Ba a real surname (Vietnamese; Senegalese
     # Fula), which is the ma/Ma shape exactly, so it takes the
@@ -1356,6 +1369,25 @@ CASES: tuple[Case, ...] = (
                "family anywhere but where this row does "
                "(decisions.md#S2)",
          shape=2),
+    Case("the_by_shape_class_never_reaches_is_wholly_suffix",
+         "Smith Jr., A.B.",
+         {"given": "A.B.", "family": "Smith", "suffix": "Jr."},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="FULL PARITY on the 1.4.0 wheel -- first 'A.B.', last "
+               "'Smith', suffix 'Jr.'; only the report is new, like "
+               "its report-only siblings above. Also the control that "
+               "pins the review-round fix: an EARLIER version of "
+               "`is_wholly_suffix` admitted a by-shape member "
+               "unconditionally, and combined with C1's own legacy "
+               "TOKEN-count disjunct in `_segment.py` that flipped "
+               "this to given 'Smith' with a self-contradicting "
+               "'holds 1 name words' report. `ambiguous_class_candidate` "
+               "is the only reader the by-shape class has at the "
+               "comma form, and it declines here exactly as the "
+               "listed class does above -- one name word, so `A.B.` "
+               "stays the given and `Jr.` its own suffix",
+         shape=2),
     Case("two_name_words_read_the_listed_acronym_as_a_credential",
          "John Smith, MA",
          {"given": "John", "family": "Smith", "suffix": "MA"},
@@ -1528,6 +1560,217 @@ CASES: tuple[Case, ...] = (
                "'a caseless script is inert by construction' bullet "
                "is true of the LEAN alone; item 5's name-word count "
                "is orthogonal to case and reaches this row too",
+         tolerated=True),
+    # #516's dotted half: an UNLISTED token of two or more
+    # period-separated chunks joins the ambiguous credential class BY
+    # SHAPE, and the words-to-spare count then reads it. These rows
+    # pin the FORK -- the same token in the two positions the count
+    # separates, with the chunk-claim names that must NOT move beside
+    # them (mechanisms.md#VOCABULARY-EXERCISES-FORKS).
+    Case("unlisted_dotted_reads_by_position_with_words_to_spare",
+         "John Smith X.Y.Z.",
+         {"given": "John", "family": "Smith", "suffix": "X.Y.Z."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the periods are the signal and the position decides: "
+               "three pieces, so the unlisted acronym is the "
+               "credential. 1.4.0 read last 'X.Y.Z.', so this breaks "
+               "parity deliberately -- the parking-lot entry of "
+               "decisions.md#suffix-acronym-collisions is what it "
+               "closes",
+         shape=1),
+    Case("unlisted_dotted_is_case_blind", "john smith x.y.z.",
+         {"given": "john", "family": "smith", "suffix": "x.y.z."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the control that separates this switch from #289's "
+               "lean: case is irrelevant here, the PERIODS being the "
+               "signal, so the all-lower spelling reads as the "
+               "mixed-case one does",
+         shape=1),
+    Case("unlisted_dotted_without_words_to_spare_is_the_family",
+         "Jack X.Y.Z.",
+         {"given": "Jack", "family": "X.Y.Z."},
+         ambiguities=("suffix-or-name",),
+         notes="the other half of the count, and the row is unchanged "
+               "in its FIELDS: two pieces, so the shape loses to the "
+               "surname reading. What is new is the report -- the "
+               "fork was always there and was called silently",
+         shape=1),
+    Case("unlisted_dotted_of_any_chunk_length", "John Smith B.Tech.",
+         {"given": "John", "family": "Smith", "suffix": "B.Tech."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="chunk LENGTH is not the test: two chunks, one of them "
+               "four letters, and the Indian degree reads as the "
+               "credential it is",
+         shape=1),
+    Case("the_s3_boundary_example_moves", "John Smith Q.W.E.R.T.",
+         {"given": "John", "family": "Smith", "suffix": "Q.W.E.R.T."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#S3's own boundary example, which said this "
+               "shape stays a name. It moves, and the rule moves with "
+               "it",
+         shape=1),
+    Case("the_roman_chunk_accident_retires_narrowly", "Jack X.Y.I.",
+         {"given": "Jack", "family": "X.Y.I."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="1.4.0 RESTORED. The chunk 'i' is a roman numeral in "
+               "the suffix vocabulary, so this read as a generational "
+               "suffix -- by accident, the fork being about "
+               "generations and the word being nothing of the kind. "
+               "Retired where every matched chunk is a single ASCII "
+               "character -- the roster this retirement is scoped to "
+               "is asserted, not just described, in "
+               "test_vocab.test_period_joined_vocab_retires_the_single_"
+               "character_chunk",
+         shape=1),
+    Case("a_retired_chunk_claim_still_reads_by_position",
+         "John Smith R.A.I.",
+         {"given": "John", "family": "Smith", "suffix": "R.A.I."},
+         ambiguities=("suffix-or-name",),
+         notes="the pair to the row above, and the reason the "
+               "retirement is safe: with words to spare the shape "
+               "reads the same token the accident read, so the FIELDS "
+               "do not move and only the cause does. The report is "
+               "what makes the new cause visible",
+         shape=1),
+    Case("a_multi_letter_roman_chunk_also_reads_by_position",
+         "John Smith J.u.n.i.o.r.",
+         {"given": "John", "family": "Smith", "suffix": "J.u.n.i.o.r."},
+         ambiguities=("suffix-or-name",),
+         notes="the six-chunk twin of the row above: no chunk here is "
+               "vocabulary at all (this is not 'junior' the suffix "
+               "word, glued letter by letter), so the shape read this "
+               "one before the retirement existed and reads it the "
+               "same way after -- the FIELDS never moved, only the "
+               "report is new",
+         shape=1),
+    Case("the_comma_structure_moves_with_the_shape_class",
+         "John Smith, A.B.",
+         {"given": "John", "family": "Smith", "suffix": "A.B."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="two NAME words before the comma read the part after "
+               "it as the credential run, for the by-shape half "
+               "exactly as for the listed one (rules.md#C1)",
+         shape=3),
+    Case("one_word_before_the_comma_keeps_the_given", "Smith, A.B.",
+         {"given": "A.B.", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="its control: one name word before the comma is never "
+               "enough, so the dotted token stays the given name and "
+               "the structure does not move. Unchanged in every "
+               "release; the report is new",
+         shape=2),
+    Case("whole_token_vocabulary_wins_over_the_shape",
+         "Smith, A.B.C.",
+         {"family": "Smith", "suffix": "A.B.C."},
+         notes="'abc' IS a suffix acronym, so the whole-token lookup "
+               "settles this before any shape reading and the count "
+               "never runs. The boundary between #516's shape class "
+               "and the vocabulary it does not touch",
+         shape=2),
+    Case("a_leading_dotted_run_is_untouched", "X.Y.Z. Smith",
+         {"given": "X.Y.Z.", "family": "Smith"},
+         notes="rules.md#S2 already says a suffix never opens the "
+               "string, and the shape class is read only by the "
+               "trailing peel and the post-comma slot -- so every "
+               "leading dotted run, 'J.R.R. Tolkien' included, is "
+               "untouched by this switch",
+         shape=1),
+    Case("a_leading_dotted_run_of_three_chunks_is_untouched",
+         "J.R.R. Tolkien",
+         {"given": "J.R.R.", "family": "Tolkien"},
+         notes="the three-chunk twin of the row above: 'j', 'r' and "
+               "'r' claim nothing either, and the leading slot never "
+               "asks the shape class regardless",
+         shape=1),
+    Case("a_multi_character_chunk_claim_survives", "Doe, John Msc.Ed.",
+         {"given": "John", "family": "Doe", "suffix": "Msc.Ed."},
+         notes="the narrow retirement's protected control: the chunk "
+               "'ed' is two characters, so the chunk rule still fires "
+               "and this real credential is not handed to the shape "
+               "class. The WIDE retirement -- any chunk match yielding "
+               "to the shape -- would have read 'Msc.Ed.' as a middle "
+               "name, which is what rejected it (decisions.md#S2)",
+         shape=2),
+    Case("a_glued_honorific_chunk_is_not_ascii", "J.씨",
+         {"given": "J.", "suffix": "씨"},
+         notes="the reason the retirement says ASCII and not just "
+               "single-character: '씨' is one character and MUST keep "
+               "its chunk claim, the honorific peel resting on it",
+         tolerated=True),
+    Case("a_delimited_dotted_token_keeps_its_clause_reading",
+         "Bridge (1.4)",
+         {"family": "Bridge", "nickname": "1.4"},
+         notes="delimited content is decided by the clause escape "
+               "rather than at the trailing slot -- so the shape "
+               "class is not offered to a token that already carries "
+               "a role, and this row gains neither a reading nor a "
+               "report. Cannot exercise the `token.role is None` "
+               "guard on its own, though: a digit chunk never reaches "
+               "the shape verdict at all (period_joined_vocab's own "
+               "alphabetic gate) -- the row beside it is the guard's "
+               "real control",
+         shape=1),
+    Case("the_role_guard_is_the_real_delimited_control", "Bridge (A.B)",
+         {"family": "Bridge", "nickname": "A.B"},
+         notes="unlike the digit row above, 'A.B' WOULD reach the "
+               "shape verdict were it not for classify's `token.role "
+               "is None` guard -- without it this nickname gains "
+               "SHAPE_ACRONYM_TAG and, with the switch on, "
+               "'vocab:suffix-ambiguous', and classify's own nickname "
+               "check misreports SUFFIX_OR_NICKNAME on a token the "
+               "clause escape already decided (measured regression, "
+               "#516 review round). This row is what actually pins "
+               "the guard load-bearing",
+         shape=1),
+    Case("a_bare_digit_chunk_is_never_an_acronym_by_shape",
+         "John Smith 1.4",
+         {"given": "John", "middle": "Smith", "family": "1.4"},
+         notes="#516 review round: the shape gate requires every chunk "
+               "to be ALPHABETIC, not merely unclaimed -- '1' and '4' "
+               "are chunks nothing spells as letters, so this stays "
+               "name material exactly as 'Bridge (1.4)' does, and "
+               "unlike the delimited control this one was never inside "
+               "a clause at all. Unchanged from dfb3170, and the gap "
+               "the delimited control alone did not cover",
+         shape=1),
+    Case("a_bare_digit_chunk_after_the_comma_is_never_an_acronym",
+         "John Smith, 1.4",
+         {"given": "1.4", "family": "John Smith"},
+         notes="the comma-form twin of the row above: one word before "
+               "the comma is never enough regardless, but the point "
+               "this row pins is that the digit chunk never even "
+               "becomes a CANDIDATE for the class -- no report, "
+               "unchanged from dfb3170",
+         shape=2),
+    Case("a_leading_shape_token_never_reports_only_the_trailing_one",
+         "J.A. K.D.",
+         {"given": "J.A.", "family": "K.D."},
+         ambiguities=("suffix-or-name",),
+         notes="'K.D.' is a considered pick -- the peel records it "
+               "even though k == 2 declines to take it, so the FIELDS "
+               "stay the two-piece positional read while the fork is "
+               "reported, exactly as a declined LISTED pick always "
+               "has been. 'J.A.' gets no such consideration: the peel "
+               "walks from the END, so a LEADING shape-admitted token "
+               "never reaches it and this reports exactly once, for "
+               "'K.D.' alone",
+         shape=1),
+    Case("an_initialless_script_glued_into_periods_is_not_this_shape",
+         "John Smith 田.中.",
+         {"given": "John", "middle": "Smith", "family": "田.中."},
+         notes="the CJK control for #516's shape verdict, on the same "
+               "reasoning is_title_shaped already gives H2's own "
+               "period-abbreviation inference (#323): a script with "
+               "no period abbreviations at all has nothing for "
+               "interior periods to abbreviate, so this stays name "
+               "material exactly as it did at dfb3170 -- no reading "
+               "and no report",
          tolerated=True),
     Case("catalan_i_is_not_connective_vocabulary_upper",
          "JOSEP CAROD I ROVIRA",
@@ -1723,8 +1966,16 @@ CASES: tuple[Case, ...] = (
          {"given": "Juan", "family": "de la Vega", "suffix": "III"}),
     Case("interior_periods_block_vocab", "Smith, J.R.",
          {"given": "J.R.", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
          notes="v1's lc() keeps interior periods: 'J.R.' is not the "
-               "title 'jr' (pinned live 2026-07-17)"),
+               "suffix word 'jr' (pinned live 2026-07-17), so this "
+               "FIELD reading is unchanged clear back to 1.4.0. #516: "
+               "two unlisted single-letter chunks join the ambiguous "
+               "class by shape all the same, the same fork "
+               "'Smith, A.B.' reports -- the class is considered and "
+               "declined (one word before the comma is never enough), "
+               "and the consideration is what reports, exactly as the "
+               "trailing peel's own declined picks always have"),
     Case("dotted_acronym_suffix", "John Smith M.D.",
          {"given": "John", "family": "Smith", "suffix": "M.D."},
          notes="suffix-ACRONYM membership alone strips periods (v1 "
@@ -1762,9 +2013,18 @@ CASES: tuple[Case, ...] = (
     Case("period_joined_titles", "Lt.Gov. John Doe",
          {"title": "Lt.Gov.", "given": "John", "family": "Doe"},
          notes="v1 derived-title rule: ANY period chunk being a title "
-               "makes the token a title (pinned live 2026-07-16)"),
+               "makes the token a title (pinned live 2026-07-16). "
+               "Title wins before #516's shape verdict is even asked, "
+               "so this stays a protected control for the switch, not "
+               "just for the chunk rule",
+         shape=1),
     Case("period_joined_suffixes", "John Doe JD.CPA",
-         {"given": "John", "family": "Doe", "suffix": "JD.CPA"}),
+         {"given": "John", "family": "Doe", "suffix": "JD.CPA"},
+         notes="the multi-character chunk match 'jd'/'cpa' still wins "
+               "over #516's shape verdict, which is asked only where "
+               "classify's own fall-through has not already tagged "
+               "'vocab:suffix' -- unchanged either side of the switch",
+         shape=1),
     Case("period_joined_any_rule", "Mr.Smith",
          {"title": "Mr.Smith"},
          notes="the ANY rule is deliberate v1 parity: one title chunk "
@@ -4328,7 +4588,8 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="negative control, and the doctrine: the leading slot "
                "has a SHAPE rule that outranks vocabulary (H2), the "
-               "trailing slot reads vocabulary only"),
+               "trailing slot reads vocabulary only",
+         shape=1),
     Case("title_word_trailing_bare_is_a_name_word", "John Smith Sir",
          {"given": "John", "middle": "Smith", "family": "Sir"},
          classification="parity",

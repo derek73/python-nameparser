@@ -654,6 +654,20 @@ class Policy:
     #: initial instead (family "John Smith", given "V"). Multi-letter
     #: suffixes ("III", "MD") parse the same either way.
     lenient_comma_suffixes: bool = True
+    #: Reads an UNLISTED token of two or more period-separated chunks
+    #: as a credential where the position allows it: "John Smith
+    #: X.Y.Z." gives suffix ``X.Y.Z.`` and "Jack X.Y.Z." keeps family
+    #: ``X.Y.Z.``, the same words-to-spare rule a listed ambiguous
+    #: acronym takes, and either reading is reported. Case is
+    #: irrelevant here -- the periods are the signal, so
+    #: "john smith x.y.z." reads as the mixed-case spelling does.
+    #: Whole-token vocabulary still wins ("M.A.", "Ph.D.", "A.B.C."),
+    #: and a single trailing period is not this shape ("John Smith
+    #: Xyz." keeps family ``Xyz.``). ``False`` reads such a token as
+    #: name material everywhere, as 2.3 did for a token no chunk
+    #: claimed; the roman-chunk retirement (rules.md#S3) is not
+    #: behind this switch, and still reports the fork.
+    unlisted_dotted_suffixes: bool = True
     #: Excludes emoji from tokenization: they appear in no token,
     #: field, or rendered view. The original string keeps them (input
     #: is never modified -- spans stay true).
@@ -753,7 +767,8 @@ class Policy:
         # caller's intent downstream; bools are the one field kind the
         # coercing checks above can't cover.
         for flag in ("middle_as_family", "lenient_comma_suffixes",
-                     "strip_emoji", "strip_bidi"):
+                     "unlisted_dotted_suffixes", "strip_emoji",
+                     "strip_bidi"):
             value = getattr(self, flag)
             if not isinstance(value, bool):
                 raise TypeError(
@@ -831,6 +846,7 @@ class PolicyPatch:
     extra_suffix_delimiters: frozenset[str] | _Unset = field(
         default=UNSET, metadata=_UNION)
     lenient_comma_suffixes: bool | _Unset = UNSET
+    unlisted_dotted_suffixes: bool | _Unset = UNSET
     strip_emoji: bool | _Unset = UNSET
     strip_bidi: bool | _Unset = UNSET
 
@@ -882,9 +898,10 @@ class PolicyPatch:
                     f"{f.name} must be an iterable, got {value!r}{hint}"
                 ) from None
             object.__setattr__(self, f.name, frozenset(value))
-        # middle_as_family, lenient_comma_suffixes, strip_emoji, and
-        # strip_bidi are scalar (compose="override") fields and
-        # DELIBERATELY get no type check here, unlike name_order and
+        # middle_as_family, lenient_comma_suffixes,
+        # unlisted_dotted_suffixes, strip_emoji, and strip_bidi are
+        # scalar (compose="override") fields and DELIBERATELY get no
+        # type check here, unlike name_order and
         # the union fields above: a PolicyPatch(strip_emoji="off") is
         # constructible, and only raises once apply_patch runs
         # Policy.__post_init__'s bool check. This is the one place the

@@ -1,5 +1,7 @@
 import dataclasses
 
+import pytest
+
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import STAGES
 from nameparser._pipeline._classify import classify
@@ -7,6 +9,7 @@ from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
+from nameparser._pipeline._vocab import ambiguous_class_candidate
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
 
@@ -59,6 +62,17 @@ def _state_through(stage_name: str, text: str) -> ParseState:
 
 def _tags(state: ParseState, text: str) -> frozenset[str]:
     return next(t.tags for t in state.tokens if t.text == text)
+
+
+def _tags_by_text(text: str, policy: Policy = Policy(),
+                  lexicon: Lexicon = _LEX) -> dict[str, frozenset[str]]:
+    """Every token's tags after classify, keyed by text -- the shape
+    tests below ask about a token whose text is not in `_LEX` at all,
+    which the by-name `_tags` above still finds fine, but a dict
+    reads more plainly at more than one lookup per name (#516)."""
+    state = ParseState(original=text, lexicon=lexicon, policy=policy)
+    out = classify(segment(tokenize(extract_delimited(state))))
+    return {t.text: t.tags for t in out.tokens}
 
 
 def test_vocabulary_tags() -> None:
@@ -415,3 +429,66 @@ def test_classify_s_fork_reads_the_pre_recorded_fact_not_its_own_answer() -> Non
     assert "initial" in _tags(out, "e")
     kinds = [a.kind for a in out.ambiguities]
     assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL]
+
+
+def test_a_by_shape_acronym_carries_both_tags() -> None:
+    # #516: the class membership is `vocab:suffix-ambiguous`, so the
+    # peel needs no new branch -- and `shape:acronym` rides beside it
+    # because the `vocab:` namespace records MEMBERSHIP and the word
+    # is not in the vocabulary. The two consumers that must tell them
+    # apart read the shape tag.
+    tags = _tags_by_text("John Smith X.Y.Z.")["X.Y.Z."]
+    assert "shape:acronym" in tags
+    assert "vocab:suffix-ambiguous" in tags
+    assert "vocab:suffix" not in tags
+    # a listed member carries membership and no shape claim
+    assert "shape:acronym" not in _tags_by_text("John Smith MA")["MA"]
+    # whole-token vocabulary wins outright
+    assert "shape:acronym" not in _tags_by_text("John Smith M.A.")["M.A."]
+    assert "vocab:suffix" in _tags_by_text("John Smith M.A.")["M.A."]
+
+
+def test_the_switch_leaves_the_shape_tag_and_takes_the_membership() -> None:
+    # OFF reads the token as name material everywhere, as 2.3 did for
+    # a token no chunk claimed (the roman-chunk retirement is not
+    # behind this switch) -- and still reports, the parser having
+    # chosen the name reading over a credential one.
+    off = _tags_by_text("John Smith X.Y.Z.", policy=Policy(
+        unlisted_dotted_suffixes=False))["X.Y.Z."]
+    assert "shape:acronym" in off
+    assert "vocab:suffix-ambiguous" not in off
+
+
+def test_delimited_content_never_joins_the_shape_class() -> None:
+    # A bracketed clause is decided by extract's escape, not by the
+    # trailing slot. 'Bridge (1.4)' cannot exercise the `token.role is
+    # None` guard on its own -- a digit chunk never reaches the shape
+    # verdict at all, guard or no guard -- so 'Bridge (A.B)' is the
+    # control that actually load-bears it: without the guard, the
+    # nickname 'A.B' would gain SHAPE_ACRONYM_TAG and (with the switch
+    # on) `vocab:suffix-ambiguous`, and classify's own nickname check
+    # would then misreport SUFFIX_OR_NICKNAME on a token the escape
+    # already decided (measured regression, #516 review round).
+    for text, word in (("Bridge (1.4)", "1.4"), ("Bridge (A.B)", "A.B")):
+        tags = _tags_by_text(text)[word]
+        assert "shape:acronym" not in tags, text
+        assert "vocab:suffix-ambiguous" not in tags, text
+
+
+@pytest.mark.parametrize("word", [
+    "X.Y.Z.", "A.B.", "M.A.", "A.B.C.", "Msc.Ed.", "Lt.Gov.", "1.4",
+    "Xyz.", "MA", "田.中.",
+])
+def test_ambiguous_class_candidate_agrees_with_the_tag(word: str) -> None:
+    # `ambiguous_class_candidate` (`_vocab.py`) and classify's own tag
+    # emission ask the SAME question twice, of necessity -- `segment`
+    # runs before `classify` and has no tags to read yet. Kept from
+    # drifting by this test rather than by a sentence alone: both
+    # docstrings point here by name. `MA.`/`Ed.` are deliberately
+    # absent: a listed member's DOTTED spelling is carried by the tag
+    # path alone (`ambiguous_class_member`'s docstring), the one place
+    # these two answers are meant to differ.
+    lex = Lexicon.default()
+    tags = _tags_by_text(f"John Smith {word}", lexicon=lex)[word]
+    assert (ambiguous_class_candidate(word, lex, Policy())
+            == ("vocab:suffix-ambiguous" in tags))

@@ -4,9 +4,10 @@ import pytest
 
 from nameparser._lexicon import Lexicon, _normalize, _title_key
 from nameparser._pipeline._vocab import (
-    ambiguous_class_member, ambiguous_lean, effective_script, is_initial,
-    is_initial_shaped, is_one_case, is_suffix_lenient, is_suffix_strict,
-    is_title_shaped, is_wholly_suffix, maiden_marker_run, name_word_count,
+    ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
+    effective_script, is_initial, is_initial_shaped, is_one_case,
+    is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
+    maiden_marker_run, name_word_count, period_joined_vocab,
     resolve_script_set, single_script,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
@@ -252,6 +253,27 @@ def test_is_wholly_suffix_is_not_the_plural_of_is_post_nominal() -> None:
         ["V."], lex, Policy(lenient_comma_suffixes=False))
 
 
+def test_is_wholly_suffix_never_reads_the_by_shape_class() -> None:
+    # #516 review round: an EARLIER version of this predicate admitted
+    # a by-shape member unconditionally, bypassing both the lean and
+    # the NAME-word count -- combined with C1's own legacy TOKEN-count
+    # disjunct in _segment.py, that flipped 'Smith Jr., A.B.' to a
+    # one-word given with a self-contradicting report. Proved by
+    # mutation to be otherwise unreached, and dropped: the by-shape
+    # class reaches the comma form only through
+    # `ambiguous_class_candidate`, never through this predicate, on
+    # or off.
+    lex, pol = Lexicon.default(), Policy()
+    assert not is_wholly_suffix(["A.B."], lex, pol)
+    assert not is_wholly_suffix(
+        ["A.B."], lex, Policy(unlisted_dotted_suffixes=False))
+    # whole-token vocabulary is untouched either way -- it never went
+    # through the shape branch this predicate lost
+    assert is_wholly_suffix(["A.B.C."], lex, pol)
+    assert is_wholly_suffix(["A.B.C."], lex,
+                            Policy(unlisted_dotted_suffixes=False))
+
+
 def test_is_wholly_suffix_reads_the_credential_lean() -> None:
     # The third reading site (#289): segment's structure decision and
     # its tail segments ask this, and 'Steven Hardman, MD, DO, DDS'
@@ -289,6 +311,57 @@ def test_ambiguous_class_member_is_the_comma_form_s_candidate() -> None:
     # the credential-lean disjunct in is_wholly_suffix consult.
     assert not ambiguous_class_member("MA.", lex)
     assert not ambiguous_class_member("Ed.", lex)
+
+
+def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
+    # #516, NARROWLY: the chunk rule survives except where every chunk
+    # the vocabulary matches is a single ASCII character, which is the
+    # roman numeral reaching a word that is not about generations at
+    # all. CHARACTER because '2' is a digit and in the set, ASCII
+    # because '씨' is the one that must KEEP its claim. The roster
+    # itself is asserted below, not just described, so a future
+    # vocabulary change cannot silently drift this test's premise.
+    lex = Lexicon.default()
+    assert {c for c in lex.suffix_acronyms | lex.suffix_words
+            if len(c) == 1 and c.isascii()} == {"2", "i", "v"}
+    assert period_joined_vocab("R.A.I.", lex) == "shape"
+    assert period_joined_vocab("X.Y.I.", lex) == "shape"
+    assert period_joined_vocab("J.u.n.i.o.r.", lex) == "shape"
+    assert period_joined_vocab("Msc.Ed.", lex) == "suffix"   # 'ed', two chars
+    assert period_joined_vocab("JD.CPA", lex) == "suffix"
+    assert period_joined_vocab("J.씨", lex) == "suffix"       # not ASCII
+    assert period_joined_vocab("Lt.Gov.", lex) == "title"     # title wins
+    # the shape itself: two or more chunks nothing claims
+    assert period_joined_vocab("X.Y.Z.", lex) == "shape"
+    assert period_joined_vocab("B.Tech.", lex) == "shape"
+    assert period_joined_vocab("Q.W.E.R.T.", lex) == "shape"
+    assert period_joined_vocab("E.S.Q.", lex) == "shape"
+    # one trailing period is not the shape, and never was
+    assert period_joined_vocab("Xyz.", lex) is None
+    # a bare digit chunk is never an acronym by shape either
+    assert period_joined_vocab("1.4", lex) is None
+    # nor is a CJK word glued into period-separated single characters:
+    # a script with no period abbreviations at all has nothing for
+    # interior periods to abbreviate (#323's reasoning, shared with
+    # is_title_shaped)
+    assert period_joined_vocab("田.中.", lex) is None
+    assert period_joined_vocab("이.박.", lex) is None
+    assert period_joined_vocab("たな.か.", lex) is None
+
+
+def test_ambiguous_class_candidate_admits_a_by_shape_member() -> None:
+    # #516: the comma form's own candidate test reaches a by-shape
+    # member too, once Policy admits it -- case-free either way, the
+    # periods being the whole signal.
+    lex, pol = Lexicon.default(), Policy()
+    assert ambiguous_class_candidate("A.B.", lex, pol)
+    assert ambiguous_class_candidate("MA", lex, pol)      # listed, unaffected
+    assert not ambiguous_class_candidate(
+        "A.B.", lex, Policy(unlisted_dotted_suffixes=False))
+    # whole-token vocabulary wins over the shape reading here too
+    assert not ambiguous_class_candidate("A.B.C.", lex, pol)
+    assert not ambiguous_class_candidate("M.A.", lex, pol)
+    assert not ambiguous_class_candidate("Smith", lex, pol)
 
 
 def test_is_title_shaped_is_h2_s_shape_alone() -> None:

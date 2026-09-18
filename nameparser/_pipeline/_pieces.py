@@ -168,7 +168,9 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
     # piece of every parse, unlike name_word_count's comma-only path),
     # moving the reference name from 412/449 to 417/454. Kept as two
     # spellings of ONE test instead -- if you touch one, touch both,
-    # and the case rows that exercise both share the same texts.
+    # and `test_is_title_shaped_and_is_leading_title_agree` (this
+    # module's own test file) checks it over the union of both
+    # predicates' example tables rather than leaving it to a sentence.
     return (bool(_PERIOD_ABBREV.match(text))
             and (text.isascii() or not in_initialless_script(text)))
 
@@ -343,7 +345,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
             out.append(True)
         elif (len(piece) == 1
                 and "vocab:suffix-ambiguous" in tokens[piece[0]].tags
-                and leans_credential(tokens[piece[0]], one_case)
+                and listed_lean(tokens[piece[0]], one_case)
                 == "credential"):
             out.append(True)
         elif (lenient and after_suffix
@@ -434,7 +436,7 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
 # regardless of what is inside it, and the inline pre-check is what
 # keeps a non-member piece ("Smith, John"'s "John") from ever making
 # the call at all.
-def leans_credential(token: WorkToken, one_case: bool | None) -> str | None:
+def listed_lean(token: WorkToken, one_case: bool | None) -> str | None:
     """`ambiguous_lean` for a LISTED bare-ambiguous token, or None if
     the token is not tagged a listed member, is admitted by SHAPE
     instead (`SHAPE_ACRONYM_TAG`, a switch's doing, not the writing's),
@@ -490,6 +492,21 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # the vocabulary is not in doubt.
         bare_ambiguous = (len(piece) == 1
                           and "vocab:suffix-ambiguous" in tokens[piece[0]].tags)
+        # #516, switch off: the writing still makes this token
+        # credential-SHAPED, and the parser is choosing the name
+        # reading over that one -- the fork the caller asked to be
+        # told about. Reported here, unconsumed, rather than folded
+        # into `bare_ambiguous` above: with the switch off the token
+        # never carries "vocab:suffix-ambiguous" (classify's own
+        # gate), so `bare_ambiguous` is already False and this is the
+        # ONLY place the report can be recorded. Switch ON, the token
+        # carries BOTH tags, so `not bare_ambiguous` is what stands
+        # this branch down and lets the consuming branch below take
+        # it; the two are not exclusive.
+        if (not bare_ambiguous and k >= 2 and len(piece) == 1
+                and SHAPE_ACRONYM_TAG in tokens[piece[0]].tags):
+            picks.append(tuple(piece))
+            break
         # #289: written case is evidence the count does not have, and
         # it overrides the count in BOTH directions -- an all-caps
         # member of a mixed-case name is taken with nothing to spare
@@ -507,7 +524,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # nothing computed a step earlier could discard.
         if bare_ambiguous and k >= 2:
             picks.append(tuple(piece))
-            lean = leans_credential(tokens[piece[0]], one_case)
+            lean = listed_lean(tokens[piece[0]], one_case)
             # peeling still leaves given + family, or the writing says
             # to peel anyway
             if lean == "credential" or (lean is None and k >= 3):

@@ -141,6 +141,19 @@ def test_structure_flips_for_the_ambiguous_class_on_a_name_word_count() -> None:
     assert _segmented("Royce, Ed").structure is Structure.FAMILY_COMMA
 
 
+def test_structure_flips_for_a_by_shape_member_too() -> None:
+    # #516: an unlisted dotted token joins the class the same way, via
+    # `_vocab.ambiguous_class_candidate` -- 'A.B.' is two unclaimed
+    # single-letter chunks, not vocabulary at all, so this is the
+    # by-shape twin of the test above. 'Smith Jr., A.B.' does not flip
+    # for the SAME reason 'Smith Jr., MA' does not (#516 review round:
+    # is_wholly_suffix must never admit the shape class here, or C1's
+    # legacy TOKEN-count disjunct flips it wrongly on 'Jr.').
+    assert _segmented("John Smith, A.B.").structure is Structure.SUFFIX_COMMA
+    assert _segmented("Smith, A.B.").structure is Structure.FAMILY_COMMA
+    assert _segmented("Smith Jr., A.B.").structure is Structure.FAMILY_COMMA
+
+
 def test_segment_records_the_case_fact_only_where_it_asked() -> None:
     # (a-lazy): the fact costs nothing on a name whose comma form
     # could not turn on it, and nothing at all on a comma-less name.

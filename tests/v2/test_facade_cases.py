@@ -44,6 +44,7 @@ _UNTRANSLATED = frozenset({
     "script_orders",
     "segment_scripts",
     "lenient_comma_suffixes",
+    "unlisted_dotted_suffixes",
     "strip_emoji",
     "strip_bidi",
 })

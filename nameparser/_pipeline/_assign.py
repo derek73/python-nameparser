@@ -552,7 +552,8 @@ def assign(state: ParseState) -> ParseState:
         # a caseless script or an all-lower spelling still called this
         # fork and read it positionally, and the class reaches a
         # by-shape member (`SHAPE_ACRONYM_TAG`) the same as a listed
-        # one once a switch admits it (commit C). Read off the FIRST
+        # one once `Policy.unlisted_dotted_suffixes` admits it (#516).
+        # Read off the FIRST
         # post-comma piece only -- `segment_suffix_reading` decides
         # piece by piece, and this is the one piece the lean can
         # reach at one word before the comma (`"Smith, MA PhD"`'s two

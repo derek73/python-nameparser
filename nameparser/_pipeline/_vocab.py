@@ -44,6 +44,7 @@ import functools
 import re
 import unicodedata
 from collections.abc import Callable, Iterable, Sequence
+from typing import Literal
 
 from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
@@ -146,10 +147,11 @@ def is_title_shaped(text: str) -> bool:
     routing its hot path (every leading piece of every parse) through
     a shared call cost one frame there, where `name_word_count`'s cold
     path (comma names only) does not notice one. Touch one, touch
-    both -- the case rows that exercise this predicate use the same
-    texts `is_leading_title`'s own tests do, which is what keeps two
-    spellings from silently drifting into two answers
-    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+    both -- kept in step by
+    `test_pieces.test_is_title_shaped_and_is_leading_title_agree`,
+    which runs both predicates over the union of this function's own
+    example table and `is_leading_title`'s, rather than by a sentence
+    alone (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 
     The shape reads a Latin convention: a period marks an
     abbreviation. Scripts with no initials have no period
@@ -375,22 +377,77 @@ def splits_into_suffixes(text: str, cores: frozenset[str],
 
 # rules.md#S3: "a word with interior periods reads as a suffix when
 # any of its period-separated chunks is suffix vocabulary"
-def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
+def period_joined_vocab(
+        text: str, lexicon: Lexicon,
+) -> Literal["title", "suffix", "shape"] | None:
     """v1's parse_pieces derivation for interior-period tokens
     ('Lt.Gov.', 'Msc.Ed.', and by the ANY rule 'Mr.Smith'): ANY title
     chunk makes the token a title (checked first, v1's continue); else
     ANY suffix chunk makes it a suffix. Chunk-level suffix membership
     is v1's is_suffix: bare ambiguous acronyms COUNT ('Msc.Ed.'
     derives via 'ed') -- the ambiguous period-gate applies to whole
-    tokens only. Returns "title", "suffix", or None."""
+    tokens only. Returns "title", "suffix", "shape", or None.
+
+    "shape" is the third verdict and it is the absence of a claim
+    worth acting on (#516): two or more chunks, EVERY one of them
+    alphabetic, and nothing the vocabulary matches except -- possibly
+    -- chunks that are a SINGLE ASCII CHARACTER. That exception is the
+    roman-numeral accident retired narrowly: measured 2026-09-15 the
+    one-character suffix vocabulary is {'2', 'i', 'v'} plus the glued
+    CJK honorific tails, so 'John Smith R.A.I.' was reading as a
+    generational suffix off the chunk 'i'. CHARACTER rather than
+    LETTER because '2' is a digit and is in the set; ASCII because
+    '씨' is the single character that must KEEP its claim ('J.씨'). A
+    multi-character match still reads as it always did, so 'Msc.Ed.',
+    'JD.CPA' and 'Lt.Gov.' are untouched -- the WIDE retirement, where
+    any chunk match yields to the shape, was measured and rejected: it
+    costs 'Doe, John Msc.Ed.' a real credential and re-routes the
+    honorific peel of '김민준씨, J.씨' for nothing this design wants
+    (decisions.md#S2).
+
+    The ALPHABETIC requirement is a SEPARATE, narrower gate on the
+    shape verdict alone (#516 review round, decided by the
+    orchestrator): a bare digit chunk is not an acronym letter by any
+    reading, so 'Smith, 1.4' and 'John Smith 1.4' do not join the
+    class by shape -- the only PROTECTED digit control this design
+    had was the delimited 'Bridge (1.4)', and 'Smith, 1.4' and its
+    no-comma twin were the gap that control did not cover, since
+    delimited content is excluded by a different mechanism (extract's
+    escape) and digits reach THIS detector, never that one.
+    '.isalpha()' is asked of EVERY chunk, not just the matched ones,
+    so a mixed token like 'X.Y.2.' is not shape-admitted either -- one
+    non-letter chunk is enough to say the writing is not spelling an
+    acronym. Chunks the vocabulary itself matches are already
+    alphabetic in the shipped lexicon, so this narrows only the
+    previously-unclaimed "shape" answer, never the "suffix" one.
+
+    The INITIALLESS-SCRIPT guard is a second, independent narrowing of
+    the same verdict, on the same reasoning `is_title_shaped` already
+    gives its own period-abbreviation inference (#323): a script with
+    no period abbreviations at all has nothing for interior periods to
+    ABBREVIATE, so a CJK word glued into period-separated single
+    characters is not spelling an acronym either -- 'John Smith
+    田.中.' and '김 민준 이.박.' stayed family at every release before
+    this gate existed, and would otherwise have joined the ambiguous
+    class by shape for the first time (measured regression, #516
+    review round).
+
+    What a "shape" verdict MEANS is the caller's question, not this
+    one's: classify writes the tag, and Policy.unlisted_dotted_suffixes
+    decides whether it is class membership.
+    """
     if not _PERIOD_NOT_AT_END.match(text):
         return None
     chunks = [_normalize(c) for c in text.split(".") if c]
     if any(c in lexicon.titles for c in chunks):
         return "title"
-    if any(c in lexicon.suffix_acronyms or c in lexicon.suffix_words
-           for c in chunks):
+    matched = [c for c in chunks
+               if c in lexicon.suffix_acronyms or c in lexicon.suffix_words]
+    if matched and not all(len(c) == 1 and c.isascii() for c in matched):
         return "suffix"
+    if (len(chunks) >= 2 and all(c.isalpha() for c in chunks)
+            and (text.isascii() or not in_initialless_script(text))):
+        return "shape"
     return None
 
 
@@ -399,19 +456,17 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     class, ignoring case and policy entirely (#289/#516).
 
     The case-INDEPENDENT half of the comma form's own candidate test
-    (`_segment.py`'s structure decision, and `is_wholly_suffix`'s
-    credential-lean disjunct below): membership by vocabulary never
-    needs the case fact, only a by-shape class a switch admits will
-    (commit C's Task 17, which introduces the case/policy-aware
-    predicate then -- this function is not that predicate wearing
-    unused parameters). A caller that wants to know whether the case
-    fact is even worth computing -- the comma form's own lazy gate --
-    asks this first and pays for `one_case` only where this says yes,
-    rather than forcing it before membership is known (measured
-    regression, #289/#516: `own_words` -> `tag_marker_runs` ran for
-    `"Smith, John"`, `"John Smith, Jr."` and every other
-    single-token-after-the-comma name, none of them able to reach the
-    class at all).
+    (`ambiguous_class_candidate`, below, which ALSO admits a by-shape
+    member where Policy allows it) and `is_wholly_suffix`'s
+    credential-lean disjunct below: membership by vocabulary never
+    needs the case fact, only the lean does. A caller that wants to
+    know whether the case fact is even worth computing -- the comma
+    form's own lazy gate -- asks this first and pays for `one_case`
+    only where this says yes, rather than forcing it before membership
+    is known (measured regression, #289/#516: `own_words` ->
+    `tag_marker_runs` ran for `"Smith, John"`, `"John Smith, Jr."` and
+    every other single-token-after-the-comma name, none of them able
+    to reach the class at all).
 
     Membership is the listed set, bare: a whole-token vocabulary match
     is not in this class at all, being settled ('M.A.', 'Ph.D.',
@@ -437,16 +492,61 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     are excluded here too, even though the LEAN still reads them as
     the bare acronym's case ('Smith, MA.' -> suffix 'MA.', measured).
     That is not a contradiction: this predicate answers only the
-    comma-form CANDIDATE question segment's structure decision and the
-    credential-lean disjunct below ask, and neither of those shapes
-    ever reaches it, because the TAG path (`vocab:suffix-ambiguous`,
-    read directly by the trailing peel and the post-comma slot) and
-    H2's leading-title shape test already carry them where they need
-    to go.
+    comma-form CANDIDATE question (`ambiguous_class_candidate`, below)
+    and the credential-lean disjunct below ask, and neither of those
+    shapes ever reaches it, because the TAG path
+    (`vocab:suffix-ambiguous`, read directly by the trailing peel and
+    the post-comma slot) and H2's leading-title shape test already
+    carry them where they need to go.
     """
     if "." in text:
         return False
     return _normalize(text) in lexicon.suffix_acronyms_ambiguous
+
+
+# The comma form's own candidate test (rules.md#C1, decisions.md#S2).
+def ambiguous_class_candidate(text: str, lexicon: Lexicon,
+                              policy: Policy) -> bool:
+    """Whether TEXT is a CANDIDATE for the ambiguous credential class
+    at the comma form's own structure decision (`_segment.py`): the
+    LISTED half (`ambiguous_class_member`, case-free) OR, where Policy
+    admits it, the SHAPE an unlisted dotted token wears
+    (`period_joined_vocab`'s third verdict, #516). Case-free either
+    way -- the shape carries no writing convention to read (the
+    periods are the signal, not the case), and the listed half's own
+    case lean is asked downstream of membership, not here.
+
+    A period anywhere is the gate for even ASKING the shape question,
+    checked before the shape's own two calls: `period_joined_vocab`
+    itself already declines a period-free text for free (no interior
+    period to split on), but a Python-level call is not free, and a
+    comma name's post-comma part usually has none ("Smith, John") --
+    measured regression, #516 review round, fixed by moving the same
+    cheap substring test `ambiguous_class_member` already makes for
+    its OWN reason (there, "no period, so no dotted form to exclude")
+    up here as an early exit. Where a period IS present,
+    `period_joined_vocab` runs before `suffix_as_written`, and
+    `suffix_as_written` only where the former says "shape": a dotted
+    whole-token match with no single-chunk vocabulary hit of its own
+    ('A.B.C.', via 'abc') would otherwise read "shape" from this
+    function's chunk-level view alone, oblivious to the WHOLE-token
+    match `suffix_as_written` already settled -- the same precedence
+    classify's own tag order gives it (`vocab:suffix` is set before
+    `period_joined_vocab` is even consulted).
+
+    This spelling and classify's tag emission (`_tags_for`'s
+    `derived == "shape"` branch) ask the SAME question twice, of
+    necessity: `segment` runs before `classify` and has no tags to
+    read yet. Kept from drifting by
+    `test_classify.test_ambiguous_class_candidate_agrees_with_the_tag`,
+    which asks both of the same texts, rather than by a sentence
+    alone.
+    """
+    if ambiguous_class_member(text, lexicon):
+        return True
+    return ("." in text and policy.unlisted_dotted_suffixes
+            and period_joined_vocab(text, lexicon) == "shape"
+            and not suffix_as_written(_normalize(text), text, lexicon))
 
 
 def name_word_count(texts: Sequence[str], lexicon: Lexicon,
@@ -520,6 +620,22 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     default, and what every caller with no state to ask has -- reads
     as no lean and is this predicate's behavior in every release
     before 2.4.
+
+    Policy.unlisted_dotted_suffixes does NOT reach this predicate:
+    admitting a by-shape member here unconditionally (an earlier
+    version of this docstring described exactly that) bypassed both
+    the lean AND the NAME-word count, and combined with C1's own
+    legacy TOKEN-count disjunct in `_segment.py`
+    (`suffixy(groups[1]) and len(groups[0]) > 1`) it flipped
+    'Smith Jr., A.B.' to given 'Smith', suffix 'Jr., A.B.' with a
+    self-contradicting report ("holds 1 name words, so it is read as
+    a credential run") -- proved by mutation testing to be otherwise
+    unreached: nothing but this predicate's own two unit tests
+    depended on it, and 'John Smith, A.B.' still flips correctly
+    through `pre_comma_names >= 2` alone (#516 review round). The
+    by-shape class reaches the comma form ONLY through
+    `_vocab.ambiguous_class_candidate`, which segment's structure
+    decision and report both already consult.
     """
     if not texts:
         return False
@@ -539,8 +655,7 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
             return True
         return (predicate(text, lexicon)
                 or period_joined_vocab(text, lexicon) == "suffix"
-                or (bool(cores)
-                    and splits_into_suffixes(text, cores, lexicon)))
+                or (bool(cores) and splits_into_suffixes(text, cores, lexicon)))
 
     merged = list(texts)
     k = 0

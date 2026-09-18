@@ -12,7 +12,12 @@ _vocab.is_wholly_suffix -- the suffix-comma decision is definitionally
 vocabulary-dependent (decisions.md#C1), and the predicate
 owns the rest (Policy.lenient_comma_suffixes picks the lenient or
 strict token test; Policy.extra_suffix_delimiters gives v1
-suffix_delimiter parity, a delimiter-core token being transparent).
+suffix_delimiter parity, a delimiter-core token being transparent);
+and, since 2.4, Policy.unlisted_dotted_suffixes, read through
+_vocab.ambiguous_class_candidate alone -- is_wholly_suffix
+deliberately does not see the by-shape class (#516). An unlisted
+dotted token joins the ambiguous credential class by SHAPE at this
+stage's own candidate test the same way a listed member does.
 
 Implements rules C1 and C2 of docs/design/rules.md, cited at the
 decision site below; history in decisions.md#C1.
@@ -26,7 +31,7 @@ from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket,
 )
 from nameparser._pipeline._vocab import (
-    ambiguous_class_member, is_one_case, is_wholly_suffix, name_word_count,
+    ambiguous_class_candidate, is_one_case, is_wholly_suffix, name_word_count,
 )
 from nameparser._types import AmbiguityKind
 
@@ -115,21 +120,23 @@ def segment(state: ParseState) -> ParseState:
     # in, and the answer reaches the listed set as well as the
     # by-shape halves -- one rule for the class rather than two.
     #
-    # Membership is tested CASE-FREE first (`ambiguous_class_member`):
-    # the structure decision below is itself case-independent (item
-    # 5's count decides "whatever case the name is written in"), so
-    # the case fact is worth forcing only once a genuine candidate is
-    # found -- not on every comma name whose post-comma part happens
-    # to be one token, which is what calling the case-aware predicate
-    # with `case_class()` as an ARGUMENT did (measured regression: the
-    # `own_words` -> `tag_marker_runs` walk ran for `"Smith, John"`
-    # and `"John Smith, Jr."`, neither able to reach the class at
-    # all). A genuine candidate still forces the fact here, downstream
-    # of the structure decision that does not need it, because
-    # assign's post-comma slot and its report do.
+    # Membership is tested CASE-FREE first (`ambiguous_class_candidate`,
+    # the listed set OR -- since 2.4 -- a by-shape member Policy
+    # admits, #516): the structure decision below is itself
+    # case-independent (item 5's count decides "whatever case the name
+    # is written in"), so the case fact is worth forcing only once a
+    # genuine candidate is found -- not on every comma name whose
+    # post-comma part happens to be one token, which is what calling
+    # the case-aware predicate with `case_class()` as an ARGUMENT did
+    # (measured regression: the `own_words` -> `tag_marker_runs` walk
+    # ran for `"Smith, John"` and `"John Smith, Jr."`, neither able to
+    # reach the class at all). A genuine candidate still forces the
+    # fact here, downstream of the structure decision that does not
+    # need it, because assign's post-comma slot and its report do.
     candidate = (len(groups[1]) == 1
-                 and ambiguous_class_member(state.tokens[groups[1][0]].text,
-                                            state.lexicon))
+                 and ambiguous_class_candidate(
+                     state.tokens[groups[1][0]].text, state.lexicon,
+                     state.policy))
     # Computed only where `candidate` is true, alongside `case_class()`
     # -- the same lazy gate: a non-candidate comma name never counts
     # its pre-comma words either. Hoisted to a local because the

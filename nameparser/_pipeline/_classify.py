@@ -11,16 +11,19 @@ one_case -- whether the name's own words are written in one case,
 recorded for the later stages that read it (#289/#516) and left alone
 where an earlier stage already asked.
 Reads: every Lexicon vocabulary field except surnames and
-honorific_tails, which script_segment consumes upstream; no Policy
-FIELD is consulted (is_initial does consult the _policy module's
-_NO_INITIALS constant, which is not configuration -- nothing here
-varies by Policy value).
+honorific_tails, which script_segment consumes upstream; and, since
+2.4, Policy.unlisted_dotted_suffixes, which decides whether an
+UNLISTED dotted token joins the ambiguous credential class by SHAPE
+(#516). is_initial also consults the _policy module's _NO_INITIALS
+constant, which is not configuration -- nothing here varies by its
+value.
 
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",
 "vocab:suffix", "vocab:suffix-word", "vocab:suffix-ambiguous",
 "vocab:particle-ambiguous", "vocab:bound-given", "vocab:maiden-marker",
-"vocab:maiden-marker-cont".
+"vocab:maiden-marker-cont"; and, in a namespace of its own,
+"shape:acronym".
 "vocab:maiden-marker" tags the HEAD of a maiden marker, which is a
 whole marker whenever the marker is one word; the continuation tag
 carries the rest of a PHRASE marker ("z domu"), so a site asking
@@ -34,6 +37,12 @@ ambiguous tag is the rest of rule S2's statement (the
 words-to-spare guard) and its Accepted consequences.
 The initial veto is assign's job, not classify's: 'V' carries both
 "vocab:suffix" and "initial".
+"shape:acronym" is the one tag in the shape: namespace and it records
+WHERE a class claim came from rather than what the vocabulary holds:
+an unlisted token the writing makes credential-shaped. It rides
+beside "vocab:suffix-ambiguous" where a Policy switch admits the
+token to that class, and stands alone where the switch is off, which
+is what lets the fork be reported without being taken.
 """
 from __future__ import annotations
 
@@ -41,7 +50,7 @@ import dataclasses
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, WorkToken,
+    SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity, WorkToken,
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
@@ -141,6 +150,31 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add("vocab:title")
         elif derived == "suffix":
             tags.add("vocab:suffix")
+        elif derived == "shape" and token.role is None:
+            # #516: the word is not in the vocabulary, so the claim is
+            # about the WRITING and says so -- SHAPE_ACRONYM_TAG beside
+            # the membership tag rather than instead of it, because
+            # `vocab:` records membership (see this module's tag
+            # roster above) and the peel reads membership. The shape
+            # tag goes on either way: with the switch off the parser
+            # has still chosen the name reading over a credential one,
+            # and that fork is reported. A token that already carries
+            # a role is delimited content, decided by extract's escape
+            # and never at the trailing slot -- 'Bridge (A.B)' is the
+            # control that proves this guard load-bearing (without
+            # it, the nickname reading of 'A.B' would gain a spurious
+            # SUFFIX_OR_NICKNAME report below); 'Bridge (1.4)' cannot
+            # exercise it on its own, since a digit chunk never
+            # reaches the shape verdict at all (period_joined_vocab's
+            # own alphabetic gate). This branch and
+            # `_vocab.ambiguous_class_candidate` ask the SAME question
+            # twice, of necessity -- `segment` runs before `classify`
+            # and has no tags to read yet -- kept from drifting by
+            # `test_classify.test_ambiguous_class_candidate_agrees_with_the_tag`
+            # rather than by this sentence alone.
+            tags.add(SHAPE_ACRONYM_TAG)
+            if state.policy.unlisted_dotted_suffixes:
+                tags.add("vocab:suffix-ambiguous")
     return frozenset(tags)
 
 
