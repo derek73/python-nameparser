@@ -425,18 +425,35 @@ CASES: tuple[Case, ...] = (
                "initials() too, for names whose roles are identical -- "
                "but only under the policies it runs, and middle_as_family "
                "is not one, so this row stays pinned here"),
+    # MOVED by #289, not deleted: 'MA' is written in capitals inside a
+    # mixed-case name, so it now leans CREDENTIAL and is taken with no
+    # words to spare -- the reserve/count this row used to pin no
+    # longer decides here, the written case does (decisions.md#S2).
     Case("ambiguous_surname_acronyms", "Jack MA",
-         {"given": "Jack", "family": "MA"},
-         ambiguities=("suffix-or-name",),
-         notes="'ma'/'do' joined suffix_acronyms_ambiguous: with only "
-               "two pieces, 'one of them is a credential' is the less "
-               "likely reading, so the ambiguous acronym stays the "
-               "family name (v1 parity via its reserve_last)"),
+         {"given": "Jack", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the defect #289 reports: an all-caps member of the "
+               "ambiguous set inside a mixed-case name is written the "
+               "way a credential is written, so it is taken as one "
+               "even though peeling it leaves no family -- what "
+               "'Jack MD' has always done with an unambiguous one. "
+               "'Jack' is then the only name word left, which is also "
+               "what turns on GIVEN_OR_FAMILY. 1.4.0 read LAST 'MA' "
+               "here (family 'MA'), so this row BREAKS 1.4.0 parity "
+               "deliberately, in the direction the East Asian surname "
+               "wants (decisions.md#S2) -- corrected 2026-09-17, F3 "
+               "review finding: an earlier version of this note "
+               "wrongly claimed the opposite"),
     Case("ambiguous_surname_acronym_with_suffix", "Jack MA Jr",
-         {"given": "Jack", "family": "MA", "suffix": "Jr"},
-         ambiguities=("suffix-or-name",),
-         notes="'Jr' peels first; 'MA' would then be the only piece "
-               "left beside the given name, so it stays family"),
+         {"given": "Jack", "suffix": "MA Jr"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="'Jr' peels first as unambiguous vocabulary; 'MA' is "
+               "then the last piece, and the caps lean takes it with "
+               "no words to spare rather than leaving it the family "
+               "the old reserve kept (decisions.md#S2) -- both suffix "
+               "words render as one run"),
     Case("ambiguous_acronym_is_a_suffix_when_a_family_name_remains",
          "John Smith MA",
          {"given": "John", "family": "Smith", "suffix": "MA"},
@@ -516,18 +533,23 @@ CASES: tuple[Case, ...] = (
                "through 2.2.0 read suffix 'Ba' with no family name; "
                "1.4.0 read family 'Ba' unflagged, so this row "
                "restores 1.4.0's roles and adds the flag"),
+    # MOVED by #289, not deleted: 'BA' is written in capitals inside a
+    # mixed-case name, so it now leans CREDENTIAL and the post-comma
+    # slot takes it with one word to spare where the count alone would
+    # not -- back to what 2.0.0 through 2.2.0 read, though for a
+    # different reason (decisions.md#S2, Derek's own #289 comment:
+    # positive evidence outranks position here).
     Case("comma_ambiguous_acronym_ba", "Smith, BA",
-         {"given": "BA", "family": "Smith"},
-         classification="parity",
+         {"family": "Smith", "suffix": "BA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
          notes="the marking's comma cost, and it is 'Smith, Ed' "
                "arriving for a second word: with 'ba' ambiguous, S2 "
                "declines the post-comma credential and C1 reads it as "
                "the given name. 2.0.0 through 2.2.0 read family "
-               "'Smith', suffix 'BA'; 1.4.0 read given 'BA', which is "
-               "what this restores and why it classifies parity. The "
-               "row is here because the release note names the text -- "
-               "comma_ambiguous_acronym pins the fork and stays green "
-               "when 'ba' leaves the ambiguous subset"),
+               "'Smith', suffix 'BA'; 1.4.0 read given 'BA'. #289 moves "
+               "this row again: the caps lean now reads 'Smith, BA' the "
+               "way a business form is written"),
     Case("ba_is_a_suffix_when_a_family_name_remains", "John Smith BA",
          {"given": "John", "family": "Smith", "suffix": "BA"},
          ambiguities=("suffix-or-name",),
@@ -1198,6 +1220,315 @@ CASES: tuple[Case, ...] = (
                "shape tag asserts the ARRANGEMENT, not a script "
                "(tools/differential/shapes.py)",
          shape=1),
+    # #289: a bare ambiguous credential acronym is read by the
+    # EVIDENCE the writing carries, and a name written in more than
+    # one case carries some. These rows pin the FORK, not the wordlist
+    # (mechanisms.md#VOCABULARY-EXERCISES-FORKS): the same two letters
+    # in the same slot, spelled five ways, with the one-case controls
+    # that must not move beside them.
+    Case("caps_ambiguous_leans_credential", "Jack MA",
+         {"given": "Jack", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the defect. An all-caps member of the ambiguous set "
+               "inside a mixed-case name is written the way a "
+               "credential is written, so it is taken as one even "
+               "though peeling it leaves no family -- which is what "
+               "'Jack MD' has always done with an unambiguous one. "
+               "1.4.0 read last 'MA' here, so this breaks v1 parity "
+               "deliberately",
+         shape=1),
+    Case("caps_ambiguous_leans_credential_with_a_period", "Jack MA.",
+         {"given": "Jack", "suffix": "MA."},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the lean reads CASE, not periods: a single trailing "
+               "period is the abbreviation shape any word can wear "
+               "(rules.md#S2) and changes nothing here, where the "
+               "capitals have already spoken",
+         shape=1),
+    Case("title_case_ambiguous_leans_surname_two_words", "Jack Ma",
+         {"given": "Jack", "family": "Ma"},
+         ambiguities=("suffix-or-name",),
+         notes="the contrast that makes the row above a fork rather "
+               "than a wordlist entry: Title case is how a surname is "
+               "written, and this row is unchanged in every release",
+         shape=1),
+    Case("one_case_upper_ambiguous_takes_the_count", "JACK MA",
+         {"given": "JACK", "family": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="the one-case control for 'Jack MA': all-caps against "
+               "all-caps is no contrast at all, so nothing leans and "
+               "rules.md#S2's words-to-spare count decides alone -- "
+               "two pieces, so the acronym stays the family name",
+         shape=1),
+    Case("one_case_lower_ambiguous_takes_the_count", "jack ma",
+         {"given": "jack", "family": "ma"},
+         ambiguities=("suffix-or-name",),
+         notes="the lowercase spelling of the row above; both cases "
+               "read alike, which is the point of asking about "
+               "evidence rather than about capitals",
+         shape=1),
+    Case("title_case_ambiguous_leans_surname_with_words_to_spare",
+         "John Smith Ma",
+         {"given": "John", "middle": "Smith", "family": "Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the lean's other direction, and the one that costs a "
+               "credential rather than a surname: with words to spare "
+               "the count read 'Ma' as a suffix, and a Title-case "
+               "word beside 'John Smith' is how a surname is written. "
+               "1.4.0 read suffix 'Ma', so this is a deliberate "
+               "parity break in the direction the East Asian surname "
+               "wants (decisions.md#S2)",
+         shape=1),
+    Case("one_case_upper_ambiguous_with_words_to_spare",
+         "JOHN SMITH MA",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="the one-case control for the row above: no evidence, "
+               "so the count decides and three pieces make the "
+               "acronym a credential, exactly as before 2.4",
+         shape=1),
+    Case("mixed_case_caps_ambiguous_with_words_to_spare",
+         "john smith MA",
+         {"given": "john", "family": "smith", "suffix": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="the lean and the count AGREE here, which is why the "
+               "row does not move: capitals against lowercase lean "
+               "credential, and three pieces read credential anyway",
+         shape=1),
+    Case("one_case_ambiguous_surname_is_untouched", "ANH DO",
+         {"given": "ANH", "family": "DO"},
+         ambiguities=("suffix-or-name",),
+         notes="the name this whole design must not break: an "
+               "all-caps Vietnamese surname in an all-caps name. One "
+               "case, so nothing leans, and the count keeps the "
+               "family -- the reading 2.0 shipped and 1.4.0 had",
+         shape=1),
+    Case("one_case_ambiguous_surname_behind_a_particle",
+         "anh van do",
+         {"given": "anh", "family": "van do"},
+         notes="its lowercase, particle-bearing twin: the particle "
+               "chain takes 'do' as part of the surname before any of "
+               "this is asked",
+         shape=1),
+    Case("a_title_and_one_ambiguous_word_is_still_a_name", "Mr MA",
+         {"title": "Mr", "family": "MA"},
+         notes="the floor the lean does not move, measured "
+               "2026-09-15: the trailing peel's walk starts after the "
+               "leading title run, so one piece is all it sees and "
+               "rules.md#S2's two-piece floor refuses it. A lean that "
+               "reached below the floor would read this as a title "
+               "with a credential and no name at all -- and nothing "
+               "is reported, because no fork was taken",
+         shape=1),
+    Case("the_lean_reaches_the_post_comma_slot", "Smith, MA",
+         {"family": "Smith", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="Derek's own reading of #289: positive evidence "
+               "outranks position, so the credential lean fires with "
+               "ONE word before the comma where the words-to-spare "
+               "count would not. The first comma-path report OF A "
+               "READING rides with it -- C2's structural flag already "
+               "reports on the comma path, but reports what the parse "
+               "could not recognize, not a fork it called "
+               "(rules.md#C1's exception, scoped to this class)",
+         shape=2),
+    Case("the_surname_lean_keeps_the_post_comma_given", "Smith, Ma",
+         {"given": "Ma", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="the contrast: Title case leans surname, so the word "
+               "stays the given name exactly as it did -- and the "
+               "call is reported all the same, both directions of one "
+               "fork being worth telling the caller about",
+         shape=2),
+    Case("the_comma_count_is_of_name_words", "Smith Jr., MA",
+         {"family": "Smith", "suffix": "Jr., MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#C1's count for this class is of NAME words, "
+               "not of words: two tokens and one name here, so the "
+               "structure does not flip and the family survives. "
+               "Counting tokens read it as given 'Smith' with suffix "
+               "'Jr., MA' -- no reading of this string puts the "
+               "family anywhere but where this row does "
+               "(decisions.md#S2)",
+         shape=2),
+    Case("two_name_words_read_the_listed_acronym_as_a_credential",
+         "John Smith, MA",
+         {"given": "John", "family": "Smith", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="1.4.0 RESTORED: v1 read first John, last Smith, "
+               "suffix MA and 2.0 through 2.3 read given 'MA' with "
+               "the whole name in `family`. The comma structure moves "
+               "with the class, so this is the SUFFIX_COMMA form "
+               "again",
+         shape=3),
+    Case("the_comma_count_reaches_the_listed_set_title_case",
+         "John Smith, Ed",
+         {"given": "John", "family": "Smith", "suffix": "Ed"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="one rule for the whole ambiguous class rather than "
+               "two: where case is silent -- 'Ed' leans SURNAME here, "
+               "and the lean does not reach the structure -- the "
+               "count of name words before the comma decides, and two "
+               "of them make it a credential. 1.4.0 read suffix 'Ed' "
+               "too, so this restores parity rather than opening "
+               "distance from it (decisions.md#S2, 2026-09-15)",
+         shape=3),
+    Case("the_comma_count_reaches_the_listed_set_lower",
+         "john smith, ma",
+         {"given": "john", "family": "smith", "suffix": "ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the one-case spelling of the row above: no evidence "
+               "either way, so the count decides and 1.4.0's suffix "
+               "reading comes back",
+         shape=3),
+    Case("the_comma_count_reaches_the_listed_set_upper",
+         "JOHN SMITH, MA",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the all-caps spelling, and the reason the count has "
+               "to reach the listed set at all: an all-caps name "
+               "carries no lean, and leaving it to the lean alone "
+               "would read this one way and its mixed-case twin "
+               "another. 1.4.0 parity restored",
+         shape=3),
+    Case("two_name_words_before_the_comma_at_two_words",
+         "Davis Royce, Ed",
+         {"given": "Davis", "family": "Royce", "suffix": "Ed"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the two-word twin of 'Royce, Ed' below, and the case "
+               "row item 5 of decisions.md#S2 turns on -- no corpus "
+               "name has this shape, so this row carries the whole "
+               "weight of that decision",
+         shape=3),
+    Case("one_name_word_before_the_comma_is_never_enough",
+         "Royce, Ed",
+         {"given": "Ed", "family": "Royce"},
+         ambiguities=("suffix-or-name",),
+         notes="the control: one name word before the comma leaves "
+               "nothing to spare, 'Ed' leans surname anyway, and the "
+               "row is unchanged in every release. The pair above and "
+               "below it is what makes the count visible",
+         shape=2),
+    Case("a_declined_ambiguous_pick_stops_the_walk",
+         "abdul Smith Jr Ma",
+         {"given": "abdul Smith", "middle": "Jr", "family": "Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="an ACCEPTED cost, pinned rather than repaired "
+               "(decisions.md#S2): the surname lean breaks the peel "
+               "AT 'Ma', so the unambiguous 'Jr' in front of it is "
+               "never reached and becomes a name word. The walk stops "
+               "at the declined pick rather than continuing past it, "
+               "and a name-leaning acronym blocking a genuine suffix "
+               "behind it is the shape that costs",
+         shape=1),
+    Case("a_tail_segment_of_leaning_credentials_is_a_run",
+         "Steven Hardman, MD, DO, DDS",
+         {"given": "Steven", "family": "Hardman", "suffix": "MD, DO, DDS"},
+         classification="fix(#289)",
+         notes="the one place this design QUIETS a report rather than "
+               "adding one: 'DO' is a listed ambiguous acronym "
+               "written in capitals inside a mixed-case name, so the "
+               "third comma segment is wholly suffix and rules.md#C2 "
+               "stops flagging it. The FIELDS do not move -- a "
+               "quieted flag is invisible to a reader sweeping for "
+               "new reports, which is why it has a row of its own",
+         shape=3),
+    # Quality-review finding, 2026-09-17: "one name never reports
+    # twice" was wrong as a blanket claim -- what is true is that one
+    # DECISION never reports twice. Two DIFFERENT ambiguous acronyms
+    # at two different forks each report once: the trailing peel over
+    # the pre-comma part ('MA', credential lean, no words to spare)
+    # and the comma structure's own flip ('Ed', two pre-comma name
+    # words -- 'Smith' and 'MA' both count, since a bare undotted
+    # ambiguous acronym is not suffix vocabulary to `name_word_count`
+    # either).
+    Case("two_different_forks_each_report_once", "Smith MA, Ed",
+         {"given": "Smith", "suffix": "MA, Ed"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "suffix-or-name",
+                      "given-or-family"),
+         notes="'Smith MA' reads two name words, flipping the comma "
+               "structure so 'Ed' joins the credential run; peeling "
+               "'Smith MA' positionally then peels 'MA' too (caps "
+               "lean, no words to spare), leaving 'Smith' the only "
+               "name word, which is also what turns on "
+               "GIVEN_OR_FAMILY. Three reports, none of them the same "
+               "fork reporting twice"),
+    Case("a_caseless_script_wrote_no_contrast", "毛泽东, MA",
+         {"given": "MA", "family": "毛泽东"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the LEAN is inert by construction: is_one_case answers "
+               "True for text that has only one case, so nothing leans "
+               "and the count decides -- one word before the comma, so "
+               "the acronym stays the given name, as in every release. "
+               "But the REPORT is not lean-gated (F4/F5 review finding, "
+               "2026-09-17): it tracks the fork being consulted, "
+               "exactly as the trailing slot always has, so this comma "
+               "form is read positionally and still reports which way "
+               "it went -- an earlier round wrongly excluded this row",
+         tolerated=True),
+    # MEASURED, not the plan's prediction: unlike its single-token
+    # Chinese twin above, '마틴 킹' is TWO whitespace tokens, so item
+    # 5's name-word count -- uniform across the whole ambiguous class,
+    # case silent or not -- sees two name words before the comma and
+    # flips the structure exactly as 'JOHN SMITH, MA' does. The comma
+    # form then reads segment 0 the way a NO_COMMA name would (the
+    # (a-lazy) mechanism's own tradeoff: the flip is decided before
+    # script_segment, so the Hangul surname split runs over '마틴 킹'
+    # positionally rather than over the untouched pre-comma text) --
+    # the same shape 'Smith 김민준씨, MA' shows in the spec's decision
+    # table. Not a caseless-script exemption: item 5 answers "where "
+    # case is silent" by the SAME count the rest of item 5 uses, and a
+    # two-word Hangul name is silent about case but not about how many
+    # name words it has.
+    Case("a_caseless_script_wrote_no_contrast_hangul", "마틴 킹, MA",
+         {"given": "틴", "middle": "킹", "family": "마", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED 2026-09-17, not the spec's older prediction "
+               "(given MA, family '마틴 킹', unchanged): dated before "
+               "item 5's name-word-count extension was decided "
+               "(2026-09-15) reached the listed set in ANY case. Two "
+               "name words before the comma flip the structure here "
+               "exactly as they do for 'JOHN SMITH, MA', and the flip "
+               "precedes script_segment's Hangul surname split, which "
+               "then runs over '마틴 킹' as if no comma had stood "
+               "there at all",
+         tolerated=True),
+    # F2 review finding, 2026-09-17: the SAME mechanism reaches Japanese
+    # too, by the same two-token count -- '田中 太郎' is two whitespace
+    # tokens, not one, so it is not '毛泽东, MA's twin (a single token)
+    # but '마틴 킹, MA's. 1.4.0 read both '마틴 킹, MA' and
+    # '田中 太郎, MA' as suffix MA (measured on the wheel), so the
+    # suffix half of this move is a PARITY RESTORATION, not a fresh
+    # deviation -- only the pre-comma surname split (given '太郎',
+    # family '田中') is #271/#272's pre-existing positional behavior,
+    # unrelated to #289.
+    Case("a_caseless_script_wrote_no_contrast_japanese", "田中 太郎, MA",
+         {"given": "太郎", "family": "田中", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED 2026-09-17: two name words before the comma "
+               "flip the structure exactly as '마틴 킹, MA' and "
+               "'JOHN SMITH, MA' do, and the flip again precedes "
+               "script_segment, so the family-first Han split runs "
+               "over '田中 太郎' positionally. Docs/design's older "
+               "'a caseless script is inert by construction' bullet "
+               "is true of the LEAN alone; item 5's name-word count "
+               "is orthogonal to case and reaches this row too",
+         tolerated=True),
     Case("catalan_i_is_not_connective_vocabulary_upper",
          "JOSEP CAROD I ROVIRA",
          {"given": "JOSEP", "middle": "CAROD I", "family": "ROVIRA"},
@@ -3176,8 +3507,36 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="'ed' is an ambiguous acronym; bare form is a name (C1), "
                "and the parse reports which reading it took"),
+    # MOVED by #289, not deleted (roles unchanged, a report gained):
+    # 'Ed' is Title-case in a mixed-case name, so it leans SURNAME and
+    # the post-comma slot declines it exactly as before -- but the
+    # decision is now reported, both directions of the fork being
+    # worth telling the caller about (decisions.md#S2).
     Case("comma_ambiguous_acronym", "Smith, Ed",
-         {"given": "Ed", "family": "Smith"}),
+         {"given": "Ed", "family": "Smith"},
+         ambiguities=("suffix-or-name",)),
+    # Quality-review finding, 2026-09-17 (item 5): name_word_count's
+    # title half used a bare `folded in lexicon.titles` lookup, not
+    # is_leading_title's H2 shape test -- so an UNLISTED period-marked
+    # opener counted as a NAME word where a LISTED one did not, and
+    # this pair split on that alone: 'Dr. Smith, Ed' (LISTED 'Dr.')
+    # read family 'Dr. Smith' unflipped, but 'Xyz. Smith, Ed'
+    # (UNLISTED, H2-shaped) flipped the comma structure and read title
+    # 'Xyz.', family 'Smith', suffix 'Ed' -- a different STRUCTURE for
+    # the same shape, from a title-vocabulary difference the count had
+    # no business seeing. Fixed by sharing H2's shape test
+    # (`_vocab.is_title_shaped`, asked in this count and inlined in
+    # `_pieces.is_leading_title`, two spellings of one predicate --
+    # sharing the function costs a frame on the hot leading-peel path,
+    # measured, so they stay separate call sites instead).
+    Case("comma_count_reads_h2_s_shape_test_too", "Xyz. Smith, Ed",
+         {"given": "Ed", "family": "Xyz. Smith"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="MOVED: title 'Xyz.', family 'Smith', suffix 'Ed' before "
+               "this fix (measured at e545803) -- an unlisted period-"
+               "marked opener now reads the way a listed title does at "
+               "this count, exactly as 'Dr. Smith, Ed' beside it"),
     Case("ambiguous_acronym_with_suffix", "John Ed III",
          {"given": "John", "family": "Ed", "suffix": "III"},
          ambiguities=("suffix-or-name",)),
@@ -3460,13 +3819,18 @@ CASES: tuple[Case, ...] = (
                "form trailing"),
     Case("audit_perioded_sa_is_the_postnominal", "Smith, S.A.",
          {"family": "Smith", "suffix": "S.A."}),
-    Case("audit_bare_do_after_comma_is_a_name", "Smith, DO",
-         {"given": "DO", "family": "Smith"},
-         classification="fix(#296)",
-         notes="'do' left TITLES but was already AMBIGUOUS, so the bare "
-               "spelling is neither title nor suffix and falls to the "
-               "given position -- the period gate handles the real "
-               "collision, which is that 'Do' is a name"),
+    # MOVED by #289, not deleted: 'DO' is written in capitals inside a
+    # mixed-case name, so it now leans CREDENTIAL and the post-comma
+    # slot takes it with one word to spare rather than falling to the
+    # given position (decisions.md#S2).
+    Case("audit_bare_caps_do_after_comma_is_a_credential", "Smith, DO",
+         {"family": "Smith", "suffix": "DO"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="'do' left TITLES but was already AMBIGUOUS; the period "
+               "gate handles the real collision, which is that 'Do' is "
+               "a name -- but the bare, all-caps spelling is now read "
+               "the way a credential is written"),
     Case("audit_perioded_do_after_comma_is_a_suffix", "Smith, D.O.",
          {"family": "Smith", "suffix": "D.O."}),
     # -- the TRAILING half of the same two removals. `dr` and `sra` are
@@ -3912,9 +4276,13 @@ CASES: tuple[Case, ...] = (
                "the reports come from the single peel over the "
                "spliced pieces. Collecting both peels' picks instead "
                "reported the same coin flip twice"),
+    # MOVED by #289, not deleted: spliced, this is 'John MA' plus a
+    # title, and 'MA' is written in capitals inside a mixed-case name
+    # -- the caps lean now takes it with no words to spare where the
+    # old reserve kept it the family (decisions.md#S2).
     Case("title_word_trailing_run_is_read_to_a_fixed_point",
          "John Prof. MA Prof.",
-         {"title": "Prof. Prof.", "given": "John", "family": "MA"},
+         {"title": "Prof. Prof.", "family": "John", "suffix": "MA"},
          ambiguities=("suffix-or-name",), classification="fix(#316)",
          notes="transparency for a SECOND title, which peel and chain "
                "reading to a FIXED POINT buys and one re-peel did "
@@ -3928,17 +4296,22 @@ CASES: tuple[Case, ...] = (
                "first 'John' / middle 'Prof. MA' / last 'Prof.' "
                "(measured 2026-09-09), so the row is #316's parity "
                "break either way and the round decided only which "
-               "reading it is"),
+               "reading it is. #289 moves it again: the caps lean "
+               "takes 'MA' as a credential rather than the family "
+               "(decisions.md#S2)"),
     Case("title_word_trailing_keeps_the_bare_acronym_reserve",
          "John Prof. MA",
-         {"title": "Prof.", "given": "John", "family": "MA"},
+         {"title": "Prof.", "family": "John", "suffix": "MA"},
          ambiguities=("suffix-or-name",), classification="fix(#316)",
          notes="the same principle where the peel's answer DEPENDS on "
-               "the spliced list: S2's reserve keeps a bare ambiguous "
-               "acronym the family of a two-word name, so this is "
-               "'John MA' plus a title and reads exactly as 'Prof. "
-               "John MA' does. Laying a second peel's roles over the "
-               "first peel's read family 'John', suffix 'MA'"),
+               "the spliced list: this is 'John MA' plus a title and "
+               "reads exactly as 'Prof. John MA' does. Laying a "
+               "second peel's roles over the first peel's read family "
+               "'John', suffix 'MA'. #289 MOVES this row: 'MA' is "
+               "written in capitals inside a mixed-case name, so the "
+               "caps lean now takes it with no words to spare, where "
+               "S2's reserve alone used to keep it the family "
+               "(decisions.md#S2)"),
     Case("title_word_trailing_between_two_numerals",
          "John Smith V Prof. VI",
          {"title": "Prof.", "given": "John", "middle": "Smith V",

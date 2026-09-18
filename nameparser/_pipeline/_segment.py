@@ -1,9 +1,12 @@
 """Stage: segment.
 
-Consumes: tokens (role-None main stream), comma_offsets.
+Consumes: tokens (role-None main stream), comma_offsets, one_case
+(where an earlier stage recorded it).
 Produces: segments (runs of main-token indices; interior segments may
 be EMPTY -- doubled commas keep their structural position), structure,
-COMMA_STRUCTURE ambiguities for unrecognized extra segments.
+one_case where the comma form asked for it, COMMA_STRUCTURE
+ambiguities for unrecognized extra segments, and SUFFIX_OR_NAME where
+the comma decided a member of the ambiguous credential class.
 Reads: Lexicon suffix vocabulary and Policy, both through
 _vocab.is_wholly_suffix -- the suffix-comma decision is definitionally
 vocabulary-dependent (decisions.md#C1), and the predicate
@@ -18,10 +21,13 @@ from __future__ import annotations
 
 import dataclasses
 
+from nameparser._pipeline._pieces import own_words
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket,
 )
-from nameparser._pipeline._vocab import is_wholly_suffix
+from nameparser._pipeline._vocab import (
+    ambiguous_class_member, is_one_case, is_wholly_suffix, name_word_count,
+)
 from nameparser._types import AmbiguityKind
 
 
@@ -57,34 +63,139 @@ def segment(state: ParseState) -> ParseState:
         return dataclasses.replace(state, segments=segs,
                                    structure=Structure.NO_COMMA)
 
+    # The case fact, asked LAZILY: only a comma form can turn on it
+    # here, and only where the part after the first comma is a single
+    # token -- the shape the ambiguous class comes in. A comma-less
+    # name never reaches this and pays nothing; classify asks for
+    # itself later where this did not (decisions.md#S2, and #429's
+    # precedent for paying a predicate twice rather than plumbing a
+    # field two sites would not otherwise share).
+    one_case = state.one_case
+
+    def case_class() -> bool:
+        nonlocal one_case
+        if one_case is None:
+            one_case = is_one_case(
+                own_words(state.tokens, state.comma_offsets,
+                          state.lexicon.maiden_markers)[0])
+        return one_case
+
+    def texts(seg: tuple[int, ...]) -> list[str]:
+        return [state.tokens[i].text for i in seg]
+
+    # Inlined rather than built on `texts` (measured, #289/#516's
+    # eager-gate fix round): every comma parse calls `suffixy` at
+    # least once, and a `texts(seg)` indirection costs a SECOND frame
+    # on top of the comprehension's own -- on 3.11 a list comprehension
+    # IS a frame (PEP 709 inlines it only from 3.12 on; see
+    # tools/perf/call_count.py's docstring), so wrapping it in another
+    # call doubles the cost every comma name pays, member or not.
+    # `texts` still serves the two call sites that are not on this
+    # path (name_word_count's pre-comma texts, and a flagged tail
+    # segment's joined display).
     def suffixy(seg: tuple[int, ...]) -> bool:
         return is_wholly_suffix([state.tokens[i].text for i in seg],
                                 state.lexicon, state.policy)
+
+    def leaning_suffixy(seg: tuple[int, ...]) -> bool:
+        return is_wholly_suffix([state.tokens[i].text for i in seg],
+                                state.lexicon, state.policy,
+                                one_case=case_class())
 
     # rules.md#C1: "the name reads as trailing suffixes when the part
     # after the first comma is entirely suffix words and more than one
     # word precedes the comma; otherwise it reads as the listing form"
     # (v1 parity: only parts[1] decides, parser.py:1318; history:
     # decisions.md#C1)
+    #
+    # And for the AMBIGUOUS class the count is of NAME words, not of
+    # words: 'Smith Jr., MA' is two tokens and one name, and the token
+    # count hands its family to `given` (#289/#516). The class is
+    # asked only of a single-token part, that being the shape it comes
+    # in, and the answer reaches the listed set as well as the
+    # by-shape halves -- one rule for the class rather than two.
+    #
+    # Membership is tested CASE-FREE first (`ambiguous_class_member`):
+    # the structure decision below is itself case-independent (item
+    # 5's count decides "whatever case the name is written in"), so
+    # the case fact is worth forcing only once a genuine candidate is
+    # found -- not on every comma name whose post-comma part happens
+    # to be one token, which is what calling the case-aware predicate
+    # with `case_class()` as an ARGUMENT did (measured regression: the
+    # `own_words` -> `tag_marker_runs` walk ran for `"Smith, John"`
+    # and `"John Smith, Jr."`, neither able to reach the class at
+    # all). A genuine candidate still forces the fact here, downstream
+    # of the structure decision that does not need it, because
+    # assign's post-comma slot and its report do.
+    candidate = (len(groups[1]) == 1
+                 and ambiguous_class_member(state.tokens[groups[1][0]].text,
+                                            state.lexicon))
+    # Computed only where `candidate` is true, alongside `case_class()`
+    # -- the same lazy gate: a non-candidate comma name never counts
+    # its pre-comma words either. Hoisted to a local because the
+    # report below quotes the exact count rather than a hardcoded
+    # "two" ('John Q. Public, MA' has three).
+    pre_comma_names = None
+    if candidate:
+        case_class()
+        pre_comma_names = name_word_count(texts(groups[0]), state.lexicon,
+                                          state.policy)
+    structure = (
+        Structure.SUFFIX_COMMA
+        if ((suffixy(groups[1]) and len(groups[0]) > 1)
+            or (pre_comma_names is not None and pre_comma_names >= 2))
+        else Structure.FAMILY_COMMA)
+    ambiguities = list(state.ambiguities)
+    if candidate and structure is Structure.SUFFIX_COMMA:
+        # The first comma-path report of a READING in the library --
+        # C2's structural flag, below, already reports on the comma
+        # path, but it reports what the parse could not recognize, not
+        # a fork it called. This is the existing kind: the parse
+        # called a fork at this comma and the caller is told which way
+        # it went. Emitted for the branch taken HERE only -- the flip.
+        # Where the structure did not move, the reading of that token
+        # is still open and `assign` takes it on the family-comma
+        # path, so it reports there, and this DECISION is never
+        # reported twice -- a second ambiguous token elsewhere is a
+        # second fork and reports on its own
+        # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE -- emitted
+        # where the branch is taken, and this branch is taken here).
+        # rules.md#C1's comma-quiet policy gains its exception for
+        # this class and no other.
+        i = groups[1][0]
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{state.tokens[i].text!r} after the comma is also an "
+            f"ordinary name word; the part before the comma holds "
+            f"{pre_comma_names} name words, so it is read as a "
+            f"credential run",
+            (i,)))
     # rules.md#C2: "a non-empty extra part that is not entirely suffix
     # words is flagged as a structural ambiguity rather than rejected"
     # -- parts[2:] are consumed as suffixes unconditionally either
     # way, so a non-suffix tail segment gets the COMMA_STRUCTURE
-    # flag, not a structure veto
-    structure = (Structure.SUFFIX_COMMA
-                 if suffixy(groups[1]) and len(groups[0]) > 1
-                 else Structure.FAMILY_COMMA)
-    ambiguities = list(state.ambiguities)
+    # flag, not a structure veto. The lean reaches this reading too:
+    # a tail of leaning credentials is a credential run, which is the
+    # one place this design quiets a report rather than adding one.
     for seg in groups[2:]:
         # empty segments are consumed silently (v1 skips them without
-        # comment); only non-empty non-suffix tails get flagged
-        if seg and not suffixy(seg):
-            texts = " ".join(state.tokens[i].text for i in seg)
+        # comment); only non-empty non-suffix tails get flagged.
+        # `suffixy(seg)` first: it is case-free and, by construction,
+        # `leaning_suffixy` can only ADD a disjunct to it
+        # (`is_wholly_suffix`'s credential-lean branch), never remove
+        # one -- so a seg that already reads wholly suffix case-free
+        # reads so case-aware too, and the case fact is worth forcing
+        # only when the case-free answer was False (measured
+        # regression: `leaning_suffixy` forced the fact for every tail
+        # segment, suffix or not).
+        if seg and not suffixy(seg) and not leaning_suffixy(seg):
+            texts_joined = " ".join(texts(seg))
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.COMMA_STRUCTURE,
-                f"segment {texts!r} beyond the recognized comma "
+                f"segment {texts_joined!r} beyond the recognized comma "
                 f"structures; consumed as suffix best-effort",
                 tuple(seg)))
     return dataclasses.replace(state, segments=tuple(groups),
                                structure=structure,
-                               ambiguities=tuple(ambiguities))
+                               ambiguities=tuple(ambiguities),
+                               one_case=one_case)

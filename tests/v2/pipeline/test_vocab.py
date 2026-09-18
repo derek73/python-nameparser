@@ -4,9 +4,10 @@ import pytest
 
 from nameparser._lexicon import Lexicon, _normalize, _title_key
 from nameparser._pipeline._vocab import (
-    effective_script, is_initial, is_initial_shaped, is_one_case,
-    is_suffix_lenient, is_suffix_strict, is_wholly_suffix,
-    maiden_marker_run, resolve_script_set, single_script,
+    ambiguous_class_member, ambiguous_lean, effective_script, is_initial,
+    is_initial_shaped, is_one_case, is_suffix_lenient, is_suffix_strict,
+    is_title_shaped, is_wholly_suffix, maiden_marker_run, name_word_count,
+    resolve_script_set, single_script,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
                                 _SCRIPT_RANGES)
@@ -249,6 +250,81 @@ def test_is_wholly_suffix_is_not_the_plural_of_is_post_nominal() -> None:
     # and the knob moves it: under strict, 'V.' is name text
     assert not is_wholly_suffix(
         ["V."], lex, Policy(lenient_comma_suffixes=False))
+
+
+def test_is_wholly_suffix_reads_the_credential_lean() -> None:
+    # The third reading site (#289): segment's structure decision and
+    # its tail segments ask this, and 'Steven Hardman, MD, DO, DDS'
+    # loses its comma-structure flag because 'DO' leans credential
+    # here. A caller with nothing to say passes nothing and gets the
+    # answer every release before this one gave.
+    lex, pol = Lexicon.default(), Policy()
+    assert not is_wholly_suffix(["DO"], lex, pol)
+    assert is_wholly_suffix(["DO"], lex, pol, one_case=False)
+    assert not is_wholly_suffix(["Do"], lex, pol, one_case=False)
+    assert not is_wholly_suffix(["DO"], lex, pol, one_case=True)
+    assert not is_wholly_suffix(["DO", "Smith"], lex, pol, one_case=False)
+
+
+def test_ambiguous_class_member_is_the_comma_form_s_candidate() -> None:
+    # The comma structure asks a different question from the lean: is
+    # this token a member of the ambiguous class AT ALL, in any case?
+    # -- because the count of NAME words before the comma is what
+    # decides there, and it decides for the listed set too
+    # ('JOHN SMITH, MA', 1.4.0 parity restored). Case-free: this
+    # predicate takes no `one_case` at all, unlike the lean.
+    lex = Lexicon.default()
+    assert ambiguous_class_member("MA", lex)
+    assert ambiguous_class_member("Ma", lex)
+    assert ambiguous_class_member("ed", lex)
+    assert not ambiguous_class_member("PhD", lex)
+    assert not ambiguous_class_member("Smith", lex)
+    # whole-token vocabulary wins over any shape reading
+    assert not ambiguous_class_member("M.A.", lex)
+    # a period ANYWHERE excludes membership here, deliberately
+    # stricter than S2's own dotted-form test: the trailing-period
+    # spelling still leans (ambiguous_lean('MA.', ...) reads as 'MA'
+    # does) but reaches the comma slot through the TAG path, not this
+    # predicate, which only the comma-form's own candidate check and
+    # the credential-lean disjunct in is_wholly_suffix consult.
+    assert not ambiguous_class_member("MA.", lex)
+    assert not ambiguous_class_member("Ed.", lex)
+
+
+def test_is_title_shaped_is_h2_s_shape_alone() -> None:
+    # Shared with _pieces.is_leading_title's own inline copy
+    # (#289/#516, quality-review finding): both must answer alike for
+    # name_word_count's comma-form count not to disagree with the
+    # leading peel about what a title is.
+    assert is_title_shaped("Xyz.")       # unlisted, H2-shaped
+    # LISTED or not is a vocabulary question this predicate never
+    # asks -- 'Dr.' wears the same shape 'Xyz.' does, and answers the
+    # same way; the caller's own listed lookup is what tells them
+    # apart (is_title_piece/lexicon.titles, at each call site)
+    assert is_title_shaped("Dr.")
+    assert not is_title_shaped("Xyz")    # no trailing period
+    assert not is_title_shaped("X.")     # one letter: an initial,
+                                        # not an abbreviation
+    assert not is_title_shaped("田中.")   # initialless script (#323)
+
+
+def test_name_word_count_counts_names_not_tokens() -> None:
+    # rules.md#C1's count for the ambiguous class: 'Smith Jr.' is two
+    # tokens and ONE name word, which is what keeps its family where a
+    # token count would hand it to `given`.
+    lex, pol = Lexicon.default(), Policy()
+    assert name_word_count(["John", "Smith"], lex, pol) == 2
+    assert name_word_count(["Smith", "Jr."], lex, pol) == 1
+    assert name_word_count(["Dr.", "Smith"], lex, pol) == 1
+    assert name_word_count(["Davis", "Royce"], lex, pol) == 2
+    assert name_word_count(["Royce"], lex, pol) == 1
+    # #289/#516, quality-review finding: the title half asks H2's
+    # shape test too, not just the listed lookup -- an UNLISTED
+    # period-marked opener now counts the way a LISTED one does
+    # ('Xyz.' beside 'Dr.', both 1), where before this it counted as
+    # a plain name word and could flip a comma structure a listed
+    # title of the same shape would not.
+    assert name_word_count(["Xyz.", "Smith"], lex, pol) == 1
 
 
 # Stored form: space-joined, per-word normalized -- what _normset
@@ -529,3 +605,24 @@ def test_is_one_case() -> None:
     # token that is caseless does not break a Latin name's verdict
     assert is_one_case(["john", "e", "山田"])
     assert not is_one_case(["John", "e", "山田"])
+
+
+def test_ambiguous_lean_reads_the_written_case() -> None:
+    # #289: in a name written in more than one case, an all-caps
+    # member of the ambiguous set leans CREDENTIAL and a member in any
+    # other cased form that is not wholly lower leans SURNAME. A
+    # lowercase member carries no lean, and neither does anything at
+    # all in a one-case name -- both fall through to today's count.
+    assert ambiguous_lean("MA", one_case=False) == "credential"
+    assert ambiguous_lean("Ma", one_case=False) == "name"
+    assert ambiguous_lean("ma", one_case=False) is None
+    assert ambiguous_lean("MA", one_case=True) is None
+    assert ambiguous_lean("Ma", one_case=True) is None
+    # a trailing period is not the signal and does not disturb one:
+    # 'MA.' is still written in capitals ('.' has no case)
+    assert ambiguous_lean("MA.", one_case=False) == "credential"
+    assert ambiguous_lean("Ma.", one_case=False) == "name"
+    # a caseless token can be written against nothing, so it leans
+    # neither way even where the name around it is mixed
+    assert ambiguous_lean("씨", one_case=False) is None
+    assert ambiguous_lean("毛", one_case=False) is None

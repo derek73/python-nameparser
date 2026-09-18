@@ -54,12 +54,12 @@ def test_stage_field_ownership() -> None:
         # a character offset that tokenize resolves to a token index
         "tokenize": {"tokens", "comma_offsets", "interpunct_offsets",
                      "ambiguities"},
-        # segment does not record `one_case` yet -- only classify does,
-        # in this commit. A later commit makes segment a writer too,
-        # lazily, only where a comma form could turn on it (#289/#516);
-        # this entry and _state.py's docstring map gain `one_case` in
-        # that commit, not before it is a real write.
-        "segment": {"segments", "structure", "ambiguities"},
+        # segment records `one_case` too, lazily, only where a comma
+        # form could turn it on -- a single-token part after the first
+        # comma, the shape the ambiguous class comes in (#289/#516).
+        # A comma-less name, or one whose post-comma part is not a
+        # single token, never asks and pays nothing.
+        "segment": {"segments", "structure", "ambiguities", "one_case"},
         # script_segment splits one unspaced CJK token into n+1 pieces
         # (n = 1 from the vocabulary, any n from a segmenter), so it
         # rewrites tokens and shifts every later index the earlier

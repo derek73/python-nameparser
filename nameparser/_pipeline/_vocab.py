@@ -102,12 +102,69 @@ _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 # contains-any, not whole=True: the shape half has already admitted the
 # trailing period, so the text reaching here is '씨.' rather than '씨'
 # and a wholly-of match would be False for every case this exists for.
-# The second caller, _pieces.is_leading_title, admits two or more
+# The second caller, is_title_shaped below, admits two or more
 # characters, so contains-any there means one CJK character anywhere
 # vetoes the whole word -- 'Kim김.' is refused as a title along with
 # '田中.' -- and that is deliberate: a word carrying a script with no
 # abbreviations is not wearing an abbreviation's period.
 in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
+
+
+# H2's own shape, text-level: an unlisted period-marked abbreviation,
+# two or more letters, one trailing period. Moved here from _pieces
+# (#289/#516, quality-review finding) so _vocab.name_word_count can
+# ask the SAME question _pieces.is_leading_title asks -- measured
+# divergence before the move: 'Dr. Smith, Ed' (LISTED title 'Dr.') and
+# 'Xyz. Smith, Ed' (UNLISTED, H2-shaped) both read family 'Dr.
+# Smith'/'Xyz. Smith', given 'Ed' at the peel, because is_leading_title
+# reads H2's shape and a bare `folded in lexicon.titles` lookup does
+# not -- but name_word_count's OWN count disagreed: 'Xyz.' counted as
+# a name word where 'Dr.' did not, so 'Xyz. Smith, Ed' alone flipped
+# the comma structure to a credential run
+# (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+#
+# Ported verbatim from v1 (nameparser/config/regexes.py
+# "period_abbreviation") -- layering forbids the config import; keep
+# in sync by hand (tests/v2/test_regex_sync.py, which reaches this
+# object through `_pieces._PERIOD_ABBREV`, an IMPORT of this one, not
+# a second definition -- the sync test's target name did not move).
+_PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
+
+
+# rules.md#H2: "an abbreviation opening the part of the name that
+# carries the given name — the whole name, or the part after a
+# family comma — reads as a title even when unlisted"
+# (history: decisions.md#H2)
+def is_title_shaped(text: str) -> bool:
+    """Whether TEXT wears H2's shape alone -- vocabulary-free, the
+    LISTED half being a separate lookup at each caller's own site
+    (is_title_piece/lexicon.titles). Asks the SAME question the
+    leading peel's own inline copy asks (`_pieces.is_leading_title`)
+    -- the comma-form name-word count (`name_word_count`, below) is
+    this function's only CALLER; `is_leading_title` keeps its own
+    copy of this body inline rather than calling this, measured:
+    routing its hot path (every leading piece of every parse) through
+    a shared call cost one frame there, where `name_word_count`'s cold
+    path (comma names only) does not notice one. Touch one, touch
+    both -- the case rows that exercise this predicate use the same
+    texts `is_leading_title`'s own tests do, which is what keeps two
+    spellings from silently drifting into two answers
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+
+    The shape reads a Latin convention: a period marks an
+    abbreviation. Scripts with no initials have no period
+    abbreviations either (_policy._NO_INITIALS, the #320 veto
+    is_initial carries), so a CJK word wearing a period is a name
+    word, not a title -- a lone '田中.' is the family name (#323).
+    `_PERIOD_ABBREV` stays ASCII-period only: a word wearing '。' never
+    matches it, and the veto is what makes the ASCII spelling agree.
+    ASCII text can carry no _NO_INITIALS character (every range sits
+    above U+3000), so the C-level test declines before the regex
+    search runs -- four frames per unlisted-abbreviation opener per
+    parse, this running four times per piece.
+    """
+    return (bool(_PERIOD_ABBREV.match(text))
+            and (text.isascii() or not in_initialless_script(text)))
 
 
 def is_initial_shaped(text: str) -> bool:
@@ -191,6 +248,45 @@ def is_one_case(texts: Sequence[str]) -> bool:
     """
     joined = " ".join(texts)
     return joined in (joined.upper(), joined.lower())
+
+
+# #289's credential lean: rules.md#S2 records the words-to-spare count
+# today; this predicate is the WRITING evidence that decides ahead of
+# it, in a mixed-case name only (history: decisions.md#S2).
+def ambiguous_lean(text: str, one_case: bool) -> str | None:
+    """Which way the WRITING leans for a member of the ambiguous
+    credential set: "credential", "name", or None for no lean at all.
+
+    None is the fall-through to rules.md#S2's count, and it is the
+    answer for three inputs. A name written wholly in one case says
+    nothing about any word in it. A member written wholly in lower
+    case says nothing either -- lower is how most of a mixed-case
+    name is written, so it is not a contrast. And a CASELESS token
+    ('씨', '毛') can be written against nothing, so neither test
+    fires and the count decides, which is what keeps this rule out of
+    a caseless script by construction.
+
+    `one_case` is the recorded fact (ParseState.one_case), taken over
+    the name's OWN words -- handed in rather than recomputed, because
+    three sites read this and a fact two of them derived apart is the
+    bug the field exists to prevent
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+
+    The caller decides MEMBERSHIP: this answers only about the
+    writing. Periods do not disturb either test, '.' having no case,
+    so 'MA.' leans as 'MA' does -- the lean reads CASE, not periods,
+    and the dotted spelling is the vocabulary's own question
+    (suffix_as_written).
+    """
+    if one_case:
+        return None
+    if text.upper() == text.lower():     # caseless: no contrast to read
+        return None
+    if text.isupper():
+        return "credential"
+    if text.islower():
+        return None
+    return "name"
 
 
 _DOTTED = re.compile(r"(?:[^\W\d_]\.)+")
@@ -298,8 +394,103 @@ def period_joined_vocab(text: str, lexicon: Lexicon) -> str | None:
     return None
 
 
+def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
+    """Whether TEXT is a member of the LISTED ambiguous credential
+    class, ignoring case and policy entirely (#289/#516).
+
+    The case-INDEPENDENT half of the comma form's own candidate test
+    (`_segment.py`'s structure decision, and `is_wholly_suffix`'s
+    credential-lean disjunct below): membership by vocabulary never
+    needs the case fact, only a by-shape class a switch admits will
+    (commit C's Task 17, which introduces the case/policy-aware
+    predicate then -- this function is not that predicate wearing
+    unused parameters). A caller that wants to know whether the case
+    fact is even worth computing -- the comma form's own lazy gate --
+    asks this first and pays for `one_case` only where this says yes,
+    rather than forcing it before membership is known (measured
+    regression, #289/#516: `own_words` -> `tag_marker_runs` ran for
+    `"Smith, John"`, `"John Smith, Jr."` and every other
+    single-token-after-the-comma name, none of them able to reach the
+    class at all).
+
+    Membership is the listed set, bare: a whole-token vocabulary match
+    is not in this class at all, being settled ('M.A.', 'Ph.D.',
+    'A.B.C.').
+
+    Cheaper than `suffix_as_written(n, text, lexicon) or ...` would be
+    here, and provably the same answer for UNDOTTED text: the Lexicon
+    invariant that an ambiguous acronym is never also a suffix WORD
+    (`__post_init__`'s gate_bypassed check) and is never counted
+    without periods once it IS one (`suffix_as_written`'s own
+    exclusion) together make that predicate's two disjuncts dead once
+    text is known to hold no period. One frame (`_normalize`) on the
+    common path that never reaches the class, where the general
+    predicate cost at least two; measured, this is what keeps a
+    non-candidate comma name ('"Smith, John"') from paying for a walk
+    it can never use (mechanisms.md#ONE-PREDICATE-PER-QUESTION's cost
+    clause).
+
+    The '.' gate here is DELIBERATELY STRICTER than S2's own dotted-form
+    test (`_dotted`, a period after EACH letter): '.' anywhere excludes
+    membership, so 'MA.' and 'Ed.' -- a single TRAILING period, which
+    `_dotted` and `ambiguous_lean` both treat as no signal at all --
+    are excluded here too, even though the LEAN still reads them as
+    the bare acronym's case ('Smith, MA.' -> suffix 'MA.', measured).
+    That is not a contradiction: this predicate answers only the
+    comma-form CANDIDATE question segment's structure decision and the
+    credential-lean disjunct below ask, and neither of those shapes
+    ever reaches it, because the TAG path (`vocab:suffix-ambiguous`,
+    read directly by the trailing peel and the post-comma slot) and
+    H2's leading-title shape test already carry them where they need
+    to go.
+    """
+    if "." in text:
+        return False
+    return _normalize(text) in lexicon.suffix_acronyms_ambiguous
+
+
+def name_word_count(texts: Sequence[str], lexicon: Lexicon,
+                    policy: Policy) -> int:
+    """How many of these texts are NAME words -- not suffix
+    vocabulary, not title vocabulary.
+
+    rules.md#C1's count for the ambiguous class, and it is of names
+    rather than of words because 'Smith Jr., MA' is two tokens and one
+    name: counting tokens there flips the structure and hands the
+    family to `given`, which no reading of that string wants
+    (decisions.md#S2). The suffix half asks the POLICY-selected
+    predicate, the same one is_wholly_suffix asks, so the two agree
+    about what a suffix word is; the title half asks BOTH the listed
+    lookup and H2's shape test (`is_title_shaped`).
+
+    `is_title_shaped` asks the SAME question `_pieces.is_leading_title`
+    asks, and both must answer it alike (quality-review finding,
+    #289/#516, measured: before this, 'Dr. Smith, Ed' -- LISTED title
+    -- did not flip the comma structure, but 'Xyz. Smith, Ed' --
+    UNLISTED, H2-shaped -- did, because this count took 'Xyz.' for a
+    name word where the leading peel would have taken it for a title).
+    `is_leading_title` does not call this function, though -- measured,
+    routing its hot path (every leading piece of every parse) through
+    a shared call cost one frame there, where this cold path (comma
+    names only) does not notice one. Two spellings of ONE test
+    instead, kept from drifting by the case rows that exercise both
+    with the same texts, not by a shared function object
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION's cost clause).
+    """
+    predicate = (is_suffix_lenient if policy.lenient_comma_suffixes
+                 else is_suffix_strict)
+    n = 0
+    for text in texts:
+        folded = _normalize(text)
+        if (predicate(text, lexicon) or folded in lexicon.titles
+                or is_title_shaped(text)):
+            continue
+        n += 1
+    return n
+
+
 def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
-                     policy: Policy) -> bool:
+                     policy: Policy, one_case: bool | None = None) -> bool:
     """Every token in a RUN counts as a suffix -- segment's
     suffix-comma test, lifted out of it so the peel can ask the same
     question (#319).
@@ -321,6 +512,14 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     An adjacent Ph./D. pair counts as ONE unit (v1's fix_phd extracted
     the credential pre-parse, so 'Smith, Ph. D.' read as suffix-comma);
     keep in sync with group's _PH/_D merge.
+
+    `one_case` is ParseState.one_case, and it admits the LEAN: a bare
+    ambiguous acronym written in capitals inside a mixed-case name is
+    a credential here, so 'Steven Hardman, MD, DO, DDS' reads its
+    third segment as the credential run it is (#289). None -- the
+    default, and what every caller with no state to ask has -- reads
+    as no lean and is this predicate's behavior in every release
+    before 2.4.
     """
     if not texts:
         return False
@@ -333,6 +532,10 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
 
     def counts_as_suffix(text: str) -> bool:
         if text in cores:
+            return True
+        if (one_case is not None
+                and ambiguous_class_member(text, lexicon)
+                and ambiguous_lean(text, one_case) == "credential"):
             return True
         return (predicate(text, lexicon)
                 or period_joined_vocab(text, lexicon) == "suffix"

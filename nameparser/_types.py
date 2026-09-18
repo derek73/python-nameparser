@@ -374,7 +374,9 @@ class AmbiguityKind(StrEnum):
     read two ways: the same token elsewhere in a name may present no
     choice at all and is then reported by nothing. Reporting is also
     partial -- a kind listed here is not necessarily emitted everywhere
-    its fork occurs (the comma paths stay quiet by design), and coverage
+    its fork occurs (the comma paths stay quiet by design, except at
+    the ambiguous credential class, where since 2.4 the reading taken
+    at the comma is reported either way -- #289), and coverage
     grows over releases. A non-empty tuple is a signal to act on; an
     empty one is not a guarantee of certainty."""
 

@@ -5,6 +5,8 @@ its predicates were reached only end to end through the case table.
 These pin the two contracts that shape cannot reach: a defensive branch
 no parse can produce, and the stability its readers rest on.
 """
+from collections.abc import Sequence, Set
+
 import pytest
 
 from nameparser._lexicon import Lexicon, _normalize
@@ -18,7 +20,7 @@ from nameparser._pipeline._pieces import (
     trailing_titles,
 )
 from nameparser._pipeline._segment import segment
-from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._state import ParseState, WorkToken
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import is_one_case, tag_marker_runs
 from nameparser._policy import Policy
@@ -249,6 +251,72 @@ def test_the_trailing_run_refuses_a_joined_piece() -> None:
     """
     assert _trailing("John de la Prof.") == 2
     assert _trailing("John Smith Prof. and Dr.") == 3
+
+
+def _peel_inputs(text: str) -> tuple[list[int], Sequence[Sequence[int]],
+                                     Sequence[Set[str]],
+                                     Sequence[WorkToken]]:
+    """The trailing peel's own inputs for segment 0, run through
+    `group` (#289/#516's `one_case` reaches the peel only after group
+    has assigned tags, so the shorter `_through_group` fixture -- not
+    a bare tokenize+segment -- is what these tests need).
+
+    The walk starts AFTER the leading title run, exactly as
+    `_assign_main` and `_trailing` above start it: `peel_walk(0, ...)`
+    would leave a leading title piece sitting in `rest` as an ordinary
+    name piece the walk never filters out (peel_walk only drops
+    group-flagged suffix pieces), and 'Mr MA' needs the title excluded
+    to reach the one-piece floor its own test pins.
+    """
+    state = _through_group(text)
+    pieces, ptags = state.pieces[0], state.piece_tags[0]
+    tokens = state.tokens
+    start = leading_titles(pieces, ptags, tokens)
+    return peel_walk(start, ptags), pieces, ptags, tokens
+
+
+def test_peel_trailing_takes_the_three_lean_outcomes() -> None:
+    # #289 at the trailing slot, the three outcomes against the peel's
+    # three: a CREDENTIAL lean consumes with no words to spare, a NAME
+    # lean declines WITH words to spare, and no lean at all leaves
+    # rules.md#S2's count deciding exactly as it did.
+    # Every case still REPORTS: the pick is appended either way, which
+    # is what the fork's report is built from.
+    for text, one_case, names, picked in (
+            ("Jack MA", False, 1, True),      # credential lean, k == 2
+            ("Jack Ma", False, 2, True),      # name lean, k == 2
+            ("Jack MA", True, 2, True),       # one case: today's count
+            ("John Smith Ma", False, 3, True),   # name lean, k == 3
+            ("John Smith MA", False, 2, True),   # credential lean
+            ("JOHN SMITH MA", True, 2, True),    # one case: the count
+    ):
+        rest, pieces, ptags, tokens = _peel_inputs(text)
+        peeled = peel_trailing(rest, pieces, ptags, tokens,
+                               one_case=one_case)
+        assert peeled.names == names, (text, one_case)
+        assert bool(peeled.picks) is picked, (text, one_case)
+
+
+def test_peel_trailing_keeps_its_two_piece_floor_under_a_lean() -> None:
+    # The floor is not what the lean moves. One piece behind a title
+    # never reaches the peel at all -- measured 2026-09-15, 'Mr MA'
+    # reads title 'Mr', family 'MA' and reports nothing -- and a lean
+    # that reached below `k >= 2` would read it as a title with a
+    # credential and no name at all.
+    rest, pieces, ptags, tokens = _peel_inputs("Mr MA")
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case=False)
+    assert peeled.names == len(rest)
+    assert peeled.picks == ()
+
+
+def test_peel_trailing_stops_at_a_declined_ambiguous_pick() -> None:
+    # The accepted cost (decisions.md#S2): the surname lean breaks the
+    # walk AT 'Ma', so the unambiguous 'Jr' in front of it is never
+    # reached and becomes a name word. The walk stops at the declined
+    # pick rather than continuing past it.
+    rest, pieces, ptags, tokens = _peel_inputs("abdul Smith Jr Ma")
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case=False)
+    assert peeled.names == len(rest)
 
 
 @pytest.mark.parametrize("text, expected", [

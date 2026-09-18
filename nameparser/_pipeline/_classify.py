@@ -2,10 +2,9 @@
 
 Consumes: tokens, comma_offsets (with token roles, the two halves of
 the structural-boundary test the marker pass applies -- see
-_vocab.tag_marker_runs), and one_case where an earlier stage has
-already recorded it (today always None -- segment does not yet write
-it -- but the read happens regardless, so a future writer needs no
-change here).
+_vocab.tag_marker_runs), and one_case where an earlier stage recorded
+it -- segment writes it lazily where a comma form can turn it on
+(#289/#516), so this read is the fallback for every other name.
 Produces: tokens with vocabulary tags added (text/span/role unchanged),
 plus ambiguities (SUFFIX_OR_NICKNAME, CONJUNCTION_OR_INITIAL) and
 one_case -- whether the name's own words are written in one case,

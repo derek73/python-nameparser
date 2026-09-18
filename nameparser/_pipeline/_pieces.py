@@ -50,13 +50,13 @@ helper.
 """
 from __future__ import annotations
 
-import re
 from collections.abc import Mapping, Sequence, Set
 from typing import NamedTuple
 
-from nameparser._pipeline._state import WorkToken
+from nameparser._pipeline._state import SHAPE_ACRONYM_TAG, WorkToken
 from nameparser._pipeline._vocab import (
-    in_initialless_script, is_trailing_numeral_suffix, tag_marker_runs,
+    _PERIOD_ABBREV, ambiguous_lean, in_initialless_script,
+    is_trailing_numeral_suffix, tag_marker_runs,
 )
 
 
@@ -134,13 +134,16 @@ def is_title_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "vocab:title" in tokens[piece[0]].tags
 
 
-# Ported verbatim from v1 (nameparser/config/regexes.py
-# "period_abbreviation") -- layering forbids the config import; keep
-# in sync by hand (tests/v2/test_regex_sync.py). Out of assign since
-# #424 and in the piece layer since #439: the test is assign's, and group's
-# leading-particle scan and trailing-run walk must start where assign
-# starts.
-_PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
+# _PERIOD_ABBREV: imported from _vocab, not redefined here (#289/#516,
+# quality-review finding) -- _vocab.name_word_count needed the SAME
+# shape test is_leading_title asks (_vocab.is_title_shaped), and
+# layering only allows the move in that direction (_pieces may import
+# _vocab; _vocab may not import _pieces). tests/v2/test_regex_sync.py
+# still reaches it as `_pieces._PERIOD_ABBREV` -- an import binds the
+# same name here, so the sync test's target did not move. Out of
+# assign since #424 and in the piece layer since #439: the test is
+# assign's, and group's leading-particle scan and trailing-run walk
+# must start where assign starts.
 
 
 # rules.md#H2: "an abbreviation opening the part of the name that
@@ -154,17 +157,18 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
     if len(piece) != 1:
         return False
     text = tokens[piece[0]].text
-    # The shape reads a Latin convention: a period marks an
-    # abbreviation. Scripts with no initials have no period
-    # abbreviations either (_policy._NO_INITIALS, the #320 veto
-    # is_initial carries), so a CJK word wearing a period is a name
-    # word, not a title -- a lone '田中.' is the family name (#323).
-    # _PERIOD_ABBREV stays ASCII-period only: a word wearing '。' never
-    # matched it, and the veto is what makes the ASCII spelling agree.
-    # ASCII text can carry no _NO_INITIALS character (every range sits
-    # above U+3000), so the C-level test declines before the regex
-    # search runs -- four frames per unlisted-abbreviation opener per
-    # parse, is_leading_title running four times per piece.
+    # INLINED rather than calling _vocab.is_title_shaped, which asks
+    # the exact same question (#289/#516, quality-review finding: the
+    # two must not drift, and did once -- name_word_count's own
+    # vocabulary-only title test read 'Xyz.' as a name word where this
+    # predicate reads it as a title, and the disagreement flipped a
+    # comma structure `Dr. Smith, Ed`'s LISTED spelling did not).
+    # Measured: routing this hot path through the shared function costs
+    # one frame per call (`is_leading_title` runs on every leading
+    # piece of every parse, unlike name_word_count's comma-only path),
+    # moving the reference name from 412/449 to 417/454. Kept as two
+    # spellings of ONE test instead -- if you touch one, touch both,
+    # and the case rows that exercise both share the same texts.
     return (bool(_PERIOD_ABBREV.match(text))
             and (text.isascii() or not in_initialless_script(text)))
 
@@ -275,10 +279,19 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            ptags: Sequence[Set[str]],
                            tokens: Sequence[WorkToken],
                            lenient: bool,
+                           one_case: bool | None = None,
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
     credential run at all.
+
+    `one_case` admits #289's credential lean: an ALL-CAPS member of
+    the ambiguous set inside a mixed-case name is a credential in this
+    slot even with one word before the comma, because the writing is
+    evidence the count does not have ('Smith, MA' -> family 'Smith',
+    suffix 'MA'). Only the LEAN reaches here: a token admitted to the
+    class by SHAPE takes the count instead, which is decided at the
+    comma and not in this walk ('Smith, A.B.' -> given 'A.B.').
 
     ONE answer for two readers, both in _assign.py -- the no-name gate
     and the router -- because they must agree piece for piece. #429
@@ -327,6 +340,11 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         # have diverged silently
         after_suffix = bool(out) and out[-1]
         if is_suffix_piece(piece, tags, tokens):
+            out.append(True)
+        elif (len(piece) == 1
+                and "vocab:suffix-ambiguous" in tokens[piece[0]].tags
+                and leans_credential(tokens[piece[0]], one_case)
+                == "credential"):
             out.append(True)
         elif (lenient and after_suffix
                 and _numeral_behind_the_initial_veto(piece, tokens)):
@@ -378,7 +396,8 @@ def peel_walk(start: int, ptags: Sequence[Set[str]],
 def trailing_start(start: int, pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]], tokens: Sequence[WorkToken],
                     skip: Set[int] = frozenset(),
-                    numeral_only: bool = False) -> int:
+                    numeral_only: bool = False,
+                    one_case: bool | None = None) -> int:
     """Where assign's trailing suffix run begins, read over the pieces
     as they stand from `start`: the index of the first piece the S2
     peel takes, or len(pieces) when it takes none (#424). What P2's
@@ -397,21 +416,51 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     with the piece the take leaves there; the acronym is left to
     assign."""
     rest = peel_walk(start, ptags, skip)
-    peeled = peel_trailing(rest, pieces, ptags, tokens)
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
     if numeral_only:
         return rest[-1] if peeled.numeral is not None else len(pieces)
     return rest[peeled.names] if peeled.names < len(rest) else len(pieces)
 
 
+# #289/#516: the "listed member, not by-shape" test both
+# peel_trailing and segment_suffix_reading ask before reading the
+# lean -- shared here so the two cannot drift on what counts
+# (quality-review finding: it was spelled twice, once per site,
+# before this). Both callers test "vocab:suffix-ambiguous" in tags
+# INLINE, before calling this, rather than leaving that cheap check to
+# this function's own body: measured, a caller whose `elif` reaches
+# this on every piece (segment_suffix_reading's does, one per
+# family-comma segment 1, member or not) pays one frame for the call
+# regardless of what is inside it, and the inline pre-check is what
+# keeps a non-member piece ("Smith, John"'s "John") from ever making
+# the call at all.
+def leans_credential(token: WorkToken, one_case: bool | None) -> str | None:
+    """`ambiguous_lean` for a LISTED bare-ambiguous token, or None if
+    the token is not tagged a listed member, is admitted by SHAPE
+    instead (`SHAPE_ACRONYM_TAG`, a switch's doing, not the writing's),
+    or there is no case fact to ask at all."""
+    if (one_case is None or "vocab:suffix-ambiguous" not in token.tags
+            or SHAPE_ACRONYM_TAG in token.tags):
+        return None
+    return ambiguous_lean(token.text, one_case)
+
+
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
-                   tokens: Sequence[WorkToken]) -> Peel:
+                   tokens: Sequence[WorkToken],
+                   one_case: bool | None = None) -> Peel:
     """The S2 trailing peel over `rest`, a peel_walk list. In the
     piece layer rather than in assign because group's bound-given
     reserve asks the same question of the view the join would leave
     (#425): one walk, so the reserve and the assignment cannot drift. Pure -- the ambiguities are
     returned for assign to report, in the order it always reported
-    them."""
+    them.
+
+    `one_case` is ParseState.one_case, the recorded fact: None means
+    nobody asked, which is every caller that has no state to ask with,
+    and reads as "no lean" -- rules.md#S2's count alone, the behavior
+    of every release before this one.
+    """
     picks: list[tuple[int, ...]] = []
     numeral: tuple[int, ...] | None = None
     k = len(rest)
@@ -441,11 +490,27 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # the vocabulary is not in doubt.
         bare_ambiguous = (len(piece) == 1
                           and "vocab:suffix-ambiguous" in tokens[piece[0]].tags)
+        # #289: written case is evidence the count does not have, and
+        # it overrides the count in BOTH directions -- an all-caps
+        # member of a mixed-case name is taken with nothing to spare
+        # ("Jack MA"), a Title-case one is declined with plenty
+        # ("John Smith Ma"). The lean is the LISTED set's alone: a
+        # token admitted to this class by SHAPE carries no writing
+        # convention to read, so it takes the count (decisions.md#S2).
+        #
         # k < 2 means it is the only piece left, which is not the fork
-        # this reports.
+        # this reports -- and not a floor the lean moves: the walk
+        # starts after the leading title run, so one piece behind a
+        # title ("Mr MA") is exactly this case and must stay a name.
+        # The lean is computed only past this floor -- membership,
+        # then the floor, then the count-or-lean, in that order, with
+        # nothing computed a step earlier could discard.
         if bare_ambiguous and k >= 2:
             picks.append(tuple(piece))
-            if k >= 3:            # peeling still leaves given + family
+            lean = leans_credential(tokens[piece[0]], one_case)
+            # peeling still leaves given + family, or the writing says
+            # to peel anyway
+            if lean == "credential" or (lean is None and k >= 3):
                 k -= 1
                 continue
         break
@@ -520,6 +585,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   ptags: Sequence[Set[str]],
                   tokens: Sequence[WorkToken],
+                  one_case: bool | None = None,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what
@@ -560,7 +626,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     """
     titled: list[int] = []
     while True:
-        peeled = peel_trailing(rest, pieces, ptags, tokens)
+        peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
         kept = trailing_titles(rest[:peeled.names], pieces, ptags,
                                tokens)
         if kept == peeled.names:

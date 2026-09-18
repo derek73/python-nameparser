@@ -1,6 +1,7 @@
 """Stage: assign.
 
-Consumes: pieces + piece_tags (grouped), segments, structure, tokens.
+Consumes: pieces + piece_tags (grouped), segments, structure, tokens,
+one_case.
 Produces: tokens with roles set on every main-stream token.
 Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
@@ -69,7 +70,8 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken, _NEVER_FLIPPED,
+    SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure, WorkToken,
+    _NEVER_FLIPPED,
 )
 from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
@@ -294,7 +296,8 @@ def _assign_main(seg_idx: int, state: ParseState,
     # wording reads the role back, and which role "not peeled" means
     # depends on name_order. (The roman-numeral fork needs no such
     # deferral and is reported here.)
-    rest, titled_tail, peeled = tail_reading(rest, pieces, ptags, tokens)
+    rest, titled_tail, peeled = tail_reading(rest, pieces, ptags, tokens,
+                                             state.one_case)
     for piece_idx in titled_tail:
         _set_roles(tokens, pieces[piece_idx], Role.TITLE)
     if peeled.numeral is not None:
@@ -532,7 +535,40 @@ def assign(state: ParseState) -> ParseState:
         # its family (the code review).
         reading = segment_suffix_reading(
             state.pieces[1], state.piece_tags[1], tokens,
-            state.policy.lenient_comma_suffixes)
+            state.policy.lenient_comma_suffixes, state.one_case)
+        # rules.md#C1's exception, scoped to the ambiguous credential
+        # class: the comma paths stay quiet by design EXCEPT here,
+        # where the parse called a fork the writing left open. Emitted
+        # on the family-comma path only -- the structure decision
+        # reports itself in `segment`, where that branch is taken, so
+        # this DECISION is never reported twice; a second ambiguous
+        # token elsewhere in the name is a second fork and reports on
+        # its own (#289, mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE).
+        #
+        # The report tracks the FORK BEING CONSULTED, not the lean --
+        # exactly as the trailing slot has always done (`Jack MA`
+        # reported before #289 too, even where the pick was declined
+        # for want of words to spare). So membership alone gates it:
+        # a caseless script or an all-lower spelling still called this
+        # fork and read it positionally, and the class reaches a
+        # by-shape member (`SHAPE_ACRONYM_TAG`) the same as a listed
+        # one once a switch admits it (commit C). Read off the FIRST
+        # post-comma piece only -- `segment_suffix_reading` decides
+        # piece by piece, and this is the one piece the lean can
+        # reach at one word before the comma (`"Smith, MA PhD"`'s two
+        # pieces both report through this same first-piece read).
+        if state.pieces[1] and len(state.pieces[1][0]) == 1:
+            i = state.pieces[1][0][0]
+            piece_tags = tokens[i].tags
+            if ("vocab:suffix-ambiguous" in piece_tags
+                    or SHAPE_ACRONYM_TAG in piece_tags):
+                chose = ("a credential" if reading and reading[0]
+                         else "the given name")
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.SUFFIX_OR_NAME,
+                    f"{tokens[i].text!r} after the comma is also an "
+                    f"ordinary name word; read as {chose}",
+                    (i,)))
         # Segment 1 is read FIRST, ahead of either branch below. It
         # consumes `reading`, piece tags and text only -- nothing
         # segment 0's read writes -- and running it first is what puts

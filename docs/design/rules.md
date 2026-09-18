@@ -133,7 +133,7 @@ H2. Rationale: before a name, an abbreviation is almost always a
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions.md#H2 · interacts: C1, P4, H5, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
+    history: decisions.md#H2 · interacts: C1, P4, H5, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is

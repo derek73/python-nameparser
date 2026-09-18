@@ -64,6 +64,17 @@ class WorkToken:
 #: cannot reach the other way).
 _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 
+#: The by-shape half of #289/#516's ambiguous credential class: a
+#: token classify admits to `vocab:suffix-ambiguous`'s READING by
+#: SHAPE rather than by the listed vocabulary (commit C's switch,
+#: `Policy.unlisted_dotted_suffixes`, is the first emitter). One
+#: constant, not a string literal at each site, because the three
+#: readers that must tell a by-shape member apart from a listed one
+#: (`_pieces.peel_trailing`, `_pieces.segment_suffix_reading`,
+#: `_assign`'s comma-path report) cannot afford to spell it three
+#: ways and have one of them typo silently past the others.
+SHAPE_ACRONYM_TAG = "shape:acronym"
+
 
 class Structure(Enum):
     """segment's comma-structure decision."""
@@ -101,7 +112,8 @@ class ParseState:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
     sorted)/comma_offsets/interpunct_offsets (the 间隔号 offsets the
     order and segmentation decisions consult, #298; the nakaguro
-    separators record NOTHING); segment -> segments/structure;
+    separators record NOTHING); segment -> segments/structure/one_case
+    (lazily, only where a comma form could turn it on -- #289/#516);
     script_segment -> tokens and segments again (the one stage that
     changes the token COUNT: an unspaced CJK token splits into n+1
     pieces, still as sub-slices of the original, and every later index

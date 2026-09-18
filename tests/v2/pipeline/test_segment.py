@@ -10,7 +10,8 @@ from nameparser._types import AmbiguityKind
 
 # synthetic vocabulary: behavior given a lexicon, never default() contents
 _LEX = Lexicon(
-    suffix_acronyms=frozenset({"phd"}),
+    suffix_acronyms=frozenset({"phd", "md", "do", "dds", "ma", "ed"}),
+    suffix_acronyms_ambiguous=frozenset({"ma", "ed", "do"}),
     suffix_words=frozenset({"jr", "v"}),
 )
 
@@ -120,3 +121,74 @@ def test_strict_comma_suffixes_veto_lenient_only_members() -> None:
         policy=dataclasses.replace(Policy(), lenient_comma_suffixes=False))
     out = segment(tokenize(extract_delimited(state)))
     assert out.structure is Structure.FAMILY_COMMA
+
+
+def test_structure_flips_for_the_ambiguous_class_on_a_name_word_count() -> None:
+    # rules.md#C1 for the ambiguous class: two or more NAME words
+    # before the comma read the part after it as the credential run.
+    # 'John Smith, MA' flips; 'Smith Jr., MA' does not, having two
+    # TOKENS and one name word -- which is what keeps Smith in the
+    # family (#289, decisions.md#S2).
+    assert _segmented("John Smith, MA").structure is Structure.SUFFIX_COMMA
+    assert _segmented("Smith Jr., MA").structure is Structure.FAMILY_COMMA
+    assert _segmented("Smith, MA").structure is Structure.FAMILY_COMMA
+    # the extension reaches the LISTED set whatever the case says, so
+    # a one-case name flips too -- 1.4.0 read all three as suffixes
+    assert _segmented("JOHN SMITH, MA").structure is Structure.SUFFIX_COMMA
+    assert _segmented("john smith, ma").structure is Structure.SUFFIX_COMMA
+    assert _segmented("John Smith, Ed").structure is Structure.SUFFIX_COMMA
+    assert _segmented("Davis Royce, Ed").structure is Structure.SUFFIX_COMMA
+    assert _segmented("Royce, Ed").structure is Structure.FAMILY_COMMA
+
+
+def test_segment_records_the_case_fact_only_where_it_asked() -> None:
+    # (a-lazy): the fact costs nothing on a name whose comma form
+    # could not turn on it, and nothing at all on a comma-less name.
+    assert _segmented("John Smith MA").one_case is None
+    assert _segmented("Smith, John Q. Public").one_case is None
+    assert _segmented("John Smith, MA").one_case is False
+    assert _segmented("JOHN SMITH, MA").one_case is True
+    # the regression test for the eager-gate fix: a single-token
+    # post-comma part that is NOT a member of the ambiguous class
+    # must not force the fact either -- membership is tested
+    # case-free first, and only a genuine candidate pays for it.
+    assert _segmented("Smith, John").one_case is None
+    assert _segmented("John Smith, Jr.").one_case is None
+
+
+def test_a_tail_segment_of_leaning_credentials_is_not_flagged() -> None:
+    # The third reading site, and the one place this design QUIETS a
+    # report: 'DO' leans credential in a mixed-case name, so the third
+    # segment is a credential run and rules.md#C2's flag stops firing.
+    state = _segmented("Steven Hardman, MD, DO, DDS")
+    assert not [a for a in state.ambiguities
+                if a.kind is AmbiguityKind.COMMA_STRUCTURE]
+    # the one-case spelling keeps today's reading, flag and all
+    state = _segmented("STEVEN HARDMAN, MD, DO, DDS")
+    assert [a for a in state.ambiguities
+            if a.kind is AmbiguityKind.COMMA_STRUCTURE]
+
+
+def test_the_structure_flip_reports_a_verbatim_detail() -> None:
+    # The first comma-path report OF A READING in the library (#289):
+    # C2's structural flag already reports on the comma path, but it
+    # reports what the parse could not recognize, not a fork it
+    # called. Pinned verbatim so a wording edit is a deliberate one,
+    # not a silent drift the case table's looser `ambiguities=` tuple
+    # check would never catch.
+    state = _segmented("John Smith, MA")
+    (amb,) = [a for a in state.ambiguities
+             if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+    assert amb.detail == (
+        "'MA' after the comma is also an ordinary name word; the part "
+        "before the comma holds 2 name words, so it is read as a "
+        "credential run")
+
+
+def test_the_structure_flip_report_counts_the_real_pre_comma_words() -> None:
+    # The count is INTERPOLATED, not a hardcoded "two": a three-word
+    # pre-comma part reports its own count.
+    state = _segmented("John Q. Public, MA")
+    (amb,) = [a for a in state.ambiguities
+             if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+    assert "holds 3 name words" in amb.detail

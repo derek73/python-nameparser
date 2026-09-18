@@ -1,7 +1,7 @@
 """Stage: group.
 
-Consumes: tokens (classified), segments, structure, extracted (the
-role + inner span per delimited region, for the #329 pass below --
+Consumes: tokens (classified), segments, structure, one_case, extracted
+(the role + inner span per delimited region, for the #329 pass below --
 the only stage after tokenize that reads it).
 Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
@@ -188,7 +188,8 @@ def _marker_run_pieces(seen: Sequence[int], pieces: Sequence[Sequence[int]],
 def _maiden_take(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
-                 cores: Set[str]) -> tuple[list[int], list[int]] | None:
+                 cores: Set[str],
+                 one_case: bool | None) -> tuple[list[int], list[int]] | None:
     """The piece indices the marker pass removes, split the way
     MaidenTake declares them: the MARKER's pieces (one, or several for
     a phrase entry like 'z domu') and the maiden name's. None when the
@@ -238,7 +239,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # stays a word -- as 1.4.0 read it.
     skip = frozenset(range(len(pieces))) - frozenset(seen)
     trailing = trailing_start(seen[m], pieces, ptags, tokens, skip,
-                               numeral_only=True)
+                               numeral_only=True, one_case=one_case)
     # The fork reads the piece before the numeral, and the take
     # REMOVES that piece: afterwards assign sees the piece before the
     # marker there, and if that is initial-shaped the fork will not
@@ -256,7 +257,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         view_tags = [ptags[i] for i in left]
         if trailing_start(leading_titles(view, view_tags, tokens),
                            view, view_tags, tokens,
-                           numeral_only=True) == len(view):
+                           numeral_only=True,
+                           one_case=one_case) == len(view):
             trailing = len(pieces)
     j = m + run
     while (j < len(seen) and seen[j] < trailing
@@ -300,6 +302,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    cores: Set[str] = frozenset(),
                    given_name_titles: Set[str] = frozenset(),
                    opens_the_name: bool = False,
+                   *,
+                   one_case: bool | None,
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -440,7 +444,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # The tokens are not touched here: this function reads them and
     # returns what it took, and group() records the drop and the roles.
     taken: MaidenTake | None = None
-    take = _maiden_take(pieces, ptags, tokens, cores)
+    take = _maiden_take(pieces, ptags, tokens, cores, one_case)
     if take is not None:
         marker_ks, maiden_ks = take
         taken = ([i for k in marker_ks for i in pieces[k]],
@@ -570,7 +574,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # the acronym still has the pieces the fork counted (below).
         name_start = leading_titles(pieces, ptags, tokens)
         tail = len(pieces) - trailing_start(name_start, pieces, ptags,
-                                             tokens)
+                                             tokens, one_case=one_case)
         def chain(tail: int) -> None:
             k = 0
             while k < len(pieces):
@@ -668,7 +672,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             chain(tail)
             left = len(pieces) - trailing_start(
                 leading_titles(pieces, ptags, tokens), pieces, ptags,
-                tokens)
+                tokens, one_case=one_case)
             if left < tail:
                 pieces[:], ptags[:] = kept[0], kept[1]
                 del ambiguities[kept[2]:]
@@ -735,13 +739,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # unjoined and keeps it joined. Shapes pinned in
                 # test_group.py.
                 rest, chain_took, before = tail_reading(
-                    peel_walk(fk, ptags), pieces, ptags, tokens)
+                    peel_walk(fk, ptags), pieces, ptags, tokens, one_case)
                 view, view_tags = list(pieces), list(ptags)
                 view[fk:fk + 2] = [pieces[fk] + pieces[fk + 1]]
                 view_tags[fk:fk + 2] = [joined_tags(fk, fk + 2,
                                                     drop={"title"})]
                 view_rest, _, after = tail_reading(
-                    peel_walk(fk, view_tags), view, view_tags, tokens)
+                    peel_walk(fk, view_tags), view, view_tags, tokens,
+                    one_case)
                 same_suffixes = (
                     [tuple(view[j]) for j in view_rest[after.names:]]
                     == [tuple(pieces[j]) for j in rest[before.names:]])
@@ -834,7 +839,8 @@ def group(state: ParseState) -> ParseState:
             None if family_comma else ambiguities,
             seg_cores,
             state.lexicon.given_name_titles,
-            opens_the_name=(seg_idx == 0 and not family_comma))
+            opens_the_name=(seg_idx == 0 and not family_comma),
+            one_case=state.one_case)
         # the marker is dropped and the maiden name's tokens become
         # MAIDEN (#274); which pieces those are was settled in
         # _group_segment, before the joins
