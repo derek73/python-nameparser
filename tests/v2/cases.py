@@ -2018,9 +2018,10 @@ CASES: tuple[Case, ...] = (
                "`deviates: #291` line comes true ONLY under this "
                "switch. At the DEFAULT this exact text still reads "
                "given 'LEED', middle 'AP', family 'John Smith' -- the "
-               "deviation stands there unchanged -- so commit E must "
-               "not remove the marker on this switch's account; it "
-               "only narrows what makes the deviation true"),
+               "deviation stands there unchanged -- so nothing in "
+               "this arc may remove rules.md#C1's `deviates: #291` "
+               "marker on this switch's account; the switch only "
+               "narrows what makes the deviation true"),
     Case("the_caps_comma_multi_word_run_declines_at_one_word",
          "Smith, LEED AP",
          {"given": "LEED", "middle": "AP", "family": "Smith"},
@@ -2040,7 +2041,11 @@ CASES: tuple[Case, ...] = (
     # their DEFAULT-policy siblings above (`caps_ambiguous_leans_
     # credential`, `the_lean_reaches_the_post_comma_slot`) and carry
     # no `shape=` tag for the same reason every other policy-on row
-    # here does not (Task 22 Step 2).
+    # here does not: the contract corpus keys on (shape, text) with no
+    # policy of its own, so tagging one would have the gate diff it
+    # against the released wheels under the DEFAULT policy -- the
+    # wrong question for a row whose point IS the non-default policy
+    # (`Case.shape`'s own docstring).
     Case("caps_switch_does_not_silence_the_listed_lean", "Jack MA",
          {"given": "Jack", "suffix": "MA"},
          policy=Policy(unlisted_caps_suffixes=True),

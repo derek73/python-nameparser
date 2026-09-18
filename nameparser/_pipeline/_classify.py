@@ -15,8 +15,12 @@ honorific_tails, which script_segment consumes upstream; and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
 ambiguous credential class by SHAPE (#516). is_initial also consults
-the _policy module's _NO_INITIALS constant, which is not
-configuration -- nothing here varies by its value.
+the _policy module's _NO_INITIALS constant. It is named apart from the
+fields above because it is not CONFIGURATION -- no Lexicon or Policy
+carries it and no caller can change it -- and not because it decides
+nothing: the tags this stage writes do vary by it ('씨.' is not tagged
+`initial`, which is the whole of #320). An earlier wording said
+"nothing here varies by its value", which is the wrong half of that.
 
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",
@@ -155,11 +159,19 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # token with no neighbours. `_vocab.tag_marker_runs` does the whole
     # field, single words included, so there is one place that decides
     # it (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
-    # v1's period-joined derivation (parse_pieces): a token with a
-    # period not at the end, ANY of whose period chunks is a title, is
-    # a title as a whole ('Lt.Gov.', and by the ANY rule 'Mr.Smith');
+    # The block a WHOLE-TOKEN vocabulary match skips, and four
+    # readings inside it, in precedence order. The first two are v1's
+    # period-joined derivation (parse_pieces): a token with a period
+    # not at the end, ANY of whose period chunks is a title, is a
+    # title as a whole ('Lt.Gov.', and by the ANY rule 'Mr.Smith');
     # else ANY suffix chunk makes it a suffix ('JD.CPA'). Title wins
-    # (v1's continue). Skipped when the whole token already matched.
+    # (v1's continue). The third and fourth are 2.4's by-shape halves
+    # (#516) and reach only a token NO vocabulary claimed: a dotted
+    # token of two or more alphabetic chunks, and -- where its switch
+    # is on -- an unlisted all-caps word. They are an `elif` chain
+    # with the dotted one first, so a dotted token never reaches the
+    # caps test and the two shapes stay disjoint. The header described
+    # the first two alone until 2026-09-18.
     if "vocab:title" not in tags and "vocab:suffix" not in tags:
         derived = period_joined_vocab(token.text, lex)
         if derived == "title":

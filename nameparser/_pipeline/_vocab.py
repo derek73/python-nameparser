@@ -145,10 +145,13 @@ def is_title_shaped(text: str) -> bool:
     leading peel's own inline copy asks (`_pieces.is_leading_title`)
     -- the comma-form name-word count (`name_word_count`, below) is
     this function's only CALLER; `is_leading_title` keeps its own
-    copy of this body inline rather than calling this, measured:
-    routing its hot path (every leading piece of every parse) through
-    a shared call cost one frame there, where `name_word_count`'s cold
-    path (comma names only) does not notice one. Touch one, touch
+    copy of this body inline rather than calling this, measured --
+    the figure lives at that predicate's own inline copy in
+    `_pieces.py` and is not restated here, two homes for one
+    measurement being how they come to disagree. What it says in
+    short: the leading peel is a hot path (every leading piece of
+    every parse) where `name_word_count`'s is cold (comma names
+    only). Touch one, touch
     both -- kept in step by
     `test_pieces.test_is_title_shaped_and_is_leading_title_agree`,
     which runs both predicates over the union of this function's own
@@ -676,9 +679,10 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     UNLISTED, H2-shaped -- did, because this count took 'Xyz.' for a
     name word where the leading peel would have taken it for a title).
     `is_leading_title` does not call this function, though -- measured,
-    routing its hot path (every leading piece of every parse) through
-    a shared call cost one frame there, where this cold path (comma
-    names only) does not notice one. Two spellings of ONE test
+    and the number has ONE home, the comment at that predicate's
+    inline copy in `_pieces.py`. Its hot path (every leading piece of
+    every parse) is what cannot afford the call; this path is cold
+    (comma names only) and does not notice one. Two spellings of ONE test
     instead, kept from drifting by the case rows that exercise both
     with the same texts, not by a shared function object
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION's cost clause).

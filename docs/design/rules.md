@@ -480,6 +480,7 @@ P2. Rationale: a particle is written as part of the surname it
       "John Smith Mc V"           →  suffix="Mc V"
       "John van Mc"               →  family="van Mc"
       "anh van do"                →  family="van do"  · boundary
+      "anh van do"                →  ambiguities=()  · boundary
     Accepted: a caller wanting the combined double-surname reading
     (#132's ask) has it as the surnames view rather than the
     family field.
@@ -1005,7 +1006,10 @@ S3. Rationale: credentials are often written run together with
     vocabulary claims is read by POSITION instead, as a bare
     ambiguous acronym is (S2): a credential where the name has words
     to spare, a name word where it does not, either reading
-    reported, and the same at a comma. Case says nothing here — the
+    reported at the slots S2 reports at, and the same at a comma —
+    which means the part BEFORE a family comma and the part after it,
+    not a word trailing the given part, where this reading is taken
+    silently. Case says nothing here — the
     periods are the evidence — and three shapes are outside it: a
     single trailing period is not this shape at all, a chunk that is
     not wholly alphabetic is no acronym letter, and a word carrying
@@ -1025,6 +1029,7 @@ S3. Rationale: credentials are often written run together with
       "Jack X.Y.I."               →  family="X.Y.I."  · boundary
       "John Smith Xyz."           →  family="Xyz."  · boundary
       "John Smith 1.4"            →  family="1.4"  · boundary
+      "Doe, John X.Y.Z."          →  middle="X.Y.Z."  · boundary
     Accepted: the initialless-script clause carries no example line
     of its own. Every input that exercises it composes a script that
     writes no abbreviations with a period that only a Latin
@@ -1401,17 +1406,24 @@ C2. Rationale: text beyond the recognized comma parts should be
     A part the parse reads as a credential run by some route other
     than the suffix vocabulary is recognized and is not flagged: a
     run of ambiguous acronyms whose written case leans credential
-    (S2), and a run every word of which joins that class by SHAPE
-    (S3). This is the one place the ambiguous class QUIETS a report
-    rather than adding one, and it is narrow on purpose — a member
-    the writing does not lean, in a name that leans nothing, is
-    recognized by nothing here and keeps the flag.
+    (S2), and a run every word of which is an unlisted DOTTED word
+    the position reads as a credential (S3). This is the one place
+    the ambiguous class QUIETS a report rather than adding one, and
+    it is narrow in two ways that the examples below pin. A member
+    whose written case does not lean CREDENTIAL keeps the flag,
+    whether the name is written in one case so that nothing leans at
+    all, or the member is written the way a name is written. And
+    S2's other by-shape half, the unlisted all-caps word, does not
+    reach here under its switch either: the shape a tail segment is
+    recognized by is the dotted one alone.
       "John Smith, MD, Bart"      →  suffix="MD, Bart"
       "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
       "John Smith, MD, R.A.I."    →  suffix="MD, R.A.I."
       "John Smith, MD, R.A.I."    →  ambiguities=()
       "John Smith, MD, R.A.I."  unlisted_dotted_suffixes-off  →  ambiguities=("comma-structure",)
       "John Smith, MD, Ma"        →  ambiguities=("comma-structure",)  · boundary
+      "Steven Hardman, MD, DO, DDS"  →  ambiguities=()
+      "STEVEN HARDMAN, MD, DO, DDS"  →  ambiguities=("comma-structure",)  · boundary
     history: decisions.md#C1 · interacts: C1, S2, S3 · implemented: nameparser/_pipeline/_segment.py
 
 ## Name order (O)
@@ -1634,8 +1646,9 @@ W3. Rationale: a family name declared by a comma is the writer's
     not in what they ask of the words — the written-case evidence
     S2 reads included, so a post-comma acronym the case leans
     credential declines the side it stands on here exactly as it
-    reads as the credential there, and one name written with two
-    credentials divides the same way. A period the listing leaves
+    reads as the credential there, and the honorific comes off the
+    part before the comma as it does behind a settled credential.
+    A period the listing leaves
     behind is not what licenses the step past a post-nominal word,
     and it is not ignored either. The step is W2's, taken on the
     vocabulary alone and taken with no punctuation anywhere in the

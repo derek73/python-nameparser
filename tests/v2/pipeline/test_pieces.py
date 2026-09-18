@@ -323,7 +323,8 @@ def test_peel_trailing_stops_at_a_declined_ambiguous_pick() -> None:
 
 
 def test_a_shape_only_token_reports_without_being_taken() -> None:
-    # Switch A off: name material everywhere, as 2.3 read it -- and
+    # `Policy(unlisted_dotted_suffixes=False)`: name material
+    # everywhere, as 2.3 read it -- and
     # the fork is still reported, because the parser chose the name
     # reading over a credential one and that is the call a caller
     # wants told (#516).

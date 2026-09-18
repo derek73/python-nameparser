@@ -1850,7 +1850,14 @@ issue = "change(suffix-acronym-collisions) esq leaves the acronym set"
 # with no wordlist entry behind it at all -- the reading this baseline
 # has, recovered by a different route than the acronym entry gave it.
 # The vocabulary decision the `change` tag records still stands and is
-# still the history of that entry; what is gone is its diff. Declared
+# still the history of that entry; what is gone is its ROLE diff. The
+# name still diffs here, on the `suffix-or-name` report the positional
+# reading brings with it -- `_ambiguities` is a compared surface from
+# 2.0 on -- and fix(#516) classifies that, which is why this rule is
+# dormant rather than explaining anything: `dormant` means "explained
+# no diff", not "the name stopped moving". Only the 1.4.0 copy can say
+# the diff is gone outright, that baseline comparing no ambiguities.
+# Declared
 # `dormant` rather than deleted, so the harness says so out loud if a
 # future change takes the positional reading away again.
 #
@@ -2257,8 +2264,14 @@ issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
 # Both sit on this rule because the rule is what states which way
 # each member of a pair goes.
 #
-# Literal-anchored to the measured movers, and one set for all five
-# ledgers so the rule says the same thing everywhere: the class is
+# Literal-anchored to the measured movers, and ONE SET FOR THE FOUR
+# 2.x LEDGERS so the rule says the same thing at each of them. The
+# 1.4.0 copy differs by exactly one member and holds 'John Prof. MA'
+# out: 1.4.0 read a trailing period-marked title as a title itself,
+# so that name's diff there belongs to fix(#316)'s rule and not to
+# this one. "One set for all five" was written before that carve-out
+# existed and was false in these four copies from the day it did
+# (2026-09-18). The set is literal because the class is
 # wide (every mixed-case name whose trailing piece is a listed
 # ambiguous acronym, plus every comma form with two name words before
 # the comma) and a regex for the class would claim the one-case

@@ -6,21 +6,32 @@ Produces: segments (runs of main-token indices; interior segments may
 be EMPTY -- doubled commas keep their structural position), structure,
 one_case where the comma form asked for it, COMMA_STRUCTURE
 ambiguities for unrecognized extra segments, and SUFFIX_OR_NAME where
-the comma decided a member of the ambiguous credential class.
+the comma FLIPPED the structure for a member of the ambiguous
+credential class. The flip and nothing else: where the structure did
+not move, the word's reading is still open and `assign` takes it on
+the family-comma path, so it reports there. "Where the comma decided
+a member of the class" said more than this stage does.
 Reads: Lexicon suffix vocabulary and Policy, both through
 _vocab.is_wholly_suffix -- the suffix-comma decision is definitionally
 vocabulary-dependent (decisions.md#C1), and the predicate
 owns the rest (Policy.lenient_comma_suffixes picks the lenient or
 strict token test; Policy.extra_suffix_delimiters gives v1
 suffix_delimiter parity, a delimiter-core token being transparent);
-and, since 2.4, Policy.unlisted_dotted_suffixes and
-Policy.unlisted_caps_suffixes, both read through
-_vocab.ambiguous_class_candidate alone -- is_wholly_suffix
-deliberately does not see the by-shape class, dotted or caps (#516).
-An unlisted dotted or all-caps token joins the ambiguous credential
-class by SHAPE at this stage's own candidate test the same way a
-listed member does; the caps half additionally needs `one_case` to
-decide membership at all, which this stage's own lazy gate supplies.
+Lexicon.maiden_markers DIRECTLY, for the own-words span the lazy case
+gate takes (_pieces.own_words); Lexicon title and suffix vocabulary
+plus Policy.lenient_comma_suffixes again through _vocab.
+name_word_count, which counts NAME words for the class's own comma
+rule; and, since 2.4, Policy.unlisted_dotted_suffixes through
+_vocab.ambiguous_class_candidate, and Policy.unlisted_caps_suffixes
+DIRECTLY as this stage's own gate before the run test calls
+_vocab.caps_shape_candidate -- which reads every Lexicon vocabulary
+field in turn (_lexicon._VOCAB_FIELDS) to decide that an all-caps
+word is UNLISTED. `is_wholly_suffix` deliberately sees neither
+by-shape half, dotted or caps (#516). An unlisted dotted or all-caps
+token joins the ambiguous credential class by SHAPE at this stage's
+own candidate tests the same way a listed member does; the caps half
+additionally needs `one_case` to decide membership at all, which this
+stage's own lazy gate supplies.
 
 Implements rules C1 and C2 of docs/design/rules.md, cited at the
 decision site below; history in decisions.md#C1.

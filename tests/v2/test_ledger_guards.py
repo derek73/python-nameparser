@@ -2732,13 +2732,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # witnesses that the NAME-word count is asked before the
         # written case is.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(306, ('given', 'suffix', 'title'), "ef4e131d3453", None),
+            _Claim(308, ('given', 'suffix', 'title'), "757795269391", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
             _Claim(2, ('family', 'given', 'suffix'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
-            _Claim(4, ('given', 'middle', 'title'), "ebd53fa48eb9", None),
+            _Claim(5, ('given', 'middle', 'title'), "e5aa72ebb9bf", None),
         # `middle` left the ROLES in the same edit, at the gate's
         # own OVER-DECLARED insistence: with 'John Smith Dr.' gone,
         # no name the rule still explains moves a middle name.
@@ -2772,7 +2772,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-18, second round: 302 -> 304, the same two new comma
         # names as the rule above.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(306, ('family', 'given'), "ef4e131d3453", None),
+            _Claim(308, ('family', 'given'), "757795269391", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -3258,7 +3258,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
             _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
-            _Claim(4, ('_ambiguities', 'given', 'middle', 'title'), "ebd53fa48eb9", None),
+            _Claim(5, ('_ambiguities', 'given', 'middle', 'title'), "e5aa72ebb9bf", None),
         # `middle` left the ROLES in the same edit, and the reach
         # grew with the rules corpus; the 1.4.0 roster above carries
         # both, and says the same at the other two baselines.
@@ -3783,7 +3783,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
             _Claim(2, ('family', 'given'), "a3cfff4e78f4", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
-            _Claim(4, ('_ambiguities', 'given', 'middle', 'title'), "ebd53fa48eb9", None),
+            _Claim(5, ('_ambiguities', 'given', 'middle', 'title'), "e5aa72ebb9bf", None),
         # `middle` left the ROLES in the same edit, and the reach
         # grew with the rules corpus; the 1.4.0 roster above carries
         # both, and says the same at the other two baselines.

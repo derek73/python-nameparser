@@ -3167,7 +3167,11 @@ issue = "change(suffix-acronym-collisions) esq leaves the acronym set"
 # with no wordlist entry behind it at all -- the reading this baseline
 # has, recovered by a different route than the acronym entry gave it.
 # The vocabulary decision the `change` tag records still stands and is
-# still the history of that entry; what is gone is its diff. Declared
+# still the history of that entry; what is gone is its diff AT THIS
+# BASELINE, where `_ambiguities` is not a compared surface at all.
+# Above 2.0 the name still diffs, on the `suffix-or-name` report the
+# positional reading brings with it, and fix(#516) classifies that --
+# each 2.x copy's own `dormant` string says so. Declared
 # `dormant` rather than deleted, so the harness says so out loud if a
 # future change takes the positional reading away again.
 #
@@ -3560,8 +3564,11 @@ issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
 # Both sit on this rule because the rule is what states which way
 # each member of a pair goes.
 #
-# Literal-anchored to the measured movers, and one set for all five
-# ledgers so the rule says the same thing everywhere: the class is
+# Literal-anchored to the measured movers. The four 2.x ledgers share
+# ONE set; this copy is that set less one name, for the reason the
+# paragraph below gives. "One set for all five" was written before
+# that carve-out existed and is corrected in all five copies
+# (2026-09-18). The set is literal because the class is
 # wide (every mixed-case name whose trailing piece is a listed
 # ambiguous acronym, plus every comma form with two name words before
 # the comma) and a regex for the class would claim the one-case

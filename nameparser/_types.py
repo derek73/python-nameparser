@@ -412,6 +412,15 @@ class AmbiguityKind(StrEnum):
     #: vocabulary ("Rinpoche", "QC MP"): with no name word beside it
     #: the first post-nominal is read as the name, because something
     #: has to be one, and only that word reports.
+    #: WHERE it is emitted is narrower than where the doubt exists,
+    #: and this is the boundary rather than an omission to be read
+    #: past. The emitters cover the trailing slot of a name, the
+    #: post-comma slot of a family-comma listing, and the extra
+    #: segments beyond it. They do NOT cover the trailing slot of the
+    #: GIVEN part after a family comma: "Doe, John MA" reads middle
+    #: ``MA`` and "Doe, John X.Y.Z." middle ``X.Y.Z.``, both silently,
+    #: as every release has. The fork is real there and nothing
+    #: reports it; decisions.md#S2 records it as open.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that
@@ -505,6 +514,12 @@ class AmbiguityKind(StrEnum):
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so
     #: the tokens are the one the stray character ended up inside.
+    #: NOT a fork the parse called: it reports a shape the parse could
+    #: not recognize, which is the carve-out this enum's own docstring
+    #: names for this member and for COMMA_STRUCTURE. That docstring
+    #: said "each says so on its own member below" while only
+    #: COMMA_STRUCTURE's did; this sentence is the other half
+    #: (2026-09-18).
     #: Two cases leave that tuple empty: a character that lands in no
     #: token at all (inside a masked region), and an input with no
     #: alphanumeric content anywhere, which parses to an empty name --

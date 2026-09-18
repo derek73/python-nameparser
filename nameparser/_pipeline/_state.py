@@ -67,12 +67,17 @@ _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 #: The by-shape half of #289/#516's ambiguous credential class: a
 #: token classify admits to `vocab:suffix-ambiguous`'s READING by
 #: SHAPE rather than by the listed vocabulary
-#: (`Policy.unlisted_dotted_suffixes` is the first emitter). One
-#: constant, not a string literal at each site, because the three
-#: readers that must tell a by-shape member apart from a listed one
-#: (`_pieces.peel_trailing`, `_pieces.segment_suffix_reading`,
-#: `_assign`'s comma-path report) cannot afford to spell it three
-#: ways and have one of them typo silently past the others.
+#: (`Policy.unlisted_dotted_suffixes` is the first emitter;
+#: `Policy.unlisted_caps_suffixes` is the second, and classify writes
+#: the tag from both branches). One constant, not a string literal at
+#: each site, because the FOUR readers that must tell a by-shape
+#: member apart from a listed one -- `_pieces.peel_trailing`,
+#: `_pieces.listed_lean` (which `segment_suffix_reading` asks through,
+#: so the reading it decides is second-hand), `_assign`'s comma-path
+#: report, and `_group`'s prefix-chain report -- cannot afford to
+#: spell it four ways and have one of them typo silently past the
+#: others. The roster read "three" and named
+#: `segment_suffix_reading` directly until 2026-09-18.
 SHAPE_ACRONYM_TAG = "shape:acronym"
 
 #: The MEMBERSHIP half of the same class: classify's tag for a token
@@ -183,10 +188,15 @@ class ParseState:
     #: computed by whichever of segment and classify needs it first,
     #: segment only when a comma form could turn on it, so a reader
     #: between the two stages sees None and must not guess.
-    #: Recorded rather than recomputed, the way `order` above is: the
-    #: suffix slot, the post-comma slot and the tail-segment reading
-    #: all consult it and must not disagree (#289/#516,
-    #: decisions.md#S2).
+    #: Recorded rather than recomputed, the way `order` above is, and
+    #: by more consumers than the first roster here named: the
+    #: trailing suffix slot, the post-comma slot, the tail-segment
+    #: reading, the prefix chain's own tail measure (_group) and the
+    #: glued-honorific peel's decline of a post-comma run
+    #: (_script_segment) all consult it and must not disagree
+    #: (#289/#516, decisions.md#S2). Five stages read it in all --
+    #: segment, script_segment, classify, group and assign -- plus the
+    #: two predicate layers they read it through (_pieces, _vocab).
     #: A fact segment records SURVIVES script_segment, the one stage
     #: that changes the token count, and survives it unrecomputed
     #: because splitting a token cannot change the answer: the verdict

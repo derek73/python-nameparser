@@ -38,8 +38,10 @@ tail_reading is that one question, running them against each other to
 their fixed point for the two stages that must not disagree about the
 answer.
 
-Layering: imports _state and _vocab only; _group, _assign and
-_classify import it, and neither of the two it imports imports it back.
+Layering: imports _state and _vocab only; FOUR stages import it --
+_segment, _classify, _group and _assign, segment being the one the
+#289/#516 own-words span added -- and neither of the two it imports
+imports it back.
 
 Naming follows _vocab's: inside an already-private module the leading
 underscore marks module-PRIVATE, so the names other stages call are
@@ -165,10 +167,16 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
     # vocabulary-only title test read 'Xyz.' as a name word where this
     # predicate reads it as a title, and the disagreement flipped a
     # comma structure `Dr. Smith, Ed`'s LISTED spelling did not).
-    # Measured: routing this hot path through the shared function costs
-    # one frame per call (`is_leading_title` runs on every leading
-    # piece of every parse, unlike name_word_count's comma-only path),
-    # moving the reference name from 412/449 to 417/454. Kept as two
+    # Measured, and THIS is the one home for the number -- both
+    # `_vocab.is_title_shaped` and `_vocab.name_word_count` point here
+    # rather than restating it, two homes for one measurement being
+    # how they come to disagree. Routing this hot path through the
+    # shared function costs one frame per call (`is_leading_title`
+    # runs on every leading piece of every parse, unlike
+    # name_word_count's comma-only path), moving the reference name
+    # from 412/449 to 417/454 -- five calls on `Dr. Juan de la Vega
+    # III`, recomputable with `uv run python
+    # tools/perf/call_count.py`. Kept as two
     # spellings of ONE test instead -- if you touch one, touch both,
     # and `test_is_title_shaped_and_is_leading_title_agree` (this
     # module's own test file) checks it over the union of both

@@ -78,9 +78,12 @@ ALLOWED = {
     "_pipeline/_script_segment.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_segment.py": _PIPELINE_STAGE_ALLOWED,
     "_pipeline/_classify.py": _PIPELINE_STAGE_ALLOWED,
-    # Piece-level predicates shared by group, assign and classify
-    # (mechanisms.md#ONE-PREDICATE-PER-QUESTION). Tighter than the
-    # stage allowance on purpose: it is a leaf both stages sit on, so
+    # Piece-level predicates shared by four stages -- segment,
+    # classify, group and assign
+    # (mechanisms.md#ONE-PREDICATE-PER-QUESTION). Segment joined with
+    # #289/#516's own-words span, and "both stages" below was written
+    # when there were two. Tighter than the
+    # stage allowance on purpose: it is a leaf those stages sit on, so
     # it may read the token type and the vocabulary layer and NOTHING
     # else -- not even _lexicon, which is the likeliest next reach (a
     # title predicate wanting _title_key) and so the one this entry
@@ -226,7 +229,7 @@ def test_every_pipeline_module_is_keyed_in_allowed() -> None:
         f"from the layering contract entirely: {missing}. Add each with "
         f"the narrowest prefix tuple that admits what it actually "
         f"imports -- _PIPELINE_STAGE_ALLOWED for a stage, something "
-        f"tighter for a leaf both stages sit on (see _pipeline/_pieces.py)"
+        f"tighter for a leaf several stages sit on (see _pipeline/_pieces.py)"
     )
 
 

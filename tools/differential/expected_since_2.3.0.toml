@@ -218,8 +218,14 @@ issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
 # Both sit on this rule because the rule is what states which way
 # each member of a pair goes.
 #
-# Literal-anchored to the measured movers, and one set for all five
-# ledgers so the rule says the same thing everywhere: the class is
+# Literal-anchored to the measured movers, and ONE SET FOR THE FOUR
+# 2.x LEDGERS so the rule says the same thing at each of them. The
+# 1.4.0 copy differs by exactly one member and holds 'John Prof. MA'
+# out: 1.4.0 read a trailing period-marked title as a title itself,
+# so that name's diff there belongs to fix(#316)'s rule and not to
+# this one. "One set for all five" was written before that carve-out
+# existed and was false in these four copies from the day it did
+# (2026-09-18). The set is literal because the class is
 # wide (every mixed-case name whose trailing piece is a listed
 # ambiguous acronym, plus every comma form with two name words before
 # the comma) and a regex for the class would claim the one-case

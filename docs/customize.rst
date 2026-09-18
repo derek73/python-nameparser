@@ -463,10 +463,12 @@ listed below.
        (a CJK word glued into periods, ``"John Smith 田.中."``, keeps
        family ``田.中.``). Defaults to ``True``; ``False`` reads such a
        token as name material everywhere and still reports the fork —
-       it does NOT revive the pre-2.4 reading of a single-character
-       roman-numeral chunk as a credential (``"Jack X.Y.I."`` still
-       keeps family ``X.Y.I.`` either way; that retirement is not
-       behind this switch).
+       it does NOT revive the pre-2.4 reading of a chunk that is a
+       single ASCII character — a roman numeral, or the digit ``2`` —
+       as a credential (``"Jack X.Y.I."`` still keeps family
+       ``X.Y.I.`` either way, and a dotted version string such as
+       ``"John Smith 1.4.2"`` keeps family ``1.4.2``; that retirement
+       is not behind this switch).
    * - ``unlisted_caps_suffixes``
      - ``bool``
      - Reads an unlisted all-caps word of two or more letters, with no
