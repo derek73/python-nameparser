@@ -239,7 +239,7 @@ def classify(state: ParseState) -> ParseState:
     # ONE fact per parse, and it is recorded now (ParseState.one_case):
     # segment writes it first where a comma form could turn on it, and
     # a fact two stages decide apart is what recording it prevents
-    # (decisions.md#P3).
+    # (decisions.md#S2).
     one_case = state.one_case
     if one_case is None:
         one_case = is_one_case(own)

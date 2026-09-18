@@ -826,8 +826,15 @@ so branching on a kind needs no import:
     ['Van']
 
 The post-nominals that double as ordinary surnames report the same way.
-``MA`` after a full name is read as a credential, but after a single
-given name it stays the surname — either way the choice is recorded:
+Which reading a bare one gets depends on what the writing says. In a
+name written in more than one case the word's OWN spelling is read
+first, even where there is nothing to spare: capitals lean the
+credential, any other cased form that is not wholly lower leans the
+surname (which is why ``Jack Ma`` reads it as the surname), and the
+lean wins over the count either way. Only where the spelling gives no
+such signal does the words-to-spare count decide: an all-lower or
+wholly one-case spelling with words to spare reads the credential.
+Either way the choice is recorded:
 
 .. doctest::
 
@@ -835,8 +842,20 @@ given name it stays the surname — either way the choice is recorded:
     'MA'
     >>> [a.kind.value for a in parse("John Smith MA").ambiguities]
     ['suffix-or-name']
-    >>> parse("Jack MA").family
+    >>> parse("Jack MA").suffix
     'MA'
+    >>> parse("Jack Ma").family
+    'Ma'
+    >>> parse("John Smith Ma").family
+    'Ma'
+
+Two ``Policy`` switches extend the same class to words the vocabulary
+does not hold. ``unlisted_dotted_suffixes`` (on by default) reads a
+token of two or more period-separated chunks the same way —
+``parse("John Smith X.Y.Z.").suffix`` is ``'X.Y.Z.'`` — and
+``unlisted_caps_suffixes`` (off by default) does the same for an
+unlisted all-caps word, which is opt-in because an all-caps surname is
+written that way too. See :doc:`customize` for both.
 
 A reading the vocabulary settles on its own is not a guess and reports
 nothing — periods make ``M.A.`` unambiguously a credential:

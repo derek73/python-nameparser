@@ -176,6 +176,6 @@ class ParseState:
     #: Recorded rather than recomputed, the way `order` above is: the
     #: suffix slot, the post-comma slot and the tail-segment reading
     #: all consult it and must not disagree (#289/#516,
-    #: decisions.md#P3).
+    #: decisions.md#S2).
     one_case: bool | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()

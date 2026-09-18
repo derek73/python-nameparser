@@ -202,13 +202,27 @@ they narrow how an existing
 entry is read when it appears alone. If you're not sure whether a word
 you're adding is one of these ambiguous cases, weigh how often it is a
 name against how often it is the credential. Marking it ambiguous is
-not free in either direction: an ambiguous acronym counts as a suffix
-only when written with its periods, so the bare spelling reads as a
-name and the parse reports the fork, and the comma form moves with it
-— ``Smith, BA`` reads first ``BA`` rather than suffix ``BA``, and a
-bracketed ``John Smith (BA)`` falls through to nickname parsing. A
-wrong unambiguous claim takes the credential reading silently and can
-lose a real person's surname. For ``particles_ambiguous`` the default
+not free in either direction: written with its periods, an ambiguous
+acronym counts as a suffix unambiguously; bare, the reading now
+depends on the writing itself, so a bracketed ``John Smith (BA)``
+falls through to nickname parsing and either bare reading reports the
+fork. Written in ALL CAPITALS inside a mixed-case name it counts as
+a suffix even with no words to spare (the credential lean); written
+Title-case there it stays the surname even WITH words to spare (the
+surname lean); lacking either signal — an all-lower spelling in a
+mixed-case name, or any spelling in a name written wholly in one
+case — the reading falls back to whether the name has two or more
+words before it. At a comma the count of NAME words before it decides
+FIRST, and the case is read only where the count leaves the word a
+name: ``John Smith, Ba`` reads suffix ``Ba`` on the count alone (two
+name words before the comma), Title-case or not, while ``Smith, BA``
+reads suffix ``BA`` on the CAPITALS lean, one word before the comma
+being all the count needs to leave for the lean to promote. What
+still reads as the given name is ``Smith, Ba`` (one word, and
+Title-case carries no credential lean to promote it) and
+``smith, ba`` (one word, one case, no lean at all). A wrong
+unambiguous claim takes the credential reading
+silently and can lose a real person's surname. For ``particles_ambiguous`` the default
 runs the other way: a particle that is not borne as a given name
 belongs in the never-given half, which is where ``mc`` and ``ste``
 were moved (#360). The other
@@ -225,8 +239,10 @@ that swallowed it as a title would misparse "Dean Martin" for
 everyone.)
 
 ``ma`` is a shipped example. It is both a credential and a common
-surname, so it is listed in ``suffix_acronyms_ambiguous`` and counts as
-a suffix only when written with periods:
+surname, so it is listed in ``suffix_acronyms_ambiguous``: written
+with periods it counts as a suffix unambiguously, and bare it takes
+the case reading above -- Title-case stays the surname, capitals lean
+the credential:
 
 .. doctest::
 
@@ -234,6 +250,8 @@ a suffix only when written with periods:
     'Ma'
     >>> parse("Jack M.A.").suffix
     'M.A.'
+    >>> parse("Jack MA").suffix
+    'MA'
 
 ``particles_ambiguous`` is the same idea for surname particles. A
 particle listed there may also be a given name, which is what makes a
@@ -428,6 +446,37 @@ listed below.
        family ``田中さん``, given ``V.`` when ``False`` — though a
        comma around a CJK name is tolerated input
        (``rules.md#W3``) and this reading can change.
+   * - ``unlisted_dotted_suffixes``
+     - ``bool``
+     - Reads an unlisted token of two or more period-separated chunks
+       as a credential where the position allows it:
+       ``"John Smith X.Y.Z."`` gives suffix ``X.Y.Z.`` while
+       ``"Jack X.Y.Z."`` keeps family ``X.Y.Z.``, and either reading
+       is reported. Case is irrelevant — the periods are the signal.
+       Whole-token vocabulary still wins (``M.A.``, ``Ph.D.``), and a
+       single trailing period is not this shape
+       (``"John Smith Xyz."`` keeps family ``Xyz.``). Two further
+       gates keep it from over-reaching: every chunk must be
+       alphabetic, so a digit anywhere refuses it
+       (``"John Smith 1.4"`` keeps family ``1.4``, on or off), and a
+       script with no period abbreviations of its own refuses it too
+       (a CJK word glued into periods, ``"John Smith 田.中."``, keeps
+       family ``田.中.``). Defaults to ``True``; ``False`` reads such a
+       token as name material everywhere and still reports the fork —
+       it does NOT revive the pre-2.4 reading of a single-character
+       roman-numeral chunk as a credential (``"Jack X.Y.I."`` still
+       keeps family ``X.Y.I.`` either way; that retirement is not
+       behind this switch).
+   * - ``unlisted_caps_suffixes``
+     - ``bool``
+     - Reads an unlisted all-caps word of two or more letters, with no
+       period in it, in a name written in more than one case as a
+       credential where the position allows it: ``"John Smith XYZ"``
+       gives suffix ``XYZ``. Defaults to ``False``, and deliberately:
+       an all-caps surname is a real writing convention that shape
+       cannot separate from a credential, so ``"Jean Pierre DUPONT"``
+       gives family ``Pierre``, suffix ``DUPONT`` with this on. Off,
+       nothing changes and nothing is reported.
    * - ``strip_emoji``
      - ``bool``
      - Excludes emoji from tokenization — they appear in no field or

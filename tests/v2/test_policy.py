@@ -791,20 +791,29 @@ def test_unlisted_caps_suffixes_is_a_validated_bool_defaulting_off() -> None:
 
 
 def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
-    # Frames, recorded honestly (#516 review round, F4): the switch is
-    # OPT-IN and OFF-BAND -- `tools/perf/call_count.py`'s reference
-    # name and the DEFAULT-policy comma harness both measure +0, the
-    # only figures test_benchmark.py's band gates. With the switch ON,
-    # a genuine comma candidate pays for the fact it forces: measured
-    # 2026-09-18 (same-interpreter harness against f7089763, the
-    # release before this design) `"Smith, John"` is +6 (207 -> 213),
-    # `"Smith, XYZ"` (a real candidate) is +39 (206 -> 245) --
-    # cheaper than an earlier round's +8/+50 measurement, after
-    # `caps_shape_candidate` consolidated three separate spellings of
-    # the shape test into one shared call. Nothing gates either
-    # number; they are reported here, dated, so a reader who turns
-    # the switch on knows what it costs and a later re-measurement
-    # does not read as a silent drift.
+    # Frames, recorded honestly (#516 review round, F4, corrected
+    # 2026-09-18): the switch is OPT-IN and OFF-BAND --
+    # `tools/perf/call_count.py`'s reference name and the
+    # DEFAULT-policy comma harness both measure +0, the only figures
+    # test_benchmark.py's band gates. With the switch ON, a genuine
+    # comma candidate pays for the fact it forces: re-measured
+    # 2026-09-18 on this tree, same-interpreter harness (the resolved
+    # `sys.executable` used on both sides, `Parser().parse` and
+    # `Parser(policy=Policy(unlisted_caps_suffixes=True)).parse`, mean
+    # of 50 after one warm-up parse) -- `"Smith, John"` is +7
+    # (206 -> 213), `"Smith, XYZ"` (a real candidate) is +40
+    # (205 -> 245). An earlier round's comment here read +6/+39
+    # against baselines 207/206, which do not reproduce (this tree's
+    # own default reading of the two names is 206/205, matching
+    # f7089763 exactly); the earlier round's post-consolidation
+    # measurement itself was one frame off on each name, not the
+    # consolidation's own effect, which still stands (the prior,
+    # three-copies-of-the-predicate tree, cbd87a7d, reads 215 and 256
+    # with the switch on -- +9/+51 against the same 206/205 baseline,
+    # so the consolidation saved 2 and 11). Nothing gates either number;
+    # they are reported here, dated, so a reader who turns the switch
+    # on knows what it costs and a later re-measurement does not read
+    # as a silent drift.
     from nameparser import Parser
 
     on = Parser(policy=Policy(unlisted_caps_suffixes=True))

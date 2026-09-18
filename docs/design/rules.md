@@ -984,7 +984,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    interacts: H1, H2, H3, H5, C1, S3 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P5 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -1033,7 +1033,7 @@ S3. Rationale: credentials are often written run together with
     CJK assertions in tests/v2/pipeline/test_vocab.py's
     test_period_joined_vocab_retires_the_single_character_chunk.
     W3 states the same precedence for the same reason.
-    interacts: S2, C1, H2, W3 · implemented: nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: S2, C1, H2, W3 · implemented: nameparser/_pipeline/_vocab.py
 
 ## Nicknames & quoted names (N)
 
