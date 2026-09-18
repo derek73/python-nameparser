@@ -7,17 +7,20 @@ no parse can produce, and the stability its readers rest on.
 """
 import pytest
 
-from nameparser._lexicon import Lexicon
+from nameparser._lexicon import Lexicon, _normalize
+from nameparser._pipeline import STAGES
 from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._group import group
 from nameparser._pipeline._pieces import (
     _numeral_behind_the_initial_veto, is_leading_title, leading_titles,
-    peel_trailing, peel_walk, segment_suffix_reading, trailing_titles,
+    own_words, peel_trailing, peel_walk, segment_suffix_reading,
+    trailing_titles,
 )
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
+from nameparser._pipeline._vocab import is_one_case, tag_marker_runs
 from nameparser._policy import Policy
 
 
@@ -26,6 +29,19 @@ def _through_group(text: str) -> ParseState:
                        policy=Policy())
     for stage in (tokenize, segment, classify, group):
         state = stage(state)
+    return state
+
+
+def _state_through(stage_name: str, text: str) -> ParseState:
+    """Run the pipeline up to and including the named stage (STAGES'
+    own names), for a test that needs a state a later stage has not
+    yet touched (#289/#516)."""
+    state = ParseState(original=text, lexicon=Lexicon.default(),
+                       policy=Policy())
+    for stage in STAGES:
+        state = stage(state)
+        if stage.__name__ == stage_name:
+            break
     return state
 
 
@@ -250,3 +266,86 @@ def test_leading_title_shape_refuses_an_initialless_script(
     state = _through_group(text + " Smith")
     assert is_leading_title(state.pieces[0][0], state.piece_tags[0][0],
                             state.tokens) is expected
+
+
+def test_own_words_is_the_name_s_own_span_and_its_clause_cut() -> None:
+    # rules.md#P3 says the case question is asked of the name's OWN
+    # words. This helper is that span, taken off the token stream so
+    # both the site that runs before classify and classify itself ask
+    # one function (#289/#516).
+    state = _state_through("segment", "Jane née Jones Smith")
+    texts, cut = own_words(state.tokens, state.comma_offsets,
+                           state.lexicon.maiden_markers)
+    assert texts == ["Jane"]
+    assert cut == 1
+    # a delimited clause's tokens arrive with a role already set, so
+    # they are not the name's own words either
+    state = _state_through("segment", "Andrew (Andy) Perkins")
+    texts, cut = own_words(state.tokens, state.comma_offsets,
+                           state.lexicon.maiden_markers)
+    assert texts == ["Andrew", "Perkins"]
+    assert cut == 3
+    # `comma_offsets` is load-bearing only for a marker PHRASE whose
+    # words would otherwise straddle a comma: 'z domu' is one entry,
+    # and 'z' and 'domu' sit on opposite sides of the comma in 'Anna
+    # z, domu Nowak'. With the real offsets the two words are in
+    # different buckets, the phrase cannot complete, and clause_at
+    # falls through to the whole name; passing () collapses every
+    # token into one bucket, the phrase wrongly completes, and the
+    # cut lands at 'z' instead. Measured 2026-09-17.
+    state = _state_through("segment", "Anna z, domu Nowak")
+    texts, cut = own_words(state.tokens, state.comma_offsets,
+                           state.lexicon.maiden_markers)
+    assert texts == ["Anna", "z", "domu", "Nowak"]
+    assert cut == 4
+    texts, cut = own_words(state.tokens, (), state.lexicon.maiden_markers)
+    assert texts == ["Anna"]
+    assert cut == 1
+
+
+def test_own_words_takes_a_marker_map_when_the_caller_has_one() -> None:
+    # classify has already decided which tokens are marker RUN heads,
+    # so it hands that map over rather than paying a second walk.
+    state = _state_through("segment", "Jane née Jones Smith")
+    heads = {1: "vocab:maiden-marker", 2: "vocab:maiden-marker-cont"}
+    assert own_words(state.tokens, state.comma_offsets,
+                     state.lexicon.maiden_markers,
+                     heads) == (["Jane"], 1)
+    # an incomplete phrase entry: no head tag, so the map's answer is
+    # "no clause" -- and the self-built path agrees, since both now
+    # run the SAME completion test (#289/#516)
+    state = _state_through("segment", "Anna z Nowak")
+    assert own_words(state.tokens, state.comma_offsets,
+                     state.lexicon.maiden_markers,
+                     {}) == (["Anna", "z", "Nowak"], 3)
+    assert own_words(state.tokens, state.comma_offsets,
+                     state.lexicon.maiden_markers)[1] == 3
+
+
+def test_own_words_two_spellings_agree_on_the_one_case_verdict() -> None:
+    # #289/#516's fix: own_words' self-built path (no marker_tags map)
+    # now calls _vocab.tag_marker_runs -- the SAME run-completion test
+    # classify uses -- instead of approximating it with a text-only
+    # head walk (the retired first_marker_head). The two spellings
+    # below -- an explicit map built ahead of time, and none at all --
+    # are now the SAME computation, so they agree on the CUT, not just
+    # the verdict, by construction rather than by corpus luck.
+    #
+    # 'ANNA z Nowak, MD' is why the old approximation was not merely
+    # imprecise but wrong: 'z' opens the phrase entry 'z domu', which
+    # completes neither way, but the text-only walk took the open
+    # alone as the cut (1: just 'ANNA', one-case True), while the real
+    # run-completion test finds no run and falls through to the full
+    # own-words span (mixed case, False) -- a flipped verdict, not a
+    # different span with the same answer. Measured 2026-09-17.
+    for text in ("Anna z Nowak", "Anna z (domu) Nowak", "ANNA z Nowak, MD"):
+        state = _state_through("segment", text)
+        folded = [_normalize(t.text) for t in state.tokens]
+        built_map = tag_marker_runs(state.tokens, state.comma_offsets,
+                                    state.lexicon.maiden_markers, folded)
+        tagged = own_words(state.tokens, state.comma_offsets,
+                           state.lexicon.maiden_markers, built_map)
+        walked = own_words(state.tokens, state.comma_offsets,
+                           state.lexicon.maiden_markers)
+        assert tagged == walked, text
+        assert is_one_case(tagged[0]) == is_one_case(walked[0]), text

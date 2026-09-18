@@ -1,6 +1,7 @@
 import dataclasses
 
 from nameparser._lexicon import Lexicon
+from nameparser._pipeline import STAGES
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
@@ -42,6 +43,18 @@ def _classified_with(text: str, lexicon: Lexicon) -> ParseState:
 
 def _classified(text: str) -> ParseState:
     return _classified_with(text, _LEX)
+
+
+def _state_through(stage_name: str, text: str) -> ParseState:
+    """Run the pipeline up to and including the named stage (STAGES'
+    own names) using this module's `_LEX`, for a test that needs a
+    state classify has not yet touched (#289/#516)."""
+    state = ParseState(original=text, lexicon=_LEX, policy=Policy())
+    for stage in STAGES:
+        state = stage(state)
+        if stage.__name__ == stage_name:
+            break
+    return state
 
 
 def _tags(state: ParseState, text: str) -> frozenset[str]:
@@ -282,7 +295,7 @@ def test_a_word_after_the_maiden_marker_reads_as_plain_vocabulary() -> None:
 
 
 def test_a_clauses_own_marker_word_does_not_truncate_the_own_words() -> None:
-    # #527 review: _tag_marker_runs walks every token, so a maiden
+    # #527 review: _vocab.tag_marker_runs walks every token, so a maiden
     # marker WORD that arrives already ROLED (parenthesised clause
     # content, extract's doing -- WorkToken.role's docstring) is the
     # CLAUSE's own word, not a bare marker opening a new clause, and
@@ -357,3 +370,48 @@ def test_classify_is_per_token_independent_of_the_comma() -> None:
     assert "conjunction" in _tags(suffix_comma, "Y")
     assert "initial" not in _tags(suffix_comma, "Y")
     assert suffix_comma.ambiguities == ()
+
+
+def test_classify_records_the_one_case_fact_on_the_state() -> None:
+    # #289/#516 promotes the fact #527 computed as a local: the suffix
+    # slot, the post-comma slot and the tail-segment reading all
+    # consult it, and two sites deciding it apart is what
+    # ParseState.order's shape exists to prevent.
+    assert _classified("JOHN SMITH MA").one_case is True
+    assert _classified("John Smith Ma").one_case is False
+    assert _classified("john smith ma").one_case is True
+    # a caseless script has only one case, and answers True harmlessly
+    assert _classified("毛泽东").one_case is True
+    # the span is the name's OWN words: a maiden clause beside a
+    # one-case name does not make it mixed (rules.md#P3)
+    assert _classified("JUAN GARCIA Y LOPEZ née Jones").one_case is True
+
+
+def test_classify_does_not_overwrite_a_fact_already_recorded() -> None:
+    # segment writes it first where a comma form asked; classify reads
+    # what is there rather than deciding it a second time.
+    state = _state_through("segment", "John Smith, MA")
+    forced = dataclasses.replace(state, one_case=True)
+    assert classify(forced).one_case is True
+
+
+def test_classify_s_fork_reads_the_pre_recorded_fact_not_its_own_answer() -> None:
+    # Not just that the field survives (the test above) -- the FORK
+    # that reads one_case must consult the recorded value, not
+    # recompute its own. "Jose e Maria Santos" is mixed case on its
+    # own words, so an unforced parse takes the conjunction branch and
+    # reports nothing; forcing one_case=True ahead of classify must
+    # flip 'e' to an initial and report CONJUNCTION_OR_INITIAL even
+    # though the tokens themselves never changed case (measured
+    # 2026-09-17, #289/#516).
+    unforced = _classified("Jose e Maria Santos")
+    assert "conjunction" in _tags(unforced, "e")
+    assert "initial" not in _tags(unforced, "e")
+    assert unforced.ambiguities == ()
+
+    state = _state_through("segment", "Jose e Maria Santos")
+    forced = dataclasses.replace(state, one_case=True)
+    out = classify(forced)
+    assert "initial" in _tags(out, "e")
+    kinds = [a.kind for a in out.ambiguities]
+    assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL]

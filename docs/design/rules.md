@@ -503,6 +503,10 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     and not by this rule. The two questions part at one point: a
     marker the pass declines and leaves as a word (M2) is a word, and
     counts toward the three — but its case is still not asked.
+    That span is not this rule's alone: wherever another rule asks
+    the case question — the suffix slot (S2) and the post-comma slot
+    (C1) — it is asked of these same words, so the answer is taken
+    once and read where each of them stands.
       "Juan y Eva Garcia"         →  given="Juan y Eva"
       "Jose E Maria Santos"       →  middle="E Maria"
       "jose e maria santos"       →  middle="e maria"
@@ -581,7 +585,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.

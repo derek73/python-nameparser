@@ -105,8 +105,9 @@ class ParseState:
     script_segment -> tokens and segments again (the one stage that
     changes the token COUNT: an unspaced CJK token splits into n+1
     pieces, still as sub-slices of the original, and every later index
-    in the segment runs shifts by n); classify -> token tags; group ->
-    pieces/piece_tags/dropped AND maiden token roles;
+    in the segment runs shifts by n); classify -> token tags AND
+    one_case; group -> pieces/piece_tags/dropped AND maiden token
+    roles;
     assign -> the remaining token roles AND `order`, the effective
     order it read them under; post_rules -> roles again, and the
     ambiguity P6's attachment reports.
@@ -153,4 +154,16 @@ class ParseState:
     #: script_orders entry -- which is why the test for it builds its
     #: own (test_post_rules.py).
     order: tuple[Role, Role, Role] | None = None
+    #: Whether the name's OWN words are written wholly in one case --
+    #: all upper or all lower alike -- and so carry no case EVIDENCE
+    #: about any word in them (rules.md#P3's own-words span,
+    #: _pieces.own_words). None means NOT ASKED YET: the fact is
+    #: computed by whichever of segment and classify needs it first,
+    #: segment only when a comma form could turn on it, so a reader
+    #: between the two stages sees None and must not guess.
+    #: Recorded rather than recomputed, the way `order` above is: the
+    #: suffix slot, the post-comma slot and the tail-segment reading
+    #: all consult it and must not disagree (#289/#516,
+    #: decisions.md#P3).
+    one_case: bool | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()

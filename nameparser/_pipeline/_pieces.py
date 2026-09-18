@@ -7,7 +7,11 @@ stage; the split is by what the question takes, not by
 which stage happens to ask (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 _vocab points here from its own side: "Text-level tests used by more
 than one stage; piece-level ones live in _pieces, the sibling layer
-over tokens-plus-tags."
+over tokens-plus-tags." own_words (#289/#516) answers over the whole
+token STREAM rather than one piece -- pieces do not exist yet at the
+stages that call it -- but the question is still piece-shaped, not
+word-shaped: it reads token ROLE, which _vocab's text-level tests
+never take.
 
 Before this module those predicates lived in _group, not because
 grouping owned them but because assign imported group and could not be
@@ -34,8 +38,8 @@ tail_reading is that one question, running them against each other to
 their fixed point for the two stages that must not disagree about the
 answer.
 
-Layering: imports _state and _vocab only; _group and _assign import
-it, and neither of the two it imports imports it back.
+Layering: imports _state and _vocab only; _group, _assign and
+_classify import it, and neither of the two it imports imports it back.
 
 Naming follows _vocab's: inside an already-private module the leading
 underscore marks module-PRIVATE, so the names other stages call are
@@ -47,13 +51,77 @@ helper.
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence, Set
+from collections.abc import Mapping, Sequence, Set
 from typing import NamedTuple
 
 from nameparser._pipeline._state import WorkToken
 from nameparser._pipeline._vocab import (
-    in_initialless_script, is_trailing_numeral_suffix,
+    in_initialless_script, is_trailing_numeral_suffix, tag_marker_runs,
 )
+
+
+# rules.md#P3: "both questions this rule asks of a name — how many
+# words it has, and whether it is written in one case — are asked of
+# the name's OWN words: a maiden marker taken as one, and the words it
+# takes (M2), are not among them, and neither is a delimited clause
+# (N1, M1)" (history: decisions.md#P3)
+def own_words(tokens: Sequence[WorkToken], comma_offsets: Sequence[int],
+              markers: frozenset[str],
+              marker_tags: Mapping[int, str] | None = None,
+              ) -> tuple[list[str], int]:
+    """The name's OWN word texts and the index the maiden clause
+    starts at -- one span for the two stages that ask about it
+    (#289/#516).
+
+    Own words are the role-less tokens before the clause: a delimited
+    clause's tokens arrive from extract with a role already set, and
+    everything from a maiden marker on is the clause. Appending a
+    clause to a name must not change how a word in the name reads.
+
+    `marker_tags` is the map `_vocab.tag_marker_runs` already built,
+    index -> "vocab:maiden-marker"/"...-cont"; a caller that has it
+    (classify) hands it over and pays no second walk. A caller that
+    runs BEFORE those tags exist (segment) omits it, and this
+    function calls `tag_marker_runs` itself to build the SAME map
+    classify would -- not an approximation of it, which is what a
+    from-scratch text walk (this module's earlier `first_marker_head`)
+    could disagree with on a name where a marker's head opens an entry
+    but no run completes ('z' of 'z domu'): measured, 'ANNA z Nowak,
+    MD' flipped the recorded one-case verdict under that approximation
+    (decisions.md#P3). Sharing the exact function instead makes the
+    two paths agree by construction, not by corpus luck.
+
+    Takes tokens/comma_offsets/markers rather than a whole ParseState:
+    both call sites have all three already, and passing them lets this
+    function sit beside the piece predicates rather than in _vocab
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION; the
+    _post_rules.suffix_entries precedent, AGENTS.md's named exception)
+    -- it answers with the SPAN, where `tag_marker_runs` answers only
+    which tokens open a run.
+
+    `marker_tags`' keys must arrive in index order for the walk below
+    to find the SMALLEST head in one pass: `tag_marker_runs` walks its
+    tokens left to right, so the first head it records is already the
+    smallest, and a caller building its own map must preserve that
+    order too.
+
+    A plain tuple, not a NamedTuple: measured 2026-09-17, wrapping
+    this in a `NamedTuple` (this module's `Peel` is one) cost the
+    reference name one more frame (413.00 vs the 412.00 band this
+    commit must hold) -- a NamedTuple's `__new__` is itself a call,
+    where a bare tuple literal is not. `Peel` can afford the frame
+    because assign builds one only where the trailing peel actually
+    ran; `own_words` returns on every parse.
+    """
+    if marker_tags is None:
+        marker_tags = tag_marker_runs(tokens, comma_offsets, markers)
+    clause_at = len(tokens)
+    for i, tag in marker_tags.items():
+        if tag == "vocab:maiden-marker" and tokens[i].role is None:
+            clause_at = i
+            break
+    return ([t.text for t in tokens[:clause_at] if t.role is None],
+            clause_at)
 
 
 # rules.md#H3: "successive title words at the start of the part

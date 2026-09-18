@@ -179,7 +179,7 @@ def _marker_run_pieces(seen: Sequence[int], pieces: Sequence[Sequence[int]],
     and no more: a run of ROLE-LESS tokens stays inside one segment. It
     can also tag a run across two adjacent clauses of the same role,
     which this walk never sees because a role-bearing token is in no
-    segment at all -- see _tag_marker_runs, which states the limit.
+    segment at all -- see _vocab.tag_marker_runs, which states the limit.
     """
     return marker_run_length(
         tokens[pieces[seen[k]][0]].tags for k in range(m + 1, len(seen)))

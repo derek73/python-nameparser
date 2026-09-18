@@ -1,8 +1,9 @@
 """Shared vocabulary predicates for pipeline stages.
 
 Text-level tests used by more than one stage; piece-level ones live
-in _pieces, the sibling layer over tokens-plus-tags. All take normalized-or-raw text
-explicitly -- no state.
+in _pieces, the sibling layer over tokens-plus-tags. All take
+normalized-or-raw text explicitly and no state, with the departures
+named below.
 
 is_wholly_suffix departs from that shape twice, deliberately. It is
 RUN-level rather than text-level, because the question it answers is
@@ -21,7 +22,21 @@ reaches is a question about a run of words that no per-word membership
 test can answer, and the vocabulary reaches it as a plain frozenset
 field like every other predicate here.
 
-Layering: imports _lexicon, _types, and _policy only.
+tag_marker_runs is the third departure, and the reason this module also
+imports _state (WorkToken, comma_bucket): deciding which tokens open a
+maiden-marker RUN needs each token's role and span, not its text alone,
+because a run must not cross a role change or a comma. It moved here
+from classify (#289/#516) so _pieces.own_words -- which may import
+only _state and _vocab (tests/v2/test_layering.py) -- can call the
+SAME function classify does rather than approximating it with a
+text-only walk. Two callers building a map from the same tokens with
+the same function cannot disagree, which a from-scratch approximation
+could (measured: 'ANNA z Nowak, MD' flips the one-case verdict when
+the approximation and the real run-completion test disagree on
+whether 'z' opens a run that completes).
+
+Layering: imports _lexicon, _policy, and _pipeline._state (WorkToken,
+comma_bucket -- read-only, never a whole ParseState).
 """
 from __future__ import annotations
 
@@ -33,6 +48,7 @@ from collections.abc import Callable, Iterable, Sequence
 from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
+from nameparser._pipeline._state import WorkToken, comma_bucket
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
@@ -433,6 +449,117 @@ def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
         if key.count(" ") == n - 1 and key in markers:
             return n
     return 0
+
+
+def tag_marker_runs(tokens: Sequence[WorkToken], comma_offsets: Sequence[int],
+                    markers: frozenset[str],
+                    folded: Sequence[str] | None = None) -> dict[int, str]:
+    """Which tokens are maiden marker runs: index -> "vocab:maiden-marker"
+    for a run's head, "vocab:maiden-marker-cont" for the rest.
+
+    Returns the decision rather than rewriting the tokens: a caller
+    that writes tags into the one pass that builds them (classify)
+    consults this map rather than deciding a run twice, so a marker
+    token is never replaced twice; a caller that never writes tags at
+    all (own_words) reads the same map for its span instead.
+
+    Moved here from classify (#289/#516) so a caller outside classify
+    -- _pieces.own_words, when it has no marker map yet -- can build
+    the SAME map classify would, rather than approximating it with a
+    text-only head test. `_pieces.py` may import only _state and
+    _vocab (tests/v2/test_layering.py), so the one shared function
+    both sites call has to live here, in the layer both can reach.
+
+    `folded` is _normalize per token; classify has already built it
+    for the vocabulary-tag pass and hands it over so this pass costs
+    no second fold, and a caller with only tokens (own_words' self-
+    built path) omits it and pays the fold here instead -- paid only
+    on that path, never on classify's, so the reference name's frame
+    count is unchanged (#289/#516).
+
+    The one sequence pass in this stage, and it has to be one: a marker
+    entry may be a PHRASE whose words are not markers individually
+    ('z', 'domu'), so no per-token membership test can find it.
+    Left to right, longest first at each position, then skip past what
+    the run claimed -- a second marker cannot start inside the first.
+
+    This is where the tag is DECIDED for the stages that read it
+    afterwards. group runs later and asks its questions of these tags
+    rather than re-deriving the run (the recorded-answer half of
+    mechanisms.md#ONE-PREDICATE-PER-QUESTION); extract runs EARLIER,
+    before tokens exist, so it calls the predicate itself over the
+    clause's whitespace words.
+
+    A tagged run is structurally contiguous, and the test is
+    one-directional: a role change IS a clause edge, so no run spans
+    one, but not every clause edge is a role change -- two ADJACENT
+    clauses of the same role are indistinguishable here, and
+    'Jane (z) (domu) Jones' does tag a run across them. Both consumers
+    refuse that run for reasons of their own (the piece walk never sees
+    role-bearing tokens at all; the clause drop is scoped to one
+    clause's span), so no reading depends on it today, and the claim
+    this pass can honestly make is the weaker one. What it does
+    guarantee is what _group._marker_run_pieces needs: a run inside the
+    MAIN stream stays inside one segment. Without it this pass walked
+    the whole span-sorted stream while group walked one segment --
+    _segment keeps only role-less tokens and buckets them by the commas
+    before them -- so a run half inside a bracketed clause was tagged
+    whole and consumed as a proper PREFIX of itself, and
+    'Anna z (domu) Nowak' read family 'Anna', maiden 'Nowak': the bare
+    preposition eating the name, which is the exact damage the phrase
+    entry exists to prevent. Refusing to tag such a run is the fix;
+    truncating it instead would hand M2 the same wrong prefix one word
+    shorter.
+    """
+    # the lookahead the vocabulary actually needs; 0 for an empty set,
+    # which skips the pass entirely
+    cap = _longest_marker(markers)
+    if not cap:
+        return {}
+    if folded is None:
+        folded = [_normalize(t.text) for t in tokens]
+    n_tokens = len(tokens)
+    # Deferred, not computed up front: only the contiguity walk reads
+    # it, only a phrase vocabulary runs that walk, and only at a token
+    # that opens an entry -- so a single-word vocabulary, and a
+    # phrase vocabulary over a name holding no marker, never pay the
+    # sweep at all.
+    buckets: list[int] | None = None
+    tags: dict[int, str] = {}
+    i = 0
+    while i < n_tokens:
+        # The predicate's own head test first, over the fold the caller
+        # already has: almost no token opens any entry, and for those
+        # there is nothing to assemble. Same function maiden_marker_run
+        # consults, so a token skipped here is one it would refuse.
+        if not maiden_marker_head(folded[i], markers):
+            i += 1
+            continue
+        # Bound the lookahead at the first structural boundary, so the
+        # predicate is asked over the words that could form one run and
+        # answers longest-first WITHIN them -- a two-word entry refused
+        # at a clause edge still leaves a one-word entry starting there
+        # free to match.
+        limit = 1
+        if cap > 1:
+            if buckets is None:
+                buckets = [comma_bucket(t.span.start, comma_offsets)
+                           for t in tokens]
+            role, bucket = tokens[i].role, buckets[i]
+            while (limit < cap and i + limit < n_tokens
+                   and tokens[i + limit].role is role
+                   and buckets[i + limit] == bucket):
+                limit += 1
+        run = maiden_marker_run(
+            [tokens[k].text for k in range(i, i + limit)], markers)
+        if not run:
+            i += 1
+            continue
+        tags[i] = "vocab:maiden-marker"
+        for k in range(i + 1, i + run):
+            tags[k] = "vocab:maiden-marker-cont"
+        i += run
+    return tags
 
 
 def _normalized_for_script(text: str) -> str | None:
