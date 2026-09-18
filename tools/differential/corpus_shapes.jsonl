@@ -16,6 +16,8 @@
 {"name": "Jack Ma", "shape": 1}
 {"name": "Jack X.Y.I.", "shape": 1}
 {"name": "Jack X.Y.Z.", "shape": 1}
+{"name": "Jean DUPONT", "shape": 1}
+{"name": "Jean Pierre DUPONT", "shape": 1}
 {"name": "John \"Jack\" Kennedy", "shape": 1}
 {"name": "John Doe JD.CPA", "shape": 1}
 {"name": "John Jack Andrew Kennedy", "shape": 1}
@@ -30,6 +32,7 @@
 {"name": "John Smith Q.W.E.R.T.", "shape": 1}
 {"name": "John Smith R.A.I.", "shape": 1}
 {"name": "John Smith X.Y.Z.", "shape": 1}
+{"name": "John Smith XYZ", "shape": 1}
 {"name": "John Smith Xyz.", "shape": 1}
 {"name": "John V. Smith", "shape": 1}
 {"name": "John e Smith", "shape": 1}
@@ -39,6 +42,7 @@
 {"name": "Juan de la Vega", "shape": 1}
 {"name": "Lt.Gov. John Doe", "shape": 1}
 {"name": "Md Abdul Karim", "shape": 1}
+{"name": "Minjun KIM", "shape": 1}
 {"name": "Mr MA", "shape": 1}
 {"name": "Sir Bob Andrew Dole", "shape": 1}
 {"name": "X.Y.Z. Smith", "shape": 1}

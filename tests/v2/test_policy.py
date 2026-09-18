@@ -775,3 +775,56 @@ def test_unlisted_dotted_suffixes_off_reads_name_material() -> None:
     for p in (Parser(), Parser(policy=Policy(unlisted_dotted_suffixes=False))):
         assert p.parse("John Smith M.A.").suffix == "M.A."
         assert p.parse("Doe, John Msc.Ed.").suffix == "Msc.Ed."
+
+
+def test_unlisted_caps_suffixes_is_a_validated_bool_defaulting_off() -> None:
+    # #516's all-caps half is OPT-IN, and the asymmetry with the
+    # dotted half is the whole decision: an all-caps surname is a real
+    # writing convention that shape cannot separate from a credential.
+    assert Policy().unlisted_caps_suffixes is False
+    assert Policy(unlisted_caps_suffixes=True).unlisted_caps_suffixes is True
+    with pytest.raises(TypeError, match="unlisted_caps_suffixes"):
+        Policy(unlisted_caps_suffixes="yes")  # type: ignore[arg-type]
+    assert Policy().patched(
+        PolicyPatch(unlisted_caps_suffixes=True)
+    ).unlisted_caps_suffixes is True
+
+
+def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
+    # Frames, recorded honestly (#516 review round, F4): the switch is
+    # OPT-IN and OFF-BAND -- `tools/perf/call_count.py`'s reference
+    # name and the DEFAULT-policy comma harness both measure +0, the
+    # only figures test_benchmark.py's band gates. With the switch ON,
+    # a genuine comma candidate pays for the fact it forces: measured
+    # 2026-09-18 (same-interpreter harness against f7089763, the
+    # release before this design) `"Smith, John"` is +6 (207 -> 213),
+    # `"Smith, XYZ"` (a real candidate) is +39 (206 -> 245) --
+    # cheaper than an earlier round's +8/+50 measurement, after
+    # `caps_shape_candidate` consolidated three separate spellings of
+    # the shape test into one shared call. Nothing gates either
+    # number; they are reported here, dated, so a reader who turns
+    # the switch on knows what it costs and a later re-measurement
+    # does not read as a silent drift.
+    from nameparser import Parser
+
+    on = Parser(policy=Policy(unlisted_caps_suffixes=True))
+    off = Parser()
+    # what it buys
+    assert on.parse("John Smith XYZ").suffix == "XYZ"
+    assert on.parse("John Smith, XYZ").suffix == "XYZ"
+    # what it costs, and why the default is off
+    assert on.parse("Jean Pierre DUPONT").suffix == "DUPONT"
+    assert off.parse("Jean Pierre DUPONT").family == "DUPONT"
+    # the default emits nothing at all
+    assert off.parse("John Smith XYZ").ambiguities == ()
+    # the boundaries: one case, one letter, a digit, and vocabulary.
+    # 'John Smith X' is NOT the single-letter control -- 'X' is a bare
+    # roman numeral (rules.md#S2's numeral fork) and reads as suffix
+    # 'X' with the switch either way, unrelated to this one; 'Z' is
+    # not vocabulary at all and stays unaffected by the switch, which
+    # is the actual boundary (a single capital never satisfies the
+    # `len(text) >= 2` half of the shape test, on or off).
+    assert on.parse("JOHN SMITH XYZ").family == "XYZ"
+    assert on.parse("John Smith Z").family == off.parse("John Smith Z").family
+    assert on.parse("John Smith XY2").family == "XY2"
+    assert on.parse("John Smith MC").suffix == "MC"

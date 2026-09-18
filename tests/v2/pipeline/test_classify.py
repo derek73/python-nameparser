@@ -7,9 +7,11 @@ from nameparser._pipeline import STAGES
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
-from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._state import SHAPE_ACRONYM_TAG, ParseState
 from nameparser._pipeline._tokenize import tokenize
-from nameparser._pipeline._vocab import ambiguous_class_candidate
+from nameparser._pipeline._vocab import (
+    ambiguous_class_candidate, ambiguous_class_member,
+)
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
 
@@ -475,20 +477,131 @@ def test_delimited_content_never_joins_the_shape_class() -> None:
         assert "vocab:suffix-ambiguous" not in tags, text
 
 
-@pytest.mark.parametrize("word", [
-    "X.Y.Z.", "A.B.", "M.A.", "A.B.C.", "Msc.Ed.", "Lt.Gov.", "1.4",
-    "Xyz.", "MA", "田.中.",
+@pytest.mark.parametrize("word,policy,one_case", [
+    ("X.Y.Z.", Policy(), None),
+    ("A.B.", Policy(), None),
+    ("M.A.", Policy(), None),
+    ("A.B.C.", Policy(), None),
+    ("Msc.Ed.", Policy(), None),
+    ("Lt.Gov.", Policy(), None),
+    ("1.4", Policy(), None),
+    ("Xyz.", Policy(), None),
+    ("MA", Policy(), None),
+    ("田.中.", Policy(), None),
+    # #516's caps half: OFF is silent (matches the tag either way,
+    # since the token never carries the fact); ON needs the REAL
+    # `one_case` fact passed in, since -- unlike the dotted shape --
+    # this membership question reads case.
+    ("XYZ", Policy(), None),
+    ("XYZ", Policy(unlisted_caps_suffixes=True), False),
+    ("MC", Policy(unlisted_caps_suffixes=True), False),
+    ("X", Policy(unlisted_caps_suffixes=True), False),
+    ("XY2", Policy(unlisted_caps_suffixes=True), False),
+    ("DUPONT", Policy(unlisted_caps_suffixes=True), False),
+    # #516 review round, F1/F1b: LISTED members must keep the LEAN
+    # (SHAPE_ACRONYM_TAG must NOT ride beside their membership tag),
+    # and UNLISTED means in no wordlist at all -- a particle, an
+    # ambiguous particle and a conjunction, capitalized, must not
+    # join the class either.
+    ("MA", Policy(unlisted_caps_suffixes=True), False),
+    ("BA", Policy(unlisted_caps_suffixes=True), False),
+    ("DE", Policy(unlisted_caps_suffixes=True), False),
+    ("Y", Policy(unlisted_caps_suffixes=True), False),
+    ("VAN", Policy(unlisted_caps_suffixes=True), False),
+    # 'Y' declines at the `len(text) >= 2` shape gate and never
+    # actually reaches the conjunction-exclusion check at all;
+    # 'AND' is the row that genuinely exercises it (quality-review
+    # finding).
+    ("AND", Policy(unlisted_caps_suffixes=True), False),
+    # #516 review round (second finding): the four wordlists the
+    # first fix round's exclusion left with no row of their own
+    # (titles, given_name_titles, bound_given_names, suffix_words --
+    # `given_name_titles` is always a subset of `titles` in the
+    # shipped lexicon, so 'AUNT' declines via BOTH the outer
+    # `vocab:title` guard and this elif's own check, and the row
+    # still pins that it declines either way), and the maiden-marker
+    # gap itself.
+    ("SIR", Policy(unlisted_caps_suffixes=True), False),
+    ("AUNT", Policy(unlisted_caps_suffixes=True), False),
+    ("ABDUL", Policy(unlisted_caps_suffixes=True), False),
+    ("JR", Policy(unlisted_caps_suffixes=True), False),
+    ("NEE", Policy(unlisted_caps_suffixes=True), False),
 ])
-def test_ambiguous_class_candidate_agrees_with_the_tag(word: str) -> None:
+def test_ambiguous_class_candidate_agrees_with_the_tag(
+        word: str, policy: Policy, one_case: bool | None) -> None:
     # `ambiguous_class_candidate` (`_vocab.py`) and classify's own tag
-    # emission ask the SAME question twice, of necessity -- `segment`
+    # emission ask the SAME questions twice, of necessity -- `segment`
     # runs before `classify` and has no tags to read yet. Kept from
     # drifting by this test rather than by a sentence alone: both
     # docstrings point here by name. `MA.`/`Ed.` are deliberately
     # absent: a listed member's DOTTED spelling is carried by the tag
     # path alone (`ambiguous_class_member`'s docstring), the one place
     # these two answers are meant to differ.
+    #
+    # Membership alone is not enough to catch #516's review-round
+    # regression: `ambiguous_class_candidate("MA", ...)` was ALWAYS
+    # True (the listed half), on both sides of the bug, so comparing
+    # candidacy to `vocab:suffix-ambiguous` presence alone never
+    # noticed that classify's caps branch was ALSO wrongly adding
+    # `shape:acronym` beside it, silencing `listed_lean`. The second
+    # assertion is what catches that: SHAPE_ACRONYM_TAG must appear
+    # if and only if the class was joined BY SHAPE, never for a
+    # listed member.
     lex = Lexicon.default()
-    tags = _tags_by_text(f"John Smith {word}", lexicon=lex)[word]
-    assert (ambiguous_class_candidate(word, lex, Policy())
+    tags = _tags_by_text(f"John Smith {word}", lexicon=lex,
+                         policy=policy)[word]
+    assert (ambiguous_class_candidate(word, lex, policy, one_case=one_case)
             == ("vocab:suffix-ambiguous" in tags))
+    shape_member = (ambiguous_class_candidate(word, lex, policy,
+                                              one_case=one_case)
+                    and not ambiguous_class_member(word, lex))
+    assert (SHAPE_ACRONYM_TAG in tags) == shape_member
+
+
+def test_the_caps_shape_is_silent_until_its_switch_is_on() -> None:
+    # OFF (the default) emits NOTHING -- not the membership tag and
+    # not the shape tag either, which is where this half differs from
+    # the dotted one: there is no fork to report while a caller has
+    # not asked for the reading (#516).
+    assert _tags_by_text("John Smith XYZ")["XYZ"] == frozenset()
+    on = Policy(unlisted_caps_suffixes=True)
+    tags = _tags_by_text("John Smith XYZ", policy=on)["XYZ"]
+    assert "shape:acronym" in tags and "vocab:suffix-ambiguous" in tags
+
+
+def test_the_caps_shape_is_a_testable_predicate() -> None:
+    # Spelled for an implementer: isalpha() and isupper() with at
+    # least two characters, in a MIXED-case name. 'MC' is real suffix
+    # vocabulary only in the SHIPPED lexicon (this module's own _LEX
+    # is deliberately minimal and does not carry it), so that one
+    # assertion uses Lexicon.default() rather than the module fixture.
+    on = Policy(unlisted_caps_suffixes=True)
+    # a digit anywhere disqualifies it
+    assert "shape:acronym" not in _tags_by_text("John Smith XY2", policy=on)["XY2"]
+    # a single capital stays what it is today, an initial
+    assert "shape:acronym" not in _tags_by_text("John Smith X", policy=on)["X"]
+    assert "initial" in _tags_by_text("John Smith X", policy=on)["X"]
+    # a one-case name has no contrast to read
+    assert "shape:acronym" not in _tags_by_text("JOHN SMITH XYZ", policy=on)["XYZ"]
+    # #516 review round (second finding): a token PAST the maiden
+    # clause cut must decline on the same one-case ground as every
+    # other token, not on `one_case_own`'s span alone -- 'NEE' sits
+    # outside `one_case_own`'s span by construction (it opens the
+    # clause), so testing that flag alone made a wholly one-case name
+    # look mixed for this one token and only this one.
+    assert "shape:acronym" not in _tags_by_text(
+        "JOHN SMITH NEE", policy=on, lexicon=Lexicon.default())["NEE"]
+    # UNLISTED means no whole-token suffix vocabulary claims it: 'MC'
+    # is suffix vocabulary and never reaches this switch
+    assert "shape:acronym" not in _tags_by_text(
+        "John Smith MC", policy=on, lexicon=Lexicon.default())["MC"]
+    # an interior period is the other switch's shape, not this one:
+    # 'X.Y' already carries `shape:acronym` at the DEFAULT (the
+    # dotted half, `unlisted_dotted_suffixes`, on by default), so the
+    # bare "in tags" assertion this row had before passed regardless
+    # of whether the caps switch touched it at all -- a differential
+    # is the real test (quality-review finding): turning the caps
+    # switch on must not CHANGE anything about a dotted token's tags.
+    assert (_tags_by_text("John Smith X.Y", policy=on)["X.Y"]
+            == _tags_by_text("John Smith X.Y")["X.Y"])
+

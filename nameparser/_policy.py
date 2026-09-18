@@ -668,6 +668,35 @@ class Policy:
     #: claimed; the roman-chunk retirement (rules.md#S3) is not
     #: behind this switch, and still reports the fork.
     unlisted_dotted_suffixes: bool = True
+    #: Reads an UNLISTED all-caps word of two or more letters, with no
+    #: period in it, in a name written in more than one case as a
+    #: credential where the position allows it: with this on,
+    #: "John Smith XYZ" gives suffix ``XYZ`` and "Smith, XYZ" still
+    #: gives given ``XYZ``, the same words-to-spare rule the rest of
+    #: the class takes. A listed member keeps its own case lean
+    #: regardless of this switch ("Jack MA" still gives suffix ``MA``
+    #: on or off), and the roman-numeral fork still claims a bare
+    #: numeral first either way ("Jack VI" is unaffected by this
+    #: switch, on or off). OFF BY DEFAULT, and the asymmetry with
+    #: ``unlisted_dotted_suffixes`` is deliberate: an all-caps surname
+    #: is a real writing convention that shape cannot separate from a
+    #: credential -- "Jean Pierre DUPONT" gives family ``Pierre``,
+    #: suffix ``DUPONT`` with this on, and a swallowed family name is
+    #: the worse failure. The two-word "Jean DUPONT" and "Minjun KIM"
+    #: read as family names at the default and KEEP that family with
+    #: this on too (one word before the credential is never enough,
+    #: the same words-to-spare rule above) -- but a genuine candidate
+    #: this switch does not move still gains the fork's report: it
+    #: was a real fork the parser considered and declined, and that
+    #: is reported even where the reading did not change. Off,
+    #: nothing changes and nothing is reported. A digit anywhere
+    #: disqualifies the token and a single capital stays an initial.
+    #: ``isupper()`` is script-agnostic, so this is the same
+    #: convention and the same reason for being off in ANY script
+    #: that has a case contrast at all, not just Latin -- an all-caps
+    #: Cyrillic surname ("Иван ИВАНОВ") or an accented Latin one
+    #: ("Jean ÉCOLE") joins this class exactly as an ASCII one does.
+    unlisted_caps_suffixes: bool = False
     #: Excludes emoji from tokenization: they appear in no token,
     #: field, or rendered view. The original string keeps them (input
     #: is never modified -- spans stay true).
@@ -767,8 +796,8 @@ class Policy:
         # caller's intent downstream; bools are the one field kind the
         # coercing checks above can't cover.
         for flag in ("middle_as_family", "lenient_comma_suffixes",
-                     "unlisted_dotted_suffixes", "strip_emoji",
-                     "strip_bidi"):
+                     "unlisted_dotted_suffixes", "unlisted_caps_suffixes",
+                     "strip_emoji", "strip_bidi"):
             value = getattr(self, flag)
             if not isinstance(value, bool):
                 raise TypeError(
@@ -847,6 +876,7 @@ class PolicyPatch:
         default=UNSET, metadata=_UNION)
     lenient_comma_suffixes: bool | _Unset = UNSET
     unlisted_dotted_suffixes: bool | _Unset = UNSET
+    unlisted_caps_suffixes: bool | _Unset = UNSET
     strip_emoji: bool | _Unset = UNSET
     strip_bidi: bool | _Unset = UNSET
 
@@ -899,8 +929,9 @@ class PolicyPatch:
                 ) from None
             object.__setattr__(self, f.name, frozenset(value))
         # middle_as_family, lenient_comma_suffixes,
-        # unlisted_dotted_suffixes, strip_emoji, and strip_bidi are
-        # scalar (compose="override") fields and DELIBERATELY get no
+        # unlisted_dotted_suffixes, unlisted_caps_suffixes, strip_emoji,
+        # and strip_bidi are scalar (compose="override") fields and
+        # DELIBERATELY get no
         # type check here, unlike name_order and
         # the union fields above: a PolicyPatch(strip_emoji="off") is
         # constructible, and only raises once apply_patch runs

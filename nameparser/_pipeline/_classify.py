@@ -12,11 +12,11 @@ recorded for the later stages that read it (#289/#516) and left alone
 where an earlier stage already asked.
 Reads: every Lexicon vocabulary field except surnames and
 honorific_tails, which script_segment consumes upstream; and, since
-2.4, Policy.unlisted_dotted_suffixes, which decides whether an
-UNLISTED dotted token joins the ambiguous credential class by SHAPE
-(#516). is_initial also consults the _policy module's _NO_INITIALS
-constant, which is not configuration -- nothing here varies by its
-value.
+2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
+which decide whether an UNLISTED dotted or all-caps token joins the
+ambiguous credential class by SHAPE (#516). is_initial also consults
+the _policy module's _NO_INITIALS constant, which is not
+configuration -- nothing here varies by its value.
 
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",
@@ -54,8 +54,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    is_initial, is_one_case, period_joined_vocab, suffix_as_written,
-    tag_marker_runs,
+    caps_shape_candidate, is_initial, is_one_case, period_joined_vocab,
+    suffix_as_written, tag_marker_runs,
 )
 from nameparser._pipeline._pieces import own_words
 
@@ -70,7 +70,8 @@ from nameparser._pipeline._pieces import own_words
 # bare ambiguous acronym is consumed only when the name has words to
 # spare"
 def _tags_for(token: WorkToken, n: str, state: ParseState,
-              marker_tag: str | None, one_case_own: bool) -> frozenset[str]:
+              marker_tag: str | None, one_case_own: bool,
+              one_case: bool) -> frozenset[str]:
     """`n` is _normalize(token.text), folded once by the caller and
     shared with the marker pass; `marker_tag` is what that pass decided
     for this token, or None. The marker DECISION is entirely
@@ -82,7 +83,21 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     and any delimited (nickname) content are not, so the fork never
     reads them either (rules.md#P3): a clause's words are not the
     name's own words, and appending one must not change how THIS token
-    reads."""
+    reads.
+
+    `one_case` is the bare NAME-level fact alone -- P3's own-words
+    span is not this question's business. #516's caps branch reads
+    THIS, not `one_case_own`: a maiden clause's own words are outside
+    `one_case_own`'s span by construction (`i < clause_at` fails for
+    every one of them), so a token past the clause cut reads
+    `one_case_own` as False regardless of whether the WHOLE name is
+    written in one case -- 'JOHN SMITH NEE' flipped 'NEE' to a
+    credential reading with the switch on, one case and all, because
+    `not one_case_own` was true for it purely from being past the
+    clause cut, never from the name's own writing (#516 review round,
+    a second reviewer's finding). `single_letter_connective` below
+    keeps `one_case_own`: that fork is genuinely about the OWN-WORDS
+    span, and reads a clause's word as no evidence on purpose."""
     lex = state.lexicon
     tags = set(token.tags)
     if marker_tag is not None:
@@ -175,6 +190,32 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add(SHAPE_ACRONYM_TAG)
             if state.policy.unlisted_dotted_suffixes:
                 tags.add("vocab:suffix-ambiguous")
+        elif (state.policy.unlisted_caps_suffixes and token.role is None
+                and caps_shape_candidate(token.text, lex, state.policy,
+                                         one_case)):
+            # #516's all-caps half, OPT-IN: an unlisted word written
+            # in capitals inside a mixed-case name. The policy
+            # conjunct comes FIRST and stays a plain attribute read --
+            # False by default, so `caps_shape_candidate` is never
+            # CALLED at the default, and sharing its body below costs
+            # the default nothing (quality-review finding: the shape
+            # test plus its eleven-list exclusion was spelled three
+            # times over -- here, in `_vocab.ambiguous_class_candidate`,
+            # and in `_segment.py`'s run test -- before this call
+            # replaced all three; unlike the dotted branch above,
+            # which stays inline because ITS caller has no such
+            # cheap first conjunct to hide behind). `role is None`
+            # stays here rather than moving into the shared predicate:
+            # delimited content is decided by extract's escape, never
+            # at the trailing slot, and this guard is what keeps a
+            # bracketed nickname like 'Bridge (A.B)' out of the shape
+            # class (see the sibling guard on the dotted branch,
+            # above, for the fuller reasoning -- the same one applies
+            # here). `caps_shape_candidate`'s own docstring carries
+            # the eleven-list roster and what each measured entry
+            # would have cost unfixed; not repeated here.
+            tags.add(SHAPE_ACRONYM_TAG)
+            tags.add("vocab:suffix-ambiguous")
     return frozenset(tags)
 
 
@@ -210,8 +251,8 @@ def classify(state: ParseState) -> ParseState:
     tokens = tuple(
         dataclasses.replace(
             t, tags=_tags_for(t, folded[i], state, marker_tags.get(i),
-                              one_case and i < clause_at
-                              and t.role is None))
+                              one_case_own=one_case and i < clause_at
+                              and t.role is None, one_case=one_case))
         for i, t in enumerate(state.tokens))
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->

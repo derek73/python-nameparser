@@ -45,6 +45,7 @@ _UNTRANSLATED = frozenset({
     "segment_scripts",
     "lenient_comma_suffixes",
     "unlisted_dotted_suffixes",
+    "unlisted_caps_suffixes",
     "strip_emoji",
     "strip_bidi",
 })
@@ -107,6 +108,31 @@ _CORE_ONLY_IDS = frozenset({
     # they assert are 1.4.0's for exactly that reason.
     "han_unspaced_no_script_orders_reports_the_convention",
     "kana_honorific_no_script_orders_reports_the_convention",
+    # #516's all-caps half: unlisted_caps_suffixes has no v1 spelling
+    # (v1 has no by-shape credential class at all), so every row that
+    # sets it is core-only.
+    "caps_surname_is_swallowed_with_the_switch_on",
+    "caps_surname_reports_but_does_not_move_at_two_words",
+    "unlisted_caps_reads_by_position_with_the_switch_on",
+    "the_caps_comma_count_needs_two_name_words",
+    "the_caps_comma_count_declines_at_one_word",
+    "one_case_input_never_reaches_the_caps_switch",
+    "suffix_vocabulary_never_reaches_the_caps_switch",
+    "the_caps_comma_count_reaches_a_multi_word_run",
+    "the_caps_comma_multi_word_run_declines_at_one_word",
+    # #516 review round: the F1/F1b/F2/F5 regression-guard rows, all
+    # under the same non-default policy.
+    "caps_switch_does_not_silence_the_listed_lean",
+    "caps_switch_does_not_silence_the_comma_lean",
+    "caps_switch_does_not_claim_a_capitalized_particle",
+    "caps_switch_does_not_claim_a_capitalized_particle_phrase",
+    "caps_switch_does_not_move_a_roman_numeral",
+    "caps_switch_does_not_move_a_roman_numeral_with_words_to_spare",
+    "caps_switch_does_not_move_a_title_floor_control",
+    "caps_switch_does_not_reach_delimited_content",
+    "caps_switch_run_test_declines_a_pure_listed_run",
+    "caps_switch_does_not_claim_a_one_case_maiden_marker",
+    "caps_switch_does_not_claim_a_mixed_case_maiden_marker",
 })
 
 

@@ -1772,6 +1772,251 @@ CASES: tuple[Case, ...] = (
                "material exactly as it did at dfb3170 -- no reading "
                "and no report",
          tolerated=True),
+    # #516's all-caps half, and it is OPT-IN. The rows come in pairs:
+    # the same name under the DEFAULT policy, where nothing moves and
+    # nothing is reported, and under Policy(unlisted_caps_suffixes=
+    # True), where the shape reads. The French and Korean names are
+    # why the default is off (mechanisms.md#VOCABULARY-EXERCISES-FORKS
+    # -- each pair pins the switch, not the words). A row that sets
+    # the non-default policy carries no `shape=` tag: the contract
+    # corpus (build_shapes_corpus.py) keys only on (shape, text), with
+    # no policy of its own, so admitting one of these texts under a
+    # shape id would have compare.py diff it against the released
+    # wheels under the DEFAULT policy -- the wrong question for a row
+    # whose point IS the non-default policy.
+    Case("caps_surname_is_a_family_name_by_default", "Jean DUPONT",
+         {"given": "Jean", "family": "DUPONT"},
+         notes="the writing convention the default protects: French "
+               "records write the surname in capitals, and shape "
+               "cannot tell that from a credential. 1.4.0's reading, "
+               "2.3's reading, and the reading at this default",
+         shape=1),
+    Case("caps_surname_is_swallowed_with_the_switch_on",
+         "Jean Pierre DUPONT",
+         {"given": "Jean", "family": "Pierre", "suffix": "DUPONT"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the cost of the switch, pinned so nobody turns it on "
+               "without meeting it: three name words, so the count "
+               "reads the capitalised surname as a credential and the "
+               "family becomes 'Pierre'. This row is the argument for "
+               "the default being off (decisions.md#S2)"),
+    # #516 review round (quality-review finding): the TWO-word shape
+    # ('Jean DUPONT') is the row `_policy.py`'s own docstring needed
+    # and did not have -- turning the switch on reports a genuine
+    # candidate even where one word before the credential declines
+    # the structure flip, matching 'the_caps_comma_count_declines_at_
+    # one_word' (the comma form's own twin of this exact guarantee).
+    Case("caps_surname_reports_but_does_not_move_at_two_words",
+         "Jean DUPONT",
+         {"given": "Jean", "family": "DUPONT"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="one name word is never enough to spend the credential "
+               "reading, so the family stays 'DUPONT' -- but the fork "
+               "was genuinely considered and declined, and reports so "
+               "even though nothing moved"),
+    Case("caps_surname_default_reading_at_three_words",
+         "Jean Pierre DUPONT",
+         {"given": "Jean", "middle": "Pierre", "family": "DUPONT"},
+         notes="the same name at the default, which is the half a "
+               "reader of the row above needs: nothing moves and "
+               "nothing is reported, so a caller who never sets the "
+               "switch never meets that cost",
+         shape=1),
+    Case("caps_korean_surname_is_a_family_name_by_default",
+         "Minjun KIM",
+         {"given": "Minjun", "family": "KIM"},
+         notes="the second convention the default protects: Korean "
+               "records write the family name in capitals to mark "
+               "which of two words it is, which is the opposite of a "
+               "credential",
+         shape=1),
+    Case("unlisted_caps_reads_by_position_with_the_switch_on",
+         "John Smith XYZ",
+         {"given": "John", "family": "Smith", "suffix": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="what the switch buys: the shape reads, and the "
+               "words-to-spare count decides it exactly as it decides "
+               "the listed set"),
+    Case("unlisted_caps_is_silent_at_the_default", "John Smith XYZ",
+         {"given": "John", "middle": "Smith", "family": "XYZ"},
+         notes="the same name at the default: name material, and NO "
+               "report -- the one place this design emits nothing "
+               "where a fork could be said to exist, because the "
+               "reading was never on offer (#516)",
+         shape=1),
+    Case("the_caps_comma_count_needs_two_name_words",
+         "John Smith, XYZ",
+         {"given": "John", "family": "Smith", "suffix": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the comma structure moves with this half too, on the "
+               "same NAME-word count"),
+    Case("the_caps_comma_count_declines_at_one_word", "Smith, XYZ",
+         {"given": "XYZ", "family": "Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="its control, switch and all: one name word before the "
+               "comma is never enough, so the capitalised word stays "
+               "the given name"),
+    Case("one_case_input_never_reaches_the_caps_switch",
+         "JOHN SMITH XYZ",
+         {"given": "JOHN", "middle": "SMITH", "family": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the one-case control, and it needs the switch ON to "
+               "mean anything: capitals against capitals are no "
+               "contrast, so the shape never fires and the row is "
+               "unchanged with the switch either way"),
+    Case("suffix_vocabulary_never_reaches_the_caps_switch",
+         "John Smith MC",
+         {"given": "John", "family": "Smith", "suffix": "MC"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="UNLISTED is the load-bearing word: 'mc' is suffix "
+               "vocabulary, so the whole-token lookup claims it before "
+               "any shape reading and this row reads the same with "
+               "the switch on or off"),
+    Case("the_caps_comma_count_reaches_a_multi_word_run",
+         "John Smith, LEED AP",
+         {"given": "John", "family": "Smith", "suffix": "LEED AP"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the first time this class reaches the comma form as "
+               "MORE than one token: 'LEED' and 'AP' are two separate "
+               "all-caps words, and every token in the run must be a "
+               "candidate for the run itself to be one -- rules.md#C1's "
+               "`deviates: #291` line comes true ONLY under this "
+               "switch. At the DEFAULT this exact text still reads "
+               "given 'LEED', middle 'AP', family 'John Smith' -- the "
+               "deviation stands there unchanged -- so commit E must "
+               "not remove the marker on this switch's account; it "
+               "only narrows what makes the deviation true"),
+    Case("the_caps_comma_multi_word_run_declines_at_one_word",
+         "Smith, LEED AP",
+         {"given": "LEED", "middle": "AP", "family": "Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="the one-pre-comma-word twin of the row above: the run "
+               "is still a candidate (so the fork still reports, via "
+               "assign's family-comma emitter reading the first "
+               "post-comma piece's tag) but one name word before the "
+               "comma is never enough to flip the structure, item 5's "
+               "count doing its job on real data"),
+    # #516 review round: LISTED members must keep #289's lean with
+    # the switch on -- the caps branch must never ride SHAPE_ACRONYM_
+    # TAG beside a listed member's own membership tag, which is what
+    # silenced `listed_lean` for these before the fix (F1, decided by
+    # the reviewer; decisions.md#S2). Both rows are byte-identical to
+    # their DEFAULT-policy siblings above (`caps_ambiguous_leans_
+    # credential`, `the_lean_reaches_the_post_comma_slot`) and carry
+    # no `shape=` tag for the same reason every other policy-on row
+    # here does not (Task 22 Step 2).
+    Case("caps_switch_does_not_silence_the_listed_lean", "Jack MA",
+         {"given": "Jack", "suffix": "MA"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the switch must not touch a LISTED member's own "
+               "#289 lean: identical to the default reading"),
+    Case("caps_switch_does_not_silence_the_comma_lean", "Smith, MA",
+         {"family": "Smith", "suffix": "MA"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="the comma-form twin of the row above, same guarantee"),
+    # #516 review round: UNLISTED means in no wordlist at all, not
+    # merely "no whole-token suffix vocabulary" -- a capitalized
+    # particle or particle phrase must not join the class either
+    # (F1b, decided by the reviewer; decisions.md#S2's amendment).
+    Case("caps_switch_does_not_claim_a_capitalized_particle",
+         "John Smith DE",
+         {"given": "John", "middle": "Smith", "family": "DE"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="'de' is a particle, not merely absent from suffix "
+               "vocabulary -- identical to the default reading with "
+               "the switch on"),
+    Case("caps_switch_does_not_claim_a_capitalized_particle_phrase",
+         "John Smith, DE LA",
+         {"family": "John Smith DE LA"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the multi-token twin: 'DE' and 'LA' are both "
+               "particles, so the RUN test (#516's own 'LEED AP' "
+               "shape) must decline them too -- identical to the "
+               "default reading"),
+    # #516 review round, F5: the spec's stated mechanism for why
+    # 'Jack VI' does not move was wrong -- 'VI' DOES reach the caps
+    # predicate and carries both tags with the switch on. It stays
+    # unchanged because `_pieces.is_trailing_numeral_suffix` (the
+    # roman-numeral fork) claims it downstream, before the lean/count
+    # this switch adds is ever consulted -- unrelated to this switch,
+    # and the reason these controls read identically on or off.
+    Case("caps_switch_does_not_move_a_roman_numeral", "Jack VI",
+         {"given": "Jack", "suffix": "VI"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the roman-numeral fork claims 'VI' before this "
+               "switch's lean/count is consulted -- identical to the "
+               "default reading, on or off"),
+    Case("caps_switch_does_not_move_a_roman_numeral_with_words_to_spare",
+         "John Smith VI",
+         {"given": "John", "family": "Smith", "suffix": "VI"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="the words-to-spare twin of the row above, same "
+               "mechanism, same guarantee"),
+    Case("caps_switch_does_not_move_a_title_floor_control", "Mr XXX",
+         {"title": "Mr", "family": "XXX"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="one piece behind a title never reaches the peel's "
+               "`k >= 2` floor -- identical to the default reading"),
+    Case("caps_switch_does_not_reach_delimited_content",
+         "Andrew Perkins (XYZ)",
+         {"given": "Andrew", "family": "Perkins", "nickname": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="delimited content is decided by the clause escape, "
+               "never at the trailing slot -- identical to the "
+               "default reading"),
+    # #516 review round, F2: the multi-token run test is a property of
+    # the CAPS class alone -- a run of pure LISTED members must keep
+    # its EXISTING reading (`_pieces.segment_suffix_reading`'s own
+    # per-piece walk, #289, unrelated to this switch and to its
+    # structure-flip candidate test) rather than being swept into the
+    # caps run test's `all()`. Identical to the default reading.
+    Case("caps_switch_run_test_declines_a_pure_listed_run",
+         "John Smith, Ed Ma",
+         {"given": "Ed", "middle": "Ma", "family": "John Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="'Ed' and 'Ma' are both LISTED ambiguous members, "
+               "Title-case (leans NAME, #289) -- the caps run test "
+               "must not admit a run the listed class already reads "
+               "on its own"),
+    # #516 review round (second finding): the caps branch read
+    # `one_case_own` -- true only for a token INSIDE the maiden
+    # clause's own-words span -- where it needed the bare NAME-level
+    # fact. 'NEE' opens the clause, so it sits OUTSIDE that span by
+    # construction and read as False regardless of the whole name's
+    # case, wrongly joining the shape class in a wholly one-case name.
+    # `maiden_markers` is also the one wordlist the ten-list exclusion
+    # first shipped without.
+    Case("caps_switch_does_not_claim_a_one_case_maiden_marker",
+         "JOHN SMITH NEE",
+         {"given": "JOHN", "middle": "SMITH", "family": "NEE"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="one case, and a maiden marker with no clause to open "
+               "(nothing follows it) -- identical to the default "
+               "reading either way"),
+    Case("caps_switch_does_not_claim_a_mixed_case_maiden_marker",
+         "John Smith NEE",
+         {"given": "John", "middle": "Smith", "family": "NEE"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the mixed-case twin: 'NEE' is unlisted by the caps "
+               "shape test's OWN membership check too, so this one "
+               "was already declining before this fix -- pinned "
+               "beside its one-case sibling for the same guarantee"),
     Case("catalan_i_is_not_connective_vocabulary_upper",
          "JOSEP CAROD I ROVIRA",
          {"given": "JOSEP", "middle": "CAROD I", "family": "ROVIRA"},

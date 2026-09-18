@@ -504,17 +504,78 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     return _normalize(text) in lexicon.suffix_acronyms_ambiguous
 
 
+# #516's all-caps half, ONE PREDICATE for the shape test and its
+# ELEVEN-list exclusion, called from three sites that each needed the
+# identical question answered (classify's tag emission, this module's
+# `ambiguous_class_candidate` below, and `_segment.py`'s multi-token
+# run test) -- a quality-review finding: the shape test plus the
+# eleven-list membership check was spelled three times over, and the
+# usual reason for THAT (a shared call costing every default-policy
+# parse a frame it cannot use) does not apply here, because every
+# caller's own first conjunct is `policy.unlisted_caps_suffixes`
+# itself, False by default -- the call below is never reached at all
+# when the switch is off, so sharing it costs the default nothing.
+def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
+                         one_case: bool | None) -> bool:
+    """Whether TEXT is an UNLISTED all-caps credential candidate: two
+    or more alphabetic characters, no period (a period fails
+    `isalpha()` outright, which is what excludes the dotted spelling
+    here for free -- no separate '.' test needed), written in a name
+    `one_case` says is mixed (`one_case is False`; `None`, "not
+    established", declines exactly as if the name were one case).
+
+    UNLISTED means in NO wordlist at all, not merely "no whole-token
+    suffix vocabulary" -- eleven lists, checked directly against the
+    lexicon rather than through a caller's tags (this function's own
+    callers have none to read, `segment` running before `classify`):
+    `titles`, `given_name_titles`, `particles`, `particles_ambiguous`,
+    `conjunctions`, `conjunctions_ambiguous`, `bound_given_names`,
+    `suffix_acronyms`, `suffix_acronyms_ambiguous`, `suffix_words` and
+    `maiden_markers` -- measured, #516 review rounds: 56 particles, 33
+    ambiguous particles, 7 conjunctions, 6 bound-given heads, a
+    maiden marker ('NEE'/'GEB') and a title all join the shape by
+    capitalization alone if any one of the eleven is left unchecked.
+    `suffix_acronyms_ambiguous` also makes this predicate stand in for
+    `ambiguous_class_member` wherever a caller needs "and not already
+    a LISTED member" (undotted text's only path into that function is
+    the identical membership test) -- `_segment.py`'s run test relies
+    on exactly that rather than calling both.
+    """
+    if not (policy.unlisted_caps_suffixes and one_case is False
+            and len(text) >= 2 and text.isalpha() and text.isupper()):
+        return False
+    n = _normalize(text)
+    return not (n in lexicon.titles or n in lexicon.given_name_titles
+                or n in lexicon.particles or n in lexicon.particles_ambiguous
+                or n in lexicon.conjunctions
+                or n in lexicon.conjunctions_ambiguous
+                or n in lexicon.bound_given_names
+                or n in lexicon.suffix_acronyms
+                or n in lexicon.suffix_acronyms_ambiguous
+                or n in lexicon.suffix_words
+                or n in lexicon.maiden_markers)
+
+
 # The comma form's own candidate test (rules.md#C1, decisions.md#S2).
 def ambiguous_class_candidate(text: str, lexicon: Lexicon,
-                              policy: Policy) -> bool:
+                              policy: Policy,
+                              one_case: bool | None = None) -> bool:
     """Whether TEXT is a CANDIDATE for the ambiguous credential class
     at the comma form's own structure decision (`_segment.py`): the
     LISTED half (`ambiguous_class_member`, case-free) OR, where Policy
     admits it, the SHAPE an unlisted dotted token wears
-    (`period_joined_vocab`'s third verdict, #516). Case-free either
-    way -- the shape carries no writing convention to read (the
-    periods are the signal, not the case), and the listed half's own
-    case lean is asked downstream of membership, not here.
+    (`period_joined_vocab`'s third verdict, #516) OR, since 2.4's
+    all-caps half (`Policy.unlisted_caps_suffixes`, #516), an unlisted
+    all-caps word in a name `one_case` says is written in more than
+    one case. The dotted shape is case-free -- the periods are the
+    signal, not the case, and the listed half's own case lean is asked
+    downstream of membership, not here -- but the CAPS shape is not:
+    'XYZ' is only credential-shaped where the name contrasts it, so
+    this is the one membership test on this function that reads
+    `one_case` at all. `one_case=None`, the default, is what every
+    caller with no fact to hand in gets, and it reads as "not
+    established" -- the caps half declines exactly as if the name were
+    one case, never as if it were mixed.
 
     A period anywhere is the gate for even ASKING the shape question,
     checked before the shape's own two calls: `period_joined_vocab`
@@ -532,21 +593,51 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
     function's chunk-level view alone, oblivious to the WHOLE-token
     match `suffix_as_written` already settled -- the same precedence
     classify's own tag order gives it (`vocab:suffix` is set before
-    `period_joined_vocab` is even consulted).
+    `period_joined_vocab` is even consulted). A period anywhere also
+    excludes the caps half outright ('MA.' is the dotted gate's
+    question, not this one's), so the two shapes stay disjoint by the
+    same early exit.
 
-    This spelling and classify's tag emission (`_tags_for`'s
-    `derived == "shape"` branch) ask the SAME question twice, of
+    The caps half delegates to `caps_shape_candidate`, above -- ONE
+    predicate for the shape test and its eleven-list exclusion, shared
+    with classify's `elif` and `_segment.py`'s run test rather than
+    spelled three times, because the usual reason for three separate
+    copies (a shared call costing the default-policy parse a frame it
+    cannot use) does not hold for this branch specifically: every
+    caller's own first conjunct is the switch itself, False by
+    default, so the shared call is never reached at the default
+    regardless of how many callers share it.
+
+    This function and classify's tag emission (`_tags_for`'s
+    `derived == "shape"` branch, dotted, and `caps_shape_candidate`
+    call, caps) still ask the SAME questions twice OVERALL, of
     necessity: `segment` runs before `classify` and has no tags to
-    read yet. Kept from drifting by
+    read yet, so the two stages cannot share the call itself even
+    though the caps half now shares its BODY. Kept from drifting by
     `test_classify.test_ambiguous_class_candidate_agrees_with_the_tag`,
     which asks both of the same texts, rather than by a sentence
     alone.
     """
     if ambiguous_class_member(text, lexicon):
         return True
-    return ("." in text and policy.unlisted_dotted_suffixes
-            and period_joined_vocab(text, lexicon) == "shape"
-            and not suffix_as_written(_normalize(text), text, lexicon))
+    if "." in text:
+        return (policy.unlisted_dotted_suffixes
+                and period_joined_vocab(text, lexicon) == "shape"
+                and not suffix_as_written(_normalize(text), text, lexicon))
+    # The policy conjunct stays INLINE here too, ahead of the call --
+    # measured, calling `caps_shape_candidate` unconditionally cost
+    # every UNDOTTED, unlisted text passing through this function a
+    # frame it could not use at the default (`policy.
+    # unlisted_caps_suffixes` is checked FIRST inside that function,
+    # but the CALL itself already happened by then): `"Smith, John"`,
+    # `"Smith, XYZ"` and `"John Smith, XYZ"` each moved +1 at the
+    # default policy (quality-review finding). `segment`'s own single-
+    # token call into this function carries no `one_case` and reaches
+    # this exact branch for the common "Smith, John" shape, so the
+    # short-circuit has to live here, not only at classify's and
+    # segment's own OTHER call sites, which already have it.
+    return policy.unlisted_caps_suffixes and caps_shape_candidate(
+        text, lexicon, policy, one_case)
 
 
 def name_word_count(texts: Sequence[str], lexicon: Lexicon,
@@ -621,21 +712,24 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     as no lean and is this predicate's behavior in every release
     before 2.4.
 
-    Policy.unlisted_dotted_suffixes does NOT reach this predicate:
-    admitting a by-shape member here unconditionally (an earlier
-    version of this docstring described exactly that) bypassed both
-    the lean AND the NAME-word count, and combined with C1's own
-    legacy TOKEN-count disjunct in `_segment.py`
+    Neither Policy.unlisted_dotted_suffixes NOR
+    Policy.unlisted_caps_suffixes reaches this predicate: admitting a
+    by-shape member here unconditionally (an earlier version of this
+    docstring described exactly that, for the dotted half alone)
+    bypassed both the lean AND the NAME-word count, and combined with
+    C1's own legacy TOKEN-count disjunct in `_segment.py`
     (`suffixy(groups[1]) and len(groups[0]) > 1`) it flipped
     'Smith Jr., A.B.' to given 'Smith', suffix 'Jr., A.B.' with a
     self-contradicting report ("holds 1 name words, so it is read as
     a credential run") -- proved by mutation testing to be otherwise
     unreached: nothing but this predicate's own two unit tests
     depended on it, and 'John Smith, A.B.' still flips correctly
-    through `pre_comma_names >= 2` alone (#516 review round). The
-    by-shape class reaches the comma form ONLY through
-    `_vocab.ambiguous_class_candidate`, which segment's structure
-    decision and report both already consult.
+    through `pre_comma_names >= 2` alone (#516 review round). Neither
+    by-shape class, dotted or caps, reaches the comma form through
+    this predicate at all -- only through `_vocab.
+    ambiguous_class_candidate`, which segment's structure decision and
+    report both already consult (the caps half as a RUN test over it,
+    #516's second review round).
     """
     if not texts:
         return False
