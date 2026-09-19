@@ -3750,6 +3750,58 @@ fields = ["middle", "suffix"]
 orders = ["DEFAULT"]
 
 [[change]]
+issue = "fix(comma-family) a credential acronym grouping joined into one piece stays middle-name text"
+# THIS PR DID NOT MOVE THESE READINGS EITHER, and the three names
+# arrived for the same reason the one above did: #531's fix round
+# needed the rows that PIN the trailing slot's piece test, so they
+# entered the corpora (2026-09-19). All three read the middle name at
+# 2.0.0 and at every baseline since, this tree included, and v1 read
+# the trailing word as a post-nominal.
+#
+# The mechanism is a STAGE EARLIER than the slot, and it is the piece
+# rather than the word: grouping merges each of these members into a
+# multi-token piece before assign asks anything -- 'MA y' on the
+# conjunction, 'van Ma' on the particle chain in front, 'DO Ed' on the
+# chain the member itself heads -- and the slot reads a piece, so a
+# piece of two tokens is not the lone member the branch asks about.
+# What v1 did instead was read the post-comma part's suffix
+# vocabulary by POSITION, which is the same family-comma routing
+# difference 'Doe, John MA Smith' carries above; these differ from it
+# only in what ends the reach.
+#
+# Literal, three names. The shape is "a family-comma name whose given
+# part ends in a joined piece carrying a class member", and a regex
+# for it would need the join, which is not in the string: 'Doe, John
+# MA Smith' and 'Doe, John MA' are spelled alike and neither is here.
+# _MUST_NOT_MATCH carries both as probes.
+name_regex = "^(?:Doe, John DO Ed|Doe, John MA y|Doe, John van Ma)$"
+fields = ["middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#380) the do attachment leaves the credential in front of it in the middle name"
+# THE SAME DECISION AS THE fix(#380) RULE BELOW, on a name that moves
+# one field more than any of its five. 'Doe, John MA do' entered the
+# corpora with #531's fix round (2026-09-19) and is NOT this PR's
+# doing -- byte-identical at cc78c960 and on the 2.3.0 wheel.
+#
+# v1 read the whole tail as post-nominals, suffix 'MA, do'. Here the
+# lower-case 'do' leans nothing, so the trailing slot declines it to
+# P6 exactly as 'Doe, John Do' does -- and a piece that walk refuses
+# ENDS the run, so the all-caps 'MA' in front of it is never asked
+# and stays middle-name text, capitals and all. Two readings on one
+# string: {family, suffix} is the attachment the rule below names,
+# and `middle` is the silence behind it, which is why the name needs
+# a rule of its own rather than joining that literal set -- a
+# three-field diff is no subset of its {family, suffix}.
+#
+# Literal, one name. tests/v2/cases.py's
+# the_particle_carve_out_silences_the_member_in_front is the row.
+name_regex = "^Doe, John MA do$"
+fields = ["family", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
 issue = "fix(#380) a trailing mc or do after a family comma is the tussenvoegsel, not a post-nominal"
 # THE SAME DECISION AS THE fix(#380) RULE ABOVE, over the two other
 # words that carry the collision it names. Five names entered the

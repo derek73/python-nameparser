@@ -417,9 +417,10 @@ class AmbiguityKind(StrEnum):
     #: has to be one, and only that word reports.
     #: WHERE it is emitted is narrower than where the doubt exists,
     #: and this is the boundary rather than an omission to be read
-    #: past. The emitters cover the trailing slot of a name, the
-    #: post-comma slot of a family-comma listing, the trailing slot of
-    #: that listing's GIVEN part, and the extra segments beyond it.
+    #: past. The emitters cover the trailing slot of a name, the FIRST
+    #: PIECE after a family comma -- that piece and no further -- the
+    #: trailing slot of that listing's GIVEN part, and the extra
+    #: segments beyond it.
     #: Since 2.4 the given part's trailing slot reports whichever way
     #: it read the word: "Doe, John MA" reads suffix ``MA`` and says
     #: so, "Doe, John Ma" keeps middle ``Ma`` and says so too. Not in
@@ -442,12 +443,21 @@ class AmbiguityKind(StrEnum):
     #: suffix ``MA`` and "Doe, Mr. MA PhD" suffix ``MA PhD``, the
     #: credential-run gate reading those segments whole; "Doe, Dr. Ma"
     #: reaches the walk instead and makes ``Ma`` the given name
-    #: itself, which the walk starts above. And -- pre-existing and
-    #: untouched by 2.4 as well -- a PARTICLE beside the member can
-    #: take it out of this slot, from either side. Where a chain in
-    #: front has swallowed the member into one piece there is no lone
-    #: member to ask about: "Doe, John van Ma" reads middle
-    #: ``van Ma`` in silence. Where a particle the suffix vocabulary
+    #: itself, which the walk starts above. The first-piece emitter
+    #: does not cover for it, reading the piece that stands
+    #: immediately after the comma and nothing behind that piece:
+    #: "Doe, MA Smith" reports its ``MA``, and "Doe, Dr. MA Smith" --
+    #: the same member, one title in front of it -- reads given ``MA``
+    #: in silence. And -- pre-existing and untouched by 2.4 as well --
+    #: a PARTICLE beside the member can
+    #: take it out of this slot, from either side. Where a chain has
+    #: swallowed the member into one piece there is no lone member to
+    #: ask about, and the member may as well HEAD that piece as trail
+    #: it: "Doe, John van Ma" reads middle ``van Ma`` in silence, and
+    #: so does "Doe, John DO Ed", where the member is itself the
+    #: particle the chain runs on and the name word behind it joins
+    #: the piece -- though "Doe, John DO" alone reads the credential
+    #: and reports. Where a particle the suffix vocabulary
     #: does not also claim stands BEHIND it, the given part ends at
     #: that particle as this walk reads it, and the attachment that
     #: moves the particle to the family runs a stage too late to
@@ -458,7 +468,8 @@ class AmbiguityKind(StrEnum):
     #: it: "Doe, John van MA" reads family ``van Doe``, suffix ``MA``
     #: and reports both forks, and "Doe, John MA vd" reads suffix
     #: ``MA`` past a ``vd`` the suffix vocabulary claims outright.
-    #: All four are silent.
+    #: All four POSITIONS above are silent -- those last two names are
+    #: the boundary each one stops at, not instances of it.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that

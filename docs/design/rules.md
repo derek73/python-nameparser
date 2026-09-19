@@ -952,6 +952,13 @@ S2. Rationale: generational suffixes and credentials are recognized
     looked past like any other credential, so `Doe, John MA vd`
     reads suffix `MA`, with `vd` attaching behind it. Where the
     reach ends, the word is an ordinary middle name, read in silence.
+    A particle in FRONT of the word takes it out of this slot as
+    well, and takes the word behind it too: where what follows the
+    particle reads as a name rather than a credential the two are
+    one name, so neither word is asked and neither reports —
+    `Doe, John van Ma` reads middle `van Ma` and `Doe, John DO Ed`
+    middle `DO Ed`, where `Doe, John van MA` reads suffix `MA` and
+    `Doe, John DO` alone reads the credential, both reporting.
     Every word this slot does read reports the fork whichever way it
     went, so a run of members all read as credentials reports once
     for each, as the same words do without the comma — while a
@@ -1011,6 +1018,10 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Doe, John MA JD"           →  ambiguities=("suffix-or-name", "suffix-or-name")
       "Doe, John MA Ma"           →  middle="MA Ma"  · boundary
       "Doe, John MA Ma"           →  ambiguities=("suffix-or-name",)  · boundary
+      "Doe, John van Ma"          →  middle="van Ma"  · boundary
+      "Doe, John van Ma"          →  ambiguities=()  · boundary
+      "Doe, John DO Ed"           →  middle="DO Ed"  · boundary
+      "Doe, John DO Ed"           →  ambiguities=()  · boundary
       "John Smith XYZ"            →  family="XYZ"
       "John Smith XYZ"  unlisted_caps_suffixes-on  →  suffix="XYZ"
       "Jean DUPONT"  unlisted_caps_suffixes-on  →  family="DUPONT"

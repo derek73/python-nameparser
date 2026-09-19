@@ -619,15 +619,13 @@ def assign(state: ParseState) -> ParseState:
             titled_idx: tuple[int, ...] = ()
             walkable: list[int] = []
             #: Where the trailing suffix run starts, for the #531
-            #: report below: the first piece the walk from the end
-            #: refuses, or the member that walk reached. Computed once,
-            #: on the first member the loop meets, and -1 until then
-            #: (no piece index can be negative, and the loop's own
-            #: floor is n + 1). One number is enough because the
-            #: question is MONOTONE -- a piece ends the given part
-            #: whenever the piece before it does -- and the loop below
-            #: ascends, so the first member's own walk already names
-            #: the floor every later member measures against.
+            #: report below: `trailing_floor`'s answer, read once on
+            #: the first member the loop meets and -1 until then (no
+            #: piece index can be negative, and the loop's own floor is
+            #: n + 1). Once is enough for the same reason one number is
+            #: enough inside that walk: the question is MONOTONE, the
+            #: loop below ascends, and a later member can only ask for
+            #: LESS of the walk than the first one did.
             run_floor = -1
 
             def previous_kept(m: int, titled: tuple[int, ...]) -> int:
@@ -656,17 +654,11 @@ def assign(state: ParseState) -> ParseState:
                     m -= 1
                 return m
 
-            #: Memo for the #531 walk inside the predicate below, and a
-            #: COMPLEXITY fix rather than a speed-up: that walk asks
-            #: the predicate that owns it about the pieces behind the
-            #: member, so a member standing behind a member re-ran the
-            #: whole run's walk, and a trailing run of k members cost
-            #: 2**k. Measured on the shape that found it, `'Doe, John '
-            #: + 'MA '*k`: 0.24ms at k=8, 23ms at 16, 5.8s at 24 --
-            #: against 0.16/0.20/0.24ms at cc78c960, where no such walk
-            #: existed. With the memo each member's walk runs once, and
-            #: the same three sizes measure 0.17/0.28/0.39ms
-            #: (2026-09-19).
+            #: State of the #531 walk below, per `titled` value: how
+            #: far down the trailing suffix run has been walked, and
+            #: whether that walk has SETTLED (it stopped on a piece
+            #: that refuses, so no lower piece can end the given part
+            #: either and the refusal is never re-asked).
             #:
             #: The key carries `titled` for the same reason the
             #: predicate takes it as a parameter: the two passes ask
@@ -681,7 +673,69 @@ def assign(state: ParseState) -> ParseState:
             #: between the two passes is the role, through `_set_roles`,
             #: which is a `dataclasses.replace(role=...)` and leaves
             #: text and tags identical.
-            ends_the_given: dict[tuple[int, tuple[int, ...]], bool] = {}
+            floors: dict[tuple[int, ...], tuple[int, bool]] = {}
+
+            def trailing_floor(m: int, titled: tuple[int, ...]) -> int:
+                """Where the trailing suffix run starts, walked as far
+                down as `m` needs it: `m >= trailing_floor(m, titled)`
+                is exactly "every kept piece behind `m` reads as a
+                suffix", which is what ENDING the given part means
+                (rules.md#S2, #531).
+
+                ONE walk per `titled` value, shared by the predicate
+                below and by that rule's report at the foot of this
+                segment, and the reason both are LINEAR in the run's
+                length. The question is MONOTONE -- a piece ends the
+                given part whenever the piece behind it does -- so a
+                single descent answers for every member, each piece
+                read at most once. Asked member by member instead, the
+                reading is recursive (a member ends the given part iff
+                everything kept behind it reads as a suffix, and a
+                piece behind it is a member asking the same of its own
+                tail): a walk per member, which cost O(run**2) with the
+                per-member memo this replaced and 2**run without one.
+                Measured on `'Doe, John ' + 'MA '*k`, k doubling from
+                200: 2.1/4.1/8.3/17.1ms here, against 8.6/31.4/120/463
+                with the memo and 1.5/3.2/7.2/17.3 at cc78c960, where
+                no such walk existed at all (2026-09-19).
+
+                `low` descends only to `m`, so what comes back is a
+                floor FOR `m` rather than the run's own first piece
+                whenever the run reaches past it; that is all either
+                caller asks, and stopping there is what keeps the
+                member's own frame count where it was. `final` carries
+                the other half: a piece that refuses settles the floor
+                for everything in front of it.
+
+                Re-entrant by construction, and it has to be: the
+                descent asks the predicate below about a piece that is
+                itself often a member, which asks this back. `floors`
+                names the piece under test BEFORE that call, so the
+                re-entrant reading is "this piece ends the given part",
+                which is what the descent has just established of it.
+                """
+                entry = floors.get(titled)
+                if entry is None:
+                    # previous_kept() of one past the end, spelled out
+                    # here rather than called: the frame budget again,
+                    # this walk being asked of every family-comma name
+                    # with a member in the given part, and the skip is
+                    # two lines. Keep the two in step.
+                    low = len(pieces) - 1
+                    while low in titled:
+                        low -= 1
+                    entry = (low, False)
+                    floors[titled] = entry
+                low, final = entry
+                while not final and low > m:
+                    if reads_as_a_suffix(low, titled):
+                        low -= 1
+                        while low in titled:
+                            low -= 1
+                    else:
+                        final = True
+                    floors[titled] = (low, final)
+                return low
 
             def reads_as_a_suffix(m: int, titled: tuple[int, ...]) -> bool:
                 """Does this segment's walk read piece `m` as a suffix?
@@ -714,17 +768,16 @@ def assign(state: ParseState) -> ParseState:
                 # with a helper (2026-09-18).
                 #
                 # That "once per piece" is the NON-MEMBER cost, and
-                # only it. A member is asked again by the walk below,
-                # once per member of the trailing run it stands in, and
-                # the memo is what holds that at once per member rather
-                # than once per subset (2026-09-19). What the two cost,
-                # measured against cc78c960: 'Smith, John', 'Doe, John
-                # Q.', 'Smith, John V', 'Smith, MA' and 'Berg, Jan vd'
-                # are all +0 frames, while 'Doe, John MA' is +6 and
-                # 'Doe, John MA PhD' +25 -- the member's walk, its
-                # lean, and the report below. The memo does not move
-                # either figure, both runs being too short to repeat a
-                # walk; what it moves is the shape of the growth.
+                # only it. A member is asked a second time by
+                # trailing_floor()'s descent above, and twice is the
+                # whole of it: the descent takes each piece once and
+                # the walkable pass asks each piece once, which is what
+                # makes the run linear. What the slot costs, measured
+                # against cc78c960: 'Smith, John', 'Doe, John Q.',
+                # 'Smith, John V', 'Smith, MA' and 'Berg, Jan vd' are
+                # all +0 frames, while 'Doe, John MA' is +6 and 'Doe,
+                # John MA PhD' +23 -- the member's descent, its lean,
+                # and the report below (2026-09-19).
                 #
                 # The comma has already named the family and the first
                 # piece after it is the given name, so the words to
@@ -744,21 +797,14 @@ def assign(state: ParseState) -> ParseState:
                     if AMBIGUOUS_ACRONYM_TAG in tok.tags:
                         # 'ending the given part' reaches past the
                         # credentials behind it and past a trailing
-                        # title, which previous_kept() makes the same
-                        # walk H5 already uses -- so 'Doe, John MA
+                        # title, which trailing_floor() skips the way
+                        # previous_kept() does -- so 'Doe, John MA
                         # Prof.' and 'Doe, John Prof. MA' land on one
                         # answer without a second notion of trailing.
                         # A name word behind the member ends the
                         # reach, and the member is an ordinary middle
                         # name read in silence.
-                        key = (m, titled)
-                        ended = ends_the_given.get(key)
-                        if ended is None:
-                            j = previous_kept(len(pieces), titled)
-                            while j > m and reads_as_a_suffix(j, titled):
-                                j = previous_kept(j, titled)
-                            ends_the_given[key] = ended = j == m
-                        if ended:
+                        if m >= trailing_floor(m, titled):
                             lean = listed_lean(tok, state.one_case)
                             # A member that is ALSO particle
                             # vocabulary reads as the credential only
@@ -888,9 +934,11 @@ def assign(state: ParseState) -> ParseState:
                 # name reports too -- 'Doe, John Ma' stays a middle
                 # name and says so. It reports only in the TRAILING
                 # RUN: with a name word behind it no fork was
-                # consulted, and rules.md#A1's "a kind is worth adding
+                # consulted, and AGENTS.md's "a kind is worth adding
                 # only if a reader would hesitate too" is why that
-                # must stay silent rather than why it happens to.
+                # must stay silent rather than why it happens to (the
+                # sentence is the 2.0-conventions section's, not
+                # rules.md#A1's, which this cited until 2026-09-19).
                 #
                 # The `do` carve-out is a REPORT carve-out on top of
                 # the reading one above: a particle-tagged member this
@@ -905,31 +953,35 @@ def assign(state: ParseState) -> ParseState:
                             _AMBIGUOUS_CREDENTIAL_TAGS)
                         and (suffix_here
                              or "particle" not in tokens[piece[0]].tags)):
-                    # Once, for the whole loop. The walk this replaces
-                    # ran per member and re-scanned `walkable` at every
-                    # step, which is a list -- so on a run the
-                    # predicate's memo had already made quadratic, the
-                    # REPORT stayed cubic. Measured on
-                    # `'Doe, ' + 'John '*r + 'MA '*r`, r doubling from
-                    # 100: 5.8/28/175/1229ms, which is 4.9x then 6.2x
-                    # then 7.0x per doubling and heading for the 8x a
-                    # cubic gives. One walk instead: 3.5/11/36/132ms,
-                    # 3.1x then 3.4x then 3.7x, heading for 4x
-                    # (2026-09-19). `run_floor` is where the FIRST
-                    # member's walk stopped, and that is the floor for
-                    # every later member too: if the walk reached that
-                    # member, nothing behind it refuses and no later
-                    # member can be refused either; if it stopped
-                    # short, it stopped at the LAST piece that refuses,
-                    # which is exactly what a later member's own walk
-                    # would have found (2026-09-19).
+                    # The SAME floor the predicate measures members
+                    # against, so this report has no walk of its own to
+                    # regress: it had one, and on a run the predicate's
+                    # memo had already made quadratic the report was
+                    # CUBIC, because its per-member walk re-scanned
+                    # `walkable` -- a list -- at every step. Measured
+                    # then on `'Doe, ' + 'John '*r + 'MA '*r`, r
+                    # doubling from 100: 5.8/28/175/1229ms, 4.9x then
+                    # 6.2x then 7.0x per doubling and heading for the
+                    # 8x a cubic gives, against 1.8/3.7/8.0ms here
+                    # (2026-09-19). Nothing guarded it: the scan was a
+                    # C-level `in` over a list and emitted no frame, so
+                    # the frame-ratio test in tests/v2/test_benchmark.py
+                    # was structurally blind to it, and the clock-based
+                    # shapes beside it repeat ONE unit where this cost
+                    # needs a name holding two runs. What keeps it gone
+                    # is the structure: one walk, read by both callers,
+                    # so a second would have to be written on purpose.
+                    #
+                    # Read once for the whole loop, `run_floor` being
+                    # where the FIRST member's walk stopped and the
+                    # floor for every later member too: if the walk
+                    # reached that member, nothing behind it refuses
+                    # and no later member can be refused either; if it
+                    # stopped short, it stopped at the LAST piece that
+                    # refuses, which is exactly what a later member's
+                    # own walk would have found (2026-09-19).
                     if run_floor < 0:
-                        j = previous_kept(len(pieces), titled_idx)
-                        while j > m and (reads_as_a_suffix(j, titled_idx)
-                                         if titled_idx
-                                         else j not in walkable):
-                            j = previous_kept(j, titled_idx)
-                        run_floor = j
+                        run_floor = trailing_floor(m, titled_idx)
                     if m >= run_floor:
                         i2 = piece[0]
                         ambiguities.append(PendingAmbiguity(

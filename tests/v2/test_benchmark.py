@@ -348,26 +348,45 @@ def test_policy_gated_cost_grows_no_worse_than_linearly(
 # pairing cannot guard a mutual recursion: #531's trailing-slot walk
 # re-entered the predicate that owns it, so a run of k ambiguous
 # credentials cost 2**k, and a run long enough to separate 2**k from
-# k**2 on the clock does not finish -- 24 members measured 5.9s, 32
-# would be days. So this one counts FRAMES over a run of 8 against a
-# run of 16, where the exponential is still cheap enough to profile
-# (112ms at 16, measured) and already 168x while quadratic is 4x.
+# k**2 on the clock does not finish -- 24 members measured 5.8s and
+# 5.9s on two runs, 32 would be days. So this one counts FRAMES over a
+# run of 8 against a run of 16, where the exponential is still cheap
+# enough to profile (112ms at 16 UNDER the sys.setprofile hook this
+# measures with, which is most of that figure: 23ms unprofiled) and
+# already 168x.
 #
 # Frames are the right instrument here for the #475 reason and one
 # more: the recursion IS frame entries, one per re-entry, so the count
 # is the defect itself rather than a proxy for it. Measured on the
 # unfixed tree before the fix landed: 2,347 frames at 8 and 394,671 at
-# 16. Measured on the fixed tree: see the numbers in the assertion
-# message when it next fails.
+# 16. On this tree (py3.11): 865 at 8, 1,497 at 16, 5,289 at 64.
+#
+# TWO ratios, ordered, because one pair cannot see both defects. At 2x
+# the input a quadratic is NOT the textbook 4x -- the per-member linear
+# work dominates at these sizes, and the per-member memo #531 first
+# shipped, a genuine quadratic, measured 2.08x here against this tree's
+# 1.73x. So the 8-vs-16 pair guards the EXPONENTIAL and nothing else,
+# and a second pair at 4x the input separates quadratic from linear:
+# 16-vs-64 measures 3.53x here, 3.33x at cc78c960 (the tree before the
+# slot existed at all) and 7.42x with that memo. The ORDER is what
+# keeps the larger pair usable: an exponential does not return from a
+# run of 64, so the cheap pair is asserted first and the tree that
+# would hang has already failed.
 _RUN_SMALL = 8
 _RUN_LARGE = 16
-#: Quadratic growth over 2x the input is ~4x, exponential ~2**8 = 256x
-#: (168x as measured, the linear rest of the parse diluting it). The
-#: bound sits between, nearer the quadratic end: 2.5x of headroom over
-#: a quadratic and 17x under the exponential this was written against.
-#: Frame counts do not move under load, so the headroom is for a future
-#: shape change rather than for runner noise.
-_RUN_MAX_RATIO = 10.0
+_RUN_HUGE = 64
+#: 8 -> 16, the exponential's bound: 1.73x measured here against the
+#: 168x of the recursion this was written for, so 6.0 leaves 3.5x of
+#: headroom over the measurement and nothing short of a re-entrant walk
+#: can reach it. It does NOT see a quadratic (2.08x, measured above),
+#: which is what the second bound is for.
+_RUN_MAX_RATIO = 6.0
+#: 16 -> 64, the quadratic's bound: 3.53x measured here against the
+#: memo version's 7.42x, so 5.0 sits ~1.4x over the measurement and
+#: ~1.5x under the regression it is aimed at. Frame counts do not move
+#: under load, so both margins are for a future shape change rather
+#: than for runner noise.
+_RUN_HUGE_MAX_RATIO = 5.0
 
 
 def _frames_for(text: str) -> int:
@@ -399,18 +418,32 @@ def test_a_trailing_credential_run_does_not_cost_exponentially() -> None:
         pytest.skip("a profile hook is already installed; this test owns it")
     small_text = "Doe, John " + "MA " * _RUN_SMALL
     large_text = "Doe, John " + "MA " * _RUN_LARGE
+    huge_text = "Doe, John " + "MA " * _RUN_HUGE
     # REACHABILITY, for the reason _POLICY_SHAPES carries one: the walk
     # under measurement runs only where every member of the run reads
     # as a credential. Route these to MIDDLE instead and the guard
     # measures a walk that no longer happens, at a comfortable ratio,
-    # forever.
+    # forever. Asked of the longest run too: the run length is what
+    # this varies, so "still a credential run" is a claim at each size.
     assert parse(small_text).suffix == " ".join(["MA"] * _RUN_SMALL)
+    assert parse(huge_text).suffix == " ".join(["MA"] * _RUN_HUGE)
     small = _frames_for(small_text)
     large = _frames_for(large_text)
     ratio = large / small
     assert ratio < _RUN_MAX_RATIO, (
         f"a run of {_RUN_SMALL} credentials costs {small} frames and a run "
-        f"of {_RUN_LARGE} costs {large} -- {ratio:.1f}x for 2x the input. "
-        f"Quadratic is ~4x and exponential ~256x, so the trailing-slot "
-        f"walk in _assign.py has re-entered the predicate that owns it "
-        f"(#531)")
+        f"of {_RUN_LARGE} costs {large} -- {ratio:.1f}x for 2x the input, "
+        f"where this tree measures 1.7x and the exponential this guards "
+        f"measured 168x. The trailing-slot walk in _assign.py has "
+        f"re-entered the predicate that owns it (#531)")
+    # Only now the long run: it is the pair that can see a QUADRATIC,
+    # and it is also the one an exponential never returns from, which
+    # the assertion above has already caught.
+    huge = _frames_for(huge_text)
+    huge_ratio = huge / large
+    assert huge_ratio < _RUN_HUGE_MAX_RATIO, (
+        f"a run of {_RUN_LARGE} credentials costs {large} frames and a run "
+        f"of {_RUN_HUGE} costs {huge} -- {huge_ratio:.1f}x for 4x the "
+        f"input, where this tree measures 3.5x and the per-member memo "
+        f"#531 first shipped measured 7.4x. Something in _assign.py's "
+        f"trailing slot is asking a walk per member again (#531)")
