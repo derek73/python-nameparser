@@ -419,8 +419,8 @@ class AmbiguityKind(StrEnum):
     #: and this is the boundary rather than an omission to be read
     #: past. The emitters cover the trailing slot of a name, the FIRST
     #: PIECE after a family comma -- that piece and no further -- the
-    #: trailing slot of that listing's GIVEN part, and the extra
-    #: segments beyond it.
+    #: trailing slot of that listing's GIVEN part, the trailing slot
+    #: of a maiden marker's clause, and the extra segments beyond it.
     #: Since 2.4 the given part's trailing slot reports whichever way
     #: it read the word: "Doe, John MA" reads suffix ``MA`` and says
     #: so, "Doe, John Ma" keeps middle ``Ma`` and says so too. Not in
@@ -429,15 +429,32 @@ class AmbiguityKind(StrEnum):
     #: site and this kind stays out of the way -- "Doe, John do" gives
     #: family ``do Doe`` and one ``PARTICLE_OR_GIVEN``, never two
     #: reports of one word.
-    #: FOUR positions stay silent, and all four are boundaries
-    #: rather than omissions. A member with a NAME WORD behind it was
-    #: never a fork -- "Doe, John MA Smith" reads middle ``MA Smith``,
-    #: the ordinary reading, and nothing consulted the class. The
-    #: maiden walk claims everything behind its marker before this
-    #: slot exists, so "Doe, Jane nee Smith MA" gives maiden
-    #: ``Smith MA`` in silence, exactly as the comma-less "John Smith
-    #: nee Jones R.A.I." does. And -- pre-existing, and untouched by
-    #: 2.4 -- a member with no name word IN FRONT of it is not at this
+    #: Since 2.4 a maiden marker's clause reports at ITS trailing slot
+    #: too, in both directions: "Doe, Jane nee Smith MA" gives maiden
+    #: ``Smith`` with suffix ``MA`` and says so, "Doe, Jane nee Smith
+    #: Ma" keeps maiden ``Smith Ma`` and says so too, and a member the
+    #: clause keeps because it is the only word after the marker
+    #: ("Jane Doe nee MA") reports as well. Where no trailing rule
+    #: reads the clause's tail, nothing was decided and nothing
+    #: reports: a clause in the FAMILY segment of a comma listing
+    #: ("Smith nee Jones MA, Jane" keeps maiden ``Jones MA``) and one
+    #: past a second comma ("Smith, John, Jr nee Jones MA" keeps
+    #: maiden ``Jones MA``) are both silent.
+    #: FOUR positions stay silent, and all four are boundaries rather
+    #: than omissions. The NO-READER clause just named is the first of
+    #: them, and the three that follow are about the member's own
+    #: surroundings. Second: a member with something BEHIND it that
+    #: the trailing reading does not take was never a fork -- "Doe,
+    #: John MA Smith" reads middle ``MA Smith``, the ordinary reading,
+    #: and nothing consulted the class, and inside a clause the same
+    #: holds of a name word ("Jane Doe nee MA Smith" keeps maiden
+    #: ``MA Smith``) and of a trailing TITLE, which breaks the
+    #: clause's peel before it can reach the member at all ("Jane Doe
+    #: nee Smith MA Prof." keeps maiden ``Smith MA Prof.``, where
+    #: "Jane Doe nee Smith Prof. MA" reads suffix ``MA`` and reports).
+    #: Third -- pre-existing, and 2.4 widening what reaches it rather
+    #: than moving it -- a member with no name word IN FRONT of it is
+    #: not at this
     #: slot either, because the slot is the end of a given part and
     #: there is none: a title took that position. "Doe, Dr. MA" gives
     #: suffix ``MA`` and "Doe, Mr. MA PhD" suffix ``MA PhD``, the
@@ -448,8 +465,15 @@ class AmbiguityKind(StrEnum):
     #: immediately after the comma and nothing behind that piece:
     #: "Doe, MA Smith" reports its ``MA``, and "Doe, Dr. MA Smith" --
     #: the same member, one title in front of it -- reads given ``MA``
-    #: in silence. And -- pre-existing and untouched by 2.4 as well --
-    #: a PARTICLE beside the member can
+    #: in silence. A maiden clause can put a name in that position:
+    #: "Doe, Dr. nee Smith MA" gives title ``Dr.``, suffix ``MA`` and
+    #: maiden ``Smith``, and moves in silence -- once ``Smith`` leaves
+    #: with the marker, segment 1 is ``Dr. MA``, a no-name segment the
+    #: credential-run gate reads whole. (The other direction still
+    #: reports, the clause's own emitter being what raises it: "Doe,
+    #: Dr. nee Smith Ma" keeps maiden ``Smith Ma`` and says so.)
+    #: And fourth -- pre-existing and untouched by 2.4 as well --
+    #: a JOIN beside the member can
     #: take it out of this slot, from either side. Where a chain has
     #: swallowed the member into one piece there is no lone member to
     #: ask about, and the member may as well HEAD that piece as trail
@@ -457,7 +481,12 @@ class AmbiguityKind(StrEnum):
     #: so does "Doe, John DO Ed", where the member is itself the
     #: particle the chain runs on and the name word behind it joins
     #: the piece -- though "Doe, John DO" alone reads the credential
-    #: and reports. Where a particle the suffix vocabulary
+    #: and reports. The particle chain is the commonest joiner but not
+    #: the only one: the bound-given join takes a member into its pair
+    #: the same way, so "Berg, abdul MA" reads given ``abdul MA`` in
+    #: silence -- and "Berg, abdul nee Jones MA" agrees with it, the
+    #: clause giving the member up and the join catching it before
+    #: this slot is reached. Where a particle the suffix vocabulary
     #: does not also claim stands BEHIND it, the given part ends at
     #: that particle as this walk reads it, and the attachment that
     #: moves the particle to the family runs a stage too late to
@@ -468,8 +497,8 @@ class AmbiguityKind(StrEnum):
     #: it: "Doe, John van MA" reads family ``van Doe``, suffix ``MA``
     #: and reports both forks, and "Doe, John MA vd" reads suffix
     #: ``MA`` past a ``vd`` the suffix vocabulary claims outright.
-    #: All four POSITIONS above are silent -- those last two names are
-    #: the boundary each one stops at, not instances of it.
+    #: All four POSITIONS above are silent -- those last two names
+    #: are the boundary each one stops at, not instances of it.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that

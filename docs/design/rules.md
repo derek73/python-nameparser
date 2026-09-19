@@ -1112,6 +1112,7 @@ S3. Rationale: credentials are often written run together with
       "John Smith Xyz."           →  family="Xyz."  · boundary
       "John Smith 1.4"            →  family="1.4"  · boundary
       "Doe, John X.Y.Z."          →  suffix="X.Y.Z."
+      "Jane Doe nee Smith X.Y.Z." →  suffix="X.Y.Z."
     Accepted: the initialless-script clause carries no example line
     of its own. Every input that exercises it composes a script that
     writes no abbreviations with a period that only a Latin
@@ -1224,7 +1225,11 @@ M2. Rationale: a maiden marker announces that what follows it is the
     word takes the words after it — up to any suffix word, or the
     trailing roman numeral assign reads as the suffix (S2), both as
     written and as the take would leave the name, the word before
-    the numeral being then the word before the marker — as the
+    the numeral being then the word before the marker, or a
+    trailing word of the ambiguous credential class (S2), asked
+    that same double way and stopping the take only where the rule
+    reading the name left standing reads the word as the
+    credential, and never the first word after the marker — as the
     maiden name, and
     the marker itself is dropped. A marker
     with nothing after it, or nothing before it, is just a word.
@@ -1249,6 +1254,12 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Smith née V"          →  suffix="V"
       "J. née Jones Smith V"      →  maiden="Jones Smith V"  · boundary
       "Jane née Jones J. V"       →  maiden="Jones J. V"  · boundary
+      "Jane Doe nee Smith MA"     →  maiden="Smith"
+      "Jane Doe nee Smith MA"     →  suffix="MA"
+      "Jane Doe nee Smith Ma"     →  maiden="Smith Ma"  · boundary
+      "Jane Doe nee MA"           →  maiden="MA"  · boundary
+      "Jane Doe nee MA Smith"     →  maiden="MA Smith"  · boundary
+      "John née Jones Smith MA"   →  maiden="Jones Smith"
       "Jones née"                 →  family="née"  · boundary
       "née Jones"                 →  family="Jones"  · boundary
       "Jane van der Berg née Jones"  →  maiden="Jones"
@@ -1272,9 +1283,10 @@ M2. Rationale: a maiden marker announces that what follows it is the
     would have bound the two into one name word (P3); the connective
     then builds a family name out of what is left.
       "Jane née Jr y Jones"            →  maiden=""
-    Accepted: a bare acronym the peel would take with words to spare
-    is maiden text all the same — the count it needs includes the
-    very words the marker removes, so the reading is left to assign.
+    Accepted: a bare acronym the reading declines is maiden text all
+    the same — the writing decides this one (S2), and the count such
+    a reading needs is taken over the name the take would leave
+    rather than over the words as they stand.
       "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
     history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 

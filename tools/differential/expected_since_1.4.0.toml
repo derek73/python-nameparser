@@ -333,6 +333,27 @@ issue = "fix(#274) maiden markers consumed"
 name_regex = "(?i)(?<![(（])(?<=\\S\\s)\\b(n[ée]e|geb)\\.?(?![)）])(?=\\s+\\S)"
 fields = ["maiden", "middle", "family"]
 
+[[change.precedes_narrower]]
+issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
+why = """
+LIVE, and new with #533's corpus rows. Three names carry a maiden
+marker AND a trailing tussenvoegsel after a family comma -- 'Doe, Jane
+nee Smith do', its capital spelling, and 'Doe, Jane nee Smith MA do'.
+Both regexes reach all three and the tussenvoegsel rule's fields are a
+strict subset of these, so nothing but file order keeps them here.
+
+The discriminator is WHICH MOVE the diff is. What 1.4.0 read as
+middle 'nee Smith' plus a trailing post-nominal, the tree reads as a
+maiden name: the whole of the diff is the marker leaving the name and
+taking words with it, and the tussenvoegsel rule cannot say that --
+it describes a particle joining a family the comma already named,
+which is a reading these three share with 1.4.0 rather than one that
+moved. Read the other way round the narrower rule would stand ready to
+explain a maiden/middle regression on every comma name ending in a
+particle, which is the absorption this file's wide-first discipline
+exists to prevent.
+"""
+
 [[change]]
 issue = "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip"
 # Its own rule rather than a widening of fix(#274) above: that rule's

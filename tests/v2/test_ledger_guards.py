@@ -2808,12 +2808,24 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # round's case rows added, '田中, 太郎 MA' and '김, 민준 MA',
         # both tolerated rows and so both in the radar corpus. Growth
         # into new corpus again; no role joined the list.
+        # 2026-09-19, #533: 137 -> 138. One new corpus name,
+        # '田中 太郎 旧姓 佐藤 MA' -- the tolerated row this change
+        # added, so radar corpus. Growth into new corpus again; no
+        # role joined the list.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(137, ('family', 'given', 'middle'), "94b869596b3e", None),
+            _Claim(138, ('family', 'given', 'middle'), "397de8444acc", None),
+        # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
+        # rather than with the rule -- this change added 35
+        # maiden-clause names as rules.md example lines and
+        # shape-tagged case rows, and this regex reaches every name
+        # carrying a marker. Read name by name against the regex; no
+        # role joined the list.
         "fix(#274) maiden markers consumed":
-            _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
+            _Claim(68, ('family', 'maiden', 'middle'), "19914ae9948e", None),
+        # 2026-09-19, #533: 5 -> 6, the same one new corpus name
+        # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
-            _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8", None),
+            _Claim(6, ('family', 'given', 'maiden', 'middle'), "c72a3d5724f5", None),
         # 2026-09-18, #531: 13 -> 19. Six corpus names whose trailing
         # word is particle vocabulary this regex already lists --
         # 'Doe, John DO', 'Doe, John Do', 'SMITH, JOHN DO',
@@ -2835,8 +2847,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the three, so it is ineligible and the fix(#380) rule the
         # round added explains it. Verified to be that name and no
         # other.
+        # 2026-09-19, #533: 21 -> 24. Three new corpus names whose
+        # trailing word is particle vocabulary this regex already
+        # lists -- 'Doe, Jane nee Smith DO', 'Doe, Jane nee Smith MA
+        # do' and 'Doe, Jane nee Smith do', the do pair this change
+        # added. Reach, not explanation: all three are the contest
+        # fix(#274) is now declared to outrank.
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(21, ('family', 'middle'), "b017f45d04f5", None),
+            _Claim(24, ('family', 'middle'), "0c62afd7f400", None),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1", None),
         # 279 -> 280 with #371, and the growth is corpus, not behavior:
@@ -2891,8 +2909,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # inferred from the arithmetic. Reach again, not explanation:
         # four of the seven diff in fields this rule cannot admit and
         # are explained further down the file.
+        # 2026-09-19, #533: 343 -> 356, the thirteen new corpus names
+        # carrying a comma. Reach, not explanation: the regex is a
+        # comma and every family-comma row this change added matches
+        # it.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(343, ('given', 'suffix', 'title'), "75e89d1dfd04", None),
+            _Claim(356, ('given', 'suffix', 'title'), "16c571069b0c", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -2940,8 +2962,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # comma names as the rule above.
         # 2026-09-19, #531 fix round: 336 -> 343, the same seven new
         # comma names as the rule above and for the same reason.
+        # 2026-09-19, #533: 343 -> 356, the same thirteen new comma
+        # names as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(343, ('family', 'given'), "75e89d1dfd04", None),
+            _Claim(356, ('family', 'given'), "16c571069b0c", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -3018,8 +3042,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "efa60ca42d4a", None),
         "fix(nickname-typographic-pairs) two typographic quote spans read as one nickname set":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "3cf566c78800", None),
+        # 2026-09-19, #533: 1 -> 2. One new corpus name, 'Berg,
+        # abdul nee Jones MA' -- this change's record that P5's
+        # lenient post-comma join takes the released member before
+        # assign can read it, so the clause form agrees with the
+        # bare 'Berg, abdul MA'. Reach, not explanation.
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
-            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613", None),
+            _Claim(2, ('given', 'maiden', 'middle'), "b2500b6f6dfc", None),
         "fix(#400/#274) bound-given join and maiden consumption in one name":
             _Claim(1, ('family', 'given', 'maiden', 'middle'), "6bed6d349342", None),
         "fix(#411/S2) a declining bound-given join leaves the suffix reading after a family comma":
@@ -3040,8 +3069,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle'), "2010cc79a34d", None),
         "fix(#424) the particle chain stops before the trailing numeral":
             _Claim(1, ('family', 'suffix'), "2c99162bc9cf", None),
+        # 2026-09-19, #533: 1 -> 2, and the new name looks like an
+        # accident and is not. This rule is an (?i) alternation
+        # carrying 'John n[ée]e Jones Smith Ma', so the example
+        # line this change added, 'John née Jones Smith MA',
+        # matches it case-insensitively -- correctly, both being
+        # the same given->family shape written two ways. Reach,
+        # not explanation: the caps spelling is the one whose
+        # reading this change MOVED, and its own rule explains it.
         "fix(#424/#445) accepted: the maiden walk keeps a bare acronym, and the lone name word is the family":
-            _Claim(1, ('family', 'given', 'maiden', 'middle', 'suffix'), "f2c6cd2e3001", None),
+            _Claim(2, ('family', 'given', 'maiden', 'middle', 'suffix'), "6728ea181c01", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
             _Claim(1, ('family', 'given'), "42b69cf1b320", None),
         "fix(#424) accepted: the maiden walk keeps the numeral an initial before the marker vetoes":
@@ -3148,8 +3185,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # what this number counts.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
             _Claim(101, ('_initials',), "e91031622dca", ('DEFAULT',)),
+        # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
+        # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
+        # nee Jones MA' -- the P5 pair this change added to record
+        # that the clause form now agrees with the bare one.
         "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
-            _Claim(41, ('_initials',), "e99f56c955d5", ('DEFAULT',)),
+            _Claim(43, ('_initials',), "2a1c728285b8", ('DEFAULT',)),
         # 2026-09-18: 109 -> 110. One new corpus name,
         # 'john van der berg ma' -- rules.md#P2's one-case contrast,
         # and a particle chain like every other member.
@@ -3405,7 +3446,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-19, #531 fix round: 20 -> 21, the same one new
         # corpus name as the 1.4.0 copy ('Doe, John MA do'), reached
         # on the trailing tussenvoegsel and explained by neither.
-            _Claim(21, ('_ambiguities', 'family', 'middle'), "b017f45d04f5", None),
+        # 2026-09-19, #533: 21 -> 24, the same three new corpus
+        # names as the 1.4.0 copy -- the do pair this change added
+        # after a family comma.
+            _Claim(24, ('_ambiguities', 'family', 'middle'), "0c62afd7f400", None),
         # 2026-09-18: 126 -> 131. Five corpus names arrived with
         # #289/#516's own case rows -- 'J.씨', 'John Smith 田.中.',
         # '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- all of them
@@ -3413,8 +3457,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # corpus, not a widened regex.
         # 2026-09-18, #531: 135 -> 137, the same two CJK comma forms
         # as the 1.4 twin.
+        # 2026-09-19, #533: 137 -> 138, the same one new tolerated
+        # corpus name as the 1.4.0 copy, '田中 太郎 旧姓 佐藤 MA'.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(137, ('_ambiguities', 'family', 'given', 'middle'), "94b869596b3e", None),
+            _Claim(138, ('_ambiguities', 'family', 'given', 'middle'), "397de8444acc", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -3426,8 +3472,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(44, ('family', 'given', 'suffix'), "1587ce883dab", None),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2", None),
+        # 2026-09-19, #533: 5 -> 6, the same one new tolerated
+        # corpus name as the CJK rule above.
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
-            _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8", None),
+            _Claim(6, ('family', 'given', 'maiden', 'middle'), "c72a3d5724f5", None),
         "fix(#272) nakaguro inside delimited content renders as a space, compounding with the CJK order flip":
             _Claim(1, ('family', 'given', 'nickname'), "d4069d459f23", None),
         "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix":
@@ -3448,8 +3496,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'given'), "db724fb9c779", None),
         "fix(#272/#308) nakaguro division and a glued hangul honorific in one name":
             _Claim(1, ('family', 'given', 'middle', 'suffix'), "2fbf1a94f122", None),
+        # 2026-09-19, #533: 1 -> 2. One new corpus name, 'Berg,
+        # abdul nee Jones MA' -- this change's record that P5's
+        # lenient post-comma join takes the released member before
+        # assign can read it, so the clause form agrees with the
+        # bare 'Berg, abdul MA'. Reach, not explanation.
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
-            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613", None),
+            _Claim(2, ('given', 'maiden', 'middle'), "b2500b6f6dfc", None),
         "fix(#412) a connective join no longer absorbs the maiden marker beside it":
             _Claim(2, ('family', 'maiden'), "51c0eb36b5c5", None),
         "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
@@ -3525,8 +3578,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320", None),
         "fix(#424/#445) the maiden walk stops before the trailing numeral, and the lone name word is the family":
             _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "cbe5bdd97317", None),
+        # 2026-09-19, #533: 6 -> 7, and as at 1.4.0 the new name
+        # looks like an accident and is not: this rule is an (?i)
+        # alternation carrying 'John n[ée]e Jones Smith Ma', which
+        # the example line 'John née Jones Smith MA' matches
+        # case-insensitively and correctly, the two being one
+        # given->family shape written two ways. Reach, not
+        # explanation.
         "fix(#445) a maiden marker makes the lone name word the family":
-            _Claim(6, ('family', 'given'), "f521c94c79fc", None),
+            _Claim(7, ('family', 'given'), "73c2f924d257", None),
         "fix(#445) the lone name word beside a marker a connective join no longer absorbs":
             _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62", None),
         "fix(#424) a marker followed only by the numeral is just a word":
@@ -4037,7 +4097,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-19, #531 fix round: 20 -> 21, the same one new
         # corpus name as the 1.4.0 copy ('Doe, John MA do'), reached
         # on the trailing tussenvoegsel and explained by neither.
-            _Claim(21, ('_ambiguities', 'family', 'middle'), "b017f45d04f5", None),
+        # 2026-09-19, #533: 21 -> 24, the same three new corpus
+        # names as the 1.4.0 copy -- the do pair this change added
+        # after a family comma.
+            _Claim(24, ('_ambiguities', 'family', 'middle'), "0c62afd7f400", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
@@ -4052,8 +4115,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(11, ('given', 'middle'), "1eaed91fc574", None),
         "fix(#367) a title no longer displaces a leading never-given particle":
             _Claim(1, ('family', 'given'), "db724fb9c779", None),
+        # 2026-09-19, #533: 1 -> 2. One new corpus name, 'Berg,
+        # abdul nee Jones MA' -- this change's record that P5's
+        # lenient post-comma join takes the released member before
+        # assign can read it, so the clause form agrees with the
+        # bare 'Berg, abdul MA'. Reach, not explanation.
         "fix(#411) the bound-given reserve stops counting words the maiden name takes":
-            _Claim(1, ('given', 'maiden', 'middle'), "7515923c9613", None),
+            _Claim(2, ('given', 'maiden', 'middle'), "b2500b6f6dfc", None),
         "fix(#412) a connective join no longer absorbs the maiden marker beside it":
             _Claim(2, ('family', 'maiden'), "51c0eb36b5c5", None),
         "fix(#418) the connective carve-out counts the name the maiden clause leaves behind":
@@ -4129,8 +4197,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given'), "42b69cf1b320", None),
         "fix(#424/#445) the maiden walk stops before the trailing numeral, and the lone name word is the family":
             _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "cbe5bdd97317", None),
+        # 2026-09-19, #533: 6 -> 7, and as at 1.4.0 the new name
+        # looks like an accident and is not: this rule is an (?i)
+        # alternation carrying 'John n[ée]e Jones Smith Ma', which
+        # the example line 'John née Jones Smith MA' matches
+        # case-insensitively and correctly, the two being one
+        # given->family shape written two ways. Reach, not
+        # explanation.
         "fix(#445) a maiden marker makes the lone name word the family":
-            _Claim(6, ('family', 'given'), "f521c94c79fc", None),
+            _Claim(7, ('family', 'given'), "73c2f924d257", None),
         "fix(#445) the lone name word beside a marker a connective join no longer absorbs":
             _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62", None),
         "fix(#424) a marker followed only by the numeral is just a word":
@@ -6010,6 +6085,16 @@ def test_a_rule_reaching_no_corpus_name_says_why_it_is_kept() -> None:
 #: re-measure before editing it.
 _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
     "expected_since_1.4.0.toml": [
+        # NEW on 2026-09-19 (#533): the three names carrying a maiden
+        # marker AND a trailing tussenvoegsel after a family comma
+        # ('Doe, Jane nee Smith do', its capital spelling, and 'Doe,
+        # Jane nee Smith MA do') are the first corpus names inside
+        # both regexes, so file order alone arbitrates the pair. The
+        # earlier rule now carries the [[change.precedes_narrower]]
+        # block saying why it wins; this control records the contest
+        # whether or not it is declared away.
+        ("fix(#274) maiden markers consumed",
+         "fix(#379) a tussenvoegsel after a family comma attaches to the family", 3),
         ("fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example",
          "fix(comma-precomma-family) pre-comma run reads as family, not given", 2),
         ("fix(#296) a credential-only comma string reads a name and its postnominal",

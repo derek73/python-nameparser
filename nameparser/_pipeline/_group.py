@@ -44,12 +44,14 @@ from enum import IntEnum
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
+    credential_at_the_given_slot,
     is_leading_title, is_suffix_piece, is_title_piece,
-    leading_titles, peel_walk, tail_reading, trailing_start,
+    leading_titles, peel_trailing, peel_walk, tail_reading,
+    trailing_start,
 )
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken,
-    _AMBIGUOUS_CREDENTIAL_TAGS,
+    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
+    WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS,
 )
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import delimiter_cores
@@ -66,6 +68,23 @@ Piece = list[int]
 #: be dropped -- more than one where the entry is a phrase, 'z domu')
 #: and the maiden-name pieces (to take Role.MAIDEN).
 MaidenTake = tuple[Piece, list[Piece]]
+
+
+class TailReader(IntEnum):
+    """Which rule reads the words the maiden walk would leave standing
+    at the end of this segment -- the reader the acronym fork's second
+    check has to ask, since a stop is only right where that reader
+    takes the word (rules.md#M2, #533).
+
+    NONE is a statement and not a default: before a family comma the
+    words are the family the comma already named, and a tail segment
+    is read as credentials whole, so no trailing rule is consulted
+    there and the clause keeps what it has -- a stop would hand a word
+    to `family` rather than to `suffix`."""
+
+    NONE = 0        # FAMILY_COMMA segment 0, and every tail segment
+    TRAILING = 1    # the S2 peel: NO_COMMA, SUFFIX_COMMA segment 0
+    GIVEN_SLOT = 2  # #531's reading: FAMILY_COMMA segment 1
 
 
 class BoundJoin(IntEnum):
@@ -190,7 +209,10 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
                  cores: Set[str],
-                 one_case: bool | None) -> tuple[list[int], list[int]] | None:
+                 one_case: bool | None,
+                 reader: TailReader,
+                 ambiguities: list[PendingAmbiguity],
+                 ) -> tuple[list[int], list[int]] | None:
     """The piece indices the marker pass removes, split the way
     MaidenTake declares them: the MARKER's pieces (one, or several for
     a phrase entry like 'z domu') and the maiden name's. None when the
@@ -207,6 +229,15 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     'Jr y Jones' as the maiden name, and 'Jane Smith née Jones Jr y
     Smith' takes only 'Jones'. The one reading the order costs; M2's
     Accepted row and decisions.md#M2 (#420) record it.
+
+    "Up to any trailing suffix" also means up to a trailing
+    CREDENTIAL since #533, where the rule that reads the name left
+    standing reads the word as one -- the TRAILING peel with no comma,
+    the given part's own slot after a family comma, and nobody before
+    that comma or past a second one, which is what `reader` says. A
+    member standing alone after the marker is never given up: the
+    marker announces a name, and the rule gives a word up only where
+    a maiden name is left standing.
 
     A tail segment's delimiter cores (`cores`, empty elsewhere) are
     structure, not words, and group() drops them after the pass --
@@ -231,39 +262,57 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # "up to any trailing suffix": a suffix WORD anywhere after the
     # marker ends the maiden name, and so does the trailing numeral as
     # assign will read it, which the suffix-piece test does not see
-    # (#424): 'John née Jones Smith V' took the V as maiden text. The
-    # numeral only -- trailing_start says why the acronym fork is
-    # left to assign here. Read from the MARKER, not after it: a
+    # (#424): 'John née Jones Smith V' took the V as maiden text. Both
+    # forks now -- the acronym one since #533, asked the same double
+    # way. Read from the MARKER, not after it: a
     # numeral straight after the marker then has the piece before it
     # the fork wants, and 'Jane Smith née V' declines like 'Jane Smith
     # née PhD' -- nothing after the marker but a suffix, so the marker
     # stays a word -- as 1.4.0 read it.
     #
-    # `one_case` is passed here and at the re-ask below and changes
-    # NOTHING, by construction: `numeral_only` answers off
-    # `peeled.numeral`, and the numeral fork is decided before the peel
-    # ever reads a lean -- the fact reaches only the bare-acronym fork,
-    # which this reading discards. Measured anyway, 2026-09-18, because
-    # "by construction" is the claim this repository gets wrong most
-    # often: dropping the argument at these TWO sites moves 0 of 9,852
-    # parses (1,642 names -- the distinct union of every
-    # `tools/differential/corpus*.jsonl` entry, every `cases.py` text,
-    # and `tests/test_variations.TEST_NAMES` with its comma
-    # permutations -- under six policies: the default, both
-    # family-first orders, strict commas, and each 2.4 switch flipped;
-    # recompute recipe in decisions.md#S2). It stays passed rather
-    # than spelled `None` because `None` is a different statement --
-    # "nobody asked" -- and a future numeral fork that DID read the
-    # writing would then be wrong silently.
+    # `one_case` is LIVE at these sites since #533, and it was not
+    # before: `numeral_only` answered off `peeled.numeral`, and the
+    # numeral fork is decided before the peel ever reads a lean, so
+    # the fact reached only the bare-acronym fork -- which that
+    # reading discarded. The acronym fork is asked now, so the writing
+    # decides here as it decides at the trailing slot of a name.
+    #
+    # Measured 2026-09-19 with a runtime wrapper that forces this
+    # function's `one_case` argument to None, over the population
+    # decisions.md#S2's 2026-09-18 recipe names -- the distinct union
+    # of every `tools/differential/corpus*.jsonl` entry, every
+    # `tests/v2/cases.py` text, and `tests/test_variations.TEST_NAMES`
+    # with the three comma permutations that entry names (no-comma,
+    # family-comma, and suffix-comma where the name has a suffix,
+    # built off the PARSE as `test_variations_of_TEST_NAMES` builds
+    # them -- not off a word split, which is what a first draft of
+    # this comment counted and why it read 2,429 names), empty
+    # strings dropped, under six policies (the default, both
+    # family-first orders, strict commas, and each 2.4 switch
+    # flipped). THE PAIR IS THE FINDING:
+    # over the corpus as it stood the day before this change it moved
+    # 0 parses, and over the corpus WITH this change's own rows it
+    # moves 36 of 10,740 (1,790 names), on 6 distinct names ('Doe,
+    # Jane nee Smith DO', 'Doe, Jane nee Smith Ma', 'Jane Doe nee
+    # Smith Ma', 'Jane Doe nee Smith Ma JD', 'Jane Doe nee Yo-Yo Ma',
+    # 'John née Jones Smith MA'). The plumbing was live either way;
+    # the corpus simply
+    # held no name that could show it, which is the blindness
+    # mechanisms.md's corpus field note asks to be measured before any
+    # "N names move" is written down. The 2026-09-18 record of 0 of
+    # 9,852 under the numeral-only reading stands as what was true
+    # then and is superseded here.
     #
     # The chain-tail measure below (`tail`, and the re-peel after the
-    # chain) is the opposite, and the same sweep says so: dropping it
-    # there moves 18 of the 9,852, on 'John van der Berg Ma', 'John de
+    # chain) is the opposite, and the 2026-09-18 sweep says so:
+    # dropping it moves 18 of that 9,852, on 'John van der Berg Ma',
+    # 'John de
     # Ma' and 'Freiherr von Berg MA' under every one of the six. A
     # review round called all three sites inert together; two are.
     skip = frozenset(range(len(pieces))) - frozenset(seen)
-    trailing = trailing_start(seen[m], pieces, ptags, tokens, skip,
-                               numeral_only=True, one_case=one_case)
+    rest = peel_walk(seen[m], ptags, skip)
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
+    trailing = rest[-1] if peeled.numeral is not None else len(pieces)
     # The fork reads the piece before the numeral, and the take
     # REMOVES that piece: afterwards assign sees the piece before the
     # marker there, and if that is initial-shaped the fork will not
@@ -284,6 +333,114 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                            numeral_only=True,
                            one_case=one_case) == len(view):
             trailing = len(pieces)
+    # #533: the ACRONYM fork, asked the way the numeral is -- the peel
+    # over the pieces as they stand, then again over the name the take
+    # would leave, and a stop only where both read the word as the
+    # credential. `peeled.names` is the first piece the peel took, so
+    # the class member it stopped at is that piece and no walk of our
+    # own is needed. One peel, one view built once per take: O(pieces)
+    # for the take, not per member, and no re-entrancy -- the
+    # predicate never calls the walk that calls it.
+    if (reader is not TailReader.NONE and peeled.names < len(rest)
+            and m + run + 1 < len(seen)):
+        # OPTION 1: the stop never takes the FIRST word after the
+        # marker -- a class member standing alone there stays the
+        # maiden name. A clamp rather than a veto: where the peel
+        # consumed that word AND words behind it, only the first stays
+        # ('Doe, J. nee MA ba' keeps maiden 'MA' and reads suffix
+        # 'ba'; a veto handed 'ba' back to the clause too). The
+        # clamped piece may then be no member at all, and the test
+        # below declines -- which changes nothing, the walk stopping
+        # at that suffix word of its own accord.
+        stop = max(rest[peeled.names], seen[m + run + 1])
+        head = pieces[stop]
+        # Both halves of the membership test below are DEFENSIVE, and
+        # measured inert on 2026-09-19 -- over 297,381 parses (1,533
+        # corpus and case names plus 4,536 generated clause shapes,
+        # seven policies, seven lexicons) admitting either half moved
+        # no parse and, at the default vocabulary, no frame. What each
+        # one guards, and why it stays:
+        #
+        # `len(head) == 1` asks a LONE piece's question, and the
+        # answer below reads `head[0]` as if the piece were the word.
+        # The only multi-token piece the marker pass can see is the
+        # Ph. D. merge above, which carries the `suffix` ptag, so the
+        # walk stops there of its own accord and the stop would change
+        # nothing -- structural today, and the default vocabulary does
+        # not even put the tag on that piece's head: a caller listing
+        # `ph` ambiguous is what could.
+        # THE NEGATIVE CONTROL, so the "inert" above is checkable
+        # rather than asserted. A probe that fires wherever the tag
+        # test admits a head this length test then DECLINES -- the
+        # only sites where dropping it could matter -- recorded 0 over
+        # 21,480 parses: decisions.md#S2's population (1,790 names;
+        # the recipe is spelled out above) under six policies and two
+        # lexicons, the default and one listing `ph` ambiguous. Nor is
+        # there a
+        # price: with `ph` listed, dropping the test leaves 'Jane Doe
+        # nee Smith Ph. D.' at 372 frames, 'Doe, Jane nee Smith
+        # Ph. D.' at 399 and 'J. nee Jones Smith Ph. D.' at 336,
+        # unchanged to the frame. It is the walk, not this test, that
+        # keeps the merged piece from ever being the stop. Kept
+        # for the reason `_assign.previous_kept` is: an inert branch
+        # is cheaper than a question asked of the wrong shape, and the
+        # four sibling sites (`_pieces.tail_reading`,
+        # `_pieces.peel_trailing`, the GIVEN_SLOT branch below, the
+        # emitter at the end of this function) all pair the two.
+        #
+        # The tag is the CLASS the rule is stated in terms of, and it
+        # is not redundant with the walk the way the length test is:
+        # 'J. née Jones Smith V' reaches here on a piece
+        # `is_suffix_piece` REFUSES for being initial-shaped, and what
+        # declines it is the view check rather than the walk. What the
+        # tag buys is the cost, and that control is a price rather
+        # than a count: dropping it runs the view machinery over every
+        # ordinary credential the peel took, measured on a scratch
+        # copy of the package with the test deleted -- 'Jane Doe nee
+        # Smith PhD' 341 -> 353 frames and 'Doe, Jane nee Smith PhD'
+        # 367 -> 372, counted per `Parser.parse` the way
+        # tests/v2/test_benchmark counts them. No test pins those
+        # numbers: `_CALL_BASELINE` is per-interpreter and per entry
+        # point, and a row for one name would have to be guessed for
+        # the four interpreters only CI runs.
+        if (stop < trailing and len(head) == 1
+                and AMBIGUOUS_ACRONYM_TAG in tokens[head[0]].tags):
+            left = [i for i in seen if i < seen[m] or i >= stop]
+            view = [pieces[i] for i in left]
+            view_tags = [ptags[i] for i in left]
+            # where the member stands in that view: everything before
+            # the marker, then the run the take would leave behind.
+            # The question is whether the reader takes THIS piece, not
+            # whether it takes something -- a suffix word behind the
+            # member answers yes to the weaker question while the
+            # member itself reads as the family name ('JOHN NEE JONES
+            # SMITH MA PHD' left 'JOHN MA PHD', whose MA is the
+            # family).
+            at = len(view) - (len(left) - left.index(stop))
+            if reader is TailReader.GIVEN_SLOT:
+                # after a family comma the words to spare are there by
+                # construction, so the reader is #531's -- the member's
+                # own reading, asked through the one predicate that
+                # owns it, and that rule's FLOOR: the member ends the
+                # given part only where every piece behind it reads as
+                # a suffix too ('Doe, Jane MA do' reads middle 'MA',
+                # the particle not being a credential, so the clause
+                # keeps both words rather than handing one of them to
+                # the current name's middle).
+                takes = all(
+                    is_suffix_piece(view[q], view_tags[q], tokens)
+                    or (len(view[q]) == 1
+                        and AMBIGUOUS_ACRONYM_TAG in tokens[view[q][0]].tags
+                        and credential_at_the_given_slot(
+                            tokens[view[q][0]], one_case))
+                    for q in range(at, len(view)))
+            else:
+                takes = trailing_start(
+                    leading_titles(view, view_tags, tokens),
+                    view, view_tags, tokens,
+                    one_case=one_case) <= at
+            if takes:
+                trailing = stop
     j = m + run
     while (j < len(seen) and seen[j] < trailing
            and not is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
@@ -295,6 +452,34 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # second word is the marker, not the first word it takes.
     if j <= m + run:
         return None
+    # #533, mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at the
+    # site that takes the branch, not where an ambiguous tag sits" --
+    # the walk that KEPT the word is where the fork was called, so it
+    # is where the report is raised. The LAST word of the maiden name
+    # is the one the trailing rule was asked about: everything behind
+    # it read as a suffix (that is what let the peel reach it), and a
+    # member the reading TOOK is not in the maiden name any more --
+    # assign reports that one where it peels it, so no token is ever
+    # reported twice. A member with a name word behind it was never
+    # asked and stays silent, which rules.md#A1's hesitating reader is
+    # the reason for rather than the accident of.
+    #
+    # Gated on the reader for the same reason the walk is: where no
+    # trailing rule reads these words, nothing was decided and nothing
+    # may report. Gated on EITHER tag, as the chain emitter's is, so a
+    # by-shape member reports with the dotted switch off -- classify
+    # writes the shape tag there while the class does not admit it,
+    # which is the one place a declined fork can be recorded.
+    last = pieces[seen[j - 1]]
+    if (reader is not TailReader.NONE and len(last) == 1
+            and not tokens[last[0]].tags.isdisjoint(
+                _AMBIGUOUS_CREDENTIAL_TAGS)):
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{tokens[last[0]].text!r} ending the maiden name is also "
+            f"a post-nominal; the maiden marker's clause keeps it "
+            f"rather than reading it as one",
+            tuple(last)))
     return seen[m:m + run], seen[m + run:j]
 
 
@@ -328,6 +513,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    opens_the_name: bool = False,
                    *,
                    one_case: bool | None,
+                   reader: TailReader = TailReader.TRAILING,
+                   maiden_ambiguities: list[PendingAmbiguity] | None = None,
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -336,6 +523,15 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # list) suppresses reporting -- see group() for when that applies.
     if ambiguities is None:
         ambiguities = []
+    # The maiden walk's own channel. group() passes `None` for the
+    # chain emitter after a family comma -- the comma fixed the
+    # family, so that fork is settled -- and #533's is not that fork:
+    # a credential ending a maiden clause is a question the comma
+    # settles nothing about. A second parameter rather than a widening
+    # of the first, so neither channel can quietly acquire the other's
+    # suppression.
+    if maiden_ambiguities is None:
+        maiden_ambiguities = ambiguities
 
     def title(k: int) -> bool:
         return is_title_piece(pieces[k], ptags[k], tokens)
@@ -468,7 +664,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # The tokens are not touched here: this function reads them and
     # returns what it took, and group() records the drop and the roles.
     taken: MaidenTake | None = None
-    take = _maiden_take(pieces, ptags, tokens, cores, one_case)
+    take = _maiden_take(pieces, ptags, tokens, cores, one_case,
+                        reader, maiden_ambiguities)
     if take is not None:
         marker_ks, maiden_ks = take
         taken = ([i for k in marker_ks for i in pieces[k]],
@@ -927,13 +1124,26 @@ def group(state: ParseState) -> ParseState:
         # there is no fork left to report.
         tail = tail_start is not None and seg_idx >= tail_start
         seg_cores = cores if tail else frozenset()
+        # #533: which rule reads what the maiden walk would leave, off
+        # the three facts already in hand here. A tail segment is read
+        # as credentials whole and segment 0 of a family comma is the
+        # family the comma named, so neither consults a trailing rule.
+        if tail:
+            reader = TailReader.NONE
+        elif family_comma:
+            reader = (TailReader.GIVEN_SLOT if seg_idx == 1
+                      else TailReader.NONE)
+        else:
+            reader = TailReader.TRAILING
         pieces, ptags, taken = _group_segment(
             seg, additional, tokens, bound_join,
             None if family_comma else ambiguities,
             seg_cores,
             state.lexicon.given_name_titles,
             opens_the_name=(seg_idx == 0 and not family_comma),
-            one_case=state.one_case)
+            one_case=state.one_case,
+            reader=reader,
+            maiden_ambiguities=ambiguities)
         # the marker is dropped and the maiden name's tokens become
         # MAIDEN (#274); which pieces those are was settled in
         # _group_segment, before the joins

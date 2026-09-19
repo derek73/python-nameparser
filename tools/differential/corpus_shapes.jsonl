@@ -5,7 +5,12 @@
 {"name": "J.A. K.D.", "shape": 1}
 {"name": "J.R.R. Tolkien", "shape": 1}
 {"name": "JACK MA", "shape": 1}
+{"name": "JANE DOE NEE SMITH MA", "shape": 1}
+{"name": "JANE DOE NEE YO-YO MA", "shape": 1}
+{"name": "JANE YO-YO MA", "shape": 1}
 {"name": "JOHN E SMITH", "shape": 1}
+{"name": "JOHN MA PHD", "shape": 1}
+{"name": "JOHN NEE JONES SMITH MA PHD", "shape": 1}
 {"name": "JOHN SMITH MA", "shape": 1}
 {"name": "JOSE E MARIA SANTOS", "shape": 1}
 {"name": "JOSEP CAROD I ROVIRA", "shape": 1}
@@ -16,10 +21,28 @@
 {"name": "Jack Ma", "shape": 1}
 {"name": "Jack X.Y.I.", "shape": 1}
 {"name": "Jack X.Y.Z.", "shape": 1}
+{"name": "Jane Doe geb. Smith MA", "shape": 1}
+{"name": "Jane Doe nee MA", "shape": 1}
+{"name": "Jane Doe nee MA Smith", "shape": 1}
+{"name": "Jane Doe nee Smith 2", "shape": 1}
+{"name": "Jane Doe nee Smith MA", "shape": 1}
+{"name": "Jane Doe nee Smith MA JD", "shape": 1}
+{"name": "Jane Doe nee Smith MA PhD", "shape": 1}
+{"name": "Jane Doe nee Smith MA Prof.", "shape": 1}
+{"name": "Jane Doe nee Smith MA y", "shape": 1}
+{"name": "Jane Doe nee Smith Ma", "shape": 1}
+{"name": "Jane Doe nee Smith Ma JD", "shape": 1}
+{"name": "Jane Doe nee Smith PhD MA", "shape": 1}
+{"name": "Jane Doe nee Smith Prof. MA", "shape": 1}
+{"name": "Jane Doe nee Smith V", "shape": 1}
+{"name": "Jane Doe nee Smith XYZ", "shape": 1}
+{"name": "Jane Doe nee Smith do", "shape": 1}
+{"name": "Jane Doe nee Yo-Yo Ma", "shape": 1}
 {"name": "Jean DUPONT", "shape": 1}
 {"name": "Jean Pierre DUPONT", "shape": 1}
 {"name": "John \"Jack\" Kennedy", "shape": 1}
 {"name": "John Doe JD.CPA", "shape": 1}
+{"name": "John Doe do", "shape": 1}
 {"name": "John Jack Andrew Kennedy", "shape": 1}
 {"name": "John Smith", "shape": 1}
 {"name": "John Smith 1.4", "shape": 1}
@@ -34,6 +57,7 @@
 {"name": "John Smith X.Y.Z.", "shape": 1}
 {"name": "John Smith XYZ", "shape": 1}
 {"name": "John Smith Xyz.", "shape": 1}
+{"name": "John Smith nee Jones R.A.I.", "shape": 1}
 {"name": "John V. Smith", "shape": 1}
 {"name": "John de Ma", "shape": 1}
 {"name": "John e Smith", "shape": 1}
@@ -43,6 +67,7 @@
 {"name": "Juan Garcia Y Lopez", "shape": 1}
 {"name": "Juan de la Vega", "shape": 1}
 {"name": "Lt.Gov. John Doe", "shape": 1}
+{"name": "Maria Kowalska z domu Nowak MA", "shape": 1}
 {"name": "Md Abdul Karim", "shape": 1}
 {"name": "Minjun KIM", "shape": 1}
 {"name": "Mr MA", "shape": 1}
@@ -52,6 +77,7 @@
 {"name": "anh van do", "shape": 1}
 {"name": "anh van mc", "shape": 1}
 {"name": "jack ma", "shape": 1}
+{"name": "jane doe nee smith ma", "shape": 1}
 {"name": "john e smith", "shape": 1}
 {"name": "john smith MA", "shape": 1}
 {"name": "john smith x.y.z.", "shape": 1}
@@ -64,12 +90,24 @@
 {"name": "محمد و علي", "shape": 1}
 {"name": "Beethoven, Ludwig van", "shape": 2}
 {"name": "Berg, Jan mc", "shape": 2}
+{"name": "Berg, abdul MA", "shape": 2}
+{"name": "Berg, abdul nee Jones MA", "shape": 2}
 {"name": "DOE, JOHN MA", "shape": 2}
 {"name": "DOE, MARY JO MA", "shape": 2}
 {"name": "Doe, Dr. John MA", "shape": 2}
 {"name": "Doe, Dr. MA", "shape": 2}
 {"name": "Doe, Dr. MA Smith", "shape": 2}
+{"name": "Doe, Dr. nee Smith MA", "shape": 2}
 {"name": "Doe, J. MA", "shape": 2}
+{"name": "Doe, J. ba", "shape": 2}
+{"name": "Doe, J. nee MA ba", "shape": 2}
+{"name": "Doe, Jane Q. nee Smith MA", "shape": 2}
+{"name": "Doe, Jane nee Smith DO", "shape": 2}
+{"name": "Doe, Jane nee Smith MA", "shape": 2}
+{"name": "Doe, Jane nee Smith MA do", "shape": 2}
+{"name": "Doe, Jane nee Smith Ma", "shape": 2}
+{"name": "Doe, Jane nee Smith do", "shape": 2}
+{"name": "Doe, Jane nee Smith ma", "shape": 2}
 {"name": "Doe, John A.", "shape": 2}
 {"name": "Doe, John BA", "shape": 2}
 {"name": "Doe, John DO", "shape": 2}
@@ -106,6 +144,7 @@
 {"name": "Smith Jr., A.B.", "shape": 2}
 {"name": "Smith Jr., John", "shape": 2}
 {"name": "Smith Jr., MA", "shape": 2}
+{"name": "Smith nee Jones, Jane MA", "shape": 2}
 {"name": "Smith, A.B.", "shape": 2}
 {"name": "Smith, A.B.C.", "shape": 2}
 {"name": "Smith, Dr. John", "shape": 2}

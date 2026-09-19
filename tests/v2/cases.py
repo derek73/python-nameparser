@@ -2807,15 +2807,616 @@ CASES: tuple[Case, ...] = (
          shape=2),
     Case("a_maiden_clause_takes_the_member_with_it",
          "Doe, Jane nee Smith MA",
-         {"given": "Jane", "family": "Doe", "maiden": "Smith MA"},
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the row that named the silence, now naming the "
+               "reading. The maiden marker no longer claims a "
+               "trailing credential: the words it takes end where a "
+               "trailing credential begins, and after a family comma "
+               "the reader of what is left standing is the given "
+               "part's own trailing slot (#531), which reads 'MA' as "
+               "the credential. 1.4.0 had no maiden routing and read "
+               "middle 'nee Smith', suffix 'MA', so the SUFFIX is "
+               "1.4.0 parity and the maiden field is not; 2.0.0 "
+               "through 2.3.0 read maiden 'Smith MA' in silence "
+               "(measured 2026-09-19). Keeping the id: it is the same "
+               "question, answered the other way",
+         shape=2),
+    # ---- #533: the maiden clause's trailing credential -------------
+    # The rule: the words a maiden marker takes end where a trailing
+    # credential begins, and a member of the ambiguous credential
+    # class is one of those -- but only where the rule that reads the
+    # name left standing reads it as the credential, both as written
+    # and as the take would leave it. That is the same double question
+    # the trailing roman numeral is asked, for the same reason: the
+    # count of words to spare includes the very words the marker
+    # removes.
+    Case("a_trailing_credential_ends_the_maiden_clause",
+         "Jane Doe nee Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the comma-less spelling of the row above, and the "
+               "statement of the rule. The peel over the pieces as "
+               "they stand takes 'MA', and the peel over the view the "
+               "take would leave ('Jane Doe MA') takes it too, so the "
+               "clause stops before it. 1.4.0 read middle 'Doe nee', "
+               "family 'Smith', suffix 'MA' -- the suffix restored, "
+               "the maiden field new since #274",
+         shape=1),
+    Case("the_clause_keeps_the_member_its_writing_declines",
+         "Jane Doe nee Smith Ma",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the other direction, and the one that carries most of "
+               "this change's visible effect at the default: Title "
+               "case in a mixed-case name is written the way a NAME "
+               "is written, so the peel declines the member and the "
+               "clause keeps it -- and the fork was consulted, so it "
+               "reports. The reading is unchanged from 2.0.0 through "
+               "2.3.0; only the report is new. 1.4.0 read suffix 'Ma'",
+         shape=1),
+    Case("the_all_caps_clause_reads_the_credential",
+         "JANE DOE NEE SMITH MA",
+         {"given": "JANE", "family": "DOE", "suffix": "MA",
+          "maiden": "SMITH"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="one case, so the lean is inert and the count decides "
+               "alone -- and with 'Jane Doe' standing in front of the "
+               "clause there are words to spare both as written and "
+               "as the take would leave the name. 1.4.0 parity on the "
+               "suffix",
+         shape=1),
+    Case("the_all_lower_clause_reads_the_credential",
+         "jane doe nee smith ma",
+         {"given": "jane", "family": "doe", "suffix": "ma",
+          "maiden": "smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the other one-case spelling, same reason as its "
+               "all-caps twin. 1.4.0 parity on the suffix",
+         shape=1),
+    Case("the_clause_keeps_a_member_standing_alone_after_the_marker",
+         "Jane Doe nee MA",
+         {"given": "Jane", "family": "Doe", "maiden": "MA"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the FLOOR, and it is deliberate that this differs "
+               "from what a suffix word or a roman numeral gets in "
+               "the same position ('Jane Smith nee PhD' and 'Jane "
+               "Smith nee V' leave the marker standing as an ordinary "
+               "word). The marker announces a NAME, and the rule "
+               "gives a word up only where a maiden name is left "
+               "standing; certain suffix vocabulary declines the "
+               "marker, an ambiguous word is kept by the clause it "
+               "ends. It reports all the same. 1.4.0 read family "
+               "'nee', suffix 'MA', so this half restores nothing and "
+               "does not try to",
+         shape=1),
+    Case("a_name_word_behind_the_member_leaves_the_clause_silent",
+         "Jane Doe nee MA Smith",
+         {"given": "Jane", "family": "Doe", "maiden": "MA Smith"},
          classification="fix(#274)",
-         notes="the silence no walk decides: the maiden marker claims "
-               "everything behind it, so the member is inside the "
-               "maiden clause and this slot never exists for it. The "
-               "comma-less 'John Smith nee Jones R.A.I.' is silent "
-               "for the same reason. 1.4.0 had no maiden routing and "
-               "read middle 'nee Smith', suffix 'MA'; 2.0.0 and 2.3.0 "
-               "read this maiden (measured 2026-09-19)"),
+         ambiguities=(),
+         notes="the recorded negative control for the emitter: the "
+               "word the walk was asked about is the LAST piece of "
+               "the maiden name, and a member with a name word behind "
+               "it is never that piece. Nothing was consulted, so "
+               "nothing reports -- which is what rules.md#A1's "
+               "hesitating reader asks for rather than an accident of "
+               "where the emitter sits. Unchanged from 2.0.0; 1.4.0 "
+               "read middle 'Doe nee MA', family 'Smith'",
+         shape=1),
+    Case("the_clause_gives_up_the_whole_credential_run",
+         "Jane Doe nee Smith MA PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MA PhD",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the peel walks the run from the end, so 'PhD' is "
+               "settled vocabulary and 'MA' is the fork it reaches "
+               "behind it -- one report, not two. Rendered with a "
+               "SPACE: R1 derives suffix entries from the commas the "
+               "WRITER typed (#436/#437), where 1.4.0 wrote 'MA, "
+               "PhD'. 2.0.0 through 2.3.0 read maiden 'Smith MA' with "
+               "suffix 'PhD', which is the order-sensitivity the "
+               "issue reported",
+         shape=1),
+    Case("the_credential_run_reads_the_same_written_the_other_way",
+         "Jane Doe nee Smith PhD MA",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD MA",
+          "maiden": "Smith"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the control the row above needs, and the whole point "
+               "of the issue: this spelling already stopped at the "
+               "suffix WORD and read both credentials, so whether the "
+               "member was read at all used to depend on which side "
+               "of 'PhD' the writer put it. Unchanged here -- the two "
+               "orders now agree",
+         shape=1),
+    Case("the_declined_member_still_ends_the_clause_for_the_run",
+         "Jane Doe nee Smith Ma JD",
+         {"given": "Jane", "family": "Doe", "suffix": "JD",
+          "maiden": "Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="both halves in one name: 'JD' is taken and reported "
+               "by assign where it peels it, 'Ma' is declined by its "
+               "writing and reported by the walk that kept it. TWO "
+               "reports, one per member, and never two for one word "
+               "-- the maiden pieces are gone before the chain runs. "
+               "1.4.0 read suffix 'Ma, JD'",
+         shape=1),
+    Case("two_members_ending_the_clause_report_once_each",
+         "Jane Doe nee Smith MA JD",
+         {"given": "Jane", "family": "Doe", "suffix": "MA JD",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the same pair with both members taken. The peel "
+               "resolves each in turn and assign reports both; the "
+               "walk reports none, the last maiden piece being an "
+               "ordinary name word",
+         shape=1),
+    Case("the_dotted_member_ends_the_clause",
+         "John Smith nee Jones R.A.I.",
+         {"given": "John", "family": "Smith", "suffix": "R.A.I.",
+          "maiden": "Jones"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the name #530's close-out reported from the other "
+               "side, and this row RESTORES 2.3.0 rather than "
+               "changing it: at 2.3.0 'R.A.I.' carried vocab:suffix "
+               "and the walk's suffix-piece test stopped at it, while "
+               "#516 retagged it shape:acronym plus "
+               "vocab:suffix-ambiguous, it stopped being a suffix "
+               "piece, and the walk took it -- maiden 'Jones R.A.I.' "
+               "on this tree, unrecorded because the name was in no "
+               "corpus file. 1.4.0 read middle 'Smith nee', family "
+               "'Jones', suffix 'R.A.I.' (all measured 2026-09-19)",
+         shape=1),
+    Case("the_dotted_member_is_kept_with_the_switch_off_and_reports",
+         "John Smith nee Jones R.A.I.",
+         {"given": "John", "family": "Smith", "maiden": "Jones R.A.I."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="with the switch off classify writes the SHAPE tag and "
+               "the class does not admit the token, so the PEEL "
+               "declines to consume it -- it records the word in "
+               "`picks` and breaks, leaving nothing for the walk's "
+               "own reading gate to be asked about -- and the clause "
+               "keeps the word. The emitter's gate reads EITHER tag, "
+               "as the chain emitter's does, so the declined fork is "
+               "still reported. That asymmetry is the whole of the "
+               "two gates' difference and is what this row pins. "
+               "Measured 2026-09-19 by stepping the peel, not "
+               "reasoned from the gate's text"),
+    Case("the_caps_switch_reaches_the_clause",
+         "Jane Doe nee Smith XYZ",
+         {"given": "Jane", "family": "Doe", "suffix": "XYZ",
+          "maiden": "Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the opt-in class reaches this slot like any other, "
+               "the switch being what admits the token to the "
+               "ambiguous class in the first place"),
+    Case("an_unlisted_word_is_no_member_of_the_class",
+         "Jane Doe nee Smith XYZ",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith XYZ"},
+         classification="fix(#274)",
+         ambiguities=(),
+         notes="the default-policy control for the row above, and the "
+               "recorded negative control for the membership gate: "
+               "with the caps switch off 'XYZ' carries neither tag, "
+               "so the walk never asks and the clause keeps it in "
+               "silence. 1.4.0 read family 'XYZ'",
+         shape=1),
+    Case("the_peel_never_reaches_a_title_behind_the_member",
+         "Jane Doe nee Smith MA Prof.",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith MA Prof."},
+         classification="fix(#274)",
+         ambiguities=(),
+         notes="the H5 BOUNDARY, recorded rather than fixed: the "
+               "maiden walk has always read peel_trailing alone, and "
+               "the trailing-title chain lives in tail_reading, which "
+               "trailing_start does not run -- so the peel breaks at "
+               "'Prof.' and never reaches the member behind it. This "
+               "change inherits that boundary rather than creating "
+               "it, and a follow-up carries the question of whether "
+               "the walk should move onto tail_reading (both forks, "
+               "numeral included). Silent, because nothing was asked",
+         shape=1),
+    Case("a_title_in_front_of_the_member_is_the_other_spelling",
+         "Jane Doe nee Smith Prof. MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith Prof."},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the boundary's other side, and the pair is the "
+               "finding: the two spellings DISAGREE here, where at "
+               "the given part's own trailing slot they agree "
+               "(#531's 'Doe, John MA Prof.' and 'Doe, John Prof. "
+               "MA' land on one answer). The peel reaches 'MA' "
+               "because nothing stands behind it, so the clause stops "
+               "and 'Prof.' stays maiden text. 1.4.0 read family "
+               "'Prof.', suffix 'MA'",
+         shape=1),
+    Case("a_connective_behind_the_member_stops_the_peel",
+         "Jane Doe nee Smith MA y",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith MA y"},
+         classification="fix(#274)",
+         ambiguities=(),
+         notes="the recorded negative control for the PEEL's reach, "
+               "measured 2026-09-19 rather than reasoned: the marker "
+               "pass runs before every join, so 'MA' and 'y' are two "
+               "pieces here and no joined one -- and 'y' is no "
+               "suffix, so the peel takes nothing, the walk is never "
+               "asked about the member behind it, and the clause "
+               "keeps both words. The connective joins them a stage "
+               "later, into the maiden name. Silent for the reason "
+               "the row below is: nothing was decided",
+         shape=1),
+    Case("the_numeral_half_of_the_walk_is_unmoved",
+         "Jane Doe nee Smith V",
+         {"given": "Jane", "family": "Doe", "suffix": "V",
+          "maiden": "Smith"},
+         classification="fix(#424)",
+         ambiguities=("suffix-or-name",),
+         notes="#424's own fork, pinned beside the acronym one "
+               "because the two now share a single peel: the numeral "
+               "half answers off Peel.numeral exactly as it did, and "
+               "this row is what says the shared call did not move "
+               "it. Unchanged since #424",
+         shape=1),
+    Case("the_digit_shaped_trailing_suffix_is_unmoved_and_silent",
+         "Jane Doe nee Smith 2",
+         {"given": "Jane", "family": "Doe", "suffix": "2",
+          "maiden": "Smith"},
+         classification="fix(#424)",
+         ambiguities=(),
+         notes="the numeral half's silent twin -- a lone digit is "
+               "generational vocabulary and no fork, so the walk "
+               "stops and nothing reports. The pair with the row "
+               "above is what separates 'the walk stopped' from 'the "
+               "walk reported'",
+         shape=1),
+    Case("the_one_case_record_loses_its_second_birth_word",
+         "JANE DOE NEE YO-YO MA",
+         {"given": "JANE", "family": "DOE", "suffix": "MA",
+          "maiden": "YO-YO"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="an ACCEPTED COST, and the control beside it is what "
+               "makes it the one-case reading's cost rather than this "
+               "rule's: 'JANE YO-YO MA' reads suffix 'MA' too, so the "
+               "clause form now agrees with the bare form. In mixed "
+               "case the writing saves the name -- see the row below",
+         shape=1),
+    Case("the_one_case_records_control_without_the_clause",
+         "JANE YO-YO MA",
+         {"given": "JANE", "family": "YO-YO", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the recorded control for the accepted cost above. "
+               "Unchanged by this rule and read by #289's count, "
+               "which is the point: a clause must not change how a "
+               "word outside it reads, and here the clause form "
+               "joined the bare form rather than the other way round",
+         shape=1),
+    Case("the_mixed_case_record_keeps_its_second_birth_word",
+         "Jane Doe nee Yo-Yo Ma",
+         {"given": "Jane", "family": "Doe", "maiden": "Yo-Yo Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the same two-word birth surname where the writing "
+               "CAN speak: Title case in a mixed-case name declines "
+               "the peel, so 'Yo-Yo Ma' stays whole and the fork "
+               "reports. 1.4.0 read family 'Yo-Yo', suffix 'Ma'",
+         shape=1),
+    Case("the_view_check_asks_whether_the_reader_takes_that_word",
+         "JOHN NEE JONES SMITH MA PHD",
+         {"family": "JOHN", "suffix": "PHD",
+          "maiden": "JONES SMITH MA"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the row that distinguishes the check this change "
+               "SHIPS from the weaker one. The take would leave "
+               "'JOHN MA PHD', whose peel takes 'PHD' and then "
+               "DECLINES 'MA' for want of words to spare -- so 'does "
+               "the reader take SOMETHING' answers yes while 'MA' "
+               "becomes the FAMILY name, which is #424's own disaster "
+               "one word further on. The check compares the view's "
+               "run start against the member's index in it, answers "
+               "no, and the clause keeps the word -- reporting, "
+               "because the fork was consulted and declined",
+         shape=1),
+    Case("the_view_checks_control_without_the_clause",
+         "JOHN MA PHD",
+         {"given": "JOHN", "family": "MA", "suffix": "PHD"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the recorded control: this IS the view the take would "
+               "leave, and family 'MA' is what the row above must "
+               "not produce. Unchanged",
+         shape=1),
+    Case("a_dangling_connective_can_end_a_maiden_name",
+         "Jane Smith nee Jones and MA",
+         {"given": "Jane", "family": "Smith", "suffix": "MA",
+          "maiden": "Jones and"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="an ACCEPTED COST. The take runs before the joins "
+               "(#420), so the connective is a piece of its own when "
+               "the walk stops and the maiden name ends on it; M2's "
+               "Accepted row about the join order already owns this "
+               "shape. Untagged: the point is the stage order, not "
+               "the input shape"),
+    Case("a_marker_phrase_ends_at_the_credential_too",
+         "Maria Kowalska z domu Nowak MA",
+         {"given": "Maria", "family": "Kowalska", "suffix": "MA",
+          "maiden": "Nowak"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the rule is about the marker's CLAUSE, not about a "
+               "one-word marker: the Polish phrase entry (#434) "
+               "reaches the same walk and the same stop. 1.4.0 read "
+               "middle 'Kowalska z domu', family 'Nowak', suffix 'MA'",
+         shape=1),
+    Case("the_german_marker_ends_at_the_credential_too",
+         "Jane Doe geb. Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="a second vocabulary spelling, for the same reason as "
+               "the row above: nothing here is about the word 'nee'",
+         shape=1),
+    Case("a_kyusei_clause_ends_at_the_credential",
+         "田中 太郎 旧姓 佐藤 MA",
+         {"given": "太郎", "family": "田中", "suffix": "MA",
+          "maiden": "佐藤"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the CJK marker reaches the walk like any other, and "
+               "the Latin credential behind it is read by the Latin "
+               "rule -- is_one_case answers True for a caseless "
+               "script, so the lean is inert and the count decides. "
+               "tolerated rather than shape-tagged: a Latin "
+               "credential wrapped around a CJK name is a composed "
+               "form (the 2026-09-01 demotion), read best-effort",
+         tolerated=True),
+    # ---- #533 after a family comma: #531's slot is the reader ------
+    Case("the_comma_reader_declines_the_title_cased_member",
+         "Doe, Jane nee Smith Ma",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="after a family comma the comma has already settled "
+               "the count, so the reader is #531's slot and the "
+               "writing decides alone -- Title case in a mixed-case "
+               "name keeps the word. Reported either way. 1.4.0 read "
+               "suffix 'Ma'",
+         shape=2),
+    Case("the_comma_reader_takes_the_all_lower_member",
+         "Doe, Jane nee Smith ma",
+         {"given": "Jane", "family": "Doe", "suffix": "ma",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the row that makes the COMMA reader load-bearing "
+               "rather than decorative: the count-based reader "
+               "declines an all-lower member with two pieces to "
+               "spare, and #531's declines nothing but a particle. "
+               "Measured -- this name moves under the comma reader "
+               "and would not under the count. 'Doe, Jane ma' already "
+               "reads suffix 'ma', which is what the clause form now "
+               "agrees with",
+         shape=2),
+    Case("the_do_pair_after_a_comma_keeps_the_particle_spelling",
+         "Doe, Jane nee Smith do",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith do"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="'do' is the one class member that is also particle "
+               "vocabulary, so after a comma the clause's trailing "
+               "slot, #531's slot and P6's attachment all want it -- "
+               "and the reading is #531's, unchanged and shared "
+               "through one predicate. Lean None plus a particle tag "
+               "means P6's word, so the clause keeps it and reports "
+               "the fork it consulted",
+         shape=2),
+    Case("the_do_pair_after_a_comma_reads_the_capitals",
+         "Doe, Jane nee Smith DO",
+         {"given": "Jane", "family": "Doe", "suffix": "DO",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the same word where the capitals speak: a positive "
+               "credential lean is the one spelling that outranks "
+               "P6's attachment (decisions.md#S2, 2026-09-18), so the "
+               "clause gives the word up. 1.4.0 read suffix 'DO'",
+         shape=2),
+    Case("the_no_comma_do_reads_by_the_count_instead",
+         "Jane Doe nee Smith do",
+         {"given": "Jane", "family": "Doe", "suffix": "do",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the row the issue flagged as needing a decision, and "
+               "it goes the other way from its comma twin BECAUSE the "
+               "reader is different: with no comma the reader is the "
+               "S2 peel over the view, which reads the count, and "
+               "P6 does not run at all. The comma-less 'John Doe do' "
+               "reads suffix 'do' today, and a clause must not change "
+               "how a word outside it reads -- so the two now agree",
+         shape=1),
+    Case("the_no_comma_dos_control_without_the_clause",
+         "John Doe do",
+         {"given": "John", "family": "Doe", "suffix": "do"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the recorded control for the row above. Unchanged, "
+               "and it is what the clause form was measured against",
+         shape=1),
+    Case("the_comma_floor_keeps_a_member_a_particle_follows",
+         "Doe, Jane nee Smith MA do",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith MA do"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="where #531's FLOOR earns its place, and a check that "
+               "asked only about 'MA' got this wrong: the take would "
+               "leave 'Jane MA do', where 'do' does not read as a "
+               "suffix (P6 keeps it) so #531's slot reads 'MA' as a "
+               "MIDDLE name -- releasing it from the clause would "
+               "move a word from one person's name into another's. "
+               "With the floor the clause keeps 'MA do' whole, and "
+               "reports the 'do' it kept. rules.md#S2's own 'Doe, "
+               "John MA do' clause is the reading this rests on",
+         shape=2),
+    Case("the_clamp_never_takes_the_first_word_after_the_marker",
+         "Doe, J. nee MA ba",
+         {"given": "J.", "family": "Doe", "suffix": "ba",
+          "maiden": "MA"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the floor is a CLAMP, not a veto, and this row is "
+               "why. The peel takes 'ba' and then 'MA', so the first "
+               "piece the peel took IS the only maiden word; a veto "
+               "that cancelled the stop whenever nothing would be "
+               "left handed 'ba' back to the clause too, giving "
+               "maiden 'MA ba' where 'Doe, J. ba' reads suffix 'ba'. "
+               "Clamped to the piece after the marker, the clause "
+               "keeps 'MA' and gives 'ba' up. TWO reports: the walk's "
+               "for the word it kept, assign's for the word it took",
+         shape=2),
+    Case("the_clamps_control_without_the_clause",
+         "Doe, J. ba",
+         {"given": "J.", "family": "Doe", "suffix": "ba"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the recorded control for the clamp: this is what the "
+               "released 'ba' must go on reading, and it is #531's "
+               "slot doing the reading. 'ba' is the fifth listed "
+               "member, the one decisions.md#suffix-acronym-collisions "
+               "marked ambiguous rather than removing. 1.4.0 parity",
+         shape=2),
+    Case("the_clause_leaves_a_middle_initial_alone",
+         "Doe, Jane Q. nee Smith MA",
+         {"given": "Jane", "middle": "Q.", "family": "Doe",
+          "suffix": "MA", "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the member leaves the clause and 'Q.' stays the "
+               "middle initial it always was -- the stop reaches the "
+               "clause's trailing word, not the name in front of it",
+         shape=2),
+    Case("a_no_name_segment_moves_in_silence",
+         "Doe, Dr. nee Smith MA",
+         {"title": "Dr.", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=(),
+         notes="an ACCEPTED COST and a recorded silence. Once 'Smith' "
+               "leaves with the marker, segment 1 is 'Dr. MA' -- a "
+               "no-name segment, which the credential-run gate reads "
+               "whole without ever reaching #531's emitter, and the "
+               "first-post-comma emitter reads 'Dr.'. That is "
+               "_types.py's third pre-existing silence (a member with "
+               "no name word IN FRONT of it), now reachable through a "
+               "clause. 1.4.0 read given 'nee', middle 'Smith', "
+               "suffix 'MA'",
+         shape=2),
+    Case("the_bound_given_join_takes_the_released_member",
+         "Berg, abdul nee Jones MA",
+         {"given": "abdul MA", "family": "Berg", "maiden": "Jones"},
+         classification="fix(#533)",
+         ambiguities=(),
+         notes="an ACCEPTED COST, and the control beside it says it "
+               "is not this change's defect: the take releases 'MA' "
+               "and P5's LENIENT post-comma join swallows it into the "
+               "bound-given pair before assign can read it -- exactly "
+               "as it does in 'Berg, abdul MA'. So the clause form "
+               "now AGREES with the clause-less form. Silent on both, "
+               "and _types.py already documents that silence (a chain "
+               "has swallowed the member into one piece, so there is "
+               "no lone member to ask about)",
+         shape=2),
+    Case("the_bound_given_joins_control_without_the_clause",
+         "Berg, abdul MA",
+         {"given": "abdul MA", "family": "Berg"},
+         classification="parity",
+         ambiguities=(),
+         notes="the recorded control for the row above, and 1.4.0 "
+               "read it identically (first 'abdul MA', last 'Berg'). "
+               "Unchanged by this rule",
+         shape=2),
+    Case("no_trailing_rule_reads_the_family_segments_clause",
+         "Smith nee Jones, Jane MA",
+         {"given": "Jane", "family": "Smith", "suffix": "MA",
+          "maiden": "Jones"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the clause is in segment 0 of a family comma, where "
+               "the comma has ALREADY named the family: those words "
+               "are family text and a stop would hand one to `family` "
+               "rather than to `suffix`, so no trailing rule is "
+               "consulted and the clause keeps what it has. The 'MA' "
+               "that does read as a credential here is in segment 1 "
+               "and is #531's slot's, not this rule's. Unchanged",
+         shape=2),
+    Case("no_trailing_rule_reads_a_third_comma_part",
+         "Smith, John, Jr nee Jones MA",
+         {"given": "John", "family": "Smith", "suffix": "Jr",
+          "maiden": "Jones MA"},
+         classification="fix(#274)",
+         ambiguities=("comma-structure",),
+         notes="the other NONE reader, and the row that killed the "
+               "first prototype: a segment past the second comma is "
+               "read as credentials whole, so no trailing rule is "
+               "consulted, the clause keeps 'MA' -- and nothing "
+               "reports, because nothing was decided. Untagged: shape "
+               "2 is a TWO-part listing. Unchanged from 2.0.0",
+               ),
+    # ---- #533: the policy sweep, all core-only -----------------------
+    Case("the_clause_reads_the_same_under_the_strict_comma_knob",
+         "Doe, Jane nee Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         policy=Policy(lenient_comma_suffixes=False),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the knob governs the LENIENT trailing predicate, "
+               "which this slot does not inherit, so the reading is "
+               "the default's"),
+    Case("the_clause_reads_the_same_under_family_first",
+         "Doe, Jane nee Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="name_order does not enter it: the peel is "
+               "order-independent and the comma has already named the "
+               "family, so all three orders move the same names "
+               "(measured over the whole corpus under six policies). "
+               "UNTAGGED, and a shape 4 tag would be wrong -- this is "
+               "a comma listing, not the family-first arrangement"),
+    Case("the_clause_reads_the_same_under_ff_given_last",
+         "Doe, Jane nee Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the third order, for the same reason as the row above"),
     Case("a_leading_title_takes_the_slot_the_member_would_have_had",
          "Doe, Dr. MA Smith",
          {"title": "Dr.", "given": "MA", "middle": "Smith",

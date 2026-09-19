@@ -181,6 +181,20 @@ _CORE_ONLY_IDS = frozenset({
     "the_trailing_slot_ignores_the_strict_comma_knob",
     "the_trailing_slot_reads_the_same_under_family_first",
     "the_trailing_slot_reads_the_same_under_ff_given_last",
+    # #533: the maiden clause's trailing credential. Five policy rows,
+    # each core-only for a field-by-field reason rather than a blanket
+    # one -- `unlisted_dotted_suffixes`, `unlisted_caps_suffixes`,
+    # `lenient_comma_suffixes` and `name_order` are each already in
+    # _UNTRANSLATED above, the first three having no v1 Constants
+    # manager at all and the fourth no v1 spelling. The DEFAULT-policy
+    # rows of the same change are ordinary rows and run here, which is
+    # what pins the facade parity that matters: HumanName("Jane Doe
+    # nee Smith MA") gives first Jane, last Doe, suffix MA.
+    "the_dotted_member_is_kept_with_the_switch_off_and_reports",
+    "the_caps_switch_reaches_the_clause",
+    "the_clause_reads_the_same_under_the_strict_comma_knob",
+    "the_clause_reads_the_same_under_family_first",
+    "the_clause_reads_the_same_under_ff_given_last",
 })
 
 

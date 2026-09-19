@@ -417,14 +417,15 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     or a bare acronym with words to spare, into the family or the
     maiden name.
 
-    `numeral_only` is the maiden walk's reading: the bare-acronym
-    fork counts pieces, and the walk removes the very pieces it
-    counted, so an acronym peeled over the pieces as they stand may
-    be the family of what is left ('John née Jones Smith Ma' read
-    maiden 'Jones Smith', family 'Ma'). The numeral fork reads one
-    piece, the one before the numeral, and _maiden_take re-asks it
-    with the piece the take leaves there; the acronym is left to
-    assign."""
+    `numeral_only` answers off `Peel.numeral` alone: the bare-acronym
+    fork counts pieces, and a caller that REMOVES the pieces it
+    counted cannot use that count as it stands ('John née Jones Smith
+    Ma' peeled over the pieces as written reads the acronym as a
+    credential with words to spare, and once 'Jones Smith' has left
+    it is the family of what remains). Its one caller is the maiden
+    walk's numeral re-ask, over the view the take would leave; the
+    walk asks the acronym fork itself, over a view of its own
+    (#533)."""
     rest = peel_walk(start, ptags, skip)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
     if numeral_only:
@@ -436,7 +437,7 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
 # peel_trailing and segment_suffix_reading ask before reading the
 # lean -- shared here so the two cannot drift on what counts
 # (quality-review finding: it was spelled twice, once per site,
-# before this). Both callers test "vocab:suffix-ambiguous" in tags
+# before this). Those two test "vocab:suffix-ambiguous" in tags
 # INLINE, before calling this, rather than leaving that cheap check to
 # this function's own body: measured, a caller whose `elif` reaches
 # this on every piece (segment_suffix_reading's does, one per
@@ -444,6 +445,18 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
 # regardless of what is inside it, and the inline pre-check is what
 # keeps a non-member piece ("Smith, John"'s "John") from ever making
 # the call at all.
+#
+# A THIRD caller since #533 -- credential_at_the_given_slot just
+# below -- deliberately does NOT pre-check, because it is the one
+# predicate that owns #531's reading and membership is its caller's
+# to decide (its own docstring says so). It pushes the test out to
+# ITS callers rather than asking it twice, and the frame argument
+# holds transitively because both of them do ask it inline: assign's
+# walkable pass tests `AMBIGUOUS_ACRONYM_TAG in tok.tags` after a
+# `len(piece) == 1` before the call (_assign.py, the given part's
+# trailing slot), and the maiden walk's view check spells the same
+# pair inside its `all(...)` (_group.py, `_maiden_take`). So no
+# non-member piece reaches this function down that route either.
 def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     """`ambiguous_lean` for a LISTED bare-ambiguous token, or None if
     the token is not tagged a listed member, is admitted by SHAPE
@@ -453,6 +466,30 @@ def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
             or SHAPE_ACRONYM_TAG in token.tags):
         return None
     return ambiguous_lean(token.text, one_case)
+
+
+def credential_at_the_given_slot(token: WorkToken,
+                                 one_case: bool | None) -> bool:
+    """#531's reading of a class MEMBER ending the given part after a
+    family comma: the credential unless the writing says otherwise.
+    The caller decides membership and that the piece ends that part.
+
+    The words to spare are there by construction at that slot, so the
+    count says nothing and only the lean does; a member that is also
+    particle vocabulary reads as the credential on a POSITIVE lean
+    alone, P6's attachment keeping every other spelling.
+
+    Two callers since #533 -- assign's walk over the given part, and
+    the maiden walk's second check over the name the take would leave
+    (rules.md#M2) -- so the reading is a function rather than a
+    condition written twice
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It is a
+    text-and-tags question, which is what puts it in this module
+    rather than beside either caller.
+    """
+    lean = listed_lean(token, one_case)
+    return lean == "credential" or (lean is None
+                                    and "particle" not in token.tags)
 
 
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],

@@ -243,6 +243,162 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
         assert not parser.parse(comma_form).suffix, comma_form
 
 
+#: The one-case-head exception class, and the recorded size of it.
+#: Structural rather than a name list: a name whose OWN words are
+#: written in one case, where the member's own writing is the only
+#: contrast in the string, so the clause hides it. `own_words` stops
+#: at the maiden marker (rules.md#P3), so a member inside the clause
+#: cannot contribute the case contrast `one_case` is computed from --
+#: which is mechanisms.md's "the predicate keeps the judged token in
+#: the span" failing structurally, the judged token never being in
+#: the span at this slot. Accepted by Derek 2026-09-19 and recorded in
+#: decisions.md#S2 as the M2 instance of #492's deferred question.
+#: The COUNT is asserted beside the class because a structural
+#: allowlist cannot notice a 115th member of it: 114 of 2016 pairs on
+#: 2026-09-19, against 186 allowlisted and 984 failing before the
+#: change.
+_MAIDEN_AGREEMENT_EXCEPTIONS = 114
+
+
+def _one_case(text: str) -> bool | None:
+    """ParseState.one_case for a whole parse -- `is_one_case` over the
+    name's own words, which is exactly the span the allowlist asks
+    about."""
+    return run(ParseState(original=text, lexicon=Lexicon.default(),
+                          policy=Policy())).one_case
+
+
+def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
+) -> None:
+    """#533's invariant: appending a maiden clause to a name must not
+    change the CLASS a trailing word is read in.
+
+    A member of the ambiguous credential class ending a name that
+    carries a maiden clause, and the same member ending the same name
+    with the clause removed, must land in the same class -- credential
+    (role SUFFIX) or name (any other role). CLASS, not FIELD.
+
+    The clause bodies are NAME WORDS ONLY on purpose: a suffix word or
+    a title inside the clause is a word the count reads, so removing
+    the clause changes the question rather than answering it ('J. nee
+    Smith Jr MA' against 'J. MA' is not a pair).
+
+    Measured on this tree before #533: 984 of 2016 pairs disagreed
+    outside the allowlist. After: 0, and the allowlist holds exactly
+    its recorded size.
+    """
+    members = ("ba", "do", "ed", "jd", "ma", "x.y.z.", "r.a.i.")
+    heads = ("Jane Doe", "Doe, Jane", "John", "J.", "Dr.", "Jane",
+             "Jane van der Berg", "JANE DOE", "jane doe", "DOE, JANE",
+             "doe, jane", "Jane Q. Doe", "Doe, Dr. Jane", "Doe, J.",
+             "Smith, Jane", "Jane Doe Jr.")
+    bodies = ("Smith", "Yo-Yo", "van der Berg", "Jones Smith", "MA",
+              "Ma")
+    parser = Parser()
+
+    def side(text: str, word: str) -> str:
+        name = parser.parse(text)
+        hits = [t for t in name.tokens if t.text == word]
+        if not hits:
+            return "gone"
+        return ("credential" if hits[-1].role is Role.SUFFIX
+                else "name")
+
+    pairs = allowed = 0
+    failures = []
+    for head in heads:
+        for body in bodies:
+            for base in members:
+                for word in (base.lower(), base.title(), base.upper()):
+                    clause = f"{head} nee {body} {word}"
+                    plain = f"{head} {word}"
+                    pairs += 1
+                    if side(clause, word) == side(plain, word):
+                        continue
+                    if _one_case(clause) and not _one_case(plain):
+                        allowed += 1
+                        continue
+                    failures.append(
+                        f"{clause!r} reads {side(clause, word)} but "
+                        f"{plain!r} reads {side(plain, word)}")
+    assert not failures, (
+        f"{len(failures)} of {pairs} pair(s) disagree outside the "
+        f"one-case-head class:\n" + "\n".join(failures[:15]))
+    assert allowed == _MAIDEN_AGREEMENT_EXCEPTIONS, (
+        f"the one-case-head class holds {allowed} of {pairs} pairs, "
+        f"recorded as {_MAIDEN_AGREEMENT_EXCEPTIONS} on 2026-09-19; a "
+        f"structural allowlist cannot notice its own growth, so this "
+        f"count is the control. Re-record it deliberately, saying why")
+
+
+def test_no_two_ambiguities_name_the_same_token_span() -> None:
+    """The maiden walk and assign's trailing peel both report at this
+    class, and group's particle-chain emitter stands beside them. None
+    of the three may report a word another already did -- the maiden
+    pieces are removed before the chain runs, and a member the reading
+    TOOK is out of the clause by the time roles are assigned.
+
+    Per TOKEN, not per whole span: a first draft compared the
+    ambiguities' token tuples for equality, which sees two reports of
+    the same span and misses the likelier defect -- one report naming
+    `Smith MA` while another names `MA`. The check below is over the
+    spans the reports claim, so an OVERLAP fails it however the two
+    spans differ in length.
+
+    Measured 2026-09-19: 0 over 20,412 parses, every particle shape
+    among them ('nee van der Berg Ma', 'nee de Ma', 'nee van Ma').
+    A COUNT of the parses that carry two reports rides along, because
+    a comparison over one report is vacuous and nothing else would
+    say so: the grid as it stands has 2,160 of them, all from the two
+    particle heads, and a later edit that drops them fails here
+    rather than silently turning this into a test of nothing.
+    """
+    members = ("ba", "do", "ed", "jd", "ma", "x.y.z.", "r.a.i.")
+    heads = ("Jane Doe", "Doe, Jane", "John", "J.", "Dr.", "Jane",
+             "Jane van der Berg", "JANE DOE", "jane doe", "DOE, JANE",
+             "doe, jane", "Jane Q. Doe", "Doe, Dr. Jane", "Doe, J.",
+             "Smith, Jane", "Jane Doe Jr.", "Doe, Jane van",
+             "Doe, Jane van der")
+    bodies = ("Smith", "Yo-Yo", "van der Berg", "de", "van",
+              "Jones Smith")
+    parsers = [Parser(),
+               Parser(policy=Policy(unlisted_dotted_suffixes=False)),
+               Parser(policy=Policy(unlisted_caps_suffixes=True))]
+    failures = []
+    multi = 0
+    for head in heads:
+        for body in bodies:
+            for base in members:
+                for word in (base.lower(), base.title(), base.upper()):
+                    for marker in ("nee", "née", "geb."):
+                        text = f"{head} {marker} {body} {word}"
+                        for parser in parsers:
+                            claimed: set[object] = set()
+                            overlap = False
+                            spans = []
+                            reports = parser.parse(text).ambiguities
+                            multi += len(reports) > 1
+                            for a in reports:
+                                # a synthetic token has no span; fall
+                                # back on its identity so it cannot
+                                # collide with another report's
+                                span = {t.span if t.span is not None
+                                        else id(t) for t in a.tokens}
+                                spans.append(sorted(map(str, span)))
+                                overlap = overlap or bool(claimed & span)
+                                claimed |= span
+                            if overlap:
+                                failures.append(f"{text!r}: {spans}")
+    assert not failures, (
+        f"{len(failures)} parse(s) report one token twice:\n"
+        + "\n".join(failures[:15]))
+    assert multi == 2160, (
+        f"{multi} of these parses carry more than one report, recorded "
+        f"as 2160 on 2026-09-19. A parse with one report cannot fail "
+        f"the check above, so this is what keeps the grid honest: move "
+        f"the number deliberately, and never to 0")
+
+
 @pytest.mark.parametrize("text", _FORK_CORPUS)
 def test_a_fork_is_never_reported_twice_on_a_real_name(text: str) -> None:
     state = run(ParseState(original=text, lexicon=Lexicon.default(),

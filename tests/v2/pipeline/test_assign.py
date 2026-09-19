@@ -6,6 +6,7 @@ from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._group import group
+from nameparser._pipeline._pieces import credential_at_the_given_slot
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
@@ -755,7 +756,9 @@ def test_the_trailing_given_slot_steps_over_a_title_inside_the_run() -> None:
 
 def test_the_trailing_given_slot_reads_the_lean_three_ways() -> None:
     """credential / name / no-lean, the three answers listed_lean
-    gives, each landing where the rule says."""
+    gives -- read for this slot through
+    `credential_at_the_given_slot`, which assign calls -- each
+    landing where the rule says."""
     assert _by_role(_assigned("Doe, John MA", lexicon=Lexicon.default()),
                     Role.SUFFIX) == "MA"          # lean credential
     assert _by_role(_assigned("Doe, John Ma", lexicon=Lexicon.default()),
@@ -768,7 +771,8 @@ def test_the_trailing_given_slot_falls_through_for_a_by_shape_member(
 ) -> None:
     """listed_lean returns None wherever the shape tag rides, so a
     by-shape member never leans and takes the positional reading --
-    which at this slot is the credential."""
+    which at this slot is the credential. Reached through
+    `credential_at_the_given_slot`, whose no-lean arm this is."""
     out = _assigned("Doe, John X.Y.Z.", lexicon=Lexicon.default())
     assert _by_role(out, Role.SUFFIX) == "X.Y.Z."
 
@@ -790,6 +794,29 @@ def test_the_trailing_given_slot_ignores_the_two_segment_floor() -> None:
     # and the restriction still governs its own predicate
     out = _assigned("Doe, John V, PhD", lexicon=Lexicon.default())
     assert _by_role(out, Role.MIDDLE) == "V"
+
+
+def test_the_shared_given_slot_predicate_reads_the_lean_three_ways(
+) -> None:
+    """credential_at_the_given_slot is the ONE place #531's reading
+    lives since #533, and its two callers sit in different stages --
+    assign's walk over the given part, and the maiden walk's second
+    check. A test of its own is what keeps the three answers pinned
+    where a caller's test would only pin the reading it needs."""
+    lex = Lexicon.default()
+    state = _assigned("Doe, John MA", lexicon=lex)
+    member = next(t for t in state.tokens if t.text == "MA")
+    assert credential_at_the_given_slot(member, False) is True
+    state = _assigned("Doe, John Ma", lexicon=lex)
+    member = next(t for t in state.tokens if t.text == "Ma")
+    assert credential_at_the_given_slot(member, False) is False
+    state = _assigned("doe, john ma", lexicon=lex)
+    member = next(t for t in state.tokens if t.text == "ma")
+    assert credential_at_the_given_slot(member, True) is True
+    # the particle carve-out: no positive lean, so P6 keeps the word
+    state = _assigned("Doe, John do", lexicon=lex)
+    member = next(t for t in state.tokens if t.text == "do")
+    assert credential_at_the_given_slot(member, False) is False
 
 
 def test_a_name_word_behind_the_member_ends_the_run() -> None:
