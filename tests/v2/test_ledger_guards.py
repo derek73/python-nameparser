@@ -2688,14 +2688,32 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- all of them
         # names this rule already described. Growth into new
         # corpus, not a widened regex.
+        # 2026-09-18, #531: 135 -> 137. The two CJK comma forms that
+        # round's case rows added, '田中, 太郎 MA' and '김, 민준 MA',
+        # both tolerated rows and so both in the radar corpus. Growth
+        # into new corpus again; no role joined the list.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(135, ('family', 'given', 'middle'), "fd79e8e1e2ef", None),
+            _Claim(137, ('family', 'given', 'middle'), "94b869596b3e", None),
         "fix(#274) maiden markers consumed":
             _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8", None),
+        # 2026-09-18, #531: 13 -> 19. Six corpus names whose trailing
+        # word is particle vocabulary this regex already lists --
+        # 'Doe, John DO', 'Doe, John Do', 'SMITH, JOHN DO',
+        # 'Nascimento, Edson Arantes do', 'NASCIMENTO, EDSON ARANTES
+        # DO' and 'Berg, Jan mc'. Five of the six read exactly what
+        # this rule describes; the sixth, 'Doe, John DO', is the one
+        # spelling where the capitals take the credential instead,
+        # and it files here because the ROLES it moves are this
+        # rule's. Growth into new corpus, not a widened regex.
+        # 2026-09-19, #531 review round: 19 -> 20. One new corpus
+        # name, 'Doe, John van DO' -- the control row for the member
+        # grouping merges INTO a particle piece, whose trailing word
+        # is particle vocabulary this regex already lists. Growth into
+        # new corpus again; no role joined the list.
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('family', 'middle'), "973617235cda", None),
+            _Claim(20, ('family', 'middle'), "2257fd2a0f42", None),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1", None),
         # 279 -> 280 with #371, and the growth is corpus, not behavior:
@@ -2731,8 +2749,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'John Smith, Ma' and 'Smith Jr., Ma' -- rules.md#C1's own
         # witnesses that the NAME-word count is asked before the
         # written case is.
+        # 2026-09-18, #531: 304 -> 310 was that round; 310 -> 334 is
+        # this one. Twenty-four comma-bearing corpus names arrived
+        # with #531's case rows and rules.md example lines, every one
+        # inside this rule's Latin comma range -- the whole 26 new
+        # names less the two CJK forms. The count grew with the
+        # CORPUS and not with the rule; no role joined the list.
+        # 2026-09-19, #531 review round: 334 -> 336. The two control
+        # rows the round added, 'Doe, Dr. MA' and 'Doe, John van DO',
+        # both comma-bearing and both inside this rule's Latin comma
+        # range. Verified to be those two names and no others.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(310, ('given', 'suffix', 'title'), "2803b1932de1", None),
+            _Claim(336, ('given', 'suffix', 'title'), "f88b911ced2e", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -2757,8 +2785,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Smith, Ma' -- the pair #289's lean reads in opposite
         # directions, both of them lone post-comma credentials
         # by this rule's own description.
+        # 2026-09-18, #531: 20 -> 21. One new corpus name, 'Doe, MA' --
+        # the family-word twin of the 'Smith, MA' above, and a lone
+        # post-comma credential by this rule's own description.
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(20, ('family', 'given', 'suffix', 'title'), "c94afd0c7617", None),
+            _Claim(21, ('family', 'given', 'suffix', 'title'), "3a950b6bb63d", None),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
             _Claim(6, ('given', 'suffix', 'title'), "7911e0158337", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
@@ -2771,8 +2802,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the lone-post-comma rule above and for the same reason.
         # 2026-09-18, second round: 302 -> 304, the same two new comma
         # names as the rule above.
+        # 2026-09-18, #531: 310 -> 334, the same twenty-four new comma
+        # names as the rule above and for the same reason.
+        # 2026-09-19, #531 review round: 334 -> 336, the same two new
+        # comma names as the rule above.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(310, ('family', 'given'), "2803b1932de1", None),
+            _Claim(336, ('family', 'given'), "f88b911ced2e", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -2790,11 +2825,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-18: 26 -> 29. The three CJK comma forms #289's own
         # case rows added ('毛泽东, MA', '田中 太郎, MA',
         # '마틴 킹, MA'). Growth into new corpus.
+        # 2026-09-18, #531: 32 -> 34, the two CJK comma forms that
+        # round added ('田中, 太郎 MA' and '김, 민준 MA'). Both
+        # regexes here ask only for a comma beside a CJK codepoint,
+        # so every CJK comma name in the corpora reaches them.
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
-            _Claim(32, ('given', 'suffix'), "a11674bdc8f2", None),
+            _Claim(34, ('given', 'suffix'), "ec7e1119a738", None),
         # 2026-09-18: 26 -> 29, the same three new CJK comma forms.
+        # 2026-09-18, #531: 32 -> 34, the same two as the rule above.
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(32, ('family', 'given', 'suffix', 'title'), "a11674bdc8f2", None),
+            _Claim(34, ('family', 'given', 'suffix', 'title'), "ec7e1119a738", None),
         # 37 -> 35 with the 2026-09-05 narrowing, which is a rule
         # NARROWING and not corpus movement: the three negative
         # lookbehinds stop the regex matching a listed honorific
@@ -3189,15 +3229,21 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
             _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe", None),
+        # 2026-09-18, #531: 13 -> 19, the same six particle-trailing
+        # comma names as the 1.4 twin, whose entry carries the roster.
+        # 2026-09-19, #531 review round: 19 -> 20, the same one new
+        # name as that twin ('Doe, John van DO').
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
+            _Claim(20, ('_ambiguities', 'family', 'middle'), "2257fd2a0f42", None),
         # 2026-09-18: 126 -> 131. Five corpus names arrived with
         # #289/#516's own case rows -- 'J.씨', 'John Smith 田.中.',
         # '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- all of them
         # names this rule already described. Growth into new
         # corpus, not a widened regex.
+        # 2026-09-18, #531: 135 -> 137, the same two CJK comma forms
+        # as the 1.4 twin.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(135, ('_ambiguities', 'family', 'given', 'middle'), "fd79e8e1e2ef", None),
+            _Claim(137, ('_ambiguities', 'family', 'given', 'middle'), "94b869596b3e", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -3281,8 +3327,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Smith, Ma' -- the pair #289's lean reads in opposite
         # directions, both of them lone post-comma credentials
         # by this rule's own description.
+        # 2026-09-18, #531: 20 -> 21, the same one new name
+        # ('Doe, MA') as the 1.4 twin.
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(20, ('suffix', 'title'), "c94afd0c7617", None),
+            _Claim(21, ('suffix', 'title'), "3a950b6bb63d", None),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
             _Claim(6, ('given', 'suffix', 'title'), "7911e0158337", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
@@ -3740,8 +3788,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
             _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe", None),
+        # 2026-09-18, #531: 13 -> 19, the same six particle-trailing
+        # comma names as the 1.4 twin, whose entry carries the roster.
+        # 2026-09-19, #531 review round: 19 -> 20, the same one new
+        # name as that twin ('Doe, John van DO').
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
+            _Claim(20, ('_ambiguities', 'family', 'middle'), "2257fd2a0f42", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
@@ -3806,8 +3858,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Smith, Ma' -- the pair #289's lean reads in opposite
         # directions, both of them lone post-comma credentials
         # by this rule's own description.
+        # 2026-09-18, #531: 20 -> 21, the same one new name
+        # ('Doe, MA') as the 1.4 twin.
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(20, ('suffix', 'title'), "c94afd0c7617", None),
+            _Claim(21, ('suffix', 'title'), "3a950b6bb63d", None),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
             _Claim(6, ('given', 'suffix', 'title'), "7911e0158337", None),
         "fix(#325) a credential run across a second comma reads as suffixes":

@@ -418,13 +418,31 @@ class AmbiguityKind(StrEnum):
     #: WHERE it is emitted is narrower than where the doubt exists,
     #: and this is the boundary rather than an omission to be read
     #: past. The emitters cover the trailing slot of a name, the
-    #: post-comma slot of a family-comma listing, and the extra
-    #: segments beyond it. They do NOT cover the trailing slot of the
-    #: GIVEN part after a family comma: "Doe, John MA" reads middle
-    #: ``MA`` and "Doe, John X.Y.Z." middle ``X.Y.Z.``, both silently,
-    #: as every 2.x release has; 1.4.0 read "Doe, John MA" as a
-    #: suffix. The fork is real there and nothing reports it;
-    #: decisions.md#S2 records it as open.
+    #: post-comma slot of a family-comma listing, the trailing slot of
+    #: that listing's GIVEN part, and the extra segments beyond it.
+    #: Since 2.4 the given part's trailing slot reports whichever way
+    #: it read the word: "Doe, John MA" reads suffix ``MA`` and says
+    #: so, "Doe, John Ma" keeps middle ``Ma`` and says so too. Not in
+    #: EVERY direction, though: where the member is also a particle
+    #: and the particle rule keeps it, that rule reports at its own
+    #: site and this kind stays out of the way -- "Doe, John do" gives
+    #: family ``do Doe`` and one ``PARTICLE_OR_GIVEN``, never two
+    #: reports of one word.
+    #: THREE positions stay silent, and all three are boundaries
+    #: rather than omissions. A member with a NAME WORD behind it was
+    #: never a fork -- "Doe, John MA Smith" reads middle ``MA Smith``,
+    #: the ordinary reading, and nothing consulted the class. The
+    #: maiden walk claims everything behind its marker before this
+    #: slot exists, so "Doe, Jane nee Smith MA" gives maiden
+    #: ``Smith MA`` in silence, exactly as the comma-less "John Smith
+    #: nee Jones R.A.I." does. And -- pre-existing, and untouched by
+    #: 2.4 -- a member with no name word IN FRONT of it is not at this
+    #: slot either, because the slot is the end of a given part and
+    #: there is none: a title took that position. "Doe, Dr. MA" gives
+    #: suffix ``MA`` and "Doe, Mr. MA PhD" suffix ``MA PhD``, the
+    #: credential-run gate reading those segments whole; "Doe, Dr. Ma"
+    #: reaches the walk instead and makes ``Ma`` the given name
+    #: itself, which the walk starts above. All three are silent.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that

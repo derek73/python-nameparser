@@ -167,6 +167,20 @@ _CORE_ONLY_IDS = frozenset({
     # answers first).
     "the_caps_shape_never_reaches_a_tail_segment",
     "the_chain_reports_the_by_shape_half_too",
+    # #531: the given part's trailing slot. Five rows, and all five are
+    # core-only for a field-by-field reason rather than a blanket one
+    # -- `unlisted_dotted_suffixes`, `unlisted_caps_suffixes`,
+    # `lenient_comma_suffixes` and `name_order` are each in
+    # _UNTRANSLATED above, the first three having no v1 Constants
+    # manager at all and the fourth having no v1 spelling. The
+    # DEFAULT-policy rows of the same change are ordinary rows and run
+    # here, which is what pins the facade parity that matters:
+    # HumanName("Doe, John MA") gives first John, last Doe, suffix MA.
+    "the_dotted_slot_reports_with_the_switch_off",
+    "the_caps_switch_reaches_the_trailing_slot",
+    "the_trailing_slot_ignores_the_strict_comma_knob",
+    "the_trailing_slot_reads_the_same_under_family_first",
+    "the_trailing_slot_reads_the_same_under_ff_given_last",
 })
 
 

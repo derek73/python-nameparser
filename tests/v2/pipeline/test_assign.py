@@ -720,3 +720,100 @@ def test_the_comma_report_says_which_way_it_read_the_word() -> None:
     assert detail["Smith, A.B."] == [
         "'A.B.' after the comma is also an ordinary name word; read as "
         "the given name"]
+
+
+def test_the_trailing_given_slot_takes_a_bare_class_member() -> None:
+    out = _assigned("Doe, John MA", lexicon=Lexicon.default())
+    assert _by_role(out, Role.SUFFIX) == "MA"
+    assert _by_role(out, Role.MIDDLE) == ""
+
+
+def test_the_trailing_given_slot_walks_past_a_title() -> None:
+    """previous_kept() is what makes 'past a trailing title' the same
+    walk H5 already uses, so the two spellings agree rather than
+    needing two notions of 'trailing'."""
+    for text in ("Doe, John MA Prof.", "Doe, John Prof. MA"):
+        out = _assigned(text, lexicon=Lexicon.default())
+        assert _by_role(out, Role.SUFFIX) == "MA", text
+        assert _by_role(out, Role.TITLE) == "Prof.", text
+
+
+def test_the_trailing_given_slot_reads_the_lean_three_ways() -> None:
+    """credential / name / no-lean, the three answers listed_lean
+    gives, each landing where the rule says."""
+    assert _by_role(_assigned("Doe, John MA", lexicon=Lexicon.default()),
+                    Role.SUFFIX) == "MA"          # lean credential
+    assert _by_role(_assigned("Doe, John Ma", lexicon=Lexicon.default()),
+                    Role.MIDDLE) == "Ma"          # lean name
+    assert _by_role(_assigned("doe, john ma", lexicon=Lexicon.default()),
+                    Role.SUFFIX) == "ma"          # one case, no lean
+
+
+def test_the_trailing_given_slot_falls_through_for_a_by_shape_member(
+) -> None:
+    """listed_lean returns None wherever the shape tag rides, so a
+    by-shape member never leans and takes the positional reading --
+    which at this slot is the credential."""
+    out = _assigned("Doe, John X.Y.Z.", lexicon=Lexicon.default())
+    assert _by_role(out, Role.SUFFIX) == "X.Y.Z."
+
+
+def test_the_trailing_given_slot_ignores_the_two_segment_floor() -> None:
+    """#144's len(segments) == 2 restriction belongs to the lenient
+    trailing predicate and is NOT inherited here: 'MA' is not
+    initial-shaped, and a credential list behind it makes the
+    credential reading likelier rather than less."""
+    out = _assigned("Doe, John MA, PhD", lexicon=Lexicon.default())
+    # _by_role space-joins by role; the written comma is preserved by
+    # post_rules' entry pass (#436/#437, rules.md#R1), a later stage
+    # this assign-only helper does not run -- the full-pipeline case
+    # row `the_trailing_slot_survives_a_third_comma_part` pins the
+    # comma-rendered "MA, PhD". What this unit test checks is the role
+    # assignment alone: both members land in SUFFIX regardless of
+    # #144's two-segment floor.
+    assert _by_role(out, Role.SUFFIX) == "MA PhD"
+    # and the restriction still governs its own predicate
+    out = _assigned("Doe, John V, PhD", lexicon=Lexicon.default())
+    assert _by_role(out, Role.MIDDLE) == "V"
+
+
+def test_a_name_word_behind_the_member_ends_the_run() -> None:
+    out = _assigned("Doe, John MA Smith", lexicon=Lexicon.default())
+    assert _by_role(out, Role.MIDDLE) == "MA Smith"
+    assert not [a for a in out.ambiguities
+                if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+
+
+def test_two_members_in_the_trailing_run_report_once_each() -> None:
+    out = _assigned("Doe, John MA JD", lexicon=Lexicon.default())
+    assert len([a for a in out.ambiguities
+                if a.kind is AmbiguityKind.SUFFIX_OR_NAME]) == 2
+
+
+def test_the_no_name_gate_path_still_reports_exactly_once() -> None:
+    """The sibling of the existing count assertion. Where the first
+    post-comma piece IS the trailing run, segment 1 holds no name
+    word, segment_suffix_reading returns non-None, and assign never
+    enters the placement loop -- so the new emitter is unreachable on
+    exactly the path the old one owns."""
+    for text in ("Doe, MA", "Doe, MA PhD", "Doe, MA JD"):
+        out = _assigned(text, lexicon=Lexicon.default())
+        assert len([a for a in out.ambiguities
+                    if a.kind is AmbiguityKind.SUFFIX_OR_NAME]) == 1, text
+
+
+def test_the_trailing_given_slot_detail_is_verbatim() -> None:
+    """Both branches, verbatim -- only the string distinguishes them,
+    the kind being the same either way."""
+    detail = {
+        text: [a.detail for a in
+               _assigned(text, lexicon=Lexicon.default()).ambiguities
+               if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+        for text in ("Doe, John MA", "Doe, John Ma")
+    }
+    assert detail["Doe, John MA"] == [
+        "'MA' ending the given part is also an ordinary name word; "
+        "read as a credential"]
+    assert detail["Doe, John Ma"] == [
+        "'Ma' ending the given part is also an ordinary name word; "
+        "read as a name"]

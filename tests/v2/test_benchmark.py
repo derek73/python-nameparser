@@ -342,3 +342,75 @@ def test_policy_gated_cost_grows_no_worse_than_linearly(
         reaches: Callable[[Parser], bool]) -> None:
     assert reaches(parser), "shape no longer reaches the gated stage"
     _assert_grows_linearly(unit, parser.parse)
+
+
+# The shapes above repeat a unit 800 times and measure the CLOCK. That
+# pairing cannot guard a mutual recursion: #531's trailing-slot walk
+# re-entered the predicate that owns it, so a run of k ambiguous
+# credentials cost 2**k, and a run long enough to separate 2**k from
+# k**2 on the clock does not finish -- 24 members measured 5.9s, 32
+# would be days. So this one counts FRAMES over a run of 8 against a
+# run of 16, where the exponential is still cheap enough to profile
+# (112ms at 16, measured) and already 168x while quadratic is 4x.
+#
+# Frames are the right instrument here for the #475 reason and one
+# more: the recursion IS frame entries, one per re-entry, so the count
+# is the defect itself rather than a proxy for it. Measured on the
+# unfixed tree before the fix landed: 2,347 frames at 8 and 394,671 at
+# 16. Measured on the fixed tree: see the numbers in the assertion
+# message when it next fails.
+_RUN_SMALL = 8
+_RUN_LARGE = 16
+#: Quadratic growth over 2x the input is ~4x, exponential ~2**8 = 256x
+#: (168x as measured, the linear rest of the parse diluting it). The
+#: bound sits between, nearer the quadratic end: 2.5x of headroom over
+#: a quadratic and 17x under the exponential this was written against.
+#: Frame counts do not move under load, so the headroom is for a future
+#: shape change rather than for runner noise.
+_RUN_MAX_RATIO = 10.0
+
+
+def _frames_for(text: str) -> int:
+    """Python frame entries for ONE parse of `text`.
+
+    One parse, not a mean: this measures growth between two inputs, and
+    the count is deterministic for a given (tree, interpreter) -- see
+    `_calls_per_parse`, which takes a mean only because it reports an
+    absolute figure against a 2% band.
+    """
+    parse("warm up the caches")
+    calls = 0
+
+    def counter(frame: object, event: str, arg: object) -> None:
+        nonlocal calls
+        if event == "call":
+            calls += 1
+
+    sys.setprofile(counter)
+    try:
+        parse(text)
+    finally:
+        sys.setprofile(None)
+    return calls
+
+
+def test_a_trailing_credential_run_does_not_cost_exponentially() -> None:
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    small_text = "Doe, John " + "MA " * _RUN_SMALL
+    large_text = "Doe, John " + "MA " * _RUN_LARGE
+    # REACHABILITY, for the reason _POLICY_SHAPES carries one: the walk
+    # under measurement runs only where every member of the run reads
+    # as a credential. Route these to MIDDLE instead and the guard
+    # measures a walk that no longer happens, at a comfortable ratio,
+    # forever.
+    assert parse(small_text).suffix == " ".join(["MA"] * _RUN_SMALL)
+    small = _frames_for(small_text)
+    large = _frames_for(large_text)
+    ratio = large / small
+    assert ratio < _RUN_MAX_RATIO, (
+        f"a run of {_RUN_SMALL} credentials costs {small} frames and a run "
+        f"of {_RUN_LARGE} costs {large} -- {ratio:.1f}x for 2x the input. "
+        f"Quadratic is ~4x and exponential ~256x, so the trailing-slot "
+        f"walk in _assign.py has re-entered the predicate that owns it "
+        f"(#531)")

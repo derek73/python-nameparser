@@ -916,9 +916,8 @@ S2. Rationale: generational suffixes and credentials are recognized
     to spare — as the second of two words it stays the family
     name — and at the slots that report, either reading carries the
     ambiguity flag. Those slots are the trailing slot of a name, the
-    first slot after a family comma, and the segments beyond it; the
-    trailing slot of the GIVEN part after a family comma is not one
-    of them, and takes its reading in silence (S3).
+    first slot after a family comma, the trailing slot of the GIVEN
+    part after that comma, and the segments beyond it.
     Written case is the other evidence, and it speaks only in a name
     written in more than one case: there a member of the ambiguous
     set written in capitals reads as the credential even with no
@@ -954,8 +953,11 @@ S2. Rationale: generational suffixes and credentials are recognized
       "John Smith Ma"             →  family="Ma"
       "Smith, MA"                 →  suffix="MA"
       "Smith, Ma"                 →  given="Ma"
-      "Doe, John MA"              →  middle="MA"  · boundary
-      "Doe, John MA"              →  ambiguities=()  · boundary
+      "Doe, John MA"              →  suffix="MA"
+      "Doe, John Ma"              →  middle="Ma"  · boundary
+      "Doe, John MA Smith"        →  middle="MA Smith"  · boundary
+      "Doe, John DO"              →  suffix="DO"
+      "SMITH, JOHN DO"            →  family="DO SMITH"  · boundary
       "John Smith XYZ"            →  family="XYZ"
       "John Smith XYZ"  unlisted_caps_suffixes-on  →  suffix="XYZ"
       "Jean DUPONT"  unlisted_caps_suffixes-on  →  family="DUPONT"
@@ -1022,11 +1024,10 @@ S3. Rationale: credentials are often written run together with
     ambiguous acronym is (S2): a credential where the name has words
     to spare, a name word where it does not, either reading
     reported at the slots S2 reports at, and the same at a comma —
-    which means the FIRST piece after a family comma and the part
-    before a SUFFIX comma. The part before a FAMILY comma never
-    reports, the comma having already named it the family; neither
-    does a word trailing the given part after one, where this
-    reading is taken silently. Case says nothing here — the
+    which means the FIRST piece after a family comma, the word
+    trailing the given part after one, and the part before a SUFFIX
+    comma. The part before a FAMILY comma never reports, the comma
+    having already named it the family. Case says nothing here — the
     periods are the evidence — and three shapes are outside it: a
     single trailing period is not this shape at all, a chunk that is
     not wholly alphabetic is no acronym letter, and a word carrying
@@ -1046,7 +1047,7 @@ S3. Rationale: credentials are often written run together with
       "Jack X.Y.I."               →  family="X.Y.I."  · boundary
       "John Smith Xyz."           →  family="Xyz."  · boundary
       "John Smith 1.4"            →  family="1.4"  · boundary
-      "Doe, John X.Y.Z."          →  middle="X.Y.Z."  · boundary
+      "Doe, John X.Y.Z."          →  suffix="X.Y.Z."
     Accepted: the initialless-script clause carries no example line
     of its own. Every input that exercises it composes a script that
     writes no abbreviations with a period that only a Latin

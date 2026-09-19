@@ -45,12 +45,14 @@ Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
 particles_ambiguous token with more pieces following ("Van Johnson",
 and since #367 "Dr. Van Johnson" too, a title no longer displacing the
 particle out of that position) -- whatever role name_order assigns.
-Emits SUFFIX_OR_NAME at FOUR sites: the trailing roman numeral, each
+Emits SUFFIX_OR_NAME at FIVE sites: the trailing roman numeral, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
-gets its first word made into the name (H4's suffix half, #491), and
+gets its first word made into the name (H4's suffix half, #491),
 -- since #289 -- the FAMILY-COMMA path's own read of the first
-post-comma piece. Further emitters of the same kind live in
+post-comma piece, and -- since #531 -- the class member ENDING that
+path's given part, which the first-piece emitter could never reach.
+Further emitters of the same kind live in
 `_segment.py`, `_group.py` and `_post_rules.py`; they are not
 assign's and are not counted here. And
 at the one site that places a LONE name word, GIVEN_OR_FAMILY for the
@@ -70,12 +72,12 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
-    is_suffix_piece, leading_titles, peel_walk, segment_suffix_reading,
-    tail_reading, trailing_titles,
+    is_suffix_piece, leading_titles, listed_lean, peel_walk,
+    segment_suffix_reading, tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken,
-    _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED,
+    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
+    WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED,
 )
 from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
@@ -606,6 +608,17 @@ def assign(state: ParseState) -> ParseState:
             # place.
             titled_idx: tuple[int, ...] = ()
             walkable: list[int] = []
+            #: Where the trailing suffix run starts, for the #531
+            #: report below: the first piece the walk from the end
+            #: refuses, or the member that walk reached. Computed once,
+            #: on the first member the loop meets, and -1 until then
+            #: (no piece index can be negative, and the loop's own
+            #: floor is n + 1). One number is enough because the
+            #: question is MONOTONE -- a piece ends the given part
+            #: whenever the piece before it does -- and the loop below
+            #: ascends, so the first member's own walk already names
+            #: the floor every later member measures against.
+            run_floor = -1
 
             def previous_kept(m: int, titled: tuple[int, ...]) -> int:
                 """The piece before `m` that the H5 chain did NOT
@@ -633,6 +646,33 @@ def assign(state: ParseState) -> ParseState:
                     m -= 1
                 return m
 
+            #: Memo for the #531 walk inside the predicate below, and a
+            #: COMPLEXITY fix rather than a speed-up: that walk asks
+            #: the predicate that owns it about the pieces behind the
+            #: member, so a member standing behind a member re-ran the
+            #: whole run's walk, and a trailing run of k members cost
+            #: 2**k. Measured on the shape that found it, `'Doe, John '
+            #: + 'MA '*k`: 0.24ms at k=8, 23ms at 16, 5.8s at 24 --
+            #: against 0.16/0.20/0.24ms at cc78c960, where no such walk
+            #: existed. With the memo each member's walk runs once, and
+            #: the same three sizes measure 0.17/0.28/0.39ms
+            #: (2026-09-19).
+            #:
+            #: The key carries `titled` for the same reason the
+            #: predicate takes it as a parameter: the two passes ask
+            #: about the same pieces with different ones spliced out.
+            #: It CANNOT go stale. Everything the recorded verdict
+            #: rests on is tags and text -- `is_suffix_piece` reads
+            #: ptags and token tags, `_reads_as_a_trailing_suffix`
+            #: reads text plus `is_suffix_piece`, `listed_lean` reads
+            #: tags, text and `state.one_case` -- and none of them
+            #: reads `.role`, verified by reading all three
+            #: (2026-09-19). The one thing this segment's code rewrites
+            #: between the two passes is the role, through `_set_roles`,
+            #: which is a `dataclasses.replace(role=...)` and leaves
+            #: text and tags identical.
+            ends_the_given: dict[tuple[int, tuple[int, ...]], bool] = {}
+
             def reads_as_a_suffix(m: int, titled: tuple[int, ...]) -> bool:
                 """Does this segment's walk read piece `m` as a suffix?
 
@@ -652,6 +692,77 @@ def assign(state: ParseState) -> ParseState:
                 """
                 if is_suffix_piece(pieces[m], ptags[m], tokens):
                     return True
+                # rules.md#S2, the given part's trailing slot (#531).
+                # INLINE, and that is the frame budget talking rather
+                # than taste: the walkable pass asks this closure once
+                # per piece of every family-comma segment, so a helper
+                # call would cost a frame on every non-member piece and
+                # a generator expression would cost its own on 3.11.
+                # Membership is therefore a bare `in` on tags already
+                # in hand, after a `len` -- 'Doe, John Q.' and
+                # 'Smith, John V' measure +0 with this shape and +1
+                # with a helper (2026-09-18).
+                #
+                # That "once per piece" is the NON-MEMBER cost, and
+                # only it. A member is asked again by the walk below,
+                # once per member of the trailing run it stands in, and
+                # the memo is what holds that at once per member rather
+                # than once per subset (2026-09-19). What the two cost,
+                # measured against cc78c960: 'Smith, John', 'Doe, John
+                # Q.', 'Smith, John V', 'Smith, MA' and 'Berg, Jan vd'
+                # are all +0 frames, while 'Doe, John MA' is +6 and
+                # 'Doe, John MA PhD' +25 -- the member's walk, its
+                # lean, and the report below. The memo does not move
+                # either figure, both runs being too short to repeat a
+                # walk; what it moves is the shape of the growth.
+                #
+                # The comma has already named the family and the first
+                # piece after it is the given name, so the words to
+                # spare S2's count asks about are there by
+                # construction and the count says nothing at this
+                # slot. What is left is the writing, which is the same
+                # evidence the comma-less spelling of the same name
+                # reads. #144's two-segment restriction below is NOT
+                # inherited: it exists because a trailing 'V' before a
+                # third comma part is likely a middle initial, and a
+                # class member is not initial-shaped while a
+                # credential list behind it makes the credential
+                # reading likelier rather than less.
+                piece = pieces[m]
+                if len(piece) == 1:
+                    tok = tokens[piece[0]]
+                    if AMBIGUOUS_ACRONYM_TAG in tok.tags:
+                        # 'ending the given part' reaches past the
+                        # credentials behind it and past a trailing
+                        # title, which previous_kept() makes the same
+                        # walk H5 already uses -- so 'Doe, John MA
+                        # Prof.' and 'Doe, John Prof. MA' land on one
+                        # answer without a second notion of trailing.
+                        # A name word behind the member ends the
+                        # reach, and the member is an ordinary middle
+                        # name read in silence.
+                        key = (m, titled)
+                        ended = ends_the_given.get(key)
+                        if ended is None:
+                            j = previous_kept(len(pieces), titled)
+                            while j > m and reads_as_a_suffix(j, titled):
+                                j = previous_kept(j, titled)
+                            ends_the_given[key] = ended = j == m
+                        if ended:
+                            lean = listed_lean(tok, state.one_case)
+                            # A member that is ALSO particle
+                            # vocabulary reads as the credential only
+                            # on a POSITIVE credential lean: P6's
+                            # attachment outranks this reading in
+                            # every other spelling, and 'Doe, John do'
+                            # leans nothing, so the positional reading
+                            # would take it -- the wrong answer there,
+                            # not merely a stray report
+                            # (decisions.md#S2, 2026-09-18).
+                            if lean == "credential" or (
+                                    lean is None
+                                    and "particle" not in tok.tags):
+                                return True
                 prev = previous_kept(m, titled)
                 # trailing piece of a two-part name is unambiguously
                 # positioned: v1 accepts the lenient test there
@@ -755,6 +866,69 @@ def assign(state: ParseState) -> ParseState:
                                if titled_idx else m not in walkable)
                 _set_roles(tokens, pieces[m],
                            Role.SUFFIX if suffix_here else Role.MIDDLE)
+                # #531's report, and the FIFTH SUFFIX_OR_NAME site in
+                # this module. The gate reads EITHER tag, as the
+                # first-post-comma emitter's does: classify writes the
+                # shape tag whether or not the dotted switch admits
+                # the token, which is what lets a declined fork be
+                # reported without being taken.
+                #
+                # The report tracks the FORK CONSULTED, not the lean
+                # (#289's rule), so a member the writing kept as a
+                # name reports too -- 'Doe, John Ma' stays a middle
+                # name and says so. It reports only in the TRAILING
+                # RUN: with a name word behind it no fork was
+                # consulted, and rules.md#A1's "a kind is worth adding
+                # only if a reader would hesitate too" is why that
+                # must stay silent rather than why it happens to.
+                #
+                # The `do` carve-out is a REPORT carve-out on top of
+                # the reading one above: a particle-tagged member this
+                # walk did not itself take is P6's fork, and P6
+                # reports it in its own kind, which is
+                # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE read
+                # strictly. Without it 'Doe, John do' reported both
+                # kinds.
+                piece = pieces[m]
+                if (len(piece) == 1
+                        and not tokens[piece[0]].tags.isdisjoint(
+                            _AMBIGUOUS_CREDENTIAL_TAGS)
+                        and (suffix_here
+                             or "particle" not in tokens[piece[0]].tags)):
+                    # Once, for the whole loop. The walk this replaces
+                    # ran per member and re-scanned `walkable` at every
+                    # step, which is a list -- so on a run the
+                    # predicate's memo had already made quadratic, the
+                    # REPORT stayed cubic. Measured on
+                    # `'Doe, ' + 'John '*r + 'MA '*r`, r doubling from
+                    # 100: 5.8/28/175/1229ms, which is 4.9x then 6.2x
+                    # then 7.0x per doubling and heading for the 8x a
+                    # cubic gives. One walk instead: 3.5/11/36/132ms,
+                    # 3.1x then 3.4x then 3.7x, heading for 4x
+                    # (2026-09-19). `run_floor` is where the FIRST
+                    # member's walk stopped, and that is the floor for
+                    # every later member too: if the walk reached that
+                    # member, nothing behind it refuses and no later
+                    # member can be refused either; if it stopped
+                    # short, it stopped at the LAST piece that refuses,
+                    # which is exactly what a later member's own walk
+                    # would have found (2026-09-19).
+                    if run_floor < 0:
+                        j = previous_kept(len(pieces), titled_idx)
+                        while j > m and (reads_as_a_suffix(j, titled_idx)
+                                         if titled_idx
+                                         else j not in walkable):
+                            j = previous_kept(j, titled_idx)
+                        run_floor = j
+                    if m >= run_floor:
+                        i2 = piece[0]
+                        ambiguities.append(PendingAmbiguity(
+                            AmbiguityKind.SUFFIX_OR_NAME,
+                            f"{tokens[i2].text!r} ending the given "
+                            f"part is also an ordinary name word; "
+                            f"read as "
+                            f"{'a credential' if suffix_here else 'a name'}",
+                            (i2,)))
         if reading is not None and sum(
                 1 for k, piece in enumerate(fam_pieces)
                 if not is_suffix_piece(piece, fam_tags[k], tokens)) > 1:

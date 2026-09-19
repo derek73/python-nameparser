@@ -26,8 +26,8 @@ import re
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._assign import _name_positions
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken, _NEVER_FLIPPED,
-    comma_bucket,
+    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
+    WorkToken, _NEVER_FLIPPED, comma_bucket,
 )
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._policy import PatronymicRule
@@ -702,7 +702,23 @@ def post_rules(state: ParseState) -> ParseState:
                            for i in seg[end - 1])):
             end -= 1
         k = end
-        while k and all("particle" in tokens[i].tags for i in seg[k - 1]):
+        # #531: a class member the given-part slot read as a
+        # credential is NOT part of the run. P6 keys on vocabulary
+        # rather than role by design, which is what gives its
+        # attachment precedence over S2 -- so assign's suffix role
+        # alone does not stand it down, verified by running #531's
+        # assign half with this condition absent ('Doe, John DO' read
+        # family 'DO Doe', the suffix role silently overridden).
+        # Narrowed to AMBIGUOUS_ACRONYM_TAG rather than to the
+        # suffix role: `vd` and `mc` are unambiguous suffix
+        # vocabulary, also particles, also suffix-roled, and the tag
+        # is what keeps them inside the run.
+        while k and all("particle" in tokens[i].tags
+                        for i in seg[k - 1]) \
+                and not (len(seg[k - 1]) == 1
+                         and tokens[seg[k - 1][0]].role is Role.SUFFIX
+                         and AMBIGUOUS_ACRONYM_TAG
+                         in tokens[seg[k - 1][0]].tags):
             k -= 1
         # GIVEN alone, which is what P6 says ("provided at least one
         # given word remains"). Not `_NAME_ROLES`: P1's fold runs
