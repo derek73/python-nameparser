@@ -738,6 +738,21 @@ def test_the_trailing_given_slot_walks_past_a_title() -> None:
         assert _by_role(out, Role.TITLE) == "Prof.", text
 
 
+def test_the_trailing_given_slot_steps_over_a_title_inside_the_run() -> None:
+    """A title BETWEEN the member and a suffix: the floor's descent
+    starts on 'Jr', steps over the titled 'Prof.' and lands on the
+    member. Both spellings above put the title at an end of the run,
+    where the descent starts past it and never takes that step."""
+    out = _assigned("Doe, John MA Prof. Jr", lexicon=Lexicon.default())
+    assert _by_role(out, Role.SUFFIX) == "MA Jr"
+    assert _by_role(out, Role.TITLE) == "Prof."
+    assert _by_role(out, Role.MIDDLE) == ""
+    # the declined spelling takes the same step and stops on the member
+    out = _assigned("Doe, John Ma Prof. Jr", lexicon=Lexicon.default())
+    assert _by_role(out, Role.SUFFIX) == "Jr"
+    assert _by_role(out, Role.MIDDLE) == "Ma"
+
+
 def test_the_trailing_given_slot_reads_the_lean_three_ways() -> None:
     """credential / name / no-lean, the three answers listed_lean
     gives, each landing where the rule says."""
