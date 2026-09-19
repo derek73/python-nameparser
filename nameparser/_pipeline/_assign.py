@@ -50,8 +50,7 @@ ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491), and
 -- since #289 -- the FAMILY-COMMA path's own read of the first
-post-comma piece. The count said three until that fourth landed with
-no sweep of this sentence. Further emitters of the same kind live in
+post-comma piece. Further emitters of the same kind live in
 `_segment.py`, `_group.py` and `_post_rules.py`; they are not
 assign's and are not counted here. And
 at the one site that places a LONE name word, GIVEN_OR_FAMILY for the
@@ -75,8 +74,8 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
-    Structure, WorkToken, _NEVER_FLIPPED,
+    ParseState, PendingAmbiguity, Structure, WorkToken,
+    _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED,
 )
 from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
@@ -560,32 +559,30 @@ def assign(state: ParseState) -> ParseState:
         # a caseless script or an all-lower spelling still called this
         # fork and read it positionally.
         #
-        # The gate reads EITHER tag, and `SHAPE_ACRONYM_TAG` is the
-        # one that reaches a by-shape member -- under EITHER 2.4
-        # switch, the dotted one and the caps one alike, since
-        # classify writes that tag from both branches. And it reaches
-        # one with the dotted switch OFF as well: classify writes the
-        # shape tag whether or not the switch admits the token to the
-        # class, which is what lets a declined fork be REPORTED
-        # without being taken ('Smith, A.B.' under
-        # `unlisted_dotted_suffixes=False` reports and keeps its
-        # given). An earlier wording said the class reaches a by-shape
-        # member "once `Policy.unlisted_dotted_suffixes` admits it",
-        # which is true of the CLASS and false of this report.
+        # The gate reads EITHER tag (`_AMBIGUOUS_CREDENTIAL_TAGS`, the
+        # same pair `_group`'s chain emitter asks), and the shape one
+        # is what reaches a by-shape member -- under EITHER 2.4
+        # switch, the dotted and the caps alike, since classify writes
+        # it from both branches. It reaches one with the dotted switch
+        # OFF as well: classify writes the shape tag whether or not
+        # the switch admits the token to the class, which is what lets
+        # a declined fork be REPORTED without being taken ('Smith,
+        # A.B.' under `unlisted_dotted_suffixes=False` reports and
+        # keeps its given). An earlier wording said the class reaches
+        # a by-shape member "once `Policy.unlisted_dotted_suffixes`
+        # admits it", which is true of the CLASS and false of this
+        # report.
         #
         # Read off the FIRST post-comma piece only --
         # `segment_suffix_reading` decides piece by piece, and this is
         # the one piece the lean can reach at one word before the
         # comma. So `"Smith, MA PhD"` reports ONCE, for 'MA' alone:
         # 'PhD' is settled vocabulary and carries neither tag, and
-        # even a second CLASS member there would not be read here. An
-        # earlier wording said its "two pieces both report", which no
-        # run has ever produced (test_assign.py asserts the count).
+        # even a second CLASS member there would not be read here
+        # (test_assign.py asserts the count).
         if state.pieces[1] and len(state.pieces[1][0]) == 1:
             i = state.pieces[1][0][0]
-            piece_tags = tokens[i].tags
-            if (AMBIGUOUS_ACRONYM_TAG in piece_tags
-                    or SHAPE_ACRONYM_TAG in piece_tags):
+            if not tokens[i].tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
                 chose = ("a credential" if reading and reading[0]
                          else "the given name")
                 ambiguities.append(PendingAmbiguity(

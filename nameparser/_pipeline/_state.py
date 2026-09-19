@@ -70,14 +70,13 @@ _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 #: (`Policy.unlisted_dotted_suffixes` is the first emitter;
 #: `Policy.unlisted_caps_suffixes` is the second, and classify writes
 #: the tag from both branches). One constant, not a string literal at
-#: each site, because the FOUR readers that must tell a by-shape
-#: member apart from a listed one -- `_pieces.peel_trailing`,
-#: `_pieces.listed_lean` (which `segment_suffix_reading` asks through,
-#: so the reading it decides is second-hand), `_assign`'s comma-path
-#: report, and `_group`'s prefix-chain report -- cannot afford to
-#: spell it four ways and have one of them typo silently past the
-#: others. The roster read "three" and named
-#: `segment_suffix_reading` directly until 2026-09-18.
+#: each site, because the readers that must tell a by-shape member
+#: apart from a listed one -- `_pieces.peel_trailing` and
+#: `_pieces.listed_lean`, which `segment_suffix_reading` asks through,
+#: so the reading it decides is second-hand -- cannot afford to spell
+#: it several ways and have one of them typo silently past the
+#: others. The two sites that want EITHER half read
+#: `_AMBIGUOUS_CREDENTIAL_TAGS` below rather than this constant.
 SHAPE_ACRONYM_TAG = "shape:acronym"
 
 #: The MEMBERSHIP half of the same class: classify's tag for a token
@@ -89,6 +88,19 @@ SHAPE_ACRONYM_TAG = "shape:acronym"
 #: silently, since a tag that is never written is simply a tag no
 #: reader ever finds.
 AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
+
+#: EITHER way a token joins the ambiguous credential class -- the
+#: vocabulary's claim and the writing's. The two emitters that report
+#: a fork the peel called and declined ask exactly this: `_group`'s
+#: prefix chain (a listed member the case lean read as a name, 'John
+#: van der Berg Ma'; a by-shape member the count left standing,
+#: 'Freiherr von Berg X.Y.I.') and `_assign`'s family-comma slot. One
+#: constant beside the two above and for their reason -- the pair was
+#: spelled two ways, a frozenset here and an `or` of two `in` tests
+#: there -- and a frozenset so each test is one `isdisjoint`, a C call
+#: with no Python frame, on a branch every chained name reaches.
+_AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
+    {AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
 
 
 class Structure(Enum):
@@ -188,8 +200,7 @@ class ParseState:
     #: computed by whichever of segment and classify needs it first,
     #: segment only when a comma form could turn on it, so a reader
     #: between the two stages sees None and must not guess.
-    #: Recorded rather than recomputed, the way `order` above is, and
-    #: by more consumers than the first roster here named: the
+    #: Recorded rather than recomputed, the way `order` above is: the
     #: trailing suffix slot, the post-comma slot, the tail-segment
     #: reading, the prefix chain's own tail measure (_group) and the
     #: glued-honorific peel's decline of a post-comma run

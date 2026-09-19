@@ -48,23 +48,12 @@ from nameparser._pipeline._pieces import (
     leading_titles, peel_walk, tail_reading, trailing_start,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
-    Structure, WorkToken,
+    ParseState, PendingAmbiguity, Structure, WorkToken,
+    _AMBIGUOUS_CREDENTIAL_TAGS,
 )
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._types import AmbiguityKind, Role
-
-#: Either way a token joins the ambiguous credential class -- the
-#: vocabulary's claim and the writing's. The prefix chain's own
-#: SUFFIX_OR_NAME emitter tests BOTH, because both are forks the peel
-#: called and declined: a listed member the case lean read as a name
-#: ('John van der Berg Ma') and a by-shape member the count left
-#: standing ('Freiherr von Berg X.Y.I.'). A frozenset so the test is
-#: one `isdisjoint` -- a C call, no Python frame, on a branch every
-#: chained name reaches.
-_AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
-    {AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
 
 # the credential-pair regexes live in _vocab, whose own
 # is_wholly_suffix merges the same pair -- and since #319 that
@@ -251,26 +240,24 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # stays a word -- as 1.4.0 read it.
     #
     # `one_case` is passed here and at the re-ask below and changes
-    # NOTHING, by construction rather than by corpus luck:
-    # `numeral_only` answers off `peeled.numeral`, and the numeral fork
-    # is decided before the peel ever reads a lean -- the fact reaches
-    # only the bare-acronym fork, which this reading discards. Measured
-    # anyway, 2026-09-18, because "by construction" is the claim this
-    # repository gets wrong most often: dropping the argument at these
-    # TWO sites alone moves 0 of 9,852 parses (1,642 names -- the
-    # distinct union of every `tools/differential/corpus*.jsonl`
-    # entry, every `cases.py` text, and
-    # `tests/test_variations.TEST_NAMES` with its comma permutations
-    # -- under six policies: the default, both family-first orders,
-    # strict commas, and each 2.4 switch flipped). The population
-    # figure is restated from the one first written here; the
-    # recompute recipe is in decisions.md#S2.
-    # It stays passed rather than spelled `None` because `None` is a
-    # different statement -- "nobody asked" -- and a future numeral
-    # fork that DID read the writing would then be wrong silently.
+    # NOTHING, by construction: `numeral_only` answers off
+    # `peeled.numeral`, and the numeral fork is decided before the peel
+    # ever reads a lean -- the fact reaches only the bare-acronym fork,
+    # which this reading discards. Measured anyway, 2026-09-18, because
+    # "by construction" is the claim this repository gets wrong most
+    # often: dropping the argument at these TWO sites moves 0 of 9,852
+    # parses (1,642 names -- the distinct union of every
+    # `tools/differential/corpus*.jsonl` entry, every `cases.py` text,
+    # and `tests/test_variations.TEST_NAMES` with its comma
+    # permutations -- under six policies: the default, both
+    # family-first orders, strict commas, and each 2.4 switch flipped;
+    # recompute recipe in decisions.md#S2). It stays passed rather
+    # than spelled `None` because `None` is a different statement --
+    # "nobody asked" -- and a future numeral fork that DID read the
+    # writing would then be wrong silently.
     #
     # The chain-tail measure below (`tail`, and the re-peel after the
-    # chain) is the opposite and the same sweep says so: dropping it
+    # chain) is the opposite, and the same sweep says so: dropping it
     # there moves 18 of the 9,852, on 'John van der Berg Ma', 'John de
     # Ma' and 'Freiherr von Berg MA' under every one of the six. A
     # review round called all three sites inert together; two are.
@@ -718,11 +705,11 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 #
                 # `j > k + 1` above is this test's floor too: a merge
                 # that folds a piece into itself chained nothing.
-                # Written inline against the tags rather than through a
-                # predicate, and no new walk: `pieces[j - 1]` is the
-                # last piece the merge is about to claim, one index and
-                # one frozenset test, so the ordinary chained name ('de
-                # la Vega') pays no frame for it.
+                # Written inline against the tags and with no new walk
+                # -- `pieces[j - 1]` is the last piece the merge is
+                # about to claim, one index and one frozenset test --
+                # so the ordinary chained name ('de la Vega') pays no
+                # frame for it.
                 #
                 # `not prefix(j - 1)` is the other floor, and it names
                 # WHICH of the two scans above claimed the piece. The
@@ -733,16 +720,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # run as a particle, which is P4's reading and P6's
                 # fork, not this one -- 'anh van do' has read family
                 # 'van do' silently since 1.4.0 and its case row says
-                # so.
-                #
-                # It is tested LAST for the reason the emitter above
-                # tests its tag first, and the cost is measured rather
-                # than assumed: `prefix` is a closure over
-                # `_is_prefix_piece`, so asking it is TWO frames, and
-                # asking it ahead of the tag test moved the reference
-                # name from 412 to 414 -- every chained name in the
-                # library paying for a question only an ambiguous
-                # acronym can make interesting. Behind the
+                # so. It is tested LAST, and measured: `prefix` is a
+                # closure over `_is_prefix_piece`, so asking it is TWO
+                # frames, and asking it ahead of the tag test moved the
+                # reference name from 412 to 414 -- every chained name
+                # in the library paying for a question only an
+                # ambiguous acronym can make interesting. Behind the
                 # `isdisjoint` (a C call, no frame) almost nothing
                 # reaches it.
                 last = pieces[j - 1]

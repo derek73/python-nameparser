@@ -141,22 +141,17 @@ _PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
 def is_title_shaped(text: str) -> bool:
     """Whether TEXT wears H2's shape alone -- vocabulary-free, the
     LISTED half being a separate lookup at each caller's own site
-    (is_title_piece/lexicon.titles). Asks the SAME question the
-    leading peel's own inline copy asks (`_pieces.is_leading_title`)
-    -- the comma-form name-word count (`name_word_count`, below) is
-    this function's only CALLER; `is_leading_title` keeps its own
-    copy of this body inline rather than calling this, measured --
-    the figure lives at that predicate's own inline copy in
-    `_pieces.py` and is not restated here, two homes for one
-    measurement being how they come to disagree. What it says in
-    short: the leading peel is a hot path (every leading piece of
-    every parse) where `name_word_count`'s is cold (comma names
-    only). Touch one, touch
-    both -- kept in step by
-    `test_pieces.test_is_title_shaped_and_is_leading_title_agree`,
-    which runs both predicates over the union of this function's own
-    example table and `is_leading_title`'s, rather than by a sentence
-    alone (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+    (is_title_piece/lexicon.titles). `name_word_count` below is the
+    only CALLER; `_pieces.is_leading_title` asks the same question
+    but keeps this body inline, its path being hot (every leading
+    piece of every parse) where this one is cold (comma names only)
+    -- the measured figure lives at that inline copy and is not
+    restated here, two homes for one measurement being how they come
+    to disagree. Touch one, touch both:
+    `test_pieces.test_is_title_shaped_and_is_leading_title_agree`
+    runs both over the union of the two example tables, so the
+    agreement is checked rather than asserted in prose
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 
     The shape reads a Latin convention: a period marks an
     abbreviation. Scripts with no initials have no period
@@ -479,16 +474,14 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
 
     The case-INDEPENDENT half of the comma form's own candidate test
     (`ambiguous_class_candidate`, below, which ALSO admits a by-shape
-    member where Policy allows it) and `is_wholly_suffix`'s
-    credential-lean disjunct below: membership by vocabulary never
-    needs the case fact, only the lean does. A caller that wants to
-    know whether the case fact is even worth computing -- the comma
-    form's own lazy gate -- asks this first and pays for `one_case`
-    only where this says yes, rather than forcing it before membership
-    is known (measured regression, #289/#516: `own_words` ->
-    `tag_marker_runs` ran for `"Smith, John"`, `"John Smith, Jr."` and
-    every other single-token-after-the-comma name, none of them able
-    to reach the class at all).
+    member where Policy allows it) and of `is_wholly_suffix`'s
+    credential-lean disjunct: membership by vocabulary never needs the
+    case fact, only the lean does. That split is what lets the comma
+    form's lazy gate ask membership FIRST and pay for `one_case` only
+    where this says yes (measured regression, #289/#516: forcing the
+    fact first ran `own_words` -> `tag_marker_runs` for every
+    single-token-after-the-comma name, none of them able to reach the
+    class at all).
 
     Membership is the listed set, bare: a whole-token vocabulary match
     is not in this class at all, being settled ('M.A.', 'Ph.D.',
@@ -499,27 +492,23 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     invariant that an ambiguous acronym is never also a suffix WORD
     (`__post_init__`'s gate_bypassed check) and is never counted
     without periods once it IS one (`suffix_as_written`'s own
-    exclusion) together make that predicate's two disjuncts dead once
-    text is known to hold no period. One frame (`_normalize`) on the
-    common path that never reaches the class, where the general
-    predicate cost at least two; measured, this is what keeps a
-    non-candidate comma name ('"Smith, John"') from paying for a walk
-    it can never use (mechanisms.md#ONE-PREDICATE-PER-QUESTION's cost
+    exclusion) together kill that predicate's two disjuncts once text
+    is known to hold no period. One frame (`_normalize`) on the common
+    path that never reaches the class, where the general predicate
+    cost at least two (mechanisms.md#ONE-PREDICATE-PER-QUESTION's cost
     clause).
 
-    The '.' gate here is DELIBERATELY STRICTER than S2's own dotted-form
-    test (`_dotted`, a period after EACH letter): '.' anywhere excludes
-    membership, so 'MA.' and 'Ed.' -- a single TRAILING period, which
-    `_dotted` and `ambiguous_lean` both treat as no signal at all --
-    are excluded here too, even though the LEAN still reads them as
+    The '.' gate here is DELIBERATELY STRICTER than S2's own
+    dotted-form test (`_dotted`, a period after EACH letter): '.'
+    anywhere excludes membership, so a single TRAILING period ('MA.',
+    'Ed.') is excluded here even though the LEAN still reads it as
     the bare acronym's case ('Smith, MA.' -> suffix 'MA.', measured).
-    That is not a contradiction: this predicate answers only the
-    comma-form CANDIDATE question (`ambiguous_class_candidate`, below)
-    and the credential-lean disjunct below ask, and neither of those
-    shapes ever reaches it, because the TAG path
+    Not a contradiction: the two questions this answers -- the
+    comma-form CANDIDATE test below and the credential-lean disjunct
+    -- are never asked of those shapes, the TAG path
     (`vocab:suffix-ambiguous`, read directly by the trailing peel and
     the post-comma slot) and H2's leading-title shape test already
-    carry them where they need to go.
+    carrying them where they need to go.
     """
     if "." in text:
         return False
@@ -527,18 +516,16 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
 
 
 # #516's all-caps half, ONE PREDICATE for the shape test and its
-# WHOLE-VOCABULARY exclusion, called from three sites that each needed
-# the identical question answered (classify's tag emission,
+# WHOLE-VOCABULARY exclusion, shared by the three sites that each
+# needed the identical question answered (classify's tag emission,
 # `_segment.py`'s multi-token run test, and this module's own unit
-# tests) -- a quality-review finding: the shape test plus the
-# membership check was spelled three times over, and the usual reason
-# for THAT (a shared call costing every default-policy parse a frame it
-# cannot use) does not apply here, because every caller's own first
-# conjunct is `policy.unlisted_caps_suffixes` itself, False by default
-# -- the call below is never reached at all when the switch is off, so
-# sharing it costs the default nothing, and the loop inside it is off
-# the default path for the same reason (confirmed against the 412/449
-# frame band and the default comma harness).
+# tests), where it had been spelled three times over (quality-review
+# finding). The usual objection to sharing -- a call costing every
+# default-policy parse a frame it cannot use -- does not apply: every
+# caller's own first conjunct is `policy.unlisted_caps_suffixes`,
+# False by default, so neither this call nor the loop inside it is
+# ever reached at the default (confirmed against the 412/449 frame
+# band and the default comma harness).
 def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
                          one_case: bool | None) -> bool:
     """Whether TEXT is an UNLISTED all-caps credential candidate: two
@@ -596,34 +583,32 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
     (`period_joined_vocab`'s third verdict, #516).
 
     Case-free throughout, and the CAPS half of the class is
-    deliberately not here. It was, briefly, behind an optional
-    `one_case` parameter -- and no production caller ever passed one,
-    `segment` being the only one and having nothing to hand in at its
-    single-token test, so the branch answered False for every name the
-    library ever parsed and only the unit tests reached it
-    (review-round finding, #289/#516). The caps half's real site is
-    `_segment.py`'s multi-token run test, which calls
-    `caps_shape_candidate` directly because the run is a property of
-    that shape alone; a dead second route to the same predicate is a
-    place for the two to disagree, not a convenience.
+    deliberately not here: its real site is `_segment.py`'s
+    multi-token run test, which calls `caps_shape_candidate` directly
+    because the run is a property of that shape alone. A second route
+    through here existed briefly, behind an optional `one_case`
+    parameter no production caller ever passed -- `segment` has
+    nothing to hand in at its single-token test -- so the branch
+    answered False for every name the library parsed and only the
+    unit tests reached it (review-round finding, #289/#516). A dead
+    second route is a place for the two to disagree, not a
+    convenience.
 
     A period anywhere is the gate for even ASKING the shape question,
     checked before the shape's own two calls: `period_joined_vocab`
-    itself already declines a period-free text for free (no interior
-    period to split on), but a Python-level call is not free, and a
-    comma name's post-comma part usually has none ("Smith, John") --
-    measured regression, #516 review round, fixed by moving the same
-    cheap substring test `ambiguous_class_member` already makes for
-    its OWN reason (there, "no period, so no dotted form to exclude")
-    up here as an early exit. Where a period IS present,
-    `period_joined_vocab` runs before `suffix_as_written`, and
-    `suffix_as_written` only where the former says "shape": a dotted
-    whole-token match with no single-chunk vocabulary hit of its own
-    ('A.B.C.', via 'abc') would otherwise read "shape" from this
-    function's chunk-level view alone, oblivious to the WHOLE-token
-    match `suffix_as_written` already settled -- the same precedence
-    classify's own tag order gives it (`vocab:suffix` is set before
-    `period_joined_vocab` is even consulted).
+    already declines a period-free text, but a Python-level call is
+    not free and a comma name's post-comma part usually has no period
+    ("Smith, John") -- measured regression, #516 review round, fixed
+    by hoisting the same cheap substring test `ambiguous_class_member`
+    already makes for its own reason. Where a period IS present,
+    `suffix_as_written` runs only after `period_joined_vocab` says
+    "shape": a dotted whole-token match with no single-chunk
+    vocabulary hit of its own ('A.B.C.', via 'abc') would otherwise
+    read "shape" from this function's chunk-level view alone,
+    oblivious to the WHOLE-token match `suffix_as_written` already
+    settled -- the same precedence classify's own tag order gives it
+    (`vocab:suffix` is set before `period_joined_vocab` is even
+    consulted).
 
     A LISTED member spelled with its periods is excluded from the
     shape branch by the same test classify's own shape branch makes:
@@ -670,29 +655,17 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     (decisions.md#S2). The suffix half asks the POLICY-selected
     predicate, the same one is_wholly_suffix asks, so the two agree
     about what a suffix word is; the title half asks BOTH the listed
-    lookup and H2's shape test (`is_title_shaped`).
-
-    `is_title_shaped` asks the SAME question `_pieces.is_leading_title`
-    asks, and both must answer it alike (quality-review finding,
-    #289/#516, measured: before this, 'Dr. Smith, Ed' -- LISTED title
-    -- did not flip the comma structure, but 'Xyz. Smith, Ed' --
-    UNLISTED, H2-shaped -- did, because this count took 'Xyz.' for a
-    name word where the leading peel would have taken it for a title).
-    `is_leading_title` does not call this function, though -- measured,
-    and the number has ONE home, the comment at that predicate's
-    inline copy in `_pieces.py`. Its hot path (every leading piece of
-    every parse) is what cannot afford the call; this path is cold
-    (comma names only) and does not notice one. Two spellings of ONE test
-    instead, kept from drifting by the case rows that exercise both
-    with the same texts, not by a shared function object
-    (mechanisms.md#ONE-PREDICATE-PER-QUESTION's cost clause).
+    lookup and H2's shape test (`is_title_shaped`) -- a bare
+    `lexicon.titles` lookup here read 'Xyz.' as a name word where the
+    leading peel reads it as a title, and that divergence is recorded
+    once, at `is_title_shaped` itself
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
     """
     predicate = (is_suffix_lenient if policy.lenient_comma_suffixes
                  else is_suffix_strict)
     n = 0
     for text in texts:
-        folded = _normalize(text)
-        if (predicate(text, lexicon) or folded in lexicon.titles
+        if (predicate(text, lexicon) or _normalize(text) in lexicon.titles
                 or is_title_shaped(text)):
             continue
         n += 1

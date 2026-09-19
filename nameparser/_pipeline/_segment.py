@@ -9,8 +9,7 @@ ambiguities for unrecognized extra segments, and SUFFIX_OR_NAME where
 the comma FLIPPED the structure for a member of the ambiguous
 credential class. The flip and nothing else: where the structure did
 not move, the word's reading is still open and `assign` takes it on
-the family-comma path, so it reports there. "Where the comma decided
-a member of the class" said more than this stage does.
+the family-comma path, so it reports there.
 Reads: Lexicon suffix vocabulary and Policy, both through
 _vocab.is_wholly_suffix -- the suffix-comma decision is definitionally
 vocabulary-dependent (decisions.md#C1), and the predicate
@@ -117,14 +116,15 @@ def segment(state: ParseState) -> ParseState:
     # `texts` still serves the two call sites that are not on this
     # path (name_word_count's pre-comma texts, and a flagged tail
     # segment's joined display).
-    def suffixy(seg: tuple[int, ...]) -> bool:
+    #
+    # `case` is ParseState.one_case: None is the case-FREE reading,
+    # which is what every caller on this path wants, and the tail
+    # walk below passes `case_class()` for the leaning one. One
+    # closure with a default rather than two whose bodies differ only
+    # in that argument.
+    def suffixy(seg: tuple[int, ...], case: bool | None = None) -> bool:
         return is_wholly_suffix([state.tokens[i].text for i in seg],
-                                state.lexicon, state.policy)
-
-    def leaning_suffixy(seg: tuple[int, ...]) -> bool:
-        return is_wholly_suffix([state.tokens[i].text for i in seg],
-                                state.lexicon, state.policy,
-                                one_case=case_class())
+                                state.lexicon, state.policy, one_case=case)
 
     def class_run(seg: tuple[int, ...]) -> bool:
         # Every token of the run joins the ambiguous credential class
@@ -142,14 +142,14 @@ def segment(state: ParseState) -> ParseState:
         # that 2.3 did not raise -- a report about the parser's own new
         # reading rather than about the name (review round, #289/#516).
         #
-        # The LISTED half is deliberately excluded rather than folded
-        # in: a listed member reaches this reading through the LEAN
-        # (`leaning_suffixy`, above), and that is the whole of what
-        # quiets it -- 'STEVEN HARDMAN, MD, DO, DDS' is written in one
-        # case, leans nothing, and keeps its flag, which is the
-        # recorded negative control for the lean's own effect here.
-        # Admitting membership alone would silence it and leave the
-        # control measuring nothing.
+        # The LISTED half is excluded rather than folded in: a listed
+        # member reaches this reading through the LEAN (the leaning
+        # `suffixy` call below), and that is the whole of what quiets
+        # it -- 'STEVEN HARDMAN, MD, DO, DDS' is written in one case,
+        # leans nothing, and keeps its flag, the recorded negative
+        # control for the lean's own effect here. Admitting membership
+        # alone would silence it and leave the control measuring
+        # nothing.
         #
         # Policy-sensitive by construction: with
         # `unlisted_dotted_suffixes` off the token is name material, is
@@ -168,31 +168,22 @@ def segment(state: ParseState) -> ParseState:
     #
     # And for the AMBIGUOUS class the count is of NAME words, not of
     # words: 'Smith Jr., MA' is two tokens and one name, and the token
-    # count hands its family to `given` (#289/#516). The listed and
-    # dotted halves are asked only of a single-token part, that being
-    # the shape either comes in; the caps half may come as a RUN of
-    # more than one token ('LEED AP', below), and the answer reaches
-    # all three -- one rule for the class rather than three.
+    # count hands its family to `given` (#289/#516). One rule for the
+    # whole class: the listed and dotted halves are asked only of a
+    # single-token part, a member of either being always exactly one
+    # token (a bare word, or one glued acronym), while the caps half
+    # may come as a RUN ('LEED AP', below).
     #
     # Membership is tested CASE-FREE first (`ambiguous_class_candidate`,
     # the listed set OR -- since 2.4 -- a by-shape member Policy
     # admits, #516): the structure decision below is itself
     # case-independent (item 5's count decides "whatever case the name
     # is written in"), so the case fact is worth forcing only once a
-    # genuine candidate is found -- not on every comma name whose
-    # post-comma part happens to be one token, which is what calling
-    # the case-aware predicate with `case_class()` as an ARGUMENT did
-    # (measured regression: the `own_words` -> `tag_marker_runs` walk
-    # ran for `"Smith, John"` and `"John Smith, Jr."`, neither able to
-    # reach the class at all). A genuine candidate still forces the
-    # fact here, downstream of the structure decision that does not
-    # need it, because assign's post-comma slot and its report do.
-    #
-    # The single-token test above is unchanged from #516's dotted
-    # half: a LISTED or DOTTED class member is always exactly one
-    # token (a bare word, or one glued acronym), so "the class comes
-    # in one token" was never an artificial restriction for either of
-    # those two halves.
+    # genuine candidate is found. Passing `case_class()` as an
+    # ARGUMENT instead ran the `own_words` -> `tag_marker_runs` walk
+    # for every comma name whose post-comma part is one token --
+    # `"Smith, John"`, `"John Smith, Jr."`, neither able to reach the
+    # class at all (measured regression).
     candidate = (len(groups[1]) == 1
                  and ambiguous_class_candidate(
                      state.tokens[groups[1][0]].text, state.lexicon,
@@ -200,44 +191,36 @@ def segment(state: ParseState) -> ParseState:
     # The all-caps half (Policy.unlisted_caps_suffixes, #516) is the
     # FIRST shape this class can wear across more than one token --
     # 'LEED AP' is two separate all-caps words, not one glued acronym
-    # -- and it is also the one membership test in this class that
-    # NEEDS the case fact to even answer membership: 'XYZ' is only
-    # credential-shaped where the name contrasts it. Gated on the
-    # switch (default off, so a non-candidate comma name never even
-    # enters this branch) and tried only where the single-token test
-    # above already declined.
+    # -- and the one membership test in this class that NEEDS the case
+    # fact to answer membership at all: 'XYZ' is only credential-shaped
+    # where the name contrasts it. Gated on the switch (default off, so
+    # a non-candidate comma name never enters this branch) and tried
+    # only where the single-token test above already declined.
     #
-    # The run is a property of the CAPS class ALONE (#516 review
-    # round, F2 -- decided by the reviewer): `run_candidate` calls
-    # `_vocab.caps_shape_candidate` directly, the branch of the class
-    # that reads `one_case` at all, rather than the un-narrowed
-    # `ambiguous_class_candidate` every token of the run was first
-    # measured against (which also admits the listed and dotted
-    # halves, already single-token classes by construction -- the
-    # comment above -- so `all()` over more than one of THEM asks a
-    # question the design never posed). A first draft called the
-    # un-narrowed function per token; measured, it moved `'John
-    # Smith, Ed Ma'` / `'John Smith, ma do'` / `'John Smith, X.Y.Z.
-    # A.B.'` to a credential run neither the spec nor any case row
-    # wants. `run_candidate(False)` asks, case-free, "if this name
+    # `caps_shape_candidate` directly, not the un-narrowed
+    # `ambiguous_class_candidate`: the run is a property of the CAPS
+    # class ALONE (#516 review round, F2), the other two halves being
+    # single-token by construction, so `all()` over more than one of
+    # THEM asks a question the design never posed. Measured, the
+    # un-narrowed call per token moved `'John Smith, Ed Ma'`, `'John
+    # Smith, ma do'` and `'John Smith, X.Y.Z. A.B.'` to a credential
+    # run neither the spec nor any case row wants.
+    #
+    # `one_case=False` asks the case-free question -- "if this name
     # turned out mixed, would EVERY token in the run join the CAPS
-    # shape specifically" -- the same trick the single-token test
-    # above uses, generalized over `all()`. Once that answers yes,
-    # the real fact is `caps_shape_candidate`'s ONLY remaining
-    # unknown for a run already confirmed shape-eligible case-free --
-    # every other conjunct is independent of case -- so the real
-    # verdict is `case_class() is False` directly, not a third `all()`
-    # walk that could only ever reach the same answer (a quality-
-    # review finding: the walk was provably redundant, not merely
-    # cheap to skip).
-    if not candidate and state.policy.unlisted_caps_suffixes and groups[1]:
-        def run_candidate(one_case_try: bool | None) -> bool:
-            return all(
-                caps_shape_candidate(state.tokens[i].text, state.lexicon,
-                                     state.policy, one_case_try)
-                for i in groups[1])
-        if run_candidate(False):
-            candidate = case_class() is False
+    # shape" -- the same trick the single-token test above uses,
+    # generalized over `all()`. Every other conjunct of
+    # `caps_shape_candidate` is case-independent, so for a run already
+    # confirmed shape-eligible the fact itself is the only unknown
+    # left, and the verdict is `case_class() is False` directly rather
+    # than a second walk that could only reach the same answer (a
+    # quality-review finding: the walk was provably redundant).
+    if (not candidate and state.policy.unlisted_caps_suffixes and groups[1]
+            and all(caps_shape_candidate(state.tokens[i].text,
+                                         state.lexicon, state.policy,
+                                         one_case=False)
+                    for i in groups[1])):
+        candidate = case_class() is False
     # Computed only where `candidate` is true, alongside `case_class()`
     # -- the same lazy gate: a non-candidate comma name never counts
     # its pre-comma words either. Hoisted to a local because the
@@ -245,6 +228,8 @@ def segment(state: ParseState) -> ParseState:
     # "two" ('John Q. Public, MA' has three).
     pre_comma_names = None
     if candidate:
+        # forced here, downstream of the structure decision that does
+        # not need it, because assign's post-comma slot and its report do
         case_class()
         pre_comma_names = name_word_count(texts(groups[0]), state.lexicon,
                                           state.policy)
@@ -255,37 +240,33 @@ def segment(state: ParseState) -> ParseState:
         else Structure.FAMILY_COMMA)
     ambiguities = list(state.ambiguities)
     if candidate and structure is Structure.SUFFIX_COMMA:
-        # The first report of the comma's OWN decision (listing or
-        # credential run) in the library -- C2's structural flag,
-        # below, already reports on the comma path, but it reports
-        # what the parse could not recognize, not a fork it called.
-        # P6's attachment fork already reports on a family-comma path,
-        # from post_rules, since 2.3 ("Berg, Jan vd"); this is a
-        # different fork, the comma's own structure call: the parse
-        # called it at this comma and the caller is told which way it
-        # went. Emitted for the branch taken HERE only -- the flip.
-        # Where the structure did not move, the reading of that token
-        # is still open and `assign` takes it on the family-comma
-        # path, so it reports there, and this DECISION is never
-        # reported twice -- a second ambiguous token elsewhere is a
-        # second fork and reports on its own
+        # The first report of the comma's OWN structure call in the
+        # library, and it is emitted for the branch taken HERE only --
+        # the flip. Where the structure did not move, that token's
+        # reading is still open and `assign` takes it on the
+        # family-comma path, so it reports there; this DECISION is
+        # never reported twice, and a second ambiguous token elsewhere
+        # is a second fork reporting on its own
         # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE -- emitted
         # where the branch is taken, and this branch is taken here).
-        # rules.md#C1's comma-quiet policy gains its exception for
-        # this class and no other. `disp`/the index tuple cover the
-        # WHOLE post-comma part, not just its first token -- for the
-        # single-token member the listed and dotted halves come in,
-        # that is the same text as before (join of one element is
-        # that element); the caps half's run ('LEED AP') is the first
-        # time this class reaches the comma form as more than one
-        # token (#516). The single-token case takes the token's text
-        # DIRECTLY rather than through the join -- measured, a
-        # generator expression is its own frame on 3.11 regardless of
-        # element count (unlike a list comprehension, which PEP 709
-        # inlines only from 3.12), so the join alone cost every
-        # REPORTING comma name (`John Smith, MA`, `John Smith, A.B.`,
-        # `Davis Royce, Ed`) +2 frames at the DEFAULT policy, a path
-        # this switch must not touch at all (#516 review round, F4).
+        # The neighbouring reports are other forks: C2's structural
+        # flag below says what the parse could not RECOGNIZE, and P6's
+        # attachment fork ("Berg, Jan vd", post_rules, since 2.3) is
+        # the attachment. rules.md#C1's comma-quiet policy gains its
+        # exception for this class and no other.
+        #
+        # `disp`/the index tuple cover the WHOLE post-comma part --
+        # the same text as before for the single-token listed and
+        # dotted halves (a join of one element is that element), while
+        # the caps half's run ('LEED AP') is the first time this class
+        # reaches the comma form as more than one token (#516). The
+        # single-token case skips the join: measured, a generator
+        # expression is its own frame on 3.11 regardless of element
+        # count (unlike a list comprehension, which PEP 709 inlines
+        # only from 3.12), so the join alone cost every REPORTING
+        # comma name (`John Smith, MA`, `John Smith, A.B.`, `Davis
+        # Royce, Ed`) +2 frames at the DEFAULT policy, a path this
+        # switch must not touch at all (#516 review round, F4).
         disp = (state.tokens[groups[1][0]].text if len(groups[1]) == 1
                 else " ".join(state.tokens[i].text for i in groups[1]))
         ambiguities.append(PendingAmbiguity(
@@ -305,19 +286,19 @@ def segment(state: ParseState) -> ParseState:
     for seg in groups[2:]:
         # empty segments are consumed silently (v1 skips them without
         # comment); only non-empty non-suffix tails get flagged.
-        # `suffixy(seg)` first: it is case-free and, by construction,
-        # `leaning_suffixy` can only ADD a disjunct to it
+        # The case-FREE `suffixy(seg)` first: by construction the
+        # leaning call can only ADD a disjunct to it
         # (`is_wholly_suffix`'s credential-lean branch), never remove
         # one -- so a seg that already reads wholly suffix case-free
         # reads so case-aware too, and the case fact is worth forcing
         # only when the case-free answer was False (measured
-        # regression: `leaning_suffixy` forced the fact for every tail
+        # regression: the leaning call forced the fact for every tail
         # segment, suffix or not).
         # `class_run` last, for the same lazy reason and one step
         # further out: it is the only one of the three that walks the
         # by-shape class, and it is asked only of a run BOTH suffix
         # readings have already declined.
-        if (seg and not suffixy(seg) and not leaning_suffixy(seg)
+        if (seg and not suffixy(seg) and not suffixy(seg, case_class())
                 and not class_run(seg)):
             texts_joined = " ".join(texts(seg))
             ambiguities.append(PendingAmbiguity(

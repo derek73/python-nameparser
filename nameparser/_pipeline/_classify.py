@@ -19,8 +19,7 @@ the _policy module's _NO_INITIALS constant. It is named apart from the
 fields above because it is not CONFIGURATION -- no Lexicon or Policy
 carries it and no caller can change it -- and not because it decides
 nothing: the tags this stage writes do vary by it ('씨.' is not tagged
-`initial`, which is the whole of #320). An earlier wording said
-"nothing here varies by its value", which is the wrong half of that.
+`initial`, which is the whole of #320).
 
 Tags emitted -- stable (API): "particle", "conjunction", "initial";
 namespaced (unstable): "vocab:title", "vocab:given-title",
@@ -170,8 +169,22 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # token of two or more alphabetic chunks, and -- where its switch
     # is on -- an unlisted all-caps word. They are an `elif` chain
     # with the dotted one first, so a dotted token never reaches the
-    # caps test and the two shapes stay disjoint. The header described
-    # the first two alone until 2026-09-18.
+    # caps test and the two shapes stay disjoint.
+    #
+    # Both by-shape branches carry SHAPE_ACRONYM_TAG BESIDE the
+    # membership tag rather than instead of it: `vocab:` records
+    # membership (the roster above) and the peel reads membership,
+    # while the shape tag records that the claim came from the
+    # WRITING. The dotted branch writes it even with its switch off,
+    # which is what lets a declined fork be reported without being
+    # taken. `role is None` guards both: a token already carrying a
+    # role is delimited content, decided by extract's escape and never
+    # at the trailing slot -- 'Bridge (A.B)' is the control that
+    # proves the guard load-bearing (without it the nickname reading
+    # of 'A.B' gains a spurious SUFFIX_OR_NICKNAME report below), and
+    # 'Bridge (1.4)' cannot exercise it, a digit chunk never reaching
+    # the shape verdict at all (period_joined_vocab's alphabetic
+    # gate).
     if "vocab:title" not in tags and "vocab:suffix" not in tags:
         derived = period_joined_vocab(token.text, lex)
         if derived == "title":
@@ -180,41 +193,26 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add("vocab:suffix")
         elif (derived == "shape" and token.role is None
                 and n not in lex.suffix_acronyms_ambiguous):
-            # #516: the word is not in the vocabulary, so the claim is
-            # about the WRITING and says so -- SHAPE_ACRONYM_TAG beside
-            # the membership tag rather than instead of it, because
-            # `vocab:` records membership (see this module's tag
-            # roster above) and the peel reads membership. The shape
-            # tag goes on either way: with the switch off the parser
-            # has still chosen the name reading over a credential one,
-            # and that fork is reported. A token that already carries
-            # a role is delimited content, decided by extract's escape
-            # and never at the trailing slot -- 'Bridge (A.B)' is the
-            # control that proves this guard load-bearing (without
-            # it, the nickname reading of 'A.B' would gain a spurious
-            # SUFFIX_OR_NICKNAME report below); 'Bridge (1.4)' cannot
-            # exercise it on its own, since a digit chunk never
-            # reaches the shape verdict at all (period_joined_vocab's
-            # own alphabetic gate). This branch and
-            # `_vocab.ambiguous_class_candidate` ask the SAME question
-            # twice, of necessity -- `segment` runs before `classify`
-            # and has no tags to read yet -- kept from drifting by
-            # `test_classify.test_ambiguous_class_candidate_agrees_with_the_tag`
+            # This branch and `_vocab.ambiguous_class_candidate` ask
+            # the SAME question twice, of necessity -- `segment` runs
+            # before `classify` and has no tags to read yet -- kept
+            # from drifting by `test_classify.
+            # test_ambiguous_class_candidate_agrees_with_the_tag`
             # rather than by this sentence alone.
             #
             # `n not in suffix_acronyms_ambiguous` is the third guard,
             # and it is about a LISTED member rather than a role: a
-            # caller may list a dotted entry ('a.b'), and the whole
-            # token then matches the ambiguous set at the membership
-            # test above while `suffix_as_written`'s period-free
-            # acronym lookup ('ab') misses it, so the chunk view
-            # reaches here and called the word by-shape. That silences
-            # `_pieces.listed_lean`, which declines wherever
-            # SHAPE_ACRONYM_TAG rides -- the caller's own listing lost
-            # its case lean ('Jack A.B.' read family where 'Jack MA'
-            # reads suffix). One frozenset lookup, on a branch only a
-            # dotted token reaches; the shipped ambiguous vocabulary
-            # carries no periods, so nothing default changes.
+            # caller may list a dotted entry ('a.b'), which the whole-
+            # token membership test above matches while
+            # `suffix_as_written`'s period-free acronym lookup ('ab')
+            # misses, so the chunk view reached here and called the
+            # word by-shape -- silencing `_pieces.listed_lean`, which
+            # declines wherever SHAPE_ACRONYM_TAG rides, and costing
+            # the caller's own listing its case lean ('Jack A.B.' read
+            # family where 'Jack MA' reads suffix). One frozenset
+            # lookup on a branch only a dotted token reaches; the
+            # shipped ambiguous vocabulary carries no periods, so
+            # nothing default changes.
             tags.add(SHAPE_ACRONYM_TAG)
             if state.policy.unlisted_dotted_suffixes:
                 tags.add(AMBIGUOUS_ACRONYM_TAG)
@@ -222,26 +220,15 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
                 and caps_shape_candidate(token.text, lex, state.policy,
                                          one_case)):
             # #516's all-caps half, OPT-IN: an unlisted word written
-            # in capitals inside a mixed-case name. The policy
-            # conjunct comes FIRST and stays a plain attribute read --
-            # False by default, so `caps_shape_candidate` is never
-            # CALLED at the default, and sharing its body below costs
-            # the default nothing (quality-review finding: the shape
-            # test plus its eleven-list exclusion was spelled three
-            # times over -- here, in `_vocab.ambiguous_class_candidate`,
-            # and in `_segment.py`'s run test -- before this call
-            # replaced all three; unlike the dotted branch above,
-            # which stays inline because ITS caller has no such
-            # cheap first conjunct to hide behind). `role is None`
-            # stays here rather than moving into the shared predicate:
-            # delimited content is decided by extract's escape, never
-            # at the trailing slot, and this guard is what keeps a
-            # bracketed nickname like 'Bridge (A.B)' out of the shape
-            # class (see the sibling guard on the dotted branch,
-            # above, for the fuller reasoning -- the same one applies
-            # here). `caps_shape_candidate`'s own docstring carries
-            # the eleven-list roster and what each measured entry
-            # would have cost unfixed; not repeated here.
+            # in capitals inside a mixed-case name. The policy conjunct
+            # comes FIRST and stays a plain attribute read -- False by
+            # default, so `caps_shape_candidate` is never CALLED at the
+            # default and sharing its body costs the default nothing
+            # (that is why this half is a call where the dotted branch
+            # above stays inline: the dotted caller has no such cheap
+            # first conjunct to hide behind). The predicate's own
+            # docstring carries the whole-vocabulary roster and what
+            # each measured entry would have cost unfixed.
             tags.add(SHAPE_ACRONYM_TAG)
             tags.add(AMBIGUOUS_ACRONYM_TAG)
     return frozenset(tags)
