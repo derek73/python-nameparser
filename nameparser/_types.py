@@ -371,12 +371,23 @@ class AmbiguityKind(StrEnum):
     existing values never change meaning.
 
     A kind names a FORK THE PARSE HAD TO CALL, not a word that could be
-    read two ways: the same token elsewhere in a name may present no
-    choice at all and is then reported by nothing. Reporting is also
+    read two ways, except where a member says otherwise: the same token
+    elsewhere in a name may present no choice at all and is then
+    reported by nothing. COMMA_STRUCTURE and UNBALANCED_DELIMITER are
+    the two that say otherwise -- each reports a shape the parse could
+    not recognize rather than a fork it chose between, and each says so
+    on its own member below. Reporting is also
     partial -- a kind listed here is not necessarily emitted everywhere
-    its fork occurs (the comma paths stay quiet by design), and coverage
-    grows over releases. A non-empty tuple is a signal to act on; an
-    empty one is not a guarantee of certainty."""
+    its fork occurs (the comma's structure decision reports no
+    reading by design, except where it decides a member of the
+    ambiguous credential class, where since 2.4 that decision is
+    reported either way -- #289; an attachment decided AFTER a
+    family comma is a separate fork and has reported on its own
+    since 2.3, e.g. "Berg, Jan vd"; the two structural kinds above
+    were never covered by either silence), and coverage grows over
+    releases. A non-empty tuple is
+    a signal to act on; an empty one is not a guarantee of
+    certainty."""
 
     #: Reserved: the name's field order itself is uncertain (e.g. a
     #: two-word name under a non-default name_order). Not yet emitted;
@@ -404,6 +415,16 @@ class AmbiguityKind(StrEnum):
     #: vocabulary ("Rinpoche", "QC MP"): with no name word beside it
     #: the first post-nominal is read as the name, because something
     #: has to be one, and only that word reports.
+    #: WHERE it is emitted is narrower than where the doubt exists,
+    #: and this is the boundary rather than an omission to be read
+    #: past. The emitters cover the trailing slot of a name, the
+    #: post-comma slot of a family-comma listing, and the extra
+    #: segments beyond it. They do NOT cover the trailing slot of the
+    #: GIVEN part after a family comma: "Doe, John MA" reads middle
+    #: ``MA`` and "Doe, John X.Y.Z." middle ``X.Y.Z.``, both silently,
+    #: as every 2.x release has; 1.4.0 read "Doe, John MA" as a
+    #: suffix. The fork is real there and nothing reports it;
+    #: decisions.md#S2 records it as open.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that
@@ -497,6 +518,12 @@ class AmbiguityKind(StrEnum):
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so
     #: the tokens are the one the stray character ended up inside.
+    #: NOT a fork the parse called: it reports a shape the parse could
+    #: not recognize, which is the carve-out this enum's own docstring
+    #: names for this member and for COMMA_STRUCTURE. That docstring
+    #: said "each says so on its own member below" while only
+    #: COMMA_STRUCTURE's did; this sentence is the other half
+    #: (2026-09-18).
     #: Two cases leave that tuple empty: a character that lands in no
     #: token at all (inside a masked region), and an input with no
     #: alphanumeric content anywhere, which parses to an empty name --

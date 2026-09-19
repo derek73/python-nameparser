@@ -455,6 +455,24 @@ issue = "change(suffix-acronym-collisions) esq leaves the acronym set"
 # reading nobody wants, and this reading is the one the decision
 # chose.
 #
+# 2026-09-18 (#516): this rule stopped explaining anything, and the
+# reason is not a revert. The by-shape credential class reads a word
+# of two or more period-separated chunks that no vocabulary claims by
+# POSITION (rules.md#S3), so 'John Smith E.S.Q.' is a credential again
+# with no wordlist entry behind it at all -- the reading this baseline
+# has, recovered by a different route than the acronym entry gave it.
+# The vocabulary decision the `change` tag records still stands and is
+# still the history of that entry; what is gone is its ROLE diff. The
+# name still diffs here, on the `suffix-or-name` report the positional
+# reading brings with it -- `_ambiguities` is a compared surface from
+# 2.0 on -- and fix(#516) classifies that, which is why this rule is
+# dormant rather than explaining anything: `dormant` means "explained
+# no diff", not "the name stopped moving". Only the 1.4.0 copy can say
+# the diff is gone outright, that baseline comparing no ambiguities.
+# Declared
+# `dormant` rather than deleted, so the harness says so out loud if a
+# future change takes the positional reading away again.
+#
 # Literal, no alternation, and exactly as wide as the diff: 'esq'
 # keeps its SUFFIX_WORDS membership, so the acronym entry's only
 # unique coverage was this one spelling and this one corpus name.
@@ -462,6 +480,7 @@ issue = "change(suffix-acronym-collisions) esq leaves the acronym set"
 # 'John Smith Esq' (the word list still reads it), 'Esq. Smith'
 # (rules.md#H2's leading inference) and 'Smith, Esq.' (the lone
 # post-comma credential).
+dormant = "'John Smith E.S.Q.' no longer moves any role this rule declares: #516's by-shape credential class reads the multi-dot spelling as a credential by position, with no wordlist entry, which is the reading this baseline already had. Its remaining diff here is the `suffix-or-name` report, which fix(#516) classifies. Kept because the vocabulary change it records is real history and the rule wakes if that reading is lost again"
 name_regex = "^John Smith E\\.S\\.Q\\.$"
 fields = ["family", "middle", "suffix"]
 
@@ -519,6 +538,16 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # 'John Smith Jr. Prof.' keeps suffix 'Jr.' rather than promoting the
 # generational suffix to the family name, and 'John Prof. MA' reads
 # family 'MA' by rules.md#S2's reserve.
+#
+# 2026-09-18 (#289): the last clause is retracted. S2's reserve is no
+# longer what decides 'John Prof. MA': written capitals in a
+# mixed-case name lean credential with nothing to spare, so the name
+# reads title 'Prof.', family 'John', suffix 'MA' -- the transparency
+# this rule is about is unchanged and now shows a DIFFERENT reading
+# through it, which is the point of transparency. This rule keeps the
+# name at every baseline where it already had it; the fix(#289) rule
+# at the bottom of each file carries the names whose reading moved and
+# that nothing else claims.
 #
 # Five roles, the union of what the sixteen move; no name moves all
 # five (four is the most, 'John Smith Jr. Prof.'), and two move only
@@ -582,7 +611,18 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # be invisible to the discovery pass that demands every alternation
 # declare what it copies. The two spellings match the same string.
 # One set, identical in all four ledgers.
-name_regex = "^(?:Andrew Perkins \\x28Mgr\\.\\x29|Dr\\. John Smith Prof\\.|Dr\\. Smith Sir\\.|John Prof\\. MA|John Smith Dr\\.|John Smith Jr\\. Prof\\.|John Smith Mr\\.|John Smith Prof\\.|John Smith Prof\\. Dr\\.|John Smith Prof\\. Jr\\.|John Smith Rev\\.|Mary Jane King\\.|Sir John Prof\\.|Smith Prof\\.|Smith Sir\\.|Smith, John Prof\\.)$"
+#
+# 2026-09-18 (#289/#516): a SEVENTEENTH member, 'JOHN PROF. MA'. It
+# arrived in the rules corpus as rules.md#H5's one-case witness that
+# the suffix reading is taken over what STANDS once the title chain
+# has run, not over what stood -- the reading the mixed-case spelling
+# stopped demonstrating when the caps lean started deciding it. The
+# name is wholly one case, so no lean fires and nothing about it is
+# this arc's: what moves is exactly this rule's trailing-title chain
+# ({title, family, suffix}, inside the five roles already declared),
+# and it stops diffing at 2.3.0 for the same reason its sixteen
+# siblings do.
+name_regex = "^(?:Andrew Perkins \\x28Mgr\\.\\x29|Dr\\. John Smith Prof\\.|Dr\\. Smith Sir\\.|JOHN PROF\\. MA|John Prof\\. MA|John Smith Dr\\.|John Smith Jr\\. Prof\\.|John Smith Mr\\.|John Smith Prof\\.|John Smith Prof\\. Dr\\.|John Smith Prof\\. Jr\\.|John Smith Rev\\.|Mary Jane King\\.|Sir John Prof\\.|Smith Prof\\.|Smith Sir\\.|Smith, John Prof\\.)$"
 fields = ["family", "given", "middle", "suffix", "title"]
 
 [[change]]
@@ -800,4 +840,162 @@ issue = "fix(#383/#479) a marked connective letter in a one-case name is reporte
 # ledger carrying no #449 rule.
 name_regex = "^(?:JOSE E MARIA SANTOS|JOHN E SMITH|john e smith|john e jones|jones, john e|e j smith)$"
 fields = ["_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
+# A member of suffix_acronyms_ambiguous written in CAPITALS inside a
+# mixed-case name is written the way a credential is written, and is
+# taken as one with nothing to spare ('Jack MA' -> given 'Jack',
+# suffix 'MA'); one written in any other cased form is written the way
+# a surname is written and stays one even with words to spare ('John
+# Smith Ma' -> middle 'Smith', family 'Ma'). The same lean reaches the
+# post-comma given slot ('Smith, MA' -> family 'Smith', suffix 'MA';
+# 'Smith, Ma' keeps its given), and the comma form's words-to-spare
+# test becomes a count of NAME words, which is case-blind -- so
+# 'John Smith, MA', 'John Smith, Ed', 'JOHN SMITH, MA' and
+# 'john smith, ma' all read the credential where the token count read
+# a given name. See rules.md#S2, rules.md#C1 and rules.md#P2.
+#
+# A name written wholly in one case carries no contrast and does not
+# move on the LEAN at all -- 'JOHN SMITH MA', 'ANH DO', 'anh van do'
+# and 'Jack Ma' are _MUST_NOT_MATCH probes in
+# tests/v2/test_ledger_guards.py. The one-case comma forms in the list
+# above are here on the NAME-word count instead, which asks nothing
+# about case; that is why they sit beside the lean's own names rather
+# than in a rule of their own.
+#
+# Accepted costs, both recorded rather than repaired: the walk stops
+# at a declined pick instead of continuing past it, so a genuine
+# suffix standing in front of a name-leaning acronym is never reached
+# ('abdul Smith Jr Ma' reads middle 'Jr'), and the lean ends P2's
+# particle chain with no words to spare where the count would not
+# ('Freiherr von Berg MA', whose own rule further up this file carries
+# the reading at 1.4.0).
+#
+# The Title-case half is witnessed at the comma by two minimal pairs
+# rather than argued: 'John Smith, MA'/'John Smith, Ma' both read the
+# credential, because two NAME words before the comma decide before
+# the case is looked at, and 'Smith Jr., MA'/'Smith Jr., Ma' split,
+# because one name word leaves the case to decide and Title-case
+# declines. 'Smith Jr., Ma' diffs here for a reading this change did
+# NOT move -- the pre-comma restructure v2 has done since 2.0, at
+# 1.4.0, and the fork's new report at the 2.x baselines -- while
+# 'John Smith, Ma' moves on the COUNT, as its all-caps twin does, and
+# has no 1.4.0 diff at all, v1 having read the credential there too.
+# Both sit on this rule because the rule is what states which way
+# each member of a pair goes.
+#
+# Literal-anchored to the measured movers, and ONE SET FOR THE FOUR
+# 2.x LEDGERS so the rule says the same thing at each of them. The
+# 1.4.0 copy differs by exactly one member and holds 'John Prof. MA'
+# out: 1.4.0 read a trailing period-marked title as a title itself,
+# so that name's diff there belongs to fix(#316)'s rule and not to
+# this one. "One set for all five" was written before that carve-out
+# existed and was false in these four copies from the day it did
+# (2026-09-18). The set is literal because the class is
+# wide (every mixed-case name whose trailing piece is a listed
+# ambiguous acronym, plus every comma form with two name words before
+# the comma) and a regex for the class would claim the one-case
+# spellings that do not move. A name here that does not diff at a
+# given baseline is simply one the reading already agreed with there.
+# `fields` is per-baseline, the union the run at THAT baseline
+# measures (#452).
+name_regex = "^(?:Davis Royce, Ed|Freiherr von Berg MA|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Prof\\. MA|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John de Ma|John van der Berg Ma|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|abdul Smith Berg Ma|abdul Smith Jr Ma|abdul Smith Ma|john smith, ma)$"
+fields = ["family", "given", "middle", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#516) an unlisted dotted acronym is read by position"
+# A token of two or more period-separated chunks that no vocabulary
+# claims joins the ambiguous credential class by SHAPE and is read by
+# POSITION, exactly as a bare listed acronym is: a credential where
+# the name has words to spare, a name word where it does not, either
+# reading reported (rules.md#S3). Case says nothing here -- the
+# periods are the evidence -- which is why 'john smith x.y.z.' moves
+# with 'John Smith X.Y.Z.'. The same admission reaches the comma form,
+# where the NAME-word count decides ('John Smith, A.B.' -> suffix
+# 'A.B.'; 'Smith, A.B.' keeps its given and only reports).
+#
+# Two names here restore a reading a PRIOR bundle's vocabulary change
+# took away, by a different route than it lost it: 'John Smith E.S.Q.'
+# and 'John Smith C.H.A.' fell to a bare positional read when 'esq'
+# and 'cha' left SUFFIX_ACRONYMS
+# (decisions.md#suffix-acronym-collisions), and the shape class reads
+# them as the credentials they always were with no wordlist entry.
+# At the baselines where
+# that restoration lands on the baseline's own reading, only the new
+# report is left and `fields` says so.
+#
+# The narrow half of the same change: a chunk match no longer makes a
+# dotted token a suffix where EVERY matched chunk is a single ASCII
+# character, which reaches only the roman numerals -- 'Jack X.Y.I.'
+# moves to family for that reason and not for the shape one.
+#
+# The shapes the vocabulary settles are untouched and are
+# _MUST_NOT_MATCH probes in tests/v2/test_ledger_guards.py: a
+# whole-token match ('Jack M.A.', 'John Smith Ph.D.', 'Smith,
+# A.B.C.'), a surviving chunk claim ('Doe, John Msc.Ed.'), a leading
+# dotted run ('X.Y.Z. Smith', 'J.R.R. Tolkien', 'A.B. Vajpayee'), the
+# single trailing period that is no shape at all ('John Smith Xyz.'),
+# and a digit chunk, which the alphabetic gate refuses ('Bridge (1.4)').
+#
+# Literal-anchored to the measured movers, one set for all five
+# ledgers, for the reason the fix(#289) rule above gives: the class is
+# a SHAPE, and a regex for the shape would claim every dotted token
+# the vocabulary already answers for.
+name_regex = "^(?:Jack X\\.Y\\.I\\.|John Smith B\\.Tech\\.|John Smith C\\.H\\.A\\.|John Smith E\\.S\\.Q\\.|John Smith Q\\.W\\.E\\.R\\.T\\.|John Smith X\\.Y\\.Z\\.|John Smith, A\\.B\\.|Smith, E\\.S\\.Q\\.|john smith x\\.y\\.z\\.)$"
+fields = ["family", "given", "middle", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#289/#516) the ambiguous credential class reports at slots that were silent"
+# Every decision at the trailing suffix slot, the post-comma given
+# slot and a tail segment now reports the EXISTING SUFFIX_OR_NAME --
+# no new kind, and the report tracks the FORK BEING CONSULTED rather
+# than which way it went, as the trailing slot always has. These names
+# gain it with no role moving at any baseline: the fork was there all
+# along and was called silently. It is the first time the comma's
+# OWN decision is reported (rules.md#C1); P6's attachment fork has
+# reported on a family-comma path since 2.3 ('Berg, Jan vd'). C2's
+# structural flag was already the first comma-path report of a shape.
+#
+# 'Steven Hardman, MD, DO, DDS' goes the other way and LOSES its
+# comma-structure flag: its third segment now reads as the credential
+# run it is, because 'DO' leans credential in a mixed-case name. That
+# is the one place this arc quiets a report rather than adding one.
+#
+# `_ambiguities` alone, which keeps `_initials` out of these rows as
+# always (#484), and the rule cannot absorb a role diff on any of
+# these names for the same reason. Literal-anchored, one set for all
+# the 2.x ledgers; the 1.4.0 ledger has no twin, `_ambiguities` being
+# a v2 surface that cannot enter a diff below baseline 2.0.
+name_regex = "^(?:J\\.A\\. K\\.D\\.|Jack X\\.Y\\.Z\\.|John Smith J\\.u\\.n\\.i\\.o\\.r\\.|John Smith R\\.A\\.I\\.|Royce, Ed|Smith Jr\\., A\\.B\\.|Smith, A\\.B\\.|Smith, Ma|Steven Hardman, MD, DO, DDS)$"
+fields = ["_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#289/#516) the glued CJK honorific peel reads the case lean"
+# The suffix-run predicate the peel uses to decline a post-comma run
+# (rules.md#W3, asking C1's own vocabulary question) now reads the
+# same written-case evidence rule S2 reads, because `one_case` is
+# passed to it. Before, one name written with two credentials divided
+# two ways: a Kim-prefixed 김민준씨 input peeled its honorific when the
+# credential was 'PhD' and did not when it was 'MA', the only
+# difference being that 'MA' is an ambiguous acronym whose case lean
+# the predicate was not given.
+#
+# Every name here is a COMPOSED form -- a Latin wrapper and a family
+# comma around a CJK name -- which no East Asian writing system
+# produces, so all three are `tolerated` case rows on the radar tier
+# (decisions.md#cjk-comma-demotion). They are classified all the same:
+# a radar diff this arc INTENDED is one a release note may be written
+# from, and an unclassified one is not.
+#
+# `title` is in `fields` because 'Dr. 김민준씨, MA' had the whole
+# string for its family at these baselines, the title included; at
+# 2.0.0 and 2.1.0 'Jo김민준씨, DO' moves `title` instead of `given`,
+# and the union is what a per-baseline `fields` records (#452).
+name_regex = "^(?:Dr\\. 김민준씨, MA|Jo김민준씨, DO|Kim김민준씨, MA)$"
+fields = ["title", "given", "family", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]

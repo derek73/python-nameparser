@@ -775,8 +775,16 @@ def test_the_reserve_mirrors_the_bare_acronym_fork() -> None:
     # then the suffix, and one piece remains -- no family. The reserve
     # now runs that same peel over the view and declines (#425); it
     # used to count 'Ma' as a name word and join.
+    #
+    # MOVED by #289, not deleted: 'Ma' is Title-case in a mixed-case
+    # name, so it leans SURNAME and the peel declines it even with
+    # words to spare -- the walk stops at the declined pick, 'jr'
+    # never reached behind it, so the reserve now sees the SAME
+    # suffixes on both sides of the join (none) and the join stands
+    # (the accepted cost decisions.md#S2 records for
+    # 'abdul Smith Jr Ma').
     out = _grouped("abdul Smith jr Ma", lexicon=_AMBIGUOUS_LEX)
-    assert _piece_texts(out) == [["abdul", "Smith", "jr", "Ma"]]
+    assert _piece_texts(out) == [["abdul Smith", "jr", "Ma"]]
 
 
 def test_the_join_never_turns_a_suffix_into_a_name() -> None:
@@ -786,8 +794,13 @@ def test_the_join_never_turns_a_suffix_into_a_name() -> None:
     # words and changes nothing else, so it declines -- 1.4.0's
     # reading, and 'John Smith Ma's. With a family behind it the
     # acronym peels either way, and the join stands.
+    #
+    # MOVED by #289, not deleted: 'Ma' now leans SURNAME (Title case,
+    # mixed-case name) on BOTH sides of the join, so the two views'
+    # suffix readings still agree and the join stands -- 'abdul Smith'
+    # given, 'Ma' family (decisions.md#S2's corpus row).
     out = _grouped("abdul Smith Ma", lexicon=_AMBIGUOUS_LEX)
-    assert _piece_texts(out) == [["abdul", "Smith", "Ma"]]
+    assert _piece_texts(out) == [["abdul Smith", "Ma"]]
     out = _grouped("abdul Smith Berg Ma", lexicon=_AMBIGUOUS_LEX)
     assert _piece_texts(out) == [["abdul Smith", "Berg", "Ma"]]
 
@@ -877,9 +890,14 @@ def test_the_chain_keeps_an_acronym_assign_will_not_peel() -> None:
     lex = _AMBIGUOUS_LEX.add(titles={"st"}, particles={"st"})
     out = _grouped("St van Berg Ma", lexicon=lex)
     assert _piece_texts(out) == [["St", "van Berg Ma"]]
-    # with a given word of its own the three pieces survive the chain
+    # MOVED by #289, not deleted: with a given word of its own the
+    # three pieces used to survive the chain (words to spare read 'Ma'
+    # as a credential); now 'Ma' leans SURNAME (Title case, mixed-case
+    # name) and the peel declines it regardless of the count, so the
+    # second re-ask absorbs it into the particle run too
+    # (decisions.md#S2).
     out = _grouped("St John van Berg Ma", lexicon=lex)
-    assert _piece_texts(out) == [["St", "John", "van Berg", "Ma"]]
+    assert _piece_texts(out) == [["St", "John", "van Berg Ma"]]
 
 
 def test_the_chain_keeps_a_numeral_the_peel_does_not_take() -> None:
@@ -897,8 +915,13 @@ def test_the_chain_stops_before_a_bare_acronym_with_words_to_spare() -> None:
     # S2's other fork, the same way: 'John Smith Ma' peels the acronym
     # as a credential, so 'John van der Berg Ma' does too -- 1.4.0 read
     # suffix 'Ma' there, and 2.0 had let the chain take it.
+    #
+    # MOVED by #289, not deleted: 'Ma' is Title-case in a mixed-case
+    # name, so it now leans SURNAME and the chain's re-ask no longer
+    # stops before it -- 'Ma' joins the particle run instead
+    # (decisions.md#S2's corpus row).
     out = _grouped("John van der Berg Ma", lexicon=_AMBIGUOUS_LEX)
-    assert _piece_texts(out) == [["John", "van der Berg", "Ma"]]
+    assert _piece_texts(out) == [["John", "van der Berg Ma"]]
 
 
 def test_the_maiden_walk_stops_before_the_numeral_too() -> None:

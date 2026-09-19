@@ -1820,6 +1820,25 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         # measured. The winners are pinned in _CROSS_RULE_WINNERS.
         "john e smith": ("_initials",),
         "john e jones": ("_initials",),
+        # #289/#516's one, adjudicated 2026-09-18, below both cohorts
+        # above for the same provenance reason. '田中 太郎, MA' entered
+        # the corpus with this arc's own case row (radar tier, a
+        # composed CJK-plus-Latin comma form the writing system does
+        # not produce), and two rules admit its {family, given} diff:
+        # the compound CJK rule and the native-script order rule. Their
+        # `fields` OVERLAP without nesting, so neither is the narrower
+        # and `precedes_narrower` has nothing to say; file order is the
+        # whole decision. The shape is this run's, not guessed.
+        "田中 太郎, MA": ("family", "given"),
+        # #289's one contract-tier contest at this baseline. 'Smith,
+        # MA' moves {given, suffix} -- v1 read given 'MA', family
+        # 'Smith', and the caps lean now reads family 'Smith', suffix
+        # 'MA' -- and two rules admit it: the lone-post-comma routing
+        # rule, whose Latin comma regex reaches every such name, and
+        # this arc's own. `fields` overlap on {given, suffix} without
+        # nesting, so neither is the narrower and file order is the
+        # whole decision. The shape is this run's, not guessed.
+        "Smith, MA": ("given", "suffix"),
     },
     # #501's six, moved here from _WATCHED_DIFFS with their shapes
     # unchanged. The four CJK rows sit at 2.0.0 alone: the honorific
@@ -1953,6 +1972,21 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: of the three baselines it diffs at since #501 pinned its 2.x pair.
 #: That is why the population is 48 names where the tests/-only scan
 #: says 50.
+#: AMENDED 2026-09-18 (#289/#516): the parenthetical above is dated
+#: 2026-09-05 and stays as written, but its live half has stopped
+#: being true. `radar unclassified` is now 0 / 5 / 6 / 7 / 7 at
+#: 1.4.0 / 2.0.0 / 2.1.0 / 2.2.0 / 2.3.0, so the two sets no longer
+#: coincide: a diffing radar name can be watched by no rule at all.
+#: The seven at 2.3.0 are this arc's own unclassified SUFFIX_OR_NAME
+#: reports -- 'Smith, E.T., Jr.', 'Smith, J.R.', 'Smith, A.P.',
+#: 'MD, DO, DDS', '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- each
+#: a fork the ambiguous credential class now calls out loud at a slot
+#: that was silent, on a name the contract does not answer for. The
+#: POPULATION CLAUSE itself still holds unchanged, because it asks
+#: for a name EXPLAINED by a ledger rule and these are explained by
+#: none: an unclassified radar diff is already printed by every run,
+#: which is the weak-watcher case the clause was written to exclude.
+#: What is retired is only the claim that the two sets coincide.
 #: Recounted 2026-09-07 with #342, which moved three names across the
 #: literal clause at once: 'Aishwarya Rai' gained a case row and left
 #: the population, while 'Lala Lajpat Rai' and 'John Smith, RAI' are
@@ -2123,7 +2157,12 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
-        "MD, DO, DDS": ("given", "title"),
+        # 2026-09-18 (#289): the shape GREW by `_ambiguities`. A
+        # bare listed member in the post-comma slot now reports
+        # `suffix-or-name` wherever the fork is consulted, and 'DO'
+        # here is one; the roles are untouched. Re-recorded in the
+        # commit that moved it, per this dict's own rule.
+        "MD, DO, DDS": ("_ambiguities", "given", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Ph. D., Jr.": ("family", "suffix", "title"),
         "Sander van": ("_initials",),
@@ -2164,7 +2203,12 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
-        "MD, DO, DDS": ("given", "title"),
+        # 2026-09-18 (#289): the shape GREW by `_ambiguities`. A
+        # bare listed member in the post-comma slot now reports
+        # `suffix-or-name` wherever the fork is consulted, and 'DO'
+        # here is one; the roles are untouched. Re-recorded in the
+        # commit that moved it, per this dict's own rule.
+        "MD, DO, DDS": ("_ambiguities", "given", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Ph. D., Jr.": ("family", "suffix", "title"),
         "Sander van": ("_initials",),

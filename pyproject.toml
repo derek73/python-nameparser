@@ -82,6 +82,18 @@ disallow_any_generics = true
 warn_return_any = true
 strict_equality = true
 
+# strict_equality for the WHOLE package rather than the core modules
+# above. A comparison between non-overlapping types is always False and
+# is always a bug, and the facade layer -- which the block above does
+# not name -- is exactly where a v1/v2 translation makes one likeliest.
+# Measured 2026-09-18: clean over nameparser/ as it stands, so this
+# costs nothing today and catches the next one. tests/ keep the default,
+# where the check has real hits (a test comparing an off-contract value
+# to a real one is doing its job).
+[[tool.mypy.overrides]]
+module = ["nameparser", "nameparser.*"]
+strict_equality = true
+
 [[tool.mypy.overrides]]
 module = ["tests.v2.*"]
 check_untyped_defs = true

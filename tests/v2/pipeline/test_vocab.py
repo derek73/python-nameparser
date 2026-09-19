@@ -2,11 +2,17 @@ import unicodedata
 
 import pytest
 
-from nameparser._lexicon import Lexicon, _normalize, _title_key
+from nameparser import Parser
+from nameparser._lexicon import (
+    Lexicon, _VOCAB_FIELDS, _normalize, _title_key,
+)
 from nameparser._pipeline._vocab import (
+    ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
+    caps_shape_candidate,
     effective_script, is_initial, is_initial_shaped, is_one_case,
-    is_suffix_lenient, is_suffix_strict, is_wholly_suffix,
-    maiden_marker_run, resolve_script_set, single_script,
+    is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
+    maiden_marker_run, name_word_count, period_joined_vocab,
+    resolve_script_set, single_script,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
                                 _SCRIPT_RANGES)
@@ -249,6 +255,234 @@ def test_is_wholly_suffix_is_not_the_plural_of_is_post_nominal() -> None:
     # and the knob moves it: under strict, 'V.' is name text
     assert not is_wholly_suffix(
         ["V."], lex, Policy(lenient_comma_suffixes=False))
+
+
+def test_is_wholly_suffix_never_reads_the_by_shape_class() -> None:
+    # #516 review round: an EARLIER version of this predicate admitted
+    # a by-shape member unconditionally, bypassing both the lean and
+    # the NAME-word count -- combined with C1's own legacy TOKEN-count
+    # disjunct in _segment.py, that flipped 'Smith Jr., A.B.' to a
+    # one-word given with a self-contradicting report. Proved by
+    # mutation to be otherwise unreached, and dropped: the by-shape
+    # class reaches the comma form only through
+    # `ambiguous_class_candidate`, never through this predicate, on
+    # or off.
+    lex, pol = Lexicon.default(), Policy()
+    assert not is_wholly_suffix(["A.B."], lex, pol)
+    assert not is_wholly_suffix(
+        ["A.B."], lex, Policy(unlisted_dotted_suffixes=False))
+    # whole-token vocabulary is untouched either way -- it never went
+    # through the shape branch this predicate lost
+    assert is_wholly_suffix(["A.B.C."], lex, pol)
+    assert is_wholly_suffix(["A.B.C."], lex,
+                            Policy(unlisted_dotted_suffixes=False))
+
+
+def test_is_wholly_suffix_reads_the_credential_lean() -> None:
+    # The third reading site (#289): segment's structure decision and
+    # its tail segments ask this, and 'Steven Hardman, MD, DO, DDS'
+    # loses its comma-structure flag because 'DO' leans credential
+    # here. A caller with nothing to say passes nothing and gets the
+    # answer every release before this one gave.
+    lex, pol = Lexicon.default(), Policy()
+    assert not is_wholly_suffix(["DO"], lex, pol)
+    assert is_wholly_suffix(["DO"], lex, pol, one_case=False)
+    assert not is_wholly_suffix(["Do"], lex, pol, one_case=False)
+    assert not is_wholly_suffix(["DO"], lex, pol, one_case=True)
+    assert not is_wholly_suffix(["DO", "Smith"], lex, pol, one_case=False)
+
+
+def test_ambiguous_class_member_is_the_comma_form_s_candidate() -> None:
+    # The comma structure asks a different question from the lean: is
+    # this token a member of the ambiguous class AT ALL, in any case?
+    # -- because the count of NAME words before the comma is what
+    # decides there, and it decides for the listed set too
+    # ('JOHN SMITH, MA', 1.4.0 parity restored). Case-free: this
+    # predicate takes no `one_case` at all, unlike the lean.
+    lex = Lexicon.default()
+    assert ambiguous_class_member("MA", lex)
+    assert ambiguous_class_member("Ma", lex)
+    assert ambiguous_class_member("ed", lex)
+    assert not ambiguous_class_member("PhD", lex)
+    assert not ambiguous_class_member("Smith", lex)
+    # whole-token vocabulary wins over any shape reading
+    assert not ambiguous_class_member("M.A.", lex)
+    # a period ANYWHERE excludes membership here, deliberately
+    # stricter than S2's own dotted-form test: the trailing-period
+    # spelling still leans (ambiguous_lean('MA.', ...) reads as 'MA'
+    # does) but reaches the comma slot through the TAG path, not this
+    # predicate, which only the comma-form's own candidate check and
+    # the credential-lean disjunct in is_wholly_suffix consult.
+    assert not ambiguous_class_member("MA.", lex)
+    assert not ambiguous_class_member("Ed.", lex)
+
+
+def test_period_joined_vocab_retires_the_single_character_chunk() -> None:
+    # #516, NARROWLY: the chunk rule survives except where every chunk
+    # the vocabulary matches is a single ASCII character, which is the
+    # roman numeral reaching a word that is not about generations at
+    # all. CHARACTER because '2' is a digit and in the set, ASCII
+    # because '씨' is the one that must KEEP its claim. The roster
+    # itself is asserted below, not just described, so a future
+    # vocabulary change cannot silently drift this test's premise.
+    lex = Lexicon.default()
+    assert {c for c in lex.suffix_acronyms | lex.suffix_words
+            if len(c) == 1 and c.isascii()} == {"2", "i", "v"}
+    assert period_joined_vocab("R.A.I.", lex) == "shape"
+    assert period_joined_vocab("X.Y.I.", lex) == "shape"
+    assert period_joined_vocab("J.u.n.i.o.r.", lex) == "shape"
+    assert period_joined_vocab("Msc.Ed.", lex) == "suffix"   # 'ed', two chars
+    assert period_joined_vocab("JD.CPA", lex) == "suffix"
+    assert period_joined_vocab("J.씨", lex) == "suffix"       # not ASCII
+    assert period_joined_vocab("Lt.Gov.", lex) == "title"     # title wins
+    # the shape itself: two or more chunks nothing claims
+    assert period_joined_vocab("X.Y.Z.", lex) == "shape"
+    assert period_joined_vocab("B.Tech.", lex) == "shape"
+    assert period_joined_vocab("Q.W.E.R.T.", lex) == "shape"
+    assert period_joined_vocab("E.S.Q.", lex) == "shape"
+    # one trailing period is not the shape, and never was
+    assert period_joined_vocab("Xyz.", lex) is None
+    # a bare digit chunk is never an acronym by shape either
+    assert period_joined_vocab("1.4", lex) is None
+    # nor is a CJK word glued into period-separated single characters:
+    # a script with no period abbreviations at all has nothing for
+    # interior periods to abbreviate (#323's reasoning, shared with
+    # is_title_shaped)
+    assert period_joined_vocab("田.中.", lex) is None
+    assert period_joined_vocab("이.박.", lex) is None
+    assert period_joined_vocab("たな.か.", lex) is None
+
+
+def test_ambiguous_class_candidate_admits_a_by_shape_member() -> None:
+    # #516: the comma form's own candidate test reaches a by-shape
+    # member too, once Policy admits it -- case-free either way, the
+    # periods being the whole signal.
+    lex, pol = Lexicon.default(), Policy()
+    assert ambiguous_class_candidate("A.B.", lex, pol)
+    assert ambiguous_class_candidate("MA", lex, pol)      # listed, unaffected
+    assert not ambiguous_class_candidate(
+        "A.B.", lex, Policy(unlisted_dotted_suffixes=False))
+    # whole-token vocabulary wins over the shape reading here too
+    assert not ambiguous_class_candidate("A.B.C.", lex, pol)
+    assert not ambiguous_class_candidate("M.A.", lex, pol)
+    assert not ambiguous_class_candidate("Smith", lex, pol)
+
+
+def test_a_listed_dotted_entry_is_not_read_by_shape() -> None:
+    # Review round, 2026-09-18. A caller may list a DOTTED entry in
+    # `suffix_acronyms_ambiguous`, and then the whole token matches
+    # that set while `suffix_as_written`'s period-free acronym lookup
+    # ('ab') misses it -- so the chunk view reached the shape verdict
+    # and called a LISTED member by-shape, which silences the case
+    # lean everywhere downstream (`_pieces.listed_lean` declines
+    # wherever SHAPE_ACRONYM_TAG rides). Both halves of the class
+    # test the same membership now.
+    lex = Lexicon.default().add(suffix_acronyms={"a.b"},
+                                suffix_acronyms_ambiguous={"a.b"})
+    assert not ambiguous_class_candidate("A.B.", lex, Policy())
+    # the shipped vocabulary carries no dotted ambiguous entry, so
+    # nothing default moves
+    assert ambiguous_class_candidate("A.B.", Lexicon.default(), Policy())
+
+
+def test_a_callers_own_conjunction_marker_keeps_its_word_a_name() -> None:
+    # The exclusion end to end through a CALLER's vocabulary rather
+    # than the shipped one: `conjunctions_ambiguous` has no subset
+    # check of its own (an orphan decides nothing, _lexicon's own
+    # note), so a caller can list a word there alone -- and the caps
+    # shape test must still decline it. 'John Smith ZZQ' reads suffix
+    # 'ZZQ' with the switch on and the default vocabulary; one
+    # wordlist entry is the whole difference (2026-09-18 review
+    # round).
+    on = Policy(unlisted_caps_suffixes=True)
+    plain = Parser(policy=on).parse("John Smith ZZQ")
+    assert (plain.family, plain.suffix) == ("Smith", "ZZQ")
+    listed = Parser(
+        lexicon=Lexicon.default().add(conjunctions_ambiguous={"zzq"}),
+        policy=on).parse("John Smith ZZQ")
+    assert (listed.middle, listed.family, listed.suffix) == (
+        "Smith", "ZZQ", "")
+    assert listed.ambiguities == ()
+
+
+def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
+    # The roster is `_lexicon._VOCAB_FIELDS`, not a list written into
+    # the predicate, and this is what says so. The hand-written one it
+    # replaced named ELEVEN of the thirteen, leaving out `surnames`
+    # and `honorific_tails` -- so a caller who listed a word as a
+    # SURNAME still had it read as a credential, which is this
+    # switch's own worst failure arriving through the one wordlist
+    # that says "this is a family name".
+    #
+    # Measured per field rather than asserted about the source: each
+    # loop adds the same unlisted word to ONE field and checks the
+    # predicate declines it. A field whose exclusion is dropped fails
+    # here by name.
+    on = Policy(unlisted_caps_suffixes=True)
+    base = Lexicon.default()
+    assert caps_shape_candidate("ZZQX", base, on, False)
+    for field in _VOCAB_FIELDS:
+        extra: dict[str, set[str]] = {field: {"zzqx"}}
+        if field == "honorific_tails":
+            # honorific_tails ⊆ suffix_words is a Lexicon invariant,
+            # so this entry cannot be added alone -- which is also why
+            # the field was already excluded transitively, and why it
+            # joins the roster for completeness rather than for a
+            # behavior change
+            extra["suffix_words"] = {"zzqx"}
+        elif field == "given_name_titles":
+            extra["titles"] = {"zzqx"}       # ⊆ titles in practice
+        elif field == "particles_ambiguous":
+            extra["particles"] = {"zzqx"}    # enforced subset
+        elif field == "suffix_acronyms_ambiguous":
+            extra["suffix_acronyms"] = {"zzqx"}   # enforced subset
+        lex = base.add(**extra)               # type: ignore[arg-type]
+        assert not caps_shape_candidate("ZZQX", lex, on, False), field
+
+
+def test_is_title_shaped_is_h2_s_shape_alone() -> None:
+    # Shared with _pieces.is_leading_title's own inline copy
+    # (#289/#516, quality-review finding): both must answer alike for
+    # name_word_count's comma-form count not to disagree with the
+    # leading peel about what a title is.
+    assert is_title_shaped("Xyz.")       # unlisted, H2-shaped
+    # LISTED or not is a vocabulary question this predicate never
+    # asks -- 'Dr.' wears the same shape 'Xyz.' does, and answers the
+    # same way; the caller's own listed lookup is what tells them
+    # apart (is_title_piece/lexicon.titles, at each call site)
+    assert is_title_shaped("Dr.")
+    assert not is_title_shaped("Xyz")    # no trailing period
+    assert not is_title_shaped("X.")     # one letter: an initial,
+                                        # not an abbreviation
+    assert not is_title_shaped("田中.")   # initialless script (#323)
+
+
+def test_name_word_count_counts_names_not_tokens() -> None:
+    # rules.md#C1's count for the ambiguous class: 'Smith Jr.' is two
+    # tokens and ONE name word, which is what keeps its family where a
+    # token count would hand it to `given`.
+    lex, pol = Lexicon.default(), Policy()
+    assert name_word_count(["John", "Smith"], lex, pol) == 2
+    assert name_word_count(["Smith", "Jr."], lex, pol) == 1
+    assert name_word_count(["Dr.", "Smith"], lex, pol) == 1
+    assert name_word_count(["Davis", "Royce"], lex, pol) == 2
+    assert name_word_count(["Royce"], lex, pol) == 1
+    # #289/#516, quality-review finding: the title half asks H2's
+    # shape test too, not just the listed lookup -- an UNLISTED
+    # period-marked opener now counts the way a LISTED one does
+    # ('Xyz.' beside 'Dr.', both 1), where before this it counted as
+    # a plain name word and could flip a comma structure a listed
+    # title of the same shape would not.
+    assert name_word_count(["Xyz.", "Smith"], lex, pol) == 1
+    # 2026-09-18 review round: the two arms behind 'Mr Smith, Ma' and
+    # 'Smith Jr, Ma', neither of which had a unit row. A BARE title
+    # word and a BARE suffix word each count as no name -- the period
+    # is no part of either test -- so both parts hold ONE name word
+    # and neither comma flips. The parses are pinned in cases.py; the
+    # arms are pinned here, because a count of 1 for the wrong reason
+    # reads identically at the parse.
+    assert name_word_count(["Mr", "Smith"], lex, pol) == 1
+    assert name_word_count(["Smith", "Jr"], lex, pol) == 1
 
 
 # Stored form: space-joined, per-word normalized -- what _normset
@@ -529,3 +763,24 @@ def test_is_one_case() -> None:
     # token that is caseless does not break a Latin name's verdict
     assert is_one_case(["john", "e", "山田"])
     assert not is_one_case(["John", "e", "山田"])
+
+
+def test_ambiguous_lean_reads_the_written_case() -> None:
+    # #289: in a name written in more than one case, an all-caps
+    # member of the ambiguous set leans CREDENTIAL and a member in any
+    # other cased form that is not wholly lower leans SURNAME. A
+    # lowercase member carries no lean, and neither does anything at
+    # all in a one-case name -- both fall through to today's count.
+    assert ambiguous_lean("MA", one_case=False) == "credential"
+    assert ambiguous_lean("Ma", one_case=False) == "name"
+    assert ambiguous_lean("ma", one_case=False) is None
+    assert ambiguous_lean("MA", one_case=True) is None
+    assert ambiguous_lean("Ma", one_case=True) is None
+    # a trailing period is not the signal and does not disturb one:
+    # 'MA.' is still written in capitals ('.' has no case)
+    assert ambiguous_lean("MA.", one_case=False) == "credential"
+    assert ambiguous_lean("Ma.", one_case=False) == "name"
+    # a caseless token can be written against nothing, so it leans
+    # neither way even where the name around it is mixed
+    assert ambiguous_lean("씨", one_case=False) is None
+    assert ambiguous_lean("毛", one_case=False) is None

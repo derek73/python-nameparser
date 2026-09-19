@@ -1,6 +1,7 @@
 """Stage: assign.
 
-Consumes: pieces + piece_tags (grouped), segments, structure, tokens.
+Consumes: pieces + piece_tags (grouped), segments, structure, tokens,
+one_case.
 Produces: tokens with roles set on every main-stream token.
 Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
@@ -44,10 +45,14 @@ Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
 particles_ambiguous token with more pieces following ("Van Johnson",
 and since #367 "Dr. Van Johnson" too, a title no longer displacing the
 particle out of that position) -- whatever role name_order assigns.
-Emits SUFFIX_OR_NAME at three sites: the trailing roman numeral, each
-ambiguous acronym the trailing peel had to resolve, and the bare-suffix
+Emits SUFFIX_OR_NAME at FOUR sites: the trailing roman numeral, each
+ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
-gets its first word made into the name (H4's suffix half, #491). And
+gets its first word made into the name (H4's suffix half, #491), and
+-- since #289 -- the FAMILY-COMMA path's own read of the first
+post-comma piece. Further emitters of the same kind live in
+`_segment.py`, `_group.py` and `_post_rules.py`; they are not
+assign's and are not counted here. And
 at the one site that places a LONE name word, GIVEN_OR_FAMILY for the
 field the convention picked (O5, #449) and TITLE_OR_NAME for the two
 shapes where the doubt is whether a word is a title instead (H4,
@@ -69,7 +74,8 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken, _NEVER_FLIPPED,
+    ParseState, PendingAmbiguity, Structure, WorkToken,
+    _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED,
 )
 from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
@@ -294,7 +300,8 @@ def _assign_main(seg_idx: int, state: ParseState,
     # wording reads the role back, and which role "not peeled" means
     # depends on name_order. (The roman-numeral fork needs no such
     # deferral and is reported here.)
-    rest, titled_tail, peeled = tail_reading(rest, pieces, ptags, tokens)
+    rest, titled_tail, peeled = tail_reading(rest, pieces, ptags, tokens,
+                                             state.one_case)
     for piece_idx in titled_tail:
         _set_roles(tokens, pieces[piece_idx], Role.TITLE)
     if peeled.numeral is not None:
@@ -532,7 +539,57 @@ def assign(state: ParseState) -> ParseState:
         # its family (the code review).
         reading = segment_suffix_reading(
             state.pieces[1], state.piece_tags[1], tokens,
-            state.policy.lenient_comma_suffixes)
+            state.policy.lenient_comma_suffixes, state.one_case)
+        # rules.md#C1's exception, scoped to the ambiguous credential
+        # class: this is the first report of the comma's OWN decision
+        # (listing or credential run), where the writing left the
+        # fork open and the comma stayed quiet by design until now.
+        # P6's attachment fork already reports on a family-comma path
+        # from post_rules, since 2.3 ("Berg, Jan vd") -- a different
+        # fork. Emitted on the family-comma path only -- the structure
+        # decision reports itself in `segment`, where that branch is
+        # taken, so this DECISION is never reported twice; a second ambiguous
+        # token elsewhere in the name is a second fork and reports on
+        # its own (#289, mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE).
+        #
+        # The report tracks the FORK BEING CONSULTED, not the lean --
+        # exactly as the trailing slot has always done (`Jack MA`
+        # reported before #289 too, even where the pick was declined
+        # for want of words to spare). So membership alone gates it:
+        # a caseless script or an all-lower spelling still called this
+        # fork and read it positionally.
+        #
+        # The gate reads EITHER tag (`_AMBIGUOUS_CREDENTIAL_TAGS`, the
+        # same pair `_group`'s chain emitter asks), and the shape one
+        # is what reaches a by-shape member -- under EITHER 2.4
+        # switch, the dotted and the caps alike, since classify writes
+        # it from both branches. It reaches one with the dotted switch
+        # OFF as well: classify writes the shape tag whether or not
+        # the switch admits the token to the class, which is what lets
+        # a declined fork be REPORTED without being taken ('Smith,
+        # A.B.' under `unlisted_dotted_suffixes=False` reports and
+        # keeps its given). An earlier wording said the class reaches
+        # a by-shape member "once `Policy.unlisted_dotted_suffixes`
+        # admits it", which is true of the CLASS and false of this
+        # report.
+        #
+        # Read off the FIRST post-comma piece only --
+        # `segment_suffix_reading` decides piece by piece, and this is
+        # the one piece the lean can reach at one word before the
+        # comma. So `"Smith, MA PhD"` reports ONCE, for 'MA' alone:
+        # 'PhD' is settled vocabulary and carries neither tag, and
+        # even a second CLASS member there would not be read here
+        # (test_assign.py asserts the count).
+        if state.pieces[1] and len(state.pieces[1][0]) == 1:
+            i = state.pieces[1][0][0]
+            if not tokens[i].tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
+                chose = ("a credential" if reading and reading[0]
+                         else "the given name")
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.SUFFIX_OR_NAME,
+                    f"{tokens[i].text!r} after the comma is also an "
+                    f"ordinary name word; read as {chose}",
+                    (i,)))
         # Segment 1 is read FIRST, ahead of either branch below. It
         # consumes `reading`, piece tags and text only -- nothing
         # segment 0's read writes -- and running it first is what puts

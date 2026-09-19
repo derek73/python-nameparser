@@ -202,10 +202,15 @@ def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
         [AmbiguityKind.SUFFIX_OR_NAME]
     assert [t.text for t in took_suffix.ambiguities[0].tokens] == ["MA"]
 
+    # MOVED by #289, not deleted: 'MA' is written in capitals inside a
+    # mixed-case name, so it now leans CREDENTIAL and is taken with no
+    # words to spare -- 'Jack' is the only name word left, which is
+    # what also turns on the GIVEN_OR_FAMILY fork (decisions.md#S2).
     took_family = parse("Jack MA")
-    assert took_family.family == "MA"
-    assert [a.kind for a in took_family.ambiguities] == \
-        [AmbiguityKind.SUFFIX_OR_NAME]
+    assert took_family.suffix == "MA"
+    assert not took_family.family
+    assert set(a.kind for a in took_family.ambiguities) == \
+        {AmbiguityKind.SUFFIX_OR_NAME, AmbiguityKind.GIVEN_OR_FAMILY}
 
 
 @pytest.mark.parametrize("text", [
@@ -249,9 +254,16 @@ def test_ambiguous_acronym_detail_names_the_role_it_got() -> None:
     # the unpeeled piece is the last NAME piece, which is the family
     # name only under GIVEN_FIRST -- FAMILY_FIRST puts it in given, so
     # the detail has to follow the role actually assigned
+    #
+    # MOVED by #289, not deleted: 'Jack MA' is mixed case now, so 'MA'
+    # leans CREDENTIAL and is peeled as a suffix under every order --
+    # there is no unpeeled acronym left for the detail to name a role
+    # for. 'JACK MA' (one case, no lean) is the input that still
+    # exercises the mechanism this test pins: the count alone decides,
+    # and the detail names whichever role the order actually gave it.
     fam_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
-    n = fam_first.parse("Jack MA")
-    assert (n.family, n.given) == ("Jack", "MA")
+    n = fam_first.parse("JACK MA")
+    assert (n.family, n.given) == ("JACK", "MA")
     assert "given name" in n.ambiguities[0].detail
     assert "family name" not in n.ambiguities[0].detail
 
@@ -561,14 +573,22 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
         n, m = parse(bound), parse(plain)
         assert (n.family, n.suffix) == (m.family, m.suffix)
         assert n.family != ""
+    # MOVED by #289, not deleted: 'Ed' is Title-case in a mixed-case
+    # name, so it now leans SURNAME and the peel declines it with
+    # words to spare -- the walk stops at the declined pick, 'Jr'
+    # never reached behind it, and both join as name words
+    # (decisions.md#S2's accepted cost, the 'abdul Smith Jr Ma' shape).
     n = parse("abu Bakar Jr Ed")
-    # spaced run, spaced render (#436); the family claim is what moves here
-    assert (n.family, n.suffix) == ("Bakar", "Jr Ed")
+    assert (n.family, n.suffix) == ("Ed", "")
     # and the join never turns a suffix into a name: unjoined, the
     # acronym is a credential with words to spare, so 'abdul Smith
     # Ma' reads as 'John Smith Ma' does (1.4.0 parity restored)
+    #
+    # MOVED by #289, not deleted: 'Ma' is Title-case in a mixed-case
+    # name, so it leans SURNAME on both sides of the join and stays a
+    # name word instead of a credential (decisions.md#S2).
     n, m = parse("abdul Smith Ma"), parse("John Smith Ma")
-    assert (n.family, n.suffix) == (m.family, m.suffix) == ("Smith", "Ma")
+    assert (n.family, n.suffix) == (m.family, m.suffix) == ("Ma", "")
 
 
 def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
@@ -607,7 +627,11 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
             ("John van der Berg V", "van der Berg", "V"),
             ("John van der Berg X", "van der Berg", "X"),
             ("abdul van der Berg V", "van der Berg", "V"),
-            ("John van der Berg Ma", "van der Berg", "Ma")):
+            # MOVED by #289, not deleted: 'Ma' is Title-case in a
+            # mixed-case name, so it now leans SURNAME and the chain's
+            # re-ask absorbs it into the particle run instead of
+            # leaving it for assign to peel (decisions.md#S2).
+            ("John van der Berg Ma", "van der Berg Ma", "")):
         n = parse(text)
         assert (n.family, n.suffix) == (family, suffix), text
     n = parse("John née Jones Smith V")
@@ -632,8 +656,15 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
     # behind a title-and-particle word the chain takes the name's first
     # word (#367), and the acronym it leaves has no words to spare for
     # assign: the chain keeps it rather than leave it as the family
+    #
+    # MOVED by #289, ACCEPTED COST (decisions.md#S2): 'MA' is written
+    # in capitals inside a mixed-case name, so it now leans CREDENTIAL
+    # and the caps lean makes it reachable where the count alone was
+    # not -- the lean ends the chain's re-ask with no words to spare,
+    # where the count would not have. This was listed as staying
+    # fix(#424)'s and measured not to: 1.4.0 read "von Berg", "MA".
     n = parse("Freiherr von Berg MA")
-    assert (n.title, n.family, n.suffix) == ("Freiherr", "von Berg MA", "")
+    assert (n.title, n.family, n.suffix) == ("Freiherr", "von Berg", "MA")
     # the numeral keeps its three pieces behind the same word, and the
     # chain, now the one name piece, reads as 'Dr. Smith V' reads
     n = parse("Freiherr von Richthofen V")

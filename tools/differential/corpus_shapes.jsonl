@@ -1,22 +1,60 @@
+{"name": "ANH DO", "shape": 1}
+{"name": "Bridge (1.4)", "shape": 1}
+{"name": "Bridge (A.B)", "shape": 1}
 {"name": "Dr. Juan de la Vega III", "shape": 1}
+{"name": "J.A. K.D.", "shape": 1}
+{"name": "J.R.R. Tolkien", "shape": 1}
+{"name": "JACK MA", "shape": 1}
 {"name": "JOHN E SMITH", "shape": 1}
+{"name": "JOHN SMITH MA", "shape": 1}
 {"name": "JOSE E MARIA SANTOS", "shape": 1}
 {"name": "JOSEP CAROD I ROVIRA", "shape": 1}
 {"name": "JUAN GARCIA Y LOPEZ", "shape": 1}
 {"name": "JUAN Y GARCIA", "shape": 1}
+{"name": "Jack MA", "shape": 1}
+{"name": "Jack MA.", "shape": 1}
+{"name": "Jack Ma", "shape": 1}
+{"name": "Jack X.Y.I.", "shape": 1}
+{"name": "Jack X.Y.Z.", "shape": 1}
+{"name": "Jean DUPONT", "shape": 1}
+{"name": "Jean Pierre DUPONT", "shape": 1}
 {"name": "John \"Jack\" Kennedy", "shape": 1}
+{"name": "John Doe JD.CPA", "shape": 1}
 {"name": "John Jack Andrew Kennedy", "shape": 1}
 {"name": "John Smith", "shape": 1}
+{"name": "John Smith 1.4", "shape": 1}
+{"name": "John Smith B.Tech.", "shape": 1}
+{"name": "John Smith C.H.A.", "shape": 1}
+{"name": "John Smith E.S.Q.", "shape": 1}
+{"name": "John Smith J.u.n.i.o.r.", "shape": 1}
 {"name": "John Smith Jr.", "shape": 1}
+{"name": "John Smith Ma", "shape": 1}
+{"name": "John Smith Q.W.E.R.T.", "shape": 1}
+{"name": "John Smith R.A.I.", "shape": 1}
+{"name": "John Smith X.Y.Z.", "shape": 1}
+{"name": "John Smith XYZ", "shape": 1}
+{"name": "John Smith Xyz.", "shape": 1}
 {"name": "John V. Smith", "shape": 1}
+{"name": "John de Ma", "shape": 1}
 {"name": "John e Smith", "shape": 1}
+{"name": "John van der Berg Ma", "shape": 1}
 {"name": "Jose E Maria Santos", "shape": 1}
 {"name": "Jose e Maria Santos", "shape": 1}
 {"name": "Juan Garcia Y Lopez", "shape": 1}
 {"name": "Juan de la Vega", "shape": 1}
+{"name": "Lt.Gov. John Doe", "shape": 1}
 {"name": "Md Abdul Karim", "shape": 1}
+{"name": "Minjun KIM", "shape": 1}
+{"name": "Mr MA", "shape": 1}
 {"name": "Sir Bob Andrew Dole", "shape": 1}
+{"name": "X.Y.Z. Smith", "shape": 1}
+{"name": "abdul Smith Jr Ma", "shape": 1}
+{"name": "anh van do", "shape": 1}
+{"name": "anh van mc", "shape": 1}
+{"name": "jack ma", "shape": 1}
 {"name": "john e smith", "shape": 1}
+{"name": "john smith MA", "shape": 1}
+{"name": "john smith x.y.z.", "shape": 1}
 {"name": "jose e maria santos", "shape": 1}
 {"name": "josep carod i rovira", "shape": 1}
 {"name": "juan garcia y lopez", "shape": 1}
@@ -26,18 +64,37 @@
 {"name": "محمد و علي", "shape": 1}
 {"name": "Beethoven, Ludwig van", "shape": 2}
 {"name": "Doe, John A.", "shape": 2}
+{"name": "Doe, John Msc.Ed.", "shape": 2}
+{"name": "John Smith, 1.4", "shape": 2}
 {"name": "Kennedy, John (Jack)", "shape": 2}
+{"name": "Royce, Ed", "shape": 2}
 {"name": "Salem, Abdul Rahman Ahmed", "shape": 2}
+{"name": "Smith Jr., A.B.", "shape": 2}
 {"name": "Smith Jr., John", "shape": 2}
+{"name": "Smith Jr., MA", "shape": 2}
+{"name": "Smith, A.B.", "shape": 2}
+{"name": "Smith, A.B.C.", "shape": 2}
 {"name": "Smith, Dr. John", "shape": 2}
+{"name": "Smith, E.S.Q.", "shape": 2}
 {"name": "Smith, John", "shape": 2}
 {"name": "Smith, John Jr.", "shape": 2}
 {"name": "Smith, John V, Jr.", "shape": 2}
 {"name": "Smith, John, Extra, Jr.", "shape": 2}
+{"name": "Smith, MA", "shape": 2}
+{"name": "Smith, Ma", "shape": 2}
 {"name": "de la Vega, Juan", "shape": 2}
+{"name": "Davis Royce, Ed", "shape": 3}
 {"name": "Dr. John P. Doe-Ray, CLU, CFP, LUTC", "shape": 3}
+{"name": "JOHN SMITH, MA", "shape": 3}
 {"name": "John Smith Jr., PhD", "shape": 3}
+{"name": "John Smith, A.B.", "shape": 3}
+{"name": "John Smith, Ed", "shape": 3}
+{"name": "John Smith, MA", "shape": 3}
+{"name": "John Smith, MD, Ma", "shape": 3}
+{"name": "John Smith, MD, R.A.I.", "shape": 3}
 {"name": "John Smith, PhD", "shape": 3}
+{"name": "Steven Hardman, MD, DO, DDS", "shape": 3}
+{"name": "john smith, ma", "shape": 3}
 {"name": "John Smith, Dr.", "shape": 4}
 {"name": "de Mesnil Jean, Dr.", "shape": 4}
 {"name": "de la Cruz Juan Carlos", "shape": 4}

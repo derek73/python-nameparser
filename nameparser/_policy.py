@@ -662,6 +662,59 @@ class Policy:
     #: they appear in no token, field, or rendered view; the original
     #: string keeps them.
     strip_bidi: bool = True  # =False replaces v1's opt-out CONSTANTS.regexes.bidi = False
+    # -- fields added after 2.3 ------------------------------------------
+    # Policy is not kw_only, so a field's POSITION is API: a caller
+    # writing Policy(GIVEN_FIRST, ..., True, False) binds by position.
+    # The two 2.4 switches below first landed beside
+    # lenient_comma_suffixes, which re-bound every positional argument
+    # from `strip_emoji` on; they are appended here instead so 2.3's
+    # eleven positions keep their meaning
+    # (tests/v2/test_policy.py::test_the_2_3_positional_fields_did_not_move).
+    # A field added in a later cycle goes at the END for the same
+    # reason, whatever it is about.
+    #: Reads an UNLISTED token of two or more period-separated chunks
+    #: as a credential where the position allows it: "John Smith
+    #: X.Y.Z." gives suffix ``X.Y.Z.`` and "Jack X.Y.Z." keeps family
+    #: ``X.Y.Z.``, the same words-to-spare rule a listed ambiguous
+    #: acronym takes, and either reading is reported. Case is
+    #: irrelevant here -- the periods are the signal, so
+    #: "john smith x.y.z." reads as the mixed-case spelling does.
+    #: Whole-token vocabulary still wins ("M.A.", "Ph.D.", "A.B.C."),
+    #: and a single trailing period is not this shape ("John Smith
+    #: Xyz." keeps family ``Xyz.``). ``False`` reads such a token as
+    #: name material everywhere, as 2.3 did for a token no chunk
+    #: claimed; the roman-chunk retirement (rules.md#S3) is not
+    #: behind this switch, and still reports the fork.
+    unlisted_dotted_suffixes: bool = True
+    #: Reads an UNLISTED all-caps word of two or more letters, with no
+    #: period in it, in a name written in more than one case as a
+    #: credential where the position allows it: with this on,
+    #: "John Smith XYZ" gives suffix ``XYZ`` and "Smith, XYZ" still
+    #: gives given ``XYZ``, the same words-to-spare rule the rest of
+    #: the class takes. A listed member keeps its own case lean
+    #: regardless of this switch ("Jack MA" still gives suffix ``MA``
+    #: on or off), and the roman-numeral fork still claims a bare
+    #: numeral first either way ("Jack VI" is unaffected by this
+    #: switch, on or off). OFF BY DEFAULT, and the asymmetry with
+    #: ``unlisted_dotted_suffixes`` is deliberate: an all-caps surname
+    #: is a real writing convention that shape cannot separate from a
+    #: credential -- "Jean Pierre DUPONT" gives family ``Pierre``,
+    #: suffix ``DUPONT`` with this on, and a swallowed family name is
+    #: the worse failure. The two-word "Jean DUPONT" and "Minjun KIM"
+    #: read as family names at the default and KEEP that family with
+    #: this on too (one word before the credential is never enough,
+    #: the same words-to-spare rule above) -- but a genuine candidate
+    #: this switch does not move still gains the fork's report: it
+    #: was a real fork the parser considered and declined, and that
+    #: is reported even where the reading did not change. Off,
+    #: nothing changes and nothing is reported. A digit anywhere
+    #: disqualifies the token and a single capital stays an initial.
+    #: ``isupper()`` is script-agnostic, so this is the same
+    #: convention and the same reason for being off in ANY script
+    #: that has a case contrast at all, not just Latin -- an all-caps
+    #: Cyrillic surname ("Иван ИВАНОВ") or an accented Latin one
+    #: ("Jean ÉCOLE") joins this class exactly as an ASCII one does.
+    unlisted_caps_suffixes: bool = False
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -752,8 +805,17 @@ class Policy:
         # Truthy strings ("no", "false") would silently invert the
         # caller's intent downstream; bools are the one field kind the
         # coercing checks above can't cover.
-        for flag in ("middle_as_family", "lenient_comma_suffixes",
-                     "strip_emoji", "strip_bidi"):
+        #
+        # The roster is DERIVED from the dataclass rather than written
+        # out: a hand-written list is a second place to remember, and
+        # the twin loop in tests/v2/test_policy.py proved it -- it still
+        # named 2.3's four flags after 2.4 added two, so the new
+        # switches shipped with no "must be a bool" coverage while the
+        # library validated them. `bool` is the whole test: every
+        # bool-annotated Policy field is a flag, and the annotation is
+        # a plain string here because of `from __future__ import
+        # annotations` (AGENTS.md's guard-the-whole-family rule).
+        for flag in _BOOL_FIELDS:
             value = getattr(self, flag)
             if not isinstance(value, bool):
                 raise TypeError(
@@ -788,6 +850,18 @@ class Policy:
         if not isinstance(patch, PolicyPatch):
             raise TypeError(f"patched() takes a PolicyPatch, got {patch!r}")
         return apply_patch(self, patch)
+
+
+#: Every bool-valued Policy field, read off the dataclass rather than
+#: listed: `__post_init__`'s bool check sweeps this, so a flag added to
+#: the class above is validated the day it lands and cannot ship
+#: unchecked the way `unlisted_dotted_suffixes` and
+#: `unlisted_caps_suffixes` did. `from __future__ import annotations`
+#: makes every annotation a string, so the comparison is against the
+#: SPELLING "bool" -- which is also what a reader of the class body
+#: sees, and a field annotated any other way is not a plain flag.
+_BOOL_FIELDS: tuple[str, ...] = tuple(
+    f.name for f in dataclasses.fields(Policy) if f.type == "bool")
 
 
 class _Unset(Enum):
@@ -833,6 +907,12 @@ class PolicyPatch:
     lenient_comma_suffixes: bool | _Unset = UNSET
     strip_emoji: bool | _Unset = UNSET
     strip_bidi: bool | _Unset = UNSET
+    # Appended, in Policy's order and for Policy's reason -- this class
+    # is positional too, and the parity test holds the two field
+    # sequences equal, so a field inserted on one side would have to be
+    # inserted on the other and both would re-bind together.
+    unlisted_dotted_suffixes: bool | _Unset = UNSET
+    unlisted_caps_suffixes: bool | _Unset = UNSET
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -882,9 +962,11 @@ class PolicyPatch:
                     f"{f.name} must be an iterable, got {value!r}{hint}"
                 ) from None
             object.__setattr__(self, f.name, frozenset(value))
-        # middle_as_family, lenient_comma_suffixes, strip_emoji, and
-        # strip_bidi are scalar (compose="override") fields and
-        # DELIBERATELY get no type check here, unlike name_order and
+        # middle_as_family, lenient_comma_suffixes,
+        # unlisted_dotted_suffixes, unlisted_caps_suffixes, strip_emoji,
+        # and strip_bidi are scalar (compose="override") fields and
+        # DELIBERATELY get no
+        # type check here, unlike name_order and
         # the union fields above: a PolicyPatch(strip_emoji="off") is
         # constructible, and only raises once apply_patch runs
         # Policy.__post_init__'s bool check. This is the one place the

@@ -48,6 +48,111 @@ def _by_role(state: ParseState, role: Role) -> str:
     return " ".join(t.text for t in state.tokens if t.role is role)
 
 
+_ROLE_NAMES = (("title", Role.TITLE), ("given", Role.GIVEN),
+              ("middle", Role.MIDDLE), ("family", Role.FAMILY),
+              ("suffix", Role.SUFFIX), ("nickname", Role.NICKNAME),
+              ("maiden", Role.MAIDEN))
+
+
+def _fields(text: str, policy: Policy | None = None) -> dict[str, str]:
+    """The non-empty role fields, by name -- #289's real ambiguous
+    vocabulary (`ba do ed jd ma`) is Lexicon.default()'s, not the
+    synthetic `_LEX` most of this module's tests share, so this reads
+    the default lexicon rather than take one as a parameter every
+    caller would otherwise have to pass."""
+    out = _assigned(text, policy, Lexicon.default())
+    return {name: v for name, role in _ROLE_NAMES
+            if (v := _by_role(out, role))}
+
+
+def test_the_lean_reaches_the_post_comma_given_slot() -> None:
+    # #289, Derek's own comment on the issue: positive evidence
+    # outranks position here, so the credential lean fires with ONE
+    # word before the comma where the count would not.
+    assert _fields("Smith, MA") == {"family": "Smith", "suffix": "MA"}
+    assert _fields("Smith, BA") == {"family": "Smith", "suffix": "BA"}
+    assert _fields("Smith, MA PhD") == {"family": "Smith",
+                                        "suffix": "MA PhD"}
+    # the other two spellings keep today's reading: a surname lean, and
+    # no lean at all
+    assert _fields("Smith, Ma") == {"given": "Ma", "family": "Smith"}
+    assert _fields("Smith, ma") == {"given": "ma", "family": "Smith"}
+    # a caseless script wrote no contrast, so nothing leans
+    assert _fields("毛泽东, MA") == {"given": "MA", "family": "毛泽东"}
+
+
+def test_the_comma_path_reports_its_ambiguous_reading_once() -> None:
+    # The first report of the comma's OWN decision in the library
+    # (#289) -- C2's structural flag already reports on the comma
+    # path, but it reports what the parse could not recognize, not a
+    # fork it called. P6's attachment fork has separately reported on
+    # a family-comma path since 2.3 ("Berg, Jan vd"). One per
+    # DECISION, in either direction, and never twice for one name --
+    # the structure decision reports where it is taken and this one
+    # reports where the family comma stands.
+    #
+    # The report tracks the FORK BEING CONSULTED, not the lean --
+    # exactly as the trailing slot always has ('Jack MA' reported
+    # before #289 too, even where the peel declined the pick for want
+    # of words to spare). So a caseless script ('毛泽东, MA') and an
+    # all-lower spelling ('Smith, ma') still called this fork and
+    # report it, read positionally; and a two-piece post-comma part
+    # whose FIRST piece is the class member ('Smith, MA PhD') reports
+    # once through that same first-piece read (F4/F5 review finding,
+    # 2026-09-17 -- reverses an earlier round's `ambiguous_lean(...)
+    # is not None` gate, which wrongly excluded both).
+    # 'Smith, A.B.' is in the loop since `Policy.unlisted_dotted_
+    # suffixes` shipped: its token carries the by-shape tag, so the
+    # fork IS consulted at this comma and reports exactly once --
+    # which is also true with the switch OFF, the shape tag going on
+    # either way (its own case rows pin both).
+    for text in ("Smith, MA", "Smith, Ma", "Smith, ma", "John Smith, MA",
+                 "John Smith, Ed", "毛泽东, MA", "Smith, MA PhD",
+                 "Smith, A.B."):
+        kinds = [a.kind.value for a in _assigned(
+            text, lexicon=Lexicon.default()).ambiguities]
+        assert kinds.count("suffix-or-name") == 1, (text, kinds)
+    # a name outside the class reports nothing at its comma, as every
+    # release before this one
+    for text in ("Smith, John", "John Smith, PhD", "Smith, Dr."):
+        kinds = [a.kind.value for a in _assigned(
+            text, lexicon=Lexicon.default()).ambiguities]
+        assert "suffix-or-name" not in kinds, text
+
+
+def test_the_family_comma_report_detail_is_verbatim() -> None:
+    # The family-comma path's own emitter (assign's half of the FIRST
+    # comma-path report; segment's structure-flip half is pinned in
+    # test_segment.py). Pinned verbatim for the same reason.
+    out = _assigned("Smith, MA", lexicon=Lexicon.default())
+    (amb,) = [a for a in out.ambiguities
+             if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+    assert amb.detail == (
+        "'MA' after the comma is also an ordinary name word; read as "
+        "a credential")
+
+
+def test_jack_ma_s_two_detail_strings_are_verbatim() -> None:
+    # The trailing slot's OWN report existed before #289 (a bare
+    # ambiguous acronym was always a coin-flip); what #289 changes is
+    # which way 'Jack MA' flips, not that it reports. Pinning both
+    # strings verbatim: the credential lean also turns 'Jack' into the
+    # only name word left, which is a SECOND fork (GIVEN_OR_FAMILY)
+    # this one row now calls.
+    out = _assigned("Jack MA", lexicon=Lexicon.default())
+    details = {a.kind.value: a.detail for a in out.ambiguities}
+    assert details == {
+        "given-or-family": (
+            "'Jack' is the only name word and nothing else decides "
+            "it; read as a given name by convention, which follows "
+            "the read order"),
+        "suffix-or-name": (
+            "'MA' written without periods is both a post-nominal and "
+            "an ordinary name; read as a suffix rather than a name "
+            "part"),
+    }
+
+
 def test_given_first_positional() -> None:
     out = _assigned("Dr. Juan de la Vega III")
     assert _by_role(out, Role.TITLE) == "Dr."
@@ -256,11 +361,16 @@ def test_the_trailing_title_is_transparent_to_the_suffix_peel() -> None:
     """
     lex = _LEX.add(suffix_acronyms={"ma"},
                    suffix_acronyms_ambiguous={"ma"})
+    # MOVED by #289, not deleted: spliced, 'John MA' is the bare
+    # 'Jack MA' shape -- an ALL-CAPS ambiguous acronym in a mixed-case
+    # name leans credential and is taken with no words to spare, so
+    # the reserve that used to keep it the family now takes it as the
+    # suffix instead (decisions.md#S2).
     out = _assigned("John Mr. MA", lexicon=lex)
     assert _by_role(out, Role.TITLE) == "Mr."
     assert _by_role(out, Role.GIVEN) == "John"
-    assert _by_role(out, Role.FAMILY) == "MA"
-    assert not _by_role(out, Role.SUFFIX)
+    assert not _by_role(out, Role.FAMILY)
+    assert _by_role(out, Role.SUFFIX) == "MA"
     out = _assigned("John Smith Mr. MA", lexicon=lex)
     assert _by_role(out, Role.FAMILY) == "Smith"
     assert _by_role(out, Role.SUFFIX) == "MA"
@@ -583,3 +693,30 @@ def test_a_mixed_post_comma_run_keeps_the_walk_order() -> None:
     out = _assigned("Smith, John Jr.")
     assert _by_role(out, Role.GIVEN) == "John"
     assert _by_role(out, Role.SUFFIX) == "Jr."
+
+
+def test_the_comma_report_says_which_way_it_read_the_word() -> None:
+    """The report's OTHER branch, verbatim (2026-09-18 review round).
+
+    `test_the_family_comma_report_detail_is_verbatim` above pins the
+    credential wording; only the string distinguishes the two
+    branches, the kind being the same either way and the roles
+    telling a caller which reading won only if it already knows which
+    field to look in. So the NAME branch needs its own row, and the
+    by-shape half with its switch OFF -- which takes that branch for a
+    fork the parser considered and declined -- is the second one.
+    """
+    detail = {
+        text: [a.detail for a in _assigned(
+            text, policy, lexicon=Lexicon.default()).ambiguities
+            if a.kind.value == "suffix-or-name"]
+        for text, policy in (("Smith, Ma", None),
+                             ("Smith, A.B.",
+                              Policy(unlisted_dotted_suffixes=False)))
+    }
+    assert detail["Smith, Ma"] == [
+        "'Ma' after the comma is also an ordinary name word; read as "
+        "the given name"]
+    assert detail["Smith, A.B."] == [
+        "'A.B.' after the comma is also an ordinary name word; read as "
+        "the given name"]

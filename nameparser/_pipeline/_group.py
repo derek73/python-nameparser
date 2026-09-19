@@ -1,7 +1,7 @@
 """Stage: group.
 
-Consumes: tokens (classified), segments, structure, extracted (the
-role + inner span per delimited region, for the #329 pass below --
+Consumes: tokens (classified), segments, structure, one_case, extracted
+(the role + inner span per delimited region, for the #329 pass below --
 the only stage after tokenize that reads it).
 Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
@@ -49,6 +49,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken,
+    _AMBIGUOUS_CREDENTIAL_TAGS,
 )
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import delimiter_cores
@@ -179,7 +180,7 @@ def _marker_run_pieces(seen: Sequence[int], pieces: Sequence[Sequence[int]],
     and no more: a run of ROLE-LESS tokens stays inside one segment. It
     can also tag a run across two adjacent clauses of the same role,
     which this walk never sees because a role-bearing token is in no
-    segment at all -- see _tag_marker_runs, which states the limit.
+    segment at all -- see _vocab.tag_marker_runs, which states the limit.
     """
     return marker_run_length(
         tokens[pieces[seen[k]][0]].tags for k in range(m + 1, len(seen)))
@@ -188,7 +189,8 @@ def _marker_run_pieces(seen: Sequence[int], pieces: Sequence[Sequence[int]],
 def _maiden_take(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
-                 cores: Set[str]) -> tuple[list[int], list[int]] | None:
+                 cores: Set[str],
+                 one_case: bool | None) -> tuple[list[int], list[int]] | None:
     """The piece indices the marker pass removes, split the way
     MaidenTake declares them: the MARKER's pieces (one, or several for
     a phrase entry like 'z domu') and the maiden name's. None when the
@@ -236,9 +238,32 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # the fork wants, and 'Jane Smith née V' declines like 'Jane Smith
     # née PhD' -- nothing after the marker but a suffix, so the marker
     # stays a word -- as 1.4.0 read it.
+    #
+    # `one_case` is passed here and at the re-ask below and changes
+    # NOTHING, by construction: `numeral_only` answers off
+    # `peeled.numeral`, and the numeral fork is decided before the peel
+    # ever reads a lean -- the fact reaches only the bare-acronym fork,
+    # which this reading discards. Measured anyway, 2026-09-18, because
+    # "by construction" is the claim this repository gets wrong most
+    # often: dropping the argument at these TWO sites moves 0 of 9,852
+    # parses (1,642 names -- the distinct union of every
+    # `tools/differential/corpus*.jsonl` entry, every `cases.py` text,
+    # and `tests/test_variations.TEST_NAMES` with its comma
+    # permutations -- under six policies: the default, both
+    # family-first orders, strict commas, and each 2.4 switch flipped;
+    # recompute recipe in decisions.md#S2). It stays passed rather
+    # than spelled `None` because `None` is a different statement --
+    # "nobody asked" -- and a future numeral fork that DID read the
+    # writing would then be wrong silently.
+    #
+    # The chain-tail measure below (`tail`, and the re-peel after the
+    # chain) is the opposite, and the same sweep says so: dropping it
+    # there moves 18 of the 9,852, on 'John van der Berg Ma', 'John de
+    # Ma' and 'Freiherr von Berg MA' under every one of the six. A
+    # review round called all three sites inert together; two are.
     skip = frozenset(range(len(pieces))) - frozenset(seen)
     trailing = trailing_start(seen[m], pieces, ptags, tokens, skip,
-                               numeral_only=True)
+                               numeral_only=True, one_case=one_case)
     # The fork reads the piece before the numeral, and the take
     # REMOVES that piece: afterwards assign sees the piece before the
     # marker there, and if that is initial-shaped the fork will not
@@ -256,7 +281,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         view_tags = [ptags[i] for i in left]
         if trailing_start(leading_titles(view, view_tags, tokens),
                            view, view_tags, tokens,
-                           numeral_only=True) == len(view):
+                           numeral_only=True,
+                           one_case=one_case) == len(view):
             trailing = len(pieces)
     j = m + run
     while (j < len(seen) and seen[j] < trailing
@@ -300,6 +326,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    cores: Set[str] = frozenset(),
                    given_name_titles: Set[str] = frozenset(),
                    opens_the_name: bool = False,
+                   *,
+                   one_case: bool | None,
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -440,7 +468,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # The tokens are not touched here: this function reads them and
     # returns what it took, and group() records the drop and the roles.
     taken: MaidenTake | None = None
-    take = _maiden_take(pieces, ptags, tokens, cores)
+    take = _maiden_take(pieces, ptags, tokens, cores, one_case)
     if take is not None:
         marker_ks, maiden_ks = take
         taken = ([i for k in marker_ks for i in pieces[k]],
@@ -570,7 +598,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # the acronym still has the pieces the fork counted (below).
         name_start = leading_titles(pieces, ptags, tokens)
         tail = len(pieces) - trailing_start(name_start, pieces, ptags,
-                                             tokens)
+                                             tokens, one_case=one_case)
         def chain(tail: int) -> None:
             k = 0
             while k < len(pieces):
@@ -643,6 +671,75 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         f"name piece; it is also a given name in other "
                         f"names",
                         (i,)))
+                # rules.md#S2: "A BARE ambiguous acronym is consumed
+                # only when the name has words to spare — as the second
+                # of two words it stays the family name — and at the
+                # slots that report, either reading carries the
+                # ambiguity flag"
+                #
+                # The other half of SUFFIX_OR_NAME's declined branch,
+                # and it is here for the reason PARTICLE_OR_GIVEN's
+                # second emitter is: a fork whose branches are taken in
+                # different stages needs an emitter in each
+                # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE).
+                # `assign` reports from `peel_trailing`'s picks, and a
+                # pick reaches it only as a LONE piece -- the peel's own
+                # `len(piece) == 1` test -- so the moment this chain
+                # takes the acronym into the particle run, the token
+                # assign would have reported on no longer exists as a
+                # piece and NOBODY reports. Measured: 'John van der Berg
+                # Ma', 'John de Ma', 'Dr. John van Smith Ma', 'John van
+                # Smith Ma Jr.' and 'John Smith Mc Ma' each lost the
+                # report #289's own lean had just made true of them,
+                # while 'John Smith Ma' -- the same fork with no
+                # particle to chain -- kept it (review round).
+                #
+                # The DECLINED reading is what this reports, because
+                # this branch only runs over pieces the peel left
+                # standing: `tail` is the peel's own answer, the inner
+                # scan stops at `len(pieces) - tail`, and a piece the
+                # peel TOOK is behind that bound. Where the chain runs
+                # again with a smaller tail (the re-peel below), the
+                # first pass's appends are truncated with the pieces,
+                # so the surviving report is the surviving reading's.
+                #
+                # `j > k + 1` above is this test's floor too: a merge
+                # that folds a piece into itself chained nothing.
+                # Written inline against the tags and with no new walk
+                # -- `pieces[j - 1]` is the last piece the merge is
+                # about to claim, one index and one frozenset test --
+                # so the ordinary chained name ('de la Vega') pays no
+                # frame for it.
+                #
+                # `not prefix(j - 1)` is the other floor, and it names
+                # WHICH of the two scans above claimed the piece. The
+                # first extends the PARTICLE run and the second takes
+                # name words up to the trailing suffix; only the second
+                # is taking a word the peel had looked at. A word in
+                # both vocabularies ('do', 'mc', 'vd') ends a particle
+                # run as a particle, which is P4's reading and P6's
+                # fork, not this one -- 'anh van do' has read family
+                # 'van do' silently since 1.4.0 and its case row says
+                # so. It is tested LAST, and measured: `prefix` is a
+                # closure over `_is_prefix_piece`, so asking it is TWO
+                # frames, and asking it ahead of the tag test moved the
+                # reference name from 412 to 414 -- every chained name
+                # in the library paying for a question only an
+                # ambiguous acronym can make interesting. Behind the
+                # `isdisjoint` (a C call, no frame) almost nothing
+                # reaches it.
+                last = pieces[j - 1]
+                if (j > k + 1 and len(last) == 1
+                        and not tokens[last[0]].tags.isdisjoint(
+                            _AMBIGUOUS_CREDENTIAL_TAGS)
+                        and not prefix(j - 1)):
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                        f"{tokens[last[0]].text!r} is both a post-nominal "
+                        f"and an ordinary name; the particle chain took "
+                        f"it into the name rather than reading it as a "
+                        f"post-nominal",
+                        tuple(last)))
                 merge(k, j, drop={"prefix"})
                 k += 1
 
@@ -668,7 +765,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             chain(tail)
             left = len(pieces) - trailing_start(
                 leading_titles(pieces, ptags, tokens), pieces, ptags,
-                tokens)
+                tokens, one_case=one_case)
             if left < tail:
                 pieces[:], ptags[:] = kept[0], kept[1]
                 del ambiguities[kept[2]:]
@@ -735,13 +832,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # unjoined and keeps it joined. Shapes pinned in
                 # test_group.py.
                 rest, chain_took, before = tail_reading(
-                    peel_walk(fk, ptags), pieces, ptags, tokens)
+                    peel_walk(fk, ptags), pieces, ptags, tokens, one_case)
                 view, view_tags = list(pieces), list(ptags)
                 view[fk:fk + 2] = [pieces[fk] + pieces[fk + 1]]
                 view_tags[fk:fk + 2] = [joined_tags(fk, fk + 2,
                                                     drop={"title"})]
                 view_rest, _, after = tail_reading(
-                    peel_walk(fk, view_tags), view, view_tags, tokens)
+                    peel_walk(fk, view_tags), view, view_tags, tokens,
+                    one_case)
                 same_suffixes = (
                     [tuple(view[j]) for j in view_rest[after.names:]]
                     == [tuple(pieces[j]) for j in rest[before.names:]])
@@ -834,7 +932,8 @@ def group(state: ParseState) -> ParseState:
             None if family_comma else ambiguities,
             seg_cores,
             state.lexicon.given_name_titles,
-            opens_the_name=(seg_idx == 0 and not family_comma))
+            opens_the_name=(seg_idx == 0 and not family_comma),
+            one_case=state.one_case)
         # the marker is dropped and the maiden name's tokens become
         # MAIDEN (#274); which pieces those are was settled in
         # _group_segment, before the joins
