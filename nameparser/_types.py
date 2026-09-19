@@ -428,7 +428,7 @@ class AmbiguityKind(StrEnum):
     #: site and this kind stays out of the way -- "Doe, John do" gives
     #: family ``do Doe`` and one ``PARTICLE_OR_GIVEN``, never two
     #: reports of one word.
-    #: THREE positions stay silent, and all three are boundaries
+    #: FOUR positions stay silent, and all four are boundaries
     #: rather than omissions. A member with a NAME WORD behind it was
     #: never a fork -- "Doe, John MA Smith" reads middle ``MA Smith``,
     #: the ordinary reading, and nothing consulted the class. The
@@ -442,7 +442,23 @@ class AmbiguityKind(StrEnum):
     #: suffix ``MA`` and "Doe, Mr. MA PhD" suffix ``MA PhD``, the
     #: credential-run gate reading those segments whole; "Doe, Dr. Ma"
     #: reaches the walk instead and makes ``Ma`` the given name
-    #: itself, which the walk starts above. All three are silent.
+    #: itself, which the walk starts above. And -- pre-existing and
+    #: untouched by 2.4 as well -- a PARTICLE beside the member can
+    #: take it out of this slot, from either side. Where a chain in
+    #: front has swallowed the member into one piece there is no lone
+    #: member to ask about: "Doe, John van Ma" reads middle
+    #: ``van Ma`` in silence. Where a particle the suffix vocabulary
+    #: does not also claim stands BEHIND it, the given part ends at
+    #: that particle as this walk reads it, and the attachment that
+    #: moves the particle to the family runs a stage too late to
+    #: re-open the question -- so "Doe, John MA do" keeps middle
+    #: ``MA``, capitals and all, beside family ``do Doe``, reporting
+    #: only the attachment's own ``PARTICLE_OR_GIVEN``. Neither half
+    #: is a rule about particles as such, and the caps spellings show
+    #: it: "Doe, John van MA" reads family ``van Doe``, suffix ``MA``
+    #: and reports both forks, and "Doe, John MA vd" reads suffix
+    #: ``MA`` past a ``vd`` the suffix vocabulary claims outright.
+    #: All four are silent.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that

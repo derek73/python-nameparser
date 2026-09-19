@@ -582,6 +582,16 @@ def assign(state: ParseState) -> ParseState:
         # 'PhD' is settled vocabulary and carries neither tag, and
         # even a second CLASS member there would not be read here
         # (test_assign.py asserts the count).
+        #
+        # The #531 emitter at the far end of this branch counts
+        # differently, and the difference is the slot rather than a
+        # second policy: it reports once per member of the trailing
+        # run it reads, so 'Doe, John MA JD' reports TWICE, matching
+        # the comma-less 'John Smith MA JD'. A member the writing
+        # keeps as a name stops that run, which is why
+        # 'Doe, John MA Ma' reports once and for 'Ma' alone -- 'MA'
+        # then has a name word behind it and is never asked
+        # (rules.md#S2).
         if state.pieces[1] and len(state.pieces[1][0]) == 1:
             i = state.pieces[1][0][0]
             if not tokens[i].tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):

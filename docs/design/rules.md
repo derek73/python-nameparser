@@ -752,7 +752,18 @@ P6. Rationale: a particle ending the name has nothing to link
     the word is BOTH a particle and suffix vocabulary, this
     attachment outranks the suffix reading (S2): a trailing
     abbreviation after a family comma is the tussenvoegsel far more
-    often than the decoration it collides with.
+    often than the decoration it collides with. One exception, and it
+    is where the capitals speak: a word of the AMBIGUOUS credential
+    class, written in capitals in a name written in more than one
+    case, reads as the credential and this attachment stands down —
+    unless a particle stands immediately in front of it, the two
+    being one particle run by then, which this rule takes whole.
+    Every other spelling of such a word attaches as it did before,
+    and the kind rule below gives it this rule's particle fork rather
+    than S2's credential one. In a name written wholly in one case
+    the two readings cannot be told apart and the particle keeps it,
+    which is right about a Portuguese record and wrong about a
+    credential; the report is how a caller finds the second.
       "Jong, Anke de"             →  family="de Jong"
       "Beethoven, Ludwig van"     →  family="van Beethoven"
       "Berg, Jan vd"              →  family="vd Berg"
@@ -761,6 +772,10 @@ P6. Rationale: a particle ending the name has nothing to link
       "Beethoven, Ludwig van"     →  family_base="Beethoven"
       "Beethoven, Ludwig van"     →  family_particles="van"
       "Nguyen, Van"               →  given="Van"  · boundary
+      "Doe, John DO"              →  suffix="DO"  · boundary
+      "Doe, John Do"              →  family="Do Doe"
+      "SMITH, JOHN DO"            →  family="DO SMITH"
+      "Doe, John van DO"          →  family="van DO Doe"
     Without a comma, a declared family-first order has named the
     family in the same way and the attachment fires there too — but
     only where the run ENDS the name and stands in a MIDDLE — the one
@@ -918,6 +933,38 @@ S2. Rationale: generational suffixes and credentials are recognized
     ambiguity flag. Those slots are the trailing slot of a name, the
     first slot after a family comma, the trailing slot of the GIVEN
     part after that comma, and the segments beyond it.
+    After a family comma, a word of this class ending the GIVEN part
+    is read as the comma-less spelling reads a word ending the name,
+    and the count is not what decides it there. The comma has already
+    named the family and the first name word after it is the given
+    name, so the words to spare are there by construction and the
+    count says nothing: a word that ENDS that part reads as the
+    credential unless its WRITING says otherwise, and a word that
+    does not end it is never asked. "Ending the given part" reaches
+    past the credentials behind it and past a trailing title, which
+    is transparent to this reading as it is to the rest of S2's (H5);
+    a name word behind the word ends the reach, and so does a
+    PARTICLE the suffix vocabulary does not also claim: it belongs to
+    the family the comma already named and is taken there by a rule
+    that runs after this reading is made (P6), so `Doe, John MA do`
+    keeps its middle name though the capitals would otherwise have
+    taken the word. A particle the suffix vocabulary DOES claim is
+    looked past like any other credential, so `Doe, John MA vd`
+    reads suffix `MA`, with `vd` attaching behind it. Where the
+    reach ends, the word is an ordinary middle name, read in silence.
+    Every word this slot does read reports the fork whichever way it
+    went, so a run of members all read as credentials reports once
+    for each, as the same words do without the comma — while a
+    member the writing keeps as a name
+    stops the reading there, and whatever stands in front of it is
+    name text, asked nothing and reporting nothing. One member of
+    this class is particle vocabulary as well, and where it stands
+    alone at this slot P6 decides it: the capitals take it as the
+    credential and every other spelling attaches to the family,
+    reported there as P6's fork rather than as this one. Behind
+    another particle it does not stand alone — the two are one
+    particle run by then — and the run attaches whatever the capitals
+    say (P6).
     Written case is the other evidence, and it speaks only in a name
     written in more than one case: there a member of the ambiguous
     set written in capitals reads as the credential even with no
@@ -925,9 +972,12 @@ S2. Rationale: generational suffixes and credentials are recognized
     not wholly lower reads as the name even with words to spare. A
     name written wholly in one case says nothing about any word in
     it, and the count decides alone; so does a script with no case
-    to write in. After a family comma this evidence is SECOND: the
-    count of name words before the comma decides first (C1), and the
-    case is read only where that count leaves the word a name.
+    to write in. After a family comma this evidence is SECOND at the
+    FIRST slot after it: the count of name words before the comma
+    decides there first (C1), and the case is read only where that
+    count leaves the word a name. At the trailing slot of the given
+    part the comma has already settled the count, so the writing is
+    the only evidence there is.
     An unlisted word joins this same ambiguous class by SHAPE where
     the caller asks for it. Two or more period-separated chunks is
     one such shape, admitted by default (S3); an unlisted all-caps
@@ -958,6 +1008,9 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Doe, John MA Smith"        →  middle="MA Smith"  · boundary
       "Doe, John DO"              →  suffix="DO"
       "SMITH, JOHN DO"            →  family="DO SMITH"  · boundary
+      "Doe, John MA JD"           →  ambiguities=("suffix-or-name", "suffix-or-name")
+      "Doe, John MA Ma"           →  middle="MA Ma"  · boundary
+      "Doe, John MA Ma"           →  ambiguities=("suffix-or-name",)  · boundary
       "John Smith XYZ"            →  family="XYZ"
       "John Smith XYZ"  unlisted_caps_suffixes-on  →  suffix="XYZ"
       "Jean DUPONT"  unlisted_caps_suffixes-on  →  family="DUPONT"
@@ -1008,7 +1061,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P5 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P5, P6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -1309,9 +1362,11 @@ C1. Rationale: a credential run after the comma means the name is in
     count leaves the word a name — one name word before the comma —
     is the case read, capitals in a mixed-case name making it the
     credential there too (S2). A decision either way at this comma
-    is reported, which is the one place the comma's own decision is
-    reported; an attachment decided after a family comma (P6)
-    reports on its own. C2's comma-structure flag reports what the
+    is reported. It is one of TWO places the comma's own decision is
+    reported, the other being the word trailing the given part after
+    it (S2), which is a second decision about a second word and never
+    the same fork twice; an attachment decided after a family comma
+    (P6) reports on its own. C2's comma-structure flag reports what the
     parse could not recognize, not a fork it called.
     By default a recognized suffix word counts
     even written like an initial ("V."), while strict mode vetoes
