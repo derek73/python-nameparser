@@ -2264,14 +2264,40 @@ issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
 # Both sit on this rule because the rule is what states which way
 # each member of a pair goes.
 #
+# 2026-09-19, #531: three names join, all of them lone post-comma
+# credentials this rule's own second sentence already describes.
+# 'Doe, MA' and 'Doe, MA PhD' are 'Smith, MA's family-word twins and
+# 'Doe, Dr. MA' is the same slot behind a title; each reads family
+# 'Doe' with the credential run in `suffix` -- 'MA', and 'MA PhD'
+# on the one that has a run -- where the baseline read given 'MA'.
+# They
+# entered the corpora with #531's control rows and are NOT #531's
+# doing -- verified byte-identical at cc78c960, the #530 merge
+# (2026-09-19). No role joined the field list: the three move
+# {given, suffix} and, on two of them, `_ambiguities`.
+#
+# 2026-09-19, #531 review round: 'Doe, Mr. MA PhD' joins them. It is
+# 'Doe, Dr. MA' with a credential run behind the member -- the gate
+# reads the segment whole, so the member joins the run rather than
+# taking the given slot -- and it moves {given, suffix}, both already
+# in the field list. It entered the corpora with that round's control
+# rows and is NOT its doing: byte-identical at cc78c960 (measured
+# 2026-09-19).
+#
 # Literal-anchored to the measured movers, and ONE SET FOR THE FOUR
 # 2.x LEDGERS so the rule says the same thing at each of them. The
-# 1.4.0 copy differs by exactly one member and holds 'John Prof. MA'
+# 1.4.0 copy differs by FOUR members now. It holds 'John Prof. MA'
 # out: 1.4.0 read a trailing period-marked title as a title itself,
 # so that name's diff there belongs to fix(#316)'s rule and not to
 # this one. "One set for all five" was written before that carve-out
 # existed and was false in these four copies from the day it did
-# (2026-09-18). The set is literal because the class is
+# (2026-09-18). And it holds the three names above out for a
+# different reason: at 1.4.0 their diff is already claimed by
+# `fix(comma-family) lone post-comma piece routes to suffix/title,
+# not first`, which stands far earlier in that file, so adding them
+# there would reach a name without explaining it and would put two
+# rules on one diff with nothing to arbitrate between them
+# (2026-09-19). The set is literal because the class is
 # wide (every mixed-case name whose trailing piece is a listed
 # ambiguous acronym, plus every comma form with two name words before
 # the comma) and a regex for the class would claim the one-case
@@ -2279,7 +2305,7 @@ issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
 # given baseline is simply one the reading already agreed with there.
 # `fields` is per-baseline, the union the run at THAT baseline
 # measures (#452).
-name_regex = "^(?:Davis Royce, Ed|Freiherr von Berg MA|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Prof\\. MA|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John de Ma|John van der Berg Ma|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|abdul Smith Berg Ma|abdul Smith Jr Ma|abdul Smith Ma|john smith, ma)$"
+name_regex = "^(?:Davis Royce, Ed|Doe, Dr\\. MA|Doe, MA|Doe, MA PhD|Doe, Mr\\. MA PhD|Freiherr von Berg MA|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Prof\\. MA|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John de Ma|John van der Berg Ma|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|abdul Smith Berg Ma|abdul Smith Jr Ma|abdul Smith Ma|john smith, ma)$"
 fields = ["family", "given", "middle", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -2343,6 +2369,14 @@ issue = "fix(#289/#516) the ambiguous credential class reports at slots that wer
 # run it is, because 'DO' leans credential in a mixed-case name. That
 # is the one place this arc quiets a report rather than adding one.
 #
+# 2026-09-19, #531 review round: 'Doe, MA Smith' joins, and it is the
+# post-comma given slot with a NAME WORD behind the member: no role
+# moves at any baseline -- the member is the given name here as it
+# always was -- and what is new is only the report that emitter makes.
+# Its silent twin 'Doe, Dr. MA Smith' puts a title in that first piece
+# instead, which the emitter reads rather than the member, and agrees
+# with every baseline on every field, so it is in no ledger at all.
+#
 # `_ambiguities` alone, which keeps `_initials` out of these rows as
 # always (#484), and the rule cannot absorb a role diff on any of
 # these names for the same reason. Literal-anchored, one set for all
@@ -2356,7 +2390,7 @@ issue = "fix(#289/#516) the ambiguous credential class reports at slots that wer
 # narrowed out rather than left to file order. The comma-structure
 # flag it loses is a 2.2-era report in any case, and the 2.2.0 and
 # 2.3.0 ledgers are where the loss is recorded.
-name_regex = "^(?:J\\.A\\. K\\.D\\.|Jack X\\.Y\\.Z\\.|John Smith J\\.u\\.n\\.i\\.o\\.r\\.|John Smith R\\.A\\.I\\.|Royce, Ed|Smith Jr\\., A\\.B\\.|Smith, A\\.B\\.|Smith, Ma)$"
+name_regex = "^(?:Doe, MA Smith|J\\.A\\. K\\.D\\.|Jack X\\.Y\\.Z\\.|John Smith J\\.u\\.n\\.i\\.o\\.r\\.|John Smith R\\.A\\.I\\.|Royce, Ed|Smith Jr\\., A\\.B\\.|Smith, A\\.B\\.|Smith, Ma)$"
 fields = ["_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -2384,4 +2418,178 @@ issue = "fix(#289/#516) the glued CJK honorific peel reads the case lean"
 # and the union is what a per-baseline `fields` records (#452).
 name_regex = "^(?:Dr\\. 김민준씨, MA|Jo김민준씨, DO|Kim김민준씨, MA)$"
 fields = ["title", "given", "family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+# ---------------------------------------------------------------
+# #531: THE GIVEN PART'S TRAILING SLOT. Four rules -- the thirteen
+# the credential reading takes, the four the writing declines and that
+# gain a REPORT alone, the one `do` spelling the capitals take from
+# P6, and the two caseless comma forms on the radar tier. The decision is
+# decisions.md#S2's 2026-09-18 pair; rules.md#S2, #S3, #C1 and #P6
+# carry the statements.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#531) a credential ending the given part of a family-comma listing reads as a credential"
+# After a family comma, a word of the ambiguous credential class
+# ending the given part is now read by the same rule the comma-less
+# spelling uses for a word ending the name. The comma has already
+# named the family and the first word after it is the given name, so
+# the words to spare are there by construction and the count says
+# nothing: the word reads as the credential unless its WRITING says
+# otherwise. rules.md#S2 states it, rules.md#S3 carries the by-shape
+# spelling, and decisions.md#S2 records the decision.
+#
+# Thirteen names, and they are the class read from every side the
+# corpora reach it: the bare member ('Doe, John MA', 'Doe, John BA');
+# its one-case spellings, where the lean is inert and the POSITIONAL
+# reading is not ('DOE, JOHN MA', 'doe, john ma', 'DOE, MARY JO MA');
+# the slot behind a title ('Doe, Dr. John MA') and behind an initial
+# ('Doe, J. MA'); a run of two members, where the credential the
+# member joins was already a suffix so `suffix` GROWS rather than
+# filling ('Doe, John MA JD', 'Doe, John MA PhD', 'Doe, John PhD MA',
+# 'Doe, John MA Jr'); the slot reached past a middle initial, which
+# keeps its own middle ('Doe, John Q. MA', 'DOE, MARY JO MA'); and the
+# by-shape member, whose lean is always None so the positional reading
+# takes it outright ('Doe, John X.Y.Z.').
+#
+# Do not read "thirteen role movers" off that list at every baseline:
+# `fields` is the union the run at THIS baseline measures (#452), and
+# a name here whose roles the baseline already agreed with contributes
+# only its report. 'Doe, John BA' is that name at 2.1.0 and 2.2.0, and
+# 'Doe, John MA JD' is the other end of the range, gaining TWO reports
+# for its two members.
+#
+# `_ambiguities` is in the fields because every one of the thirteen
+# gains the existing SUFFIX_OR_NAME -- no new kind, and the report
+# tracks the FORK CONSULTED rather than which way it went, which is
+# the rule fix(#289/#516) above already states for the other slots.
+# #452's over-declaration check recomputes the union on every run.
+#
+# Literal-anchored for the reason the two rules above give, and it is
+# sharper here: the class is a SLOT, so a regex for it would claim
+# every family-comma name whose given part ends in an ambiguous
+# acronym -- including the four the WRITING declines, which keep their
+# name reading and have the rule below, and 'Doe, John MA Smith',
+# where a name word behind the member ends the run so nothing moves
+# and nothing reports. _MUST_NOT_MATCH carries both, with the `do`
+# spellings P6 keeps and the third-comma-part name #144's restriction
+# still owns.
+name_regex = "^(?:DOE, JOHN MA|DOE, MARY JO MA|Doe, Dr\\. John MA|Doe, J\\. MA|Doe, John BA|Doe, John MA|Doe, John MA JD|Doe, John MA Jr|Doe, John MA PhD|Doe, John PhD MA|Doe, John Q\\. MA|Doe, John X\\.Y\\.Z\\.|doe, john ma)$"
+fields = ["_ambiguities", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#531) a member the writing declines keeps its name reading and reports the fork"
+# The other direction of the same fork, and the whole of what these
+# four names do: no role moves at any 2.x baseline and the decision
+# starts being REPORTED. 'Doe, John Ma', 'Doe, John Ed' and
+# 'Doe, Mary Jo Ma' carry a Title-cased member in a mixed-case name,
+# which is written the way a name is written, so the member stays a
+# middle name; 'Doe, John MA Ma' is a two-member run whose last member
+# is Title-cased, so the walk declines there and the run stays middle
+# text whole.
+#
+# Reporting a DECLINED fork is #530's stated rule -- the report tracks
+# the fork consulted, not the lean -- and rules.md#A1's "a kind is
+# worth adding only if a reader would hesitate too" is the standing
+# objection it answers. It is also the only part of #531 that adds a
+# report without moving a field, which is why it is a rule of its own
+# rather than a widening of the one above: `fields` is
+# `_ambiguities` alone, so this rule cannot absorb a role diff on any
+# of the four.
+#
+# At 1.4.0 these same four DO move roles -- v1 read all four members
+# as post-nominals -- and that divergence is carried there by
+# fix(given-part-trailing-slot), whose comment records that #531
+# changed which names it holds rather than retiring it.
+#
+# Literal-anchored: the class is the slot's declining half, and a
+# regex for it would claim the thirteen movers above.
+name_regex = "^(?:Doe, John Ed|Doe, John MA Ma|Doe, John Ma|Doe, Mary Jo Ma)$"
+fields = ["_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#531) capitals take the do collision from the family-comma particle attachment"
+# 'Doe, John DO', alone, because the word is alone in the class: `do`
+# is the one ambiguous credential that is also particle vocabulary, so
+# this slot and P6's attachment (rules.md#P6) want the same word.
+# Derek's decision, recorded at decisions.md#S2: CAPITALS DECIDE, AND
+# THE PARTICLE RULE KEEPS EVERY OTHER SPELLING. An all-caps member in
+# a name written in more than one case carries a positive credential
+# lean, so the credential reading wins and P6 stands down; every other
+# spelling attaches exactly as it did, with P6's own
+# `particle-or-given` and no second report.
+#
+# THE PAIRING IS THE ARGUMENT and the accepted cost is half of it. In
+# ONE CASE the rule cannot tell 'NASCIMENTO, EDSON ARANTES DO' from
+# 'SMITH, JOHN DO' and reads both as the particle -- right about the
+# Brazilian record, wrong about the osteopath. Those two, and
+# 'Doe, John Do', 'DOE, JOHN DO', 'doe, john do' and
+# 'Nascimento, Edson Arantes do', are _MUST_NOT_MATCH probes: this
+# rule has no business claiming a single one of them, and each is a
+# name #531 measured to be byte-identical before and after.
+#
+# `fields` is per-baseline and the two halves of this file's set
+# differ by which role the particle came OUT of, which is P6's own
+# history: {middle, suffix} at 2.0.0 and 2.1.0, where the
+# baseline read middle 'DO' because P6's family-comma attachment had
+# not shipped, and {family, suffix} at 2.2.0 and 2.3.0, where it had
+# and the baseline reads family 'DO Doe'.
+name_regex = "^Doe, John DO$"
+fields = ["_ambiguities", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#531) the trailing slot's positional reading reaches a caseless script"
+# '田中, 太郎 MA' and '김, 민준 MA': middle 'MA' -> suffix 'MA', one
+# report each. A caseless script answers True to the one-case test, so
+# the lean is None -- and at this slot a None lean is not inert,
+# because the POSITIONAL reading the lean would have overridden is
+# itself the credential. "Caseless is inert" holds for the LEAN and
+# not for the outcome, which is the sentence tests/v2/cases.py's two
+# rows carry.
+#
+# Both are COMPOSED forms -- a family comma between a CJK family and a
+# CJK given name, which no East Asian writing system produces -- so
+# both are `tolerated` case rows on the radar tier
+# (decisions.md#cjk-comma-demotion), and their diffs print under
+# UNCLASSIFIED (radar) rather than blocking. They are classified all
+# the same, on fix(#289/#516)'s stated ground: a radar diff an arc
+# INTENDED is one a release note may be written from, and an
+# unclassified one is not.
+#
+# Literal-anchored, and the probes are the CJK comma names that do NOT
+# move at this slot: '田中 太郎, MA', '毛泽东, MA' and '마틴 킹, MA' put
+# their member in the FIRST post-comma piece, which is #289's slot and
+# not this one.
+name_regex = "^(?:田中, 太郎 MA|김, 민준 MA)$"
+fields = ["_ambiguities", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#380) a trailing mc after a family comma is the tussenvoegsel, not a post-nominal"
+# THE SAME DECISION AS THE fix(#380) RULE ABOVE, over the other word
+# that carries the collision it names. 'Berg, Jan mc' entered the
+# corpora with #531's case rows (2026-09-18) as the negative control
+# for the `do` carve-out -- 'mc' is unambiguous suffix vocabulary AND
+# a never-given particle, so P6's run claims it whatever role assign
+# gave it, and #531 left it byte-identical (verified against the tree
+# at cc78c960, 2026-09-19).
+#
+# The diff is against these two baselines only: `mc` joined the
+# never-given particles in 2.2 (decisions.md#suffix-acronym-
+# collisions) and P6's family-comma attachment shipped in 2.3, so
+# 2.2.0 and 2.3.0 already read family 'mc Berg' and carry no rule for
+# it. `_ambiguities` is in the fields because the name also gains
+# #530's report at these baselines, which is #289/#516's doing and
+# not this rule's subject; the rule claims the union the run measures
+# (#452) and the roles are P6's.
+#
+# Literal, one name. A regex over the trailing word would claim every
+# Mc* surname in the corpora, which is the widening the vd rule's own
+# _MUST_NOT_MATCH probes already refuse.
+name_regex = "^Berg, Jan mc$"
+fields = ["_ambiguities", "family", "suffix"]
 orders = ["DEFAULT"]

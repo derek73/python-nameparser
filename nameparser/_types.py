@@ -417,14 +417,59 @@ class AmbiguityKind(StrEnum):
     #: has to be one, and only that word reports.
     #: WHERE it is emitted is narrower than where the doubt exists,
     #: and this is the boundary rather than an omission to be read
-    #: past. The emitters cover the trailing slot of a name, the
-    #: post-comma slot of a family-comma listing, and the extra
-    #: segments beyond it. They do NOT cover the trailing slot of the
-    #: GIVEN part after a family comma: "Doe, John MA" reads middle
-    #: ``MA`` and "Doe, John X.Y.Z." middle ``X.Y.Z.``, both silently,
-    #: as every 2.x release has; 1.4.0 read "Doe, John MA" as a
-    #: suffix. The fork is real there and nothing reports it;
-    #: decisions.md#S2 records it as open.
+    #: past. The emitters cover the trailing slot of a name, the FIRST
+    #: PIECE after a family comma -- that piece and no further -- the
+    #: trailing slot of that listing's GIVEN part, and the extra
+    #: segments beyond it.
+    #: Since 2.4 the given part's trailing slot reports whichever way
+    #: it read the word: "Doe, John MA" reads suffix ``MA`` and says
+    #: so, "Doe, John Ma" keeps middle ``Ma`` and says so too. Not in
+    #: EVERY direction, though: where the member is also a particle
+    #: and the particle rule keeps it, that rule reports at its own
+    #: site and this kind stays out of the way -- "Doe, John do" gives
+    #: family ``do Doe`` and one ``PARTICLE_OR_GIVEN``, never two
+    #: reports of one word.
+    #: FOUR positions stay silent, and all four are boundaries
+    #: rather than omissions. A member with a NAME WORD behind it was
+    #: never a fork -- "Doe, John MA Smith" reads middle ``MA Smith``,
+    #: the ordinary reading, and nothing consulted the class. The
+    #: maiden walk claims everything behind its marker before this
+    #: slot exists, so "Doe, Jane nee Smith MA" gives maiden
+    #: ``Smith MA`` in silence, exactly as the comma-less "John Smith
+    #: nee Jones R.A.I." does. And -- pre-existing, and untouched by
+    #: 2.4 -- a member with no name word IN FRONT of it is not at this
+    #: slot either, because the slot is the end of a given part and
+    #: there is none: a title took that position. "Doe, Dr. MA" gives
+    #: suffix ``MA`` and "Doe, Mr. MA PhD" suffix ``MA PhD``, the
+    #: credential-run gate reading those segments whole; "Doe, Dr. Ma"
+    #: reaches the walk instead and makes ``Ma`` the given name
+    #: itself, which the walk starts above. The first-piece emitter
+    #: does not cover for it, reading the piece that stands
+    #: immediately after the comma and nothing behind that piece:
+    #: "Doe, MA Smith" reports its ``MA``, and "Doe, Dr. MA Smith" --
+    #: the same member, one title in front of it -- reads given ``MA``
+    #: in silence. And -- pre-existing and untouched by 2.4 as well --
+    #: a PARTICLE beside the member can
+    #: take it out of this slot, from either side. Where a chain has
+    #: swallowed the member into one piece there is no lone member to
+    #: ask about, and the member may as well HEAD that piece as trail
+    #: it: "Doe, John van Ma" reads middle ``van Ma`` in silence, and
+    #: so does "Doe, John DO Ed", where the member is itself the
+    #: particle the chain runs on and the name word behind it joins
+    #: the piece -- though "Doe, John DO" alone reads the credential
+    #: and reports. Where a particle the suffix vocabulary
+    #: does not also claim stands BEHIND it, the given part ends at
+    #: that particle as this walk reads it, and the attachment that
+    #: moves the particle to the family runs a stage too late to
+    #: re-open the question -- so "Doe, John MA do" keeps middle
+    #: ``MA``, capitals and all, beside family ``do Doe``, reporting
+    #: only the attachment's own ``PARTICLE_OR_GIVEN``. Neither half
+    #: is a rule about particles as such, and the caps spellings show
+    #: it: "Doe, John van MA" reads family ``van Doe``, suffix ``MA``
+    #: and reports both forks, and "Doe, John MA vd" reads suffix
+    #: ``MA`` past a ``vd`` the suffix vocabulary claims outright.
+    #: All four POSITIONS above are silent -- those last two names are
+    #: the boundary each one stops at, not instances of it.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that

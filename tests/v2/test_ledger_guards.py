@@ -749,8 +749,79 @@ def test_case_shape_ids_exist_in_the_inventory() -> None:
 #: claims 'abd Allah'), and those are recorded in the rules' comments
 #: instead.
 _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
-    "fix(#380)": ("vd Berg, Jan", "Jan vd Berg", "Smith vd",
-                  "Berg, Jan mc"),
+    # Keyed on the full issue text, not "fix(#380)": since #531 that
+    # substring matches three rules -- the vd one below, and the `mc`
+    # and `mc or do` ones that carry the same decision over the other
+    # two collision words -- and 'Berg, Jan mc' is the vd rule's
+    # boundary and the others' claim. The same rekeying fix(#360)'s
+    # pair already records, for the same reason.
+    "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
+        ("vd Berg, Jan", "Jan vd Berg", "Smith vd", "Berg, Jan mc"),
+    # #531's five trailing-particle names at 1.4.0. 'Doe, John DO' is
+    # the spelling the capitals take (decisions.md#S2), so this rule
+    # must not reach it however the other four are spelled; 'Berg, Jan
+    # vd' is the vd rule's own name; and the two Mc* probes are the
+    # widening the comment refuses -- a regex over the trailing word
+    # rather than the literal list.
+    "fix(#380) a trailing mc or do after a family comma":
+        ("Doe, John DO", "Berg, Jan vd", "McDonald, Ronald",
+         "Mcintyre Smith Jr."),
+    # The same boundary at 2.0.0/2.1.0, where only 'mc' diffs.
+    "fix(#380) a trailing mc after a family comma":
+        ("Doe, John DO", "Berg, Jan vd", "McDonald, Ronald",
+         "Mcintyre Smith Jr."),
+    # #531's trailing slot. The probes are the three boundaries the
+    # rule's own comment argues: a member the WRITING declines
+    # ('Doe, John Ma', 'DOE, JOHN MA' being one-case and so a mover,
+    # not a probe), a member with a NAME WORD behind it, which ends
+    # the run ('Doe, John MA Smith'), the third-comma-part shape #144's
+    # restriction still owns ('Doe, John V, PhD'), the `do` spelling
+    # P6 keeps ('Doe, John do'), and the comma-less spelling, which is
+    # #289's and has read the credential since 2.0 ('John Doe MA').
+    "fix(#531) a credential ending the given part":
+        ("Doe, John Ma", "Doe, John MA Smith", "Doe, John V, PhD",
+         "Doe, John do", "John Doe MA"),
+    # The declining half. Its probes are the movers: a rule that
+    # reached one would claim a ROLE regression as a report-only
+    # diff, which is the direction `fields = ["_ambiguities"]` alone
+    # cannot catch.
+    "fix(#531) a member the writing declines":
+        ("Doe, John MA", "DOE, JOHN MA", "Doe, John X.Y.Z.",
+         "Doe, John MA Smith"),
+    # The `do` carve-out, whose probes ARE the pairing
+    # decisions.md#S2 records: every other spelling attaches to the
+    # family and reports as P6's fork, and each is measured
+    # byte-identical across #531.
+    "fix(#531) capitals take the do collision":
+        ("Doe, John do", "Doe, John Do", "DOE, JOHN DO", "doe, john do",
+         "SMITH, JOHN DO", "Nascimento, Edson Arantes do",
+         "Doe, John van DO"),
+    # The caseless pair. Their probes are the CJK comma names whose
+    # member sits in the FIRST post-comma piece, which is #289's slot:
+    # a rule reaching one would stand ready to explain a regression in
+    # the half of the comma reading #531 did not touch.
+    "fix(#531) the trailing slot's positional reading reaches a caseless script":
+        ("田中 太郎, MA", "毛泽东, MA", "마틴 킹, MA", "田中, 太郎"),
+    # #531's dotted half at 1.4.0. The probes are the dotted shapes
+    # the VOCABULARY answers for, which fix(#516)'s rule holds out for
+    # the same reason, plus the acronym spelling of the same slot,
+    # which reaches 1.4.0 parity and diffs nowhere.
+    "fix(#531) a dotted credential ending the given part":
+        ("John Smith X.Y.Z.", "Doe, John Msc.Ed.", "Smith, A.B.C.",
+         "Doe, John MA"),
+    # The interior-credential control at 1.4.0. Its probes are the
+    # trailing-slot names on either side of it: a rule reaching one
+    # would absorb #531's own diff under a 2.0-era label.
+    "fix(comma-family) an interior credential acronym":
+        ("Doe, John MA", "Doe, John Ma", "John Smith MA",
+         "Doe, John MA Smith Jr."),
+    # The 1.4.0 rule #531 re-pointed. 'Doe, John MA' is the name it
+    # LOST -- the tree now agrees with v1 there, so a rule reaching it
+    # would explain a diff that no longer exists and stand ready for
+    # its regression; the other three are the neighbouring readings.
+    "fix(given-part-trailing-slot)":
+        ("Doe, John MA", "Doe, John MA Smith", "John Smith Ma",
+         "Doe, John X.Y.Z."),
     "fix(#399)": ("Jane van der Berg née", "Jane van der Berg née y Jones",
                   "van der Berg, abdul née Jones", "Jane Smith née Jones"),
     # Keyed on the full issue text, not "fix(#360)": that substring now
@@ -1971,7 +2042,9 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                r"Smith Jr\., MA", r"Smith Jr\., Ma", "Smith, MA",
                "abdul Smith Berg Ma", "abdul Smith Jr Ma",
                "abdul Smith Ma", "john smith, ma"}),
-    frozenset({"Davis Royce, Ed", "Freiherr von Berg MA",
+    frozenset({"Davis Royce, Ed", r"Doe, Dr\. MA", "Doe, MA",
+               "Doe, MA PhD", r"Doe, Mr\. MA PhD",
+               "Freiherr von Berg MA",
                "JOHN SMITH, MA", "Jack MA", r"Jack MA\.", "Jack Wei Ma",
                r"John Prof\. MA", "John Smith Ma", "John Smith, Ed",
                "John Smith, MA", "John Smith, Ma", "John de Ma",
@@ -1984,14 +2057,57 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                r"John Smith Q\.W\.E\.R\.T\.", r"John Smith X\.Y\.Z\.",
                r"John Smith, A\.B\.", r"Smith, E\.S\.Q\.",
                r"john smith x\.y\.z\."}),
-    frozenset({r"J\.A\. K\.D\.", r"Jack X\.Y\.Z\.",
+    frozenset({"Doe, MA Smith", r"J\.A\. K\.D\.", r"Jack X\.Y\.Z\.",
                r"John Smith J\.u\.n\.i\.o\.r\.", r"John Smith R\.A\.I\.",
                "Royce, Ed", r"Smith Jr\., A\.B\.", r"Smith, A\.B\.",
                "Smith, Ma"}),
-    frozenset({r"J\.A\. K\.D\.", r"Jack X\.Y\.Z\.",
+    frozenset({"Doe, MA Smith", r"J\.A\. K\.D\.", r"Jack X\.Y\.Z\.",
                r"John Smith J\.u\.n\.i\.o\.r\.", r"John Smith R\.A\.I\.",
                "Royce, Ed", r"Smith Jr\., A\.B\.", r"Smith, A\.B\.",
                "Smith, Ma", "Steven Hardman, MD, DO, DDS"}),
+    # #531's movers, one corpus name per alternative -- lists of
+    # names, not copies of any wordlist. Three sets: the thirteen the
+    # trailing slot moves, the four the WRITING declines (one set, and
+    # it is shared by two rules -- the 2.x report-only rule and the
+    # 1.4.0 fix(given-part-trailing-slot) rule, which hold the same
+    # four names for opposite halves of the same reading), and the
+    # five trailing-particle names the fix(#380) decision covers.
+    #
+    # What selects the first two is a SLOT the vocabulary participates
+    # in only at one end: a member of the ambiguous credential class
+    # ENDING the given part of a family-comma listing. A member
+    # copying SUFFIX_ACRONYMS_AMBIGUOUS would reach 'Doe, John MA
+    # Smith', where a name word behind the member ends the run, and
+    # the whole `do` family, which rules.md#P6 keeps -- every one of
+    # them measured not to move. _MUST_NOT_MATCH carries the probes.
+    frozenset({"DOE, JOHN MA", "DOE, MARY JO MA", r"Doe, Dr\. John MA",
+               r"Doe, J\. MA", "Doe, John BA", "Doe, John MA",
+               "Doe, John MA JD", "Doe, John MA Jr",
+               "Doe, John MA PhD", "Doe, John PhD MA",
+               r"Doe, John Q\. MA", r"Doe, John X\.Y\.Z\.",
+               "doe, john ma"}),
+    frozenset({"Doe, John Ed", "Doe, John MA Ma", "Doe, John Ma",
+               "Doe, Mary Jo Ma"}),
+    # The third set. What selects these five is a WORD that is both
+    # particle and credential vocabulary standing last after a family
+    # comma -- `mc` and `do` -- and a member copying PARTICLES would
+    # reach every Dutch and Portuguese comma listing in the corpora,
+    # which is exactly the reach fix(#379)'s shape regex has and this
+    # rule deliberately does not.
+    frozenset({"Berg, Jan mc", "Doe, John Do",
+               "NASCIMENTO, EDSON ARANTES DO",
+               "Nascimento, Edson Arantes do", "SMITH, JOHN DO"}),
+    # A fourth set, from #531's fix round: the three 1.4.0 names whose
+    # member grouping JOINED into a multi-token piece before the slot
+    # could ask about it. A list of names, not a copy of any wordlist,
+    # and the vocabularies they touch could not select them anyway --
+    # the piece is what the rule turns on, and a piece is not in the
+    # string. A member copying CONJUNCTIONS or PARTICLES would reach
+    # every comma listing carrying one, and a member copying
+    # SUFFIX_ACRONYMS_AMBIGUOUS would reach 'Doe, John MA', which the
+    # slot takes. _MUST_NOT_MATCH carries both probes.
+    frozenset({"Doe, John DO Ed", "Doe, John MA y",
+               "Doe, John van Ma"}),
     # #449's movers, one corpus name per alternative -- a list of
     # names, not a copy of any wordlist, so there is no vocabulary for
     # it to drift from. What selects these names is a SHAPE the
@@ -2688,14 +2804,39 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- all of them
         # names this rule already described. Growth into new
         # corpus, not a widened regex.
+        # 2026-09-18, #531: 135 -> 137. The two CJK comma forms that
+        # round's case rows added, '田中, 太郎 MA' and '김, 민준 MA',
+        # both tolerated rows and so both in the radar corpus. Growth
+        # into new corpus again; no role joined the list.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(135, ('family', 'given', 'middle'), "fd79e8e1e2ef", None),
+            _Claim(137, ('family', 'given', 'middle'), "94b869596b3e", None),
         "fix(#274) maiden markers consumed":
             _Claim(33, ('family', 'maiden', 'middle'), "6f8bf7136b09", None),
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
             _Claim(5, ('family', 'given', 'maiden', 'middle'), "bc0e10dd7ec8", None),
+        # 2026-09-18, #531: 13 -> 19. Six corpus names whose trailing
+        # word is particle vocabulary this regex already lists --
+        # 'Doe, John DO', 'Doe, John Do', 'SMITH, JOHN DO',
+        # 'Nascimento, Edson Arantes do', 'NASCIMENTO, EDSON ARANTES
+        # DO' and 'Berg, Jan mc'. Five of the six read exactly what
+        # this rule describes; the sixth, 'Doe, John DO', is the one
+        # spelling where the capitals take the credential instead,
+        # and it files here because the ROLES it moves are this
+        # rule's. Growth into new corpus, not a widened regex.
+        # 2026-09-19, #531 review round: 19 -> 20. One new corpus
+        # name, 'Doe, John van DO' -- the control row for the member
+        # grouping merges INTO a particle piece, whose trailing word
+        # is particle vocabulary this regex already lists. Growth into
+        # new corpus again; no role joined the list.
+        # 2026-09-19, #531 fix round: 20 -> 21. One new corpus name,
+        # 'Doe, John MA do', which this rule's shape regex reaches on
+        # its trailing tussenvoegsel. REACH, not explanation: the name
+        # diffs {family, middle, suffix} and this rule declares two of
+        # the three, so it is ineligible and the fix(#380) rule the
+        # round added explains it. Verified to be that name and no
+        # other.
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('family', 'middle'), "973617235cda", None),
+            _Claim(21, ('family', 'middle'), "b017f45d04f5", None),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1", None),
         # 279 -> 280 with #371, and the growth is corpus, not behavior:
@@ -2731,8 +2872,27 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'John Smith, Ma' and 'Smith Jr., Ma' -- rules.md#C1's own
         # witnesses that the NAME-word count is asked before the
         # written case is.
+        # 2026-09-18, #531: 304 -> 310 was that round; 310 -> 334 is
+        # this one. Twenty-four comma-bearing corpus names arrived
+        # with #531's case rows and rules.md example lines, every one
+        # inside this rule's Latin comma range -- the whole 26 new
+        # names less the two CJK forms. The count grew with the
+        # CORPUS and not with the rule; no role joined the list.
+        # 2026-09-19, #531 review round: 334 -> 336. The two control
+        # rows the round added, 'Doe, Dr. MA' and 'Doe, John van DO',
+        # both comma-bearing and both inside this rule's Latin comma
+        # range. Verified to be those two names and no others.
+        # 2026-09-19, #531 fix round: 336 -> 343. Seven more shape-2
+        # rows, and it is the WHOLE of that round's new corpus text --
+        # every one of 'Doe, Dr. MA Smith', 'Doe, John DO Ed',
+        # 'Doe, John MA do', 'Doe, John MA y', 'Doe, John van Ma',
+        # 'Doe, MA Smith' and 'Doe, Mr. MA PhD' is comma-bearing and
+        # Latin. Matched name by name against the regex rather than
+        # inferred from the arithmetic. Reach again, not explanation:
+        # four of the seven diff in fields this rule cannot admit and
+        # are explained further down the file.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(310, ('given', 'suffix', 'title'), "2803b1932de1", None),
+            _Claim(343, ('given', 'suffix', 'title'), "75e89d1dfd04", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -2757,8 +2917,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Smith, Ma' -- the pair #289's lean reads in opposite
         # directions, both of them lone post-comma credentials
         # by this rule's own description.
+        # 2026-09-18, #531: 20 -> 21. One new corpus name, 'Doe, MA' --
+        # the family-word twin of the 'Smith, MA' above, and a lone
+        # post-comma credential by this rule's own description.
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(20, ('family', 'given', 'suffix', 'title'), "c94afd0c7617", None),
+            _Claim(21, ('family', 'given', 'suffix', 'title'), "3a950b6bb63d", None),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
             _Claim(6, ('given', 'suffix', 'title'), "7911e0158337", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
@@ -2771,8 +2934,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the lone-post-comma rule above and for the same reason.
         # 2026-09-18, second round: 302 -> 304, the same two new comma
         # names as the rule above.
+        # 2026-09-18, #531: 310 -> 334, the same twenty-four new comma
+        # names as the rule above and for the same reason.
+        # 2026-09-19, #531 review round: 334 -> 336, the same two new
+        # comma names as the rule above.
+        # 2026-09-19, #531 fix round: 336 -> 343, the same seven new
+        # comma names as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(310, ('family', 'given'), "2803b1932de1", None),
+            _Claim(343, ('family', 'given'), "75e89d1dfd04", None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -2790,11 +2959,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-18: 26 -> 29. The three CJK comma forms #289's own
         # case rows added ('毛泽东, MA', '田中 太郎, MA',
         # '마틴 킹, MA'). Growth into new corpus.
+        # 2026-09-18, #531: 32 -> 34, the two CJK comma forms that
+        # round added ('田中, 太郎 MA' and '김, 민준 MA'). Both
+        # regexes here ask only for a comma beside a CJK codepoint,
+        # so every CJK comma name in the corpora reaches them.
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
-            _Claim(32, ('given', 'suffix'), "a11674bdc8f2", None),
+            _Claim(34, ('given', 'suffix'), "ec7e1119a738", None),
         # 2026-09-18: 26 -> 29, the same three new CJK comma forms.
+        # 2026-09-18, #531: 32 -> 34, the same two as the rule above.
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(32, ('family', 'given', 'suffix', 'title'), "a11674bdc8f2", None),
+            _Claim(34, ('family', 'given', 'suffix', 'title'), "ec7e1119a738", None),
         # 37 -> 35 with the 2026-09-05 narrowing, which is a rule
         # NARROWING and not corpus movement: the three negative
         # lookbehinds stop the regex matching a listed honorific
@@ -3087,7 +3261,41 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # name whose given part ends in an ambiguous acronym --
         # including the ones v1 read the same way.
         "fix(given-part-trailing-slot) a credential acronym ending the given part of a family-comma listing reads as a middle name":
-            _Claim(1, ('middle', 'suffix'), "c164207a6725", ('DEFAULT',)),
+        # 2026-09-19, #531: 1 -> 4, and the name it HELD is not among
+        # the four. 'Doe, John MA' reached 1.4.0 parity and left; the
+        # four that replaced it -- 'Doe, John Ma', 'Doe, John Ed',
+        # 'Doe, Mary Jo Ma', 'Doe, John MA Ma' -- entered the corpora
+        # with #531's case rows carrying the SAME reading this rule
+        # describes, declined by the writing rather than by the slot's
+        # silence. Verified name by name against the gate's
+        # UNEXPLAINED block at this baseline. A rule re-pointed, not
+        # widened: the count grew and the digest moved together.
+            _Claim(4, ('middle', 'suffix'), "c6d26d145ee1", ('DEFAULT',)),
+        # 2026-09-19, #531. Three rules the round added at this
+        # baseline, each literal-anchored and each claiming exactly
+        # the names its ledger comment names -- verified name by name
+        # against the gate's UNEXPLAINED block here. #531's dotted
+        # half (one name, the one v1 parity BREAK the change accepts);
+        # the interior-credential control, whose member is not at the
+        # trailing slot at all; and the fix(#380) decision read over
+        # the two other collision words, five names this PR measured
+        # byte-identical at cc78c960.
+        "fix(#531) a dotted credential ending the given part leaves 1.4's middle name":
+            _Claim(1, ('middle', 'suffix'), "5800f141483d", ('DEFAULT',)),
+        "fix(comma-family) an interior credential acronym stays a middle-name word":
+            _Claim(1, ('middle', 'suffix'), "4831097f5067", ('DEFAULT',)),
+        # 2026-09-19, #531 fix round: two rules land, each literal-
+        # anchored to names that arrived in the same commit, so both
+        # claims are born at exactly what their regex spells -- three
+        # names and one. Neither reading moved in that commit: all
+        # four parse byte-identically at cc78c960 (measured).
+        "fix(comma-family) a credential acronym grouping joined into one piece stays middle-name text":
+            _Claim(3, ('middle', 'suffix'), "4095bb985318", ('DEFAULT',)),
+        "fix(#380) the do attachment leaves the credential in front of it in the middle name":
+            _Claim(1, ('family', 'middle', 'suffix'), "8080ca73a18a",
+                   ('DEFAULT',)),
+        "fix(#380) a trailing mc or do after a family comma is the tussenvoegsel, not a post-nominal":
+            _Claim(5, ('family', 'suffix'), "13fad71c96d0", ('DEFAULT',)),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3189,15 +3397,24 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
             _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe", None),
+        # 2026-09-18, #531: 13 -> 19, the same six particle-trailing
+        # comma names as the 1.4 twin, whose entry carries the roster.
+        # 2026-09-19, #531 review round: 19 -> 20, the same one new
+        # name as that twin ('Doe, John van DO').
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
+        # 2026-09-19, #531 fix round: 20 -> 21, the same one new
+        # corpus name as the 1.4.0 copy ('Doe, John MA do'), reached
+        # on the trailing tussenvoegsel and explained by neither.
+            _Claim(21, ('_ambiguities', 'family', 'middle'), "b017f45d04f5", None),
         # 2026-09-18: 126 -> 131. Five corpus names arrived with
         # #289/#516's own case rows -- 'J.씨', 'John Smith 田.中.',
         # '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- all of them
         # names this rule already described. Growth into new
         # corpus, not a widened regex.
+        # 2026-09-18, #531: 135 -> 137, the same two CJK comma forms
+        # as the 1.4 twin.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(135, ('_ambiguities', 'family', 'given', 'middle'), "fd79e8e1e2ef", None),
+            _Claim(137, ('_ambiguities', 'family', 'given', 'middle'), "94b869596b3e", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -3281,8 +3498,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Smith, Ma' -- the pair #289's lean reads in opposite
         # directions, both of them lone post-comma credentials
         # by this rule's own description.
+        # 2026-09-18, #531: 20 -> 21, the same one new name
+        # ('Doe, MA') as the 1.4 twin.
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(20, ('suffix', 'title'), "c94afd0c7617", None),
+            _Claim(21, ('suffix', 'title'), "3a950b6bb63d", None),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
             _Claim(6, ('given', 'suffix', 'title'), "7911e0158337", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
@@ -3425,7 +3644,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # one-particle spelling of 'John van der Berg Ma'. Its diff
         # is the restored chain report at the 2.x baselines and the
         # role move at 1.4.0 and 2.2/2.3; no role joined the list.
-            _Claim(20, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "fe5f68146005", ('DEFAULT',)),
+        # 2026-09-19, #531: 20 -> 23. Three corpus names, 'Doe, MA',
+        # 'Doe, MA PhD' and 'Doe, Dr. MA', the lone post-comma
+        # credentials #531's control rows brought in. Verified to be
+        # those three and no others; no role joined the list, and the
+        # 1.4.0 copy does not carry them (its ledger comment says
+        # which rule already owns their diff there).
+        # 2026-09-19, #531 fix round: 23 -> 24. One corpus name,
+        # 'Doe, Mr. MA PhD' -- 'Doe, Dr. MA' with a credential run
+        # behind the member. Verified to be that name and no other;
+        # no role joined the list.
+            _Claim(24, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9af04fd5b07d", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -3437,12 +3666,40 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the gate -- which is the one thing this row can say about a
         # rule whose whole subject is a report.
         "fix(#289/#516) the ambiguous credential class reports at slots that were silent":
-            _Claim(8, ('_ambiguities',), "4f4844f54ba1", ('DEFAULT',)),
+        # 2026-09-19, #531 fix round: one corpus name joins,
+        # 'Doe, MA Smith' -- the post-comma given slot reporting where
+        # no role moves at any baseline. Verified to be that name and
+        # no other.
+            _Claim(9, ('_ambiguities',), "879e77ab5baa", ('DEFAULT',)),
         # The 2026-09-18 review round's honorific-peel rule: three
         # composed CJK forms, radar tier, classified because the arc
         # intended the move (the ledger comment carries the argument).
         "fix(#289/#516) the glued CJK honorific peel reads the case lean":
             _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "4fb6dbdbccd4", ('DEFAULT',)),
+        # 2026-09-19, #531. Five rules, every one
+        # literal-anchored and claiming exactly the names its ledger
+        # comment names -- verified name by name against the gate's
+        # UNEXPLAINED and UNCLASSIFIED (radar) blocks at this
+        # baseline. The caseless pair is radar-tier and classified all
+        # the same, on fix(#289/#516)'s stated ground: a radar diff an
+        # arc intended is one a release note may be written from.
+        # `Doe, John DO` moves {middle, suffix} here and
+        # {family, suffix} from 2.2.0 on, which is P6's own shipping
+        # date showing through.
+        "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
+            _Claim(13, ('_ambiguities', 'middle', 'suffix'), "c577ebf116f2", ('DEFAULT',)),
+        "fix(#531) a member the writing declines keeps its name reading and reports the fork":
+            _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
+        "fix(#531) capitals take the do collision from the family-comma particle attachment":
+            _Claim(1, ('_ambiguities', 'middle', 'suffix'), "8ad64f404621", ('DEFAULT',)),
+        "fix(#531) the trailing slot's positional reading reaches a caseless script":
+            _Claim(2, ('_ambiguities', 'middle', 'suffix'), "8419a6f53c3e", ('DEFAULT',)),
+        # The `mc` collision, at the two baselines where it diffs:
+        # `mc` joined the never-given particles in 2.2 and P6's
+        # family-comma attachment shipped in 2.3, so 2.2.0 and 2.3.0
+        # already read family 'mc Berg' and carry no rule for it.
+        "fix(#380) a trailing mc after a family comma is the tussenvoegsel, not a post-nominal":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "105229644206", ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -3613,7 +3870,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # one-particle spelling of 'John van der Berg Ma'. Its diff
         # is the restored chain report at the 2.x baselines and the
         # role move at 1.4.0 and 2.2/2.3; no role joined the list.
-            _Claim(20, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "fe5f68146005", ('DEFAULT',)),
+        # 2026-09-19, #531: 20 -> 23. Three corpus names, 'Doe, MA',
+        # 'Doe, MA PhD' and 'Doe, Dr. MA', the lone post-comma
+        # credentials #531's control rows brought in. Verified to be
+        # those three and no others; no role joined the list, and the
+        # 1.4.0 copy does not carry them (its ledger comment says
+        # which rule already owns their diff there).
+        # 2026-09-19, #531 fix round: 23 -> 24. One corpus name,
+        # 'Doe, Mr. MA PhD' -- 'Doe, Dr. MA' with a credential run
+        # behind the member. Verified to be that name and no other;
+        # no role joined the list.
+            _Claim(24, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9af04fd5b07d", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -3625,12 +3892,34 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the gate -- which is the one thing this row can say about a
         # rule whose whole subject is a report.
         "fix(#289/#516) the ambiguous credential class reports at slots that were silent":
-            _Claim(9, ('_ambiguities',), "f89a7428e317", ('DEFAULT',)),
+        # 2026-09-19, #531 fix round: one corpus name joins,
+        # 'Doe, MA Smith' -- the post-comma given slot reporting where
+        # no role moves at any baseline. Verified to be that name and
+        # no other.
+            _Claim(10, ('_ambiguities',), "5d427b25c1c7", ('DEFAULT',)),
         # The 2026-09-18 review round's honorific-peel rule: three
         # composed CJK forms, radar tier, classified because the arc
         # intended the move (the ledger comment carries the argument).
         "fix(#289/#516) the glued CJK honorific peel reads the case lean":
             _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "4fb6dbdbccd4", ('DEFAULT',)),
+        # 2026-09-19, #531. Four rules, every one
+        # literal-anchored and claiming exactly the names its ledger
+        # comment names -- verified name by name against the gate's
+        # UNEXPLAINED and UNCLASSIFIED (radar) blocks at this
+        # baseline. The caseless pair is radar-tier and classified all
+        # the same, on fix(#289/#516)'s stated ground: a radar diff an
+        # arc intended is one a release note may be written from.
+        # `Doe, John DO` moves {family, suffix} here, P6 having
+        # shipped in 2.3; at 2.0.0 and 2.1.0 the same name moves
+        # {middle, suffix} instead.
+        "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
+            _Claim(13, ('_ambiguities', 'middle', 'suffix'), "c577ebf116f2", ('DEFAULT',)),
+        "fix(#531) a member the writing declines keeps its name reading and reports the fork":
+            _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
+        "fix(#531) capitals take the do collision from the family-comma particle attachment":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "8ad64f404621", ('DEFAULT',)),
+        "fix(#531) the trailing slot's positional reading reaches a caseless script":
+            _Claim(2, ('_ambiguities', 'middle', 'suffix'), "8419a6f53c3e", ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3740,8 +4029,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('middle', 'suffix'), "e9f282da0d0f", None),
         "fix(#429) a wholly-credential segment after a one-word family renders as one entry":
             _Claim(1, ('suffix', 'title'), "9e0b9e8d5cbe", None),
+        # 2026-09-18, #531: 13 -> 19, the same six particle-trailing
+        # comma names as the 1.4 twin, whose entry carries the roster.
+        # 2026-09-19, #531 review round: 19 -> 20, the same one new
+        # name as that twin ('Doe, John van DO').
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(13, ('_ambiguities', 'family', 'middle'), "973617235cda", None),
+        # 2026-09-19, #531 fix round: 20 -> 21, the same one new
+        # corpus name as the 1.4.0 copy ('Doe, John MA do'), reached
+        # on the trailing tussenvoegsel and explained by neither.
+            _Claim(21, ('_ambiguities', 'family', 'middle'), "b017f45d04f5", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
@@ -3806,8 +4102,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Smith, Ma' -- the pair #289's lean reads in opposite
         # directions, both of them lone post-comma credentials
         # by this rule's own description.
+        # 2026-09-18, #531: 20 -> 21, the same one new name
+        # ('Doe, MA') as the 1.4 twin.
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(20, ('suffix', 'title'), "c94afd0c7617", None),
+            _Claim(21, ('suffix', 'title'), "3a950b6bb63d", None),
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
             _Claim(6, ('given', 'suffix', 'title'), "7911e0158337", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
@@ -3939,7 +4237,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # one-particle spelling of 'John van der Berg Ma'. Its diff
         # is the restored chain report at the 2.x baselines and the
         # role move at 1.4.0 and 2.2/2.3; no role joined the list.
-            _Claim(20, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "fe5f68146005", ('DEFAULT',)),
+        # 2026-09-19, #531: 20 -> 23. Three corpus names, 'Doe, MA',
+        # 'Doe, MA PhD' and 'Doe, Dr. MA', the lone post-comma
+        # credentials #531's control rows brought in. Verified to be
+        # those three and no others; no role joined the list, and the
+        # 1.4.0 copy does not carry them (its ledger comment says
+        # which rule already owns their diff there).
+        # 2026-09-19, #531 fix round: 23 -> 24. One corpus name,
+        # 'Doe, Mr. MA PhD' -- 'Doe, Dr. MA' with a credential run
+        # behind the member. Verified to be that name and no other;
+        # no role joined the list.
+            _Claim(24, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9af04fd5b07d", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -3951,12 +4259,40 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the gate -- which is the one thing this row can say about a
         # rule whose whole subject is a report.
         "fix(#289/#516) the ambiguous credential class reports at slots that were silent":
-            _Claim(8, ('_ambiguities',), "4f4844f54ba1", ('DEFAULT',)),
+        # 2026-09-19, #531 fix round: one corpus name joins,
+        # 'Doe, MA Smith' -- the post-comma given slot reporting where
+        # no role moves at any baseline. Verified to be that name and
+        # no other.
+            _Claim(9, ('_ambiguities',), "879e77ab5baa", ('DEFAULT',)),
         # The 2026-09-18 review round's honorific-peel rule: three
         # composed CJK forms, radar tier, classified because the arc
         # intended the move (the ledger comment carries the argument).
         "fix(#289/#516) the glued CJK honorific peel reads the case lean":
             _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "4fb6dbdbccd4", ('DEFAULT',)),
+        # 2026-09-19, #531. Five rules, every one
+        # literal-anchored and claiming exactly the names its ledger
+        # comment names -- verified name by name against the gate's
+        # UNEXPLAINED and UNCLASSIFIED (radar) blocks at this
+        # baseline. The caseless pair is radar-tier and classified all
+        # the same, on fix(#289/#516)'s stated ground: a radar diff an
+        # arc intended is one a release note may be written from.
+        # `Doe, John DO` moves {middle, suffix} here and
+        # {family, suffix} from 2.2.0 on, which is P6's own shipping
+        # date showing through.
+        "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
+            _Claim(13, ('_ambiguities', 'middle', 'suffix'), "c577ebf116f2", ('DEFAULT',)),
+        "fix(#531) a member the writing declines keeps its name reading and reports the fork":
+            _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
+        "fix(#531) capitals take the do collision from the family-comma particle attachment":
+            _Claim(1, ('_ambiguities', 'middle', 'suffix'), "8ad64f404621", ('DEFAULT',)),
+        "fix(#531) the trailing slot's positional reading reaches a caseless script":
+            _Claim(2, ('_ambiguities', 'middle', 'suffix'), "8419a6f53c3e", ('DEFAULT',)),
+        # The `mc` collision, at the two baselines where it diffs:
+        # `mc` joined the never-given particles in 2.2 and P6's
+        # family-comma attachment shipped in 2.3, so 2.2.0 and 2.3.0
+        # already read family 'mc Berg' and carry no rule for it.
+        "fix(#380) a trailing mc after a family comma is the tussenvoegsel, not a post-nominal":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "105229644206", ('DEFAULT',)),
     },
     "expected_since_2.3.0.toml": {
         # #383/#479's three rules, the first this ledger carries. The
@@ -3996,7 +4332,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # one-particle spelling of 'John van der Berg Ma'. Its diff
         # is the restored chain report at the 2.x baselines and the
         # role move at 1.4.0 and 2.2/2.3; no role joined the list.
-            _Claim(20, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "fe5f68146005", ('DEFAULT',)),
+        # 2026-09-19, #531: 20 -> 23. Three corpus names, 'Doe, MA',
+        # 'Doe, MA PhD' and 'Doe, Dr. MA', the lone post-comma
+        # credentials #531's control rows brought in. Verified to be
+        # those three and no others; no role joined the list, and the
+        # 1.4.0 copy does not carry them (its ledger comment says
+        # which rule already owns their diff there).
+        # 2026-09-19, #531 fix round: 23 -> 24. One corpus name,
+        # 'Doe, Mr. MA PhD' -- 'Doe, Dr. MA' with a credential run
+        # behind the member. Verified to be that name and no other;
+        # no role joined the list.
+            _Claim(24, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9af04fd5b07d", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -4008,12 +4354,34 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the gate -- which is the one thing this row can say about a
         # rule whose whole subject is a report.
         "fix(#289/#516) the ambiguous credential class reports at slots that were silent":
-            _Claim(9, ('_ambiguities',), "f89a7428e317", ('DEFAULT',)),
+        # 2026-09-19, #531 fix round: one corpus name joins,
+        # 'Doe, MA Smith' -- the post-comma given slot reporting where
+        # no role moves at any baseline. Verified to be that name and
+        # no other.
+            _Claim(10, ('_ambiguities',), "5d427b25c1c7", ('DEFAULT',)),
         # The 2026-09-18 review round's honorific-peel rule: three
         # composed CJK forms, radar tier, classified because the arc
         # intended the move (the ledger comment carries the argument).
         "fix(#289/#516) the glued CJK honorific peel reads the case lean":
             _Claim(3, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "4fb6dbdbccd4", ('DEFAULT',)),
+        # 2026-09-19, #531. Four rules, every one
+        # literal-anchored and claiming exactly the names its ledger
+        # comment names -- verified name by name against the gate's
+        # UNEXPLAINED and UNCLASSIFIED (radar) blocks at this
+        # baseline. The caseless pair is radar-tier and classified all
+        # the same, on fix(#289/#516)'s stated ground: a radar diff an
+        # arc intended is one a release note may be written from.
+        # `Doe, John DO` moves {family, suffix} here, P6 having
+        # shipped in 2.3; at 2.0.0 and 2.1.0 the same name moves
+        # {middle, suffix} instead.
+        "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
+            _Claim(13, ('_ambiguities', 'middle', 'suffix'), "c577ebf116f2", ('DEFAULT',)),
+        "fix(#531) a member the writing declines keeps its name reading and reports the fork":
+            _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
+        "fix(#531) capitals take the do collision from the family-comma particle attachment":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "8ad64f404621", ('DEFAULT',)),
+        "fix(#531) the trailing slot's positional reading reaches a caseless script":
+            _Claim(2, ('_ambiguities', 'middle', 'suffix'), "8419a6f53c3e", ('DEFAULT',)),
     },
 }
 

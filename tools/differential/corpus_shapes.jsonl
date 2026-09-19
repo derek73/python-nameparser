@@ -63,11 +63,45 @@
 {"name": "хосе и мария сантос", "shape": 1}
 {"name": "محمد و علي", "shape": 1}
 {"name": "Beethoven, Ludwig van", "shape": 2}
+{"name": "Berg, Jan mc", "shape": 2}
+{"name": "DOE, JOHN MA", "shape": 2}
+{"name": "DOE, MARY JO MA", "shape": 2}
+{"name": "Doe, Dr. John MA", "shape": 2}
+{"name": "Doe, Dr. MA", "shape": 2}
+{"name": "Doe, Dr. MA Smith", "shape": 2}
+{"name": "Doe, J. MA", "shape": 2}
 {"name": "Doe, John A.", "shape": 2}
+{"name": "Doe, John BA", "shape": 2}
+{"name": "Doe, John DO", "shape": 2}
+{"name": "Doe, John DO Ed", "shape": 2}
+{"name": "Doe, John Do", "shape": 2}
+{"name": "Doe, John Ed", "shape": 2}
+{"name": "Doe, John MA", "shape": 2}
+{"name": "Doe, John MA JD", "shape": 2}
+{"name": "Doe, John MA Jr", "shape": 2}
+{"name": "Doe, John MA Ma", "shape": 2}
+{"name": "Doe, John MA PhD", "shape": 2}
+{"name": "Doe, John MA Smith", "shape": 2}
+{"name": "Doe, John MA do", "shape": 2}
+{"name": "Doe, John MA y", "shape": 2}
+{"name": "Doe, John Ma", "shape": 2}
 {"name": "Doe, John Msc.Ed.", "shape": 2}
+{"name": "Doe, John PhD MA", "shape": 2}
+{"name": "Doe, John Q. MA", "shape": 2}
+{"name": "Doe, John X.Y.Z.", "shape": 2}
+{"name": "Doe, John van DO", "shape": 2}
+{"name": "Doe, John van Ma", "shape": 2}
+{"name": "Doe, MA", "shape": 2}
+{"name": "Doe, MA PhD", "shape": 2}
+{"name": "Doe, MA Smith", "shape": 2}
+{"name": "Doe, Mary Jo Ma", "shape": 2}
+{"name": "Doe, Mr. MA PhD", "shape": 2}
 {"name": "John Smith, 1.4", "shape": 2}
 {"name": "Kennedy, John (Jack)", "shape": 2}
+{"name": "NASCIMENTO, EDSON ARANTES DO", "shape": 2}
+{"name": "Nascimento, Edson Arantes do", "shape": 2}
 {"name": "Royce, Ed", "shape": 2}
+{"name": "SMITH, JOHN DO", "shape": 2}
 {"name": "Salem, Abdul Rahman Ahmed", "shape": 2}
 {"name": "Smith Jr., A.B.", "shape": 2}
 {"name": "Smith Jr., John", "shape": 2}
@@ -83,6 +117,7 @@
 {"name": "Smith, MA", "shape": 2}
 {"name": "Smith, Ma", "shape": 2}
 {"name": "de la Vega, Juan", "shape": 2}
+{"name": "doe, john ma", "shape": 2}
 {"name": "Davis Royce, Ed", "shape": 3}
 {"name": "Dr. John P. Doe-Ray, CLU, CFP, LUTC", "shape": 3}
 {"name": "JOHN SMITH, MA", "shape": 3}

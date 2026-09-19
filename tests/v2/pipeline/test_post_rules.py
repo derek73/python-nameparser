@@ -3,6 +3,7 @@ import sys
 
 import pytest
 
+from nameparser import parse
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
 from nameparser._pipeline._post_rules import suffix_entries
@@ -1121,3 +1122,39 @@ def test_suffix_entries_keys_on_the_suffix_role() -> None:
     neither a continuation."""
     assert _forced_entry_tags("A B", Role.MIDDLE) == [
         ("A", False), ("B", False)]
+
+
+def test_p6_declines_a_credential_lean_class_member() -> None:
+    """P6 keys on VOCABULARY, not role, so assign's suffix role would
+    otherwise be silently overridden -- verified by running the
+    change's assign half alone, which left 'Doe, John DO' family
+    'DO Doe'."""
+    name = parse("Doe, John DO")
+    assert name.suffix == "DO"
+    assert name.family == "Doe"
+    assert [a.kind.value for a in name.ambiguities] == ["suffix-or-name"]
+
+
+def test_p6_still_claims_an_unambiguous_suffix_particle() -> None:
+    """The condition is narrowed to AMBIGUOUS_ACRONYM_TAG, which is
+    what keeps 'vd' and 'mc' -- unambiguous suffix vocabulary, also
+    particles, also suffix-roled -- inside the run."""
+    for text, family in (("Berg, Jan vd", "vd Berg"),
+                         ("Berg, Jan mc", "mc Berg")):
+        name = parse(text)
+        assert name.family == family, text
+        assert name.suffix == "", text
+
+
+def test_p6_keeps_every_non_capital_spelling_of_the_particle_member(
+) -> None:
+    """Capitals decide; the particle rule keeps the rest, and each
+    reports P6's own kind ONCE (decisions.md#S2, 2026-09-18)."""
+    for text, family in (("Doe, John do", "do Doe"),
+                         ("Doe, John Do", "Do Doe"),
+                         ("DOE, JOHN DO", "DO DOE"),
+                         ("doe, john do", "do doe")):
+        name = parse(text)
+        assert name.family == family, text
+        assert [a.kind.value for a in name.ambiguities] == \
+            ["particle-or-given"], text

@@ -170,6 +170,79 @@ def test_a_leading_ambiguous_particle_is_reported_once_and_only_once(
         f"{len(failures)} shape(s) disagree:\n" + "\n".join(failures[:15]))
 
 
+#: The three `do` rows P6's attachment owns by design. A CLOSED list
+#: with the rule that owns each one: a fourth exception fails, which is
+#: the whole point of carrying them by name rather than by count.
+_COMMA_AGREEMENT_EXCEPTIONS = {
+    "John Doe do": "rules.md#P6 attaches the lower-case particle member",
+    "John Q. Doe do": "rules.md#P6 attaches the lower-case particle member",
+    "Mary Jo Doe do": "rules.md#P6 attaches the lower-case particle member",
+}
+
+
+def test_a_comma_form_and_its_comma_less_twin_agree_on_the_class(
+) -> None:
+    """#531's invariant, and the shape of the defect it closed.
+
+    A word ending the given part of a family-comma listing and the
+    same word ending the comma-less spelling of the same name must be
+    put in the SAME CLASS -- credential (role SUFFIX) or name (any of
+    the other six roles). CLASS, not FIELD, and the difference
+    matters: 'John Doe Ma' reads family 'Ma' with middle 'Doe' while
+    'Doe, John Ma' reads middle 'Ma', different fields and both
+    'name', and this test must pass on that pair.
+
+    Measured on this tree before #531: 48 of the 78 pairs disagreed,
+    every one of them in the same direction -- the comma form
+    declining a credential the comma-less form took. After: 3, and
+    they are the allowlist above.
+    """
+    words = []
+    for base in ("ba", "do", "ed", "jd", "ma", "x.y.z.", "q.w.e.r.t."):
+        words += [base, base.upper(), base.capitalize()]
+    words += ["phd", "PhD", "Jr", "xyz", "XYZ"]
+    shapes = (("John Doe {w}", "Doe, John {w}"),
+              ("John Q. Doe {w}", "Doe, John Q. {w}"),
+              ("Mary Jo Doe {w}", "Doe, Mary Jo {w}"))
+    parser = Parser()
+
+    def side(name: object, word: str) -> str:
+        for role in Role:
+            value = getattr(name, role.value)
+            if value == word or word in value.split():
+                return "credential" if role is Role.SUFFIX else "name"
+        return "absent"
+
+    failures = []
+    for word in words:
+        for plain, comma in shapes:
+            a = side(parser.parse(plain.format(w=word)), word)
+            b = side(parser.parse(comma.format(w=word)), word)
+            if a == b:
+                continue
+            key = plain.format(w=word)
+            if key in _COMMA_AGREEMENT_EXCEPTIONS:
+                continue
+            failures.append(
+                f"{key!r} reads {a} but {comma.format(w=word)!r} "
+                f"reads {b}")
+    assert not failures, (
+        f"{len(failures)} pair(s) disagree:\n" + "\n".join(failures[:15]))
+
+
+def test_the_comma_agreement_exceptions_are_all_still_exceptions(
+) -> None:
+    """The allowlist's own negative control: a row that stopped being
+    an exception is an allowlist entry silently covering nothing, and
+    the sweep above cannot notice that about itself."""
+    parser = Parser()
+    for plain in _COMMA_AGREEMENT_EXCEPTIONS:
+        comma_form = "Doe, " + plain.replace("John Doe ", "John ").replace(
+            "John Q. Doe ", "John Q. ").replace("Mary Jo Doe ", "Mary Jo ")
+        assert parser.parse(plain).suffix, plain
+        assert not parser.parse(comma_form).suffix, comma_form
+
+
 @pytest.mark.parametrize("text", _FORK_CORPUS)
 def test_a_fork_is_never_reported_twice_on_a_real_name(text: str) -> None:
     state = run(ParseState(original=text, lexicon=Lexicon.default(),
