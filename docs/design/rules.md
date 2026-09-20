@@ -592,10 +592,10 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     and .capitalized() gives "John E Smith", where the connective
     reading gave "j. s." and "John e Smith" — a connective
     contributing no initial (R3) and keeping its lowercase (R4),
-    where an initial does neither. The v1 facade's initials() still
-    reads the letter by vocabulary and written shape rather than by
-    the parse's reading, so HumanName("john e smith").initials()
-    stays "j. s." for now; decisions.md#P3 records the split.
+    where an initial does neither. The v1 facade's initials() reads
+    the same parse, so HumanName("john e smith").initials() is
+    also "j. e. s."; #528 closed the split and decisions.md#P3
+    records it.
     Accepted: two 1.4.0 parity breaks, one in each direction. A bare
     capital in a name written wholly in upper case no longer reads as
     an initial, so "JUAN GARCIA Y LOPEZ" joins where 1.4.0 and
