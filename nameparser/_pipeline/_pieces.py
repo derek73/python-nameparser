@@ -406,7 +406,6 @@ def peel_walk(start: int, ptags: Sequence[Set[str]],
 def trailing_start(start: int, pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]], tokens: Sequence[WorkToken],
                     skip: Set[int] = frozenset(),
-                    numeral_only: bool = False,
                     *, one_case: bool | None) -> int:
     """Where assign's trailing suffix run begins, read over the pieces
     as they stand from `start`: the index of the first piece the S2
@@ -417,19 +416,14 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     or a bare acronym with words to spare, into the family or the
     maiden name.
 
-    `numeral_only` answers off `Peel.numeral` alone: the bare-acronym
-    fork counts pieces, and a caller that REMOVES the pieces it
-    counted cannot use that count as it stands ('John née Jones Smith
-    Ma' peeled over the pieces as written reads the acronym as a
-    credential with words to spare, and once 'Jones Smith' has left
-    it is the family of what remains). Its one caller is the maiden
-    walk's numeral re-ask, over the view the take would leave; the
-    walk asks the acronym fork itself, over a view of its own
-    (#533)."""
+    Both forks, always. A caller that needs one of them alone -- the
+    maiden walk re-asking the numeral over the view its take would
+    leave, where the acronym fork's piece COUNT no longer describes
+    the name -- calls the `peel_walk` + `peel_trailing` pair this
+    wraps and reads the half it wants (#533). A `numeral_only` flag
+    lived here for that one caller and cost it a frame."""
     rest = peel_walk(start, ptags, skip)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
-    if numeral_only:
-        return rest[-1] if peeled.numeral is not None else len(pieces)
     return rest[peeled.names] if peeled.names < len(rest) else len(pieces)
 
 
@@ -447,16 +441,14 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
 # the call at all.
 #
 # A THIRD caller since #533 -- credential_at_the_given_slot just
-# below -- deliberately does NOT pre-check, because it is the one
-# predicate that owns #531's reading and membership is its caller's
-# to decide (its own docstring says so). It pushes the test out to
-# ITS callers rather than asking it twice, and the frame argument
-# holds transitively because both of them do ask it inline: assign's
-# walkable pass tests `AMBIGUOUS_ACRONYM_TAG in tok.tags` after a
-# `len(piece) == 1` before the call (_assign.py, the given part's
-# trailing slot), and the maiden walk's view check spells the same
-# pair inside its `all(...)` (_group.py, `_maiden_take`). So no
-# non-member piece reaches this function down that route either.
+# below -- deliberately does NOT pre-check: it owns #531's reading
+# and leaves membership to its own callers (its docstring says so),
+# and the frame argument holds transitively because both of them ask
+# inline -- `AMBIGUOUS_ACRONYM_TAG in tok.tags` after a
+# `len(piece) == 1` at assign's given-part trailing slot, and the
+# same pair inside the `all(...)` of `_group.py`'s `_maiden_take`
+# view check. So no non-member piece reaches this function down that
+# route either.
 def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     """`ambiguous_lean` for a LISTED bare-ambiguous token, or None if
     the token is not tagged a listed member, is admitted by SHAPE

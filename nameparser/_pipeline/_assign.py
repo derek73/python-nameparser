@@ -823,15 +823,15 @@ def assign(state: ParseState) -> ParseState:
                             # drift would have been silent -- each
                             # site's own tests would have gone on
                             # passing (mechanisms.md
-                            # #ONE-PREDICATE-PER-QUESTION). It costs
-                            # one frame PER MEMBER asked at this slot,
-                            # not one frame per name -- against
+                            # #ONE-PREDICATE-PER-QUESTION). The call
+                            # costs one frame PER MEMBER asked at this
+                            # slot, not one per name: against
                             # 2f57ff21, 'Doe, John MA' is 310 -> 311
                             # and 'Doe, John MA Ma MA', which asks
-                            # four times, is 439 -> 443. A name with
-                            # no member here never reaches it and pays
-                            # nothing ('Smith, John' 206, 'MA JD' 185,
-                            # both unchanged). Measured 2026-09-19 per
+                            # four times, 439 -> 443, while a name
+                            # with no member here never reaches it
+                            # ('Smith, John' 206, 'MA JD' 185, both
+                            # unchanged). Measured 2026-09-19 per
                             # `Parser.parse`; Derek took that trade
                             # deliberately.
                             if credential_at_the_given_slot(

@@ -357,44 +357,29 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # née PhD' -- nothing after the marker but a suffix, so the marker
     # stays a word -- as 1.4.0 read it.
     #
-    # `one_case` is LIVE at these sites since #533, and it was not
-    # before: `numeral_only` answered off `peeled.numeral`, and the
-    # numeral fork is decided before the peel ever reads a lean, so
-    # the fact reached only the bare-acronym fork -- which that
-    # reading discarded. The acronym fork is asked now, so the writing
-    # decides here as it decides at the trailing slot of a name.
-    #
-    # Measured 2026-09-19 with a runtime wrapper that forces this
-    # function's `one_case` argument to None, over the population
-    # decisions.md#S2's 2026-09-18 recipe names -- the distinct union
-    # of every `tools/differential/corpus*.jsonl` entry, every
-    # `tests/v2/cases.py` text, and `tests/test_variations.TEST_NAMES`
-    # with the three comma permutations that entry names (no-comma,
-    # family-comma, and suffix-comma where the name has a suffix,
-    # built off the PARSE as `test_variations_of_TEST_NAMES` builds
-    # them -- not off a word split, which is what a first draft of
-    # this comment counted and why it read 2,429 names), empty
-    # strings dropped, under six policies (the default, both
-    # family-first orders, strict commas, and each 2.4 switch
-    # flipped). THE PAIR IS THE FINDING: over the corpus as it stood
-    # the day before this change it moved 0 parses, and over the
-    # corpus WITH this change's own rows it moves 36 of 10,752 (1,792
-    # names), on 6 distinct names ('Doe, Jane nee Smith DO', 'Doe,
-    # Jane nee Smith Ma', 'Jane Doe nee Smith Ma', 'Jane Doe nee Smith
-    # Ma JD', 'Jane Doe nee Yo-Yo Ma', 'John née Jones Smith MA'). The
-    # plumbing was live either way; the corpus simply held no name
-    # that could show it, which is the blindness mechanisms.md's
-    # corpus field note asks to be measured before any "N names move"
-    # is written down. The 2026-09-18 record of 0 of 9,852 under the
-    # numeral-only reading stands as what was true then and is
-    # superseded here.
+    # `one_case` is LIVE at these sites since #533 and was not before:
+    # the numeral fork is decided before the peel ever reads a lean,
+    # so the fact reached only the bare-acronym fork, which the
+    # numeral-only reading discarded. The acronym fork is asked now,
+    # so the writing decides here as it decides at the trailing slot
+    # of a name. Measured 2026-09-19 with a runtime wrapper forcing
+    # this function's `one_case` argument to None, over the population
+    # and the six policies decisions.md#S2's 2026-09-18 recipe names
+    # -- 36 of 10,752 parses move (1,792 names), on 6 distinct names
+    # ('Doe, Jane nee Smith DO', 'Doe, Jane nee Smith Ma', 'Jane Doe
+    # nee Smith Ma', 'Jane Doe nee Smith Ma JD', 'Jane Doe nee Yo-Yo
+    # Ma', 'John née Jones Smith MA'). THE PAIR IS THE FINDING: over
+    # the same corpus WITHOUT this change's own rows it moves 0, so
+    # the plumbing was live either way and the corpus simply held no
+    # name that could show it -- the blindness mechanisms.md's corpus
+    # field note asks to be measured before any "N names move" is
+    # written down.
     #
     # The chain-tail measure below (`tail`, and the re-peel after the
-    # chain) is the opposite, and the 2026-09-18 sweep says so:
-    # dropping it moves 18 of that 9,852, on 'John van der Berg Ma',
-    # 'John de Ma' and 'Freiherr von Berg MA' under every one of the
-    # six. A review round called all three sites inert together; two
-    # are.
+    # chain) is the opposite, and the 2026-09-18 sweep over the
+    # pre-change 9,852 says so: dropping it moves 18 of them, on
+    # 'John van der Berg Ma', 'John de Ma' and 'Freiherr von Berg MA'
+    # under every one of the six policies.
     skip = frozenset(range(len(pieces))) - frozenset(seen)
     rest = peel_walk(seen[m], ptags, skip)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
@@ -406,18 +391,25 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # ('J. née Jones Smith V'). So the numeral must read as the suffix
     # as the take would leave the name too, and the question is asked
     # the way P5's reserve asks it (#425): the peel is run over the
-    # VIEW the take would leave, not one condition of it -- the first
-    # re-ask checked the preceding piece alone, and a title before the
-    # marker ('Dr. née Jones Smith V') leaves the numeral as assign's
-    # whole rest, where no fork fires at all (the code review).
+    # VIEW the take would leave, not one condition of it. Checking the
+    # preceding piece alone misses a title before the marker, where
+    # 'Dr. née Jones Smith V' leaves the numeral as assign's whole
+    # rest and no fork fires at all.
     if trailing < len(pieces):
         left = [i for i in seen if i < seen[m] or i >= trailing]
         view = [pieces[i] for i in left]
         view_tags = [ptags[i] for i in left]
-        if trailing_start(leading_titles(view, view_tags, tokens),
-                           view, view_tags, tokens,
-                           numeral_only=True,
-                           one_case=one_case) == len(view):
+        # The same peel pair as above, read over the view -- and only
+        # `Peel.numeral` off it, because the bare-acronym fork COUNTS
+        # pieces and this view no longer holds the pieces it counted
+        # ('John née Jones Smith Ma' peeled over the pieces as written
+        # reads the acronym as a credential with words to spare, and
+        # once 'Jones Smith' has left it is the family of what
+        # remains). The acronym fork builds a view of its own below.
+        view_rest = peel_walk(leading_titles(view, view_tags, tokens),
+                              view_tags)
+        if peel_trailing(view_rest, view, view_tags, tokens,
+                          one_case).numeral is None:
             trailing = len(pieces)
     # #533: the ACRONYM fork, asked the way the numeral is -- the peel
     # over the pieces as they stand, then again over the name the take
@@ -441,72 +433,59 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # at that suffix word of its own accord.
         stop = max(rest[peeled.names], seen[m + run + 1])
         head = pieces[stop]
-        # `len(head) == 1` is DEFENSIVE, and measured inert on
-        # 2026-09-19 -- NOT unreachable, which is what an earlier
-        # round of this comment claimed on a population that could not
-        # contain the shape. It asks a LONE piece's question, and the
-        # answer below reads `head[0]` as if the piece were the word.
+        # `len(head) == 1` is DEFENSIVE and measured inert
+        # (2026-09-19) rather than unreachable: it asks a LONE piece's
+        # question, and the answer below reads `head[0]` as if the
+        # piece were the word. The multi-token piece it keeps out is
+        # the Ph. D. merge above, whose `suffix` ptag stops `peel_walk`
+        # ever returning it -- so the peel half of `stop` cannot be it,
+        # but the FIRST-WORD FLOOR is an index rather than a walk and
+        # does reach the merged piece whenever that piece is the second
+        # word after the marker ('BERG, ABDUL Z DOMU MA PH. D.').
         #
-        # The multi-token piece it keeps out is the Ph. D. merge
-        # above. That piece carries the `suffix` ptag, so `peel_walk`
-        # never returns it and the peel half of `stop` cannot be it --
-        # but the FIRST-WORD FLOOR is the other half, and the floor is
-        # an index rather than a walk, so it reaches the merged piece
-        # whenever that piece is the second word after the marker.
-        # 'BERG, ABDUL Z DOMU MA PH. D.' is that shape.
-        #
-        # THE NEGATIVE CONTROL, re-measured 2026-09-19 over a
-        # population built to HOLD the shape -- 4,224 names (twelve
-        # heads x four markers x 23 bodies, each also with a ', MD'
-        # tail and in upper and lower case) under six policies and two
-        # lexicons, the default and one listing `ph` ambiguous, 50,688
-        # parses. A probe that fires wherever the tag test admits a
-        # head this length test then DECLINES -- the only sites where
-        # dropping it could matter -- fires 1,440 times, against
-        # 25,920 reaches of this site and 19,296 tag admissions. The
-        # earlier "0 over 21,504" was the population, not the branch;
-        # mechanisms.md's corpus field note is about exactly this.
-        #
-        # Inert it still is, and now that is a measurement rather than
-        # a structure: dropping it is byte-identical -- fields,
-        # ambiguities and every token's role and tags -- over 905,796
-        # parses (that population plus the review's 142,518-name
-        # corpus under the six policies). What it buys is the price,
-        # and the price is real where the count is not: with `ph`
-        # listed, dropping it takes 'BERG, ABDUL Z DOMU MA PH. D.'
-        # from 438 frames to 453. Kept for the reason
-        # `_assign.previous_kept` is: an inert branch is cheaper than
-        # a question asked of the wrong shape, and the three sibling
-        # sites (`_pieces.segment_suffix_reading` -- the `_pieces.py`
-        # block that pairs the same two conditions -- the GIVEN_SLOT
-        # branch below, and the emitter at the end of this function)
-        # each pair a length test with a tag test the same way.
+        # THE NEGATIVE CONTROL, measured 2026-09-19 over a population
+        # built to HOLD that shape -- 4,224 names (twelve heads x four
+        # markers x 23 bodies, each also with a ', MD' tail and in
+        # upper and lower case) under six policies and two lexicons,
+        # the default and one listing `ph` ambiguous, 50,688 parses. A
+        # probe that fires wherever the tag test admits a head this
+        # length test then DECLINES -- the only sites where dropping it
+        # could matter -- fires 1,440 times, against 25,920 reaches of
+        # this site and 19,296 tag admissions. Dropping it is
+        # byte-identical all the same -- fields, ambiguities and every
+        # token's role and tags -- over 905,796 parses (that population
+        # plus the review's 142,518-name corpus under the six
+        # policies). What it buys is the price, which is real where the
+        # count is not: with `ph` listed, dropping it takes 'BERG,
+        # ABDUL Z DOMU MA PH. D.' from 438 frames to 453. Kept for the
+        # reason `_assign.previous_kept` is: an inert branch is cheaper
+        # than a question asked of the wrong shape, and the three
+        # sibling sites (`_pieces.segment_suffix_reading`, the
+        # GIVEN_SLOT branch below, and the emitter at the end of this
+        # function) each pair a length test with a tag test the same
+        # way.
         #
         # The tag is the CLASS the rule is stated in terms of, and it
         # is not redundant with the walk the way the length test is:
         # 'J. née Jones Smith V' reaches here on a piece
         # `is_suffix_piece` REFUSES for being initial-shaped, and what
-        # declines it is the view check rather than the walk. What the
-        # tag buys is the cost, and that control is a price rather
-        # than a count: dropping it runs the view machinery over every
-        # ordinary credential the peel took, measured on a scratch
-        # copy of the package with the test deleted -- 'Jane Doe nee
-        # Smith PhD' 341 -> 353 frames and 'Doe, Jane nee Smith PhD'
-        # 367 -> 372, counted per `Parser.parse` the way
+        # declines it is the view check rather than the walk. Its own
+        # control is a price too, not a count: dropping it runs the
+        # view machinery over every ordinary credential the peel took
+        # -- 'Jane Doe nee Smith PhD' 341 -> 353 frames and 'Doe, Jane
+        # nee Smith PhD' 367 -> 372, counted per `Parser.parse` the way
         # tests/v2/test_benchmark counts them. No test pins those
         # numbers: `_CALL_BASELINE` is per-interpreter and per entry
         # point, and a row for one name would have to be guessed for
         # the four interpreters only CI runs.
         #
-        # A THIRD condition stood here and is gone: `stop < trailing`.
-        # It guarded nothing, structurally -- `stop` is the larger of
-        # a walked piece and the floor, and both are bounded by
-        # `trailing`, so at worst `stop == trailing` and the
-        # assignment below would set `trailing` to what it already is.
-        # Measured over the same 1,760,904 parses: `stop > trailing`
-        # never once, `stop == trailing` 15,696 times, and the tag
-        # test declined every one of those, so removing it moved no
-        # parse and no frame.
+        # A THIRD condition stood here and is gone: `stop < trailing`
+        # guarded nothing, `stop` being the larger of a walked piece
+        # and the floor and both bounded by `trailing`, so at worst
+        # `stop == trailing` and the assignment below sets `trailing`
+        # to what it already is. Measured over 1,760,904 parses:
+        # `stop > trailing` never once, `stop == trailing` 15,696
+        # times, and the tag test declined every one of those.
         if (len(head) == 1
                 and AMBIGUOUS_ACRONYM_TAG in tokens[head[0]].tags):
             left = [i for i in seen if i < seen[m] or i >= stop]
@@ -603,12 +582,12 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # byte-identical (fields, ambiguities, token roles and tags) over
     # the 905,796-parse oracle at the same frame counts.
     last = pieces[seen[j - 1]]
+    word = tokens[last[0]]
     if (reader is not TailReader.NONE
-            and not tokens[last[0]].tags.isdisjoint(
-                _AMBIGUOUS_CREDENTIAL_TAGS)):
+            and not word.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS)):
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{tokens[last[0]].text!r} ending the maiden name is also "
+            f"{word.text!r} ending the maiden name is also "
             f"a post-nominal; the maiden marker's clause keeps it "
             f"rather than reading it as one",
             tuple(last)))
@@ -666,10 +645,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # two parameters. They are given the SAME list wherever nothing is
     # suppressed, which is every segment that is NOT after a family
     # comma; what the split buys is the other case, where `None` on
-    # the first must not reach the second. An earlier spelling
-    # defaulted the maiden channel to whatever the first was, so a
-    # caller passing `ambiguities=None` silenced both -- which the
-    # required argument now makes unsayable (the review's finding).
+    # the first must not reach the second -- a maiden channel
+    # defaulting to whatever the first was would let a caller passing
+    # `ambiguities=None` silence both (the review's finding).
 
     def title(k: int) -> bool:
         return is_title_piece(pieces[k], ptags[k], tokens)
