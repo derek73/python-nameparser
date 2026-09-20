@@ -853,25 +853,25 @@ def post_rules(state: ParseState) -> ParseState:
     # ONE walk decides both marks -- a plain loop, not two generator
     # expressions: this runs per role on every parse and a genexp
     # costs a frame of its own (frame budget). An EMPTY role needs no
-    # guard of its own: every arm below iterates the part, so the walk
-    # is inert on one, and a `continue` ahead of it survived the whole
-    # suite and moved neither frame count (measured 2026-09-20,
-    # py3.11: parse=406.00 facade=443.00 with it and without it).
+    # `continue` ahead of the walk, which is inert on one: measured
+    # 2026-09-20, py3.11, one survived the whole suite and moved
+    # neither frame count (parse=406.00 facade=443.00 either way).
+    # `bool(part)` says the same thing about the R2 arm as
+    # `_types._remarked`'s twin of this walk does.
     for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
         part = _idx(tokens, role)
-        all_particle = True
+        all_particle = bool(part)
         conj: list[int] = []
         others = 0
         for i in part:
             tags = tokens[i].tags
+            is_conj = "conjunction" in tags
+            if is_conj:
+                conj.append(i)
             if "particle" not in tags:
                 all_particle = False
-                if "conjunction" in tags:
-                    conj.append(i)
-                else:
+                if not is_conj:
                     others += 1
-            elif "conjunction" in tags:
-                conj.append(i)
         if all_particle:
             for i in part:
                 tokens[i] = dataclasses.replace(

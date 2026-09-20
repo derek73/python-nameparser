@@ -757,14 +757,15 @@ def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
             elif not alone and UNJOINED_TAG in tags:
                 out[i] = dataclasses.replace(out[i],
                                              tags=tags - {UNJOINED_TAG})
+            # re-read: the arm above may have replaced the token
             tags = out[i].tags
             mark = lone_conj and "conjunction" in tags
             if mark and UNJOINED_CONJUNCTION_TAG not in tags:
                 out[i] = dataclasses.replace(
                     out[i], tags=tags | {UNJOINED_CONJUNCTION_TAG})
             elif not mark and UNJOINED_CONJUNCTION_TAG in tags:
-                out[i] = dataclasses.replace(out[i],
-                                             tags=tags - {UNJOINED_CONJUNCTION_TAG})
+                out[i] = dataclasses.replace(
+                    out[i], tags=tags - {UNJOINED_CONJUNCTION_TAG})
     return tuple(out)
 
 

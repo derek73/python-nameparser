@@ -225,12 +225,11 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # unjoined mark has turned into ordinary name words" -- so a
     # conjunction keeps conjunction treatment even inside a part the
     # mark has turned into ordinary name words.
-    # The GENERATION test is the other half of that sentence, and it
-    # is why a single conjunct stands ahead of both conjunction arms:
+    # The `generation` guard below is the other half of that sentence:
     # a word this vocabulary holds can ALSO be the generation it
     # spells ('i' is the Catalan link and the roman numeral), and
     # where the parse read the generation the token still carries the
-    # `conjunction` tag classify gave it -- so without the test,
+    # `conjunction` tag classify gave it -- so without the guard,
     # `parse("John Quincy Smith i").capitalized(force=True)` gave
     # 'John Quincy Smith i' where every release through 2.3 gave
     # 'John Quincy Smith I' (#397 review). Such a token is repaired
@@ -251,6 +250,10 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # record of the vocabulary half, so the pair reads two decisions
     # the parse already made and re-derives neither
     # (mechanisms.md#RENDER-HONORS-THE-PARSE).
+    # It guards the whole test rather than the two conjunction arms
+    # alone, which reads as the wider claim and is not one: the
+    # particle arm asks for role MIDDLE or FAMILY, so a SUFFIX-roled
+    # token can never reach it either way.
     # No SHIPPED name witnesses the difference: `particles` and
     # `conjunctions` are disjoint in the default vocabulary and in
     # every locale pack, so no shipped conjunction can sit in an
@@ -305,12 +308,14 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # whose tags it keeps on purpose, and keying this on `span is None`
     # overrode them -- `revise(middle='e-f')` repaired to 'e-F' where
     # the same words parsed gave 'E-F' (#463 review).
-    if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY)
-            and UNJOINED_TAG not in tags)
-            or (not (role is Role.SUFFIX and "vocab:suffix" in tags)
-                and ("conjunction" in tags
-                     or (UNCLASSIFIED_TAG in tags
-                         and _reads_as_conjunction(word, lex))))):
+    generation = role is Role.SUFFIX and "vocab:suffix" in tags
+    if not generation and (
+            (normalized in lex.particles
+             and role in (Role.MIDDLE, Role.FAMILY)
+             and UNJOINED_TAG not in tags)
+            or "conjunction" in tags
+            or (UNCLASSIFIED_TAG in tags
+                and _reads_as_conjunction(word, lex))):
         return word.lower()
     # v1 cap_word tries the edge-stripped form, then the period-free
     # form ('Ph.D.' -> 'ph.d' -> 'phd' hits the exceptions map)
