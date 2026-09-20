@@ -2466,24 +2466,198 @@ CASES: tuple[Case, ...] = (
                "an accented capital is admitted -- the docstring's "
                "'Jean ÉCOLE' example, given the third word it needs "
                "to have words to spare"),
-    Case("catalan_i_is_not_connective_vocabulary_upper",
+    Case("catalan_i_in_a_one_case_name_reads_as_an_initial_upper",
          "JOSEP CAROD I ROVIRA",
          {"given": "JOSEP", "middle": "CAROD I", "family": "ROVIRA"},
-         notes="pinned at TODAY's reading so #397 shows its move: 'i' "
-               "is not in CONJUNCTIONS at all, so the bare capital is "
-               "an initial by shape and this row never reaches the "
-               "fork. If #397 adds 'i' it ships in "
-               "conjunctions_ambiguous too, and this row changes",
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="the row that predicted its own move, and the move is "
+               "the REPORT and not the reading: 'i' is connective "
+               "vocabulary now and ships in conjunctions_ambiguous "
+               "beside 'e', so a name written wholly in one case reads "
+               "the bare capital as an initial -- which is what it "
+               "already did by shape -- and now says so. Roles "
+               "unchanged from 1.4.0 through 2.3.0; only the "
+               "ambiguity is new. The id moved with the answer: it "
+               "read 'is_not_connective_vocabulary', which this "
+               "commit makes false, and nothing outside this table "
+               "named it",
          shape=1),
-    Case("catalan_i_is_not_connective_vocabulary_lower",
+    Case("catalan_i_in_a_one_case_name_reads_as_an_initial_lower",
          "josep carod i rovira",
          {"given": "josep", "middle": "carod i", "family": "rovira"},
-         notes="the lowercase twin: 'i' is an ordinary name word, not "
-               "vocabulary, so nothing joins and nothing reports. This "
-               "row pins NOTHING today -- both readings are what every "
-               "release including 1.4.0 already gives -- and is kept "
-               "anyway as the other half of #397's before-picture, "
-               "beside its upper twin above",
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="the lowercase twin, and the one that shows the fork is "
+               "about CASE EVIDENCE and not about capitals: a name "
+               "written wholly in lower case has nothing marking the "
+               "letter either way, so the marked set decides and the "
+               "letter reads as an initial. Roles unchanged at every "
+               "release; the report is new. Compare 'Josep Carod i "
+               "Rovira' below, which is written in more than one case "
+               "and joins",
+         shape=1),
+    # ---- #397: the Catalan/Polish link ------------------------------
+    # The rule: a connective counts as a name word wherever P3's
+    # carve-out counts them, whatever else the vocabulary says the word
+    # is -- and a connective that is ALSO generational vocabulary joins
+    # only where a name word stands on each side of it. 'i' is the one
+    # shipped entry in both classes: the Catalan link and the roman
+    # numeral I.
+    Case("the_catalan_link_joins_two_surnames",
+         "Josep Carod i Rovira",
+         {"given": "Josep", "family": "Carod i Rovira"},
+         classification="fix(#397)",
+         notes="the statement of the rule and the commonest shape. "
+               "Four words, so the carve-out's count has to reach four "
+               "-- and it does only because the link counts ITSELF, "
+               "'i' being suffix vocabulary that _is_rootname used to "
+               "refuse. 1.4.0 through 2.3.0 read middle 'Carod i', "
+               "family 'Rovira', which is the link left unjoined one "
+               "word short of what a Catalan reader wants",
+         shape=1),
+    Case("the_catalan_link_joins_with_a_middle_name_in_front",
+         "Josep Lluis Carod i Rovira",
+         {"given": "Josep", "middle": "Lluis", "family": "Carod i Rovira"},
+         classification="fix(#397)",
+         notes="the same join with a real middle name beside it: the "
+               "join takes 'Carod i Rovira' and leaves 'Lluis' where "
+               "it was, rather than swallowing the whole tail. 1.4.0 "
+               "read middle 'Lluis Carod i', family 'Rovira'",
+         shape=1),
+    Case("the_catalan_link_survives_a_family_comma",
+         "Carod i Rovira, Josep",
+         {"given": "Josep", "family": "Carod i Rovira"},
+         classification="fix(#397)",
+         notes="the sharpest of the before-pictures, and the half the "
+               "vocabulary alone does not fix: after a family comma "
+               "the link was not merely unjoined, it was read as a "
+               "GENERATION and the family lost it -- 1.4.0 through "
+               "2.3.0 gave family 'Carod Rovira' with suffix 'i'. It "
+               "is also the one new name here that lands in a comma "
+               "rule's corpus claim",
+         shape=2),
+    Case("the_link_is_still_a_name_word_in_a_three_word_name",
+         "Josep i Rovira",
+         {"given": "Josep", "middle": "i", "family": "Rovira"},
+         ambiguities=(),
+         notes="P3's own carve-out, and the BOUNDARY: three words, so "
+               "the single-letter connective stays a name word and "
+               "nothing joins. Roles identical at 1.4.0 and at every "
+               "release since, which is what keeps this row parity -- "
+               "and the two halves of this bundle cancel on it, since "
+               "the readmission (#461) hands the letter back an "
+               "initial that the vocabulary addition would otherwise "
+               "have taken, so 'J. i. R.' holds across the bundle. "
+               "Written in more than one case, so no fork is consulted "
+               "and nothing reports",
+         shape=1),
+    Case("a_link_with_nothing_to_its_right_is_the_generation",
+         "John Quincy Smith i",
+         {"given": "John", "middle": "Quincy", "family": "Smith",
+          "suffix": "i"},
+         notes="the BOUNDARY the both-sides condition exists for, and "
+               "the one Catalan row that reaches its is_suffix_piece "
+               "call at all -- every other Catalan row short-circuits "
+               "on the position test (measured). Four name words, so "
+               "the count no longer declines; drop the condition and "
+               "this reads family 'Smith i', losing the generation "
+               "(measured). A connective with nothing to its right is "
+               "connecting nothing. Roles unchanged at every release, "
+               "1.4.0 included",
+         shape=1),
+    Case("a_link_ending_a_shorter_name_is_the_generation_too",
+         "Josep Carod i",
+         {"given": "Josep", "family": "Carod", "suffix": "i"},
+         notes="the same boundary one word shorter, and it is refused "
+               "one gate EARLIER: three name words, so the count "
+               "declines before the both-sides test is reached. The "
+               "pair with the row above is what separates the two "
+               "gates -- measured, delete the both-sides condition and "
+               "this row still passes while its four-word twin does "
+               "not. Roles unchanged at every release",
+         shape=1),
+    Case("the_two_word_link_keeps_the_generation_reading",
+         "Carod i",
+         {"given": "Carod", "suffix": "i"},
+         classification="fix(suffix-routing)",
+         ambiguities=("given-or-family",),
+         notes="an ACCEPTED COST, pinned so the ledger rule that "
+               "records it has a witness in this table. Two pieces "
+               "never reach the join loop at all, which needs three, "
+               "so the name reads as a name plus a trailing "
+               "generation and the family is empty. 1.4.0 read last "
+               "'i' -- the same two-token divergence the 1.4.0 "
+               "ledger's fix(suffix-routing) rule describes for a "
+               "trailing roman numeral, and the same one 'Donald Mc' "
+               "pins above for the acronym half. That reading also "
+               "has a NOT-WANTED rule at 1.4.0 whose standing this "
+               "bundle converts from 'unresolved' to 'decided': the "
+               "cause is settled and the reading is kept",
+         shape=1),
+    Case("the_link_joins_under_a_trailing_generation_marker",
+         "Josep Carod i Rovira III",
+         {"given": "Josep", "family": "Carod i Rovira", "suffix": "III"},
+         classification="fix(#397)",
+         notes="the suffix run is peeled before grouping, so the join "
+               "sees the same four pieces it sees without it and the "
+               "generation keeps its own slot. The contrast with "
+               "'John Quincy Smith i' is the whole design: a "
+               "generation word BEHIND the link is a suffix, a "
+               "generation word that IS the link with nothing behind "
+               "it stays a suffix too. 1.4.0 read middle 'Carod i'",
+         shape=1),
+    Case("a_bare_capital_link_in_a_mixed_case_name_is_an_initial",
+         "Josep Carod I Rovira",
+         {"given": "Josep", "middle": "Carod I", "family": "Rovira"},
+         ambiguities=(),
+         notes="the recorded negative control for the whole "
+               "vocabulary addition, and the reason the `initial` test "
+               "stays FIRST in the rootname count: a bare Latin "
+               "capital in a name of more than one case is how an "
+               "initial is written, so classify tags it `initial` and "
+               "never `conjunction`, the count is unmoved and nothing "
+               "joins. Identical at 1.4.0 and at every release since",
+         shape=1),
+    Case("a_connective_run_absorbs_a_name_with_no_other_name_word",
+         "Henry i of England",
+         {"given": "Henry i of England"},
+         classification="fix(#397)",
+         ambiguities=("given-or-family",),
+         notes="the ACCEPTED CONSEQUENCE of reaching the class, "
+               "recorded rather than repaired: 'i' and 'of' are "
+               "adjacent connectives, so they merge into one "
+               "connective RUN and the run -- now counting itself -- "
+               "joins the whole name into a single piece. Before this "
+               "commit the same name read given 'Henry', family 'i of "
+               "England'; 1.4.0 read the same. It is the shape 'Duke "
+               "of Edinburgh' already has, which is why the report is "
+               "the lone-name-word one. UNTAGGED on purpose: a "
+               "second-order consequence is not a shape this table "
+               "admits to the contract corpus",
+         ),
+    Case("a_trailing_y_is_not_in_the_both_sides_class",
+         "Juan Garcia Lopez y",
+         {"given": "Juan", "middle": "Garcia", "family": "Lopez y"},
+         notes="the recorded negative control for the CLASS half of "
+               "the both-sides test, and it must NOT move: 'y' is "
+               "connective vocabulary but not generational "
+               "vocabulary, so the condition never asks about it and "
+               "today's reading stands. Drop the is_suffix_piece "
+               "conjunct and this row reads family 'y' with 'Lopez' "
+               "pushed into the middle -- measured, and no property "
+               "invariant in this repo catches it. Identical at 1.4.0",
+         shape=1),
+    Case("a_trailing_y_behind_a_join_is_not_in_the_class_either",
+         "Juan Garcia y Lopez y",
+         {"given": "Juan", "family": "Garcia y Lopez y"},
+         notes="the same control with the letter appearing twice, one "
+               "joining and one trailing: the interior 'y' joins on "
+               "the position test and the trailing one is never asked "
+               "about, so the whole run stays the family. Drop the "
+               "class conjunct and the family collapses to 'y' with "
+               "middle 'Garcia y Lopez' -- measured. Identical at "
+               "1.4.0",
          shape=1),
     # ---- #531: the given part's trailing slot ----------------------
     # The slot: after a family comma the comma has already named the

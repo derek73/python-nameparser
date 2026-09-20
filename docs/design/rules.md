@@ -517,6 +517,17 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     The joined part is ONE name word wherever another rule counts
     them, so a rule taking "one name word" takes the whole join and
     never half of it.
+    A connective counts as a name word wherever this rule counts them,
+    whatever else the vocabulary says the word is. A word can be a
+    connective and a generation at once — the Catalan link is also the
+    roman numeral one — and counting it as the generation would let a
+    connective raise the bar for its own join, so the shortest linked
+    name, which is the commonest one, would be the only one that
+    failed to link.
+    A connective that is also generational vocabulary joins only where
+    a name word stands on each side of it. A connective with nothing
+    to its right is connecting nothing, and a word of that vocabulary
+    ending a name is the generation it also spells.
     Both questions this rule asks of a name — how many words it has,
     and whether it is written in one case — are asked of the name's
     OWN words: a maiden marker taken as one, and the words it takes
@@ -544,13 +555,18 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "Juan & Garcia"             →  given="Juan & Garcia"
       "Mr. Jack and Jill"         →  family="Jack and Jill"
       "Mr. Jack Jill"             →  given="Jack"
+      "Josep Carod i Rovira"      →  family="Carod i Rovira"
+      "Carod i Rovira, Josep"     →  family="Carod i Rovira"
+      "Josep i Rovira"            →  middle="i"
+      "John Quincy Smith i"       →  suffix="i"
+      "Carod i"                   →  suffix="i"
     Both exceptions are about the written FORM, not the word: the
     three-word carve-out counts letters, so a symbol connective joins
     at any length, and it reaches every single-letter connective the
-    vocabulary holds — Cyrillic и/і/й and Arabic و as well as y and
-    e. The initial reading counts letters too, and asks one more
-    question of them: a letter with no case at all (و) can be written
-    against nothing, so it never reads as an initial. A Cyrillic
+    vocabulary holds — Catalan i and Cyrillic и/і/й and Arabic و as
+    well as y and e. The initial reading counts letters too, and asks
+    one more question of them: a letter with no case at all (و) can be
+    written against nothing, so it never reads as an initial. A Cyrillic
     capital has case but is not the shape an initial is written in —
     Cyrillic abbreviates with a dotted letter — so in a name of more
     than one case it joins, the reading #267 blessed, and in a name
@@ -558,9 +574,11 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     letter.
     Which single letters a tradition actually wants joined differs by
     language, and the marked set is where that answer lives: "y" is
-    the commonest Hispanic compound and stays out of it, "e" is a
-    common bare initial and is the one entry shipped. A caller with
-    Portuguese data removes it; a caller with Dutch data adds "y".
+    the commonest Hispanic compound and stays out of it, while "e" and
+    Catalan "i" are both common bare initials and are the two entries
+    shipped. A caller with Portuguese data removes "e"; a caller with
+    Catalan or Polish data removes "i"; a caller with Dutch data adds
+    the letter "y" to it.
     The initial reading is visible beyond the fields, on the two
     derived views: parse("john e smith").initials() gives "j. e. s."
     and .capitalized() gives "John E Smith", where the connective

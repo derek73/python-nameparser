@@ -610,6 +610,21 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
                  tokens: Sequence[WorkToken]) -> bool:
     if len(piece) == 1 and "initial" in tokens[piece[0]].tags:
         return False
+    # rules.md#P3: "A connective counts as a name word wherever this
+    # rule counts them, whatever else the vocabulary says the word is"
+    # (#397). The order against the `initial` test above decides
+    # nothing, and what makes that safe lives in classify rather than
+    # here: for a single letter it writes `initial` or `conjunction`
+    # and never both, so a one-case `I`/`i` arrives with no conjunction
+    # tag whichever test runs first. Measured -- hoisting this arm
+    # above the `initial` refusal moves no field, report or initial on
+    # any corpus name under three name orders, and no test. The
+    # refusal keeps its place as the older and narrower of the two.
+    # INLINE rather than a call to _is_conj_piece: this runs once per
+    # piece of every name (frame budget).
+    if ("conjunction" in ptags
+            or (len(piece) == 1 and "conjunction" in tokens[piece[0]].tags)):
+        return True
     return not (is_title_piece(piece, ptags, tokens)
                 or _is_prefix_piece(piece, ptags, tokens)
                 or is_suffix_piece(piece, ptags, tokens))
@@ -804,17 +819,30 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # single-letter connective in a three-word name, which stays a
         # name word" (v1's Google Code issue 11 carve-out, the
         # "john e smith" bug). The threshold reads the ROOTNAME count,
-        # so a conjunction that is also suffix vocabulary raises the
-        # bar for itself -- #397 measures that on "i".
+        # and since #397 a connective counts ITSELF toward that count,
+        # so a connective that is also suffix vocabulary no longer
+        # raises the bar for its own join.
         k = 0
         while k < len(pieces):
             if not conj(k):
                 k += 1
                 continue
             text = " ".join(tokens[i].text for i in pieces[k])
-            if len(text) == 1 and total < 4 and text.isalpha():
-                k += 1
-                continue
+            if len(text) == 1 and text.isalpha():
+                if total < 4:
+                    k += 1
+                    continue
+                # rules.md#P3: "A connective that is also generational
+                # vocabulary joins only where a name word stands on
+                # each side of it" (#397). About the CLASS, not the
+                # letter, and narrow by construction: it is reached
+                # only for a single-letter connective piece, and it
+                # cannot see a trailing `y` or `and`, which is what
+                # leaves those readings alone.
+                if (not (0 < k < len(pieces) - 1)
+                        and is_suffix_piece(pieces[k], ptags[k], tokens)):
+                    k += 1
+                    continue
             start = max(0, k - 1)
             end = min(len(pieces), k + 2)
             neighbor = start if start < k else end - 1

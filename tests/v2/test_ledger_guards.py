@@ -3130,8 +3130,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # carrying a comma. Reach, not explanation: the regex is a
         # comma and every family-comma row this change added matches
         # it.
+        # 2026-09-20, #397: 358 -> 359, the one new corpus name
+        # carrying a comma, 'Carod i Rovira, Josep'. Reach, not
+        # explanation, and verified name by name: the claimed set
+        # gained that name and lost none.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(358, ('given', 'suffix', 'title'), '0485bb024e5a', None),
+            _Claim(359, ('given', 'suffix', 'title'), '37cb26979687', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3181,8 +3185,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # comma names as the rule above and for the same reason.
         # 2026-09-19, #533: 343 -> 356, the same thirteen new comma
         # names as the rule above and for the same reason.
+        # 2026-09-20, #397: 358 -> 359, the same one new comma name as
+        # the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(358, ('family', 'given'), '0485bb024e5a', None),
+            _Claim(359, ('family', 'given'), '37cb26979687', None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -3404,8 +3410,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # share a field and two corpus names -- and this rule's REACH
         # is unmoved by it: the regex did not change, and reach is
         # what this number counts.
+        # 2026-09-20, #397: 101 -> 102. One new corpus name holding a
+        # connective run, 'Juan Garcia y Lopez y' -- the negative
+        # control for the both-sides condition's class half, which is
+        # in the corpus because its row carries a shape tag. Reach
+        # again: the regex is unchanged and the claimed set gained
+        # that name alone.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(101, ('_initials',), "e91031622dca", ('DEFAULT',)),
+            _Claim(102, ('_initials',), "2c63e2c40d47", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
         # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
         # nee Jones MA' -- the P5 pair this change added to record

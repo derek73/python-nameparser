@@ -1,6 +1,7 @@
 {"name": "ANH DO", "shape": 1}
 {"name": "Bridge (1.4)", "shape": 1}
 {"name": "Bridge (A.B)", "shape": 1}
+{"name": "Carod i", "shape": 1}
 {"name": "Dr. Juan de la Vega III", "shape": 1}
 {"name": "J.A. K.D.", "shape": 1}
 {"name": "J.R.R. Tolkien", "shape": 1}
@@ -44,6 +45,7 @@
 {"name": "John Doe JD.CPA", "shape": 1}
 {"name": "John Doe do", "shape": 1}
 {"name": "John Jack Andrew Kennedy", "shape": 1}
+{"name": "John Quincy Smith i", "shape": 1}
 {"name": "John Smith", "shape": 1}
 {"name": "John Smith 1.4", "shape": 1}
 {"name": "John Smith B.Tech.", "shape": 1}
@@ -64,7 +66,15 @@
 {"name": "John van der Berg Ma", "shape": 1}
 {"name": "Jose E Maria Santos", "shape": 1}
 {"name": "Jose e Maria Santos", "shape": 1}
+{"name": "Josep Carod I Rovira", "shape": 1}
+{"name": "Josep Carod i", "shape": 1}
+{"name": "Josep Carod i Rovira", "shape": 1}
+{"name": "Josep Carod i Rovira III", "shape": 1}
+{"name": "Josep Lluis Carod i Rovira", "shape": 1}
+{"name": "Josep i Rovira", "shape": 1}
+{"name": "Juan Garcia Lopez y", "shape": 1}
 {"name": "Juan Garcia Y Lopez", "shape": 1}
+{"name": "Juan Garcia y Lopez y", "shape": 1}
 {"name": "Juan de la Vega", "shape": 1}
 {"name": "Lt.Gov. John Doe", "shape": 1}
 {"name": "Maria Kowalska z domu Nowak MA", "shape": 1}
@@ -93,6 +103,7 @@
 {"name": "Berg, Jane van der nee Smith DO", "shape": 2}
 {"name": "Berg, abdul MA", "shape": 2}
 {"name": "Berg, abdul nee Jones MA", "shape": 2}
+{"name": "Carod i Rovira, Josep", "shape": 2}
 {"name": "DOE, JOHN MA", "shape": 2}
 {"name": "DOE, MARY JO MA", "shape": 2}
 {"name": "Doe, Dr. John MA", "shape": 2}

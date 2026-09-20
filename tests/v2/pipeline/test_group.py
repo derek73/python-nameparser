@@ -5,6 +5,7 @@ from typing import cast
 
 import pytest
 
+from nameparser import Parser
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import _group as _group_module
 from nameparser._pipeline._classify import classify
@@ -1396,3 +1397,136 @@ def test_the_marker_placements_reach_both_answers() -> None:
         tagged[text] = bool(runs)
     assert sum(tagged.values()) >= 4
     assert sum(not v for v in tagged.values()) >= 3
+
+
+# --- #397: the carve-out's count, and the both-sides condition ------
+# _LEX ships no single letter that is BOTH connective and generational
+# vocabulary, so each test below builds the overlap it is about. That
+# is the point of the rule -- it is keyed on the CLASS, never on the
+# letter -- and a test using the shipped sets would walk the right
+# branch while proving nothing about it (AGENTS.md: "Pin the decision,
+# not the vocabulary").
+_LINK_LEX = _LEX.add(conjunctions={"i"}, suffix_words={"i"})
+#: the same letter as a connective that is NOT generational vocabulary
+_PLAIN_LEX = _LEX.add(conjunctions={"i"})
+
+
+def test_a_connective_piece_counts_toward_the_carve_outs_total() -> None:
+    # rules.md#P3's count (#397). Four words, one of them the link,
+    # and the link is suffix vocabulary -- so the total reaches four
+    # only because a connective counts ITSELF. Without the count arm
+    # the total is three, the carve-out declines, and the link stays
+    # a name word in the middle.
+    out = _grouped("Josep Carod i Rovira", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Josep", "Carod i Rovira"]]
+
+
+def test_the_count_arm_is_what_moves_it_not_the_vocabulary() -> None:
+    # the control that separates the two halves of commit 1: with the
+    # letter a connective but NOT generational vocabulary, nothing
+    # refused it before and the join already fired. Same output, and
+    # the pair is what says the count arm is about the overlap.
+    out = _grouped("Josep Carod i Rovira", lexicon=_PLAIN_LEX)
+    assert _piece_texts(out) == [["Josep", "Carod i Rovira"]]
+
+
+def test_a_connective_with_nothing_to_its_right_does_not_join() -> None:
+    # the both-sides condition (#397). Four name words, so the count
+    # no longer declines -- what keeps the generation here is the
+    # position test, and dropping it reads 'Smith i' as one piece.
+    out = _grouped("John Quincy Smith i", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["John", "Quincy", "Smith", "i"]]
+
+
+def test_a_connective_with_nothing_to_its_left_does_not_join() -> None:
+    # the other side of the same condition, and it needs four pieces
+    # to get past the count: a link OPENING the name has no name word
+    # behind it either.
+    out = _grouped("i Carod Rovira Puig", lexicon=_LINK_LEX)
+    assert _piece_texts(out)[0][0] == "i"
+
+
+def test_the_both_sides_condition_reads_the_class_not_the_letter(
+) -> None:
+    # the recorded negative control for the is_suffix_piece conjunct,
+    # and the one the property invariants CANNOT give: with the same
+    # letter outside the generational vocabulary the condition
+    # declines to ask and the trailing connective joins, exactly as a
+    # trailing 'y' does today. Measured -- remove that conjunct and
+    # this test is the one that dies.
+    out = _grouped("John Quincy Smith i", lexicon=_PLAIN_LEX)
+    assert _piece_texts(out) == [["John", "Quincy", "Smith i"]]
+
+
+def test_a_trailing_shipped_connective_is_untouched_by_the_condition(
+) -> None:
+    # the shipped-vocabulary half of the same control: 'y' is a
+    # connective and not a suffix word, so the condition never reaches
+    # it and 'Lopez y' stays one piece.
+    out = _grouped("Juan Garcia Lopez y")
+    assert _piece_texts(out) == [["Juan", "Garcia", "Lopez y"]]
+
+
+def test_the_three_word_carve_out_still_declines_before_both_sides(
+) -> None:
+    # the two gates are separate and this is what separates them:
+    # three name words, so the count refuses and the both-sides test
+    # is never reached. Delete the both-sides condition and this test
+    # still passes while its four-word sibling does not.
+    out = _grouped("Josep Carod i", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Josep", "Carod", "i"]]
+
+
+def test_a_one_case_letter_is_an_initial_and_never_counts() -> None:
+    # what keeps the one-case fork's count where it was: classify
+    # writes `initial` or `conjunction` on a single letter and never
+    # both, so a letter the fork read as an initial reaches
+    # _is_rootname with no conjunction tag at all, the count is
+    # unmoved, and the name reads as it always did. The EXCLUSIVITY is
+    # the load-bearing part, not the order of the two tests -- measured
+    # (swapping them moves nothing).
+    lex = _LINK_LEX.add(conjunctions_ambiguous={"i"})
+    out = _grouped("josep carod i rovira", lexicon=lex)
+    assert _piece_texts(out) == [["josep", "carod", "i", "rovira"]]
+
+
+def test_the_class_reaches_a_callers_own_connective() -> None:
+    # rules.md#P3 is keyed on the class throughout: a caller who adds
+    # 'v' to their connectives gets the Catalan link's behavior for
+    # it, because 'v' is generational vocabulary the way 'i' is.
+    p = Parser(lexicon=Lexicon.default().add(conjunctions={"v"}))
+    joined = p.parse("Josep Carod v Rovira")
+    assert (joined.given, joined.family) == ("Josep", "Carod v Rovira")
+    trailing = p.parse("John Quincy Smith v")
+    assert (trailing.family, trailing.suffix) == ("Smith", "v")
+
+
+def test_a_callers_non_generational_letter_is_outside_the_condition(
+) -> None:
+    # the recorded negative control, at the reading level: 'x' is a
+    # roman numeral letter that is NOT suffix vocabulary, so the
+    # both-sides condition declines to ask and BOTH positions join,
+    # which is what they did before this change too.
+    p = Parser(lexicon=Lexicon.default().add(conjunctions={"x"}))
+    assert p.parse("John Quincy Smith x").family == "Smith x"
+    assert p.parse("Josep Carod x Rovira").family == "Carod x Rovira"
+
+
+def test_the_count_reaches_a_connective_that_is_particle_vocabulary(
+) -> None:
+    # the ACCEPTED CONSEQUENCE of counting a connective whatever else
+    # it is: _is_rootname refuses a PARTICLE piece the same way it
+    # refuses a generational one, so a caller who makes 'y' a particle
+    # too used to get a different reading from the default lexicon.
+    # Now it agrees with it -- the direction the rule wants. Measured
+    # before this change: given 'Juan', middle 'Velasquez', family
+    # 'y Garcia', family_base 'Garcia'.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    out = p.parse("Juan Velasquez y Garcia")
+    assert (out.given, out.middle, out.family) == (
+        "Juan", "", "Velasquez y Garcia")
+    # the cost that comes with it, pinned rather than hidden:
+    # family_base drops a particle wherever it stands and not only
+    # leading, so the joined run loses the letter here. A standing
+    # rules.md#R2 limit this row surfaces, not one it creates.
+    assert out.family_base == "Velasquez Garcia"

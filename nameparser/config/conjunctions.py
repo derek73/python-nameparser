@@ -9,6 +9,13 @@ CONJUNCTIONS = frozenset({
     'the',
     'und',
     'y',
+    # #397: the Catalan/Polish surname link ("Carod i Rovira",
+    # "Kowalski i Nowak"). Single-letter like 'y'/'и'/'e', and the one
+    # entry that is ALSO generational vocabulary -- 'i' is the roman
+    # numeral I, a bare entry of SUFFIX_WORDS -- so the carve-out
+    # counts it as a name word for its own sake and it joins only
+    # with a name word on each side (rules.md#P3).
+    'i',
     # #269: Cyrillic (ru/uk/bg) "and": и, і, та. Ukrainian writes і and
     # й for the same conjunction, alternating on the surrounding
     # vowel/consonant for euphony ("Олесь і Олена", "Марія й Петро"),
@@ -46,14 +53,17 @@ CONJUNCTIONS_AMBIGUOUS = frozenset({
     # ('Velasquez y Garcia'). Cyrillic и/і/й follow y, not e: #267
     # blessed their joining and nothing here narrows it.
     #
-    # 'i' (Catalan) is NOT here because it is not conjunction vocabulary
-    # at all yet; it ships in this subset if #397 adds it, a bare I
-    # initial being as common as a bare E.
+    # 'i' (Catalan/Polish) ships here beside 'e' for the same reason
+    # (#397): a bare I initial is as common as a bare E, so a name
+    # written wholly in one case reads the letter as an initial and
+    # reports the fork rather than joining in silence.
     #
     # A caller edits the vocabulary rather than a switch: remove 'e' to
-    # restore joining for Portuguese data, add 'y' for a Dutch-style
-    # "every single letter is an initial".
+    # restore joining for Portuguese data, remove 'i' for Catalan or
+    # Polish data, add 'y' for a Dutch-style "every single letter is an
+    # initial".
     'e',
+    'i',
 })
 """
 Single-letter entries of :data:`CONJUNCTIONS` that read as an initial,
