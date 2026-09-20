@@ -27,6 +27,9 @@
 {"name": "Jane Doe geb. Smith MA", "shape": 1}
 {"name": "Jane Doe nee MA", "shape": 1}
 {"name": "Jane Doe nee MA Smith", "shape": 1}
+{"name": "Jane Doe nee Puig i", "shape": 1}
+{"name": "Jane Doe nee Puig i III", "shape": 1}
+{"name": "Jane Doe nee Puig i Soler", "shape": 1}
 {"name": "Jane Doe nee Smith 2", "shape": 1}
 {"name": "Jane Doe nee Smith MA", "shape": 1}
 {"name": "Jane Doe nee Smith MA JD", "shape": 1}
@@ -125,6 +128,7 @@
 {"name": "Doe, J. ba", "shape": 2}
 {"name": "Doe, J. nee MA ba", "shape": 2}
 {"name": "Doe, Jane Q. nee Smith MA", "shape": 2}
+{"name": "Doe, Jane nee Puig i Soler", "shape": 2}
 {"name": "Doe, Jane nee Smith DO", "shape": 2}
 {"name": "Doe, Jane nee Smith Do", "shape": 2}
 {"name": "Doe, Jane nee Smith MA", "shape": 2}

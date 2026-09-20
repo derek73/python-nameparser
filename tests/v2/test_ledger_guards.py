@@ -1063,6 +1063,29 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
         ("Smith, MD PhD", "John Smith, MD PhD", "Smith, MD, PhD",
          "Smith, MD - PhD - FACS", "John Doe, MD - PhD - FACS"),
+    # #397's maiden-clause rules, at every baseline. The key is a
+    # substring of BOTH spellings -- the bare 'fix(#397)' one at the
+    # 2.x baselines and the 'fix(#274/#397)' comma name at 1.4.0 --
+    # and every probe must miss both. The wall the comments argue
+    # for: the link with nothing to its right, the link before a
+    # generation and before a credential (each the generation it also
+    # spells, and the clause ends at it as it always did), the two
+    # spellings where the letter is an INITIAL and the clause keeps
+    # everything, the delimited form the writer settled, and the 'y'
+    # twin, which never had either reading at any baseline.
+    "a link inside a maiden clause stays in the birth name":
+        ("Jane Doe nee Puig i", "Jane Doe nee Puig i III",
+         "Jane Doe nee Puig i MA", "Jane Doe nee Puig I Soler",
+         "JANE DOE NEE PUIG I SOLER", "Jane Doe (nee Puig i Soler)",
+         "Jane Doe nee Puig y Soler"),
+    # The 1.4.0 rule for the control, whose diff there carries the
+    # marker's consumption and the run's rendering and not this
+    # change at all. It must not reach the names the link fix DOES
+    # move, nor the older generation run whose rendering the
+    # fix(#436/#437) rule at the head of that file owns.
+    "a clause the generational link ended":
+        ("Jane Doe nee Puig i Soler", "Doe, Jane nee Puig i Soler",
+         "Jane Doe nee Puig i", "Josep Lluis Carod i III"),
     "fix(#436/#437) the glued honorific and the roman numeral are one post-nominal run":
         ("田中さん V.", "田中さん 様.", "田中さん, Dr."),
     "fix(#436/#437) the glued honorific and the polite address are one post-nominal run":
@@ -2625,7 +2648,13 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "The Rt Hon Kenneth Clarke QC MP, HMG",
                "Washington Jr\\. MD, Franklin", "abdul Smith Jr Ma",
                "abdul Smith Jr V"}),
-    frozenset({"JOHN DOE PHD MD", "Jane Doe nee Smith PhD MA",
+    # 2026-09-20, #397 review: one more name joins the 2.x set and not
+    # the 1.4.0 one, for the reason 'Jane Doe nee Smith PhD MA' did --
+    # 'Jane Doe nee Puig i III' is a comma-written generation run
+    # those baselines share with the tree's spaced one, while at 1.4.0
+    # its ROLES move too and a rule of that ledger's own owns it.
+    frozenset({"JOHN DOE PHD MD", "Jane Doe nee Puig i III",
+               "Jane Doe nee Smith PhD MA",
                "John Doe MD PhD",
                "John Smith MD PhD", "John Smith Mc V",
                "Josep Lluis Carod i III", "Josep Lluis Carod i V",
@@ -2634,6 +2663,13 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "The Rt Hon Kenneth Clarke QC MP, HMG",
                "Washington Jr\\. MD, Franklin", "abdul Smith Jr Ma",
                "abdul Smith Jr V"}),
+    # #397's maiden-clause rule, one corpus name per alternative -- a
+    # list of names, not a copy of any wordlist. What selects the two
+    # is the PLACEMENT of the link inside a clause, which no
+    # vocabulary decides; a member spelled as the shape (a bare letter
+    # after a maiden marker) would reach every clause name in the
+    # corpora and pre-excuse the readings the walk must refuse.
+    frozenset({"Doe, Jane nee Puig i Soler", "Jane Doe nee Puig i Soler"}),
     # #397's join and its one-case report, one corpus name per
     # alternative -- lists of names, not copies of any wordlist. The
     # join's subject is a SHAPE the vocabulary participates in at one
@@ -3199,7 +3235,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # carrying a marker. Read name by name against the regex; no
         # role joined the list.
         "fix(#274) maiden markers consumed":
-            _Claim(73, ('family', 'maiden', 'middle'), 'a2e495d071dd', None),
+            _Claim(77, ('family', 'maiden', 'middle'), 'd36e74b1f60d', None),
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -3300,7 +3336,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # comma form of the swallowed generation. Reach again, and
         # verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(360, ('given', 'suffix', 'title'), 'f0e6eed75c6a', None),
+            _Claim(361, ('given', 'suffix', 'title'), '2e17dee05bcf', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3355,7 +3391,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-20, #397 review: 359 -> 360, the same one new comma
         # name as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(360, ('family', 'given'), 'f0e6eed75c6a', None),
+            _Claim(361, ('family', 'given'), '2e17dee05bcf', None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -3824,6 +3860,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
                    ('DEFAULT',)),
         "fix(#461) a connective holding its part alone contributes an initial":
             _Claim(15, ('_initials',), "4d436d1ebeca", ('DEFAULT',)),
+        "fix(#274/#397) a link inside a maiden clause stays in the birth name, after a family comma":
+            _Claim(1, ('maiden', 'middle', 'suffix'), 'ad2442b1b12a',
+                   None),
+        "fix(#274/#436/#437) a clause the generational link ended, and the run it left renders with spaces":
+            _Claim(1, ('family', 'maiden', 'middle', 'suffix'),
+                   '7d64445a7252', None),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3837,7 +3879,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 46651750 -- and each of which arrived with that change's own
         # case rows. Roles unmoved, `suffix` alone as before.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(14, ('suffix',), "4f5e63e709ae", None),
+            _Claim(15, ('suffix',), "b610147f490b", None),
         # #449's six rules, second in every 2.x ledger. The
         # alternation reaches twenty-two corpus names and
         # `_ambiguities` alone: no role moves anywhere in this change,
@@ -4329,6 +4371,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(16, ('_initials',), "075dc34f9e95", ('DEFAULT',)),
         "fix(#461) a connective with a name word beside it stops contributing an initial":
             _Claim(13, ('_initials',), "3cc41f4bfc21", ('DEFAULT',)),
+        "fix(#397) a link inside a maiden clause stays in the birth name":
+            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
+                   '32405b182f4e', ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -4346,7 +4391,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 46651750 -- and each of which arrived with that change's own
         # case rows. Roles unmoved, `suffix` alone as before.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(14, ('suffix',), "4f5e63e709ae", None),
+            _Claim(15, ('suffix',), "b610147f490b", None),
         # #449's six rules, second in every 2.x ledger. The
         # alternation reaches twenty-two corpus names and
         # `_ambiguities` alone: no role moves anywhere in this change,
@@ -4614,6 +4659,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(17, ('_initials',), "797473971e75", ('DEFAULT',)),
         "fix(#461) a connective with a name word beside it stops contributing an initial":
             _Claim(13, ('_initials',), "3cc41f4bfc21", ('DEFAULT',)),
+        "fix(#397) a link inside a maiden clause stays in the birth name":
+            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
+                   '32405b182f4e', ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -4627,7 +4675,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 46651750 -- and each of which arrived with that change's own
         # case rows. Roles unmoved, `suffix` alone as before.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(14, ('suffix',), "4f5e63e709ae", None),
+            _Claim(15, ('suffix',), "b610147f490b", None),
         # #449's six rules, second in every 2.x ledger. The
         # alternation reaches twenty-two corpus names and
         # `_ambiguities` alone: no role moves anywhere in this change,
@@ -5090,6 +5138,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(16, ('_initials',), "075dc34f9e95", ('DEFAULT',)),
         "fix(#461) a connective with a name word beside it stops contributing an initial":
             _Claim(13, ('_initials',), "3cc41f4bfc21", ('DEFAULT',)),
+        "fix(#397) a link inside a maiden clause stays in the birth name":
+            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
+                   '32405b182f4e', ('DEFAULT',)),
     },
     "expected_since_2.3.0.toml": {
         # #383/#479's three rules, the first this ledger carries. The
@@ -5242,6 +5293,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(17, ('_initials',), "797473971e75", ('DEFAULT',)),
         "fix(#461) a connective with a name word beside it stops contributing an initial":
             _Claim(22, ('_initials',), "e73827447b4e", ('DEFAULT',)),
+        "fix(#397) a link inside a maiden clause stays in the birth name":
+            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
+                   '32405b182f4e', ('DEFAULT',)),
     },
 }
 

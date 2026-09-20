@@ -1645,3 +1645,133 @@ def test_the_count_reaches_a_connective_that_is_particle_vocabulary(
     # leading, so the joined run loses the letter here. A standing
     # rules.md#R2 limit this row surfaces, not one it creates.
     assert out.family_base == "Velasquez Garcia"
+
+
+# --- #397 review: the link inside a MAIDEN CLAUSE -------------------
+# rules.md#M2's link clause. The walk ends the birth name at the first
+# suffix WORD after the marker, and the link is one -- so it ended the
+# clause there, and what #397 added was to JOIN the words it left
+# standing into the current surname. Each branch below has the same
+# LINK/PLAIN pair the both-sides tests above use: with the letter
+# outside the generational vocabulary the walk never stopped at it in
+# the first place, so the pair says which arm does the work.
+#
+# `ma` is added to BOTH acronym sets where the right-hand neighbour
+# has to be an AMBIGUOUS credential: such a word carries no
+# `vocab:suffix` tag, so the piece test cannot refuse it and only the
+# peel bound keeps it out of the clause.
+_LINK_MA_LEX = _LINK_LEX.add(suffix_acronyms={"ma"},
+                             suffix_acronyms_ambiguous={"ma"})
+_PLAIN_MA_LEX = _PLAIN_LEX.add(suffix_acronyms={"ma"},
+                               suffix_acronyms_ambiguous={"ma"})
+
+
+def test_a_link_inside_a_maiden_clause_does_not_end_it() -> None:
+    # the statement of the rule. A birth-name word on each side of the
+    # link, so the walk steps over it and the clause takes all three
+    # words; without the exception the clause is 'Puig' and 'i Soler'
+    # is left for the joins to build a surname out of.
+    out = _grouped("Jane Doe née Puig i Soler", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig", "i", "Soler"]
+    assert _piece_texts(out) == [["Jane", "Doe"]]
+
+
+def test_the_clause_link_arm_is_what_moves_it_not_the_vocabulary(
+) -> None:
+    # the PLAIN twin: with the letter a connective but NOT generational
+    # vocabulary the walk never stopped at it, so the reading is the
+    # one it always had. The pair is what says the exception is about
+    # the overlap.
+    out = _grouped("Jane Doe née Puig i Soler", lexicon=_PLAIN_LEX)
+    assert _maiden_texts(out) == ["Puig", "i", "Soler"]
+
+
+def test_the_clause_link_survives_a_family_comma() -> None:
+    # the same walk under the GIVEN_SLOT reader, which is a different
+    # branch of the take rather than a second member of one shape:
+    # before the exception the leak landed in the given part.
+    out = _grouped("Doe, Jane née Puig i Soler", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig", "i", "Soler"]
+    assert _piece_texts(out) == [["Doe"], ["Jane"]]
+
+
+def test_a_clause_link_runs_twice_over() -> None:
+    # every link of the clause is asked, not just the first: the walk
+    # steps over each one it finds between two birth-name words.
+    out = _grouped("Jane Doe née Puig i Soler i Vila", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig", "i", "Soler", "i", "Vila"]
+
+
+def test_a_clause_link_with_nothing_on_its_right_still_ends_it(
+) -> None:
+    # the first control. Nothing stands after the link at all, so it
+    # is joining nothing and is the generation it also spells -- the
+    # clause ends at it exactly as it did before, and `_name_word_
+    # beside` walks off the end. The PLAIN twin keeps the letter,
+    # which is what says this row is the condition's doing.
+    out = _grouped("Jane Doe née Puig i", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig"]
+    plain = _grouped("Jane Doe née Puig i", lexicon=_PLAIN_LEX)
+    assert _maiden_texts(plain) == ["Puig"]
+
+
+def test_a_generation_on_the_links_right_is_no_name_word() -> None:
+    # the second control, refused by CLASS: 'jr' is suffix vocabulary,
+    # so `_name_word_beside` declines it wherever it stands.
+    out = _grouped("Jane Doe née Puig i jr", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig"]
+    plain = _grouped("Jane Doe née Puig i jr", lexicon=_PLAIN_LEX)
+    assert _maiden_texts(plain) == ["Puig", "i"]
+
+
+def test_an_ambiguous_credential_on_the_right_is_refused_by_bound(
+) -> None:
+    # the third control, and the one that pins WHICH right-hand bound
+    # the exception reads. 'MA' carries no `vocab:suffix` tag -- the
+    # piece test says nothing about it -- so what keeps it out of the
+    # clause is `peel_start`, where assign's trailing run begins over
+    # the pieces as written. Read the walk's own stop instead and this
+    # row takes 'i MA' into the birth name.
+    out = _grouped("Jane Doe née Puig i MA", lexicon=_LINK_MA_LEX)
+    assert _maiden_texts(out) == ["Puig"]
+    plain = _grouped("Jane Doe née Puig i MA", lexicon=_PLAIN_MA_LEX)
+    assert _maiden_texts(plain) == ["Puig", "i"]
+
+
+def test_a_suffix_word_that_is_no_connective_still_ends_the_clause(
+) -> None:
+    # the recorded negative control for the CLASS half of the
+    # exception, the shape 'Juan Garcia Lopez y' is for the join: 'jr'
+    # stands between two birth-name words and is not a connective at
+    # all, so the exception is never asked and the clause ends at it
+    # as it always did. Drop the connective conjunct and this row
+    # reads maiden 'Puig jr Soler' -- measured. Identical under both
+    # lexicons, the letter deciding nothing here.
+    out = _grouped("Jane Doe née Puig jr Soler", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig"]
+    assert _piece_texts(out) == [["Jane", "Doe", "jr", "Soler"]]
+
+
+def test_the_marker_is_not_the_name_word_on_the_links_left() -> None:
+    # the fourth control, and the one the clause's own `lo` bound
+    # carries: the marker announces the name and is no word of it, so
+    # a link standing first inside the clause joins nothing there. The
+    # walk then stops at its very first piece and the pass declines
+    # altogether, leaving the marker an ordinary word (rules.md#M2).
+    out = _grouped("Jane Doe née i Soler", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == []
+    assert _piece_texts(out) == [["Jane", "Doe", "née i Soler"]]
+    plain = _grouped("Jane Doe née i Soler", lexicon=_PLAIN_LEX)
+    assert _maiden_texts(plain) == ["i", "Soler"]
+
+
+def test_a_marker_with_nothing_after_it_declines_before_the_bound(
+) -> None:
+    # the clause's `lo` is the first piece after the marker run, and
+    # with nothing behind the marker there is no such piece: the pass
+    # declines here rather than indexing for a bound it would never
+    # read. Unchanged behavior, and the row exists because the early
+    # return is what makes it unchanged.
+    out = _grouped("Jane Doe née", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == []
+    assert _piece_texts(out) == [["Jane", "Doe", "née"]]

@@ -1264,6 +1264,13 @@ M2. Rationale: a maiden marker announces that what follows it is the
     credential, and never the first word after the marker — as the
     maiden name, and
     the marker itself is dropped.
+    One suffix word does not stop it. Where such a word is also a
+    connective standing between two name words of the clause (P3),
+    a link inside the birth name does not end it, and the words on
+    both sides of the link are the maiden name. A link with the
+    marker on one side of it, or with the trailing run on the
+    other, is joining nothing there and ends the clause like any
+    other suffix word.
     Those last two stops are each asked TWICE for one reason: the
     count of words to spare includes the very words the marker
     removes, so a reading taken over the name as written can be
@@ -1343,6 +1350,9 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Doe, Dr. nee Smith MA"     →  maiden="Smith MA"  · boundary
       "Berg, abdul nee Jones MA"  →  maiden="Jones MA"  · boundary
       "Jane Doe nee Smith DO DO"  →  maiden="Smith DO DO"  · boundary
+      "Jane Doe nee Puig i Soler" →  maiden="Puig i Soler"
+      "Jane Doe nee Puig i"       →  maiden="Puig"  · boundary
+      "Jane Doe nee Puig i"       →  suffix="i"  · boundary
       "Jane Doe (nee Smith MA)"   →  maiden="Smith MA"
       "Jane Doe (nee Smith Ma)"   →  maiden="Smith Ma"
       "Jane Doe (nee Smith) MA"   →  suffix="MA"
@@ -1367,7 +1377,9 @@ M2. Rationale: a maiden marker announces that what follows it is the
     Accepted: the marker reads the words as written, so a suffix word
     inside the maiden name ends it even where a connective beside it
     would have bound the two into one name word (P3); the connective
-    then builds a family name out of what is left.
+    then builds a family name out of what is left. A suffix word
+    that IS the connective is the exception stated above, and ends
+    the clause only where it joins nothing.
       "Jane née Jr y Jones"            →  maiden=""
     Accepted: a bare acronym the reading declines is maiden text all
     the same — the writing decides this one (S2), and the count such

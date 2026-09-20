@@ -884,3 +884,45 @@ issue = "fix(#461) a connective with a name word beside it stops contributing an
 name_regex = "^(?:Assoc Dean of Chemistry Robert Johns|Dean of Chemistry|Dean of Chemistry Robert Johns|Duke of Edinburgh|Duke of Wellington|John & Jane|John and Jane Aznar y Lopez|John and Jane Smith|John of the Doe|Jose e Maria Santos|Juan & Garcia|Juan and Garcia|Juan y Eva Garcia|Mr\\. and Mrs\\. John and Jane Smith|Rob And Beth Edmunds|and Jon Dough|part1 of The part2 of the part3 and part4|part1 of and The part2 of the part3 And part4|the and Jon Dough|ХОСЕ И МАРИЯ САНТОС|Хосе И Мария Сантос|хосе и мария сантос)$"
 fields = ["_initials"]
 orders = ["DEFAULT"]
+
+# #397 review: A LINK INSIDE A MAIDEN CLAUSE STAYS IN THE BIRTH NAME
+# (2026-09-20). LAST in the file, narrow-first: this rule declares
+# {family, maiden, middle, suffix} and every rule above it that could
+# reach either name declares a strict subset, so an earlier position
+# would be an order-decided contest the run refuses (#382).
+#
+# rules.md#M2 states the exception; decisions.md#M2's 2026-09-20
+# bullet carries the measurement and why it is fixed in #397's own PR
+# rather than filed.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#397) a link inside a maiden clause stays in the birth name"
+# Two names, one sentence, two shapes -- `fields` is the union.
+#
+# The maiden walk has always ended the birth name at the first suffix
+# WORD after the marker, and the Catalan link is also the roman
+# numeral, so this baseline read maiden 'Puig' and left 'i Soler'
+# outside the clause: 'Jane Doe nee Puig i Soler' middle 'Doe i',
+# family 'Soler'; 'Doe, Jane nee Puig i Soler' middle 'Soler', suffix
+# 'i'. That truncation PREDATES this bundle. What #397 added is
+# worse and is why the stop is fixed here: with the link joining, the
+# leaked words merged into the CURRENT surname -- measured on the
+# parent 46651750 and on this branch's 0fbcaa0b, family 'Doe i Soler'
+# and given 'Jane i Soler' respectively -- a word of the birth name
+# inside the current one.
+#
+# The 'y' spelling is the control and never moved at any baseline:
+# 'Jane Doe nee Puig y Soler' reads maiden 'Puig y Soler' here and in
+# the tree, 'y' being connective vocabulary and no generation. That
+# twin is the property invariant in tests/v2/test_properties.py.
+#
+# Literal-anchored to the two. The shape is "a one-letter connective
+# inside a maiden clause", which would stand ready to excuse every
+# future regression at this walk -- and the walk's whole design is
+# that some such letters must NOT be taken. _MUST_NOT_MATCH carries
+# the wall: the i-last control, the generation behind it, and the
+# spellings where the letter is an initial.
+name_regex = "^(?:Doe, Jane nee Puig i Soler|Jane Doe nee Puig i Soler)$"
+fields = ["family", "maiden", "middle", "suffix"]
+orders = ["DEFAULT"]

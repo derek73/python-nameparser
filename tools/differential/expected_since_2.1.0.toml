@@ -97,7 +97,16 @@ issue = "fix(#436/#437) a space-separated post-nominal run renders with spaces, 
 # generation marker and not a name word to its right. What grew is
 # the CORPUS -- the three arrived with #397's own case rows -- and
 # the run rendering is what the diffs are about.
-name_regex = "^(?:JOHN DOE PHD MD|Jane Doe nee Smith PhD MA|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Josep Lluis Carod i III|Josep Lluis Carod i V|Kenneth Clarke QC MP|Rovira, Josep Carod i Jr\\.|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
+# 2026-09-20, #397 review: one more name joins the alternation and
+# the rule does not change. 'Jane Doe nee Puig i III' is the same
+# two-word generation run inside a MAIDEN clause's tail: this
+# baseline renders 'i, III' and the tree renders 'i III', which is
+# the whole of its diff here. The link fix moves nothing on it --
+# measured against the parent 46651750, the parse is byte-identical
+# before and after (given 'Jane', family 'Doe', suffix 'i III',
+# maiden 'Puig'), the link having a generation and not a name word
+# to its right. What grew is the CORPUS.
+name_regex = "^(?:JOHN DOE PHD MD|Jane Doe nee Puig i III|Jane Doe nee Smith PhD MA|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Josep Lluis Carod i III|Josep Lluis Carod i V|Kenneth Clarke QC MP|Rovira, Josep Carod i Jr\\.|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
 fields = ["suffix"]
 
 # The six #449 rules go SECOND, not first: the rule above
@@ -3098,4 +3107,46 @@ issue = "fix(#461) a connective with a name word beside it stops contributing an
 # fixed.
 name_regex = "^(?:Assoc Dean of Chemistry Robert Johns|Dean of Chemistry Robert Johns|John and Jane Aznar y Lopez|John and Jane Smith|Jose e Maria Santos|Juan y Eva Garcia|Mr\\. and Mrs\\. John and Jane Smith|Rob And Beth Edmunds|and Jon Dough|the and Jon Dough|ХОСЕ И МАРИЯ САНТОС|Хосе И Мария Сантос|хосе и мария сантос)$"
 fields = ["_initials"]
+orders = ["DEFAULT"]
+
+# #397 review: A LINK INSIDE A MAIDEN CLAUSE STAYS IN THE BIRTH NAME
+# (2026-09-20). LAST in the file, narrow-first: this rule declares
+# {family, maiden, middle, suffix} and every rule above it that could
+# reach either name declares a strict subset, so an earlier position
+# would be an order-decided contest the run refuses (#382).
+#
+# rules.md#M2 states the exception; decisions.md#M2's 2026-09-20
+# bullet carries the measurement and why it is fixed in #397's own PR
+# rather than filed.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#397) a link inside a maiden clause stays in the birth name"
+# Two names, one sentence, two shapes -- `fields` is the union.
+#
+# The maiden walk has always ended the birth name at the first suffix
+# WORD after the marker, and the Catalan link is also the roman
+# numeral, so this baseline read maiden 'Puig' and left 'i Soler'
+# outside the clause: 'Jane Doe nee Puig i Soler' middle 'Doe i',
+# family 'Soler'; 'Doe, Jane nee Puig i Soler' middle 'Soler', suffix
+# 'i'. That truncation PREDATES this bundle. What #397 added is
+# worse and is why the stop is fixed here: with the link joining, the
+# leaked words merged into the CURRENT surname -- measured on the
+# parent 46651750 and on this branch's 0fbcaa0b, family 'Doe i Soler'
+# and given 'Jane i Soler' respectively -- a word of the birth name
+# inside the current one.
+#
+# The 'y' spelling is the control and never moved at any baseline:
+# 'Jane Doe nee Puig y Soler' reads maiden 'Puig y Soler' here and in
+# the tree, 'y' being connective vocabulary and no generation. That
+# twin is the property invariant in tests/v2/test_properties.py.
+#
+# Literal-anchored to the two. The shape is "a one-letter connective
+# inside a maiden clause", which would stand ready to excuse every
+# future regression at this walk -- and the walk's whole design is
+# that some such letters must NOT be taken. _MUST_NOT_MATCH carries
+# the wall: the i-last control, the generation behind it, and the
+# spellings where the letter is an initial.
+name_regex = "^(?:Doe, Jane nee Puig i Soler|Jane Doe nee Puig i Soler)$"
+fields = ["family", "maiden", "middle", "suffix"]
 orders = ["DEFAULT"]

@@ -4282,3 +4282,52 @@ issue = "fix(#434/#533) a marker PHRASE takes the maiden name, and its clause en
 name_regex = "^Maria Kowalska z domu Nowak MA$"
 fields = ["family", "maiden", "middle"]
 
+
+# #397 review: A LINK INSIDE A MAIDEN CLAUSE STAYS IN THE BIRTH NAME
+# (2026-09-20). Two rules, because at this baseline two OTHER changes
+# ride along in the same diffs and one rule has to explain the whole
+# of each: the marker leaving the name (#274) and R1's space-joined
+# rendering of a suffix run v1 wrote with a comma (#436/#437).
+#
+# The third new name, 'Jane Doe nee Puig i Soler', needs no rule here:
+# its diff at this baseline is {family, maiden, middle}, which the
+# fix(#274) alternation above already explains -- v1 has no maiden
+# support at all, so the clause leaving the name IS the whole diff and
+# the link's placement inside it changes none of the three field
+# NAMES. The fourth, 'Jane Doe nee Puig i', is explained there too.
+#
+# rules.md#M2 states the exception; decisions.md#M2's 2026-09-20
+# bullet carries the measurement.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#274/#397) a link inside a maiden clause stays in the birth name, after a family comma"
+# 'Doe, Jane nee Puig i Soler'. v1 read middle 'nee Puig Soler' with
+# suffix 'i' -- the marker an ordinary word and the link a generation.
+# The tree reads given 'Jane', family 'Doe', maiden 'Puig i Soler':
+# the marker consumed (#274) and the link kept inside the clause it
+# stands in (#397). `suffix` is in the list because v1 had one and the
+# tree does not, which is the link's half.
+#
+# Literal, one name. The shape would be "a maiden marker and a bare
+# letter", which reaches every clause name in the corpora.
+name_regex = "^Doe, Jane nee Puig i Soler$"
+fields = ["maiden", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#274/#436/#437) a clause the generational link ended, and the run it left renders with spaces"
+# 'Jane Doe nee Puig i III'. Two changes meet in the v1 diff: the
+# marker leaving the name (#274, maiden 'Puig' where v1 read last
+# 'Puig' and middle 'Doe nee') and the two-word generation run 'i III'
+# that v1 rendered 'i, III' (#436/#437). The link fix moves NOTHING on
+# it and that is what the name is in the corpus for -- measured
+# against the parent 46651750, the parse is byte-identical before and
+# after this bundle, the link having a generation to its right rather
+# than a name word.
+#
+# Separate from the fix(#274/#436/#437) rule above it rather than a
+# widening of that anchor: that one is about a clause an unambiguous
+# CREDENTIAL ended, and a rule naming only credentials would
+# attribute this stop to the wrong reading.
+name_regex = "^Jane Doe nee Puig i III$"
+fields = ["family", "maiden", "middle", "suffix"]

@@ -1691,3 +1691,201 @@ def test_a_letter_that_did_not_join_repairs_as_the_off_switch_does() -> None:
     assert not failures, (
         f"{len(failures)} repair(s) moved for a letter that joined "
         f"nothing:\n" + "\n".join(failures[:10]))
+
+
+# --- #397 review: the MAIDEN-CLAUSE LINK grid, and its two ----------
+# invariants
+# A third grid, kept apart from the two above for the reason the
+# off-switch one is: every row here is parsed TWICE, once as written
+# and once with the link spelled `y`, and the texts that earn the
+# second parse are the clause shapes -- which neither grid above
+# generates, both putting their connective among the name's own
+# words. What this one adds: a link INSIDE a maiden clause, in every
+# position a clause can hold one, under every marker the library
+# ships and behind every trailing run the walk stops at.
+#
+# The `y` spelling is the ORACLE and not a second subject. It is the
+# same sentence with the ambiguity removed: `y` is connective
+# vocabulary and no generation, so nothing in the walk can read it as
+# the end of the clause, and whatever it does is what the `i`
+# spelling has to do wherever P3 says the letter is joining.
+
+#: The clause bodies, `@` standing where the link goes: a link
+#: between two words, with a word run on either side of it, doubled,
+#: and the two shapes where it joins NOTHING -- nothing on its right,
+#: nothing on its left but the marker. The last two are the
+#: controls the guard below must refuse, and
+#: `test_the_maiden_link_grid_can_fail` counts them out.
+_LINK_BODIES: tuple[tuple[str, ...], ...] = (
+    ("Puig", "@", "Soler"),
+    ("Puig", "@", "Soler", "Roig"),
+    ("Puig", "Soler", "@", "Roig"),
+    ("Puig", "@", "Soler", "@", "Roig"),
+    ("Puig", "@"),
+    ("@", "Soler"),
+)
+#: Nothing, the two generations and the two credential classes -- the
+#: four trailing runs M2's walk stops at, plus the empty one.
+_LINK_TAILS: tuple[tuple[str, ...], ...] = (
+    (), ("III",), ("Jr.",), ("MA",), ("PhD",))
+#: One to three words, and the last carries a link of its OWN, which
+#: stays spelled `i` in both parses: the head's reading is not what
+#: this grid is about, and holding it fixed is what makes a moved
+#: field the clause's doing.
+_LINK_HEADS: tuple[tuple[str, ...], ...] = (
+    ("Jane",), ("Doe", "Jane"), ("Jane", "Doe"),
+    ("Jane", "M.", "Doe"), ("Carod", "i", "Rovira"))
+
+_LINK_RE = re.compile(r"(?<!\S)y(?!\S)")
+
+
+def _link_texts() -> dict[str, str]:
+    """Every clause shape, mapped to its `y`-spelled twin.
+
+    The two spellings differ in one CHARACTER per link, so their
+    token spans line up exactly -- which is what lets the second
+    invariant below delimit the clause with the twin's own maiden
+    tokens and then read the first parse at those offsets.
+    """
+    out: dict[str, str] = {}
+    markers = sorted(Lexicon.default().maiden_markers)
+    for head, marker, body, tail, comma in itertools.product(
+            _LINK_HEADS, markers, _LINK_BODIES, _LINK_TAILS,
+            (False, True)):
+        if comma and len(head) < 2:
+            continue
+        pair = []
+        for link in ("i", "y"):
+            words = [link if w == "@" else w for w in body]
+            rest = list(head[1:] if comma else head) + [marker] \
+                + words + list(tail)
+            pair.append(f"{head[0]}, " + " ".join(rest) if comma
+                        else " ".join(rest))
+        out.setdefault(pair[0], pair[1])
+    return out
+
+
+_LINK_TWIN = _link_texts()
+_MAIDEN_LINK_GRID = _rows(
+    list(_LINK_TWIN),
+    (("default", Lexicon.default(), frozenset()),))
+
+
+def _link_joins_inside_the_clause(maiden: str) -> bool:
+    """Whether the ORACLE parse put a link inside the birth name with
+    a birth-name word on each side of it -- rules.md#P3's both-sides
+    condition, read off the `y` spelling's own maiden field.
+
+    The guard, and it is narrower than "the twin keeps the link" for
+    a measured reason: 'Jane Doe nee Puig y' keeps its `y` in maiden
+    'Puig y', and 'Jane Doe nee Puig i' reads maiden 'Puig' with
+    suffix 'i' -- deliberately, the link there joining nothing and
+    being the generation it also spells (rules.md#M2). So a guard
+    asking only whether the twin kept the letter would demand the two
+    agree where the rules say they must not. `Puig y III` and `y
+    Soler` are the same shape from the other two sides.
+    """
+    words = maiden.split()
+    at = [k for k, w in enumerate(words) if w == "y"]
+    return bool(at) and all(
+        any(w != "y" for w in words[:k])
+        and any(w != "y" for w in words[k + 1:]) for k in at)
+
+
+@functools.cache
+def _maiden_link_findings() -> dict[str, list[str]]:
+    """One walk of the maiden-link grid; two invariants' answers.
+
+    Both parses of a row are taken once here and handed to both
+    predicates, which is all this walk does -- the ONE PARSE, MANY
+    CHECKS rule the two grids above follow.
+    """
+    out: dict[str, list[str]] = {k: [] for k in ("INV8", "INV9")}
+    for text, parser, label in _MAIDEN_LINK_GRID:
+        twin = parser.parse(_LINK_TWIN[text])
+        if not _link_joins_inside_the_clause(twin.maiden):
+            continue
+        on = parser.parse(text)
+        want = {k: _LINK_RE.sub("i", v) for k, v in twin.as_dict().items()}
+        if on.as_dict() != want:
+            out["INV8"].append(f"[{label}] {text!r}: {on.as_dict()} != "
+                               f"y-twin {want}")
+        spans = [tok.span for tok in twin.tokens
+                 if tok.role is Role.MAIDEN and tok.span is not None]
+        lo = min(s.start for s in spans)
+        hi = max(s.end for s in spans)
+        for tok in on.tokens:
+            if (tok.span is not None and lo <= tok.span.start
+                    and tok.span.end <= hi and tok.role in _NAME_ROLES):
+                out["INV9"].append(
+                    f"[{label}] {text!r}: {tok.text!r} of the birth "
+                    f"name reads as {tok.role.value}")
+    return out
+
+
+def test_the_maiden_link_grid_can_fail() -> None:
+    """The reachability probe, the shape every grid in this file
+    carries. Dated recorded control, measured 2026-09-20.
+
+    The third count is the one to watch: the guard above refuses the
+    two joining-nothing bodies outright, so a grid whose every row
+    were one of those would pass both invariants in silence. 1,350 of
+    the first 2,000 rows are guarded in, and 10,540 of all 15,810 --
+    two thirds, which is the four admitted bodies of six.
+    """
+    assert len(_MAIDEN_LINK_GRID) == 15810, len(_MAIDEN_LINK_GRID)
+    assert len(_LINK_TWIN) == 4590, len(_LINK_TWIN)
+    guarded = sum(
+        1 for text, parser, _ in _MAIDEN_LINK_GRID[:2000]
+        if _link_joins_inside_the_clause(parser.parse(_LINK_TWIN[text]).maiden))
+    assert guarded > 800, guarded
+
+
+def test_a_clause_link_reads_as_its_y_twin_does() -> None:
+    """INV8 (#397 review). THE y TWIN. Where the `y` spelling puts a
+    link inside the birth name with a birth-name word on each side,
+    the `i` spelling gives the same seven fields, letter for letter
+    apart from the link itself.
+
+    `y` is connective vocabulary and nothing else, so its reading is
+    the one the maiden walk was never able to get wrong; `i` is that
+    same connective AND the roman numeral, and the walk used to end
+    the birth name at it. The pair is the whole statement of
+    rules.md#M2's link clause, and it needs no expected values of its
+    own.
+
+    Mutation-checked, 2026-09-20: it fails on all 10,540 guarded rows
+    at 0fbcaa0b -- this branch's tip before the fix -- and on the same
+    10,540 at the parent 46651750, the walk having truncated the
+    birth name at the link since long before #397 reached it. That it
+    is EVERY guarded row and not a subset is the finding: no clause
+    shape holding a joining link read as its twin did.
+    """
+    failures = _maiden_link_findings()["INV8"]
+    assert not failures, (
+        f"{len(failures)} parse(s) read a clause link differently "
+        f"from its y twin:\n" + "\n".join(failures[:10]))
+
+
+def test_no_birth_name_word_reads_as_a_word_of_the_current_name() -> None:
+    """INV9 (#397 review). The failure class #424 and #533 exist to
+    prevent, stated for the link: no token standing inside the birth
+    name -- as the `y` twin's own maiden tokens delimit it -- is
+    roled GIVEN, MIDDLE or FAMILY.
+
+    Weaker than INV8 and kept beside it because it is the one that
+    names the HARM. A truncation moves fields too, and this stays
+    green for it; what it refuses is a word of one person's birth
+    name being handed to the surname they carry now.
+
+    Mutation-checked, 2026-09-20: it fails on 28,985 tokens at
+    0fbcaa0b and on 22,185 at the parent 46651750, over the same
+    10,540 guarded rows. The GAP between those two is what this
+    branch added: at the parent the released words are a truncation
+    that left them in `middle` and `family`, and with the link
+    joining they became words of the current surname itself.
+    """
+    failures = _maiden_link_findings()["INV9"]
+    assert not failures, (
+        f"{len(failures)} birth-name word(s) read as a word of the "
+        f"current name:\n" + "\n".join(failures[:10]))

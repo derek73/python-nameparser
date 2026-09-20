@@ -2748,6 +2748,70 @@ CASES: tuple[Case, ...] = (
                "middle 'Garcia y Lopez' -- measured. Identical at "
                "1.4.0",
          shape=1),
+    Case("a_link_inside_a_maiden_clause_stays_in_the_birth_name",
+         "Jane Doe nee Puig i Soler",
+         {"given": "Jane", "family": "Doe", "maiden": "Puig i Soler"},
+         classification="fix(#397)",
+         notes="the shape the link fix turned from a truncation into "
+               "a LEAK, and the reason it is fixed here rather than "
+               "left for its own issue: the maiden walk has always "
+               "stopped at the first suffix word after the marker, so "
+               "2.0.0 through 2.3.0 read maiden 'Puig' and left 'i "
+               "Soler' standing as middle 'Doe i', family 'Soler' -- "
+               "a truncation, and the released words at least stayed "
+               "out of the surname. With the link joining, the same "
+               "two words became family 'Doe i Soler': a word of the "
+               "BIRTH name inside the CURRENT one, which is the class "
+               "of failure #424 and #533 exist to prevent. The 'y' "
+               "spelling never had either reading, and the invariant "
+               "in test_properties.py is that twin. 1.4.0 has no "
+               "maiden support at all and read middle 'Doe nee Puig "
+               "i', last 'Soler'",
+         shape=1),
+    Case("the_link_stays_in_the_birth_name_after_a_family_comma_too",
+         "Doe, Jane nee Puig i Soler",
+         {"given": "Jane", "family": "Doe", "maiden": "Puig i Soler"},
+         classification="fix(#397)",
+         notes="the comma form, and a different reader rather than a "
+               "second member of one shape: segment 1 is read at the "
+               "GIVEN slot, so the leak landed in given 'Jane i "
+               "Soler' rather than in the family. 2.0.0 through 2.3.0 "
+               "read maiden 'Puig' with middle 'Soler' and suffix "
+               "'i'. 1.4.0 read middle 'nee Puig Soler', suffix 'i'",
+         shape=2),
+    Case("a_link_with_nothing_on_its_right_still_ends_the_clause",
+         "Jane Doe nee Puig i",
+         {"given": "Jane", "family": "Doe", "suffix": "i",
+          "maiden": "Puig"},
+         classification="fix(#274)",
+         notes="the CONTROL for the two rows above and the half that "
+               "must not move: a link joining nothing is the "
+               "generation it also spells, so the clause ends at it "
+               "exactly as it did. The pair is what says the "
+               "exception is about PLACEMENT and not about the word. "
+               "Unchanged from 2.0.0 through 2.3.0; 1.4.0 read middle "
+               "'Doe nee', last 'Puig', suffix 'i', which is the "
+               "maiden support #274 added",
+         shape=1),
+    Case("a_link_before_a_generation_ends_the_clause_too",
+         "Jane Doe nee Puig i III",
+         {"given": "Jane", "family": "Doe", "suffix": "i III",
+          "maiden": "Puig"},
+         classification="fix(#436/#437)",
+         notes="the second control, and the one that pins WHICH bound "
+               "the exception reads: the right-hand name word is "
+               "looked for below the trailing run assign's peel takes, "
+               "so a generation there is outside the clause's own "
+               "words and the link joins nothing. Widen that bound to "
+               "the walk's own stop and this row reads maiden 'Puig i "
+               "III' -- measured. 'i MA' is the acronym half of the "
+               "same control and is not in this table: 'MA' carries "
+               "no suffix tag for the piece test to refuse it by, so "
+               "only the peel bound keeps it out. Unchanged from "
+               "2.0.0 through 2.3.0; 1.4.0 wrote the suffix 'i, III' "
+               "with a comma R1 no longer derives, and read last "
+               "'Puig' for want of maiden support",
+         shape=1),
     # ---- #461: a connective initials where it joins nothing --------
     # The rule, one sentence for all three groups: a connective
     # contributes nothing where it is JOINING -- a part holding

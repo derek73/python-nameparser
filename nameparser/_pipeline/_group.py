@@ -285,6 +285,42 @@ def _join_takes_the_member(view: Sequence[Sequence[int]],
             and leading_titles(view, view_tags, tokens) == at - 1)
 
 
+# rules.md#M2: "a link inside the birth name does not end it" -- the
+# one shape the walk below steps over rather than stopping at.
+# rules.md#P3: "A connective that is also generational vocabulary
+# joins only where a name word stands on each side of it" is the
+# reason, and the class test is that rule's own. The take runs BEFORE
+# every join, so the link is still a piece of its own here and the
+# question is asked of the pieces as classify left them -- the same
+# inputs `_group_segment`'s `frozen` logic gives `_name_word_beside`,
+# which is why this calls that predicate rather than restating the
+# class (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+#
+# The two halves of "also generational vocabulary" are already settled
+# where this is called from: the walk asks `is_suffix_piece` first and
+# only consults this when the answer was yes, so what is left to ask
+# is the connective half, through the predicate that owns it. A lone
+# link is therefore no link at all ('Jane Doe nee Puig i' keeps maiden
+# 'Puig' and suffix 'i'), and neither is one standing before the
+# generation or the credential a clause ends with ('... nee Puig i
+# III', '... i MA'): `hi` is where assign's peel begins, so those
+# stand at or past it and `_name_word_beside` refuses them by bound.
+def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
+                                  pieces: Sequence[Sequence[int]],
+                                  ptags: Sequence[Set[str]],
+                                  tokens: Sequence[WorkToken]) -> bool:
+    """Whether the suffix piece at `k` is a connective PLACED TO JOIN
+    between two name words of the clause `lo`..`hi`.
+
+    Defined here, beside its one caller, and forward-referencing the
+    two predicates it is built out of: `_is_conj_piece` and
+    `_name_word_beside` are the JOIN's, further down this module, and
+    moving them up to meet this would say they belonged to the clause."""
+    return (_is_conj_piece(pieces[k], ptags[k], tokens)
+            and _name_word_beside(k, -1, lo, hi, pieces, ptags, tokens)
+            and _name_word_beside(k, 1, lo, hi, pieces, ptags, tokens))
+
+
 def _maiden_take(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
@@ -384,6 +420,20 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     rest = peel_walk(seen[m], ptags, skip)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
     trailing = rest[-1] if peeled.numeral is not None else len(pieces)
+    # Where assign's trailing run begins over the pieces as WRITTEN:
+    # `trailing_start`'s whole answer, read off the peel pair it wraps
+    # rather than re-running that pair, which is the reading its own
+    # docstring sends this caller here for. Only the link exception in
+    # the walk below wants it, as the right bound of the clause -- the
+    # walk's own stop is `trailing`, and this is never past it: the
+    # numeral fork's `trailing` is the walk's LAST piece and the
+    # acronym fork's `stop` is a max over this one, so the two never
+    # disagree about where the clause ends, only about what the
+    # exception may reach across. Measured 2026-09-20 with a probe
+    # here over the whole suite -- 93,408 reaches of this site,
+    # `peel_start > trailing` 0 of them.
+    peel_start = (rest[peeled.names] if peeled.names < len(rest)
+                  else len(pieces))
     # The fork reads the piece before the numeral, and the take
     # REMOVES that piece: afterwards assign sees the piece before the
     # marker there, and if that is initial-shaped the fork will not
@@ -539,15 +589,35 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             if takes and not _join_takes_the_member(
                     view, view_tags, tokens, at):
                 trailing = stop
+    # The walk starts past the WHOLE marker: a phrase's second word is
+    # the marker, not the first word it takes. With nothing behind the
+    # marker at all there is no clause to walk and no first word to
+    # bound it with, so the decline the `j <= m + run` test below
+    # reaches is taken here instead -- `lo` would have no piece to name
+    # ('Jane van der Berg née').
+    if m + run >= len(seen):
+        return None
+    # rules.md#M2: "a link inside the birth name does not end it" --
+    # the clause's OWN bounds, which are not the segment's: `lo` is the
+    # first piece after the marker run, so the marker is never the name
+    # word on a link's left, and `peel_start` is where the trailing run
+    # begins, so the generation or credential a clause ends with is
+    # never the name word on its right ('... nee Puig i III', '... i
+    # MA', whose MA carries no `vocab:suffix` tag for the piece test to
+    # refuse it by). A core between the marker and that first word is
+    # below `lo` by construction and so cannot pass for the name word
+    # either ('PhD née - i Jones').
+    lo = seen[m + run]
     j = m + run
     while (j < len(seen) and seen[j] < trailing
-           and not is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
-                                    tokens)):
+           and (not is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
+                                    tokens)
+                or _link_joins_inside_the_clause(seen[j], lo, peel_start,
+                                                 pieces, ptags, tokens))):
         j += 1
     # j == m + run means nothing followed the marker but a suffix, so
     # the pass declines and the marker stays ordinary words
-    # (rules.md#M2). The walk starts past the WHOLE marker: a phrase's
-    # second word is the marker, not the first word it takes.
+    # (rules.md#M2).
     if j <= m + run:
         return None
     # #533, mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at the
@@ -633,8 +703,13 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 # rules.md#P3: "a word the rest of the parse reads as a name word
 # rather than as a generation, a credential or an honorific, looked
 # for past any run of connectives standing between" (#397)
+# `Sequence[Sequence[int]]` rather than `Sequence[Piece]`, widened
+# when the maiden walk became a second caller: this reads a piece and
+# never edits one, and `_maiden_take` holds its pieces at the wider
+# type the stage's entry point hands it.
 def _name_word_beside(k: int, step: int, lo: int, hi: int,
-                      pieces: Sequence[Piece], ptags: Sequence[Set[str]],
+                      pieces: Sequence[Sequence[int]],
+                      ptags: Sequence[Set[str]],
                       tokens: Sequence[WorkToken]) -> bool:
     """Whether such a word stands on the `step` side of the
     connective piece at `k`.
