@@ -78,7 +78,15 @@
 # never claim.
 [[change]]
 issue = "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas"
-name_regex = "^(?:JOHN DOE PHD MD|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Kenneth Clarke QC MP|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
+# 2026-09-19, #533: one name joins the alternation and the rule
+# does not change. 'Jane Doe nee Smith PhD MA' is a two-word
+# credential run this baseline renders 'PhD, MA' and the tree
+# renders 'PhD MA' -- the whole of its diff at this baseline, and
+# the same diff at 2f57ff21, measured. #533 moves nothing on it:
+# the unambiguous PhD already ended the walk, so the clause gave
+# the MA up before this change as it does after it. What grew is
+# the CORPUS, and the run rendering is what the diff is about.
+name_regex = "^(?:JOHN DOE PHD MD|Jane Doe nee Smith PhD MA|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Kenneth Clarke QC MP|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
 fields = ["suffix"]
 
 # The six #449 rules go SECOND, not first: the rule above
@@ -1550,8 +1558,16 @@ issue = "fix(#445) a maiden marker makes the lone name word the family"
 # rule of its own: this baseline already reads it maiden 'Jones Smith
 # Ma', so the acronym is no part of the diff. At 1.4.0, where v1 read
 # suffix 'Ma', it is the one name of this class that needs one.
+# 2026-09-19, #533: `_ambiguities` joins the two, and no name
+# leaves or enters. The roles are unchanged by that change --
+# 'John née Jones Smith Ma' has its Title-cased member declined
+# by its own writing, exactly as the count declined it before --
+# but the fork is now CONSULTED at the end of the clause and
+# REPORTED, and the gate compares `_ambiguities` as a field. The
+# other five names carry no member and contribute nothing to the
+# union, which is why this widening is one field and not a rule.
 name_regex = "(?i)^(?:Janey n[ée]e Jones|Jane n[ée]e Jones J\\. V|Jane n[ée]e Jones Smith|John n[ée]e Jones Smith Ma|Smith n[ée]e Jones|Smith n[ée]e Jones PhD)$"
-fields = ["given", "family"]
+fields = ["given", "family", "_ambiguities"]
 
 [[change]]
 issue = "fix(#445) the lone name word beside a marker a connective join no longer absorbs"
@@ -2475,7 +2491,17 @@ issue = "fix(#531) a credential ending the given part of a family-comma listing 
 # and nothing reports. _MUST_NOT_MATCH carries both, with the `do`
 # spellings P6 keeps and the third-comma-part name #144's restriction
 # still owns.
-name_regex = "^(?:DOE, JOHN MA|DOE, MARY JO MA|Doe, Dr\\. John MA|Doe, J\\. MA|Doe, John BA|Doe, John MA|Doe, John MA JD|Doe, John MA Jr|Doe, John MA PhD|Doe, John PhD MA|Doe, John Q\\. MA|Doe, John X\\.Y\\.Z\\.|doe, john ma)$"
+# 2026-09-19, #533: TWO names join the alternation and the rule does
+# not change. 'Doe, J. ba' and 'Smith nee Jones, Jane MA' are this
+# slot read exactly as the thirteen above are -- a lower-case member
+# ending the given part after an initial, and the same member behind
+# a maiden clause that sits in the FAMILY segment, where no trailing
+# rule reads the clause's own tail and the given part's slot is
+# reached as usual. Both read the same way at 2f57ff21, before #533,
+# measured name by name: what grew is the CORPUS, not the rule, and
+# a `fix(#533)` rule for them would attribute a #531 reading to the
+# wrong change.
+name_regex = "^(?:DOE, JOHN MA|DOE, MARY JO MA|Doe, Dr\\. John MA|Doe, J\\. MA|Doe, J\\. ba|Doe, John BA|Doe, John MA|Doe, John MA JD|Doe, John MA Jr|Doe, John MA PhD|Doe, John PhD MA|Doe, John Q\\. MA|Doe, John X\\.Y\\.Z\\.|Smith nee Jones, Jane MA|doe, john ma)$"
 fields = ["_ambiguities", "middle", "suffix"]
 orders = ["DEFAULT"]
 
@@ -2593,3 +2619,213 @@ issue = "fix(#380) a trailing mc after a family comma is the tussenvoegsel, not 
 name_regex = "^Berg, Jan mc$"
 fields = ["_ambiguities", "family", "suffix"]
 orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#533) a credential ending a maiden clause reads as a credential"
+# The words a maiden marker takes now end where a trailing credential
+# begins, where the rule that reads the name left standing reads the
+# word as one -- both as the name is written and as the take would
+# leave it (rules.md#M2, decisions.md#M2). `suffix` fills as `maiden`
+# shortens, and the fork is reported: the end of a maiden clause was
+# the last trailing position in the library where a member of the
+# ambiguous credential class was read in silence.
+#
+# Fourteen names here, three fewer than the same rule carries at
+# 2.2.0 and 2.3.0, and the three are a fact about THIS baseline
+# rather than about the change. 'Maria Kowalska z domu Nowak MA' and
+# 'John née Jones Smith MA' move roles this baseline has never read,
+# so each needs a rule that explains the whole of its diff; 'Doe, J.
+# nee MA ba' moves no role from here at all and is with the reports
+# below. Width is baseline-relative, and so is membership.
+#
+# What is left is the class read from every side the corpora reach
+# it: the bare member ('Jane Doe nee Smith MA', 'Doe, Jane nee Smith
+# MA'); its one-case spellings, where the lean is inert and the
+# POSITIONAL reading is not ('JANE DOE NEE SMITH MA', 'JANE DOE NEE
+# YO-YO MA', 'jane doe nee smith ma', 'Doe, Jane nee Smith ma'); the
+# German abbreviation ('Jane Doe geb. Smith MA'); a member beside
+# another credential, where `suffix` GROWS rather than filling ('Jane
+# Doe nee Smith MA JD', 'Jane Doe nee Smith MA PhD', 'Jane Doe nee
+# Smith Ma JD' -- whose Title-cased Ma stays in the clause while the
+# JD behind it leaves); past a trailing title, which the peel steps
+# over ('Jane Doe nee Smith Prof. MA'); the slot reached past a
+# middle initial ('Doe, Jane Q. nee Smith MA'); and the `do`
+# collision, where the capitals decide ('Doe, Jane nee Smith DO'
+# beside 'Jane Doe nee Smith do').
+#
+# Literal-anchored for the reason fix(#531)'s rules give: the subject
+# is a SLOT, so a regex for it would claim the names whose WRITING
+# declines the word as readily as the ones it takes.
+name_regex = "^(?:Doe, Jane Q\\. nee Smith MA|Doe, Jane nee Smith DO|Doe, Jane nee Smith MA|Doe, Jane nee Smith ma|JANE DOE NEE SMITH MA|JANE DOE NEE YO-YO MA|Jane Doe geb\\. Smith MA|Jane Doe nee Smith MA|Jane Doe nee Smith MA JD|Jane Doe nee Smith MA PhD|Jane Doe nee Smith Ma JD|Jane Doe nee Smith Prof\\. MA|Jane Doe nee Smith do|jane doe nee smith ma)$"
+fields = ["_ambiguities", "maiden", "suffix"]
+
+[[change]]
+issue = "fix(#533) the maiden clause reports the credential it keeps"
+# The other direction of the same fork, and the whole of what these
+# five names do at this baseline: no role moves and the decision
+# starts being REPORTED. A Title-cased member in a mixed-case name is
+# written the way a name is written, so the clause keeps it ('Jane
+# Doe nee Smith Ma', 'Jane Doe nee Yo-Yo Ma', 'Doe, Jane nee Smith
+# Ma'); a member that is the ONLY word after the marker stays the
+# maiden name whatever its writing says ('Jane Doe nee MA'); and
+# 'Doe, J. nee MA ba' is the CLAMP, whose roles this baseline already
+# reads the way the tree does -- maiden 'MA', suffix 'ba' -- so from
+# here the clamp is visible only as the report it raises.
+#
+# Reporting a DECLINED fork is #530's stated rule -- the report
+# tracks the fork consulted, not the lean -- and it is why this is a
+# rule of its own rather than a widening of the one above: `fields`
+# is `_ambiguities` alone, so it cannot absorb a role diff on any of
+# the five.
+name_regex = "^(?:Doe, J\\. nee MA ba|Doe, Jane nee Smith Ma|Jane Doe nee MA|Jane Doe nee Smith Ma|Jane Doe nee Yo-Yo Ma)$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position"
+# 'Jane Doe nee Smith X.Y.Z.'. A by-shape member carries no writing
+# convention to read -- `listed_lean` returns None where the switch
+# made the token credential-SHAPED and the vocabulary did not list it
+# -- so the positional reading decides alone and the clause gives the
+# word up. The same trade #516 recorded at its own slot and #531 at
+# the given part's, taken to agree with the comma-less 'John Doe
+# X.Y.Z.' and rules.md#S3's shape rule rather than to restore
+# anything.
+#
+# Its own rule rather than one of the movers above, because the
+# ARGUMENT is different: every name up there has a writing the lean
+# could have read, and this one has none.
+name_regex = "^Jane Doe nee Smith X\\.Y\\.Z\\.$"
+fields = ["_ambiguities", "maiden", "suffix"]
+
+[[change]]
+issue = "fix(#533) accepted: the released credential lands where the segment it is released into puts it"
+# 'Doe, Dr. nee Smith MA', and it is SILENT, which is why it is not
+# with the movers above: a rule declaring `_ambiguities` over a name
+# that gains no report is the over-declaration #452's check names.
+# Once 'Smith' leaves with the marker, segment 1 is 'Dr. MA' -- a
+# no-name segment the credential-run gate reads whole (rules.md#C1)
+# -- so the member is a suffix and the given part's own emitter never
+# sees it.
+#
+# 'Berg, abdul nee Jones MA' is the other name of this shape and is
+# NOT here: from this baseline its diff is P5's, and fix(#411) above
+# carries it. It joins this rule at 2.2.0 and 2.3.0, where the
+# reserve's own change has already shipped.
+name_regex = "^Doe, Dr\\. nee Smith MA$"
+fields = ["maiden", "suffix"]
+
+[[change]]
+issue = "fix(#533) restores the suffix reading a 2.4 retag had moved into the maiden name"
+# 'John Smith nee Jones R.A.I.', and it is a RESTORATION rather than
+# a change: this baseline reads suffix 'R.A.I.' with maiden 'Jones',
+# and so does the tree, so only the report diffs here. What moved in
+# between was this unreleased 2.4 cycle. At 2.3.0 the token carried
+# `vocab:suffix` and the maiden walk's suffix-piece test stopped at
+# it; #516 retags it `shape:acronym` plus `vocab:suffix-ambiguous`,
+# it stops being a suffix piece, and the walk took it -- maiden
+# 'Jones R.A.I.' on this tree at 2f57ff21, measured. The name was in
+# no corpus file, so no gate ever compared it and no 2.4.0 release
+# bullet records the move.
+name_regex = "^John Smith nee Jones R\\.A\\.I\\.$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "fix(#445/#533) the clause gives the credential up, and the one name word it leaves is the family"
+# 'John née Jones Smith MA', whose diff has TWO causes from here and
+# one rule has to explain the whole of it -- the shape the
+# fix(#424/#445) rules above already record for the numeral and for
+# the Title-cased acronym. #445 moves the one name word the clause
+# leaves into the family (given 'John' -> family 'John'), which this
+# baseline has never read, and #533 takes the MA out of the maiden
+# name and into `suffix`. Attributing either to the other would be
+# false, and a rule declaring only one pair of fields would explain
+# nothing while the name went UNEXPLAINED.
+#
+# Case-SENSITIVE, unlike the fix(#445) rule above, and measured: the
+# capitals are what decide here, so 'John née Jones Smith Ma' keeps
+# its member in the clause and 'John née Jones Smith MA' gives it up.
+# An (?i) anchor would stand ready to explain either name's diff with
+# the other's reasoning.
+name_regex = "^John née Jones Smith MA$"
+fields = ["_ambiguities", "family", "given", "maiden", "suffix"]
+
+[[change]]
+issue = "fix(#445/#533) a one-case clause keeps the credential, and the one name word it leaves is the family"
+# 'JOHN NEE JONES SMITH MA PHD'. One case, so no lean; a suffix word
+# BEHIND the member ends the peel before it can reach the member, so
+# the clause KEEPS the MA and only the clause's own emitter speaks.
+# The role move is #445's -- the lone name word the clause leaves
+# becomes the family -- and this baseline has not read it, so the
+# diff is that move plus the new report.
+#
+# Its own rule rather than an alternative in the fix(#445) rule
+# above, and case-sensitivity is the reason: that rule is (?i), and
+# the mixed-case spelling of these words reads the other way. 'John
+# nee Jones Smith MA PHD' gives the MA up and reads suffix 'MA PHD',
+# measured 2026-09-19, so an (?i) alternative here would stand ready
+# to explain a regression on a name whose reading is the opposite of
+# this one's.
+name_regex = "^JOHN NEE JONES SMITH MA PHD$"
+fields = ["_ambiguities", "family", "given"]
+
+[[change]]
+issue = "fix(#434/#533) a marker PHRASE takes the maiden name, and its clause ends at the credential"
+# 'Maria Kowalska z domu Nowak MA'. The marker PHRASE is what moves
+# the roles from here -- this baseline had no `z domu` entry, so it
+# read middle 'Kowalska z domu', family 'Nowak' -- and the tree reads
+# given 'Maria', family 'Kowalska', maiden 'Nowak'. #533's own effect
+# on the name is invisible at this baseline: the trailing MA is a
+# suffix on both sides, and both sides report it. What #533 changed
+# is which words the maiden name holds, and `maiden` is already in
+# the diff for the phrase's sake.
+#
+# Named for both changes because the maiden TEXT is the compound: at
+# 2f57ff21 the same three fields moved and `maiden` read 'Nowak MA'.
+# A rule naming only #434 would attribute this change's stop to the
+# vocabulary addition; one naming only #533 would attribute the
+# phrase to it.
+name_regex = "^Maria Kowalska z domu Nowak MA$"
+fields = ["family", "maiden", "middle"]
+
+[[change]]
+issue = "fix(#424) the maiden walk stops before the trailing numeral, with the family name left standing"
+# 'Jane Doe nee Smith V', and #533 has nothing to do with it: the
+# name reads the same on this tree as it did at 2f57ff21, measured.
+# The walk stops before the trailing roman numeral assign reads as
+# the suffix, asked over the pieces as they stand and again over the
+# view the take would leave -- #424's reading, stated at rules.md#M2.
+# maiden 'Smith V' -> maiden 'Smith', suffix 'V', with the report
+# #516 added at that slot.
+#
+# A rule of its own rather than an alternative in 'fix(#424/#445) the
+# maiden walk stops before the trailing numeral, and the lone name
+# word is the family' above: that rule's second half is the #445 move
+# and this name has none -- family 'Doe' stands either way. What grew
+# is the CORPUS: this change's rows put the numeral's clause shape in
+# front of the gate for the first time at a baseline that can see it.
+name_regex = "^Jane Doe nee Smith V$"
+fields = ["_ambiguities", "maiden", "suffix"]
+
+[[change]]
+issue = "fix(#533) the maiden clause ends at the credential in a native-script name too"
+# '田中 太郎 旧姓 佐藤 MA': maiden '佐藤 MA' -> maiden '佐藤', suffix
+# 'MA', one report. The walk reads the same rule whatever script the
+# clause is written in -- the marker is 旧姓, the member is Latin, and
+# neither fact reaches the stop -- so this is the movers' rule above
+# with a CJK marker in front of it.
+#
+# A COMPOSED form, so the name is a `tolerated` row on the radar tier
+# (decisions.md#cjk-comma-demotion) and its diff prints under
+# UNCLASSIFIED (radar) rather than blocking. It is classified all the
+# same, on fix(#289/#516)'s stated ground and the one #531's caseless
+# rule follows: a radar diff an arc INTENDED is one a release note
+# may be written from, and an unclassified one is not.
+#
+# Its own rule rather than an alternative in the movers' regex: a CJK
+# member in an alternation is claimed by the honorific pin, which
+# would demand that alternation be a copy of GLUED_HONORIFICS. A lone
+# literal has no alternation to pin. At 1.4.0 and 2.0.0 the marker's
+# own rule carries this name instead, the 旧姓 consumption being the
+# larger diff from those baselines.
+name_regex = "^田中 太郎 旧姓 佐藤 MA$"
+fields = ["_ambiguities", "maiden", "suffix"]

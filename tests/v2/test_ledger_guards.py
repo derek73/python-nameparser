@@ -1273,6 +1273,105 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
         ("Jean DUPONT", "Jean Pierre DUPONT", "Minjun KIM",
          "John Smith XYZ", "Smith, LEED AP", "John Smith, LEED AP",
          "Mr XXX"),
+    # #533's rules, and the probes are the boundaries each rule's own
+    # comment argues for. The class is a SLOT, so every one of these
+    # is a name carrying the same vocabulary in a position the rule
+    # does not reach -- which is what a regex written over the WORDS
+    # rather than over the names would claim.
+    #
+    # The movers must not reach the declining half ('Jane Doe nee
+    # Smith Ma', 'Doe, Jane nee Smith MA do'), the boundaries where
+    # no fork was consulted at all ('Jane Doe nee MA Smith', a name
+    # word behind the member; 'Jane Doe nee Smith MA Prof.', a
+    # trailing title breaking the peel; 'Smith, John, Jr nee Jones
+    # MA', past a second comma), the numeral shape another rule owns
+    # ('Jane Doe nee Smith V'), or the CLAUSE-LESS controls whose
+    # readings pre-date this change ('Doe, John MA' is #531's,
+    # 'John Smith MA' is S2's).
+    "fix(#533) a credential ending a maiden clause reads as a credential":
+        ("Jane Doe nee Smith Ma", "Doe, Jane nee Smith MA do",
+         "Jane Doe nee MA Smith", "Jane Doe nee Smith MA Prof.",
+         "Smith, John, Jr nee Jones MA", "Jane Doe nee Smith V",
+         "Doe, John MA", "John Smith MA", "Berg, abdul MA",
+         "Jane Doe nee Smith XYZ"),
+    # The declining half must not reach the movers, and the same
+    # boundaries apply from this side.
+    "fix(#533) the maiden clause reports the credential it keeps":
+        ("Jane Doe nee Smith MA", "Doe, Jane nee Smith MA",
+         "Jane Doe nee MA Smith", "Jane Doe nee Smith MA Prof.",
+         "Smith, John, Jr nee Jones MA", "Doe, John Ma",
+         "John Smith Ma", "Jane Doe nee Smith V"),
+    # The by-shape rule must stay on the one spelling the switch
+    # makes credential-SHAPED: not the listed member beside it, not
+    # the comma-less control, and not the same acronym one period
+    # short.
+    "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause":
+        ("Jane Doe nee Smith MA", "John Doe X.Y.Z.",
+         "Doe, John X.Y.Z.", "Jane Doe nee Smith X.Y.Z",
+         "Jane Doe nee Smith XYZ"),
+    # The two names where the released member lands elsewhere must
+    # not reach their own clause-less controls -- which is the pair
+    # the rule's argument rests on -- nor the spellings that decline.
+    "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
+        ("Berg, abdul MA", "Doe, Dr. MA", "Doe, Dr. nee Smith Ma",
+         "Berg, abdul nee Jones Ma", "Doe, Dr. nee Smith MA PhD"),
+    # The restoration is one name and one spelling: not the same
+    # acronym without the clause, and not a spelling the dotted gate
+    # reads differently.
+    "fix(#533) restores the suffix reading a 2.4 retag had moved into the maiden name":
+        ("John Smith R.A.I.", "John Smith nee Jones RAI",
+         "John Smith nee Jones R.A.I", "Jane Doe nee Smith R.A.I."),
+    # 1.4.0's pre-existing half must not reach the names whose clause
+    # this change made give the member up.
+    "fix(#274/#424) accepted: a maiden clause keeps a trailing credential":
+        ("Jane Doe nee Smith MA", "Doe, Jane nee Smith MA",
+         "Jane Doe nee MA Smith", "Jane Doe nee Smith V",
+         "John Smith MA"),
+    # ...and the name whose clause an UNAMBIGUOUS credential ended
+    # must not reach the ambiguous ones, in either word order.
+    "fix(#274/#436/#437) a clause the unambiguous credential ended":
+        ("Jane Doe nee Smith MA PhD", "Jane Doe nee Smith MA",
+         "Jane Doe nee Smith PhD", "John Doe PhD MA"),
+    # 1.4.0's #533 half must not reach the pre-existing one, and the
+    # capitals are the evidence: 'Jane Doe nee Smith Ma JD' is in the
+    # rule and 'Jane Doe nee Smith Ma' is not.
+    "fix(#533) the clause gives the credential up, and the run it joins renders as the writer spaced it":
+        ("Jane Doe nee Smith PhD MA", "Jane Doe nee Smith MA",
+         "Jane Doe nee Smith Ma", "Doe, J. nee MA", "Doe, J. ba"),
+    # The compound rules are case-SENSITIVE by construction, so each
+    # takes the other spellings of its own words as probes.
+    "fix(#445/#533) the clause gives the credential up, and the one name word it leaves is the family":
+        ("John née Jones Smith Ma", "JOHN NEE JONES SMITH MA PHD",
+         "John née Jones Smith", "Jane Doe nee Smith MA"),
+    "fix(#445/#533) a one-case clause keeps the credential, and the one name word it leaves is the family":
+        ("John nee Jones Smith MA PHD", "John née Jones Smith Ma",
+         "JOHN NEE JONES SMITH MA", "John née Jones Smith MA"),
+    # The phrase rule must not reach the bare phrase name the
+    # fix(#434) rules own, nor the n[ée]e spellings.
+    "fix(#434/#533) a marker PHRASE takes the maiden name":
+        ("Maria Kowalska z domu Nowak", "Maria Kowalska z domu Nowak Ma",
+         "Jane Doe nee Smith MA", "Maria Kowalska nee Nowak MA"),
+    # The native-script rule is one literal, and the widening it
+    # invites is a 旧姓 regex: the marker's other corpus names do not
+    # end in a member and must not be claimed, nor must the Latin
+    # spelling of the same reading.
+    "fix(#533) the maiden clause ends at the credential in a native-script name too":
+        ("田中 太郎 旧姓 佐藤", "Jane van der Berg 旧姓 Jones",
+         "田中 太郎 旧姓 佐藤 Ma", "Jane Doe nee Smith MA"),
+    # The numeral rule is #424's and must not reach the acronym
+    # shapes #533 moved, nor the two numeral names that already have
+    # rules of their own.
+    "fix(#424) the maiden walk stops before the trailing numeral, with the family name left standing":
+        ("Jane Doe nee Smith MA", "John née Jones Smith V",
+         "Jane Smith née V", "J. née Jones Smith V"),
+    # 2026-09-19, #533: the narrowed anchor's boundary is the
+    # spelling it no longer claims. 'John née Jones Smith MA' reads
+    # the opposite way and has fix(#445/#533); 'John nee Jones Smith
+    # MA PHD' is the mixed-case spelling of the name that joined,
+    # and reads the opposite way too.
+    "fix(#424/#445) accepted: the maiden walk keeps a bare acronym":
+        ("John née Jones Smith MA", "John nee Jones Smith MA PHD",
+         "JOHN NEE JONES SMITH MA"),
 }
 
 
@@ -1981,9 +2080,23 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # what selects these names: 'John Smith Mc V' is here on a
     # particle that is also suffix vocabulary and 'Kenneth Clarke QC
     # MP' on two acronyms, and a member matching either set would
-    # reach names that do not move. One set, identical in all four
-    # ledgers.
+    # reach names that do not move. TWO sets since 2026-09-19 (#533):
+    # 'Jane Doe nee Smith PhD MA' joined the THREE 2.x spellings of
+    # that rule and not the 1.4.0 one, so the four ledgers no longer
+    # carry one identical set. The name is one more corpus name whose
+    # run those baselines write with a comma and the tree writes with
+    # a space; the SEPARATOR is still the subject, and the maiden
+    # clause in front of it decides nothing there -- #533 moves no
+    # role on it, measured against 2f57ff21. At 1.4.0 it does move
+    # roles, under a rule of that ledger's own.
     frozenset({"JOHN DOE PHD MD", "John Doe MD PhD",
+               "John Smith MD PhD", "John Smith Mc V",
+               "Kenneth Clarke QC MP", "Smith, John PhD I\\.",
+               "The Rt Hon Kenneth Clarke QC MP, HMG",
+               "Washington Jr\\. MD, Franklin", "abdul Smith Jr Ma",
+               "abdul Smith Jr V"}),
+    frozenset({"JOHN DOE PHD MD", "Jane Doe nee Smith PhD MA",
+               "John Doe MD PhD",
                "John Smith MD PhD", "John Smith Mc V",
                "Kenneth Clarke QC MP", "Smith, John PhD I\\.",
                "The Rt Hon Kenneth Clarke QC MP, HMG",
@@ -2080,12 +2193,18 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # Smith', where a name word behind the member ends the run, and
     # the whole `do` family, which rules.md#P6 keeps -- every one of
     # them measured not to move. _MUST_NOT_MATCH carries the probes.
+    # 2026-09-19, #533: two names joined that first set and it is
+    # fifteen. 'Doe, J. ba' and 'Smith nee Jones, Jane MA' are the
+    # same slot read the same way, and both read so at 2f57ff21 --
+    # the corpus grew, the rule did not. Neither is a step toward a
+    # wordlist: 'ba' is already in the class the first thirteen draw
+    # on, and what selects the second is still the SLOT.
     frozenset({"DOE, JOHN MA", "DOE, MARY JO MA", r"Doe, Dr\. John MA",
-               r"Doe, J\. MA", "Doe, John BA", "Doe, John MA",
-               "Doe, John MA JD", "Doe, John MA Jr",
+               r"Doe, J\. MA", r"Doe, J\. ba", "Doe, John BA",
+               "Doe, John MA", "Doe, John MA JD", "Doe, John MA Jr",
                "Doe, John MA PhD", "Doe, John PhD MA",
                r"Doe, John Q\. MA", r"Doe, John X\.Y\.Z\.",
-               "doe, john ma"}),
+               "Smith nee Jones, Jane MA", "doe, john ma"}),
     frozenset({"Doe, John Ed", "Doe, John MA Ma", "Doe, John Ma",
                "Doe, Mary Jo Ma"}),
     # The third set. What selects these five is a WORD that is both
@@ -2342,6 +2461,70 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # lopez', on the 2.0.0 per-word grouping -- are no part of the six.
     frozenset({"john e smith", "john e jones", "jones, john e",
                "JUAN Y GARCIA"}),
+    # #533's rules, one corpus name per alternative -- lists of names,
+    # not copies of any wordlist. What selects every one of them is a
+    # SLOT the vocabulary participates in only at one end: a member of
+    # the ambiguous credential class ending a maiden marker's clause.
+    # A member copying SUFFIX_ACRONYMS_AMBIGUOUS would reach 'Jane Doe
+    # nee MA Smith', where a name word behind the member ends the
+    # clause, and 'Jane Doe nee Smith MA Prof.', where a title breaks
+    # the peel before it -- both measured not to move.
+    # _MUST_NOT_MATCH carries those probes and the rest.
+    #
+    # Six sets, and the pairs differ by BASELINE rather than by
+    # reading: what a rule claims is what its baseline can see
+    # (#452), so 'Doe, J. nee MA ba' is a report at 2.0.0 and a mover
+    # at 2.2.0, and 'John née Jones Smith MA' needs a compound rule of
+    # its own below 2.2.0 where #445's move is still in the diff.
+    #
+    # The movers, at 2.2.0 and 2.3.0 (seventeen):
+    frozenset({r"Doe, J\. nee MA ba", r"Doe, Jane Q\. nee Smith MA",
+               "Doe, Jane nee Smith DO", "Doe, Jane nee Smith MA",
+               "Doe, Jane nee Smith ma", "JANE DOE NEE SMITH MA",
+               "JANE DOE NEE YO-YO MA", r"Jane Doe geb\. Smith MA",
+               "Jane Doe nee Smith MA", "Jane Doe nee Smith MA JD",
+               "Jane Doe nee Smith MA PhD", "Jane Doe nee Smith Ma JD",
+               r"Jane Doe nee Smith Prof\. MA", "Jane Doe nee Smith do",
+               "John née Jones Smith MA", "Maria Kowalska z domu Nowak MA",
+               "jane doe nee smith ma"}),
+    # and at 2.0.0 and 2.1.0 (fourteen).
+    frozenset({r"Doe, Jane Q\. nee Smith MA", "Doe, Jane nee Smith DO",
+               "Doe, Jane nee Smith MA", "Doe, Jane nee Smith ma",
+               "JANE DOE NEE SMITH MA", "JANE DOE NEE YO-YO MA",
+               r"Jane Doe geb\. Smith MA", "Jane Doe nee Smith MA",
+               "Jane Doe nee Smith MA JD", "Jane Doe nee Smith MA PhD",
+               "Jane Doe nee Smith Ma JD",
+               r"Jane Doe nee Smith Prof\. MA", "Jane Doe nee Smith do",
+               "jane doe nee smith ma"}),
+    # The names the clause KEEPS and now reports, at 2.2.0 and 2.3.0
+    # (eight),
+    frozenset({"Doe, Jane nee Smith MA do", "Doe, Jane nee Smith Ma",
+               "Doe, Jane nee Smith do", "JOHN NEE JONES SMITH MA PHD",
+               "Jane Doe nee MA", "Jane Doe nee Smith Ma",
+               "Jane Doe nee Yo-Yo Ma", "John née Jones Smith Ma"}),
+    # and at 2.0.0 and 2.1.0 (five).
+    frozenset({r"Doe, J\. nee MA ba", "Doe, Jane nee Smith Ma",
+               "Jane Doe nee MA", "Jane Doe nee Smith Ma",
+               "Jane Doe nee Yo-Yo Ma"}),
+    # The two names where the released member lands somewhere other
+    # than the trailing peel. One set, shared by the 1.4.0 rule and
+    # the 2.2.0/2.3.0 one; at 2.0.0 and 2.1.0 the rule holds one name
+    # and has no alternation to declare.
+    frozenset({"Berg, abdul nee Jones MA", r"Doe, Dr\. nee Smith MA"}),
+    # The 1.4.0 pair and the 1.4.0 halves. The clause KEEPS the member
+    # in six of them, which at that baseline is not a report but the
+    # `suffix` v1 read emptying; it gives the member up in four, whose
+    # runs v1 also wrote with commas. The two-member set is the
+    # narrowed fix(#424/#445) anchor, which holds the two spellings
+    # whose reading that rule describes and no longer reaches the
+    # third by (?i).
+    frozenset({"Doe, Jane nee Smith MA do", "Doe, Jane nee Smith Ma",
+               "Doe, Jane nee Smith do", "Jane Doe nee MA",
+               "Jane Doe nee Smith Ma", "Jane Doe nee Yo-Yo Ma"}),
+    frozenset({r"Doe, J\. nee MA ba", "Jane Doe nee Smith MA JD",
+               "Jane Doe nee Smith MA PhD", "Jane Doe nee Smith Ma JD"}),
+    frozenset({"JOHN NEE JONES SMITH MA PHD",
+               "John n[ée]e Jones Smith Ma"}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -3069,16 +3252,20 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('given', 'middle'), "2010cc79a34d", None),
         "fix(#424) the particle chain stops before the trailing numeral":
             _Claim(1, ('family', 'suffix'), "2c99162bc9cf", None),
-        # 2026-09-19, #533: 1 -> 2, and the new name looks like an
-        # accident and is not. This rule is an (?i) alternation
-        # carrying 'John n[ée]e Jones Smith Ma', so the example
-        # line this change added, 'John née Jones Smith MA',
-        # matches it case-insensitively -- correctly, both being
-        # the same given->family shape written two ways. Reach,
-        # not explanation: the caps spelling is the one whose
-        # reading this change MOVED, and its own rule explains it.
+        # 2026-09-19, #533: 1 -> 2, and the two are not the two an
+        # earlier draft of this note predicted. The rule was an (?i)
+        # alternation carrying 'John n[ée]e Jones Smith Ma', so the
+        # example line this change added, 'John née Jones Smith MA',
+        # matched it case-insensitively -- and that spelling now
+        # reads the OPPOSITE way, the clause giving the MA up. The
+        # anchor is narrowed to the two spellings whose reading this
+        # rule describes ('John née Jones Smith Ma' and 'JOHN NEE
+        # JONES SMITH MA PHD'), the caps-MA spelling is carried by
+        # fix(#445/#533) below, and the digest moves although the
+        # count does not -- which is the one kind of growth a names
+        # count alone cannot see.
         "fix(#424/#445) accepted: the maiden walk keeps a bare acronym, and the lone name word is the family":
-            _Claim(2, ('family', 'given', 'maiden', 'middle', 'suffix'), "6728ea181c01", None),
+            _Claim(2, ('family', 'given', 'maiden', 'middle', 'suffix'), "348bf7114c9c", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle, the P4 example":
             _Claim(1, ('family', 'given'), "42b69cf1b320", None),
         "fix(#424) accepted: the maiden walk keeps the numeral an initial before the marker vetoes":
@@ -3337,6 +3524,50 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
                    ('DEFAULT',)),
         "fix(#380) a trailing mc or do after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(5, ('family', 'suffix'), "13fad71c96d0", ('DEFAULT',)),
+        # #533's rows, and the rule is not #533's: six corpus names
+        # whose reading this change leaves alone, carrying the
+        # `suffix` v1 read beside the three fields fix(#274) declares.
+        # A number that grows here without a corpus row growing with
+        # it is this rule reaching a name whose clause DOES give the
+        # word up, which is the rule below.
+        "fix(#274/#424) accepted: a maiden clause keeps a trailing credential v1 read as a post-nominal":
+            _Claim(6, ('family', 'maiden', 'middle', 'suffix'), "447e065d4852", None),
+        # One corpus name, four roles. The rule is a compound of two
+        # released changes and #533 moves nothing on it, so a growth
+        # here is this rule reaching a name whose clause the
+        # ambiguous member ended instead.
+        "fix(#274/#436/#437) a clause the unambiguous credential ended, and the run it left renders with spaces":
+            _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "51b39568664f", None),
+        # Four corpus names, four roles. The `suffix` is where the
+        # released member lands and `maiden` is what it left, so a
+        # widening that took one without the other would change the
+        # roles here before it reached the gate.
+        "fix(#533) the clause gives the credential up, and the run it joins renders as the writer spaced it":
+            _Claim(4, ('family', 'maiden', 'middle', 'suffix'), "3b2a2ee29ece", None),
+        # One corpus name. `suffix` is NOT in the 1.4.0 roles and
+        # that is the point of the row: v1 read the member as a
+        # post-nominal and so does the tree, which is what #533
+        # restored here.
+        "fix(#445/#533) the clause gives the credential up, and the one name word it leaves is the family":
+            _Claim(1, ('family', 'given', 'maiden', 'middle'), "6403e56cea29", None),
+        # One corpus name. The by-shape member has no lean to read,
+        # so a growth here is the rule reaching a LISTED member --
+        # a different reading under this rule's sentence.
+        "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause leaves v1's family name":
+            _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "0cc7bd35a9b3", None),
+        # One corpus name, three roles and no `suffix`: v1 read the
+        # trailing MA as a post-nominal and so does the tree. A
+        # `suffix` appearing here would mean the phrase rule had
+        # reached a name whose member moved.
+        "fix(#434/#533) a marker PHRASE takes the maiden name, and its clause ends at the credential":
+            _Claim(1, ('family', 'maiden', 'middle'), "bf8359f65c8a", None),
+        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
+        # 2.1.0 where fix(#411) still carries the bound-given half.
+        # No `_ambiguities` at any baseline, which is the row's own
+        # check: both readings are silent, and a report appearing
+        # here means one of them started speaking.
+        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
+            _Claim(2, ('given', 'maiden', 'middle', 'suffix'), "b3280b888d7c", None),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3344,7 +3575,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # SEPARATOR and no role, so a widening that took a role would
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(10, ('suffix',), "30f5314a2662", None),
+            _Claim(11, ('suffix',), "e665eae5c5df", None),
         # #449's six rules, second in every 2.x ledger. The
         # alternation reaches twenty-two corpus names and
         # `_ambiguities` alone: no role moves anywhere in this change,
@@ -3586,7 +3817,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # given->family shape written two ways. Reach, not
         # explanation.
         "fix(#445) a maiden marker makes the lone name word the family":
-            _Claim(7, ('family', 'given'), "73c2f924d257", None),
+            _Claim(7, ('_ambiguities', 'family', 'given'), "73c2f924d257", None),
         "fix(#445) the lone name word beside a marker a connective join no longer absorbs":
             _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62", None),
         "fix(#424) a marker followed only by the numeral is just a word":
@@ -3747,7 +3978,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # {family, suffix} from 2.2.0 on, which is P6's own shipping
         # date showing through.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
-            _Claim(13, ('_ambiguities', 'middle', 'suffix'), "c577ebf116f2", ('DEFAULT',)),
+            _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
             _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
         "fix(#531) capitals take the do collision from the family-comma particle attachment":
@@ -3760,6 +3991,62 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # already read family 'mc Berg' and carry no rule for it.
         "fix(#380) a trailing mc after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "105229644206", ('DEFAULT',)),
+        # The change's own movers: seventeen corpus names at 2.2.0
+        # and 2.3.0, fourteen at 2.0.0 and 2.1.0 where three of them
+        # move roles those baselines cannot see and have rules of
+        # their own. `suffix`, `maiden` and `_ambiguities` together:
+        # the member lands in one, leaves the other and is reported,
+        # so a widening taking any of the three alone would change
+        # the roles here before it reached the gate.
+        "fix(#533) a credential ending a maiden clause reads as a credential":
+            _Claim(14, ('_ambiguities', 'maiden', 'suffix'), "2147fddf943a", None),
+        # The declining half: eight corpus names at 2.2.0 and 2.3.0,
+        # five at 2.0.0 and 2.1.0. `_ambiguities` alone, so a role
+        # appearing here is this rule reaching a name whose clause
+        # gave the member up.
+        "fix(#533) the maiden clause reports the credential it keeps":
+            _Claim(5, ('_ambiguities',), "a51ac503d15d", None),
+        # One corpus name. The by-shape member has no lean to read,
+        # so a growth here is the rule reaching a LISTED member --
+        # a different reading under this rule's sentence.
+        "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "0cc7bd35a9b3", None),
+        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
+        # 2.1.0 where fix(#411) still carries the bound-given half.
+        # No `_ambiguities` at any baseline, which is the row's own
+        # check: both readings are silent, and a report appearing
+        # here means one of them started speaking.
+        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
+            _Claim(1, ('maiden', 'suffix'), "4cc6318d5d14", None),
+        # One corpus name, `_ambiguities` alone at every 2.x
+        # baseline: the roles are the ones these releases already
+        # read, which is what makes the row a restoration. A role
+        # appearing here would mean the restoration had stopped
+        # being one.
+        "fix(#533) restores the suffix reading a 2.4 retag had moved into the maiden name":
+            _Claim(1, ('_ambiguities',), "0a7295a0cb19", None),
+        # One corpus name. `suffix` is NOT in the 1.4.0 roles and
+        # that is the point of the row: v1 read the member as a
+        # post-nominal and so does the tree, which is what #533
+        # restored here.
+        "fix(#445/#533) the clause gives the credential up, and the one name word it leaves is the family":
+            _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "6403e56cea29", None),
+        # One corpus name, at 2.0.0 and 2.1.0 only. Case-sensitive by
+        # construction, so a growth here is the anchor having picked
+        # up the mixed-case spelling, which reads the other way.
+        "fix(#445/#533) a one-case clause keeps the credential, and the one name word it leaves is the family":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "a1816f915523", None),
+        # One corpus name, three roles and no `suffix`: v1 read the
+        # trailing MA as a post-nominal and so does the tree. A
+        # `suffix` appearing here would mean the phrase rule had
+        # reached a name whose member moved.
+        "fix(#434/#533) a marker PHRASE takes the maiden name, and its clause ends at the credential":
+            _Claim(1, ('family', 'maiden', 'middle'), "bf8359f65c8a", None),
+        # One corpus name, and the rule is #424's rather than #533's:
+        # the reading is unchanged on this tree since 2f57ff21. A
+        # growth here is the numeral rule reaching an acronym name.
+        "fix(#424) the maiden walk stops before the trailing numeral, with the family name left standing":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "170a53c37765", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -3771,7 +4058,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # SEPARATOR and no role, so a widening that took a role would
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(10, ('suffix',), "30f5314a2662", None),
+            _Claim(11, ('suffix',), "e665eae5c5df", None),
         # #449's six rules, second in every 2.x ledger. The
         # alternation reaches twenty-two corpus names and
         # `_ambiguities` alone: no role moves anywhere in this change,
@@ -3973,13 +4260,53 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # shipped in 2.3; at 2.0.0 and 2.1.0 the same name moves
         # {middle, suffix} instead.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
-            _Claim(13, ('_ambiguities', 'middle', 'suffix'), "c577ebf116f2", ('DEFAULT',)),
+            _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
             _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
         "fix(#531) capitals take the do collision from the family-comma particle attachment":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "8ad64f404621", ('DEFAULT',)),
         "fix(#531) the trailing slot's positional reading reaches a caseless script":
             _Claim(2, ('_ambiguities', 'middle', 'suffix'), "8419a6f53c3e", ('DEFAULT',)),
+        # The change's own movers: seventeen corpus names at 2.2.0
+        # and 2.3.0, fourteen at 2.0.0 and 2.1.0 where three of them
+        # move roles those baselines cannot see and have rules of
+        # their own. `suffix`, `maiden` and `_ambiguities` together:
+        # the member lands in one, leaves the other and is reported,
+        # so a widening taking any of the three alone would change
+        # the roles here before it reached the gate.
+        "fix(#533) a credential ending a maiden clause reads as a credential":
+            _Claim(17, ('_ambiguities', 'maiden', 'suffix'), "3051b7cde472", None),
+        # The declining half: eight corpus names at 2.2.0 and 2.3.0,
+        # five at 2.0.0 and 2.1.0. `_ambiguities` alone, so a role
+        # appearing here is this rule reaching a name whose clause
+        # gave the member up.
+        "fix(#533) the maiden clause reports the credential it keeps":
+            _Claim(8, ('_ambiguities',), "0b36d3482ba6", None),
+        # One corpus name. The by-shape member has no lean to read,
+        # so a growth here is the rule reaching a LISTED member --
+        # a different reading under this rule's sentence.
+        "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "0cc7bd35a9b3", None),
+        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
+        # 2.1.0 where fix(#411) still carries the bound-given half.
+        # No `_ambiguities` at any baseline, which is the row's own
+        # check: both readings are silent, and a report appearing
+        # here means one of them started speaking.
+        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
+            _Claim(2, ('given', 'maiden', 'suffix'), "b3280b888d7c", None),
+        # One corpus name, `_ambiguities` alone at every 2.x
+        # baseline: the roles are the ones these releases already
+        # read, which is what makes the row a restoration. A role
+        # appearing here would mean the restoration had stopped
+        # being one.
+        "fix(#533) restores the suffix reading a 2.4 retag had moved into the maiden name":
+            _Claim(1, ('_ambiguities',), "0a7295a0cb19", None),
+        # One corpus name, on the radar tier. A growth here is this
+        # rule reaching a second CJK-marker name, which would be a
+        # corpus row to look at rather than a widening to wave
+        # through.
+        "fix(#533) the maiden clause ends at the credential in a native-script name too":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "6bab87214ddf", None),
     },
     "expected_since_2.1.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3987,7 +4314,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # SEPARATOR and no role, so a widening that took a role would
         # change the row here before it reached the gate.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(10, ('suffix',), "30f5314a2662", None),
+            _Claim(11, ('suffix',), "e665eae5c5df", None),
         # #449's six rules, second in every 2.x ledger. The
         # alternation reaches twenty-two corpus names and
         # `_ambiguities` alone: no role moves anywhere in this change,
@@ -4205,7 +4532,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # given->family shape written two ways. Reach, not
         # explanation.
         "fix(#445) a maiden marker makes the lone name word the family":
-            _Claim(7, ('family', 'given'), "73c2f924d257", None),
+            _Claim(7, ('_ambiguities', 'family', 'given'), "73c2f924d257", None),
         "fix(#445) the lone name word beside a marker a connective join no longer absorbs":
             _Claim(1, ('family', 'given', 'maiden', 'middle'), "52544a41dd62", None),
         "fix(#424) a marker followed only by the numeral is just a word":
@@ -4355,7 +4682,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # {family, suffix} from 2.2.0 on, which is P6's own shipping
         # date showing through.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
-            _Claim(13, ('_ambiguities', 'middle', 'suffix'), "c577ebf116f2", ('DEFAULT',)),
+            _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
             _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
         "fix(#531) capitals take the do collision from the family-comma particle attachment":
@@ -4368,6 +4695,68 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # already read family 'mc Berg' and carry no rule for it.
         "fix(#380) a trailing mc after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "105229644206", ('DEFAULT',)),
+        # The change's own movers: seventeen corpus names at 2.2.0
+        # and 2.3.0, fourteen at 2.0.0 and 2.1.0 where three of them
+        # move roles those baselines cannot see and have rules of
+        # their own. `suffix`, `maiden` and `_ambiguities` together:
+        # the member lands in one, leaves the other and is reported,
+        # so a widening taking any of the three alone would change
+        # the roles here before it reached the gate.
+        "fix(#533) a credential ending a maiden clause reads as a credential":
+            _Claim(14, ('_ambiguities', 'maiden', 'suffix'), "2147fddf943a", None),
+        # The declining half: eight corpus names at 2.2.0 and 2.3.0,
+        # five at 2.0.0 and 2.1.0. `_ambiguities` alone, so a role
+        # appearing here is this rule reaching a name whose clause
+        # gave the member up.
+        "fix(#533) the maiden clause reports the credential it keeps":
+            _Claim(5, ('_ambiguities',), "a51ac503d15d", None),
+        # One corpus name. The by-shape member has no lean to read,
+        # so a growth here is the rule reaching a LISTED member --
+        # a different reading under this rule's sentence.
+        "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "0cc7bd35a9b3", None),
+        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
+        # 2.1.0 where fix(#411) still carries the bound-given half.
+        # No `_ambiguities` at any baseline, which is the row's own
+        # check: both readings are silent, and a report appearing
+        # here means one of them started speaking.
+        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
+            _Claim(1, ('maiden', 'suffix'), "4cc6318d5d14", None),
+        # One corpus name, `_ambiguities` alone at every 2.x
+        # baseline: the roles are the ones these releases already
+        # read, which is what makes the row a restoration. A role
+        # appearing here would mean the restoration had stopped
+        # being one.
+        "fix(#533) restores the suffix reading a 2.4 retag had moved into the maiden name":
+            _Claim(1, ('_ambiguities',), "0a7295a0cb19", None),
+        # One corpus name. `suffix` is NOT in the 1.4.0 roles and
+        # that is the point of the row: v1 read the member as a
+        # post-nominal and so does the tree, which is what #533
+        # restored here.
+        "fix(#445/#533) the clause gives the credential up, and the one name word it leaves is the family":
+            _Claim(1, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "6403e56cea29", None),
+        # One corpus name, at 2.0.0 and 2.1.0 only. Case-sensitive by
+        # construction, so a growth here is the anchor having picked
+        # up the mixed-case spelling, which reads the other way.
+        "fix(#445/#533) a one-case clause keeps the credential, and the one name word it leaves is the family":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "a1816f915523", None),
+        # One corpus name, three roles and no `suffix`: v1 read the
+        # trailing MA as a post-nominal and so does the tree. A
+        # `suffix` appearing here would mean the phrase rule had
+        # reached a name whose member moved.
+        "fix(#434/#533) a marker PHRASE takes the maiden name, and its clause ends at the credential":
+            _Claim(1, ('family', 'maiden', 'middle'), "bf8359f65c8a", None),
+        # One corpus name, and the rule is #424's rather than #533's:
+        # the reading is unchanged on this tree since 2f57ff21. A
+        # growth here is the numeral rule reaching an acronym name.
+        "fix(#424) the maiden walk stops before the trailing numeral, with the family name left standing":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "170a53c37765", None),
+        # One corpus name, on the radar tier. A growth here is this
+        # rule reaching a second CJK-marker name, which would be a
+        # corpus row to look at rather than a widening to wave
+        # through.
+        "fix(#533) the maiden clause ends at the credential in a native-script name too":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "6bab87214ddf", None),
     },
     "expected_since_2.3.0.toml": {
         # #383/#479's three rules, the first this ledger carries. The
@@ -4450,13 +4839,53 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # shipped in 2.3; at 2.0.0 and 2.1.0 the same name moves
         # {middle, suffix} instead.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
-            _Claim(13, ('_ambiguities', 'middle', 'suffix'), "c577ebf116f2", ('DEFAULT',)),
+            _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
             _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
         "fix(#531) capitals take the do collision from the family-comma particle attachment":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "8ad64f404621", ('DEFAULT',)),
         "fix(#531) the trailing slot's positional reading reaches a caseless script":
             _Claim(2, ('_ambiguities', 'middle', 'suffix'), "8419a6f53c3e", ('DEFAULT',)),
+        # The change's own movers: seventeen corpus names at 2.2.0
+        # and 2.3.0, fourteen at 2.0.0 and 2.1.0 where three of them
+        # move roles those baselines cannot see and have rules of
+        # their own. `suffix`, `maiden` and `_ambiguities` together:
+        # the member lands in one, leaves the other and is reported,
+        # so a widening taking any of the three alone would change
+        # the roles here before it reached the gate.
+        "fix(#533) a credential ending a maiden clause reads as a credential":
+            _Claim(17, ('_ambiguities', 'maiden', 'suffix'), "3051b7cde472", None),
+        # The declining half: eight corpus names at 2.2.0 and 2.3.0,
+        # five at 2.0.0 and 2.1.0. `_ambiguities` alone, so a role
+        # appearing here is this rule reaching a name whose clause
+        # gave the member up.
+        "fix(#533) the maiden clause reports the credential it keeps":
+            _Claim(8, ('_ambiguities',), "0b36d3482ba6", None),
+        # One corpus name. The by-shape member has no lean to read,
+        # so a growth here is the rule reaching a LISTED member --
+        # a different reading under this rule's sentence.
+        "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "0cc7bd35a9b3", None),
+        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
+        # 2.1.0 where fix(#411) still carries the bound-given half.
+        # No `_ambiguities` at any baseline, which is the row's own
+        # check: both readings are silent, and a report appearing
+        # here means one of them started speaking.
+        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
+            _Claim(2, ('given', 'maiden', 'suffix'), "b3280b888d7c", None),
+        # One corpus name, `_ambiguities` alone at every 2.x
+        # baseline: the roles are the ones these releases already
+        # read, which is what makes the row a restoration. A role
+        # appearing here would mean the restoration had stopped
+        # being one.
+        "fix(#533) restores the suffix reading a 2.4 retag had moved into the maiden name":
+            _Claim(1, ('_ambiguities',), "0a7295a0cb19", None),
+        # One corpus name, on the radar tier. A growth here is this
+        # rule reaching a second CJK-marker name, which would be a
+        # corpus row to look at rather than a widening to wave
+        # through.
+        "fix(#533) the maiden clause ends at the credential in a native-script name too":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "6bab87214ddf", None),
     },
 }
 
