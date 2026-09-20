@@ -3318,45 +3318,181 @@ CASES: tuple[Case, ...] = (
                "middle initial it always was -- the stop reaches the "
                "clause's trailing word, not the name in front of it",
          shape=2),
-    Case("a_no_name_segment_moves_in_silence",
+    Case("a_no_name_segment_leaves_the_clause_nobody_to_read_it",
          "Doe, Dr. nee Smith MA",
-         {"title": "Dr.", "family": "Doe", "suffix": "MA",
-          "maiden": "Smith"},
-         classification="fix(#533)",
-         ambiguities=(),
-         notes="an ACCEPTED COST and a recorded silence. Once 'Smith' "
+         {"title": "Dr.", "family": "Doe", "maiden": "Smith MA"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#M2's invariant, and the row that used to "
+               "record the opposite: an earlier round of #533 read "
+               "suffix 'MA' here and said so in silence. Once 'Smith' "
                "leaves with the marker, segment 1 is 'Dr. MA' -- a "
                "no-name segment, which the credential-run gate reads "
-               "whole without ever reaching #531's emitter, and the "
-               "first-post-comma emitter reads 'Dr.'. That is "
-               "_types.py's third pre-existing silence (a member with "
-               "no name word IN FRONT of it), now reachable through a "
-               "clause. 1.4.0 read given 'nee', middle 'Smith', "
+               "whole without ever reaching #531's emitter, so the "
+               "released word would have landed in `given`, not in "
+               "`suffix`. With no name word ahead of it the member is "
+               "no trailing word of a given part, the walk declines, "
+               "and the clause keeps it. The REPORT survives the "
+               "decline: the emitter asks whether a trailing rule "
+               "reads these words at all, which after a family comma "
+               "it does. 1.4.0 read given 'nee', middle 'Smith', "
                "suffix 'MA'",
          shape=2),
-    Case("the_bound_given_join_takes_the_released_member",
+    Case("the_bound_given_join_would_take_the_released_member",
          "Berg, abdul nee Jones MA",
-         {"given": "abdul MA", "family": "Berg", "maiden": "Jones"},
-         classification="fix(#533)",
-         ambiguities=(),
-         notes="an ACCEPTED COST, and the control beside it says it "
-               "is not this change's defect: the take releases 'MA' "
-               "and P5's LENIENT post-comma join swallows it into the "
-               "bound-given pair before assign can read it -- exactly "
-               "as it does in 'Berg, abdul MA'. So the clause form "
-               "now AGREES with the clause-less form. Silent on both, "
-               "and _types.py already documents that silence (a chain "
-               "has swallowed the member into one piece, so there is "
-               "no lone member to ask about)",
+         {"given": "abdul", "family": "Berg", "maiden": "Jones MA"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the other half of M2's invariant: P5's LENIENT "
+               "post-comma join runs BELOW the marker pass and would "
+               "swallow the released 'MA' into the bound-given pair "
+               "before assign could read it -- 'abdul MA' as the "
+               "given name, which is where the clause-less control "
+               "below genuinely puts it. A word joined away is a word "
+               "the clause gave up for nothing, so the walk declines "
+               "and keeps it. An earlier round of #533 released it "
+               "and read given 'abdul MA' in silence",
          shape=2),
     Case("the_bound_given_joins_control_without_the_clause",
          "Berg, abdul MA",
          {"given": "abdul MA", "family": "Berg"},
          classification="parity",
          ambiguities=(),
-         notes="the recorded control for the row above, and 1.4.0 "
-               "read it identically (first 'abdul MA', last 'Berg'). "
-               "Unchanged by this rule",
+         notes="the recorded control for the row above -- what the "
+               "released member WOULD have read as, and why releasing "
+               "it buys nothing. 1.4.0 read it identically (first "
+               "'abdul MA', last 'Berg'). Unchanged by this rule",
+         shape=2),
+    Case("a_particle_chain_would_take_the_released_member",
+         "Berg, Jane van der nee Smith DO",
+         {"given": "Jane", "family": "van der Berg",
+          "maiden": "Smith DO"},
+         classification="parity",
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         notes="M2's invariant against P2 rather than P5. 'DO' is "
+               "particle vocabulary standing behind a particle piece, "
+               "so the chain below this pass would absorb it into the "
+               "family -- a word crossing from the BIRTH name into "
+               "the current one, which is #424's failure from the "
+               "other side. An earlier round of #533 released it and "
+               "read family 'van der DO Berg' in silence, and the "
+               "clause-less 'Berg, Jane van der DO' reads that way "
+               "for its own reasons and is unchanged",
+         shape=2),
+    Case("two_released_particle_members_would_chain_each_other",
+         "Jane Doe nee Smith DO DO",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith DO DO"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the no-comma spelling of the same decline, where what "
+               "would do the joining is the OTHER released member: "
+               "the trailing peel reads both 'DO's as credentials, "
+               "but the moment they are out of the clause the first "
+               "is a non-leading particle and chains the second into "
+               "family 'DO DO'. An earlier round of #533 read exactly "
+               "that, and in silence",
+         shape=2),
+    Case("the_default_vocabularys_own_corpus_mover",
+         "John née Jones Smith Ma",
+         {"family": "John", "maiden": "Jones Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the one name in the pre-existing differential corpus "
+               "this rule reaches at the DEFAULT vocabulary, and it "
+               "moves by gaining the REPORT rather than a field: "
+               "'Ma' is Title-case inside a mixed-case name, so the "
+               "lean declines the credential reading and the clause "
+               "keeps it -- which is a fork called, and now said out "
+               "loud. It was only ever pinned under a test lexicon "
+               "before. Already a corpus_rules.jsonl name, so the "
+               "shape tag re-witnesses it rather than growing the "
+               "deduped corpus",
+         shape=2),
+    Case("a_member_alone_after_the_marker_keeps_its_credential_behind",
+         "Jane Doe nee MA PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD",
+          "maiden": "MA"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="THE FIRST-WORD FLOOR with an unambiguous credential "
+               "behind it: the walk may not take the first word after "
+               "the marker, so 'MA' stays the maiden name whatever "
+               "the peel read, and the 'PhD' behind it was never this "
+               "rule's to give -- a suffix WORD ends the clause the "
+               "way it always did. The report is the clause's own",
+         shape=2),
+    Case("a_particle_member_declines_on_its_lean_after_a_comma",
+         "Doe, Jane nee Smith Do",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith Do"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="#531's reading at the given slot, reached through a "
+               "clause: a member that is also particle vocabulary is "
+               "the credential on a POSITIVE lean alone, and "
+               "Title-case inside a mixed-case name is not one. So "
+               "the clause keeps it and says so. The caps spelling "
+               "'Doe, Jane nee Smith DO' is the other direction",
+         shape=2),
+    Case("a_numeral_between_the_clause_and_the_member",
+         "Jane Doe nee Smith V MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith V"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="both stops read the TRAILING word, so the numeral is "
+               "not the word either fork asks about: the acronym fork "
+               "stops at 'MA' and 'V' stays maiden text behind it. "
+               "The mirror image, 'Jane Smith née Jones Ma V', keeps "
+               "maiden 'Jones Ma' and reads suffix 'V'",
+         shape=2),
+    Case("delimiters_keep_the_whole_span_whatever_the_last_word_is",
+         "Jane Doe (nee Smith MA)",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith MA"},
+         classification="parity",
+         ambiguities=(),
+         notes="rules.md#M2, the delimited clause: the writer drew "
+               "the boundary and it outranks every reading inside it, "
+               "so no fork is called and none is reported. The marker "
+               "inside the pair is what says the span is a maiden "
+               "clause even where the pair is not in "
+               "`maiden_delimiters`. Unchanged by #533 and by every "
+               "release before it -- a settled position, not one of "
+               "the silences about un-asked forks",
+         shape=2),
+    Case("delimiters_keep_the_whole_span_in_title_case_too",
+         "Jane Doe (nee Smith Ma)",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith Ma"},
+         classification="parity",
+         ambiguities=(),
+         notes="the pair for the row above: the two spellings differ "
+               "in everything the lean reads and the delimiters make "
+               "the difference immaterial. Undelimited, 'Jane Doe nee "
+               "Smith MA' reads suffix 'MA' and 'Jane Doe nee Smith "
+               "Ma' keeps it -- and both report",
+         shape=2),
+    Case("a_word_outside_the_delimiters_is_outside_the_clause",
+         "Jane Doe (nee Smith) MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the boundary cuts both ways: the span is the maiden "
+               "name whole, and a member the writer left OUTSIDE it "
+               "is an ordinary trailing credential that assign peels "
+               "and reports. The control for the two rows above",
+         shape=2),
+    Case("two_released_members_each_get_their_own_report",
+         "Jane Doe nee Smith Ma JD",
+         {"given": "Jane", "family": "Doe", "suffix": "JD",
+          "maiden": "Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the shape that puts BOTH suffix-or-name emitters on "
+               "one parse: the clause keeps 'Ma' on its lean and "
+               "reports it, assign peels 'JD' and reports that, and "
+               "the two name different tokens -- which is what "
+               "test_properties' span test needs to actually "
+               "exercise its own check",
          shape=2),
     Case("no_trailing_rule_reads_the_family_segments_clause",
          "Smith nee Jones, Jane MA",

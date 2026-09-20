@@ -90,6 +90,7 @@
 {"name": "محمد و علي", "shape": 1}
 {"name": "Beethoven, Ludwig van", "shape": 2}
 {"name": "Berg, Jan mc", "shape": 2}
+{"name": "Berg, Jane van der nee Smith DO", "shape": 2}
 {"name": "Berg, abdul MA", "shape": 2}
 {"name": "Berg, abdul nee Jones MA", "shape": 2}
 {"name": "DOE, JOHN MA", "shape": 2}
@@ -103,6 +104,7 @@
 {"name": "Doe, J. nee MA ba", "shape": 2}
 {"name": "Doe, Jane Q. nee Smith MA", "shape": 2}
 {"name": "Doe, Jane nee Smith DO", "shape": 2}
+{"name": "Doe, Jane nee Smith Do", "shape": 2}
 {"name": "Doe, Jane nee Smith MA", "shape": 2}
 {"name": "Doe, Jane nee Smith MA do", "shape": 2}
 {"name": "Doe, Jane nee Smith Ma", "shape": 2}
@@ -134,7 +136,15 @@
 {"name": "Doe, MA Smith", "shape": 2}
 {"name": "Doe, Mary Jo Ma", "shape": 2}
 {"name": "Doe, Mr. MA PhD", "shape": 2}
+{"name": "Jane Doe (nee Smith MA)", "shape": 2}
+{"name": "Jane Doe (nee Smith Ma)", "shape": 2}
+{"name": "Jane Doe (nee Smith) MA", "shape": 2}
+{"name": "Jane Doe nee MA PhD", "shape": 2}
+{"name": "Jane Doe nee Smith DO DO", "shape": 2}
+{"name": "Jane Doe nee Smith Ma JD", "shape": 2}
+{"name": "Jane Doe nee Smith V MA", "shape": 2}
 {"name": "John Smith, 1.4", "shape": 2}
+{"name": "John née Jones Smith Ma", "shape": 2}
 {"name": "Kennedy, John (Jack)", "shape": 2}
 {"name": "NASCIMENTO, EDSON ARANTES DO", "shape": 2}
 {"name": "Nascimento, Edson Arantes do", "shape": 2}

@@ -452,9 +452,8 @@ class AmbiguityKind(StrEnum):
     #: clause's peel before it can reach the member at all ("Jane Doe
     #: nee Smith MA Prof." keeps maiden ``Smith MA Prof.``, where
     #: "Jane Doe nee Smith Prof. MA" reads suffix ``MA`` and reports).
-    #: Third -- pre-existing, and 2.4 widening what reaches it rather
-    #: than moving it -- a member with no name word IN FRONT of it is
-    #: not at this
+    #: Third -- pre-existing, and untouched by 2.4 -- a member with no
+    #: name word IN FRONT of it is not at this
     #: slot either, because the slot is the end of a given part and
     #: there is none: a TITLE or a POST-NOMINAL took that position --
     #: either one leaves the segment with no name word for the slot to
@@ -467,25 +466,16 @@ class AmbiguityKind(StrEnum):
     #: immediately after the comma and nothing behind that piece:
     #: "Doe, MA Smith" reports its ``MA``, and "Doe, Dr. MA Smith" --
     #: the same member, one title in front of it -- reads given ``MA``
-    #: in silence. A maiden clause can put a name in that position:
-    #: "Doe, Dr. nee Smith MA" gives title ``Dr.``, suffix ``MA`` and
-    #: maiden ``Smith``, and moves in silence -- once ``Smith`` leaves
-    #: with the marker, segment 1 is ``Dr. MA``, a no-name segment the
-    #: credential-run gate reads whole. (The other direction still
-    #: reports, the clause's own emitter being what raises it: "Doe,
-    #: Dr. nee Smith Ma" keeps maiden ``Smith Ma`` and says so.)
-    #: What stands in front need not be a title, and a clause is the
-    #: commonest way to reach the POST-NOMINAL spelling: "Jane Doe, Jr
-    #: nee Smith MA" gives maiden ``Smith`` with suffix ``Jr MA`` and
-    #: moves in silence, the take leaving segment 1 as ``Jr MA`` --
-    #: post-nominals only, so the same gate reads it whole. ``III``
-    #: and ``PhD`` head it the same way, and each agrees with its
-    #: clause-less control ("Jane Doe, Jr MA" is silent too). The
-    #: clause's own emitter still covers the kept direction here:
-    #: "Jane Doe, Jr nee Smith Ma" and "Jane Doe, Jr nee MA" both
-    #: report. Found by the #533 design-docs review, which is the
-    #: measurement worth keeping: this silence was written as a
-    #: title's and a post-nominal reaches it too.
+    #: in silence. A maiden CLAUSE does NOT reach this position, and
+    #: that is a decision rather than an accident: a clause may give
+    #: a word up only where the word then reads as a post-nominal
+    #: (rules.md#M2), and here nothing would read it at all, so the
+    #: clause keeps it and reports instead. "Doe, Dr. nee Smith MA"
+    #: keeps maiden ``Smith MA`` and says so, as does the
+    #: post-nominal spelling "Jane Doe, Jr nee Smith MA" -- the take
+    #: would leave segment 1 as ``Jr MA``, post-nominals only, which
+    #: the gate reads whole. The same holds of the fourth position
+    #: below: a clause never hands a word to a join.
     #: And fourth -- pre-existing and untouched by 2.4 as well --
     #: a JOIN beside the member can
     #: take it out of this slot, from either side. Where a chain has
@@ -498,9 +488,9 @@ class AmbiguityKind(StrEnum):
     #: and reports. The particle chain is the commonest joiner but not
     #: the only one: the bound-given join takes a member into its pair
     #: the same way, so "Berg, abdul MA" reads given ``abdul MA`` in
-    #: silence -- and "Berg, abdul nee Jones MA" agrees with it, the
-    #: clause giving the member up and the join catching it before
-    #: this slot is reached. Where a particle the suffix vocabulary
+    #: silence -- while "Berg, abdul nee Jones MA" keeps maiden
+    #: ``Jones MA`` and reports, the clause declining to hand the
+    #: member to a join that would swallow it. Where a particle the suffix vocabulary
     #: does not also claim stands BEHIND it, the given part ends at
     #: that particle as this walk reads it, and the attachment that
     #: moves the particle to the family runs a stage too late to
@@ -513,6 +503,17 @@ class AmbiguityKind(StrEnum):
     #: ``MA`` past a ``vd`` the suffix vocabulary claims outright.
     #: All four POSITIONS above are silent -- those last two names
     #: are the boundary each one stops at, not instances of it.
+    #: A DELIMITED maiden clause is quiet for a different reason and
+    #: is not one of the four. Where a recognized marker stands
+    #: inside a delimited span the whole span is the maiden name,
+    #: whatever its last word is and whether or not the pair is a
+    #: configured maiden delimiter: "Jane Doe (nee Smith MA)" and
+    #: "Jane Doe (nee Smith Ma)" both give maiden ``Smith MA`` /
+    #: ``Smith Ma`` and report nothing. The writer drew the boundary,
+    #: so no fork was available to decline -- a settled position
+    #: rather than a fork left un-asked. The boundary cuts both ways:
+    #: "Jane Doe (nee Smith) MA" gives suffix ``MA`` and reports, the
+    #: member standing outside the span.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that

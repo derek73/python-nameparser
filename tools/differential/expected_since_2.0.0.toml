@@ -2735,6 +2735,11 @@ orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#533) a credential ending a maiden clause reads as a credential"
+# The PR review added one: 'Jane Doe nee Smith V MA', where a
+# trailing roman numeral stands between the clause and the member.
+# Both stops read the TRAILING word, so the numeral is not the word
+# either fork asks about -- the acronym fork stops at 'MA' and the
+# 'V' stays maiden text behind it.
 # The words a maiden marker takes now end where a trailing credential
 # begins, where the rule that reads the name left standing reads the
 # word as one -- both as the name is written and as the take would
@@ -2769,11 +2774,27 @@ issue = "fix(#533) a credential ending a maiden clause reads as a credential"
 # Literal-anchored for the reason fix(#531)'s rules give: the subject
 # is a SLOT, so a regex for it would claim the names whose WRITING
 # declines the word as readily as the ones it takes.
-name_regex = "^(?:Doe, Jane Q\\. nee Smith MA|Doe, Jane nee Smith DO|Doe, Jane nee Smith MA|Doe, Jane nee Smith ma|JANE DOE NEE SMITH MA|JANE DOE NEE YO-YO MA|Jane Doe geb\\. Smith MA|Jane Doe nee Smith MA|Jane Doe nee Smith MA JD|Jane Doe nee Smith MA PhD|Jane Doe nee Smith Ma JD|Jane Doe nee Smith Prof\\. MA|Jane Doe nee Smith do|jane doe nee smith ma)$"
+name_regex = "^(?:Doe, Jane Q\\. nee Smith MA|Doe, Jane nee Smith DO|Doe, Jane nee Smith MA|Doe, Jane nee Smith ma|JANE DOE NEE SMITH MA|JANE DOE NEE YO-YO MA|Jane Doe geb\\. Smith MA|Jane Doe nee Smith MA|Jane Doe nee Smith MA JD|Jane Doe nee Smith MA PhD|Jane Doe nee Smith Ma JD|Jane Doe nee Smith Prof\\. MA|Jane Doe nee Smith V MA|Jane Doe nee Smith do|jane doe nee smith ma)$"
 fields = ["_ambiguities", "maiden", "suffix"]
 
 [[change]]
 issue = "fix(#533) the maiden clause reports the credential it keeps"
+# The PR review added more, and they are the same declining half
+# reached by four further routes -- each a shape where the clause
+# CANNOT promise the word a credential reading, so rules.md#M2 keeps
+# it. No name word is left AHEAD of the member for a given part's
+# trailing slot to be the end of ('Doe, Dr. nee Smith MA'); a
+# particle chain below the marker pass would absorb it into the
+# family ('Berg, Jane van der nee Smith DO', and 'Jane Doe nee Smith
+# DO DO' where the other released member is what would do the
+# joining); P5's bound-given join would swallow it into the pair
+# ('Berg, abdul nee Jones MA'); the FIRST-WORD FLOOR spares it and
+# only an unambiguous credential behind it leaves ('Jane Doe nee MA
+# PhD'); and the lean declines it after a comma ('Doe, Jane nee
+# Smith Do'). Those first four READ as 2f57ff21 read them and gain
+# only the report: an earlier round of this branch released all four
+# and moved them in silence, which is what the review measured and
+# reversed.
 # The other direction of the same fork, and the whole of what these
 # five names do at this baseline: no role moves and the decision
 # starts being REPORTED. A Title-cased member in a mixed-case name is
@@ -2790,8 +2811,69 @@ issue = "fix(#533) the maiden clause reports the credential it keeps"
 # rule of its own rather than a widening of the one above: `fields`
 # is `_ambiguities` alone, so it cannot absorb a role diff on any of
 # the five.
-name_regex = "^(?:Doe, J\\. nee MA ba|Doe, Jane nee Smith Ma|Jane Doe nee MA|Jane Doe nee Smith Ma|Jane Doe nee Yo-Yo Ma)$"
+name_regex = "^(?:Doe, Dr\\. nee Smith MA|Doe, J\\. nee MA ba|Doe, Jane nee Smith Ma|Jane Doe nee MA|Jane Doe nee MA PhD|Jane Doe nee Smith DO DO|Jane Doe nee Smith Ma|Jane Doe nee Yo-Yo Ma)$"
 fields = ["_ambiguities"]
+
+[[change]]
+issue = "fix(#411/#533) the bound-given pair after a comma, and the clause it keeps its credential in"
+# 'Berg, abdul nee Jones MA'. Two changes in one name and neither is
+# enough on its own, which is why it is a rule rather than an
+# alternative in either. The clause consumption (#274) and the
+# reserve that stops counting the words it takes (#411) are what move
+# `given`, `middle` and `maiden` against this baseline; the report is
+# #533's.
+#
+# What #533 does here is NOT a role move, and the comment is the only
+# place that can say so: an earlier round of this branch released the
+# 'MA' from the clause and let P5's lenient post-comma join swallow
+# it into the pair, reading given 'abdul MA' in silence. The review
+# measured that as M2's invariant broken -- a word the clause gave up
+# landing in a NAME part -- so the stop is declined, the clause keeps
+# 'Jones MA', and the fork is reported instead.
+name_regex = "^Berg, abdul nee Jones MA$"
+fields = ["_ambiguities", "given", "maiden", "middle"]
+
+[[change]]
+issue = "fix(#399/#533) a maiden marker bounds the particle chain, and the clause keeps the credential the chain would have taken"
+# 'Berg, Jane van der nee Smith DO'. The marker bounds the particle
+# join arriving from its left (#399, rules.md#M2), which is what
+# moves `middle`, `family` and `maiden` against this baseline, and
+# the chain still reports its own PARTICLE_OR_GIVEN.
+#
+# The SUFFIX_OR_NAME beside it is #533's, and it is a report without
+# a role move on purpose. 'DO' is particle vocabulary, so releasing
+# it from the clause would put it back in reach of the very chain the
+# marker just bounded -- family 'van der DO Berg', a word crossing
+# from the birth name into the current one, which an earlier round of
+# this branch did in silence. rules.md#M2's invariant declines the
+# stop, the clause keeps 'Smith DO', and the fork is reported.
+name_regex = "^Berg, Jane van der nee Smith DO$"
+fields = ["_ambiguities", "family", "maiden", "middle"]
+
+[[change]]
+issue = "fix(#335/#533) a marker-led bracketed clause is the maiden name whatever its last word is"
+# 'Jane Doe (nee Smith MA)', 'Jane Doe (nee Smith Ma)', 'Jane Doe
+# (nee Smith) MA'. The role move is fix(#335)'s, one rule above: this
+# baseline read the parenthesis pair as a nickname delimiter and
+# looked no further. These three are separate because the FIRST TWO
+# also lose a report -- the clause came back a nickname ending in a
+# credential-class word, so the nickname reading raised its own
+# SUFFIX_OR_NICKNAME, and consuming the clause as a maiden name
+# retires it.
+#
+# They are here rather than as three more alternatives up there for
+# the reason that rule's own comment gives about declaring a field a
+# diff does not move: adding `_ambiguities` to it would let a report
+# change hide on the five Latin names it already holds.
+#
+# What #533 does to them is NOTHING, and that is the point of
+# recording them: the delimiters outrank every reading inside the
+# span, so the whole span is the maiden name whatever its last word
+# is and no fork is called (decisions.md#M2, rules.md#M2). 'Jane Doe
+# (nee Smith) MA' is the control -- the member the writer left
+# OUTSIDE the span is an ordinary trailing credential and reports.
+name_regex = "^(?:Jane Doe \\(nee Smith MA\\)|Jane Doe \\(nee Smith Ma\\)|Jane Doe \\(nee Smith\\) MA)$"
+fields = ["_ambiguities", "maiden", "nickname"]
 
 [[change]]
 issue = "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position"
@@ -2809,23 +2891,6 @@ issue = "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause i
 # could have read, and this one has none.
 name_regex = "^Jane Doe nee Smith X\\.Y\\.Z\\.$"
 fields = ["_ambiguities", "maiden", "suffix"]
-
-[[change]]
-issue = "fix(#533) accepted: the released credential lands where the segment it is released into puts it"
-# 'Doe, Dr. nee Smith MA', and it is SILENT, which is why it is not
-# with the movers above: a rule declaring `_ambiguities` over a name
-# that gains no report is the over-declaration #452's check names.
-# Once 'Smith' leaves with the marker, segment 1 is 'Dr. MA' -- a
-# no-name segment the credential-run gate reads whole (rules.md#C1)
-# -- so the member is a suffix and the given part's own emitter never
-# sees it.
-#
-# 'Berg, abdul nee Jones MA' is the other name of this shape and is
-# NOT here: from this baseline its diff is P5's, and fix(#411) above
-# carries it. It joins this rule at 2.2.0 and 2.3.0, where the
-# reserve's own change has already shipped.
-name_regex = "^Doe, Dr\\. nee Smith MA$"
-fields = ["maiden", "suffix"]
 
 [[change]]
 issue = "fix(#533) restores the suffix reading a 2.4 retag had moved into the maiden name"

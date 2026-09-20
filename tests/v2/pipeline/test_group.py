@@ -1,17 +1,22 @@
 import bisect
 import dataclasses
+from collections.abc import Sequence
+from typing import cast
 
 import pytest
 
 from nameparser._lexicon import Lexicon
+from nameparser._pipeline import _group as _group_module
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited, _maiden_marked
 from nameparser._pipeline._group import (
-    _group_segment, group, marker_run_length,
+    TailReader, _group_segment, group, marker_run_length,
 )
 from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
-from nameparser._pipeline._state import ParseState, PendingAmbiguity
+from nameparser._pipeline._state import (
+    ParseState, PendingAmbiguity, Structure, WorkToken,
+)
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import maiden_marker_run
 from nameparser._policy import Policy, Script
@@ -1074,20 +1079,118 @@ def test_the_maiden_report_survives_the_family_comma_suppression(
     assert len(_suffix_forks(out)) == 1
 
 
-def test_an_unnamed_maiden_channel_falls_back_to_the_general_one(
-) -> None:
-    """The second channel's DEFAULT, which group() never takes -- it
-    names both lists at every call. A caller of the segment function
-    that names only the one gets the one: the maiden fork reports
-    into it rather than into a list nobody reads, which is what makes
-    the parameter a routing choice rather than a second switch."""
+def test_the_two_ambiguity_channels_route_independently() -> None:
+    """Both channels are REQUIRED arguments, and they are two so that
+    silencing one never silences the other.
+
+    `reader` and `maiden_ambiguities` have no defaults: the one
+    production caller answers both off the segment's structure, and a
+    default would be this module guessing what that caller knows. The
+    routing is what the split buys -- the same list in both slots is
+    one channel, two lists are two, and #533's review found the
+    earlier spelling defaulting the maiden channel to whatever the
+    first was, so `ambiguities=None` silenced both.
+    """
     state = classify(segment(tokenize(extract_delimited(ParseState(
         original="Jane Doe née Smith Ma", lexicon=_AMBIGUOUS_LEX,
         policy=Policy())))))
-    reported: list[PendingAmbiguity] = []
+    general: list[PendingAmbiguity] = []
+    maiden: list[PendingAmbiguity] = []
     _group_segment(state.segments[0], 0, state.tokens,
-                   ambiguities=reported, one_case=state.one_case)
-    assert [a.kind for a in reported] == [AmbiguityKind.SUFFIX_OR_NAME]
+                   ambiguities=general, one_case=state.one_case,
+                   reader=TailReader.TRAILING,
+                   maiden_ambiguities=maiden)
+    assert [a.kind for a in maiden] == [AmbiguityKind.SUFFIX_OR_NAME]
+    assert general == []
+    # the general channel suppressed, the maiden one still speaks --
+    # which is exactly what group() does after a family comma
+    only_maiden: list[PendingAmbiguity] = []
+    _group_segment(state.segments[0], 0, state.tokens,
+                   ambiguities=None, one_case=state.one_case,
+                   reader=TailReader.TRAILING,
+                   maiden_ambiguities=only_maiden)
+    assert [a.kind for a in only_maiden] == [AmbiguityKind.SUFFIX_OR_NAME]
+    # and NONE is the reader that silences the maiden channel itself,
+    # because nothing was decided there
+    silent: list[PendingAmbiguity] = []
+    _group_segment(state.segments[0], 0, state.tokens,
+                   ambiguities=None, one_case=state.one_case,
+                   reader=TailReader.NONE, maiden_ambiguities=silent)
+    assert silent == []
+
+
+def test_an_unmapped_reader_is_a_loud_failure_rather_than_a_default(
+) -> None:
+    """The exhaustive dispatch, exercised.
+
+    `_maiden_take` ends its reader branch with `assert_never`, which
+    makes a fourth `TailReader` member a mypy error at this site
+    rather than a silent fall-through to one of the three readings.
+    At RUNTIME that line is unreachable by construction, so it is
+    reached here the only way it can be -- with a value outside the
+    enum -- both to pin the loudness and to keep the line from being
+    the one uncovered statement in the module.
+    """
+    state = classify(segment(tokenize(extract_delimited(ParseState(
+        original="Jane Doe née Smith MA", lexicon=Lexicon.default(),
+        policy=Policy())))))
+    with pytest.raises(AssertionError):
+        _group_segment(state.segments[0], 0, state.tokens,
+                       ambiguities=[], one_case=state.one_case,
+                       reader=cast(TailReader, 99),
+                       maiden_ambiguities=[])
+
+
+def test_the_reader_is_pinned_to_the_structure_it_is_read_from(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """`TailReader` is a closed set, and group() maps (structure,
+    segment index) onto it in one place. Pinned here by WATCHING that
+    mapping rather than restating it -- a restatement passes when the
+    code changes under it, which is the shape of vacuous guard
+    AGENTS.md warns about. `_maiden_take` dispatches on the enum
+    exhaustively (`assert_never`), so a fourth member with no row
+    here is a type error rather than a silent default.
+    """
+    assert len(TailReader) == 3
+    want = {
+        # no comma: the whole name, read by the S2 peel
+        (Structure.NO_COMMA, 0): TailReader.TRAILING,
+        # suffix comma: segment 0 is the name, the rest is the
+        # credential run and is read whole
+        (Structure.SUFFIX_COMMA, 0): TailReader.TRAILING,
+        (Structure.SUFFIX_COMMA, 1): TailReader.NONE,
+        (Structure.SUFFIX_COMMA, 2): TailReader.NONE,
+        # family comma: segment 0 is the family the comma named,
+        # segment 1 is the given part with its own trailing slot
+        # (#531), and a third part is a credential run again
+        (Structure.FAMILY_COMMA, 0): TailReader.NONE,
+        (Structure.FAMILY_COMMA, 1): TailReader.GIVEN_SLOT,
+        (Structure.FAMILY_COMMA, 2): TailReader.NONE,
+    }
+    texts = ("Jane Doe née Smith MA",
+             "Jane Doe née Smith, MD, PhD",
+             "Doe, Jane née Smith MA, MD")
+    seen: dict[tuple[Structure, int], TailReader] = {}
+    real = _group_module._group_segment
+
+    def spy(seg: tuple[int, ...], additional: int,
+            tokens: Sequence[WorkToken], *args: object,
+            **kwargs: object) -> object:
+        seen[(state.structure, len(seen_order))] = cast(
+            TailReader, kwargs["reader"])
+        seen_order.append(seg)
+        return real(seg, additional, tokens, *args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(_group_module, "_group_segment", spy)
+    for text in texts:
+        seen_order: list[tuple[int, ...]] = []
+        state = classify(segment(tokenize(extract_delimited(ParseState(
+            original=text, lexicon=Lexicon.default(),
+            policy=Policy())))))
+        group(state)
+    assert seen == want, (
+        f"group() maps the structures to {seen}, pinned as {want}")
 
 
 def test_a_marker_followed_only_by_the_numeral_is_just_a_word() -> None:

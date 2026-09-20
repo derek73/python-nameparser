@@ -486,7 +486,22 @@ def credential_at_the_given_slot(token: WorkToken,
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It is a
     text-and-tags question, which is what puts it in this module
     rather than beside either caller.
+
+    The membership half of that contract is CHECKED rather than
+    trusted, because getting it wrong is silent: all three of
+    `listed_lean`'s None reasons fall through to the `particle` test
+    below, so a non-member handed in by mistake is answered True --
+    "read it as the credential" -- for a word the class never admitted.
+    An assert rather than a raise or a branch: it enters no Python
+    frame (measured -- 'Doe, John MA' stays at 311), it states the
+    contract where a reader of the function body meets it, and under
+    -O it is exactly the code that was here before.
     """
+    assert AMBIGUOUS_ACRONYM_TAG in token.tags, (
+        f"credential_at_the_given_slot is #531's reading of a LISTED "
+        f"class member; {token.text!r} carries {sorted(token.tags)} "
+        f"and is not one. The caller decides membership -- test "
+        f"AMBIGUOUS_ACRONYM_TAG before calling")
     lean = listed_lean(token, one_case)
     return lean == "credential" or (lean is None
                                     and "particle" not in token.tags)

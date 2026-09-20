@@ -1309,12 +1309,27 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
         ("Jane Doe nee Smith MA", "John Doe X.Y.Z.",
          "Doe, John X.Y.Z.", "Jane Doe nee Smith X.Y.Z",
          "Jane Doe nee Smith XYZ"),
-    # The two names where the released member lands elsewhere must
-    # not reach their own clause-less controls -- which is the pair
-    # the rule's argument rests on -- nor the spellings that decline.
-    "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
-        ("Berg, abdul MA", "Doe, Dr. MA", "Doe, Dr. nee Smith Ma",
-         "Berg, abdul nee Jones Ma", "Doe, Dr. nee Smith MA PhD"),
+    # The names whose clause KEEPS the member because no reader or a
+    # join would have taken it must not reach their own clause-less
+    # controls -- which is what the rule's argument rests on: 'Berg,
+    # abdul MA' really does read given 'abdul MA', and that is the
+    # reading the decline refuses to hand a clause word to.
+    "fix(#274/#533) the clause keeps the credential a join or a missing reader would have taken":
+        ("Berg, abdul MA", "Doe, Dr. MA", "Berg, Jane van der DO",
+         "Doe, Jane MA do", "Jane Doe nee Smith MA"),
+    # Same, at the 2.x baselines where the decline shows as a report
+    # rather than as a role move.
+    "fix(#411/#533) the bound-given pair after a comma":
+        ("Berg, abdul MA", "Berg, abdul nee Jones Ma",
+         "Berg, abdul nee Jones"),
+    "fix(#399/#533) a maiden marker bounds the particle chain, and the clause keeps":
+        ("Berg, Jane van der DO", "Berg, Jane van der nee Smith Do",
+         "Berg, Jane van der nee Smith"),
+    # The delimited rule must not reach the undelimited spellings,
+    # which is the whole of what it says: the boundary is the writer's.
+    "fix(#335/#533) a marker-led bracketed clause is the maiden name whatever its last word is":
+        ("Jane Doe nee Smith MA", "Jane Doe nee Smith Ma",
+         "Jane Smith (née Jones)"),
     # The restoration is one name and one spelling: not the same
     # acronym without the clause, and not a spelling the dotted gate
     # reads differently.
@@ -2059,6 +2074,17 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
 #: question someone answers in writing, not something to skip past.
 _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"^", " "}),      # the honorific rule's leading anchor
+    # The #533 review's two literal-anchored rules, one alternative
+    # per corpus name. Lists of names, not copies of any wordlist:
+    # what selects them is the SHAPE the clause's decline turns on --
+    # no reader ahead of the member, or a join below the marker pass
+    # that would take it -- and no vocabulary decides that. The
+    # delimited trio is the same, keyed on the writer's brackets.
+    frozenset({"Berg, Jane van der nee Smith DO", "Berg, abdul nee Jones MA",
+               "Doe, Dr\\. nee Smith MA", "Doe, Jane nee Smith Do",
+               "Jane Doe nee MA PhD"}),
+    frozenset({"Jane Doe \\(nee Smith MA\\)", "Jane Doe \\(nee Smith Ma\\)",
+               "Jane Doe \\(nee Smith\\) MA"}),
     # fix(#400)'s two openings: start-of-name or just after a family
     # comma. `abd` joins forward on the given side wherever that side
     # begins, and the alternation is over ANCHORS, not over words --
@@ -2484,7 +2510,8 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "JANE DOE NEE YO-YO MA", r"Jane Doe geb\. Smith MA",
                "Jane Doe nee Smith MA", "Jane Doe nee Smith MA JD",
                "Jane Doe nee Smith MA PhD", "Jane Doe nee Smith Ma JD",
-               r"Jane Doe nee Smith Prof\. MA", "Jane Doe nee Smith do",
+               r"Jane Doe nee Smith Prof\. MA", "Jane Doe nee Smith V MA",
+               "Jane Doe nee Smith do",
                "John née Jones Smith MA", "Maria Kowalska z domu Nowak MA",
                "jane doe nee smith ma"}),
     # and at 2.0.0 and 2.1.0 (fourteen).
@@ -2494,13 +2521,17 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                r"Jane Doe geb\. Smith MA", "Jane Doe nee Smith MA",
                "Jane Doe nee Smith MA JD", "Jane Doe nee Smith MA PhD",
                "Jane Doe nee Smith Ma JD",
-               r"Jane Doe nee Smith Prof\. MA", "Jane Doe nee Smith do",
+               r"Jane Doe nee Smith Prof\. MA", "Jane Doe nee Smith V MA",
+               "Jane Doe nee Smith do",
                "jane doe nee smith ma"}),
     # The names the clause KEEPS and now reports, at 2.2.0 and 2.3.0
     # (eight),
-    frozenset({"Doe, Jane nee Smith MA do", "Doe, Jane nee Smith Ma",
+    frozenset({"Berg, Jane van der nee Smith DO", "Berg, abdul nee Jones MA",
+               r"Doe, Dr\. nee Smith MA", "Doe, Jane nee Smith Do",
+               "Doe, Jane nee Smith MA do", "Doe, Jane nee Smith Ma",
                "Doe, Jane nee Smith do", "JOHN NEE JONES SMITH MA PHD",
-               "Jane Doe nee MA", "Jane Doe nee Smith Ma",
+               "Jane Doe nee MA", "Jane Doe nee MA PhD",
+               "Jane Doe nee Smith DO DO", "Jane Doe nee Smith Ma",
                "Jane Doe nee Yo-Yo Ma", "John née Jones Smith Ma"}),
     # and at 2.0.0 and 2.1.0 (five).
     frozenset({r"Doe, J\. nee MA ba", "Doe, Jane nee Smith Ma",
@@ -2510,8 +2541,7 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # than the trailing peel. One set, shared by the 1.4.0 rule and
     # the 2.2.0/2.3.0 one; at 2.0.0 and 2.1.0 the rule holds one name
     # and has no alternation to declare.
-    frozenset({"Berg, abdul nee Jones MA", r"Doe, Dr\. nee Smith MA"}),
-    # The 1.4.0 pair and the 1.4.0 halves. The clause KEEPS the member
+        # The 1.4.0 pair and the 1.4.0 halves. The clause KEEPS the member
     # in six of them, which at that baseline is not a report but the
     # `suffix` v1 read emptying; it gives the member up in four, whose
     # runs v1 also wrote with commas. The two-member set is the
@@ -2520,6 +2550,10 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # third by (?i).
     frozenset({"Doe, Jane nee Smith MA do", "Doe, Jane nee Smith Ma",
                "Doe, Jane nee Smith do", "Jane Doe nee MA",
+               "Jane Doe nee Smith Ma", "Jane Doe nee Yo-Yo Ma"}),
+    frozenset({r"Doe, Dr\. nee Smith MA", r"Doe, J\. nee MA ba",
+               "Doe, Jane nee Smith Ma", "Jane Doe nee MA",
+               "Jane Doe nee MA PhD", "Jane Doe nee Smith DO DO",
                "Jane Doe nee Smith Ma", "Jane Doe nee Yo-Yo Ma"}),
     frozenset({r"Doe, J\. nee MA ba", "Jane Doe nee Smith MA JD",
                "Jane Doe nee Smith MA PhD", "Jane Doe nee Smith Ma JD"}),
@@ -3004,7 +3038,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # carrying a marker. Read name by name against the regex; no
         # role joined the list.
         "fix(#274) maiden markers consumed":
-            _Claim(68, ('family', 'maiden', 'middle'), "19914ae9948e", None),
+            _Claim(73, ('family', 'maiden', 'middle'), 'a2e495d071dd', None),
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -3037,7 +3071,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # added. Reach, not explanation: all three are the contest
         # fix(#274) is now declared to outrank.
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(24, ('family', 'middle'), "0c62afd7f400", None),
+            _Claim(26, ('family', 'middle'), '22c55d325d9d', None),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1", None),
         # 279 -> 280 with #371, and the growth is corpus, not behavior:
@@ -3097,7 +3131,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # comma and every family-comma row this change added matches
         # it.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(356, ('given', 'suffix', 'title'), "16c571069b0c", None),
+            _Claim(358, ('given', 'suffix', 'title'), '0485bb024e5a', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3148,7 +3182,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-19, #533: 343 -> 356, the same thirteen new comma
         # names as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(356, ('family', 'given'), "16c571069b0c", None),
+            _Claim(358, ('family', 'given'), '0485bb024e5a', None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -3382,7 +3416,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'john van der berg ma' -- rules.md#P2's one-case contrast,
         # and a particle chain like every other member.
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(110, ('_initials',), "9193a1954e3b", ('DEFAULT',)),
+            _Claim(111, ('_initials',), '3729c1e3152d', ('DEFAULT',)),
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
             _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
@@ -3561,13 +3595,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # reached a name whose member moved.
         "fix(#434/#533) a marker PHRASE takes the maiden name, and its clause ends at the credential":
             _Claim(1, ('family', 'maiden', 'middle'), "bf8359f65c8a", None),
-        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
-        # 2.1.0 where fix(#411) still carries the bound-given half.
-        # No `_ambiguities` at any baseline, which is the row's own
-        # check: both readings are silent, and a report appearing
-        # here means one of them started speaking.
-        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
-            _Claim(2, ('given', 'maiden', 'middle', 'suffix'), "b3280b888d7c", None),
+        "fix(#274/#533) the clause keeps the credential a join or a missing reader would have taken":
+            _Claim(5, ('family', 'given', 'maiden', 'middle', 'suffix'), 'ae9d39617af1', None),
+        "fix(#335/#533) a marker-led bracketed clause is the maiden name whatever its last word is":
+            _Claim(3, ('maiden', 'nickname'), 'cc1045ecdc05', None),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -3680,7 +3711,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-19, #533: 21 -> 24, the same three new corpus
         # names as the 1.4.0 copy -- the do pair this change added
         # after a family comma.
-            _Claim(24, ('_ambiguities', 'family', 'middle'), "0c62afd7f400", None),
+            _Claim(26, ('_ambiguities', 'family', 'middle'), '22c55d325d9d', None),
         # 2026-09-18: 126 -> 131. Five corpus names arrived with
         # #289/#516's own case rows -- 'J.씨', 'John Smith 田.中.',
         # '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- all of them
@@ -3999,25 +4030,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # so a widening taking any of the three alone would change
         # the roles here before it reached the gate.
         "fix(#533) a credential ending a maiden clause reads as a credential":
-            _Claim(14, ('_ambiguities', 'maiden', 'suffix'), "2147fddf943a", None),
+            _Claim(15, ('_ambiguities', 'maiden', 'suffix'), '1b2218cb6296', None),
         # The declining half: eight corpus names at 2.2.0 and 2.3.0,
         # five at 2.0.0 and 2.1.0. `_ambiguities` alone, so a role
         # appearing here is this rule reaching a name whose clause
         # gave the member up.
         "fix(#533) the maiden clause reports the credential it keeps":
-            _Claim(5, ('_ambiguities',), "a51ac503d15d", None),
+            _Claim(8, ('_ambiguities',), '329a6472b344', None),
         # One corpus name. The by-shape member has no lean to read,
         # so a growth here is the rule reaching a LISTED member --
         # a different reading under this rule's sentence.
         "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "0cc7bd35a9b3", None),
-        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
-        # 2.1.0 where fix(#411) still carries the bound-given half.
-        # No `_ambiguities` at any baseline, which is the row's own
-        # check: both readings are silent, and a report appearing
-        # here means one of them started speaking.
-        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
-            _Claim(1, ('maiden', 'suffix'), "4cc6318d5d14", None),
         # One corpus name, `_ambiguities` alone at every 2.x
         # baseline: the roles are the ones these releases already
         # read, which is what makes the row a restoration. A role
@@ -4047,6 +4071,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # growth here is the numeral rule reaching an acronym name.
         "fix(#424) the maiden walk stops before the trailing numeral, with the family name left standing":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "170a53c37765", None),
+        "fix(#335/#533) a marker-led bracketed clause is the maiden name whatever its last word is":
+            _Claim(3, ('_ambiguities', 'maiden', 'nickname'), 'cc1045ecdc05', None),
+        "fix(#399/#533) a maiden marker bounds the particle chain, and the clause keeps the credential the chain would have taken":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle'), 'fa3fe4878b47', None),
+        "fix(#411/#533) the bound-given pair after a comma, and the clause it keeps its credential in":
+            _Claim(1, ('_ambiguities', 'given', 'maiden', 'middle'), '431d3dd24c14', None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -4275,26 +4305,19 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # so a widening taking any of the three alone would change
         # the roles here before it reached the gate.
         "fix(#533) a credential ending a maiden clause reads as a credential":
-            _Claim(17, ('_ambiguities', 'maiden', 'suffix'), "3051b7cde472", None),
+            _Claim(18, ('_ambiguities', 'maiden', 'suffix'), '3f7d5fd3cc4b', None),
         # The declining half: eight corpus names at 2.2.0 and 2.3.0,
         # five at 2.0.0 and 2.1.0. `_ambiguities` alone, so a role
         # appearing here is this rule reaching a name whose clause
         # gave the member up.
         "fix(#533) the maiden clause reports the credential it keeps":
-            _Claim(8, ('_ambiguities',), "0b36d3482ba6", None),
+            _Claim(14, ('_ambiguities',), '24fe6a424eda', None),
         # One corpus name. The by-shape member has no lean to read,
         # so a growth here is the rule reaching a LISTED member --
         # a different reading under this rule's sentence.
         "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "0cc7bd35a9b3", None),
-        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
-        # 2.1.0 where fix(#411) still carries the bound-given half.
-        # No `_ambiguities` at any baseline, which is the row's own
-        # check: both readings are silent, and a report appearing
-        # here means one of them started speaking.
-        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
-            _Claim(2, ('given', 'maiden', 'suffix'), "b3280b888d7c", None),
-        # One corpus name, `_ambiguities` alone at every 2.x
+# One corpus name, `_ambiguities` alone at every 2.x
         # baseline: the roles are the ones these releases already
         # read, which is what makes the row a restoration. A role
         # appearing here would mean the restoration had stopped
@@ -4427,7 +4450,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-19, #533: 21 -> 24, the same three new corpus
         # names as the 1.4.0 copy -- the do pair this change added
         # after a family comma.
-            _Claim(24, ('_ambiguities', 'family', 'middle'), "0c62afd7f400", None),
+            _Claim(26, ('_ambiguities', 'family', 'middle'), '22c55d325d9d', None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
@@ -4703,26 +4726,19 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # so a widening taking any of the three alone would change
         # the roles here before it reached the gate.
         "fix(#533) a credential ending a maiden clause reads as a credential":
-            _Claim(14, ('_ambiguities', 'maiden', 'suffix'), "2147fddf943a", None),
+            _Claim(15, ('_ambiguities', 'maiden', 'suffix'), '1b2218cb6296', None),
         # The declining half: eight corpus names at 2.2.0 and 2.3.0,
         # five at 2.0.0 and 2.1.0. `_ambiguities` alone, so a role
         # appearing here is this rule reaching a name whose clause
         # gave the member up.
         "fix(#533) the maiden clause reports the credential it keeps":
-            _Claim(5, ('_ambiguities',), "a51ac503d15d", None),
+            _Claim(8, ('_ambiguities',), '329a6472b344', None),
         # One corpus name. The by-shape member has no lean to read,
         # so a growth here is the rule reaching a LISTED member --
         # a different reading under this rule's sentence.
         "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "0cc7bd35a9b3", None),
-        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
-        # 2.1.0 where fix(#411) still carries the bound-given half.
-        # No `_ambiguities` at any baseline, which is the row's own
-        # check: both readings are silent, and a report appearing
-        # here means one of them started speaking.
-        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
-            _Claim(1, ('maiden', 'suffix'), "4cc6318d5d14", None),
-        # One corpus name, `_ambiguities` alone at every 2.x
+# One corpus name, `_ambiguities` alone at every 2.x
         # baseline: the roles are the ones these releases already
         # read, which is what makes the row a restoration. A role
         # appearing here would mean the restoration had stopped
@@ -4757,6 +4773,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # through.
         "fix(#533) the maiden clause ends at the credential in a native-script name too":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "6bab87214ddf", None),
+        "fix(#335/#533) a marker-led bracketed clause is the maiden name whatever its last word is":
+            _Claim(3, ('_ambiguities', 'maiden', 'nickname'), 'cc1045ecdc05', None),
+        "fix(#399/#533) a maiden marker bounds the particle chain, and the clause keeps the credential the chain would have taken":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle'), 'fa3fe4878b47', None),
+        "fix(#411/#533) the bound-given pair after a comma, and the clause it keeps its credential in":
+            _Claim(1, ('_ambiguities', 'given', 'maiden', 'middle'), '431d3dd24c14', None),
     },
     "expected_since_2.3.0.toml": {
         # #383/#479's three rules, the first this ledger carries. The
@@ -4854,26 +4876,19 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # so a widening taking any of the three alone would change
         # the roles here before it reached the gate.
         "fix(#533) a credential ending a maiden clause reads as a credential":
-            _Claim(17, ('_ambiguities', 'maiden', 'suffix'), "3051b7cde472", None),
+            _Claim(18, ('_ambiguities', 'maiden', 'suffix'), '3f7d5fd3cc4b', None),
         # The declining half: eight corpus names at 2.2.0 and 2.3.0,
         # five at 2.0.0 and 2.1.0. `_ambiguities` alone, so a role
         # appearing here is this rule reaching a name whose clause
         # gave the member up.
         "fix(#533) the maiden clause reports the credential it keeps":
-            _Claim(8, ('_ambiguities',), "0b36d3482ba6", None),
+            _Claim(14, ('_ambiguities',), '24fe6a424eda', None),
         # One corpus name. The by-shape member has no lean to read,
         # so a growth here is the rule reaching a LISTED member --
         # a different reading under this rule's sentence.
         "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause is read by position":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "0cc7bd35a9b3", None),
-        # Two corpus names at 1.4.0 and 2.2.0/2.3.0, one at 2.0.0 and
-        # 2.1.0 where fix(#411) still carries the bound-given half.
-        # No `_ambiguities` at any baseline, which is the row's own
-        # check: both readings are silent, and a report appearing
-        # here means one of them started speaking.
-        "fix(#533) accepted: the released credential lands where the segment it is released into puts it":
-            _Claim(2, ('given', 'maiden', 'suffix'), "b3280b888d7c", None),
-        # One corpus name, `_ambiguities` alone at every 2.x
+# One corpus name, `_ambiguities` alone at every 2.x
         # baseline: the roles are the ones these releases already
         # read, which is what makes the row a restoration. A role
         # appearing here would mean the restoration had stopped
@@ -6294,7 +6309,13 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
         # costs the entry nothing: 1.4.0 reads the parenthesized pair
         # as a nickname exactly as the tree does, so there is no diff
         # to silence.
-        _Excluded(59, "572f5b8f850a", ()),
+        # 59 -> 62 on 2026-09-19 for the #533 review's three delimited
+        # maiden names ('Jane Doe (nee Smith MA)', '... Ma)', '(nee
+        # Smith) MA'), whose parentheses match this shape. It silences
+        # none of their diff either: the fix(#335/#533) rule carries
+        # it at every baseline that has one, and `absorbed_by` stays
+        # empty, which is the half of this record that matters.
+        _Excluded(62, "7fdfb86d426e", ()),
 }
 
 
@@ -6522,8 +6543,25 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
         # earlier rule now carries the [[change.precedes_narrower]]
         # block saying why it wins; this control records the contest
         # whether or not it is declared away.
+        # 3 → 5 on 2026-09-19: the #533 review's two `do`-bearing
+        # corpus rows ('Berg, Jane van der nee Smith DO', 'Doe, Jane
+        # nee Smith Do') land inside both regexes. Shared REACH, not
+        # a widening -- the declared pair is unchanged.
         ("fix(#274) maiden markers consumed",
-         "fix(#379) a tussenvoegsel after a family comma attaches to the family", 3),
+         "fix(#379) a tussenvoegsel after a family comma attaches to the family", 5),
+        # The #533 review's own rule is wide-first against three
+        # narrower ones, each declared on it with a
+        # [[change.precedes_narrower]] block in the 1.4.0 ledger.
+        # Recorded here for the reason this whole roster exists: the
+        # declarations say the contests are INTENDED, and these rows
+        # say how much corpus they cover, so a rule quietly growing
+        # into a fourth pair fails here.
+        ("fix(#274/#533) the clause keeps the credential a join or a missing reader would have taken",
+         "fix(comma-precomma-family) pre-comma run reads as family, not given", 4),
+        ("fix(#274/#533) the clause keeps the credential a join or a missing reader would have taken",
+         "fix(#411) the bound-given reserve stops counting words the maiden name takes", 1),
+        ("fix(#274/#533) the clause keeps the credential a join or a missing reader would have taken",
+         "fix(#379) a tussenvoegsel after a family comma attaches to the family", 2),
         ("fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example",
          "fix(comma-precomma-family) pre-comma run reads as family, not given", 2),
         ("fix(#296) a credential-only comma string reads a name and its postnominal",

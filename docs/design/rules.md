@@ -1260,16 +1260,31 @@ M2. Rationale: a maiden marker announces that what follows it is the
     credential straight after the marker, so a lone member reads as
     the name it was announced to be.
     A member ENDING a clause that some rule reads is reported where
-    the clause KEEPS it (S2); one the clause gives up is read like
-    any other word in the position it lands in, and reports where
-    that reading reports — which is sometimes nowhere. What the take
-    leaves behind decides that, not the clause: where the words in
-    front of the given-up member are all post-nominals or titles,
-    the part it lands in has no name word left in it, and a part of
-    nothing but credentials is read whole and asked nothing. So a
-    clause standing after a family comma in a part whose only other
-    words are post-nominals moves its member in SILENCE, agreeing
-    with the same name written without the clause.
+    the clause KEEPS it (S2); one the clause gives up is reported
+    where the reading that took it reports, so no word is reported
+    twice and none goes unreported.
+    That holds because a word the clause gives up reads as a
+    post-nominal or the clause keeps it. The stop is right only
+    where the released word ends the parse in the SUFFIX, so a stop
+    that would put it in a name part is no stop and the clause keeps
+    the word. What the take LEAVES BEHIND decides that, not the
+    clause as written. Two shapes leave nothing that could read the
+    word as a credential. A part whose other words are all
+    post-nominals or titles has no name word left for a trailing
+    slot to be the end of, and a part of nothing but credentials is
+    read whole and asked nothing. And a join reached below the take
+    — a particle chain (P2), or a bound given-name join (P5) — can
+    absorb the released word into a name part before any trailing
+    rule sees it, which would carry a word of the BIRTH name into
+    the current one. In both the clause keeps the word, and reports
+    it as it reports every member it keeps.
+    Delimiters outrank every reading inside them. Where a recognized
+    marker stands inside a delimited clause, the whole span is the
+    maiden name whatever its last word is, and whether or not the
+    pair is a configured maiden delimiter (M3): the writer drew the
+    boundary, so no fork is called and nothing is reported. A word
+    the writer left OUTSIDE the span is outside the clause and reads
+    as it would anywhere else.
     A marker
     with nothing after it, or nothing before it, is just a word.
     A marker may be more than one word, and is then recognized only
@@ -1299,6 +1314,12 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Doe nee MA"           →  maiden="MA"  · boundary
       "Jane Doe nee MA Smith"     →  maiden="MA Smith"  · boundary
       "John née Jones Smith MA"   →  maiden="Jones Smith"
+      "Doe, Dr. nee Smith MA"     →  maiden="Smith MA"  · boundary
+      "Berg, abdul nee Jones MA"  →  maiden="Jones MA"  · boundary
+      "Jane Doe nee Smith DO DO"  →  maiden="Smith DO DO"  · boundary
+      "Jane Doe (nee Smith MA)"   →  maiden="Smith MA"
+      "Jane Doe (nee Smith Ma)"   →  maiden="Smith Ma"
+      "Jane Doe (nee Smith) MA"   →  suffix="MA"
       "Jones née"                 →  family="née"  · boundary
       "née Jones"                 →  family="Jones"  · boundary
       "Jane van der Berg née Jones"  →  maiden="Jones"

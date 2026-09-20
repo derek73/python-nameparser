@@ -208,6 +208,13 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #                             first piece is a bound given-name word,
 #                             so the reserve's per-piece question is
 #                             asked over the whole run (#401)
+#   M2 clause VIEW            maiden_clause ONLY -- the one unit that
+#                             reaches the #533 acronym fork, which
+#                             needs a maiden marker AND a class member
+#                             ending the string. 'MA nee ' has both
+#                             words and reaches nothing: the peel
+#                             stops at the trailing marker, so the
+#                             ORDER inside the unit is the shape
 _SHAPES = {
     "delimiter_pairs": "(a) ",      # extract: matched pairs -> masked spans
     "quote_pairs": '"a" ',          # extract: the open==close path
@@ -220,6 +227,7 @@ _SHAPES = {
     "conjunctions": "and ",         # group: merge() accumulating one piece
     "honorifics": "씨 ",             # script_segment: the peel's site scan
     "bound_given": "abdul ",        # group: the P5 reserve over every piece
+    "maiden_clause": "nee MA ",     # group: M2's view over the segment
 }
 
 _BASE = 800
@@ -256,6 +264,15 @@ _FACTOR = 4
 # review rather than here, no earlier unit leading with a bound word.
 # Computed once, the shape reads 4.2, inside the clean column; neither
 # number moved.
+# The twelfth (maiden_clause, #533 review) arrived the same way, with
+# its own quadratic in hand. M2's walk builds ONE view per take over
+# the segment's own indices, and a rewrite that rebuilt those indices
+# per piece -- behavior-identical, and it passed the whole suite --
+# measures 8.3 at base 200, 10.4 at 400 and 12.2-12.6 at 800 against
+# a clean 4.0-4.1 at every one of the three, repeated runs. So the
+# signal is the strongest of the three quadratics on record and does
+# not decide the bound; the shape reads 4.05-4.12 at base 800 across
+# repeated runs, inside the clean column, and neither number moved.
 _MAX_RATIO = 6.0
 
 

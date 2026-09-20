@@ -365,6 +365,110 @@ DO' actually landing here.
 """
 
 [[change]]
+issue = "fix(#274/#533) the clause keeps the credential a join or a missing reader would have taken"
+# Five names where the marker's clause takes words v1 read as a
+# middle name and a suffix, and KEEPS the credential at the end of
+# them. Against 1.4.0 the visible diff is #274's consumption -- v1
+# had no maiden reading at all, so `given`/`middle`/`family`/`suffix`
+# empty as `maiden` fills -- and #533's half is that the last word
+# goes INTO `maiden` rather than staying the suffix v1 read.
+#
+# Each is a route by which rules.md#M2's invariant declines the stop,
+# and an earlier round of this branch took all five:
+#   'Doe, Dr. nee Smith MA' -- the take would leave 'Dr. MA', a
+#     segment with no name word for a given part's trailing slot to
+#     be the end of, so nothing there reads the word as a credential
+#   'Berg, abdul nee Jones MA' -- P5's lenient post-comma join would
+#     swallow the released word into the bound-given pair
+#   'Berg, Jane van der nee Smith DO' -- the particle chain the
+#     marker just bounded would take it back into the family
+#   'Jane Doe nee MA PhD' -- the FIRST-WORD FLOOR spares the member
+#     standing straight after the marker; only the unambiguous
+#     'PhD' behind it leaves, which is why `suffix` narrows rather
+#     than empties here
+#   'Doe, Jane nee Smith Do' -- #531's lean declines a Title-cased
+#     member after a comma
+# The first three read as 2f57ff21 read them; the last two are
+# #533's own clamp and lean.
+#
+# `_ambiguities` is NOT declared and cannot be at this baseline: the
+# v1 surface has no such field, and the reports these names now
+# carry are recorded in the 2.x ledgers where the comparison can see
+# them.
+name_regex = "^(?:Berg, Jane van der nee Smith DO|Berg, abdul nee Jones MA|Doe, Dr\\. nee Smith MA|Doe, Jane nee Smith Do|Jane Doe nee MA PhD)$"
+fields = ["family", "given", "maiden", "middle", "suffix"]
+
+[[change.precedes_narrower]]
+issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
+why = """
+LIVE, and new with the #533 review's corpus rows. Four of the five
+names here have a family comma, so the pre-comma rule's {given,
+family} is a strict subset of these fields and nothing but file order
+keeps them here.
+
+The discriminator is WHAT MOVED the given name. The precomma rule
+describes 2.x splitting a pre-comma run that 1.4 read as one first
+name; on these four the pre-comma run is a single word 1.4 and the
+tree both read as the family, and what empties `given` is the MARKER
+leaving with the word after it -- 'Doe, Dr. nee Smith MA' reads given
+'nee' at 1.4.0 because v1 had no marker reading at all. Classified by
+the precomma rule instead, each would be attributed to a comma
+behavior none of them exercises.
+"""
+
+[[change.precedes_narrower]]
+issue = "fix(#411) the bound-given reserve stops counting words the maiden name takes"
+why = """
+LIVE, and new with the #533 review's corpus rows. 'Berg, abdul nee
+Jones MA' is reached by both and #411's fields are a strict subset.
+
+The discriminator is that #411's rule is about the RESERVE and this
+name's diff is about the CREDENTIAL: the reserve half is real and is
+why `given` reads 'abdul' rather than 'abdul nee', but the `suffix`
+1.4.0 read is emptied by the clause KEEPING the 'MA', which #411 has
+nothing to say about and whose field it does not declare. The review
+round is what settled that reading -- an earlier round released the
+word into P5's join and read given 'abdul MA' -- so a rule naming
+#411 alone would attribute this change's decline to the reserve.
+"""
+
+[[change.precedes_narrower]]
+issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
+why = """
+LIVE, and new with the #533 review's corpus rows. 'Berg, Jane van der
+nee Smith DO' and 'Doe, Jane nee Smith Do' each carry a maiden marker
+AND a tussenvoegsel-shaped word after a family comma, and the
+tussenvoegsel rule's fields are a strict subset of these.
+
+The discriminator is the one fix(#274)'s own block above this file
+gives for the same pair: what 1.4.0 read as middle text plus a
+trailing post-nominal, the tree reads as a maiden name, and the
+marker leaving with its words is what every field of these diffs is
+about. On 'Berg, Jane van der nee Smith DO' the tussenvoegsel is not
+even the moved word -- 'van der' attaches to the family either way,
+and the 'DO' the clause KEEPS is what empties `suffix`.
+"""
+
+[[change]]
+issue = "fix(#335/#533) a marker-led bracketed clause is the maiden name whatever its last word is"
+# 'Jane Doe (nee Smith MA)', 'Jane Doe (nee Smith Ma)', 'Jane Doe
+# (nee Smith) MA'. The role move is fix(#335)'s, above: 1.4 knew the
+# parenthesis pair and had no maiden reading to give the clause, so
+# it came back a nickname.
+#
+# Recorded as their own rule because what #533 does to them is
+# NOTHING, and that is worth a row. The delimiters outrank every
+# reading inside the span, so the whole span is the maiden name
+# whatever its last word is and no fork is called at all
+# (decisions.md#M2, rules.md#M2) -- 'Smith MA' and 'Smith Ma' read
+# alike where the undelimited spellings do not. 'Jane Doe (nee
+# Smith) MA' is the control: the member the writer left OUTSIDE the
+# span is an ordinary trailing credential, which v1 also read as a
+# suffix, so only the clause's role moves.
+name_regex = "^(?:Jane Doe \\(nee Smith MA\\)|Jane Doe \\(nee Smith Ma\\)|Jane Doe \\(nee Smith\\) MA)$"
+fields = ["maiden", "nickname"]
+
+[[change]]
 issue = "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip"
 # Its own rule rather than a widening of fix(#274) above: that rule's
 # fields stop at maiden/middle/family because a Latin marker moves
@@ -4022,22 +4126,3 @@ issue = "fix(#434/#533) a marker PHRASE takes the maiden name, and its clause en
 name_regex = "^Maria Kowalska z domu Nowak MA$"
 fields = ["family", "maiden", "middle"]
 
-[[change]]
-issue = "fix(#533) accepted: the released credential lands where the segment it is released into puts it"
-# Two names where the member leaves the clause and something other
-# than the trailing peel catches it. Both are accepted and both are
-# silent -- no report, because the rule that would raise one never
-# reads the word.
-#
-# 'Doe, Dr. nee Smith MA': once 'Smith' leaves with the marker,
-# segment 1 is 'Dr. MA' -- a no-name segment the credential-run gate
-# reads whole (rules.md#C1) -- so the member is a suffix and the
-# given part's own emitter never sees it. v1 read given 'nee', middle
-# 'Smith'. 'Berg, abdul nee Jones MA': P5's lenient post-comma join
-# takes the released member into the bound-given pair before assign
-# can read it, exactly as it does in the clause-less 'Berg, abdul
-# MA', so the clause form now AGREES with the bare form -- which is
-# what makes this a consequence rather than a defect. v1 read given
-# 'abdul nee', middle 'Jones', suffix 'MA'.
-name_regex = "^(?:Berg, abdul nee Jones MA|Doe, Dr\\. nee Smith MA)$"
-fields = ["given", "maiden", "middle", "suffix"]

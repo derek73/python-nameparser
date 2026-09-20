@@ -7,6 +7,8 @@ keeps runs reproducible on shared CI runners -- this layer guards
 against regressions; exploratory fuzzing happened during review.
 """
 import dataclasses
+import hashlib
+import re
 import warnings
 
 import pytest
@@ -254,11 +256,20 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: structurally, the judged token never being in the span at this
 #: slot. Accepted by Derek 2026-09-19 and recorded in
 #: decisions.md#S2 as the M2 instance of #492's deferred question.
-#: The COUNT is asserted beside the class because a structural
-#: allowlist cannot notice a 115th member of it: 114 of 2016 pairs on
-#: 2026-09-19, against 186 allowlisted and 984 failing before the
-#: change.
-_MAIDEN_AGREEMENT_EXCEPTIONS = 114
+#: The class is asserted beside the count because a structural
+#: allowlist cannot notice a new member of it, and a COUNT cannot
+#: notice a swap -- one pair leaving and another arriving keeps the
+#: number. So the SET is pinned, by digest: sha256 over the sorted
+#: "<policy>|<marker>|<clause name>" lines, printed by the assertion
+#: when it fails, which is how a deliberate move is re-recorded.
+#: Re-measured 2026-09-19 on the widened grid below: 1,026 of 18,144
+#: pairs, which is exactly 9x the 114 of 2,016 the single-marker,
+#: single-policy grid held -- three markers x three policies, and the
+#: class is indifferent to both, which is the finding. (Before #533
+#: the same grid had 186 allowlisted and 984 failing.)
+_MAIDEN_AGREEMENT_EXCEPTIONS = 1026
+_MAIDEN_AGREEMENT_DIGEST = (
+    "4b70727a2633fea1a9c219173d48b223cc0866a5d340b69a9eb4f14fc386ae6a")
 
 
 def _one_case(text: str) -> bool | None:
@@ -295,9 +306,16 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
              "Smith, Jane", "Jane Doe Jr.")
     bodies = ("Smith", "Yo-Yo", "van der Berg", "Jones Smith", "MA",
               "Ma")
-    parser = Parser()
+    # three markers and the two 2.4 switches beside the default: the
+    # switches change WHICH tokens are in the class, and the marker
+    # spellings are what `own_words` stops at, so both are dimensions
+    # the allowlist's structural argument rests on.
+    markers = ("nee", "n\u00e9e", "geb.")
+    policies = (("default", Policy()),
+                ("caps", Policy(unlisted_caps_suffixes=True)),
+                ("nodot", Policy(unlisted_dotted_suffixes=False)))
 
-    def side(text: str, word: str) -> str:
+    def side(parser: Parser, text: str, word: str) -> str:
         name = parser.parse(text)
         hits = [t for t in name.tokens if t.text == word]
         if not hits:
@@ -305,31 +323,171 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
         return ("credential" if hits[-1].role is Role.SUFFIX
                 else "name")
 
-    pairs = allowed = 0
+    pairs = 0
+    allowed: list[str] = []
     failures = []
-    for head in heads:
-        for body in bodies:
-            for base in members:
-                for word in (base.lower(), base.title(), base.upper()):
-                    clause = f"{head} nee {body} {word}"
-                    plain = f"{head} {word}"
-                    pairs += 1
-                    if side(clause, word) == side(plain, word):
-                        continue
-                    if _one_case(clause) and not _one_case(plain):
-                        allowed += 1
-                        continue
-                    failures.append(
-                        f"{clause!r} reads {side(clause, word)} but "
-                        f"{plain!r} reads {side(plain, word)}")
+    for label, policy in policies:
+        parser = Parser(policy=policy)
+        for head in heads:
+            for body in bodies:
+                for base in members:
+                    for word in (base.lower(), base.title(),
+                                 base.upper()):
+                        for marker in markers:
+                            clause = f"{head} {marker} {body} {word}"
+                            plain = f"{head} {word}"
+                            pairs += 1
+                            if side(parser, clause, word) == side(
+                                    parser, plain, word):
+                                continue
+                            if _one_case(clause) and not _one_case(plain):
+                                allowed.append(
+                                    f"{label}|{marker}|{clause}")
+                                continue
+                            failures.append(
+                                f"[{label}] {clause!r} reads "
+                                f"{side(parser, clause, word)} but "
+                                f"{plain!r} reads "
+                                f"{side(parser, plain, word)}")
     assert not failures, (
         f"{len(failures)} of {pairs} pair(s) disagree outside the "
         f"one-case-head class:\n" + "\n".join(failures[:15]))
-    assert allowed == _MAIDEN_AGREEMENT_EXCEPTIONS, (
-        f"the one-case-head class holds {allowed} of {pairs} pairs, "
-        f"recorded as {_MAIDEN_AGREEMENT_EXCEPTIONS} on 2026-09-19; a "
-        f"structural allowlist cannot notice its own growth, so this "
-        f"count is the control. Re-record it deliberately, saying why")
+    digest = hashlib.sha256(
+        "\n".join(sorted(allowed)).encode()).hexdigest()
+    assert (len(allowed), digest) == (
+        _MAIDEN_AGREEMENT_EXCEPTIONS, _MAIDEN_AGREEMENT_DIGEST), (
+        f"the one-case-head class holds {len(allowed)} of {pairs} "
+        f"pairs with digest {digest}, recorded as "
+        f"{_MAIDEN_AGREEMENT_EXCEPTIONS} / "
+        f"{_MAIDEN_AGREEMENT_DIGEST} on 2026-09-19. The SET is "
+        f"pinned, not only the size: a swap keeps the count. "
+        f"Re-record both deliberately, saying why. Members:\n"
+        + "\n".join(sorted(allowed)[:10]))
+
+
+#: The tags that make a token a member of the ambiguous credential
+#: class as the reader sees it -- the listed one and the by-shape one
+#: a 2.4 switch writes. Spelled here rather than imported so the
+#: property is stated in the terms rules.md#M2 states it in, and so a
+#: rename in the pipeline cannot quietly narrow what this checks.
+_CLASS_TAGS = frozenset({"vocab:suffix-ambiguous", "shape:acronym"})
+
+#: Two-member trailing runs: the one shape that puts a maiden-clause
+#: report and an assign-peel report on the same parse, each naming a
+#: different token. Written out rather than generated, because what
+#: makes them work is the CONTRAST between the two members' writing.
+_TAILS = ("Ma JD", "MA JD", "MA Ma")
+
+
+def _maiden_clause_grid() -> list[tuple[str, Parser, str]]:
+    """(name, parser, policy label) for the M2 release grid.
+
+    Rich enough to hold every shape the #533 review found: title-led
+    and post-nominal-led comma heads, particle heads, a bound-given
+    head, by-shape and caps-on members, two adjacent particle members,
+    mixed/ALL-CAPS/lower writing, comma and no-comma, four markers,
+    and the default policy beside each 2.4 switch.
+    """
+    heads = ("Jane Doe", "Doe, Jane", "Doe, Prof.", "Doe, Dr.",
+             "Jane Doe, Jr", "Jane Doe, PhD", "Doe, J.", "Doe, PhD",
+             "Berg, Jane van der", "Jane van der Berg", "Berg, abdul",
+             "abdul Berg", "J. Doe", "Doe", "Prof. Jane Doe",
+             "Doe, Jane van der", "Doe, Sir")
+    bodies = ("Smith", "Smith MA", "Smith Ma", "Smith ma", "Smith A.B.",
+              "Smith X.Y.Z.", "Smith XYZ", "Smith ba", "Smith DO",
+              "Smith Do", "Smith do", "Smith MA XYZ", "Smith DO DO",
+              "Smith Ma JD", "Smith MA JD", "Smith MA Ma",
+              "Smith V MA", "MA", "MA PhD", "MA ba", "Smith Jones MA",
+              "Smith PhD", "Smith Jr", "Jones Smith Ma", "Smith MA PhD")
+    policies = (("default", Policy()),
+                ("caps", Policy(unlisted_caps_suffixes=True)),
+                ("nodot", Policy(unlisted_dotted_suffixes=False)))
+    parsers = [(label, Parser(policy=p)) for label, p in policies]
+    texts: list[str] = []
+    seen: set[str] = set()
+    for head in heads:
+        for body in bodies:
+            markers = ("nee", "née", "geb.", "z domu") if " " not in body \
+                else ("nee",)
+            for marker in markers:
+                base = f"{head} {marker} {body}"
+                for text in (base, f"{base}, MD"):
+                    for written in (text, text.upper(), text.lower()):
+                        if written not in seen:
+                            seen.add(written)
+                            texts.append(written)
+    return [(t, parser, label) for t in texts for label, parser in parsers]
+
+
+def _released_but_not_suffix(text: str, parser: Parser) -> list[str]:
+    """Words rules.md#M2 says must be SUFFIX-roled and are not.
+
+    The clause's parent-style reach is everything from the marker to
+    the first CERTAIN suffix word -- suffix vocabulary that is not
+    initial-shaped, which is where the walk stopped before #533 and
+    still stops. Inside that reach a class member is either still in
+    the maiden name or was given up as a credential; any third answer
+    is a word the clause released into the current name, which is the
+    failure this property exists for.
+    """
+    marker = _MARKER_RE.search(text)
+    if marker is None:
+        return []
+    name = parser.parse(text)
+    if not name.maiden:
+        return []
+    out = []
+    for tok in name.tokens:
+        if tok.span is None or tok.span.start < marker.end():
+            continue
+        if "vocab:suffix" in tok.tags and "initial" not in tok.tags:
+            break
+        if (not _CLASS_TAGS.isdisjoint(tok.tags)
+                and tok.role not in (Role.MAIDEN, Role.SUFFIX)):
+            out.append(f"{tok.text!r} -> {tok.role.value}")
+    return out
+
+
+_MARKER_RE = re.compile(
+    r"(?<![\w.])(nee|née|geb\.|z domu)(?![\w])", re.IGNORECASE)
+
+
+def test_a_word_the_clause_gives_up_lands_in_suffix() -> None:
+    """rules.md#M2's invariant, over the whole release grid.
+
+    The clause may hand a word to the trailing rule that reads it as
+    a credential, and it may keep the word. There is no third answer:
+    a released word that ends the parse in `given`, `middle` or
+    `family` has crossed from the BIRTH name into the current one,
+    silently, and that is the class of failure #424 named from the
+    other direction.
+
+    The grid is the pin, and it is a grid rather than a name list so
+    that it could fail. At d97d3eb7 -- the commit this review round
+    started from -- it fails on 790 of its 8,466 parses, 290 distinct
+    names, covering every shape the review reported: 'Doe, Prof. nee
+    Smith A.B.' reading given 'A.B.' (32 parses, and 'X.Y.Z.' another
+    32), 'DOE, PROF. NEE SMITH MA' reading given 'MA' (206, the
+    largest class, with 'ba' at 96), 'Berg, Jane van der nee Smith
+    DO' reading family 'van der DO Berg' (12) and 'Jane Doe nee Smith
+    DO DO' reading family 'DO DO' (108, two words apiece). At
+    2f57ff21, the parent, it passes on all 8,466 -- the invariant is
+    what the conservative direction always held.
+    """
+    failures = []
+    grid = _maiden_clause_grid()
+    for text, parser, label in grid:
+        for bad in _released_but_not_suffix(text, parser):
+            failures.append(f"[{label}] {text!r}: {bad}")
+    assert not failures, (
+        f"{len(failures)} of {len(grid)} parse(s) released a word the "
+        f"clause should have kept:\n" + "\n".join(failures[:20]))
+    # the grid has to be able to fail: every shape above must actually
+    # reach the walk, which it does only where a clause is taken
+    reached = sum(bool(p.parse(t).maiden) for t, p, _ in grid)
+    assert reached > len(grid) // 2, (
+        f"only {reached} of {len(grid)} grid parses carry a maiden "
+        f"name; the rest cannot exercise M2 at all")
 
 
 def test_no_two_ambiguities_name_the_same_token_span() -> None:
@@ -346,13 +504,25 @@ def test_no_two_ambiguities_name_the_same_token_span() -> None:
     spans the reports claim, so an OVERLAP fails it however the two
     spans differ in length.
 
-    Measured 2026-09-19: 0 over 20,412 parses, every particle shape
+    Measured 2026-09-19: 0 over 27,216 parses, every particle shape
     among them ('nee van der Berg Ma', 'nee de Ma', 'nee van Ma').
     A COUNT of the parses that carry two reports rides along, because
     a comparison over one report is vacuous and nothing else would
-    say so: the grid as it stands has 2,160 of them, all from the two
-    particle heads, and a later edit that drops them fails here
-    rather than silently turning this into a test of nothing.
+    say so.
+
+    The count is also what caught this test measuring the wrong
+    thing. Every one of the 2,160 multi-report parses the grid held
+    at the review paired the MAIDEN emitter with the particle-chain
+    emitter -- the pair this test is named for, maiden against
+    assign's peel, never occurred, because one trailing member is
+    either kept by the clause or peeled by assign and no grid row had
+    TWO. The `_TAILS` below are that shape: 'Ma JD' keeps 'Ma' and
+    peels 'JD', 'MA JD' releases 'MA' and peels 'JD' behind it, and
+    'MA Ma' keeps the Title-case one with the caps one in front. The
+    count is re-pinned on the widened grid, and the pairing is
+    asserted directly beside it so a later edit that drops the tails
+    fails here rather than silently turning this back into a test of
+    the particle emitter.
     """
     members = ("ba", "do", "ed", "jd", "ma", "x.y.z.", "r.a.i.")
     heads = ("Jane Doe", "Doe, Jane", "John", "J.", "Dr.", "Jane",
@@ -390,14 +560,46 @@ def test_no_two_ambiguities_name_the_same_token_span() -> None:
                                 claimed |= span
                             if overlap:
                                 failures.append(f"{text!r}: {spans}")
+    # the tails that put the maiden emitter and assign's peel on one
+    # parse -- the pair this test is named for, which the grid above
+    # cannot produce (see the docstring)
+    both = 0
+    for head in heads:
+        for body in bodies:
+            for tail in _TAILS:
+                for marker in ("nee", "née", "geb."):
+                    text = f"{head} {marker} {body} {tail}"
+                    for parser in parsers:
+                        claimed = set()
+                        overlap = False
+                        spans = []
+                        reports = parser.parse(text).ambiguities
+                        multi += len(reports) > 1
+                        kinds = [a.kind for a in reports]
+                        both += (kinds.count(
+                            AmbiguityKind.SUFFIX_OR_NAME) > 1)
+                        for a in reports:
+                            span = {t.span if t.span is not None
+                                    else id(t) for t in a.tokens}
+                            spans.append(sorted(map(str, span)))
+                            overlap = overlap or bool(claimed & span)
+                            claimed |= span
+                        if overlap:
+                            failures.append(f"{text!r}: {spans}")
     assert not failures, (
         f"{len(failures)} parse(s) report one token twice:\n"
         + "\n".join(failures[:15]))
-    assert multi == 2160, (
+    assert multi == 4320, (
         f"{multi} of these parses carry more than one report, recorded "
-        f"as 2160 on 2026-09-19. A parse with one report cannot fail "
+        f"as 4320 on 2026-09-19. A parse with one report cannot fail "
         f"the check above, so this is what keeps the grid honest: move "
         f"the number deliberately, and never to 0")
+    assert both == 1944, (
+        f"{both} parse(s) carry TWO suffix-or-name reports, recorded "
+        f"as 1944 on 2026-09-19. This is the pair the test is named "
+        f"for -- the maiden emitter against assign's trailing peel -- "
+        f"and it was 0 for the whole grid until the two-member tails "
+        f"were added. Never re-record it as 0")
 
 
 @pytest.mark.parametrize("text", _FORK_CORPUS)
