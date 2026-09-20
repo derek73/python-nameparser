@@ -3,7 +3,7 @@ import sys
 
 import pytest
 
-from nameparser import parse
+from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
 from nameparser._pipeline._post_rules import suffix_entries
@@ -11,8 +11,9 @@ from nameparser._pipeline._state import ParseState
 from nameparser._policy import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
                                 GIVEN_FIRST, PatronymicRule, Policy,
                                 Script)
-from nameparser._types import (FOLDED_TAG, STABLE_TAGS, AmbiguityKind,
-                               Role)
+from nameparser._types import (FOLDED_TAG, STABLE_TAGS,
+                               UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
+                               AmbiguityKind, Role)
 
 # A reduced lexicon, the convention in every pipeline stage module: a
 # stage test should not move when shipped vocabulary does. What it must
@@ -1158,3 +1159,62 @@ def test_p6_keeps_every_non_capital_spelling_of_the_particle_member(
         assert name.family == family, text
         assert [a.kind.value for a in name.ambiguities] == \
             ["particle-or-given"], text
+
+
+def test_a_lone_connective_is_marked_as_joining_nothing() -> None:
+    # rules.md#R3's mark (#461), decided where the parts are settled.
+    r = parse("Juan de y")
+    y = [t for t in r.tokens if t.text == "y"][0]
+    assert UNJOINED_CONJUNCTION_TAG in y.tags
+    assert UNJOINED_TAG not in y.tags
+
+
+def test_a_joining_connective_carries_no_mark() -> None:
+    # the recorded negative control: name words beside it, so it is
+    # doing a connective's work and the mark is not written.
+    r = parse("John and Jane Smith")
+    conj = [t for t in r.tokens if t.text == "and"][0]
+    assert UNJOINED_CONJUNCTION_TAG not in conj.tags
+    # and the two-word part, where the criterion is the PART and not
+    # a count
+    r2 = parse("Jon Dough and")
+    conj2 = [t for t in r2.tokens if t.text == "and"][0]
+    assert UNJOINED_CONJUNCTION_TAG not in conj2.tags
+
+
+def test_an_all_particle_part_keeps_r2s_mark_and_gains_no_other(
+) -> None:
+    # the `elif`'s precedence, and the reason it is an `elif`: where
+    # the part is all particles R2's mark already readmits every word,
+    # a word that is BOTH particle and connective included. Swapping
+    # the branches moves the caller's own rows.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    r = p.parse("Juan de y")
+    y = [t for t in r.tokens if t.text == "y"][0]
+    assert UNJOINED_TAG in y.tags
+    assert UNJOINED_CONJUNCTION_TAG not in y.tags
+    assert r.initials() == "J. d. y."
+
+
+def test_a_word_that_is_both_particle_and_connective_is_marked_too(
+) -> None:
+    # The walk sorts the part's words into three buckets and a word of
+    # BOTH vocabularies belongs in the connective one, which is what
+    # the second arm of the sort does. The shape that needs it: a part
+    # that is not all-particle -- so R2's mark does not fire -- holding
+    # a plain connective, a working particle, and a word that is both.
+    # Without the arm the both-vocabulary word takes neither mark,
+    # drops as an ordinary family particle, and the part's own base
+    # disagrees with the view over it.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    r = p.parse("Juan de y and")
+    assert r.family == "de y and"
+    assert r.initials() == "J. y. a."
+    tags = {t.text: t.tags for t in r.tokens if t.role is Role.FAMILY}
+    assert UNJOINED_CONJUNCTION_TAG in tags["y"]
+    assert UNJOINED_CONJUNCTION_TAG in tags["and"]
+    # the working particle beside them takes no mark and does not
+    # initial, which is what makes the criterion "nothing to join"
+    # rather than "nothing else here"
+    assert UNJOINED_CONJUNCTION_TAG not in tags["de"]
+    assert UNJOINED_TAG not in tags["de"]

@@ -3,6 +3,7 @@
 {"name": "Bridge (A.B)", "shape": 1}
 {"name": "Carod i", "shape": 1}
 {"name": "Dr. Juan de la Vega III", "shape": 1}
+{"name": "Duke of Edinburgh", "shape": 1}
 {"name": "J.A. K.D.", "shape": 1}
 {"name": "J.R.R. Tolkien", "shape": 1}
 {"name": "JACK MA", "shape": 1}
@@ -61,9 +62,11 @@
 {"name": "John Smith Xyz.", "shape": 1}
 {"name": "John Smith nee Jones R.A.I.", "shape": 1}
 {"name": "John V. Smith", "shape": 1}
+{"name": "John and Jane Smith", "shape": 1}
 {"name": "John de Ma", "shape": 1}
 {"name": "John e Smith", "shape": 1}
 {"name": "John van der Berg Ma", "shape": 1}
+{"name": "Jon Dough and", "shape": 1}
 {"name": "Jose E Maria Santos", "shape": 1}
 {"name": "Jose e Maria Santos", "shape": 1}
 {"name": "Josep Carod I Rovira", "shape": 1}
@@ -75,7 +78,10 @@
 {"name": "Juan Garcia Lopez y", "shape": 1}
 {"name": "Juan Garcia Y Lopez", "shape": 1}
 {"name": "Juan Garcia y Lopez y", "shape": 1}
+{"name": "Juan Velasquez y Garcia", "shape": 1}
 {"name": "Juan de la Vega", "shape": 1}
+{"name": "Juan de y", "shape": 1}
+{"name": "Juan y Garcia", "shape": 1}
 {"name": "Lt.Gov. John Doe", "shape": 1}
 {"name": "Maria Kowalska z domu Nowak MA", "shape": 1}
 {"name": "Md Abdul Karim", "shape": 1}
@@ -96,6 +102,7 @@
 {"name": "juan garcia y lopez", "shape": 1}
 {"name": "juan y garcia", "shape": 1}
 {"name": "ХОСЕ И МАРИЯ САНТОС", "shape": 1}
+{"name": "Хосе И Мария Сантос", "shape": 1}
 {"name": "хосе и мария сантос", "shape": 1}
 {"name": "محمد و علي", "shape": 1}
 {"name": "Beethoven, Ludwig van", "shape": 2}

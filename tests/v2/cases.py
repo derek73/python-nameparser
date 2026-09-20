@@ -1237,7 +1237,13 @@ CASES: tuple[Case, ...] = (
                "shape 1's given-first arrangement under the default "
                "order, exactly as the Cyrillic twins above do -- a "
                "shape tag asserts the ARRANGEMENT, not a script "
-               "(tools/differential/shapes.py)",
+               "(tools/differential/shapes.py). Since #461 it is also "
+               "the readmission read as a PARITY RESTORATION rather "
+               "than a deviation: 'و' is the whole middle part, so it "
+               "joins nothing, initials again on both views, and both "
+               "give 'م. و. ع.' -- which is what 1.4.0 gave. Roles "
+               "unmoved throughout, so the classification does not "
+               "change; what moves is a view, and it moves back",
          shape=1),
     # #289: a bare ambiguous credential acronym is read by the
     # EVIDENCE the writing carries, and a name written in more than
@@ -2658,6 +2664,100 @@ CASES: tuple[Case, ...] = (
                "class conjunct and the family collapses to 'y' with "
                "middle 'Garcia y Lopez' -- measured. Identical at "
                "1.4.0",
+         shape=1),
+    # ---- #461: a connective initials where it joins nothing --------
+    # The rule, one sentence for all three groups: a connective
+    # contributes nothing where it is JOINING -- a part holding
+    # another name word for it to join, the part's working particles
+    # set aside -- and initials like any other name word where its
+    # part holds nothing else. Asked of the whole PART, never of a
+    # word count. These rows carry the ROLES, which this table's
+    # expectations are; the initials each one is about are named in
+    # its notes and asserted by rules.md#R3's example lines and by
+    # tests/v2/test_render.py.
+    Case("a_connective_among_given_names_stops_initialing",
+         "John and Jane Smith",
+         {"given": "John and Jane", "family": "Smith"},
+         classification="fix(#461)",
+         notes="the name R3's retired paragraph said had four "
+               "candidate answers, and this rule picks one of them by "
+               "stating a rule rather than by choosing a value: the "
+               "given part holds name words for 'and' to join, so it "
+               "joins and contributes nothing. Roles unchanged at "
+               "every release; initials go 'J. a. J. S.' -- 1.4.0's "
+               "run-together 'J a J. S.' -- to 'J. J. S.'",
+         shape=1),
+    Case("a_title_run_read_as_a_name_loses_its_connective_too",
+         "Duke of Edinburgh",
+         {"given": "Duke of Edinburgh"},
+         classification="fix(#461)",
+         ambiguities=("given-or-family",),
+         notes="the same rule on the shape that makes it visible "
+               "outside couple listings: the whole name joins into "
+               "one given part, 'of' has name words on both sides of "
+               "it, and 'D. o. E.' becomes 'D. E.'. The report is "
+               "unchanged and is the one this row also pins",
+         shape=1),
+    Case("a_connective_holding_a_part_alone_initials",
+         "Juan y Garcia",
+         {"given": "Juan", "middle": "y", "family": "Garcia"},
+         classification="fix(#461)",
+         notes="the other direction, and the commonest of the three "
+               "shapes: P3's three-word carve-out leaves 'y' a name "
+               "word in the middle part BY ITSELF, so there is "
+               "nothing there for it to join and it initials -- 'J. "
+               "G.' becomes 'J. y. G.'. Roles unchanged since 1.4.0. "
+               "This is the half the design flagged and Derek took",
+         shape=1),
+    Case("a_lone_connective_in_the_family_initials_too",
+         "Juan de y",
+         {"given": "Juan", "family": "de y"},
+         classification="fix(#461)",
+         notes="the row #461 was filed about, where the two views of "
+               "one parse disagreed about one token: family_base was "
+               "'y' and initials() was 'J.', so the base said the "
+               "word is a name word and the initials said it is not. "
+               "Now 'J. y.', and they agree. The part is not "
+               "all-particle under the default vocabulary -- 'y' is "
+               "no particle there -- so only the new mark readmits it",
+         shape=1),
+    Case("a_part_of_two_words_with_a_name_word_still_joins",
+         "Jon Dough and",
+         {"given": "Jon", "family": "Dough and"},
+         classification="parity",
+         notes="the recorded negative control for the WHOLE-PART "
+               "question, and the row that says the criterion is not "
+               "a word count wearing a part's clothes: two words, one "
+               "of them the connective, and the other is a name word "
+               "for it to join -- so it joins, contributes nothing, "
+               "and 'J. D.' is unchanged at every release including "
+               "1.4.0. Read the part, never count it",
+         shape=1),
+    Case("a_working_particle_does_not_count_as_something_to_join",
+         "Juan Velasquez y Garcia",
+         {"given": "Juan", "family": "Velasquez y Garcia"},
+         classification="parity",
+         notes="the control on the other side: the family holds two "
+               "name words beside the connective, so it joins and "
+               "'J. V. G.' is unchanged -- 1.4.0 gave the facade's "
+               "run-together 'J. V G.' for its own reason (grouping, "
+               "not membership). The clause about working particles "
+               "is what this row does NOT exercise and the "
+               "'Juan de y' row above does",
+         shape=1),
+    Case("a_joined_cyrillic_connective_stops_initialing",
+         "Хосе И Мария Сантос",
+         {"given": "Хосе И Мария", "family": "Сантос"},
+         classification="fix(#461)",
+         notes="the non-Latin half of the losing direction, and it "
+               "moves the OTHER way from the Arabic "
+               "'caseless_connective_never_enters_the_fork' row above "
+               "because the part differs and not the script: here the "
+               "connective has given names on both sides of it, so it "
+               "joins. 'Х. И. М. С.' becomes 'Х. М. С.'. A Cyrillic "
+               "capital is not the shape an initial is written in "
+               "(rules.md#P3), so the letter is the connective in "
+               "every spelling of this name",
          shape=1),
     # ---- #531: the given part's trailing slot ----------------------
     # The slot: after a family comma the comma has already named the

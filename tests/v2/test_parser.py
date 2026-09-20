@@ -11,7 +11,8 @@ from nameparser import (
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
 )
-from nameparser._types import AmbiguityKind, Role, Segmentation
+from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
+                               AmbiguityKind, Role, Segmentation)
 
 
 def test_parser_defaults_and_properties() -> None:
@@ -1063,6 +1064,69 @@ def test_revise_sets_a_missing_unjoined_mark() -> None:
     assert revised.family_particles == ""
     revised = p.revise(p.parse("Juan de la Vega"), family="Do")
     assert (revised.family, revised.family_base) == ("Do", "Do")
+
+
+def test_revise_recomputes_the_connective_mark_in_both_directions(
+) -> None:
+    # The mark says a connective stands in a part with nothing to
+    # join, which is a fact about the PART -- so the harvest that
+    # splices a sub-parse's tokens into one field invalidates it both
+    # ways, exactly as it does the particle mark above (rules.md#R3,
+    # #461).
+    p = Parser()
+    lone = p.parse("Juan de y")
+    assert lone.initials() == "J. y."
+    # STALE: the marked 'y' lands beside a name word
+    widened = p.revise(lone, family="y Garcia")
+    assert widened.initials() == "J. G."
+    # MISSING: a connective revised into a part of its own
+    narrowed = p.revise(p.parse("Juan Velasquez y Garcia"), family="y")
+    assert narrowed.initials() == "J. y."
+    # and the identity revise round-trips, which is the property the
+    # particle-mark tests above pin for R2
+    again = p.revise(lone, family=lone.family)
+    assert (again.family, again.initials()) == (lone.family,
+                                                lone.initials())
+
+
+def test_revise_writes_a_connective_mark_the_sub_parse_did_not(
+) -> None:
+    # The MISSING direction that role-forcing alone cannot produce,
+    # and the one input shape that does: the sub-parse of 'and y'
+    # reads 'and' as the given name and 'y' -- a particle under this
+    # caller's vocabulary -- as an all-particle family, so R2's mark
+    # is what the sub-parse writes on it. Forcing both into one field
+    # makes that part no longer all-particle, so R2's mark is cleared
+    # and #461's has to be written in its place, by the recompute
+    # rather than by any stage. Without it the 'y' carries no mark at
+    # all, drops as an ordinary family particle, and the field and
+    # the view disagree again.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    revised = p.revise(p.parse("John Smith"), family="and y")
+    assert revised.family == "and y"
+    assert revised.initials() == "J. a. y."
+    marks = {t.text: t.tags for t in revised.tokens
+             if t.role is Role.FAMILY}
+    assert UNJOINED_CONJUNCTION_TAG in marks["y"]
+    assert UNJOINED_TAG not in marks["y"]
+
+
+def test_revise_keeps_r2s_precedence_over_the_connective_mark(
+) -> None:
+    # The recompute mirrors the pipeline walk's `elif`, and this is
+    # the row where the two marks would otherwise both be written:
+    # 'de y' under a vocabulary that makes 'y' a particle is an
+    # all-particle part, so R2's mark readmits every word of it --
+    # the connective included -- and #461's is not written there. The
+    # rendered answer is the same either way, which is why this
+    # asserts the TAGS: the facade's own connective predicate reads
+    # the second mark, so writing it here would move that view alone.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    revised = p.revise(p.parse("John Smith"), family="de y")
+    assert revised.initials() == "J. d. y."
+    y = [t for t in revised.tokens if t.text == "y"][0]
+    assert UNJOINED_TAG in y.tags
+    assert UNJOINED_CONJUNCTION_TAG not in y.tags
 
 
 def test_revise_sub_parse_structural_behavior() -> None:

@@ -8,6 +8,7 @@ against regressions; exploratory fuzzing happened during review.
 """
 import dataclasses
 import hashlib
+import itertools
 import re
 import warnings
 
@@ -23,7 +24,8 @@ from nameparser._lexicon import _VOCAB_FIELDS
 from nameparser._pipeline import run
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._vocab import effective_script
-from nameparser._types import AmbiguityKind, Role
+from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
+                               AmbiguityKind, Role, Token)
 
 from .conftest import differential_corpus
 
@@ -987,3 +989,226 @@ def test_bad_policy_field_fails_cleanly(field: str, value: object) -> None:
     except (ValueError, TypeError):
         return
     _quiet_parser(policy=policy).parse("Dr. John de la Vega III")
+
+
+# --- #397/#461: the connective grid, and its five invariants --------
+# A GRID and not a name list, for the reason #531's agreement sweep
+# was one: every invariant below is stated about a shape the parser
+# can reach in many ways, and a list pins the ways somebody thought
+# of. Generators include heads with NO name word, parts of one word,
+# a part that is nothing but the connective, comma and no-comma,
+# mixed/ALL-CAPS/lower, class members supplied by a CUSTOM lexicon
+# (a second single letter that is also generational vocabulary, and a
+# connective that is also particle vocabulary), and four policies.
+
+
+def _connective_grid() -> list[tuple[str, Parser, str]]:
+    heads: tuple[list[str], ...] = (
+        [], ["Josep"], ["Josep", "Lluis"], ["Dr."], ["Dr.", "Josep"])
+    mids: tuple[list[str], ...] = (
+        [], ["Carod"], ["de", "Carod"], ["Carod", "Rovira"])
+    conns = ("i", "y", "e", "and", "&", "of", "и")
+    tails: tuple[list[str], ...] = (
+        [], ["Rovira"], ["de", "Rovira"], ["Rovira", "Puig"])
+    suffixes: tuple[list[str], ...] = (
+        [], ["III"], ["Jr."], ["I"], ["MA"])
+    lexicons = (("default", Lexicon.default()),
+                ("conj+v", Lexicon.default().add(conjunctions={"v"})),
+                ("part+y", Lexicon.default().add(particles={"y"})))
+    policies = (("default", Policy()),
+                ("family-first", Policy(name_order=FAMILY_FIRST)),
+                ("given-last", Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
+                ("strict-comma", Policy(lenient_comma_suffixes=False)))
+    texts: list[str] = []
+    seen: set[str] = set()
+    for head, mid, conn, tail, suffix, comma in itertools.product(
+            heads, mids, conns, tails, suffixes, (False, True)):
+        if not (mid or tail):
+            continue
+        if comma and tail:
+            base = " ".join(tail) + ", " + " ".join(head + mid + [conn])
+        else:
+            base = " ".join(head + mid + [conn] + tail)
+        base = (base + " " + " ".join(suffix)).strip()
+        for written in (base, base.upper(), base.lower()):
+            if written not in seen:
+                seen.add(written)
+                texts.append(written)
+    parsers = [(f"{ln}/{pn}", Parser(lexicon=lex, policy=pol))
+               for ln, lex in lexicons for pn, pol in policies]
+    return [(t, p, label) for t in texts for label, p in parsers]
+
+
+_CONNECTIVE_GRID = _connective_grid()
+
+
+def _readmitted(tok: Token) -> bool:
+    return not {UNJOINED_TAG, UNJOINED_CONJUNCTION_TAG}.isdisjoint(tok.tags)
+
+
+def _has_something_to_join(tok: Token, part: tuple[Token, ...]) -> bool:
+    """rules.md#R3's question, asked of the WHOLE PART.
+
+    Working particles are set aside -- a particle the unjoined mark
+    has NOT readmitted is doing a particle's work and is no name word
+    for a connective to join.
+    """
+    return any(other is not tok
+               and "conjunction" not in other.tags
+               and not ("particle" in other.tags
+                        and UNJOINED_TAG not in other.tags)
+               for other in part)
+
+
+def _predicted_initials(part: tuple[Token, ...], role: Role) -> list[str]:
+    out = []
+    for tok in part:
+        skip = ("conjunction" in tok.tags
+                or ("particle" in tok.tags and role is not Role.GIVEN))
+        if not skip or _readmitted(tok):
+            out.append(tok.text[0])
+    return out
+
+
+def test_the_connective_grid_can_fail() -> None:
+    """The reachability probe every grid in this file carries.
+
+    A grid that reaches none of the shapes it is about passes
+    vacuously, and a comparison over a population of zero is the same
+    silence as a clean run. These three counts are a dated recorded
+    control, measured 2026-09-20 on the shipped tree.
+    """
+    assert len(_CONNECTIVE_GRID) == 170100, len(_CONNECTIVE_GRID)
+    assert len({t for t, _, _ in _CONNECTIVE_GRID}) == 14175
+    joined = sum(1 for text, parser, _ in _CONNECTIVE_GRID[:2000]
+                 if any("conjunction" in tok.tags
+                        for tok in parser.parse(text).tokens))
+    assert joined > 500, joined
+
+
+def test_a_generational_connective_joins_only_with_both_sides() -> None:
+    """INV1 (#397). For a single-letter connective that is ALSO
+    generational vocabulary: if it shares its role part with any other
+    word, a non-connective word stands before it AND after it.
+
+    Mutation-checked, 2026-09-20: dropping the position test fails
+    this on 1575 parses, dropping the whole both-sides condition on
+    504, and dropping the rootname count arm on 816. The CLASS test
+    is NOT covered here and has its own rows -- see
+    tests/v2/pipeline/test_group.py.
+    """
+    failures = []
+    for text, parser, label in _CONNECTIVE_GRID:
+        letters = {w for w in parser.lexicon.conjunctions
+                   if len(w) == 1 and w in parser.lexicon.suffix_words}
+        name = parser.parse(text)
+        for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
+            part = name.tokens_for(role)
+            if len(part) < 2:
+                continue
+            for i, tok in enumerate(part):
+                if ("conjunction" not in tok.tags or len(tok.text) != 1
+                        or tok.text.lower() not in letters):
+                    continue
+                left = any("conjunction" not in t.tags for t in part[:i])
+                right = any("conjunction" not in t.tags for t in part[i + 1:])
+                if not (left and right):
+                    failures.append(
+                        f"[{label}] {text!r}: {role.value} {tok.text!r}")
+    assert not failures, (
+        f"{len(failures)} parse(s) joined a generational connective "
+        f"without a name word on each side:\n" + "\n".join(failures[:10]))
+
+
+def test_the_mark_is_exactly_the_parts_with_nothing_to_join() -> None:
+    """INV2 (#461). A connective carries a readmitting mark IFF its
+    part holds no other word that is neither a connective nor a
+    working particle.
+
+    Stated over the PAIR of marks deliberately: keyed on the new mark
+    alone it fails 366 times under `add(particles={"y"})`, where the
+    part is all-particle and R2's OLD mark does the readmitting.
+    Mutation-checked: dropping the new mark fails this on 14,066.
+    """
+    failures = []
+    for text, parser, label in _CONNECTIVE_GRID:
+        name = parser.parse(text)
+        for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
+            part = name.tokens_for(role)
+            for tok in part:
+                if "conjunction" not in tok.tags:
+                    continue
+                if _has_something_to_join(tok, part) == _readmitted(tok):
+                    failures.append(
+                        f"[{label}] {text!r}: {role.value} {tok.text!r} "
+                        f"joinable={_has_something_to_join(tok, part)} "
+                        f"marked={_readmitted(tok)}")
+    assert not failures, (
+        f"{len(failures)} connective token(s) disagree with the "
+        f"criterion:\n" + "\n".join(failures[:10]))
+
+
+def test_initials_take_only_base_words_and_drop_only_joiners() -> None:
+    """INV3 and INV4, beside R2's existing invariant.
+
+    INV3: every family word `initials()` contributes is a word of
+    `family_base`. INV4: every `family_base` word that contributes no
+    initial is tagged conjunction. Together they say the two views of
+    one parse cannot come apart again, which is the defect #461 was
+    filed about.
+
+    Mutation-checked: swapping the two branches of the mark walk fails
+    this on 188 parses (`Carod y` under `add(particles={"y"})`, whose
+    base is empty while its `y` initials).
+    """
+    failures = []
+    for text, parser, label in _CONNECTIVE_GRID:
+        name = parser.parse(text)
+        family = name.tokens_for(Role.FAMILY)
+        base = name.family_base.split()
+        contributing = [t for t in family
+                        if t.text[0] in _predicted_initials(family,
+                                                            Role.FAMILY)
+                        and (not ("conjunction" in t.tags
+                                  or "particle" in t.tags)
+                             or _readmitted(t))]
+        for tok in contributing:
+            if tok.text not in base:
+                failures.append(
+                    f"[{label}] {text!r}: INV3 {tok.text!r} initials but "
+                    f"is not in base {base!r}")
+        for tok in family:
+            if (tok.text in base and tok not in contributing
+                    and "conjunction" not in tok.tags):
+                failures.append(
+                    f"[{label}] {text!r}: INV4 {tok.text!r} is a base "
+                    f"word, contributes no initial, and is no connective")
+    assert not failures, (
+        f"{len(failures)} disagreement(s) between initials() and "
+        f"family_base:\n" + "\n".join(failures[:10]))
+
+
+def test_initials_emit_exactly_the_predicted_contributors() -> None:
+    """INV5. Per group, `initials("{role}")` emits exactly the words
+    the criterion predicts, in field order.
+
+    The output-level statement of the same rule, and the one that
+    catches a view reading the marks correctly and then rendering
+    something else. Mutation-checked: restoring the given group's old
+    blanket exemption fails this on 27,343 parses, and dropping the
+    new mark from the readmitting set on 14,066.
+    """
+    failures = []
+    for text, parser, label in _CONNECTIVE_GRID:
+        name = parser.parse(text)
+        for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
+            predicted = _predicted_initials(name.tokens_for(role), role)
+            got = name.initials(
+                f"{{{role.value}}}").replace(".", "").split()
+            if got != predicted:
+                failures.append(
+                    f"[{label}] {text!r}: {role.value} {got!r} != "
+                    f"predicted {predicted!r}")
+    assert not failures, (
+        f"{len(failures)} group(s) emitted something other than the "
+        f"criterion's contributors:\n" + "\n".join(failures[:10]))

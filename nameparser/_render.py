@@ -15,7 +15,8 @@ from __future__ import annotations
 import re
 
 from nameparser._lexicon import Lexicon, _normalize
-from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG, UNJOINED_TAG,
+from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG,
+                               UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
                                Ambiguity, ParsedName, Role, Token)
 
 _SPACES = re.compile(r"\s+")
@@ -41,6 +42,14 @@ _INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
 #: as a particle, so it is a name word of the part like the rest.
 #: Not STABLE_TAGS -- that also contains "initial", which must contribute.
 _SKIP_TAGS = frozenset({"particle", "conjunction"})
+#: The given group's own skip set (rules.md#R3, #461): a connective
+#: contributes no initial in ANY group where it is joining words, so
+#: the given group no longer exempts it -- "one rule for every group".
+#: The particle exemption stays: a given-group particle is a name word
+#: there, which is what the whole-group exemption was for.
+_SKIP_TAGS_GIVEN = frozenset({"conjunction"})
+#: Either unjoined mark readmits the word it sits on.
+_UNJOINED_MARKS = frozenset({UNJOINED_TAG, UNJOINED_CONJUNCTION_TAG})
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial", minus
 # the empty alternative) -- layering forbids importing the pipeline here;
@@ -152,11 +161,13 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     delimiter follows each initial, separator sits between initials
     within a group. Each group is ordered the way its FIELD is
     ordered -- written order, except folded words, which initial
-    before the rest of the group (#408). Tokens tagged
-    particle/conjunction contribute no
-    initial in middle/family (given-name tokens always contribute),
-    and the unjoined mark readmits the words of an all-particle part
-    whichever of those tags they carry; tags come from the pipeline --
+    before the rest of the group (#408).
+    A token tagged conjunction contributes no initial in ANY group,
+    and one tagged particle contributes none in middle/family
+    (given-group particles always contribute); either unjoined mark
+    readmits the word it sits on, so the words of an all-particle part
+    and a connective with nothing in its part to join both count;
+    tags come from the pipeline --
     hand-built untagged tokens all contribute, and so do the words of
     a field spliced in by replace(), which the parse never read.
     This view takes NO lexicon, so it has none to fall back to for
@@ -174,10 +185,10 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     for key in _INITIALS_KEYS:
         role = Role(key)
         tokens = name.tokens_for(role)
-        if role is not Role.GIVEN:
-            tokens = tuple(t for t in tokens
-                           if not (_SKIP_TAGS & t.tags)
-                           or UNJOINED_TAG in t.tags)
+        skip = _SKIP_TAGS_GIVEN if role is Role.GIVEN else _SKIP_TAGS
+        tokens = tuple(t for t in tokens
+                       if not (skip & t.tags)
+                       or _UNJOINED_MARKS & t.tags)
         # mechanisms.md#FOLDED_TAG: "a rule that needs different
         # rendering order tags the token, and the rendering views
         # consult the tag" -- this is a rendering view, so it reads
@@ -209,8 +220,9 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # particle's work there" -- UNJOINED_TAG is that mark (#407).
     # Only the PARTICLE conjunct is gated on it, and that is the rule
     # rather than an omission -- rules.md#R4: "A CONJUNCTION keeps its
-    # lowercase even inside such a part, being no name word in any
-    # part" -- so a conjunction keeps conjunction treatment even
+    # lowercase wherever it stands, including inside a part whose
+    # other words the unjoined mark has turned into ordinary name
+    # words" -- so a conjunction keeps conjunction treatment even
     # inside a part the mark has turned into ordinary name words.
     # No SHIPPED name witnesses the difference: `particles` and
     # `conjunctions` are disjoint in the default vocabulary and in
@@ -225,15 +237,18 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # 'Anh Y Van'. That is pinned by test_repair_keeps_a_conjunction_
     # lowercase_in_a_particle_part -- until which gating it passed the
     # whole suite.
-    # initials() does NOT match this carve-out, and the mismatch is
-    # recorded rather than fixed: #461 made it match and was backed
-    # out, the mark being a statement about a whole PART that #461
-    # honored for some of the part's words and not for one of them,
-    # so what is in question is R3's "even then" clause rather than
-    # the code (decisions.md, under R2). Under that same lexicon
-    # `Anh y Van` repairs to 'Anh y Van' and initials 'A. y. V.',
-    # pinned by
-    # test_initials_readmits_a_conjunction_in_a_particle_part.
+    # initials() does NOT match this carve-out, and since #461 that
+    # is a DECIDED disagreement rather than a recorded one: a
+    # connective that initials because it joins nothing is still not
+    # written the way a name is written, which is the sentence quoted
+    # above and this rule's own reason rather than a borrowing from
+    # R3. Under that same lexicon `Anh y Van` repairs to 'Anh y Van'
+    # and initials 'A. y. V.' -- the two views agreeing on this row
+    # because R2's mark readmits the word for both -- while
+    # `parse("Juan de y")` repairs to 'Juan de y' and initials
+    # 'J. y.', where they part. Pinned by
+    # test_initials_readmits_a_conjunction_in_a_particle_part and
+    # test_repair_keeps_a_lone_connective_lowercase_where_it_initials.
     # That conjunct reads the TAG, not the word (#458). classify takes
     # the conjunction-versus-initial decision once, over the whole
     # token -- v1's is_conjunction excludes initials, so 'E.' in

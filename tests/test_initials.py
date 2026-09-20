@@ -283,8 +283,15 @@ class InitialsTestCase(HumanNameTestBase):
         # carry the split and its closing.
         hn = HumanName("john e smith")
         self.m(hn.initials(), "j. e. s.", hn)
+        # 'maria y lopez' moved with #461, not with the one-case fork:
+        # its 'y' holds the middle part alone, so there is nothing
+        # there for it to join and it initials like any other name
+        # word, agreeing with the parse's own view. rules.md#R3 states
+        # the rule for all three groups and decisions.md#R3 records
+        # what it costs. The letter's TAG is unchanged -- a lowercase
+        # 'y' outside the marked set is still the connective.
         hn = HumanName("maria y lopez")
-        self.m(hn.initials(), "m. l.", hn)
+        self.m(hn.initials(), "m. y. l.", hn)
         # These two are among #528's four movers, and the #528 ledger
         # rule's own name_regex (a literal alternation, in
         # tools/differential/expected_since_1.4.0.toml) covers all four

@@ -703,8 +703,16 @@ def test_token_is_conjunction_reads_the_tag_then_the_vocabulary() -> None:
     # the vocabulary-and-shape test said about either.
     parsed = HumanName("JUAN Y GARCIA")
     tags = {t.text: t for t in parsed._parsed.tokens}
-    assert parsed._token_is_conjunction(tags["Y"]) is True
+    # #461: the 'Y' holds the middle part alone, so the parse marked
+    # it as joining nothing and the predicate reads that mark beside
+    # the tag. The CONTROL below is a 'Y' that IS joining, where the
+    # tag still answers on its own.
+    assert parsed._token_is_conjunction(tags["Y"]) is False
     assert parsed._token_is_conjunction(tags["JUAN"]) is False
+
+    joining = HumanName("JUAN GARCIA Y LOPEZ")
+    jtags = {t.text: t for t in joining._parsed.tokens}
+    assert joining._token_is_conjunction(jtags["Y"]) is True
 
     fork = HumanName("john e smith")
     e = {t.text: t for t in fork._parsed.tokens}["e"]
@@ -758,10 +766,22 @@ def test_process_initial_direct_call_keeps_the_v1_string_path() -> None:
 
 def test_process_initial_with_tokens_reads_the_parse() -> None:
     # The same two name parts, this time handed the tokens the parse
-    # built: the answer flips on both, which is #528 in one assertion.
+    # built: the answer flips, which is #528 in one assertion.
+    # #461 moved the FIRST half's value and the flip with it: the 'Y'
+    # of 'JUAN Y GARCIA' holds the middle part alone, so the parse
+    # marks it as joining nothing and this view takes its letter --
+    # which is what the bare-string path above already said about the
+    # same text. The flip the first half pinned is re-pinned below on
+    # a 'Y' that IS joining, where the two paths still disagree;
+    # rules.md#R3 states the rule and decisions.md#R3 records it.
     hn = HumanName("JUAN Y GARCIA")
     middle = hn._list_tokens_for("middle")[0]
-    assert hn._process_initial("", firstname=False, tokens=middle) == ""
+    assert hn._process_initial("", firstname=False, tokens=middle) == "Y"
+    joining = HumanName("JUAN GARCIA Y LOPEZ")
+    joined_y = [g for g in joining._list_tokens_for("last")
+                if g[0].text == "Y"][0]
+    assert joining._process_initial("", firstname=False,
+                                    tokens=joined_y) == ""
     fork = HumanName("john e smith")
     fork_middle = fork._list_tokens_for("middle")[0]
     assert fork._process_initial("", firstname=False,
@@ -921,17 +941,34 @@ def test_initials_freeze_the_connective_answer_at_parse_time() -> None:
     # next full_name assignment, not on the next initials() call.
     # A local Constants, never CONSTANTS: the shared singleton would
     # leak the removal into every later test in the process.
+    # #461 moved the VALUE on 'juan y garcia' and with it this name's
+    # ability to WITNESS the freeze: its 'y' holds the middle part
+    # alone, so it initials as a marked connective and would initial
+    # again as a plain name word, and all three readings below are now
+    # the same string (rules.md#R3, decisions.md#R3). The name is kept
+    # for its moved value and for the capitalize() precedent; the
+    # freeze itself is re-pinned under it on a name where the
+    # connective is JOINING, which is where a vocabulary edit still
+    # changes the answer.
     constants = Constants()
     name = HumanName("juan y garcia", constants=constants)
-    assert name.initials() == "j. g."
+    assert name.initials() == "j. y. g."
     constants.conjunctions.remove("y")
-    assert name.initials() == "j. g."           # frozen at parse time
+    assert name.initials() == "j. y. g."         # frozen at parse time
     # capitalize() has behaved this way all along, which is the
     # precedent this cost was accepted on
     name.capitalize()
     assert str(name) == "Juan y Garcia"
     name.full_name = "juan y garcia"            # re-parse applies it
     assert name.initials() == "j. y. g."
+
+    joined = Constants()
+    joining = HumanName("juan garcia y lopez", constants=joined)
+    assert joining.initials() == "j. g. l."
+    joined.conjunctions.remove("y")
+    assert joining.initials() == "j. g. l."      # frozen at parse time
+    joining.full_name = "juan garcia y lopez"   # re-parse applies it
+    assert joining.initials() == "j. g. y. l."
 
 
 def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> None:
@@ -956,9 +993,18 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
     # carry the same mark and take the same fallback. Rebuilt here from
     # the live parse's own fields, so the strings are identical and
     # only the missing parse explains the difference.
+    # 'JUAN Y GARCIA' no longer contrasts on INITIALS: #461 gave the
+    # live parse the restored answer, both views now saying 'J. Y. G.'
+    # because the 'Y' holds its part alone (rules.md#R3,
+    # decisions.md#R3). Kept for its CAPITALIZE half, which still
+    # differs, and replaced on the initials side by
+    # 'JUAN GARCIA Y LOPEZ', where the letter IS joining and the live
+    # parse still drops it. 'john e smith' is untouched throughout.
     for name, live_initials, restored_initials, live_cap, restored_cap in (
-            ("JUAN Y GARCIA", "J. G.", "J. Y. G.",
+            ("JUAN Y GARCIA", "J. Y. G.", "J. Y. G.",
              "Juan y Garcia", "Juan Y Garcia"),
+            ("JUAN GARCIA Y LOPEZ", "J. G. L.", "J. G. Y. L.",
+             "Juan Garcia y Lopez", "Juan Garcia Y Lopez"),
             ("john e smith", "j. e. s.", "j. s.",
              "John E Smith", "John e Smith")):
         assert HumanName(name).initials() == live_initials

@@ -180,23 +180,24 @@ def test_repair_keeps_a_conjunction_lowercase_in_a_particle_part() -> None:
 
 
 def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
-    """Today's answer on an OPEN question (#461), pinned as such.
+    """rules.md#R3, settled (#461).
 
-    rules.md#R3 says a conjunction never initials "even then" -- even
-    inside the all-particle part R2 turns into ordinary name words --
-    and `initials()` does not do that: the mark readmits the part's
-    words whichever skip tag they carry. #461 made the code match the
-    clause and was backed out, the clause rather than the code being
-    what is now in question (decisions.md, under R2).
+    This pinned TODAY's output on an open question so that settling it
+    would fail the suite until the pin moved with it. It fired, and
+    this is the pin moved: a connective contributes no initial where
+    it is JOINING, and a part holding nothing else for it to join is a
+    part where it initials like any other name word, agreeing with the
+    base. The all-particle rows below are unchanged, because R2's mark
+    already readmitted the word there; what moved is everything under
+    the default vocabulary, where a lone connective now initials too.
+    decisions.md#R3 records the rule and what it costs.
 
-    So this pins what a `deviates:` marker would pin if one could
-    hang here -- TODAY's output, strictly, so that settling #461
-    fails the suite until this moves with it. It cannot be a marker:
-    markers hang on rules.md example lines and every line there names
-    an input string parsed with the DEFAULT vocabulary, over which
-    `particles` and `conjunctions` are disjoint and no string reaches
-    this shape. It is also what keeps the values quoted in prose by
-    decisions.md, mechanisms.md#RENDER-HONORS-THE-PARSE and
+    Still not a `deviates:` marker and still not a rules.md example
+    line: markers hang on example lines and every line there names an
+    input parsed with the DEFAULT vocabulary, over which `particles`
+    and `conjunctions` are disjoint, so no string reaches the
+    all-particle-with-a-connective shape. It is also what keeps the
+    values quoted in prose by decisions.md, mechanisms.md and
     `_render.py` from going stale unnoticed.
     """
     assert "y" in Lexicon.default().conjunctions, (
@@ -213,13 +214,43 @@ def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
     assert p.parse("Anh y Van").initials() == "A. y. V."
     assert p.parse("johnny y").initials() == "j. y."
 
-    # and OUTSIDE such a part the skip stands, joining or not --
-    # these are what the readmission must not reach
+    # OUTSIDE such a part the skip stands where the connective is
+    # JOINING, and these are what the readmission must not reach --
+    # the question is asked of the whole PART and never of a word
+    # count, which is what keeps a part of two words with a name word
+    # in it on this side of the line
     assert p.parse("Juan Velasquez y Garcia").initials() == "J. V. G."
+    assert parse("Jon Dough and").initials() == "J. D."
+    # Under THIS lexicon 'Juan y Garcia' is one of them, and for a
+    # reason worth spelling out: making 'y' a particle folds it into
+    # the family, so the part is 'y Garcia' and holds a name word for
+    # it to join. Unchanged, where the same string under the default
+    # vocabulary moves -- which is the row below.
     assert p.parse("Juan y Garcia").initials() == "J. G."
-    # including under the default vocabulary, where 'y' is no particle
-    # and the family is therefore not all-particle
-    assert parse("Juan de y").initials() == "J."
+    # and it DOES reach a part holding nothing else, under the default
+    # vocabulary too, where 'y' is no particle and only the new mark
+    # readmits it
+    assert parse("Juan y Garcia").initials() == "J. y. G."
+    assert parse("Juan de y").initials() == "J. y."
+    assert parse("Juan y").initials() == "J. y."
+
+
+def test_repair_keeps_a_lone_connective_lowercase_where_it_initials(
+) -> None:
+    """rules.md#R4's own reading, and the view split it accepts.
+
+    A connective that initials BECAUSE it joins nothing is still not
+    written the way a name is written, so case repair leaves it
+    lowercase while initials() takes its letter. That is R4's reason
+    rather than a borrowing from R3 -- the two rules answer different
+    questions about the same token and this is the row where their
+    answers part. mechanisms.md#RENDER-HONORS-THE-PARSE records the
+    shape; decisions.md#R4 records the split.
+    """
+    assert parse("Juan de y").initials() == "J. y."
+    assert parse("Juan de y").capitalized().family == "de y"
+    assert parse("juan y").capitalized(force=True).given == "Juan"
+    assert parse("juan y").capitalized(force=True).family == "y"
 
 
 def test_initials_order_folded_words_first_like_the_family_field() -> None:
@@ -693,8 +724,12 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
     """
     assert parse("john e smith").initials() == "j. e. s."
     assert HumanName("john e smith").initials() == "j. e. s."
-    assert parse("JUAN Y GARCIA").initials() == "J. G."
-    assert HumanName("JUAN Y GARCIA").initials() == "J. G."
+    # #461 moved the VALUE and not the agreement: 'Y' holds the middle
+    # part alone, so it initials on both surfaces -- which is also
+    # 1.4.0's answer on this name, restored. The joined control below
+    # is where the letter still drops, on both surfaces.
+    assert parse("JUAN Y GARCIA").initials() == "J. Y. G."
+    assert HumanName("JUAN Y GARCIA").initials() == "J. Y. G."
     assert parse("JUAN GARCIA Y LOPEZ").initials() == "J. G. L."
     assert HumanName("JUAN GARCIA Y LOPEZ").initials() == "J. G. L."
     # The mixed-case controls, where the writing decides the letter and
@@ -703,11 +738,30 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
     assert HumanName("Juan Y. Garcia").initials() == "J. Y. G."
     # 'maria y lopez' is a ONE-CASE control, not a mixed-case one: written
     # wholly in lowercase, its 'y' is outside the marked set (rules.md#P3),
-    # so it stays the connective and drops on both surfaces -- unmoved,
-    # like the mixed-case names above, but for the vocabulary's reason
-    # rather than the writing's (tests/v2/test_ledger_guards.py's
-    # "one-case controls" wording, around line 1118).
-    assert HumanName("maria y lopez").initials() == "m. l."
+    # so it stays the CONNECTIVE on both surfaces rather than reading as
+    # an initial the way 'e' does (tests/v2/test_ledger_guards.py's
+    # "one-case controls" wording, around line 1118). What it no longer
+    # witnesses is the DROP: #461 gave the letter its initial back here,
+    # because it holds the middle part alone and so joins nothing
+    # (decisions.md#R3). The joining one-case control below is where
+    # a lowercase 'y' still drops, which is what keeps this row's point
+    # -- the tag, not the value -- observable.
+    assert HumanName("maria y lopez").initials() == "m. y. l."
+    assert parse("maria y lopez").initials() == "m. y. l."
+    assert HumanName("juan garcia y lopez").initials() == "j. g. l."
+    assert parse("juan garcia y lopez").initials() == "j. g. l."
+    # The GIVEN group, where #461 dropped the facade's own blanket
+    # exemption as well as the core's: a connective among given names
+    # is joining there like anywhere else, so it contributes nothing
+    # on BOTH surfaces. Without the facade half these read 'J. a. J.
+    # S.' and 'D. o. E.' while the core reads them as below, which is
+    # the disagreement the one rule exists to prevent.
+    assert parse("John and Jane Smith").initials() == "J. J. S."
+    assert HumanName("John and Jane Smith").initials() == "J. J. S."
+    assert parse("Duke of Edinburgh").initials() == "D. E."
+    assert HumanName("Duke of Edinburgh").initials() == "D. E."
+    assert parse("John & Jane").initials() == "J. J."
+    assert HumanName("John & Jane").initials() == "J. J."
     # The one corpus name where the two views still differ, and it is
     # not this rule's: the facade merges 'Ph.' + 'D.' into one list
     # element and renders it with no inner delimiter

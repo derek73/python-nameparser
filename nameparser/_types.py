@@ -114,6 +114,19 @@ STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 #: keeping it leaves a later rule free to report the fork this decides.
 UNJOINED_TAG = "vocab:unjoined-particle"
 
+#: A name part holding no word a connective could join -- once the
+#: part's WORKING particles are set aside -- is a part where the
+#: connective is not doing a connective's work, so it initials like an
+#: ordinary name word, agreeing with `family_base` (rules.md#R3,
+#: #461). The twin of UNJOINED_TAG above, computed in the same pass
+#: and for the same reason: the fact is about a PART, so it is decided
+#: once where the parts are settled rather than re-derived by each
+#: view -- which is how `initials()` and `family_base` came apart.
+#: A SEPARATE marker rather than a widening of UNJOINED_TAG, because
+#: that one is also read by family_particles/family_base and by
+#: _cap_word, and none of those three may move.
+UNJOINED_CONJUNCTION_TAG = "vocab:unjoined-conjunction"
+
 #: The one sanctioned view-reorder marker (namespaced = unstable API).
 #: Tokens cannot reorder (span order is validated), so a role fold that
 #: must render BEFORE the role's original tokens tags them with this;
@@ -702,21 +715,32 @@ def _validated_field_strings(fields: dict[str, str]) -> dict[Role, str]:
 
 
 def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
-    """UNJOINED_TAG recomputed over an edited token list.
+    """Both unjoined marks recomputed over an edited token list.
 
-    The mark says a particle stands ALONE in its part, which is a fact
-    about the part rather than the word, so an edit that re-roles
-    tokens invalidates it in both directions: replace()/revise() splice
-    a sub-parse's tokens into one field, and a particle marked alone
-    there can land beside a name word (stale mark) while an unmarked
-    one can end up alone (missing mark). Parser.revise strips
-    FOLDED_TAG for the same reason; this one is RECOMPUTED rather than
-    stripped, because absent is only correct for half the cases.
+    Each mark says a word stands in a part with nothing for it to join
+    -- a particle alone among particles (UNJOINED_TAG), a connective
+    among connectives and working particles
+    (UNJOINED_CONJUNCTION_TAG) -- which is a fact about the part rather
+    than the word, so an edit that re-roles tokens invalidates it in
+    both directions: replace()/revise() splice a sub-parse's tokens
+    into one field, and a word marked alone there can land beside a
+    name word (stale mark) while an unmarked one can end up alone
+    (missing mark). Parser.revise strips FOLDED_TAG for the same
+    reason; these are RECOMPUTED rather than stripped, because absent
+    is only correct for half the cases.
+
+    The two predicates mirror the pipeline's single walk, including
+    its precedence: where the part is ALL particles the first mark
+    already readmits every word of it, a word that is both particle
+    and connective included, so the second is not written there.
     """
     out = list(tokens)
     for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
         part = [i for i, t in enumerate(out) if t.role is role]
         alone = bool(part) and all("particle" in out[i].tags for i in part)
+        lone_conj = (not alone) and not any(
+            "conjunction" not in out[i].tags and "particle" not in out[i].tags
+            for i in part)
         for i in part:
             tags = out[i].tags
             if alone and UNJOINED_TAG not in tags:
@@ -724,6 +748,14 @@ def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
             elif not alone and UNJOINED_TAG in tags:
                 out[i] = dataclasses.replace(out[i],
                                              tags=tags - {UNJOINED_TAG})
+            tags = out[i].tags
+            mark = lone_conj and "conjunction" in tags
+            if mark and UNJOINED_CONJUNCTION_TAG not in tags:
+                out[i] = dataclasses.replace(
+                    out[i], tags=tags | {UNJOINED_CONJUNCTION_TAG})
+            elif not mark and UNJOINED_CONJUNCTION_TAG in tags:
+                out[i] = dataclasses.replace(out[i],
+                                             tags=tags - {UNJOINED_CONJUNCTION_TAG})
     return tuple(out)
 
 

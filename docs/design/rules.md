@@ -2027,18 +2027,21 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     family word; titles, suffixes, particles and nicknames
     contribute nothing — except the particles of a part whose every
     word is one, which are not acting as particles there (R2) and
-    initial like any other name word. A CONJUNCTION never initials,
-    so a base that is one contributes nothing even then. That
-    carve-out is stated for the middle and base family words; the
-    GIVEN group is not settled here. A conjunction written among
-    given names does initial today, and this document does not yet
-    say whether it should — because two of its own rules answer
-    differently and neither answer has been taken: this rule counts
-    name words, while P3 makes a connective and its neighbours ONE
-    name word, so a joined given group owes one initial under P3 and
-    one per joined name word under the carve-out. Until that is
-    decided the given group's answer is pinned-but-undocumented
-    rather than specified, and no line below asserts it.
+    initial like any other name word. A connective contributes
+    nothing where it is joining: a part holding another name word for
+    it to join — the part's working particles set aside — is a part
+    where the connective is doing a connective's work and is no name
+    word of its own. A part holding nothing else is a part where it
+    is joining nothing, and there it initials like any other name
+    word, agreeing with the base.
+    The question is asked of the WHOLE PART, never of a word count. A
+    part of two words where one is the connective is still a part
+    where it joins — the base of "Jon Dough and" is "Dough and" and
+    its initials are "J. D." — and a part of three is no different.
+    One rule for every group. A connective written among given names
+    is a connective there too and contributes nothing where it joins,
+    so the group that was pinned-but-undocumented is now specified by
+    the same sentence as the other two.
     Which words a group contributes is one question; the ORDER they
     contribute in is a second, and its answer is the field's. Each
     group initials in the order its field reads — written order,
@@ -2058,7 +2061,11 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     A family that is ALL particles therefore contributes its words
     rather than nothing: they are the base (R2), so they initial.
       "Juan van der"              →  initials="J. v. d."
-      "Juan de y"                 →  initials="J."
+      "Juan de y"                 →  initials="J. y."
+      "John and Jane Smith"       →  initials="J. J. S."
+      "Duke of Edinburgh"         →  initials="D. E."
+      "Juan Velasquez y Garcia"   →  initials="J. V. G."
+      "Jon Dough and"             →  initials="J. D."
     Accepted: this rule reads a part the parser read. A field set as
     raw text after the parse carries no reading, and this view is
     handed no vocabulary to supply one — it takes a format spec and
@@ -2090,23 +2097,17 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     shapes need a field edited after the parse, or a rendering the
     other view does not have. decisions.md#R3 carries what all of it
     costs and where it is pinned.
-    Accepted: the unsettled given-group answer above is neither rare
-    nor hypothetical — 26 of the corpus names carry a conjunction
-    among the given names (measured 2026-09-13; recompute by parsing
-    the deduped corpus*.jsonl glob and keeping every name with a
-    GIVEN-role token tagged "conjunction"), every one of them
-    reachable from the default vocabulary, and it has initialed since
-    1.4.0. It carries no marked deviation, for the reason that
-    mechanism exists: a
-    marker states the INTENDED value, and one name, "John and Jane
-    Smith", has four candidates. Today gives "J. a. J. S."; the
-    carve-out read as written gives "J. J. S."; P3's one-name-word
-    join gives just "J. S."; and 1.4.0 gave "J a J. S.". Marking it
-    would put an invented value in a normative document and hold
-    the parser to it. #461 asks the neighbouring question about the
-    all-particle base and does not own this one; decisions.md#R2
-    carries the population and the measurements.
-    history: decisions.md#R3 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
+    Accepted: the given group's answer is a 1.4.0 parity break, and
+    a second one in the other direction sits beside it. A connective
+    among given names contributed an initial from 1.4.0 until this
+    rule reached it, so "John and Jane Smith" gives "J. J. S." where
+    every release through 2.3 gave "J. a. J. S." and 1.4.0 gave the
+    run-together "J a J. S."; and a connective holding a part alone
+    now contributes one, so "محمد و علي" gives "م. و. ع." on both
+    views, which is 1.4.0's own answer restored. The rule is one
+    sentence for all three groups, and taking it is what made the
+    four candidate answers this group once had into one.
+    history: decisions.md#R3 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py, nameparser/_pipeline/_post_rules.py
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
@@ -2116,9 +2117,12 @@ R4. Rationale: case repair is a display concern, applied only on
     convention (McDonald), not only ordinary word-by-word casing, and
     a part whose every word is particle vocabulary is repaired as
     ordinary name words, since none of them is doing a particle's
-    work there (R2). A CONJUNCTION keeps its lowercase even inside
-    such a part, being no name word in any part — the carve-out R3
-    states for initials. A name already written the way repair would
+    work there (R2). A CONJUNCTION keeps its lowercase wherever it
+    stands, including inside a part whose other words the unjoined
+    mark has turned into ordinary name words. That is this rule's own
+    reading and not a borrowing from R3: a connective that initials
+    because it joins nothing is still not written the way a name is
+    written. A name already written the way repair would
     write it comes back unchanged, measured by repair's own
     conventions rather than by the bearer's. A spelling written in a
     single case is repaired even where its bearer meant it, because

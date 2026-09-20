@@ -32,7 +32,8 @@ import nameparser._render as _render
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
 from nameparser._lexicon import _normalize
 from nameparser._parser import Parser
-from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG, ParsedName,
+from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG,
+                               UNJOINED_CONJUNCTION_TAG, ParsedName,
                                Role, Token)
 
 _V2_FIELD = {"first": "given", "last": "family"}  # v1 name -> v2 name
@@ -521,7 +522,12 @@ class HumanName:
         self._resolve()
         if UNCLASSIFIED_TAG in tok.tags:
             return _render._reads_as_conjunction(tok.text, self._lexicon)
-        return "conjunction" in tok.tags
+        # #461: a connective with nothing in its part to join is not
+        # acting as one, and the parse decided that and marked the
+        # token -- the same mark the core's initials() reads, so the
+        # two views cannot disagree about it.
+        return ("conjunction" in tok.tags
+                and UNJOINED_CONJUNCTION_TAG not in tok.tags)
 
     def _split_last(self) -> tuple[list[str], list[str]]:
         # rules.md#R2: "a name part whose every word is particle
@@ -633,7 +639,9 @@ class HumanName:
                                  for tok in tokens)
         initials = []
         for word, conjunction in zip(words, conjunctions, strict=True):
-            if not (self._is_particle(word) or conjunction) or firstname:
+            # #461: the conjunction filter reaches EVERY group; only
+            # the particle filter is exempted for the given group.
+            if not conjunction and (firstname or not self._is_particle(word)):
                 initials.append(word[0])
         if len(initials) > 0:
             return self.initials_separator.join(initials)
