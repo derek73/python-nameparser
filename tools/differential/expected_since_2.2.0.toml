@@ -75,7 +75,18 @@ issue = "fix(#436/#437) a space-separated post-nominal run renders with spaces, 
 # the unambiguous PhD already ended the walk, so the clause gave
 # the MA up before this change as it does after it. What grew is
 # the CORPUS, and the run rendering is what the diff is about.
-name_regex = "^(?:JOHN DOE PHD MD|Jane Doe nee Smith PhD MA|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Kenneth Clarke QC MP|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
+# 2026-09-20, #397: three names join the alternation and the rule
+# does not change. 'Josep Lluis Carod i III' ('i, III' -> 'i III'),
+# 'Josep Lluis Carod i V' ('i, V' -> 'i V') and 'Rovira, Josep Carod
+# i Jr.' ('i, Jr.' -> 'i Jr.') are two-word generation runs this
+# baseline renders with a comma and the tree renders with a space --
+# the whole of each one's diff here. #397 moves NOTHING on any of
+# them: measured against the parent 46651750 all three parse
+# byte-identically before and after this bundle, the link having a
+# generation marker and not a name word to its right. What grew is
+# the CORPUS -- the three arrived with #397's own case rows -- and
+# the run rendering is what the diffs are about.
+name_regex = "^(?:JOHN DOE PHD MD|Jane Doe nee Smith PhD MA|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Josep Lluis Carod i III|Josep Lluis Carod i V|Kenneth Clarke QC MP|Rovira, Josep Carod i Jr\\.|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
 fields = ["suffix"]
 
 # The six #449 rules go SECOND, not first: the rule above
@@ -373,6 +384,26 @@ issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
 # remains and this rule still explains it, one `_initials` move.
 # expected_since_2.0.0.toml's copy of this rule carries the account;
 # it is the same at all three baselines.
+#
+# 2026-09-20, #461: THE SURFACE FLIPPED AND THE RULE DID NOT. At
+# this baseline the wheel gives facade 'J. G.' and core 'J. Y. G.'
+# for 'JUAN Y GARCIA' (measured 2026-09-20 from the 2.2.0 wheel).
+# Before this change only the CORE moved, 'J. Y. G.' -> 'J. G.', a
+# connective contributing no initial; after it only the FACADE moves,
+# 'J. G.' -> 'J. Y. G.', and the core agrees with the baseline word
+# for word -- the 'Y' holds its part alone, so it initials again on
+# both surfaces and the tree gives 'J. Y. G.' from each. `_initials`
+# is one pseudo-field, so this rule still explains the name; what
+# changed is WHICH HALF of the disagreement it is explaining, which
+# is why the paragraph above reads backwards without this one.
+# rules.md#R3, decisions.md#R3.
+#
+# The name stops diffing at 1.4.0 and at 2.3.0 under the same move,
+# and the rule written for it in each of those ledgers goes: the
+# 2.3.0 `fix(#383/#479) a bare capital connective in an all-upper
+# name stops initialing` is deleted outright, and 1.4.0's
+# `fix(#528) ...` keeps its other three names and drops this one from
+# its alternation.
 name_regex = "(?:^|[\\s,])(?:[EY]|[EeYy]\\.)(?=[\\s,]|$)"
 fields = ["_initials"]
 orders = ["DEFAULT"]
@@ -1349,3 +1380,181 @@ issue = "fix(#533) the maiden clause ends at the credential in a native-script n
 # larger diff from those baselines.
 name_regex = "^田中 太郎 旧姓 佐藤 MA$"
 fields = ["_ambiguities", "maiden", "suffix"]
+
+# ---------------------------------------------------------------
+# #397 + #461: THE CATALAN LINK JOINS, AND A CONNECTIVE INITIALS
+# WHERE IT JOINS NOTHING (2026-09-20). Four rules: the join's ROLES,
+# the REPORT a one-case spelling makes instead of joining, and
+# #461's two halves, which are one sentence read in its two
+# directions and need two rules because a rule listing `_initials`
+# may list nothing else (#484).
+#
+# LAST in the file, and that is narrow-first rather than a
+# preference: the join rule declares {family, middle, suffix} and
+# every rule above it that reaches one of its five names declares a
+# strict subset, so an earlier position is an order-decided contest
+# the run refuses (#382).
+#
+# rules.md#P3 states the join and its two boundaries; rules.md#R3
+# states what a connective contributes. decisions.md#P3 carries the
+# count decision and the both-sides scope, decisions.md#R3 the
+# criterion and its measured blast radius.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#397) the Catalan/Polish link joins two surnames"
+# 'i' is connective vocabulary since #397, and a connective counts as
+# a name word toward rules.md#P3's three-word carve-out whatever else
+# the vocabulary says it is -- which matters here because 'i' is also
+# the roman numeral. So a four-word name reaches the threshold and the
+# link joins. This baseline read 'Josep Carod i Rovira' as middle
+# 'Carod i' with family 'Rovira', and 'Carod i Rovira, Josep' -- where
+# the link stands after a family comma -- as family 'Carod Rovira'
+# with the link taken as a GENERATION in `suffix`, which is why the
+# two move different field sets and are grouped here rather than
+# split. The three longer spellings move with the first: 'Josep Carod
+# i Rovira III' and 'Josep Lluis Carod i Rovira' the same
+# {family, middle}, and 'Josep Carod i de Rovira' the same pair with
+# the link joining PAST a particle (middle 'Carod i' -> 'Carod i de',
+# family 'de Rovira' -> 'Rovira'). Five names, `fields` the union of
+# their two shapes.
+#
+# All five entered this corpus with #397's own rules.md#P3 example
+# lines and case rows; before that they were radar-tier names the
+# contract did not answer for, which is why a rule appears at this
+# baseline only now.
+#
+# Literal-anchored to the five. The shape is "a single letter between
+# two name words", which reaches every corpus name carrying a bare
+# initial and would pre-excuse the opposite reading -- #397's whole
+# accepted cost is that some such letters must NOT join.
+# _MUST_NOT_MATCH in tests/v2/test_ledger_guards.py carries the wall:
+# 'Josep i Rovira' (three words, under the carve-out), 'Carod i' and
+# 'John Quincy Smith i' (the link with nothing to its right) and the
+# two 'Josep Lluis Carod i <numeral>' spellings, whose trailing
+# generation run is the fix(#436/#437) rule's at the head of this
+# file.
+name_regex = "^(?:Carod i Rovira, Josep|Josep Carod i Rovira|Josep Carod i Rovira III|Josep Carod i de Rovira|Josep Lluis Carod i Rovira)$"
+fields = ["family", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#397) the Catalan link reports a connective-or-initial in a one-case name"
+# 'JOSEP CAROD I ROVIRA', 'JOSEP LLUIS CAROD I ROVIRA' and 'josep
+# carod i rovira'. 'i' joined `conjunctions_ambiguous` with #397, so
+# in a name written wholly in one case -- where the writing says
+# nothing either way -- the letter reads as an INITIAL and the call is
+# reported, exactly as 'e' has read since #383/#479. #527's mechanism,
+# a new letter: rules.md#P3's marked subset.
+#
+# ROLES DO NOT MOVE on any of the three, and that is the point of the
+# marked subset rather than an accident of these spellings: reading
+# the letter as an initial leaves it the middle-name word this
+# baseline already had, so the whole diff is the report. Measured
+# against the parent 46651750 on 2026-09-20, the same three names'
+# parses are byte-identical before and after the bundle and only
+# `ambiguities` moved. The lower-case spellings where the letter WAS
+# the generation before -- 'rovira, i', 'john smith i jr', 'maier, amy
+# i, jr.', 'josep de carod i rovira' -- do move fields under the same
+# marked-subset reading, and no corpus carries one of them, so this
+# rule is about the report alone.
+#
+# No rule at 1.4.0 and that is structural: `_ambiguities` is a v2
+# field and cannot diff against a v1 worker at all.
+#
+# Literal, three names. _MUST_NOT_MATCH carries the mixed-case
+# spellings, where the writing decides the letter and the JOIN is what
+# moved, and 'JUAN GARCIA Y LOPEZ', the unmarked letter in the same
+# one-case position, which reports nothing.
+name_regex = "^(?:JOSEP CAROD I ROVIRA|JOSEP LLUIS CAROD I ROVIRA|josep carod i rovira)$"
+fields = ["_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#461) a connective holding its part alone contributes an initial"
+# 17 names, each one a part whose only word is the connective,
+# so there is nothing there for it to join and it initials as any
+# other name word does -- which is what `family_base` and `given_base`
+# have said about the same token since 2.2 (rules.md#R2/#R3). This
+# baseline drops the letter; the tree keeps it. Measured from the
+# 2.2.0 wheel and from the tree on 2026-09-20: 'Juan de y' 'J.' ->
+# 'J. y.'; 'johnny y' 'j.' -> 'j. y.'; 'Garcia y Lopez' 'G. L.' ->
+# 'G. y. L.'; 'Juan y Garcia' 'J. G.' -> 'J. y. G.' and 'juan y
+# garcia' the lowercase twin; 'John y Jane' 'J. J.' -> 'J. y. J.';
+# 'Carod y de Rovira i' 'C. R.' -> 'C. y. R.'; 'John e Smith' 'J. S.'
+# -> 'J. e. S.', with 'John e Smith III', 'John e Smith, III' and
+# 'Smith, John e, III, Jr' giving the same pair; 'john e jones, III'
+# 'j. j.' -> 'j. e. j.'; 'Jose e Maria' 'J. M.' -> 'J. e. M.';
+# 'Lt.Gov. juan e garcia' 'j. g.' -> 'j. e. g.'; and 'Fritz Freiherr
+# und von Bar' 'F.' -> 'F. u.', the German spelling of the same shape.
+# BOTH SURFACES move together and to the same string on every one of
+# them, the two views reading one mark (#528, decisions.md#R3).
+# 'محمد و علي' is the readmission RESTORING 1.4.0 parity rather than
+# breaking it: 'م. ع.' here, 'م. و. ع.' in the tree, which is the
+# string the 1.4.0 wheel gives. The 1.4.0 ledger's
+# `feat(#269) a recognized non-Latin connective contributes no
+# initial` explained that name and is DELETED in the same commit as
+# this rule, the name having stopped diffing there.
+# 'Juan y Garcia née Jones' is in this list at 2.2.0 and 2.3.0 and at
+# no earlier baseline: below 2.2 the maiden clause moves ROLES on it,
+# so `_initials` never enters its diff and `fix(#418)` explains what
+# happened (compare.py's roles-identical guard, #484).
+#
+# ONE CAUSE, measured, not two. Every name here agreed with this
+# baseline's wheel BEFORE the bundle -- the parent 46651750 gives the
+# wheel's string on each -- so none of the diff belongs to #383/#479's
+# one-case fork or to any older change; the whole of it is #461.
+#
+# Literal-anchored. The shape is "a part holding one connective and
+# nothing else", which no regex over the raw string can state -- the
+# reading is the parse's -- and the nearest writable shape, "a name
+# carrying a lone cased letter", reaches every bare-initial name in
+# the corpora. _MUST_NOT_MATCH carries the wall: 'Jon Dough and' (base
+# 'Dough and', a connective with a name word beside it, keeping
+# 'J. D.'), 'Juan Velasquez y Garcia' (the joined run, keeping
+# 'J. V. G.') and 'Juan Garcia Lopez y'.
+name_regex = "^(?:Carod y de Rovira i|Fritz Freiherr und von Bar|Garcia y Lopez|John e Smith|John e Smith III|John e Smith, III|John y Jane|Jose e Maria|Juan de y|Juan y Garcia|Juan y Garcia née Jones|Lt\\.Gov\\. juan e garcia|Smith, John e, III, Jr|john e jones, III|johnny y|juan y garcia|محمد و علي)$"
+fields = ["_initials"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#461) a connective with a name word beside it stops contributing an initial"
+# 13 names, the other direction of the same sentence: where the
+# part holds a name word for the connective to join, the connective is
+# doing a connective's work and contributes nothing. This baseline
+# initialed it; the tree does not. 'John and Jane Smith' 'J. a. J. S.'
+# -> 'J. J. S.'; 'Juan y Eva Garcia' 'J. y. E. G.' -> 'J. E. G.';
+# 'Jose e Maria Santos' 'J. e. M. S.' -> 'J. M. S.'; 'and Jon Dough'
+# 'a. J. D.' -> 'J. D.' and 'the and Jon Dough' 't. a. J. D.' ->
+# 'J. D.'; 'Rob And Beth Edmunds' 'R. A. B. E.' -> 'R. B. E.'; the two
+# 'Dean of Chemistry Robert Johns' spellings 'D. o. C. R. J.' ->
+# 'D. C. R. J.'; 'John and Jane Aznar y Lopez' 'J. a. J. A. L.' ->
+# 'J. J. A. L.'; 'Mr. and Mrs. John and Jane Smith' 'J. a. J. S.' ->
+# 'J. J. S.'; and the three Cyrillic spellings of 'Хосе И Мария
+# Сантос' 'Х. И. М. С.' -> 'Х. М. С.', lower case and upper case
+# alike. Both surfaces move together and to the same string.
+#
+# ONE CAUSE, measured. Each of these names agreed with this
+# baseline's wheel before the bundle -- the parent 46651750 gives the
+# wheel's string on every one, the Cyrillic three included, whose 'и'
+# has been decided vocabulary since 2.0 and reaches no case fork. So
+# none of the diff is #383/#479's and the whole of it is #461. At
+# 1.4.0 these names diff too, but they diffed there BEFORE this
+# bundle, on the 2.0.0 per-word GROUPING, and that ledger keeps them
+# on `fix(initials-per-word) a connective run initials each word`
+# with a dated paragraph naming both halves.
+#
+# CYRILLIC SPELLED OUT, not classed. A `\p{Cyrillic}`-style span
+# would declare a script this rule is not about -- the sentence is
+# about a PART, in any script -- and _SPAN_BEARING_RULES in
+# tests/v2/test_ledger_guards.py records that this rule declares no
+# span.
+#
+# Literal-anchored, for the GAIN rule's reason, and with the same
+# wall: 'Jon Dough and', 'Juan Velasquez y Garcia' and 'Juan Garcia
+# Lopez y' are _MUST_NOT_MATCH probes here too -- the criterion is the
+# PART and never a word count, which is exactly what keeps those three
+# fixed.
+name_regex = "^(?:Assoc Dean of Chemistry Robert Johns|Dean of Chemistry Robert Johns|John and Jane Aznar y Lopez|John and Jane Smith|Jose e Maria Santos|Juan y Eva Garcia|Mr\\. and Mrs\\. John and Jane Smith|Rob And Beth Edmunds|and Jon Dough|the and Jon Dough|ХОСЕ И МАРИЯ САНТОС|Хосе И Мария Сантос|хосе и мария сантос)$"
+fields = ["_initials"]
+orders = ["DEFAULT"]
