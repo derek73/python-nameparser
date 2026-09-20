@@ -2562,15 +2562,95 @@ CASES: tuple[Case, ...] = (
          "John Quincy Smith i",
          {"given": "John", "middle": "Quincy", "family": "Smith",
           "suffix": "i"},
-         notes="the BOUNDARY the both-sides condition exists for, and "
-               "the one Catalan row that reaches its is_suffix_piece "
-               "call at all -- every other Catalan row short-circuits "
-               "on the position test (measured). Four name words, so "
-               "the count no longer declines; drop the condition and "
-               "this reads family 'Smith i', losing the generation "
-               "(measured). A connective with nothing to its right is "
-               "connecting nothing. Roles unchanged at every release, "
-               "1.4.0 included",
+         notes="the BOUNDARY the both-sides condition exists for, in "
+               "its simplest shape: there is no piece at all to the "
+               "right of the link. Four name words, so the count no "
+               "longer declines; drop the condition and this reads "
+               "family 'Smith i', losing the generation (measured). A "
+               "connective with nothing to its right is connecting "
+               "nothing. Roles unchanged at every release, 1.4.0 "
+               "included",
+         shape=1),
+    Case("a_link_before_a_generation_is_the_generation_too",
+         "Josep Lluis Carod i III",
+         {"given": "Josep", "middle": "Lluis", "family": "Carod",
+          "suffix": "i III"},
+         classification="fix(#436/#437)",
+         notes="the other half of the same boundary, and the one the "
+               "first cut got wrong: there IS a piece to the right, "
+               "so a condition asking about POSITION passed it and "
+               "the family read 'Carod i III' -- a generational "
+               "suffix silently swallowed into the surname, on 130 "
+               "names of the review's grid and pinned by nothing. The "
+               "question is the neighbour's CLASS: what the rest of "
+               "the parse reads that word as. The four ROLES are "
+               "1.4.0's and every release's; what the classification "
+               "records is the suffix STRING, which 1.4.0 wrote "
+               "'i, III' because it joined suffix entries with a "
+               "comma and R1 derives them from the writer's commas "
+               "now",
+         shape=1),
+    Case("the_neighbour_test_reads_the_peel_and_not_the_vocabulary",
+         "Josep Lluis Carod i V",
+         {"given": "Josep", "middle": "Lluis", "family": "Carod",
+          "suffix": "i V"},
+         classification="fix(suffix-routing)",
+         ambiguities=("suffix-or-name",),
+         notes="why the condition asks assign's TRAILING-RUN walk "
+               "rather than the suffix-piece test: a bare 'V' is "
+               "suffix vocabulary written like an initial, so "
+               "is_suffix_piece refuses it (rules.md#S2's initial "
+               "veto) and a class test spelled with that predicate "
+               "alone would let the link swallow it. The peel takes "
+               "it, so trailing_start puts it outside the name's own "
+               "words and the link stays the generation -- carrying "
+               "the fork report the swallowed reading had lost. 'MA' "
+               "is the acronym half of the same shape. Roles "
+               "unchanged from 2.0.0 through 2.3.0; 1.4.0 read middle "
+               "'Lluis Carod', last 'i', suffix 'V', which is the "
+               "two-token divergence 'Carod i' pins above and the "
+               "same fix(suffix-routing) rule describes",
+         shape=1),
+    Case("the_link_joins_nothing_across_a_family_comma_either",
+         "Rovira, Josep Carod i Jr.",
+         {"given": "Josep", "middle": "Carod", "family": "Rovira",
+          "suffix": "i Jr."},
+         classification="fix(#436/#437)",
+         notes="the comma form of the row above, and it is a "
+               "different code path rather than a second member of "
+               "one: the link and the generation sit in segment 1, "
+               "where the name words are counted without the family "
+               "the comma already fixed. The first cut read middle "
+               "'Carod i Jr.'. Roles are 1.4.0's here too, and the "
+               "classification is the same suffix-string comma: "
+               "1.4.0 wrote 'i, Jr.'",
+         shape=2),
+    Case("a_trailing_link_does_not_count_itself_for_another_join",
+         "Carod y de Rovira i",
+         {"given": "Carod", "middle": "y", "family": "de Rovira",
+          "suffix": "i"},
+         notes="the COUNT half of the same rule, and the reason it "
+               "cannot be stated for the join alone. The trailing 'i' "
+               "joins nothing, so it is the generation -- and a "
+               "generation is no name word, so it must not raise the "
+               "three-word carve-out's total either. Counting it did: "
+               "the total reached four, and an unrelated 'y' two "
+               "pieces away joined on the strength of it, reading "
+               "given 'Carod y de' with family 'Rovira'. Roles "
+               "unchanged at every release",
+         shape=1),
+    Case("a_particle_on_the_right_is_a_name_side_neighbour",
+         "Josep Carod i de Rovira",
+         {"given": "Josep", "middle": "Carod i de", "family": "Rovira"},
+         classification="fix(#397)",
+         notes="the boundary on the other side of the class test: a "
+               "PARTICLE beside the link is a name word, not a "
+               "credential, so the link joins and the particle chain "
+               "then takes the surname. 1.4.0 through 2.3.0 read "
+               "middle 'Carod i' with family 'de Rovira' -- the link "
+               "unjoined, which is the whole defect #397 is about. "
+               "Contrast 'Josep Lluis Jr. i Rovira', where the "
+               "neighbour is a credential and the reading stands",
          shape=1),
     Case("a_link_ending_a_shorter_name_is_the_generation_too",
          "Josep Carod i",
@@ -2605,13 +2685,16 @@ CASES: tuple[Case, ...] = (
          "Josep Carod i Rovira III",
          {"given": "Josep", "family": "Carod i Rovira", "suffix": "III"},
          classification="fix(#397)",
-         notes="the suffix run is peeled before grouping, so the join "
-               "sees the same four pieces it sees without it and the "
-               "generation keeps its own slot. The contrast with "
-               "'John Quincy Smith i' is the whole design: a "
-               "generation word BEHIND the link is a suffix, a "
-               "generation word that IS the link with nothing behind "
-               "it stays a suffix too. 1.4.0 read middle 'Carod i'",
+         notes="the CONTROL for the three rows above: a generation "
+               "standing behind a name word leaves a name word on "
+               "each side of the link, so the link joins and the "
+               "generation keeps its own slot. Move it one word left "
+               "-- 'Josep Lluis Carod i III' -- and the link has a "
+               "credential on its right instead, joins nothing, and "
+               "is the generation it also spells. That pair is the "
+               "whole design, and the pair is why the condition asks "
+               "the NEIGHBOUR's class rather than the link's own. "
+               "1.4.0 read middle 'Carod i'",
          shape=1),
     Case("a_bare_capital_link_in_a_mixed_case_name_is_an_initial",
          "Josep Carod I Rovira",

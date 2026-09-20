@@ -2,6 +2,7 @@
 {"name": "Bridge (1.4)", "shape": 1}
 {"name": "Bridge (A.B)", "shape": 1}
 {"name": "Carod i", "shape": 1}
+{"name": "Carod y de Rovira i", "shape": 1}
 {"name": "Dr. Juan de la Vega III", "shape": 1}
 {"name": "Duke of Edinburgh", "shape": 1}
 {"name": "J.A. K.D.", "shape": 1}
@@ -73,7 +74,10 @@
 {"name": "Josep Carod i", "shape": 1}
 {"name": "Josep Carod i Rovira", "shape": 1}
 {"name": "Josep Carod i Rovira III", "shape": 1}
+{"name": "Josep Carod i de Rovira", "shape": 1}
+{"name": "Josep Lluis Carod i III", "shape": 1}
 {"name": "Josep Lluis Carod i Rovira", "shape": 1}
+{"name": "Josep Lluis Carod i V", "shape": 1}
 {"name": "Josep i Rovira", "shape": 1}
 {"name": "Juan Garcia Lopez y", "shape": 1}
 {"name": "Juan Garcia Y Lopez", "shape": 1}
@@ -166,6 +170,7 @@
 {"name": "Kennedy, John (Jack)", "shape": 2}
 {"name": "NASCIMENTO, EDSON ARANTES DO", "shape": 2}
 {"name": "Nascimento, Edson Arantes do", "shape": 2}
+{"name": "Rovira, Josep Carod i Jr.", "shape": 2}
 {"name": "Royce, Ed", "shape": 2}
 {"name": "SMITH, JOHN DO", "shape": 2}
 {"name": "Salem, Abdul Rahman Ahmed", "shape": 2}

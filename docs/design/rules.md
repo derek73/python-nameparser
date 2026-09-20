@@ -518,16 +518,22 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     them, so a rule taking "one name word" takes the whole join and
     never half of it.
     A connective counts as a name word wherever this rule counts them,
-    whatever else the vocabulary says the word is. A word can be a
-    connective and a generation at once — the Catalan link is also the
-    roman numeral one — and counting it as the generation would let a
-    connective raise the bar for its own join, so the shortest linked
-    name, which is the commonest one, would be the only one that
-    failed to link.
+    whatever else the vocabulary says the word is, where it is placed
+    to join. A word can be a connective and a generation at once — the
+    Catalan link is also the roman numeral one — and counting it as
+    the generation would let a connective raise the bar for its own
+    join, so the shortest linked name, which is the commonest one,
+    would be the only one that failed to link; while counting it as a
+    connective where it joins nothing lowers the bar for a different
+    connective's join instead.
     A connective that is also generational vocabulary joins only where
-    a name word stands on each side of it. A connective with nothing
-    to its right is connecting nothing, and a word of that vocabulary
-    ending a name is the generation it also spells.
+    a name word stands on each side of it — a word the rest of the
+    parse reads as a name word rather than as a credential or an
+    honorific, looked for past any run of connectives standing
+    between. A connective with nothing to its right is connecting
+    nothing, and a word of that vocabulary ending a name, or standing
+    before the credential a name ends with, is the generation it also
+    spells.
     Both questions this rule asks of a name — how many words it has,
     and whether it is written in one case — are asked of the name's
     OWN words: a maiden marker taken as one, and the words it takes
@@ -560,6 +566,8 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "Josep i Rovira"            →  middle="i"
       "John Quincy Smith i"       →  suffix="i"
       "Carod i"                   →  suffix="i"
+      "Josep Lluis Carod i III"   →  suffix="i III"
+      "Carod y de Rovira i"       →  middle="y"
     Both exceptions are about the written FORM, not the word: the
     three-word carve-out counts letters, so a symbol connective joins
     at any length, and it reaches every single-letter connective the

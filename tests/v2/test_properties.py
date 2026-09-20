@@ -25,7 +25,7 @@ from nameparser._pipeline import run
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._vocab import effective_script
 from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
-                               AmbiguityKind, Role, Token)
+                               AmbiguityKind, ParsedName, Role, Token)
 
 from .conftest import differential_corpus
 
@@ -1212,3 +1212,259 @@ def test_initials_emit_exactly_the_predicted_contributors() -> None:
     assert not failures, (
         f"{len(failures)} group(s) emitted something other than the "
         f"criterion's contributors:\n" + "\n".join(failures[:10]))
+
+
+# --- #397 review: the OFF-SWITCH grid, and its two invariants -------
+# A second grid, kept apart from the one above rather than folded
+# into it, and the reason is the cost: both invariants below parse
+# every entry TWICE -- once as configured and once with the class
+# letter out of the connective vocabulary -- so the shapes that
+# earned a place here are the ones the first cut of #397 got wrong,
+# not every shape the file already covers. What this one adds over
+# `_connective_grid`: the trailing numeral and bare acronym assign's
+# peel takes ('V', 'i', beside the 'III'/'Jr.'/'I'/'MA' both carry),
+# a maiden clause, a head that is nothing but an initial or a
+# particle, and the SUFFIX comma as a third comma shape.
+
+
+def _off_switch_grid() -> list[tuple[str, Parser, str]]:
+    heads: tuple[list[str], ...] = (
+        [], ["Josep"], ["Josep", "Lluis"], ["Dr."], ["J."], ["van"],
+        ["Josep", "Lluis", "Marti"])
+    mids: tuple[list[str], ...] = ([], ["Carod"], ["de", "Carod"])
+    conns = ("i", "y", "e", "and")
+    tails: tuple[list[str], ...] = ([], ["Rovira"], ["de", "Rovira"])
+    suffixes: tuple[list[str], ...] = (
+        [], ["III"], ["Jr."], ["I"], ["V"], ["MA"], ["i"], ["nee", "Puig"])
+    lexicons = (("default", Lexicon.default()),
+                ("conj+v", Lexicon.default().add(conjunctions={"v"})))
+    policies = (("default", Policy()),
+                ("family-first", Policy(name_order=FAMILY_FIRST)),
+                ("given-last", Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
+                ("strict-comma", Policy(lenient_comma_suffixes=False)))
+    texts: list[str] = []
+    seen: set[str] = set()
+    for head, mid, conn, tail, suffix, comma in itertools.product(
+            heads, mids, conns, tails, suffixes, (0, 1, 2)):
+        if not (mid or tail):
+            continue
+        if comma == 1 and not tail:
+            continue
+        if comma == 2 and not suffix:
+            continue
+        front = head + mid + [conn]
+        if comma == 1:
+            base = " ".join(tail) + ", " + " ".join(front + suffix)
+        elif comma == 2:
+            base = " ".join(front + tail) + ", " + " ".join(suffix)
+        else:
+            base = " ".join(front + tail + suffix)
+        for written in (base, base.upper(), base.lower()):
+            if written not in seen:
+                seen.add(written)
+                texts.append(written)
+    parsers = [(f"{ln}/{pn}", Parser(lexicon=lex, policy=pol))
+               for ln, lex in lexicons for pn, pol in policies]
+    return [(t, p, label) for t in texts for label, p in parsers]
+
+
+_OFF_SWITCH_GRID = _off_switch_grid()
+_NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+_OFF_PARSERS: dict[tuple[int, frozenset[str]], Parser] = {}
+
+
+def _class_letters(lexicon: Lexicon) -> frozenset[str]:
+    """The class rules.md#P3's both-sides condition is about: a
+    one-letter connective that is ALSO generational vocabulary."""
+    return frozenset(w for w in lexicon.conjunctions
+                     if len(w) == 1 and w in lexicon.suffix_words)
+
+
+def _off_switch(parser: Parser, letters: frozenset[str]) -> Parser:
+    """The same parser with those letters out of the connectives --
+    the parent-equivalent reading, where nothing can have joined.
+
+    Keyed by `id`, which is safe here and nowhere else: the grid above
+    holds every parser for the module's lifetime, so no id is reused.
+    A `Parser` is not hashable (its `Lexicon` carries a mappingproxy).
+    """
+    key = (id(parser), letters)
+    if key not in _OFF_PARSERS:
+        _OFF_PARSERS[key] = Parser(
+            lexicon=parser.lexicon.remove(conjunctions=set(letters)),
+            policy=parser.policy)
+    return _OFF_PARSERS[key]
+
+
+def _present(text: str, letters: frozenset[str]) -> frozenset[str]:
+    words = {w.strip(".,").lower() for w in text.split()}
+    return frozenset(letters & words)
+
+
+_Placed = tuple[Token, tuple[int, int]]
+
+
+def _placed(name: ParsedName) -> list[_Placed]:
+    """The parse's tokens with their spans, spliced ones dropped."""
+    return [(tok, tok.span) for tok in name.tokens if tok.span is not None]
+
+
+def _off_roles(off: ParsedName) -> dict[tuple[int, int], Role]:
+    return {span: tok.role for tok, span in _placed(off)}
+
+
+def _name_word_beside(toks: list[_Placed], i: int, step: int,
+                      off_role: dict[tuple[int, int], Role],
+                      original: str) -> bool:
+    """Whether a name word stands on the `step` side of toks[i],
+    judged by the OFF-SWITCH parse's roles -- which is what makes
+    this a PRE-JOIN reading: in that parse the class letter is no
+    connective, so no join has moved anything. A comma between ends
+    the walk (it is another segment), and connectives are stepped
+    over because a run of them joins as one."""
+    j = i
+    while True:
+        k = j + step
+        if not 0 <= k < len(toks):
+            return False
+        left, right = (j, k) if step > 0 else (k, j)
+        if "," in original[toks[left][1][1]:toks[right][1][0]]:
+            return False
+        j = k
+        if "conjunction" in toks[j][0].tags:
+            continue
+        return off_role.get(toks[j][1]) in _NAME_ROLES
+
+
+def _initial_spans(name: ParsedName,
+                   letters: frozenset[str]) -> set[tuple[int, int]]:
+    return {span for tok, span in _placed(name)
+            if "initial" in tok.tags and tok.text.lower() in letters}
+
+
+def _initial_reading_moved(on: ParsedName, off: ParsedName,
+                           letters: frozenset[str]) -> bool:
+    """Whether the two parses disagree about a class letter being an
+    INITIAL -- rules.md#P3's marked-subset clause rather than its
+    both-sides one, and the one thing an off-switch comparison cannot
+    hold fixed: taking the word out of the connectives decides that
+    question too, in either direction. A marked letter in a one-case
+    name reads as an initial only while it IS connective vocabulary;
+    a bare capital the caller's own connectives claim stops reading
+    as one."""
+    return _initial_spans(on, letters) != _initial_spans(off, letters)
+
+
+def _link_joins_between_name_words(on: ParsedName, off: ParsedName,
+                                   letters: frozenset[str]) -> bool:
+    off_role = _off_roles(off)
+    toks = _placed(on)
+    for i, (tok, _span) in enumerate(toks):
+        if ("conjunction" not in tok.tags
+                or tok.text.lower() not in letters):
+            continue
+        if (_name_word_beside(toks, i, -1, off_role, on.original)
+                and _name_word_beside(toks, i, 1, off_role, on.original)):
+            return True
+    return False
+
+
+def test_the_off_switch_grid_can_fail() -> None:
+    """The reachability probe, the shape every grid in this file
+    carries. Dated recorded control, measured 2026-09-20."""
+    assert len(_OFF_SWITCH_GRID) == 103040, len(_OFF_SWITCH_GRID)
+    assert len({t for t, _, _ in _OFF_SWITCH_GRID}) == 12880
+    reached = sum(1 for text, parser, _ in _OFF_SWITCH_GRID[:4000]
+                  if _present(text, _class_letters(parser.lexicon)))
+    assert reached > 1000, reached
+
+
+def test_a_link_that_joins_nothing_changes_no_field() -> None:
+    """INV6 (#397 review), and the strongest thing this rule can be
+    asked: turning the class letter OFF is the parent's reading, so
+    a letter that joins nothing must leave every field where the
+    parent left it.
+
+    Two exemptions, both narrow and both P3's own OTHER clauses. A
+    letter that JOINED between name words is the rule working, judged
+    on the off-switch parse's classes so an absorbed suffix cannot
+    pass itself off as the name word on the right. And a letter the
+    two parses disagree about being an INITIAL is the marked-subset
+    clause, which the switch decides along with the join and so
+    cannot hold fixed.
+
+    Mutation-checked, 2026-09-20: this fails on 2,360 parses at
+    c8550b64, the commit the review was written against.
+    """
+    failures = []
+    for text, parser, label in _OFF_SWITCH_GRID:
+        letters = _present(text, _class_letters(parser.lexicon))
+        if not letters:
+            continue
+        on = parser.parse(text)
+        off = _off_switch(parser, letters).parse(text)
+        # the SEVEN FIELDS, and not comparison_key: a parse carries
+        # more than its fields, and what the off-switch legitimately
+        # moves besides them is the conjunction-or-initial report
+        if on.as_dict() == off.as_dict():
+            continue
+        if _link_joins_between_name_words(on, off, letters):
+            continue
+        if _initial_reading_moved(on, off, letters):
+            continue
+        failures.append(f"[{label}] {text!r}: {on.as_dict()} != "
+                        f"off-switch {off.as_dict()}")
+    assert not failures, (
+        f"{len(failures)} parse(s) moved a field with no link joining "
+        f"anything:\n" + "\n".join(failures[:10]))
+
+
+def test_a_trailing_credential_never_joins_into_a_name_part() -> None:
+    """INV1 strengthened (#397 review). INV1 above inspects the part
+    a join PRODUCED, where an absorbed credential is itself the name
+    word standing on the right, so it is satisfied by the very defect
+    it is about -- `Josep Lluis Carod i III` passes it. This asks the
+    off-switch parse instead: a word THAT reading puts in the suffix
+    never lands inside a joined name part.
+
+    It carries INV6's second exemption and not its first: a letter
+    the two parses disagree about being an INITIAL moved for the
+    marked-subset clause's reasons, not this one. The JOIN exemption
+    is deliberately absent -- a link joining elsewhere in the name
+    never licenses a credential joining here.
+
+    Mutation-checked, 2026-09-20: this fails on 960 parses at
+    c8550b64, where INV1 fails on none of them.
+    """
+    failures = []
+    for text, parser, label in _OFF_SWITCH_GRID:
+        letters = _present(text, _class_letters(parser.lexicon))
+        if not letters:
+            continue
+        on = parser.parse(text)
+        off = _off_switch(parser, letters).parse(text)
+        if _initial_reading_moved(on, off, letters):
+            continue
+        off_role = _off_roles(off)
+        for role in _NAME_ROLES:
+            part = on.tokens_for(role)
+            if len(part) < 2:
+                continue
+            for tok in part:
+                # not the LINK itself: it is generational vocabulary
+                # by definition of the class, so the off-switch parse
+                # reads it as the suffix in every name it ends. This
+                # rule is about the OTHER word -- the credential a
+                # link must not take with it.
+                # `span is None` is a typing guard and nothing else:
+                # every token of a PARSER-produced name carries one,
+                # and this grid holds no spliced parse.
+                if "conjunction" in tok.tags or tok.span is None:
+                    continue
+                if off_role.get(tok.span) is Role.SUFFIX:
+                    failures.append(
+                        f"[{label}] {text!r}: {tok.text!r} reads as the "
+                        f"suffix and joined into {role.value}")
+    assert not failures, (
+        f"{len(failures)} credential(s) joined into a name part:\n"
+        + "\n".join(failures[:10]))

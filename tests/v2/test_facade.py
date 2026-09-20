@@ -916,6 +916,30 @@ def test_initials_honor_an_overridden_list_property() -> None:
     assert SubLastOnly("john e smith").initials() == "j. e. Z."
 
 
+def test_a_group_of_particles_and_a_connective_drops_only_unparsed(
+) -> None:
+    # `_process_initial`'s closing comment, pinned (#397 review). The
+    # "group yields nothing for a reason other than being wholly
+    # particles" branch is the one #461 emptied on the PARSE path: the
+    # middle here is a working particle plus a connective with nothing
+    # to join, so the connective is readmitted and initials. Measured
+    # 2026-09-20 over every corpus and case text plus the review's
+    # generated grid, 95,119 names: zero parsed groups reach the drop.
+    assert HumanName("Vega, Santa de y").initials() == "S. y. V."
+    # and the paths with no parse to read, where a connective is
+    # answered from the vocabulary and carries no mark, which keep the
+    # pre-#461 answer and so keep the branch alive
+    built = HumanName(first="Santa", middle="de y", last="Vega")
+    assert built.initials() == "S. V."
+
+    class Sub(HumanName):
+        @property
+        def middle_list(self) -> list[str]:
+            return ["de y"]
+
+    assert Sub("Vega, Santa de y").initials() == "S. V."
+
+
 def test_initials_of_a_spliced_field_ask_the_vocabulary() -> None:
     # A field assigned after the parse is raw text: ParsedName.replace()
     # stamps UNCLASSIFIED_TAG on it, which says the words were read by

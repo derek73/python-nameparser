@@ -738,7 +738,16 @@ def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
     for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
         part = [i for i, t in enumerate(out) if t.role is role]
         alone = bool(part) and all("particle" in out[i].tags for i in part)
-        lone_conj = (not alone) and not any(
+        # `bool(part)` on both, and DEFENSIVE and measured inert on
+        # this one (2026-09-20, #397 review question 4): an EMPTY part
+        # satisfies `all` and `not any` alike, so without the guard
+        # this reads True there and says a mark is due on a part with
+        # no tokens to put it on. Nothing can see the difference --
+        # `lone_conj` is read only inside the `for i in part` below,
+        # which has no members. Control: drop it and the whole suite
+        # is green, which is why it is stated as a reader's guard
+        # rather than pinned by a test.
+        lone_conj = bool(part) and not alone and not any(
             "conjunction" not in out[i].tags and "particle" not in out[i].tags
             for i in part)
         for i in part:

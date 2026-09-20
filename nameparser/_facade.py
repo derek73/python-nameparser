@@ -648,10 +648,30 @@ class HumanName:
         # Return '' (never empty_attribute_default, which may be None)
         # when a part has no initialable words. group_initials below
         # decides what that means: one such element among others is
-        # dropped; a group that yields nothing AND is wholly particles
-        # initials its words; and a group that yields nothing for any
-        # other reason -- a conjunction, or particles mixed with one --
-        # is still dropped ("Vega, Santa de y" drops its middle).
+        # dropped (`Alex van Johnson`'s `van`); a group that yields
+        # nothing AND is wholly particles initials its words; and a
+        # group that yields nothing for any other reason is still
+        # dropped.
+        #
+        # That third case survives the parse path no longer, and #461
+        # is why: a connective with nothing to join is readmitted, so
+        # a group of a PARSED name cannot reach it. Any word that is
+        # neither a particle nor a connective initials, so a group
+        # reaching this is all particles and connectives; not being
+        # wholly particles it holds a connective; and that
+        # connective's part holds nothing but particles and
+        # connectives for it to join, so it is readmitted and the
+        # group yields it. Measured 2026-09-20, zero such groups over
+        # 95,119 names -- every corpus and case text plus the review's
+        # generated grid -- where "Vega, Santa de y" was the example
+        # until #461 and now initials 'S. y. V.'.
+        #
+        # What still reaches it is the paths with no parse to read,
+        # where a connective is answered from the vocabulary and
+        # carries no mark: HumanName(first="Santa", middle="de y",
+        # last="Vega").initials() gives 'S. V.', the pre-#461 answer,
+        # and so does a subclass overriding middle_list with the same
+        # words (tests/v2/test_facade.py pins both).
         return ""
 
     def _initials_lists(self) -> tuple[list[str], list[str], list[str]]:

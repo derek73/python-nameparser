@@ -630,6 +630,43 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
                 or is_suffix_piece(piece, ptags, tokens))
 
 
+# rules.md#P3: "a word the rest of the parse reads as a name word
+# rather than as a credential or an honorific, looked for past any
+# run of connectives standing between" (#397)
+def _name_word_beside(k: int, step: int, lo: int, hi: int,
+                      pieces: Sequence[Piece], ptags: Sequence[Set[str]],
+                      tokens: Sequence[WorkToken]) -> bool:
+    """Whether such a word stands on the `step` side of the
+    connective piece at `k`.
+
+    `lo` and `hi` bound the name's own words: assign peels the pieces
+    below `lo` as its leading titles and those from `hi` up as its
+    trailing suffix run, so a piece outside that span is a credential
+    or an honorific however it is spelled, and the numeral or bare
+    acronym the peel takes ('i V', 'i MA') is inside `hi` by
+    construction rather than by a second reading of the vocabulary
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+
+    Inside the span the suffix and title tests still run, because
+    neither bound reaches a credential or an honorific standing in
+    the MIDDLE of a name ('Josep Jr. i Rovira', 'Josep Dr. i
+    Rovira'): the peel walks from the end and stops at the first name
+    word, the title run from the front.
+
+    The walk steps over connectives because a RUN of them joins as
+    one ('Carod i y Rovira'), so the word this rule is about is the
+    first one past the run -- and where the run runs out ('Juan i e')
+    there is no name word on that side at all.
+    """
+    j = k + step
+    while (0 <= j < len(pieces)
+            and _is_conj_piece(pieces[j], ptags[j], tokens)):
+        j += step
+    return (lo <= j < hi
+            and not is_suffix_piece(pieces[j], ptags[j], tokens)
+            and not is_title_piece(pieces[j], ptags[j], tokens))
+
+
 def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
                    bound_join: BoundJoin = BoundJoin.STRICT,
@@ -806,12 +843,70 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             del ptags[k]
 
     if len(pieces) + additional >= 3:
+        # rules.md#P3: "A connective that is also generational
+        # vocabulary joins only where a name word stands on each side
+        # of it" (#397, restated by its review). `frozen` holds the
+        # TOKEN index of every such connective that has no name word
+        # on one side or the other. It is joining nothing, so it is
+        # the generation it also spells: it may not merge into a run,
+        # it may not join, and it counts toward the carve-out total
+        # the way the generation counted -- which is not at all, a
+        # suffix piece being no rootname.
+        #
+        # Asked HERE, of the pieces as classify left them, and of the
+        # NEIGHBOURS' class rather than of the connective's position.
+        # Position was the first cut and it tested the wrong thing:
+        # any piece on each side passed it, so a generational suffix
+        # standing behind the link was swallowed into the name
+        # ("Josep Lluis Carod i III" read family 'Carod i III'). And
+        # the question cannot be re-asked further down, because a
+        # merge answers it: in the part a join produced, the absorbed
+        # suffix IS the word standing on the right.
+        #
+        # A token index rather than a piece index for the same reason
+        # the chain's trailing run is a length from the end: the
+        # merges below move piece indices and cannot move this one.
+        #
+        # Nothing but a one-letter connective of the suffix vocabulary
+        # reaches the body, so a name that has none pays tag lookups
+        # and no call at all.
+        frozen: set[int] = set()
+        lo = hi = -1
+        for k, piece in enumerate(pieces):
+            tok = tokens[piece[0]]
+            if (len(piece) != 1 or len(tok.text) != 1
+                    or "conjunction" not in tok.tags
+                    or "vocab:suffix" not in tok.tags):
+                continue
+            if hi < 0:
+                lo = leading_titles(pieces, ptags, tokens)
+                hi = trailing_start(lo, pieces, ptags, tokens,
+                                    one_case=one_case)
+            if not (_name_word_beside(k, -1, lo, hi, pieces, ptags, tokens)
+                    and _name_word_beside(k, 1, lo, hi, pieces, ptags,
+                                          tokens)):
+                frozen.add(piece[0])
         total = sum(_is_rootname(p, t, tokens)
-                    for p, t in zip(pieces, ptags)) + additional
+                    for p, t in zip(pieces, ptags)
+                    if p[0] not in frozen) + additional
         # contiguous conjunction runs merge first (v1: "of the")
+        #
+        # `pieces[k][0] in frozen` and not `frozen.isdisjoint(...)`:
+        # the piece this loop extends GROWS with every merge, so a
+        # test over its tokens costs 1+2+...+n and the stage goes
+        # quadratic in the length of a connective run -- measured,
+        # 'and ' x3200 took 41.8ms against 21.7ms, 6.2x per 4x input
+        # where the shape reads 4.1x, and tests/v2/test_benchmark.py's
+        # "and " shape is the guard that caught it. Reading the first
+        # token alone is exact rather than an approximation: a frozen
+        # piece is one token, nothing merges it (this branch declines,
+        # and the join below skips it), so a piece holding a frozen
+        # token IS that token.
         k = 0
         while k < len(pieces) - 1:
-            if conj(k) and conj(k + 1):
+            if (conj(k) and conj(k + 1)
+                    and pieces[k][0] not in frozen
+                    and pieces[k + 1][0] not in frozen):
                 merge(k, k + 2, add={"conjunction"})
             else:
                 k += 1
@@ -819,30 +914,23 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # single-letter connective in a three-word name, which stays a
         # name word" (v1's Google Code issue 11 carve-out, the
         # "john e smith" bug). The threshold reads the ROOTNAME count,
-        # and since #397 a connective counts ITSELF toward that count,
-        # so a connective that is also suffix vocabulary no longer
-        # raises the bar for its own join.
+        # and since #397 a connective counts ITSELF toward that count
+        # WHERE IT IS JOINING, so a connective that is also suffix
+        # vocabulary no longer raises the bar for its own join and no
+        # longer lowers it for an unrelated one ("Carod y Rovira i"
+        # counted the trailing generation and let the `y` join).
         k = 0
         while k < len(pieces):
-            if not conj(k):
+            # first token again, and here it is exact for the second
+            # reason as well: the piece a join produces is left BEHIND
+            # `k`, so no merged piece is ever tested twice.
+            if not conj(k) or pieces[k][0] in frozen:
                 k += 1
                 continue
             text = " ".join(tokens[i].text for i in pieces[k])
-            if len(text) == 1 and text.isalpha():
-                if total < 4:
-                    k += 1
-                    continue
-                # rules.md#P3: "A connective that is also generational
-                # vocabulary joins only where a name word stands on
-                # each side of it" (#397). About the CLASS, not the
-                # letter, and narrow by construction: it is reached
-                # only for a single-letter connective piece, and it
-                # cannot see a trailing `y` or `and`, which is what
-                # leaves those readings alone.
-                if (not (0 < k < len(pieces) - 1)
-                        and is_suffix_piece(pieces[k], ptags[k], tokens)):
-                    k += 1
-                    continue
+            if len(text) == 1 and text.isalpha() and total < 4:
+                k += 1
+                continue
             start = max(0, k - 1)
             end = min(len(pieces), k + 2)
             neighbor = start if start < k else end - 1

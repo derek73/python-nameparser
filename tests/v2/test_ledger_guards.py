@@ -3134,8 +3134,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # carrying a comma, 'Carod i Rovira, Josep'. Reach, not
         # explanation, and verified name by name: the claimed set
         # gained that name and lost none.
+        # 2026-09-20, #397 review: 359 -> 360, the one new comma name
+        # the review's rows add, 'Rovira, Josep Carod i Jr.' -- the
+        # comma form of the swallowed generation. Reach again, and
+        # verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(359, ('given', 'suffix', 'title'), '37cb26979687', None),
+            _Claim(360, ('given', 'suffix', 'title'), 'f0e6eed75c6a', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3187,8 +3191,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # names as the rule above and for the same reason.
         # 2026-09-20, #397: 358 -> 359, the same one new comma name as
         # the rule above and for the same reason.
+        # 2026-09-20, #397 review: 359 -> 360, the same one new comma
+        # name as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(359, ('family', 'given'), '37cb26979687', None),
+            _Claim(360, ('family', 'given'), 'f0e6eed75c6a', None),
         "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
@@ -3416,8 +3422,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # in the corpus because its row carries a shape tag. Reach
         # again: the regex is unchanged and the claimed set gained
         # that name alone.
+        # 2026-09-20, #397 review: 102 -> 103. One new corpus name
+        # holding a connective run, 'Carod y de Rovira i' -- the row
+        # pinning that a trailing link does not count itself for an
+        # unrelated 'y', which is in the corpus because its row
+        # carries a shape tag. Reach again, verified name by name.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(102, ('_initials',), "2c63e2c40d47", ('DEFAULT',)),
+            _Claim(103, ('_initials',), "05db047609d0", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
         # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
         # nee Jones MA' -- the P5 pair this change added to record
@@ -3427,8 +3438,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-18: 109 -> 110. One new corpus name,
         # 'john van der berg ma' -- rules.md#P2's one-case contrast,
         # and a particle chain like every other member.
+        # 2026-09-20, #397 review: 111 -> 112. The same one new name
+        # as the connective-run rule above, 'Carod y de Rovira i',
+        # whose 'de Rovira' is a particle chain; two rules reach one
+        # name and neither widened. Verified name by name.
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(111, ('_initials',), '3729c1e3152d', ('DEFAULT',)),
+            _Claim(112, ('_initials',), 'b3b3b696a56e', ('DEFAULT',)),
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
             _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
