@@ -1945,8 +1945,15 @@ A1. Rationale: a caller can only act on doubt that is reported.
     Parsing never fails on any input: where the text's structure or
     a word's reading is genuinely uncertain, the parse completes on
     the best reading and carries an ambiguity report naming the
-    doubt.
+    doubt. A report names the reading the parse took, so a report
+    whose fork the rest of the parse then resolved to NEITHER branch
+    is withdrawn rather than carried beside a reading it
+    contradicts: a letter both a connective and an initial, read as
+    the generation it also spells, is neither of the two the
+    connective-or-initial fork offered, and only that fork's report
+    goes — the generation's own stands.
       "Van Johnson"               →  ambiguities=("particle-or-given",)
+      "JOHN QUINCY SMITH I"       →  ambiguities=("suffix-or-name",)
       "Jane „JD Smith"            →  ambiguities=("unbalanced-delimiter",)
       "John Smith, MD, Bart"      →  ambiguities=("comma-structure",)
       "John Smith"                →  ambiguities=()  · boundary
@@ -1954,7 +1961,7 @@ A1. Rationale: a caller can only act on doubt that is reported.
     segmenter's own error, which propagates — a user-code error is
     not a content error. (Needs the optional extra to demonstrate,
     so no example line.)
-    implemented: nameparser/_pipeline/_state.py
+    history: decisions.md#A1 · interacts: P3, S2 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_state.py
 
 A2. Rationale: an input with no name content names nobody, and
     saying so beats inventing fields from punctuation.
@@ -2146,6 +2153,11 @@ R4. Rationale: case repair is a display concern, applied only on
     and not a borrowing from R3: a connective that initials because
     it joins nothing is still not written the way a name is written,
     while a generation is written the way a generation is written.
+    The GENERATION is what that clause turns on and not the field:
+    a connective the suffix field merely holds, which the suffix
+    vocabulary does not know, was read as no generation and keeps its
+    lowercase there like any other connective — the third part of a
+    comma form is the shape that puts one there.
     A name already written the way repair would
     write it comes back unchanged, measured by repair's own
     conventions rather than by the bearer's. A spelling written in a
@@ -2159,6 +2171,8 @@ R4. Rationale: case repair is a display concern, applied only on
       "john smith phd"            →  capitalized="John Smith Ph.D."
       "John Quincy Smith i"       →  capitalized_forced="John Quincy Smith I"
       "Carod i"                   →  capitalized_forced="Carod I"
+      "Smith, John, and"          →  capitalized_forced="John Smith and"
+      "Doe, Jane, and Jr."        →  capitalized_forced="Jane Doe and Jr."
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
     Accepted: the clause reaches a part the parser read. A field
     spliced in as raw text after the parse carries no reading of its

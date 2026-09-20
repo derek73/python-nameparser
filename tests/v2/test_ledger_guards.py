@@ -3336,7 +3336,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # comma form of the swallowed generation. Reach again, and
         # verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(361, ('given', 'suffix', 'title'), '2e17dee05bcf', None),
+            _Claim(363, ('given', 'suffix', 'title'), 'b628b4d25dfb', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3391,7 +3391,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-20, #397 review: 359 -> 360, the same one new comma
         # name as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(361, ('family', 'given'), '2e17dee05bcf', None),
+            _Claim(363, ('family', 'given'), 'b628b4d25dfb', None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -3636,7 +3636,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # unrelated 'y', which is in the corpus because its row
         # carries a shape tag. Reach again, verified name by name.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(103, ('_initials',), "05db047609d0", ('DEFAULT',)),
+            _Claim(104, ('_initials',), "bc7dfeba1da5", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
         # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
         # nee Jones MA' -- the P5 pair this change added to record

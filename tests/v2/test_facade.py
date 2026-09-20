@@ -1048,3 +1048,48 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
         assert str(restored) == restored_cap
         built.capitalize()
         assert str(built) == restored_cap
+
+
+def test_the_v1_off_switch_restores_the_pre_397_fields() -> None:
+    """decisions.md#P3's off switch on the V1 SURFACE (#397 second
+    review). The bullet says deleting `i` from `C.conjunctions`
+    restores the parent's readings; the core-side switch is pinned by
+    the off-switch grid in tests/v2/test_properties.py and this is the
+    facade half, which has no `Lexicon` of its own to remove from.
+
+    The three role movers of decisions.md#P3's one-case paragraph are
+    the rows, because they are the ones whose FIELDS move: every
+    value on the right below is what the released 2.3.0 wheel gives,
+    measured 2026-09-20.
+
+    A local `Constants`, never the shared `CONSTANTS`: a removal on
+    the singleton would leak into every later test in the process.
+    """
+    constants = Constants()
+    constants.conjunctions.remove("i")
+    for text, on_fields, off_fields in (
+            ("rovira, i",
+             {"first": "i", "last": "rovira", "suffix": ""},
+             {"first": "", "last": "rovira", "suffix": "i"}),
+            ("john smith i jr",
+             {"first": "john", "middle": "smith", "last": "i",
+              "suffix": "jr"},
+             {"first": "john", "middle": "", "last": "smith",
+              "suffix": "i jr"}),
+            ("maier, amy i, jr.",
+             {"first": "amy", "middle": "i", "last": "maier",
+              "suffix": "jr."},
+             {"first": "amy", "middle": "", "last": "maier",
+              "suffix": "i, jr."})):
+        on = HumanName(text)
+        off = HumanName(text, constants)
+        for field, value in on_fields.items():
+            assert getattr(on, field) == value, (text, field)
+        for field, value in off_fields.items():
+            assert getattr(off, field) == value, (text, field)
+    # and the join itself, the reading the bullet leads with
+    joined = HumanName("Josep Carod i Rovira")
+    assert joined.last == "Carod i Rovira"
+    unjoined = HumanName("Josep Carod i Rovira", constants)
+    assert unjoined.middle == "Carod i"
+    assert unjoined.last == "Rovira"

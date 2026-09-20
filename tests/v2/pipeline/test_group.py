@@ -1775,3 +1775,112 @@ def test_a_marker_with_nothing_after_it_declines_before_the_bound(
     out = _grouped("Jane Doe née", lexicon=_LINK_LEX)
     assert _maiden_texts(out) == []
     assert _piece_texts(out) == [["Jane", "Doe", "née"]]
+
+
+# --- #397 second review: the bound, the class and the frozen piece --
+
+def test_a_trailing_title_does_not_hide_the_suffix_run_from_the_join(
+) -> None:
+    # rules.md#H5 read where the JOIN asks its question (#397 second
+    # review). `trailing_start` reads the peel over the pieces as
+    # WRITTEN, so a title standing behind the suffix run makes the
+    # peel take nothing and the answer is `len(pieces)` -- and a
+    # caller using it as the right bound of the NAME is then told a
+    # credential is a name word. 'MA' carries no `vocab:suffix` tag,
+    # so the piece test cannot refuse it either and the join swallowed
+    # it: family 'Adams i MA', no report, and `initials()` gaining an
+    # 'M.'.
+    #
+    # The pair is the finding, and it is H5's own sentence: the name
+    # one title shorter has always read the other way.
+    # the SHIPPED vocabulary reaches this row -- 'i' is a default
+    # connective and a default suffix word, 'MA' a default ambiguous
+    # acronym and 'Prof.' a default title -- so this is one of the
+    # few #397 rows that needs no built lexicon at all.
+    shipped = Lexicon.default()
+    titled = _grouped("John Quincy Adams i MA Prof.", lexicon=shipped)
+    bare = _grouped("John Quincy Adams i MA", lexicon=shipped)
+    assert _piece_texts(titled) == [
+        ["John", "Quincy", "Adams", "i", "MA", "Prof."]]
+    assert _piece_texts(bare) == [["John", "Quincy", "Adams", "i", "MA"]]
+    # and end to end, where the fields say what the bound bought.
+    # The SHIPPED vocabulary reaches this: 'i' is a default
+    # connective and a default suffix word, and 'MA' a default
+    # ambiguous acronym, so no built lexicon is needed here and the
+    # row is a real parse rather than a configured one.
+    parser = Parser()
+    name = parser.parse("John Quincy Adams i MA Prof.")
+    assert name.as_dict() == {
+        "title": "Prof.", "given": "John", "middle": "Quincy",
+        "family": "Adams", "suffix": "i MA", "nickname": "", "maiden": ""}
+    assert name.initials() == "J. Q. A."
+    assert [a.kind.value for a in name.ambiguities] == ["suffix-or-name"]
+    # a LOWER-CASE title is the same shape and reaches the same
+    # bound: the vocabulary lookup is folded, so 'prof.' peels like
+    # 'Prof.'
+    lower_title = parser.parse("John Quincy Adams i MA prof.")
+    assert lower_title.title == "prof."
+    assert lower_title.suffix == "i MA"
+    # the ONE-CASE spellings never reached the defect and are pinned
+    # as the control: written wholly in one case the letter reads as
+    # an initial (rules.md#P3's marked subset), no join is attempted
+    # at all, and both spellings already agreed with each other and
+    # with the untitled name at dc3bdf9c -- which is what says the
+    # bound and not the marking is what this row is about.
+    for text, title in (("john quincy adams i ma prof.", "prof."),
+                        ("JOHN QUINCY ADAMS I MA PROF.", "PROF.")):
+        one_case = parser.parse(text)
+        assert one_case.title == title
+        assert one_case.suffix == text.split()[-2]
+
+
+def test_a_multi_letter_link_of_the_suffix_vocabulary_joins_by_the_same_rule(
+) -> None:
+    # rules.md#P3's both-sides clause names a CLASS -- "a connective
+    # that is also generational vocabulary" -- and says nothing about
+    # how the word is spelled (#397 second review). A `len(text) != 1`
+    # filter stood in the stage and narrowed the clause to one-letter
+    # connectives, untested and undocumented; this is the row that was
+    # caller-reachable past it. Nothing SHIPPED reaches it -- 'i' is
+    # the only member of the class in the default vocabulary and in
+    # every locale pack -- which is why the lexicon is built here.
+    lex = Lexicon.default().add(conjunctions={"og"},
+                                suffix_words={"og"})
+    parser = Parser(lexicon=lex)
+    # nothing on its right: it is the generation it also spells
+    lone = parser.parse("John Quincy Smith og")
+    assert lone.family == "Smith"
+    assert lone.suffix == "og"
+    # a name word on each side: it joins, exactly as a one-letter
+    # member does
+    joined = parser.parse("Josep Carod og Rovira")
+    assert joined.family == "Carod og Rovira"
+    # the three-word carve-out stays SINGLE-LETTER, which is what its
+    # own sentence says ("a single-letter connective in a three-word
+    # name"): 'og' is two letters, so it joins in a THREE-word name
+    # where the one-letter 'i' of the shipped vocabulary stays a name
+    # word in the middle.
+    assert parser.parse("Josep og Carod").given == "Josep og Carod"
+    assert Parser().parse("Josep i Carod").middle == "i"
+    # and with nothing on its right the class test decides before the
+    # carve-out is ever asked, for either spelling
+    assert parser.parse("Josep Carod og").suffix == "og"
+    assert Parser().parse("Josep Carod i").suffix == "i"
+
+
+def test_a_frozen_link_is_still_absorbed_by_a_neighbours_join() -> None:
+    # What freezing a piece claims and what it does not (#397 second
+    # review). `frozen` keeps a connective from being the SUBJECT of a
+    # join; it does not keep the word out of the span another
+    # connective's join takes. The trailing 'i' here has nothing on
+    # its right and is frozen, and the 'y' beside it joins across it
+    # all the same.
+    #
+    # Not a defect and not a silence: this is the reading the parent
+    # commit 46651750 gives the same name, the letter being no
+    # connective there at all, so the row is a CONTROL for the
+    # comment beside `frozen` rather than a behavior claim of its own.
+    out = Parser().parse("Josep Carod Rovira Puig y i")
+    assert out.family == "Puig y i"
+    assert out.middle == "Carod Rovira"
+    assert out.suffix == ""

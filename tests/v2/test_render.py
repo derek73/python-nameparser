@@ -291,6 +291,68 @@ def test_repair_capitalizes_a_generation_the_connective_also_spells(
         force=True)) == "Josep y Rovira"
 
 
+def test_repair_keeps_a_plain_connective_the_suffix_field_holds_lower(
+) -> None:
+    """rules.md#R4, the GENERATION half read narrowly (#397 second
+    review). The clause turns on the generation and not on the field:
+    the test is the suffix ROLE **and** the suffix VOCABULARY, and a
+    role test alone capitalized every plain connective that merely
+    LANDS in the suffix field.
+
+    The third part of a comma form is the shape that puts one there
+    -- assign reads those words as the suffix run whatever they are
+    -- and none of them is generational vocabulary, so none of them
+    was read as a generation and all of them keep the lowercase they
+    have always had. Expected strings measured 2026-09-20 on the
+    released 1.4.0 and 2.3.0 wheels from a throwaway environment, and
+    they agree with each other and with the parent commit 46651750.
+
+    'Smith, John, и' is the one row where the two wheels part, and
+    for a reason older than this rule: Cyrillic 'и' is a 2.x
+    conjunction and not a 1.4.0 one, so 1.4.0 gives 'John Smith И'
+    and 2.3.0 gives 'John Smith и'. The tree follows 2.3.0, as
+    _render.py's own note on that word says it must.
+    """
+    for text, plain, forced in (
+            ("Smith, John, and", "John Smith and", "John Smith and"),
+            ("Smith, John, y", "John Smith y", "John Smith y"),
+            ("Smith, John, e", "John Smith e", "John Smith e"),
+            ("Smith, John, und", "John Smith und", "John Smith und"),
+            ("Smith, John, of", "John Smith of", "John Smith of"),
+            ("Smith, John, и", "John Smith и", "John Smith и"),
+            ("Doe, Jane, and Jr.", "Jane Doe and Jr.",
+             "Jane Doe and Jr."),
+            ("Smith, John, and III", "John Smith and III",
+             "John Smith and III")):
+        name = parse(text)
+        assert name.suffix.split()[0] == text.split(", ")[-1].split()[0]
+        assert str(name.capitalized()) == plain, text
+        assert str(name.capitalized(force=True)) == forced, text
+        v1 = HumanName(text)
+        v1.capitalize(force=True)
+        assert str(v1) == forced, text
+    # A SPLICED field is the other way in, and R4's Accepted
+    # paragraph is explicit about it: text nobody read gets the
+    # vocabulary's answer, so a suffix set to 'de y' keeps its 'y'
+    # exactly as a family set to 'de y' does. 1.4.0 and 2.3.0 both
+    # give 'John Smith De, y'.
+    spliced = HumanName(first="John", last="Smith", suffix="de y")
+    spliced.capitalize(force=True)
+    assert str(spliced) == "John Smith De, y"
+    # ... and the vocabulary's answer is what a spliced 'i' gets too,
+    # which is a CHANGE from the parent and the shape to know about:
+    # 'i' is connective vocabulary here and was not there, so the
+    # spliced field follows 'y' now where it used to follow the
+    # numeral. The PARSED name is unaffected -- it has a reading, and
+    # the reading is the generation (above).
+    spliced_i = HumanName(first="John", last="Smith", suffix="i")
+    spliced_i.capitalize(force=True)
+    assert str(spliced_i) == "John Smith i"
+    spliced_y = HumanName(first="John", last="Smith", suffix="y")
+    spliced_y.capitalize(force=True)
+    assert str(spliced_y) == "John Smith y"
+
+
 def test_initials_order_folded_words_first_like_the_family_field() -> None:
     """#408: the view and the field must read one parse the same way.
 

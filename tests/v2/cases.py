@@ -2812,6 +2812,84 @@ CASES: tuple[Case, ...] = (
                "with a comma R1 no longer derives, and read last "
                "'Puig' for want of maiden support",
          shape=1),
+    # ---- #397 second review: the one-case role movers --------------
+    # decisions.md#P3's 2026-09-20 bullet describes these four names
+    # in prose and pinned none of them. They are where the marked
+    # subset's riskiest movement is -- an ALL-LOWER name whose letter
+    # the parent read as the GENERATION and this reads as an initial
+    # -- and each one now reads as its ALL-CAPS twin already did,
+    # which is the claim the prose makes and
+    # test_properties.py::test_a_one_case_name_reads_the_same_in_
+    # either_case holds over the grid. Every reading below measured
+    # 2026-09-20 on the released 1.4.0 and 2.3.0 wheels from a
+    # throwaway environment.
+    Case("a_one_case_link_after_a_family_comma_is_the_given_name",
+         "rovira, i",
+         {"given": "i", "family": "rovira"},
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="written wholly in lower case, so the letter reads as "
+               "an INITIAL and takes the given slot the comma leaves "
+               "for it. 2.3.0 read family 'rovira' with suffix 'i'; "
+               "1.4.0 read first 'i', which is this reading. The "
+               "ALL-CAPS twin 'ROVIRA, I' gave first 'I' at BOTH of "
+               "them and gives given 'I' here -- the two spellings "
+               "disagreed at 2.3.0 and agree now. NO SHAPE TAG on "
+               "any of these four: decisions.md#P3's one-case "
+               "paragraph says of them that none is a corpus name, "
+               "and admitting them to the differential's contract "
+               "corpus is a ledger change of its own rather than "
+               "this row's business. The cross-version readings "
+               "above are what the corpus would have bought, "
+               "measured on the wheels instead"),
+    Case("a_one_case_link_before_a_generation_is_a_name_word",
+         "john smith i jr",
+         {"given": "john", "middle": "smith", "family": "i",
+          "suffix": "jr"},
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="the same movement with a generation behind it: the "
+               "letter reads as an initial, so the peel stops before "
+               "it and 'jr' alone is the suffix. 2.3.0 read family "
+               "'smith' with suffix 'i jr' and 1.4.0 suffix 'i, jr'. "
+               "The ALL-CAPS twin 'JOHN SMITH I JR' read middle "
+               "'SMITH', last 'I', suffix 'JR' at both of them -- "
+               "again the reading this row now gives. No shape "
+               "tag, for the reason the row above gives"),
+    Case("a_one_case_link_in_a_comma_suffix_run_is_a_middle_initial",
+         "maier, amy i, jr.",
+         {"given": "amy", "middle": "i", "family": "maier",
+          "suffix": "jr."},
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="the third comma shape, and the one whose MIXED-CASE "
+               "twin is already in this table: 'Maier, Amy I, Jr.' "
+               "reads middle 'I' and does not move, the writing "
+               "having decided the letter there. 2.3.0 and 1.4.0 "
+               "both read suffix 'i, jr.' for the lower-case "
+               "spelling while 'MAIER, AMY I, JR.' already read "
+               "middle 'I' -- the disagreement this closes. No "
+               "shape tag, for the reason the first of these rows "
+               "gives"),
+    Case("a_link_inside_a_maiden_clause_keeps_a_bare_credential",
+         "Jane Doe nee Puig i Ma",
+         {"given": "Jane", "family": "Doe", "maiden": "Puig i Ma"},
+         classification="fix(#397)",
+         ambiguities=("suffix-or-name",),
+         notes="the clause's link with a BARE ambiguous acronym "
+               "behind it, on the shipped vocabulary rather than a "
+               "built one. 'Ma' is a name word here -- mixed case, "
+               "so the class member leans to the name -- and a name "
+               "word on the link's right is what the exception "
+               "wants, so the clause takes all three words and "
+               "reports the acronym it kept. 2.3.0 read middle 'Doe "
+               "i', family 'Ma', maiden 'Puig', handing two words of "
+               "the birth name to the current one; 1.4.0 read middle "
+               "'Doe nee', last 'Puig', suffix 'i, Ma'. The "
+               "ALL-CAPS 'MA' is the other lean and is the control "
+               "in test_properties.py rather than a row here. No "
+               "shape tag, for the reason the first of these rows "
+               "gives"),
     # ---- #461: a connective initials where it joins nothing --------
     # The rule, one sentence for all three groups: a connective
     # contributes nothing where it is JOINING -- a part holding

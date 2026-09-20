@@ -225,21 +225,32 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # unjoined mark has turned into ordinary name words" -- so a
     # conjunction keeps conjunction treatment even inside a part the
     # mark has turned into ordinary name words.
-    # The ROLE test is the other half of that sentence, and it is why
-    # a single comparison stands ahead of both conjunction arms: a
-    # word this vocabulary holds can ALSO be the generation it spells
-    # ('i' is the Catalan link and the roman numeral), and where the
-    # parse read the generation the token still carries the
+    # The GENERATION test is the other half of that sentence, and it
+    # is why a single conjunct stands ahead of both conjunction arms:
+    # a word this vocabulary holds can ALSO be the generation it
+    # spells ('i' is the Catalan link and the roman numeral), and
+    # where the parse read the generation the token still carries the
     # `conjunction` tag classify gave it -- so without the test,
     # `parse("John Quincy Smith i").capitalized(force=True)` gave
     # 'John Quincy Smith i' where every release through 2.3 gave
-    # 'John Quincy Smith I' (#397 review). A suffix-roled token is
-    # repaired as the suffix it was read as, which is the rest of
-    # R4's sentence: "one the parse read as the generation it also
-    # spells is not a connective of this name at all". The test is
-    # the ROLE and not the suffix VOCABULARY, because the role is
-    # what the parse decided and the vocabulary is only what the word
-    # could have been (mechanisms.md#RENDER-HONORS-THE-PARSE).
+    # 'John Quincy Smith I' (#397 review). Such a token is repaired
+    # as the suffix it was read as, which is the rest of R4's
+    # sentence: "one the parse read as the generation it also spells
+    # is not a connective of this name at all".
+    # BOTH HALVES, and the role alone is not enough -- the role says
+    # where the word landed and the vocabulary says whether landing
+    # there made it a generation. A plain connective can land in the
+    # suffix field without being generational vocabulary at all (a
+    # third comma part: `Smith, John, and`), and on the role test
+    # alone every one of them was repaired as a name word --
+    # 'John Smith And' where 1.4.0, 2.0 through 2.3 and the parent
+    # commit all gave 'John Smith and', and 'John Smith De, Y' for a
+    # field spliced to suffix='de y' where R4's own Accepted
+    # paragraph says the vocabulary answers and the 'y' keeps its
+    # lowercase (#397 second review). `vocab:suffix` is classify's
+    # record of the vocabulary half, so the pair reads two decisions
+    # the parse already made and re-derives neither
+    # (mechanisms.md#RENDER-HONORS-THE-PARSE).
     # No SHIPPED name witnesses the difference: `particles` and
     # `conjunctions` are disjoint in the default vocabulary and in
     # every locale pack, so no shipped conjunction can sit in an
@@ -296,7 +307,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # the same words parsed gave 'E-F' (#463 review).
     if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags)
-            or (role is not Role.SUFFIX
+            or (not (role is Role.SUFFIX and "vocab:suffix" in tags)
                 and ("conjunction" in tags
                      or (UNCLASSIFIED_TAG in tags
                          and _reads_as_conjunction(word, lex))))):

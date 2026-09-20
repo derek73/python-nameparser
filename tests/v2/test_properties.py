@@ -25,7 +25,8 @@ from nameparser import (
 from nameparser.config import Constants
 from nameparser._lexicon import _VOCAB_FIELDS
 from nameparser._pipeline import run
-from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._state import (AMBIGUOUS_ACRONYM_TAG,
+                                         ParseState)
 from nameparser._pipeline._vocab import effective_script
 from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
                                AmbiguityKind, ParsedName, Role, Token)
@@ -1082,17 +1083,97 @@ def _rows(texts: list[str],
     return out
 
 
+def _signature(parser: Parser, text: str) -> tuple[object, ...]:
+    """Everything the four grids' invariants can read of one parse.
+
+    Used only by the trim's own guard below, which is why it is
+    exhaustive rather than cheap: it has to be able to see a
+    difference no invariant in this file happens to ask about.
+    """
+    name = parser.parse(text)
+    return (
+        tuple(sorted(name.as_dict().items())),
+        tuple((t.text, t.role.value, tuple(sorted(t.tags)), t.span)
+              for t in name.tokens),
+        name.initials(),
+        tuple(name.initials(f"{{{r.value}}}") for r in _NAME_ROLES),
+        name.family_base, name.family_particles,
+        str(parser.capitalized(name)),
+        str(parser.capitalized(name, force=True)),
+        tuple(sorted((a.kind.value, a.detail,
+                      tuple(t.text for t in a.tokens))
+                     for a in name.ambiguities)),
+    )
+
+
+#: Every (text, lexicon, policy) the trim drops is checked against
+#: the row it collapses onto, one in `_TRIM_STRIDE` of them.
+_TRIM_STRIDE = 61
+
+
+def _dropped_rows(texts: list[str], lexicons: _Variants) -> list[
+        tuple[str, tuple[str, Lexicon], tuple[str, Policy],
+              tuple[str, Lexicon], tuple[str, Policy]]]:
+    """The pairings `_rows` declines, each with the pairing it
+    collapses onto: the same text under the variant it could not read
+    differently, replaced by the baseline of whichever dimension
+    declined.
+
+    Deterministically sampled by stride rather than at random -- a
+    random slice makes a failure unreproducible, and the shapes here
+    are generated in a fixed order.
+    """
+    base_lex = lexicons[0]
+    base_pol = _GRID_POLICIES[0]
+    out = []
+    for i, text in enumerate(texts):
+        if i % _TRIM_STRIDE:
+            continue
+        reach = _reaching(text)
+        for ln, lex, lex_need in lexicons:
+            for pn, pol, pol_need in _GRID_POLICIES:
+                if (lex_need | pol_need) <= reach:
+                    continue
+                twin_lex = (ln, lex) if lex_need <= reach else base_lex[:2]
+                twin_pol = (pn, pol) if pol_need <= reach else base_pol[:2]
+                out.append((text, (ln, lex), (pn, pol),
+                            twin_lex, twin_pol))
+    return out
+
+
 @functools.cache
 def _class_letters(lexicon: Lexicon) -> frozenset[str]:
     """The class rules.md#P3's both-sides condition is about: a
-    one-letter connective that is ALSO generational vocabulary.
+    connective that is ALSO generational vocabulary.
+
+    NO LENGTH TEST, matching the rule's own scope and the stage's
+    (#397 second review, where a `len(w) == 1` came out of both).
+    Measured no-op over every lexicon these grids build: `i` is the
+    only member in the default vocabulary and in every locale pack,
+    and the two variant lexicons add a one-letter connective and a
+    particle.
 
     Cached on the lexicon -- a frozen, hashable value -- because both
     grids ask this of every row and there are five lexicons between
     them.
     """
     return frozenset(w for w in lexicon.conjunctions
-                     if len(w) == 1 and w in lexicon.suffix_words)
+                     if w in lexicon.suffix_words)
+
+
+#: The two grids' lexicon variants, module-level so
+#: `test_every_declared_variant_earns_a_row` can name them. See
+#: `_rows` for what the third element of each declares.
+_CONNECTIVE_LEXICONS: _Variants = (
+    ("default", Lexicon.default(), frozenset()),
+    ("conj+v", Lexicon.default().add(conjunctions={"v"}),
+     frozenset({"v"})),
+    ("part+y", Lexicon.default().add(particles={"y"}),
+     frozenset({"y"})))
+_OFF_SWITCH_LEXICONS: _Variants = (
+    ("default", Lexicon.default(), frozenset()),
+    ("conj+v", Lexicon.default().add(conjunctions={"v"}),
+     frozenset({"v"})))
 
 
 def _connective_grid() -> list[tuple[str, Parser, str]]:
@@ -1105,12 +1186,6 @@ def _connective_grid() -> list[tuple[str, Parser, str]]:
         [], ["Rovira"], ["de", "Rovira"], ["Rovira", "Puig"])
     suffixes: tuple[list[str], ...] = (
         [], ["III"], ["Jr."], ["I"], ["MA"])
-    lexicons: _Variants = (
-        ("default", Lexicon.default(), frozenset()),
-        ("conj+v", Lexicon.default().add(conjunctions={"v"}),
-         frozenset({"v"})),
-        ("part+y", Lexicon.default().add(particles={"y"}),
-         frozenset({"y"})))
     texts: list[str] = []
     seen: set[str] = set()
     for head, mid, conn, tail, suffix, comma in itertools.product(
@@ -1126,7 +1201,7 @@ def _connective_grid() -> list[tuple[str, Parser, str]]:
             if written not in seen:
                 seen.add(written)
                 texts.append(written)
-    return _rows(texts, lexicons)
+    return _rows(texts, _CONNECTIVE_LEXICONS)
 
 
 _CONNECTIVE_GRID = _connective_grid()
@@ -1160,9 +1235,60 @@ def _predicted_initials(part: tuple[Token, ...], role: Role) -> list[str]:
     return out
 
 
+#: The two kinds whose details assert DIFFERENT readings of the same
+#: word: one says the letter is read as an initial, the other that it
+#: is read as a generational suffix. A token cannot be both, so a
+#: token named by both carries a report that contradicts the reading
+#: beside it (#397 second review).
+_CONTRADICTORY_KINDS = (AmbiguityKind.CONJUNCTION_OR_INITIAL,
+                        AmbiguityKind.SUFFIX_OR_NAME)
+
+
+def _record_contradicting_reports(name: ParsedName, label: str, text: str,
+                                  out: list[str]) -> None:
+    """INV10 (#397 second review). Two statements of one rule, the
+    second wider than the first and both about the same defect.
+
+    rules.md#A1's own sentence, that a report names the reading the
+    parse took. The
+    connective-or-initial fork offers a connective and an initial and
+    says which it took, so a token the parse roles SUFFIX or TITLE
+    resolved that fork to NEITHER branch and the report is false on
+    its face. And no token may be named by two reports whose details
+    assert different readings of it, which is the same defect stated
+    without naming a role: 'JOHN QUINCY SMITH I' carried
+    connective-or-initial beside suffix-or-name, one saying the
+    letter reads as an initial and the other that it reads as the
+    generation.
+
+    'i' is the first word that is both a marked connective and suffix
+    vocabulary, so this could not arise before this cycle -- which is
+    why the invariant is worth writing down now rather than having
+    been written down before.
+    """
+    by_span: dict[tuple[int, int] | None, set[AmbiguityKind]] = {}
+    for amb in name.ambiguities:
+        for tok in amb.tokens:
+            span = None if tok.span is None else (tok.span.start,
+                                                  tok.span.end)
+            by_span.setdefault(span, set()).add(amb.kind)
+            if (amb.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
+                    and tok.role in (Role.SUFFIX, Role.TITLE)):
+                out.append(
+                    f"[{label}] {text!r}: {tok.text!r} is roled "
+                    f"{tok.role.value} and reports "
+                    f"{amb.kind.value}")
+    for span, kinds in by_span.items():
+        if set(_CONTRADICTORY_KINDS) <= kinds:
+            out.append(
+                f"[{label}] {text!r}: the token at {span} carries both "
+                f"{_CONTRADICTORY_KINDS[0].value} and "
+                f"{_CONTRADICTORY_KINDS[1].value}")
+
+
 @functools.cache
 def _connective_findings() -> dict[str, list[str]]:
-    """One walk of the connective grid; four invariants' answers.
+    """One walk of the connective grid; FIVE invariants' answers.
 
     Each key below is one test's failure list, built with the parse
     in hand and in grid order, so a test reads exactly what it would
@@ -1172,10 +1298,12 @@ def _connective_findings() -> dict[str, list[str]]:
     is stated in, and this function only asks them all at once.
     """
     out: dict[str, list[str]] = {k: [] for k in
-                                 ("INV1", "INV2", "INV3/4", "INV5")}
+                                 ("INV1", "INV2", "INV3/4", "INV5",
+                                  "INV10")}
     for text, parser, label in _CONNECTIVE_GRID:
         letters = _class_letters(parser.lexicon)
         name = parser.parse(text)
+        _record_contradicting_reports(name, label, text, out["INV10"])
         for role in _NAME_ROLES:
             part = name.tokens_for(role)
             # hoisted out of the INV3/INV4 comprehensions below, where
@@ -1231,6 +1359,92 @@ def _connective_findings() -> dict[str, list[str]]:
                         f"word, contributes no initial, and is no "
                         f"connective")
     return out
+
+
+@pytest.mark.parametrize("grid_name", ("connective", "off-switch"))
+def test_the_reach_trim_drops_only_rows_a_kept_row_repeats(
+        grid_name: str) -> None:
+    """The TRIM ITSELF, as a mechanism rather than as a measurement.
+
+    `_rows` pairs a text only with the configurations that can read
+    it differently, and each variant declares its reach as a set of
+    WORDS that `_reaching` folds a text into. Sound for the variants
+    that stand here today -- verified row by row when the trim
+    landed -- and silently wrong for a variant nobody has written
+    yet: `_reaching` splits on whitespace and strips edge periods, so
+    a variant declaring a MULTI-WORD entry ("van der") or a
+    hyphenated one would be matched by no text at all and would
+    contribute ZERO rows, leaving a green suite testing one
+    configuration fewer than it names.
+
+    Two checks, and the second is the one that catches that: every
+    dropped pairing parses identically to the pairing it collapses
+    onto, and every declared variant earns at least one row. A
+    variant that reaches nothing passes the first vacuously.
+
+    Sampled by stride (`_TRIM_STRIDE`), which keeps this at about a
+    second while covering every shape class: the generators emit
+    shapes in a fixed order, so a stride walks all of them.
+    """
+    grid, lexicons = ((_CONNECTIVE_GRID, _CONNECTIVE_LEXICONS)
+                      if grid_name == "connective"
+                      else (_OFF_SWITCH_GRID, _OFF_SWITCH_LEXICONS))
+    texts: list[str] = []
+    seen: set[str] = set()
+    for text, _parser, _label in grid:
+        if text not in seen:
+            seen.add(text)
+            texts.append(text)
+    cache: dict[tuple[str, str, str], tuple[object, ...]] = {}
+
+    def sig(text: str, lex: tuple[str, Lexicon],
+            pol: tuple[str, Policy]) -> tuple[object, ...]:
+        key = (text, lex[0], pol[0])
+        if key not in cache:
+            cache[key] = _signature(
+                Parser(lexicon=lex[1], policy=pol[1]), text)
+        return cache[key]
+
+    dropped = _dropped_rows(texts, lexicons)
+    assert dropped, "the trim dropped nothing; it has stopped trimming"
+    problems = [
+        f"{text!r} [{lex[0]}/{pol[0]}] differs from its kept twin "
+        f"[{twin_lex[0]}/{twin_pol[0]}]"
+        for text, lex, pol, twin_lex, twin_pol in dropped
+        if sig(text, lex, pol) != sig(text, twin_lex, twin_pol)]
+    assert not problems, (
+        f"{len(problems)} of {len(dropped)} dropped row(s) are not "
+        f"repeats:\n" + "\n".join(problems[:10]))
+
+
+def test_every_declared_variant_earns_a_row_somewhere() -> None:
+    """The other half of the trim's guard: a variant whose declared
+    reach no text can satisfy contributes ZERO rows and the suite
+    goes on testing one configuration fewer than it names, in
+    silence. `_reaching` splits a text on whitespace and strips edge
+    periods, so a multi-word or hyphenated entry is the shape that
+    would do it.
+
+    Asked of the two grids TOGETHER, because a variant earning rows
+    in one of them alone is the state today and is recorded rather
+    than a defect: no text of the connective grid holds a standalone
+    'v', so `conj+v` earns its rows in the off-switch grid, whose
+    suffixes include 'V'. `_rows` says so and calls it
+    self-maintaining -- give a connective generator a 'v' word and
+    the rows come back. What no generator can repair is a reach
+    nothing folds to, and that is what this refuses.
+    """
+    labels = ({label for _t, _p, label in _CONNECTIVE_GRID}
+              | {label for _t, _p, label in _OFF_SWITCH_GRID}
+              | {label for _t, _p, label in _MAIDEN_LINK_GRID})
+    declared = {f"{ln}/{pn}"
+                for lexicons in (_CONNECTIVE_LEXICONS,
+                                 _OFF_SWITCH_LEXICONS)
+                for ln, _lex, _ln_need in lexicons
+                for pn, _pol, _pn_need in _GRID_POLICIES}
+    missing = sorted(declared - labels)
+    assert not missing, (
+        f"declared variant(s) earning no row in any grid: {missing}")
 
 
 def test_the_connective_grid_can_fail() -> None:
@@ -1337,6 +1551,33 @@ def test_initials_emit_exactly_the_predicted_contributors() -> None:
         f"criterion's contributors:\n" + "\n".join(failures[:10]))
 
 
+def test_no_report_contradicts_the_reading_beside_it() -> None:
+    """INV10 (#397 second review). Two forms of one rule, both over
+    the connective grid's 55,800 rows: no token carries
+    connective-or-initial while the parse roles it SUFFIX or TITLE,
+    and no token is named by two reports whose details assert
+    different readings of it.
+
+    The fork classify takes offers a connective and an initial. A
+    generation is neither, so where the parse reads one the report
+    describes a branch nobody took -- which is the narrow half. The
+    wide half needs no role at all: two reports on one token, one
+    saying it reads as an initial and the other that it reads as a
+    generational suffix, cannot both be true whatever the roles say.
+
+    Mutation-checked, 2026-09-20: it fails on 8,204 rows at
+    dc3bdf9c -- 5,078 the narrow half and 3,126 the wide one -- and
+    on the same 8,204 at e540d4c5 and c8550b64, the report having
+    been wrong since the letter joined the marked subset. 0 here,
+    and deleting the withdrawal in `_pipeline/_assemble.py` restores
+    all 8,204.
+    """
+    failures = _connective_findings()["INV10"]
+    assert not failures, (
+        f"{len(failures)} report(s) contradict the reading beside "
+        f"them:\n" + "\n".join(failures[:10]))
+
+
 # --- #397 review: the OFF-SWITCH grid, and its two invariants -------
 # A second grid, kept apart from the one above rather than folded
 # into it, and the reason is the cost: both invariants below parse
@@ -1361,12 +1602,19 @@ def _off_switch_grid() -> list[tuple[str, Parser, str]]:
     mids: tuple[list[str], ...] = ([], ["Carod"], ["de", "Carod"])
     conns = ("i", "y", "e", "and")
     tails: tuple[list[str], ...] = ([], ["Rovira"], ["de", "Rovira"])
+    # The last two are the #397 SECOND review's addition: a trailing
+    # TITLE, alone and standing behind a credential. Where the peel
+    # is read over the pieces as WRITTEN a following title hides the
+    # suffix run from it, so the bound the join checks its right
+    # neighbour against said "name word" of a credential and the join
+    # swallowed it -- 'John Quincy Adams i MA Prof.' read family
+    # 'Adams i MA' where 'John Quincy Adams i MA' reads family
+    # 'Adams'. The lower-case spelling of the title comes free with
+    # the casing loop below, and the leading-title-only head is
+    # `["Dr."]` above.
     suffixes: tuple[list[str], ...] = (
-        [], ["III"], ["Jr."], ["I"], ["V"], ["MA"], ["i"], ["nee", "Puig"])
-    lexicons: _Variants = (
-        ("default", Lexicon.default(), frozenset()),
-        ("conj+v", Lexicon.default().add(conjunctions={"v"}),
-         frozenset({"v"})))
+        [], ["III"], ["Jr."], ["I"], ["V"], ["MA"], ["i"], ["nee", "Puig"],
+        ["MA", "Prof."], ["Prof."])
     texts: list[str] = []
     seen: set[str] = set()
     for head, mid, conn, tail, suffix, comma in itertools.product(
@@ -1388,7 +1636,7 @@ def _off_switch_grid() -> list[tuple[str, Parser, str]]:
             if written not in seen:
                 seen.add(written)
                 texts.append(written)
-    return _rows(texts, lexicons)
+    return _rows(texts, _OFF_SWITCH_LEXICONS)
 
 
 _OFF_SWITCH_GRID = _off_switch_grid()
@@ -1451,6 +1699,38 @@ def _name_word_beside(toks: list[_Placed], i: int, step: int,
         return off_role.get(toks[j][1]) in _NAME_ROLES
 
 
+def _without_the_link(text: str, letters: frozenset[str]) -> str:
+    """The same name with every class letter deleted -- the LINK-FREE
+    CONTROL.
+
+    What it is for: a credential can land inside a name part for a
+    reason that has nothing to do with the link, and one such reason
+    is older than #397 and untouched by it. The particle chain reads
+    where the trailing suffix run begins over the pieces as WRITTEN,
+    so a trailing title hides that run from it and the chain runs to
+    the end of the segment -- 'Josep de Carod y Rovira MA Prof.'
+    reads family 'de Carod y Rovira MA Prof.' at the parent 46651750
+    and at 1.4.0, with no link of the generational class in it at
+    all. Deleting the link answers whether the link is what put the
+    credential there: where the control puts it in a name part too,
+    it did not.
+
+    A trailing comma rides back onto the word before, so the comma
+    SHAPE survives the deletion ('Josep Carod i, MA' -> 'Josep
+    Carod, MA') -- the one structure whose loss would make the
+    control a different name rather than the same one shorter.
+    """
+    out: list[str] = []
+    for word in text.split():
+        core = word.rstrip(",")
+        if core.lower() in letters:
+            if word.endswith(",") and out:
+                out[-1] += ","
+            continue
+        out.append(word)
+    return " ".join(out)
+
+
 def _initial_spans(name: ParsedName,
                    letters: frozenset[str]) -> set[tuple[int, int]]:
     return {span for tok, span in _placed(name)
@@ -1486,24 +1766,52 @@ def _link_joins_between_name_words(on: ParsedName, off: ParsedName,
 
 @functools.cache
 def _off_switch_findings() -> dict[str, list[str]]:
-    """One walk of the off-switch grid; three invariants' answers.
+    """One walk of the off-switch grid; FOUR invariants' answers.
 
     Both parses of a row -- as configured, and with the class letters
     out of the connectives -- are taken once here and handed to all
-    three predicates, which is the whole of what this walk does. The
+    four predicates, which is the whole of what this walk does. The
     exemptions stay each test's own: INV6 takes the join and the
-    initial reading, INV1-strengthened only the initial reading, INV7
-    those two plus R4's placed-connective sentence, exactly as their
-    docstrings say.
+    initial reading, INV1-strengthened the initial reading and the
+    link-free control, INV7 the join and the initial reading plus
+    R4's placed-connective sentence, exactly as their docstrings say.
+
+    INV6b costs NO parse at all, which is why it joins this walk
+    rather than opening a grid of its own: the grid already writes
+    every text in three casings, so the ALL-CAPS twin of a lower-case
+    row is another row of this same walk and the comparison is a
+    lookup over what the walk already read. The link-free controls
+    INV1-strengthened wants are the only parses added here, and only
+    on a row that would otherwise be recorded as a failure.
     """
     out: dict[str, list[str]] = {k: [] for k in
-                                 ("INV6", "INV1-strengthened", "INV7")}
+                                 ("INV6", "INV1-strengthened", "INV7",
+                                  "INV6b")}
     v1_off: dict[frozenset[str], Constants] = {}
+    #: (label, text) -> the roles the configured parse gave, in token
+    #: order, for INV6b's casing comparison below.
+    roles_by: dict[tuple[str, str],
+                   tuple[tuple[str, str, bool], ...]] = {}
     for text, parser, label in _OFF_SWITCH_GRID:
         letters = _present(text, _class_letters(parser.lexicon))
         if not letters:
             continue
         on = parser.parse(text)
+        # INV6b's rows, and its scope: the MARKED subset. Its claim
+        # is decisions.md#P3's own -- a one-case name reads the
+        # marked letter as an initial and so reads as its ALL-CAPS
+        # twin already did -- and a class letter the caller's lexicon
+        # leaves UNMARKED is the shape P3's Accepted block records
+        # instead, where a bare Latin capital and its lowercase
+        # spelling genuinely part. The `conj+v` variant is exactly
+        # that caller: it adds 'v' to the connectives and not to the
+        # marked subset, so 'carod y rovira, v' and its ALL-CAPS twin
+        # disagree, identically at the parent 46651750 (20 rows,
+        # measured 2026-09-20, every one of them strict-comma).
+        if letters <= parser.lexicon.conjunctions_ambiguous:
+            roles_by[(label, text)] = tuple(
+                (tok.text.lower(), tok.role.value,
+                 AMBIGUOUS_ACRONYM_TAG in tok.tags) for tok in on.tokens)
         off_parser = _off_switch(parser, letters)
         off = off_parser.parse(text)
         # the SEVEN FIELDS, and not comparison_key: a parse carries
@@ -1534,10 +1842,37 @@ def _off_switch_findings() -> dict[str, list[str]]:
                     # parse.
                     if "conjunction" in tok.tags or tok.span is None:
                         continue
-                    if off_role.get(tok.span) is Role.SUFFIX:
-                        out["INV1-strengthened"].append(
-                            f"[{label}] {text!r}: {tok.text!r} reads as "
-                            f"the suffix and joined into {role.value}")
+                    if off_role.get(tok.span) is not Role.SUFFIX:
+                        continue
+                    # THE LINK-FREE CONTROL, and the reason it is
+                    # asked here rather than folded into the oracle:
+                    # the particle chain puts a credential into the
+                    # family on its own where a trailing title hides
+                    # the suffix run from it, link or no link, at
+                    # this commit and at the parent and at 1.4.0
+                    # alike ('Josep de Carod y Rovira MA Prof.').
+                    # Turning the class letter off ALSO stops that
+                    # chain -- the letter becomes suffix vocabulary
+                    # again and the chain halts at it -- so the
+                    # off-switch parse reads the credential as a
+                    # suffix for a reason this rule is not about.
+                    # Deleting the link asks the question directly.
+                    # Recorded boundary, not a silence: the shape is
+                    # pinned by test_a_trailing_title_still_hides_the
+                    # _suffix_run_from_the_particle_chain below and
+                    # is the #535 family.
+                    #
+                    # Taken only on a row already read as a failure,
+                    # so the green state pays 15 parses over the
+                    # whole grid (measured 2026-09-20).
+                    control = parser.parse(
+                        _without_the_link(text, letters))
+                    if any(c.text == tok.text and c.role is role
+                           for c in control.tokens_for(role)):
+                        continue
+                    out["INV1-strengthened"].append(
+                        f"[{label}] {text!r}: {tok.text!r} reads as "
+                        f"the suffix and joined into {role.value}")
         if not (same_fields and not moved
                 and not _placed_as_a_connective(on, letters)):
             continue
@@ -1558,7 +1893,64 @@ def _off_switch_findings() -> dict[str, list[str]]:
                 out["INV7"].append(
                     f"[v1] {text!r} force={force}: {v1_here!r} != "
                     f"off-switch {v1_there!r}")
+    # INV6b, over what the walk above already read. A text that is
+    # its own lower-casing and is not its own upper-casing is the
+    # all-lower spelling of a one-case name, and the grid wrote its
+    # ALL-CAPS twin too, under the same labels.
+    for (label, text), roles in roles_by.items():
+        if text != text.lower() or text == text.upper():
+            continue
+        twin = roles_by.get((label, text.upper()))
+        if twin is None or twin == roles:
+            continue
+        if _a_case_reading_the_docs_already_own(roles, twin):
+            continue
+        out["INV6b"].append(
+            f"[{label}] {text!r}: {list(roles)} != ALL-CAPS twin "
+            f"{list(twin)}")
     return out
+
+
+def _a_case_reading_the_docs_already_own(
+        lower: tuple[tuple[str, str, bool], ...],
+        upper: tuple[tuple[str, str, bool], ...]) -> bool:
+    """INV6b's TWO exemptions, both of them case readings this
+    library decided long before #397 and neither of them the marked
+    subset's.
+
+    ONE: a single-letter suffix word the lower spelling reads as the
+    suffix and the ALL-CAPS spelling does not. That is the
+    `suffix_not_acronyms` vs `is_an_initial` tension, Latin-only:
+    `_vocab.is_initial` matches an ASCII CAPITAL, so the peel's veto
+    fires on 'I' and 'V' and never on 'i' and 'v'. Measured
+    2026-09-20 at the parent 46651750 on letters this branch does not
+    touch at all -- 'carod y i' reads suffix 'i' where 'CAROD Y I'
+    reads family 'I', and 'carod y v' against 'CAROD Y V' and 'carod
+    e i' against 'CAROD E I' are the same pair.
+
+    TWO: a member of the AMBIGUOUS credential class reading
+    differently in the two spellings. That is decisions.md#S2's own
+    lean -- an ALL-CAPS bare member of the class reads as the
+    credential and a lower-case one as a name word -- and it decides
+    the COMMA STRUCTURE, so its effect reaches every token of the
+    name: 'i rovira, ma' reads given 'ma' and 'I ROVIRA, MA' suffix
+    'MA', and the rest of the row moves with it. Identical at the
+    parent on all 24 rows it exempts, measured 2026-09-20, and 21 of
+    those carry no letter of #397's class at all.
+
+    Neither exemption reaches what the branch DID close, which is
+    what makes INV6b worth running: 'rovira, i', 'john smith i jr'
+    and 'josep de carod i rovira' each disagreed with its ALL-CAPS
+    twin at the parent and agrees with it here.
+
+    Compared by token INDEX, the two spellings having the same tokens
+    in the same order by construction.
+    """
+    return any(
+        (a[1] == Role.SUFFIX.value and b[1] != Role.SUFFIX.value
+         and len(a[0]) == 1)
+        or ((a[2] or b[2]) and a[1] != b[1])
+        for a, b in zip(lower, upper))
 
 
 def test_the_off_switch_grid_can_fail() -> None:
@@ -1566,13 +1958,18 @@ def test_the_off_switch_grid_can_fail() -> None:
     carries. Dated recorded control, measured 2026-09-20.
 
     The row count fell from 103,040 to 53,312 with `_rows` (see the
-    connective probe above); the TEXT count is unmoved, and 2,011 of
-    the first 4,000 rows carry a class letter, against 1,800 of the
-    old grid's first 4,000. Over the whole grid 25,088 rows carry one
-    and are parsed twice; the old grid parsed 46,088 twice, six times
-    over."""
-    assert len(_OFF_SWITCH_GRID) == 53312, len(_OFF_SWITCH_GRID)
-    assert len({t for t, _, _ in _OFF_SWITCH_GRID}) == 12880
+    connective probe above); the TEXT count is unmoved by the trim,
+    and 2,011 of the first 4,000 rows carried a class letter against
+    1,800 of the pre-trim grid's first 4,000.
+
+    RE-MEASURED 2026-09-20 for the #397 second review, which added
+    the two trailing-title suffix runs: 66,752 rows over 16,576
+    texts, 2,109 of the first 4,000 rows carrying a class letter and
+    28,448 over the whole grid -- those being the rows parsed twice.
+    The module's own runtime is the budget these numbers spend, and
+    it is stated where the walk is built."""
+    assert len(_OFF_SWITCH_GRID) == 66752, len(_OFF_SWITCH_GRID)
+    assert len({t for t, _, _ in _OFF_SWITCH_GRID}) == 16576
     reached = sum(1 for text, parser, _ in _OFF_SWITCH_GRID[:4000]
                   if _present(text, _class_letters(parser.lexicon)))
     assert reached > 1000, reached
@@ -1592,11 +1989,15 @@ def test_a_link_that_joins_nothing_changes_no_field() -> None:
     clause, which the switch decides along with the join and so
     cannot hold fixed.
 
-    Mutation-checked, 2026-09-20: this fails on 1,250 parses at
-    c8550b64, the commit the review was written against (2,360 over
-    the full cross product), and on 610 where the both-sides gate
-    tests POSITION rather than class -- the c8550b64 defect isolated,
-    which is the one INV1 above cannot see.
+    Mutation-checked, re-measured 2026-09-20 over the grid as it
+    now stands (the second review added the two trailing-title
+    suffix runs, so every count here moved with it): this fails on
+    1,480 parses at c8550b64, the commit the first review was
+    written against, on 764 where the both-sides gate tests POSITION
+    rather than class -- the c8550b64 defect isolated, which is the
+    one INV1 above cannot see -- and on 154 at dc3bdf9c, where the
+    join's right-hand bound was read over the pieces as WRITTEN and
+    a trailing title hid the suffix run from it. 0 here.
     """
     failures = _off_switch_findings()["INV6"]
     assert not failures, (
@@ -1618,9 +2019,18 @@ def test_a_trailing_credential_never_joins_into_a_name_part() -> None:
     is deliberately absent -- a link joining elsewhere in the name
     never licenses a credential joining here.
 
-    Mutation-checked, 2026-09-20: this fails on 534 parses at
-    c8550b64 (960 over the full cross product), where INV1 fails on
-    none of them.
+    THE LINK-FREE CONTROL is its third exemption, added by the
+    second review and documented at the walk: a credential can land
+    in a name part for a reason older than #397 and untouched by it,
+    and deleting the link is how this asks whether the link is what
+    put it there.
+
+    Mutation-checked, re-measured 2026-09-20 over the grid as it now
+    stands: this fails on 639 parses at c8550b64, where INV1 fails
+    on none of them, on the same 639 where the both-sides gate tests
+    POSITION rather than class, and on 105 at dc3bdf9c -- the
+    trailing-title bound, the defect the two new suffix runs were
+    added to see. 0 here.
     """
     failures = _off_switch_findings()["INV1-strengthened"]
     assert not failures, (
@@ -1677,20 +2087,159 @@ def test_a_letter_that_did_not_join_repairs_as_the_off_switch_does() -> None:
     not a connective at all. What is left is the generation, and the
     rule for it is that it repairs as the generation it was read as.
 
-    Mutation-checked, re-measured 2026-09-20 on the trimmed grid:
-    this fails on 7,382 repairs at e540d4c5, where the
-    suffix-roled letter still took the connective conjunct, and on 0
-    here; removing the role test alone fails it on the same 7,382.
-    (11,341 for both over the full cross product.) The v1 arm runs on
-    the default-lexicon, default-policy rows, the only ones a
-    `Constants` can express, and 917 of those failures are its -- the
-    same 917 as before the trim, those rows never having been
-    duplicated.
+    Mutation-checked, re-measured 2026-09-20 over the grid as it
+    now stands: this fails on 7,860 repairs at e540d4c5, where the
+    suffix-roled letter still took the connective conjunct, on 8,054
+    with the generation conjunct removed outright, and on 0 here and
+    at dc3bdf9c -- dc3bdf9c PASSES it, which is the point of INV7b
+    below: the guard there was the suffix ROLE alone, which is too
+    wide, and too wide in a direction this invariant's subject
+    cannot reach. The v1 arm runs on the default-lexicon,
+    default-policy rows, the only ones a `Constants` can express,
+    and 1,017 of the e540d4c5 failures are its.
     """
     failures = _off_switch_findings()["INV7"]
     assert not failures, (
         f"{len(failures)} repair(s) moved for a letter that joined "
         f"nothing:\n" + "\n".join(failures[:10]))
+
+
+def test_a_one_case_name_reads_the_same_in_either_case() -> None:
+    """INV6b (#397 second review). decisions.md#P3 states in prose
+    that a name written wholly in lower case now reads as its
+    ALL-CAPS twin already did, and INV6 cannot hold it: the
+    `_initial_reading_moved` exemption there swallows the one-case
+    population, 9,296 of the 28,448 rows that carry a class letter,
+    which is exactly where the marked subset's riskiest movement
+    lives.
+
+    Every all-lower row's roles, token for token, against the roles
+    of the same text ALL-CAPS under the same parser. Costs no parse:
+    the grid writes both spellings, so the twin is another row of the
+    walk that just ran.
+
+    Scope and exemptions in `_a_case_reading_the_docs_already_own`
+    and at the `roles_by` write -- the marked subset, less two case
+    readings the library decided long before this rule.
+
+    Mutation-checked, 2026-09-20: marking the letter for ALL-CAPS
+    names only -- `and token.text.isupper()` on classify's fork --
+    fails this on 944 rows. Five unit tests in
+    tests/v2/pipeline/test_classify.py fall with it, so this is not
+    the only guard on that line and is not claimed to be; what it
+    adds is the SHAPE of the claim. Those five each assert one
+    spelling's reading against a stored expectation; this asserts
+    that the two spellings AGREE, over the 6,496 all-lower rows this
+    invariant's scope keeps -- where INV6 is exempt and where, until
+    the four rows this round added, no row of tests/v2/cases.py
+    stood. What it holds is
+    real: 'rovira, i', 'john smith i jr' and 'josep de carod i
+    rovira' each disagreed with its ALL-CAPS twin at the parent
+    46651750 and agrees with it here.
+    """
+    failures = _off_switch_findings()["INV6b"]
+    assert not failures, (
+        f"{len(failures)} one-case name(s) read differently from "
+        f"their ALL-CAPS twin:\n" + "\n".join(failures[:10]))
+
+
+# --- #397 second review: the SUFFIX-FIELD CONNECTIVE grid -----------
+# A fourth grid, and a tiny one -- 60 rows against the three above in
+# the tens of thousands -- because the shape it is about is one none
+# of them can generate. Every grid above puts its connective among
+# the name's own words or inside a clause; this one puts a connective
+# in the SUFFIX FIELD without its being generational vocabulary, and
+# there are exactly two ways to do that: a third comma part, whose
+# words assign reads as the suffix run whatever they are, and a field
+# spliced in after the parse.
+#
+# The oracle cannot be the off switch, and that is the reason for the
+# separate grid rather than a second reason for it: no `i` stands in
+# any of these names, so removing `i` from the connectives changes
+# nothing and the comparison would be vacuous -- the silence a
+# reachability probe exists to catch. The oracle is the RULE instead,
+# the RULE instead, rules.md#R4 read in its own words: a suffix-roled
+# connective that the suffix vocabulary does NOT hold was read as no
+# generation and keeps its lowercase.
+# The literal strings the released wheels give are pinned separately,
+# as unit tests in tests/v2/test_render.py.
+
+_SUFFIX_FIELD_CONNECTIVES = ("and", "y", "e", "und", "of", "&", "и")
+
+
+def _suffix_field_rows() -> list[tuple[str, str]]:
+    """(description, the connective word) for every way this grid
+    puts a connective into the suffix field."""
+    rows: list[tuple[str, str]] = []
+    for word in _SUFFIX_FIELD_CONNECTIVES:
+        rows += [(f"Smith, John, {word}", word),
+                 (f"Doe, Jane, {word} Jr.", word),
+                 (f"Smith, John, {word} III", word)]
+    return rows
+
+
+def test_a_connective_the_suffix_field_holds_keeps_its_lowercase() -> None:
+    """INV7b (#397 second review). R4's clause turns on the
+    GENERATION and not on the field: a connective the suffix field
+    merely holds, which the suffix vocabulary does not know, was read
+    as no generation, so case repair leaves it lowercase -- plain and
+    forced, on both surfaces.
+
+    INV7 cannot see this. Its oracle is the off switch and its
+    subject is the class letter, and no name here carries one: `and`,
+    `y`, `e`, `und`, `of`, `&` and `и` are connectives and nothing
+    else, which is the whole point -- they are what a role test alone
+    could not tell apart from the generation.
+
+    Mutation-checked, 2026-09-20: this fails on 36 of its 42 rows
+    at dc3bdf9c, where `role is not Role.SUFFIX` gated both
+    conjunction arms, and on 0 here; the six that pass there are the
+    Cyrillic 'и', which repairs to itself either way. 'Smith, John,
+    and' repaired forced to 'John Smith And' there, against 'John
+    Smith and' at 1.4.0, at 2.0.0 through 2.3.0 and at the parent
+    46651750. INV7 above cannot see any of this -- it passes at
+    dc3bdf9c.
+    """
+    parser = Parser()
+    failures = []
+    for text, word in _suffix_field_rows():
+        name = parser.parse(text)
+        if word not in {t.text for t in name.tokens_for(Role.SUFFIX)}:
+            failures.append(f"{text!r}: {word!r} is not in the suffix")
+            continue
+        for force in (False, True):
+            repaired = str(parser.capitalized(name, force=force))
+            v1 = _v1_capitalized(text, None, force)
+            for label, got in (("core", repaired), ("v1", v1)):
+                if word not in got.split():
+                    failures.append(
+                        f"[{label}] {text!r} force={force}: {got!r} does "
+                        f"not keep {word!r} lowercase")
+    assert not failures, (
+        f"{len(failures)} repair(s) capitalized a connective the "
+        f"suffix field merely holds:\n" + "\n".join(failures[:10]))
+
+
+def test_the_suffix_field_connective_grid_can_fail() -> None:
+    """The reachability probe, the shape every grid in this file
+    carries. Dated recorded control, measured 2026-09-20.
+
+    The one that matters here is the SECOND: a row whose connective
+    the parse did not actually put in the suffix field would pass
+    INV7b for the wrong reason, and the invariant records that as a
+    failure rather than skipping it, so this counts the rows that
+    reach the repair at all.
+    """
+    rows = _suffix_field_rows()
+    assert len(rows) == 21, len(rows)
+    parser = Parser()
+    reached = sum(
+        1 for text, word in rows
+        if word in {t.text for t in parser.parse(text).tokens_for(
+            Role.SUFFIX)})
+    assert reached == 21, reached
+    assert not _class_letters(Lexicon.default()) & {
+        w for _t, w in rows}, "a class letter would make INV7 the oracle"
 
 
 # --- #397 review: the MAIDEN-CLAUSE LINK grid, and its two ----------

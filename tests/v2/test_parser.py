@@ -1848,3 +1848,35 @@ def test_a_phrase_marker_outranks_the_word_it_starts_with() -> None:
     assert configured.parse("Jane Smith geb von Braun").maiden == "Braun"
     assert configured.parse("Jane Smith geb Braun").maiden == "Braun"
     assert parse("Jane Smith geb von Braun").maiden == "von Braun"
+
+
+def test_the_catalan_recipe_unmarks_the_link_for_one_case_names() -> None:
+    """rules.md#P3's per-caller answer for Catalan and Polish data
+    (#397 second review), pinned rather than described.
+
+    `i` ships in the MARKED subset, so a name written wholly in one
+    case reads it as an initial and reports the fork. A caller whose
+    data is Catalan knows better, and the knob the rule names is
+    `remove(conjunctions_ambiguous={"i"})` -- which leaves the letter
+    a connective and takes the one-case fork out of its way. The
+    prose said so; nothing ran it.
+    """
+    catalan = Parser(
+        lexicon=Lexicon.default().remove(conjunctions_ambiguous={"i"}))
+    for text in ("JOSEP CAROD I ROVIRA", "josep carod i rovira"):
+        name = catalan.parse(text)
+        assert name.family == text.split(" ", 1)[1]
+        assert name.ambiguities == ()
+    # the three things the recipe does NOT change, and they are what
+    # make it safe to hand a Catalan user. The link with nothing on
+    # its right is still the generation it also spells ...
+    kept = catalan.parse("JOHN QUINCY SMITH I")
+    assert kept.suffix == "I"
+    assert kept.family == "SMITH"
+    # ... P3's three-word carve-out still leaves a lone letter a name
+    # word ...
+    assert catalan.parse("JOHN I SMITH").middle == "I"
+    # ... and no report is emitted anywhere, the fork the recipe
+    # removes being the only one these names raised
+    assert catalan.parse("JOHN I SMITH").ambiguities == ()
+    assert catalan.parse("JOHN QUINCY SMITH I").ambiguities == ()

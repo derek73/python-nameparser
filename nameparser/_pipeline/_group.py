@@ -48,7 +48,7 @@ from nameparser._pipeline._pieces import (
     credential_at_the_given_slot,
     is_leading_title, is_suffix_piece, is_title_piece,
     leading_titles, peel_trailing, peel_walk, tail_reading,
-    trailing_start,
+    trailing_start, trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
@@ -702,7 +702,15 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 
 # rules.md#P3: "a word the rest of the parse reads as a name word
 # rather than as a generation, a credential or an honorific, looked
-# for past any run of connectives standing between" (#397)
+# for past any run of connectives standing between. A connective with
+# nothing to its right is connecting nothing, and a word of that
+# vocabulary ending a name, or standing before the credential a name
+# ends with, is the generation it also spells" (#397) -- the WHOLE
+# clause, its second sentence included, because that sentence is what
+# this predicate answering `False` means. Reading it as a generation
+# is the CALLER's half: `_group_segment`'s `frozen` set is where a
+# connective this refuses is placed as the generation, and
+# `_link_joins_inside_the_clause` is the maiden walk's.
 # `Sequence[Sequence[int]]` rather than `Sequence[Piece]`, widened
 # when the maiden walk became a second caller: this reads a piece and
 # never edits one, and `_maiden_take` holds its pieces at the wider
@@ -923,10 +931,23 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # of it" (#397, restated by its review). `frozen` holds the
         # TOKEN index of every such connective that has no name word
         # on one side or the other. It is joining nothing, so it is
-        # the generation it also spells: it may not merge into a run,
-        # it may not join, and it counts toward the carve-out total
-        # the way the generation counted -- which is not at all, a
-        # suffix piece being no rootname.
+        # the generation it also spells: no join of its own reaches
+        # it, it may not merge into a run, and it counts toward the
+        # carve-out total the way the generation counted -- which is
+        # not at all, a suffix piece being no rootname.
+        #
+        # "No join of its own" is the whole claim, and a NEIGHBOUR's
+        # join can still absorb it: the two loops below skip a frozen
+        # piece as the join's SUBJECT and nothing keeps it out of the
+        # span another connective's join takes. 'Josep Carod Rovira
+        # Puig y i' freezes the trailing 'i' -- nothing stands on its
+        # right -- and the 'y' beside it joins across it all the same,
+        # for family 'Puig y i', which is the parent's reading of the
+        # same name and 'y i' is what the parent read there too.
+        # Pinned by test_a_frozen_link_is_still_absorbed_by_a_
+        # neighbours_join. Freezing it is not a claim that the word
+        # cannot move; it is a claim about which joins this loop
+        # licenses.
         #
         # Asked HERE, of the pieces as classify left them, and of the
         # NEIGHBOURS' class rather than of the connective's position.
@@ -942,21 +963,61 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # the chain's trailing run is a length from the end: the
         # merges below move piece indices and cannot move this one.
         #
-        # Nothing but a one-letter connective of the suffix vocabulary
-        # reaches the body, so a name that has none pays tag lookups
-        # and no call at all.
+        # Nothing but a connective of the suffix vocabulary reaches
+        # the body, so a name that has none pays tag lookups and no
+        # call at all.
+        #
+        # NO LENGTH TEST, and that is the rule's own scope rather than
+        # an omission: the clause quoted above names a CLASS -- "a
+        # connective that is also generational vocabulary" -- and says
+        # nothing about how the word is spelled. A `len(tok.text) != 1`
+        # stood here and narrowed it to one-letter connectives,
+        # untested and undocumented, and it was caller-reachable: under
+        # `Lexicon.default().add(conjunctions={"og"}, suffix_words=
+        # {"og"})`, 'John Quincy Smith og' read family 'Smith og' with
+        # the test and reads family 'Smith' plus suffix 'og' without it
+        # -- which is the answer the rule states (#397 second review).
+        # Dropping it is byte-identical over every oracle in use --
+        # fields, reports, `initials()`, `capitalized()` plain and
+        # forced, and every token's role -- across 359,053 parses
+        # measured 2026-09-20: the 351,400-parse review grid under
+        # eight lexicon/policy/locale configurations, the 2,175-parse
+        # sweep of tests/v2/cases.py under three orders, and the
+        # 5,478-parse sweep of the differential corpora under six.
+        # It has to be: `i` is the ONLY member of the class in the
+        # default vocabulary and in every locale pack, and it is one
+        # letter. Pinned by test_a_multi_letter_link_of_the_suffix_
+        # vocabulary_joins_by_the_same_rule.
+        #
+        # The three-word carve-out below stays single-letter, because
+        # THAT is what its own sentence says ("a single-letter
+        # connective in a three-word name").
         frozen: set[int] = set()
         lo = hi = -1
         for k, piece in enumerate(pieces):
             tok = tokens[piece[0]]
-            if (len(piece) != 1 or len(tok.text) != 1
+            if (len(piece) != 1
                     or "conjunction" not in tok.tags
                     or "vocab:suffix" not in tok.tags):
                 continue
             if hi < 0:
                 lo = leading_titles(pieces, ptags, tokens)
-                hi = trailing_start(lo, pieces, ptags, tokens,
-                                    one_case=one_case)
+                # H5's reading and not the peel over the pieces as
+                # WRITTEN: a title standing behind the suffix run
+                # hides it from `trailing_start`, which then answers
+                # `len(pieces)` and hands this loop a credential as
+                # the name word on the link's right. 'John Quincy
+                # Adams i MA Prof.' joined to family 'Adams i MA'
+                # with no report at all, where 'John Quincy Adams i
+                # MA' -- the same name, one title shorter -- reads
+                # family 'Adams', suffix 'i MA' and reports the
+                # acronym (#397 second review). Asked once per
+                # segment and only where such a connective was found,
+                # so the cost is the chain's own and no ordinary name
+                # pays it.
+                hi = trailing_start_past_titles(lo, pieces, ptags,
+                                                tokens,
+                                                one_case=one_case)
             if not (_name_word_beside(k, -1, lo, hi, pieces, ptags, tokens)
                     and _name_word_beside(k, 1, lo, hi, pieces, ptags,
                                           tokens)):
