@@ -631,8 +631,8 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 
 
 # rules.md#P3: "a word the rest of the parse reads as a name word
-# rather than as a credential or an honorific, looked for past any
-# run of connectives standing between" (#397)
+# rather than as a generation, a credential or an honorific, looked
+# for past any run of connectives standing between" (#397)
 def _name_word_beside(k: int, step: int, lo: int, hi: int,
                       pieces: Sequence[Piece], ptags: Sequence[Set[str]],
                       tokens: Sequence[WorkToken]) -> bool:

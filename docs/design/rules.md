@@ -528,9 +528,9 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     connective's join instead.
     A connective that is also generational vocabulary joins only where
     a name word stands on each side of it — a word the rest of the
-    parse reads as a name word rather than as a credential or an
-    honorific, looked for past any run of connectives standing
-    between. A connective with nothing to its right is connecting
+    parse reads as a name word rather than as a generation, a
+    credential or an honorific, looked for past any run of
+    connectives standing between. A connective with nothing to its right is connecting
     nothing, and a word of that vocabulary ending a name, or standing
     before the credential a name ends with, is the generation it also
     spells.
@@ -635,7 +635,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4, S2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -1103,7 +1103,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P5, P6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P3, P5, P6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -2125,12 +2125,16 @@ R4. Rationale: case repair is a display concern, applied only on
     convention (McDonald), not only ordinary word-by-word casing, and
     a part whose every word is particle vocabulary is repaired as
     ordinary name words, since none of them is doing a particle's
-    work there (R2). A CONJUNCTION keeps its lowercase wherever it
-    stands, including inside a part whose other words the unjoined
-    mark has turned into ordinary name words. That is this rule's own
-    reading and not a borrowing from R3: a connective that initials
-    because it joins nothing is still not written the way a name is
-    written. A name already written the way repair would
+    work there (R2). A CONNECTIVE the parse placed among the name
+    words keeps its lowercase wherever it stands there, including
+    inside a part whose other words the unjoined mark has turned into
+    ordinary name words; one the parse read as the generation it also
+    spells is not a connective of this name at all, and is repaired
+    as the generation it was read as. That is this rule's own reading
+    and not a borrowing from R3: a connective that initials because
+    it joins nothing is still not written the way a name is written,
+    while a generation is written the way a generation is written.
+    A name already written the way repair would
     write it comes back unchanged, measured by repair's own
     conventions rather than by the bearer's. A spelling written in a
     single case is repaired even where its bearer meant it, because
@@ -2141,6 +2145,8 @@ R4. Rationale: case repair is a display concern, applied only on
       "ANH DO"                    →  capitalized="Anh Do"
       "anh van do"                →  capitalized="Anh Van Do"
       "john smith phd"            →  capitalized="John Smith Ph.D."
+      "John Quincy Smith i"       →  capitalized_forced="John Quincy Smith I"
+      "Carod i"                   →  capitalized_forced="Carod I"
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
     Accepted: the clause reaches a part the parser read. A field
     spliced in as raw text after the parse carries no reading of its

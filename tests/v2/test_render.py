@@ -253,6 +253,44 @@ def test_repair_keeps_a_lone_connective_lowercase_where_it_initials(
     assert parse("juan y").capitalized(force=True).family == "y"
 
 
+def test_repair_capitalizes_a_generation_the_connective_also_spells(
+) -> None:
+    """rules.md#R4's other half (#397 review), and the row that made
+    the sentence need two clauses.
+
+    A word can be the connective and the generation at once -- 'i' is
+    the Catalan link and the roman numeral -- and where the parse read
+    the GENERATION the token still carries the `conjunction` tag
+    classify gave it. Repair reads the ROLE the parse decided, not the
+    tag alone, so a suffix-roled letter is repaired as the suffix it
+    was read as. Without that test these gave 'John Quincy Smith i'
+    and 'Carod i', where every release through 2.3 gave the capital.
+
+    Both surfaces, because the v1 facade repairs through this same
+    helper and a fix on one of them would be a split.
+    """
+    assert parse("John Quincy Smith i").suffix == "i"
+    assert str(parse("John Quincy Smith i").capitalized(
+        force=True)) == "John Quincy Smith I"
+    assert str(parse("Carod i").capitalized(force=True)) == "Carod I"
+    assert str(parse("Josep Lluis Carod i III").capitalized(
+        force=True)) == "Josep Lluis Carod I III"
+    v1 = HumanName("John Quincy Smith i")
+    v1.capitalize(force=True)
+    assert str(v1) == "John Quincy Smith I"
+    v1_two = HumanName("Carod i")
+    v1_two.capitalize(force=True)
+    assert str(v1_two) == "Carod I"
+    # the contrast that keeps the role test honest: the SAME letter
+    # in a NAME part is a connective and keeps its lowercase, which
+    # is the answer 'y' has always had there
+    assert parse("Josep i Rovira").middle == "i"
+    assert str(parse("Josep i Rovira").capitalized(
+        force=True)) == "Josep i Rovira"
+    assert str(parse("Josep y Rovira").capitalized(
+        force=True)) == "Josep y Rovira"
+
+
 def test_initials_order_folded_words_first_like_the_family_field() -> None:
     """#408: the view and the field must read one parse the same way.
 

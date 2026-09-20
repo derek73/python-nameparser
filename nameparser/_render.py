@@ -219,11 +219,27 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # repaired as ordinary name words, since none of them is doing a
     # particle's work there" -- UNJOINED_TAG is that mark (#407).
     # Only the PARTICLE conjunct is gated on it, and that is the rule
-    # rather than an omission -- rules.md#R4: "A CONJUNCTION keeps its
-    # lowercase wherever it stands, including inside a part whose
-    # other words the unjoined mark has turned into ordinary name
-    # words" -- so a conjunction keeps conjunction treatment even
-    # inside a part the mark has turned into ordinary name words.
+    # rather than an omission -- rules.md#R4: "A CONNECTIVE the parse
+    # placed among the name words keeps its lowercase wherever it
+    # stands there, including inside a part whose other words the
+    # unjoined mark has turned into ordinary name words" -- so a
+    # conjunction keeps conjunction treatment even inside a part the
+    # mark has turned into ordinary name words.
+    # The ROLE test is the other half of that sentence, and it is why
+    # a single comparison stands ahead of both conjunction arms: a
+    # word this vocabulary holds can ALSO be the generation it spells
+    # ('i' is the Catalan link and the roman numeral), and where the
+    # parse read the generation the token still carries the
+    # `conjunction` tag classify gave it -- so without the test,
+    # `parse("John Quincy Smith i").capitalized(force=True)` gave
+    # 'John Quincy Smith i' where every release through 2.3 gave
+    # 'John Quincy Smith I' (#397 review). A suffix-roled token is
+    # repaired as the suffix it was read as, which is the rest of
+    # R4's sentence: "one the parse read as the generation it also
+    # spells is not a connective of this name at all". The test is
+    # the ROLE and not the suffix VOCABULARY, because the role is
+    # what the parse decided and the vocabulary is only what the word
+    # could have been (mechanisms.md#RENDER-HONORS-THE-PARSE).
     # No SHIPPED name witnesses the difference: `particles` and
     # `conjunctions` are disjoint in the default vocabulary and in
     # every locale pack, so no shipped conjunction can sit in an
@@ -280,9 +296,10 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # the same words parsed gave 'E-F' (#463 review).
     if ((normalized in lex.particles and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags)
-            or "conjunction" in tags
-            or (UNCLASSIFIED_TAG in tags
-                and _reads_as_conjunction(word, lex))):
+            or (role is not Role.SUFFIX
+                and ("conjunction" in tags
+                     or (UNCLASSIFIED_TAG in tags
+                         and _reads_as_conjunction(word, lex))))):
         return word.lower()
     # v1 cap_word tries the edge-stripped form, then the period-free
     # form ('Ph.D.' -> 'ph.d' -> 'phd' hits the exceptions map)

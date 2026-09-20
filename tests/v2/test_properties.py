@@ -18,8 +18,10 @@ from hypothesis import strategies as st
 
 from nameparser import (
     DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
-    GIVEN_FIRST, Lexicon, Parser, PatronymicRule, Policy, Script, parse,
+    GIVEN_FIRST, HumanName, Lexicon, Parser, PatronymicRule, Policy,
+    Script, parse,
 )
+from nameparser.config import Constants
 from nameparser._lexicon import _VOCAB_FIELDS
 from nameparser._pipeline import run
 from nameparser._pipeline._state import ParseState
@@ -1468,3 +1470,96 @@ def test_a_trailing_credential_never_joins_into_a_name_part() -> None:
     assert not failures, (
         f"{len(failures)} credential(s) joined into a name part:\n"
         + "\n".join(failures[:10]))
+
+
+def _placed_as_a_connective(on: ParsedName,
+                            letters: frozenset[str]) -> bool:
+    """Whether the parse put a class letter among the NAME words as a
+    connective -- rules.md#R4's own reading, and the one thing an
+    off-switch comparison of case repair cannot hold fixed: a
+    connective keeps its lowercase there and the off-switch parse,
+    where the letter is no connective at all, capitalizes it. Asked
+    of the token's WORDS rather than of its whole text, because a
+    merged piece renders word by word and repair asks per word."""
+    for tok in on.tokens:
+        if tok.role is Role.SUFFIX or "conjunction" not in tok.tags:
+            continue
+        if letters & {w.strip(".,").lower() for w in tok.text.split()}:
+            return True
+    return False
+
+
+def _v1_off_switch(letters: frozenset[str]) -> Constants:
+    constants = Constants()
+    for letter in letters:
+        constants.conjunctions.remove(letter)
+    return constants
+
+
+def _v1_capitalized(text: str, constants: Constants | None,
+                    force: bool) -> str:
+    name = HumanName(text) if constants is None else HumanName(text,
+                                                               constants)
+    name.capitalize(force=force)
+    return str(name)
+
+
+def test_a_letter_that_did_not_join_repairs_as_the_off_switch_does() -> None:
+    """INV7 (#397 review). Case repair is the third view, and the one
+    the differential cannot see at all, so it gets the same treatment
+    INV6 gives the fields: turning the class letter OFF is the
+    parent's reading, so a letter that became no connective of this
+    name must leave every repair where the parent left it, plain and
+    forced, on both surfaces.
+
+    Three exemptions. The first two are INV6's -- a name whose FIELDS
+    moved is a name the join changed, and a letter the two parses
+    disagree about being an INITIAL is the marked-subset clause. The
+    third is rules.md#R4's own sentence: a connective the parse
+    placed among the name words keeps its lowercase there, which the
+    off-switch parse cannot agree with, since for it the letter is
+    not a connective at all. What is left is the generation, and the
+    rule for it is that it repairs as the generation it was read as.
+
+    Mutation-checked, 2026-09-21: this fails on 11,341 repairs at
+    e540d4c5, where the suffix-roled letter still took the connective
+    conjunct, and on 0 here; removing the role test alone fails it on
+    the same 11,341. The v1 arm runs on the default-lexicon,
+    default-policy rows, the only ones a `Constants` can express, and
+    917 of those failures are its.
+    """
+    failures = []
+    v1_off: dict[frozenset[str], Constants] = {}
+    for text, parser, label in _OFF_SWITCH_GRID:
+        letters = _present(text, _class_letters(parser.lexicon))
+        if not letters:
+            continue
+        on = parser.parse(text)
+        off_parser = _off_switch(parser, letters)
+        off = off_parser.parse(text)
+        if on.as_dict() != off.as_dict():
+            continue
+        if _initial_reading_moved(on, off, letters):
+            continue
+        if _placed_as_a_connective(on, letters):
+            continue
+        for force in (False, True):
+            here = str(parser.capitalized(on, force=force))
+            there = str(off_parser.capitalized(off, force=force))
+            if here != there:
+                failures.append(
+                    f"[{label}] {text!r} force={force}: {here!r} != "
+                    f"off-switch {there!r}")
+            if label != "default/default":
+                continue
+            if letters not in v1_off:
+                v1_off[letters] = _v1_off_switch(letters)
+            v1_here = _v1_capitalized(text, None, force)
+            v1_there = _v1_capitalized(text, v1_off[letters], force)
+            if v1_here != v1_there:
+                failures.append(
+                    f"[v1] {text!r} force={force}: {v1_here!r} != "
+                    f"off-switch {v1_there!r}")
+    assert not failures, (
+        f"{len(failures)} repair(s) moved for a letter that joined "
+        f"nothing:\n" + "\n".join(failures[:10]))
