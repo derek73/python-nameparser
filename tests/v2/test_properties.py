@@ -7,6 +7,7 @@ keeps runs reproducible on shared CI runners -- this layer guards
 against regressions; exploratory fuzzing happened during review.
 """
 import dataclasses
+import functools
 import hashlib
 import itertools
 import re
@@ -1002,6 +1003,96 @@ def test_bad_policy_field_fails_cleanly(field: str, value: object) -> None:
 # mixed/ALL-CAPS/lower, class members supplied by a CUSTOM lexicon
 # (a second single letter that is also generational vocabulary, and a
 # connective that is also particle vocabulary), and four policies.
+#
+# ONE PARSE, MANY CHECKS (2026-09-20). The four invariants below ask
+# four questions of the SAME parse, so the grid is walked ONCE, in
+# `_connective_findings`, and each test reads its own answers out of
+# that walk. Four tests each walking the grid for themselves is what
+# took this module from 11s to 115s and CI's build jobs from about 5
+# minutes to 17-25 (every parse costs several times more under
+# coverage tracing, which is what CI runs). A new invariant over this
+# grid joins the walk rather than opening a fifth.
+
+
+#: A grid's configuration variants: (label, value, the features of a
+#: text that reach it). See `_rows`.
+_Variants = tuple[tuple[str, Lexicon, frozenset[str]], ...]
+
+#: The policies both grids below run, each with the feature a text
+#: must hold for the policy to be distinguishable at all -- see
+#: `_rows`.
+_GRID_POLICIES: tuple[tuple[str, Policy, frozenset[str]], ...] = (
+    ("default", Policy(), frozenset()),
+    ("family-first", Policy(name_order=FAMILY_FIRST), frozenset()),
+    ("given-last", Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+     frozenset()),
+    # lenient_comma_suffixes decides what a COMMA hands to the suffix
+    # run, and a name without one has no such hand-off to decide
+    ("strict-comma", Policy(lenient_comma_suffixes=False),
+     frozenset({","})),
+)
+
+
+def _reaching(text: str) -> frozenset[str]:
+    """What of a text a configuration variant could read at all: its
+    words, folded the way the vocabulary matches them, plus ',' when
+    it carries one."""
+    out = {w.strip(".,").lower() for w in text.split()}
+    if "," in text:
+        out.add(",")
+    return frozenset(out)
+
+
+def _rows(texts: list[str],
+          lexicons: _Variants) -> list[tuple[str, Parser, str]]:
+    """Every text against the parsers that can read it DIFFERENTLY.
+
+    A variant that ADDS vocabulary changes no parse of a name not
+    containing the added word, and `lenient_comma_suffixes` decides
+    nothing in a name with no comma, so most of a full cross product
+    is one configuration re-deriving another's answer. Each variant
+    declares the words that reach it and is paired with the texts
+    holding them.
+
+    A SHAPE trim and not a sample -- the TEXTS are untouched, and so
+    is every shape class among them; what goes is duplicate pairings.
+    Measured 2026-09-20 over the full cross product of both grids:
+    177,980 collapsed rows, 0 of them differing from the row they
+    collapse onto in fields, token tags and spans, `initials()` on
+    every group, the four derived views, `capitalized()` plain and
+    forced, or the reports. Reproduce with the signature comparison
+    in the commit that introduced this (`test(#397/#461): the
+    invariant tests share one parsed grid`).
+
+    Self-maintaining, which a hand-picked subset would not be: give a
+    generator below a 'v' word and the conj+v rows come back on their
+    own. That is the one to know about -- no text of the connective
+    grid holds a standalone 'v', so `conj+v` earns no row there and
+    earns them in the off-switch grid, whose suffixes include 'V'.
+    """
+    parsers = [(f"{ln}/{pn}", Parser(lexicon=lex, policy=pol),
+                lex_need | pol_need)
+               for ln, lex, lex_need in lexicons
+               for pn, pol, pol_need in _GRID_POLICIES]
+    out: list[tuple[str, Parser, str]] = []
+    for text in texts:
+        reach = _reaching(text)
+        out += [(text, parser, label)
+                for label, parser, need in parsers if need <= reach]
+    return out
+
+
+@functools.cache
+def _class_letters(lexicon: Lexicon) -> frozenset[str]:
+    """The class rules.md#P3's both-sides condition is about: a
+    one-letter connective that is ALSO generational vocabulary.
+
+    Cached on the lexicon -- a frozen, hashable value -- because both
+    grids ask this of every row and there are five lexicons between
+    them.
+    """
+    return frozenset(w for w in lexicon.conjunctions
+                     if len(w) == 1 and w in lexicon.suffix_words)
 
 
 def _connective_grid() -> list[tuple[str, Parser, str]]:
@@ -1014,13 +1105,12 @@ def _connective_grid() -> list[tuple[str, Parser, str]]:
         [], ["Rovira"], ["de", "Rovira"], ["Rovira", "Puig"])
     suffixes: tuple[list[str], ...] = (
         [], ["III"], ["Jr."], ["I"], ["MA"])
-    lexicons = (("default", Lexicon.default()),
-                ("conj+v", Lexicon.default().add(conjunctions={"v"})),
-                ("part+y", Lexicon.default().add(particles={"y"})))
-    policies = (("default", Policy()),
-                ("family-first", Policy(name_order=FAMILY_FIRST)),
-                ("given-last", Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
-                ("strict-comma", Policy(lenient_comma_suffixes=False)))
+    lexicons: _Variants = (
+        ("default", Lexicon.default(), frozenset()),
+        ("conj+v", Lexicon.default().add(conjunctions={"v"}),
+         frozenset({"v"})),
+        ("part+y", Lexicon.default().add(particles={"y"}),
+         frozenset({"y"})))
     texts: list[str] = []
     seen: set[str] = set()
     for head, mid, conn, tail, suffix, comma in itertools.product(
@@ -1036,9 +1126,7 @@ def _connective_grid() -> list[tuple[str, Parser, str]]:
             if written not in seen:
                 seen.add(written)
                 texts.append(written)
-    parsers = [(f"{ln}/{pn}", Parser(lexicon=lex, policy=pol))
-               for ln, lex in lexicons for pn, pol in policies]
-    return [(t, p, label) for t in texts for label, p in parsers]
+    return _rows(texts, lexicons)
 
 
 _CONNECTIVE_GRID = _connective_grid()
@@ -1072,6 +1160,79 @@ def _predicted_initials(part: tuple[Token, ...], role: Role) -> list[str]:
     return out
 
 
+@functools.cache
+def _connective_findings() -> dict[str, list[str]]:
+    """One walk of the connective grid; four invariants' answers.
+
+    Each key below is one test's failure list, built with the parse
+    in hand and in grid order, so a test reads exactly what it would
+    have found walking the grid itself -- same rows, same order, same
+    message. What the walk does NOT do is decide anything: every
+    predicate stays where it was, spelled in the terms its own rule
+    is stated in, and this function only asks them all at once.
+    """
+    out: dict[str, list[str]] = {k: [] for k in
+                                 ("INV1", "INV2", "INV3/4", "INV5")}
+    for text, parser, label in _CONNECTIVE_GRID:
+        letters = _class_letters(parser.lexicon)
+        name = parser.parse(text)
+        for role in _NAME_ROLES:
+            part = name.tokens_for(role)
+            # hoisted out of the INV3/INV4 comprehensions below, where
+            # it used to be recomputed once per token of the part
+            predicted = _predicted_initials(part, role)
+            if len(part) >= 2:
+                for i, tok in enumerate(part):
+                    if ("conjunction" not in tok.tags
+                            or len(tok.text) != 1
+                            or tok.text.lower() not in letters):
+                        continue
+                    left = any("conjunction" not in t.tags
+                               for t in part[:i])
+                    right = any("conjunction" not in t.tags
+                                for t in part[i + 1:])
+                    if not (left and right):
+                        out["INV1"].append(
+                            f"[{label}] {text!r}: {role.value} "
+                            f"{tok.text!r}")
+            for tok in part:
+                if "conjunction" not in tok.tags:
+                    continue
+                joinable = _has_something_to_join(tok, part)
+                if joinable == _readmitted(tok):
+                    out["INV2"].append(
+                        f"[{label}] {text!r}: {role.value} {tok.text!r} "
+                        f"joinable={joinable} "
+                        f"marked={_readmitted(tok)}")
+            got = name.initials(
+                f"{{{role.value}}}").replace(".", "").split()
+            if got != predicted:
+                out["INV5"].append(
+                    f"[{label}] {text!r}: {role.value} {got!r} != "
+                    f"predicted {predicted!r}")
+            if role is not Role.FAMILY:
+                continue
+            base = name.family_base.split()
+            contributing = [t for t in part
+                            if t.text[0] in predicted
+                            and (not ("conjunction" in t.tags
+                                      or "particle" in t.tags)
+                                 or _readmitted(t))]
+            for tok in contributing:
+                if tok.text not in base:
+                    out["INV3/4"].append(
+                        f"[{label}] {text!r}: INV3 {tok.text!r} initials "
+                        f"but is not in base {base!r}")
+            for tok in part:
+                if (tok.text in base and tok not in contributing
+                        and "conjunction" not in tok.tags):
+                    out["INV3/4"].append(
+                        f"[{label}] {text!r}: INV4 {tok.text!r} is a base "
+                        f"word, contributes no initial, and is no "
+                        f"connective")
+    return out
+
+
 def test_the_connective_grid_can_fail() -> None:
     """The reachability probe every grid in this file carries.
 
@@ -1079,13 +1240,21 @@ def test_the_connective_grid_can_fail() -> None:
     vacuously, and a comparison over a population of zero is the same
     silence as a clean run. These three counts are a dated recorded
     control, measured 2026-09-20 on the shipped tree.
+
+    The row count fell from 170,100 to 55,800 when `_rows` stopped
+    pairing a text with configurations that cannot read it; the TEXT
+    count did not move, and that is the number to watch here, because
+    it is the one that says a shape was dropped. 1,580 of the first
+    2,000 rows join, against 1,280 of the old grid's first 2,000 --
+    the same texts, reached sooner, the old slice having held twelve
+    rows per text where this one holds three or four.
     """
-    assert len(_CONNECTIVE_GRID) == 170100, len(_CONNECTIVE_GRID)
+    assert len(_CONNECTIVE_GRID) == 55800, len(_CONNECTIVE_GRID)
     assert len({t for t, _, _ in _CONNECTIVE_GRID}) == 14175
     joined = sum(1 for text, parser, _ in _CONNECTIVE_GRID[:2000]
                  if any("conjunction" in tok.tags
                         for tok in parser.parse(text).tokens))
-    assert joined > 500, joined
+    assert joined > 1000, joined
 
 
 def test_a_generational_connective_joins_only_with_both_sides() -> None:
@@ -1093,30 +1262,17 @@ def test_a_generational_connective_joins_only_with_both_sides() -> None:
     generational vocabulary: if it shares its role part with any other
     word, a non-connective word stands before it AND after it.
 
-    Mutation-checked, 2026-09-20: dropping the position test fails
-    this on 1575 parses, dropping the whole both-sides condition on
-    504, and dropping the rootname count arm on 816. The CLASS test
+    Mutation-checked, 2026-09-20, re-measured on the trimmed grid:
+    dropping the whole both-sides condition fails this on 162 parses,
+    where the full cross product gave 504. The gate's other two
+    failure modes stay invisible here and are INV6's and INV1-
+    strengthened's to catch -- testing POSITION instead of class, and
+    dropping the count's frozen exclusion, each leave this invariant
+    green on every row, which is why those two exist. The CLASS test
     is NOT covered here and has its own rows -- see
     tests/v2/pipeline/test_group.py.
     """
-    failures = []
-    for text, parser, label in _CONNECTIVE_GRID:
-        letters = {w for w in parser.lexicon.conjunctions
-                   if len(w) == 1 and w in parser.lexicon.suffix_words}
-        name = parser.parse(text)
-        for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
-            part = name.tokens_for(role)
-            if len(part) < 2:
-                continue
-            for i, tok in enumerate(part):
-                if ("conjunction" not in tok.tags or len(tok.text) != 1
-                        or tok.text.lower() not in letters):
-                    continue
-                left = any("conjunction" not in t.tags for t in part[:i])
-                right = any("conjunction" not in t.tags for t in part[i + 1:])
-                if not (left and right):
-                    failures.append(
-                        f"[{label}] {text!r}: {role.value} {tok.text!r}")
+    failures = _connective_findings()["INV1"]
     assert not failures, (
         f"{len(failures)} parse(s) joined a generational connective "
         f"without a name word on each side:\n" + "\n".join(failures[:10]))
@@ -1128,23 +1284,15 @@ def test_the_mark_is_exactly_the_parts_with_nothing_to_join() -> None:
     working particle.
 
     Stated over the PAIR of marks deliberately: keyed on the new mark
-    alone it fails 366 times under `add(particles={"y"})`, where the
-    part is all-particle and R2's OLD mark does the readmitting.
-    Mutation-checked: dropping the new mark fails this on 14,066.
+    alone it fails 272 times, every one of them under
+    `add(particles={"y"})`, where the part is all-particle and R2's
+    OLD mark does the readmitting. Mutation-checked, re-measured
+    2026-09-20 on the trimmed grid: neutering the walk's
+    lone-connective arm, so the new mark is never written, fails this
+    on 4,639 rows -- 14,078 of the full cross product, which is what
+    the trim costs a count and not what it costs detection.
     """
-    failures = []
-    for text, parser, label in _CONNECTIVE_GRID:
-        name = parser.parse(text)
-        for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
-            part = name.tokens_for(role)
-            for tok in part:
-                if "conjunction" not in tok.tags:
-                    continue
-                if _has_something_to_join(tok, part) == _readmitted(tok):
-                    failures.append(
-                        f"[{label}] {text!r}: {role.value} {tok.text!r} "
-                        f"joinable={_has_something_to_join(tok, part)} "
-                        f"marked={_readmitted(tok)}")
+    failures = _connective_findings()["INV2"]
     assert not failures, (
         f"{len(failures)} connective token(s) disagree with the "
         f"criterion:\n" + "\n".join(failures[:10]))
@@ -1159,32 +1307,13 @@ def test_initials_take_only_base_words_and_drop_only_joiners() -> None:
     one parse cannot come apart again, which is the defect #461 was
     filed about.
 
-    Mutation-checked: swapping the two branches of the mark walk fails
-    this on 188 parses (`Carod y` under `add(particles={"y"})`, whose
-    base is empty while its `y` initials).
+    Mutation-checked, re-measured 2026-09-20 on the trimmed grid:
+    swapping the two branches of the mark walk fails this on 94
+    parses (188 over the full cross product) -- `Carod y` under
+    `add(particles={"y"})`, whose base is empty while its `y`
+    initials.
     """
-    failures = []
-    for text, parser, label in _CONNECTIVE_GRID:
-        name = parser.parse(text)
-        family = name.tokens_for(Role.FAMILY)
-        base = name.family_base.split()
-        contributing = [t for t in family
-                        if t.text[0] in _predicted_initials(family,
-                                                            Role.FAMILY)
-                        and (not ("conjunction" in t.tags
-                                  or "particle" in t.tags)
-                             or _readmitted(t))]
-        for tok in contributing:
-            if tok.text not in base:
-                failures.append(
-                    f"[{label}] {text!r}: INV3 {tok.text!r} initials but "
-                    f"is not in base {base!r}")
-        for tok in family:
-            if (tok.text in base and tok not in contributing
-                    and "conjunction" not in tok.tags):
-                failures.append(
-                    f"[{label}] {text!r}: INV4 {tok.text!r} is a base "
-                    f"word, contributes no initial, and is no connective")
+    failures = _connective_findings()["INV3/4"]
     assert not failures, (
         f"{len(failures)} disagreement(s) between initials() and "
         f"family_base:\n" + "\n".join(failures[:10]))
@@ -1196,21 +1325,13 @@ def test_initials_emit_exactly_the_predicted_contributors() -> None:
 
     The output-level statement of the same rule, and the one that
     catches a view reading the marks correctly and then rendering
-    something else. Mutation-checked: restoring the given group's old
-    blanket exemption fails this on 27,343 parses, and dropping the
-    new mark from the readmitting set on 14,066.
+    something else. Mutation-checked, re-measured 2026-09-20 on the
+    trimmed grid: restoring the given group's old blanket exemption
+    (`_SKIP_TAGS_GIVEN` back to the empty set) fails this on 9,308
+    parses, and dropping the new mark from the readmitting set on
+    4,639 -- 27,103 and 14,078 over the full cross product.
     """
-    failures = []
-    for text, parser, label in _CONNECTIVE_GRID:
-        name = parser.parse(text)
-        for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
-            predicted = _predicted_initials(name.tokens_for(role), role)
-            got = name.initials(
-                f"{{{role.value}}}").replace(".", "").split()
-            if got != predicted:
-                failures.append(
-                    f"[{label}] {text!r}: {role.value} {got!r} != "
-                    f"predicted {predicted!r}")
+    failures = _connective_findings()["INV5"]
     assert not failures, (
         f"{len(failures)} group(s) emitted something other than the "
         f"criterion's contributors:\n" + "\n".join(failures[:10]))
@@ -1227,6 +1348,10 @@ def test_initials_emit_exactly_the_predicted_contributors() -> None:
 # peel takes ('V', 'i', beside the 'III'/'Jr.'/'I'/'MA' both carry),
 # a maiden clause, a head that is nothing but an initial or a
 # particle, and the SUFFIX comma as a third comma shape.
+#
+# The same ONE PARSE, MANY CHECKS rule as the grid above, and here it
+# buys twice as much: the three invariants share BOTH parses of every
+# row -- six parses became two -- in `_off_switch_findings`.
 
 
 def _off_switch_grid() -> list[tuple[str, Parser, str]]:
@@ -1238,12 +1363,10 @@ def _off_switch_grid() -> list[tuple[str, Parser, str]]:
     tails: tuple[list[str], ...] = ([], ["Rovira"], ["de", "Rovira"])
     suffixes: tuple[list[str], ...] = (
         [], ["III"], ["Jr."], ["I"], ["V"], ["MA"], ["i"], ["nee", "Puig"])
-    lexicons = (("default", Lexicon.default()),
-                ("conj+v", Lexicon.default().add(conjunctions={"v"})))
-    policies = (("default", Policy()),
-                ("family-first", Policy(name_order=FAMILY_FIRST)),
-                ("given-last", Policy(name_order=FAMILY_FIRST_GIVEN_LAST)),
-                ("strict-comma", Policy(lenient_comma_suffixes=False)))
+    lexicons: _Variants = (
+        ("default", Lexicon.default(), frozenset()),
+        ("conj+v", Lexicon.default().add(conjunctions={"v"}),
+         frozenset({"v"})))
     texts: list[str] = []
     seen: set[str] = set()
     for head, mid, conn, tail, suffix, comma in itertools.product(
@@ -1265,21 +1388,11 @@ def _off_switch_grid() -> list[tuple[str, Parser, str]]:
             if written not in seen:
                 seen.add(written)
                 texts.append(written)
-    parsers = [(f"{ln}/{pn}", Parser(lexicon=lex, policy=pol))
-               for ln, lex in lexicons for pn, pol in policies]
-    return [(t, p, label) for t in texts for label, p in parsers]
+    return _rows(texts, lexicons)
 
 
 _OFF_SWITCH_GRID = _off_switch_grid()
-_NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
 _OFF_PARSERS: dict[tuple[int, frozenset[str]], Parser] = {}
-
-
-def _class_letters(lexicon: Lexicon) -> frozenset[str]:
-    """The class rules.md#P3's both-sides condition is about: a
-    one-letter connective that is ALSO generational vocabulary."""
-    return frozenset(w for w in lexicon.conjunctions
-                     if len(w) == 1 and w in lexicon.suffix_words)
 
 
 def _off_switch(parser: Parser, letters: frozenset[str]) -> Parser:
@@ -1371,10 +1484,94 @@ def _link_joins_between_name_words(on: ParsedName, off: ParsedName,
     return False
 
 
+@functools.cache
+def _off_switch_findings() -> dict[str, list[str]]:
+    """One walk of the off-switch grid; three invariants' answers.
+
+    Both parses of a row -- as configured, and with the class letters
+    out of the connectives -- are taken once here and handed to all
+    three predicates, which is the whole of what this walk does. The
+    exemptions stay each test's own: INV6 takes the join and the
+    initial reading, INV1-strengthened only the initial reading, INV7
+    those two plus R4's placed-connective sentence, exactly as their
+    docstrings say.
+    """
+    out: dict[str, list[str]] = {k: [] for k in
+                                 ("INV6", "INV1-strengthened", "INV7")}
+    v1_off: dict[frozenset[str], Constants] = {}
+    for text, parser, label in _OFF_SWITCH_GRID:
+        letters = _present(text, _class_letters(parser.lexicon))
+        if not letters:
+            continue
+        on = parser.parse(text)
+        off_parser = _off_switch(parser, letters)
+        off = off_parser.parse(text)
+        # the SEVEN FIELDS, and not comparison_key: a parse carries
+        # more than its fields, and what the off-switch legitimately
+        # moves besides them is the conjunction-or-initial report
+        same_fields = on.as_dict() == off.as_dict()
+        moved = _initial_reading_moved(on, off, letters)
+        if not (same_fields
+                or _link_joins_between_name_words(on, off, letters)
+                or moved):
+            out["INV6"].append(f"[{label}] {text!r}: {on.as_dict()} != "
+                               f"off-switch {off.as_dict()}")
+        if not moved:
+            off_role = _off_roles(off)
+            for role in _NAME_ROLES:
+                part = on.tokens_for(role)
+                if len(part) < 2:
+                    continue
+                for tok in part:
+                    # not the LINK itself: it is generational
+                    # vocabulary by definition of the class, so the
+                    # off-switch parse reads it as the suffix in every
+                    # name it ends. This rule is about the OTHER word
+                    # -- the credential a link must not take with it.
+                    # `span is None` is a typing guard and nothing
+                    # else: every token of a PARSER-produced name
+                    # carries one, and this grid holds no spliced
+                    # parse.
+                    if "conjunction" in tok.tags or tok.span is None:
+                        continue
+                    if off_role.get(tok.span) is Role.SUFFIX:
+                        out["INV1-strengthened"].append(
+                            f"[{label}] {text!r}: {tok.text!r} reads as "
+                            f"the suffix and joined into {role.value}")
+        if not (same_fields and not moved
+                and not _placed_as_a_connective(on, letters)):
+            continue
+        for force in (False, True):
+            here = str(parser.capitalized(on, force=force))
+            there = str(off_parser.capitalized(off, force=force))
+            if here != there:
+                out["INV7"].append(
+                    f"[{label}] {text!r} force={force}: {here!r} != "
+                    f"off-switch {there!r}")
+            if label != "default/default":
+                continue
+            if letters not in v1_off:
+                v1_off[letters] = _v1_off_switch(letters)
+            v1_here = _v1_capitalized(text, None, force)
+            v1_there = _v1_capitalized(text, v1_off[letters], force)
+            if v1_here != v1_there:
+                out["INV7"].append(
+                    f"[v1] {text!r} force={force}: {v1_here!r} != "
+                    f"off-switch {v1_there!r}")
+    return out
+
+
 def test_the_off_switch_grid_can_fail() -> None:
     """The reachability probe, the shape every grid in this file
-    carries. Dated recorded control, measured 2026-09-20."""
-    assert len(_OFF_SWITCH_GRID) == 103040, len(_OFF_SWITCH_GRID)
+    carries. Dated recorded control, measured 2026-09-20.
+
+    The row count fell from 103,040 to 53,312 with `_rows` (see the
+    connective probe above); the TEXT count is unmoved, and 2,011 of
+    the first 4,000 rows carry a class letter, against 1,800 of the
+    old grid's first 4,000. Over the whole grid 25,088 rows carry one
+    and are parsed twice; the old grid parsed 46,088 twice, six times
+    over."""
+    assert len(_OFF_SWITCH_GRID) == 53312, len(_OFF_SWITCH_GRID)
     assert len({t for t, _, _ in _OFF_SWITCH_GRID}) == 12880
     reached = sum(1 for text, parser, _ in _OFF_SWITCH_GRID[:4000]
                   if _present(text, _class_letters(parser.lexicon)))
@@ -1395,27 +1592,13 @@ def test_a_link_that_joins_nothing_changes_no_field() -> None:
     clause, which the switch decides along with the join and so
     cannot hold fixed.
 
-    Mutation-checked, 2026-09-20: this fails on 2,360 parses at
-    c8550b64, the commit the review was written against.
+    Mutation-checked, 2026-09-20: this fails on 1,250 parses at
+    c8550b64, the commit the review was written against (2,360 over
+    the full cross product), and on 610 where the both-sides gate
+    tests POSITION rather than class -- the c8550b64 defect isolated,
+    which is the one INV1 above cannot see.
     """
-    failures = []
-    for text, parser, label in _OFF_SWITCH_GRID:
-        letters = _present(text, _class_letters(parser.lexicon))
-        if not letters:
-            continue
-        on = parser.parse(text)
-        off = _off_switch(parser, letters).parse(text)
-        # the SEVEN FIELDS, and not comparison_key: a parse carries
-        # more than its fields, and what the off-switch legitimately
-        # moves besides them is the conjunction-or-initial report
-        if on.as_dict() == off.as_dict():
-            continue
-        if _link_joins_between_name_words(on, off, letters):
-            continue
-        if _initial_reading_moved(on, off, letters):
-            continue
-        failures.append(f"[{label}] {text!r}: {on.as_dict()} != "
-                        f"off-switch {off.as_dict()}")
+    failures = _off_switch_findings()["INV6"]
     assert not failures, (
         f"{len(failures)} parse(s) moved a field with no link joining "
         f"anything:\n" + "\n".join(failures[:10]))
@@ -1435,38 +1618,11 @@ def test_a_trailing_credential_never_joins_into_a_name_part() -> None:
     is deliberately absent -- a link joining elsewhere in the name
     never licenses a credential joining here.
 
-    Mutation-checked, 2026-09-20: this fails on 960 parses at
-    c8550b64, where INV1 fails on none of them.
+    Mutation-checked, 2026-09-20: this fails on 534 parses at
+    c8550b64 (960 over the full cross product), where INV1 fails on
+    none of them.
     """
-    failures = []
-    for text, parser, label in _OFF_SWITCH_GRID:
-        letters = _present(text, _class_letters(parser.lexicon))
-        if not letters:
-            continue
-        on = parser.parse(text)
-        off = _off_switch(parser, letters).parse(text)
-        if _initial_reading_moved(on, off, letters):
-            continue
-        off_role = _off_roles(off)
-        for role in _NAME_ROLES:
-            part = on.tokens_for(role)
-            if len(part) < 2:
-                continue
-            for tok in part:
-                # not the LINK itself: it is generational vocabulary
-                # by definition of the class, so the off-switch parse
-                # reads it as the suffix in every name it ends. This
-                # rule is about the OTHER word -- the credential a
-                # link must not take with it.
-                # `span is None` is a typing guard and nothing else:
-                # every token of a PARSER-produced name carries one,
-                # and this grid holds no spliced parse.
-                if "conjunction" in tok.tags or tok.span is None:
-                    continue
-                if off_role.get(tok.span) is Role.SUFFIX:
-                    failures.append(
-                        f"[{label}] {text!r}: {tok.text!r} reads as the "
-                        f"suffix and joined into {role.value}")
+    failures = _off_switch_findings()["INV1-strengthened"]
     assert not failures, (
         f"{len(failures)} credential(s) joined into a name part:\n"
         + "\n".join(failures[:10]))
@@ -1521,45 +1677,17 @@ def test_a_letter_that_did_not_join_repairs_as_the_off_switch_does() -> None:
     not a connective at all. What is left is the generation, and the
     rule for it is that it repairs as the generation it was read as.
 
-    Mutation-checked, 2026-09-21: this fails on 11,341 repairs at
-    e540d4c5, where the suffix-roled letter still took the connective
-    conjunct, and on 0 here; removing the role test alone fails it on
-    the same 11,341. The v1 arm runs on the default-lexicon,
-    default-policy rows, the only ones a `Constants` can express, and
-    917 of those failures are its.
+    Mutation-checked, re-measured 2026-09-20 on the trimmed grid:
+    this fails on 7,382 repairs at e540d4c5, where the
+    suffix-roled letter still took the connective conjunct, and on 0
+    here; removing the role test alone fails it on the same 7,382.
+    (11,341 for both over the full cross product.) The v1 arm runs on
+    the default-lexicon, default-policy rows, the only ones a
+    `Constants` can express, and 917 of those failures are its -- the
+    same 917 as before the trim, those rows never having been
+    duplicated.
     """
-    failures = []
-    v1_off: dict[frozenset[str], Constants] = {}
-    for text, parser, label in _OFF_SWITCH_GRID:
-        letters = _present(text, _class_letters(parser.lexicon))
-        if not letters:
-            continue
-        on = parser.parse(text)
-        off_parser = _off_switch(parser, letters)
-        off = off_parser.parse(text)
-        if on.as_dict() != off.as_dict():
-            continue
-        if _initial_reading_moved(on, off, letters):
-            continue
-        if _placed_as_a_connective(on, letters):
-            continue
-        for force in (False, True):
-            here = str(parser.capitalized(on, force=force))
-            there = str(off_parser.capitalized(off, force=force))
-            if here != there:
-                failures.append(
-                    f"[{label}] {text!r} force={force}: {here!r} != "
-                    f"off-switch {there!r}")
-            if label != "default/default":
-                continue
-            if letters not in v1_off:
-                v1_off[letters] = _v1_off_switch(letters)
-            v1_here = _v1_capitalized(text, None, force)
-            v1_there = _v1_capitalized(text, v1_off[letters], force)
-            if v1_here != v1_there:
-                failures.append(
-                    f"[v1] {text!r} force={force}: {v1_here!r} != "
-                    f"off-switch {v1_there!r}")
+    failures = _off_switch_findings()["INV7"]
     assert not failures, (
         f"{len(failures)} repair(s) moved for a letter that joined "
         f"nothing:\n" + "\n".join(failures[:10]))

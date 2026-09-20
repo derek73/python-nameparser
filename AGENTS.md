@@ -36,6 +36,8 @@ Three committed contributor docs carry the parser's normative rules and their re
 
 **Guard tests** SHOULD carry a recorded negative control — the answer with the guard off, stored as data (the _EXCLUSION_EFFECT shape; see mechanisms.md's Verification shapes).
 
+**Invariant tests over a generated grid share ONE parsed grid, and a grid pairs a text only with configurations that can read it differently.** Both rules are in `tests/v2/test_properties.py` (`_connective_findings`, `_off_switch_findings`, `_rows`) and both were bought at a price: four tests each walking the same 170,100-row grid, and a grid that was a full cross product of texts × lexicons × policies, together took that module from 11s to 115s and CI's build jobs from ~5 minutes to 17–25 (under coverage every parse costs several times more, and every later PR pays it). A new invariant over an existing grid joins that grid's walk instead of opening its own; a new grid states its measured runtime where it is built. Trim a grid by SHAPE — a variant lexicon reaches only the texts holding the word it adds — never by sampling, and prove the dropped rows were duplicates by signature before dropping them. Mutation counts in the tests' docstrings are counts over the grid, so re-measure them whenever the grid moves.
+
 ## Commands
 
 ```bash
