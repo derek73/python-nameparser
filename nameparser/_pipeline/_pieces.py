@@ -406,7 +406,6 @@ def peel_walk(start: int, ptags: Sequence[Set[str]],
 def trailing_start(start: int, pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]], tokens: Sequence[WorkToken],
                     skip: Set[int] = frozenset(),
-                    numeral_only: bool = False,
                     *, one_case: bool | None) -> int:
     """Where assign's trailing suffix run begins, read over the pieces
     as they stand from `start`: the index of the first piece the S2
@@ -417,18 +416,14 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     or a bare acronym with words to spare, into the family or the
     maiden name.
 
-    `numeral_only` is the maiden walk's reading: the bare-acronym
-    fork counts pieces, and the walk removes the very pieces it
-    counted, so an acronym peeled over the pieces as they stand may
-    be the family of what is left ('John née Jones Smith Ma' read
-    maiden 'Jones Smith', family 'Ma'). The numeral fork reads one
-    piece, the one before the numeral, and _maiden_take re-asks it
-    with the piece the take leaves there; the acronym is left to
-    assign."""
+    Both forks, always. A caller that needs one of them alone -- the
+    maiden walk re-asking the numeral over the view its take would
+    leave, where the acronym fork's piece COUNT no longer describes
+    the name -- calls the `peel_walk` + `peel_trailing` pair this
+    wraps and reads the half it wants (#533). A `numeral_only` flag
+    lived here for that one caller and cost it a frame."""
     rest = peel_walk(start, ptags, skip)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
-    if numeral_only:
-        return rest[-1] if peeled.numeral is not None else len(pieces)
     return rest[peeled.names] if peeled.names < len(rest) else len(pieces)
 
 
@@ -436,7 +431,7 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
 # peel_trailing and segment_suffix_reading ask before reading the
 # lean -- shared here so the two cannot drift on what counts
 # (quality-review finding: it was spelled twice, once per site,
-# before this). Both callers test "vocab:suffix-ambiguous" in tags
+# before this). Those two test "vocab:suffix-ambiguous" in tags
 # INLINE, before calling this, rather than leaving that cheap check to
 # this function's own body: measured, a caller whose `elif` reaches
 # this on every piece (segment_suffix_reading's does, one per
@@ -444,6 +439,16 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
 # regardless of what is inside it, and the inline pre-check is what
 # keeps a non-member piece ("Smith, John"'s "John") from ever making
 # the call at all.
+#
+# A THIRD caller since #533 -- credential_at_the_given_slot just
+# below -- deliberately does NOT pre-check: it owns #531's reading
+# and leaves membership to its own callers (its docstring says so),
+# and the frame argument holds transitively because both of them ask
+# inline -- `AMBIGUOUS_ACRONYM_TAG in tok.tags` after a
+# `len(piece) == 1` at assign's given-part trailing slot, and the
+# same pair inside the `all(...)` of `_group.py`'s `_maiden_take`
+# view check. So no non-member piece reaches this function down that
+# route either.
 def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     """`ambiguous_lean` for a LISTED bare-ambiguous token, or None if
     the token is not tagged a listed member, is admitted by SHAPE
@@ -453,6 +458,45 @@ def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
             or SHAPE_ACRONYM_TAG in token.tags):
         return None
     return ambiguous_lean(token.text, one_case)
+
+
+def credential_at_the_given_slot(token: WorkToken,
+                                 one_case: bool | None) -> bool:
+    """#531's reading of a class MEMBER ending the given part after a
+    family comma: the credential unless the writing says otherwise.
+    The caller decides membership and that the piece ends that part.
+
+    The words to spare are there by construction at that slot, so the
+    count says nothing and only the lean does; a member that is also
+    particle vocabulary reads as the credential on a POSITIVE lean
+    alone, P6's attachment keeping every other spelling.
+
+    Two callers since #533 -- assign's walk over the given part, and
+    the maiden walk's second check over the name the take would leave
+    (rules.md#M2) -- so the reading is a function rather than a
+    condition written twice
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It is a
+    text-and-tags question, which is what puts it in this module
+    rather than beside either caller.
+
+    The membership half of that contract is CHECKED rather than
+    trusted, because getting it wrong is silent: all three of
+    `listed_lean`'s None reasons fall through to the `particle` test
+    below, so a non-member handed in by mistake is answered True --
+    "read it as the credential" -- for a word the class never admitted.
+    An assert rather than a raise or a branch: it enters no Python
+    frame (measured -- 'Doe, John MA' stays at 311), it states the
+    contract where a reader of the function body meets it, and under
+    -O it is exactly the code that was here before.
+    """
+    assert AMBIGUOUS_ACRONYM_TAG in token.tags, (
+        f"credential_at_the_given_slot is #531's reading of a LISTED "
+        f"class member; {token.text!r} carries {sorted(token.tags)} "
+        f"and is not one. The caller decides membership -- test "
+        f"AMBIGUOUS_ACRONYM_TAG before calling")
+    lean = listed_lean(token, one_case)
+    return lean == "credential" or (lean is None
+                                    and "particle" not in token.tags)
 
 
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],

@@ -72,7 +72,8 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
-    is_suffix_piece, leading_titles, listed_lean, peel_walk,
+    credential_at_the_given_slot,
+    is_suffix_piece, leading_titles, peel_walk,
     segment_suffix_reading, tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
@@ -805,7 +806,6 @@ def assign(state: ParseState) -> ParseState:
                         # reach, and the member is an ordinary middle
                         # name read in silence.
                         if m >= trailing_floor(m, titled):
-                            lean = listed_lean(tok, state.one_case)
                             # A member that is ALSO particle
                             # vocabulary reads as the credential only
                             # on a POSITIVE credential lean: P6's
@@ -815,9 +815,27 @@ def assign(state: ParseState) -> ParseState:
                             # would take it -- the wrong answer there,
                             # not merely a stray report
                             # (decisions.md#S2, 2026-09-18).
-                            if lean == "credential" or (
-                                    lean is None
-                                    and "particle" not in tok.tags):
+                            #
+                            # A FUNCTION since #533, not two conditions
+                            # written to match: the maiden walk's
+                            # second check asks this same question of
+                            # the name a take would leave, and the
+                            # drift would have been silent -- each
+                            # site's own tests would have gone on
+                            # passing (mechanisms.md
+                            # #ONE-PREDICATE-PER-QUESTION). The call
+                            # costs one frame PER MEMBER asked at this
+                            # slot, not one per name: against
+                            # 2f57ff21, 'Doe, John MA' is 310 -> 311
+                            # and 'Doe, John MA Ma MA', which asks
+                            # four times, 439 -> 443, while a name
+                            # with no member here never reaches it
+                            # ('Smith, John' 206, 'MA JD' 185, both
+                            # unchanged). Measured 2026-09-19 per
+                            # `Parser.parse`; Derek took that trade
+                            # deliberately.
+                            if credential_at_the_given_slot(
+                                    tok, state.one_case):
                                 return True
                 prev = previous_kept(m, titled)
                 # trailing piece of a two-part name is unambiguously

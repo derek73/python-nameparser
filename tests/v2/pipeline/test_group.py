@@ -1,19 +1,26 @@
 import bisect
 import dataclasses
+from collections.abc import Sequence
+from typing import cast
 
 import pytest
 
 from nameparser._lexicon import Lexicon
+from nameparser._pipeline import _group as _group_module
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited, _maiden_marked
-from nameparser._pipeline._group import group, marker_run_length
+from nameparser._pipeline._group import (
+    TailReader, _group_segment, group, marker_run_length,
+)
 from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
-from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._state import (
+    ParseState, PendingAmbiguity, Structure, WorkToken,
+)
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import maiden_marker_run
 from nameparser._policy import Policy, Script
-from nameparser._types import Role
+from nameparser._types import AmbiguityKind, Role
 
 _LEX = Lexicon(
     titles=frozenset({"mr", "mrs", "secretary", "the", "state"}),
@@ -935,23 +942,255 @@ def test_the_maiden_walk_stops_before_the_numeral_too() -> None:
     assert _piece_texts(out) == [["John", "V"]]
 
 
-def test_the_maiden_walk_leaves_the_acronym_fork_to_assign() -> None:
-    # The bare-acronym fork counts pieces, and the walk removes the
-    # pieces it counted: peeled over the pieces as they stand, 'Ma'
-    # would be a credential with words to spare, but once 'Jones
-    # Smith' has left the name it is the family of a two-piece name.
-    # So the walk takes it as maiden text, as it always did, and
-    # stops only at the numeral fork.
+def test_the_maiden_walk_keeps_the_acronym_its_writing_declines(
+) -> None:
+    # The walk asks the acronym fork the way it asks the numeral one
+    # (#533): the peel over the pieces as they stand, then again over
+    # the name the take would leave. 'Ma' is Title case in a
+    # mixed-case name, so the peel declines it either way and the
+    # clause keeps it -- the same answer this test pinned when the
+    # fork was left to assign, for a different reason. The WRITING
+    # keeps the word, not the count.
     out = _grouped("John née Jones Smith Ma", lexicon=_AMBIGUOUS_LEX)
     assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
         ["Jones", "Smith", "Ma"]
-    # The numeral-only reading is what the acronym BETWEEN the maiden
-    # name and the numeral shows: the general peel would stop at the
-    # acronym, the re-ask would veto it, and the walk would take the
-    # numeral too (the test review's surviving mutant).
+    # and the capitals go the other way, which is what makes the row
+    # above a reading rather than a floor
+    out = _grouped("John née Jones Smith MA", lexicon=_AMBIGUOUS_LEX)
+    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
+        ["Jones", "Smith"]
+    # The numeral half is untouched: the acronym BETWEEN the maiden
+    # name and the numeral still declines, and the walk still stops at
+    # the numeral fork (the test review's surviving mutant).
     out = _grouped("Jane Smith née Jones Ma V", lexicon=_AMBIGUOUS_LEX)
     assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
         ["Jones", "Ma"]
+
+
+# -- #533: the acronym fork, the reader, the clamp and the emitter
+
+def _maiden_texts(state: ParseState) -> list[str]:
+    return [t.text for t in state.tokens if t.role is Role.MAIDEN]
+
+
+def _suffix_forks(state: ParseState) -> list[str]:
+    return [a.detail for a in state.ambiguities
+            if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+
+
+def test_the_clause_stops_before_a_credential_the_reader_takes(
+) -> None:
+    out = _grouped("Jane Doe née Smith MA", lexicon=_AMBIGUOUS_LEX)
+    assert _maiden_texts(out) == ["Smith"]
+
+
+def test_the_clause_never_gives_up_the_first_word_after_the_marker(
+) -> None:
+    """Option 1's floor, as a CLAMP. A member standing alone after the
+    marker stays the maiden name; where the peel consumed that word
+    AND words behind it, only the first stays -- a veto that cancelled
+    the stop outright handed the words behind it back to the clause
+    too."""
+    out = _grouped("Jane Doe née MA", lexicon=_AMBIGUOUS_LEX)
+    assert _maiden_texts(out) == ["MA"]
+    out = _grouped("Doe, J. née MA ba",
+                   lexicon=_AMBIGUOUS_LEX.add(
+                       suffix_acronyms={"ba"},
+                       suffix_acronyms_ambiguous={"ba"}))
+    assert _maiden_texts(out) == ["MA"]
+
+
+def test_the_clamped_stop_may_land_on_no_member_and_declines() -> None:
+    """The clamp can move the stop onto a piece that is no class
+    member at all, and then the test declines and nothing changes --
+    the walk stopping at that suffix word of its own accord."""
+    out = _grouped("Jane Doe née MA Jr", lexicon=_AMBIGUOUS_LEX)
+    assert _maiden_texts(out) == ["MA"]
+
+
+def test_the_view_check_asks_about_the_member_and_not_about_the_run(
+) -> None:
+    """The take would leave 'JOHN MA PHD', whose peel takes 'PHD' and
+    then declines 'MA' for want of words to spare. A check asking
+    whether the reader takes SOMETHING answers yes there, and the
+    member becomes the FAMILY name."""
+    # NOTE the accented marker: this module's `_LEX` ships
+    # maiden_markers={"née", "geb"} and NOT the unaccented "nee", so
+    # the plain spelling takes nothing at all here and the test would
+    # pass vacuously. cases.py's row of the same shape uses the
+    # DEFAULT vocabulary, where both spellings are markers.
+    lex = _AMBIGUOUS_LEX.add(suffix_acronyms={"phd"})
+    out = _grouped("JOHN NÉE JONES SMITH MA PHD", lexicon=lex)
+    assert _maiden_texts(out) == ["JONES", "SMITH", "MA"]
+    assert len(_suffix_forks(out)) == 1
+
+
+def test_the_reader_is_none_in_the_family_segment() -> None:
+    """Segment 0 of a family comma: the comma has already named the
+    family, so no trailing rule reads those words and the clause keeps
+    them -- and nothing reports, nothing having been decided."""
+    out = _grouped("Smith née Jones MA, Jane", lexicon=_AMBIGUOUS_LEX)
+    assert _maiden_texts(out) == ["Jones", "MA"]
+    assert _suffix_forks(out) == []
+
+
+def test_the_reader_is_none_in_a_third_comma_part() -> None:
+    """A segment past the second comma is read as credentials whole,
+    so no trailing rule is consulted there either."""
+    out = _grouped("Smith, John, Jr née Jones MA",
+                   lexicon=_AMBIGUOUS_LEX.add(suffix_words={"jr"}))
+    assert _maiden_texts(out) == ["Jones", "MA"]
+    assert _suffix_forks(out) == []
+
+
+def test_the_emitter_fires_on_the_last_maiden_piece_and_only_there(
+) -> None:
+    """The word the trailing rule was asked about is the LAST piece of
+    the maiden name: everything behind it read as a suffix, which is
+    what let the peel reach it. A member with a name word behind it
+    was never asked."""
+    out = _grouped("Jane Doe née Smith Ma", lexicon=_AMBIGUOUS_LEX)
+    assert _suffix_forks(out) == [
+        "'Ma' ending the maiden name is also a post-nominal; the "
+        "maiden marker's clause keeps it rather than reading it as one"]
+    out = _grouped("Jane Doe née MA Smith", lexicon=_AMBIGUOUS_LEX)
+    assert _suffix_forks(out) == []
+
+
+def test_the_emitter_reports_a_by_shape_member_too() -> None:
+    """The emitter's gate reads EITHER tag, as the chain emitter's
+    does, so a member admitted by SHAPE reports even where the class
+    does not admit it and the peel declined to consume it -- it
+    records the word in `picks` and breaks, so the walk's own reading
+    gate is never asked about it (measured 2026-09-19)."""
+    out = _grouped("John Smith née Jones R.A.I.",
+                   policy=Policy(unlisted_dotted_suffixes=False))
+    assert _maiden_texts(out) == ["Jones", "R.A.I."]
+    assert len(_suffix_forks(out)) == 1
+
+
+def test_the_maiden_report_survives_the_family_comma_suppression(
+) -> None:
+    """group() passes `None` for the chain emitter, deliberately --
+    the comma fixed the family. The maiden fork is not that fork, so
+    it travels on its own channel and reports after a comma too."""
+    out = _grouped("Doe, Jane née Smith Ma", lexicon=_AMBIGUOUS_LEX)
+    assert _maiden_texts(out) == ["Smith", "Ma"]
+    assert len(_suffix_forks(out)) == 1
+
+
+def test_the_two_ambiguity_channels_route_independently() -> None:
+    """Both channels are REQUIRED arguments, and they are two so that
+    silencing one never silences the other.
+
+    `reader` and `maiden_ambiguities` have no defaults: the one
+    production caller answers both off the segment's structure, and a
+    default would be this module guessing what that caller knows. The
+    routing is what the split buys -- the same list in both slots is
+    one channel, two lists are two, and #533's review found the
+    earlier spelling defaulting the maiden channel to whatever the
+    first was, so `ambiguities=None` silenced both.
+    """
+    state = classify(segment(tokenize(extract_delimited(ParseState(
+        original="Jane Doe née Smith Ma", lexicon=_AMBIGUOUS_LEX,
+        policy=Policy())))))
+    general: list[PendingAmbiguity] = []
+    maiden: list[PendingAmbiguity] = []
+    _group_segment(state.segments[0], 0, state.tokens,
+                   ambiguities=general, one_case=state.one_case,
+                   reader=TailReader.TRAILING,
+                   maiden_ambiguities=maiden)
+    assert [a.kind for a in maiden] == [AmbiguityKind.SUFFIX_OR_NAME]
+    assert general == []
+    # the general channel suppressed, the maiden one still speaks --
+    # which is exactly what group() does after a family comma
+    only_maiden: list[PendingAmbiguity] = []
+    _group_segment(state.segments[0], 0, state.tokens,
+                   ambiguities=None, one_case=state.one_case,
+                   reader=TailReader.TRAILING,
+                   maiden_ambiguities=only_maiden)
+    assert [a.kind for a in only_maiden] == [AmbiguityKind.SUFFIX_OR_NAME]
+    # and NONE is the reader that silences the maiden channel itself,
+    # because nothing was decided there
+    silent: list[PendingAmbiguity] = []
+    _group_segment(state.segments[0], 0, state.tokens,
+                   ambiguities=None, one_case=state.one_case,
+                   reader=TailReader.NONE, maiden_ambiguities=silent)
+    assert silent == []
+
+
+def test_an_unmapped_reader_is_a_loud_failure_rather_than_a_default(
+) -> None:
+    """The exhaustive dispatch, exercised.
+
+    `_maiden_take` ends its reader branch with `assert_never`, which
+    makes a fourth `TailReader` member a mypy error at this site
+    rather than a silent fall-through to one of the three readings.
+    At RUNTIME that line is unreachable by construction, so it is
+    reached here the only way it can be -- with a value outside the
+    enum -- both to pin the loudness and to keep the line from being
+    the one uncovered statement in the module.
+    """
+    state = classify(segment(tokenize(extract_delimited(ParseState(
+        original="Jane Doe née Smith MA", lexicon=Lexicon.default(),
+        policy=Policy())))))
+    with pytest.raises(AssertionError):
+        _group_segment(state.segments[0], 0, state.tokens,
+                       ambiguities=[], one_case=state.one_case,
+                       reader=cast(TailReader, 99),
+                       maiden_ambiguities=[])
+
+
+def test_the_reader_is_pinned_to_the_structure_it_is_read_from(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """`TailReader` is a closed set, and group() maps (structure,
+    segment index) onto it in one place. Pinned here by WATCHING that
+    mapping rather than restating it -- a restatement passes when the
+    code changes under it, which is the shape of vacuous guard
+    AGENTS.md warns about. `_maiden_take` dispatches on the enum
+    exhaustively (`assert_never`), so a fourth member with no row
+    here is a type error rather than a silent default.
+    """
+    assert len(TailReader) == 3
+    want = {
+        # no comma: the whole name, read by the S2 peel
+        (Structure.NO_COMMA, 0): TailReader.TRAILING,
+        # suffix comma: segment 0 is the name, the rest is the
+        # credential run and is read whole
+        (Structure.SUFFIX_COMMA, 0): TailReader.TRAILING,
+        (Structure.SUFFIX_COMMA, 1): TailReader.NONE,
+        (Structure.SUFFIX_COMMA, 2): TailReader.NONE,
+        # family comma: segment 0 is the family the comma named,
+        # segment 1 is the given part with its own trailing slot
+        # (#531), and a third part is a credential run again
+        (Structure.FAMILY_COMMA, 0): TailReader.NONE,
+        (Structure.FAMILY_COMMA, 1): TailReader.GIVEN_SLOT,
+        (Structure.FAMILY_COMMA, 2): TailReader.NONE,
+    }
+    texts = ("Jane Doe née Smith MA",
+             "Jane Doe née Smith, MD, PhD",
+             "Doe, Jane née Smith MA, MD")
+    seen: dict[tuple[Structure, int], TailReader] = {}
+    real = _group_module._group_segment
+
+    def spy(seg: tuple[int, ...], additional: int,
+            tokens: Sequence[WorkToken], *args: object,
+            **kwargs: object) -> object:
+        seen[(state.structure, len(seen_order))] = cast(
+            TailReader, kwargs["reader"])
+        seen_order.append(seg)
+        return real(seg, additional, tokens, *args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(_group_module, "_group_segment", spy)
+    for text in texts:
+        seen_order: list[tuple[int, ...]] = []
+        state = classify(segment(tokenize(extract_delimited(ParseState(
+            original=text, lexicon=Lexicon.default(),
+            policy=Policy())))))
+        group(state)
+    assert seen == want, (
+        f"group() maps the structures to {seen}, pinned as {want}")
 
 
 def test_a_marker_followed_only_by_the_numeral_is_just_a_word() -> None:

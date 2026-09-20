@@ -454,7 +454,11 @@ listed below.
        ``"Jack X.Y.Z."`` keeps family ``X.Y.Z.``, and either reading
        is reported. The family-comma form is one of those positions
        since 2.4: ``"Doe, John X.Y.Z."`` gives suffix ``X.Y.Z.``
-       while ``"Doe, X.Y.Z."`` keeps given ``X.Y.Z.``.
+       while ``"Doe, X.Y.Z."`` keeps given ``X.Y.Z.``. So is the word
+       ending a maiden marker's clause, also since 2.4:
+       ``"Jane Doe nee Smith X.Y.Z."`` gives maiden ``Smith`` with
+       suffix ``X.Y.Z.``, where ``False`` keeps maiden
+       ``Smith X.Y.Z.``.
        Case is irrelevant — the periods are the signal.
        Whole-token vocabulary still wins (``M.A.``, ``Ph.D.``), and a
        single trailing period is not this shape
@@ -477,8 +481,11 @@ listed below.
      - Reads an unlisted all-caps word of two or more letters, with no
        period in it, in a name written in more than one case as a
        credential where the position allows it: ``"John Smith XYZ"``
-       gives suffix ``XYZ``, and since 2.4 so does the family-comma
-       form ``"Doe, John XYZ"``. Defaults to ``False``, and
+       gives suffix ``XYZ``, and since 2.4 so do the family-comma
+       form ``"Doe, John XYZ"`` and the word ending a maiden marker's
+       clause (``"Jane Doe nee Smith XYZ"`` gives maiden ``Smith``
+       with suffix ``XYZ``, where off it keeps maiden
+       ``Smith XYZ``). Defaults to ``False``, and
        deliberately:
        an all-caps surname is a real writing convention that shape
        cannot separate from a credential, so ``"Jean Pierre DUPONT"``

@@ -671,10 +671,70 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
     assert (n.given, n.family, n.suffix) == ("", "von Richthofen", "V")
     n = parse("Dr. Smith V")
     assert (n.given, n.family, n.suffix) == ("", "Smith", "V")
-    # the walk takes the numeral only: an acronym between the maiden
-    # name and the numeral is maiden text
+    # both stops read the TRAILING word, so an acronym with the
+    # numeral behind it is not the word either fork asks about and
+    # stays maiden text -- and so does a numeral with an acronym
+    # behind it ('Jane Doe nee Smith V MA' keeps maiden 'Smith V')
     n = parse("Jane Smith née Jones Ma V")
     assert (n.maiden, n.suffix) == ("Jones Ma", "V")
+    n = parse("Jane Doe nee Smith V MA")
+    assert (n.maiden, n.suffix) == ("Smith V", "MA")
+
+
+def test_a_post_nominal_head_leaves_the_clause_nobody_to_read_it(
+) -> None:
+    """#533 review: the clause KEEPS the member, and says so.
+
+    After a family comma the given-slot reader takes the member only
+    where the take leaves a given part for it to end. Where the part
+    before the marker is nothing but post-nominals, it does not: the
+    take would leave a segment of credentials, which is read whole
+    and asked nothing, and the released word would land in `given`
+    rather than in `suffix`. So the walk declines and the word stays
+    in the maiden name -- rules.md#M2's invariant, which replaced the
+    ACCEPTED silent mover an earlier round of this branch shipped
+    here (it read maiden 'Smith', suffix 'Jr MA').
+
+    The clause still REPORTS, and that is the measurement this test
+    exists for: the emitter is gated on there being a trailing rule
+    at all, not on the view check the rule then fails, so a fork
+    called the conservative way is still a fork the caller hears
+    about.
+    """
+    n = parse("Jane Doe, Jr nee Smith MA")
+    assert (n.given, n.family, n.maiden, n.suffix) == (
+        "Jane", "Doe", "Smith MA", "Jr")
+    assert [a.kind for a in n.ambiguities] == [
+        AmbiguityKind.SUFFIX_OR_NAME]
+    # 2f57ff21 read it this way too: the review round restored the
+    # parent reading rather than inventing a third one
+    assert n.maiden == "Smith MA"
+    # a post-nominal, not only a generational word, heads it the same
+    for head in ("III", "PhD"):
+        n = parse(f"Jane Doe, {head} nee Smith MA")
+        assert (n.maiden, n.suffix) == ("Smith MA", head)
+        assert [a.kind for a in n.ambiguities] == [
+            AmbiguityKind.SUFFIX_OR_NAME]
+    # and a TITLE heads it the same way, which is the spelling
+    # `AmbiguityKind.SUFFIX_OR_NAME`'s third position was written as
+    n = parse("Doe, Dr. nee Smith MA")
+    assert (n.title, n.family, n.maiden) == ("Dr.", "Doe", "Smith MA")
+    assert [a.kind for a in n.ambiguities] == [
+        AmbiguityKind.SUFFIX_OR_NAME]
+    # the clause-less control is what the member WOULD have read as,
+    # and the difference is the point: without the clause there is a
+    # given name in front of the member and the slot exists
+    control = parse("Doe, Dr. Smith MA")
+    assert (control.given, control.suffix) == ("Smith", "MA")
+    # the KEPT direction reported before this round too -- the
+    # clause's own emitter is what raises it, and it never needed the
+    # given slot
+    for text, maiden in (("Jane Doe, Jr nee Smith Ma", "Smith Ma"),
+                         ("Jane Doe, Jr nee MA", "MA")):
+        n = parse(text)
+        assert n.maiden == maiden
+        assert [a.kind for a in n.ambiguities] == [
+            AmbiguityKind.SUFFIX_OR_NAME]
 
 
 def test_the_numeral_fork_fires_on_the_last_piece_only() -> None:
