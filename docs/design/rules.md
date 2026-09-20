@@ -891,7 +891,7 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_post_rules.py
 
 ## Suffixes: generational & credentials (S)
 
@@ -932,7 +932,12 @@ S2. Rationale: generational suffixes and credentials are recognized
     name — and at the slots that report, either reading carries the
     ambiguity flag. Those slots are the trailing slot of a name, the
     first slot after a family comma, the trailing slot of the GIVEN
-    part after that comma, and the segments beyond it.
+    part after that comma, the trailing slot of a maiden marker's
+    clause (M2), and the segments beyond it. A word this document
+    says is READ at one of those slots is not always a word one of
+    them reports: where a reading moves a word out of the slot that
+    asked about it, what reports is the slot it lands in, and that
+    may be none — M2 states the case where a clause does it.
     After a family comma, a word of this class ending the GIVEN part
     is read as the comma-less spelling reads a word ending the name,
     and the count is not what decides it there. The comma has already
@@ -1089,7 +1094,8 @@ S3. Rationale: credentials are often written run together with
     to spare, a name word where it does not, either reading
     reported at the slots S2 reports at, and the same at a comma —
     which means the FIRST piece after a family comma, the word
-    trailing the given part after one, and the part before a SUFFIX
+    trailing the given part after one, the word ending a maiden
+    marker's clause (M2), and the part before a SUFFIX
     comma. The part before a FAMILY comma never reports, the comma
     having already named it the family. Case says nothing here — the
     periods are the evidence — and three shapes are outside it: a
@@ -1231,7 +1237,40 @@ M2. Rationale: a maiden marker announces that what follows it is the
     reading the name left standing reads the word as the
     credential, and never the first word after the marker — as the
     maiden name, and
-    the marker itself is dropped. A marker
+    the marker itself is dropped.
+    Those last two stops are each asked TWICE for one reason: the
+    count of words to spare includes the very words the marker
+    removes, so a reading taken over the name as written can be
+    wrong about the name the take would leave. WHICH rule does the
+    reading depends on where the clause stands. Where the clause is
+    in the part a trailing rule reads — a name with no comma, and
+    the part before a SUFFIX comma, which that rule reads the same
+    way — that rule is the reader. After a family comma it is the
+    reading the end of the given part takes, where the comma has
+    already settled the count and the writing decides alone. Before
+    a family comma, and in a part after a second one, no trailing
+    rule reads those words at all: the clause keeps them and says
+    nothing about them.
+    That the credential stop spares the first word after the marker
+    is a deliberate divergence from what certain suffix vocabulary
+    gets in the same position, where the marker declines and stays
+    an ordinary word. The marker announces a name, and this class is
+    the one carrying no evidence of which it is: its members are
+    borne surnames as well as credentials, and nobody writes a
+    credential straight after the marker, so a lone member reads as
+    the name it was announced to be.
+    A member ENDING a clause that some rule reads is reported where
+    the clause KEEPS it (S2); one the clause gives up is read like
+    any other word in the position it lands in, and reports where
+    that reading reports — which is sometimes nowhere. What the take
+    leaves behind decides that, not the clause: where the words in
+    front of the given-up member are all post-nominals or titles,
+    the part it lands in has no name word left in it, and a part of
+    nothing but credentials is read whole and asked nothing. So a
+    clause standing after a family comma in a part whose only other
+    words are post-nominals moves its member in SILENCE, agreeing
+    with the same name written without the clause.
+    A marker
     with nothing after it, or nothing before it, is just a word.
     A marker may be more than one word, and is then recognized only
     whole and only where its words stand together: its own first word
@@ -1288,7 +1327,14 @@ M2. Rationale: a maiden marker announces that what follows it is the
     a reading needs is taken over the name the take would leave
     rather than over the words as they stand.
       "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
-    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
+    Accepted: a trailing title is not transparent inside a clause,
+    and the two spellings disagree — the walk reads the trailing
+    credential run and not the title chain behind it, so a title
+    AFTER a member of that class hides it and a title before it
+    does not.
+      "Jane Doe nee Smith MA Prof."    →  maiden="Smith MA Prof."  · boundary
+      "Jane Doe nee Smith Prof. MA"    →  maiden="Smith Prof."  · boundary
+    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
     maiden, but a recognized marker word inside it does — the clause

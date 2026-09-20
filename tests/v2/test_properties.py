@@ -249,9 +249,10 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: contrast in the string, so the clause hides it. `own_words` stops
 #: at the maiden marker (rules.md#P3), so a member inside the clause
 #: cannot contribute the case contrast `one_case` is computed from --
-#: which is mechanisms.md's "the predicate keeps the judged token in
-#: the span" failing structurally, the judged token never being in
-#: the span at this slot. Accepted by Derek 2026-09-19 and recorded in
+#: which is decisions.md#S2's own "THE PREDICATE KEEPS THE JUDGED
+#: TOKEN IN THE SPAN" (the 2026-09-14 #289/#516 entry) failing
+#: structurally, the judged token never being in the span at this
+#: slot. Accepted by Derek 2026-09-19 and recorded in
 #: decisions.md#S2 as the M2 instance of #492's deferred question.
 #: The COUNT is asserted beside the class because a structural
 #: allowlist cannot notice a 115th member of it: 114 of 2016 pairs on

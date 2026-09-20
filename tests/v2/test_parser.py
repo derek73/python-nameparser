@@ -671,10 +671,59 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
     assert (n.given, n.family, n.suffix) == ("", "von Richthofen", "V")
     n = parse("Dr. Smith V")
     assert (n.given, n.family, n.suffix) == ("", "Smith", "V")
-    # the walk takes the numeral only: an acronym between the maiden
-    # name and the numeral is maiden text
+    # both stops read the TRAILING word, so an acronym with the
+    # numeral behind it is not the word either fork asks about and
+    # stays maiden text -- and so does a numeral with an acronym
+    # behind it ('Jane Doe nee Smith V MA' keeps maiden 'Smith V')
     n = parse("Jane Smith née Jones Ma V")
     assert (n.maiden, n.suffix) == ("Jones Ma", "V")
+    n = parse("Jane Doe nee Smith V MA")
+    assert (n.maiden, n.suffix) == ("Smith V", "MA")
+
+
+def test_a_post_nominal_head_makes_the_clause_move_the_member_in_silence(
+) -> None:
+    """#533 design-docs review: a MOVER that reports nothing.
+
+    After a family comma the given-slot reader takes the member, but
+    the take can leave that segment holding post-nominals only -- no
+    name word for the slot to be the end of -- and a part of nothing
+    but credentials is read whole and asked nothing. This is the
+    pre-existing "no name word in FRONT of the member" silence
+    (``AmbiguityKind.SUFFIX_OR_NAME``'s third position), which was
+    written as a TITLE's and which a post-nominal reaches just as
+    well; `Doe, Dr. nee Smith MA` is the titled spelling.
+
+    No rules.md example line pins it, deliberately: the name differs
+    from this tree at all five differential baselines and most of the
+    diff belongs to other changes (1.4.0 reads title 'Jr', given
+    'nee', family 'Jane Doe'), so an example line would have put five
+    ledger rules into a docs commit. This test is the pin instead.
+    """
+    n = parse("Jane Doe, Jr nee Smith MA")
+    assert (n.given, n.family, n.maiden, n.suffix) == (
+        "Jane", "Doe", "Smith", "Jr MA")
+    assert n.ambiguities == ()
+    # it is a MOVER: 2f57ff21 read maiden 'Smith MA'
+    assert n.maiden == "Smith"
+    # and it agrees with the same name written without the clause,
+    # which is why the silence is right rather than a lost report
+    control = parse("Jane Doe, Jr MA")
+    assert control.suffix == "Jr MA"
+    assert control.ambiguities == ()
+    # a post-nominal, not only a generational word, heads it the same
+    for head in ("III", "PhD"):
+        n = parse(f"Jane Doe, {head} nee Smith MA")
+        assert (n.maiden, n.suffix) == ("Smith", f"{head} MA")
+        assert n.ambiguities == ()
+    # the KEPT direction still reports -- the clause's own emitter is
+    # what raises it, and it never needed the given slot
+    for text, maiden in (("Jane Doe, Jr nee Smith Ma", "Smith Ma"),
+                         ("Jane Doe, Jr nee MA", "MA")):
+        n = parse(text)
+        assert n.maiden == maiden
+        assert [a.kind for a in n.ambiguities] == [
+            AmbiguityKind.SUFFIX_OR_NAME]
 
 
 def test_the_numeral_fork_fires_on_the_last_piece_only() -> None:

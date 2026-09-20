@@ -292,7 +292,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # flipped). THE PAIR IS THE FINDING:
     # over the corpus as it stood the day before this change it moved
     # 0 parses, and over the corpus WITH this change's own rows it
-    # moves 36 of 10,740 (1,790 names), on 6 distinct names ('Doe,
+    # moves 36 of 10,752 (1,792 names), on 6 distinct names ('Doe,
     # Jane nee Smith DO', 'Doe, Jane nee Smith Ma', 'Jane Doe nee
     # Smith Ma', 'Jane Doe nee Smith Ma JD', 'Jane Doe nee Yo-Yo Ma',
     # 'John née Jones Smith MA'). The plumbing was live either way;
@@ -373,9 +373,13 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # rather than asserted. A probe that fires wherever the tag
         # test admits a head this length test then DECLINES -- the
         # only sites where dropping it could matter -- recorded 0 over
-        # 21,480 parses: decisions.md#S2's population (1,790 names;
+        # 21,504 parses: decisions.md#S2's population (1,792 names;
         # the recipe is spelled out above) under six policies and two
-        # lexicons, the default and one listing `ph` ambiguous. Nor is
+        # lexicons, the default and one listing `ph` ambiguous. That 0
+        # is a measured absence rather than an unreached probe: over
+        # the same sweep this site is reached 394 times and the TAG
+        # test admits the head in 310 of them, so the probe can fire
+        # and does not (re-measured 2026-09-19). Nor is
         # there a
         # price: with `ph` listed, dropping the test leaves 'Jane Doe
         # nee Smith Ph. D.' at 372 frames, 'Doe, Jane nee Smith

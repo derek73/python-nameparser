@@ -456,7 +456,9 @@ class AmbiguityKind(StrEnum):
     #: than moving it -- a member with no name word IN FRONT of it is
     #: not at this
     #: slot either, because the slot is the end of a given part and
-    #: there is none: a title took that position. "Doe, Dr. MA" gives
+    #: there is none: a TITLE or a POST-NOMINAL took that position --
+    #: either one leaves the segment with no name word for the slot to
+    #: be the end of. "Doe, Dr. MA" gives
     #: suffix ``MA`` and "Doe, Mr. MA PhD" suffix ``MA PhD``, the
     #: credential-run gate reading those segments whole; "Doe, Dr. Ma"
     #: reaches the walk instead and makes ``Ma`` the given name
@@ -472,6 +474,18 @@ class AmbiguityKind(StrEnum):
     #: credential-run gate reads whole. (The other direction still
     #: reports, the clause's own emitter being what raises it: "Doe,
     #: Dr. nee Smith Ma" keeps maiden ``Smith Ma`` and says so.)
+    #: What stands in front need not be a title, and a clause is the
+    #: commonest way to reach the POST-NOMINAL spelling: "Jane Doe, Jr
+    #: nee Smith MA" gives maiden ``Smith`` with suffix ``Jr MA`` and
+    #: moves in silence, the take leaving segment 1 as ``Jr MA`` --
+    #: post-nominals only, so the same gate reads it whole. ``III``
+    #: and ``PhD`` head it the same way, and each agrees with its
+    #: clause-less control ("Jane Doe, Jr MA" is silent too). The
+    #: clause's own emitter still covers the kept direction here:
+    #: "Jane Doe, Jr nee Smith Ma" and "Jane Doe, Jr nee MA" both
+    #: report. Found by the #533 design-docs review, which is the
+    #: measurement worth keeping: this silence was written as a
+    #: title's and a post-nominal reaches it too.
     #: And fourth -- pre-existing and untouched by 2.4 as well --
     #: a JOIN beside the member can
     #: take it out of this slot, from either side. Where a chain has

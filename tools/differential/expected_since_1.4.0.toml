@@ -1940,12 +1940,15 @@ fields = ["family", "suffix"]
 
 [[change]]
 issue = "fix(#424/#445) accepted: the maiden walk keeps a bare acronym, and the lone name word is the family"
-# 'John née Jones Smith Ma': rules.md#M2 -- "a bare acronym the peel
-# would take with words to spare is maiden text all the same". middle
+# 'John née Jones Smith Ma': rules.md#M2 -- "a bare acronym the
+# reading declines is maiden text all the same". middle
 # 'née Jones', family 'Smith', suffix 'Ma' -> maiden 'Jones Smith Ma':
 # v1 had no maiden support; 2.0 has read the name so since #274, and
-# the walk deliberately leaves the acronym fork to assign (the count
-# it needs includes the words the marker removes). The fix(#274) rule
+# since #533 the walk asks the acronym fork rather than leaving it:
+# what declines this word is the WRITING, Title case saying name
+# where capitals would say credential, and the count such a reading
+# needs is taken over the name the take would leave rather than over
+# the words as they stand. The fix(#274) rule
 # cannot carry it: its fields omit the suffix v1 read. A rules.md
 # Accepted example, first witnessed here.
 #
