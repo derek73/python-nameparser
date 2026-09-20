@@ -308,17 +308,29 @@ def _join_takes_the_member(view: Sequence[Sequence[int]],
 def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
                                   pieces: Sequence[Sequence[int]],
                                   ptags: Sequence[Set[str]],
-                                  tokens: Sequence[WorkToken]) -> bool:
+                                  tokens: Sequence[WorkToken],
+                                  beside: list[_Beside]) -> bool:
     """Whether the suffix piece at `k` is a connective PLACED TO JOIN
     between two name words of the clause `lo`..`hi`.
 
     Defined here, beside its one caller, and forward-referencing the
     two predicates it is built out of: `_is_conj_piece` and
     `_name_word_beside` are the JOIN's, further down this module, and
-    moving them up to meet this would say they belonged to the clause."""
+    moving them up to meet this would say they belonged to the clause.
+
+    `beside` is the caller's memo cell, EMPTY until the first piece
+    that gets this far -- which is a suffix piece inside a clause, so
+    almost no name reaches it -- and filled here rather than at the
+    call site so the laziness costs no frame of its own. The walk
+    does not touch `pieces` or `ptags`, so one fill serves every
+    piece of it (#397 second review, the run fix)."""
+    if not beside:
+        beside.append(_run_neighbours(pieces, ptags, tokens))
     return (_is_conj_piece(pieces[k], ptags[k], tokens)
-            and _name_word_beside(k, -1, lo, hi, pieces, ptags, tokens)
-            and _name_word_beside(k, 1, lo, hi, pieces, ptags, tokens))
+            and _name_word_beside(k, -1, lo, hi, pieces, ptags, tokens,
+                                  beside[0])
+            and _name_word_beside(k, 1, lo, hi, pieces, ptags, tokens,
+                                  beside[0]))
 
 
 def _maiden_take(pieces: Sequence[Sequence[int]],
@@ -609,11 +621,17 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # either ('PhD née - i Jones').
     lo = seen[m + run]
     j = m + run
+    # The link exception's memo cell, filled on first use inside the
+    # predicate: an ordinary clause never reaches it, and a clause
+    # holding a RUN of links asks about the run once instead of once
+    # per member ('Jane Doe nee Puig i i i ... Soler').
+    beside: list[_Beside] = []
     while (j < len(seen) and seen[j] < trailing
            and (not is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
                                     tokens)
                 or _link_joins_inside_the_clause(seen[j], lo, peel_start,
-                                                 pieces, ptags, tokens))):
+                                                 pieces, ptags, tokens,
+                                                 beside))):
         j += 1
     # j == m + run means nothing followed the marker but a suffix, so
     # the pass declines and the marker stays ordinary words
@@ -662,6 +680,85 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"rather than reading it as one",
             tuple(last)))
     return seen[m:m + run], seen[m + run:j]
+
+
+#: What `_name_word_beside` reads instead of walking: two arrays over
+#: the segment's pieces, giving for each index the nearest piece on
+#: its left and on its right that is NOT a connective -- `-1` and
+#: `len(pieces)` where the run reaches the end. Built by
+#: `_run_neighbours`, and an ALIAS rather than a NamedTuple because a
+#: NamedTuple's __new__ is a frame of its own (decisions.md#parse-cost).
+_Beside = tuple[list[int], list[int]]
+
+
+def _run_neighbours(pieces: Sequence[Sequence[int]],
+                    ptags: Sequence[Set[str]],
+                    tokens: Sequence[WorkToken]) -> _Beside:
+    """The nearest non-connective piece on each side of every index.
+
+    EVERY MEMBER OF ONE RUN HAS THE SAME ANSWER, which is the whole
+    of the fix: `_name_word_beside` used to walk the run itself, so a
+    name holding a run of n connectives walked it n times and the
+    stage went quadratic in the run's length -- measured 2026-09-20,
+    `"Josep " + "i " * n + "Rovira"` grew 3.8x per doubling against
+    the 2.0x every other shape holds, 59ms at n=800. Two linear
+    passes answer the same question once for the whole segment.
+    `tests/v2/test_benchmark.py`'s `link_run` shape is the guard.
+
+    `_is_conj_piece` is asked ONCE per piece, into a list the second
+    pass then reads: asking it in both passes would double the calls,
+    and it is the only per-piece call this builder makes. Recorded in
+    the FIRST pass rather than by a comprehension of its own -- which
+    is a code object on 3.11 and a bytecode saving here rather than a
+    frame one, measured: the profile hook emits no call event for it.
+
+    WHAT IT COSTS A SHORT NAME, because answering for the whole
+    segment is not free where the walk would have stopped at once:
+    this call, plus `_is_conj_piece` for the pieces the walk never
+    reached. Measured 2026-09-20 against b9ed1429 -- `Josep Carod i
+    Rovira` 304 -> 307 frames (one call and two more `_is_conj_piece`
+    over its four pieces) and `Jane Doe nee Puig i Soler` 307 -> 312.
+    An O(1) rise per link-bearing name against an unbounded saving:
+    the same name with a run of 64 links goes 6,741 -> 2,652.
+    `tools/perf/call_count.py` is unmoved (parse=406.00,
+    facade=443.00) -- its reference name carries no link -- and so are
+    `John Smith`, `Smith, John`, `Juan Garcia y Lopez` and `Jane Doe
+    nee Smith`, none of which reaches this at all.
+
+    Called only where a generational connective was found in the
+    segment (the `frozen` loop) or where a clause's walk reached a
+    suffix piece (`_link_joins_inside_the_clause`), so no ordinary
+    name pays for it at all.
+
+    Mutation-checked 2026-09-20, each arm by a NAMED test: reading
+    the left array on both sides fails
+    test_a_connective_with_nothing_to_its_right_does_not_join, the
+    right array on both sides fails
+    test_a_leading_title_on_the_left_is_no_name_word, and dropping
+    either pass's `not` fails
+    test_a_connective_piece_counts_toward_the_carve_outs_total.
+    SWAPPING the two arrays outright is an EQUIVALENT mutant and no
+    test fails: both callers ask for a name word on each side and
+    AND the two answers, so which array answers which side is not a
+    question the conjunction can see.
+    """
+    n = len(pieces)
+    left = [-1] * n
+    right = [n] * n
+    conj = [False] * n
+    prev = -1
+    for k in range(n):
+        left[k] = prev
+        is_conj = _is_conj_piece(pieces[k], ptags[k], tokens)
+        conj[k] = is_conj
+        if not is_conj:
+            prev = k
+    nxt = n
+    for k in range(n - 1, -1, -1):
+        right[k] = nxt
+        if not conj[k]:
+            nxt = k
+    return left, right
 
 
 # rules.md#P3: "a recognized connective joins its neighbors into one
@@ -718,7 +815,8 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 def _name_word_beside(k: int, step: int, lo: int, hi: int,
                       pieces: Sequence[Sequence[int]],
                       ptags: Sequence[Set[str]],
-                      tokens: Sequence[WorkToken]) -> bool:
+                      tokens: Sequence[WorkToken],
+                      beside: _Beside) -> bool:
     """Whether such a word stands on the `step` side of the
     connective piece at `k`.
 
@@ -736,15 +834,23 @@ def _name_word_beside(k: int, step: int, lo: int, hi: int,
     Rovira'): the peel walks from the end and stops at the first name
     word, the title run from the front.
 
-    The walk steps over connectives because a RUN of them joins as
+    The answer steps over connectives because a RUN of them joins as
     one ('Carod i y Rovira'), so the word this rule is about is the
     first one past the run -- and where the run runs out ('Juan i e')
-    there is no name word on that side at all.
+    there is no name word on that side at all. `beside` is where that
+    stepping already happened: `_run_neighbours` walked every run once
+    for the whole segment, so this reads an index rather than walking
+    to it.
+
+    A SENTINEL OUT OF RANGE is how "the run ran out" arrives -- -1 on
+    the left, `len(pieces)` on the right -- and the bound test below
+    is what turns it into False, exactly as it did when the walk ran
+    here and stopped at the same place. `lo` is never negative and
+    `hi` never past `len(pieces)`, so neither sentinel can pass it,
+    and the two piece tests are never asked about an index that is
+    not one.
     """
-    j = k + step
-    while (0 <= j < len(pieces)
-            and _is_conj_piece(pieces[j], ptags[j], tokens)):
-        j += step
+    j = beside[0][k] if step < 0 else beside[1][k]
     return (lo <= j < hi
             and not is_suffix_piece(pieces[j], ptags[j], tokens)
             and not is_title_piece(pieces[j], ptags[j], tokens))
@@ -994,6 +1100,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # connective in a three-word name").
         frozen: set[int] = set()
         lo = hi = -1
+        beside: _Beside = ([], [])
         for k, piece in enumerate(pieces):
             tok = tokens[piece[0]]
             if (len(piece) != 1
@@ -1014,13 +1121,22 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # acronym (#397 second review). Asked once per
                 # segment and only where such a connective was found,
                 # so the cost is the chain's own and no ordinary name
-                # pays it.
+                # pays it -- which is the same gate the run memo
+                # below is built on, and for the same reason.
                 hi = trailing_start_past_titles(lo, pieces, ptags,
                                                 tokens,
                                                 one_case=one_case)
-            if not (_name_word_beside(k, -1, lo, hi, pieces, ptags, tokens)
+                # ONE ANSWER PER RUN, built beside the two bounds and
+                # on the same gate: every member of a contiguous run
+                # of connectives has the same nearest name word on
+                # each side, and asking per member walked the run
+                # once per member -- quadratic in its length, 3.8x
+                # per doubling measured at `b9ed1429`.
+                beside = _run_neighbours(pieces, ptags, tokens)
+            if not (_name_word_beside(k, -1, lo, hi, pieces, ptags, tokens,
+                                      beside)
                     and _name_word_beside(k, 1, lo, hi, pieces, ptags,
-                                          tokens)):
+                                          tokens, beside)):
                 frozen.add(piece[0])
         total = sum(_is_rootname(p, t, tokens)
                     for p, t in zip(pieces, ptags)

@@ -215,6 +215,20 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #                             words and reaches nothing: the peel
 #                             stops at the trailing marker, so the
 #                             ORDER inside the unit is the shape
+#   connective RUN LENGTH     link_run ONLY -- P3's both-sides
+#                             condition walks the run of connectives
+#                             beside a link, and no other unit here
+#                             puts two connectives in a row where one
+#                             of them is GENERATIONAL vocabulary.
+#                             'and ' is a run too, but no member of it
+#                             is in the class, so the frozen loop's
+#                             body never runs and the walk is never
+#                             entered; the unit needs MIXED CASE as
+#                             well, since a one-case name reads the
+#                             marked letter as an initial and the
+#                             frozen loop declines it on the tag
+#                             ('i und ' reaches nothing, 'i Und '
+#                             reaches everything)
 _SHAPES = {
     "delimiter_pairs": "(a) ",      # extract: matched pairs -> masked spans
     "quote_pairs": '"a" ',          # extract: the open==close path
@@ -228,6 +242,7 @@ _SHAPES = {
     "honorifics": "씨 ",             # script_segment: the peel's site scan
     "bound_given": "abdul ",        # group: the P5 reserve over every piece
     "maiden_clause": "nee MA ",     # group: M2's view over the segment
+    "link_run": "i Und ",           # group: P3's both-sides walk (#397)
 }
 
 _BASE = 800
@@ -273,6 +288,18 @@ _FACTOR = 4
 # signal is the strongest of the three quadratics on record and does
 # not decide the bound; the shape reads 4.05-4.12 at base 800 across
 # repeated runs, inside the clean column, and neither number moved.
+# The thirteenth (link_run, #397 second review) arrived with its own
+# quadratic in hand as well, and it is the one this shape was added
+# FOR rather than one found by adding it: `_name_word_beside` walked
+# the run of connectives beside a link once per MEMBER of that run,
+# so at commit b9ed1429 the shape measures 8.48 at base 100, 10.29 at
+# 200 and 12.11 at 400 -- outside the bound at every one of them, and
+# the second-strongest signal on record. Answered once per run
+# (`_group._run_neighbours`) it reads 4.04 at base 200, 4.02 at 400
+# and 4.02-4.19 at 800 across repeated runs, inside the clean column;
+# neither number moved. The absolute cost is the shape's own price
+# and is paid at the top of the clean range: 11.6ms at base 800
+# against 48.7ms at 3200.
 _MAX_RATIO = 6.0
 
 
@@ -464,3 +491,67 @@ def test_a_trailing_credential_run_does_not_cost_exponentially() -> None:
         f"input, where this tree measures 3.5x and the per-member memo "
         f"#531 first shipped measured 7.4x. Something in _assign.py's "
         f"trailing slot is asking a walk per member again (#531)")
+
+
+# The clause caller of the same walk, and a THIRD instrument for the
+# same reason the one above needed a second: `_SHAPES` repeats a unit
+# and nothing else, so it cannot express "a name word, a marker, then
+# a long run" -- and a maiden clause needs exactly that prefix.
+# Measured: `"nee i Und " * n` never reaches the clause link exception
+# at all (the take declines, and b9ed1429 and this tree measure the
+# identical 3.92/4.07/4.12 on it), which is the silent-no-op a
+# reachability probe exists to catch. So this guard builds its own
+# input and counts FRAMES, which the walk is made of and which do not
+# move under load.
+#
+# One pair, not two: the defect here is a quadratic and there is no
+# exponential to order it against, so the 16-vs-64 pair is the whole
+# guard. Measured 2026-09-20 through this file's own `_frames_for`:
+# 876 frames at 16 and 2,652 at 64 on this tree (3.03x), against
+# 1,125 and 6,741 at b9ed1429 (5.99x), where `_name_word_beside`
+# walked the run once per member -- identical on three repeated runs
+# at each end, frame counts being deterministic.
+_CLAUSE_RUN_SMALL = 16
+_CLAUSE_RUN_LARGE = 64
+#: 3.03x measured here against 5.99x at b9ed1429: 4.5 sits ~1.5x over
+#: the measurement and ~1.3x under the regression. Frame counts are
+#: deterministic for a given tree and interpreter, so both margins are
+#: for a future shape change rather than for runner noise.
+_CLAUSE_RUN_MAX_RATIO = 4.5
+
+
+def _clause_run(members: int) -> str:
+    """A maiden clause whose birth name is a RUN of links.
+
+    Mixed case on purpose: written wholly in one case the letter reads
+    as an initial (rules.md#P3's marked subset) and the clause's link
+    exception is never asked, so the guard would measure nothing.
+    """
+    return "Jane Doe nee Puig " + "i " * members + "Soler"
+
+
+def test_a_clause_link_run_does_not_cost_quadratically() -> None:
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    small_text = _clause_run(_CLAUSE_RUN_SMALL)
+    large_text = _clause_run(_CLAUSE_RUN_LARGE)
+    # REACHABILITY, the probe every shape in this file carries: the
+    # walk under measurement runs only while the clause KEEPS the run,
+    # which is rules.md#M2's link exception. End the clause at the
+    # first link instead and the guard measures a walk that no longer
+    # happens, at a comfortable ratio, forever. Asked at both sizes,
+    # the run length being what this varies.
+    for text, members in ((small_text, _CLAUSE_RUN_SMALL),
+                          (large_text, _CLAUSE_RUN_LARGE)):
+        assert parse(text).maiden == " ".join(
+            ["Puig"] + ["i"] * members + ["Soler"])
+    small = _frames_for(small_text)
+    large = _frames_for(large_text)
+    ratio = large / small
+    assert ratio < _CLAUSE_RUN_MAX_RATIO, (
+        f"a clause holding {_CLAUSE_RUN_SMALL} links costs {small} frames "
+        f"and one holding {_CLAUSE_RUN_LARGE} costs {large} -- "
+        f"{ratio:.1f}x for 4x the input, where this tree measures 3.0x "
+        f"and the per-member walk at b9ed1429 measured 6.0x. "
+        f"_group.py's `_name_word_beside` is walking the run per member "
+        f"again (#397)")
