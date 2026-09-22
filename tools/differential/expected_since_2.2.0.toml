@@ -1622,3 +1622,32 @@ issue = "fix(#397) a link inside a maiden clause stays in the birth name"
 name_regex = "^(?:Doe, Jane nee Puig i Soler|Jane Doe nee Puig i Soler|Smith, John, PhD née Puig Mr\\. - i Soler)$"
 fields = ["family", "maiden", "middle", "suffix"]
 orders = ["DEFAULT"]
+
+[[change]]
+issue = "change(suffix-acronym-collisions) ph leaves the acronym set"
+# 'John Smith Ph.': 'ph' left SUFFIX_ACRONYMS with #459's all-caps
+# repair (PR #521, 2026-09-13). The fragment let the merged 'Ph. D.'
+# token pass the acronym test on its first piece -- the merge itself
+# keys on the PH/D regexes of _pipeline/_vocab.py and keeps working
+# without it -- and its only unique coverage was a bare trailing
+# 'Ph.' with no 'D.' behind it, read as a credential by every release
+# since 1.4.0. Out of the set that spelling falls to the positional
+# read: given 'John', middle 'Smith', family 'Ph.', suffix ''.
+#
+# A BEHAVIOR CHANGE rather than a fix, which is what the `change` tag
+# says: a deliberate 2.x parity break at every baseline, argued in
+# decisions.md's `Excluded (SUFFIX_ACRONYMS — ph)` block beside esq's
+# and carried by the 2.4.0 release-log bullet. No corpus name had the
+# shape until the cases.py row was written to carry it, which is why
+# the removal measured as 0 role movers at review time; 'John Smith
+# Ph. D.', 'Smith, Ph. D.' and 'john smith phd' do not move.
+#
+# Literal to the one corpus name that carries the shape. The CLASS
+# the removal moves is wider -- the undotted 'John Smith Ph'/'PH',
+# 'Ph.' inside a credential run ('John Smith Ph. MD', 'MD Ph.',
+# 'Ph. Jr.'), and the comma form 'Smith, Ph.' from 2.2.0 on -- every
+# one a bare ph with no D. behind it (the decisions block lists them,
+# measured 2026-09-22). A row carrying one of those arrives
+# unexplained here by design: widen this rule to it, do not file it.
+name_regex = "^John Smith Ph\\.$"
+fields = ["family", "middle", "suffix"]

@@ -1204,6 +1204,11 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # post-nominal that is not title vocabulary.
     "fix(#316) a trailing Latin title on a native-script name is a title":
         ("王先生, V.", "田中さん, Dr.", "田中さん II"),
+    # The ph boundary: the merged split spelling in both positions, and
+    # the single-token spellings the `phd` entry carries.
+    "change(suffix-acronym-collisions) ph leaves the acronym set":
+        ("John Smith Ph. D.", "Smith, Ph. D.", "john smith phd",
+         "John Smith Ph.D."),
     # The esq boundary is every spelling SUFFIX_WORDS still carries,
     # in each of the three positions the corpora write it in.
     "change(suffix-acronym-collisions) esq leaves the acronym set":
@@ -3170,6 +3175,12 @@ def _claim(rule: dict) -> _Claim:
 #: both is growth into names the rule genuinely describes.
 _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     "expected_since_1.4.0.toml": {
+        # The ph removal (#459/#521): one literal name, the cases.py
+        # row written to carry the bare trailing `Ph.` shape, since no
+        # corpus name had it -- which is why the removal measured as
+        # zero role movers at review time.
+        "change(suffix-acronym-collisions) ph leaves the acronym set":
+            _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
@@ -3887,6 +3898,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('maiden', 'suffix'), 'e20491ebfe62', None),
     },
     "expected_since_2.0.0.toml": {
+        # The ph removal (#459/#521): one literal name, the cases.py
+        # row written to carry the bare trailing `Ph.` shape, since no
+        # corpus name had it -- which is why the removal measured as
+        # zero role movers at review time.
+        "change(suffix-acronym-collisions) ph leaves the acronym set":
+            _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
@@ -4402,6 +4419,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
     # the 2.0.0 mapping above, the same regex classifying the same
     # names.
     "expected_since_2.2.0.toml": {
+        # The ph removal (#459/#521): one literal name, the cases.py
+        # row written to carry the bare trailing `Ph.` shape, since no
+        # corpus name had it -- which is why the removal measured as
+        # zero role movers at review time.
+        "change(suffix-acronym-collisions) ph leaves the acronym set":
+            _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
@@ -4689,6 +4712,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
                    '4de0e7570bd6', ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
+        # The ph removal (#459/#521): one literal name, the cases.py
+        # row written to carry the bare trailing `Ph.` shape, since no
+        # corpus name had it -- which is why the removal measured as
+        # zero role movers at review time.
+        "change(suffix-acronym-collisions) ph leaves the acronym set":
+            _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
@@ -5171,6 +5200,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
                    '4de0e7570bd6', ('DEFAULT',)),
     },
     "expected_since_2.3.0.toml": {
+        # The ph removal (#459/#521): one literal name, the cases.py
+        # row written to carry the bare trailing `Ph.` shape, since no
+        # corpus name had it -- which is why the removal measured as
+        # zero role movers at review time.
+        "change(suffix-acronym-collisions) ph leaves the acronym set":
+            _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
         # #383/#479's three rules, the first this ledger carries. The
         # role rule is the 2.x shape of the 1.4.0 rule of the same
         # name -- two corpus names, the union of two disjoint role
