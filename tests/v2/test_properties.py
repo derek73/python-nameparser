@@ -1676,15 +1676,23 @@ def _off_roles(off: ParsedName) -> dict[tuple[int, int], Role]:
     return {span: tok.role for tok, span in _placed(off)}
 
 
-def _name_word_beside(toks: list[_Placed], i: int, step: int,
-                      off_role: dict[tuple[int, int], Role],
-                      original: str) -> bool:
+def _name_word_on_the_side(toks: list[_Placed], i: int, step: int,
+                           off_role: dict[tuple[int, int], Role],
+                           original: str) -> bool:
     """Whether a name word stands on the `step` side of toks[i],
     judged by the OFF-SWITCH parse's roles -- which is what makes
     this a PRE-JOIN reading: in that parse the class letter is no
     connective, so no join has moved anything. A comma between ends
     the walk (it is another segment), and connectives are stepped
-    over because a run of them joins as one."""
+    over because a run of them joins as one.
+
+    DELIBERATELY A SECOND IMPLEMENTATION, and named so that the
+    mirror cannot be mistaken for the glass: it asks ONE side per
+    call over spans and off-switch roles, where the parser's
+    `_group._between_name_words` asks both at once over pieces and
+    tags. The name it used to carry was the implementation's own,
+    which read as a call into the thing under test rather than as a
+    model of it."""
     j = i
     while True:
         k = j + step
@@ -1758,8 +1766,9 @@ def _link_joins_between_name_words(on: ParsedName, off: ParsedName,
         if ("conjunction" not in tok.tags
                 or tok.text.lower() not in letters):
             continue
-        if (_name_word_beside(toks, i, -1, off_role, on.original)
-                and _name_word_beside(toks, i, 1, off_role, on.original)):
+        if (_name_word_on_the_side(toks, i, -1, off_role, on.original)
+                and _name_word_on_the_side(toks, i, 1, off_role,
+                                           on.original)):
             return True
     return False
 

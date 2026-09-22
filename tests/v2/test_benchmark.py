@@ -512,8 +512,13 @@ def test_a_trailing_credential_run_does_not_cost_exponentially() -> None:
 # `_between_name_words` walked the run once per member -- identical on
 # three repeated runs at each end, frame counts being deterministic.
 # One frame per link below the 875/2,651 this same helper read before
-# `_between_name_words` answered both sides in one call, and the pair
-# first recorded here (876/2,652) was one frame above that again.
+# `_between_name_words` answered both sides in one call. The pair
+# first recorded here, 876/2,652, is one frame above that and does NOT
+# reproduce: re-measured 2026-09-22 on py3.11, 6048eb5d -- the commit
+# that wrote those two figures into this comment -- reads 875 and
+# 2,651, which is the same pair 9fd84463 reads. So that recording came
+# off another interpreter; it stays, with the py3.11 reading of its own
+# tree now beside it.
 _CLAUSE_RUN_SMALL = 16
 _CLAUSE_RUN_LARGE = 64
 #: 3.01x measured here against 5.99x at b9ed1429: 4.5 sits ~1.5x over
@@ -558,3 +563,81 @@ def test_a_clause_link_run_does_not_cost_quadratically() -> None:
         f"and the per-member walk at b9ed1429 measured 6.0x. "
         f"_group.py's `_between_name_words` is walking the run per member "
         f"again (#397)")
+
+
+# THE ABSOLUTE COST OF A LINK, which the ratio above cannot see: a
+# change costing ONE MORE FRAME PER LINK moves both ends of the pair
+# and leaves the ratio where it was. Re-splitting the #397 follow-up's
+# fold is exactly that change -- 859/2,587 here against 875/2,651 at
+# 9fd84463, +1 per link at each size -- and against THIS suite the
+# pre-fold parser is green everywhere but here. Measured 2026-09-22 on
+# py3.11: a copy of this tree carrying `git archive 9fd84463
+# nameparser` in place of its own runs 9,652 passed, 324 skipped, 4
+# xfailed and ONE failure, this test. So a link-bearing name gets a
+# banded absolute pin, keyed by interpreter and banded like
+# `_CALL_BASELINE` above.
+#
+# THE LONG RUN AND NOT THE SHORT ONE, and the arithmetic is the whole
+# reason: +1 per link is 16 frames at `_CLAUSE_RUN_SMALL`, and 2% of
+# 859 is 17.2, so the small end's band swallows the very regression
+# this pin exists for (875 sits inside 842-876). At
+# `_CLAUSE_RUN_LARGE` the same change is +64 against a 2% band of
+# 51.7, and 2,651 sits outside 2,535-2,639. A tighter band on the
+# short name would do it too and was not taken: the band is the one
+# `_CALL_BASELINE` uses, and a bespoke one here would need its own
+# argument every time the shape moved.
+#
+# ONE ROW, py3.11, and an unknown interpreter SKIPS rather than fails
+# -- which is where this parts company with `_check_budget`, whose
+# table carries every interpreter CI runs and so can afford to fail on
+# a missing row. Only py3.11 is measurable in this working tree, and a
+# figure nobody here ran is not a pin. The #537 reviewer reports 3.12
+# at 835/2,563 and 3.13/3.14 at 882/2,706 for the 16/64 pair; those
+# are NOT recorded below, because recording them would put a number
+# under a band without a run behind it. Reproduce one on its own
+# interpreter and add the row.
+_LINK_BASELINE = {
+    (3, 11): 2587,
+}
+#: The same +-2% `_CALL_BASELINE` uses, and for the same reason: frame
+#: counts are deterministic for a given tree and interpreter, so the
+#: band is headroom for a deliberate shape change rather than for
+#: runner noise.
+_LINK_BAND = 0.02
+
+
+def test_a_link_costs_what_it_is_pinned_at() -> None:
+    """The absolute frame cost of one link-bearing name.
+
+    The ratio guard above cannot fail on a per-link constant, because
+    a constant moves its two ends together. This one can, and it is
+    the only thing in the suite that can.
+    """
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    version = sys.version_info[:2]
+    if version not in _LINK_BASELINE:
+        pytest.skip(
+            f"no link baseline for Python {version[0]}.{version[1]}; "
+            f"measure `_clause_run({_CLAUSE_RUN_LARGE})` on this "
+            f"interpreter and add the row to _LINK_BASELINE")
+    text = _clause_run(_CLAUSE_RUN_LARGE)
+    # REACHABILITY, the probe every shape in this file carries: the
+    # frames counted are the clause walk's, and they are only there
+    # while the clause KEEPS the run (rules.md#M2's link exception).
+    # End the clause at the first link and this measures a name that
+    # no longer holds 64 links, comfortably inside the band forever.
+    assert parse(text).maiden == " ".join(
+        ["Puig"] + ["i"] * _CLAUSE_RUN_LARGE + ["Soler"])
+    baseline = _LINK_BASELINE[version]
+    actual = _frames_for(text)
+    low, high = baseline * (1 - _LINK_BAND), baseline * (1 + _LINK_BAND)
+    assert low <= actual <= high, (
+        f"a maiden clause holding {_CLAUSE_RUN_LARGE} links costs "
+        f"{actual} frames on Python {version[0]}.{version[1]}, band "
+        f"{low:.0f}-{high:.0f} around a baseline of {baseline}. Growth "
+        f"and shrinkage are both signals, and one frame per link is "
+        f"enough to reach this band where the ratio guard above cannot "
+        f"see it: check whether `_group._between_name_words` still "
+        f"answers both sides of a link in one call, then move the "
+        f"baseline deliberately (#397)")

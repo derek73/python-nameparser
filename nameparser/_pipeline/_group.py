@@ -602,11 +602,17 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # marker is never the name word on a link's left, and a delimiter
     # core between the marker and that first word is below `lo` by
     # construction and cannot pass for one either. A core is the TAIL
-    # segment's alone (`extra_suffix_delimiters`, empty by default), so
-    # an ordinary dash is not one and does pass: 'PhD née - i Jones'
-    # keeps maiden '- i Jones' (measured 2026-09-20), while the same
-    # text under a configured ' - ' declines
-    # (test_a_core_between_the_marker_and_the_first_word_is_below_lo).
+    # segment's alone (`extra_suffix_delimiters`, empty by default),
+    # and a dash standing where no tail segment can hold it is an
+    # ordinary word at EITHER policy: 'PhD née - i Jones' keeps maiden
+    # '- i Jones' configured and unconfigured alike, there being no
+    # comma to make a tail out of. It takes the tail a suffix comma
+    # builds for the dash to be a core at all, and then the two
+    # policies part company -- 'Smith, John, PhD née - i Jones' keeps
+    # maiden '- i Jones' by default and declines under a configured
+    # ' - ', which is the pair
+    # test_a_core_between_the_marker_and_the_first_word_is_below_lo
+    # holds (all four readings measured 2026-09-22).
     # NOT theoretical and not a whole claim about cores, both settled
     # by measurement 2026-09-21 over corpus u cases.py u the property
     # grids u a 50,925-name generated set with cores, under thirteen
@@ -616,14 +622,15 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # `_run_neighbours` (which steps over connectives and nothing
     # else), and DOES pass for the name word on a link's side. That
     # reading is pinned as it stands rather than repaired here
-    # (test_a_core_beside_a_link_inside_the_clause_passes_for_a_word):
+    # (test_a_core_beside_a_link_wrongly_passes_for_a_word_until_538):
     # `_between_name_words` is asked about a core in 51,072 of 900,023
     # calls, the answer differs from a core-skipping reading in 8,094
     # parses over 1,278 texts, and 1,824 of those move `maiden` on 288
-    # texts -- none of them a corpus or cases.py name, none reachable
-    # at the default policy. The repair is `cores` threaded through
+    # texts -- none of them reachable at the default policy, which is
+    # why rules.md#M2 states it with a policy annotation beside the
+    # marker. The repair is `cores` threaded through
     # three call sites into `_run_neighbours`, which is its own change
-    # (#397 follow-up).
+    # (#538, and rules.md#M2 carries it as a `deviates:` example).
     # `peel_start` is where assign's trailing run begins over
     # the pieces as WRITTEN, so the generation or credential a clause
     # ends with is never the name word on a link's right ('... nee Puig
@@ -743,8 +750,12 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     Soler` 315 -> 319. An O(1) rise per link-bearing name against an
     unbounded saving: the same name with a run of 64 links goes
     6,741 -> 2,587. (The pair first written here read 304 -> 307 and
-    307 -> 312; the run-of-64 half was py3.11 and the two short-name
-    halves were not, which is the spliced-interpreter table
+    307 -> 312, with 6,741 -> 2,652 for the run of 64. Re-measured
+    2026-09-22 on py3.11, WHICH OF THOSE REPRODUCE is: the two
+    short-name pairs, neither of them; the run-of-64 pair, its left
+    half only -- b9ed1429 reads 6,741 exactly, while 6048eb5d, the
+    tree the 2,652 was taken on, reads 2,651 here. So the interpreter
+    splice ran through a single arrow, which is what the table
     `tools/perf/call_count.py`'s own docstring warns about. Every
     figure above is one interpreter, stated.)
     `tools/perf/call_count.py` is unmoved (parse=406.00,

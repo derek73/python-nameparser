@@ -1393,6 +1393,16 @@ M2. Rationale: a maiden marker announces that what follows it is the
     does not.
       "Jane Doe nee Smith MA Prof."    →  maiden="Smith MA Prof."  · boundary
       "Jane Doe nee Smith Prof. MA"    →  maiden="Smith Prof."  · boundary
+    Deviation: the link exception asks for a name word on each side,
+    and a separator the caller declared is structure rather than a
+    name word — so a link with one beside it is joining nothing and
+    ends the clause like any other suffix word. A declared separator
+    standing inside the clause, past its first word, is read as that
+    name word instead, and the clause runs on across a link it should
+    have ended at. The same clause written without the separator,
+    which leaves the title as the word on the link's left, does end
+    there.
+      "Smith, John, PhD née Puig Mr. - i Soler" extra_suffix_delimiters-dash →  maiden="Puig Mr."  deviates: #538 (today: maiden="Puig Mr. i Soler")
     history: decisions.md#M2 · interacts: P2, P3, P5, P6, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means

@@ -3201,8 +3201,8 @@ orders = ["DEFAULT"]
 # #397 review: A LINK INSIDE A MAIDEN CLAUSE STAYS IN THE BIRTH NAME
 # (2026-09-20). LAST in the file, narrow-first: this rule declares
 # {family, maiden, middle, suffix} and every rule above it that could
-# reach either name declares a strict subset, so an earlier position
-# would be an order-decided contest the run refuses (#382).
+# reach any of the three declares a strict subset, so an earlier
+# position would be an order-decided contest the run refuses (#382).
 #
 # rules.md#M2 states the exception; decisions.md#M2's 2026-09-20
 # bullet carries the measurement and why it is fixed in #397's own PR
@@ -3211,7 +3211,7 @@ orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#397) a link inside a maiden clause stays in the birth name"
-# Two names, one sentence, two shapes -- `fields` is the union.
+# Three names, one sentence, three shapes -- `fields` is the union.
 #
 # The maiden walk has always ended the birth name at the first suffix
 # WORD after the marker, and the Catalan link is also the roman
@@ -3230,12 +3230,25 @@ issue = "fix(#397) a link inside a maiden clause stays in the birth name"
 # the tree, 'y' being connective vocabulary and no generation. That
 # twin is the property invariant in tests/v2/test_properties.py.
 #
-# Literal-anchored to the two. The shape is "a one-letter connective
+# The THIRD name arrives from rules.md#M2 rather than from a report:
+# 'Smith, John, PhD née Puig Mr. - i Soler' is the doc's
+# `deviates: #538` example, and the doc reaches the deviation with a
+# configured ' - ' that this corpus does not apply. Parsed with the
+# DEFAULT facade, as the gate parses it, the dash is an ordinary name
+# word, so the link has one on each side and the clause keeps
+# 'i Soler' where this baseline left it in the suffix: suffix
+# 'PhD i Soler' -> 'PhD', maiden 'Puig Mr. -' -> 'Puig Mr. - i Soler'
+# (measured 2026-09-22 at all four 2.x baselines, identical at each).
+# That is this rule's own sentence and no part of #538, whose reading
+# needs the delimiter declared; {maiden, suffix} is a subset of the
+# union above.
+#
+# Literal-anchored to the three. The shape is "a one-letter connective
 # inside a maiden clause", which would stand ready to excuse every
 # future regression at this walk -- and the walk's whole design is
 # that some such letters must NOT be taken. _MUST_NOT_MATCH carries
 # the wall: the i-last control, the generation behind it, and the
 # spellings where the letter is an initial.
-name_regex = "^(?:Doe, Jane nee Puig i Soler|Jane Doe nee Puig i Soler)$"
+name_regex = "^(?:Doe, Jane nee Puig i Soler|Jane Doe nee Puig i Soler|Smith, John, PhD née Puig Mr\\. - i Soler)$"
 fields = ["family", "maiden", "middle", "suffix"]
 orders = ["DEFAULT"]

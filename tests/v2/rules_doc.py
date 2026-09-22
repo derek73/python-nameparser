@@ -131,6 +131,14 @@ POLICIES: dict[str, Policy] = {
     #: one is on by default and the other off.
     "unlisted_dotted_suffixes-off": Policy(unlisted_dotted_suffixes=False),
     "unlisted_caps_suffixes-on": Policy(unlisted_caps_suffixes=True),
+    #: The delimiter switch (#206), named after its Policy FIELD for
+    #: the reason above and carrying the DELIMITER in the suffix,
+    #: because this field's value is a set rather than a flag: a rule
+    #: reached only under a configured separator has to say which one,
+    #: and " - " is the spelling docs/customize.rst teaches and the
+    #: one the group tests configure.
+    "extra_suffix_delimiters-dash": Policy(
+        extra_suffix_delimiters=frozenset({" - "})),
 }
 #: D-section subjects: zero-arg constructions whose diagnostics the
 #: warns=/raises= assertion forms exercise.

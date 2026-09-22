@@ -1810,8 +1810,17 @@ def test_a_core_between_the_marker_and_the_first_word_is_below_lo(
     assert _maiden_texts(plain) == ["-", "i", "Jones"]
 
 
-def test_a_core_beside_a_link_inside_the_clause_passes_for_a_word(
+def test_a_core_beside_a_link_wrongly_passes_for_a_word_until_538(
 ) -> None:
+    """A KNOWN-WRONG reading, pinned so the repair has to move it.
+
+    rules.md#M2 gives the link exception a name word on each side,
+    and a delimiter core is structure rather than a name word -- so
+    the clause below should end where its separator-less twin ends.
+    It does not. Update this test when #538 lands: the assertion
+    beneath the first parse is the deviation, not the contract, and
+    rules.md#M2's `deviates: #538` example is its other half.
+    """
     # WHAT IS NOT TRUE OF A CORE PAST `lo`, pinned as it reads rather
     # than as it ought to: inside the clause a core is an ordinary
     # index to `_run_neighbours`, which steps over CONNECTIVES and
@@ -1821,11 +1830,14 @@ def test_a_core_beside_a_link_inside_the_clause_passes_for_a_word(
     # other in 51,072 of 900,023 calls over the population above, and
     # the answer differs from a core-skipping reading in 8,094 parses
     # (1,278 texts); 1,824 of those move the `maiden` field, on 288
-    # texts. None is a corpus or cases.py name and none is reachable
-    # at the default policy, `extra_suffix_delimiters` being empty
-    # there. Reported, not fixed: the repair is `cores` threaded
-    # through three call sites into `_run_neighbours`, not a one-liner
-    # (#397 follow-up, 2026-09-21).
+    # texts. None of the 288 is reachable at the default policy,
+    # `extra_suffix_delimiters` being empty there -- so the one of
+    # them rules.md#M2 now carries as a `deviates: #538` example (this
+    # row's first text) enters corpus_rules.jsonl as a name the gate
+    # parses with the DEFAULT facade, where it moves for the link fix
+    # and not for this. Reported, not fixed: the repair is `cores`
+    # threaded through three call sites into `_run_neighbours`, not a
+    # one-liner (#538).
     out = _grouped("Smith, John, PhD née Puig Mr. - i Soler",
                    policy=_DASH, lexicon=_LINK_LEX)
     assert _maiden_texts(out) == ["Puig", "Mr.", "i", "Soler"]
