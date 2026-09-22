@@ -7,7 +7,11 @@ stage; the split is by what the question takes, not by
 which stage happens to ask (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 _vocab points here from its own side: "Text-level tests used by more
 than one stage; piece-level ones live in _pieces, the sibling layer
-over tokens-plus-tags."
+over tokens-plus-tags." own_words (#289/#516) answers over the whole
+token STREAM rather than one piece -- pieces do not exist yet at the
+stages that call it -- but the question is still piece-shaped, not
+word-shaped: it reads token ROLE, which _vocab's text-level tests
+never take.
 
 Before this module those predicates lived in _group, not because
 grouping owned them but because assign imported group and could not be
@@ -34,8 +38,10 @@ tail_reading is that one question, running them against each other to
 their fixed point for the two stages that must not disagree about the
 answer.
 
-Layering: imports _state and _vocab only; _group and _assign import
-it, and neither of the two it imports imports it back.
+Layering: imports _state and _vocab only; FOUR stages import it --
+_segment, _classify, _group and _assign, segment being the one the
+#289/#516 own-words span added -- and neither of the two it imports
+imports it back.
 
 Naming follows _vocab's: inside an already-private module the leading
 underscore marks module-PRIVATE, so the names other stages call are
@@ -46,12 +52,80 @@ helper.
 """
 from __future__ import annotations
 
-import re
-from collections.abc import Sequence, Set
+from collections.abc import Mapping, Sequence, Set
 from typing import NamedTuple
 
-from nameparser._pipeline._state import WorkToken
-from nameparser._pipeline._vocab import is_trailing_numeral_suffix
+from nameparser._pipeline._state import (
+    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, WorkToken,
+)
+from nameparser._pipeline._vocab import (
+    _PERIOD_ABBREV, Lean, ambiguous_lean, in_initialless_script,
+    is_trailing_numeral_suffix, tag_marker_runs,
+)
+
+
+# rules.md#P3: "both questions this rule asks of a name — how many
+# words it has, and whether it is written in one case — are asked of
+# the name's OWN words: a maiden marker taken as one, and the words it
+# takes (M2), are not among them, and neither is a delimited clause
+# (N1, M1)" (history: decisions.md#P3)
+def own_words(tokens: Sequence[WorkToken], comma_offsets: Sequence[int],
+              markers: frozenset[str],
+              marker_tags: Mapping[int, str] | None = None,
+              ) -> tuple[list[str], int]:
+    """The name's OWN word texts and the index the maiden clause
+    starts at -- one span for the two stages that ask about it
+    (#289/#516).
+
+    Own words are the role-less tokens before the clause: a delimited
+    clause's tokens arrive from extract with a role already set, and
+    everything from a maiden marker on is the clause. Appending a
+    clause to a name must not change how a word in the name reads.
+
+    `marker_tags` is the map `_vocab.tag_marker_runs` already built,
+    index -> "vocab:maiden-marker"/"...-cont"; a caller that has it
+    (classify) hands it over and pays no second walk. A caller that
+    runs BEFORE those tags exist (segment) omits it, and this
+    function calls `tag_marker_runs` itself to build the SAME map
+    classify would -- not an approximation of it, which is what a
+    from-scratch text walk (this module's earlier `first_marker_head`)
+    could disagree with on a name where a marker's head opens an entry
+    but no run completes ('z' of 'z domu'): measured, 'ANNA z Nowak,
+    MD' flipped the recorded one-case verdict under that approximation
+    (decisions.md#P3). Sharing the exact function instead makes the
+    two paths agree by construction, not by corpus luck.
+
+    Takes tokens/comma_offsets/markers rather than a whole ParseState:
+    both call sites have all three already, and passing them lets this
+    function sit beside the piece predicates rather than in _vocab
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION; the
+    _post_rules.suffix_entries precedent, AGENTS.md's named exception)
+    -- it answers with the SPAN, where `tag_marker_runs` answers only
+    which tokens open a run.
+
+    `marker_tags`' keys must arrive in index order for the walk below
+    to find the SMALLEST head in one pass: `tag_marker_runs` walks its
+    tokens left to right, so the first head it records is already the
+    smallest, and a caller building its own map must preserve that
+    order too.
+
+    A plain tuple, not a NamedTuple: measured 2026-09-17, wrapping
+    this in a `NamedTuple` (this module's `Peel` is one) cost the
+    reference name one more frame (413.00 vs the 412.00 band this
+    commit must hold) -- a NamedTuple's `__new__` is itself a call,
+    where a bare tuple literal is not. `Peel` can afford the frame
+    because assign builds one only where the trailing peel actually
+    ran; `own_words` returns on every parse.
+    """
+    if marker_tags is None:
+        marker_tags = tag_marker_runs(tokens, comma_offsets, markers)
+    clause_at = len(tokens)
+    for i, tag in marker_tags.items():
+        if tag == "vocab:maiden-marker" and tokens[i].role is None:
+            clause_at = i
+            break
+    return ([t.text for t in tokens[:clause_at] if t.role is None],
+            clause_at)
 
 
 # rules.md#H3: "successive title words at the start of the part
@@ -64,13 +138,16 @@ def is_title_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "vocab:title" in tokens[piece[0]].tags
 
 
-# Ported verbatim from v1 (nameparser/config/regexes.py
-# "period_abbreviation") -- layering forbids the config import; keep
-# in sync by hand (tests/v2/test_regex_sync.py). Out of assign since
-# #424 and in the piece layer since #439: the test is assign's, and group's
-# leading-particle scan and trailing-run walk must start where assign
-# starts.
-_PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
+# _PERIOD_ABBREV: imported from _vocab, not redefined here (#289/#516,
+# quality-review finding) -- _vocab.name_word_count needed the SAME
+# shape test is_leading_title asks (_vocab.is_title_shaped), and
+# layering only allows the move in that direction (_pieces may import
+# _vocab; _vocab may not import _pieces). tests/v2/test_regex_sync.py
+# still reaches it as `_pieces._PERIOD_ABBREV` -- an import binds the
+# same name here, so the sync test's target did not move. Out of
+# assign since #424 and in the piece layer since #439: the test is
+# assign's, and group's leading-particle scan and trailing-run walk
+# must start where assign starts.
 
 
 # rules.md#H2: "an abbreviation opening the part of the name that
@@ -81,8 +158,29 @@ def is_leading_title(piece: Sequence[int], ptags: Set[str],
                       tokens: Sequence[WorkToken]) -> bool:
     if is_title_piece(piece, ptags, tokens):
         return True
-    return (len(piece) == 1
-            and bool(_PERIOD_ABBREV.match(tokens[piece[0]].text)))
+    if len(piece) != 1:
+        return False
+    text = tokens[piece[0]].text
+    # INLINED rather than calling _vocab.is_title_shaped, which asks
+    # the exact same question (#289/#516, quality-review finding: the
+    # two must not drift, and did once -- name_word_count's own
+    # vocabulary-only title test read 'Xyz.' as a name word where this
+    # predicate reads it as a title, and the disagreement flipped a
+    # comma structure `Dr. Smith, Ed`'s LISTED spelling did not).
+    # THIS is the one home for the number, `is_title_shaped` pointing
+    # here rather than restating it: routing this hot path through the
+    # shared function costs one frame per call (`is_leading_title`
+    # runs on every leading piece of every parse, unlike
+    # name_word_count's comma-only path), moving the reference name
+    # from 412/449 to 417/454 -- five calls on `Dr. Juan de la Vega
+    # III`, recomputable with `uv run python
+    # tools/perf/call_count.py`. Kept as two spellings of ONE test
+    # instead -- if you touch one, touch both, and
+    # `test_is_title_shaped_and_is_leading_title_agree` (this module's
+    # own test file) checks it over the union of both predicates'
+    # example tables rather than leaving it to a sentence.
+    return (bool(_PERIOD_ABBREV.match(text))
+            and (text.isascii() or not in_initialless_script(text)))
 
 
 def leading_titles(pieces: Sequence[Sequence[int]],
@@ -191,10 +289,19 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            ptags: Sequence[Set[str]],
                            tokens: Sequence[WorkToken],
                            lenient: bool,
+                           one_case: bool | None,
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
     credential run at all.
+
+    `one_case` admits #289's credential lean: an ALL-CAPS member of
+    the ambiguous set inside a mixed-case name is a credential in this
+    slot even with one word before the comma, because the writing is
+    evidence the count does not have ('Smith, MA' -> family 'Smith',
+    suffix 'MA'). Only the LEAN reaches here: a token admitted to the
+    class by SHAPE takes the count instead, which is decided at the
+    comma and not in this walk ('Smith, A.B.' -> given 'A.B.').
 
     ONE answer for two readers, both in _assign.py -- the no-name gate
     and the router -- because they must agree piece for piece. #429
@@ -243,6 +350,11 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         # have diverged silently
         after_suffix = bool(out) and out[-1]
         if is_suffix_piece(piece, tags, tokens):
+            out.append(True)
+        elif (len(piece) == 1
+                and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags
+                and listed_lean(tokens[piece[0]], one_case)
+                == "credential"):
             out.append(True)
         elif (lenient and after_suffix
                 and _numeral_behind_the_initial_veto(piece, tokens)):
@@ -294,7 +406,7 @@ def peel_walk(start: int, ptags: Sequence[Set[str]],
 def trailing_start(start: int, pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]], tokens: Sequence[WorkToken],
                     skip: Set[int] = frozenset(),
-                    numeral_only: bool = False) -> int:
+                    *, one_case: bool | None) -> int:
     """Where assign's trailing suffix run begins, read over the pieces
     as they stand from `start`: the index of the first piece the S2
     peel takes, or len(pieces) when it takes none (#424). What P2's
@@ -304,30 +416,105 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     or a bare acronym with words to spare, into the family or the
     maiden name.
 
-    `numeral_only` is the maiden walk's reading: the bare-acronym
-    fork counts pieces, and the walk removes the very pieces it
-    counted, so an acronym peeled over the pieces as they stand may
-    be the family of what is left ('John née Jones Smith Ma' read
-    maiden 'Jones Smith', family 'Ma'). The numeral fork reads one
-    piece, the one before the numeral, and _maiden_take re-asks it
-    with the piece the take leaves there; the acronym is left to
-    assign."""
+    Both forks, always. A caller that needs one of them alone -- the
+    maiden walk re-asking the numeral over the view its take would
+    leave, where the acronym fork's piece COUNT no longer describes
+    the name -- calls the `peel_walk` + `peel_trailing` pair this
+    wraps and reads the half it wants (#533). A `numeral_only` flag
+    lived here for that one caller and cost it a frame."""
     rest = peel_walk(start, ptags, skip)
-    peeled = peel_trailing(rest, pieces, ptags, tokens)
-    if numeral_only:
-        return rest[-1] if peeled.numeral is not None else len(pieces)
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
     return rest[peeled.names] if peeled.names < len(rest) else len(pieces)
+
+
+# #289/#516: the "listed member, not by-shape" test both
+# peel_trailing and segment_suffix_reading ask before reading the
+# lean -- shared here so the two cannot drift on what counts
+# (quality-review finding: it was spelled twice, once per site,
+# before this). Those two test "vocab:suffix-ambiguous" in tags
+# INLINE, before calling this, rather than leaving that cheap check to
+# this function's own body: measured, a caller whose `elif` reaches
+# this on every piece (segment_suffix_reading's does, one per
+# family-comma segment 1, member or not) pays one frame for the call
+# regardless of what is inside it, and the inline pre-check is what
+# keeps a non-member piece ("Smith, John"'s "John") from ever making
+# the call at all.
+#
+# A THIRD caller since #533 -- credential_at_the_given_slot just
+# below -- deliberately does NOT pre-check: it owns #531's reading
+# and leaves membership to its own callers (its docstring says so),
+# and the frame argument holds transitively because both of them ask
+# inline -- `AMBIGUOUS_ACRONYM_TAG in tok.tags` after a
+# `len(piece) == 1` at assign's given-part trailing slot, and the
+# same pair inside the `all(...)` of `_group.py`'s `_maiden_take`
+# view check. So no non-member piece reaches this function down that
+# route either.
+def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
+    """`ambiguous_lean` for a LISTED bare-ambiguous token, or None if
+    the token is not tagged a listed member, is admitted by SHAPE
+    instead (`SHAPE_ACRONYM_TAG`, a switch's doing, not the writing's),
+    or there is no case fact to ask at all."""
+    if (one_case is None or AMBIGUOUS_ACRONYM_TAG not in token.tags
+            or SHAPE_ACRONYM_TAG in token.tags):
+        return None
+    return ambiguous_lean(token.text, one_case)
+
+
+def credential_at_the_given_slot(token: WorkToken,
+                                 one_case: bool | None) -> bool:
+    """#531's reading of a class MEMBER ending the given part after a
+    family comma: the credential unless the writing says otherwise.
+    The caller decides membership and that the piece ends that part.
+
+    The words to spare are there by construction at that slot, so the
+    count says nothing and only the lean does; a member that is also
+    particle vocabulary reads as the credential on a POSITIVE lean
+    alone, P6's attachment keeping every other spelling.
+
+    Two callers since #533 -- assign's walk over the given part, and
+    the maiden walk's second check over the name the take would leave
+    (rules.md#M2) -- so the reading is a function rather than a
+    condition written twice
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It is a
+    text-and-tags question, which is what puts it in this module
+    rather than beside either caller.
+
+    The membership half of that contract is CHECKED rather than
+    trusted, because getting it wrong is silent: all three of
+    `listed_lean`'s None reasons fall through to the `particle` test
+    below, so a non-member handed in by mistake is answered True --
+    "read it as the credential" -- for a word the class never admitted.
+    An assert rather than a raise or a branch: it enters no Python
+    frame (measured -- 'Doe, John MA' stays at 311), it states the
+    contract where a reader of the function body meets it, and under
+    -O it is exactly the code that was here before.
+    """
+    assert AMBIGUOUS_ACRONYM_TAG in token.tags, (
+        f"credential_at_the_given_slot is #531's reading of a LISTED "
+        f"class member; {token.text!r} carries {sorted(token.tags)} "
+        f"and is not one. The caller decides membership -- test "
+        f"AMBIGUOUS_ACRONYM_TAG before calling")
+    lean = listed_lean(token, one_case)
+    return lean == "credential" or (lean is None
+                                    and "particle" not in token.tags)
 
 
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
-                   tokens: Sequence[WorkToken]) -> Peel:
+                   tokens: Sequence[WorkToken],
+                   one_case: bool | None) -> Peel:
     """The S2 trailing peel over `rest`, a peel_walk list. In the
     piece layer rather than in assign because group's bound-given
     reserve asks the same question of the view the join would leave
     (#425): one walk, so the reserve and the assignment cannot drift. Pure -- the ambiguities are
     returned for assign to report, in the order it always reported
-    them."""
+    them.
+
+    `one_case` is ParseState.one_case, the recorded fact: None means
+    nobody asked, which is every caller that has no state to ask with,
+    and reads as "no lean" -- rules.md#S2's count alone, the behavior
+    of every release before this one.
+    """
     picks: list[tuple[int, ...]] = []
     numeral: tuple[int, ...] | None = None
     k = len(rest)
@@ -356,12 +543,43 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # left ("Smith PhD" -> suffix, a classified fix), because there
         # the vocabulary is not in doubt.
         bare_ambiguous = (len(piece) == 1
-                          and "vocab:suffix-ambiguous" in tokens[piece[0]].tags)
+                          and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags)
+        # #516, switch off: the writing still makes this token
+        # credential-SHAPED, and the parser is choosing the name
+        # reading over that one -- the fork the caller asked to be
+        # told about. Reported here, unconsumed, rather than folded
+        # into `bare_ambiguous` above: with the switch off the token
+        # never carries "vocab:suffix-ambiguous" (classify's own
+        # gate), so `bare_ambiguous` is already False and this is the
+        # ONLY place the report can be recorded. Switch ON, the token
+        # carries BOTH tags, so `not bare_ambiguous` is what stands
+        # this branch down and lets the consuming branch below take
+        # it; the two are not exclusive.
+        if (not bare_ambiguous and k >= 2 and len(piece) == 1
+                and SHAPE_ACRONYM_TAG in tokens[piece[0]].tags):
+            picks.append(tuple(piece))
+            break
+        # #289: written case is evidence the count does not have, and
+        # it overrides the count in BOTH directions -- an all-caps
+        # member of a mixed-case name is taken with nothing to spare
+        # ("Jack MA"), a Title-case one is declined with plenty
+        # ("John Smith Ma"). The lean is the LISTED set's alone: a
+        # token admitted to this class by SHAPE carries no writing
+        # convention to read, so it takes the count (decisions.md#S2).
+        #
         # k < 2 means it is the only piece left, which is not the fork
-        # this reports.
+        # this reports -- and not a floor the lean moves: the walk
+        # starts after the leading title run, so one piece behind a
+        # title ("Mr MA") is exactly this case and must stay a name.
+        # The lean is computed only past this floor -- membership,
+        # then the floor, then the count-or-lean, in that order, with
+        # nothing computed a step earlier could discard.
         if bare_ambiguous and k >= 2:
             picks.append(tuple(piece))
-            if k >= 3:            # peeling still leaves given + family
+            lean = listed_lean(tokens[piece[0]], one_case)
+            # peeling still leaves given + family, or the writing says
+            # to peel anyway
+            if lean == "credential" or (lean is None and k >= 3):
                 k -= 1
                 continue
         break
@@ -416,6 +634,10 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     while k > 1:
         idx = rest[k - 1]
         piece = pieces[idx]
+        # no #323 veto on the shape here, unlike is_leading_title's:
+        # the shape is ANDed with is_title_piece, so the word is listed
+        # vocabulary, and a listed CJK title wearing a stop should read
+        # as a title.
         if (len(piece) == 1
                 and _PERIOD_ABBREV.match(tokens[piece[0]].text)
                 and is_title_piece(piece, ptags[idx], tokens)):
@@ -432,6 +654,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   ptags: Sequence[Set[str]],
                   tokens: Sequence[WorkToken],
+                  one_case: bool | None,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what
@@ -472,7 +695,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     """
     titled: list[int] = []
     while True:
-        peeled = peel_trailing(rest, pieces, ptags, tokens)
+        peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
         kept = trailing_titles(rest[:peeled.names], pieces, ptags,
                                tokens)
         if kept == peeled.names:
@@ -481,3 +704,41 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
         # run goes in FRONT of what the pass before it took
         titled[:0] = rest[kept:peeled.names]
         rest = rest[:kept] + rest[peeled.names:]
+
+
+# rules.md#H5: "the title is TRANSPARENT to the suffix reading: where
+# two or more name words stand, what stands once the chain is taken
+# reads exactly as it would read written without the title, plus the
+# title"
+def trailing_start_past_titles(start: int,
+                                pieces: Sequence[Sequence[int]],
+                                ptags: Sequence[Set[str]],
+                                tokens: Sequence[WorkToken],
+                                *, one_case: bool | None) -> int:
+    """`trailing_start` read through H5's chain: where assign's
+    trailing suffix run begins once a trailing TITLE has stopped
+    hiding it.
+
+    `trailing_start` reads the pieces as WRITTEN, so a title standing
+    behind the suffix run makes the peel take nothing and the answer
+    is `len(pieces)` -- the reading assign itself has not had since
+    H5, because assign runs the peel and the chain to their fixed
+    point instead (`tail_reading`). A caller using that answer as the
+    right bound of the NAME is told a credential is a name word:
+    'John Quincy Adams i MA Prof.' read family 'Adams i MA' where
+    'John Quincy Adams i MA' reads family 'Adams' and suffix 'i MA'
+    (#397 second review). Every caller that bounds the name wants
+    this one; `trailing_start` stays for the callers that count a
+    trailing run of the pieces as they stand.
+
+    The returned index bounds the name from the right, and the
+    trailing titles the chain spliced out are not under it: they end
+    the segment, so they stand at or past the first suffix piece
+    whenever there is one. Where the peel takes nothing even past the
+    chain this returns `len(pieces)` as `trailing_start` does, and a
+    trailing title is then inside the bound and refused by the title
+    test the callers already run beside it.
+    """
+    rest, _titled, peeled = tail_reading(peel_walk(start, ptags),
+                                         pieces, ptags, tokens, one_case)
+    return rest[peeled.names] if peeled.names < len(rest) else len(pieces)

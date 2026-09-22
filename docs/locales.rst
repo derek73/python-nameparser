@@ -180,6 +180,12 @@ new naming rule belongs in.
    mixes traditions, parse the subsets separately with different
    parsers rather than enabling a pack over all of it.
 
+   A declared family-first ``name_order`` stands down the rotation
+   instead of competing with it: fold the pack onto a base parser
+   built with ``Policy(name_order=FAMILY_FIRST)`` and ``"Мицкевич
+   Адам Юзеф"`` reads family ``Мицкевич`` rather than the given-first
+   order the pack restores by default.
+
 .. _segmenter-contract:
 
 Segmenters

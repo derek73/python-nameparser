@@ -7,11 +7,12 @@ ingest (:func:`nameparser._lexicon._normalize`) normalizes it away and
 papers over the typo. Checking at import turns a silently-inert entry
 into an immediate failure.
 
-Deliberately a weaker fold than ``_normalize``, which also strips edge
-periods: entries like ``'esq.'`` are legitimate data here, and this
-module cannot import ``_lexicon`` anyway (``_lexicon`` imports these
-constants). The relationship checks between constants stay in the
-modules that own them -- those encode facts about the data, not hygiene.
+Deliberately a weaker fold than ``_normalize``, which also
+NFC-composes and strips edge full stops: entries like ``'esq.'`` are
+legitimate data here, and this module cannot import ``_lexicon``
+anyway (``_lexicon`` imports these constants). The relationship checks
+between constants stay in the modules that own them -- those encode
+facts about the data, not hygiene.
 
 Interior whitespace is checked but not forbidden. A PHRASE entry is
 legitimate in the two fields ``_lexicon._PHRASE_FIELDS`` names, and

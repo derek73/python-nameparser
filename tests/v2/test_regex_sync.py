@@ -111,6 +111,12 @@ def test_initial_copies_agree_with_each_other_and_config() -> None:
 # source now fails here instead of being silently unpinned.
 _SOURCES: dict[tuple[str, str], str | None] = {
     ("_pieces", "_PERIOD_ABBREV"): "period_abbreviation",
+    # SAME object as the entry above, not a second copy: _pieces
+    # imports it from _vocab (#289/#516, quality-review finding --
+    # is_title_shaped moved there so name_word_count could share
+    # is_leading_title's H2 shape test), so it is visible under both
+    # module names and the completeness scan below sees it twice.
+    ("_vocab", "_PERIOD_ABBREV"): "period_abbreviation",
     ("_group", "_D"): None,
     ("_vocab", "_DOTTED"): None,
     ("_group", "_PH"): None,

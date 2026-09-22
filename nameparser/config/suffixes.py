@@ -122,11 +122,24 @@ Post-nominal suffixes matched as WORDS: the lookup uses the normalized token,
 so only EDGE periods come off and interior ones survive -- "Junior." matches
 here, "J.u.n.o.r." does not and stays name text ("John J.u.n.o.r." parses a
 family name, on both APIs). The example is deliberately not "J.u.n.i.o.r.",
-which fails this lookup too and is a suffix anyway: an interior-period token
-that no whole-token set claims goes to ``period_joined_vocab``, which splits
-it on its periods and, no chunk being a title, calls the whole thing a
-suffix if ANY chunk is suffix vocabulary -- and the chunk "i" is the Roman
-numeral listed above.
+which fails this lookup too: an interior-period token that no whole-token
+set claims goes to ``period_joined_vocab``, which splits it on its periods
+and, no chunk being a title, calls the whole thing a suffix if ANY chunk is
+suffix vocabulary -- except where every chunk it matches is a SINGLE ASCII
+CHARACTER, which since 2.4 retires rather than claims (decisions.md#S2): the
+one-character suffix vocabulary is the Roman numerals and the digit "2" --
+ASCII is load-bearing there, since the seven single-character CJK
+honorifics in THIS set (様, 殿, 氏, 군, 님, 씨, 양 -- three of them also
+glued-honorific heads below) must KEEP their chunk claim ("J.씨" still
+derives from 씨) -- and a word
+built of single ASCII letters is not about generations. So "J.u.n.i.o.r."
+no longer reaches this set's "i" entry as a generational claim; it is
+read by POSITION instead, as an unlisted multi-chunk word
+(``Policy.unlisted_dotted_suffixes``, default on), and with words to
+spare it is still a suffix (rules.md#S3). A multi-character chunk match
+is untouched -- "Msc.Ed." still derives from ``ed`` and reads as a
+suffix outright, and "Lt.Gov." still derives a TITLE from its own
+multi-character chunk match.
 So membership here is not the last word on a dotted token; the sentence is
 about this set's lookup alone. :data:`SUFFIX_ACRONYMS` is the set matched
 with every period removed, so it alone covers a multi-dot spelling: both
@@ -135,8 +148,9 @@ the same string once the periods come off. The two sets are asserted
 DISJOINT (see the guard block at the bottom): a post-nominal belongs to
 one of them or the other, and which one holds it is what decides whether
 its multi-dot spelling reaches a whole-token lookup at all --
-``period_joined_vocab`` may still claim the token chunk by chunk, as the
-"J.u.n.i.o.r." example above shows.
+``period_joined_vocab`` may still claim the token chunk by chunk, as
+"Msc.Ed." and "Lt.Gov." above show -- or read it by position instead,
+as "J.u.n.i.o.r." now does.
 
 """
 GLUED_HONORIFICS = frozenset({

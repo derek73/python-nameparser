@@ -57,12 +57,50 @@ class WorkToken:
 
 #: M4's two carve-outs, as the tags classify recorded them: a bound
 #: given-name word is vocabulary claiming the word as a given name,
-#: and `initial` is the shape claim. Neither is a predicate M4 owns.
+#: and `initial` is the initial reading. Neither is a predicate M4 owns.
 #: Shared here beside WorkToken.tags for the reason COMMA_CHARS is:
 #: assign's `_WORD_ALREADY_CLAIMED` is built from this pair, and the
 #: two stages must not drift (post_rules imports _assign, so _assign
 #: cannot reach the other way).
 _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
+
+#: The by-shape half of #289/#516's ambiguous credential class: a
+#: token classify admits to `vocab:suffix-ambiguous`'s READING by
+#: SHAPE rather than by the listed vocabulary
+#: (`Policy.unlisted_dotted_suffixes` is the first emitter;
+#: `Policy.unlisted_caps_suffixes` is the second, and classify writes
+#: the tag from both branches). One constant, not a string literal at
+#: each site, because the readers that must tell a by-shape member
+#: apart from a listed one -- `_pieces.peel_trailing` and
+#: `_pieces.listed_lean`, which `segment_suffix_reading` asks through,
+#: so the reading it decides is second-hand -- cannot afford to spell
+#: it several ways and have one of them typo silently past the
+#: others. The two sites that want EITHER half read
+#: `_AMBIGUOUS_CREDENTIAL_TAGS` below rather than this constant.
+SHAPE_ACRONYM_TAG = "shape:acronym"
+
+#: The MEMBERSHIP half of the same class: classify's tag for a token
+#: the ambiguous credential vocabulary claims, by listing
+#: (`Lexicon.suffix_acronyms_ambiguous`) or -- where a Policy switch
+#: admits the by-shape half -- beside `SHAPE_ACRONYM_TAG`. Beside that
+#: constant and for its reason: the string was spelled out at eight
+#: sites across four modules, each of them a place for a typo to pass
+#: silently, since a tag that is never written is simply a tag no
+#: reader ever finds.
+AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
+
+#: EITHER way a token joins the ambiguous credential class -- the
+#: vocabulary's claim and the writing's. The two emitters that report
+#: a fork the peel called and declined ask exactly this: `_group`'s
+#: prefix chain (a listed member the case lean read as a name, 'John
+#: van der Berg Ma'; a by-shape member the count left standing,
+#: 'Freiherr von Berg X.Y.I.') and `_assign`'s family-comma slot. One
+#: constant beside the two above and for their reason -- the pair was
+#: spelled two ways, a frozenset here and an `or` of two `in` tests
+#: there -- and a frozenset so each test is one `isdisjoint`, a C call
+#: with no Python frame, on a branch every chained name reaches.
+_AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
+    {AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
 
 
 class Structure(Enum):
@@ -101,12 +139,14 @@ class ParseState:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
     sorted)/comma_offsets/interpunct_offsets (the 间隔号 offsets the
     order and segmentation decisions consult, #298; the nakaguro
-    separators record NOTHING); segment -> segments/structure;
+    separators record NOTHING); segment -> segments/structure/one_case
+    (lazily, only where a comma form could turn it on -- #289/#516);
     script_segment -> tokens and segments again (the one stage that
     changes the token COUNT: an unspaced CJK token splits into n+1
     pieces, still as sub-slices of the original, and every later index
-    in the segment runs shifts by n); classify -> token tags; group ->
-    pieces/piece_tags/dropped AND maiden token roles;
+    in the segment runs shifts by n); classify -> token tags AND
+    one_case; group -> pieces/piece_tags/dropped AND maiden token
+    roles;
     assign -> the remaining token roles AND `order`, the effective
     order it read them under; post_rules -> roles again, and the
     ambiguity P6's attachment reports.
@@ -153,4 +193,29 @@ class ParseState:
     #: script_orders entry -- which is why the test for it builds its
     #: own (test_post_rules.py).
     order: tuple[Role, Role, Role] | None = None
+    #: Whether the name's OWN words are written wholly in one case --
+    #: all upper or all lower alike -- and so carry no case EVIDENCE
+    #: about any word in them (rules.md#P3's own-words span,
+    #: _pieces.own_words). None means NOT ASKED YET: the fact is
+    #: computed by whichever of segment and classify needs it first,
+    #: segment only when a comma form could turn on it, so a reader
+    #: between the two stages sees None and must not guess.
+    #: Recorded rather than recomputed, the way `order` above is: the
+    #: trailing suffix slot, the post-comma slot, the tail-segment
+    #: reading, the prefix chain's own tail measure (_group) and the
+    #: glued-honorific peel's decline of a post-comma run
+    #: (_script_segment) all consult it and must not disagree
+    #: (#289/#516, decisions.md#S2). Five stages read it in all --
+    #: segment, script_segment, classify, group and assign -- plus the
+    #: two predicate layers they read it through (_pieces, _vocab).
+    #: A fact segment records SURVIVES script_segment, the one stage
+    #: that changes the token count, and survives it unrecomputed
+    #: because splitting a token cannot change the answer: the verdict
+    #: is `is_one_case` over the name's own words JOINED, and a split
+    #: only moves a space into a string whose upper/lower comparison
+    #: ignores spaces entirely -- '김민준씨' and '김민준 씨' fold alike.
+    #: So the field is carried through rather than invalidated, and
+    #: script_segment reads it (its suffix-run predicate takes the
+    #: lean) rather than asking again.
+    one_case: bool | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()

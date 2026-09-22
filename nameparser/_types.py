@@ -84,9 +84,11 @@ class Span(NamedTuple):
 #: NOT to reproduce `family_particles`, which since #404 also consults
 #: UNJOINED_TAG and excludes a particle standing alone in its part
 #: ("Anh Do" has a particle-tagged family word and no family
-#: particles); "conjunction" a joining word ("and", "y"); "initial" an
-#: initial-shaped word in a script that HAS initials -- "J." or "А.",
-#: never "씨." (#320);
+#: particles); "conjunction" a joining word ("and", "y"); "initial" a
+#: word READ as an initial -- initial-shaped in a script that HAS
+#: initials ("J." or "А.", never "씨.", #320), or a marked
+#: single-letter connective in a name written in one case
+#: (rules.md#P3, see CONJUNCTION_OR_INITIAL);
 #: "joined" a continuation of the token before it -- within one
 #: merged piece the tag is role-blind and every view joins the pair
 #: with a space ("Ph." + "D."; 'Smith, Ph. D. Smith' gives first_list
@@ -111,6 +113,19 @@ STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 #: word IS particle vocabulary wherever it lands, which stays true, and
 #: keeping it leaves a later rule free to report the fork this decides.
 UNJOINED_TAG = "vocab:unjoined-particle"
+
+#: A name part holding no word a connective could join -- once the
+#: part's WORKING particles are set aside -- is a part where the
+#: connective is not doing a connective's work, so it initials like an
+#: ordinary name word, agreeing with `family_base` (rules.md#R3,
+#: #461). The twin of UNJOINED_TAG above, computed in the same pass
+#: and for the same reason: the fact is about a PART, so it is decided
+#: once where the parts are settled rather than re-derived by each
+#: view -- which is how `initials()` and `family_base` came apart.
+#: A SEPARATE marker rather than a widening of UNJOINED_TAG, because
+#: that one is also read by family_particles/family_base and by
+#: _cap_word, and none of those three may move.
+UNJOINED_CONJUNCTION_TAG = "vocab:unjoined-conjunction"
 
 #: The one sanctioned view-reorder marker (namespaced = unstable API).
 #: Tokens cannot reorder (span order is validated), so a role fold that
@@ -369,12 +384,23 @@ class AmbiguityKind(StrEnum):
     existing values never change meaning.
 
     A kind names a FORK THE PARSE HAD TO CALL, not a word that could be
-    read two ways: the same token elsewhere in a name may present no
-    choice at all and is then reported by nothing. Reporting is also
+    read two ways, except where a member says otherwise: the same token
+    elsewhere in a name may present no choice at all and is then
+    reported by nothing. COMMA_STRUCTURE and UNBALANCED_DELIMITER are
+    the two that say otherwise -- each reports a shape the parse could
+    not recognize rather than a fork it chose between, and each says so
+    on its own member below. Reporting is also
     partial -- a kind listed here is not necessarily emitted everywhere
-    its fork occurs (the comma paths stay quiet by design), and coverage
-    grows over releases. A non-empty tuple is a signal to act on; an
-    empty one is not a guarantee of certainty."""
+    its fork occurs (the comma's structure decision reports no
+    reading by design, except where it decides a member of the
+    ambiguous credential class, where since 2.4 that decision is
+    reported either way -- #289; an attachment decided AFTER a
+    family comma is a separate fork and has reported on its own
+    since 2.3, e.g. "Berg, Jan vd"; the two structural kinds above
+    were never covered by either silence), and coverage grows over
+    releases. A non-empty tuple is
+    a signal to act on; an empty one is not a guarantee of
+    certainty."""
 
     #: Reserved: the name's field order itself is uncertain (e.g. a
     #: two-word name under a non-default name_order). Not yet emitted;
@@ -402,6 +428,105 @@ class AmbiguityKind(StrEnum):
     #: vocabulary ("Rinpoche", "QC MP"): with no name word beside it
     #: the first post-nominal is read as the name, because something
     #: has to be one, and only that word reports.
+    #: WHERE it is emitted is narrower than where the doubt exists,
+    #: and this is the boundary rather than an omission to be read
+    #: past. The emitters cover the trailing slot of a name, the FIRST
+    #: PIECE after a family comma -- that piece and no further -- the
+    #: trailing slot of that listing's GIVEN part, the trailing slot
+    #: of a maiden marker's clause, and the extra segments beyond it.
+    #: Since 2.4 the given part's trailing slot reports whichever way
+    #: it read the word: "Doe, John MA" reads suffix ``MA`` and says
+    #: so, "Doe, John Ma" keeps middle ``Ma`` and says so too. Not in
+    #: EVERY direction, though: where the member is also a particle
+    #: and the particle rule keeps it, that rule reports at its own
+    #: site and this kind stays out of the way -- "Doe, John do" gives
+    #: family ``do Doe`` and one ``PARTICLE_OR_GIVEN``, never two
+    #: reports of one word.
+    #: Since 2.4 a maiden marker's clause reports at ITS trailing slot
+    #: too, in both directions: "Doe, Jane nee Smith MA" gives maiden
+    #: ``Smith`` with suffix ``MA`` and says so, "Doe, Jane nee Smith
+    #: Ma" keeps maiden ``Smith Ma`` and says so too, and a member the
+    #: clause keeps because it is the only word after the marker
+    #: ("Jane Doe nee MA") reports as well. Where no trailing rule
+    #: reads the clause's tail, nothing was decided and nothing
+    #: reports: a clause in the FAMILY segment of a comma listing
+    #: ("Smith nee Jones MA, Jane" keeps maiden ``Jones MA``) and one
+    #: past a second comma ("Smith, John, Jr nee Jones MA" keeps
+    #: maiden ``Jones MA``) are both silent.
+    #: FOUR positions stay silent, and all four are boundaries rather
+    #: than omissions. The NO-READER clause just named is the first of
+    #: them, and the three that follow are about the member's own
+    #: surroundings. Second: a member with something BEHIND it that
+    #: the trailing reading does not take was never a fork -- "Doe,
+    #: John MA Smith" reads middle ``MA Smith``, the ordinary reading,
+    #: and nothing consulted the class, and inside a clause the same
+    #: holds of a name word ("Jane Doe nee MA Smith" keeps maiden
+    #: ``MA Smith``) and of a trailing TITLE, which breaks the
+    #: clause's peel before it can reach the member at all ("Jane Doe
+    #: nee Smith MA Prof." keeps maiden ``Smith MA Prof.``, where
+    #: "Jane Doe nee Smith Prof. MA" reads suffix ``MA`` and reports).
+    #: Third -- pre-existing, and untouched by 2.4 -- a member with no
+    #: name word IN FRONT of it is not at this
+    #: slot either, because the slot is the end of a given part and
+    #: there is none: a TITLE or a POST-NOMINAL took that position --
+    #: either one leaves the segment with no name word for the slot to
+    #: be the end of. "Doe, Dr. MA" gives
+    #: suffix ``MA`` and "Doe, Mr. MA PhD" suffix ``MA PhD``, the
+    #: credential-run gate reading those segments whole; "Doe, Dr. Ma"
+    #: reaches the walk instead and makes ``Ma`` the given name
+    #: itself, which the walk starts above. The first-piece emitter
+    #: does not cover for it, reading the piece that stands
+    #: immediately after the comma and nothing behind that piece:
+    #: "Doe, MA Smith" reports its ``MA``, and "Doe, Dr. MA Smith" --
+    #: the same member, one title in front of it -- reads given ``MA``
+    #: in silence. A maiden CLAUSE does NOT reach this position, and
+    #: that is a decision rather than an accident: a clause may give
+    #: a word up only where the word then reads as a post-nominal
+    #: (rules.md#M2), and here nothing would read it at all, so the
+    #: clause keeps it and reports instead. "Doe, Dr. nee Smith MA"
+    #: keeps maiden ``Smith MA`` and says so, as does the
+    #: post-nominal spelling "Jane Doe, Jr nee Smith MA" -- the take
+    #: would leave segment 1 as ``Jr MA``, post-nominals only, which
+    #: the gate reads whole. The same holds of the fourth position
+    #: below: a clause never hands a word to a join.
+    #: And fourth -- pre-existing and untouched by 2.4 as well --
+    #: a JOIN beside the member can
+    #: take it out of this slot, from either side. Where a chain has
+    #: swallowed the member into one piece there is no lone member to
+    #: ask about, and the member may as well HEAD that piece as trail
+    #: it: "Doe, John van Ma" reads middle ``van Ma`` in silence, and
+    #: so does "Doe, John DO Ed", where the member is itself the
+    #: particle the chain runs on and the name word behind it joins
+    #: the piece -- though "Doe, John DO" alone reads the credential
+    #: and reports. The particle chain is the commonest joiner but not
+    #: the only one: the bound-given join takes a member into its pair
+    #: the same way, so "Berg, abdul MA" reads given ``abdul MA`` in
+    #: silence -- while "Berg, abdul nee Jones MA" keeps maiden
+    #: ``Jones MA`` and reports, the clause declining to hand the
+    #: member to a join that would swallow it. Where a particle the suffix vocabulary
+    #: does not also claim stands BEHIND it, the given part ends at
+    #: that particle as this walk reads it, and the attachment that
+    #: moves the particle to the family runs a stage too late to
+    #: re-open the question -- so "Doe, John MA do" keeps middle
+    #: ``MA``, capitals and all, beside family ``do Doe``, reporting
+    #: only the attachment's own ``PARTICLE_OR_GIVEN``. Neither half
+    #: is a rule about particles as such, and the caps spellings show
+    #: it: "Doe, John van MA" reads family ``van Doe``, suffix ``MA``
+    #: and reports both forks, and "Doe, John MA vd" reads suffix
+    #: ``MA`` past a ``vd`` the suffix vocabulary claims outright.
+    #: All four POSITIONS above are silent -- those last two names
+    #: are the boundary each one stops at, not instances of it.
+    #: A DELIMITED maiden clause is quiet for a different reason and
+    #: is not one of the four. Where a recognized marker stands
+    #: inside a delimited span the whole span is the maiden name,
+    #: whatever its last word is and whether or not the pair is a
+    #: configured maiden delimiter: "Jane Doe (nee Smith MA)" and
+    #: "Jane Doe (nee Smith Ma)" both give maiden ``Smith MA`` /
+    #: ``Smith Ma`` and report nothing. The writer drew the boundary,
+    #: so no fork was available to decline -- a settled position
+    #: rather than a fork left un-asked. The boundary cuts both ways:
+    #: "Jane Doe (nee Smith) MA" gives suffix ``MA`` and reports, the
+    #: member standing outside the span.
     SUFFIX_OR_NAME = "suffix-or-name"
     #: An input the title peel eats down to one last word which is
     #: itself title vocabulary still has to name somebody, so that
@@ -450,6 +575,33 @@ class AmbiguityKind(StrEnum):
     #: is the family and nothing about this, so the fork is real and
     #: ``detail`` names the word it turned on.
     PARTICLE_OR_GIVEN = "particle-or-given"
+    #: A single-letter connective in a name written wholly in ONE case
+    #: -- all upper or all lower alike -- where the writing therefore
+    #: says nothing about which reading was meant. The letter is read as
+    #: an INITIAL and this reports the fork: "jose e maria santos" gives
+    #: middle "e maria" and "JOSE E MARIA SANTOS" middle "E MARIA",
+    #: both flagged. Only a letter the vocabulary marks both ways
+    #: reports -- ``Lexicon.conjunctions_ambiguous``, "e" by default --
+    #: because a letter outside it is not in doubt: "JUAN GARCIA Y
+    #: LOPEZ" joins into family "GARCIA Y LOPEZ" and reports nothing,
+    #: as does the Cyrillic "ХОСЕ И МАРИЯ САНТОС" -- whose join lands
+    #: in GIVEN "ХОСЕ И МАРИЯ" rather than FAMILY, but reports nothing
+    #: all the same.
+    #: Four things never reach the fork. MIXED-case input decides on
+    #: the writing instead, so "Jose E Maria Santos" reads the capital
+    #: as an initial and "John e Smith" the lowercase letter as the
+    #: connective, neither reporting. A CASELESS letter has no case to
+    #: read, so Arabic "محمد و علي" keeps its connective silently. A
+    #: MULTI-letter connective ("and", "та", "και") or a symbol ("&") is
+    #: no initial's shape at any casing. And a letter inside a maiden or
+    #: delimited clause never reaches the fork either (the own-words
+    #: doctrine, rules.md#P3): appending " née Jones" or a nickname
+    #: changes no report, because the clause's words were never
+    #: eligible for it.
+    #: ``detail`` names the token, the kind naming neither the field nor
+    #: the letter: which field the reading lands in follows the name's
+    #: shape and its ``name_order``, the PARTICLE_OR_GIVEN precedent.
+    CONJUNCTION_OR_INITIAL = "conjunction-or-initial"
     #: A name of one name word that nothing else decided had to be read
     #: as one field or the other, and both readings fit it equally well
     #: -- "Andrew", "Smith". The convention picks the given name under
@@ -468,6 +620,12 @@ class AmbiguityKind(StrEnum):
     #: A nickname/maiden delimiter opened without closing (or closed
     #: without opening); the text was kept as literal name content, so
     #: the tokens are the one the stray character ended up inside.
+    #: NOT a fork the parse called: it reports a shape the parse could
+    #: not recognize, which is the carve-out this enum's own docstring
+    #: names for this member and for COMMA_STRUCTURE. That docstring
+    #: said "each says so on its own member below" while only
+    #: COMMA_STRUCTURE's did; this sentence is the other half
+    #: (2026-09-18).
     #: Two cases leave that tuple empty: a character that lands in no
     #: token at all (inside a masked region), and an input with no
     #: alphanumeric content anywhere, which parses to an empty name --
@@ -557,21 +715,41 @@ def _validated_field_strings(fields: dict[str, str]) -> dict[Role, str]:
 
 
 def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
-    """UNJOINED_TAG recomputed over an edited token list.
+    """Both unjoined marks recomputed over an edited token list.
 
-    The mark says a particle stands ALONE in its part, which is a fact
-    about the part rather than the word, so an edit that re-roles
-    tokens invalidates it in both directions: replace()/revise() splice
-    a sub-parse's tokens into one field, and a particle marked alone
-    there can land beside a name word (stale mark) while an unmarked
-    one can end up alone (missing mark). Parser.revise strips
-    FOLDED_TAG for the same reason; this one is RECOMPUTED rather than
-    stripped, because absent is only correct for half the cases.
+    Each mark says a word stands in a part with nothing for it to join
+    -- a particle alone among particles (UNJOINED_TAG), a connective
+    among connectives and working particles
+    (UNJOINED_CONJUNCTION_TAG) -- which is a fact about the part rather
+    than the word, so an edit that re-roles tokens invalidates it in
+    both directions: replace()/revise() splice a sub-parse's tokens
+    into one field, and a word marked alone there can land beside a
+    name word (stale mark) while an unmarked one can end up alone
+    (missing mark). Parser.revise strips FOLDED_TAG for the same
+    reason; these are RECOMPUTED rather than stripped, because absent
+    is only correct for half the cases.
+
+    The two predicates mirror the pipeline's single walk, including
+    its precedence: where the part is ALL particles the first mark
+    already readmits every word of it, a word that is both particle
+    and connective included, so the second is not written there.
     """
     out = list(tokens)
     for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
         part = [i for i, t in enumerate(out) if t.role is role]
         alone = bool(part) and all("particle" in out[i].tags for i in part)
+        # `bool(part)` on both, and DEFENSIVE and measured inert on
+        # this one (2026-09-20, #397 review question 4): an EMPTY part
+        # satisfies `all` and `not any` alike, so without the guard
+        # this reads True there and says a mark is due on a part with
+        # no tokens to put it on. Nothing can see the difference --
+        # `lone_conj` is read only inside the `for i in part` below,
+        # which has no members. Control: drop it and the whole suite
+        # is green, which is why it is stated as a reader's guard
+        # rather than pinned by a test.
+        lone_conj = bool(part) and not alone and not any(
+            "conjunction" not in out[i].tags and "particle" not in out[i].tags
+            for i in part)
         for i in part:
             tags = out[i].tags
             if alone and UNJOINED_TAG not in tags:
@@ -579,6 +757,15 @@ def _remarked(tokens: list[Token]) -> tuple[Token, ...]:
             elif not alone and UNJOINED_TAG in tags:
                 out[i] = dataclasses.replace(out[i],
                                              tags=tags - {UNJOINED_TAG})
+            # re-read: the arm above may have replaced the token
+            tags = out[i].tags
+            mark = lone_conj and "conjunction" in tags
+            if mark and UNJOINED_CONJUNCTION_TAG not in tags:
+                out[i] = dataclasses.replace(
+                    out[i], tags=tags | {UNJOINED_CONJUNCTION_TAG})
+            elif not mark and UNJOINED_CONJUNCTION_TAG in tags:
+                out[i] = dataclasses.replace(
+                    out[i], tags=tags - {UNJOINED_CONJUNCTION_TAG})
     return tuple(out)
 
 

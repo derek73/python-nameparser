@@ -44,6 +44,8 @@ _UNTRANSLATED = frozenset({
     "script_orders",
     "segment_scripts",
     "lenient_comma_suffixes",
+    "unlisted_dotted_suffixes",
+    "unlisted_caps_suffixes",
     "strip_emoji",
     "strip_bidi",
 })
@@ -106,6 +108,93 @@ _CORE_ONLY_IDS = frozenset({
     # they assert are 1.4.0's for exactly that reason.
     "han_unspaced_no_script_orders_reports_the_convention",
     "kana_honorific_no_script_orders_reports_the_convention",
+    # #516's all-caps half: unlisted_caps_suffixes has no v1 spelling
+    # (v1 has no by-shape credential class at all), so every row that
+    # sets it is core-only.
+    "caps_surname_is_swallowed_with_the_switch_on",
+    "caps_surname_reports_but_does_not_move_at_two_words",
+    "unlisted_caps_reads_by_position_with_the_switch_on",
+    "the_caps_comma_count_needs_two_name_words",
+    "the_caps_comma_count_declines_at_one_word",
+    "one_case_input_never_reaches_the_caps_switch",
+    "suffix_vocabulary_never_reaches_the_caps_switch",
+    "the_caps_comma_count_reaches_a_multi_word_run",
+    "the_caps_comma_multi_word_run_declines_at_one_word",
+    # #516 review round: the F1/F1b/F2/F5 regression-guard rows, all
+    # under the same non-default policy.
+    "caps_switch_does_not_silence_the_listed_lean",
+    "caps_switch_does_not_silence_the_comma_lean",
+    "caps_switch_does_not_claim_a_capitalized_particle",
+    "caps_switch_does_not_claim_a_capitalized_particle_phrase",
+    "caps_switch_does_not_move_a_roman_numeral",
+    "caps_switch_does_not_move_a_roman_numeral_with_words_to_spare",
+    "caps_switch_does_not_move_a_title_floor_control",
+    "caps_switch_does_not_reach_delimited_content",
+    "caps_switch_run_test_declines_a_pure_listed_run",
+    "caps_switch_does_not_claim_a_one_case_maiden_marker",
+    "caps_switch_does_not_claim_a_mixed_case_maiden_marker",
+    # The 2026-09-18 review round's negative control for the
+    # tail-segment class test: `unlisted_dotted_suffixes` has no v1
+    # spelling either (v1 reads no token by shape), so the row that
+    # turns it OFF is core-only, exactly as the caps rows above are.
+    # Its default-policy twin is an ordinary row and runs here.
+    "the_by_shape_tail_segment_is_flagged_with_the_switch_off",
+    # The same round's unpinned-branch rows, every one under a policy
+    # with no v1 spelling: the caps switch, and -- for the two strict
+    # comma rows -- `lenient_comma_suffixes`, which the block above
+    # already names two rows for.
+    "caps_switch_reads_the_name_level_case_past_a_clause",
+    "caps_one_case_comma_declines_a_single_token",
+    "caps_one_case_comma_declines_a_run",
+    "caps_run_needs_every_token_not_any",
+    "caps_run_declines_a_bound_given_head",
+    "caps_run_declines_a_conjunction",
+    "caps_switch_leaves_a_capitalized_title_a_title",
+    "strict_comma_reads_the_dotted_numeral_as_a_name_word",
+    "strict_comma_reads_the_bare_numeral_into_the_run",
+    "the_comma_flip_is_read_under_the_declared_order",
+    "two_caps_credentials_peel_as_a_run",
+    "the_caps_shape_is_script_agnostic_cyrillic",
+    "the_caps_shape_is_script_agnostic_accented",
+    "the_dotted_switch_off_still_reports_the_post_comma_fork",
+    "the_dotted_switch_off_leaves_a_lone_token_to_the_convention",
+    "the_dotted_switch_off_leaves_a_titled_token_a_name",
+    # The 2026-09-18 verification round's two unpinned-branch rows,
+    # both under a policy with no v1 spelling: the caps switch again,
+    # and `unlisted_dotted_suffixes` turned OFF, which is the only
+    # policy that makes the chain emitter's by-shape tag reachable
+    # (at the default, classify writes both tags and the listed one
+    # answers first).
+    "the_caps_shape_never_reaches_a_tail_segment",
+    "the_chain_reports_the_by_shape_half_too",
+    # #531: the given part's trailing slot. Five rows, and all five are
+    # core-only for a field-by-field reason rather than a blanket one
+    # -- `unlisted_dotted_suffixes`, `unlisted_caps_suffixes`,
+    # `lenient_comma_suffixes` and `name_order` are each in
+    # _UNTRANSLATED above, the first three having no v1 Constants
+    # manager at all and the fourth having no v1 spelling. The
+    # DEFAULT-policy rows of the same change are ordinary rows and run
+    # here, which is what pins the facade parity that matters:
+    # HumanName("Doe, John MA") gives first John, last Doe, suffix MA.
+    "the_dotted_slot_reports_with_the_switch_off",
+    "the_caps_switch_reaches_the_trailing_slot",
+    "the_trailing_slot_ignores_the_strict_comma_knob",
+    "the_trailing_slot_reads_the_same_under_family_first",
+    "the_trailing_slot_reads_the_same_under_ff_given_last",
+    # #533: the maiden clause's trailing credential. Five policy rows,
+    # each core-only for a field-by-field reason rather than a blanket
+    # one -- `unlisted_dotted_suffixes`, `unlisted_caps_suffixes`,
+    # `lenient_comma_suffixes` and `name_order` are each already in
+    # _UNTRANSLATED above, the first three having no v1 Constants
+    # manager at all and the fourth no v1 spelling. The DEFAULT-policy
+    # rows of the same change are ordinary rows and run here, which is
+    # what pins the facade parity that matters: HumanName("Jane Doe
+    # nee Smith MA") gives first Jane, last Doe, suffix MA.
+    "the_dotted_member_is_kept_with_the_switch_off_and_reports",
+    "the_caps_switch_reaches_the_clause",
+    "the_clause_reads_the_same_under_the_strict_comma_knob",
+    "the_clause_reads_the_same_under_family_first",
+    "the_clause_reads_the_same_under_ff_given_last",
 })
 
 

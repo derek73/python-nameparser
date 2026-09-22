@@ -65,6 +65,7 @@ H1. Rationale: a title normally addresses by surname, so a title
       "Sir John Prof."            →  given="John"
       "Dr. Smith Sir."            →  family="Smith"
       "His Excellency Lord Duncan"  →  family="Duncan"
+      "Her Royal Highness Princess Anne"  →  given="Anne"
       "Sir John"                  →  given="John"  · boundary
     Accepted: a given-name title plus one name word leaves the
     family empty — the input names no family, and inventing one
@@ -78,8 +79,12 @@ H1. Rationale: a title normally addresses by surname, so a title
     not change what the run addresses by, the last word being the
     one asked — `His Excellency Lord Duncan` reads family `Duncan`
     because `lord` is not a given-name title, not because the run is
-    long, and `Her Royal Highness Princess Anne` reads family `Anne`
-    for the same reason.
+    long. `lord` and `lady` stay out of that list by decision
+    (#519): each addresses by given name only as a courtesy style for
+    children of the senior ranks (`Lord Peter`, `Lady Diana`) and by
+    title or surname for every peer and every wife (`Lord Byron`,
+    `Lady Thatcher`), and the text does not say which the bearer is,
+    which the list cannot express; `prince` and `princess` are in it.
     history: decisions.md#H1 · interacts: H3, H5, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a
@@ -108,6 +113,17 @@ H2. Rationale: before a name, an abbreviation is almost always a
     word, and only vocabulary can recognize it — which is what #343
     and #344 supply for Bengali and Devanagari.
       "প্রকৌশলী. Sen"             →  given="প্রকৌশলী."
+    Accepted: the shape reads a Latin convention, and a script with
+    no initials has no period abbreviations either, so a period-
+    marked opening word carrying a Han, kana or hangul character —
+    as the script table classifies them; halfwidth katakana sits
+    outside it and still reads by the Latin shape, the limit
+    decisions.md#cjk-full-stops records — is a name word and never a
+    title by shape (#323; decisions.md#cjk-full-stops) — the same
+    veto that keeps 씨. from reading as an initial. The Latin
+    reading is unchanged, and W3's example block carries the CJK
+    reading this clause vetoes into.
+      "Smith. John"               →  title="Smith."
     Accepted: before a family comma the pre-comma text is wholly the
     family name (C1), so no shape or vocabulary reading makes a
     title there.
@@ -117,7 +133,7 @@ H2. Rationale: before a name, an abbreviation is almost always a
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions.md#H2 · interacts: C1, P4, H5 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
+    history: decisions.md#H2 · interacts: C1, P4, H5, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is
@@ -282,7 +298,8 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     is then taken over what stands, not over what stood.
       "John Smith Prof. Jr."      →  suffix="Jr."
       "John Smith Jr. Prof."      →  suffix="Jr."
-      "John Prof. MA"             →  family="MA"
+      "John Prof. MA"             →  suffix="MA"
+      "JOHN PROF. MA"             →  family="MA"
     Accepted: the reach is the whole title vocabulary, the ordinary
     surnames in it included. TITLES holds king, judge and bishop,
     and a period written behind one of them is enough to make it the
@@ -421,7 +438,14 @@ P2. Rationale: a particle is written as part of the surname it
     a trailing suffix begins — read as assign will read it (S2),
     over the pieces the chain leaves: a trailing roman numeral, or a
     bare acronym with words to spare, ends the chain as a suffix word
-    does — a maiden marker takes the
+    does, and so does a bare ambiguous acronym written in capitals in
+    a mixed-case name, which needs no words to spare; the same
+    acronym written Title-case in a mixed-case name ends nothing and
+    joins the chain as any name word does, words to spare or not,
+    and the fork the chain called is reported there exactly as it is
+    where no particle stands (S2) —
+    a maiden
+    marker takes the
     words after it (M2), or the name ends. The final group reads as
     the family name;
     earlier groups read by position. The chain begins wherever the
@@ -438,18 +462,34 @@ P2. Rationale: a particle is written as part of the surname it
       "John van der Berg PhD"     →  family="van der Berg"
       "John van der Berg V"       →  family="van der Berg"
       "John van der Berg V"       →  suffix="V"
-      "John van der Berg Ma"      →  suffix="Ma"
+      "John van der Berg Ma"      →  family="van der Berg Ma"
+      "John van der Berg Ma"      →  ambiguities=("suffix-or-name",)
+      "john van der berg ma"      →  suffix="ma"
       "John van der J. V"         →  family="van der J. V"  · boundary
-      "Freiherr von Berg MA"      →  family="von Berg MA"
+      "Freiherr von Berg MA"      →  family="von Berg"
+      "Freiherr von Berg MA"      →  suffix="MA"
       "Freiherr von Richthofen V" →  suffix="V"  · boundary
       "John van der Berg née Jones"  →  family="van der Berg"
     Accepted: a particle of the unambiguous suffix vocabulary too
     (vd, mc) is a suffix piece to the peel, so where it opens the
     trailing run the chain stops before it as before any suffix
     word, and the peel takes it; where it continues a prefix run,
-    the run takes it as a particle, as P6 reads it after a comma.
+    the run takes it as a particle, as P6 reads it after a comma —
+    and there the chain reports nothing, the particle reading being
+    P6's fork rather than S2's.
+    The same carve-out covers `do`, the one word that is both a
+    particle and an AMBIGUOUS credential acronym: where a particle
+    run takes it, the word is the run's and the chain reports
+    nothing, whatever case it is written in — so `Anh van Do` is
+    silent where `Anh Do`, with no particle standing, reports.
+    A word that is both belongs to the particle run and to P6's
+    fork, not to S2's.
       "John Smith Mc V"           →  suffix="Mc V"
       "John van Mc"               →  family="van Mc"
+      "anh van do"                →  family="van do"  · boundary
+      "anh van do"                →  ambiguities=()  · boundary
+      "Anh van Do"                →  family="van Do"  · boundary
+      "Anh van Do"                →  ambiguities=()  · boundary
     Accepted: a caller wanting the combined double-surname reading
     (#132's ask) has it as the surnames view rather than the
     family field.
@@ -458,43 +498,144 @@ P2. Rationale: a particle is written as part of the surname it
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
-    likely an initial than a connective.
+    likely an initial than a connective, and where a name is written
+    in more than one case, a bare Latin capital standing alone is how
+    an initial is marked and a bare lowercase letter is how it is
+    not.
     A recognized connective joins its neighbors into one name part,
     connective runs included — except a single-letter connective in
     a three-word name, which stays a name word, and a single-letter
-    connective written as a bare Latin capital, which reads as an
-    initial and never joins. The joined part is ONE name word
-    wherever another rule counts them, so a rule taking "one name
-    word" takes the whole join and never half of it. The three-word
-    count is of the name's own words: a maiden marker taken as one,
-    and the words it takes (M2), are not among them, so a maiden
-    clause does not change whether the connective joins. A marker
-    left as a word (M2) is a word, and counts.
+    connective that reads as an initial instead, which never joins.
+    A single-letter connective reads as an initial where the writing
+    says so: written as a bare Latin capital in a name that is not written
+    wholly in one case, or — in a name written wholly in one case,
+    where nothing says so — where the letter is one the vocabulary
+    marks as reading both ways.
+    A letter the vocabulary marks as reading both ways, read as an
+    initial in a name written wholly in one case, is a call that could
+    have gone the other way, and is reported.
+    The joined part is ONE name word wherever another rule counts
+    them, so a rule taking "one name word" takes the whole join and
+    never half of it.
+    A connective counts as a name word wherever this rule counts them,
+    whatever else the vocabulary says the word is, where it is placed
+    to join. A word can be a connective and a generation at once — the
+    Catalan link is also the roman numeral one — and counting it as
+    the generation would let a connective raise the bar for its own
+    join, so the shortest linked name, which is the commonest one,
+    would be the only one that failed to link; while counting it as a
+    connective where it joins nothing lowers the bar for a different
+    connective's join instead.
+    A connective that is also generational vocabulary joins only where
+    a name word stands on each side of it — a word the rest of the
+    parse reads as a name word rather than as a generation, a
+    credential or an honorific, looked for past any run of
+    connectives standing between. A connective with nothing to its right is connecting
+    nothing, and a word of that vocabulary ending a name, or standing
+    before the credential a name ends with, is the generation it also
+    spells.
+    Both questions this rule asks of a name — how many words it has,
+    and whether it is written in one case — are asked of the name's
+    OWN words: a maiden marker taken as one, and the words it takes
+    (M2), are not among them, and neither is a delimited clause (N1,
+    M1). So a clause beside the name changes neither whether the
+    connective joins nor how a letter in the name reads, and a letter
+    inside such a clause is the clause's word, read as it always was
+    and not by this rule. The two questions part at one point: a
+    marker the pass declines and leaves as a word (M2) is a word, and
+    counts toward the three — but its case is still not asked.
+    That span is not this rule's alone: wherever another rule asks
+    the case question — the suffix slot (S2) and the post-comma slot
+    (C1) — it is asked of these same words, so the answer is taken
+    once and read where each of them stands.
       "Juan y Eva Garcia"         →  given="Juan y Eva"
       "Jose E Maria Santos"       →  middle="E Maria"
+      "jose e maria santos"       →  middle="e maria"
+      "Jose e Maria Santos"       →  given="Jose e Maria"
+      "JUAN GARCIA Y LOPEZ"       →  family="GARCIA Y LOPEZ"
+      "juan garcia y lopez"       →  family="garcia y lopez"
+      "john e smith"              →  middle="e"
       "Juan y Garcia"             →  middle="y"  · boundary
       "Juan y Garcia née Jones"   →  middle="y"
       "Juan and Garcia"           →  given="Juan and Garcia"
       "Juan & Garcia"             →  given="Juan & Garcia"
       "Mr. Jack and Jill"         →  family="Jack and Jill"
       "Mr. Jack Jill"             →  given="Jack"
+      "Josep Carod i Rovira"      →  family="Carod i Rovira"
+      "Carod i Rovira, Josep"     →  family="Carod i Rovira"
+      "Josep i Rovira"            →  middle="i"
+      "John Quincy Smith i"       →  suffix="i"
+      "Carod i"                   →  suffix="i"
+      "Josep Lluis Carod i III"   →  suffix="i III"
+      "Carod y de Rovira i"       →  middle="y"
     Both exceptions are about the written FORM, not the word: the
     three-word carve-out counts letters, so a symbol connective joins
     at any length, and it reaches every single-letter connective the
-    vocabulary holds — Cyrillic и/і/й and Arabic و as well as y and
-    e. Which single letters a tradition actually wants joined differs
-    by language, and no locale gets its own answer today.
-    Accepted: the initial veto is a LATIN shape — a Cyrillic
-    capital joins ("И".isupper() is true, so this is not a
-    Unicode-uppercase rule); #267's closure blessed the Cyrillic
-    side, and whether the Latin-capital half should stand is #383.
+    vocabulary holds — Catalan i and Cyrillic и/і/й and Arabic و as
+    well as y and e. The initial reading counts letters too, and asks
+    one more question of them: a letter with no case at all (و) can be
+    written against nothing, so it never reads as an initial. A Cyrillic
+    capital has case but is not the shape an initial is written in —
+    Cyrillic abbreviates with a dotted letter — so in a name of more
+    than one case it joins, the reading #267 blessed, and in a name
+    of one case it takes the vocabulary's answer like any other cased
+    letter.
+    Which single letters a tradition actually wants joined differs by
+    language, and the marked set is where that answer lives: "y" is
+    the commonest Hispanic compound and stays out of it, while "e" and
+    Catalan "i" are both common bare initials and are the two entries
+    shipped. A caller with Portuguese data removes "e"; a caller with
+    Catalan or Polish data removes "i"; a caller with Dutch data adds
+    the letter "y" to it.
+    The initial reading is visible beyond the fields, on the two
+    derived views: parse("john e smith").initials() gives "j. e. s."
+    and .capitalized() gives "John E Smith", where the connective
+    reading gave "j. s." and "John e Smith" — a connective
+    contributing no initial (R3) and keeping its lowercase (R4),
+    where an initial does neither. The v1 facade's initials() reads
+    the same parse, so HumanName("john e smith").initials() is
+    also "j. e. s."; #528 closed the split and decisions.md#P3
+    records it.
+    Accepted: two 1.4.0 parity breaks, one in each direction. A bare
+    capital in a name written wholly in upper case no longer reads as
+    an initial, so "JUAN GARCIA Y LOPEZ" joins where 1.4.0 and
+    2.0–2.3 read middle "GARCIA Y"; and a marked lowercase letter in
+    a name written wholly in lower case no longer joins, so "jose e
+    maria santos" reads middle "e maria" where they read given "jose
+    e maria". That is #383 answered with "bless" for the mixed-case
+    half — a bare Latin capital among mixed case still reads as an
+    initial, the shape the veto always tested, which is why #267's
+    Cyrillic reading is untouched — and answered with evidence for
+    the one-case half, where the vocabulary decides.
+    A maiden marker's run and every word after it are outside the
+    name's own words from the moment classify tags the marker, and
+    they stay outside whether or not the marker pass later declines
+    the marker and leaves it a word (M2). A declined marker therefore
+    does two things at once. It still does not count toward the case
+    class, which shows when it is the only differently-cased token,
+    so "JUAN Y GARCIA née" joins where "JUAN Y GARCIA née Jones"
+    keeps "Y" a name word. And it leaves any connective standing
+    after it to the mixed-case rule rather than to the one-case fork,
+    so a bare Latin capital there reads as an initial while its
+    lowercase spelling joins — the one shape in which the name's OWN
+    words read differently in its two one-case spellings. So "JUAN
+    NÉE JR Y LOPEZ" reads middle "NÉE JR Y" with its "Y" an initial,
+    while "juan née jr y lopez" reads family "jr y lopez" with its
+    own "y" joined. A clause's words are read as they always were,
+    and that is not an exception to this: such a letter still takes
+    a different tag in the two spellings, so its case repair can
+    differ between them, which is a repair difference and not a
+    reading of the name's own words.
+    Accepted rather than repaired: classify cannot know what group
+    will decline, and a clause's words are read by the clause's own
+    rules.
       "Хосе И Мария Сантос"       →  given="Хосе И Мария"
     H1 is the counting rule that shows the one-word clause today: a
     title plus the join reads the whole join as the family, where the
     same two words unjoined are two name words and H1 does not fire.
-    P1's leading run becomes the second once #395 lands — its run
-    must take the "Vega y Santos" join whole or stop before it.
-    history: decisions.md#P3 · interacts: H1, P1, M2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    P1's leading run is the second (#395, landed): its run takes
+    the "Vega y Santos" join whole or stops before it.
+    history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4, S2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -579,10 +720,10 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abdul Smith V"             →  family="Smith"
       "abdul Smith V"             →  suffix="V"
       "abdul Smith Jr V"          →  family="Smith"
-      "abdul Smith Jr Ma"         →  family="Smith"
-      "abdul Smith Jr Ma"         →  suffix="Jr Ma"
-      "abdul Smith Ma"            →  suffix="Ma"
-      "abdul Smith Berg Ma"       →  family="Berg"  · boundary
+      "abdul Smith Jr Ma"         →  given="abdul Smith"
+      "abdul Smith Jr Ma"         →  middle="Jr"
+      "abdul Smith Ma"            →  given="abdul Smith"
+      "abdul Smith Berg Ma"       →  middle="Berg"  · boundary
       "abdul Sir Smith Berg"      →  given="abdul Sir"
       "Berg, abdul van"           →  given="abdul van"
       "Berg, abdul vd"            →  family="vd Berg"
@@ -637,7 +778,18 @@ P6. Rationale: a particle ending the name has nothing to link
     the word is BOTH a particle and suffix vocabulary, this
     attachment outranks the suffix reading (S2): a trailing
     abbreviation after a family comma is the tussenvoegsel far more
-    often than the decoration it collides with.
+    often than the decoration it collides with. One exception, and it
+    is where the capitals speak: a word of the AMBIGUOUS credential
+    class, written in capitals in a name written in more than one
+    case, reads as the credential and this attachment stands down —
+    unless a particle stands immediately in front of it, the two
+    being one particle run by then, which this rule takes whole.
+    Every other spelling of such a word attaches as it did before,
+    and the kind rule below gives it this rule's particle fork rather
+    than S2's credential one. In a name written wholly in one case
+    the two readings cannot be told apart and the particle keeps it,
+    which is right about a Portuguese record and wrong about a
+    credential; the report is how a caller finds the second.
       "Jong, Anke de"             →  family="de Jong"
       "Beethoven, Ludwig van"     →  family="van Beethoven"
       "Berg, Jan vd"              →  family="vd Berg"
@@ -646,6 +798,10 @@ P6. Rationale: a particle ending the name has nothing to link
       "Beethoven, Ludwig van"     →  family_base="Beethoven"
       "Beethoven, Ludwig van"     →  family_particles="van"
       "Nguyen, Van"               →  given="Van"  · boundary
+      "Doe, John DO"              →  suffix="DO"  · boundary
+      "Doe, John Do"              →  family="Do Doe"
+      "SMITH, JOHN DO"            →  family="DO SMITH"
+      "Doe, John van DO"          →  family="van DO Doe"
     Without a comma, a declared family-first order has named the
     family in the same way and the attachment fires there too — but
     only where the run ENDS the name and stands in a MIDDLE — the one
@@ -761,7 +917,7 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_post_rules.py
 
 ## Suffixes: generational & credentials (S)
 
@@ -799,11 +955,109 @@ S2. Rationale: generational suffixes and credentials are recognized
     abbreviation shape any word can wear and does not. A
     BARE ambiguous acronym is consumed only when the name has words
     to spare — as the second of two words it stays the family
-    name — and either reading carries the ambiguity flag.
+    name — and at the slots that report, either reading carries the
+    ambiguity flag. Those slots are the trailing slot of a name, the
+    first slot after a family comma, the trailing slot of the GIVEN
+    part after that comma, the trailing slot of a maiden marker's
+    clause (M2), and the segments beyond it. A word this document
+    says is READ at one of those slots is not always a word one of
+    them reports: where a reading moves a word out of the slot that
+    asked about it, what reports is the slot it lands in, and that
+    may be none — M2 states the case where a clause does it.
+    After a family comma, a word of this class ending the GIVEN part
+    is read as the comma-less spelling reads a word ending the name,
+    and the count is not what decides it there. The comma has already
+    named the family and the first name word after it is the given
+    name, so the words to spare are there by construction and the
+    count says nothing: a word that ENDS that part reads as the
+    credential unless its WRITING says otherwise, and a word that
+    does not end it is never asked. "Ending the given part" reaches
+    past the credentials behind it and past a trailing title, which
+    is transparent to this reading as it is to the rest of S2's (H5);
+    a name word behind the word ends the reach, and so does a
+    PARTICLE the suffix vocabulary does not also claim: it belongs to
+    the family the comma already named and is taken there by a rule
+    that runs after this reading is made (P6), so `Doe, John MA do`
+    keeps its middle name though the capitals would otherwise have
+    taken the word. A particle the suffix vocabulary DOES claim is
+    looked past like any other credential, so `Doe, John MA vd`
+    reads suffix `MA`, with `vd` attaching behind it. Where the
+    reach ends, the word is an ordinary middle name, read in silence.
+    A particle in FRONT of the word takes it out of this slot as
+    well, and takes the word behind it too: where what follows the
+    particle reads as a name rather than a credential the two are
+    one name, so neither word is asked and neither reports —
+    `Doe, John van Ma` reads middle `van Ma` and `Doe, John DO Ed`
+    middle `DO Ed`, where `Doe, John van MA` reads suffix `MA` and
+    `Doe, John DO` alone reads the credential, both reporting.
+    Every word this slot does read reports the fork whichever way it
+    went, so a run of members all read as credentials reports once
+    for each, as the same words do without the comma — while a
+    member the writing keeps as a name
+    stops the reading there, and whatever stands in front of it is
+    name text, asked nothing and reporting nothing. One member of
+    this class is particle vocabulary as well, and where it stands
+    alone at this slot P6 decides it: the capitals take it as the
+    credential and every other spelling attaches to the family,
+    reported there as P6's fork rather than as this one. Behind
+    another particle it does not stand alone — the two are one
+    particle run by then — and the run attaches whatever the capitals
+    say (P6).
+    Written case is the other evidence, and it speaks only in a name
+    written in more than one case: there a member of the ambiguous
+    set written in capitals reads as the credential even with no
+    words to spare, and one written in any other cased form that is
+    not wholly lower reads as the name even with words to spare. A
+    name written wholly in one case says nothing about any word in
+    it, and the count decides alone; so does a script with no case
+    to write in. After a family comma this evidence is SECOND at the
+    FIRST slot after it: the count of name words before the comma
+    decides there first (C1), and the case is read only where that
+    count leaves the word a name. At the trailing slot of the given
+    part the comma has already settled the count, so the writing is
+    the only evidence there is.
+    An unlisted word joins this same ambiguous class by SHAPE where
+    the caller asks for it. Two or more period-separated chunks is
+    one such shape, admitted by default (S3); an unlisted all-caps
+    alphabetic word of two or more letters, standing in a suffix
+    position of a mixed-case name and belonging to no wordlist, is
+    the other, admitted only under the caller switch the example
+    lines below name. That second shape is OFF by default because
+    French and Korean records write the SURNAME in capitals, so it
+    is a surname as often as it is a credential and only the caller
+    knows which corpus this is; the cost of turning it on is that a
+    three-word name gives up its family name to the acronym, while a
+    two-word name keeps it — there are no words to spare there, so
+    the class is considered and declined and only the fork is
+    reported.
       "John Smith Jr."            →  suffix="Jr."
       "John Smith M.A."           →  suffix="M.A."
       "John Smith PhD"            →  suffix="PhD"
       "John Ma"                   →  family="Ma"  · boundary
+      "Jack MA"                   →  suffix="MA"
+      "Jack Ma"                   →  family="Ma"
+      "JACK MA"                   →  family="MA"
+      "JOHN SMITH MA"             →  suffix="MA"
+      "John Smith Ma"             →  family="Ma"
+      "Smith, MA"                 →  suffix="MA"
+      "Smith, Ma"                 →  given="Ma"
+      "Doe, John MA"              →  suffix="MA"
+      "Doe, John Ma"              →  middle="Ma"  · boundary
+      "Doe, John MA Smith"        →  middle="MA Smith"  · boundary
+      "Doe, John DO"              →  suffix="DO"
+      "SMITH, JOHN DO"            →  family="DO SMITH"  · boundary
+      "Doe, John MA JD"           →  ambiguities=("suffix-or-name", "suffix-or-name")
+      "Doe, John MA Ma"           →  middle="MA Ma"  · boundary
+      "Doe, John MA Ma"           →  ambiguities=("suffix-or-name",)  · boundary
+      "Doe, John van Ma"          →  middle="van Ma"  · boundary
+      "Doe, John van Ma"          →  ambiguities=()  · boundary
+      "Doe, John DO Ed"           →  middle="DO Ed"  · boundary
+      "Doe, John DO Ed"           →  ambiguities=()  · boundary
+      "John Smith XYZ"            →  family="XYZ"
+      "John Smith XYZ"  unlisted_caps_suffixes-on  →  suffix="XYZ"
+      "Jean DUPONT"  unlisted_caps_suffixes-on  →  family="DUPONT"
+      "Jean Pierre DUPONT"  unlisted_caps_suffixes-on  →  suffix="DUPONT"
+      "Jean Pierre DUPONT"  unlisted_caps_suffixes-on  →  family="Pierre"
       "Jack Ma."                  →  family="Ma."  · boundary
       "Ph. D. Van Johnson"        →  family="Van Johnson"
       "Ph. D. Van Johnson"        →  title="Ph."
@@ -819,13 +1073,16 @@ S2. Rationale: generational suffixes and credentials are recognized
     this decision, since the abbreviation test H2 uses is true of
     `Ph.` itself, so a scan that stepped over titles would step over
     the very piece being judged.
-    Accepted: with words to spare, a bare ambiguous acronym reads
-    as a suffix even beside an East Asian surname it more likely
-    belongs to; and an unambiguous suffix is consumed even when
-    that leaves no family name at all.
-      "Jack Wei Ma"               →  suffix="Ma"
-      "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
+    Accepted: an unambiguous suffix is consumed even when that
+    leaves no family name at all.
       "Smith Jr."                 →  family=""
+    Accepted: the case signal costs a genuine suffix standing behind
+    a name-leaning acronym. The walk stops at the declined pick
+    rather than continuing past it, so a suffix word in front of one
+    is never reached and reads as a name word.
+      "Jack Wei Ma"               →  family="Ma"
+      "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
+      "abdul Smith Jr Ma"         →  middle="Jr"
     Accepted: the title chain no longer takes the word this rule
     needs, and the argument a descriptive note here asked for is
     made. A title run leaves one NAME word standing and a
@@ -846,18 +1103,63 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    interacts: H1, H2, H3, H5, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P3, P5, P6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
-    vocabulary.
+    vocabulary, and a word of several chunks that no vocabulary
+    knows is still written the way a credential is written.
     A word with interior periods reads as a suffix when any of its
-    period-separated chunks is suffix vocabulary — any chunk, which
-    is looser than it sounds, since single letters can be Roman
-    numerals.
+    period-separated chunks is suffix vocabulary — except where
+    every chunk the vocabulary matches is a single ASCII character,
+    the roman numerals and the lone digit the vocabulary lists,
+    which are about generations rather than credentials.
+    A word of two or more period-separated chunks that no
+    vocabulary claims is read by POSITION instead, as a bare
+    ambiguous acronym is (S2): a credential where the name has words
+    to spare, a name word where it does not, either reading
+    reported at the slots S2 reports at, and the same at a comma —
+    which means the FIRST piece after a family comma, the word
+    trailing the given part after one, the word ending a maiden
+    marker's clause (M2), and the part before a SUFFIX
+    comma. The part before a FAMILY comma never reports, the comma
+    having already named it the family. Case says nothing here — the
+    periods are the evidence — and three shapes are outside it: a
+    single trailing period is not this shape at all, a chunk that is
+    not wholly alphabetic is no acronym letter, and a word carrying
+    a script that writes no abbreviations is not wearing an
+    abbreviation's periods (H2 refuses the same word for the same
+    reason). This second half is a caller switch, ON by default, and
+    the example lines name it; turned off, such a word is name
+    material and the chunk rule above still decides the rest.
+      "John Smith Msc.Ed."        →  suffix="Msc.Ed."
+      "John Smith Msc.Ed."  unlisted_dotted_suffixes-off  →  suffix="Msc.Ed."
+      "Doe, John Msc.Ed."         →  suffix="Msc.Ed."
       "John Smith J.u.n.i.o.r."   →  suffix="J.u.n.i.o.r."
-      "John Smith Q.W.E.R.T."     →  family="Q.W.E.R.T."  · boundary
-    implemented: nameparser/_pipeline/_vocab.py
+      "John Smith Q.W.E.R.T."     →  suffix="Q.W.E.R.T."
+      "John Smith X.Y.Z."         →  suffix="X.Y.Z."
+      "john smith x.y.z."         →  suffix="x.y.z."
+      "John Smith X.Y.Z."  unlisted_dotted_suffixes-off  →  family="X.Y.Z."
+      "Jack X.Y.I."               →  family="X.Y.I."  · boundary
+      "John Smith Xyz."           →  family="Xyz."  · boundary
+      "John Smith 1.4"            →  family="1.4"  · boundary
+      "Doe, John X.Y.Z."          →  suffix="X.Y.Z."
+      "Jane Doe nee Smith X.Y.Z." →  suffix="X.Y.Z."
+    Accepted: the initialless-script clause carries no example line
+    of its own. Every input that exercises it composes a script that
+    writes no abbreviations with a period that only a Latin
+    convention writes — `John Smith 田.中.` is the shape — and a
+    composed form no writing system produces is tolerated input
+    rather than contract. A normative rule cannot hold an example of
+    it without putting the string into the corpus that enforces it
+    at released baselines, so the witnesses are the tolerated row
+    tests/v2/cases.py's
+    an_initialless_script_glued_into_periods_is_not_this_shape,
+    which keeps the name on the differential's radar tier, and the
+    CJK assertions in tests/v2/pipeline/test_vocab.py's
+    test_period_joined_vocab_retires_the_single_character_chunk.
+    W3 states the same precedence for the same reason.
+    history: decisions.md#S2 · interacts: S2, C1, H2, W3 · implemented: nameparser/_pipeline/_vocab.py
 
 ## Nicknames & quoted names (N)
 
@@ -955,9 +1257,68 @@ M2. Rationale: a maiden marker announces that what follows it is the
     word takes the words after it — up to any suffix word, or the
     trailing roman numeral assign reads as the suffix (S2), both as
     written and as the take would leave the name, the word before
-    the numeral being then the word before the marker — as the
+    the numeral being then the word before the marker, or a
+    trailing word of the ambiguous credential class (S2), asked
+    that same double way and stopping the take only where the rule
+    reading the name left standing reads the word as the
+    credential, and never the first word after the marker — as the
     maiden name, and
-    the marker itself is dropped. A marker
+    the marker itself is dropped.
+    One suffix word does not stop it. Where such a word is also a
+    connective standing between two name words of the clause (P3),
+    a link inside the birth name does not end it, and the words on
+    both sides of the link are the maiden name. A link with the
+    marker on one side of it, or with the trailing run on the
+    other, is joining nothing there and ends the clause like any
+    other suffix word.
+    Those last two stops are each asked TWICE for one reason: the
+    count of words to spare includes the very words the marker
+    removes, so a reading taken over the name as written can be
+    wrong about the name the take would leave. WHICH rule does the
+    reading depends on where the clause stands. Where the clause is
+    in the part a trailing rule reads — a name with no comma, and
+    the part before a SUFFIX comma, which that rule reads the same
+    way — that rule is the reader. After a family comma it is the
+    reading the end of the given part takes, where the comma has
+    already settled the count and the writing decides alone. Before
+    a family comma, and in a part after a second one, no trailing
+    rule reads those words at all: the clause keeps them and says
+    nothing about them.
+    That the credential stop spares the first word after the marker
+    is a deliberate divergence from what certain suffix vocabulary
+    gets in the same position, where the marker declines and stays
+    an ordinary word. The marker announces a name, and this class is
+    the one carrying no evidence of which it is: its members are
+    borne surnames as well as credentials, and nobody writes a
+    credential straight after the marker, so a lone member reads as
+    the name it was announced to be.
+    A member ENDING a clause that some rule reads is reported where
+    the clause KEEPS it (S2); one the clause gives up is reported
+    where the reading that took it reports, so no word is reported
+    twice and none goes unreported.
+    That holds because a word the clause gives up reads as a
+    post-nominal or the clause keeps it. The stop is right only
+    where the released word ends the parse in the SUFFIX, so a stop
+    that would put it in a name part is no stop and the clause keeps
+    the word. What the take LEAVES BEHIND decides that, not the
+    clause as written. Two shapes leave nothing that could read the
+    word as a credential. A part whose other words are all
+    post-nominals or titles has no name word left for a trailing
+    slot to be the end of, and a part of nothing but credentials is
+    read whole and asked nothing. And a join reached below the take
+    — a particle chain (P2), or a bound given-name join (P5) — can
+    absorb the released word into a name part before any trailing
+    rule sees it, which would carry a word of the BIRTH name into
+    the current one. In both the clause keeps the word, and reports
+    it as it reports every member it keeps.
+    Delimiters outrank every reading inside them. Where a recognized
+    marker stands inside a delimited clause, the whole span is the
+    maiden name whatever its last word is, and whether or not the
+    pair is a configured maiden delimiter (M3): the writer drew the
+    boundary, so no fork is called and nothing is reported. A word
+    the writer left OUTSIDE the span is outside the clause and reads
+    as it would anywhere else.
+    A marker
     with nothing after it, or nothing before it, is just a word.
     A marker may be more than one word, and is then recognized only
     whole and only where its words stand together: its own first word
@@ -980,6 +1341,21 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Smith née V"          →  suffix="V"
       "J. née Jones Smith V"      →  maiden="Jones Smith V"  · boundary
       "Jane née Jones J. V"       →  maiden="Jones J. V"  · boundary
+      "Jane Doe nee Smith MA"     →  maiden="Smith"
+      "Jane Doe nee Smith MA"     →  suffix="MA"
+      "Jane Doe nee Smith Ma"     →  maiden="Smith Ma"  · boundary
+      "Jane Doe nee MA"           →  maiden="MA"  · boundary
+      "Jane Doe nee MA Smith"     →  maiden="MA Smith"  · boundary
+      "John née Jones Smith MA"   →  maiden="Jones Smith"
+      "Doe, Dr. nee Smith MA"     →  maiden="Smith MA"  · boundary
+      "Berg, abdul nee Jones MA"  →  maiden="Jones MA"  · boundary
+      "Jane Doe nee Smith DO DO"  →  maiden="Smith DO DO"  · boundary
+      "Jane Doe nee Puig i Soler" →  maiden="Puig i Soler"
+      "Jane Doe nee Puig i"       →  maiden="Puig"  · boundary
+      "Jane Doe nee Puig i"       →  suffix="i"  · boundary
+      "Jane Doe (nee Smith MA)"   →  maiden="Smith MA"
+      "Jane Doe (nee Smith Ma)"   →  maiden="Smith Ma"
+      "Jane Doe (nee Smith) MA"   →  suffix="MA"
       "Jones née"                 →  family="née"  · boundary
       "née Jones"                 →  family="Jones"  · boundary
       "Jane van der Berg née Jones"  →  maiden="Jones"
@@ -1001,13 +1377,33 @@ M2. Rationale: a maiden marker announces that what follows it is the
     Accepted: the marker reads the words as written, so a suffix word
     inside the maiden name ends it even where a connective beside it
     would have bound the two into one name word (P3); the connective
-    then builds a family name out of what is left.
+    then builds a family name out of what is left. A suffix word
+    that IS the connective is the exception stated above, and ends
+    the clause only where it joins nothing.
       "Jane née Jr y Jones"            →  maiden=""
-    Accepted: a bare acronym the peel would take with words to spare
-    is maiden text all the same — the count it needs includes the
-    very words the marker removes, so the reading is left to assign.
+    Accepted: a bare acronym the reading declines is maiden text all
+    the same — the writing decides this one (S2), and the count such
+    a reading needs is taken over the name the take would leave
+    rather than over the words as they stand.
       "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
-    history: decisions.md#M2 · interacts: P2, P3, P5, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
+    Accepted: a trailing title is not transparent inside a clause,
+    and the two spellings disagree — the walk reads the trailing
+    credential run and not the title chain behind it, so a title
+    AFTER a member of that class hides it and a title before it
+    does not.
+      "Jane Doe nee Smith MA Prof."    →  maiden="Smith MA Prof."  · boundary
+      "Jane Doe nee Smith Prof. MA"    →  maiden="Smith Prof."  · boundary
+    Deviation: the link exception asks for a name word on each side,
+    and a separator the caller declared is structure rather than a
+    name word — so a link with one beside it is joining nothing and
+    ends the clause like any other suffix word. A declared separator
+    standing inside the clause, past its first word, is read as that
+    name word instead, and the clause runs on across a link it should
+    have ended at. The same clause written without the separator,
+    which leaves the title as the word on the link's left, does end
+    there.
+      "Smith, John, PhD née Puig Mr. - i Soler" extra_suffix_delimiters-dash →  maiden="Puig Mr."  deviates: #538 (today: maiden="Puig Mr. i Soler")
+    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
     maiden, but a recognized marker word inside it does — the clause
@@ -1062,7 +1458,7 @@ M4. Rationale: a maiden name is a FORMER family name, and a former
     decided, so it cannot overrule what a word already IS
     (mechanisms.md#TWO-LAYER-ASSIGN). A word the vocabulary has
     claimed as a given name keeps that reading, and so does a word
-    written as an initial, which is nobody's family name. A name
+    read as an initial, which is nobody's family name. A name
     carrying a TITLE is H1's rather than this rule's, H1's
     given-name-title carve-out included, which keeps the word a
     given name. A nickname holds nothing off: where N3 has already
@@ -1091,8 +1487,26 @@ C1. Rationale: a credential run after the comma means the name is in
     the part after the first comma is entirely suffix words and more
     than one word precedes the comma; otherwise it reads as the
     listing form, the part before the comma being the family name.
-    Only the part after the first comma decides. Both modes consult
-    the vocabulary alone; by default a recognized suffix word counts
+    Only the part after the first comma decides.
+    For the ambiguous credential class — a bare acronym the
+    vocabulary marks as also an ordinary name, and a word admitted
+    to the class by shape, which S3 defines and bounds — the
+    count before the comma is of NAME words rather than of words:
+    two or more of them read the part after the comma as the
+    credential run, whatever case the name is written in. The count
+    goes FIRST and written case is asked only after it: where two
+    name words stand before the comma the part after it is the
+    credential run however that part is written, and only where the
+    count leaves the word a name — one name word before the comma —
+    is the case read, capitals in a mixed-case name making it the
+    credential there too (S2). A decision either way at this comma
+    is reported. It is one of TWO places the comma's own decision is
+    reported, the other being the word trailing the given part after
+    it (S2), which is a second decision about a second word and never
+    the same fork twice; an attachment decided after a family comma
+    (P6) reports on its own. C2's comma-structure flag reports what the
+    parse could not recognize, not a fork it called.
+    By default a recognized suffix word counts
     even written like an initial ("V."), while strict mode vetoes
     initial-shaped words. In the listing form the part after the
     comma is still read for what it is: a part that is nothing but
@@ -1146,6 +1560,18 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, Mr. Jr."       →  given="John"
       "Smith Jr., Mr."            →  family="Smith"  · boundary
       "John Smith, Jones"         →  family="John Smith"
+      "John Smith, MA"            →  suffix="MA"
+      "John Smith, Ma"            →  suffix="Ma"
+      "Smith, MA"                 →  suffix="MA"
+      "Smith, Ma"                 →  given="Ma"
+      "John Smith, Ed"            →  suffix="Ed"
+      "Davis Royce, Ed"           →  suffix="Ed"
+      "Royce, Ed"                 →  given="Ed"  · boundary
+      "Smith Jr., MA"             →  suffix="Jr., MA"
+      "Smith Jr., Ma"             →  given="Ma"  · boundary
+      "John Smith, A.B."          →  suffix="A.B."
+      "John Smith, A.B."  unlisted_dotted_suffixes-off  →  given="A.B."
+      "Smith, A.B."               →  given="A.B."  · boundary
     Accepted: a word of both the title and the unambiguous suffix
     vocabulary reads as the postnominal after a family comma in
     every spelling, the honorific's too — position decides for the
@@ -1180,7 +1606,7 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions.md#C1 · interacts: H2, P6, W3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1 · interacts: H2, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.
@@ -1189,9 +1615,29 @@ C2. Rationale: text beyond the recognized comma parts should be
     flagged as a structural ambiguity rather than rejected — parsing
     never fails on content. An empty part between doubled commas is
     consumed silently.
+    A part the parse reads as a credential run by some route other
+    than the suffix vocabulary is recognized and is not flagged: a
+    run of ambiguous acronyms whose written case leans credential
+    (S2), and a run every word of which is an unlisted DOTTED word
+    the position reads as a credential (S3). This is the one place
+    the ambiguous class QUIETS a report rather than adding one, and
+    it is narrow in two ways that the examples below pin. A member
+    whose written case does not lean CREDENTIAL keeps the flag,
+    whether the name is written in one case so that nothing leans at
+    all, or the member is written the way a name is written. And
+    S2's other by-shape half, the unlisted all-caps word, does not
+    reach here under its switch either: the shape a tail segment is
+    recognized by is the dotted one alone.
       "John Smith, MD, Bart"      →  suffix="MD, Bart"
       "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
-    history: decisions.md#C1 · implemented: nameparser/_pipeline/_segment.py
+      "John Smith, MD, R.A.I."    →  suffix="MD, R.A.I."
+      "John Smith, MD, R.A.I."    →  ambiguities=()
+      "John Smith, MD, R.A.I."  unlisted_dotted_suffixes-off  →  ambiguities=("comma-structure",)
+      "John Smith, MD, Ma"        →  ambiguities=("comma-structure",)  · boundary
+      "Steven Hardman, MD, DO, DDS"  →  ambiguities=()
+      "STEVEN HARDMAN, MD, DO, DDS"  →  ambiguities=("comma-structure",)  · boundary
+      "John Smith, MD, XYZ"  unlisted_caps_suffixes-on  →  ambiguities=("comma-structure",)
+    history: decisions.md#C1, decisions.md#S2 · interacts: C1, S2, S3 · implemented: nameparser/_pipeline/_segment.py
 
 ## Name order (O)
 
@@ -1338,7 +1784,7 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
 
 ## Scripts & writing systems (W)
 
-Background: script-conditional behavior is permitted exactly where the writing system itself — not statistics about it — settles the convention; a language can never be inferred from Latin-script text, because transliteration destroys the signal. The facts this section builds on: Chinese and Japanese both write the family name first in native script, so the script settles the order without knowing the language. Hangul is written by exactly one language and Korean family names are a small closed census set. Han text does not identify its language — a Chinese surname list would divide Japanese 高橋一郎 as 高 + 橋一郎 — which is why Han division is opt-in and there is no Korean pack to opt into. Hiragana never transcribes a foreign name (transcriptions are katakana alone), so kanji-plus-kana is a Japanese name in Japanese order, while wholly-katakana is predominantly a transcribed foreign name already in given-first order. Real Chinese text is unspaced (毛泽东); the spaced 毛 泽东 is an artifact. A fuller narrative lives in docs/usage.rst's East Asian section. One fact carries its own consequence: none of the three writing systems marks the family name with a comma — position in the written form is what identifies it, so a comma standing between the family name and the given name is a listing convention carried in from elsewhere rather than a form the script produces. That is why the rule reading one (W3) is tolerated rather than normative. CLDR's own locale data says the same where a contrary convention would have had to appear: across its ko, zh and ja personName patterns not one of the 126 pattern strings carries a comma of any width, the surname-first referring patterns separating surname from given by a single space, and the only comma in reach belongs to the locale-neutral root's sorting format — a list-ordering format, which ko and zh override comma-free and ja all but one inherited slot (decisions.md#cjk-comma-demotion carries the pull verbatim, with its URLs, its commit and its date).
+Background: script-conditional behavior is permitted exactly where the writing system itself — not statistics about it — settles the convention; a language can never be inferred from Latin-script text, because transliteration destroys the signal. The facts this section builds on: Chinese and Japanese both write the family name first in native script, so the script settles the order without knowing the language. Hangul is written by exactly one language and Korean family names are a small closed census set. Han text does not identify its language — a Chinese surname list would divide Japanese 高橋一郎 as 高 + 橋一郎 — which is why Han division is opt-in and there is no Korean pack to opt into. Hiragana never transcribes a foreign name (transcriptions are katakana alone), so kanji-plus-kana is a Japanese name in Japanese order, while wholly-katakana is predominantly a transcribed foreign name already in given-first order. Real Chinese text is unspaced (毛泽东); the spaced 毛 泽东 is an artifact. A fuller narrative lives in docs/usage.rst's East Asian section. One fact carries its own consequence: none of the three writing systems marks the family name with a comma — position in the written form is what identifies it, so a comma standing between the family name and the given name is a listing convention carried in from elsewhere rather than a form the script produces. That is why the rule reading one (W3) is tolerated rather than normative. CLDR's own locale data says the same where a contrary convention would have had to appear: across its ko, zh and ja personName patterns not one of the 126 pattern strings carries a comma of any width, the surname-first referring patterns separating surname from given by a single space, and the only comma in reach belongs to the locale-neutral root's sorting format — a list-ordering format, which ko and zh override comma-free and ja all but one inherited slot (decisions.md#cjk-comma-demotion carries the pull verbatim, with its URLs, its commit and its date). A full stop of any width — the ASCII period, the fullwidth ．, the ideographic 。 and its halfwidth ｡ — glued after a script-written word is punctuation and not part of the word: it is invisible to the script reading and to the vocabulary, and it stays in the text on the word it arrived with, because no East Asian script writes an initial or an abbreviation with a period (#322, #323; decisions.md#cjk-full-stops). A stop glued BEFORE the word is punctuation to the vocabulary lookup, which folds both edges away, so .씨 is still the honorific. The classification fold that feeds the two division sites reads the trailing edge only, so a word wearing a leading stop is given no script at all and never becomes a surname site: .김민준 stays one whole word, given, no script rule reaching it. The honorific peel (W2) is not gated by that fold — the tail alone is its license — so it reads such a token regardless of a leading stop, and its own trailing-edge fold is what decides there: .김민준씨 peels to .김민준 and 씨, and .김민준씨. peels to .김민준 and 씨. (tests/v2/pipeline/test_script_segment.py's test_the_peel_reads_the_trailing_stop_only).
 
 W1. Rationale: hangul is monoglot Korean and its surnames are a
     closed census set, so an unspaced hangul name divides at a
@@ -1410,29 +1856,41 @@ W3. Rationale: a family name declared by a comma is the writer's
     name's end, and a glued honorific before the comma stays glued.
     The vocabulary question is C1's own, asked without C1's
     word-count condition: the two differ in what else they require,
-    not in what they ask of the words. A period the listing leaves
+    not in what they ask of the words — the written-case evidence
+    S2 reads included, so a post-comma acronym the case leans
+    credential declines the side it stands on here exactly as it
+    reads as the credential there, and the honorific comes off the
+    part before the comma as it does behind a settled credential.
+    A period the listing leaves
     behind is not what licenses the step past a post-nominal word,
     and it is not ignored either. The step is W2's, taken on the
     vocabulary alone and taken with no punctuation anywhere in the
     input; a period on a SEPARATE post-nominal word rides along into
     the suffix and moves no division (田中さん 様. divides where
-    田中さん 様 does). A period glued to the honorific's OWN word is
-    read instead, and decides against the split-off: the listed tail
-    no longer ends that word, so nothing peels and the text goes on
-    whole — 田中さん. and 김민준씨. each read as a title, measured
-    2026-09-05. Neither string is a case row or a corpus line, so no
-    row pins those two readings and they can move without the suite
-    or the differential saying so; the sentence reports them rather
-    than promising them, even by this rule's standard.
+    田中さん 様 does). A period glued to the honorific's OWN word
+    rides with the honorific: the split-off matches the listed tail
+    through it and cuts before it, so 田中さん. and 김민준씨. divide
+    where 田中さん and 김민준씨 do (#323; until 2026-09-10 each read
+    as a title, measured 2026-09-05 and pinned by nothing, which is
+    why the move was free), and a period-marked Han opener divides
+    as its stop-less spelling does, 田中. 太郎 reading family-first
+    — the reading H2's Accepted clause vetoes a title into, carried
+    here because an edge full stop makes it tolerated input like the
+    rest of this block. All three are case rows now, tolerated, and
+    the sentence reports them rather than promising them, even by
+    this rule's standard.
     decisions.md#cjk-comma-demotion carries the parses.
       "남궁민수"                  →  family="남궁"
       "지훈, 남궁민수"            →  given="남궁민수"
       "남궁민수, 지훈"            →  family="남궁민수"  · boundary
       "田中さん, Dr."             →  family="田中さん"
       "田中さん, PhD"             →  suffix="さん, PhD"
+      "Kim김민준씨, MA"           →  suffix="씨, MA"
       "田中さん 様."              →  suffix="さん 様."
-    tolerated: native CJK writing has neither a family-comma convention nor a period standing after an honorific, so the four comma lines above and the period line under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All five stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
-    history: decisions.md#W3 · interacts: W1, W2, C1 · implemented: nameparser/_pipeline/_script_segment.py
+      "김민준씨."                 →  suffix="씨."
+      "田中. 太郎"                →  family="田中."
+    tolerated: native CJK writing has neither a family-comma convention nor an edge full stop of any width on a name word, so the five comma lines above and the three period lines under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All eight stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
+    history: decisions.md#W3 · interacts: W1, W2, C1, H2 · implemented: nameparser/_pipeline/_script_segment.py
 
 W4. Rationale: Chinese, Japanese and Korean all write the family
     name first in native script — the script settles the order
@@ -1497,8 +1955,15 @@ A1. Rationale: a caller can only act on doubt that is reported.
     Parsing never fails on any input: where the text's structure or
     a word's reading is genuinely uncertain, the parse completes on
     the best reading and carries an ambiguity report naming the
-    doubt.
+    doubt. A report names the reading the parse took, so a report
+    whose fork the rest of the parse then resolved to NEITHER branch
+    is withdrawn rather than carried beside a reading it
+    contradicts: a letter both a connective and an initial, read as
+    the generation it also spells, is neither of the two the
+    connective-or-initial fork offered, and only that fork's report
+    goes — the generation's own stands.
       "Van Johnson"               →  ambiguities=("particle-or-given",)
+      "JOHN QUINCY SMITH I"       →  ambiguities=("suffix-or-name",)
       "Jane „JD Smith"            →  ambiguities=("unbalanced-delimiter",)
       "John Smith, MD, Bart"      →  ambiguities=("comma-structure",)
       "John Smith"                →  ambiguities=()  · boundary
@@ -1506,7 +1971,7 @@ A1. Rationale: a caller can only act on doubt that is reported.
     segmenter's own error, which propagates — a user-code error is
     not a content error. (Needs the optional extra to demonstrate,
     so no example line.)
-    implemented: nameparser/_pipeline/_state.py
+    history: decisions.md#A1 · interacts: P3, S2 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_state.py
 
 A2. Rationale: an input with no name content names nobody, and
     saying so beats inventing fields from punctuation.
@@ -1548,14 +2013,17 @@ R1. Rationale: a field is a way of reading the parse, not a stored
     revises back to itself wherever the value's words read as the
     whole name read them — a glued CJK honorific peels off an initial
     in a bare value where the whole name kept it glued, one corpus
-    name of the 368 with a suffix (decisions.md#C1, 2026-09-06). A
-    delimiter the configuration names parts a value only where the
-    value's own words, read as a name, give it a tail segment for the
-    core to be dropped on; a run of post-nominals has none, with or
-    without a comma of its own, so there the delimiter stays a word of
-    the run — write a comma at the boundary instead. Stated without an
-    example line because every line here names an input string, and
-    this shape needs a field revised after the parse.
+    name of the 372 with a suffix (decisions.md#C1, 2026-09-06, which
+    counted 368 of 1117 then; re-measured 2026-09-10 with this
+    bundle's rows in the corpora, 372 of 1156 distinct names and the
+    same single failure). A delimiter the configuration names parts a
+    value only where the value's own words, read as a name, give it a
+    tail segment for the core to be dropped on; a run of post-nominals
+    has none, with or without a comma of its own, so there the
+    delimiter stays a word of the run — write a comma at the boundary
+    instead. Stated without an example line because every line here
+    names an input string, and this shape needs a field revised after
+    the parse.
     history: decisions.md#C1 · interacts: O3, P6, R3 · implemented: nameparser/_parser.py, nameparser/_pipeline/_post_rules.py, nameparser/_types.py
 
 R2. Rationale: callers need the surname with and without its
@@ -1596,18 +2064,21 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     family word; titles, suffixes, particles and nicknames
     contribute nothing — except the particles of a part whose every
     word is one, which are not acting as particles there (R2) and
-    initial like any other name word. A CONJUNCTION never initials,
-    so a base that is one contributes nothing even then. That
-    carve-out is stated for the middle and base family words; the
-    GIVEN group is not settled here. A conjunction written among
-    given names does initial today, and this document does not yet
-    say whether it should — because two of its own rules answer
-    differently and neither answer has been taken: this rule counts
-    name words, while P3 makes a connective and its neighbours ONE
-    name word, so a joined given group owes one initial under P3 and
-    one per joined name word under the carve-out. Until that is
-    decided the given group's answer is pinned-but-undocumented
-    rather than specified, and no line below asserts it.
+    initial like any other name word. A connective contributes
+    nothing where it is joining: a part holding another name word for
+    it to join — the part's working particles set aside — is a part
+    where the connective is doing a connective's work and is no name
+    word of its own. A part holding nothing else is a part where it
+    is joining nothing, and there it initials like any other name
+    word, agreeing with the base.
+    The question is asked of the WHOLE PART, never of a word count. A
+    part of two words where one is the connective is still a part
+    where it joins — the base of "Jon Dough and" is "Dough and" and
+    its initials are "J. D." — and a part of three is no different.
+    One rule for every group. A connective written among given names
+    is a connective there too and contributes nothing where it joins,
+    so the group that was pinned-but-undocumented is now specified by
+    the same sentence as the other two.
     Which words a group contributes is one question; the ORDER they
     contribute in is a second, and its answer is the field's. Each
     group initials in the order its field reads — written order,
@@ -1627,7 +2098,11 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     A family that is ALL particles therefore contributes its words
     rather than nothing: they are the base (R2), so they initial.
       "Juan van der"              →  initials="J. v. d."
-      "Juan de y"                 →  initials="J."
+      "Juan de y"                 →  initials="J. y."
+      "John and Jane Smith"       →  initials="J. J. S."
+      "Duke of Edinburgh"         →  initials="D. E."
+      "Juan Velasquez y Garcia"   →  initials="J. V. G."
+      "Jon Dough and"             →  initials="J. D."
     Accepted: this rule reads a part the parser read. A field set as
     raw text after the parse carries no reading, and this view is
     handed no vocabulary to supply one — it takes a format spec and
@@ -1637,23 +2112,39 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     name gives "j. v.". Case repair IS handed a vocabulary, so it falls
     back for the one question a word can answer on its own, and R4
     says which. Revising the field through the parser classifies it
-    and matches the parse in both views. Stated without an example
-    line because every line here names an input string, and this
-    shape needs a field edited after the parse.
-    Accepted: the unsettled given-group answer above is neither rare
-    nor hypothetical — 25 of the corpus names carry a conjunction
-    among the given names, every one of them reachable from the
-    default vocabulary, and it has initialed since 1.4.0. It carries
-    no marked deviation, for the reason that mechanism exists: a
-    marker states the INTENDED value, and one name, "John and Jane
-    Smith", has four candidates. Today gives "J. a. J. S."; the
-    carve-out read as written gives "J. J. S."; P3's one-name-word
-    join gives just "J. S."; and 1.4.0 gave "J a J. S.". Marking it
-    would put an invented value in a normative document and hold
-    the parser to it. #461 asks the neighbouring question about the
-    all-particle base and does not own this one; decisions.md#R2
-    carries the population and the measurements.
-    history: decisions.md#R3 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
+    and matches the parse in both of the parsed name's views. Stated
+    without an example line because every line here names an input
+    string, and this shape needs a field edited after the parse.
+    The v1 facade's HumanName.initials() is a second view of this
+    question and IS handed a vocabulary: it reads the parse's reading
+    wherever a word is backed by a parsed token, and falls back
+    wherever a word is not — a field set as raw text, or a name
+    restored from a v1 pickle or copied through the same state hooks.
+    The connective question falls back to the same helper case repair
+    uses; the particle question was never asked of the parse in this
+    view at all — `_is_particle` is a live
+    vocabulary lookup for every word, backed or spliced alike — so a
+    family spliced to "de la vega" initials "j. v." on this view
+    against "j. d. l. v." on the parsed name's own. So the
+    two views agree on WHICH WORDS initial in a parsed name; what
+    still differs there is GROUPING, the facade initialing a joined
+    run as one element, which is where the name "Ph. D., John" gives
+    a run-together "J. P D." on this view against "J. P. D." on the
+    other. Stated in prose and not as example lines because both
+    shapes need a field edited after the parse, or a rendering the
+    other view does not have. decisions.md#R3 carries what all of it
+    costs and where it is pinned.
+    Accepted: the given group's answer is a 1.4.0 parity break, and
+    a second one in the other direction sits beside it. A connective
+    among given names contributed an initial from 1.4.0 until this
+    rule reached it, so "John and Jane Smith" gives "J. J. S." where
+    every release through 2.3 gave "J. a. J. S." and 1.4.0 gave the
+    run-together "J a J. S."; and a connective holding a part alone
+    now contributes one, so "محمد و علي" gives "م. و. ع." on both
+    views, which is 1.4.0's own answer restored. The rule is one
+    sentence for all three groups, and taking it is what made the
+    four candidate answers this group once had into one.
+    history: decisions.md#R3 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py, nameparser/_pipeline/_post_rules.py
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
@@ -1663,9 +2154,21 @@ R4. Rationale: case repair is a display concern, applied only on
     convention (McDonald), not only ordinary word-by-word casing, and
     a part whose every word is particle vocabulary is repaired as
     ordinary name words, since none of them is doing a particle's
-    work there (R2). A CONJUNCTION keeps its lowercase even inside
-    such a part, being no name word in any part — the carve-out R3
-    states for initials. A name already written the way repair would
+    work there (R2). A CONNECTIVE the parse placed among the name
+    words keeps its lowercase wherever it stands there, including
+    inside a part whose other words the unjoined mark has turned into
+    ordinary name words; one the parse read as the generation it also
+    spells is not a connective of this name at all, and is repaired
+    as the generation it was read as. That is this rule's own reading
+    and not a borrowing from R3: a connective that initials because
+    it joins nothing is still not written the way a name is written,
+    while a generation is written the way a generation is written.
+    The GENERATION is what that clause turns on and not the field:
+    a connective the suffix field merely holds, which the suffix
+    vocabulary does not know, was read as no generation and keeps its
+    lowercase there like any other connective — the third part of a
+    comma form is the shape that puts one there.
+    A name already written the way repair would
     write it comes back unchanged, measured by repair's own
     conventions rather than by the bearer's. A spelling written in a
     single case is repaired even where its bearer meant it, because
@@ -1684,6 +2187,10 @@ R4. Rationale: case repair is a display concern, applied only on
       "john smith phd"            →  capitalized="John Smith Ph.D."
       "john smith mba"            →  capitalized="John Smith MBA"
       "john smith jr"             →  capitalized="John Smith Jr"  · boundary
+      "John Quincy Smith i"       →  capitalized_forced="John Quincy Smith I"
+      "Carod i"                   →  capitalized_forced="Carod I"
+      "Smith, John, and"          →  capitalized_forced="John Smith and"
+      "Doe, Jane, and Jr."        →  capitalized_forced="Jane Doe and Jr."
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
     Accepted: the clause reaches a part the parser read. A field
     spliced in as raw text after the parse carries no reading of its
@@ -1711,12 +2218,19 @@ R4. Rationale: case repair is a display concern, applied only on
     needs a reading on every word of the part, and a spliced field
     has none on any, so that half falls through to particle treatment
     and the "de la" boundary above stands. Initials are the contrast
-    worth knowing, and R3 states it: that view is handed no
-    vocabulary at all, so it falls back on neither question and a
-    spliced field's every word initials. revise() classifies the
-    value and crosses both questions, in both views: a middle revised
-    to "e-f" repairs to "E-F" as the parsed name does, where splicing
-    the same text in gives "e-F".
+    worth knowing, and R3 states it — but ask which initials view,
+    because the two answer oppositely. The parsed name's own view is
+    handed no vocabulary at all, so it falls back on neither question
+    and a spliced field's every word initials. The v1 facade's view IS
+    handed one: the connective question falls back to the helper this
+    rule uses, while the particle question is never asked of the
+    parse in this view at all — a live vocabulary lookup for every
+    word, backed or spliced alike — so a family spliced to "de la
+    vega" initials "j. v." there against the parsed view's "j. d. l.
+    v.". revise() classifies the value and crosses both questions, in
+    both of the parsed name's views: a middle revised to "e-f"
+    repairs to "E-F" as the parsed name does, where splicing the same
+    text in gives "e-F".
     history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name

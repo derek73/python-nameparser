@@ -180,23 +180,24 @@ def test_repair_keeps_a_conjunction_lowercase_in_a_particle_part() -> None:
 
 
 def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
-    """Today's answer on an OPEN question (#461), pinned as such.
+    """rules.md#R3, settled (#461).
 
-    rules.md#R3 says a conjunction never initials "even then" -- even
-    inside the all-particle part R2 turns into ordinary name words --
-    and `initials()` does not do that: the mark readmits the part's
-    words whichever skip tag they carry. #461 made the code match the
-    clause and was backed out, the clause rather than the code being
-    what is now in question (decisions.md, under R2).
+    This pinned TODAY's output on an open question so that settling it
+    would fail the suite until the pin moved with it. It fired, and
+    this is the pin moved: a connective contributes no initial where
+    it is JOINING, and a part holding nothing else for it to join is a
+    part where it initials like any other name word, agreeing with the
+    base. The all-particle rows below are unchanged, because R2's mark
+    already readmitted the word there; what moved is everything under
+    the default vocabulary, where a lone connective now initials too.
+    decisions.md#R3 records the rule and what it costs.
 
-    So this pins what a `deviates:` marker would pin if one could
-    hang here -- TODAY's output, strictly, so that settling #461
-    fails the suite until this moves with it. It cannot be a marker:
-    markers hang on rules.md example lines and every line there names
-    an input string parsed with the DEFAULT vocabulary, over which
-    `particles` and `conjunctions` are disjoint and no string reaches
-    this shape. It is also what keeps the values quoted in prose by
-    decisions.md, mechanisms.md#RENDER-HONORS-THE-PARSE and
+    Still not a `deviates:` marker and still not a rules.md example
+    line: markers hang on example lines and every line there names an
+    input parsed with the DEFAULT vocabulary, over which `particles`
+    and `conjunctions` are disjoint, so no string reaches the
+    all-particle-with-a-connective shape. It is also what keeps the
+    values quoted in prose by decisions.md, mechanisms.md and
     `_render.py` from going stale unnoticed.
     """
     assert "y" in Lexicon.default().conjunctions, (
@@ -213,13 +214,143 @@ def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
     assert p.parse("Anh y Van").initials() == "A. y. V."
     assert p.parse("johnny y").initials() == "j. y."
 
-    # and OUTSIDE such a part the skip stands, joining or not --
-    # these are what the readmission must not reach
+    # OUTSIDE such a part the skip stands where the connective is
+    # JOINING, and these are what the readmission must not reach --
+    # the question is asked of the whole PART and never of a word
+    # count, which is what keeps a part of two words with a name word
+    # in it on this side of the line
     assert p.parse("Juan Velasquez y Garcia").initials() == "J. V. G."
+    assert parse("Jon Dough and").initials() == "J. D."
+    # Under THIS lexicon 'Juan y Garcia' is one of them, and for a
+    # reason worth spelling out: making 'y' a particle folds it into
+    # the family, so the part is 'y Garcia' and holds a name word for
+    # it to join. Unchanged, where the same string under the default
+    # vocabulary moves -- which is the row below.
     assert p.parse("Juan y Garcia").initials() == "J. G."
-    # including under the default vocabulary, where 'y' is no particle
-    # and the family is therefore not all-particle
-    assert parse("Juan de y").initials() == "J."
+    # and it DOES reach a part holding nothing else, under the default
+    # vocabulary too, where 'y' is no particle and only the new mark
+    # readmits it
+    assert parse("Juan y Garcia").initials() == "J. y. G."
+    assert parse("Juan de y").initials() == "J. y."
+    assert parse("Juan y").initials() == "J. y."
+
+
+def test_repair_keeps_a_lone_connective_lowercase_where_it_initials(
+) -> None:
+    """rules.md#R4's own reading, and the view split it accepts.
+
+    A connective that initials BECAUSE it joins nothing is still not
+    written the way a name is written, so case repair leaves it
+    lowercase while initials() takes its letter. That is R4's reason
+    rather than a borrowing from R3 -- the two rules answer different
+    questions about the same token and this is the row where their
+    answers part. mechanisms.md#RENDER-HONORS-THE-PARSE records the
+    shape; decisions.md#R4 records the split.
+    """
+    assert parse("Juan de y").initials() == "J. y."
+    assert parse("Juan de y").capitalized().family == "de y"
+    assert parse("juan y").capitalized(force=True).given == "Juan"
+    assert parse("juan y").capitalized(force=True).family == "y"
+
+
+def test_repair_capitalizes_a_generation_the_connective_also_spells(
+) -> None:
+    """rules.md#R4's other half (#397 review), and the row that made
+    the sentence need two clauses.
+
+    A word can be the connective and the generation at once -- 'i' is
+    the Catalan link and the roman numeral -- and where the parse read
+    the GENERATION the token still carries the `conjunction` tag
+    classify gave it. Repair reads the ROLE the parse decided, not the
+    tag alone, so a suffix-roled letter is repaired as the suffix it
+    was read as. Without that test these gave 'John Quincy Smith i'
+    and 'Carod i', where every release through 2.3 gave the capital.
+
+    Both surfaces, because the v1 facade repairs through this same
+    helper and a fix on one of them would be a split.
+    """
+    assert parse("John Quincy Smith i").suffix == "i"
+    assert str(parse("John Quincy Smith i").capitalized(
+        force=True)) == "John Quincy Smith I"
+    assert str(parse("Carod i").capitalized(force=True)) == "Carod I"
+    assert str(parse("Josep Lluis Carod i III").capitalized(
+        force=True)) == "Josep Lluis Carod I III"
+    v1 = HumanName("John Quincy Smith i")
+    v1.capitalize(force=True)
+    assert str(v1) == "John Quincy Smith I"
+    v1_two = HumanName("Carod i")
+    v1_two.capitalize(force=True)
+    assert str(v1_two) == "Carod I"
+    # the contrast that keeps the role test honest: the SAME letter
+    # in a NAME part is a connective and keeps its lowercase, which
+    # is the answer 'y' has always had there
+    assert parse("Josep i Rovira").middle == "i"
+    assert str(parse("Josep i Rovira").capitalized(
+        force=True)) == "Josep i Rovira"
+    assert str(parse("Josep y Rovira").capitalized(
+        force=True)) == "Josep y Rovira"
+
+
+def test_repair_keeps_a_plain_connective_the_suffix_field_holds_lower(
+) -> None:
+    """rules.md#R4, the GENERATION half read narrowly (#397 second
+    review). The clause turns on the generation and not on the field:
+    the test is the suffix ROLE **and** the suffix VOCABULARY, and a
+    role test alone capitalized every plain connective that merely
+    LANDS in the suffix field.
+
+    The third part of a comma form is the shape that puts one there
+    -- assign reads those words as the suffix run whatever they are
+    -- and none of them is generational vocabulary, so none of them
+    was read as a generation and all of them keep the lowercase they
+    have always had. Expected strings measured 2026-09-20 on the
+    released 1.4.0 and 2.3.0 wheels from a throwaway environment, and
+    they agree with each other and with the parent commit 46651750.
+
+    'Smith, John, и' is the one row where the two wheels part, and
+    for a reason older than this rule: Cyrillic 'и' is a 2.x
+    conjunction and not a 1.4.0 one, so 1.4.0 gives 'John Smith И'
+    and 2.3.0 gives 'John Smith и'. The tree follows 2.3.0, as
+    _render.py's own note on that word says it must.
+    """
+    for text, plain, forced in (
+            ("Smith, John, and", "John Smith and", "John Smith and"),
+            ("Smith, John, y", "John Smith y", "John Smith y"),
+            ("Smith, John, e", "John Smith e", "John Smith e"),
+            ("Smith, John, und", "John Smith und", "John Smith und"),
+            ("Smith, John, of", "John Smith of", "John Smith of"),
+            ("Smith, John, и", "John Smith и", "John Smith и"),
+            ("Doe, Jane, and Jr.", "Jane Doe and Jr.",
+             "Jane Doe and Jr."),
+            ("Smith, John, and III", "John Smith and III",
+             "John Smith and III")):
+        name = parse(text)
+        assert name.suffix.split()[0] == text.split(", ")[-1].split()[0]
+        assert str(name.capitalized()) == plain, text
+        assert str(name.capitalized(force=True)) == forced, text
+        v1 = HumanName(text)
+        v1.capitalize(force=True)
+        assert str(v1) == forced, text
+    # A SPLICED field is the other way in, and R4's Accepted
+    # paragraph is explicit about it: text nobody read gets the
+    # vocabulary's answer, so a suffix set to 'de y' keeps its 'y'
+    # exactly as a family set to 'de y' does. 1.4.0 and 2.3.0 both
+    # give 'John Smith De, y'.
+    spliced = HumanName(first="John", last="Smith", suffix="de y")
+    spliced.capitalize(force=True)
+    assert str(spliced) == "John Smith De, y"
+    # ... and the vocabulary's answer is what a spliced 'i' gets too,
+    # which is a CHANGE from the parent and the shape to know about:
+    # 'i' is connective vocabulary here and was not there, so the
+    # spliced field follows 'y' now where it used to follow the
+    # numeral. The PARSED name is unaffected -- it has a reading, and
+    # the reading is the generation (above).
+    spliced_i = HumanName(first="John", last="Smith", suffix="i")
+    spliced_i.capitalize(force=True)
+    assert str(spliced_i) == "John Smith i"
+    spliced_y = HumanName(first="John", last="Smith", suffix="y")
+    spliced_y.capitalize(force=True)
+    assert str(spliced_y) == "John Smith y"
 
 
 def test_initials_order_folded_words_first_like_the_family_field() -> None:
@@ -658,3 +789,99 @@ def test_render_malformed_specs_surface_raw_format_errors() -> None:
         pn.render("{}")
     with pytest.raises(ValueError):
         pn.render("{given!q}")
+
+
+def test_capitalized_one_case_connective_that_reads_as_an_initial() -> None:
+    """#383/#479, the half no differential gate can see (decisions.md#R4).
+
+    Repair lowercases a CONJUNCTION even inside a part it otherwise
+    capitalizes (rules.md#R4's carve-out). Once a marked single letter
+    in a one-case name is read as an INITIAL instead, that carve-out no
+    longer reaches it and the letter capitalizes like any name word.
+    The 'y' line is the control: it stays the connective, so it stays
+    lowercase, and the two together show the carve-out itself is
+    untouched.
+    """
+    assert str(parse("john e jones").capitalized()) == "John E Jones"
+    assert str(parse("john e smith").capitalized()) == "John E Smith"
+    assert str(parse("juan garcia y lopez").capitalized()) \
+        == "Juan Garcia y Lopez"
+    # R5's gate: mixed-case input is the writer's choice and repair
+    # defers to it, so this one is not repaired at all
+    assert str(parse("John e Smith").capitalized()) == "John e Smith"
+
+
+def test_facade_initials_follow_the_one_case_fork() -> None:
+    """Both surfaces read the same letter the same way (#528).
+
+    The core's initials() follows the parse's tags: in a name written
+    wholly in one case an 'e' is an INITIAL and a 'y' is the connective
+    (rules.md#P3), so R3's "each given, middle, and base family word"
+    reaches the first and not the second. Until #528 HumanName.initials()
+    re-derived that from the lexicon and the part's raw shape instead,
+    and kept 1.4.0's answer on both letters; it now reads the same tags,
+    so the two views of one parse agree. decisions.md#R3 records it.
+    """
+    assert parse("john e smith").initials() == "j. e. s."
+    assert HumanName("john e smith").initials() == "j. e. s."
+    # #461 moved the VALUE and not the agreement: 'Y' holds the middle
+    # part alone, so it initials on both surfaces -- which is also
+    # 1.4.0's answer on this name, restored. The joined control below
+    # is where the letter still drops, on both surfaces.
+    assert parse("JUAN Y GARCIA").initials() == "J. Y. G."
+    assert HumanName("JUAN Y GARCIA").initials() == "J. Y. G."
+    assert parse("JUAN GARCIA Y LOPEZ").initials() == "J. G. L."
+    assert HumanName("JUAN GARCIA Y LOPEZ").initials() == "J. G. L."
+    # The mixed-case controls, where the writing decides the letter and
+    # nothing moved on either surface
+    assert HumanName("John E Smith").initials() == "J. E. S."
+    assert HumanName("Juan Y. Garcia").initials() == "J. Y. G."
+    # 'maria y lopez' is a ONE-CASE control, not a mixed-case one: written
+    # wholly in lowercase, its 'y' is outside the marked set (rules.md#P3),
+    # so it stays the CONNECTIVE on both surfaces rather than reading as
+    # an initial the way 'e' does (tests/v2/test_ledger_guards.py's
+    # "one-case controls" wording, around line 1118). What it no longer
+    # witnesses is the DROP: #461 gave the letter its initial back here,
+    # because it holds the middle part alone and so joins nothing
+    # (decisions.md#R3). The joining one-case control below is where
+    # a lowercase 'y' still drops, which is what keeps this row's point
+    # -- the tag, not the value -- observable.
+    assert HumanName("maria y lopez").initials() == "m. y. l."
+    assert parse("maria y lopez").initials() == "m. y. l."
+    assert HumanName("juan garcia y lopez").initials() == "j. g. l."
+    assert parse("juan garcia y lopez").initials() == "j. g. l."
+    # The GIVEN group, where #461 dropped the facade's own blanket
+    # exemption as well as the core's: a connective among given names
+    # is joining there like anywhere else, so it contributes nothing
+    # on BOTH surfaces. Without the facade half these read 'J. a. J.
+    # S.' and 'D. o. E.' while the core reads them as below, which is
+    # the disagreement the one rule exists to prevent.
+    assert parse("John and Jane Smith").initials() == "J. J. S."
+    assert HumanName("John and Jane Smith").initials() == "J. J. S."
+    assert parse("Duke of Edinburgh").initials() == "D. E."
+    assert HumanName("Duke of Edinburgh").initials() == "D. E."
+    assert parse("John & Jane").initials() == "J. J."
+    assert HumanName("John & Jane").initials() == "J. J."
+    # The one corpus name where the two views still differ, and it is
+    # not this rule's: the facade merges 'Ph.' + 'D.' into one list
+    # element and renders it with no inner delimiter
+    # (fix(initials-per-word) the Ph. D. merge, decisions.md#phd-merge)
+    assert HumanName("Ph. D., John").initials() == "J. P D."
+    assert parse("Ph. D., John").initials() == "J. P. D."
+
+
+def test_initials_separator_is_honored_on_the_live_token_path() -> None:
+    # tests/test_initials.py's two "Van Berg" separator tests call
+    # _process_initial("Van Berg", firstname=True) directly -- v1's
+    # string path, with tokens=None -- which #528 kept working but no
+    # longer the path HumanName.initials() itself takes. This pins
+    # initials_separator on the live TOKEN path (tokens= passed by
+    # _initials_lists), so a regression that reads initials_separator
+    # only on the string branch would pass those two tests and fail
+    # here. Measured.
+    assert HumanName("Ph. D., John", initials_separator="-").initials() \
+        == "J. P-D."
+    assert HumanName("Ph. D., John", initials_separator="").initials() \
+        == "J. PD."
+    assert HumanName("Ph. D., John", initials_separator="") \
+        .initials_list() == ["J", "PD"]

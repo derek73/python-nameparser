@@ -26,13 +26,13 @@ import re
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._assign import _name_positions
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken, _NEVER_FLIPPED,
-    comma_bucket,
+    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
+    WorkToken, _NEVER_FLIPPED, comma_bucket,
 )
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
-    FOLDED_TAG, UNJOINED_TAG, AmbiguityKind, Role,
+    FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, AmbiguityKind, Role,
 )
 
 # Ported verbatim from v1 (nameparser/config/regexes.py) -- layering
@@ -438,7 +438,7 @@ def post_rules(state: ParseState) -> ParseState:
     # no corpus name and is not this change's to make
     # (decisions.md#M4).
     # rules.md#M4: "a word the vocabulary has claimed as a given name
-    # keeps that reading, and so does a word written as an initial"
+    # keeps that reading, and so does a word read as an initial"
     # -- read off the tags classify already recorded rather than a
     # predicate of this rule's own, because this rule changes what
     # POSITION decided and must not reach what a word IS
@@ -702,7 +702,23 @@ def post_rules(state: ParseState) -> ParseState:
                            for i in seg[end - 1])):
             end -= 1
         k = end
-        while k and all("particle" in tokens[i].tags for i in seg[k - 1]):
+        # #531: a class member the given-part slot read as a
+        # credential is NOT part of the run. P6 keys on vocabulary
+        # rather than role by design, which is what gives its
+        # attachment precedence over S2 -- so assign's suffix role
+        # alone does not stand it down, verified by running #531's
+        # assign half with this condition absent ('Doe, John DO' read
+        # family 'DO Doe', the suffix role silently overridden).
+        # Narrowed to AMBIGUOUS_ACRONYM_TAG rather than to the
+        # suffix role: `vd` and `mc` are unambiguous suffix
+        # vocabulary, also particles, also suffix-roled, and the tag
+        # is what keeps them inside the run.
+        while k and all("particle" in tokens[i].tags
+                        for i in seg[k - 1]) \
+                and not (len(seg[k - 1]) == 1
+                         and tokens[seg[k - 1][0]].role is Role.SUFFIX
+                         and AMBIGUOUS_ACRONYM_TAG
+                         in tokens[seg[k - 1][0]].tags):
             k -= 1
         # GIVEN alone, which is what P6 says ("provided at least one
         # given word remains"). Not `_NAME_ROLES`: P1's fold runs
@@ -827,12 +843,49 @@ def post_rules(state: ParseState) -> ParseState:
     # exempt that role outright), so restricting this loop to MIDDLE
     # and FAMILY moves 0 of 4,506 parses. The GIVEN arm is marked so a
     # future view reading the mark gets a consistent answer.
+    #
+    # rules.md#R3: "A part holding nothing else is a part where it is
+    # joining nothing, and there it initials like any other name word"
+    # -- #461's mark, decided HERE for the same reason R2's is: the
+    # question is about the PART, and a view that re-derives a
+    # part-level fact is how initials() and family_base came apart.
+    #
+    # ONE walk decides both marks -- a plain loop, not two generator
+    # expressions: this runs per role on every parse and a genexp
+    # costs a frame of its own (frame budget). An EMPTY role needs no
+    # `continue` ahead of the walk, which is inert on one: measured
+    # 2026-09-20, py3.11, one survived the whole suite and moved
+    # neither frame count (parse=406.00 facade=443.00 either way).
+    # `bool(part)` says the same thing about the R2 arm as
+    # `_types._remarked`'s twin of this walk does.
     for role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
         part = _idx(tokens, role)
-        if part and all("particle" in tokens[i].tags for i in part):
+        all_particle = bool(part)
+        conj: list[int] = []
+        others = 0
+        for i in part:
+            tags = tokens[i].tags
+            is_conj = "conjunction" in tags
+            if is_conj:
+                conj.append(i)
+            if "particle" not in tags:
+                all_particle = False
+                if not is_conj:
+                    others += 1
+        if all_particle:
             for i in part:
                 tokens[i] = dataclasses.replace(
                     tokens[i], tags=tokens[i].tags | {UNJOINED_TAG})
+        elif conj and not others:
+            # #461: nothing here for the connective to join. The `elif`
+            # is deliberate -- where the part is all-particle R2's mark
+            # already readmits every word, a word that is BOTH particle
+            # and connective included, which is what keeps a caller's
+            # `add(particles={"y"})` readings unchanged.
+            for i in conj:
+                tokens[i] = dataclasses.replace(
+                    tokens[i],
+                    tags=tokens[i].tags | {UNJOINED_CONJUNCTION_TAG})
     _mark_suffix_entries(tokens, state)
     return dataclasses.replace(state, tokens=tuple(tokens),
                                ambiguities=tuple(ambiguities))

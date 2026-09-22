@@ -81,7 +81,16 @@
 # never claim.
 [[change]]
 issue = "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas"
-name_regex = "^(?:JOHN DOE PHD MD|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Kenneth Clarke QC MP|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
+# 2026-09-20, #397: one name joins the alternation and the rule does
+# not change. 'Josep Lluis Carod i III' is a two-word generation run
+# this baseline renders 'i, III' and the tree renders 'i III' -- the
+# whole of its diff here. #397 moves NOTHING on it: measured against
+# the parent 46651750 the parse is byte-identical before and after
+# this bundle (given 'Josep', middle 'Lluis', family 'Carod', suffix
+# 'i III'), the link having no name word to its right. What grew is
+# the CORPUS -- the name arrived with #397's own case rows -- and the
+# run rendering is what the diff is about.
+name_regex = "^(?:JOHN DOE PHD MD|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|Josep Lluis Carod i III|Kenneth Clarke QC MP|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
 fields = ["suffix"]
 
 # #346: swami, guru, baba and lama moved from the TITLES-only block
@@ -111,6 +120,33 @@ fields = ["suffix"]
 [[change]]
 issue = "fix(#346) a renunciate title and one name word leave the name a given name"
 name_regex = "^(?:Baba Ramdev|Guru Nanak|Lama Zopa|Swami Vivekananda)$"
+fields = ["family", "given"]
+
+# #519: prince and princess moved from the TITLES-only block into
+# GIVEN_NAME_TITLES on 2026-09-10. rules.md#H1's fold now reaches
+# them, so the one name word behind the title is the GIVEN name and
+# the family is empty, where every baseline read it as the family.
+# Both roles move together and `fields` declares both.
+#
+# Three corpus names: 'Prince Charles' and 'Prince Fielder' from the
+# radar-tier corpus_issues.jsonl, and the contract-tier rules.md
+# example 'Her Royal Highness Princess Anne' (corpus_rules.jsonl), all
+# moving the same way. 'Prince Fielder' moves too and is wrong either
+# way -- Prince is his given name, which is #348's collision and not
+# this rule's subject. The boundary is pinned by _MUST_NOT_MATCH
+# probes: two name words behind the title ('Prince Harry Windsor'),
+# the chained run 'Prince of Wales Jr' (addresses by `wales`), the
+# trailing 'Robert Prince', 'Lord Byron' (`lord` stays out) and the
+# bare 'Prince'.
+#
+# An anchored alternation of the NAMES rather than a shape, under
+# the ledger discipline expected_since_1.4.0.toml's header states:
+# keep each entry's `name_regex` as tight as the diff allows. It
+# copies no wordlist, which _NOT_A_VOCABULARY_COPY records;
+# _CORPUS_CLAIMS pins the reach with its digest.
+[[change]]
+issue = "fix(#519) prince and princess join the given-name titles"
+name_regex = "^(?:Her Royal Highness Princess Anne|Prince Charles|Prince Fielder)$"
 fields = ["family", "given"]
 
 [[change]]
@@ -305,6 +341,141 @@ issue = "fix(#274) maiden markers consumed"
 # own example lines added.
 name_regex = "(?i)(?<![(（])(?<=\\S\\s)\\b(n[ée]e|geb)\\.?(?![)）])(?=\\s+\\S)"
 fields = ["maiden", "middle", "family"]
+
+[[change.precedes_narrower]]
+issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
+why = """
+LIVE, and new with #533's corpus rows. Three names carry a maiden
+marker AND a trailing tussenvoegsel after a family comma -- 'Doe, Jane
+nee Smith do', its capital spelling, and 'Doe, Jane nee Smith MA do'.
+Both regexes reach all three and the tussenvoegsel rule's fields are a
+strict subset of these, so nothing but file order keeps them here.
+
+The discriminator is WHICH MOVE the diff is. What 1.4.0 read as
+middle 'nee Smith' plus a trailing post-nominal, the tree reads as a
+maiden name: the marker leaving the name and taking words with it is
+what every one of the three diffs is ABOUT, and the tussenvoegsel
+rule cannot say that -- it describes a particle joining a family the
+comma already named, which is a reading these three share with 1.4.0
+rather than one that moved. Read the other way round the narrower
+rule would stand ready to explain a maiden/middle regression on every
+comma name ending in a particle, which is the absorption this file's
+wide-first discipline exists to prevent.
+
+Not "the whole of the diff", which an earlier draft of this block
+said and which two of the three names falsify: 'Doe, Jane nee Smith
+do' and 'Doe, Jane nee Smith MA do' also empty the `suffix` v1 read,
+and `suffix` is in neither rule's fields, so neither classifies them
+at all -- they are below, under 'fix(#274/#424) accepted: a maiden
+clause keeps a trailing credential v1 read as a post-nominal'. The
+contest is over the names both regexes REACH, not the ones either
+explains, which is what keeps it live with only 'Doe, Jane nee Smith
+DO' actually landing here.
+"""
+
+[[change]]
+issue = "fix(#274/#533) the clause keeps the credential a join or a missing reader would have taken"
+# Five names where the marker's clause takes words v1 read as a
+# middle name and a suffix, and KEEPS the credential at the end of
+# them. Against 1.4.0 the visible diff is #274's consumption -- v1
+# had no maiden reading at all, so `given`/`middle`/`family`/`suffix`
+# empty as `maiden` fills -- and #533's half is that the last word
+# goes INTO `maiden` rather than staying the suffix v1 read.
+#
+# Each is a route by which rules.md#M2's invariant declines the stop,
+# and an earlier round of this branch took all five:
+#   'Doe, Dr. nee Smith MA' -- the take would leave 'Dr. MA', a
+#     segment with no name word for a given part's trailing slot to
+#     be the end of, so nothing there reads the word as a credential
+#   'Berg, abdul nee Jones MA' -- P5's lenient post-comma join would
+#     swallow the released word into the bound-given pair
+#   'Berg, Jane van der nee Smith DO' -- the particle chain the
+#     marker just bounded would take it back into the family
+#   'Jane Doe nee MA PhD' -- the FIRST-WORD FLOOR spares the member
+#     standing straight after the marker; only the unambiguous
+#     'PhD' behind it leaves, which is why `suffix` narrows rather
+#     than empties here
+#   'Doe, Jane nee Smith Do' -- #531's lean declines a Title-cased
+#     member after a comma
+# The first three read as 2f57ff21 read them; the last two are
+# #533's own clamp and lean.
+#
+# `_ambiguities` is NOT declared and cannot be at this baseline: the
+# v1 surface has no such field, and the reports these names now
+# carry are recorded in the 2.x ledgers where the comparison can see
+# them.
+name_regex = "^(?:Berg, Jane van der nee Smith DO|Berg, abdul nee Jones MA|Doe, Dr\\. nee Smith MA|Doe, Jane nee Smith Do|Jane Doe nee MA PhD)$"
+fields = ["family", "given", "maiden", "middle", "suffix"]
+
+[[change.precedes_narrower]]
+issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
+why = """
+LIVE, and new with the #533 review's corpus rows. Four of the five
+names here have a family comma, so the pre-comma rule's {given,
+family} is a strict subset of these fields and nothing but file order
+keeps them here.
+
+The discriminator is WHAT MOVED the given name. The precomma rule
+describes 2.x splitting a pre-comma run that 1.4 read as one first
+name; on these four the pre-comma run is a single word 1.4 and the
+tree both read as the family, and what empties `given` is the MARKER
+leaving with the word after it -- 'Doe, Dr. nee Smith MA' reads given
+'nee' at 1.4.0 because v1 had no marker reading at all. Classified by
+the precomma rule instead, each would be attributed to a comma
+behavior none of them exercises.
+"""
+
+[[change.precedes_narrower]]
+issue = "fix(#411) the bound-given reserve stops counting words the maiden name takes"
+why = """
+LIVE, and new with the #533 review's corpus rows. 'Berg, abdul nee
+Jones MA' is reached by both and #411's fields are a strict subset.
+
+The discriminator is that #411's rule is about the RESERVE and this
+name's diff is about the CREDENTIAL: the reserve half is real and is
+why `given` reads 'abdul' rather than 'abdul nee', but the `suffix`
+1.4.0 read is emptied by the clause KEEPING the 'MA', which #411 has
+nothing to say about and whose field it does not declare. The review
+round is what settled that reading -- an earlier round released the
+word into P5's join and read given 'abdul MA' -- so a rule naming
+#411 alone would attribute this change's decline to the reserve.
+"""
+
+[[change.precedes_narrower]]
+issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
+why = """
+LIVE, and new with the #533 review's corpus rows. 'Berg, Jane van der
+nee Smith DO' and 'Doe, Jane nee Smith Do' each carry a maiden marker
+AND a tussenvoegsel-shaped word after a family comma, and the
+tussenvoegsel rule's fields are a strict subset of these.
+
+The discriminator is the one fix(#274)'s own block above this file
+gives for the same pair: what 1.4.0 read as middle text plus a
+trailing post-nominal, the tree reads as a maiden name, and the
+marker leaving with its words is what every field of these diffs is
+about. On 'Berg, Jane van der nee Smith DO' the tussenvoegsel is not
+even the moved word -- 'van der' attaches to the family either way,
+and the 'DO' the clause KEEPS is what empties `suffix`.
+"""
+
+[[change]]
+issue = "fix(#335/#533) a marker-led bracketed clause is the maiden name whatever its last word is"
+# 'Jane Doe (nee Smith MA)', 'Jane Doe (nee Smith Ma)', 'Jane Doe
+# (nee Smith) MA'. The role move is fix(#335)'s, above: 1.4 knew the
+# parenthesis pair and had no maiden reading to give the clause, so
+# it came back a nickname.
+#
+# Recorded as their own rule because what #533 does to them is
+# NOTHING, and that is worth a row. The delimiters outrank every
+# reading inside the span, so the whole span is the maiden name
+# whatever its last word is and no fork is called at all
+# (decisions.md#M2, rules.md#M2) -- 'Smith MA' and 'Smith Ma' read
+# alike where the undelimited spellings do not. 'Jane Doe (nee
+# Smith) MA' is the control: the member the writer left OUTSIDE the
+# span is an ordinary trailing credential, which v1 also read as a
+# suffix, so only the clause's role moves.
+name_regex = "^(?:Jane Doe \\(nee Smith MA\\)|Jane Doe \\(nee Smith Ma\\)|Jane Doe \\(nee Smith\\) MA)$"
+fields = ["maiden", "nickname"]
 
 [[change]]
 issue = "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip"
@@ -1097,18 +1268,25 @@ name_regex = "^(?:Ahmad Jayadi, CHA|Aishwarya Rai|John Smith RAI|John Smith, RAI
 fields = ["family", "given", "middle", "suffix"]
 
 [[change]]
-issue = "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost"
+issue = "fix(#397) accepted: a two-word Catalan link has no name word to its right and stays the generation"
 # 'Carod i': the tree reads given 'Carod', family '', suffix 'i'. 'i'
 # is a bare entry in SUFFIX_WORDS (nameparser/config/suffixes.py --
 # the Roman-numeral generation markers i/ii/iii/iv/v, not
-# SUFFIX_ACRONYMS), so a two-word name ending in it reads as a
-# name plus a trailing generation rather than a two-word family link.
-# #397 (OPEN, milestone v2.2, enhancement) reports that Catalan and
-# Polish link two surnames with 'i' functioning as a conjunction, the
-# way Spanish already links them with 'y' ("Juan Garcia y Lopez" reads
-# family 'Garcia y Lopez'); nameparser's CONJUNCTIONS vocabulary does
-# not include 'i', so nothing there joins the link, and SUFFIX_WORDS'
-# numeral reading is what actually claims the trailing word instead.
+# SUFFIX_ACRONYMS), so a two-word name ending in it reads as a name
+# plus a trailing generation rather than a two-word family link.
+#
+# DECIDED, not unresolved, and that is what changed on 2026-09-20:
+# #397 landed, 'i' IS connective vocabulary now, and the Catalan link
+# joins wherever a name word stands on each side of it -- 'Josep Carod
+# i Rovira' and 'Carod i Rovira, Josep' both read family 'Carod i
+# Rovira' and have a rule of their own below. This name is the
+# boundary that rule states: a connective with nothing to its right is
+# connecting nothing, and a word of that vocabulary ending a name is
+# the generation it also spells. Two pieces do not reach the join loop
+# at all, which needs three, so the reading is refused one gate
+# earlier still. rules.md#P3 carries both sentences and this name is
+# one of its example lines. decisions.md#P3 records the count decision
+# and the both-sides scope behind them.
 #
 # Whether 1.4 itself read the trailing word as `family` is outside
 # what this ledger's worker can check directly
@@ -1117,36 +1295,82 @@ issue = "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as 
 # baseline moves exactly {family, suffix}, which is consistent with
 # that reading and is what the fields below claim.
 #
-# Classified because the cause is known and recorded, NOT because the
-# reading is wanted -- the same standing fix(#342) above claims, from
-# decisions.md#P5's 2026-08-22 #369 entry. A [[never]] exclusion was
-# considered and rejected for the same reason as fix(#342) above: an
-# excluded name reports UNEXPLAINED and exits non-zero, and #397's own
-# "What needs deciding" section leaves open both whether 'i' joins
-# CONJUNCTIONS at all and how the join's rootname carve-out should
-# treat a word that is both a conjunction and suffix vocabulary --
-# unresolved, so the fix is not yet in hand.
-#
-# DELETE THIS RULE when #397 lands. The gate then reports it as
-# 'EXPLAINED NOTHING', which is the reminder.
+# Classified because the cause is known and RECORDED AS WANTED, which
+# is a stronger standing than the fix(#342) rule above: that one is
+# NOT WANTED and unresolved, this one is the stated boundary of a
+# landed rule. A [[never]] exclusion is still wrong for it -- an
+# excluded name reports UNEXPLAINED and exits non-zero.
 #
 # Literal-anchored to the one corpus name that reaches this shape, for
 # fix(#342) above's reason: a rule keyed on "two-word name, trailing
 # single letter" would pre-excuse every generation-marker regression,
-# not just this one. Measured, the four longer corpus names in the
-# same family produce no diff at this baseline at all, so none of them
-# reaches classify() and none needs a rule here: 'Carod i Rovira',
-# 'Josep Carod i Rovira' and 'Josep Lluis Carod i Rovira' read 'i' into
-# `middle` with `family` already the tail word ('Rovira'), and 'Lluis
-# Carod i' reads it into `suffix` with `family` already populated
-# ('Carod') -- unlike 'Carod i' above, none of the four has an empty
-# `family`, and all four read this way at every baseline this ledger's
-# worker can reach. That is #397's open enhancement (the family link
-# is still one word short of what a Catalan reader wants), not a
-# 1.4-to-2.x regression, so it is out of scope for a ledger that only
-# records diffs FROM 1.4.0.
+# not just this one. The three longer names in the same family are
+# each accounted for elsewhere now -- 'Carod i Rovira' and 'Josep
+# Carod i Rovira' by the fix(#397) join rule below, and 'Lluis Carod
+# i' by the same both-sides boundary as this name, one word longer and
+# therefore diffing nothing at all.
 name_regex = "(?i)^carod\\s+i$"
 fields = ["family", "suffix"]
+
+[[change]]
+issue = "fix(#397) the Catalan/Polish link joins two surnames"
+# 'i' is connective vocabulary since #397, and a connective counts as
+# a name word toward rules.md#P3's three-word carve-out whatever else
+# the vocabulary says it is -- which matters here because 'i' is also
+# the roman numeral. So a four-word name reaches the threshold and the
+# link joins. 1.4.0 read 'Josep Carod i Rovira' as middle 'Carod i'
+# with family 'Rovira', and 'Carod i Rovira, Josep' -- where the link
+# stands after a family comma -- as family 'Carod Rovira' with the
+# link taken as a GENERATION in `suffix`, which is why the two move
+# different field sets and are grouped here rather than split. The
+# three longer spellings move with the first: 'Josep Carod i Rovira
+# III' and 'Josep Lluis Carod i Rovira' the same {family, middle}, and
+# 'Josep Carod i de Rovira' the same pair with the link joining PAST a
+# particle (middle 'Carod i' -> 'Carod i de', family 'de Rovira' ->
+# 'Rovira'). Five names, `fields` the union of their two shapes.
+#
+# All five entered this corpus with #397's own rules.md#P3 example
+# lines and case rows; before that they were radar-tier names the
+# contract did not answer for, which is why a rule appears at this
+# baseline only now. decisions.md#P3.
+#
+# Literal-anchored to the five. The shape is "a single letter between
+# two name words", which reaches every corpus name carrying a bare
+# initial and would pre-excuse the opposite reading -- #397's whole
+# accepted cost is that some such letters must NOT join.
+# _MUST_NOT_MATCH in tests/v2/test_ledger_guards.py carries the wall:
+# 'Josep i Rovira' (three words, under the carve-out), 'Carod i' (the
+# rule above), 'John Quincy Smith i' (the link with nothing to its
+# right) and 'Josep Lluis Carod i III' (a generation run, the
+# fix(#436/#437) rule at the head of this file).
+name_regex = "^(?:Carod i Rovira, Josep|Josep Carod i Rovira|Josep Carod i Rovira III|Josep Carod i de Rovira|Josep Lluis Carod i Rovira)$"
+fields = ["family", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(suffix-routing) a two-word trailing generation run peels whole, and the name word before it is the family"
+# 'Josep Lluis Carod i V': v1 read middle 'Lluis Carod', last 'i',
+# suffix 'V' -- it peeled the LAST word of the trailing run and left
+# the first to the family -- where 2.x peels the run whole and reads
+# middle 'Lluis', family 'Carod', suffix 'i V'. The same shape
+# 'John Smith Mc V' carries on the fix(#424) rule further down, whose
+# sentence is about a PARTICLE opening the run; here both words are
+# generation vocabulary, so it needs a rule rather than that one's
+# widening.
+#
+# NOT this bundle's doing, and measured rather than argued: against
+# the parent 46651750 the parse is byte-identical before and after
+# #397 and #461 (given 'Josep', middle 'Lluis', family 'Carod', suffix
+# 'i V'), the link having a generation marker and not a name word to
+# its right. The name is new to the CORPUS -- it arrived with #397's
+# case rows as exactly that boundary -- so a divergence v2 has carried
+# since 2.0 is classified here for the first time.
+#
+# Literal, one name: the shape is "a trailing run of two suffix words"
+# and would stand ready to explain every future peel regression.
+name_regex = "^Josep Lluis Carod i V$"
+fields = ["family", "middle", "suffix"]
+orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole"
@@ -1165,6 +1389,14 @@ issue = "ambiguous-surname-acronym data change: parenthesized (MA)/(DO) now stay
 # surname (v1 parity restored); side effect: parenthesized/quoted "MA"
 # or "DO" no longer escape to suffix (v1 did, since v1 treated them as
 # unambiguous there) -- they now fall through to nickname parsing.
+#
+# 2026-09-18 (#289): the first clause holds for the spelling it names
+# and not for its all-caps twin. 'Jack Ma' still keeps its surname by
+# the words-to-spare guard; 'Jack MA' is now read as a credential by
+# the written case contrast, with nothing to spare -- the guard never
+# reaches it. The parenthesized side effect above is untouched: a
+# bracketed clause is decided before the class is asked at all, so
+# 'Andrew Perkins (MA)' keeps its nickname whatever the case.
 # Not expected to fire against this corpus (no such strings survived
 # into the v1 banks); kept for documentation completeness.
 # The members are the entries themselves, undotted. They carried
@@ -1809,8 +2041,21 @@ issue = "fix(#424) accepted: the chain keeps an acronym assign will not peel beh
 # fields-only fix(suffix-routing) catch-all -- the count was the tell.
 # #451 deleted that catch-all, so this ledger has no fields-only rule
 # left to absorb anything.
+#
+# 2026-09-18 (#289): a THIRD reading, and it is the one that ships.
+# The comment above says the chain "asks the peel again and takes
+# it"; with the case signal the peel takes the ACRONYM instead, so
+# the name reads title 'Freiherr', family 'von Berg', suffix 'MA' --
+# neither 1.4.0's (first 'von Berg', last 'MA') nor 2.0-2.3's
+# (family 'von Berg MA'). Accepted rather than repaired: the lean
+# ends P2's chain with no words to spare where the count would not,
+# and `fields` gains `suffix` because the diff moves it. Measured at
+# this baseline: given 'von Berg' -> '', family 'MA' -> 'von Berg',
+# suffix '' -> 'MA'. The rule kept explaining nothing between the
+# case signal landing and this edit -- the diff had grown past the
+# declaration, which is the under-declared half of #452.
 name_regex = "(?i)^freiherr\\s+von\\s+berg\\s+ma$"
-fields = ["given", "family"]
+fields = ["given", "family", "suffix"]
 
 [[change]]
 issue = "fix(#424) a title-led chain before the numeral is the one name piece"
@@ -1861,12 +2106,15 @@ fields = ["family", "suffix"]
 
 [[change]]
 issue = "fix(#424/#445) accepted: the maiden walk keeps a bare acronym, and the lone name word is the family"
-# 'John née Jones Smith Ma': rules.md#M2 -- "a bare acronym the peel
-# would take with words to spare is maiden text all the same". middle
+# 'John née Jones Smith Ma': rules.md#M2 -- "a bare acronym the
+# reading declines is maiden text all the same". middle
 # 'née Jones', family 'Smith', suffix 'Ma' -> maiden 'Jones Smith Ma':
 # v1 had no maiden support; 2.0 has read the name so since #274, and
-# the walk deliberately leaves the acronym fork to assign (the count
-# it needs includes the words the marker removes). The fix(#274) rule
+# since #533 the walk asks the acronym fork rather than leaving it:
+# what declines this word is the WRITING, Title case saying name
+# where capitals would say credential, and the count such a reading
+# needs is taken over the name the take would leave rather than over
+# the words as they stand. The fix(#274) rule
 # cannot carry it: its fields omit the suffix v1 read. A rules.md
 # Accepted example, first witnessed here.
 #
@@ -1880,7 +2128,24 @@ issue = "fix(#424/#445) accepted: the maiden walk keeps a bare acronym, and the 
 # which is exactly how the gate reported it before this edit. The
 # name is #445's only mover whose diff is not the shape the fix(#445)
 # rule below carries, the suffix v1 read being the difference.
-name_regex = "(?i)^john\\s+n[ée]e\\s+jones\\s+smith\\s+ma$"
+#
+# 2026-09-19, #533: NARROWED from (?i) to the two spellings whose
+# reading this rule describes, and widened to the second of them.
+# The (?i) anchor reached 'John née Jones Smith MA' as well, and
+# that name now does the OPPOSITE of what this rule says -- the
+# clause gives the MA up and it reads suffix 'MA' -- so leaving
+# the anchor alone would have this rule explain a diff under the
+# reasoning of the reading it lost. It is carried below, by
+# 'fix(#445/#533) the clause gives the credential up, and the one
+# name word it leaves is the family'. 'JOHN NEE JONES SMITH MA
+# PHD' joins instead: one case, so no lean, and a suffix word
+# BEHIND the member ends the peel before it reaches the member --
+# the clause keeps the MA and the lone name word is the family,
+# which is this rule's sentence exactly. Its mixed-case spelling
+# does not read that way ('John nee Jones Smith MA PHD' reads
+# suffix 'MA PHD', measured), which is why the anchor cannot go
+# back to (?i) to pick it up.
+name_regex = "^(?:JOHN NEE JONES SMITH MA PHD|John n[ée]e Jones Smith Ma)$"
 fields = ["given", "middle", "family", "suffix", "maiden"]
 
 [[change]]
@@ -2719,6 +2984,15 @@ issue = "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-
 # read differently ON PURPOSE, which is why both spellings of the bare
 # one are _MUST_NOT_MATCH probes here.
 #
+# 2026-09-18 (#289): the quoted sentence holds for the spelling it
+# names and not for its all-caps twin. 'Jack Ma' is still kept intact
+# by the words-to-spare guard; 'Jack MA' is now read as a credential
+# by the written case contrast, with nothing to spare -- the guard
+# never reaches it, and the periods gate is not what decides it. Only
+# 'Jack Ma' is still a probe here; 'Jack MA' moved to the fix(#289)
+# rule's own roster at the bottom of this file, where the roster
+# comment says why. decisions.md#ma-do carries the amendment.
+#
 # Literal-anchored, and it could not be anything else. Measured: the
 # member `m\.?a\.?` matches the fragment 'M.A.' in the corpus, and
 # _normalize leaves that as 'm.a', which is not a SUFFIX_ACRONYMS entry
@@ -2749,9 +3023,10 @@ fields = ["family", "suffix"]
 # on parse().initials() -- renders for a parse whose fields did not
 # move.
 #
-# The order the file has them in: the two literal name LISTS first
-# (fix(#385/#402), fix(#360)), then the three VOCABULARY rules --
-# connective, bound-given, particle chain -- then the Ph. D. merge.
+# The order the file has them in: the four literal name LISTS first
+# (fix(#385/#402), fix(#360), feat(#269), fix(#528) -- the last added
+# 2026-09-13), then the three VOCABULARY rules -- connective,
+# bound-given, particle chain -- then the Ph. D. merge.
 # Only the bound-given/particle-chain pair is ordered by narrowness,
 # and by measured reach rather than by reading: 41 corpus names
 # against 107 (measured 2026-09-02 at this baseline, and recorded in
@@ -2764,6 +3039,47 @@ fields = ["family", "suffix"]
 # facade at all -- main() passes empty dicts for it -- so an
 # `_initials` diff under a declared order could only come from the
 # CORE, and must not be absorbed by a rule whose prose says "facade".
+#
+# #383/#479 HAD no rule in this block, and #528 gave it one. Recorded
+# as a pair because the absence was itself a measured finding and the
+# reason it stopped holding is the whole of #528. The change moved
+# what `parse(...).initials()` renders for 'john e smith', 'john e
+# jones', 'jones, john e' and 'JUAN Y GARCIA' -- and on 2026-09-13
+# `HumanName.initials()` re-derived the connective decision from
+# vocabulary and initial shape on the raw text instead of reading the
+# parse's tags, so the FACADE's view did not move at all and the
+# facade is the only surface compared below 2.0. Measured that day:
+# not one of the four diffed here. #528 closed the split; the facade
+# reads the tags now, the same four names move here, and
+# `fix(#528) the facade's initials follow the parse's connective tags`
+# below classifies them.
+#
+# THE FOUR ARE NOT THE CHANGE'S WHOLE POPULATION, and this is the
+# one place in this file that says which names it leaves out.
+# Measured 2026-09-13 over the corpus glob, driving the facade before
+# and after #528: SIX one-case names' `HumanName.initials()` move for
+# the tag reason, and the two that are missing above
+# ('jose e maria santos', 'JUAN GARCIA Y LOPEZ') move their ROLES
+# against this baseline as well, so `_initials` never enters their
+# diff (compare.py's roles-identical guard) and the role rule at the
+# end of this file explains what happened to them. Scoped to that
+# reason deliberately: other corpus names' facade initials move
+# against 1.4.0 for other reasons and are no part of the six --
+# 'e and e' ('e a e.' -> 'e. a. e.') and 'juan garcia y lopez'
+# ('j. g l.' -> 'j. g. l.'), both measured from the wheel the same
+# day, move on the 2.0.0 per-word GROUPING the `fix(initials-per-word)`
+# rules below describe. decisions.md#P3 records the split and
+# decisions.md#R3 its closing.
+#
+# THE #528 RULE SITS AHEAD OF THE VOCABULARY RULES, with the literal
+# name lists, and the position is load-bearing rather than tidy: the
+# connective rule below carries `fields = ["_initials"]` too, its
+# regex reaches 'john e smith' and 'john e jones' (measured
+# 2026-09-13), and equal `fields` puts the pair outside
+# `precedes_narrower` -- which leaves file order deciding, with
+# _CROSS_RULE_WINNERS in tests/v2/test_ledger_guards.py pinning the
+# answer. Written first, the narrower rule wins, which is this file's
+# convention.
 
 [[change]]
 issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
@@ -2775,14 +3091,17 @@ issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
 # 1.4.0 contributed nothing for such a part ('Anh Do' -> 'A.'; the
 # tree gives 'A. D.'). The fields did not move, only the view, which
 # is why no rule could classify this until #484 gave the gate an
-# initials column. Reach exactly the 27 names that move (24 spellings,
-# three of them case variants), listed literally rather than shaped:
+# initials column. Reach exactly the 28 names that move (25 spellings,
+# three of them case variants), listed literally rather than shaped
+# -- 'anh van mc' joined on 2026-09-18 with the case row that
+# admitted it to the corpus, the unambiguous-vocabulary twin of the
+# 'anh van do' already here:
 # the shape is "a part of nothing but particles", which no regex over
 # the raw string can state, and the fix(#445) rule above set the
 # precedent for a name list in THIS ledger (fix(#410) and fix(#335)
 # are two more). 'de los Santos' is NOT here: its
 # initials moved for a different reason (the rule below).
-name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
+name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|anh van mc|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
 fields = ["_initials"]
 orders = ["DEFAULT"]
 
@@ -2796,6 +3115,148 @@ name_regex = "(?i)^de los santos$"
 fields = ["_initials"]
 orders = ["DEFAULT"]
 
+# `feat(#269) a recognized non-Latin connective contributes no
+# initial` STOOD HERE until 2026-09-20 and is DELETED, not declared
+# dormant. It covered '^محمد و علي$' on `fields = ["_initials"]`,
+# saying that `و` was recognized as a connective in 2.0 and so stopped
+# contributing a letter: 'م. و. ع.' became 'م. ع.'. #461 asks the
+# question of the PART instead, and `و` is the whole middle part with
+# no name word beside it to join, so it initials again -- the tree
+# gives 'م. و. ع.' from both surfaces, which is 1.4.0's own answer,
+# measured from the wheel. The name stops diffing at this baseline
+# and the rule reported EXPLAINED NOTHING. Its REASON is wrong now,
+# not merely unreached, so a `dormant = "..."` declaration would
+# assert something false; the ledger's own convention
+# (tools/differential/README.md, the dormancy tiers) is deletion.
+# It still diffs at the four 2.x baselines, where 2.0 through 2.3 all
+# dropped the letter, and the fix(#461) readmission rule in each of
+# those ledgers carries it. decisions.md#R3.
+
+[[change]]
+issue = "fix(#528) the facade's initials follow the parse's connective tags"
+# 'john e smith', 'john e jones', 'jones, john e' and 'JUAN Y GARCIA'.
+# `HumanName.initials()` decided "is this word the connective" from
+# the lexicon plus v1's initial SHAPE on the part's raw text, where
+# the core's initials() reads the tag the parse recorded. #383/#479
+# gave rules.md#P3 a fork the shape cannot see -- in a name written
+# wholly in one case a marked 'e' is an initial and an unmarked 'y'
+# joins -- so from 2.4's #527 until #528 the two views of one parse
+# disagreed about the same letter. They agree now, and the facade's
+# answer is the core's. Name by name, with 1.4.0's values measured
+# from the wheel on 2026-09-13: 'john e smith' goes 'j. s.' ->
+# 'j. e. s.'; 'john e jones' and 'jones, john e' both go 'j. j.' ->
+# 'j. e. j.', the two e-names whose family initial is a `j` and not
+# an `s`; and 'JUAN Y GARCIA' goes 'J. Y. G.' -> 'J. G.', the
+# capital one losing a letter where the other three gain one. No
+# role moves on any of the four -- P3's three-word carve-out is untouched -- which
+# is exactly why the derived view is the whole diff here.
+#
+# LITERAL, four names; which two of the change's movers they leave
+# out, and why, is the block header above.
+# A regex for the class -- "a one-case name whose single-letter
+# connective the parse read against 1.4.0's reading" -- is not
+# writable over the raw string at all, the reading being the parse's.
+# _MUST_NOT_MATCH in tests/v2/test_ledger_guards.py carries the
+# probes: the mixed-case spellings, where the writing decides the
+# letter and nothing moved on either surface; 'maria y lopez', whose
+# lowercase 'y' was the connective before and after; and
+# 'Ph. D., John', the one corpus name whose two initials views still
+# disagree -- the facade merges the credential into one list element
+# and renders 'P D' with no inner delimiter, which is
+# fix(initials-per-word) the Ph. D. merge below and not this.
+#
+# Two of the four -- 'john e smith' and 'john e jones' -- were
+# EXPLAINED BY THE CONNECTIVE RULE BELOW before this rule existed
+# (measured 2026-09-13 at this baseline: both sat in its classified
+# list). Why this rule takes them instead: the block header above.
+# _CROSS_RULE_WINNERS pins it and _RECORDED_DIFFS carries the shapes.
+#
+# 2026-09-20, #461: 'JUAN Y GARCIA' LEAVES the alternation, and the
+# name is the one of the four this rule can no longer say anything
+# about. Its 'Y' holds the middle part alone, so under #461 it
+# initials again on both surfaces: the tree gives 'J. Y. G.' from
+# HumanName.initials() and 'J. Y. G.' from parse(...).initials(),
+# which is word for word what the 1.4.0 wheel gives, so the name has
+# no diff left at this baseline to explain (measured 2026-09-20 from
+# the wheel and from the tree). Dropping it from the regex rather
+# than leaving it there is the narrowing this file asks for -- a
+# member reaching a name that cannot diff is a standing claim on
+# whatever that name diffs NEXT. The other three still move for this
+# rule's own reason, the facade reading the parse's tags, and are
+# untouched. The name keeps a rule at 2.0.0/2.1.0/2.2.0, where
+# fix(#462) explains it and its surface flipped; at 2.3.0 the rule
+# written for it is deleted for this reason. decisions.md#R3.
+name_regex = "^(?:john e smith|john e jones|jones, john e)$"
+fields = ["_initials"]
+orders = ["DEFAULT"]
+
+# ---------------------------------------------------------------
+# #461: A CONNECTIVE CONTRIBUTES NOTHING WHERE IT IS JOINING, AND
+# INITIALS LIKE ANY OTHER NAME WORD WHERE ITS PART HOLDS NOTHING
+# ELSE FOR IT TO JOIN (rules.md#R3, decisions.md#R3).
+#
+# ONE rule at this baseline and two at every 2.x one, and the
+# asymmetry is measured rather than tidy. The half that LOSES a
+# letter -- a connective with name words beside it -- was already
+# diffing here before this change, on the 2.0.0 per-word GROUPING
+# the four fix(initials-per-word) rules below describe, so its names
+# stay on those rules and the first of them carries a dated
+# paragraph saying which half of its diff is now which. The half
+# that GAINS one had no 1.4.0 diff at all: every name below agreed
+# with the wheel before this bundle and diverges from it now, which
+# is a parity break this file has to state in its own words rather
+# than let an older rule absorb.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#461) a connective holding its part alone contributes an initial"
+# Fifteen names, each one a part whose only word is the connective,
+# so there is nothing there for it to join and it initials as any
+# other name word does -- which is what `family_base` and
+# `given_base` have said about the same token since 2.2
+# (rules.md#R2/#R3). 1.4.0 dropped the letter and so did every
+# release since; the tree keeps it. Measured from the 1.4.0 wheel
+# and from the tree on 2026-09-20, name by name: 'Juan de y' 'J.' ->
+# 'J. y.'; 'johnny y' 'j.' -> 'j. y.'; 'Garcia y Lopez' 'G. L.' ->
+# 'G. y. L.'; 'Juan y Garcia' 'J. G.' -> 'J. y. G.' and 'juan y
+# garcia' the lowercase twin; 'John y Jane' 'J. J.' -> 'J. y. J.';
+# 'Carod y de Rovira i' 'C. R.' -> 'C. y. R.'; 'John e Smith' 'J. S.'
+# -> 'J. e. S.', with 'John e Smith III', 'John e Smith, III' and
+# 'Smith, John e, III, Jr' giving the same pair; 'john e jones, III'
+# 'j. j.' -> 'j. e. j.'; 'Jose e Maria' 'J. M.' -> 'J. e. M.';
+# 'Lt.Gov. juan e garcia' 'j. g.' -> 'j. e. g.'; and 'Fritz Freiherr
+# und von Bar' 'F.' -> 'F. u.', the German spelling of the same
+# shape.
+#
+# NOT THE PER-WORD GROUPING BELOW, and that is the reason this rule
+# exists at this baseline rather than the names being left to it.
+# 1.4.0 rendered every one of these with the same granularity the
+# tree does -- 'J. G.', not 'J G.' -- so nothing about the grouping
+# moved; what moved is the LETTER COUNT. Each of the eleven whose
+# spelling carries a lowercase ' y ' or ' e ' is reached by that
+# rule's alternation all the same, and would be absorbed by it
+# silently, which is what _RECORDED_DIFFS and _CROSS_RULE_WINNERS
+# adjudicate: equal `fields`, so neither rule is the narrower and
+# file order is the whole decision, and this rule is written first.
+#
+# `Fritz Freiherr und von Bar`, 'johnny y' and 'Smith, John e, III,
+# Jr' reach no such contest -- the alternation below carries no
+# 'und', and it wants whitespace AFTER the letter, which a letter at
+# end of string and a letter before a comma never offer -- so the
+# three have no pin.
+#
+# Literal-anchored to the fifteen. The shape is "a part holding one
+# connective and nothing else", which no regex over the raw string
+# can state -- the reading is the parse's -- and the nearest
+# writable shape, "a name carrying a lone cased letter", reaches
+# every bare-initial name in the corpora. _MUST_NOT_MATCH carries
+# the wall: 'Jon Dough and' (base 'Dough and', a connective with a
+# name word beside it, keeping 'J. D.'), 'Juan Velasquez y Garcia'
+# (the joined run, keeping 'J. V. G.') and 'Juan Garcia Lopez y'.
+name_regex = "^(?:Carod y de Rovira i|Fritz Freiherr und von Bar|Garcia y Lopez|John e Smith|John e Smith III|John e Smith, III|John y Jane|Jose e Maria|Juan de y|Juan y Garcia|Lt\\.Gov\\. juan e garcia|Smith, John e, III, Jr|john e jones, III|johnny y|juan y garcia)$"
+fields = ["_initials"]
+orders = ["DEFAULT"]
+
 [[change]]
 issue = "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)"
 # 'Juan y Eva Garcia', 'Dean of Chemistry Robert Johns', 'John & Jane':
@@ -2806,7 +3267,29 @@ issue = "fix(initials-per-word) a connective run initials each word (facade, sin
 # The parse is identical; this is the facade's rendering, changed in
 # 2.0.0 and recorded first in 2.3.0's release log (decisions.md,
 # "the initials view"). Strip periods and spaces and every name here
-# agrees with 1.4.0 letter for letter.
+# agreed with 1.4.0 letter for letter until 2026-09-20.
+#
+# 2026-09-20, #461: THAT SENTENCE NO LONGER HOLDS FOR EVERY NAME, and
+# the ones it stopped holding for have TWO causes in one diff. A
+# connective with a name word beside it now contributes no initial at
+# all, so the group it used to render per-word is simply gone: 'John
+# and Jane Smith' goes 'J a J. S.' at the wheel to 'J. J. S.' in the
+# tree, where the grouping half is 'J a J. S.' -> 'J. a. J. S.' and
+# #461's half is the drop of the 'a'. Measured against the parent
+# 46651750 on 2026-09-20, the names this rule explains where BOTH
+# halves are now in the diff are: 'Assoc Dean of Chemistry Robert
+# Johns', 'Dean of Chemistry', 'Dean of Chemistry Robert Johns',
+# 'Duke of Edinburgh', 'Duke of Wellington', 'John & Jane', 'John and
+# Jane Aznar y Lopez', 'John and Jane Smith', 'John of the Doe', 'Jose
+# e Maria Santos', 'Juan & Garcia', 'Juan and Garcia', 'Juan y Eva
+# Garcia', 'Mr. and Mrs. John and Jane Smith', 'Rob And Beth Edmunds',
+# 'and Jon Dough', 'the and Jon Dough' and the two 'part1 of ...'
+# strings. Every one of them ALREADY diffed here before this bundle,
+# and on this rule's own sentence, which is why they stay on it rather
+# than moving to the fix(#461) rule above -- that rule is for the
+# names whose 1.4.0 diff this change CREATED. Both halves are stated
+# rather than one absorbing the other, the treatment fix(#462) and
+# fix(#383/#479) already get in these files. decisions.md#R3.
 #
 # CASE-SENSITIVE, the whole alternation, deliberately -- and it is the
 # SINGLE LETTERS the case decides, because a capital `E`/`Y` is an
@@ -2988,6 +3471,21 @@ issue = "change(suffix-acronym-collisions) esq leaves the acronym set"
 # reading nobody wants, and this reading is the one the decision
 # chose.
 #
+# 2026-09-18 (#516): this rule stopped explaining anything, and the
+# reason is not a revert. The by-shape credential class reads a word
+# of two or more period-separated chunks that no vocabulary claims by
+# POSITION (rules.md#S3), so 'John Smith E.S.Q.' is a credential again
+# with no wordlist entry behind it at all -- the reading this baseline
+# has, recovered by a different route than the acronym entry gave it.
+# The vocabulary decision the `change` tag records still stands and is
+# still the history of that entry; what is gone is its diff AT THIS
+# BASELINE, where `_ambiguities` is not a compared surface at all.
+# Above 2.0 the name still diffs, on the `suffix-or-name` report the
+# positional reading brings with it, and fix(#516) classifies that --
+# each 2.x copy's own `dormant` string says so. Declared
+# `dormant` rather than deleted, so the harness says so out loud if a
+# future change takes the positional reading away again.
+#
 # Literal, no alternation, and exactly as wide as the diff: 'esq'
 # keeps its SUFFIX_WORDS membership, so the acronym entry's only
 # unique coverage was this one spelling and this one corpus name.
@@ -2995,6 +3493,7 @@ issue = "change(suffix-acronym-collisions) esq leaves the acronym set"
 # 'John Smith Esq' (the word list still reads it), 'Esq. Smith'
 # (rules.md#H2's leading inference) and 'Smith, Esq.' (the lone
 # post-comma credential).
+dormant = "'John Smith E.S.Q.' no longer diffs at this baseline: #516's by-shape credential class reads the multi-dot spelling as a credential by position, with no wordlist entry, which is the reading this baseline already had. Kept because the vocabulary change it records is real history and the rule wakes if that reading is lost again"
 name_regex = "^John Smith E\\.S\\.Q\\.$"
 fields = ["family", "middle", "suffix"]
 
@@ -3052,6 +3551,16 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # 'John Smith Jr. Prof.' keeps suffix 'Jr.' rather than promoting the
 # generational suffix to the family name, and 'John Prof. MA' reads
 # family 'MA' by rules.md#S2's reserve.
+#
+# 2026-09-18 (#289): the last clause is retracted. S2's reserve is no
+# longer what decides 'John Prof. MA': written capitals in a
+# mixed-case name lean credential with nothing to spare, so the name
+# reads title 'Prof.', family 'John', suffix 'MA' -- the transparency
+# this rule is about is unchanged and now shows a DIFFERENT reading
+# through it, which is the point of transparency. This rule keeps the
+# name at every baseline where it already had it; the fix(#289) rule
+# at the bottom of each file carries the names whose reading moved and
+# that nothing else claims.
 #
 # Five roles, the union of what the sixteen move; no name moves all
 # five (four is the most, 'John Smith Jr. Prof.'), and two move only
@@ -3115,7 +3624,18 @@ issue = "fix(#316) a trailing period-marked title word reads as a title"
 # be invisible to the discovery pass that demands every alternation
 # declare what it copies. The two spellings match the same string.
 # One set, identical in all four ledgers.
-name_regex = "^(?:Andrew Perkins \\x28Mgr\\.\\x29|Dr\\. John Smith Prof\\.|Dr\\. Smith Sir\\.|John Prof\\. MA|John Smith Dr\\.|John Smith Jr\\. Prof\\.|John Smith Mr\\.|John Smith Prof\\.|John Smith Prof\\. Dr\\.|John Smith Prof\\. Jr\\.|John Smith Rev\\.|Mary Jane King\\.|Sir John Prof\\.|Smith Prof\\.|Smith Sir\\.|Smith, John Prof\\.)$"
+#
+# 2026-09-18 (#289/#516): a SEVENTEENTH member, 'JOHN PROF. MA'. It
+# arrived in the rules corpus as rules.md#H5's one-case witness that
+# the suffix reading is taken over what STANDS once the title chain
+# has run, not over what stood -- the reading the mixed-case spelling
+# stopped demonstrating when the caps lean started deciding it. The
+# name is wholly one case, so no lean fires and nothing about it is
+# this arc's: what moves is exactly this rule's trailing-title chain
+# ({title, family, suffix}, inside the five roles already declared),
+# and it stops diffing at 2.3.0 for the same reason its sixteen
+# siblings do.
+name_regex = "^(?:Andrew Perkins \\x28Mgr\\.\\x29|Dr\\. John Smith Prof\\.|Dr\\. Smith Sir\\.|JOHN PROF\\. MA|John Prof\\. MA|John Smith Dr\\.|John Smith Jr\\. Prof\\.|John Smith Mr\\.|John Smith Prof\\.|John Smith Prof\\. Dr\\.|John Smith Prof\\. Jr\\.|John Smith Rev\\.|Mary Jane King\\.|Sir John Prof\\.|Smith Prof\\.|Smith Sir\\.|Smith, John Prof\\.)$"
 fields = ["family", "given", "middle", "suffix", "title"]
 
 [[change]]
@@ -3130,13 +3650,16 @@ issue = "fix(#316) a trailing Latin title on a native-script name is a title"
 # buys.
 #
 # ITS OWN rule rather than a seventeenth alternative above, and not by
-# preference: an alternation holding a script-classified member is
-# claimed by the honorific pin in tests/v2/test_ledger_guards.py,
-# which requires such an alternation's members to BE the config's CJK
-# honorific entries. So this stands alone, literal-anchored, reaching
-# exactly one corpus name (_CORPUS_CLAIMS carries the 1) with
-# _MUST_NOT_MATCH probes for the boundary -- the same shape the four
-# #436/#437 CJK rules above take, and for the same reason.
+# preference: an UNDECLARED alternation holding a script-classified
+# member is claimed by the honorific pin in
+# tests/v2/test_ledger_guards.py, which requires such an
+# alternation's members to BE the config's CJK honorific entries --
+# and until #322/#323 taught that pin to ask whether the members FOLD
+# into that vocabulary, that was every such alternation. So this
+# stands alone, literal-anchored,
+# reaching exactly one corpus name (_CORPUS_CLAIMS carries the 1)
+# with _MUST_NOT_MATCH probes for the boundary -- the same shape the
+# four #436/#437 CJK rules above take, and for the same reason.
 #
 # Classified 2026-09-09, in the review round that fixed which title
 # run H1 addresses by; the reading itself is untouched by that fix.
@@ -3154,7 +3677,8 @@ issue = "fix(#316) a trailing Latin title on a native-script name is a title"
 # given-first -- so `title`, `given`, `family` and `suffix` all move.
 #
 # Literal and anchored, so the reach cannot widen into the other
-# twenty-nine tolerated CJK names. _MUST_NOT_MATCH carries three of
+# forty-six tolerated CJK names (twenty-nine until this bundle's
+# seventeen rows joined the file). _MUST_NOT_MATCH carries three of
 # them as probes: '王先生, V.' (a Latin post-nominal behind a
 # comma, which the trailing walk never sees), '田中さん, Dr.' (the
 # comma spelling of this very shape, routed by the segment gate) and
@@ -3162,3 +3686,678 @@ issue = "fix(#316) a trailing Latin title on a native-script name is a title"
 # vocabulary).
 name_regex = "^毛 泽东 Dr\\.$"
 fields = ["family", "given", "suffix", "title"]
+
+# #322/#323, LAST in the file. The parser knew ONE full stop --
+# the ASCII period -- and knew it at ONE site, the lexicon's edge
+# strip. It now reads four: the ASCII period, the fullwidth '．',
+# the ideographic '。' and its halfwidth '｡'. A full stop glued
+# AFTER a script-written word is punctuation and not part of the
+# word -- invisible to the script reading and to the vocabulary,
+# and left in the text on the word it arrived with -- because no
+# East Asian script writes an initial or an abbreviation with a
+# period. A leading stop folds away for the vocabulary lookup,
+# which reads both edges; the classification fold that feeds the
+# surname site reads the TRAILING edge only, so a word wearing a
+# leading stop is given no script and never becomes a surname
+# site: '.김민준' stays one whole word, given. The honorific peel
+# is not gated by that fold -- the tail alone licenses it -- so a
+# leading stop does not stop it: '.김민준씨' peels to '.김민준'
+# and '씨' (rules.md's W Background, decisions.md#cjk-full-stops).
+#
+# The eleven names here are the ones whose diff carries a `title`
+# or a `suffix` move -- nine CJK, the katakana 'マイケル.' (a #323
+# mover added 2026-09-10 in the whole-branch review, its diff being
+# title-or-given), and the bracketed '(김민준.) John Smith', added
+# in the review round after that, whose diff carries the `title`
+# the unwrapped clause used to take. SIX MORE of the bundle's
+# seventeen movers are absent on purpose, and for one reason in two
+# shapes. '김. 민준', '양 지훈.' and '양. 지훈' move within {given,
+# middle, family} at this baseline -- {family, given}, as it
+# happens -- which the native-script CJK rule above already
+# declares. The three stop-bearing FAMILY_COMMA rows
+# the same review round added are the other shape: '田中さん., V.' and '이, J.씨.'
+# are claimed here by the broad 'fix(cjk-comma-compound)' and
+# 'fix(cjk-comma-honorific-peel)' rules above, and '김민준씨., J.씨'
+# produces no diff at this baseline at all. Adding
+# any of the six would only take a name off a rule that describes
+# it, or claim a diff that does not exist.
+#
+# LAST is narrow-first (#382), not taste. Two earlier rules reach
+# these names by regex: 'fix(#271/#272/#298) native-script CJK'
+# reaches all eleven (its script-range scope catches the katakana
+# mover, and the bracketed row's CJK clause) and 'fix(cjk-glued-honorific-peel)' reaches the two
+# glued spellings ('田中さん.', '김민준씨.'). This rule's five
+# roles are a STRICT SUPERSET of the three each of those declares,
+# so both are the narrower rule and both belong ahead of it;
+# order_contests sees no pair at all, a contest needing the LATER
+# rule's fields to nest inside the earlier one's.
+#
+# An anchored alternation of the NAMES rather than a shape, and the
+# two criteria a shape could be written on both reach names this
+# rule must not claim. "An edge full stop on a word carrying a
+# classified character" reaches 22 corpus names, measured
+# 2026-09-10: the bundle's seventeen movers and FIVE that do not
+# move ('田中さん 様.', '田中さん, 様.', '김민준 씨.', '김민준 양.',
+# '김민준, 씨.'). Measured with the TOKENIZER and not a whitespace
+# split -- two of the movers wear their stop before a comma
+# ('김민준씨.,', '田中さん.,'), which a whitespace split does not
+# see -- plus the bracketed '(김민준.) John Smith' by hand, its stop
+# sitting inside the clause until rules.md#S1 unwraps it; an 18
+# recorded earlier the same day came from the split, over a corpus
+# four names smaller. A character class of the four stops would be a hand
+# copy of nameparser._lexicon.FULL_STOPS besides, and would reach
+# the looser population of "an ASCII period anywhere in a CJK-
+# bearing name" -- 20 distinct names on 21 corpus rows before this
+# bundle ('Dr 김민준씨, Jr.' being the name on two of them), wider
+# because it sweeps in periods sitting on LATIN tokens inside a CJK
+# name ('毛 泽东 Dr.', '田中さん, V.'). None of the five or the
+# twenty is moved BY THIS BUNDLE, so a shape spelling would
+# reach names whose diffs belong to other rules (most of them
+# do diff against the older baselines -- 19 of the twenty at
+# 1.4.0) or to no rule at all; decisions.md#cjk-full-stops
+# carries both counts and the recompute. The members copy no wordlist,
+# which the honorific pin in tests/v2/test_ledger_guards.py DERIVES
+# rather than taking on trust -- no member of this alternation folds
+# into the CJK honorific vocabulary, bare or wearing a full stop;
+# _CORPUS_CLAIMS pins the reach at 11 with its digest, and
+# _MUST_NOT_MATCH pins the four readings the bundle left alone.
+[[change]]
+issue = "fix(#322/#323) a full stop on a CJK token is read as punctuation and stays on its token"
+name_regex = "^(?:\\x28김민준\\.\\x29 John Smith|マイケル\\.|田中\\.|田中\\. 太郎|田中さん\\.|김민준 씨。|김민준 씨．|김민준 씨｡|김민준\\.|김민준\\. 지훈|김민준씨\\.)$"
+fields = ["family", "given", "middle", "suffix", "title"]
+
+# ---------------------------------------------------------------
+# #383/#479: A SINGLE-LETTER CONNECTIVE JOINS ONLY ON CASE EVIDENCE.
+# One rule, and the count is the finding. Seventeen corpus names are
+# written wholly in one case AND carry a cased single-letter
+# connective -- the whole population this change can reach, measured
+# 2026-09-13 over the 1174-name corpus by folding every one-letter
+# token of every one-case name against CONJUNCTIONS -- and exactly
+# two of them move a ROLE BECAUSE OF THIS CHANGE. Of the fifteen
+# others, thirteen move no role at all and the Cyrillic pair move
+# theirs for #269's reason -- vocabulary that has decided their 'и'
+# since 2.0, nothing to do with the fork -- so four names in the
+# population move a role against this baseline and only two of the
+# four are this rule's. The other two are classified by
+# `feat(#269) non-Latin titles/conjunctions recognized` above, whose
+# reach the population grew by exactly those two.
+# The report the change also emits is a v2
+# surface that does not exist below 2.0, while the derived view moved
+# only in the CORE, which is not compared here either (the note in
+# the `_initials` block above). So this is the whole of 2.4's
+# #383/#479 blast radius at 1.4.0.
+#
+# LAST in the file: every diff it claims reported UNEXPLAINED on the
+# run that preceded it (measured 2026-09-13), so no rule above
+# already claims one, and nothing below can be shadowed by a literal
+# alternation of two names.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#383/#479) a single-letter connective joins only on case evidence"
+# 'jose e maria santos' and 'JUAN GARCIA Y LOPEZ', both rules.md#P3
+# examples. A name written wholly in one case carries no case
+# evidence about any letter in it, so the reading comes from the
+# vocabulary: 'e' is marked as reading both ways and reads as an
+# initial, 'y' is not and joins. Both directions are v1 parity BREAKS
+# and both are deliberate -- 1.4.0 gives 'jose e maria santos' first
+# 'jose e maria' and 'JUAN GARCIA Y LOPEZ' middle 'GARCIA Y'
+# (measured from the 1.4.0 wheel, 2026-09-13). See rules.md#P3 and
+# the 2026-09-13 entry of decisions.md#P3.
+#
+# The two names move DISJOINT role pairs and the declaration is their
+# union: 'jose e maria santos' moves `given` and `middle` (the joined
+# run splits, and what is past the letter becomes the middle name),
+# 'JUAN GARCIA Y LOPEZ' moves `middle` and `family` (the letter now
+# joins, so the middle empties into the family). `#452`'s
+# over-declaration check recomputes that union on every run, so a
+# third role here would fail rather than stand as a claim on a future
+# diff.
+#
+# Literal-anchored to the two names: the class is wide (every one-case
+# name with a cased single-letter connective) but the corpora carry
+# only these two at a role-moving shape, and a regex for the class
+# would claim the fifteen OTHER names of that population (the section
+# comment above counts them) whose roles this change does not move
+# -- including 'juan garcia y lopez', which already joined, and
+# 'JUAN Y GARCIA', whose three-word carve-out keeps the letter a name
+# word in both directions.
+# _MUST_NOT_MATCH in tests/v2/test_ledger_guards.py carries the probes,
+# every one of them a MIXED-case spelling: mixed case is where the
+# writing decides, nothing moved there at all, and a rule reaching one
+# would be absorbing a regression in the half of rules.md#P3 this
+# change did not touch.
+name_regex = "^(?:jose e maria santos|JUAN GARCIA Y LOPEZ)$"
+fields = ["given", "middle", "family"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
+# A member of suffix_acronyms_ambiguous written in CAPITALS inside a
+# mixed-case name is written the way a credential is written, and is
+# taken as one with nothing to spare ('Jack MA' -> given 'Jack',
+# suffix 'MA'); one written in any other cased form is written the way
+# a surname is written and stays one even with words to spare ('John
+# Smith Ma' -> middle 'Smith', family 'Ma'). The same lean reaches the
+# post-comma given slot ('Smith, MA' -> family 'Smith', suffix 'MA';
+# 'Smith, Ma' keeps its given), and the comma form's words-to-spare
+# test becomes a count of NAME words, which is case-blind -- so
+# 'John Smith, MA', 'John Smith, Ed', 'JOHN SMITH, MA' and
+# 'john smith, ma' all read the credential where the token count read
+# a given name. See rules.md#S2, rules.md#C1 and rules.md#P2.
+#
+# A name written wholly in one case carries no contrast and does not
+# move on the LEAN at all -- 'JOHN SMITH MA', 'ANH DO', 'anh van do'
+# and 'Jack Ma' are _MUST_NOT_MATCH probes in
+# tests/v2/test_ledger_guards.py. The one-case comma forms in the list
+# above are here on the NAME-word count instead, which asks nothing
+# about case; that is why they sit beside the lean's own names rather
+# than in a rule of their own.
+#
+# Accepted costs, both recorded rather than repaired: the walk stops
+# at a declined pick instead of continuing past it, so a genuine
+# suffix standing in front of a name-leaning acronym is never reached
+# ('abdul Smith Jr Ma' reads middle 'Jr'), and the lean ends P2's
+# particle chain with no words to spare where the count would not
+# ('Freiherr von Berg MA', whose own rule further up this file carries
+# the reading at 1.4.0).
+#
+# The Title-case half is witnessed at the comma by two minimal pairs
+# rather than argued: 'John Smith, MA'/'John Smith, Ma' both read the
+# credential, because two NAME words before the comma decide before
+# the case is looked at, and 'Smith Jr., MA'/'Smith Jr., Ma' split,
+# because one name word leaves the case to decide and Title-case
+# declines. 'Smith Jr., Ma' diffs here for a reading this change did
+# NOT move -- the pre-comma restructure v2 has done since 2.0, at
+# 1.4.0, and the fork's new report at the 2.x baselines -- while
+# 'John Smith, Ma' moves on the COUNT, as its all-caps twin does, and
+# has no 1.4.0 diff at all, v1 having read the credential there too.
+# Both sit on this rule because the rule is what states which way
+# each member of a pair goes.
+#
+# Literal-anchored to the measured movers. The four 2.x ledgers share
+# ONE set; this copy is that set less FOUR names, for the reasons the
+# paragraphs below give. "One set for all five" was written before
+# the first carve-out existed and is corrected in all five copies
+# (2026-09-18). The set is literal because the class is
+# wide (every mixed-case name whose trailing piece is a listed
+# ambiguous acronym, plus every comma form with two name words before
+# the comma) and a regex for the class would claim the one-case
+# spellings that do not move. A name here that does not diff at a
+# given baseline is simply one the reading already agreed with there.
+# `fields` is per-baseline, the union the run at THAT baseline
+# measures (#452).
+#
+# One name is held OUT of the set here and only here: 'John Prof. MA'
+# is claimed at this baseline by `fix(#316) a trailing period-marked
+# title word reads as a title`, whose own comment carries the dated
+# retraction of what the name used to demonstrate. That rule declares
+# a `title` role this one does not, describes the whole of the diff
+# rather than the acronym's half of it, and stands first -- so the
+# name is narrowed out rather than left to be decided by file order,
+# which the harness refuses to let go undeclared.
+#
+# THREE MORE are held out here and only here, added to the 2.x copies
+# on 2026-09-19: 'Doe, MA', 'Doe, MA PhD' and 'Doe, Dr. MA', the lone
+# post-comma credentials #531's control rows brought into the corpora.
+# They diff at this baseline too -- v1 read first 'MA', last 'Doe' --
+# but that diff is already claimed here by `fix(comma-family) lone
+# post-comma piece routes to suffix/title, not first`, which stands
+# near the top of this file and whose {given, suffix, title} admits
+# their {given, suffix}. Adding them to this rule would give one diff
+# two rules and leave file order to arbitrate, which is the shape the
+# harness refuses to let go undeclared; so the 2.x copies carry them
+# and this one does not.
+name_regex = "^(?:Davis Royce, Ed|Freiherr von Berg MA|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John de Ma|John van der Berg Ma|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|abdul Smith Berg Ma|abdul Smith Jr Ma|abdul Smith Ma|john smith, ma)$"
+fields = ["family", "given", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#516) an unlisted dotted acronym is read by position"
+# A token of two or more period-separated chunks that no vocabulary
+# claims joins the ambiguous credential class by SHAPE and is read by
+# POSITION, exactly as a bare listed acronym is: a credential where
+# the name has words to spare, a name word where it does not, either
+# reading reported (rules.md#S3). Case says nothing here -- the
+# periods are the evidence -- which is why 'john smith x.y.z.' moves
+# with 'John Smith X.Y.Z.'. The same admission reaches the comma form,
+# where the NAME-word count decides ('John Smith, A.B.' -> suffix
+# 'A.B.'; 'Smith, A.B.' keeps its given and only reports).
+#
+# Two names here restore a reading a PRIOR bundle's vocabulary change
+# took away, by a different route than it lost it: 'John Smith E.S.Q.'
+# and 'John Smith C.H.A.' fell to a bare positional read when 'esq'
+# and 'cha' left SUFFIX_ACRONYMS
+# (decisions.md#suffix-acronym-collisions), and the shape class reads
+# them as the credentials they always were with no wordlist entry.
+# At the baselines where
+# that restoration lands on the baseline's own reading, only the new
+# report is left and `fields` says so.
+#
+# The narrow half of the same change: a chunk match no longer makes a
+# dotted token a suffix where EVERY matched chunk is a single ASCII
+# character, which reaches only the roman numerals -- 'Jack X.Y.I.'
+# moves to family for that reason and not for the shape one.
+#
+# The shapes the vocabulary settles are untouched and are
+# _MUST_NOT_MATCH probes in tests/v2/test_ledger_guards.py: a
+# whole-token match ('Jack M.A.', 'John Smith Ph.D.', 'Smith,
+# A.B.C.'), a surviving chunk claim ('Doe, John Msc.Ed.'), a leading
+# dotted run ('X.Y.Z. Smith', 'J.R.R. Tolkien', 'A.B. Vajpayee'), the
+# single trailing period that is no shape at all ('John Smith Xyz.'),
+# and a digit chunk, which the alphabetic gate refuses ('Bridge (1.4)').
+#
+# Literal-anchored to the measured movers, one set for all five
+# ledgers, for the reason the fix(#289) rule above gives: the class is
+# a SHAPE, and a regex for the shape would claim every dotted token
+# the vocabulary already answers for.
+name_regex = "^(?:Jack X\\.Y\\.I\\.|John Smith B\\.Tech\\.|John Smith C\\.H\\.A\\.|John Smith E\\.S\\.Q\\.|John Smith Q\\.W\\.E\\.R\\.T\\.|John Smith X\\.Y\\.Z\\.|John Smith, A\\.B\\.|Smith, E\\.S\\.Q\\.|john smith x\\.y\\.z\\.)$"
+fields = ["family", "given", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(given-part-trailing-slot) a credential acronym ending the given part of a family-comma listing reads as a middle name"
+# 2026-09-19, #531: THE WIDENING THIS RULE'S OWN COMMENT PREDICTED HAS
+# LANDED, AND THE RULE NEITHER RETIRED NOR NARROWED -- IT CHANGED
+# NAMES. What the rule SAYS is still true, of a different set, and for
+# a different reason, so read the two paragraphs below as replacing
+# the retirement paragraph rather than amending it.
+#
+# 'Doe, John MA' is GONE from the regex: the emitter now reaches the
+# trailing slot of the given part, so the tree reads suffix 'MA'
+# exactly as the 1.4.0 wheel does and the name has no diff at this
+# baseline at all (the report it gains is a v2 surface that cannot
+# enter a diff below baseline 2.0, which is why the 2.x ledgers carry
+# it and this one does not).
+#
+# What is here instead is the four names where the reading is STILL
+# the middle name v1 read as a post-nominal -- and the mechanism is no
+# longer the slot's silence. It is the WRITING: a member written in a
+# cased form that is neither capitals nor wholly lower, in a name
+# written in more than one case, is written the way a name is written
+# and stays one (rules.md#S2, decisions.md#S2). 'Doe, John Ma',
+# 'Doe, John Ed' and 'Doe, Mary Jo Ma' are Title-cased members in
+# mixed-case names, and 'Doe, John MA Ma' is a two-member run whose
+# LAST member is Title-cased, so the walk declines there and the whole
+# run stays middle text. v1 took all four as suffixes, and the four
+# keep the 2.0-era reading against it. Each of them now REPORTS the
+# fork it declined, which is #531's doing and is a v2 surface, so it
+# is invisible here and carried by the 2.x ledgers' own rule.
+#
+# The four names entered the corpora with #531's case rows
+# (2026-09-18); the reading they carry is a 2.0-era one this PR did
+# not move, exactly as 'Doe, John MA's was when this rule was written.
+#
+# The dotted sibling is still NOT here and must not be folded in: it
+# now LEAVES 1.4.0's middle for the credential reading, which is the
+# opposite direction, and has a rule of its own at the bottom of this
+# file.
+#
+# Literal-anchored for the same reason the fix(#289) rule above gives:
+# the class is a slot, and a regex for the slot would claim every
+# family-comma name whose given part ends in an ambiguous acronym,
+# including 'Doe, John MA' itself, which v1 now agrees with.
+# _MUST_NOT_MATCH carries that name as a probe, beside
+# 'Doe, John MA Smith', whose member is not at the trailing slot at
+# all and whose diff has the comma-family rule below.
+name_regex = "^(?:Doe, John Ed|Doe, John MA Ma|Doe, John Ma|Doe, Mary Jo Ma)$"
+fields = ["middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#531) a dotted credential ending the given part leaves 1.4's middle name"
+# The dotted half of #531, and the one place the change accepts a v1
+# parity BREAK rather than restoring one. 'Doe, John X.Y.Z.' reads
+# middle 'X.Y.Z.' on the 1.4.0 wheel (measured) and middle at 2.0.0
+# through 2.3.0 too; the tree reads suffix 'X.Y.Z.'.
+#
+# Deliberate, and the reason is agreement rather than history: a
+# multi-chunk dotted token no vocabulary claims joins the ambiguous
+# credential class BY SHAPE and is read by POSITION (rules.md#S3,
+# fix(#516)'s rule above), the comma-less 'John Doe X.Y.Z.' reads it
+# as the credential, and at this slot the comma has already named the
+# family so the words-to-spare count is satisfied by construction.
+# The acronym half of #531 restores v1; this half departs from it, and
+# decisions.md#S2 records the pair as one decision with two
+# directions.
+#
+# `listed_lean` returns None wherever the by-shape tag rides, so no
+# case evidence is consulted here at all -- which is why this name
+# needs a rule of its own rather than sitting with the acronyms above
+# or with the four the writing declines.
+#
+# Literal, one name. A regex for the dotted SHAPE would claim every
+# dotted token the vocabulary already answers for, which is the reach
+# fix(#516)'s own comment refuses; _MUST_NOT_MATCH carries the probes
+# it names.
+name_regex = "^Doe, John X\\.Y\\.Z\\.$"
+fields = ["middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(comma-family) an interior credential acronym stays a middle-name word"
+# THIS PR DID NOT MOVE THIS READING, and the rule exists only because
+# the name entered the corpus here -- the shape the rule above is
+# bounded by, arriving as #531's recorded negative control
+# (2026-09-18). 'Doe, John MA Smith' reads middle 'Smith', suffix 'MA'
+# on the 1.4.0 wheel and middle 'MA Smith' at 2.0.0 and every baseline
+# since, this tree included. Measured case-independent: 'DOE, JOHN MA
+# SMITH' and 'doe, john ma smith' read the same way.
+#
+# It is NOT the trailing slot and must not be folded into either rule
+# above: a NAME WORD stands behind the member, which ends the trailing
+# run, so no fork is consulted, nothing reports, and the member is an
+# ordinary middle-name word. What v1 did instead was read the
+# post-comma part's suffix vocabulary by POSITION and lift 'MA' out of
+# the middle of the given part -- a family-comma routing difference
+# 2.0 settled, which is why this files under the comma-family group
+# that tests/v2/cases.py gives the row.
+#
+# Literal, one name: the shape is "a family-comma name whose given
+# part carries an ambiguous acronym with a name word behind it", and a
+# regex for it would claim the trailing-slot names two rules above.
+name_regex = "^Doe, John MA Smith$"
+fields = ["middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(comma-family) a credential acronym grouping joined into one piece stays middle-name text"
+# THIS PR DID NOT MOVE THESE READINGS EITHER, and the three names
+# arrived for the same reason the one above did: #531's fix round
+# needed the rows that PIN the trailing slot's piece test, so they
+# entered the corpora (2026-09-19). All three read the middle name at
+# 2.0.0 and at every baseline since, this tree included, and v1 read
+# the trailing word as a post-nominal.
+#
+# The mechanism is a STAGE EARLIER than the slot, and it is the piece
+# rather than the word: grouping merges each of these members into a
+# multi-token piece before assign asks anything -- 'MA y' on the
+# conjunction, 'van Ma' on the particle chain in front, 'DO Ed' on the
+# chain the member itself heads -- and the slot reads a piece, so a
+# piece of two tokens is not the lone member the branch asks about.
+# What v1 did instead was read the post-comma part's suffix
+# vocabulary by POSITION, which is the same family-comma routing
+# difference 'Doe, John MA Smith' carries above; these differ from it
+# only in what ends the reach.
+#
+# Literal, three names. The shape is "a family-comma name whose given
+# part ends in a joined piece carrying a class member", and a regex
+# for it would need the join, which is not in the string: 'Doe, John
+# MA Smith' and 'Doe, John MA' are spelled alike and neither is here.
+# _MUST_NOT_MATCH carries both as probes.
+name_regex = "^(?:Doe, John DO Ed|Doe, John MA y|Doe, John van Ma)$"
+fields = ["middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#380) the do attachment leaves the credential in front of it in the middle name"
+# THE SAME DECISION AS THE fix(#380) RULE BELOW, on a name that moves
+# one field more than any of its five. 'Doe, John MA do' entered the
+# corpora with #531's fix round (2026-09-19) and is NOT this PR's
+# doing -- byte-identical at cc78c960 and on the 2.3.0 wheel.
+#
+# v1 read the whole tail as post-nominals, suffix 'MA, do'. Here the
+# lower-case 'do' leans nothing, so the trailing slot declines it to
+# P6 exactly as 'Doe, John Do' does -- and a piece that walk refuses
+# ENDS the run, so the all-caps 'MA' in front of it is never asked
+# and stays middle-name text, capitals and all. Two readings on one
+# string: {family, suffix} is the attachment the rule below names,
+# and `middle` is the silence behind it, which is why the name needs
+# a rule of its own rather than joining that literal set -- a
+# three-field diff is no subset of its {family, suffix}.
+#
+# Literal, one name. tests/v2/cases.py's
+# the_particle_carve_out_silences_the_member_in_front is the row.
+name_regex = "^Doe, John MA do$"
+fields = ["family", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#380) a trailing mc or do after a family comma is the tussenvoegsel, not a post-nominal"
+# THE SAME DECISION AS THE fix(#380) RULE ABOVE, over the two other
+# words that carry the collision it names. Five names entered the
+# corpora with #531's case rows and its `do` pairing (2026-09-18), and
+# every one of them reads here what 'Berg, Jan vd' reads there: the
+# trailing word attaches to the family the comma already named
+# (rules.md#P6) where v1 read it as a post-nominal, so {family,
+# suffix} moves and nothing else does.
+#
+# 'Berg, Jan mc' is the second word of decisions.md#vocabulary-
+# collisions' live pair, and decisions.md#suffix-acronym-collisions
+# is where 'mc' was left in the acronym set as no borne name at all.
+# The other four are the `do` rows: 'Doe, John Do', 'SMITH, JOHN DO',
+# 'NASCIMENTO, EDSON ARANTES DO' and 'Nascimento, Edson Arantes do'.
+#
+# THIS PR DID NOT MOVE ANY OF THE FIVE -- verified name by name
+# against the tree at cc78c960, where all five parse byte-identically
+# (2026-09-19). What #531 DID do is take the sixth spelling OUT of
+# this set: 'Doe, John DO' is an all-caps member in a mixed-case name,
+# the one writing that carries a positive credential lean, so the
+# credential reading wins, P6 stands down, and the name reaches 1.4.0
+# parity and drops out of this ledger entirely. That is
+# decisions.md#S2's `do` pairing, and 'Doe, John DO' is a
+# _MUST_NOT_MATCH probe here because of it -- the one-case
+# 'SMITH, JOHN DO' beside it in the regex is the accepted cost the
+# same entry records.
+#
+# Literal-anchored, unlike the vd rule's shape regex: `do` is
+# ordinary given-name and particle text in a way `vd` is not, so a
+# regex over the trailing word would claim every Portuguese and
+# Vietnamese comma listing in the corpora. The vd rule's own
+# _MUST_NOT_MATCH key was rekeyed to its full issue text when this
+# rule landed, for the reason fix(#360)'s pair already records: the
+# bare tag now matches two rules, and each one's boundary is the
+# other's claim.
+name_regex = "^(?:Berg, Jan mc|Doe, John Do|NASCIMENTO, EDSON ARANTES DO|Nascimento, Edson Arantes do|SMITH, JOHN DO)$"
+fields = ["family", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#274/#424) accepted: a maiden clause keeps a trailing credential v1 read as a post-nominal"
+# Six names whose reading this change does not touch: each reads on
+# this tree exactly as it read at 2f57ff21, measured name by name,
+# and the whole of the 1.4.0 diff is v1 having no maiden field. The
+# marker takes the words after it, the trailing member among them --
+# rules.md#M2's Accepted reading, which has shipped since #274 and
+# which #533 leaves standing wherever the WRITING declines the word
+# (a Title-cased member in a mixed-case name: 'Jane Doe nee Smith
+# Ma', 'Jane Doe nee Yo-Yo Ma', 'Doe, Jane nee Smith Ma'), wherever
+# the member is the only word the marker would leave ('Jane Doe nee
+# MA'), and wherever P6's attachment claims the word instead ('Doe,
+# Jane nee Smith do', 'Doe, Jane nee Smith MA do'). What #533 adds on
+# these six is a REPORT, and 1.4.0 has no surface to compare one
+# against -- so nothing of this change is visible from here, and the
+# rule is named for the change that is.
+#
+# Its own rule rather than a widening of fix(#274) above, and the
+# reason is that rule's `fields`: it stops at maiden/middle/family
+# because a Latin marker moves only those, while these six also move
+# the `suffix` v1 read. Folding them in would have fix(#274) stand
+# ready to explain a suffix regression on every name carrying a
+# marker -- the trade 'fix(#424/#445) accepted: the maiden walk keeps
+# a bare acronym' already refused for the same reason and records.
+#
+# Literal-anchored: the subject is a SLOT, and a regex for it would
+# claim the names whose writing gives the word UP as readily as
+# these.
+name_regex = "^(?:Doe, Jane nee Smith MA do|Doe, Jane nee Smith Ma|Doe, Jane nee Smith do|Jane Doe nee MA|Jane Doe nee Smith Ma|Jane Doe nee Yo-Yo Ma)$"
+fields = ["family", "maiden", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#274/#436/#437) a clause the unambiguous credential ended, and the run it left renders with spaces"
+# 'Jane Doe nee Smith PhD MA', and #533 moves nothing on it either:
+# the unambiguous PhD already ended the walk before this change, so
+# the clause gave the MA up then as it does now -- maiden 'Smith',
+# suffix 'PhD MA', the same reading as at 2f57ff21. Two changes meet
+# in the 1.4.0 diff and one rule has to explain the whole of it: the
+# marker leaving the name (#274) and R1's space-separated rendering
+# of the run v1 wrote 'PhD, MA' (#436/#437).
+#
+# The name is the order-sensitivity #533 was filed about, seen from
+# the side that never moved: 'Jane Doe nee Smith MA PhD' reads the
+# same way now and did not before, and it is in the rule below.
+name_regex = "^Jane Doe nee Smith PhD MA$"
+fields = ["family", "maiden", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#533) the clause gives the credential up, and the run it joins renders as the writer spaced it"
+# Four names where #533 changes which words the clause holds, and the
+# 1.4.0 diff carries two more changes besides. What the marker takes
+# now ends where a trailing credential begins (rules.md#M2,
+# decisions.md#M2), so 'Jane Doe nee Smith MA PhD' reads suffix 'MA
+# PhD' where the tree read maiden 'Smith MA' at 2f57ff21, and 'Jane
+# Doe nee Smith MA JD' reads suffix 'MA JD' where it read maiden
+# 'Smith MA JD'. 'Jane Doe nee Smith Ma JD' is the pair's other
+# half: the Title-cased Ma stays in the clause and only the JD behind
+# it leaves. 'Doe, J. nee MA ba' is the CLAMP -- a member that is the
+# first word after the marker stays the maiden name, so maiden 'MA'
+# is kept and suffix 'ba' is given up.
+#
+# The other two changes are the marker leaving the name (#274, which
+# v1 has no field for) and R1's space-separated rendering of the run
+# the member joins, which v1 wrote with commas: 'MA, PhD' -> 'MA
+# PhD', 'MA, JD' -> 'MA JD', 'MA, ba' -> 'ba' (#436/#437). One rule
+# explains the whole of each diff, which is why this is not three.
+#
+# NOT case-insensitive, and measured: 'Jane Doe nee Smith Ma JD' and
+# 'Jane Doe nee Smith MA JD' read differently from each other -- the
+# capitals are the evidence the lean reads -- so an (?i) anchor here
+# would stand ready to explain either with the other's reasoning.
+name_regex = "^(?:Doe, J\\. nee MA ba|Jane Doe nee Smith MA JD|Jane Doe nee Smith MA PhD|Jane Doe nee Smith Ma JD)$"
+fields = ["family", "maiden", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#445/#533) the clause gives the credential up, and the one name word it leaves is the family"
+# 'John née Jones Smith MA', whose diff has three causes from 1.4.0
+# and one rule has to explain the whole of it. v1 read given 'John',
+# middle 'née Jones', last 'Smith', suffix 'MA'; the tree reads
+# family 'John', suffix 'MA', maiden 'Jones Smith'. The marker takes
+# the words after it (#274), rules.md#M4 makes the one name word the
+# clause leaves the family (#445), and #533 is what takes the MA back
+# out of the maiden name -- at 2f57ff21 this read maiden 'Jones Smith
+# MA' with no suffix at all, so `suffix` was in the diff then and is
+# not now.
+#
+# Its own rule because 'fix(#424/#445) accepted: the maiden walk
+# keeps a bare acronym, and the lone name word is the family' above
+# says the OPPOSITE of what this name now does, and until this commit
+# its (?i) anchor claimed both spellings. That rule is narrowed to
+# the spellings whose reading it describes; this one carries the
+# spelling that gives the member up.
+name_regex = "^John née Jones Smith MA$"
+fields = ["family", "given", "maiden", "middle"]
+
+[[change]]
+issue = "fix(#533) accepted: an unlisted dotted acronym ending a maiden clause leaves v1's family name"
+# 'Jane Doe nee Smith X.Y.Z.': v1 read middle 'Doe nee Smith', last
+# 'X.Y.Z.' and no suffix at all; the tree reads family 'Doe', suffix
+# 'X.Y.Z.', maiden 'Smith'. A by-shape member carries no writing
+# convention to read -- `listed_lean` returns None where the switch
+# made the token credential-SHAPED and the vocabulary did not list it
+# -- so the positional reading decides alone and the clause gives the
+# word up. The same trade #531 recorded at the given part's slot and
+# for the same reason: taken to agree with the comma-less 'John Doe
+# X.Y.Z.' and rules.md#S3's shape rule, not to restore anything.
+#
+# Accepted, and the divergence from v1 is the whole of it: v1 made
+# the dotted acronym the family name, and nothing here proposes to.
+name_regex = "^Jane Doe nee Smith X\\.Y\\.Z\\.$"
+fields = ["family", "maiden", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#434/#533) a marker PHRASE takes the maiden name, and its clause ends at the credential"
+# 'Maria Kowalska z domu Nowak MA'. fix(#274)'s regex is the
+# n[ée]e/geb alternation and cannot reach a phrase entry at all --
+# its own comment says why, at length -- and the fix(#434) rules
+# below are anchored to the bare 'Maria Kowalska z domu Nowak'.
+# Separate rather than a widening of that anchor: the diff here is
+# the same three fields but the CAUSE is two changes, and a rule
+# naming only #434 would attribute this change's stop to the
+# vocabulary addition.
+#
+# What #533 does here is not in the field list: `maiden` moves for
+# the phrase's sake either way, and what changed is the TEXT it
+# holds -- 'Nowak MA' at 2f57ff21, 'Nowak' now, with the MA a suffix
+# v1 also read as one.
+name_regex = "^Maria Kowalska z domu Nowak MA$"
+fields = ["family", "maiden", "middle"]
+
+
+# #397 review: A LINK INSIDE A MAIDEN CLAUSE STAYS IN THE BIRTH NAME
+# (2026-09-20; a third rule added 2026-09-22 with rules.md#M2's
+# `deviates: #538` example). Separate rules rather than one, because
+# at this baseline OTHER changes ride along in the same diffs and one
+# rule has to explain the whole of each: the marker leaving the name
+# (#274), R1's space-joined rendering of a suffix run v1 wrote with a
+# comma (#436/#437), and -- for the name added last -- the suffix
+# field v1 put a whole suffix-comma tail in.
+#
+# The third new name, 'Jane Doe nee Puig i Soler', needs no rule here:
+# its diff at this baseline is {family, maiden, middle}, which the
+# fix(#274) alternation above already explains -- v1 has no maiden
+# support at all, so the clause leaving the name IS the whole diff and
+# the link's placement inside it changes none of the three field
+# NAMES. The fourth, 'Jane Doe nee Puig i', is explained there too.
+#
+# rules.md#M2 states the exception; decisions.md#M2's 2026-09-20
+# bullet carries the measurement.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#274/#397) a link inside a maiden clause stays in the birth name, after a family comma"
+# 'Doe, Jane nee Puig i Soler'. v1 read middle 'nee Puig Soler' with
+# suffix 'i' -- the marker an ordinary word and the link a generation.
+# The tree reads given 'Jane', family 'Doe', maiden 'Puig i Soler':
+# the marker consumed (#274) and the link kept inside the clause it
+# stands in (#397). `suffix` is in the list because v1 had one and the
+# tree does not, which is the link's half.
+#
+# Literal, one name. The shape would be "a maiden marker and a bare
+# letter", which reaches every clause name in the corpora.
+name_regex = "^Doe, Jane nee Puig i Soler$"
+fields = ["maiden", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#274/#436/#437) a clause the generational link ended, and the run it left renders with spaces"
+# 'Jane Doe nee Puig i III'. Two changes meet in the v1 diff: the
+# marker leaving the name (#274, maiden 'Puig' where v1 read last
+# 'Puig' and middle 'Doe nee') and the two-word generation run 'i III'
+# that v1 rendered 'i, III' (#436/#437). The link fix moves NOTHING on
+# it and that is what the name is in the corpus for -- measured
+# against the parent 46651750, the parse is byte-identical before and
+# after this bundle, the link having a generation to its right rather
+# than a name word.
+#
+# Separate from the fix(#274/#436/#437) rule above it rather than a
+# widening of that anchor: that one is about a clause an unambiguous
+# CREDENTIAL ended, and a rule naming only credentials would
+# attribute this stop to the wrong reading.
+name_regex = "^Jane Doe nee Puig i III$"
+fields = ["family", "maiden", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the suffix field, link and all"
+# 'Smith, John, PhD née Puig Mr. - i Soler', which arrives from
+# rules.md#M2 rather than from a report: it is the doc's
+# `deviates: #538` example, and the doc reaches that deviation with a
+# configured ' - ' this corpus does not apply. What the gate sees is
+# the DEFAULT facade reading, where the dash is an ordinary name word
+# like any other.
+#
+# v1 had no maiden markers at all, so everything behind the suffix
+# comma stayed in the suffix: suffix 'PhD née Puig Mr. - i Soler'
+# against the tree's 'PhD', maiden '' against 'Puig Mr. - i Soler'
+# (measured 2026-09-22). One rule for the whole of it -- the marker
+# leaving the name (#274) and, inside what it takes, the link kept in
+# the clause it stands in (#397), which is what puts 'i Soler' on the
+# maiden side of the same two fields.
+#
+# Not a widening of the fix(#274/#397) comma rule above: that one is
+# about a FAMILY comma, where v1 left a middle name behind and the
+# field list says so. This tail leaves v1 a suffix and nothing else.
+#
+# Literal, one name, for the reason those rules give: the shape would
+# be "a maiden marker and a bare letter", which reaches every clause
+# name in the corpora.
+name_regex = "^Smith, John, PhD née Puig Mr\\. - i Soler$"
+fields = ["maiden", "suffix"]

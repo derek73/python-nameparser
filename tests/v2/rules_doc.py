@@ -122,6 +122,23 @@ POLICIES: dict[str, Policy] = {
     "maiden-parens": Policy(maiden_delimiters=frozenset({("(", ")")})),
     "keep-emoji": Policy(strip_emoji=False),
     "strict-comma-suffixes": Policy(lenient_comma_suffixes=False),
+    #: The two switches over the by-shape credential class (#516).
+    #: Named after the Policy FIELD rather than after the behavior,
+    #: which is deliberate: rules.md's statements stay
+    #: implementation-free, so the annotation slot is the one place
+    #: the doc can put the caller-facing name of the switch its prose
+    #: describes. The suffix says which way the field is set, since
+    #: one is on by default and the other off.
+    "unlisted_dotted_suffixes-off": Policy(unlisted_dotted_suffixes=False),
+    "unlisted_caps_suffixes-on": Policy(unlisted_caps_suffixes=True),
+    #: The delimiter switch (#206), named after its Policy FIELD for
+    #: the reason above and carrying the DELIMITER in the suffix,
+    #: because this field's value is a set rather than a flag: a rule
+    #: reached only under a configured separator has to say which one,
+    #: and " - " is the spelling docs/customize.rst teaches and the
+    #: one the group tests configure.
+    "extra_suffix_delimiters-dash": Policy(
+        extra_suffix_delimiters=frozenset({" - "})),
 }
 #: D-section subjects: zero-arg constructions whose diagnostics the
 #: warns=/raises= assertion forms exercise.

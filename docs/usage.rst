@@ -331,6 +331,10 @@ syllable held as its separate jamo rather than as one codepoint. macOS
 filenames are the common source. Everything above works on decomposed
 input: script classification normalizes to NFC before deciding, so a
 decomposed name gets the same order rule as its composed twin.
+Vocabulary lookup does the same before matching a word against
+titles, honorifics and the rest, so a decomposed ``Señor`` or ``née``
+— macOS-origin data again — is recognized as readily as its composed
+spelling.
 
 Splitting is the exception. An unspaced decomposed hangul name is
 ordered correctly but not split, because surname matching runs against
@@ -392,6 +396,19 @@ before the name is split or ordered, so those rules see the name
 without it. That is why ``김민준씨`` still divides into family 김 and
 given 민준, and why a configured Japanese segmenter is handed 山田太郎
 rather than 山田太郎様.
+
+The stop can be any width: the fullwidth ``．`` a Japanese or
+Chinese input method produces by default, the ideographic ``。`` and
+the halfwidth ``｡`` all reach the honorific vocabulary as an ASCII
+period does, so ``김민준 씨．`` gives suffix ``씨．``, family 김, given
+민준. A period glued to an ordinary name word, not an honorific, is
+likewise left where it was written rather than breaking the
+segmentation that follows it:
+
+.. doctest::
+
+    >>> parse("양. 지훈").family, parse("양. 지훈").given
+    ('양.', '지훈')
 
 Commas and Latin wrappers around a CJK name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -722,10 +739,13 @@ rule applies there in exactly the same way:
     >>> parse("Morse, Det. Insp. Jane").title
     'Det. Insp.'
 
-The rule is bounded in three ways, so it doesn't swallow ordinary
+The rule is bounded in four ways, so it doesn't swallow ordinary
 names. Single initials are left alone, so are abbreviations with
-interior periods, and it applies only to that leading run — the same
-word after the given name is a middle name:
+interior periods, it applies only to that leading run (the same
+word after the given name is a middle name), and a period-marked
+opening word carrying a Han, kana or hangul character is a name word
+rather than a title, since those scripts write no abbreviation with a
+period (``田中.`` is the family name):
 
 .. doctest::
 
@@ -806,8 +826,15 @@ so branching on a kind needs no import:
     ['Van']
 
 The post-nominals that double as ordinary surnames report the same way.
-``MA`` after a full name is read as a credential, but after a single
-given name it stays the surname — either way the choice is recorded:
+Which reading a bare one gets depends on what the writing says. In a
+name written in more than one case the word's OWN spelling is read
+first, even where there is nothing to spare: capitals lean the
+credential, any other cased form that is not wholly lower leans the
+surname (which is why ``Jack Ma`` reads it as the surname), and the
+lean wins over the count either way. Only where the spelling gives no
+such signal does the words-to-spare count decide: an all-lower or
+wholly one-case spelling with words to spare reads the credential.
+Either way the choice is recorded:
 
 .. doctest::
 
@@ -815,8 +842,20 @@ given name it stays the surname — either way the choice is recorded:
     'MA'
     >>> [a.kind.value for a in parse("John Smith MA").ambiguities]
     ['suffix-or-name']
-    >>> parse("Jack MA").family
+    >>> parse("Jack MA").suffix
     'MA'
+    >>> parse("Jack Ma").family
+    'Ma'
+    >>> parse("John Smith Ma").family
+    'Ma'
+
+Two ``Policy`` switches extend the same class to words the vocabulary
+does not hold. ``unlisted_dotted_suffixes`` (on by default) reads a
+token of two or more period-separated chunks the same way —
+``parse("John Smith X.Y.Z.").suffix`` is ``'X.Y.Z.'`` — and
+``unlisted_caps_suffixes`` (off by default) does the same for an
+unlisted all-caps word, which is opt-in because an all-caps surname is
+written that way too. See :doc:`customize` for both.
 
 A reading the vocabulary settles on its own is not a guess and reports
 nothing — periods make ``M.A.`` unambiguously a credential:
@@ -890,10 +929,14 @@ no longer knows ``de la`` are particles, so ``family_particles``
 empties and ``family_base`` takes the whole field.
 
 A token the parse never saw carries no decision to honor, so a view
-that is *handed* a vocabulary can fall back to it —
-:meth:`~nameparser.ParsedName.capitalized` is the one that is, and it
-falls back for one question only: whether a word is a conjunction or
-an initial, which a word answers on its own. Whether a particle is
+that is *handed* a vocabulary can fall back to it — of the parsed
+name's own views, :meth:`~nameparser.ParsedName.capitalized` is the
+one that is, and it falls back for one question only: whether a word
+is a conjunction or an initial, which a word answers on its own.
+(The v1 :class:`~nameparser.parser.HumanName` facade's ``initials()``
+is the other view that is handed one, and takes the same fallback for
+spliced text; it is not a method of the parsed name and is not what
+this section describes.) Whether a particle is
 acting as a particle is a fact about the whole part, and there is no
 reading on any word of a spliced field to derive it from, so a family
 set to ``de la`` stays lowercase where the same words parsed are

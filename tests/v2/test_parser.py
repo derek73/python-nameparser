@@ -11,7 +11,8 @@ from nameparser import (
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
 )
-from nameparser._types import AmbiguityKind, Role, Segmentation
+from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
+                               AmbiguityKind, Role, Segmentation)
 
 
 def test_parser_defaults_and_properties() -> None:
@@ -202,10 +203,15 @@ def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
         [AmbiguityKind.SUFFIX_OR_NAME]
     assert [t.text for t in took_suffix.ambiguities[0].tokens] == ["MA"]
 
+    # MOVED by #289, not deleted: 'MA' is written in capitals inside a
+    # mixed-case name, so it now leans CREDENTIAL and is taken with no
+    # words to spare -- 'Jack' is the only name word left, which is
+    # what also turns on the GIVEN_OR_FAMILY fork (decisions.md#S2).
     took_family = parse("Jack MA")
-    assert took_family.family == "MA"
-    assert [a.kind for a in took_family.ambiguities] == \
-        [AmbiguityKind.SUFFIX_OR_NAME]
+    assert took_family.suffix == "MA"
+    assert not took_family.family
+    assert set(a.kind for a in took_family.ambiguities) == \
+        {AmbiguityKind.SUFFIX_OR_NAME, AmbiguityKind.GIVEN_OR_FAMILY}
 
 
 @pytest.mark.parametrize("text", [
@@ -249,9 +255,16 @@ def test_ambiguous_acronym_detail_names_the_role_it_got() -> None:
     # the unpeeled piece is the last NAME piece, which is the family
     # name only under GIVEN_FIRST -- FAMILY_FIRST puts it in given, so
     # the detail has to follow the role actually assigned
+    #
+    # MOVED by #289, not deleted: 'Jack MA' is mixed case now, so 'MA'
+    # leans CREDENTIAL and is peeled as a suffix under every order --
+    # there is no unpeeled acronym left for the detail to name a role
+    # for. 'JACK MA' (one case, no lean) is the input that still
+    # exercises the mechanism this test pins: the count alone decides,
+    # and the detail names whichever role the order actually gave it.
     fam_first = Parser(policy=Policy(name_order=FAMILY_FIRST))
-    n = fam_first.parse("Jack MA")
-    assert (n.family, n.given) == ("Jack", "MA")
+    n = fam_first.parse("JACK MA")
+    assert (n.family, n.given) == ("JACK", "MA")
     assert "given name" in n.ambiguities[0].detail
     assert "family name" not in n.ambiguities[0].detail
 
@@ -561,14 +574,22 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
         n, m = parse(bound), parse(plain)
         assert (n.family, n.suffix) == (m.family, m.suffix)
         assert n.family != ""
+    # MOVED by #289, not deleted: 'Ed' is Title-case in a mixed-case
+    # name, so it now leans SURNAME and the peel declines it with
+    # words to spare -- the walk stops at the declined pick, 'Jr'
+    # never reached behind it, and both join as name words
+    # (decisions.md#S2's accepted cost, the 'abdul Smith Jr Ma' shape).
     n = parse("abu Bakar Jr Ed")
-    # spaced run, spaced render (#436); the family claim is what moves here
-    assert (n.family, n.suffix) == ("Bakar", "Jr Ed")
+    assert (n.family, n.suffix) == ("Ed", "")
     # and the join never turns a suffix into a name: unjoined, the
     # acronym is a credential with words to spare, so 'abdul Smith
     # Ma' reads as 'John Smith Ma' does (1.4.0 parity restored)
+    #
+    # MOVED by #289, not deleted: 'Ma' is Title-case in a mixed-case
+    # name, so it leans SURNAME on both sides of the join and stays a
+    # name word instead of a credential (decisions.md#S2).
     n, m = parse("abdul Smith Ma"), parse("John Smith Ma")
-    assert (n.family, n.suffix) == (m.family, m.suffix) == ("Smith", "Ma")
+    assert (n.family, n.suffix) == (m.family, m.suffix) == ("Ma", "")
 
 
 def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
@@ -607,7 +628,11 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
             ("John van der Berg V", "van der Berg", "V"),
             ("John van der Berg X", "van der Berg", "X"),
             ("abdul van der Berg V", "van der Berg", "V"),
-            ("John van der Berg Ma", "van der Berg", "Ma")):
+            # MOVED by #289, not deleted: 'Ma' is Title-case in a
+            # mixed-case name, so it now leans SURNAME and the chain's
+            # re-ask absorbs it into the particle run instead of
+            # leaving it for assign to peel (decisions.md#S2).
+            ("John van der Berg Ma", "van der Berg Ma", "")):
         n = parse(text)
         assert (n.family, n.suffix) == (family, suffix), text
     n = parse("John née Jones Smith V")
@@ -632,18 +657,85 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
     # behind a title-and-particle word the chain takes the name's first
     # word (#367), and the acronym it leaves has no words to spare for
     # assign: the chain keeps it rather than leave it as the family
+    #
+    # MOVED by #289, ACCEPTED COST (decisions.md#S2): 'MA' is written
+    # in capitals inside a mixed-case name, so it now leans CREDENTIAL
+    # and the caps lean makes it reachable where the count alone was
+    # not -- the lean ends the chain's re-ask with no words to spare,
+    # where the count would not have. This was listed as staying
+    # fix(#424)'s and measured not to: 1.4.0 read "von Berg", "MA".
     n = parse("Freiherr von Berg MA")
-    assert (n.title, n.family, n.suffix) == ("Freiherr", "von Berg MA", "")
+    assert (n.title, n.family, n.suffix) == ("Freiherr", "von Berg", "MA")
     # the numeral keeps its three pieces behind the same word, and the
     # chain, now the one name piece, reads as 'Dr. Smith V' reads
     n = parse("Freiherr von Richthofen V")
     assert (n.given, n.family, n.suffix) == ("", "von Richthofen", "V")
     n = parse("Dr. Smith V")
     assert (n.given, n.family, n.suffix) == ("", "Smith", "V")
-    # the walk takes the numeral only: an acronym between the maiden
-    # name and the numeral is maiden text
+    # both stops read the TRAILING word, so an acronym with the
+    # numeral behind it is not the word either fork asks about and
+    # stays maiden text -- and so does a numeral with an acronym
+    # behind it ('Jane Doe nee Smith V MA' keeps maiden 'Smith V')
     n = parse("Jane Smith née Jones Ma V")
     assert (n.maiden, n.suffix) == ("Jones Ma", "V")
+    n = parse("Jane Doe nee Smith V MA")
+    assert (n.maiden, n.suffix) == ("Smith V", "MA")
+
+
+def test_a_post_nominal_head_leaves_the_clause_nobody_to_read_it(
+) -> None:
+    """#533 review: the clause KEEPS the member, and says so.
+
+    After a family comma the given-slot reader takes the member only
+    where the take leaves a given part for it to end. Where the part
+    before the marker is nothing but post-nominals, it does not: the
+    take would leave a segment of credentials, which is read whole
+    and asked nothing, and the released word would land in `given`
+    rather than in `suffix`. So the walk declines and the word stays
+    in the maiden name -- rules.md#M2's invariant, which replaced the
+    ACCEPTED silent mover an earlier round of this branch shipped
+    here (it read maiden 'Smith', suffix 'Jr MA').
+
+    The clause still REPORTS, and that is the measurement this test
+    exists for: the emitter is gated on there being a trailing rule
+    at all, not on the view check the rule then fails, so a fork
+    called the conservative way is still a fork the caller hears
+    about.
+    """
+    n = parse("Jane Doe, Jr nee Smith MA")
+    assert (n.given, n.family, n.maiden, n.suffix) == (
+        "Jane", "Doe", "Smith MA", "Jr")
+    assert [a.kind for a in n.ambiguities] == [
+        AmbiguityKind.SUFFIX_OR_NAME]
+    # 2f57ff21 read it this way too: the review round restored the
+    # parent reading rather than inventing a third one
+    assert n.maiden == "Smith MA"
+    # a post-nominal, not only a generational word, heads it the same
+    for head in ("III", "PhD"):
+        n = parse(f"Jane Doe, {head} nee Smith MA")
+        assert (n.maiden, n.suffix) == ("Smith MA", head)
+        assert [a.kind for a in n.ambiguities] == [
+            AmbiguityKind.SUFFIX_OR_NAME]
+    # and a TITLE heads it the same way, which is the spelling
+    # `AmbiguityKind.SUFFIX_OR_NAME`'s third position was written as
+    n = parse("Doe, Dr. nee Smith MA")
+    assert (n.title, n.family, n.maiden) == ("Dr.", "Doe", "Smith MA")
+    assert [a.kind for a in n.ambiguities] == [
+        AmbiguityKind.SUFFIX_OR_NAME]
+    # the clause-less control is what the member WOULD have read as,
+    # and the difference is the point: without the clause there is a
+    # given name in front of the member and the slot exists
+    control = parse("Doe, Dr. Smith MA")
+    assert (control.given, control.suffix) == ("Smith", "MA")
+    # the KEPT direction reported before this round too -- the
+    # clause's own emitter is what raises it, and it never needed the
+    # given slot
+    for text, maiden in (("Jane Doe, Jr nee Smith Ma", "Smith Ma"),
+                         ("Jane Doe, Jr nee MA", "MA")):
+        n = parse(text)
+        assert n.maiden == maiden
+        assert [a.kind for a in n.ambiguities] == [
+            AmbiguityKind.SUFFIX_OR_NAME]
 
 
 def test_the_numeral_fork_fires_on_the_last_piece_only() -> None:
@@ -974,6 +1066,69 @@ def test_revise_sets_a_missing_unjoined_mark() -> None:
     assert (revised.family, revised.family_base) == ("Do", "Do")
 
 
+def test_revise_recomputes_the_connective_mark_in_both_directions(
+) -> None:
+    # The mark says a connective stands in a part with nothing to
+    # join, which is a fact about the PART -- so the harvest that
+    # splices a sub-parse's tokens into one field invalidates it both
+    # ways, exactly as it does the particle mark above (rules.md#R3,
+    # #461).
+    p = Parser()
+    lone = p.parse("Juan de y")
+    assert lone.initials() == "J. y."
+    # STALE: the marked 'y' lands beside a name word
+    widened = p.revise(lone, family="y Garcia")
+    assert widened.initials() == "J. G."
+    # MISSING: a connective revised into a part of its own
+    narrowed = p.revise(p.parse("Juan Velasquez y Garcia"), family="y")
+    assert narrowed.initials() == "J. y."
+    # and the identity revise round-trips, which is the property the
+    # particle-mark tests above pin for R2
+    again = p.revise(lone, family=lone.family)
+    assert (again.family, again.initials()) == (lone.family,
+                                                lone.initials())
+
+
+def test_revise_writes_a_connective_mark_the_sub_parse_did_not(
+) -> None:
+    # The MISSING direction that role-forcing alone cannot produce,
+    # and the one input shape that does: the sub-parse of 'and y'
+    # reads 'and' as the given name and 'y' -- a particle under this
+    # caller's vocabulary -- as an all-particle family, so R2's mark
+    # is what the sub-parse writes on it. Forcing both into one field
+    # makes that part no longer all-particle, so R2's mark is cleared
+    # and #461's has to be written in its place, by the recompute
+    # rather than by any stage. Without it the 'y' carries no mark at
+    # all, drops as an ordinary family particle, and the field and
+    # the view disagree again.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    revised = p.revise(p.parse("John Smith"), family="and y")
+    assert revised.family == "and y"
+    assert revised.initials() == "J. a. y."
+    marks = {t.text: t.tags for t in revised.tokens
+             if t.role is Role.FAMILY}
+    assert UNJOINED_CONJUNCTION_TAG in marks["y"]
+    assert UNJOINED_TAG not in marks["y"]
+
+
+def test_revise_keeps_r2s_precedence_over_the_connective_mark(
+) -> None:
+    # The recompute mirrors the pipeline walk's `elif`, and this is
+    # the row where the two marks would otherwise both be written:
+    # 'de y' under a vocabulary that makes 'y' a particle is an
+    # all-particle part, so R2's mark readmits every word of it --
+    # the connective included -- and #461's is not written there. The
+    # rendered answer is the same either way, which is why this
+    # asserts the TAGS: the facade's own connective predicate reads
+    # the second mark, so writing it here would move that view alone.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    revised = p.revise(p.parse("John Smith"), family="de y")
+    assert revised.initials() == "J. d. y."
+    y = [t for t in revised.tokens if t.text == "y"][0]
+    assert UNJOINED_TAG in y.tags
+    assert UNJOINED_CONJUNCTION_TAG not in y.tags
+
+
 def test_revise_sub_parse_structural_behavior() -> None:
     # the docstring's three structural promises, pinned: delimiters
     # never become tokens, marker words are consumed as in parsing,
@@ -1062,10 +1217,15 @@ def test_revise_reads_a_glued_honorific_on_its_own() -> None:
     assert p.revise(n, suffix=n.suffix).suffix == "씨, J. 씨"
 
 
-#: The one suffix-bearing corpus name whose suffix does not revise back
-#: to itself: the honorific peel pinned just above. Named here so the
-#: guard below fails on a NEW exception and not on the known one.
-_HONORIFIC_PEEL = frozenset({"김민준씨, J.씨"})
+#: The suffix-bearing corpus names whose suffix does not revise back
+#: to itself: the honorific peel pinned just above, and since
+#: 2026-09-10 its stop-bearing spelling, which parses to the same
+#: suffix with a stop on the first word ('씨., J.씨' revising to
+#: '씨., J. 씨'). One limit, two writings of one name -- the stop
+#: rides on 씨 and reaches neither the sub-parse's peel nor the entry
+#: join. Named here so the guard below fails on a NEW exception and
+#: not on the known one.
+_HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨"})
 
 
 def _suffix_bearing_corpus_names() -> list[str]:
@@ -1073,6 +1233,29 @@ def _suffix_bearing_corpus_names() -> list[str]:
     p = Parser()
     return [n for n in _CORPUS_NAMES
             if p.parse(n).suffix and n not in _HONORIFIC_PEEL]
+
+
+def test_the_known_round_trip_exceptions_are_one_limit() -> None:
+    # What makes the two spellings ONE limit rather than two names
+    # somebody enrolled: each one's parsed suffix carries a word that
+    # ENDS in a listed honorific_tails entry without BEING one ('J.씨'
+    # ends in 씨), which is exactly the shape the sub-parse peels and
+    # the whole-name parse leaves glued. A genuinely different
+    # round-trip failure added to the frozenset by the same gesture
+    # fails here rather than riding in on the exemption. The
+    # characterization selects the two members and nothing else in the
+    # suffix-bearing corpus, measured 2026-09-10.
+    p = Parser()
+    tails = Lexicon.default().honorific_tails
+
+    def ends_in_a_tail_without_being_one(name: str) -> bool:
+        return any(word not in tails
+                   and any(word.endswith(tail) for tail in tails)
+                   for word in p.parse(name).suffix.split())
+
+    assert all(ends_in_a_tail_without_being_one(n) for n in _HONORIFIC_PEEL)
+    assert not [n for n in _suffix_bearing_corpus_names()
+                if ends_in_a_tail_without_being_one(n)]
 
 
 def test_the_suffix_bearing_corpus_is_not_empty() -> None:
@@ -1665,3 +1848,35 @@ def test_a_phrase_marker_outranks_the_word_it_starts_with() -> None:
     assert configured.parse("Jane Smith geb von Braun").maiden == "Braun"
     assert configured.parse("Jane Smith geb Braun").maiden == "Braun"
     assert parse("Jane Smith geb von Braun").maiden == "von Braun"
+
+
+def test_the_catalan_recipe_unmarks_the_link_for_one_case_names() -> None:
+    """rules.md#P3's per-caller answer for Catalan and Polish data
+    (#397 second review), pinned rather than described.
+
+    `i` ships in the MARKED subset, so a name written wholly in one
+    case reads it as an initial and reports the fork. A caller whose
+    data is Catalan knows better, and the knob the rule names is
+    `remove(conjunctions_ambiguous={"i"})` -- which leaves the letter
+    a connective and takes the one-case fork out of its way. The
+    prose said so; nothing ran it.
+    """
+    catalan = Parser(
+        lexicon=Lexicon.default().remove(conjunctions_ambiguous={"i"}))
+    for text in ("JOSEP CAROD I ROVIRA", "josep carod i rovira"):
+        name = catalan.parse(text)
+        assert name.family == text.split(" ", 1)[1]
+        assert name.ambiguities == ()
+    # the three things the recipe does NOT change, and they are what
+    # make it safe to hand a Catalan user. The link with nothing on
+    # its right is still the generation it also spells ...
+    kept = catalan.parse("JOHN QUINCY SMITH I")
+    assert kept.suffix == "I"
+    assert kept.family == "SMITH"
+    # ... P3's three-word carve-out still leaves a lone letter a name
+    # word ...
+    assert catalan.parse("JOHN I SMITH").middle == "I"
+    # ... and no report is emitted anywhere, the fork the recipe
+    # removes being the only one these names raised
+    assert catalan.parse("JOHN I SMITH").ambiguities == ()
+    assert catalan.parse("JOHN QUINCY SMITH I").ambiguities == ()

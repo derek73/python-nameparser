@@ -1,10 +1,23 @@
-from nameparser._lexicon import Lexicon
+import dataclasses
+
+import pytest
+
+from nameparser import Parser
+from nameparser._lexicon import Lexicon, _normalize
+from nameparser._pipeline import STAGES
+from nameparser._pipeline import _classify as _classify_module
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
-from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._state import (
+    SHAPE_ACRONYM_TAG, ParseState, WorkToken,
+)
 from nameparser._pipeline._tokenize import tokenize
+from nameparser._pipeline._vocab import (
+    ambiguous_class_candidate, ambiguous_class_member, caps_shape_candidate,
+)
 from nameparser._policy import Policy
+from nameparser._types import AmbiguityKind, Role
 
 _LEX = Lexicon(
     titles=frozenset({"dr", "sir"}),
@@ -14,23 +27,61 @@ _LEX = Lexicon(
     suffix_acronyms_ambiguous=frozenset({"ma"}),
     particles=frozenset({"de", "la", "van"}),
     particles_ambiguous=frozenset({"van"}),
-    # й is COPIED from the shipped conjunctions (Ukrainian, #267) so the
-    # collision test_cyrillic_initial_outranks_the_conjunction pins is
-    # one that really ships and the reader can check against the
-    # defaults. The copy is local: this file never reads the shipped set
-    conjunctions=frozenset({"and", "y", "й"}),
+    # 'e' and 'y' are both shipped single-letter conjunctions and the
+    # fork treats them differently, which is the whole point of the
+    # subset; й is COPIED from the shipped conjunctions (Ukrainian,
+    # #267) so the collision
+    # test_cyrillic_initial_outranks_the_conjunction pins is one that
+    # really ships and the reader can check against the defaults. The
+    # copies are local: this file never reads the shipped sets.
+    # 'i' (#397) is the second marked entry and the only one that is
+    # ALSO in suffix_words here, which is what makes the collision cell
+    # below reachable.
+    conjunctions=frozenset({"and", "e", "i", "y", "й"}),
+    conjunctions_ambiguous=frozenset({"e", "i"}),
     bound_given_names=frozenset({"abdul"}),
-    maiden_markers=frozenset({"née"}),
+    # "née" and the unaccented "nee" are both shipped (English writes
+    # the French marker either way, AGENTS.md); a clause-truncation
+    # test below needs the unaccented spelling since _normalize does
+    # not fold accents away.
+    maiden_markers=frozenset({"née", "nee"}),
 )
 
 
-def _classified(text: str) -> ParseState:
-    state = ParseState(original=text, lexicon=_LEX, policy=Policy())
+def _classified_with(text: str, lexicon: Lexicon) -> ParseState:
+    state = ParseState(original=text, lexicon=lexicon, policy=Policy())
     return classify(segment(tokenize(extract_delimited(state))))
+
+
+def _classified(text: str) -> ParseState:
+    return _classified_with(text, _LEX)
+
+
+def _state_through(stage_name: str, text: str) -> ParseState:
+    """Run the pipeline up to and including the named stage (STAGES'
+    own names) using this module's `_LEX`, for a test that needs a
+    state classify has not yet touched (#289/#516)."""
+    state = ParseState(original=text, lexicon=_LEX, policy=Policy())
+    for stage in STAGES:
+        state = stage(state)
+        if stage.__name__ == stage_name:
+            break
+    return state
 
 
 def _tags(state: ParseState, text: str) -> frozenset[str]:
     return next(t.tags for t in state.tokens if t.text == text)
+
+
+def _tags_by_text(text: str, policy: Policy = Policy(),
+                  lexicon: Lexicon = _LEX) -> dict[str, frozenset[str]]:
+    """Every token's tags after classify, keyed by text -- the shape
+    tests below ask about a token whose text is not in `_LEX` at all,
+    which the by-name `_tags` above still finds fine, but a dict
+    reads more plainly at more than one lookup per name (#516)."""
+    state = ParseState(original=text, lexicon=lexicon, policy=policy)
+    out = classify(segment(tokenize(extract_delimited(state))))
+    return {t.text: t.tags for t in out.tokens}
 
 
 def test_vocabulary_tags() -> None:
@@ -96,3 +147,587 @@ def test_bare_ambiguous_acronym_in_acronyms_is_not_suffix() -> None:
     out = _classified("Ma M.A.")
     assert "vocab:suffix" not in _tags(out, "Ma")
     assert "vocab:suffix" in _tags(out, "M.A.")
+
+
+def test_one_case_subset_member_is_an_initial_and_reports() -> None:
+    # rules.md#P3 says a one-case name carries no case evidence, so
+    # the vocabulary decides, and 'e' is marked as reading both ways.
+    # (No colon after the rule id on purpose: tests/ is swept by
+    # test_doc_citations.py, and the colon form must quote the rule
+    # verbatim and puts this file on P3's implemented: list.)
+    for text in ("jose e maria santos", "JOSE E MARIA SANTOS"):
+        out = _classified(text)
+        letter = "e" if text.islower() else "E"
+        assert "initial" in _tags(out, letter), text
+        assert "conjunction" not in _tags(out, letter), text
+        kinds = [a.kind for a in out.ambiguities]
+        assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL], text
+        assert out.ambiguities[0].indices == (1,), text
+        assert repr(letter) in out.ambiguities[0].detail, text
+
+
+def test_one_case_non_member_joins_even_as_a_bare_capital() -> None:
+    # the half that changes for 'y': a bare capital used to be vetoed
+    # into an initial by its Latin shape, and now joins, because the
+    # rule is about EVIDENCE and an all-upper name has none.
+    out = _classified("JUAN GARCIA Y LOPEZ")
+    assert "conjunction" in _tags(out, "Y")
+    assert "initial" not in _tags(out, "Y")
+    assert out.ambiguities == ()
+
+
+def test_mixed_case_keeps_todays_rule_verbatim() -> None:
+    # both halves, unchanged and unreported: a bare capital is an
+    # initial, a lowercase letter is the connective.
+    upper = _classified("Jose E Maria Santos")
+    assert "initial" in _tags(upper, "E")
+    assert "conjunction" not in _tags(upper, "E")
+    lower = _classified("John e Smith")
+    assert "conjunction" in _tags(lower, "e")
+    assert "initial" not in _tags(lower, "e")
+    assert upper.ambiguities == () and lower.ambiguities == ()
+
+
+def test_a_trailing_uppercase_suffix_makes_the_name_mixed_case() -> None:
+    # the gate reads the whole name's text, so 'john e jones, III' is
+    # mixed case and keeps today's reading -- the boundary that keeps
+    # a v1 corpus name still.
+    out = _classified("john e jones, III")
+    assert "conjunction" in _tags(out, "e")
+    assert out.ambiguities == ()
+
+
+def test_emptying_the_subset_restores_joining_for_e() -> None:
+    # the knob, and the reason there is no switch: remove 'e' and a
+    # one-case name joins it again, silently.
+    lex = dataclasses.replace(_LEX, conjunctions_ambiguous=frozenset())
+    out = _classified_with("jose e maria santos", lex)
+    assert "conjunction" in _tags(out, "e")
+    assert "initial" not in _tags(out, "e")
+    assert out.ambiguities == ()
+
+
+def test_the_catalan_link_reads_as_an_initial_in_a_one_case_name(
+) -> None:
+    # #397's letter through #527's fork, and the reason it ships
+    # marked: a bare I initial is as common as a bare E, so a name
+    # with no case evidence reads the letter as an initial and says
+    # so. rules.md#P3 says the marked set is where that answer lives.
+    for text in ("josep carod i rovira", "JOSEP CAROD I ROVIRA"):
+        out = _classified(text)
+        letter = "i" if text.islower() else "I"
+        assert "initial" in _tags(out, letter), text
+        assert "conjunction" not in _tags(out, letter), text
+        kinds = [a.kind for a in out.ambiguities]
+        assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL], text
+        assert repr(letter) in out.ambiguities[0].detail, text
+
+
+def test_the_catalan_link_joins_where_the_writing_speaks() -> None:
+    # the mixed-case half, unchanged and unreported: a lowercase
+    # letter among capitals is the connective and a bare capital is
+    # an initial, exactly as for 'e'.
+    lower = _classified("Josep Carod i Rovira")
+    assert "conjunction" in _tags(lower, "i")
+    assert "initial" not in _tags(lower, "i")
+    upper = _classified("Josep Carod I Rovira")
+    assert "initial" in _tags(upper, "I")
+    assert "conjunction" not in _tags(upper, "I")
+    assert lower.ambiguities == () and upper.ambiguities == ()
+
+
+def test_removing_the_link_from_the_subset_restores_joining() -> None:
+    # the Catalan/Polish removal recipe docs/customize.rst teaches,
+    # exercised: drop 'i' from the marked subset and a one-case name
+    # joins it again, silently, which is what a ca/pl corpus wants.
+    lex = dataclasses.replace(
+        _LEX, conjunctions_ambiguous=_LEX.conjunctions_ambiguous - {"i"})
+    out = _classified_with("josep carod i rovira", lex)
+    assert "conjunction" in _tags(out, "i")
+    assert "initial" not in _tags(out, "i")
+    assert out.ambiguities == ()
+
+
+def test_an_orphan_marker_is_inert_even_in_the_emitter() -> None:
+    # 'e' left in conjunctions_ambiguous but removed from conjunctions
+    # -- legal since the pair is not in _SUBSET_FIELDS (decisions.md#P3)
+    # -- never takes the fork, so 'E' in an all-upper name falls to the
+    # else branch and is tagged "initial" by is_initial() alone, same as
+    # any bare capital. Without the emitter's base-vocabulary gate this
+    # would still report a connective that the lexicon no longer has.
+    orphan = dataclasses.replace(
+        _LEX, conjunctions=_LEX.conjunctions - {"e"})
+    out = _classified_with("JOSE E MARIA SANTOS", orphan)
+    assert "initial" in _tags(out, "E")
+    assert "conjunction" not in _tags(out, "E")
+    assert out.ambiguities == ()
+
+
+def test_a_caseless_connective_never_enters_the_fork() -> None:
+    # Arabic و has no case, so token.upper() == token.lower() and
+    # today's rule stands whatever the name's case class is. Marked
+    # as well -- the only configuration where the casedness gate
+    # decides anything: without this, و is absent from
+    # conjunctions_ambiguous the same way every other shipped
+    # conjunction but 'e' is, so the test would pass even if the
+    # casedness check were deleted outright.
+    lex = dataclasses.replace(
+        _LEX,
+        conjunctions=_LEX.conjunctions | frozenset({"و"}),
+        conjunctions_ambiguous=_LEX.conjunctions_ambiguous | frozenset({"و"}))
+    out = _classified_with("محمد و علي", lex)
+    assert "conjunction" in _tags(out, "و")
+    assert out.ambiguities == ()
+
+
+def test_a_multi_letter_connective_is_untouched() -> None:
+    out = _classified("john and jane smith")
+    assert "conjunction" in _tags(out, "and")
+    assert out.ambiguities == ()
+
+
+def test_a_dotted_letter_is_an_initial_by_shape_in_any_case_class() -> None:
+    # 'e.' is initial-SHAPED, so the fork's len(text) == 1 gate declines
+    # and today's rule takes it -- initial, unreported, as it always was.
+    out = _classified("john e. smith")
+    assert "initial" in _tags(out, "e.")
+    assert "conjunction" not in _tags(out, "e.")
+    assert out.ambiguities == ()
+
+
+def test_a_maiden_clause_does_not_count_toward_the_case_class() -> None:
+    # rules.md#P3 says a maiden marker, taken as one, and the words it
+    # takes, are not among the name's own words -- so appending
+    # ' née Jones' must not flip 'Y' back to an initial: the name's own
+    # words ("JUAN GARCIA Y LOPEZ") are still all-upper on their own,
+    # and 'née Jones' being Title-case is not evidence about THEM.
+    out = _classified("JUAN GARCIA Y LOPEZ née Jones")
+    assert "conjunction" in _tags(out, "Y")
+    assert "initial" not in _tags(out, "Y")
+    assert out.ambiguities == ()
+
+
+def test_a_maiden_clause_leaves_the_own_words_report_intact() -> None:
+    # the other half: a one-case name's own words still report, clause
+    # appended or not.
+    out = _classified("jose e maria santos née jones")
+    assert "initial" in _tags(out, "e")
+    assert "conjunction" not in _tags(out, "e")
+    kinds = [a.kind for a in out.ambiguities]
+    assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL]
+
+
+def test_a_delimited_clause_does_not_count_toward_the_case_class() -> None:
+    # delimited (nickname) content arrives with its role already set by
+    # extract, before classify ever runs, so it is excluded from the
+    # name's own words the same way a maiden clause is -- confirmed by
+    # inspecting the token here (role is Role.NICKNAME, not None).
+    out = _classified('JOSE E MARIA SANTOS "Pepe"')
+    pepe = next(t for t in out.tokens if t.text == "Pepe")
+    assert pepe.role is Role.NICKNAME
+    assert "initial" in _tags(out, "E")
+    kinds = [a.kind for a in out.ambiguities]
+    assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL]
+
+
+def test_the_fork_itself_never_reads_a_delimited_clauses_tokens() -> None:
+    # the other half of the bug the above test alone did not catch: not
+    # just the CASE CLASS but the fork itself must skip a clause's own
+    # tokens, or a nickname's bare capital gets read as though it were
+    # one of the name's own words. 'Y' is initial-SHAPED, so pre-fork
+    # (2.3.0) it read "initial" and nothing else -- that must hold
+    # whatever the surrounding name's case class is.
+    y = _classified('JOSE MARIA SANTOS "Y"')
+    assert "initial" in _tags(y, "Y")
+    assert "conjunction" not in _tags(y, "Y")
+    assert y.ambiguities == ()
+    e = _classified('JOSE MARIA SANTOS "E"')
+    assert "initial" in _tags(e, "E")
+    assert "conjunction" not in _tags(e, "E")
+    assert e.ambiguities == ()
+
+
+def test_a_word_after_the_maiden_marker_reads_as_plain_vocabulary() -> None:
+    # symmetric with the delimited-clause case: a word inside the
+    # maiden clause itself is not one of the name's own words either,
+    # so it never enters the fork -- 'e' after 'née' is bare vocabulary
+    # membership, the same reading it had before this PR.
+    out = _classified("juan garcia lopez née e")
+    assert "conjunction" in _tags(out, "e")
+    assert "initial" not in _tags(out, "e")
+    assert out.ambiguities == ()
+
+
+def test_a_clauses_own_marker_word_does_not_truncate_the_own_words() -> None:
+    # #527 review: _vocab.tag_marker_runs walks every token, so a maiden
+    # marker WORD that arrives already ROLED (parenthesised clause
+    # content, extract's doing -- WorkToken.role's docstring) is the
+    # CLAUSE's own word, not a bare marker opening a new clause, and
+    # must not move clause_at. Before the fix, "NEE"'s match truncated
+    # "own" at its own index, excluding the trailing "GARCIA Y LOPEZ"
+    # from the case class and misreading 'Y' as an initial instead of
+    # joining the family (rules.md#P4).
+    out = _classified("JUAN (NEE JONES) GARCIA Y LOPEZ")
+    nee = next(t for t in out.tokens if t.text == "NEE")
+    # the parenthesised clause opens as Role.NICKNAME (parens are a
+    # nickname delimiter by default) and extract promotes it to
+    # Role.MAIDEN once the marker word is recognized inside it (M1/M3)
+    assert nee.role is Role.MAIDEN
+    assert "conjunction" in _tags(out, "Y")
+    assert "initial" not in _tags(out, "Y")
+    assert out.ambiguities == ()
+
+
+def test_a_clauses_own_marker_word_does_not_skew_the_case_class() -> None:
+    # the mixed-case sibling of the test above: excluding "Santos" (a
+    # trailing capitalized own word) from "own" made the truncated
+    # prefix "jose e maria" look uniformly lowercase, so 'e' wrongly
+    # took the one-case fork and reported.
+    out = _classified('jose e maria "Nee" Santos')
+    nee = next(t for t in out.tokens if t.text == "Nee")
+    # a lone marker word in the clause: no content follows it inside
+    # the quotes, so nothing promotes NICKNAME to MAIDEN (M3) -- the
+    # fix does not care which role a clause carries, only that it
+    # carries one at all (WorkToken.role is not None)
+    assert nee.role is Role.NICKNAME
+    assert "conjunction" in _tags(out, "e")
+    assert "initial" not in _tags(out, "e")
+    assert out.ambiguities == ()
+
+
+def test_a_title_counts_toward_the_case_class_unlike_a_clause() -> None:
+    # a title is one of the name's own words, unlike a clause: "Dr."
+    # beside an all-upper name makes the WHOLE name mixed case, so 'Y'
+    # is evidence-backed and stays an initial; "DR." (itself all-caps)
+    # leaves the name one-case and 'Y' joins as the plain connective.
+    mixed = _classified("Dr. JUAN GARCIA Y LOPEZ")
+    assert "initial" in _tags(mixed, "Y")
+    assert "conjunction" not in _tags(mixed, "Y")
+    assert mixed.ambiguities == ()
+    one_case = _classified("DR. JUAN GARCIA Y LOPEZ")
+    assert "conjunction" in _tags(one_case, "Y")
+    assert "initial" not in _tags(one_case, "Y")
+    assert one_case.ambiguities == ()
+
+
+def test_the_emitter_runs_per_token() -> None:
+    # each cased single-letter connective gets its OWN report, keyed by
+    # its own index -- 'e and e' in the corpus is the other witness.
+    out = _classified("jose e maria e santos")
+    kinds = [a.kind for a in out.ambiguities]
+    assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL,
+                      AmbiguityKind.CONJUNCTION_OR_INITIAL]
+    assert out.ambiguities[0].indices == (1,)
+    assert out.ambiguities[1].indices == (3,)
+
+
+def test_classify_is_per_token_independent_of_the_comma() -> None:
+    # classify runs before the comma settles any structural question,
+    # so the case class and the fork read the same whether the comma
+    # is there or not.
+    family_comma = _classified("SANTOS, JOSE E MARIA")
+    assert "initial" in _tags(family_comma, "E")
+    kinds = [a.kind for a in family_comma.ambiguities]
+    assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL]
+
+    suffix_comma = _classified("GARCIA Y LOPEZ, JUAN")
+    assert "conjunction" in _tags(suffix_comma, "Y")
+    assert "initial" not in _tags(suffix_comma, "Y")
+    assert suffix_comma.ambiguities == ()
+
+
+def test_classify_records_the_one_case_fact_on_the_state() -> None:
+    # #289/#516 promotes the fact #527 computed as a local: the suffix
+    # slot, the post-comma slot and the tail-segment reading all
+    # consult it, and two sites deciding it apart is what
+    # ParseState.order's shape exists to prevent.
+    assert _classified("JOHN SMITH MA").one_case is True
+    assert _classified("John Smith Ma").one_case is False
+    assert _classified("john smith ma").one_case is True
+    # a caseless script has only one case, and answers True harmlessly
+    assert _classified("毛泽东").one_case is True
+    # the span is the name's OWN words: a maiden clause beside a
+    # one-case name does not make it mixed (rules.md#P3)
+    assert _classified("JUAN GARCIA Y LOPEZ née Jones").one_case is True
+
+
+def test_classify_does_not_overwrite_a_fact_already_recorded() -> None:
+    # segment writes it first where a comma form asked; classify reads
+    # what is there rather than deciding it a second time.
+    state = _state_through("segment", "John Smith, MA")
+    forced = dataclasses.replace(state, one_case=True)
+    assert classify(forced).one_case is True
+
+
+def test_classify_s_fork_reads_the_pre_recorded_fact_not_its_own_answer() -> None:
+    # Not just that the field survives (the test above) -- the FORK
+    # that reads one_case must consult the recorded value, not
+    # recompute its own. "Jose e Maria Santos" is mixed case on its
+    # own words, so an unforced parse takes the conjunction branch and
+    # reports nothing; forcing one_case=True ahead of classify must
+    # flip 'e' to an initial and report CONJUNCTION_OR_INITIAL even
+    # though the tokens themselves never changed case (measured
+    # 2026-09-17, #289/#516).
+    unforced = _classified("Jose e Maria Santos")
+    assert "conjunction" in _tags(unforced, "e")
+    assert "initial" not in _tags(unforced, "e")
+    assert unforced.ambiguities == ()
+
+    state = _state_through("segment", "Jose e Maria Santos")
+    forced = dataclasses.replace(state, one_case=True)
+    out = classify(forced)
+    assert "initial" in _tags(out, "e")
+    kinds = [a.kind for a in out.ambiguities]
+    assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL]
+
+
+def test_a_by_shape_acronym_carries_both_tags() -> None:
+    # #516: the class membership is `vocab:suffix-ambiguous`, so the
+    # peel needs no new branch -- and `shape:acronym` rides beside it
+    # because the `vocab:` namespace records MEMBERSHIP and the word
+    # is not in the vocabulary. The two consumers that must tell them
+    # apart read the shape tag.
+    tags = _tags_by_text("John Smith X.Y.Z.")["X.Y.Z."]
+    assert "shape:acronym" in tags
+    assert "vocab:suffix-ambiguous" in tags
+    assert "vocab:suffix" not in tags
+    # a listed member carries membership and no shape claim
+    assert "shape:acronym" not in _tags_by_text("John Smith MA")["MA"]
+    # whole-token vocabulary wins outright
+    assert "shape:acronym" not in _tags_by_text("John Smith M.A.")["M.A."]
+    assert "vocab:suffix" in _tags_by_text("John Smith M.A.")["M.A."]
+
+
+def test_the_switch_leaves_the_shape_tag_and_takes_the_membership() -> None:
+    # OFF reads the token as name material everywhere, as 2.3 did for
+    # a token no chunk claimed (the roman-chunk retirement is not
+    # behind this switch) -- and still reports, the parser having
+    # chosen the name reading over a credential one.
+    off = _tags_by_text("John Smith X.Y.Z.", policy=Policy(
+        unlisted_dotted_suffixes=False))["X.Y.Z."]
+    assert "shape:acronym" in off
+    assert "vocab:suffix-ambiguous" not in off
+
+
+def test_no_listed_member_ever_carries_the_shape_tag() -> None:
+    # The invariant, stated over the TAGS rather than over a branch:
+    # SHAPE_ACRONYM_TAG says "the WRITING made this credential-shaped,
+    # the vocabulary did not", so a token whose normalized text IS a
+    # listed ambiguous acronym must never carry it -- the tag silences
+    # `_pieces.listed_lean`, which is the listing's whole effect.
+    #
+    # The custom lexicon is the case that was broken (review round,
+    # 2026-09-18): a DOTTED entry matches `suffix_acronyms_ambiguous`
+    # whole while `suffix_as_written`'s period-free acronym lookup
+    # ('ab') misses it, so the chunk view reached the shape branch and
+    # 'Jack A.B.' read family where 'Jack MA' reads suffix.
+    dotted = Lexicon.default().add(suffix_acronyms={"a.b"},
+                                   suffix_acronyms_ambiguous={"a.b"})
+    for lex, texts in ((Lexicon.default(),
+                        ("John Smith MA", "John Smith Ma", "Smith, MA",
+                         "John Smith BA", "John Smith X.Y.Z.")),
+                       (dotted,
+                        ("Jack A.B.", "John Smith A.B.", "Smith, A.B."))):
+        for policy in (Policy(), Policy(unlisted_caps_suffixes=True),
+                       Policy(unlisted_dotted_suffixes=False)):
+            for text in texts:
+                for word, tags in _tags_by_text(text, lexicon=lex,
+                                                policy=policy).items():
+                    if SHAPE_ACRONYM_TAG in tags:
+                        assert _normalize(word) not in \
+                            lex.suffix_acronyms_ambiguous, (text, word)
+
+
+def test_delimited_content_never_joins_the_shape_class() -> None:
+    # A bracketed clause is decided by extract's escape, not by the
+    # trailing slot. 'Bridge (1.4)' cannot exercise the `token.role is
+    # None` guard on its own -- a digit chunk never reaches the shape
+    # verdict at all, guard or no guard -- so 'Bridge (A.B)' is the
+    # control that actually load-bears it: without the guard, the
+    # nickname 'A.B' would gain SHAPE_ACRONYM_TAG and (with the switch
+    # on) `vocab:suffix-ambiguous`, and classify's own nickname check
+    # would then misreport SUFFIX_OR_NICKNAME on a token the escape
+    # already decided (measured regression, #516 review round).
+    for text, word in (("Bridge (1.4)", "1.4"), ("Bridge (A.B)", "A.B")):
+        tags = _tags_by_text(text)[word]
+        assert "shape:acronym" not in tags, text
+        assert "vocab:suffix-ambiguous" not in tags, text
+
+
+@pytest.mark.parametrize("word,policy,one_case", [
+    ("X.Y.Z.", Policy(), None),
+    ("A.B.", Policy(), None),
+    ("M.A.", Policy(), None),
+    ("A.B.C.", Policy(), None),
+    ("Msc.Ed.", Policy(), None),
+    ("Lt.Gov.", Policy(), None),
+    ("1.4", Policy(), None),
+    ("Xyz.", Policy(), None),
+    ("MA", Policy(), None),
+    ("田.中.", Policy(), None),
+    # #516's caps half: OFF is silent (matches the tag either way,
+    # since the token never carries the fact); ON needs the REAL
+    # `one_case` fact, which these rows hand to `caps_shape_candidate`
+    # -- the predicate classify calls, and since the review round the
+    # only route into the caps half at all.
+    ("XYZ", Policy(), None),
+    ("XYZ", Policy(unlisted_caps_suffixes=True), False),
+    ("MC", Policy(unlisted_caps_suffixes=True), False),
+    ("X", Policy(unlisted_caps_suffixes=True), False),
+    ("XY2", Policy(unlisted_caps_suffixes=True), False),
+    ("DUPONT", Policy(unlisted_caps_suffixes=True), False),
+    # #516 review round, F1/F1b: LISTED members must keep the LEAN
+    # (SHAPE_ACRONYM_TAG must NOT ride beside their membership tag),
+    # and UNLISTED means in no wordlist at all -- a particle, an
+    # ambiguous particle and a conjunction, capitalized, must not
+    # join the class either.
+    ("MA", Policy(unlisted_caps_suffixes=True), False),
+    ("BA", Policy(unlisted_caps_suffixes=True), False),
+    ("DE", Policy(unlisted_caps_suffixes=True), False),
+    ("Y", Policy(unlisted_caps_suffixes=True), False),
+    ("VAN", Policy(unlisted_caps_suffixes=True), False),
+    # 'Y' declines at the `len(text) >= 2` shape gate and never
+    # actually reaches the conjunction-exclusion check at all;
+    # 'AND' is the row that genuinely exercises it (quality-review
+    # finding).
+    ("AND", Policy(unlisted_caps_suffixes=True), False),
+    # #516 review round (second finding): the four wordlists the
+    # first fix round's exclusion left with no row of their own
+    # (titles, given_name_titles, bound_given_names, suffix_words --
+    # `given_name_titles` is always a subset of `titles` in the
+    # shipped lexicon, so 'AUNT' declines via BOTH the outer
+    # `vocab:title` guard and this elif's own check, and the row
+    # still pins that it declines either way), and the maiden-marker
+    # gap itself.
+    ("SIR", Policy(unlisted_caps_suffixes=True), False),
+    ("AUNT", Policy(unlisted_caps_suffixes=True), False),
+    ("ABDUL", Policy(unlisted_caps_suffixes=True), False),
+    ("JR", Policy(unlisted_caps_suffixes=True), False),
+    ("NEE", Policy(unlisted_caps_suffixes=True), False),
+])
+def test_ambiguous_class_candidate_agrees_with_the_tag(
+        word: str, policy: Policy, one_case: bool | None) -> None:
+    # `ambiguous_class_candidate` (`_vocab.py`) and classify's own tag
+    # emission ask the SAME questions twice, of necessity -- `segment`
+    # runs before `classify` and has no tags to read yet. Kept from
+    # drifting by this test rather than by a sentence alone: both
+    # docstrings point here by name. `MA.`/`Ed.` are deliberately
+    # absent: a listed member's DOTTED spelling is carried by the tag
+    # path alone (`ambiguous_class_member`'s docstring), the one place
+    # these two answers are meant to differ.
+    #
+    # Membership alone is not enough to catch #516's review-round
+    # regression: `ambiguous_class_candidate("MA", ...)` was ALWAYS
+    # True (the listed half), on both sides of the bug, so comparing
+    # candidacy to `vocab:suffix-ambiguous` presence alone never
+    # noticed that classify's caps branch was ALSO wrongly adding
+    # `shape:acronym` beside it, silencing `listed_lean`. The second
+    # assertion is what catches that: SHAPE_ACRONYM_TAG must appear
+    # if and only if the class was joined BY SHAPE, never for a
+    # listed member.
+    #
+    # `candidate` is spelled as the DISJUNCTION the two stages make
+    # between them, because that is what `segment` asks in two calls:
+    # `ambiguous_class_candidate` for the listed and dotted halves at
+    # its single-token test, and `caps_shape_candidate` for the caps
+    # half at its multi-token run test. The caps half used to hang off
+    # `ambiguous_class_candidate` behind an optional `one_case` no
+    # production caller passed, so it answered False for every name
+    # the library parsed and only this test reached it; the parameter
+    # is gone and the rows point at the live predicate instead.
+    lex = Lexicon.default()
+    tags = _tags_by_text(f"John Smith {word}", lexicon=lex,
+                         policy=policy)[word]
+    candidate = (ambiguous_class_candidate(word, lex, policy)
+                 or (policy.unlisted_caps_suffixes
+                     and caps_shape_candidate(word, lex, policy, one_case)))
+    assert candidate == ("vocab:suffix-ambiguous" in tags)
+    shape_member = candidate and not ambiguous_class_member(word, lex)
+    assert (SHAPE_ACRONYM_TAG in tags) == shape_member
+
+
+def test_the_caps_branch_reads_the_name_level_case_not_the_own_span(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The mutation control for #516's `one_case` vs `one_case_own`
+    split, run rather than described.
+
+    A maiden marker OPENING the name leaves `own_words` empty, so the
+    NAME-level fact is one-case and nothing may join the caps class.
+    `one_case_own` is a different question -- "one case AND this token
+    is one of the name's own words" -- and every token past the clause
+    cut answers it False by construction, so reading it here makes a
+    wholly one-case name look mixed for exactly those tokens.
+
+    The revert is applied at runtime: `_tags_for` is wrapped so the
+    caps branch sees `one_case_own` where it should see `one_case`.
+    Without the wrapper the reading below holds; with it, 'XYZ' joins
+    the class and the family name is lost.
+    """
+    on = Policy(unlisted_caps_suffixes=True)
+    parser = Parser(policy=on)
+    name = parser.parse("née JONES XYZ")
+    assert (name.given, name.middle, name.family) == ("née", "JONES", "XYZ")
+    assert name.ambiguities == ()
+
+    real = _classify_module._tags_for
+
+    def reverted(token: WorkToken, n: str, state: ParseState,
+                 marker_tag: str | None, one_case_own: bool,
+                 one_case: bool) -> frozenset[str]:
+        return real(token, n, state, marker_tag,
+                    one_case_own=one_case_own, one_case=one_case_own)
+
+    monkeypatch.setattr(_classify_module, "_tags_for", reverted)
+    broken = Parser(policy=on).parse("née JONES XYZ")
+    assert broken.family != "XYZ", (
+        "the revert changed nothing, so this control measures nothing: "
+        "check that classify's caps branch still reads `one_case`")
+
+
+def test_the_caps_shape_is_silent_until_its_switch_is_on() -> None:
+    # OFF (the default) emits NOTHING -- not the membership tag and
+    # not the shape tag either, which is where this half differs from
+    # the dotted one: there is no fork to report while a caller has
+    # not asked for the reading (#516).
+    assert _tags_by_text("John Smith XYZ")["XYZ"] == frozenset()
+    on = Policy(unlisted_caps_suffixes=True)
+    tags = _tags_by_text("John Smith XYZ", policy=on)["XYZ"]
+    assert "shape:acronym" in tags and "vocab:suffix-ambiguous" in tags
+
+
+def test_the_caps_shape_is_a_testable_predicate() -> None:
+    # Spelled for an implementer: isalpha() and isupper() with at
+    # least two characters, in a MIXED-case name. 'MC' is real suffix
+    # vocabulary only in the SHIPPED lexicon (this module's own _LEX
+    # is deliberately minimal and does not carry it), so that one
+    # assertion uses Lexicon.default() rather than the module fixture.
+    on = Policy(unlisted_caps_suffixes=True)
+    # a digit anywhere disqualifies it
+    assert "shape:acronym" not in _tags_by_text("John Smith XY2", policy=on)["XY2"]
+    # a single capital stays what it is today, an initial
+    assert "shape:acronym" not in _tags_by_text("John Smith X", policy=on)["X"]
+    assert "initial" in _tags_by_text("John Smith X", policy=on)["X"]
+    # a one-case name has no contrast to read
+    assert "shape:acronym" not in _tags_by_text("JOHN SMITH XYZ", policy=on)["XYZ"]
+    # #516 review round (second finding): a token PAST the maiden
+    # clause cut must decline on the same one-case ground as every
+    # other token, not on `one_case_own`'s span alone -- 'NEE' sits
+    # outside `one_case_own`'s span by construction (it opens the
+    # clause), so testing that flag alone made a wholly one-case name
+    # look mixed for this one token and only this one.
+    assert "shape:acronym" not in _tags_by_text(
+        "JOHN SMITH NEE", policy=on, lexicon=Lexicon.default())["NEE"]
+    # UNLISTED means no whole-token suffix vocabulary claims it: 'MC'
+    # is suffix vocabulary and never reaches this switch
+    assert "shape:acronym" not in _tags_by_text(
+        "John Smith MC", policy=on, lexicon=Lexicon.default())["MC"]
+    # an interior period is the other switch's shape, not this one:
+    # 'X.Y' already carries `shape:acronym` at the DEFAULT (the
+    # dotted half, `unlisted_dotted_suffixes`, on by default), so the
+    # bare "in tags" assertion this row had before passed regardless
+    # of whether the caps switch touched it at all -- a differential
+    # is the real test (quality-review finding): turning the caps
+    # switch on must not CHANGE anything about a dotted token's tags.
+    assert (_tags_by_text("John Smith X.Y", policy=on)["X.Y"]
+            == _tags_by_text("John Smith X.Y")["X.Y"])
+

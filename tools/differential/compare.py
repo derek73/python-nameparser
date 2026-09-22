@@ -31,7 +31,7 @@ HERE = Path(__file__).resolve().parent
 FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
           "maiden")
 
-DEFAULT_BASELINE = "2.2.0"
+DEFAULT_BASELINE = "2.3.0"
 REPO_ROOT = HERE.parents[1]
 #: The v2 API's names for the same seven roles FIELDS names in v1
 #: vocabulary. Both are compared from baseline 2.0 on.
@@ -572,7 +572,8 @@ _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 #: decision when a corpus is added, the way the Script tables do.
 _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
-    "corpus_cjk.jsonl": 67,     # 70 today, generated from the case table.
+    "corpus_cjk.jsonl": 67,     # 70 today (2026-09-10, `wc -l`),
+                                # generated from the case table.
                                 # LOWERED 95 -> 70 on 2026-09-01,
                                 # deliberately: the CJK comma demotion
                                 # moved 25 tolerated texts out of this
@@ -585,54 +586,45 @@ _CORPUS_FLOORS = {
                                 # the trailing-period honorifics
                                 # ('田中さん 様.' and its two twins) are
                                 # the listing artifact the first
-                                # sweep's criterion could not see
-    "corpus_cjk_tolerated.jsonl": 22,  # 29 today, the tolerated half of
-                                # the same generator: composed and
-                                # wrapped CJK forms (comma listings,
-                                # Latin titles and credentials,
-                                # trailing ASCII periods) whose
-                                # handling the contract stopped
-                                # promising on 2026-09-01. 25 on the
-                                # day it was created; the 26th is
-                                # '지훈, 남궁민수', which had no case
-                                # row until rules.md#W3 was demoted
-                                # and the rules corpus stopped
-                                # carrying it -- the row was written
-                                # so the text moved tiers instead of
-                                # leaving the harness. 29 since
-                                # 2026-09-05, the three period rows.
-                                # Floor left at 22: it guards against
-                                # the file emptying, and this half only
-                                # grows as the contract narrows
+                                # sweep's criterion could not see.
+                                # UNMOVED by the #322/#323 full-stop
+                                # bundle (2026-09-10): every row it
+                                # added is tolerated, so all seventeen
+                                # of its names landed in the file below
+    "corpus_cjk_tolerated.jsonl": 22,  # 47 today (2026-09-10, `wc -l`),
+                                # the tolerated half of the same
+                                # generator: composed and wrapped CJK
+                                # forms (comma listings, Latin titles
+                                # and credentials, trailing ASCII
+                                # periods) whose handling the contract
+                                # stopped promising on 2026-09-01. 47
+                                # since 2026-09-10, the #322/#323
+                                # bundle's seventeen names, every one
+                                # tolerated and so every one on the
+                                # radar tier; floor left at 22, which
+                                # guards against the file emptying,
+                                # this half only growing as the
+                                # contract narrows
     "corpus_issues.jsonl": 370,  # 381 today, harvested and append-only
-    "corpus_rules.jsonl": 150,  # 249 today, generated from rules.md.
-                                # 248 until 2026-09-05, when W2's
-                                # trailing-period example moved into
-                                # the tolerated W3 and the builder
-                                # stopped harvesting it -- the seventh
-                                # text a CJK demotion has taken out of
-                                # this file, and (measured 2026-09-05)
-                                # the last CJK example anywhere outside
-                                # W3 that carried a non-space ASCII
-                                # character. 247 -> 249 later the same
-                                # day, when the review round restored
-                                # W2's second half and witnessed it
-                                # with '김민준 박사님' and '선생님' --
-                                # both already in corpus_cjk.jsonl, so
-                                # the file grew and the deduped pool
-                                # did not.
-                                # 252 until 2026-09-01, when W3 took
-                                # rules.md's `tolerated:` marker and
-                                # build_rules_corpus.py stopped
-                                # harvesting a marked rule: six comma
-                                # texts left (W3's two, W2's two, C1's
-                                # two) and two pure ones arrived with
-                                # the W2 swap. Every one of the six is
-                                # still compared and classified, from
-                                # corpus_cjk_tolerated.jsonl above.
-                                # Floor left at 150: it guards against
-                                # the file emptying, and a demotion
-                                # this size is nowhere near it
+    "corpus_rules.jsonl": 150,  # 287 today (2026-09-10, `wc -l`),
+                                # generated from rules.md -- the "249"
+                                # this line read was measured on
+                                # 2026-09-05 and never re-measured as
+                                # the document grew (286 the day
+                                # before). The one row this bundle
+                                # adds is 'Smith. John', H2's Latin
+                                # witness for the #323 veto's fork;
+                                # the CJK witness is W3's, and a
+                                # tolerated rule's examples are not
+                                # harvested here. The file tracks the
+                                # document, so a demotion shrinks it --
+                                # a marked rule stops being harvested
+                                # and its texts move to
+                                # corpus_cjk_tolerated.jsonl above,
+                                # still compared and classified; floor
+                                # left at 150, which guards against the
+                                # file emptying and is nowhere near any
+                                # demotion this document has seen
     "corpus_shapes.jsonl": 35,  # 37 today, generated from shape-tagged
                                 # case rows. Ratcheted 27 -> 35 on
                                 # 2026-09-01 with the shape 6/7
@@ -1712,12 +1704,13 @@ class _ShapeMismatch(NamedTuple):
 #: Default-order shapes only, because the roster classifies with no
 #: order. recorded_diff_mismatches below says what that leaves out.
 #:
-#: PROVENANCE. The 45 rows at 1.4.0 are measured against the 1.4.0
-#: wheel, as the roster always claimed, and all 45 still agree -- the
+#: PROVENANCE. The 47 rows at 1.4.0 are measured against the 1.4.0
+#: wheel, as the roster always claimed, and all 47 still agree -- the
 #: original 31 re-measured 2026-09-03, the fourteen #498 added measured
-#: 2026-09-05 by the sweep that found them, and every one of the 45
-#: checked by the same recompute: drive main() at all four baselines and
-#: feed its `diffing` and its post-skip corpus to
+#: 2026-09-05 by the sweep that found them, #528's two measured
+#: 2026-09-13 by the run that reported their contest, and every one of
+#: the 47 checked by the same recompute: drive main() at all four
+#: baselines and feed its `diffing` and its post-skip corpus to
 #: recorded_diff_mismatches, wrapping _run_worker to
 #: capture the post-skip entries and dormant_rules to capture `diffing`,
 #: since both receive exactly what main() built.
@@ -1754,8 +1747,12 @@ class _ShapeMismatch(NamedTuple):
 #: every run. 'Nguyen, Van' is classified by nothing only because it
 #: diffs from nothing.
 _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
-    # open cycle: one rule, so nothing for a second one to contest
     "expected_since_2.2.0.toml": {},
+    # The open cycle carries #383/#479's three rules since
+    # 2026-09-13, and no contest among them: each is a literal name
+    # or alternation of names, and no two reach the same corpus
+    # name, so the run finds no contested diff to adjudicate.
+    "expected_since_2.3.0.toml": {},
     "expected_since_1.4.0.toml": {
         "Andrews, M.D.": ("given", "suffix"),
         "田中, 太郎さん": ("given", "suffix"),
@@ -1810,6 +1807,73 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Smith, Ph. D. MD": ("suffix", "title"),
         "Smith, Ph.D. Jr.": ("given", "suffix"),
         "Smith, PhD Jr.": ("given", "suffix", "title"),
+        # #528's two, adjudicated 2026-09-13, and kept BELOW #498's
+        # block so the three cohorts read down the dict in the order
+        # the PROVENANCE note above tells them. Both are contested by
+        # `fix(#528) the facade's initials follow the parse's
+        # connective tags` against `fix(initials-per-word) a
+        # connective run initials each word`: equal `fields`, so
+        # neither is narrower, `precedes_narrower` has no narrower
+        # rule to name, and file order is the whole decision. The
+        # shapes are this run's, not guessed -- the gate reported the
+        # pair as an unpinned contest and these are the diffs it
+        # measured. The winners are pinned in _CROSS_RULE_WINNERS.
+        "john e smith": ("_initials",),
+        "john e jones": ("_initials",),
+        # #461's eleven, adjudicated 2026-09-20, below #528's pair and
+        # contested against the same rule for the same structural
+        # reason: `fix(#461) a connective holding its part alone
+        # contributes an initial` and `fix(initials-per-word) a
+        # connective run initials each word` both carry
+        # `fields = ["_initials"]`, so neither is narrower,
+        # `precedes_narrower` has no narrower rule to name, and file
+        # order is the whole decision. 'Carod y de Rovira i' carries
+        # TWO losers -- the particle-chain per-word rule reaches it
+        # through 'de Rovira' -- and one row covers both, as this
+        # dict's header says a row does.
+        #
+        # The ARGUMENT for the winner, and it is the same on all
+        # eleven: 1.4.0 rendered each of these names with the SAME
+        # granularity the tree does ('J. G.', never 'J G.'), so the
+        # per-word grouping moved nothing on them; what moved is the
+        # letter count, the connective holding its part alone
+        # contributing an initial again. Measured 2026-09-20 against
+        # the 1.4.0 wheel and against the parent 46651750: every one
+        # of the eleven AGREED with 1.4.0 before this bundle and
+        # diverges from it now, which no rule about a 2.0.0 rendering
+        # change can be describing. Deleting or narrowing the #461
+        # rule hands them back to the grouping rule silently, which is
+        # the handover these rows exist to catch.
+        "Carod y de Rovira i": ("_initials",),
+        "Garcia y Lopez": ("_initials",),
+        "John e Smith": ("_initials",),
+        "John e Smith III": ("_initials",),
+        "John e Smith, III": ("_initials",),
+        "John y Jane": ("_initials",),
+        "Jose e Maria": ("_initials",),
+        "Juan y Garcia": ("_initials",),
+        "Lt.Gov. juan e garcia": ("_initials",),
+        "john e jones, III": ("_initials",),
+        "juan y garcia": ("_initials",),
+        # #289/#516's one, adjudicated 2026-09-18, below both cohorts
+        # above for the same provenance reason. '田中 太郎, MA' entered
+        # the corpus with this arc's own case row (radar tier, a
+        # composed CJK-plus-Latin comma form the writing system does
+        # not produce), and two rules admit its {family, given} diff:
+        # the compound CJK rule and the native-script order rule. Their
+        # `fields` OVERLAP without nesting, so neither is the narrower
+        # and `precedes_narrower` has nothing to say; file order is the
+        # whole decision. The shape is this run's, not guessed.
+        "田中 太郎, MA": ("family", "given"),
+        # #289's one contract-tier contest at this baseline. 'Smith,
+        # MA' moves {given, suffix} -- v1 read given 'MA', family
+        # 'Smith', and the caps lean now reads family 'Smith', suffix
+        # 'MA' -- and two rules admit it: the lone-post-comma routing
+        # rule, whose Latin comma regex reaches every such name, and
+        # this arc's own. `fields` overlap on {given, suffix} without
+        # nesting, so neither is the narrower and file order is the
+        # whole decision. The shape is this run's, not guessed.
+        "Smith, MA": ("given", "suffix"),
     },
     # #501's six, moved here from _WATCHED_DIFFS with their shapes
     # unchanged. The four CJK rows sit at 2.0.0 alone: the honorific
@@ -1941,8 +2005,23 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: 'Carod i' diffs under the default order at 1.4.0 only, where its
 #: contest row stands, and 'MD, PHD' carries a contest row at every one
 #: of the three baselines it diffs at since #501 pinned its 2.x pair.
-#: That is why the population is 51 names where the tests/-only scan
-#: says 53.
+#: That is why the population is 48 names where the tests/-only scan
+#: says 50.
+#: AMENDED 2026-09-18 (#289/#516): the parenthetical above is dated
+#: 2026-09-05 and stays as written, but its live half has stopped
+#: being true. `radar unclassified` is now 0 / 5 / 6 / 7 / 7 at
+#: 1.4.0 / 2.0.0 / 2.1.0 / 2.2.0 / 2.3.0, so the two sets no longer
+#: coincide: a diffing radar name can be watched by no rule at all.
+#: The seven at 2.3.0 are this arc's own unclassified SUFFIX_OR_NAME
+#: reports -- 'Smith, E.T., Jr.', 'Smith, J.R.', 'Smith, A.P.',
+#: 'MD, DO, DDS', '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- each
+#: a fork the ambiguous credential class now calls out loud at a slot
+#: that was silent, on a name the contract does not answer for. The
+#: POPULATION CLAUSE itself still holds unchanged, because it asks
+#: for a name EXPLAINED by a ledger rule and these are explained by
+#: none: an unclassified radar diff is already printed by every run,
+#: which is the weak-watcher case the clause was written to exclude.
+#: What is retired is only the claim that the two sets coincide.
 #: Recounted 2026-09-07 with #342, which moved three names across the
 #: literal clause at once: 'Aishwarya Rai' gained a case row and left
 #: the population, while 'Lala Lajpat Rai' and 'John Smith, RAI' are
@@ -1962,6 +2041,29 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: that list to twenty-three, 'Sir Jr' leaving rules.md and so the
 #: rules corpus; it was a cases.py literal and never in this
 #: population, so the row counts are unmoved by that too.
+#: Recounted 2026-09-13 with #383/#479, which moved three names across
+#: the literal clause the way 'Aishwarya Rai' moved across it in #342:
+#: 'Jose e Maria Santos' and 'JOSE E MARIA SANTOS' gained cases.py
+#: rows and entered the CONTRACT corpora with them (corpus_rules.jsonl
+#: and corpus_shapes.jsonl), and 'Juan Garcia y Lopez' became a string
+#: literal in tests/v2/test_render.py -- so all three fail the literal
+#: clause, two of them the radar-corpus clause as well, and all three
+#: left the population. FIVE rows were RETIRED with them: 'Jose e
+#: Maria Santos' and 'Juan Garcia y Lopez' at 1.4.0, and 'JOSE E MARIA
+#: SANTOS' at 2.0.0, 2.1.0 and 2.2.0 -- that last row having been
+#: re-recorded ("_initials",) -> ("_ambiguities",) earlier the same
+#: day, before the population question was put to it. Nothing goes
+#: unwatched by the retirement, which is the Aishwarya precedent's
+#: whole point: each name now carries a case row asserting its entire
+#: parse, and the three #383/#479 rules classify every diff the five
+#: rows recorded.
+#: One row the recount does NOT retire is worth naming, because
+#: without it the per-file line below reads as a partition it is not:
+#: 'QC MP' sits in corpus_rules.jsonl, a CONTRACT corpus, as well as
+#: in corpus_issues.jsonl, and has done since before this change. By
+#: the population clause above it does not belong here. It is left
+#: alone rather than retired blind -- retiring a row removes a guard,
+#: and nothing in this change made this one wrong.
 #: 'John Smith Rev.' is named NOWHERE under
 #: tests/, so it
 #: counts in both scans -- the every-file figures in the RECOMPUTE
@@ -1969,14 +2071,15 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: else: it did not re-derive the population clause above, so the
 #: equality sentence that follows is dated 2026-09-07 and is not
 #: restated for today.
-#: The counts: 38 / 34 / 33 / 8 rows, 113 in all, over those 52 names
+#: The counts: 36 / 33 / 32 / 7 rows, 108 in all, over those 49 names
 #: -- and as of 2026-09-07 the roster was exactly the population, the
 #: five contest rows beyond it having gone to _RECORDED_DIFFS with #501
 #: and five more with #498, which left the population by gaining a
 #: _RECORDED_DIFFS key rather than by ceasing to be watched anywhere.
-#: 50 of the 52 sit in corpus_issues.jsonl and 3 in corpus.jsonl, with
-#: 'dr Vincent van Gogh dr' in both, so the per-file counts overlap by
-#: one and are not a partition. Every row is a default-order shape,
+#: 47 of the 49 sit in corpus_issues.jsonl, 3 in corpus.jsonl and 1 in
+#: corpus_rules.jsonl, with 'dr Vincent van Gogh dr' and 'QC MP' each
+#: in two of them, so the per-file counts overlap by two and are not a
+#: partition. Every row is a default-order shape,
 #: as the roster above's are, so no row here is a declared-order-only
 #: diff for NOT CHECKED to name.
 #:
@@ -1985,14 +2088,14 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: calls whose order is None and whose rule is not None; apply the
 #: four clauses above with the literal set from ast.walk over
 #: tests/**/*.py EXCLUDING test_ledger_guards.py, as the POPULATION
-#: clause says -- run over every file it yields 25 / 23 / 22 / 5 rows
-#: rather than 38 / 34 / 33 / 8, since _CROSS_RULE_WINNERS' keys and
+#: clause says -- run over every file it yields 24 / 23 / 22 / 5 rows
+#: rather than 36 / 33 / 32 / 7, since _CROSS_RULE_WINNERS' keys and
 #: a few guard literals then score as watchers, and #498's fourteen
 #: keys are exactly that kind of literal -- as are #342's two
 #: 2026-09-07 arrivals, both named in _NOT_A_VOCABULARY_COPY. The
 #: every-file figures are the strict ones MINUS the roster names that
 #: are named as an exact string literal in test_ledger_guards.py and
-#: nowhere else under tests/ (13 / 11 / 11 / 3 today), which is a
+#: nowhere else under tests/ (12 / 10 / 10 / 2 today), which is a
 #: derivation a reader can run in one pass over this dict and that
 #: file -- no baseline wheel needed -- and it is how the pair was
 #: recomputed on 2026-09-09. That recount RETRACTS the pair recorded
@@ -2047,8 +2150,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "John of the Doe": ("_initials",),
         "Jong van der": ("_initials",),
         "Jong, van der": ("_initials",),
-        "Jose e Maria Santos": ("_initials",),
-        "Juan Garcia y Lopez": ("_initials",),
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "Mesnil Garcia van": ("_initials",),
         "Mohamad X": ("family", "suffix"),
@@ -2081,7 +2182,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Dr. Do Van Johnson, MD": ("family", "given"),
         "E Anne D,Leonardo": ("_initials",),
         "Esq. van Gogh": ("_ambiguities", "family", "given"),
-        "JOSE E MARIA SANTOS": ("_initials",),
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
@@ -2092,7 +2192,12 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
-        "MD, DO, DDS": ("given", "title"),
+        # 2026-09-18 (#289): the shape GREW by `_ambiguities`. A
+        # bare listed member in the post-comma slot now reports
+        # `suffix-or-name` wherever the fork is consulted, and 'DO'
+        # here is one; the roles are untouched. Re-recorded in the
+        # commit that moved it, per this dict's own rule.
+        "MD, DO, DDS": ("_ambiguities", "given", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Ph. D., Jr.": ("family", "suffix", "title"),
         "Sander van": ("_initials",),
@@ -2123,7 +2228,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Dr. Do Van Johnson, MD": ("family", "given"),
         "E Anne D,Leonardo": ("_initials",),
         "Esq. van Gogh": ("_ambiguities", "family", "given"),
-        "JOSE E MARIA SANTOS": ("_initials",),
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
@@ -2134,7 +2238,12 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
-        "MD, DO, DDS": ("given", "title"),
+        # 2026-09-18 (#289): the shape GREW by `_ambiguities`. A
+        # bare listed member in the post-comma slot now reports
+        # `suffix-or-name` wherever the fork is consulted, and 'DO'
+        # here is one; the roles are untouched. Re-recorded in the
+        # commit that moved it, per this dict's own rule.
+        "MD, DO, DDS": ("_ambiguities", "given", "title"),
         "Mesnil Garcia van": ("_initials",),
         "Ph. D., Jr.": ("family", "suffix", "title"),
         "Sander van": ("_initials",),
@@ -2151,7 +2260,6 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     },
     "expected_since_2.2.0.toml": {
         "E Anne D,Leonardo": ("_initials",),
-        "JOSE E MARIA SANTOS": ("_initials",),
         "Joe E. Smith": ("_initials",),
         "John Smith Rev.": ("family", "middle", "title"),
         "John Smith, RAI": ("family", "given", "suffix"),
@@ -2159,6 +2267,12 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "Smith, John E, III, Jr": ("_initials",),
     },
+    # Still empty on 2026-09-13, and now for a reason rather than for
+    # want of diffs: all TEN of the open cycle's movers are named by a
+    # string literal under tests/ outside test_ledger_guards.py -- a
+    # cases.py row, a render pin or a v1 bank -- so not one of them
+    # meets the population's literal clause and none takes a row here.
+    "expected_since_2.3.0.toml": {},
 }
 
 

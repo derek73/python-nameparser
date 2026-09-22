@@ -99,15 +99,20 @@ Removing works the same way, and drops the word from recognition:
 
 A few fields mark a subset of another — ``given_name_titles`` over
 ``titles``, ``particles_ambiguous`` over ``particles``,
-``suffix_acronyms_ambiguous`` over ``suffix_acronyms``, and
+``suffix_acronyms_ambiguous`` over ``suffix_acronyms``,
+``conjunctions_ambiguous`` over ``conjunctions``, and
 ``honorific_tails`` over ``suffix_words``. Entries belong in the base
-field too, so add to both and remove from the marker first. The last
-three enforce that: anything else raises ``ValueError`` naming the
-orphans rather than leaving a marker entry that no rule will ever
-consult. ``given_name_titles`` is deliberately unchecked — a title run
-is matched as one space-joined string, or by that run's last word, so a
-legitimate entry like ``"sir and dame"`` is no single word in
-``titles`` — and an orphan there is inert rather than harmful.
+field too, so add to both and remove from the marker first. Three of
+them enforce that — ``particles_ambiguous``, ``suffix_acronyms_ambiguous``
+and ``honorific_tails`` raise ``ValueError`` naming the orphans, because
+an orphan in each of those does real harm rather than nothing. The
+other two are deliberately unchecked because an orphan there is inert:
+``given_name_titles`` matches a title run as one space-joined string, or
+by that run's last word, so a legitimate entry like ``"sir and dame"``
+is no single word in ``titles``; and a ``conjunctions_ambiguous`` entry
+is only ever read for a word that is a conjunction, so
+``remove(conjunctions={"e"})`` simply works and the stale marker entry
+is never consulted.
 
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,21 +192,37 @@ each way a source might punctuate it.
 Words that are also ordinary names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Two fields — ``suffix_acronyms_ambiguous`` and ``particles_ambiguous``
-— mark entries from ``suffix_acronyms`` and ``particles`` that are also
-plausible as ordinary name words on their own (an acronym suffix that
-doubles as a nickname, a particle that doubles as a given name). They
-don't add new vocabulary by themselves; they narrow how an existing
+Three fields — ``suffix_acronyms_ambiguous``, ``particles_ambiguous``
+and ``conjunctions_ambiguous`` — mark entries from ``suffix_acronyms``,
+``particles`` and ``conjunctions`` that are also plausible as ordinary
+name words on their own (an acronym suffix that doubles as a nickname,
+a particle that doubles as a given name, a connective letter that
+doubles as an initial). They don't add new vocabulary by themselves;
+they narrow how an existing
 entry is read when it appears alone. If you're not sure whether a word
 you're adding is one of these ambiguous cases, weigh how often it is a
 name against how often it is the credential. Marking it ambiguous is
-not free in either direction: an ambiguous acronym counts as a suffix
-only when written with its periods, so the bare spelling reads as a
-name and the parse reports the fork, and the comma form moves with it
-— ``Smith, BA`` reads first ``BA`` rather than suffix ``BA``, and a
-bracketed ``John Smith (BA)`` falls through to nickname parsing. A
-wrong unambiguous claim takes the credential reading silently and can
-lose a real person's surname. For ``particles_ambiguous`` the default
+not free in either direction: written with its periods, an ambiguous
+acronym counts as a suffix unambiguously; bare, the reading now
+depends on the writing itself, so a bracketed ``John Smith (BA)``
+falls through to nickname parsing and either bare reading reports the
+fork. Written in ALL CAPITALS inside a mixed-case name it counts as
+a suffix even with no words to spare (the credential lean); written
+Title-case there it stays the surname even WITH words to spare (the
+surname lean); lacking either signal — an all-lower spelling in a
+mixed-case name, or any spelling in a name written wholly in one
+case — the reading falls back to whether the name has two or more
+words before it. At a comma the count of NAME words before it decides
+FIRST, and the case is read only where the count leaves the word a
+name: ``John Smith, Ba`` reads suffix ``Ba`` on the count alone (two
+name words before the comma), Title-case or not, while ``Smith, BA``
+reads suffix ``BA`` on the CAPITALS lean, one word before the comma
+being all the count needs to leave for the lean to promote. What
+still reads as the given name is ``Smith, Ba`` (one word, and
+Title-case carries no credential lean to promote it) and
+``smith, ba`` (one word, one case, no lean at all). A wrong
+unambiguous claim takes the credential reading
+silently and can lose a real person's surname. For ``particles_ambiguous`` the default
 runs the other way: a particle that is not borne as a given name
 belongs in the never-given half, which is where ``mc`` and ``ste``
 were moved (#360). The other
@@ -218,8 +239,10 @@ that swallowed it as a title would misparse "Dean Martin" for
 everyone.)
 
 ``ma`` is a shipped example. It is both a credential and a common
-surname, so it is listed in ``suffix_acronyms_ambiguous`` and counts as
-a suffix only when written with periods:
+surname, so it is listed in ``suffix_acronyms_ambiguous``: written
+with periods it counts as a suffix unambiguously, and bare it takes
+the case reading above -- Title-case stays the surname, capitals lean
+the credential:
 
 .. doctest::
 
@@ -227,6 +250,8 @@ a suffix only when written with periods:
     'Ma'
     >>> parse("Jack M.A.").suffix
     'M.A.'
+    >>> parse("Jack MA").suffix
+    'MA'
 
 ``particles_ambiguous`` is the same idea for surname particles. A
 particle listed there may also be a given name, which is what makes a
@@ -269,6 +294,60 @@ ambiguity is recorded and it becomes part of the surname — under any
     >>> lex = Lexicon.default().remove(particles_ambiguous={"van"})
     >>> Parser(lexicon=lex).parse("van Gogh").family
     'van Gogh'
+
+``conjunctions_ambiguous`` is the same idea for one-letter connectives.
+A single letter written against the name's own case is an initial and
+one written with it is the connective — but a name written wholly in
+one case, all upper or all lower, says nothing either way, and this is
+the set that decides it there. ``e`` and ``i`` are the two entries
+shipped: a bare ``E`` or ``I`` initial is common where those letters
+between two surnames are rarer, and ``y`` runs the other way, so ``y``
+joins even written as a bare capital.
+
+.. doctest::
+
+    >>> parse("jose e maria santos").middle       # 'e' reads as an initial
+    'e maria'
+    >>> parse("JUAN GARCIA Y LOPEZ").family       # 'y' joins
+    'GARCIA Y LOPEZ'
+    >>> parse("Jose e Maria Santos").given        # mixed case decides itself
+    'Jose e Maria'
+
+A member also reports the fork, so a caller can see which reading was
+taken:
+
+.. doctest::
+
+    >>> [a.kind for a in parse("jose e maria santos").ambiguities]
+    [<AmbiguityKind.CONJUNCTION_OR_INITIAL: 'conjunction-or-initial'>]
+
+If your data is Portuguese, where ``e`` links surnames the way ``y``
+does in Spanish, take it out and the connective reading comes back:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().remove(conjunctions_ambiguous={"e"})
+    >>> Parser(lexicon=lex).parse("jose e maria santos").given
+    'jose e maria'
+
+If your data is Catalan or Polish, where ``i`` links two surnames the
+way ``y`` does in Spanish, take that one out instead and the link
+joins in a one-case name too:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().remove(conjunctions_ambiguous={"i"})
+    >>> Parser(lexicon=lex).parse("josep carod i rovira").family
+    'carod i rovira'
+
+If your data is Dutch, where a bare single letter is an initial and
+never a connective, add the other one instead:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().add(conjunctions_ambiguous={"y"})
+    >>> Parser(lexicon=lex).parse("juan garcia y lopez").middle
+    'garcia y'
 
 Bound given names
 ~~~~~~~~~~~~~~~~~~
@@ -321,7 +400,9 @@ listed below.
      - ``frozenset[PatronymicRule]``
      - Reorders patronymic-shaped names via opt-in detectors — East
        Slavic formal order (``EAST_SLAVIC``) or Turkic reversed order
-       (``TURKIC``). Defaults to empty.
+       (``TURKIC``) — but stands down under a declared
+       ``FAMILY_FIRST`` or ``FAMILY_FIRST_GIVEN_LAST`` ``name_order``.
+       Defaults to empty.
    * - ``middle_as_family``
      - ``bool``
      - Folds ``middle`` into ``family`` instead of splitting them —
@@ -376,6 +457,51 @@ listed below.
        family ``田中さん``, given ``V.`` when ``False`` — though a
        comma around a CJK name is tolerated input
        (``rules.md#W3``) and this reading can change.
+   * - ``unlisted_dotted_suffixes``
+     - ``bool``
+     - Reads an unlisted token of two or more period-separated chunks
+       as a credential where the position allows it:
+       ``"John Smith X.Y.Z."`` gives suffix ``X.Y.Z.`` while
+       ``"Jack X.Y.Z."`` keeps family ``X.Y.Z.``, and either reading
+       is reported. The family-comma form is one of those positions
+       since 2.4: ``"Doe, John X.Y.Z."`` gives suffix ``X.Y.Z.``
+       while ``"Doe, X.Y.Z."`` keeps given ``X.Y.Z.``. So is the word
+       ending a maiden marker's clause, also since 2.4:
+       ``"Jane Doe nee Smith X.Y.Z."`` gives maiden ``Smith`` with
+       suffix ``X.Y.Z.``, where ``False`` keeps maiden
+       ``Smith X.Y.Z.``.
+       Case is irrelevant — the periods are the signal.
+       Whole-token vocabulary still wins (``M.A.``, ``Ph.D.``), and a
+       single trailing period is not this shape
+       (``"John Smith Xyz."`` keeps family ``Xyz.``). Two further
+       gates keep it from over-reaching: every chunk must be
+       alphabetic, so a digit anywhere refuses it
+       (``"John Smith 1.4"`` keeps family ``1.4``, on or off), and a
+       script with no period abbreviations of its own refuses it too
+       (a CJK word glued into periods, ``"John Smith 田.中."``, keeps
+       family ``田.中.``). Defaults to ``True``; ``False`` reads such a
+       token as name material everywhere and still reports the fork —
+       it does NOT revive the pre-2.4 reading of a chunk that is a
+       single ASCII character — a roman numeral, or the digit ``2`` —
+       as a credential (``"Jack X.Y.I."`` still keeps family
+       ``X.Y.I.`` either way, and a dotted version string such as
+       ``"John Smith 1.4.2"`` keeps family ``1.4.2``; that retirement
+       is not behind this switch).
+   * - ``unlisted_caps_suffixes``
+     - ``bool``
+     - Reads an unlisted all-caps word of two or more letters, with no
+       period in it, in a name written in more than one case as a
+       credential where the position allows it: ``"John Smith XYZ"``
+       gives suffix ``XYZ``, and since 2.4 so do the family-comma
+       form ``"Doe, John XYZ"`` and the word ending a maiden marker's
+       clause (``"Jane Doe nee Smith XYZ"`` gives maiden ``Smith``
+       with suffix ``XYZ``, where off it keeps maiden
+       ``Smith XYZ``). Defaults to ``False``, and
+       deliberately:
+       an all-caps surname is a real writing convention that shape
+       cannot separate from a credential, so ``"Jean Pierre DUPONT"``
+       gives family ``Pierre``, suffix ``DUPONT`` with this on. Off,
+       nothing changes and nothing is reported.
    * - ``strip_emoji``
      - ``bool``
      - Excludes emoji from tokenization — they appear in no field or

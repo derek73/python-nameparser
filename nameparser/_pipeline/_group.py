@@ -1,7 +1,7 @@
 """Stage: group.
 
-Consumes: tokens (classified), segments, structure, extracted (the
-role + inner span per delimited region, for the #329 pass below --
+Consumes: tokens (classified), segments, structure, one_case, extracted
+(the role + inner span per delimited region, for the #329 pass below --
 the only stage after tokenize that reads it).
 Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
@@ -41,14 +41,18 @@ import bisect
 import dataclasses
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
+from typing import assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
+    credential_at_the_given_slot,
     is_leading_title, is_suffix_piece, is_title_piece,
-    leading_titles, peel_walk, tail_reading, trailing_start,
+    leading_titles, peel_trailing, peel_walk, tail_reading,
+    trailing_start, trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken,
+    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
+    WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS,
 )
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import delimiter_cores
@@ -61,10 +65,44 @@ from nameparser._types import AmbiguityKind, Role
 # wholly-suffix post-comma run, both of which see the merged reading
 
 Piece = list[int]
-#: What the marker pass took out of a segment: the marker's tokens (to
-#: be dropped -- more than one where the entry is a phrase, 'z domu')
-#: and the maiden-name pieces (to take Role.MAIDEN).
+#: What the marker pass took out of a segment: the marker's TOKEN
+#: indices (more than one where the entry is a phrase, 'z domu') and
+#: the maiden-name pieces, themselves token indices, to take
+#: Role.MAIDEN. `_group_segment` produces it.
 MaidenTake = tuple[Piece, list[Piece]]
+#: What `_maiden_take` answers with, one index space further out: PIECE
+#: indices into its own `pieces` argument -- the marker's pieces, then
+#: the maiden name's. `_group_segment` resolves them to the token
+#: indices MaidenTake declares, which is the only reason the two are
+#: different types rather than one name used twice.
+MaidenIndices = tuple[list[int], list[int]]
+
+
+class TailReader(IntEnum):
+    """Which rule reads the words the maiden walk would leave standing
+    at the end of this segment -- the reader the acronym fork's second
+    check has to ask, since a stop is only right where that reader
+    takes the word (rules.md#M2, #533).
+
+    NONE is a statement and not a default: before a family comma the
+    words are the family the comma already named, and a tail segment
+    is read as credentials whole, so no trailing rule is consulted
+    there and the clause keeps what it has -- a stop would hand a word
+    to `family` rather than to `suffix`.
+
+    A CLOSED set: `_maiden_take` dispatches on it exhaustively
+    (`typing.assert_never`), so a fourth member is a type error at
+    every reader until it is given a reading. group() is the one
+    place (structure, segment index) is mapped onto it, and
+    tests/v2/pipeline/test_group.py's
+    `test_the_reader_is_pinned_to_the_structure_it_is_read_from`
+    pins that mapping -- by watching the call, not by restating it --
+    along with this enum's size. Change either and that test says so.
+    """
+
+    NONE = 0        # FAMILY_COMMA segment 0, and every tail segment
+    TRAILING = 1    # the S2 peel: NO_COMMA, SUFFIX_COMMA segment 0
+    GIVEN_SLOT = 2  # #531's reading: FAMILY_COMMA segment 1
 
 
 class BoundJoin(IntEnum):
@@ -99,11 +137,10 @@ def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "particle" in tokens[piece[0]].tags
 
 
-# rules.md#M2: "a recognized maiden marker standing after at least
-# one name word takes the words after it" -- up to any suffix word,
-# or the trailing numeral assign reads as the suffix, as the maiden
-# name, the marker itself dropped
-# (history: decisions.md#M2)
+# rules.md#M2: "a recognized maiden marker standing after at least one
+# name word takes the words after it" -- up to any suffix word, or the
+# trailing numeral assign reads as the suffix, as the maiden name, the
+# marker itself dropped (history: decisions.md#M2)
 #
 # A marker piece is a LONE marker -- M2's own "standing as a word of
 # its own". The consumer runs before every join but the Ph. D. merge
@@ -179,20 +216,139 @@ def _marker_run_pieces(seen: Sequence[int], pieces: Sequence[Sequence[int]],
     and no more: a run of ROLE-LESS tokens stays inside one segment. It
     can also tag a run across two adjacent clauses of the same role,
     which this walk never sees because a role-bearing token is in no
-    segment at all -- see _tag_marker_runs, which states the limit.
+    segment at all -- see _vocab.tag_marker_runs, which states the limit.
     """
     return marker_run_length(
         tokens[pieces[seen[k]][0]].tags for k in range(m + 1, len(seen)))
 
 
+# rules.md#M2: "a word the clause gives up reads as a post-nominal or
+# the clause keeps it" -- the two halves of that, asked of the VIEW
+# the take would leave. Split out of `_maiden_take` because each
+# models a LATER decision about the released word, and the stop is
+# only right where that decision goes the way the release assumed
+# (#533 review).
+def _a_name_word_ahead(view: Sequence[Sequence[int]],
+                       view_tags: Sequence[Set[str]],
+                       tokens: Sequence[WorkToken],
+                       at: int) -> bool:
+    """Whether the view holds a name word BEFORE the member at `at`.
+
+    #531's reading is the given part's own trailing slot, and a slot
+    needs a part: the take removes the clause, so where every piece
+    ahead of the member is a title or a suffix the member is the only
+    name word left and there is no trailing slot for it to end.
+    Asked of the view rather than of the segment because the segment
+    still has the maiden name in it -- that is exactly the word the
+    release takes away ('Doe, Prof. nee Smith A.B.' left 'Prof. A.B.',
+    whose A.B. is the GIVEN name and no credential at all)."""
+    return any(not is_title_piece(view[q], view_tags[q], tokens)
+               and not is_suffix_piece(view[q], view_tags[q], tokens)
+               for q in range(at))
+
+
+def _join_takes_the_member(view: Sequence[Sequence[int]],
+                           view_tags: Sequence[Set[str]],
+                           tokens: Sequence[WorkToken],
+                           at: int) -> bool:
+    """Whether a join BELOW this pass would absorb the member at `at`.
+
+    A released word only reads as the credential while it is still the
+    lone piece assign's peel looks at; inside a joined piece it is a
+    word of the name the join built, and the release has moved it from
+    the birth name into the CURRENT one -- #424's class of failure,
+    now from the other side ('Berg, Jane van der nee Smith DO' read
+    family 'van der DO Berg').
+
+    Two joins can reach it, and each is modelled by the shape it needs
+    rather than by running it: P2's chain, where the member is
+    particle vocabulary standing behind a particle piece or beside
+    another released one ('Jane Doe nee Smith DO DO' read family
+    'DO DO'), and P5's bound-given join, where the member is the word
+    after the bound one ('Berg, abdul nee Jones MA' read given
+    'abdul MA'). Both over-decline rather than predict: a shape that
+    only MIGHT join keeps its word in the maiden name, which is the
+    conservative direction M2's invariant asks for."""
+    member = tokens[view[at][0]]
+    if "particle" in member.tags:
+        if at and _is_prefix_piece(view[at - 1], view_tags[at - 1], tokens):
+            return True
+        for q in range(at + 1, len(view)):
+            if len(view[q]) == 1 and "particle" in tokens[view[q][0]].tags:
+                return True
+    # P5 joins the first non-title piece to the one after it, so the
+    # member is at risk exactly where it IS the one after it. The tag
+    # pair is tested before `leading_titles` is asked, which is what
+    # keeps the ordinary credential release from paying that frame.
+    return (at > 0 and len(view[at - 1]) == 1
+            and "vocab:bound-given" in tokens[view[at - 1][0]].tags
+            and leading_titles(view, view_tags, tokens) == at - 1)
+
+
+# rules.md#M2: "a link inside the birth name does not end it" -- the
+# one shape the walk below steps over rather than stopping at.
+# rules.md#P3: "A connective that is also generational vocabulary
+# joins only where a name word stands on each side of it" is the
+# reason, and the class test is that rule's own. The take runs BEFORE
+# every join, so the link is still a piece of its own here and the
+# question is asked of the pieces as classify left them -- the same
+# inputs `_group_segment`'s `frozen` loop gives
+# `_between_name_words`, which is why this calls that predicate
+# rather than restating the class
+# (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
+                                  pieces: Sequence[Sequence[int]],
+                                  ptags: Sequence[Set[str]],
+                                  tokens: Sequence[WorkToken],
+                                  beside: list[_Beside]) -> bool:
+    """Whether the suffix piece at `k` is a connective PLACED TO JOIN
+    between two name words of the clause `lo`..`hi`.
+
+    The caller asks `is_suffix_piece` first and consults this only
+    where the answer was yes, so the generational half of "also
+    generational vocabulary" is settled and the connective half is
+    what is left to ask. A lone link is therefore no link at all
+    ('Jane Doe nee Puig i' keeps maiden 'Puig' and suffix 'i'), and
+    neither is one standing before the generation or the credential a
+    clause ends with ('... nee Puig i III', '... i MA'): `hi` is where
+    assign's peel begins, so those stand at or past it and
+    `_between_name_words` refuses them by bound.
+
+    Defined here, beside its one caller, and forward-referencing the
+    two predicates it is built out of: `_is_conj_piece` and
+    `_between_name_words` are the JOIN's, further down this module, and
+    moving them up to meet this would say they belonged to the clause.
+
+    `beside` is the caller's memo cell, filled on the first CONNECTIVE
+    piece the walk reaches rather than on the first suffix piece, so
+    a clause ending at an ordinary credential never builds it at all
+    and a clause holding a RUN of links builds it once ('Jane Doe nee
+    Puig i i i ... Soler'). Filled here rather than at the call site
+    so the laziness costs no frame of its own, and one fill serves
+    the whole walk because that walk mutates neither `pieces` nor
+    `ptags` (#397 second review, the run fix)."""
+    if not _is_conj_piece(pieces[k], ptags[k], tokens):
+        return False
+    if not beside:
+        beside.append(_run_neighbours(pieces, ptags, tokens))
+    return _between_name_words(k, lo, hi, pieces, ptags, tokens, beside[0])
+
+
 def _maiden_take(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
-                 cores: Set[str]) -> tuple[list[int], list[int]] | None:
-    """The piece indices the marker pass removes, split the way
-    MaidenTake declares them: the MARKER's pieces (one, or several for
-    a phrase entry like 'z domu') and the maiden name's. None when the
-    pass declines.
+                 cores: Set[str],
+                 one_case: bool | None,
+                 reader: TailReader,
+                 ambiguities: list[PendingAmbiguity],
+                 ) -> MaidenIndices | None:
+    """The PIECE indices the marker pass removes, split the way
+    MaidenIndices declares them: the MARKER's pieces (one, or several
+    for a phrase entry like 'z domu') and the maiden name's. None when
+    the pass declines. Piece indices into `pieces`, not the TOKEN
+    indices of the MaidenTake `_group_segment` builds out of them --
+    the two are different index spaces and both are named types so a
+    reader never has to guess which one an annotation means.
 
     Split here rather than by the caller because `run` is known here
     and nowhere else -- it comes off the continuation tags, which are
@@ -201,10 +357,23 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     Computed before any join (the Ph. D. merge aside), so "up to any
     trailing suffix" means the first suffix WORD after the marker: a
     connective beside that suffix cannot un-suffix it first. 'Jane
-    Smith née Jr y Jones' declines where the joined reading took
-    'Jr y Jones' as the maiden name, and 'Jane Smith née Jones Jr y
-    Smith' takes only 'Jones'. The one reading the order costs; M2's
-    Accepted row and decisions.md#M2 (#420) record it.
+    Smith née Jr y Jones' declines where the joined reading took 'Jr y
+    Jones' as the maiden name, and 'Jane Smith née Jones Jr y Smith'
+    takes only 'Jones'. The one reading the order costs; M2's Accepted
+    row and decisions.md#M2 (#420) record it.
+
+    "Up to any trailing suffix" also means up to a trailing CREDENTIAL
+    since #533, where the rule that reads the name left standing reads
+    the word as one -- the TRAILING peel with no comma, the given
+    part's own slot after a family comma, and nobody before that comma
+    or past a second one, which is what `reader` says. A member
+    standing alone after the marker is never given up: the marker
+    announces a name, and the rule gives a word up only where a maiden
+    name is left standing. Nor is one given up to a reader that will
+    not be there to read it, or to a JOIN that runs before the reader
+    does: rules.md#M2's invariant is that a released word ends the
+    parse suffix-roled, and the two view checks below are what makes
+    the stop conservative enough to hold it (#533 review).
 
     A tail segment's delimiter cores (`cores`, empty elsewhere) are
     structure, not words, and group() drops them after the pass --
@@ -229,16 +398,41 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # "up to any trailing suffix": a suffix WORD anywhere after the
     # marker ends the maiden name, and so does the trailing numeral as
     # assign will read it, which the suffix-piece test does not see
-    # (#424): 'John née Jones Smith V' took the V as maiden text. The
-    # numeral only -- trailing_start says why the acronym fork is
-    # left to assign here. Read from the MARKER, not after it: a
+    # (#424): 'John née Jones Smith V' took the V as maiden text. Both
+    # forks now -- the acronym one since #533, asked the same double
+    # way. Read from the MARKER, not after it: a
     # numeral straight after the marker then has the piece before it
     # the fork wants, and 'Jane Smith née V' declines like 'Jane Smith
     # née PhD' -- nothing after the marker but a suffix, so the marker
     # stays a word -- as 1.4.0 read it.
+    #
+    # `one_case` is LIVE at these sites since #533 and was not before:
+    # the numeral fork is decided before the peel ever reads a lean,
+    # so the fact reached only the bare-acronym fork, which the
+    # numeral-only reading discarded. The acronym fork is asked now,
+    # so the writing decides here as it decides at the trailing slot
+    # of a name. Measured 2026-09-19 with a runtime wrapper forcing
+    # this function's `one_case` argument to None, over the population
+    # and the six policies decisions.md#S2's 2026-09-18 recipe names
+    # -- 36 of 10,752 parses move (1,792 names), on 6 distinct names
+    # ('Doe, Jane nee Smith DO', 'Doe, Jane nee Smith Ma', 'Jane Doe
+    # nee Smith Ma', 'Jane Doe nee Smith Ma JD', 'Jane Doe nee Yo-Yo
+    # Ma', 'John née Jones Smith MA'). THE PAIR IS THE FINDING: over
+    # the same corpus WITHOUT this change's own rows it moves 0, so
+    # the plumbing was live either way and the corpus simply held no
+    # name that could show it -- the blindness mechanisms.md's corpus
+    # field note asks to be measured before any "N names move" is
+    # written down.
+    #
+    # The chain-tail measure below (`tail`, and the re-peel after the
+    # chain) is the opposite, and the 2026-09-18 sweep over the
+    # pre-change 9,852 says so: dropping it moves 18 of them, on
+    # 'John van der Berg Ma', 'John de Ma' and 'Freiherr von Berg MA'
+    # under every one of the six policies.
     skip = frozenset(range(len(pieces))) - frozenset(seen)
-    trailing = trailing_start(seen[m], pieces, ptags, tokens, skip,
-                               numeral_only=True)
+    rest = peel_walk(seen[m], ptags, skip)
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
+    trailing = rest[-1] if peeled.numeral is not None else len(pieces)
     # The fork reads the piece before the numeral, and the take
     # REMOVES that piece: afterwards assign sees the piece before the
     # marker there, and if that is initial-shaped the fork will not
@@ -246,37 +440,363 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # ('J. née Jones Smith V'). So the numeral must read as the suffix
     # as the take would leave the name too, and the question is asked
     # the way P5's reserve asks it (#425): the peel is run over the
-    # VIEW the take would leave, not one condition of it -- the first
-    # re-ask checked the preceding piece alone, and a title before the
-    # marker ('Dr. née Jones Smith V') leaves the numeral as assign's
-    # whole rest, where no fork fires at all (the code review).
+    # VIEW the take would leave, not one condition of it. Checking the
+    # preceding piece alone misses a title before the marker, where
+    # 'Dr. née Jones Smith V' leaves the numeral as assign's whole
+    # rest and no fork fires at all.
     if trailing < len(pieces):
         left = [i for i in seen if i < seen[m] or i >= trailing]
         view = [pieces[i] for i in left]
         view_tags = [ptags[i] for i in left]
-        if trailing_start(leading_titles(view, view_tags, tokens),
-                           view, view_tags, tokens,
-                           numeral_only=True) == len(view):
+        # The same peel pair as above, read over the view -- and only
+        # `Peel.numeral` off it, because the bare-acronym fork COUNTS
+        # pieces and this view no longer holds the pieces it counted
+        # ('John née Jones Smith Ma' peeled over the pieces as written
+        # reads the acronym as a credential with words to spare, and
+        # once 'Jones Smith' has left it is the family of what
+        # remains). The acronym fork builds a view of its own below.
+        view_rest = peel_walk(leading_titles(view, view_tags, tokens),
+                              view_tags)
+        if peel_trailing(view_rest, view, view_tags, tokens,
+                          one_case).numeral is None:
             trailing = len(pieces)
+    # #533: the ACRONYM fork, asked the way the numeral is -- the peel
+    # over the pieces as they stand, then again over the name the take
+    # would leave, and a stop only where both read the word as the
+    # credential. `peeled.names` is a COUNT of positions in `rest`, so
+    # `rest[peeled.names]` is the first piece the peel took and the
+    # class member it stopped at; no walk of our own is needed. One
+    # peel, one view built once per take: O(pieces) for the take, not
+    # per member, and no re-entrancy -- the predicate never calls the
+    # walk that calls it.
+    if (reader is not TailReader.NONE and peeled.names < len(rest)
+            and m + run + 1 < len(seen)):
+        # THE FIRST-WORD FLOOR: the stop never takes the FIRST word
+        # after the marker -- a class member standing alone there
+        # stays the maiden name. A clamp rather than a veto: where the
+        # peel consumed that word AND words behind it, only the first
+        # stays ('Doe, J. nee MA ba' keeps maiden 'MA' and reads
+        # suffix 'ba'; a veto handed 'ba' back to the clause too). The
+        # clamped piece may then be no member at all, and the test
+        # below declines -- which changes nothing, the walk stopping
+        # at that suffix word of its own accord.
+        stop = max(rest[peeled.names], seen[m + run + 1])
+        head = pieces[stop]
+        # `len(head) == 1` is DEFENSIVE and measured inert
+        # (2026-09-19) rather than unreachable: it asks a LONE piece's
+        # question, and the answer below reads `head[0]` as if the
+        # piece were the word. The multi-token piece it keeps out is
+        # the Ph. D. merge above, whose `suffix` ptag stops `peel_walk`
+        # ever returning it -- so the peel half of `stop` cannot be it,
+        # but the FIRST-WORD FLOOR is an index rather than a walk and
+        # does reach the merged piece whenever that piece is the second
+        # word after the marker ('BERG, ABDUL Z DOMU MA PH. D.').
+        #
+        # THE NEGATIVE CONTROL, measured 2026-09-19 over a population
+        # built to HOLD that shape -- 4,224 names (twelve heads x four
+        # markers x 23 bodies, each also with a ', MD' tail and in
+        # upper and lower case) under six policies and two lexicons,
+        # the default and one listing `ph` ambiguous, 50,688 parses. A
+        # probe that fires wherever the tag test admits a head this
+        # length test then DECLINES -- the only sites where dropping it
+        # could matter -- fires 1,440 times, against 25,920 reaches of
+        # this site and 19,296 tag admissions. Dropping it is
+        # byte-identical all the same -- fields, ambiguities and every
+        # token's role and tags -- over 905,796 parses (that population
+        # plus the review's 142,518-name corpus under the six
+        # policies). What it buys is the price, which is real where the
+        # count is not: with `ph` listed, dropping it takes 'BERG,
+        # ABDUL Z DOMU MA PH. D.' from 438 frames to 453. Kept for the
+        # reason `_assign.previous_kept` is: an inert branch is cheaper
+        # than a question asked of the wrong shape, and the three
+        # sibling sites (`_pieces.segment_suffix_reading`, the
+        # GIVEN_SLOT branch below, and the emitter at the end of this
+        # function) each pair a length test with a tag test the same
+        # way.
+        #
+        # The tag is the CLASS the rule is stated in terms of, and it
+        # is not redundant with the walk the way the length test is:
+        # 'J. née Jones Smith V' reaches here on a piece
+        # `is_suffix_piece` REFUSES for being initial-shaped, and what
+        # declines it is the view check rather than the walk. Its own
+        # control is a price too, not a count: dropping it runs the
+        # view machinery over every ordinary credential the peel took
+        # -- 'Jane Doe nee Smith PhD' 341 -> 353 frames and 'Doe, Jane
+        # nee Smith PhD' 367 -> 372, counted per `Parser.parse` the way
+        # tests/v2/test_benchmark counts them. No test pins those
+        # numbers: `_CALL_BASELINE` is per-interpreter and per entry
+        # point, and a row for one name would have to be guessed for
+        # the four interpreters only CI runs.
+        #
+        # A THIRD condition stood here and is gone: `stop < trailing`
+        # guarded nothing, `stop` being the larger of a walked piece
+        # and the floor and both bounded by `trailing`, so at worst
+        # `stop == trailing` and the assignment below sets `trailing`
+        # to what it already is. Measured over 1,760,904 parses:
+        # `stop > trailing` never once, `stop == trailing` 15,696
+        # times, and the tag test declined every one of those.
+        if (len(head) == 1
+                and AMBIGUOUS_ACRONYM_TAG in tokens[head[0]].tags):
+            left = [i for i in seen if i < seen[m] or i >= stop]
+            view = [pieces[i] for i in left]
+            view_tags = [ptags[i] for i in left]
+            # where the member stands in that view: everything before
+            # the marker, then the run the take would leave behind.
+            # The question is whether the reader takes THIS piece, not
+            # whether it takes something -- a suffix word behind the
+            # member answers yes to the weaker question while the
+            # member itself reads as the family name ('JOHN NEE JONES
+            # SMITH MA PHD' left 'JOHN MA PHD', whose MA is the family).
+            at = left.index(stop)
+            if reader is TailReader.GIVEN_SLOT:
+                # after a family comma the words to spare are there by
+                # construction, so the reader is #531's -- the member's
+                # own reading, asked through the one predicate that
+                # owns it, and that rule's FLOOR: the member ends the
+                # given part only where every piece behind it reads as
+                # a suffix too ('Doe, Jane nee Smith MA do' keeps
+                # maiden 'Smith MA do', the trailing particle not
+                # being a credential, so the clause keeps both words
+                # rather than handing one of them to the current
+                # name's middle -- which is what the clause-less
+                # 'Doe, Jane MA do' does with them, middle 'MA' and
+                # family 'do Doe'). And a slot the take would
+                # leave nobody to read is no slot: `_a_name_word_ahead`
+                # is that half, asked first because it is the cheaper
+                # question and because with no name word ahead the
+                # answer below is about a name that would not exist.
+                takes = _a_name_word_ahead(view, view_tags, tokens, at) and all(
+                    is_suffix_piece(view[q], view_tags[q], tokens)
+                    or (len(view[q]) == 1
+                        and AMBIGUOUS_ACRONYM_TAG in tokens[view[q][0]].tags
+                        and credential_at_the_given_slot(
+                            tokens[view[q][0]], one_case))
+                    for q in range(at, len(view)))
+            elif reader is TailReader.TRAILING:
+                takes = trailing_start(
+                    leading_titles(view, view_tags, tokens),
+                    view, view_tags, tokens,
+                    one_case=one_case) <= at
+            else:
+                assert_never(reader)
+            # rules.md#M2: "a word the clause gives up reads as a
+            # post-nominal or the clause keeps it". Both readers above
+            # ask what a TRAILING rule makes of the member, and a join
+            # below this pass runs first and can take the word out of
+            # that rule's reach entirely, so the release is withdrawn
+            # where one would (#533 review).
+            if takes and not _join_takes_the_member(
+                    view, view_tags, tokens, at):
+                trailing = stop
+    # The walk starts past the WHOLE marker: a phrase's second word is
+    # the marker, not the first word it takes. With nothing behind the
+    # marker at all there is no clause to walk and no first word to
+    # bound it with, so the decline the `j <= m + run` test below
+    # reaches is taken here instead -- `lo` would have no piece to name
+    # ('Jane van der Berg née').
+    if m + run >= len(seen):
+        return None
+    # rules.md#M2: "a link inside the birth name does not end it" --
+    # the clause's OWN bounds for the link exception, which are not the
+    # segment's. `lo` is the first piece after the marker run, so the
+    # marker is never the name word on a link's left, and a delimiter
+    # core between the marker and that first word is below `lo` by
+    # construction and cannot pass for one either. A core is the TAIL
+    # segment's alone (`extra_suffix_delimiters`, empty by default),
+    # and a dash standing where no tail segment can hold it is an
+    # ordinary word at EITHER policy: 'PhD née - i Jones' keeps maiden
+    # '- i Jones' configured and unconfigured alike, there being no
+    # comma to make a tail out of. It takes the tail a suffix comma
+    # builds for the dash to be a core at all, and then the two
+    # policies part company -- 'Smith, John, PhD née - i Jones' keeps
+    # maiden '- i Jones' by default and declines under a configured
+    # ' - ', which is the pair
+    # test_a_core_between_the_marker_and_the_first_word_is_below_lo
+    # holds (all four readings measured 2026-09-22).
+    # NOT theoretical and not a whole claim about cores, both settled
+    # by measurement 2026-09-21 over corpus u cases.py u the property
+    # grids u a 50,925-name generated set with cores, under thirteen
+    # core-bearing policies: 25,536 of 596,392 maiden takes had a core
+    # standing exactly there, so the bound is load-bearing -- and PAST
+    # `lo` a core is no longer below it, is an ordinary index to
+    # `_run_neighbours` (which steps over connectives and nothing
+    # else), and DOES pass for the name word on a link's side. That
+    # reading is pinned as it stands rather than repaired here
+    # (test_a_core_beside_a_link_wrongly_passes_for_a_word_until_538):
+    # `_between_name_words` is asked about a core in 51,072 of 900,023
+    # calls, the answer differs from a core-skipping reading in 8,094
+    # parses over 1,278 texts, and 1,824 of those move `maiden` on 288
+    # texts -- none of them reachable at the default policy, which is
+    # why rules.md#M2 states it with a policy annotation beside the
+    # marker. The repair is `cores` threaded through
+    # three call sites into `_run_neighbours`, which is its own change
+    # (#538, and rules.md#M2 carries it as a `deviates:` example).
+    # `peel_start` is where assign's trailing run begins over
+    # the pieces as WRITTEN, so the generation or credential a clause
+    # ends with is never the name word on a link's right ('... nee Puig
+    # i III', '... i MA', whose MA carries no `vocab:suffix` tag for
+    # the piece test to refuse it by).
+    #
+    # `peel_start` is `trailing_start`'s whole answer, read off the
+    # peel pair above rather than re-running it, which is the reading
+    # that function's own docstring sends this caller here for. It is
+    # never past the walk's own stop, `trailing`: the numeral fork's
+    # `trailing` is the walk's LAST piece and the acronym fork's `stop`
+    # is a max over this one, so the two never disagree about where the
+    # clause ends, only about what the exception may reach across.
+    # Measured 2026-09-20 with a probe here over the whole suite --
+    # 93,408 reaches of this site, `peel_start > trailing` 0 of them.
+    lo = seen[m + run]
+    peel_start = (rest[peeled.names] if peeled.names < len(rest)
+                  else len(pieces))
     j = m + run
+    # The link exception's memo cell, filled inside the predicate on
+    # the first connective it is asked about (see its docstring).
+    beside: list[_Beside] = []
     while (j < len(seen) and seen[j] < trailing
-           and not is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
-                                    tokens)):
+           and (not is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
+                                    tokens)
+                or _link_joins_inside_the_clause(seen[j], lo, peel_start,
+                                                 pieces, ptags, tokens,
+                                                 beside))):
         j += 1
     # j == m + run means nothing followed the marker but a suffix, so
     # the pass declines and the marker stays ordinary words
-    # (rules.md#M2). The walk starts past the WHOLE marker: a phrase's
-    # second word is the marker, not the first word it takes.
+    # (rules.md#M2).
     if j <= m + run:
         return None
+    # #533, mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at the
+    # site that takes the branch, not where an ambiguous tag sits" --
+    # the walk that KEPT the word is where the fork was called, so it
+    # is where the report is raised. The LAST word of the maiden name
+    # is the one the trailing rule was asked about: everything behind
+    # it read as a suffix (that is what let the peel reach it), and a
+    # member the reading TOOK is not in the maiden name any more --
+    # assign reports that one where it peels it, so no token is ever
+    # reported twice. A member with a name word behind it was never
+    # asked and stays silent, which rules.md#A1's hesitating reader is
+    # the reason for rather than the accident of.
+    #
+    # Gated on the reader for the same reason the walk is: where no
+    # trailing rule reads these words, nothing was decided and nothing
+    # may report. Gated on EITHER tag, as the chain emitter's is, so a
+    # by-shape member reports with the dotted switch off -- classify
+    # writes the shape tag there while the class does not admit it,
+    # which is the one place a declined fork can be recorded.
+    #
+    # `last[0]` is the whole word and no `len(last) == 1` guards it,
+    # unlike the three sibling sites: here the invariant IS structural
+    # and a test would be inert by construction rather than by
+    # measurement. The only multi-token piece this pass can see is the
+    # Ph. D. merge, `merge` gives that piece the `suffix` ptag
+    # unconditionally, and `is_suffix_piece` answers yes off that ptag
+    # alone -- so the walk just above ENDS before it, and the last
+    # maiden piece is never it whatever a caller's vocabulary says.
+    # Measured too, both ways: a probe on `len(last) != 1` here fired
+    # 0 times over 1,760,904 parses, and deleting the test is
+    # byte-identical (fields, ambiguities, token roles and tags) over
+    # the 905,796-parse oracle at the same frame counts.
+    last = pieces[seen[j - 1]]
+    word = tokens[last[0]]
+    if (reader is not TailReader.NONE
+            and not word.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS)):
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{word.text!r} ending the maiden name is also "
+            f"a post-nominal; the maiden marker's clause keeps it "
+            f"rather than reading it as one",
+            tuple(last)))
     return seen[m:m + run], seen[m + run:j]
+
+
+#: What `_between_name_words` reads instead of walking: two arrays over
+#: the segment's pieces, giving for each index the nearest piece on
+#: its left and on its right that is NOT a connective -- `-1` and
+#: `len(pieces)` where the run reaches the end. Built by
+#: `_run_neighbours`, and an ALIAS rather than a NamedTuple because a
+#: NamedTuple's __new__ is a frame of its own (decisions.md#parse-cost).
+_Beside = tuple[list[int], list[int]]
+
+
+def _run_neighbours(pieces: Sequence[Sequence[int]],
+                    ptags: Sequence[Set[str]],
+                    tokens: Sequence[WorkToken]) -> _Beside:
+    """The nearest non-connective piece on each side of every index.
+
+    EVERY MEMBER OF ONE RUN HAS THE SAME ANSWER, which is the whole
+    of the fix: `_between_name_words` used to walk the run itself, so a
+    name holding a run of n connectives walked it n times and the
+    stage went quadratic in the run's length -- measured 2026-09-20,
+    `"Josep " + "i " * n + "Rovira"` grew 3.8x per doubling against
+    the 2.0x every other shape holds, 59ms at n=800. Two linear
+    passes answer the same question once for the whole segment.
+    `tests/v2/test_benchmark.py`'s `link_run` shape is the guard.
+
+    `_is_conj_piece` is asked ONCE per piece, into a list the second
+    pass then reads: asking it in both passes would double the calls,
+    and it is the only per-piece call this builder makes. Recorded in
+    the FIRST pass rather than by a comprehension of its own -- which
+    is a code object on 3.11 and a bytecode saving here rather than a
+    frame one, measured: the profile hook emits no call event for it.
+
+    WHAT IT COSTS A SHORT NAME, because answering for the whole
+    segment is not free where the walk would have stopped at once:
+    this call, plus `_is_conj_piece` for the pieces the walk never
+    reached. Re-measured 2026-09-21 on py3.11 against b9ed1429, the
+    whole pair through `tests/v2/test_benchmark.py`'s own
+    `_frames_for` shape -- `Josep Carod i Rovira` 311 -> 313 frames
+    (one call and two more `_is_conj_piece` over its four pieces,
+    less the frame the fold below saved) and `Jane Doe nee Puig i
+    Soler` 315 -> 319. An O(1) rise per link-bearing name against an
+    unbounded saving: the same name with a run of 64 links goes
+    6,741 -> 2,587. (The pair first written here read 304 -> 307 and
+    307 -> 312, with 6,741 -> 2,652 for the run of 64. Re-measured
+    2026-09-22 on py3.11, WHICH OF THOSE REPRODUCE is: the two
+    short-name pairs, neither of them; the run-of-64 pair, its left
+    half only -- b9ed1429 reads 6,741 exactly, while 6048eb5d, the
+    tree the 2,652 was taken on, reads 2,651 here. So the interpreter
+    splice ran through a single arrow, which is what the table
+    `tools/perf/call_count.py`'s own docstring warns about. Every
+    figure above is one interpreter, stated.)
+    `tools/perf/call_count.py` is unmoved (parse=406.00,
+    facade=443.00) -- its reference name carries no link -- and so are
+    `John Smith`, `Smith, John`, `Juan Garcia y Lopez` and `Jane Doe
+    nee Smith`, none of which reaches this at all.
+
+    Called only where a generational connective was found in the
+    segment (the `frozen` loop) or where a clause's walk reached a
+    CONNECTIVE suffix piece (`_link_joins_inside_the_clause`), so no
+    ordinary name pays for it at all.
+
+    Dropping either pass's `not` fails
+    test_a_connective_piece_counts_toward_the_carve_outs_total
+    (mutation-checked 2026-09-20; how the two arrays are READ is
+    checked in `_between_name_words`, which reads them).
+    """
+    n = len(pieces)
+    left = [-1] * n
+    right = [n] * n
+    conj = [False] * n
+    prev = -1
+    for k in range(n):
+        left[k] = prev
+        is_conj = _is_conj_piece(pieces[k], ptags[k], tokens)
+        conj[k] = is_conj
+        if not is_conj:
+            prev = k
+    nxt = n
+    for k in range(n - 1, -1, -1):
+        right[k] = nxt
+        if not conj[k]:
+            nxt = k
+    return left, right
 
 
 # rules.md#P3: "a recognized connective joins its neighbors into one
 # name part, connective runs included — except a single-letter
 # connective in a three-word name, which stays a name word, and a
-# single-letter connective written as a bare Latin capital, which
-# reads as an initial and never joins" (history: decisions.md#P3)
+# single-letter connective that reads as an initial instead, which
+# never joins" (history: decisions.md#P3)
 def _is_conj_piece(piece: Sequence[int], ptags: Set[str],
                    tokens: Sequence[WorkToken]) -> bool:
     if "conjunction" in ptags:
@@ -288,9 +808,115 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
                  tokens: Sequence[WorkToken]) -> bool:
     if len(piece) == 1 and "initial" in tokens[piece[0]].tags:
         return False
+    # rules.md#P3: "A connective counts as a name word wherever this
+    # rule counts them, whatever else the vocabulary says the word is"
+    # (#397). The order against the `initial` refusal above decides
+    # nothing, and what makes that safe lives in classify rather than
+    # here: for a single letter it writes `initial` or `conjunction`
+    # and never both, so a one-case `I`/`i` arrives with no conjunction
+    # tag whichever test runs first -- measured, hoisting this arm
+    # above the refusal moves no field, report or initial on any
+    # corpus name under three name orders, and no test. INLINE rather
+    # than a call to _is_conj_piece: this runs once per piece of every
+    # name (frame budget).
+    if ("conjunction" in ptags
+            or (len(piece) == 1 and "conjunction" in tokens[piece[0]].tags)):
+        return True
     return not (is_title_piece(piece, ptags, tokens)
                 or _is_prefix_piece(piece, ptags, tokens)
                 or is_suffix_piece(piece, ptags, tokens))
+
+
+# rules.md#P3: "a word the rest of the parse reads as a name word
+# rather than as a generation, a credential or an honorific, looked
+# for past any run of connectives standing between. A connective with
+# nothing to its right is connecting nothing, and a word of that
+# vocabulary ending a name, or standing before the credential a name
+# ends with, is the generation it also spells" (#397) -- the WHOLE
+# clause, its second sentence included, because that sentence is what
+# this predicate answering `False` means. Reading it as a generation
+# is the CALLER's half: `_group_segment`'s `frozen` set is where a
+# connective this refuses is placed as the generation, and
+# `_link_joins_inside_the_clause` is the maiden walk's.
+# `Sequence[Sequence[int]]` rather than `Sequence[Piece]`, widened
+# when the maiden walk became a second caller: this reads a piece and
+# never edits one, and `_maiden_take` holds its pieces at the wider
+# type the stage's entry point hands it.
+def _between_name_words(k: int, lo: int, hi: int,
+                        pieces: Sequence[Sequence[int]],
+                        ptags: Sequence[Set[str]],
+                        tokens: Sequence[WorkToken],
+                        beside: _Beside) -> bool:
+    """Whether such a word stands on EACH side of the connective piece
+    at `k`.
+
+    Both sides in one call because neither caller ever wants one: a
+    connective is placed to join only where a name word stands on both
+    sides of it, so the two answers were always ANDed at the call site
+    and the left one short-circuits the right either way. One frame per
+    generational connective rather than two, which is the whole of the
+    saving -- the left arm below is the old left call and the right arm
+    the old right one, unchanged (#397 follow-up).
+
+    `lo` and `hi` bound the name's own words: assign peels the pieces
+    below `lo` as its leading titles and those from `hi` up as its
+    trailing suffix run, so a piece outside that span is a credential
+    or an honorific however it is spelled, and the numeral or bare
+    acronym the peel takes ('i V', 'i MA') is inside `hi` by
+    construction rather than by a second reading of the vocabulary
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+
+    Inside the span the suffix and title tests still run, because
+    neither bound reaches a credential or an honorific standing in
+    the MIDDLE of a name ('Josep Jr. i Rovira', 'Josep Dr. i
+    Rovira'): the peel walks from the end and stops at the first name
+    word, the title run from the front.
+
+    The answer steps over connectives because a RUN of them joins as
+    one ('Carod i y Rovira'), so the word this rule is about is the
+    first one past the run -- and where the run runs out ('Juan i e')
+    there is no name word on that side at all. `beside` is where that
+    stepping already happened: `_run_neighbours` walked every run once
+    for the whole segment, so this reads an index rather than walking
+    to it. A SENTINEL OUT OF RANGE is how "the run ran out" arrives --
+    -1 on the left, `len(pieces)` on the right -- and each bound test
+    below turns it into False, exactly as the walk did when it ran
+    here and stopped at the same place. `lo` is never negative and
+    `hi` never past `len(pieces)`, so neither sentinel can pass the
+    bound, and the piece tests are never asked about an index that is
+    not one.
+
+    Mutation-checked 2026-09-21, every arm of both sides by a NAMED
+    test. Reading the LEFT array for the right arm too fails
+    test_a_connective_with_nothing_to_its_right_does_not_join;
+    the RIGHT array for the left arm too fails
+    test_a_leading_title_on_the_left_is_no_name_word.
+    The bounds, WIDENED to the whole segment rather than dropped --
+    dropping the right one indexes past the pieces on the sentinel and
+    raises instead of failing a test -- fail
+    test_the_marker_is_not_the_name_word_on_the_links_left (left) and
+    test_the_right_hand_test_reads_the_peel_not_the_suffix_piece
+    (right). Either piece test on the LEFT fails
+    test_a_credential_or_honorific_mid_name_is_no_name_word_either;
+    either on the RIGHT fails
+    test_a_credential_or_honorific_mid_name_on_the_right_too, which is
+    the row the fold asked for: while this was two per-side calls a
+    mutation hit both sides at once and the left-hand rows covered for
+    the right-hand ones, whose own rows stand at the END of the name
+    where `hi` refuses them first. SWAPPING the two arrays outright is
+    an EQUIVALENT mutant and no test fails: the two arms are ANDed, so
+    which array answers which side is not a question the conjunction
+    can see.
+    """
+    left = beside[0][k]
+    if not (lo <= left < hi
+            and not is_suffix_piece(pieces[left], ptags[left], tokens)
+            and not is_title_piece(pieces[left], ptags[left], tokens)):
+        return False
+    right = beside[1][k]
+    return (lo <= right < hi
+            and not is_suffix_piece(pieces[right], ptags[right], tokens)
+            and not is_title_piece(pieces[right], ptags[right], tokens))
 
 
 def _group_segment(seg: tuple[int, ...], additional: int,
@@ -300,6 +926,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    cores: Set[str] = frozenset(),
                    given_name_titles: Set[str] = frozenset(),
                    opens_the_name: bool = False,
+                   *,
+                   one_case: bool | None,
+                   reader: TailReader,
+                   maiden_ambiguities: list[PendingAmbiguity],
                    ) -> tuple[list[Piece], list[set[str]], MaidenTake | None]:
     pieces: list[Piece] = [[i] for i in seg]
     ptags: list[set[str]] = [set() for _ in seg]
@@ -308,6 +938,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # list) suppresses reporting -- see group() for when that applies.
     if ambiguities is None:
         ambiguities = []
+    # The maiden walk's own channel, and REQUIRED beside `reader` for
+    # the same reason: the one production caller answers both off the
+    # segment's structure, and a default would be this module guessing
+    # what that caller already knows. group() passes `None` on the
+    # first for the chain emitter after a family comma -- the comma
+    # fixed the family, so that fork is settled -- and #533's is not
+    # that fork: a credential ending a maiden clause is a question the
+    # comma settles nothing about, which is why the two channels are
+    # two parameters. They are given the SAME list wherever nothing is
+    # suppressed, which is every segment that is NOT after a family
+    # comma; what the split buys is the other case, where `None` on
+    # the first must not reach the second -- a maiden channel
+    # defaulting to whatever the first was would let a caller passing
+    # `ambiguities=None` silence both (the review's finding).
 
     def title(k: int) -> bool:
         return is_title_piece(pieces[k], ptags[k], tokens)
@@ -440,7 +1084,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # The tokens are not touched here: this function reads them and
     # returns what it took, and group() records the drop and the roles.
     taken: MaidenTake | None = None
-    take = _maiden_take(pieces, ptags, tokens, cores)
+    take = _maiden_take(pieces, ptags, tokens, cores, one_case,
+                        reader, maiden_ambiguities)
     if take is not None:
         marker_ks, maiden_ks = take
         taken = ([i for k in marker_ks for i in pieces[k]],
@@ -450,12 +1095,121 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             del ptags[k]
 
     if len(pieces) + additional >= 3:
+        # rules.md#P3: "A connective that is also generational
+        # vocabulary joins only where a name word stands on each side
+        # of it" (#397). `frozen` holds the TOKEN index of every such
+        # connective missing that name word on one side or the other.
+        # It is joining nothing, so it is the generation it also
+        # spells: no join of its own reaches it, it may not merge into
+        # a run, and it counts toward the carve-out total the way the
+        # generation counted -- not at all, a suffix piece being no
+        # rootname. A TOKEN index for the same reason the chain's
+        # trailing run is a length from the end: the merges below move
+        # piece indices and cannot move this one.
+        #
+        # "No join of its own" is the whole claim, and a NEIGHBOUR's
+        # join can still absorb it: the two loops below skip a frozen
+        # piece as the join's SUBJECT and nothing keeps it out of the
+        # span another connective's join takes. 'Josep Carod Rovira
+        # Puig y i' freezes the trailing 'i' -- nothing stands on its
+        # right -- and the 'y' beside it joins across it all the same,
+        # for family 'Puig y i', which is what the parent read there
+        # too. Pinned by test_a_frozen_link_is_still_absorbed_by_a_
+        # neighbours_join.
+        #
+        # Asked HERE, of the pieces as classify left them, and of the
+        # NEIGHBOURS' class rather than of the connective's position:
+        # any piece on each side passes a position test, so a
+        # generational suffix standing behind the link was swallowed
+        # into the name ("Josep Lluis Carod i III" read family 'Carod
+        # i III'). It cannot be re-asked further down either, because
+        # a merge answers it -- in the part a join produced, the
+        # absorbed suffix IS the word standing on the right.
+        #
+        # Nothing but a connective of the suffix vocabulary reaches
+        # the body, so a name that has none pays tag lookups and no
+        # call at all.
+        #
+        # NO LENGTH TEST, which is the rule's own scope rather than an
+        # omission: the clause quoted above names a CLASS and says
+        # nothing about how the word is spelled. Narrowing it to
+        # one-letter connectives was caller-reachable -- under
+        # `Lexicon.default().add(conjunctions={"og"}, suffix_words=
+        # {"og"})`, 'John Quincy Smith og' reads family 'Smith' plus
+        # suffix 'og', the answer the rule states, and read family
+        # 'Smith og' while a `len(tok.text) != 1` stood here (#397
+        # second review). Nothing SHIPPED can witness it, `i` being
+        # the only member of the class in the default vocabulary and
+        # in every locale pack and one letter long -- measured rather
+        # than assumed: byte-identical (fields, reports, `initials()`,
+        # `capitalized()` plain and forced, every token's role) across
+        # 359,053 parses on 2026-09-20, the 351,400-parse review grid
+        # under eight lexicon/policy/locale configurations, the
+        # 2,175-parse sweep of tests/v2/cases.py under three orders
+        # and the 5,478-parse sweep of the differential corpora under
+        # six. Pinned by test_a_multi_letter_link_of_the_suffix_
+        # vocabulary_joins_by_the_same_rule.
+        #
+        # The three-word carve-out below stays single-letter, because
+        # THAT is what its own sentence says ("a single-letter
+        # connective in a three-word name").
+        frozen: set[int] = set()
+        lo = hi = -1
+        beside: _Beside = ([], [])
+        for k, piece in enumerate(pieces):
+            tok = tokens[piece[0]]
+            if (len(piece) != 1
+                    or "conjunction" not in tok.tags
+                    or "vocab:suffix" not in tok.tags):
+                continue
+            # The bounds and the run memo, computed once per segment
+            # and only where such a connective was found, so the cost
+            # is the link's own and no ordinary name pays any of it.
+            if hi < 0:
+                lo = leading_titles(pieces, ptags, tokens)
+                # H5's reading and not the peel over the pieces as
+                # WRITTEN: a title standing behind the suffix run
+                # hides it from `trailing_start`, which then answers
+                # `len(pieces)` and hands this loop a credential as
+                # the name word on the link's right. 'John Quincy
+                # Adams i MA Prof.' joined to family 'Adams i MA' with
+                # no report at all, where 'John Quincy Adams i MA' --
+                # the same name, one title shorter -- reads family
+                # 'Adams', suffix 'i MA' and reports the acronym
+                # (#397 second review).
+                hi = trailing_start_past_titles(lo, pieces, ptags,
+                                                tokens,
+                                                one_case=one_case)
+                # ONE ANSWER PER RUN: every member of a contiguous run
+                # of connectives has the same nearest name word on
+                # each side, and asking per member walked the run once
+                # per member -- quadratic in its length, 3.8x per
+                # doubling measured at `b9ed1429`.
+                beside = _run_neighbours(pieces, ptags, tokens)
+            if not _between_name_words(k, lo, hi, pieces, ptags, tokens,
+                                       beside):
+                frozen.add(piece[0])
         total = sum(_is_rootname(p, t, tokens)
-                    for p, t in zip(pieces, ptags)) + additional
+                    for p, t in zip(pieces, ptags)
+                    if p[0] not in frozen) + additional
         # contiguous conjunction runs merge first (v1: "of the")
+        #
+        # `pieces[k][0] in frozen` and not `frozen.isdisjoint(...)`:
+        # the piece this loop extends GROWS with every merge, so a
+        # test over its tokens costs 1+2+...+n and the stage goes
+        # quadratic in the length of a connective run -- measured,
+        # 'and ' x3200 took 41.8ms against 21.7ms, 6.2x per 4x input
+        # where the shape reads 4.1x, and tests/v2/test_benchmark.py's
+        # "and " shape is the guard that caught it. Reading the first
+        # token alone is exact rather than an approximation: a frozen
+        # piece is one token, nothing merges it (this branch declines,
+        # and the join below skips it), so a piece holding a frozen
+        # token IS that token.
         k = 0
         while k < len(pieces) - 1:
-            if conj(k) and conj(k + 1):
+            if (conj(k) and conj(k + 1)
+                    and pieces[k][0] not in frozen
+                    and pieces[k + 1][0] not in frozen):
                 merge(k, k + 2, add={"conjunction"})
             else:
                 k += 1
@@ -463,15 +1217,21 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # single-letter connective in a three-word name, which stays a
         # name word" (v1's Google Code issue 11 carve-out, the
         # "john e smith" bug). The threshold reads the ROOTNAME count,
-        # so a conjunction that is also suffix vocabulary raises the
-        # bar for itself -- #397 measures that on "i".
+        # and since #397 a connective counts ITSELF toward that count
+        # WHERE IT IS JOINING, so a connective that is also suffix
+        # vocabulary no longer raises the bar for its own join and no
+        # longer lowers it for an unrelated one ("Carod y Rovira i"
+        # counted the trailing generation and let the `y` join).
         k = 0
         while k < len(pieces):
-            if not conj(k):
+            # first token again, and here it is exact for the second
+            # reason as well: the piece a join produces is left BEHIND
+            # `k`, so no merged piece is ever tested twice.
+            if not conj(k) or pieces[k][0] in frozen:
                 k += 1
                 continue
             text = " ".join(tokens[i].text for i in pieces[k])
-            if len(text) == 1 and total < 4 and text.isalpha():
+            if len(text) == 1 and text.isalpha() and total < 4:
                 k += 1
                 continue
             start = max(0, k - 1)
@@ -570,7 +1330,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # the acronym still has the pieces the fork counted (below).
         name_start = leading_titles(pieces, ptags, tokens)
         tail = len(pieces) - trailing_start(name_start, pieces, ptags,
-                                             tokens)
+                                             tokens, one_case=one_case)
         def chain(tail: int) -> None:
             k = 0
             while k < len(pieces):
@@ -643,6 +1403,75 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         f"name piece; it is also a given name in other "
                         f"names",
                         (i,)))
+                # rules.md#S2: "A BARE ambiguous acronym is consumed
+                # only when the name has words to spare — as the second
+                # of two words it stays the family name — and at the
+                # slots that report, either reading carries the
+                # ambiguity flag"
+                #
+                # The other half of SUFFIX_OR_NAME's declined branch,
+                # and it is here for the reason PARTICLE_OR_GIVEN's
+                # second emitter is: a fork whose branches are taken in
+                # different stages needs an emitter in each
+                # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE).
+                # `assign` reports from `peel_trailing`'s picks, and a
+                # pick reaches it only as a LONE piece -- the peel's own
+                # `len(piece) == 1` test -- so the moment this chain
+                # takes the acronym into the particle run, the token
+                # assign would have reported on no longer exists as a
+                # piece and NOBODY reports. Measured: 'John van der Berg
+                # Ma', 'John de Ma', 'Dr. John van Smith Ma', 'John van
+                # Smith Ma Jr.' and 'John Smith Mc Ma' each lost the
+                # report #289's own lean had just made true of them,
+                # while 'John Smith Ma' -- the same fork with no
+                # particle to chain -- kept it (review round).
+                #
+                # The DECLINED reading is what this reports, because
+                # this branch only runs over pieces the peel left
+                # standing: `tail` is the peel's own answer, the inner
+                # scan stops at `len(pieces) - tail`, and a piece the
+                # peel TOOK is behind that bound. Where the chain runs
+                # again with a smaller tail (the re-peel below), the
+                # first pass's appends are truncated with the pieces,
+                # so the surviving report is the surviving reading's.
+                #
+                # `j > k + 1` above is this test's floor too: a merge
+                # that folds a piece into itself chained nothing.
+                # Written inline against the tags and with no new walk
+                # -- `pieces[j - 1]` is the last piece the merge is
+                # about to claim, one index and one frozenset test --
+                # so the ordinary chained name ('de la Vega') pays no
+                # frame for it.
+                #
+                # `not prefix(j - 1)` is the other floor, and it names
+                # WHICH of the two scans above claimed the piece. The
+                # first extends the PARTICLE run and the second takes
+                # name words up to the trailing suffix; only the second
+                # is taking a word the peel had looked at. A word in
+                # both vocabularies ('do', 'mc', 'vd') ends a particle
+                # run as a particle, which is P4's reading and P6's
+                # fork, not this one -- 'anh van do' has read family
+                # 'van do' silently since 1.4.0 and its case row says
+                # so. It is tested LAST, and measured: `prefix` is a
+                # closure over `_is_prefix_piece`, so asking it is TWO
+                # frames, and asking it ahead of the tag test moved the
+                # reference name from 412 to 414 -- every chained name
+                # in the library paying for a question only an
+                # ambiguous acronym can make interesting. Behind the
+                # `isdisjoint` (a C call, no frame) almost nothing
+                # reaches it.
+                last = pieces[j - 1]
+                if (j > k + 1 and len(last) == 1
+                        and not tokens[last[0]].tags.isdisjoint(
+                            _AMBIGUOUS_CREDENTIAL_TAGS)
+                        and not prefix(j - 1)):
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                        f"{tokens[last[0]].text!r} is both a post-nominal "
+                        f"and an ordinary name; the particle chain took "
+                        f"it into the name rather than reading it as a "
+                        f"post-nominal",
+                        tuple(last)))
                 merge(k, j, drop={"prefix"})
                 k += 1
 
@@ -668,7 +1497,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             chain(tail)
             left = len(pieces) - trailing_start(
                 leading_titles(pieces, ptags, tokens), pieces, ptags,
-                tokens)
+                tokens, one_case=one_case)
             if left < tail:
                 pieces[:], ptags[:] = kept[0], kept[1]
                 del ambiguities[kept[2]:]
@@ -735,13 +1564,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # unjoined and keeps it joined. Shapes pinned in
                 # test_group.py.
                 rest, chain_took, before = tail_reading(
-                    peel_walk(fk, ptags), pieces, ptags, tokens)
+                    peel_walk(fk, ptags), pieces, ptags, tokens, one_case)
                 view, view_tags = list(pieces), list(ptags)
                 view[fk:fk + 2] = [pieces[fk] + pieces[fk + 1]]
                 view_tags[fk:fk + 2] = [joined_tags(fk, fk + 2,
                                                     drop={"title"})]
                 view_rest, _, after = tail_reading(
-                    peel_walk(fk, view_tags), view, view_tags, tokens)
+                    peel_walk(fk, view_tags), view, view_tags, tokens,
+                    one_case)
                 same_suffixes = (
                     [tuple(view[j]) for j in view_rest[after.names:]]
                     == [tuple(pieces[j]) for j in rest[before.names:]])
@@ -829,12 +1659,26 @@ def group(state: ParseState) -> ParseState:
         # there is no fork left to report.
         tail = tail_start is not None and seg_idx >= tail_start
         seg_cores = cores if tail else frozenset()
+        # #533: which rule reads what the maiden walk would leave, off
+        # the three facts already in hand here. A tail segment is read
+        # as credentials whole and segment 0 of a family comma is the
+        # family the comma named, so neither consults a trailing rule.
+        if tail:
+            reader = TailReader.NONE
+        elif family_comma:
+            reader = (TailReader.GIVEN_SLOT if seg_idx == 1
+                      else TailReader.NONE)
+        else:
+            reader = TailReader.TRAILING
         pieces, ptags, taken = _group_segment(
             seg, additional, tokens, bound_join,
             None if family_comma else ambiguities,
             seg_cores,
             state.lexicon.given_name_titles,
-            opens_the_name=(seg_idx == 0 and not family_comma))
+            opens_the_name=(seg_idx == 0 and not family_comma),
+            one_case=state.one_case,
+            reader=reader,
+            maiden_ambiguities=ambiguities)
         # the marker is dropped and the maiden name's tokens become
         # MAIDEN (#274); which pieces those are was settled in
         # _group_segment, before the joins

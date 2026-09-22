@@ -32,6 +32,7 @@ this paragraph, if the two ever disagree).
 """
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 
 from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
@@ -126,8 +127,9 @@ class Case:
     #: tag -- mutually exclusive with `shape`, since a shape ADMITS a
     #: text to the contract and tolerated deliberately does not. Every
     #: composed/wrapped CJK form (a comma listing, a Latin title or
-    #: credential around a CJK name, and since 2026-09-05 a trailing
-    #: ASCII period on an honorific) is this table's ground for it,
+    #: credential around a CJK name, since 2026-09-05 a trailing ASCII
+    #: period on an honorific, and since #323 an edge full stop of any
+    #: width on any CJK name word) is this table's ground for it,
     #: not shapes 6/7's. Restricted to CJK-bearing text (`_has_cjk`):
     #: it exists to demote composed/wrapped CJK forms specifically, and
     #: a Latin row asking for it is a smell until some future arc
@@ -358,40 +360,47 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "Esq"},
          notes="the suffix_words branch of the delimited-content "
                "escape (v1 parity, pinned live 2026-07-17)"),
-    Case("suffix_acronym_multidot_spelling_is_a_name_word",
+    Case("the_removed_esq_spelling_returns_as_a_credential",
          "John Smith E.S.Q.",
-         {"given": "John", "middle": "Smith", "family": "E.S.Q."},
-         classification="fix(suffix-acronym-collisions)",
-         notes="a BEHAVIOR CHANGE rather than a fix -- a deliberate "
-               "2.x parity break, every release from 1.4.0 read "
-               "suffix 'E.S.Q.' here. 'esq' left SUFFIX_ACRONYMS "
-               "2026-09-08: Esquire is a contraction, not an "
-               "initialism, the entry arrived in the 2019 bulk "
-               "post-nominal import (af5bdab, #93), and the multi-dot "
-               "spelling was its only unique coverage. Same criterion "
-               "as the rai/cha rows above -- "
-               "decisions.md#suffix-acronym-collisions -- asked of the "
-               "machinery instead of a surname: does the entry "
-               "describe the WORD or the set's normalization. The "
-               "classification is a slug and not an issue number "
-               "because no issue asked for it; the bundle that "
-               "carried it is #489/#316"),
+         {"given": "John", "family": "Smith", "suffix": "E.S.Q."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="1.4.0 RESTORED a SECOND time, by a different route "
+               "than it lost it. 'esq' left SUFFIX_ACRONYMS 2026-09-08: "
+               "Esquire is a contraction, not an initialism, the entry "
+               "arrived in the 2019 bulk post-nominal import "
+               "(af5bdab, #93), and the multi-dot spelling was its "
+               "only unique coverage -- so for one bundle this read "
+               "family 'E.S.Q.' (a deliberate 2.x parity break, "
+               "decisions.md#suffix-acronym-collisions; same criterion "
+               "as the rai/cha rows above, asked of the machinery "
+               "instead of a surname: does the entry describe the "
+               "WORD or the set's normalization; the bundle that "
+               "carried the removal is #489/#316). #516's by-shape "
+               "class reads it again now, with no wordlist entry at "
+               "all: an unlisted dotted token of three single-letter "
+               "chunks joins the ambiguous class by SHAPE and the "
+               "words-to-spare count reads it as the credential it is",
+         shape=1),
     Case("suffix_acronym_multidot_after_a_family_comma",
          "Smith, E.S.Q.",
          {"given": "E.S.Q.", "family": "Smith"},
          classification="parity",
-         notes="the other path the same removal moves, and the one "
-               "that RESTORES v1: with 'esq' in SUFFIX_ACRONYMS the "
-               "multi-dot spelling was a suffix piece, so the "
-               "post-comma segment held no name word and read suffix "
-               "'E.S.Q.' (2.0.0 through 2.2.0). Out of the set, it is "
-               "an ordinary name word and the walk's first non-title "
-               "piece is ALWAYS the given -- which is what 1.4.0 read "
-               "here, first 'E.S.Q.' / last 'Smith' (measured "
-               "2026-09-09), so this row is parity where its no-comma "
-               "sibling above is a parity BREAK. Same entry, opposite "
-               "directions, because v1 read the two paths "
-               "differently"),
+         ambiguities=("suffix-or-name",),
+         notes="the other path the same removal moved, once -- with "
+               "'esq' in SUFFIX_ACRONYMS the multi-dot spelling was a "
+               "suffix piece, so the post-comma segment held no name "
+               "word and read suffix 'E.S.Q.' (2.0.0 through 2.2.0); "
+               "out of the set it briefly restored 1.4.0 instead, "
+               "first 'E.S.Q.' / last 'Smith' (measured 2026-09-09). "
+               "#516's by-shape class now reads the SAME single "
+               "pre-comma word as a candidate for the ambiguous class "
+               "-- one word is never enough to flip the structure "
+               "(rules.md#C1), so the FIELDS stay at the 1.4.0 "
+               "reading, but the class is now considered, and the "
+               "consideration reports: the parity note above is about "
+               "the reading, not about whether a fork was called",
+         shape=2),
     Case("suffix_word_esq_still_reads_as_a_suffix", "John Smith Esq",
          {"given": "John", "family": "Smith", "suffix": "Esq"},
          notes="the other half of the row above, and what the removal "
@@ -423,18 +432,35 @@ CASES: tuple[Case, ...] = (
                "initials() too, for names whose roles are identical -- "
                "but only under the policies it runs, and middle_as_family "
                "is not one, so this row stays pinned here"),
+    # MOVED by #289, not deleted: 'MA' is written in capitals inside a
+    # mixed-case name, so it now leans CREDENTIAL and is taken with no
+    # words to spare -- the reserve/count this row used to pin no
+    # longer decides here, the written case does (decisions.md#S2).
     Case("ambiguous_surname_acronyms", "Jack MA",
-         {"given": "Jack", "family": "MA"},
-         ambiguities=("suffix-or-name",),
-         notes="'ma'/'do' joined suffix_acronyms_ambiguous: with only "
-               "two pieces, 'one of them is a credential' is the less "
-               "likely reading, so the ambiguous acronym stays the "
-               "family name (v1 parity via its reserve_last)"),
+         {"given": "Jack", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the defect #289 reports: an all-caps member of the "
+               "ambiguous set inside a mixed-case name is written the "
+               "way a credential is written, so it is taken as one "
+               "even though peeling it leaves no family -- what "
+               "'Jack MD' has always done with an unambiguous one. "
+               "'Jack' is then the only name word left, which is also "
+               "what turns on GIVEN_OR_FAMILY. 1.4.0 read LAST 'MA' "
+               "here (family 'MA'), so this row BREAKS 1.4.0 parity "
+               "deliberately, in the direction the East Asian surname "
+               "wants (decisions.md#S2) -- corrected 2026-09-17, F3 "
+               "review finding: an earlier version of this note "
+               "wrongly claimed the opposite"),
     Case("ambiguous_surname_acronym_with_suffix", "Jack MA Jr",
-         {"given": "Jack", "family": "MA", "suffix": "Jr"},
-         ambiguities=("suffix-or-name",),
-         notes="'Jr' peels first; 'MA' would then be the only piece "
-               "left beside the given name, so it stays family"),
+         {"given": "Jack", "suffix": "MA Jr"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="'Jr' peels first as unambiguous vocabulary; 'MA' is "
+               "then the last piece, and the caps lean takes it with "
+               "no words to spare rather than leaving it the family "
+               "the old reserve kept (decisions.md#S2) -- both suffix "
+               "words render as one run"),
     Case("ambiguous_acronym_is_a_suffix_when_a_family_name_remains",
          "John Smith MA",
          {"given": "John", "family": "Smith", "suffix": "MA"},
@@ -488,16 +514,22 @@ CASES: tuple[Case, ...] = (
                "is the same shape and moves with it"),
     Case("removed_credential_loses_the_dotted_spelling_too",
          "John Smith C.H.A.",
-         {"given": "John", "middle": "Smith", "family": "C.H.A."},
-         classification="fix(#342)",
-         notes="the removal reaches the DOTTED spelling through S3's "
-               "period fold, which strips the periods to reach the "
-               "entry -- so with 'cha' gone this reads family. The "
-               "contrast is 'John Smith R.A.I.', which still reads "
-               "suffix and is an accident of 'i' being a SUFFIX_WORDS "
-               "numeral rather than a survival of the vocabulary, "
-               "deliberately unpinned "
-               "(decisions.md#suffix-acronym-collisions)"),
+         {"given": "John", "family": "Smith", "suffix": "C.H.A."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="for one bundle the removal reached the DOTTED spelling "
+               "through S3's period fold, which strips the periods to "
+               "reach the entry -- so with 'cha' gone this read family "
+               "(the contrast was 'John Smith R.A.I.', which kept "
+               "reading suffix as an accident of 'i' being a "
+               "SUFFIX_WORDS numeral rather than a survival of the "
+               "vocabulary, decisions.md#suffix-acronym-collisions). "
+               "#516's by-shape class now reads BOTH the same way, by "
+               "POSITION rather than by any chunk claim -- three "
+               "single-letter chunks, none of them vocabulary, still "
+               "join the ambiguous class by shape and the words-to-"
+               "spare count reads this one a credential too",
+         shape=1),
     # -- #342: 'ba' is the other half of the same decision. BA is a
     # common credential and Ba a real surname (Vietnamese; Senegalese
     # Fula), which is the ma/Ma shape exactly, so it takes the
@@ -514,18 +546,23 @@ CASES: tuple[Case, ...] = (
                "through 2.2.0 read suffix 'Ba' with no family name; "
                "1.4.0 read family 'Ba' unflagged, so this row "
                "restores 1.4.0's roles and adds the flag"),
+    # MOVED by #289, not deleted: 'BA' is written in capitals inside a
+    # mixed-case name, so it now leans CREDENTIAL and the post-comma
+    # slot takes it with one word to spare where the count alone would
+    # not -- back to what 2.0.0 through 2.2.0 read, though for a
+    # different reason (decisions.md#S2, Derek's own #289 comment:
+    # positive evidence outranks position here).
     Case("comma_ambiguous_acronym_ba", "Smith, BA",
-         {"given": "BA", "family": "Smith"},
-         classification="parity",
+         {"family": "Smith", "suffix": "BA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
          notes="the marking's comma cost, and it is 'Smith, Ed' "
                "arriving for a second word: with 'ba' ambiguous, S2 "
                "declines the post-comma credential and C1 reads it as "
                "the given name. 2.0.0 through 2.2.0 read family "
-               "'Smith', suffix 'BA'; 1.4.0 read given 'BA', which is "
-               "what this restores and why it classifies parity. The "
-               "row is here because the release note names the text -- "
-               "comma_ambiguous_acronym pins the fork and stays green "
-               "when 'ba' leaves the ambiguous subset"),
+               "'Smith', suffix 'BA'; 1.4.0 read given 'BA'. #289 moves "
+               "this row again: the caps lean now reads 'Smith, BA' the "
+               "way a business form is written"),
     Case("ba_is_a_suffix_when_a_family_name_remains", "John Smith BA",
          {"given": "John", "family": "Smith", "suffix": "BA"},
          ambiguities=("suffix-or-name",),
@@ -808,7 +845,13 @@ CASES: tuple[Case, ...] = (
                "The declined post-nominal is what the report names "
                "(#405), so the kind is suffix-or-name and not "
                "particle-or-given -- 'vd' is no given name in either "
-               "reading"),
+               "reading. Also the control for #531's P6 condition, "
+               "which declines a piece that is one token, roled SUFFIX "
+               "and carries `vocab:suffix-ambiguous`: 'vd' is "
+               "UNAMBIGUOUS suffix vocabulary, so it carries no such "
+               "tag and stays inside P6's run -- byte-identical before "
+               "and after #531. Narrowing that condition to the "
+               "ambiguous tag is what buys it"),
     Case("tussenvoegsel_behind_a_post_nominal", "Berg, Jan van Jr.",
          {"given": "Jan", "family": "van Berg", "suffix": "Jr."},
          classification="fix(#379)",
@@ -998,6 +1041,3369 @@ CASES: tuple[Case, ...] = (
     Case("initial_shaped_not_conjunction", "john e. smith",
          {"given": "john", "middle": "e.", "family": "smith"},
          notes="v1 is_conjunction excludes initials at classify too"),
+    # #383/#479: a single-letter connective joins only on positive
+    # evidence, and a name written wholly in one case has none. These
+    # 17 rows pin the FORK, not the wordlist
+    # (mechanisms.md#VOCABULARY-EXERCISES-FORKS).
+    #
+    # The 12 Latin e/y rows, plainly: 'e' at four words carries
+    # one-case-lower ('jose e maria santos'), one-case-upper ('JOSE E
+    # MARIA SANTOS'), mixed-lower where 'e' joins ('Jose e Maria
+    # Santos'), and mixed-upper where 'E' is an initial ('Jose E Maria
+    # Santos') -- four spellings, because within a mixed-case name the
+    # letter's OWN case still decides which reading it gets. 'e' at
+    # three words carries the same one-case-lower/one-case-upper/mixed-
+    # lower trio ('john e smith' / 'JOHN E SMITH' / 'John e Smith');
+    # its mixed-upper twin ('John E Smith') is absent because it would
+    # pin nothing these rows do not -- the three-word carve-out already
+    # keeps 'e' a name word either way, exactly as
+    # one_case_three_word_e_is_an_initial does. 'y'
+    # carries one-case-upper and one-case-lower at four words ('JUAN
+    # GARCIA Y LOPEZ' / 'juan garcia y lopez'), mixed-upper at four
+    # words where 'Y' still vetoes ('Juan Garcia Y Lopez'), and one-
+    # case-upper/one-case-lower at three words where the carve-out
+    # already held ('JUAN Y GARCIA' / 'juan y garcia'). 'Juan Garcia y
+    # Lopez' (mixed-lower, four words) is absent for the same reason as
+    # 'John E Smith': it pins the same BRANCH the mixed-lower 'e' row
+    # already demonstrates, a different JOIN though -- 'Garcia y Lopez'
+    # into the family where 'Jose e Maria' joins into the given run.
+    # 'Juan Y Garcia' (mixed-UPPER, three words) is absent because its
+    # control lives beside the capitalize() pin instead, in
+    # tests/test_capitalization.py::test_a_one_letter_conjunction_is_case_sensitive_to_repair;
+    # 'Juan y Garcia' (mixed-lower, three words) is absent from this
+    # table because rules.md#P3 carries it as its boundary example and
+    # test_render.py pins its initials.
+    #
+    # The other five rows are three DIFFERENT reasons a row does not
+    # move, not "three scripts that must not enter the fork": the
+    # Cyrillic pair DOES enter the fork -- 'и' is cased conjunction
+    # vocabulary and takes the non-member branch exactly as 'y' does,
+    # joining without a report -- the Catalan pair's 'i' is Latin script
+    # but is not conjunction vocabulary AT ALL, so it never reaches
+    # `single_letter_connective` in the first place (a different, earlier exclusion
+    # than Cyrillic's, and #397's before-picture); only the Arabic row
+    # is genuinely caseless and so never enters the fork on that
+    # ground.
+    #
+    # All 17 rows are shape-tagged so build_shapes_corpus.py projects
+    # them into the contract corpus -- measured 2026-09-13, no corpus
+    # file held a uniform-case name with a single-letter connective
+    # beyond the eight already there, and none held a standalone و at
+    # all, so without these the fork is invisible to every future gate
+    # run.
+    Case("one_case_lower_e_reads_as_an_initial", "jose e maria santos",
+         {"given": "jose", "middle": "e maria", "family": "santos"},
+         classification="fix(#479)",
+         ambiguities=("conjunction-or-initial",),
+         notes="#479 row 1, the defect. 1.4.0 and 2.0-2.3 alike read "
+               "'e' as the connective and gave given 'jose e maria'. "
+               "A lowercase letter in an all-lowercase name is no more "
+               "evidence than an uppercase one in an all-uppercase "
+               "name, so the vocabulary decides and 'e' is marked",
+         shape=1),
+    Case("one_case_upper_e_reads_as_an_initial", "JOSE E MARIA SANTOS",
+         {"given": "JOSE", "middle": "E MARIA", "family": "SANTOS"},
+         ambiguities=("conjunction-or-initial",),
+         notes="#479 row 4. The READING is unchanged from 1.4.0 and "
+               "from 2.3 -- what is new is the report: an all-upper "
+               "name's capital is not the evidence a mixed-case name's "
+               "capital is, so the same fork was being called silently",
+         shape=1),
+    Case("mixed_case_lower_e_is_the_connective", "Jose e Maria Santos",
+         {"given": "Jose e Maria", "family": "Santos"},
+         notes="the mixed-case control for the row above: here the "
+               "lowercase letter IS evidence, because the rest of the "
+               "name is not lowercase, so 'e' joins and nothing is in "
+               "doubt",
+         shape=1),
+    Case("mixed_case_upper_e_is_an_initial", "Jose E Maria Santos",
+         {"given": "Jose", "middle": "E Maria", "family": "Santos"},
+         notes="the other mixed-case control: a bare capital among "
+               "mixed case is how an initial is written, unchanged "
+               "since 1.4.0 and unreported",
+         shape=1),
+    Case("one_case_three_word_e_is_an_initial", "john e smith",
+         {"given": "john", "middle": "e", "family": "smith"},
+         ambiguities=("conjunction-or-initial",),
+         notes="P3's three-word carve-out is untouched -- 'e' stays a "
+               "name word either way -- so the ROLES do not move and "
+               "the visible change is the tag: ParsedName.initials() "
+               "(the v2 view this table exercises) gives 'j. e. s.' "
+               "where 2.3 gave 'j. s.', and capitalize() gives 'John E "
+               "Smith' where 2.3 gave 'John e Smith', pinned in "
+               "tests/v2/test_render.py. Measured 2026-09-13: the v1 "
+               "facade's HumanName.initials() did not follow this fork "
+               "that morning and still gave 'j. s.'; #528 closed the "
+               "split the same day by making that view read the "
+               "parse's tags, so both surfaces give 'j. e. s.' now and "
+               "test_facade_initials_follow_the_one_case_fork in "
+               "tests/v2/test_render.py pins the agreement where a "
+               "test pinned the split. This table asserts roles",
+         shape=1),
+    Case("one_case_upper_three_word_e_is_an_initial", "JOHN E SMITH",
+         {"given": "JOHN", "middle": "E", "family": "SMITH"},
+         ambiguities=("conjunction-or-initial",),
+         notes="the all-upper spelling of the row above: same reading, "
+               "and the report is what is new",
+         shape=1),
+    Case("mixed_case_three_word_e_is_the_connective", "John e Smith",
+         {"given": "John", "middle": "e", "family": "Smith"},
+         notes="the mixed-case control at three words. The carve-out "
+               "means the ROLE is the same as the row above; the "
+               "difference is the tag, and so the initials -- 'J. S.' "
+               "here against 'J. E. S.' for 'JOHN E SMITH'",
+         shape=1),
+    Case("one_case_upper_y_joins_as_a_bare_capital", "JUAN GARCIA Y LOPEZ",
+         {"given": "JUAN", "family": "GARCIA Y LOPEZ"},
+         classification="fix(#383)",
+         notes="#383 answered with 'bless', and this is the half that "
+               "moves: 1.4.0 through 2.3 vetoed a bare Latin capital "
+               "into an initial and gave middle 'GARCIA Y'. An "
+               "all-upper name's capital is not evidence, 'y' is not "
+               "marked as reading both ways, so it joins -- and "
+               "reports nothing, because nothing about it is in doubt",
+         shape=1),
+    Case("one_case_lower_y_joins", "juan garcia y lopez",
+         {"given": "juan", "family": "garcia y lopez"},
+         notes="the parity half of the pair above: a lowercase 'y' "
+               "joined before this change and joins after it",
+         shape=1),
+    Case("mixed_case_upper_y_is_an_initial", "Juan Garcia Y Lopez",
+         {"given": "Juan", "middle": "Garcia Y", "family": "Lopez"},
+         notes="the mixed-case control: here the capital IS evidence, "
+               "so the bare 'Y' reads as an initial exactly as it "
+               "always has, and the join does not happen",
+         shape=1),
+    Case("one_case_upper_y_keeps_the_three_word_carveout", "JUAN Y GARCIA",
+         {"given": "JUAN", "middle": "Y", "family": "GARCIA"},
+         notes="the boundary between the two exceptions: 'Y' is now "
+               "conjunction-tagged rather than initial-tagged, and the "
+               "three-word carve-out still refuses the join, so the "
+               "ROLE is unchanged. What moves is initials() -- "
+               "ParsedName.initials() gives 'J. G.' where 2.3 gave "
+               "'J. Y. G.', a conjunction contributing none "
+               "(rules.md#R3) -- and the v1 facade's "
+               "HumanName.initials() gave 'J. Y. G.' until #528 made "
+               "it read the same tags on 2026-09-13. That is the "
+               "split the 'john e smith' row records, closed on the "
+               "same day and by the same change "
+               "(test_facade_initials_follow_the_one_case_fork in "
+               "tests/v2/test_render.py). It runs the other way here: "
+               "there the facade GAINED a letter it had been "
+               "dropping, and here it loses one it had been keeping. "
+               "Which is why this row needs the lowercase twin below "
+               "to be readable",
+         shape=1),
+    Case("one_case_lower_y_keeps_the_three_word_carveout", "juan y garcia",
+         {"given": "juan", "middle": "y", "family": "garcia"},
+         notes="the twin of the row above, unchanged in every release: "
+               "lowercase 'y' was already the connective at three "
+               "words, and the carve-out already kept it a name word",
+         shape=1),
+    Case("one_case_upper_cyrillic_connective_joins", "ХОСЕ И МАРИЯ САНТОС",
+         {"given": "ХОСЕ И МАРИЯ", "family": "САНТОС"},
+         classification="feat(#269)",
+         notes="#267's blessing survives the #383 rewrite, and for a "
+               "different reason than it had: 'И' joins because 'и' is "
+               "not in conjunctions_ambiguous, not because the veto "
+               "tested a LATIN shape. No report -- the reading is not "
+               "in doubt. 1.4.0 has no Cyrillic conjunction vocabulary "
+               "at all and reads 'И' as a middle word (first ХОСЕ, "
+               "middle И МАРИЯ, last САНТОС -- measured on the 1.4.0 "
+               "wheel); #269 is what joins it, and this PR only adds "
+               "the one-case spellings to the roster #269 already "
+               "ships",
+         shape=1),
+    Case("one_case_lower_cyrillic_connective_joins", "хосе и мария сантос",
+         {"given": "хосе и мария", "family": "сантос"},
+         classification="feat(#269)",
+         notes="the lowercase spelling of the row above; both cases "
+               "read alike, which is the point of making the rule "
+               "about evidence rather than about capitals. 1.4.0 reads "
+               "'и' as a middle word here too (measured on the 1.4.0 "
+               "wheel: first хосе, middle и мария, last сантос) for "
+               "the same reason -- no Cyrillic conjunction vocabulary "
+               "-- and #269 is what joins it",
+         shape=1),
+    Case("caseless_connective_never_enters_the_fork", "محمد و علي",
+         {"given": "محمد", "middle": "و", "family": "علي"},
+         notes="Arabic و has no case at all, so the fork's cased-token "
+               "test is false and today's rule stands whatever the "
+               "name's case class is. The first standalone و in any "
+               "corpus -- measured 2026-09-13, none held one -- and "
+               "the three-word carve-out keeps it a name word, as it "
+               "does for 'juan y garcia'. shape=1 measured accepted by "
+               "Case.__post_init__ (2026-09-13): the row instantiates "
+               "shape 1's given-first arrangement under the default "
+               "order, exactly as the Cyrillic twins above do -- a "
+               "shape tag asserts the ARRANGEMENT, not a script "
+               "(tools/differential/shapes.py). Since #461 it is also "
+               "the readmission read as a PARITY RESTORATION rather "
+               "than a deviation: 'و' is the whole middle part, so it "
+               "joins nothing, initials again on both views, and both "
+               "give 'م. و. ع.' -- which is what 1.4.0 gave. Roles "
+               "unmoved throughout, so the classification does not "
+               "change; what moves is a view, and it moves back",
+         shape=1),
+    # #289: a bare ambiguous credential acronym is read by the
+    # EVIDENCE the writing carries, and a name written in more than
+    # one case carries some. These rows pin the FORK, not the wordlist
+    # (mechanisms.md#VOCABULARY-EXERCISES-FORKS): the same two letters
+    # in the same slot, spelled five ways, with the one-case controls
+    # that must not move beside them.
+    Case("caps_ambiguous_leans_credential", "Jack MA",
+         {"given": "Jack", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the defect. An all-caps member of the ambiguous set "
+               "inside a mixed-case name is written the way a "
+               "credential is written, so it is taken as one even "
+               "though peeling it leaves no family -- which is what "
+               "'Jack MD' has always done with an unambiguous one. "
+               "1.4.0 read last 'MA' here, so this breaks v1 parity "
+               "deliberately",
+         shape=1),
+    Case("caps_ambiguous_leans_credential_with_a_period", "Jack MA.",
+         {"given": "Jack", "suffix": "MA."},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the lean reads CASE, not periods: a single trailing "
+               "period is the abbreviation shape any word can wear "
+               "(rules.md#S2) and changes nothing here, where the "
+               "capitals have already spoken",
+         shape=1),
+    Case("title_case_ambiguous_leans_surname_two_words", "Jack Ma",
+         {"given": "Jack", "family": "Ma"},
+         ambiguities=("suffix-or-name",),
+         notes="the contrast that makes the row above a fork rather "
+               "than a wordlist entry: Title case is how a surname is "
+               "written, and this row is unchanged in every release",
+         shape=1),
+    Case("one_case_upper_ambiguous_takes_the_count", "JACK MA",
+         {"given": "JACK", "family": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="the one-case control for 'Jack MA': all-caps against "
+               "all-caps is no contrast at all, so nothing leans and "
+               "rules.md#S2's words-to-spare count decides alone -- "
+               "two pieces, so the acronym stays the family name",
+         shape=1),
+    Case("one_case_lower_ambiguous_takes_the_count", "jack ma",
+         {"given": "jack", "family": "ma"},
+         ambiguities=("suffix-or-name",),
+         notes="the lowercase spelling of the row above; both cases "
+               "read alike, which is the point of asking about "
+               "evidence rather than about capitals",
+         shape=1),
+    Case("title_case_ambiguous_leans_surname_with_words_to_spare",
+         "John Smith Ma",
+         {"given": "John", "middle": "Smith", "family": "Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the lean's other direction, and the one that costs a "
+               "credential rather than a surname: with words to spare "
+               "the count read 'Ma' as a suffix, and a Title-case "
+               "word beside 'John Smith' is how a surname is written. "
+               "1.4.0 read suffix 'Ma', so this is a deliberate "
+               "parity break in the direction the East Asian surname "
+               "wants (decisions.md#S2)",
+         shape=1),
+    Case("one_case_upper_ambiguous_with_words_to_spare",
+         "JOHN SMITH MA",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="the one-case control for the row above: no evidence, "
+               "so the count decides and three pieces make the "
+               "acronym a credential, exactly as before 2.4",
+         shape=1),
+    Case("mixed_case_caps_ambiguous_with_words_to_spare",
+         "john smith MA",
+         {"given": "john", "family": "smith", "suffix": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="the lean and the count AGREE here, which is why the "
+               "row does not move: capitals against lowercase lean "
+               "credential, and three pieces read credential anyway",
+         shape=1),
+    Case("one_case_ambiguous_surname_is_untouched", "ANH DO",
+         {"given": "ANH", "family": "DO"},
+         ambiguities=("suffix-or-name",),
+         notes="the name this whole design must not break: an "
+               "all-caps Vietnamese surname in an all-caps name. One "
+               "case, so nothing leans, and the count keeps the "
+               "family -- the reading 2.0 shipped and 1.4.0 had",
+         shape=1),
+    Case("one_case_ambiguous_surname_behind_a_particle",
+         "anh van do",
+         {"given": "anh", "family": "van do"},
+         notes="its lowercase, particle-bearing twin: the particle "
+               "chain takes 'do' as part of the surname before any of "
+               "this is asked",
+         shape=1),
+    Case("a_title_and_one_ambiguous_word_is_still_a_name", "Mr MA",
+         {"title": "Mr", "family": "MA"},
+         notes="the floor the lean does not move, measured "
+               "2026-09-15: the trailing peel's walk starts after the "
+               "leading title run, so one piece is all it sees and "
+               "rules.md#S2's two-piece floor refuses it. A lean that "
+               "reached below the floor would read this as a title "
+               "with a credential and no name at all -- and nothing "
+               "is reported, because no fork was taken",
+         shape=1),
+    Case("the_lean_reaches_the_post_comma_slot", "Smith, MA",
+         {"family": "Smith", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="Derek's own reading of #289: positive evidence "
+               "outranks position, so the credential lean fires with "
+               "ONE word before the comma where the words-to-spare "
+               "count would not. The first report of the comma's OWN "
+               "decision rides with it -- C2's structural flag already "
+               "reports on the comma path, but reports what the parse "
+               "could not recognize, not a fork it called "
+               "(rules.md#C1's exception, scoped to this class; P6's "
+               "attachment fork has reported on a family-comma path "
+               "since 2.3, e.g. 'Berg, Jan vd')",
+         shape=2),
+    Case("the_surname_lean_keeps_the_post_comma_given", "Smith, Ma",
+         {"given": "Ma", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="the contrast: Title case leans surname, so the word "
+               "stays the given name exactly as it did -- and the "
+               "call is reported all the same, both directions of one "
+               "fork being worth telling the caller about",
+         shape=2),
+    Case("the_comma_count_is_of_name_words", "Smith Jr., MA",
+         {"family": "Smith", "suffix": "Jr., MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#C1's count for this class is of NAME words, "
+               "not of words: two tokens and one name here, so the "
+               "structure does not flip and the family survives. "
+               "Counting tokens read it as given 'Smith' with suffix "
+               "'Jr., MA' -- no reading of this string puts the "
+               "family anywhere but where this row does "
+               "(decisions.md#S2)",
+         shape=2),
+    Case("the_by_shape_class_never_reaches_is_wholly_suffix",
+         "Smith Jr., A.B.",
+         {"given": "A.B.", "family": "Smith", "suffix": "Jr."},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="FULL PARITY on the 1.4.0 wheel -- first 'A.B.', last "
+               "'Smith', suffix 'Jr.'; only the report is new, like "
+               "its report-only siblings above. Also the control that "
+               "pins the review-round fix: an EARLIER version of "
+               "`is_wholly_suffix` admitted a by-shape member "
+               "unconditionally, and combined with C1's own legacy "
+               "TOKEN-count disjunct in `_segment.py` that flipped "
+               "this to given 'Smith' with a self-contradicting "
+               "'holds 1 name words' report. `ambiguous_class_candidate` "
+               "is the only reader the by-shape class has at the "
+               "comma form, and it declines here exactly as the "
+               "listed class does above -- one name word, so `A.B.` "
+               "stays the given and `Jr.` its own suffix",
+         shape=2),
+    Case("two_name_words_read_the_listed_acronym_as_a_credential",
+         "John Smith, MA",
+         {"given": "John", "family": "Smith", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="1.4.0 RESTORED: v1 read first John, last Smith, "
+               "suffix MA and 2.0 through 2.3 read given 'MA' with "
+               "the whole name in `family`. The comma structure moves "
+               "with the class, so this is the SUFFIX_COMMA form "
+               "again",
+         shape=3),
+    Case("the_comma_count_reaches_the_listed_set_title_case",
+         "John Smith, Ed",
+         {"given": "John", "family": "Smith", "suffix": "Ed"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="one rule for the whole ambiguous class rather than "
+               "two: where case is silent -- 'Ed' leans SURNAME here, "
+               "and the lean does not reach the structure -- the "
+               "count of name words before the comma decides, and two "
+               "of them make it a credential. 1.4.0 read suffix 'Ed' "
+               "too, so this restores parity rather than opening "
+               "distance from it (decisions.md#S2, 2026-09-15)",
+         shape=3),
+    Case("the_comma_count_reaches_the_listed_set_lower",
+         "john smith, ma",
+         {"given": "john", "family": "smith", "suffix": "ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the one-case spelling of the row above: no evidence "
+               "either way, so the count decides and 1.4.0's suffix "
+               "reading comes back",
+         shape=3),
+    Case("the_comma_count_reaches_the_listed_set_upper",
+         "JOHN SMITH, MA",
+         {"given": "JOHN", "family": "SMITH", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the all-caps spelling, and the reason the count has "
+               "to reach the listed set at all: an all-caps name "
+               "carries no lean, and leaving it to the lean alone "
+               "would read this one way and its mixed-case twin "
+               "another. 1.4.0 parity restored",
+         shape=3),
+    Case("two_name_words_before_the_comma_at_two_words",
+         "Davis Royce, Ed",
+         {"given": "Davis", "family": "Royce", "suffix": "Ed"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the two-word twin of 'Royce, Ed' below, and the case "
+               "row item 5 of decisions.md#S2 turns on -- no corpus "
+               "name has this shape, so this row carries the whole "
+               "weight of that decision",
+         shape=3),
+    Case("one_name_word_before_the_comma_is_never_enough",
+         "Royce, Ed",
+         {"given": "Ed", "family": "Royce"},
+         ambiguities=("suffix-or-name",),
+         notes="the control: one name word before the comma leaves "
+               "nothing to spare, 'Ed' leans surname anyway, and the "
+               "row is unchanged in every release. The pair above and "
+               "below it is what makes the count visible",
+         shape=2),
+    Case("a_declined_ambiguous_pick_stops_the_walk",
+         "abdul Smith Jr Ma",
+         {"given": "abdul Smith", "middle": "Jr", "family": "Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="an ACCEPTED cost, pinned rather than repaired "
+               "(decisions.md#S2): the surname lean breaks the peel "
+               "AT 'Ma', so the unambiguous 'Jr' in front of it is "
+               "never reached and becomes a name word. The walk stops "
+               "at the declined pick rather than continuing past it, "
+               "and a name-leaning acronym blocking a genuine suffix "
+               "behind it is the shape that costs",
+         shape=1),
+    Case("a_tail_segment_of_leaning_credentials_is_a_run",
+         "Steven Hardman, MD, DO, DDS",
+         {"given": "Steven", "family": "Hardman", "suffix": "MD, DO, DDS"},
+         classification="fix(#289)",
+         notes="the one place this design QUIETS a report rather than "
+               "adding one: 'DO' is a listed ambiguous acronym "
+               "written in capitals inside a mixed-case name, so the "
+               "third comma segment is wholly suffix and rules.md#C2 "
+               "stops flagging it. The FIELDS do not move -- a "
+               "quieted flag is invisible to a reader sweeping for "
+               "new reports, which is why it has a row of its own",
+         shape=3),
+    # Quality-review finding, 2026-09-17: "one name never reports
+    # twice" was wrong as a blanket claim -- what is true is that one
+    # DECISION never reports twice. Two DIFFERENT ambiguous acronyms
+    # at two different forks each report once: the trailing peel over
+    # the pre-comma part ('MA', credential lean, no words to spare)
+    # and the comma structure's own flip ('Ed', two pre-comma name
+    # words -- 'Smith' and 'MA' both count, since a bare undotted
+    # ambiguous acronym is not suffix vocabulary to `name_word_count`
+    # either).
+    Case("two_different_forks_each_report_once", "Smith MA, Ed",
+         {"given": "Smith", "suffix": "MA, Ed"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name", "suffix-or-name",
+                      "given-or-family"),
+         notes="'Smith MA' reads two name words, flipping the comma "
+               "structure so 'Ed' joins the credential run; peeling "
+               "'Smith MA' positionally then peels 'MA' too (caps "
+               "lean, no words to spare), leaving 'Smith' the only "
+               "name word, which is also what turns on "
+               "GIVEN_OR_FAMILY. Three reports, none of them the same "
+               "fork reporting twice"),
+    Case("a_caseless_script_wrote_no_contrast", "毛泽东, MA",
+         {"given": "MA", "family": "毛泽东"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the LEAN is inert by construction: is_one_case answers "
+               "True for text that has only one case, so nothing leans "
+               "and the count decides -- one word before the comma, so "
+               "the acronym stays the given name, as in every release. "
+               "But the REPORT is not lean-gated (F4/F5 review finding, "
+               "2026-09-17): it tracks the fork being consulted, "
+               "exactly as the trailing slot always has, so this comma "
+               "form is read positionally and still reports which way "
+               "it went -- an earlier round wrongly excluded this row",
+         tolerated=True),
+    # MEASURED, not the plan's prediction: unlike its single-token
+    # Chinese twin above, '마틴 킹' is TWO whitespace tokens, so item
+    # 5's name-word count -- uniform across the whole ambiguous class,
+    # case silent or not -- sees two name words before the comma and
+    # flips the structure exactly as 'JOHN SMITH, MA' does. The comma
+    # form then reads segment 0 the way a NO_COMMA name would (the
+    # (a-lazy) mechanism's own tradeoff: the flip is decided before
+    # script_segment, so the Hangul surname split runs over '마틴 킹'
+    # positionally rather than over the untouched pre-comma text) --
+    # the same shape 'Smith 김민준씨, MA' shows in the spec's decision
+    # table. Not a caseless-script exemption: item 5 answers "where "
+    # case is silent" by the SAME count the rest of item 5 uses, and a
+    # two-word Hangul name is silent about case but not about how many
+    # name words it has.
+    Case("a_caseless_script_wrote_no_contrast_hangul", "마틴 킹, MA",
+         {"given": "틴", "middle": "킹", "family": "마", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED 2026-09-17, not the spec's older prediction "
+               "(given MA, family '마틴 킹', unchanged): dated before "
+               "item 5's name-word-count extension was decided "
+               "(2026-09-15) reached the listed set in ANY case. Two "
+               "name words before the comma flip the structure here "
+               "exactly as they do for 'JOHN SMITH, MA', and the flip "
+               "precedes script_segment's Hangul surname split, which "
+               "then runs over '마틴 킹' as if no comma had stood "
+               "there at all",
+         tolerated=True),
+    # F2 review finding, 2026-09-17: the SAME mechanism reaches Japanese
+    # too, by the same two-token count -- '田中 太郎' is two whitespace
+    # tokens, not one, so it is not '毛泽东, MA's twin (a single token)
+    # but '마틴 킹, MA's. 1.4.0 read both '마틴 킹, MA' and
+    # '田中 太郎, MA' as suffix MA (measured on the wheel), so the
+    # suffix half of this move is a PARITY RESTORATION, not a fresh
+    # deviation -- only the pre-comma surname split (given '太郎',
+    # family '田中') is #271/#272's pre-existing positional behavior,
+    # unrelated to #289.
+    Case("a_caseless_script_wrote_no_contrast_japanese", "田中 太郎, MA",
+         {"given": "太郎", "family": "田中", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED 2026-09-17: two name words before the comma "
+               "flip the structure exactly as '마틴 킹, MA' and "
+               "'JOHN SMITH, MA' do, and the flip again precedes "
+               "script_segment, so the family-first Han split runs "
+               "over '田中 太郎' positionally. Docs/design's older "
+               "'a caseless script is inert by construction' bullet "
+               "is true of the LEAN alone; item 5's name-word count "
+               "is orthogonal to case and reaches this row too",
+         tolerated=True),
+    # #516's dotted half: an UNLISTED token of two or more
+    # period-separated chunks joins the ambiguous credential class BY
+    # SHAPE, and the words-to-spare count then reads it. These rows
+    # pin the FORK -- the same token in the two positions the count
+    # separates, with the chunk-claim names that must NOT move beside
+    # them (mechanisms.md#VOCABULARY-EXERCISES-FORKS).
+    Case("unlisted_dotted_reads_by_position_with_words_to_spare",
+         "John Smith X.Y.Z.",
+         {"given": "John", "family": "Smith", "suffix": "X.Y.Z."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the periods are the signal and the position decides: "
+               "three pieces, so the unlisted acronym is the "
+               "credential. 1.4.0 read last 'X.Y.Z.', so this breaks "
+               "parity deliberately -- the parking-lot entry of "
+               "decisions.md#suffix-acronym-collisions is what it "
+               "closes",
+         shape=1),
+    Case("unlisted_dotted_is_case_blind", "john smith x.y.z.",
+         {"given": "john", "family": "smith", "suffix": "x.y.z."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the control that separates this switch from #289's "
+               "lean: case is irrelevant here, the PERIODS being the "
+               "signal, so the all-lower spelling reads as the "
+               "mixed-case one does",
+         shape=1),
+    Case("unlisted_dotted_without_words_to_spare_is_the_family",
+         "Jack X.Y.Z.",
+         {"given": "Jack", "family": "X.Y.Z."},
+         ambiguities=("suffix-or-name",),
+         notes="the other half of the count, and the row is unchanged "
+               "in its FIELDS: two pieces, so the shape loses to the "
+               "surname reading. What is new is the report -- the "
+               "fork was always there and was called silently",
+         shape=1),
+    Case("unlisted_dotted_of_any_chunk_length", "John Smith B.Tech.",
+         {"given": "John", "family": "Smith", "suffix": "B.Tech."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="chunk LENGTH is not the test: two chunks, one of them "
+               "four letters, and the Indian degree reads as the "
+               "credential it is",
+         shape=1),
+    Case("the_s3_boundary_example_moves", "John Smith Q.W.E.R.T.",
+         {"given": "John", "family": "Smith", "suffix": "Q.W.E.R.T."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#S3's own boundary example, which said this "
+               "shape stays a name. It moves, and the rule moves with "
+               "it",
+         shape=1),
+    Case("the_roman_chunk_accident_retires_narrowly", "Jack X.Y.I.",
+         {"given": "Jack", "family": "X.Y.I."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="1.4.0 RESTORED. The chunk 'i' is a roman numeral in "
+               "the suffix vocabulary, so this read as a generational "
+               "suffix -- by accident, the fork being about "
+               "generations and the word being nothing of the kind. "
+               "Retired where every matched chunk is a single ASCII "
+               "character -- the roster this retirement is scoped to "
+               "is asserted, not just described, in "
+               "test_vocab.test_period_joined_vocab_retires_the_single_"
+               "character_chunk",
+         shape=1),
+    Case("a_retired_chunk_claim_still_reads_by_position",
+         "John Smith R.A.I.",
+         {"given": "John", "family": "Smith", "suffix": "R.A.I."},
+         ambiguities=("suffix-or-name",),
+         notes="the pair to the row above, and the reason the "
+               "retirement is safe: with words to spare the shape "
+               "reads the same token the accident read, so the FIELDS "
+               "do not move and only the cause does. The report is "
+               "what makes the new cause visible",
+         shape=1),
+    Case("a_multi_letter_roman_chunk_also_reads_by_position",
+         "John Smith J.u.n.i.o.r.",
+         {"given": "John", "family": "Smith", "suffix": "J.u.n.i.o.r."},
+         ambiguities=("suffix-or-name",),
+         notes="the six-chunk twin of the row above: no chunk here is "
+               "vocabulary at all (this is not 'junior' the suffix "
+               "word, glued letter by letter), so the shape read this "
+               "one before the retirement existed and reads it the "
+               "same way after -- the FIELDS never moved, only the "
+               "report is new",
+         shape=1),
+    Case("the_comma_structure_moves_with_the_shape_class",
+         "John Smith, A.B.",
+         {"given": "John", "family": "Smith", "suffix": "A.B."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="two NAME words before the comma read the part after "
+               "it as the credential run, for the by-shape half "
+               "exactly as for the listed one (rules.md#C1)",
+         shape=3),
+    Case("one_word_before_the_comma_keeps_the_given", "Smith, A.B.",
+         {"given": "A.B.", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="its control: one name word before the comma is never "
+               "enough, so the dotted token stays the given name and "
+               "the structure does not move. Unchanged in every "
+               "release; the report is new",
+         shape=2),
+    Case("whole_token_vocabulary_wins_over_the_shape",
+         "Smith, A.B.C.",
+         {"family": "Smith", "suffix": "A.B.C."},
+         notes="'abc' IS a suffix acronym, so the whole-token lookup "
+               "settles this before any shape reading and the count "
+               "never runs. The boundary between #516's shape class "
+               "and the vocabulary it does not touch",
+         shape=2),
+    Case("a_leading_dotted_run_is_untouched", "X.Y.Z. Smith",
+         {"given": "X.Y.Z.", "family": "Smith"},
+         notes="rules.md#S2 already says a suffix never opens the "
+               "string, and the shape class is read only by the "
+               "trailing peel and the post-comma slot -- so every "
+               "leading dotted run, 'J.R.R. Tolkien' included, is "
+               "untouched by this switch",
+         shape=1),
+    Case("a_leading_dotted_run_of_three_chunks_is_untouched",
+         "J.R.R. Tolkien",
+         {"given": "J.R.R.", "family": "Tolkien"},
+         notes="the three-chunk twin of the row above: 'j', 'r' and "
+               "'r' claim nothing either, and the leading slot never "
+               "asks the shape class regardless",
+         shape=1),
+    Case("a_multi_character_chunk_claim_survives", "Doe, John Msc.Ed.",
+         {"given": "John", "family": "Doe", "suffix": "Msc.Ed."},
+         notes="the narrow retirement's protected control: the chunk "
+               "'ed' is two characters, so the chunk rule still fires "
+               "and this real credential is not handed to the shape "
+               "class. The WIDE retirement -- any chunk match yielding "
+               "to the shape -- would have read 'Msc.Ed.' as a middle "
+               "name, which is what rejected it (decisions.md#S2)",
+         shape=2),
+    Case("a_glued_honorific_chunk_is_not_ascii", "J.씨",
+         {"given": "J.", "suffix": "씨"},
+         notes="the reason the retirement says ASCII and not just "
+               "single-character: '씨' is one character and MUST keep "
+               "its chunk claim, the honorific peel resting on it",
+         tolerated=True),
+    Case("a_delimited_dotted_token_keeps_its_clause_reading",
+         "Bridge (1.4)",
+         {"family": "Bridge", "nickname": "1.4"},
+         notes="delimited content is decided by the clause escape "
+               "rather than at the trailing slot -- so the shape "
+               "class is not offered to a token that already carries "
+               "a role, and this row gains neither a reading nor a "
+               "report. Cannot exercise the `token.role is None` "
+               "guard on its own, though: a digit chunk never reaches "
+               "the shape verdict at all (period_joined_vocab's own "
+               "alphabetic gate) -- the row beside it is the guard's "
+               "real control",
+         shape=1),
+    Case("the_role_guard_is_the_real_delimited_control", "Bridge (A.B)",
+         {"family": "Bridge", "nickname": "A.B"},
+         notes="unlike the digit row above, 'A.B' WOULD reach the "
+               "shape verdict were it not for classify's `token.role "
+               "is None` guard -- without it this nickname gains "
+               "SHAPE_ACRONYM_TAG and, with the switch on, "
+               "'vocab:suffix-ambiguous', and classify's own nickname "
+               "check misreports SUFFIX_OR_NICKNAME on a token the "
+               "clause escape already decided (measured regression, "
+               "#516 review round). This row is what actually pins "
+               "the guard load-bearing",
+         shape=1),
+    Case("a_bare_digit_chunk_is_never_an_acronym_by_shape",
+         "John Smith 1.4",
+         {"given": "John", "middle": "Smith", "family": "1.4"},
+         notes="#516 review round: the shape gate requires every chunk "
+               "to be ALPHABETIC, not merely unclaimed -- '1' and '4' "
+               "are chunks nothing spells as letters, so this stays "
+               "name material exactly as 'Bridge (1.4)' does, and "
+               "unlike the delimited control this one was never inside "
+               "a clause at all. Unchanged from dfb3170, and the gap "
+               "the delimited control alone did not cover",
+         shape=1),
+    Case("a_bare_digit_chunk_after_the_comma_is_never_an_acronym",
+         "John Smith, 1.4",
+         {"given": "1.4", "family": "John Smith"},
+         notes="the comma-form twin of the row above: one word before "
+               "the comma is never enough regardless, but the point "
+               "this row pins is that the digit chunk never even "
+               "becomes a CANDIDATE for the class -- no report, "
+               "unchanged from dfb3170",
+         shape=2),
+    Case("a_leading_shape_token_never_reports_only_the_trailing_one",
+         "J.A. K.D.",
+         {"given": "J.A.", "family": "K.D."},
+         ambiguities=("suffix-or-name",),
+         notes="'K.D.' is a considered pick -- the peel records it "
+               "even though k == 2 declines to take it, so the FIELDS "
+               "stay the two-piece positional read while the fork is "
+               "reported, exactly as a declined LISTED pick always "
+               "has been. 'J.A.' gets no such consideration: the peel "
+               "walks from the END, so a LEADING shape-admitted token "
+               "never reaches it and this reports exactly once, for "
+               "'K.D.' alone",
+         shape=1),
+    Case("an_initialless_script_glued_into_periods_is_not_this_shape",
+         "John Smith 田.中.",
+         {"given": "John", "middle": "Smith", "family": "田.中."},
+         notes="the CJK control for #516's shape verdict, on the same "
+               "reasoning is_title_shaped already gives H2's own "
+               "period-abbreviation inference (#323): a script with "
+               "no period abbreviations at all has nothing for "
+               "interior periods to abbreviate, so this stays name "
+               "material exactly as it did at dfb3170 -- no reading "
+               "and no report",
+         tolerated=True),
+    # The whole-PR review round, 2026-09-18. Three groups: the fork
+    # the prefix chain swallowed, the honorific peel that stopped
+    # asking for the lean, and the tail segment that started flagging
+    # its own new reading. Every row here is a REPORT moving, not a
+    # role -- which is exactly why none of them had a row before.
+    Case("the_chain_reports_the_acronym_it_takes",
+         "John van der Berg Ma",
+         {"given": "John", "family": "van der Berg Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#S2 says either reading carries the flag, and "
+               "this reading carried none. assign reports from the "
+               "peel's picks and a pick reaches it only as a LONE "
+               "piece, so once the prefix chain merged 'Ma' into the "
+               "family piece the token assign would have reported on "
+               "no longer existed. The roles are unchanged and were "
+               "never in doubt -- 'Ma' is Title-case in a mixed-case "
+               "name, so #289's lean declines it; what the review "
+               "round restored is the report, emitted at the chain's "
+               "own merge (mechanisms.md#AMBIGUITY-AT-THE-DECISION-"
+               "SITE)",
+         shape=1),
+    Case("the_chain_reports_at_one_particle_too", "John de Ma",
+         {"given": "John", "family": "de Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the shortest spelling of the row above: one particle, "
+               "one chained acronym. Kept beside it because the chain "
+               "reaches the merge by a different route here -- 'de' "
+               "takes the single following piece rather than a run -- "
+               "and the emitter's `j > k + 1` floor is what both have "
+               "to clear",
+         shape=1),
+    Case("the_chain_reports_the_by_shape_half_too",
+         "John van der Berg X.Y.Z.",
+         {"given": "John", "family": "van der Berg X.Y.Z."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         ambiguities=("suffix-or-name",),
+         classification="fix(#516)",
+         notes="the BY-SHAPE half of the chain emitter's two-tag "
+               "test, unpinned until the verification round "
+               "(2026-09-18): with the listed tag alone, all 8624 "
+               "tests still passed. The switch is what makes the "
+               "half reachable -- at the default, classify writes "
+               "BOTH tags, so the listed tag answers for this name "
+               "too and the shape tag's absence is invisible. Off, "
+               "only the shape tag is written, and dropping it from "
+               "`_AMBIGUOUS_CREDENTIAL_TAGS` silences this row, "
+               "'Freiherr von Berg X.Y.I.' and 'John van Berg A.B.' "
+               "at once"),
+    Case("a_particle_that_is_also_an_acronym_reports_nothing",
+         "anh van mc",
+         {"given": "anh", "family": "van mc"},
+         notes="the control the emitter above must NOT claim, and the "
+               "reason it asks `prefix(j - 1)` last. 'mc' is a "
+               "particle as well as suffix vocabulary, so the chain's "
+               "PARTICLE run takes it -- P4's reading and P6's fork, "
+               "not S2's -- and 1.4.0 read it this way in silence. "
+               "'anh van do' is the shipped twin (its own row above) "
+               "and this is its unambiguous-vocabulary sibling, which "
+               "the peel never even considers",
+         shape=1),
+    Case("the_glued_honorific_peels_behind_a_leaning_credential",
+         "Kim김민준씨, MA",
+         {"family": "Kim김민준", "suffix": "씨, MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="script_segment asked `is_wholly_suffix` of the "
+               "post-comma run WITHOUT the case fact segment had just "
+               "recorded, so 'MA' read as name material, the run was "
+               "scanned, its only peel site was 'MA' itself -- which "
+               "ends in no listed tail -- and the person's own 씨 went "
+               "unpeeled (family 'Kim김민준씨'). 'Kim김민준씨, PhD' "
+               "peeled all along, so one name in two credential "
+               "spellings parsed two ways. Passing the fact is the "
+               "whole fix (review round, 2026-09-18)",
+         tolerated=True),
+    Case("the_glued_honorific_peel_reads_the_lean_not_the_word",
+         "Jo김민준씨, DO",
+         {"family": "Jo김민준", "suffix": "씨, DO"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="a second member of the ambiguous set behind the same "
+               "comma, so the row above pins the mechanism rather "
+               "than the word 'MA' "
+               "(mechanisms.md#VOCABULARY-EXERCISES-FORKS is about "
+               "not doing this per entry; 'DO' is here because it is "
+               "ALSO particle vocabulary, which nothing else on this "
+               "path exercises)",
+         tolerated=True),
+    Case("the_glued_honorific_peel_behind_a_title_and_a_lean",
+         "Dr. 김민준씨, MA",
+         {"title": "Dr.", "family": "김민준", "suffix": "씨, MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the title is what makes this name MIXED-case at all "
+               "-- Hangul is caseless, so '김민준씨, MA' on its own is "
+               "one case, leans nothing and keeps today's reading "
+               "(given 'MA', family '김민준씨', unpeeled). Two rows, "
+               "one difference, and the difference is the case "
+               "contrast rather than the honorific",
+         tolerated=True),
+    Case("a_tail_segment_of_by_shape_credentials_is_not_flagged",
+         "John Smith, MD, R.A.I.",
+         {"given": "John", "family": "Smith", "suffix": "MD, R.A.I."},
+         classification="fix(#516)",
+         notes="rules.md#S3's narrow roman retirement moved 'R.A.I.' "
+               "out of the vocabulary verdict and into the shape "
+               "class, and segment's tail-segment test reads "
+               "`is_wholly_suffix`, which is blind to that class by "
+               "design -- so a third segment the parser itself reads "
+               "as a credential run gained a COMMA_STRUCTURE flag 2.3 "
+               "did not raise. A report about the parser's own new "
+               "reading rather than about the name (review round, "
+               "2026-09-18). Roles unchanged at every policy: a tail "
+               "segment is consumed as suffix either way",
+         shape=3),
+    Case("the_by_shape_tail_segment_is_flagged_with_the_switch_off",
+         "John Smith, MD, R.A.I.",
+         {"given": "John", "family": "Smith", "suffix": "MD, R.A.I."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         ambiguities=("comma-structure",),
+         notes="the negative control for the row above, and the "
+               "reason the test is policy-sensitive rather than a "
+               "blanket quiet: with the switch off 'R.A.I.' is name "
+               "material, is no candidate for the class, and the "
+               "segment genuinely is beyond the recognized comma "
+               "structures. Same fields, opposite report",
+         classification="fix(#516)"),
+    Case("a_listed_tail_segment_keeps_its_flag_where_nothing_leans",
+         "John Smith, MD, Ma",
+         {"given": "John", "family": "Smith", "suffix": "MD, Ma"},
+         ambiguities=("comma-structure",),
+         notes="the other boundary of the same test: the quiet is the "
+               "BY-SHAPE half's alone. A LISTED member reaches this "
+               "reading through the case lean "
+               "('Steven Hardman, MD, DO, DDS', "
+               "test_segment.py's own negative control), and 'Ma' "
+               "leans the other way, so the flag stands exactly as it "
+               "did at 1f78bef. Folding membership into the test "
+               "instead would have silenced the lean's own control",
+         shape=3),
+    Case("the_caps_shape_never_reaches_a_tail_segment",
+         "John Smith, MD, XYZ",
+         {"given": "John", "family": "Smith", "suffix": "MD, XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("comma-structure",),
+         classification="fix(#516)",
+         notes="the SECOND way C2's quiet is narrow, and the half its "
+               "examples did not pin until the verification round "
+               "(2026-09-18). The shape a tail segment is recognized "
+               "by is the DOTTED one alone, so turning the caps "
+               "switch on does not quiet 'XYZ' here -- the flag is "
+               "the same one the default policy raises. Folding "
+               "`caps_shape_candidate` into the class run would make "
+               "this row fail"),
+    # #516's all-caps half, and it is OPT-IN. The rows come in pairs:
+    # the same name under the DEFAULT policy, where nothing moves and
+    # nothing is reported, and under Policy(unlisted_caps_suffixes=
+    # True), where the shape reads. The French and Korean names are
+    # why the default is off (mechanisms.md#VOCABULARY-EXERCISES-FORKS
+    # -- each pair pins the switch, not the words). A row that sets
+    # the non-default policy carries no `shape=` tag: the contract
+    # corpus (build_shapes_corpus.py) keys only on (shape, text), with
+    # no policy of its own, so admitting one of these texts under a
+    # shape id would have compare.py diff it against the released
+    # wheels under the DEFAULT policy -- the wrong question for a row
+    # whose point IS the non-default policy.
+    Case("caps_surname_is_a_family_name_by_default", "Jean DUPONT",
+         {"given": "Jean", "family": "DUPONT"},
+         notes="the writing convention the default protects: French "
+               "records write the surname in capitals, and shape "
+               "cannot tell that from a credential. 1.4.0's reading, "
+               "2.3's reading, and the reading at this default",
+         shape=1),
+    Case("caps_surname_is_swallowed_with_the_switch_on",
+         "Jean Pierre DUPONT",
+         {"given": "Jean", "family": "Pierre", "suffix": "DUPONT"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the cost of the switch, pinned so nobody turns it on "
+               "without meeting it: three name words, so the count "
+               "reads the capitalised surname as a credential and the "
+               "family becomes 'Pierre'. This row is the argument for "
+               "the default being off (decisions.md#S2)"),
+    # #516 review round (quality-review finding): the TWO-word shape
+    # ('Jean DUPONT') is the row `_policy.py`'s own docstring needed
+    # and did not have -- turning the switch on reports a genuine
+    # candidate even where one word before the credential declines
+    # the structure flip, matching 'the_caps_comma_count_declines_at_
+    # one_word' (the comma form's own twin of this exact guarantee).
+    Case("caps_surname_reports_but_does_not_move_at_two_words",
+         "Jean DUPONT",
+         {"given": "Jean", "family": "DUPONT"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="one name word is never enough to spend the credential "
+               "reading, so the family stays 'DUPONT' -- but the fork "
+               "was genuinely considered and declined, and reports so "
+               "even though nothing moved"),
+    Case("caps_surname_default_reading_at_three_words",
+         "Jean Pierre DUPONT",
+         {"given": "Jean", "middle": "Pierre", "family": "DUPONT"},
+         notes="the same name at the default, which is the half a "
+               "reader of the row above needs: nothing moves and "
+               "nothing is reported, so a caller who never sets the "
+               "switch never meets that cost",
+         shape=1),
+    Case("caps_korean_surname_is_a_family_name_by_default",
+         "Minjun KIM",
+         {"given": "Minjun", "family": "KIM"},
+         notes="the second convention the default protects: Korean "
+               "records write the family name in capitals to mark "
+               "which of two words it is, which is the opposite of a "
+               "credential",
+         shape=1),
+    Case("unlisted_caps_reads_by_position_with_the_switch_on",
+         "John Smith XYZ",
+         {"given": "John", "family": "Smith", "suffix": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="what the switch buys: the shape reads, and the "
+               "words-to-spare count decides it exactly as it decides "
+               "the listed set"),
+    Case("unlisted_caps_is_silent_at_the_default", "John Smith XYZ",
+         {"given": "John", "middle": "Smith", "family": "XYZ"},
+         notes="the same name at the default: name material, and NO "
+               "report -- the one place this design emits nothing "
+               "where a fork could be said to exist, because the "
+               "reading was never on offer (#516)",
+         shape=1),
+    Case("the_caps_comma_count_needs_two_name_words",
+         "John Smith, XYZ",
+         {"given": "John", "family": "Smith", "suffix": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the comma structure moves with this half too, on the "
+               "same NAME-word count"),
+    Case("the_caps_comma_count_declines_at_one_word", "Smith, XYZ",
+         {"given": "XYZ", "family": "Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="its control, switch and all: one name word before the "
+               "comma is never enough, so the capitalised word stays "
+               "the given name"),
+    Case("one_case_input_never_reaches_the_caps_switch",
+         "JOHN SMITH XYZ",
+         {"given": "JOHN", "middle": "SMITH", "family": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the one-case control, and it needs the switch ON to "
+               "mean anything: capitals against capitals are no "
+               "contrast, so the shape never fires and the row is "
+               "unchanged with the switch either way"),
+    Case("suffix_vocabulary_never_reaches_the_caps_switch",
+         "John Smith MC",
+         {"given": "John", "family": "Smith", "suffix": "MC"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="UNLISTED is the load-bearing word: 'mc' is suffix "
+               "vocabulary, so the whole-token lookup claims it before "
+               "any shape reading and this row reads the same with "
+               "the switch on or off"),
+    Case("the_caps_comma_count_reaches_a_multi_word_run",
+         "John Smith, LEED AP",
+         {"given": "John", "family": "Smith", "suffix": "LEED AP"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the first time this class reaches the comma form as "
+               "MORE than one token: 'LEED' and 'AP' are two separate "
+               "all-caps words, and every token in the run must be a "
+               "candidate for the run itself to be one -- rules.md#C1's "
+               "`deviates: #291` line comes true ONLY under this "
+               "switch. At the DEFAULT this exact text still reads "
+               "given 'LEED', middle 'AP', family 'John Smith' -- the "
+               "deviation stands there unchanged -- so nothing in "
+               "this arc may remove rules.md#C1's `deviates: #291` "
+               "marker on this switch's account; the switch only "
+               "narrows what makes the deviation true"),
+    Case("the_caps_comma_multi_word_run_declines_at_one_word",
+         "Smith, LEED AP",
+         {"given": "LEED", "family": "Smith", "suffix": "AP"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the one-pre-comma-word twin of the row above, and the "
+               "only corpus mover #531 found outside the two known "
+               "names -- only behind a default-off switch, so no "
+               "default reading is at stake (Derek's Q3, accepted "
+               "2026-09-18). The STRUCTURE still does not flip: one "
+               "name word before the comma is never enough, item 5's "
+               "count doing its job on real data, so 'LEED' stays the "
+               "given name. What moved is the TRAILING slot behind it "
+               "-- before #531 'AP' was the middle name and the only "
+               "report was assign's family-comma emitter reading the "
+               "first post-comma piece's tag; now the given part's "
+               "trailing slot takes 'AP' as the credential and reports "
+               "its own decision. Two slots, two forks, two reports"),
+    # #516 review round: LISTED members must keep #289's lean with
+    # the switch on -- the caps branch must never ride SHAPE_ACRONYM_
+    # TAG beside a listed member's own membership tag, which is what
+    # silenced `listed_lean` for these before the fix (F1, decided by
+    # the reviewer; decisions.md#S2). Both rows are byte-identical to
+    # their DEFAULT-policy siblings above (`caps_ambiguous_leans_
+    # credential`, `the_lean_reaches_the_post_comma_slot`) and carry
+    # no `shape=` tag for the same reason every other policy-on row
+    # here does not: the contract corpus keys on (shape, text) with no
+    # policy of its own, so tagging one would have the gate diff it
+    # against the released wheels under the DEFAULT policy -- the
+    # wrong question for a row whose point IS the non-default policy
+    # (`Case.shape`'s own docstring).
+    Case("caps_switch_does_not_silence_the_listed_lean", "Jack MA",
+         {"given": "Jack", "suffix": "MA"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the switch must not touch a LISTED member's own "
+               "#289 lean: identical to the default reading"),
+    Case("caps_switch_does_not_silence_the_comma_lean", "Smith, MA",
+         {"family": "Smith", "suffix": "MA"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="the comma-form twin of the row above, same guarantee"),
+    # #516 review round: UNLISTED means in no wordlist at all, not
+    # merely "no whole-token suffix vocabulary" -- a capitalized
+    # particle or particle phrase must not join the class either
+    # (F1b, decided by the reviewer; decisions.md#S2's amendment).
+    Case("caps_switch_does_not_claim_a_capitalized_particle",
+         "John Smith DE",
+         {"given": "John", "middle": "Smith", "family": "DE"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="'de' is a particle, not merely absent from suffix "
+               "vocabulary -- identical to the default reading with "
+               "the switch on"),
+    Case("caps_switch_does_not_claim_a_capitalized_particle_phrase",
+         "John Smith, DE LA",
+         {"family": "John Smith DE LA"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the multi-token twin: 'DE' and 'LA' are both "
+               "particles, so the RUN test (#516's own 'LEED AP' "
+               "shape) must decline them too -- identical to the "
+               "default reading"),
+    # #516 review round, F5: the spec's stated mechanism for why
+    # 'Jack VI' does not move was wrong -- 'VI' DOES reach the caps
+    # predicate and carries both tags with the switch on. It stays
+    # unchanged because `_pieces.is_trailing_numeral_suffix` (the
+    # roman-numeral fork) claims it downstream, before the lean/count
+    # this switch adds is ever consulted -- unrelated to this switch,
+    # and the reason these controls read identically on or off.
+    Case("caps_switch_does_not_move_a_roman_numeral", "Jack VI",
+         {"given": "Jack", "suffix": "VI"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name", "given-or-family"),
+         notes="the roman-numeral fork claims 'VI' before this "
+               "switch's lean/count is consulted -- identical to the "
+               "default reading, on or off"),
+    Case("caps_switch_does_not_move_a_roman_numeral_with_words_to_spare",
+         "John Smith VI",
+         {"given": "John", "family": "Smith", "suffix": "VI"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         ambiguities=("suffix-or-name",),
+         notes="the words-to-spare twin of the row above, same "
+               "mechanism, same guarantee"),
+    Case("caps_switch_does_not_move_a_title_floor_control", "Mr XXX",
+         {"title": "Mr", "family": "XXX"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="one piece behind a title never reaches the peel's "
+               "`k >= 2` floor -- identical to the default reading"),
+    Case("caps_switch_does_not_reach_delimited_content",
+         "Andrew Perkins (XYZ)",
+         {"given": "Andrew", "family": "Perkins", "nickname": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="delimited content is decided by the clause escape, "
+               "never at the trailing slot -- identical to the "
+               "default reading"),
+    # #516 review round, F2: the multi-token run test is a property of
+    # the CAPS class alone -- a run of pure LISTED members must keep
+    # its EXISTING reading (`_pieces.segment_suffix_reading`'s own
+    # per-piece walk, #289, unrelated to this switch and to its
+    # structure-flip candidate test) rather than being swept into the
+    # caps run test's `all()`. Identical to the default reading.
+    Case("caps_switch_run_test_declines_a_pure_listed_run",
+         "John Smith, Ed Ma",
+         {"given": "Ed", "middle": "Ma", "family": "John Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="'Ed' and 'Ma' are both LISTED ambiguous members, "
+               "Title-case (leans NAME, #289) -- the caps run test "
+               "must not admit a run the listed class already reads "
+               "on its own. #531 adds the SECOND report and moves no "
+               "field: this is a family-comma name whose given part "
+               "now ends in a class member, and 'Ma' is Title-cased, "
+               "so the slot consults the fork and declines it "
+               "exactly as 'Doe, John Ma' does. The report tracks "
+               "the fork CONSULTED (#530), which is why a declined "
+               "reading still says so"),
+    # #516 review round (second finding): the caps branch read
+    # `one_case_own` -- true only for a token INSIDE the maiden
+    # clause's own-words span -- where it needed the bare NAME-level
+    # fact. 'NEE' opens the clause, so it sits OUTSIDE that span by
+    # construction and read as False regardless of the whole name's
+    # case, wrongly joining the shape class in a wholly one-case name.
+    # `maiden_markers` is also the one wordlist the ten-list exclusion
+    # first shipped without.
+    Case("caps_switch_does_not_claim_a_one_case_maiden_marker",
+         "JOHN SMITH NEE",
+         {"given": "JOHN", "middle": "SMITH", "family": "NEE"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="one case, and a maiden marker with no clause to open "
+               "(nothing follows it) -- identical to the default "
+               "reading either way"),
+    Case("caps_switch_does_not_claim_a_mixed_case_maiden_marker",
+         "John Smith NEE",
+         {"given": "John", "middle": "Smith", "family": "NEE"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the mixed-case twin: 'NEE' is unlisted by the caps "
+               "shape test's OWN membership check too, so this one "
+               "was already declining before this fix -- pinned "
+               "beside its one-case sibling for the same guarantee"),
+    # The 2026-09-18 review round's unpinned branches: live code paths
+    # that no row named, found by reading the diff rather than by a
+    # failure. Nothing here moved; every value is measured.
+    Case("caps_switch_reads_the_name_level_case_past_a_clause",
+         "née JONES XYZ",
+         {"given": "née", "middle": "JONES", "family": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the positive half of the two NEE rows above, and the "
+               "row that fails if classify's caps branch is reverted "
+               "to `one_case_own`: a marker OPENING the name leaves "
+               "own_words EMPTY, so the name-level fact is one-case "
+               "and nothing in the clause can join the shape class. "
+               "Under `one_case_own` every token past the cut reads "
+               "as mixed and 'XYZ' becomes a credential. "
+               "test_classify.py monkeypatches the revert and asserts "
+               "this very reading breaks"),
+    Case("caps_one_case_comma_declines_a_single_token",
+         "JOHN SMITH, XYZ",
+         {"given": "XYZ", "family": "JOHN SMITH"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the comma control for the one-case gate: two name "
+               "words before the comma would flip the structure for a "
+               "LISTED member, but the caps class needs a case "
+               "contrast to be a member at all, and a wholly "
+               "upper-case name has none. No report either -- there "
+               "was no fork to call"),
+    Case("caps_one_case_comma_declines_a_run",
+         "JOHN SMITH, LEED AP",
+         {"given": "LEED", "middle": "AP", "family": "JOHN SMITH"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the multi-token twin: segment's run test asks "
+               "`caps_shape_candidate` of every token and then reads "
+               "the case fact ONCE, so a one-case name declines the "
+               "whole run rather than per token"),
+    Case("caps_run_needs_every_token_not_any",
+         "John Smith, LEED BA",
+         {"given": "LEED", "family": "John Smith", "suffix": "BA"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="pins `all()` rather than `any()`: 'BA' is a LISTED "
+               "ambiguous acronym, so the caps shape test excludes it "
+               "and the run is no caps run -- the structure stays the "
+               "listing form. The first report is assign's post-comma "
+               "one, fired on 'LEED' alone, which carries the shape "
+               "tag from classify whatever segment made of the run. "
+               "#531 moves 'BA' itself: this is a family-comma name "
+               "whose given part now ends in a class member, and the "
+               "member is written in CAPITALS in a name written in "
+               "more than one case, so it leans credential (#289) and "
+               "reads suffix where it read middle -- its own second "
+               "report. What #516 pins here is untouched: the caps "
+               "run test still declines, and the structure is still "
+               "the listing form"),
+    Case("the_comma_count_counts_names_not_words_behind_a_title",
+         "Mr Smith, Ma",
+         {"given": "Ma", "family": "Mr Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED. name_word_count's TITLE arm: 'Mr' is title "
+               "vocabulary, so the part before the comma holds ONE "
+               "name word and the count declines the flip. Without "
+               "that arm two tokens would read as two names and hand "
+               "the family to `given`"),
+    Case("the_comma_count_counts_names_not_words_behind_a_suffix",
+         "Smith Jr, Ma",
+         {"given": "Ma", "family": "Smith", "suffix": "Jr"},
+         ambiguities=("suffix-or-name",),
+         notes="the SUFFIX arm of the same count, and the shape "
+               "decisions.md#S2 names: 'Smith Jr., MA' is two tokens "
+               "and one name. The Title-case spelling declines where "
+               "the all-caps one flips, which is the pair rules.md#C1 "
+               "states"),
+    Case("strict_comma_reads_the_dotted_numeral_as_a_name_word",
+         "Smith V., Ma",
+         {"given": "Smith", "family": "V.", "suffix": "Ma"},
+         policy=Policy(lenient_comma_suffixes=False),
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED, and a known rough edge recorded rather than "
+               "repaired (decisions.md#S2, 2026-09-18). Under strict "
+               "the initial-shaped 'V.' fails the suffix test, so "
+               "name_word_count sees TWO name words before the comma, "
+               "flips the structure, and the positional read of "
+               "'Smith V.' gives given 'Smith', family 'V.'. "
+               "Consistent with master: 'Smith V., PhD' reads the "
+               "same way under the same knob, so this is the knob's "
+               "own reading of 'V.' and not the credential class's"),
+    Case("strict_comma_reads_the_bare_numeral_into_the_run",
+         "Smith V, Ma",
+         {"given": "Smith", "suffix": "V, Ma"},
+         policy=Policy(lenient_comma_suffixes=False),
+         ambiguities=("suffix-or-name", "suffix-or-name",
+                      "given-or-family"),
+         notes="the period is the whole difference from the row "
+               "above: bare 'V' is still initial-shaped and still "
+               "counts as a name word here, so the structure flips "
+               "the same way -- but the trailing peel then takes it "
+               "as the roman numeral, leaving 'Smith' the only name "
+               "word and reporting all three forks"),
+    Case("caps_run_declines_a_bound_given_head", "John Smith, ABDUL AP",
+         {"given": "ABDUL AP", "family": "John Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the exclusion end to end rather than at the "
+               "predicate: 'ABDUL' is bound-given vocabulary, so the "
+               "run is no caps run and the part after the comma is "
+               "the given name it would be at the default"),
+    Case("caps_run_declines_a_conjunction", "John Smith, AND AP",
+         {"given": "AND AP", "family": "John Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="the same end to end for `conjunctions`, the row "
+               "test_classify.py's predicate table names as the one "
+               "that genuinely exercises that arm ('Y' declines at "
+               "the two-character gate first)"),
+    Case("caps_switch_leaves_a_capitalized_title_a_title",
+         "John Smith, MR",
+         {"title": "MR", "given": "John", "family": "Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         notes="`titles` end to end: the post-comma part holds no "
+               "name word, so C1's no-name-word clause keeps the "
+               "pre-comma positional read and 'MR' is the title it "
+               "is at the default"),
+    Case("a_period_final_delimited_clause_joins_the_shape_class",
+         "Andrew Perkins (X.Y.Z.)",
+         {"given": "Andrew", "family": "Perkins", "suffix": "X.Y.Z."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED, and it NARROWS the note on "
+               "caps_switch_does_not_reach_delimited_content: "
+               "`_extract._suffix_shaped` releases period-final "
+               "delimited content with role None, so it is ordinary "
+               "trailing material by the time classify runs and the "
+               "shape class claims it -- matching '(M.D)', which the "
+               "escape already sent to `suffix`. What the "
+               "`token.role is None` guard keeps out is content the "
+               "escape did NOT release ('Bridge (A.B)', a nickname), "
+               "which is a different population from 'delimited "
+               "content' whole"),
+    Case("a_leading_period_is_not_the_dotted_shape", "John Smith .XY",
+         {"given": "John", "middle": "Smith", "family": ".XY"},
+         notes="`period_joined_vocab` splits on interior periods, so "
+               "a LEADING one leaves a single chunk and there is no "
+               "acronym shape to read -- name material, and no fork "
+               "was called, so nothing is reported"),
+    Case("a_caseless_name_word_leaves_the_count_to_decide", "毛泽东 MA",
+         {"given": "毛泽东", "family": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="the comma-less twin of the 毛泽东, MA row: one name "
+               "word before the acronym, so the peel's two-piece "
+               "floor declines it whatever the writing says, and the "
+               "fork is reported all the same. Han is caseless, so "
+               "the NAME is mixed-case (the all-caps 'MA' contrasts "
+               "with nothing that has a case) -- the lean reads "
+               "'credential' and the floor is what refuses it",
+         tolerated=True),
+    Case("a_digit_chunk_moves_the_trailing_slot_silently",
+         "John Smith 1.4.2",
+         {"given": "John", "middle": "Smith", "family": "1.4.2"},
+         classification="fix(#516)",
+         notes="ACCEPTED and SILENT, recorded at decisions.md#S2. "
+               "rules.md#S3's narrow retirement drops a dotted token "
+               "whose every matched chunk is a single ASCII "
+               "character, and the vocabulary's lone digit '2' is one "
+               "of them -- so the chunk claim goes, and the shape "
+               "class cannot take it either, its own gate wanting "
+               "every chunk ALPHABETIC. A version string read as a "
+               "credential was the same accident the retirement "
+               "removes, so it moves suffix -> family at every "
+               "policy with no report"),
+    Case("a_digit_chunk_moves_the_post_comma_slot_silently",
+         "Smith, 1.4.2",
+         {"given": "1.4.2", "family": "Smith"},
+         classification="fix(#516)",
+         notes="the comma twin: no candidate, so no flip and no "
+               "report -- the part after the comma is simply the "
+               "given name, where 2.3 read family 'Smith', suffix "
+               "'1.4.2'"),
+    Case("a_digit_chunk_moves_the_two_word_comma_slot_silently",
+         "John Smith, 1.4.2",
+         {"given": "1.4.2", "family": "John Smith"},
+         classification="fix(#516)",
+         notes="and with TWO name words before the comma, where a "
+               "real class member would flip the structure: '1.4.2' "
+               "is no member, so the listing form stands and the "
+               "whole pre-comma run is the family. The widest of the "
+               "three silent moves"),
+    Case("the_comma_flip_is_read_under_the_declared_order",
+         "John Smith, MA",
+         {"given": "Smith", "family": "John", "suffix": "MA"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED. The count flips the structure whatever the "
+               "order -- it counts NAME words, which no order changes "
+               "-- and the pre-comma run is then read positionally, "
+               "so the declared order decides which of 'John Smith' "
+               "is the family. The report's wording quotes the count, "
+               "not a role, so it reads the same under every order"),
+    Case("two_caps_credentials_peel_as_a_run",
+         "John MA XYZ",
+         {"given": "John", "suffix": "MA XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("given-or-family", "suffix-or-name",
+                      "suffix-or-name"),
+         notes="MEASURED, and the widest reading the switch reaches: "
+               "the peel walks from the END, so 'XYZ' goes first (two "
+               "pieces still stand behind it), and 'MA' then has "
+               "'John' alone behind it -- but its LISTED lean says "
+               "credential, which needs no words to spare. The name "
+               "loses its family name entirely and says so three "
+               "times. At the default it reads given John, middle MA, "
+               "family XYZ, silently"),
+    Case("the_caps_shape_is_script_agnostic_cyrillic",
+         "Иван Петр ИВАНОВ",
+         {"given": "Иван", "family": "Петр", "suffix": "ИВАНОВ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the switch's docstring claims `isupper()` is "
+               "script-agnostic, so the convention and the reason for "
+               "the default are the same in any script with a case "
+               "contrast. Measured rather than asserted in prose: a "
+               "Cyrillic all-caps surname joins the class exactly as "
+               "'Jean Pierre DUPONT' does, and is swallowed the same "
+               "way"),
+    Case("the_dotted_switch_off_still_reports_the_post_comma_fork",
+         "Smith, A.B.",
+         {"given": "A.B.", "family": "Smith"},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED. With the switch off the token never joins "
+               "the class, so the STRUCTURE cannot flip -- but "
+               "classify still writes SHAPE_ACRONYM_TAG (the fork was "
+               "real and the parser declined it), and assign's "
+               "post-comma report reads that tag directly. Exactly "
+               "ONE report: the shape tag is on one piece and the "
+               "reading is read off the first post-comma piece alone",
+         classification="fix(#516)"),
+    Case("the_dotted_switch_off_leaves_a_lone_token_to_the_convention",
+         "A.B.", {"given": "A.B."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         ambiguities=("given-or-family",),
+         notes="one piece, so the peel's two-piece floor refuses the "
+               "class before the switch is consulted at all, and what "
+               "is left is O5's lone-name-word convention. GIVEN_OR_"
+               "FAMILY and nothing else -- pinned because the shape "
+               "tag is present and must NOT produce a second report "
+               "where no fork was taken"),
+    Case("the_dotted_switch_off_leaves_a_titled_token_a_name",
+         "Dr. A.B.", {"title": "Dr.", "family": "A.B."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         notes="the title floor: the peel's walk starts after the "
+               "leading title run, so one piece is all it sees and "
+               "the fork is never consulted -- no report at all, the "
+               "same floor 'Mr MA' pins for the listed half"),
+    Case("the_caps_shape_is_script_agnostic_accented",
+         "Jean Pierre ÉCOLE",
+         {"given": "Jean", "family": "Pierre", "suffix": "ÉCOLE"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="the other half of the same claim: a non-ASCII LATIN "
+               "letter. `isalpha()`/`isupper()` are Unicode-wide, so "
+               "an accented capital is admitted -- the docstring's "
+               "'Jean ÉCOLE' example, given the third word it needs "
+               "to have words to spare"),
+    Case("catalan_i_in_a_one_case_name_reads_as_an_initial_upper",
+         "JOSEP CAROD I ROVIRA",
+         {"given": "JOSEP", "middle": "CAROD I", "family": "ROVIRA"},
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="the row that predicted its own move, and the move is "
+               "the REPORT and not the reading: 'i' is connective "
+               "vocabulary now and ships in conjunctions_ambiguous "
+               "beside 'e', so a name written wholly in one case reads "
+               "the bare capital as an initial -- which is what it "
+               "already did by shape -- and now says so. Roles "
+               "unchanged from 1.4.0 through 2.3.0; only the "
+               "ambiguity is new. The id moved with the answer: it "
+               "read 'is_not_connective_vocabulary', which this "
+               "commit makes false, and nothing outside this table "
+               "named it",
+         shape=1),
+    Case("catalan_i_in_a_one_case_name_reads_as_an_initial_lower",
+         "josep carod i rovira",
+         {"given": "josep", "middle": "carod i", "family": "rovira"},
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="the lowercase twin, and the one that shows the fork is "
+               "about CASE EVIDENCE and not about capitals: a name "
+               "written wholly in lower case has nothing marking the "
+               "letter either way, so the marked set decides and the "
+               "letter reads as an initial. Roles unchanged at every "
+               "release; the report is new. Compare 'Josep Carod i "
+               "Rovira' below, which is written in more than one case "
+               "and joins",
+         shape=1),
+    # ---- #397: the Catalan/Polish link ------------------------------
+    # The rule: a connective counts as a name word wherever P3's
+    # carve-out counts them, whatever else the vocabulary says the word
+    # is -- and a connective that is ALSO generational vocabulary joins
+    # only where a name word stands on each side of it. 'i' is the one
+    # shipped entry in both classes: the Catalan link and the roman
+    # numeral I.
+    Case("the_catalan_link_joins_two_surnames",
+         "Josep Carod i Rovira",
+         {"given": "Josep", "family": "Carod i Rovira"},
+         classification="fix(#397)",
+         notes="the statement of the rule and the commonest shape. "
+               "Four words, so the carve-out's count has to reach four "
+               "-- and it does only because the link counts ITSELF, "
+               "'i' being suffix vocabulary that _is_rootname used to "
+               "refuse. 1.4.0 through 2.3.0 read middle 'Carod i', "
+               "family 'Rovira', which is the link left unjoined one "
+               "word short of what a Catalan reader wants",
+         shape=1),
+    Case("the_catalan_link_joins_with_a_middle_name_in_front",
+         "Josep Lluis Carod i Rovira",
+         {"given": "Josep", "middle": "Lluis", "family": "Carod i Rovira"},
+         classification="fix(#397)",
+         notes="the same join with a real middle name beside it: the "
+               "join takes 'Carod i Rovira' and leaves 'Lluis' where "
+               "it was, rather than swallowing the whole tail. 1.4.0 "
+               "read middle 'Lluis Carod i', family 'Rovira'",
+         shape=1),
+    Case("the_catalan_link_survives_a_family_comma",
+         "Carod i Rovira, Josep",
+         {"given": "Josep", "family": "Carod i Rovira"},
+         classification="fix(#397)",
+         notes="the sharpest of the before-pictures, and the half the "
+               "vocabulary alone does not fix: after a family comma "
+               "the link was not merely unjoined, it was read as a "
+               "GENERATION and the family lost it -- 1.4.0 through "
+               "2.3.0 gave family 'Carod Rovira' with suffix 'i'. It "
+               "is also the one new name here that lands in a comma "
+               "rule's corpus claim",
+         shape=2),
+    Case("the_link_is_still_a_name_word_in_a_three_word_name",
+         "Josep i Rovira",
+         {"given": "Josep", "middle": "i", "family": "Rovira"},
+         ambiguities=(),
+         notes="P3's own carve-out, and the BOUNDARY: three words, so "
+               "the single-letter connective stays a name word and "
+               "nothing joins. Roles identical at 1.4.0 and at every "
+               "release since, which is what keeps this row parity -- "
+               "and the two halves of this bundle cancel on it, since "
+               "the readmission (#461) hands the letter back an "
+               "initial that the vocabulary addition would otherwise "
+               "have taken, so 'J. i. R.' holds across the bundle. "
+               "Written in more than one case, so no fork is consulted "
+               "and nothing reports",
+         shape=1),
+    Case("a_link_with_nothing_to_its_right_is_the_generation",
+         "John Quincy Smith i",
+         {"given": "John", "middle": "Quincy", "family": "Smith",
+          "suffix": "i"},
+         notes="the BOUNDARY the both-sides condition exists for, in "
+               "its simplest shape: there is no piece at all to the "
+               "right of the link. Four name words, so the count no "
+               "longer declines; drop the condition and this reads "
+               "family 'Smith i', losing the generation (measured). A "
+               "connective with nothing to its right is connecting "
+               "nothing. Roles unchanged at every release, 1.4.0 "
+               "included",
+         shape=1),
+    Case("a_link_before_a_generation_is_the_generation_too",
+         "Josep Lluis Carod i III",
+         {"given": "Josep", "middle": "Lluis", "family": "Carod",
+          "suffix": "i III"},
+         classification="fix(#436/#437)",
+         notes="the other half of the same boundary, and the one the "
+               "first cut got wrong: there IS a piece to the right, "
+               "so a condition asking about POSITION passed it and "
+               "the family read 'Carod i III' -- a generational "
+               "suffix silently swallowed into the surname, on 130 "
+               "names of the review's grid and pinned by nothing. The "
+               "question is the neighbour's CLASS: what the rest of "
+               "the parse reads that word as. The four ROLES are "
+               "1.4.0's and every release's; what the classification "
+               "records is the suffix STRING, which 1.4.0 wrote "
+               "'i, III' because it joined suffix entries with a "
+               "comma and R1 derives them from the writer's commas "
+               "now",
+         shape=1),
+    Case("the_neighbour_test_reads_the_peel_and_not_the_vocabulary",
+         "Josep Lluis Carod i V",
+         {"given": "Josep", "middle": "Lluis", "family": "Carod",
+          "suffix": "i V"},
+         classification="fix(suffix-routing)",
+         ambiguities=("suffix-or-name",),
+         notes="why the condition asks assign's TRAILING-RUN walk "
+               "rather than the suffix-piece test: a bare 'V' is "
+               "suffix vocabulary written like an initial, so "
+               "is_suffix_piece refuses it (rules.md#S2's initial "
+               "veto) and a class test spelled with that predicate "
+               "alone would let the link swallow it. The peel takes "
+               "it, so trailing_start puts it outside the name's own "
+               "words and the link stays the generation -- carrying "
+               "the fork report the swallowed reading had lost. 'MA' "
+               "is the acronym half of the same shape. Roles "
+               "unchanged from 2.0.0 through 2.3.0; 1.4.0 read middle "
+               "'Lluis Carod', last 'i', suffix 'V', which is the "
+               "two-token divergence 'Carod i' pins above and the "
+               "same fix(suffix-routing) rule describes",
+         shape=1),
+    Case("the_link_joins_nothing_across_a_family_comma_either",
+         "Rovira, Josep Carod i Jr.",
+         {"given": "Josep", "middle": "Carod", "family": "Rovira",
+          "suffix": "i Jr."},
+         classification="fix(#436/#437)",
+         notes="the comma form of the row above, and it is a "
+               "different code path rather than a second member of "
+               "one: the link and the generation sit in segment 1, "
+               "where the name words are counted without the family "
+               "the comma already fixed. The first cut read middle "
+               "'Carod i Jr.'. Roles are 1.4.0's here too, and the "
+               "classification is the same suffix-string comma: "
+               "1.4.0 wrote 'i, Jr.'",
+         shape=2),
+    Case("a_trailing_link_does_not_count_itself_for_another_join",
+         "Carod y de Rovira i",
+         {"given": "Carod", "middle": "y", "family": "de Rovira",
+          "suffix": "i"},
+         notes="the COUNT half of the same rule, and the reason it "
+               "cannot be stated for the join alone. The trailing 'i' "
+               "joins nothing, so it is the generation -- and a "
+               "generation is no name word, so it must not raise the "
+               "three-word carve-out's total either. Counting it did: "
+               "the total reached four, and an unrelated 'y' two "
+               "pieces away joined on the strength of it, reading "
+               "given 'Carod y de' with family 'Rovira'. Roles "
+               "unchanged at every release",
+         shape=1),
+    Case("a_particle_on_the_right_is_a_name_side_neighbour",
+         "Josep Carod i de Rovira",
+         {"given": "Josep", "middle": "Carod i de", "family": "Rovira"},
+         classification="fix(#397)",
+         notes="the boundary on the other side of the class test: a "
+               "PARTICLE beside the link is a name word, not a "
+               "credential, so the link joins and the particle chain "
+               "then takes the surname. 1.4.0 through 2.3.0 read "
+               "middle 'Carod i' with family 'de Rovira' -- the link "
+               "unjoined, which is the whole defect #397 is about. "
+               "Contrast 'Josep Lluis Jr. i Rovira', where the "
+               "neighbour is a credential and the reading stands",
+         shape=1),
+    Case("a_link_ending_a_shorter_name_is_the_generation_too",
+         "Josep Carod i",
+         {"given": "Josep", "family": "Carod", "suffix": "i"},
+         notes="the same boundary one word shorter, and it is refused "
+               "one gate EARLIER: three name words, so the count "
+               "declines before the both-sides test is reached. The "
+               "pair with the row above is what separates the two "
+               "gates -- measured, delete the both-sides condition and "
+               "this row still passes while its four-word twin does "
+               "not. Roles unchanged at every release",
+         shape=1),
+    Case("the_two_word_link_keeps_the_generation_reading",
+         "Carod i",
+         {"given": "Carod", "suffix": "i"},
+         classification="fix(suffix-routing)",
+         ambiguities=("given-or-family",),
+         notes="an ACCEPTED COST, pinned so the ledger rule that "
+               "records it has a witness in this table. Two pieces "
+               "never reach the join loop at all, which needs three, "
+               "so the name reads as a name plus a trailing "
+               "generation and the family is empty. 1.4.0 read last "
+               "'i' -- the same two-token divergence the 1.4.0 "
+               "ledger's fix(suffix-routing) rule describes for a "
+               "trailing roman numeral, and the same one 'Donald Mc' "
+               "pins above for the acronym half. That reading also "
+               "has a NOT-WANTED rule at 1.4.0 whose standing this "
+               "bundle converts from 'unresolved' to 'decided': the "
+               "cause is settled and the reading is kept",
+         shape=1),
+    Case("the_link_joins_under_a_trailing_generation_marker",
+         "Josep Carod i Rovira III",
+         {"given": "Josep", "family": "Carod i Rovira", "suffix": "III"},
+         classification="fix(#397)",
+         notes="the CONTROL for the three rows above: a generation "
+               "standing behind a name word leaves a name word on "
+               "each side of the link, so the link joins and the "
+               "generation keeps its own slot. Move it one word left "
+               "-- 'Josep Lluis Carod i III' -- and the link has a "
+               "credential on its right instead, joins nothing, and "
+               "is the generation it also spells. That pair is the "
+               "whole design, and the pair is why the condition asks "
+               "the NEIGHBOUR's class rather than the link's own. "
+               "1.4.0 read middle 'Carod i'",
+         shape=1),
+    Case("a_bare_capital_link_in_a_mixed_case_name_is_an_initial",
+         "Josep Carod I Rovira",
+         {"given": "Josep", "middle": "Carod I", "family": "Rovira"},
+         ambiguities=(),
+         notes="the recorded negative control for the whole "
+               "vocabulary addition, and the reason the `initial` test "
+               "stays FIRST in the rootname count: a bare Latin "
+               "capital in a name of more than one case is how an "
+               "initial is written, so classify tags it `initial` and "
+               "never `conjunction`, the count is unmoved and nothing "
+               "joins. Identical at 1.4.0 and at every release since",
+         shape=1),
+    Case("a_connective_run_absorbs_a_name_with_no_other_name_word",
+         "Henry i of England",
+         {"given": "Henry i of England"},
+         classification="fix(#397)",
+         ambiguities=("given-or-family",),
+         notes="the ACCEPTED CONSEQUENCE of reaching the class, "
+               "recorded rather than repaired: 'i' and 'of' are "
+               "adjacent connectives, so they merge into one "
+               "connective RUN and the run -- now counting itself -- "
+               "joins the whole name into a single piece. Before this "
+               "commit the same name read given 'Henry', family 'i of "
+               "England'; 1.4.0 read the same. It is the shape 'Duke "
+               "of Edinburgh' already has, which is why the report is "
+               "the lone-name-word one. UNTAGGED on purpose: a "
+               "second-order consequence is not a shape this table "
+               "admits to the contract corpus",
+         ),
+    Case("a_trailing_y_is_not_in_the_both_sides_class",
+         "Juan Garcia Lopez y",
+         {"given": "Juan", "middle": "Garcia", "family": "Lopez y"},
+         notes="the recorded negative control for the CLASS half of "
+               "the both-sides test, and it must NOT move: 'y' is "
+               "connective vocabulary but not generational "
+               "vocabulary, so the condition never asks about it and "
+               "today's reading stands. Drop the is_suffix_piece "
+               "conjunct and this row reads family 'y' with 'Lopez' "
+               "pushed into the middle -- measured, and no property "
+               "invariant in this repo catches it. Identical at 1.4.0",
+         shape=1),
+    Case("a_trailing_y_behind_a_join_is_not_in_the_class_either",
+         "Juan Garcia y Lopez y",
+         {"given": "Juan", "family": "Garcia y Lopez y"},
+         notes="the same control with the letter appearing twice, one "
+               "joining and one trailing: the interior 'y' joins on "
+               "the position test and the trailing one is never asked "
+               "about, so the whole run stays the family. Drop the "
+               "class conjunct and the family collapses to 'y' with "
+               "middle 'Garcia y Lopez' -- measured. Identical at "
+               "1.4.0",
+         shape=1),
+    Case("a_link_inside_a_maiden_clause_stays_in_the_birth_name",
+         "Jane Doe nee Puig i Soler",
+         {"given": "Jane", "family": "Doe", "maiden": "Puig i Soler"},
+         classification="fix(#397)",
+         notes="the shape the link fix turned from a truncation into "
+               "a LEAK, and the reason it is fixed here rather than "
+               "left for its own issue: the maiden walk has always "
+               "stopped at the first suffix word after the marker, so "
+               "2.0.0 through 2.3.0 read maiden 'Puig' and left 'i "
+               "Soler' standing as middle 'Doe i', family 'Soler' -- "
+               "a truncation, and the released words at least stayed "
+               "out of the surname. With the link joining, the same "
+               "two words became family 'Doe i Soler': a word of the "
+               "BIRTH name inside the CURRENT one, which is the class "
+               "of failure #424 and #533 exist to prevent. The 'y' "
+               "spelling never had either reading, and the invariant "
+               "in test_properties.py is that twin. 1.4.0 has no "
+               "maiden support at all and read middle 'Doe nee Puig "
+               "i', last 'Soler'",
+         shape=1),
+    Case("the_link_stays_in_the_birth_name_after_a_family_comma_too",
+         "Doe, Jane nee Puig i Soler",
+         {"given": "Jane", "family": "Doe", "maiden": "Puig i Soler"},
+         classification="fix(#397)",
+         notes="the comma form, and a different reader rather than a "
+               "second member of one shape: segment 1 is read at the "
+               "GIVEN slot, so the leak landed in given 'Jane i "
+               "Soler' rather than in the family. 2.0.0 through 2.3.0 "
+               "read maiden 'Puig' with middle 'Soler' and suffix "
+               "'i'. 1.4.0 read middle 'nee Puig Soler', suffix 'i'",
+         shape=2),
+    Case("a_link_with_nothing_on_its_right_still_ends_the_clause",
+         "Jane Doe nee Puig i",
+         {"given": "Jane", "family": "Doe", "suffix": "i",
+          "maiden": "Puig"},
+         classification="fix(#274)",
+         notes="the CONTROL for the two rows above and the half that "
+               "must not move: a link joining nothing is the "
+               "generation it also spells, so the clause ends at it "
+               "exactly as it did. The pair is what says the "
+               "exception is about PLACEMENT and not about the word. "
+               "Unchanged from 2.0.0 through 2.3.0; 1.4.0 read middle "
+               "'Doe nee', last 'Puig', suffix 'i', which is the "
+               "maiden support #274 added",
+         shape=1),
+    Case("a_link_before_a_generation_ends_the_clause_too",
+         "Jane Doe nee Puig i III",
+         {"given": "Jane", "family": "Doe", "suffix": "i III",
+          "maiden": "Puig"},
+         classification="fix(#436/#437)",
+         notes="the second control, and the one that pins WHICH bound "
+               "the exception reads: the right-hand name word is "
+               "looked for below the trailing run assign's peel takes, "
+               "so a generation there is outside the clause's own "
+               "words and the link joins nothing. Widen that bound to "
+               "the walk's own stop and this row reads maiden 'Puig i "
+               "III' -- measured. 'i MA' is the acronym half of the "
+               "same control and is not in this table: 'MA' carries "
+               "no suffix tag for the piece test to refuse it by, so "
+               "only the peel bound keeps it out. Unchanged from "
+               "2.0.0 through 2.3.0; 1.4.0 wrote the suffix 'i, III' "
+               "with a comma R1 no longer derives, and read last "
+               "'Puig' for want of maiden support",
+         shape=1),
+    # ---- #397 second review: the one-case role movers --------------
+    # decisions.md#P3's 2026-09-20 bullet describes these four names
+    # in prose and pinned none of them. They are where the marked
+    # subset's riskiest movement is -- an ALL-LOWER name whose letter
+    # the parent read as the GENERATION and this reads as an initial
+    # -- and each one now reads as its ALL-CAPS twin already did,
+    # which is the claim the prose makes and
+    # test_properties.py::test_a_one_case_name_reads_the_same_in_
+    # either_case holds over the grid. Every reading below measured
+    # 2026-09-20 on the released 1.4.0 and 2.3.0 wheels from a
+    # throwaway environment.
+    Case("a_one_case_link_after_a_family_comma_is_the_given_name",
+         "rovira, i",
+         {"given": "i", "family": "rovira"},
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="written wholly in lower case, so the letter reads as "
+               "an INITIAL and takes the given slot the comma leaves "
+               "for it. 2.3.0 read family 'rovira' with suffix 'i'; "
+               "1.4.0 read first 'i', which is this reading. The "
+               "ALL-CAPS twin 'ROVIRA, I' gave first 'I' at BOTH of "
+               "them and gives given 'I' here -- the two spellings "
+               "disagreed at 2.3.0 and agree now. NO SHAPE TAG on "
+               "any of these four: decisions.md#P3's one-case "
+               "paragraph says of them that none is a corpus name, "
+               "and admitting them to the differential's contract "
+               "corpus is a ledger change of its own rather than "
+               "this row's business. The cross-version readings "
+               "above are what the corpus would have bought, "
+               "measured on the wheels instead"),
+    Case("a_one_case_link_before_a_generation_is_a_name_word",
+         "john smith i jr",
+         {"given": "john", "middle": "smith", "family": "i",
+          "suffix": "jr"},
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="the same movement with a generation behind it: the "
+               "letter reads as an initial, so the peel stops before "
+               "it and 'jr' alone is the suffix. 2.3.0 read family "
+               "'smith' with suffix 'i jr' and 1.4.0 suffix 'i, jr'. "
+               "The ALL-CAPS twin 'JOHN SMITH I JR' read middle "
+               "'SMITH', last 'I', suffix 'JR' at both of them -- "
+               "again the reading this row now gives. No shape "
+               "tag, for the reason the row above gives"),
+    Case("a_one_case_link_in_a_comma_suffix_run_is_a_middle_initial",
+         "maier, amy i, jr.",
+         {"given": "amy", "middle": "i", "family": "maier",
+          "suffix": "jr."},
+         classification="fix(#397)",
+         ambiguities=("conjunction-or-initial",),
+         notes="the third comma shape, and the one whose MIXED-CASE "
+               "twin is already in this table: 'Maier, Amy I, Jr.' "
+               "reads middle 'I' and does not move, the writing "
+               "having decided the letter there. 2.3.0 and 1.4.0 "
+               "both read suffix 'i, jr.' for the lower-case "
+               "spelling while 'MAIER, AMY I, JR.' already read "
+               "middle 'I' -- the disagreement this closes. No "
+               "shape tag, for the reason the first of these rows "
+               "gives"),
+    Case("a_link_inside_a_maiden_clause_keeps_a_bare_credential",
+         "Jane Doe nee Puig i Ma",
+         {"given": "Jane", "family": "Doe", "maiden": "Puig i Ma"},
+         classification="fix(#397)",
+         ambiguities=("suffix-or-name",),
+         notes="the clause's link with a BARE ambiguous acronym "
+               "behind it, on the shipped vocabulary rather than a "
+               "built one. 'Ma' is a name word here -- mixed case, "
+               "so the class member leans to the name -- and a name "
+               "word on the link's right is what the exception "
+               "wants, so the clause takes all three words and "
+               "reports the acronym it kept. 2.3.0 read middle 'Doe "
+               "i', family 'Ma', maiden 'Puig', handing two words of "
+               "the birth name to the current one; 1.4.0 read middle "
+               "'Doe nee', last 'Puig', suffix 'i, Ma'. The "
+               "ALL-CAPS 'MA' is the other lean and is the control "
+               "in test_properties.py rather than a row here. No "
+               "shape tag, for the reason the first of these rows "
+               "gives"),
+    # ---- #461: a connective initials where it joins nothing --------
+    # The rule, one sentence for all three groups: a connective
+    # contributes nothing where it is JOINING -- a part holding
+    # another name word for it to join, the part's working particles
+    # set aside -- and initials like any other name word where its
+    # part holds nothing else. Asked of the whole PART, never of a
+    # word count. These rows carry the ROLES, which this table's
+    # expectations are; the initials each one is about are named in
+    # its notes and asserted by rules.md#R3's example lines and by
+    # tests/v2/test_render.py.
+    Case("a_connective_among_given_names_stops_initialing",
+         "John and Jane Smith",
+         {"given": "John and Jane", "family": "Smith"},
+         classification="fix(#461)",
+         notes="the name R3's retired paragraph said had four "
+               "candidate answers, and this rule picks one of them by "
+               "stating a rule rather than by choosing a value: the "
+               "given part holds name words for 'and' to join, so it "
+               "joins and contributes nothing. Roles unchanged at "
+               "every release; initials go 'J. a. J. S.' -- 1.4.0's "
+               "run-together 'J a J. S.' -- to 'J. J. S.'",
+         shape=1),
+    Case("a_title_run_read_as_a_name_loses_its_connective_too",
+         "Duke of Edinburgh",
+         {"given": "Duke of Edinburgh"},
+         classification="fix(#461)",
+         ambiguities=("given-or-family",),
+         notes="the same rule on the shape that makes it visible "
+               "outside couple listings: the whole name joins into "
+               "one given part, 'of' has name words on both sides of "
+               "it, and 'D. o. E.' becomes 'D. E.'. The report is "
+               "unchanged and is the one this row also pins",
+         shape=1),
+    Case("a_connective_holding_a_part_alone_initials",
+         "Juan y Garcia",
+         {"given": "Juan", "middle": "y", "family": "Garcia"},
+         classification="fix(#461)",
+         notes="the other direction, and the commonest of the three "
+               "shapes: P3's three-word carve-out leaves 'y' a name "
+               "word in the middle part BY ITSELF, so there is "
+               "nothing there for it to join and it initials -- 'J. "
+               "G.' becomes 'J. y. G.'. Roles unchanged since 1.4.0. "
+               "This is the half the design flagged and Derek took",
+         shape=1),
+    Case("a_lone_connective_in_the_family_initials_too",
+         "Juan de y",
+         {"given": "Juan", "family": "de y"},
+         classification="fix(#461)",
+         notes="the row #461 was filed about, where the two views of "
+               "one parse disagreed about one token: family_base was "
+               "'y' and initials() was 'J.', so the base said the "
+               "word is a name word and the initials said it is not. "
+               "Now 'J. y.', and they agree. The part is not "
+               "all-particle under the default vocabulary -- 'y' is "
+               "no particle there -- so only the new mark readmits it",
+         shape=1),
+    Case("a_part_of_two_words_with_a_name_word_still_joins",
+         "Jon Dough and",
+         {"given": "Jon", "family": "Dough and"},
+         classification="parity",
+         notes="the recorded negative control for the WHOLE-PART "
+               "question, and the row that says the criterion is not "
+               "a word count wearing a part's clothes: two words, one "
+               "of them the connective, and the other is a name word "
+               "for it to join -- so it joins, contributes nothing, "
+               "and 'J. D.' is unchanged at every release including "
+               "1.4.0. Read the part, never count it",
+         shape=1),
+    Case("a_working_particle_does_not_count_as_something_to_join",
+         "Juan Velasquez y Garcia",
+         {"given": "Juan", "family": "Velasquez y Garcia"},
+         classification="parity",
+         notes="the control on the other side: the family holds two "
+               "name words beside the connective, so it joins and "
+               "'J. V. G.' is unchanged -- 1.4.0 gave the facade's "
+               "run-together 'J. V G.' for its own reason (grouping, "
+               "not membership). The clause about working particles "
+               "is what this row does NOT exercise and the "
+               "'Juan de y' row above does",
+         shape=1),
+    Case("a_joined_cyrillic_connective_stops_initialing",
+         "Хосе И Мария Сантос",
+         {"given": "Хосе И Мария", "family": "Сантос"},
+         classification="fix(#461)",
+         notes="the non-Latin half of the losing direction, and it "
+               "moves the OTHER way from the Arabic "
+               "'caseless_connective_never_enters_the_fork' row above "
+               "because the part differs and not the script: here the "
+               "connective has given names on both sides of it, so it "
+               "joins. 'Х. И. М. С.' becomes 'Х. М. С.'. A Cyrillic "
+               "capital is not the shape an initial is written in "
+               "(rules.md#P3), so the letter is the connective in "
+               "every spelling of this name",
+         shape=1),
+    # ---- #531: the given part's trailing slot ----------------------
+    # The slot: after a family comma the comma has already named the
+    # family and the first word after it is the given name, so a class
+    # member ENDING the given part has words to spare by construction
+    # and the count says nothing. The writing decides, exactly as it
+    # does for the comma-less spelling of the same name.
+    Case("the_given_parts_trailing_slot_reads_the_credential",
+         "Doe, John MA",
+         {"given": "John", "family": "Doe", "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="1.4.0 RESTORED: v1 read suffix 'MA' and 2.0 through "
+               "2.3 read middle 'MA' in silence. The comma fixed the "
+               "family and the first post-comma word is the given "
+               "name, so the words-to-spare count is satisfied by "
+               "construction and the positional reading at this slot "
+               "IS the credential. Same answer as the comma-less "
+               "'John Doe MA', which is the whole point "
+               "(decisions.md#S2)",
+         shape=2),
+    Case("the_given_parts_trailing_dotted_slot_reads_the_credential",
+         "Doe, John X.Y.Z.",
+         {"given": "John", "family": "Doe", "suffix": "X.Y.Z."},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the BY-SHAPE half of the same slot, and the half that "
+               "does NOT restore 1.4.0: v1 read middle 'X.Y.Z.' here "
+               "and this becomes a suffix. `listed_lean` returns None "
+               "wherever the shape tag rides, so a by-shape member "
+               "never leans and falls to the positional reading, which "
+               "at this slot is the credential -- matching the "
+               "comma-less 'John Doe X.Y.Z.' and the 2.4 shape rule "
+               "rather than v1. One name, one new divergence, accepted "
+               "(decisions.md#S2)",
+         shape=2),
+    Case("the_given_parts_trailing_slot_in_all_caps",
+         "DOE, JOHN MA",
+         {"given": "JOHN", "family": "DOE", "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="one case, so the lean is inert and the positional "
+               "reading decides alone -- and at this slot it is the "
+               "credential. 1.4.0 parity",
+         shape=2),
+    Case("the_given_parts_trailing_slot_in_all_lower",
+         "doe, john ma",
+         {"given": "john", "family": "doe", "suffix": "ma"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the other one-case spelling, same reason as its "
+               "all-caps twin: nothing leans, the position decides. "
+               "1.4.0 parity",
+         shape=2),
+    Case("the_trailing_slot_reads_every_listed_member",
+         "Doe, John BA",
+         {"given": "John", "family": "Doe", "suffix": "BA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="'ba' is another listed member (one of the five "
+               "decisions.md#suffix-acronym-collisions marked "
+               "ambiguous rather than removing), so the slot is not a "
+               "rule about 'ma' -- it is the whole class",
+         shape=2),
+    Case("the_trailing_slot_leaves_the_middle_initial_alone",
+         "Doe, John Q. MA",
+         {"given": "John", "middle": "Q.", "family": "Doe",
+          "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the member leaves the given part and 'Q.' stays the "
+               "middle initial it always was -- the slot reaches the "
+               "trailing word, not the run in front of it. 1.4.0 "
+               "parity on both fields",
+         shape=2),
+    Case("the_trailing_slot_joins_the_credential_run_behind_it",
+         "Doe, John MA PhD",
+         {"given": "John", "family": "Doe", "suffix": "MA PhD"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="'ending the given part' REACHES PAST the credentials "
+               "behind it, so 'MA' joins the run rather than being "
+               "walled off by it. Rendered with a SPACE and not a "
+               "comma: R1 derives suffix entries from the commas the "
+               "WRITER typed (#436/#437), so only 'Doe, John MA, PhD' "
+               "renders 'MA, PhD'. 1.4.0 wrote a comma in both. ONE "
+               "report: 'PhD' is settled vocabulary and carries "
+               "neither class tag",
+         shape=2),
+    Case("the_trailing_slot_reaches_past_a_generational_suffix",
+         "Doe, John MA Jr",
+         {"given": "John", "family": "Doe", "suffix": "MA Jr"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the run behind the member does not have to be "
+               "credentials -- a generational suffix is a suffix "
+               "piece and the walk reaches past it the same way",
+         shape=2),
+    Case("the_trailing_slot_is_a_run_not_a_position",
+         "Doe, John PhD MA",
+         {"given": "John", "family": "Doe", "suffix": "PhD MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the member stands LAST here and the settled "
+               "credential in front of it is what used to strand it: "
+               "2.0 through 2.3 read middle 'MA' with suffix 'PhD', "
+               "which is a name word behind a post-nominal. One "
+               "reading now, and it is 1.4.0's",
+         shape=2),
+    Case("the_trailing_slot_survives_a_third_comma_part",
+         "Doe, John MA, PhD",
+         {"given": "John", "family": "Doe", "suffix": "MA, PhD"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="#144's two-segment restriction is NOT inherited by "
+               "this branch. That restriction exists because a "
+               "trailing 'V' before a third comma part is likely a "
+               "middle initial; 'MA' is not initial-shaped, and a "
+               "credential list behind it makes the credential "
+               "reading MORE likely rather than less. The comma the "
+               "writer typed is what renders here, which is why this "
+               "row shows 'MA, PhD' where its spaced twin shows "
+               "'MA PhD' (#436/#437)"),
+    Case("two_members_in_the_trailing_run_report_twice",
+         "Doe, John MA JD",
+         {"given": "John", "family": "Doe", "suffix": "MA JD"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="one decision, one report; two members, two reports -- "
+               "matching 'John Doe MA JD', which reports twice today. "
+               "No token is ever reported twice: these are two "
+               "tokens",
+         shape=2),
+    # ---- the declined direction: the reading does NOT move and the
+    # report is new. Derek's Q4, answered 'report both directions':
+    # #530's rule is that the report tracks the FORK CONSULTED, not
+    # the lean.
+    Case("the_trailing_slot_declines_a_title_cased_member",
+         "Doe, John Ma",
+         {"given": "John", "middle": "Ma", "family": "Doe"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="Title case in a mixed-case name is written the way a "
+               "NAME is written, so the member stays a middle name -- "
+               "and the fork was consulted, so it reports. The first "
+               "of the rows where #531 adds a report without moving a "
+               "field; 'Doe, Mary Jo Ma', 'Doe, John Ed' and 'Doe, "
+               "John MA Ma' below are the others, each declining on "
+               "the same signal. It is the same rule the comma-less "
+               "'John Doe Ma' has followed since #289",
+         shape=2),
+    Case("the_trailing_slot_declines_behind_two_given_words",
+         "Doe, Mary Jo Ma",
+         {"given": "Mary", "middle": "Jo Ma", "family": "Doe"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the lean does not care how many given words stand in "
+               "front -- Title case declines here exactly as it does "
+               "with one. 1.4.0 read middle 'Jo', suffix 'Ma'; the "
+               "case signal is what this release chose over that",
+         shape=2),
+    Case("the_trailing_slot_declines_a_title_cased_name_word",
+         "Doe, John Ed",
+         {"given": "John", "middle": "Ed", "family": "Doe"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="'Ed' is a given name far more often than it is a "
+               "doctorate, and Title case is how that is written. The "
+               "report is how a caller finds the other reading",
+         shape=2),
+    Case("the_trailing_slot_declines_then_takes_the_next_member",
+         "Doe, John Ma JD",
+         {"given": "John", "middle": "Ma", "family": "Doe",
+          "suffix": "JD"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="two members, two decisions, two reports -- and they "
+               "go opposite ways. 'JD' is all-caps and takes the "
+               "credential; 'Ma' is Title-cased and stays a name, "
+               "which also ENDS the run, so nothing in front of it is "
+               "reached"),
+    Case("a_declined_member_ends_the_trailing_run",
+         "Doe, John MA Ma",
+         {"given": "John", "middle": "MA Ma", "family": "Doe"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the trailing member declines on its Title case, and "
+               "the walk stops at the declined pick rather than "
+               "continuing past it -- so the all-caps 'MA' in front "
+               "is never asked and never reports. ONE report, for "
+               "'Ma'. Identical in shape to rules.md#S2's accepted "
+               "'Jack Wei Ma' clause",
+         shape=2),
+    Case("a_taken_member_behind_a_declined_one_still_reports",
+         "Doe, John Ma MA",
+         {"given": "John", "middle": "Ma", "family": "Doe",
+          "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the mirror of the row above, and the pair is the "
+               "argument: order in the string decides which member "
+               "the run reaches. Here the trailing 'MA' is taken, the "
+               "run then reaches 'Ma', which declines and ends it"),
+    Case("a_third_member_behind_the_declined_one_stays_silent",
+         "Doe, John MA Ma MA",
+         {"given": "John", "middle": "MA Ma", "family": "Doe",
+          "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the run walked to its floor and then measured against "
+               "it: the trailing 'MA' is taken, 'Ma' declines on its "
+               "Title case and STOPS the run there, and the leading "
+               "'MA' -- behind a piece this walk refused -- is an "
+               "ordinary middle name, silent. TWO reports, for 'Ma' "
+               "and the trailing 'MA'; the third member reaches no "
+               "fork. The row that would catch a floor left over from "
+               "an earlier member, since the three members ask the "
+               "same walk three times and only the first two are "
+               "above the floor. Today middle 'MA Ma MA', silent"),
+    # ---- H5: a trailing title is transparent to this reading ------
+    Case("a_trailing_title_is_transparent_to_the_slot",
+         "Doe, John MA Prof.",
+         {"title": "Prof.", "given": "John", "family": "Doe",
+          "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the walk starts at previous_kept(), which is the H5 "
+               "chain's own notion of where the name ends -- so "
+               "'past a trailing title' costs no second definition "
+               "of 'trailing'. 1.4.0 read middle 'Prof.', suffix "
+               "'MA'; the title role is 2.x's own H5 and not at "
+               "stake here"),
+    Case("a_title_in_front_of_the_member_becomes_a_title",
+         "Doe, John Prof. MA",
+         {"title": "Prof.", "given": "John", "family": "Doe",
+          "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="MEASURED, and a SECOND field moves: today this is "
+               "middle 'Prof. MA'. Once 'MA' leaves `walkable` the "
+               "H5 trailing-title chain reaches 'Prof.' and takes "
+               "it. That is H5's stated transparency working, and it "
+               "lands this row on the same answer as its neighbour "
+               "above rather than against it"),
+    Case("a_leading_title_does_not_block_the_slot",
+         "Doe, Dr. John MA",
+         {"title": "Dr.", "given": "John", "family": "Doe",
+          "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the leading title run is peeled before the walk "
+               "starts, so the slot sees exactly what it sees "
+               "without it. 1.4.0 parity",
+         shape=2),
+    Case("an_initial_given_name_does_not_block_the_slot",
+         "Doe, J. MA",
+         {"given": "J.", "family": "Doe", "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the first post-comma piece is the given name "
+               "whatever its shape, so a one-letter given leaves the "
+               "member at the trailing slot as any other would. "
+               "1.4.0 parity",
+         shape=2),
+    Case("the_trailing_slot_reads_two_given_words_in_one_case",
+         "DOE, MARY JO MA",
+         {"given": "MARY", "middle": "JO", "family": "DOE",
+          "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="an ACCEPTED COST stated plainly: one case carries no "
+               "contrast, so the positional reading takes the member "
+               "and a record writing a middle name in capitals loses "
+               "it. 1.4.0 read exactly this, and the comma-less form "
+               "has carried the same cost since 2.0",
+         shape=2),
+    # ---- the negative controls: the reading does NOT move and
+    # NOTHING is reported -----------------------------------------
+    Case("a_name_word_behind_the_member_ends_the_reach",
+         "Doe, John MA Smith",
+         {"given": "John", "middle": "MA Smith", "family": "Doe"},
+         classification="fix(comma-family)",
+         notes="UNCHANGED and SILENT, and the silence is the point: "
+               "a name word behind the member ends the trailing run, "
+               "so the member is an ordinary middle name and no fork "
+               "was consulted. AGENTS.md's 'a kind is worth adding "
+               "only if a reader would hesitate too' is why this must "
+               "stay silent rather than why it happens to -- that "
+               "sentence is the 2.0-conventions section's, and this "
+               "note cited rules.md#A1 for it until 2026-09-19. NOT "
+               "1.4.0 "
+               "parity, and not #531's doing either: v1 read middle "
+               "'Smith', suffix 'MA', and 2.0.0 already read what "
+               "this row reads (both measured on the released wheels, "
+               "2026-09-18). What moved was 2.0 reading the "
+               "post-comma part's suffix vocabulary by POSITION, so "
+               "the divergence files under the family-comma group "
+               "rather than under the case signal -- measured "
+               "case-independent, 'DOE, JOHN MA SMITH' and "
+               "'doe, john ma smith' reading the same way",
+         shape=2),
+    Case("a_multi_token_piece_never_reaches_the_slot",
+         "Doe, John MA y",
+         {"given": "John", "middle": "MA y", "family": "Doe"},
+         classification="fix(comma-family)",
+         notes="the slot reads a PIECE, not a token: 'y' is a "
+               "conjunction, so grouping joins 'MA y' into one piece "
+               "and both len() tests -- the branch's and the report "
+               "gate's -- decline it. The row that PINS them, and the "
+               "one the particle rows above cannot be: delete the "
+               "branch's test and the piece reads as a credential, "
+               "suffix 'MA y'; delete the report gate's and 'MA' is "
+               "reported where nothing was decided (both measured "
+               "2026-09-19). 'Doe, John A.B. e' is the by-shape "
+               "spelling of the same piece and moves with it, so it "
+               "gets no row of its own. UNCHANGED by #531 -- 2.0.0 "
+               "and 2.3.0 read this middle too, where 1.4.0 read "
+               "middle 'y', suffix 'MA' -- and the divergence is "
+               "'Doe, John MA Smith's, the post-comma part read by "
+               "POSITION since 2.0",
+         shape=2),
+    Case("a_maiden_clause_takes_the_member_with_it",
+         "Doe, Jane nee Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the row that named the silence, now naming the "
+               "reading. The maiden marker no longer claims a "
+               "trailing credential: the words it takes end where a "
+               "trailing credential begins, and after a family comma "
+               "the reader of what is left standing is the given "
+               "part's own trailing slot (#531), which reads 'MA' as "
+               "the credential. 1.4.0 had no maiden routing and read "
+               "middle 'nee Smith', suffix 'MA', so the SUFFIX is "
+               "1.4.0 parity and the maiden field is not; 2.0.0 "
+               "through 2.3.0 read maiden 'Smith MA' in silence "
+               "(measured 2026-09-19). Keeping the id: it is the same "
+               "question, answered the other way",
+         shape=2),
+    # ---- #533: the maiden clause's trailing credential -------------
+    # The rule: the words a maiden marker takes end where a trailing
+    # credential begins, and a member of the ambiguous credential
+    # class is one of those -- but only where the rule that reads the
+    # name left standing reads it as the credential, both as written
+    # and as the take would leave it. That is the same double question
+    # the trailing roman numeral is asked, for the same reason: the
+    # count of words to spare includes the very words the marker
+    # removes.
+    Case("a_trailing_credential_ends_the_maiden_clause",
+         "Jane Doe nee Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the comma-less spelling of the row above, and the "
+               "statement of the rule. The peel over the pieces as "
+               "they stand takes 'MA', and the peel over the view the "
+               "take would leave ('Jane Doe MA') takes it too, so the "
+               "clause stops before it. 1.4.0 read middle 'Doe nee', "
+               "family 'Smith', suffix 'MA' -- the suffix restored, "
+               "the maiden field new since #274",
+         shape=1),
+    Case("the_clause_keeps_the_member_its_writing_declines",
+         "Jane Doe nee Smith Ma",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the other direction, and the one that carries most of "
+               "this change's visible effect at the default: Title "
+               "case in a mixed-case name is written the way a NAME "
+               "is written, so the peel declines the member and the "
+               "clause keeps it -- and the fork was consulted, so it "
+               "reports. The reading is unchanged from 2.0.0 through "
+               "2.3.0; only the report is new. 1.4.0 read suffix 'Ma'",
+         shape=1),
+    Case("the_all_caps_clause_reads_the_credential",
+         "JANE DOE NEE SMITH MA",
+         {"given": "JANE", "family": "DOE", "suffix": "MA",
+          "maiden": "SMITH"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="one case, so the lean is inert and the count decides "
+               "alone -- and with 'Jane Doe' standing in front of the "
+               "clause there are words to spare both as written and "
+               "as the take would leave the name. 1.4.0 parity on the "
+               "suffix",
+         shape=1),
+    Case("the_all_lower_clause_reads_the_credential",
+         "jane doe nee smith ma",
+         {"given": "jane", "family": "doe", "suffix": "ma",
+          "maiden": "smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the other one-case spelling, same reason as its "
+               "all-caps twin. 1.4.0 parity on the suffix",
+         shape=1),
+    Case("the_clause_keeps_a_member_standing_alone_after_the_marker",
+         "Jane Doe nee MA",
+         {"given": "Jane", "family": "Doe", "maiden": "MA"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the FLOOR, and it is deliberate that this differs "
+               "from what a suffix word or a roman numeral gets in "
+               "the same position ('Jane Smith nee PhD' and 'Jane "
+               "Smith nee V' leave the marker standing as an ordinary "
+               "word). The marker announces a NAME, and the rule "
+               "gives a word up only where a maiden name is left "
+               "standing; certain suffix vocabulary declines the "
+               "marker, an ambiguous word is kept by the clause it "
+               "ends. It reports all the same. 1.4.0 read family "
+               "'nee', suffix 'MA', so this half restores nothing and "
+               "does not try to",
+         shape=1),
+    Case("a_name_word_behind_the_member_leaves_the_clause_silent",
+         "Jane Doe nee MA Smith",
+         {"given": "Jane", "family": "Doe", "maiden": "MA Smith"},
+         classification="fix(#274)",
+         ambiguities=(),
+         notes="the recorded negative control for the emitter: the "
+               "word the walk was asked about is the LAST piece of "
+               "the maiden name, and a member with a name word behind "
+               "it is never that piece. Nothing was consulted, so "
+               "nothing reports -- which is what rules.md#A1's "
+               "hesitating reader asks for rather than an accident of "
+               "where the emitter sits. Unchanged from 2.0.0; 1.4.0 "
+               "read middle 'Doe nee MA', family 'Smith'",
+         shape=1),
+    Case("the_clause_gives_up_the_whole_credential_run",
+         "Jane Doe nee Smith MA PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "MA PhD",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the peel walks the run from the end, so 'PhD' is "
+               "settled vocabulary and 'MA' is the fork it reaches "
+               "behind it -- one report, not two. Rendered with a "
+               "SPACE: R1 derives suffix entries from the commas the "
+               "WRITER typed (#436/#437), where 1.4.0 wrote 'MA, "
+               "PhD'. 2.0.0 through 2.3.0 read maiden 'Smith MA' with "
+               "suffix 'PhD', which is the order-sensitivity the "
+               "issue reported",
+         shape=1),
+    Case("the_credential_run_reads_the_same_written_the_other_way",
+         "Jane Doe nee Smith PhD MA",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD MA",
+          "maiden": "Smith"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the control the row above needs, and the whole point "
+               "of the issue: this spelling already stopped at the "
+               "suffix WORD and read both credentials, so whether the "
+               "member was read at all used to depend on which side "
+               "of 'PhD' the writer put it. Unchanged here -- the two "
+               "orders now agree",
+         shape=1),
+    Case("the_declined_member_still_ends_the_clause_for_the_run",
+         "Jane Doe nee Smith Ma JD",
+         {"given": "Jane", "family": "Doe", "suffix": "JD",
+          "maiden": "Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="both halves in one name: 'JD' is taken and reported "
+               "by assign where it peels it, 'Ma' is declined by its "
+               "writing and reported by the walk that kept it. TWO "
+               "reports, one per member, and never two for one word "
+               "-- the maiden pieces are gone before the chain runs. "
+               "1.4.0 read suffix 'Ma, JD'",
+         shape=1),
+    Case("two_members_ending_the_clause_report_once_each",
+         "Jane Doe nee Smith MA JD",
+         {"given": "Jane", "family": "Doe", "suffix": "MA JD",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the same pair with both members taken. The peel "
+               "resolves each in turn and assign reports both; the "
+               "walk reports none, the last maiden piece being an "
+               "ordinary name word",
+         shape=1),
+    Case("the_dotted_member_ends_the_clause",
+         "John Smith nee Jones R.A.I.",
+         {"given": "John", "family": "Smith", "suffix": "R.A.I.",
+          "maiden": "Jones"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the name #530's close-out reported from the other "
+               "side, and this row RESTORES 2.3.0 rather than "
+               "changing it: at 2.3.0 'R.A.I.' carried vocab:suffix "
+               "and the walk's suffix-piece test stopped at it, while "
+               "#516 retagged it shape:acronym plus "
+               "vocab:suffix-ambiguous, it stopped being a suffix "
+               "piece, and the walk took it -- maiden 'Jones R.A.I.' "
+               "on this tree, unrecorded because the name was in no "
+               "corpus file. 1.4.0 read middle 'Smith nee', family "
+               "'Jones', suffix 'R.A.I.' (all measured 2026-09-19)",
+         shape=1),
+    Case("the_dotted_member_is_kept_with_the_switch_off_and_reports",
+         "John Smith nee Jones R.A.I.",
+         {"given": "John", "family": "Smith", "maiden": "Jones R.A.I."},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="with the switch off classify writes the SHAPE tag and "
+               "the class does not admit the token, so the PEEL "
+               "declines to consume it -- it records the word in "
+               "`picks` and breaks, leaving nothing for the walk's "
+               "own reading gate to be asked about -- and the clause "
+               "keeps the word. The emitter's gate reads EITHER tag, "
+               "as the chain emitter's does, so the declined fork is "
+               "still reported. That asymmetry is the whole of the "
+               "two gates' difference and is what this row pins. "
+               "Measured 2026-09-19 by stepping the peel, not "
+               "reasoned from the gate's text"),
+    Case("the_caps_switch_reaches_the_clause",
+         "Jane Doe nee Smith XYZ",
+         {"given": "Jane", "family": "Doe", "suffix": "XYZ",
+          "maiden": "Smith"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the opt-in class reaches this slot like any other, "
+               "the switch being what admits the token to the "
+               "ambiguous class in the first place"),
+    Case("an_unlisted_word_is_no_member_of_the_class",
+         "Jane Doe nee Smith XYZ",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith XYZ"},
+         classification="fix(#274)",
+         ambiguities=(),
+         notes="the default-policy control for the row above, and the "
+               "recorded negative control for the membership gate: "
+               "with the caps switch off 'XYZ' carries neither tag, "
+               "so the walk never asks and the clause keeps it in "
+               "silence. 1.4.0 read family 'XYZ'",
+         shape=1),
+    Case("the_peel_never_reaches_a_title_behind_the_member",
+         "Jane Doe nee Smith MA Prof.",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith MA Prof."},
+         classification="fix(#274)",
+         ambiguities=(),
+         notes="the H5 BOUNDARY, recorded rather than fixed: the "
+               "maiden walk has always read peel_trailing alone, and "
+               "the trailing-title chain lives in tail_reading, which "
+               "trailing_start does not run -- so the peel breaks at "
+               "'Prof.' and never reaches the member behind it. This "
+               "change inherits that boundary rather than creating "
+               "it, and a follow-up carries the question of whether "
+               "the walk should move onto tail_reading (both forks, "
+               "numeral included). Silent, because nothing was asked",
+         shape=1),
+    Case("a_title_in_front_of_the_member_is_the_other_spelling",
+         "Jane Doe nee Smith Prof. MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith Prof."},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the boundary's other side, and the pair is the "
+               "finding: the two spellings DISAGREE here, where at "
+               "the given part's own trailing slot they agree "
+               "(#531's 'Doe, John MA Prof.' and 'Doe, John Prof. "
+               "MA' land on one answer). The peel reaches 'MA' "
+               "because nothing stands behind it, so the clause stops "
+               "and 'Prof.' stays maiden text. 1.4.0 read family "
+               "'Prof.', suffix 'MA'",
+         shape=1),
+    Case("a_connective_behind_the_member_stops_the_peel",
+         "Jane Doe nee Smith MA y",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith MA y"},
+         classification="fix(#274)",
+         ambiguities=(),
+         notes="the recorded negative control for the PEEL's reach, "
+               "measured 2026-09-19 rather than reasoned: the marker "
+               "pass runs before every join, so 'MA' and 'y' are two "
+               "pieces here and no joined one -- and 'y' is no "
+               "suffix, so the peel takes nothing, the walk is never "
+               "asked about the member behind it, and the clause "
+               "keeps both words. The connective joins them a stage "
+               "later, into the maiden name. Silent for the reason "
+               "the row below is: nothing was decided",
+         shape=1),
+    Case("the_numeral_half_of_the_walk_is_unmoved",
+         "Jane Doe nee Smith V",
+         {"given": "Jane", "family": "Doe", "suffix": "V",
+          "maiden": "Smith"},
+         classification="fix(#424)",
+         ambiguities=("suffix-or-name",),
+         notes="#424's own fork, pinned beside the acronym one "
+               "because the two now share a single peel: the numeral "
+               "half answers off Peel.numeral exactly as it did, and "
+               "this row is what says the shared call did not move "
+               "it. Unchanged since #424",
+         shape=1),
+    Case("the_digit_shaped_trailing_suffix_is_unmoved_and_silent",
+         "Jane Doe nee Smith 2",
+         {"given": "Jane", "family": "Doe", "suffix": "2",
+          "maiden": "Smith"},
+         classification="fix(#424)",
+         ambiguities=(),
+         notes="the numeral half's silent twin -- a lone digit is "
+               "generational vocabulary and no fork, so the walk "
+               "stops and nothing reports. The pair with the row "
+               "above is what separates 'the walk stopped' from 'the "
+               "walk reported'",
+         shape=1),
+    Case("the_one_case_record_loses_its_second_birth_word",
+         "JANE DOE NEE YO-YO MA",
+         {"given": "JANE", "family": "DOE", "suffix": "MA",
+          "maiden": "YO-YO"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="an ACCEPTED COST, and the control beside it is what "
+               "makes it the one-case reading's cost rather than this "
+               "rule's: 'JANE YO-YO MA' reads suffix 'MA' too, so the "
+               "clause form now agrees with the bare form. In mixed "
+               "case the writing saves the name -- see the row below",
+         shape=1),
+    Case("the_one_case_records_control_without_the_clause",
+         "JANE YO-YO MA",
+         {"given": "JANE", "family": "YO-YO", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the recorded control for the accepted cost above. "
+               "Unchanged by this rule and read by #289's count, "
+               "which is the point: a clause must not change how a "
+               "word outside it reads, and here the clause form "
+               "joined the bare form rather than the other way round",
+         shape=1),
+    Case("the_mixed_case_record_keeps_its_second_birth_word",
+         "Jane Doe nee Yo-Yo Ma",
+         {"given": "Jane", "family": "Doe", "maiden": "Yo-Yo Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the same two-word birth surname where the writing "
+               "CAN speak: Title case in a mixed-case name declines "
+               "the peel, so 'Yo-Yo Ma' stays whole and the fork "
+               "reports. 1.4.0 read family 'Yo-Yo', suffix 'Ma'",
+         shape=1),
+    Case("the_view_check_asks_whether_the_reader_takes_that_word",
+         "JOHN NEE JONES SMITH MA PHD",
+         {"family": "JOHN", "suffix": "PHD",
+          "maiden": "JONES SMITH MA"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the row that distinguishes the check this change "
+               "SHIPS from the weaker one. The take would leave "
+               "'JOHN MA PHD', whose peel takes 'PHD' and then "
+               "DECLINES 'MA' for want of words to spare -- so 'does "
+               "the reader take SOMETHING' answers yes while 'MA' "
+               "becomes the FAMILY name, which is #424's own disaster "
+               "one word further on. The check compares the view's "
+               "run start against the member's index in it, answers "
+               "no, and the clause keeps the word -- reporting, "
+               "because the fork was consulted and declined",
+         shape=1),
+    Case("the_view_checks_control_without_the_clause",
+         "JOHN MA PHD",
+         {"given": "JOHN", "family": "MA", "suffix": "PHD"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the recorded control: this IS the view the take would "
+               "leave, and family 'MA' is what the row above must "
+               "not produce. Unchanged",
+         shape=1),
+    Case("a_dangling_connective_can_end_a_maiden_name",
+         "Jane Smith nee Jones and MA",
+         {"given": "Jane", "family": "Smith", "suffix": "MA",
+          "maiden": "Jones and"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="an ACCEPTED COST. The take runs before the joins "
+               "(#420), so the connective is a piece of its own when "
+               "the walk stops and the maiden name ends on it; M2's "
+               "Accepted row about the join order already owns this "
+               "shape. Untagged: the point is the stage order, not "
+               "the input shape"),
+    Case("a_marker_phrase_ends_at_the_credential_too",
+         "Maria Kowalska z domu Nowak MA",
+         {"given": "Maria", "family": "Kowalska", "suffix": "MA",
+          "maiden": "Nowak"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the rule is about the marker's CLAUSE, not about a "
+               "one-word marker: the Polish phrase entry (#434) "
+               "reaches the same walk and the same stop. 1.4.0 read "
+               "middle 'Kowalska z domu', family 'Nowak', suffix 'MA'",
+         shape=1),
+    Case("the_german_marker_ends_at_the_credential_too",
+         "Jane Doe geb. Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="a second vocabulary spelling, for the same reason as "
+               "the row above: nothing here is about the word 'nee'",
+         shape=1),
+    Case("a_kyusei_clause_ends_at_the_credential",
+         "田中 太郎 旧姓 佐藤 MA",
+         {"given": "太郎", "family": "田中", "suffix": "MA",
+          "maiden": "佐藤"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the CJK marker reaches the walk like any other, and "
+               "the Latin credential behind it is read by the Latin "
+               "rule -- is_one_case answers True for a caseless "
+               "script, so the lean is inert and the count decides. "
+               "tolerated rather than shape-tagged: a Latin "
+               "credential wrapped around a CJK name is a composed "
+               "form (the 2026-09-01 demotion), read best-effort",
+         tolerated=True),
+    # ---- #533 after a family comma: #531's slot is the reader ------
+    Case("the_comma_reader_declines_the_title_cased_member",
+         "Doe, Jane nee Smith Ma",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="after a family comma the comma has already settled "
+               "the count, so the reader is #531's slot and the "
+               "writing decides alone -- Title case in a mixed-case "
+               "name keeps the word. Reported either way. 1.4.0 read "
+               "suffix 'Ma'",
+         shape=2),
+    Case("the_comma_reader_takes_the_all_lower_member",
+         "Doe, Jane nee Smith ma",
+         {"given": "Jane", "family": "Doe", "suffix": "ma",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the row that makes the COMMA reader load-bearing "
+               "rather than decorative: the count-based reader "
+               "declines an all-lower member with two pieces to "
+               "spare, and #531's declines nothing but a particle. "
+               "Measured -- this name moves under the comma reader "
+               "and would not under the count. 'Doe, Jane ma' already "
+               "reads suffix 'ma', which is what the clause form now "
+               "agrees with",
+         shape=2),
+    Case("the_do_pair_after_a_comma_keeps_the_particle_spelling",
+         "Doe, Jane nee Smith do",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith do"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="'do' is the one class member that is also particle "
+               "vocabulary, so after a comma the clause's trailing "
+               "slot, #531's slot and P6's attachment all want it -- "
+               "and the reading is #531's, unchanged and shared "
+               "through one predicate. Lean None plus a particle tag "
+               "means P6's word, so the clause keeps it and reports "
+               "the fork it consulted",
+         shape=2),
+    Case("the_do_pair_after_a_comma_reads_the_capitals",
+         "Doe, Jane nee Smith DO",
+         {"given": "Jane", "family": "Doe", "suffix": "DO",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the same word where the capitals speak: a positive "
+               "credential lean is the one spelling that outranks "
+               "P6's attachment (decisions.md#S2, 2026-09-18), so the "
+               "clause gives the word up. 1.4.0 read suffix 'DO'",
+         shape=2),
+    Case("the_no_comma_do_reads_by_the_count_instead",
+         "Jane Doe nee Smith do",
+         {"given": "Jane", "family": "Doe", "suffix": "do",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the row the issue flagged as needing a decision, and "
+               "it goes the other way from its comma twin BECAUSE the "
+               "reader is different: with no comma the reader is the "
+               "S2 peel over the view, which reads the count, and "
+               "P6 does not run at all. The comma-less 'John Doe do' "
+               "reads suffix 'do' today, and a clause must not change "
+               "how a word outside it reads -- so the two now agree",
+         shape=1),
+    Case("the_no_comma_dos_control_without_the_clause",
+         "John Doe do",
+         {"given": "John", "family": "Doe", "suffix": "do"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the recorded control for the row above. Unchanged, "
+               "and it is what the clause form was measured against",
+         shape=1),
+    Case("the_comma_floor_keeps_a_member_a_particle_follows",
+         "Doe, Jane nee Smith MA do",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith MA do"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="where #531's FLOOR earns its place, and a check that "
+               "asked only about 'MA' got this wrong: the take would "
+               "leave 'Jane MA do', where 'do' does not read as a "
+               "suffix (P6 keeps it) so #531's slot reads 'MA' as a "
+               "MIDDLE name -- releasing it from the clause would "
+               "move a word from one person's name into another's. "
+               "With the floor the clause keeps 'MA do' whole, and "
+               "reports the 'do' it kept. rules.md#S2's own 'Doe, "
+               "John MA do' clause is the reading this rests on",
+         shape=2),
+    Case("the_clamp_never_takes_the_first_word_after_the_marker",
+         "Doe, J. nee MA ba",
+         {"given": "J.", "family": "Doe", "suffix": "ba",
+          "maiden": "MA"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the floor is a CLAMP, not a veto, and this row is "
+               "why. The peel takes 'ba' and then 'MA', so the first "
+               "piece the peel took IS the only maiden word; a veto "
+               "that cancelled the stop whenever nothing would be "
+               "left handed 'ba' back to the clause too, giving "
+               "maiden 'MA ba' where 'Doe, J. ba' reads suffix 'ba'. "
+               "Clamped to the piece after the marker, the clause "
+               "keeps 'MA' and gives 'ba' up. TWO reports: the walk's "
+               "for the word it kept, assign's for the word it took",
+         shape=2),
+    Case("the_clamps_control_without_the_clause",
+         "Doe, J. ba",
+         {"given": "J.", "family": "Doe", "suffix": "ba"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the recorded control for the clamp: this is what the "
+               "released 'ba' must go on reading, and it is #531's "
+               "slot doing the reading. 'ba' is the fifth listed "
+               "member, the one decisions.md#suffix-acronym-collisions "
+               "marked ambiguous rather than removing. 1.4.0 parity",
+         shape=2),
+    Case("the_clause_leaves_a_middle_initial_alone",
+         "Doe, Jane Q. nee Smith MA",
+         {"given": "Jane", "middle": "Q.", "family": "Doe",
+          "suffix": "MA", "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the member leaves the clause and 'Q.' stays the "
+               "middle initial it always was -- the stop reaches the "
+               "clause's trailing word, not the name in front of it",
+         shape=2),
+    Case("a_no_name_segment_leaves_the_clause_nobody_to_read_it",
+         "Doe, Dr. nee Smith MA",
+         {"title": "Dr.", "family": "Doe", "maiden": "Smith MA"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#M2's invariant, and the row that used to "
+               "record the opposite: an earlier round of #533 read "
+               "suffix 'MA' here and said so in silence. Once 'Smith' "
+               "leaves with the marker, segment 1 is 'Dr. MA' -- a "
+               "no-name segment, which the credential-run gate reads "
+               "whole without ever reaching #531's emitter, so the "
+               "released word would have landed in `given`, not in "
+               "`suffix`. With no name word ahead of it the member is "
+               "no trailing word of a given part, the walk declines, "
+               "and the clause keeps it. The REPORT survives the "
+               "decline: the emitter asks whether a trailing rule "
+               "reads these words at all, which after a family comma "
+               "it does. 1.4.0 read given 'nee', middle 'Smith', "
+               "suffix 'MA'",
+         shape=2),
+    Case("the_bound_given_join_would_take_the_released_member",
+         "Berg, abdul nee Jones MA",
+         {"given": "abdul", "family": "Berg", "maiden": "Jones MA"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the other half of M2's invariant: P5's LENIENT "
+               "post-comma join runs BELOW the marker pass and would "
+               "swallow the released 'MA' into the bound-given pair "
+               "before assign could read it -- 'abdul MA' as the "
+               "given name, which is where the clause-less control "
+               "below genuinely puts it. A word joined away is a word "
+               "the clause gave up for nothing, so the walk declines "
+               "and keeps it. An earlier round of #533 released it "
+               "and read given 'abdul MA' in silence",
+         shape=2),
+    Case("the_bound_given_joins_control_without_the_clause",
+         "Berg, abdul MA",
+         {"given": "abdul MA", "family": "Berg"},
+         classification="parity",
+         ambiguities=(),
+         notes="the recorded control for the row above -- what the "
+               "released member WOULD have read as, and why releasing "
+               "it buys nothing. 1.4.0 read it identically (first "
+               "'abdul MA', last 'Berg'). Unchanged by this rule",
+         shape=2),
+    Case("a_particle_chain_would_take_the_released_member",
+         "Berg, Jane van der nee Smith DO",
+         {"given": "Jane", "family": "van der Berg",
+          "maiden": "Smith DO"},
+         classification="parity",
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         notes="M2's invariant against P2 rather than P5. 'DO' is "
+               "particle vocabulary standing behind a particle piece, "
+               "so the chain below this pass would absorb it into the "
+               "family -- a word crossing from the BIRTH name into "
+               "the current one, which is #424's failure from the "
+               "other side. An earlier round of #533 released it and "
+               "read family 'van der DO Berg' in silence, and the "
+               "clause-less 'Berg, Jane van der DO' reads that way "
+               "for its own reasons and is unchanged",
+         shape=2),
+    Case("two_released_particle_members_would_chain_each_other",
+         "Jane Doe nee Smith DO DO",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith DO DO"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the no-comma spelling of the same decline, where what "
+               "would do the joining is the OTHER released member: "
+               "the trailing peel reads both 'DO's as credentials, "
+               "but the moment they are out of the clause the first "
+               "is a non-leading particle and chains the second into "
+               "family 'DO DO'. An earlier round of #533 read exactly "
+               "that, and in silence",
+         shape=2),
+    Case("the_default_vocabularys_own_corpus_mover",
+         "John née Jones Smith Ma",
+         {"family": "John", "maiden": "Jones Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the one name in the pre-existing differential corpus "
+               "this rule reaches at the DEFAULT vocabulary, and it "
+               "moves by gaining the REPORT rather than a field: "
+               "'Ma' is Title-case inside a mixed-case name, so the "
+               "lean declines the credential reading and the clause "
+               "keeps it -- which is a fork called, and now said out "
+               "loud. It was only ever pinned under a test lexicon "
+               "before. Already a corpus_rules.jsonl name, so the "
+               "shape tag re-witnesses it rather than growing the "
+               "deduped corpus",
+         shape=2),
+    Case("a_member_alone_after_the_marker_keeps_its_credential_behind",
+         "Jane Doe nee MA PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD",
+          "maiden": "MA"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="THE FIRST-WORD FLOOR with an unambiguous credential "
+               "behind it: the walk may not take the first word after "
+               "the marker, so 'MA' stays the maiden name whatever "
+               "the peel read, and the 'PhD' behind it was never this "
+               "rule's to give -- a suffix WORD ends the clause the "
+               "way it always did. The report is the clause's own",
+         shape=2),
+    Case("a_particle_member_declines_on_its_lean_after_a_comma",
+         "Doe, Jane nee Smith Do",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith Do"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="#531's reading at the given slot, reached through a "
+               "clause: a member that is also particle vocabulary is "
+               "the credential on a POSITIVE lean alone, and "
+               "Title-case inside a mixed-case name is not one. So "
+               "the clause keeps it and says so. The caps spelling "
+               "'Doe, Jane nee Smith DO' is the other direction",
+         shape=2),
+    Case("a_numeral_between_the_clause_and_the_member",
+         "Jane Doe nee Smith V MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith V"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="both stops read the TRAILING word, so the numeral is "
+               "not the word either fork asks about: the acronym fork "
+               "stops at 'MA' and 'V' stays maiden text behind it. "
+               "The mirror image, 'Jane Smith née Jones Ma V', keeps "
+               "maiden 'Jones Ma' and reads suffix 'V'",
+         shape=2),
+    Case("delimiters_keep_the_whole_span_whatever_the_last_word_is",
+         "Jane Doe (nee Smith MA)",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith MA"},
+         classification="parity",
+         ambiguities=(),
+         notes="rules.md#M2, the delimited clause: the writer drew "
+               "the boundary and it outranks every reading inside it, "
+               "so no fork is called and none is reported. The marker "
+               "inside the pair is what says the span is a maiden "
+               "clause even where the pair is not in "
+               "`maiden_delimiters`. Unchanged by #533 and by every "
+               "release before it -- a settled position, not one of "
+               "the silences about un-asked forks",
+         shape=2),
+    Case("delimiters_keep_the_whole_span_in_title_case_too",
+         "Jane Doe (nee Smith Ma)",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith Ma"},
+         classification="parity",
+         ambiguities=(),
+         notes="the pair for the row above: the two spellings differ "
+               "in everything the lean reads and the delimiters make "
+               "the difference immaterial. Undelimited, 'Jane Doe nee "
+               "Smith MA' reads suffix 'MA' and 'Jane Doe nee Smith "
+               "Ma' keeps it -- and both report",
+         shape=2),
+    Case("a_word_outside_the_delimiters_is_outside_the_clause",
+         "Jane Doe (nee Smith) MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         classification="parity",
+         ambiguities=("suffix-or-name",),
+         notes="the boundary cuts both ways: the span is the maiden "
+               "name whole, and a member the writer left OUTSIDE it "
+               "is an ordinary trailing credential that assign peels "
+               "and reports. The control for the two rows above",
+         shape=2),
+    Case("two_released_members_each_get_their_own_report",
+         "Jane Doe nee Smith Ma JD",
+         {"given": "Jane", "family": "Doe", "suffix": "JD",
+          "maiden": "Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the shape that puts BOTH suffix-or-name emitters on "
+               "one parse: the clause keeps 'Ma' on its lean and "
+               "reports it, assign peels 'JD' and reports that, and "
+               "the two name different tokens -- which is what "
+               "test_properties' span test needs to actually "
+               "exercise its own check",
+         shape=2),
+    Case("no_trailing_rule_reads_the_family_segments_clause",
+         "Smith nee Jones, Jane MA",
+         {"given": "Jane", "family": "Smith", "suffix": "MA",
+          "maiden": "Jones"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the clause is in segment 0 of a family comma, where "
+               "the comma has ALREADY named the family: those words "
+               "are family text and a stop would hand one to `family` "
+               "rather than to `suffix`, so no trailing rule is "
+               "consulted and the clause keeps what it has. The 'MA' "
+               "that does read as a credential here is in segment 1 "
+               "and is #531's slot's, not this rule's. Unchanged",
+         shape=2),
+    Case("no_trailing_rule_reads_a_third_comma_part",
+         "Smith, John, Jr nee Jones MA",
+         {"given": "John", "family": "Smith", "suffix": "Jr",
+          "maiden": "Jones MA"},
+         classification="fix(#274)",
+         ambiguities=("comma-structure",),
+         notes="the other NONE reader, and the row that killed the "
+               "first prototype: a segment past the second comma is "
+               "read as credentials whole, so no trailing rule is "
+               "consulted, the clause keeps 'MA' -- and nothing "
+               "reports, because nothing was decided. Untagged: shape "
+               "2 is a TWO-part listing. Unchanged from 2.0.0",
+               ),
+    # ---- #533: the policy sweep, all core-only -----------------------
+    Case("the_clause_reads_the_same_under_the_strict_comma_knob",
+         "Doe, Jane nee Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         policy=Policy(lenient_comma_suffixes=False),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the knob governs the LENIENT trailing predicate, "
+               "which this slot does not inherit, so the reading is "
+               "the default's"),
+    Case("the_clause_reads_the_same_under_family_first",
+         "Doe, Jane nee Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="name_order does not enter it: the peel is "
+               "order-independent and the comma has already named the "
+               "family, so all three orders move the same names "
+               "(measured over the whole corpus under six policies). "
+               "UNTAGGED, and a shape 4 tag would be wrong -- this is "
+               "a comma listing, not the family-first arrangement"),
+    Case("the_clause_reads_the_same_under_ff_given_last",
+         "Doe, Jane nee Smith MA",
+         {"given": "Jane", "family": "Doe", "suffix": "MA",
+          "maiden": "Smith"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the third order, for the same reason as the row above"),
+    Case("a_leading_title_takes_the_slot_the_member_would_have_had",
+         "Doe, Dr. MA Smith",
+         {"title": "Dr.", "given": "MA", "middle": "Smith",
+          "family": "Doe"},
+         notes="beside 'Doe, MA Smith' below, and the pair is what "
+               "says how far the FIRST-PIECE emitter reaches: it reads "
+               "the piece standing immediately after the comma, which "
+               "is the title here, so the member behind it is read as "
+               "the given name in silence. Not this slot either -- a "
+               "title took the position the given part would have had. "
+               "Parity at 1.4.0, 2.0.0 and 2.3.0 alike (measured "
+               "2026-09-19)",
+         shape=2),
+    Case("the_post_comma_emitter_reports_the_same_member_untitled",
+         "Doe, MA Smith",
+         {"given": "MA", "middle": "Smith", "family": "Doe"},
+         ambiguities=("suffix-or-name",),
+         notes="the same member, the same reading, one title fewer -- "
+               "and now the first piece after the comma IS the member, "
+               "so #289's emitter reports it. The report is the whole "
+               "difference from the row above: 1.4.0 read first 'MA', "
+               "middle 'Smith' too, so the fields are parity",
+         shape=2),
+    Case("a_title_led_segment_consumes_a_whole_run_in_silence",
+         "Doe, Mr. MA PhD",
+         {"title": "Mr.", "family": "Doe", "suffix": "MA PhD"},
+         classification="fix(#289)",
+         notes="'Doe, Dr. MA' with a credential run behind the "
+               "member, which is what the row adds: the no-name gate "
+               "reads the segment whole, so the member joins the run "
+               "rather than taking the given slot, and neither "
+               "emitter is in that path. 1.4.0, 2.0.0 and 2.3.0 all "
+               "read first 'MA', suffix 'PhD' -- the case lean moved "
+               "it, which is 'Doe, Dr. MA's classification "
+               "(measured 2026-09-19)",
+         shape=2),
+    Case("the_initial_veto_before_a_third_comma_part_is_untouched",
+         "Doe, John V, PhD",
+         {"given": "John", "middle": "V", "family": "Doe",
+          "suffix": "PhD"},
+         notes="#144's two-segment restriction still governs its own "
+               "predicate: 'V' is a roman numeral reached by the "
+               "LENIENT trailing test, not by the ambiguous class, so "
+               "the new branch never sees it and the middle initial "
+               "survives. The control that pins the restriction's "
+               "scope after #531 narrowed nothing about it"),
+    Case("the_no_name_gate_path_still_reports_exactly_once",
+         "Doe, MA",
+         {"family": "Doe", "suffix": "MA"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the reading is the_lean_reaches_the_post_comma_slot's "
+               "('Smith, MA') word for word, so it carries that row's "
+               "classification: 1.4.0 AND 2.0.0 both read first 'MA', "
+               "last 'Doe', and #289's lean is what made the "
+               "credential (measured on both wheels 2026-09-18). "
+               "UNCHANGED by #531, and structurally unreachable by the new "
+               "emitter rather than luckily missed: segment 1 holds "
+               "no name word, `segment_suffix_reading` returns "
+               "non-None, and assign sets every role from that "
+               "reading without entering the placement loop at all. "
+               "So the slot the old emitter owns and the slot the new "
+               "one owns cannot both fire -- which is why no token is "
+               "ever reported twice",
+         shape=2),
+    Case("the_no_name_gate_path_with_a_run_still_reports_once",
+         "Doe, MA PhD",
+         {"family": "Doe", "suffix": "MA PhD"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="the same gate path with a credential run behind the "
+               "member, and the same classification as its bare twin "
+               "above: 1.4.0 and 2.0.0 alike read first 'MA', suffix "
+               "'PhD'. One report, for the one class member, exactly "
+               "as before #531",
+         shape=2),
+    Case("a_title_led_segment_consumes_the_member_in_silence",
+         "Doe, Dr. MA",
+         {"title": "Dr.", "family": "Doe", "suffix": "MA"},
+         classification="fix(#289)",
+         notes="the THIRD position this kind stays silent at, and a "
+               "boundary rather than an omission: a title took the "
+               "slot the given name would have had, so there is no "
+               "given part for the member to end. The segment holds "
+               "no name word, the credential-run gate reads it whole, "
+               "and #531's emitter is in the placement loop the gate "
+               "path never enters. The post-comma emitter cannot "
+               "reach it either -- that one reads the FIRST piece "
+               "after the comma, which is 'Dr.'. So the reading moves "
+               "and nothing reports. MEASURED on the wheels: 1.4.0, "
+               "2.0.0 and 2.3.0 all read first 'MA', last 'Doe'; "
+               "#289's case lean is what makes it a credential, which "
+               "is this row's twin 'Doe, MA' above, and 'DOE, DR. MA' "
+               "keeps given 'MA' where one case carries no lean",
+         shape=2),
+    # ---- the `do` pairing: capitals decide, the particle rule keeps
+    # every other spelling (Derek, 2026-09-18) ---------------------
+    Case("capitals_decide_for_the_particle_member",
+         "Doe, John DO",
+         {"given": "John", "family": "Doe", "suffix": "DO"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="'do' is the one class member that is also particle "
+               "vocabulary, so this slot and P6's attachment want the "
+               "same word. A POSITIVE credential lean -- an all-caps "
+               "member in a name written in more than one case -- is "
+               "what takes it, and P6 stands down. 1.4.0 read suffix "
+               "'DO'. Reports ONCE: where this reading wins, P6 has "
+               "nothing to report",
+         shape=2),
+    Case("the_particle_rule_keeps_the_lower_case_member",
+         "Nascimento, Edson Arantes do",
+         {"given": "Edson", "middle": "Arantes",
+          "family": "do Nascimento"},
+         classification="fix(#380)",
+         ambiguities=("particle-or-given",),
+         notes="UNCHANGED, and the record the pairing is built to "
+               "protect. Mixed case with an all-lower member leans "
+               "nothing, so the reading carve-out hands it to P6 and "
+               "the report carve-out keeps P6's own kind as the only "
+               "one. This is the half of the pair the capitals buy. "
+               "NOT 1.4.0 parity: v1 read suffix 'do', and P6's "
+               "attachment has outranked that since 2.3 -- which is "
+               "'Berg, Jan vd's classification, this word being the "
+               "same collision",
+         shape=2),
+    Case("one_case_cannot_tell_the_osteopath_from_the_record",
+         "SMITH, JOHN DO",
+         {"given": "JOHN", "family": "DO SMITH"},
+         classification="fix(#380)",
+         ambiguities=("particle-or-given",),
+         notes="ACCEPTED COST, and the pairing IS the argument: in "
+               "one case the rule cannot tell this from "
+               "'NASCIMENTO, EDSON ARANTES DO' and reads both as the "
+               "particle -- right about the Brazilian record, wrong "
+               "about the osteopath, whose 'DO' 1.4.0 read as a "
+               "suffix. Both report `particle-or-given`, which is how "
+               "a caller finds the second. Accepted rather than "
+               "repaired: the one-case reading is the commoner of the "
+               "two collisions and the Nascimento record is the name "
+               "a wrong answer would damage",
+         shape=2),
+    Case("a_member_inside_a_particle_run_never_reaches_the_slot",
+         "Doe, John van DO",
+         {"given": "John", "family": "van DO Doe"},
+         classification="fix(#380)",
+         ambiguities=("particle-or-given",),
+         notes="the capitals lean cannot reach this 'DO', and the "
+               "reason is EARLIER than #531: grouping merges 'van DO' "
+               "into ONE particle piece before the trailing slot "
+               "exists. What declines it is the TAG test -- the "
+               "piece's first token is 'van', which carries no class "
+               "tag -- and the len() test in front of that decides "
+               "nothing here, since deleting it leaves this row where "
+               "it stands ('Doe, John MA y' is the row that pins it). "
+               "Not a carve-out and not this release's doing -- "
+               "verified byte-identical at cc78c960 and on the 2.3.0 "
+               "wheel (2026-09-19), where 'Doe, John DO' moved and "
+               "this did not. The report is P6's, named for 'van', "
+               "the word of the run that is also a given name. 1.4.0 "
+               "read middle 'van DO'; the attachment is #380's, which "
+               "is the classification 'Nascimento, Edson Arantes do' "
+               "carries above",
+         shape=2),
+    Case("a_member_heading_a_particle_chain_never_reaches_it_either",
+         "Doe, John DO Ed",
+         {"given": "John", "middle": "DO Ed", "family": "Doe"},
+         classification="fix(comma-family)",
+         notes="the member HEADS the joined piece here where 'van DO' "
+               "has it trailing: 'do' is particle vocabulary, so the "
+               "chain takes the name word behind it and 'DO Ed' is "
+               "one two-token piece. Both words silent -- though "
+               "'Doe, John DO' alone reads the credential and reports "
+               "-- and nothing attaches, the run not being wholly "
+               "particles. The SECOND killer for the len() tests, and "
+               "the one where the piece's first token IS the class "
+               "member: without them the piece reads as a credential, "
+               "suffix 'DO Ed'. 1.4.0 read suffix 'DO, Ed'; 2.0.0 and "
+               "2.3.0 read this (measured 2026-09-19)",
+         shape=2),
+    Case("a_declining_member_inside_a_particle_run_is_silent_too",
+         "Doe, John van Ma",
+         {"given": "John", "middle": "van Ma", "family": "Doe"},
+         classification="fix(comma-family)",
+         notes="'Doe, John van DO's Title-cased twin, and it differs "
+               "in what P6 does rather than in what the slot does: "
+               "the joined piece is two tokens either way, but 'Ma' "
+               "is not particle vocabulary, so the trailing run is "
+               "not wholly particles and nothing attaches -- middle "
+               "'van Ma', family 'Doe', silent on both counts. 1.4.0 "
+               "read middle 'van', suffix 'Ma'; 2.0.0 and 2.3.0 read "
+               "this",
+         shape=2),
+    Case("the_particle_carve_out_silences_the_member_in_front",
+         "Doe, John MA do",
+         {"given": "John", "middle": "MA", "family": "do Doe"},
+         classification="fix(#380)",
+         ambiguities=("particle-or-given",),
+         notes="the carve-out cascades: lower-case 'do' leans "
+               "nothing, so this walk does not read it as a suffix -- "
+               "and a piece the walk refuses ENDS the run, so the "
+               "all-caps 'MA' in front of it is never asked and never "
+               "reports, capitals and all. P6 then attaches 'do' a "
+               "stage later, too late to re-open the question. One "
+               "report, P6's. UNCHANGED by #531: byte-identical at "
+               "cc78c960 and on the 2.3.0 wheel (2026-09-19)",
+         shape=2),
+    Case("one_case_keeps_the_particle_on_the_real_record",
+         "NASCIMENTO, EDSON ARANTES DO",
+         {"given": "EDSON", "middle": "ARANTES",
+          "family": "DO NASCIMENTO"},
+         classification="fix(#380)",
+         ambiguities=("particle-or-given",),
+         notes="the fourth corner of the pairing, and the reason the "
+               "one-case cost is accepted: this is a real Portuguese "
+               "record and the particle reading is right about it. "
+               "1.4.0 read middle 'ARANTES', suffix 'DO'",
+         shape=2),
+    Case("the_particle_member_declines_in_title_case_too",
+         "Doe, John Do",
+         {"given": "John", "family": "Do Doe"},
+         classification="fix(#380)",
+         ambiguities=("particle-or-given",),
+         notes="Title case leans NAME, which is not a positive "
+               "credential lean, so the carve-out hands it to P6 "
+               "like every non-capital spelling. One report, P6's. "
+               "1.4.0 read suffix 'Do'",
+         shape=2),
+    Case("p6_still_claims_the_other_unambiguous_suffix_particle",
+         "Berg, Jan mc",
+         {"given": "Jan", "family": "mc Berg"},
+         classification="fix(#380)",
+         ambiguities=("suffix-or-name",),
+         notes="'mc' is the second word in both vocabularies whose "
+               "suffix half is unambiguous, and it is the control "
+               "that stops #531's P6 condition being written against "
+               "one example -- 'Berg, Jan vd' above is the first, and "
+               "both are byte-identical before and after. Carries "
+               "that row's classification for the same reason: 1.4.0 "
+               "and 2.0.0 both read suffix 'mc' and P6's attachment "
+               "is what took it (measured on both wheels 2026-09-18)",
+         shape=2),
+    # ---- the particle cascade Derek accepted (Q1) ----------------
+    Case("the_slot_hands_a_trailing_particle_to_p6",
+         "Doe, John van MA",
+         {"given": "John", "family": "van Doe", "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         notes="A FAMILY MOVE, found by measurement and accepted by "
+               "Derek 2026-09-18: today this is middle 'van MA', "
+               "silent. Once 'MA' becomes a suffix, P6's own walk "
+               "looks past that post-nominal, finds 'van' as a "
+               "trailing all-particle run and attaches it. That is "
+               "exactly 'Berg, Jan van Jr.'s reading, arriving "
+               "through a shape it could not reach before. TWO "
+               "reports, one per fork, and neither is this slot "
+               "reporting twice"),
+    Case("the_slot_reaches_past_an_unambiguous_suffix_particle",
+         "Doe, John MA vd",
+         {"given": "John", "family": "vd Doe", "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the row above with the particle BEHIND the member "
+               "instead of in front, and the pair says the cascade is "
+               "not about where the particle stands: 'vd' is claimed "
+               "outright by the suffix vocabulary, so this walk reads "
+               "past it and takes 'MA', and P6 then attaches 'vd' "
+               "over that reading -- reporting in the kind naming the "
+               "reading it OVERRODE, which is why both reports here "
+               "are `suffix-or-name` where 'Doe, John van MA' gives "
+               "one of each. Today middle 'MA', family 'vd Doe', one "
+               "report ('Berg, Jan vd' is that reading with nothing "
+               "in front of the particle)"),
+    # ---- policy rows. Every one is _CORE_ONLY (see
+    # tests/v2/test_facade_cases.py) --------------------------------
+    Case("the_dotted_slot_reports_with_the_switch_off",
+         "Doe, John X.Y.Z.",
+         {"given": "John", "middle": "X.Y.Z.", "family": "Doe"},
+         policy=Policy(unlisted_dotted_suffixes=False),
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the declined-but-reported shape at this slot: "
+               "classify writes `shape:acronym` whether or not the "
+               "switch admits the token, which `peel_trailing` "
+               "already relies on, so the fork is consulted and "
+               "reported while the reading stays a middle name. Same "
+               "treatment 'Smith, A.B.' gets at the first post-comma "
+               "slot"),
+    Case("the_caps_switch_reaches_the_trailing_slot",
+         "Doe, John XYZ",
+         {"given": "John", "family": "Doe", "suffix": "XYZ"},
+         policy=Policy(unlisted_caps_suffixes=True),
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the by-shape class reaches this slot through the "
+               "same tag the listed class does. `listed_lean` returns "
+               "None wherever `shape:acronym` rides, so a by-shape "
+               "member never has a lean and takes the positional "
+               "reading -- which at this slot is the credential"),
+    Case("the_trailing_slot_ignores_the_strict_comma_knob",
+         "Doe, John MA",
+         {"given": "John", "family": "Doe", "suffix": "MA"},
+         policy=Policy(lenient_comma_suffixes=False),
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="`lenient_comma_suffixes` governs #144's initial-veto "
+               "predicate, which this branch does not go through -- "
+               "so the strict knob reads this slot exactly as the "
+               "default does. The control that says which predicate "
+               "owns the word"),
+    Case("the_trailing_slot_reads_the_same_under_family_first",
+         "Doe, John MA",
+         {"given": "John", "family": "Doe", "suffix": "MA"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="a family comma names the family, so the declared "
+               "order arbitrates nothing here. Measured identical "
+               "under all three orders, which is also why "
+               "`_ORDER_EXEMPTION_EFFECT` gains no row"),
+    Case("the_trailing_slot_reads_the_same_under_ff_given_last",
+         "Doe, John MA",
+         {"given": "John", "family": "Doe", "suffix": "MA"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the third order, for the same reason as the second"),
+    # ---- caseless scripts. tolerated=True, NOT a shape tag:
+    # cases.py's __post_init__ hard-errors on a composed CJK comma
+    # form carrying a shape.
+    Case("a_caseless_script_takes_the_trailing_credential",
+         "田中, 太郎 MA",
+         {"given": "太郎", "family": "田中", "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="'caseless is inert' holds for the LEAN, not for the "
+               "OUTCOME: `is_one_case` answers True for a caseless "
+               "script, so nothing leans, so the positional reading "
+               "applies -- and at this slot the positional reading IS "
+               "the credential. 1.4.0 parity, measured. A composed "
+               "CJK comma form, so tolerated rather than contract "
+               "(rules.md#W3's 2026-09-01 demotion)",
+         tolerated=True),
+    Case("a_hangul_family_takes_the_trailing_credential_too",
+         "김, 민준 MA",
+         {"given": "민준", "family": "김", "suffix": "MA"},
+         classification="fix(#531)",
+         ambiguities=("suffix-or-name",),
+         notes="the Korean twin of the row above, and the pair is "
+               "what stops the reading being a fact about Han. "
+               "Tolerated for the same reason",
+         tolerated=True),
     Case("family_comma_lenient_trailing", "Smith, John V",
          {"given": "John", "family": "Smith", "suffix": "V"},
          notes="v1 #144: the trailing piece of a two-part comma name "
@@ -1173,8 +4579,16 @@ CASES: tuple[Case, ...] = (
          {"given": "Juan", "family": "de la Vega", "suffix": "III"}),
     Case("interior_periods_block_vocab", "Smith, J.R.",
          {"given": "J.R.", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
          notes="v1's lc() keeps interior periods: 'J.R.' is not the "
-               "title 'jr' (pinned live 2026-07-17)"),
+               "suffix word 'jr' (pinned live 2026-07-17), so this "
+               "FIELD reading is unchanged clear back to 1.4.0. #516: "
+               "two unlisted single-letter chunks join the ambiguous "
+               "class by shape all the same, the same fork "
+               "'Smith, A.B.' reports -- the class is considered and "
+               "declined (one word before the comma is never enough), "
+               "and the consideration is what reports, exactly as the "
+               "trailing peel's own declined picks always have"),
     Case("dotted_acronym_suffix", "John Smith M.D.",
          {"given": "John", "family": "Smith", "suffix": "M.D."},
          notes="suffix-ACRONYM membership alone strips periods (v1 "
@@ -1212,9 +4626,18 @@ CASES: tuple[Case, ...] = (
     Case("period_joined_titles", "Lt.Gov. John Doe",
          {"title": "Lt.Gov.", "given": "John", "family": "Doe"},
          notes="v1 derived-title rule: ANY period chunk being a title "
-               "makes the token a title (pinned live 2026-07-16)"),
+               "makes the token a title (pinned live 2026-07-16). "
+               "Title wins before #516's shape verdict is even asked, "
+               "so this stays a protected control for the switch, not "
+               "just for the chunk rule",
+         shape=1),
     Case("period_joined_suffixes", "John Doe JD.CPA",
-         {"given": "John", "family": "Doe", "suffix": "JD.CPA"}),
+         {"given": "John", "family": "Doe", "suffix": "JD.CPA"},
+         notes="the multi-character chunk match 'jd'/'cpa' still wins "
+               "over #516's shape verdict, which is asked only where "
+               "classify's own fall-through has not already tagged "
+               "'vocab:suffix' -- unchanged either side of the switch",
+         shape=1),
     Case("period_joined_any_rule", "Mr.Smith",
          {"title": "Mr.Smith"},
          notes="the ANY rule is deliberate v1 parity: one title chunk "
@@ -2476,13 +5899,58 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="negative control: `lord` is not a given-name title, so "
                "the run's last word does not address by given name"),
-    Case("title_run_princess_is_vocabulary_scope",
+    # -- #519: prince and princess join the given-name titles. The
+    # criterion is rules.md#H Background's: a title that precedes and
+    # addresses by the GIVEN name belongs. "Prince Harry", "Princess
+    # Anne" address by given name and no surname reading of the word
+    # behind them exists. lord and lady stay out, decided: both split
+    # by the bearer's rank, given name for children of the senior
+    # ranks (Lord Peter, Lady Diana) and title or surname for every
+    # peer and every wife (Lord Byron, Lady Thatcher), and the set
+    # has no way to say "sometimes" -- the reason `venerable` stayed
+    # out.
+    Case("title_run_princess_addresses_by_given_name",
          "Her Royal Highness Princess Anne",
-         {"title": "Her Royal Highness Princess", "family": "Anne"},
-         classification="parity",
-         notes="negative control: `princess` is not a given-name title "
-               "either -- a vocabulary question with its own frequency "
-               "argument (Prince Harry, Lady Gaga), deliberately out"),
+         {"title": "Her Royal Highness Princess", "given": "Anne"},
+         classification="fix(#519)",
+         notes="was the #489 bundle's negative control for the "
+               "vocabulary question it filed as #519; `princess` now "
+               "IS a given-name title, so the run's last word "
+               "addresses by given name and the family is empty"),
+    Case("prince_and_one_name_word_is_a_given_name", "Prince Harry",
+         {"title": "Prince", "given": "Harry"},
+         classification="fix(#519)",
+         notes="the name the release note advertises: 1.4.0 through "
+               "2.2.0 read family 'Harry'. H1's fold is pinned by the "
+               "Sir John rows; this pins the membership"),
+    Case("prince_licences_the_bound_given_join", "Prince abdul Rahman",
+         {"title": "Prince", "given": "abdul Rahman"},
+         classification="fix(#519)",
+         notes="the second site that reads the set, rules.md#P5's "
+               "licence: behind a given-name title there is no family "
+               "to spare, so the bound word joins forward as it does "
+               "behind Sir. Read family 'Rahman' before #519"),
+    Case("prince_as_a_given_name_is_still_the_collision", "Prince Fielder",
+         {"title": "Prince", "given": "Fielder"},
+         classification="fix(#519)",
+         notes="wrong either way -- Prince is his given name (#348). "
+               "Membership only decides which field the one word "
+               "behind the title takes; it does not decide whether "
+               "the word IS a title, and that is #348's question, "
+               "not this one's"),
+    Case("lord_stays_a_surname_title", "Lord Byron",
+         {"title": "Lord", "family": "Byron"},
+         notes="negative control for #519: `lord` addresses a duke's "
+               "or marquess's younger son by given name (Lord Peter) "
+               "and every peer by title (Lord Byron); the set cannot "
+               "say 'sometimes', so it stays out and H1 families the "
+               "one word"),
+    Case("lady_stays_a_surname_title", "Lady Gaga",
+         {"title": "Lady", "family": "Gaga"},
+         notes="negative control for #519: `lady` addresses by given "
+               "name for a peer's daughter (Lady Diana) and by "
+               "surname for a wife (Lady Thatcher); the set cannot "
+               "say 'sometimes', so it stays out as `lord` does"),
     Case("title_and_two_name_words_is_not_h1s", "Sir John Smith",
          {"title": "Sir", "given": "John", "family": "Smith"},
          classification="parity",
@@ -2912,8 +6380,36 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="'ed' is an ambiguous acronym; bare form is a name (C1), "
                "and the parse reports which reading it took"),
+    # MOVED by #289, not deleted (roles unchanged, a report gained):
+    # 'Ed' is Title-case in a mixed-case name, so it leans SURNAME and
+    # the post-comma slot declines it exactly as before -- but the
+    # decision is now reported, both directions of the fork being
+    # worth telling the caller about (decisions.md#S2).
     Case("comma_ambiguous_acronym", "Smith, Ed",
-         {"given": "Ed", "family": "Smith"}),
+         {"given": "Ed", "family": "Smith"},
+         ambiguities=("suffix-or-name",)),
+    # Quality-review finding, 2026-09-17 (item 5): name_word_count's
+    # title half used a bare `folded in lexicon.titles` lookup, not
+    # is_leading_title's H2 shape test -- so an UNLISTED period-marked
+    # opener counted as a NAME word where a LISTED one did not, and
+    # this pair split on that alone: 'Dr. Smith, Ed' (LISTED 'Dr.')
+    # read family 'Dr. Smith' unflipped, but 'Xyz. Smith, Ed'
+    # (UNLISTED, H2-shaped) flipped the comma structure and read title
+    # 'Xyz.', family 'Smith', suffix 'Ed' -- a different STRUCTURE for
+    # the same shape, from a title-vocabulary difference the count had
+    # no business seeing. Fixed by sharing H2's shape test
+    # (`_vocab.is_title_shaped`, asked in this count and inlined in
+    # `_pieces.is_leading_title`, two spellings of one predicate --
+    # sharing the function costs a frame on the hot leading-peel path,
+    # measured, so they stay separate call sites instead).
+    Case("comma_count_reads_h2_s_shape_test_too", "Xyz. Smith, Ed",
+         {"given": "Ed", "family": "Xyz. Smith"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="MOVED: title 'Xyz.', family 'Smith', suffix 'Ed' before "
+               "this fix (measured at e545803) -- an unlisted period-"
+               "marked opener now reads the way a listed title does at "
+               "this count, exactly as 'Dr. Smith, Ed' beside it"),
     Case("ambiguous_acronym_with_suffix", "John Ed III",
          {"given": "John", "family": "Ed", "suffix": "III"},
          ambiguities=("suffix-or-name",)),
@@ -3196,13 +6692,18 @@ CASES: tuple[Case, ...] = (
                "form trailing"),
     Case("audit_perioded_sa_is_the_postnominal", "Smith, S.A.",
          {"family": "Smith", "suffix": "S.A."}),
-    Case("audit_bare_do_after_comma_is_a_name", "Smith, DO",
-         {"given": "DO", "family": "Smith"},
-         classification="fix(#296)",
-         notes="'do' left TITLES but was already AMBIGUOUS, so the bare "
-               "spelling is neither title nor suffix and falls to the "
-               "given position -- the period gate handles the real "
-               "collision, which is that 'Do' is a name"),
+    # MOVED by #289, not deleted: 'DO' is written in capitals inside a
+    # mixed-case name, so it now leans CREDENTIAL and the post-comma
+    # slot takes it with one word to spare rather than falling to the
+    # given position (decisions.md#S2).
+    Case("audit_bare_caps_do_after_comma_is_a_credential", "Smith, DO",
+         {"family": "Smith", "suffix": "DO"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="'do' left TITLES but was already AMBIGUOUS; the period "
+               "gate handles the real collision, which is that 'Do' is "
+               "a name -- but the bare, all-caps spelling is now read "
+               "the way a credential is written"),
     Case("audit_perioded_do_after_comma_is_a_suffix", "Smith, D.O.",
          {"family": "Smith", "suffix": "D.O."}),
     # -- the TRAILING half of the same two removals. `dr` and `sra` are
@@ -3648,9 +7149,13 @@ CASES: tuple[Case, ...] = (
                "the reports come from the single peel over the "
                "spliced pieces. Collecting both peels' picks instead "
                "reported the same coin flip twice"),
+    # MOVED by #289, not deleted: spliced, this is 'John MA' plus a
+    # title, and 'MA' is written in capitals inside a mixed-case name
+    # -- the caps lean now takes it with no words to spare where the
+    # old reserve kept it the family (decisions.md#S2).
     Case("title_word_trailing_run_is_read_to_a_fixed_point",
          "John Prof. MA Prof.",
-         {"title": "Prof. Prof.", "given": "John", "family": "MA"},
+         {"title": "Prof. Prof.", "family": "John", "suffix": "MA"},
          ambiguities=("suffix-or-name",), classification="fix(#316)",
          notes="transparency for a SECOND title, which peel and chain "
                "reading to a FIXED POINT buys and one re-peel did "
@@ -3664,17 +7169,22 @@ CASES: tuple[Case, ...] = (
                "first 'John' / middle 'Prof. MA' / last 'Prof.' "
                "(measured 2026-09-09), so the row is #316's parity "
                "break either way and the round decided only which "
-               "reading it is"),
+               "reading it is. #289 moves it again: the caps lean "
+               "takes 'MA' as a credential rather than the family "
+               "(decisions.md#S2)"),
     Case("title_word_trailing_keeps_the_bare_acronym_reserve",
          "John Prof. MA",
-         {"title": "Prof.", "given": "John", "family": "MA"},
+         {"title": "Prof.", "family": "John", "suffix": "MA"},
          ambiguities=("suffix-or-name",), classification="fix(#316)",
          notes="the same principle where the peel's answer DEPENDS on "
-               "the spliced list: S2's reserve keeps a bare ambiguous "
-               "acronym the family of a two-word name, so this is "
-               "'John MA' plus a title and reads exactly as 'Prof. "
-               "John MA' does. Laying a second peel's roles over the "
-               "first peel's read family 'John', suffix 'MA'"),
+               "the spliced list: this is 'John MA' plus a title and "
+               "reads exactly as 'Prof. John MA' does. Laying a "
+               "second peel's roles over the first peel's read family "
+               "'John', suffix 'MA'. #289 MOVES this row: 'MA' is "
+               "written in capitals inside a mixed-case name, so the "
+               "caps lean now takes it with no words to spare, where "
+               "S2's reserve alone used to keep it the family "
+               "(decisions.md#S2)"),
     Case("title_word_trailing_between_two_numerals",
          "John Smith V Prof. VI",
          {"title": "Prof.", "given": "John", "middle": "Smith V",
@@ -3691,7 +7201,8 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="negative control, and the doctrine: the leading slot "
                "has a SHAPE rule that outranks vocabulary (H2), the "
-               "trailing slot reads vocabulary only"),
+               "trailing slot reads vocabulary only",
+         shape=1),
     Case("title_word_trailing_bare_is_a_name_word", "John Smith Sir",
          {"given": "John", "middle": "Smith", "family": "Sir"},
          classification="parity",
@@ -4528,6 +8039,267 @@ CASES: tuple[Case, ...] = (
                "listing artifact no writing system produces. The row "
                "still pins #320's mechanism at HEAD",
          tolerated=True),
+    Case("ko_honorific_with_a_fullwidth_full_stop", "김민준 씨．",
+         {"family": "김", "given": "민준", "suffix": "씨．"},
+         classification="fix(#322)",
+         notes="U+FF0E, the stop a Japanese or Chinese IME produces by "
+               "default. The lookup fold reads it as an edge period "
+               "(_lexicon.FULL_STOPS), so 씨． reaches the suffix entry "
+               "the ASCII spelling already reached; the token text "
+               "keeps its stop. Pins the fold on the one stop NFKC "
+               "would ALSO have folded -- the row beside it pins the "
+               "one it would not -- and earns its place as a member "
+               "of a set the library SHIPS, which "
+               "mechanisms.md#VOCABULARY-EXERCISES-FORKS says is "
+               "caller-visible behavior wanting a row per member, "
+               "unlike caller-configured vocabulary. 2.2.0 read given "
+               "김, middle 민준, family 씨．.",
+         tolerated=True),
+    Case("ko_honorific_with_an_ideographic_full_stop", "김민준 씨。",
+         {"family": "김", "given": "민준", "suffix": "씨。"},
+         classification="fix(#322)",
+         notes="U+3002, which NFKC leaves alone -- the row that shows "
+               "the stop SET is what fixes #322, not a Unicode "
+               "normalization. 2.2.0 read given 김, middle 민준, "
+               "family 씨。.",
+         tolerated=True),
+    Case("ko_honorific_with_a_halfwidth_ideographic_full_stop",
+         "김민준 씨｡",
+         {"family": "김", "given": "민준", "suffix": "씨｡"},
+         classification="fix(#322)",
+         notes="U+FF61, which NFKC folds to U+3002 and no further -- "
+               "so even under NFKC this spelling needs the set. 2.2.0 "
+               "read given 김, middle 민준, family 씨｡.",
+         tolerated=True),
+    Case("ko_honorific_written_nfd_after_a_family_comma",
+         unicodedata.normalize("NFD", "김민준, 씨."),
+         {"family": unicodedata.normalize("NFD", "김민준"),
+          "suffix": unicodedata.normalize("NFD", "씨.")},
+         classification="fix(#322)",
+         notes="the lookup fold composes NFC, so decomposed 씨. reaches "
+               "the suffix entry (2.2.0 read title 씨.). The family "
+               "stays WHOLE and stays NFD: segmentation matches raw "
+               "text on purpose (decisions.md#W1, 2026-07-29 ja "
+               "amendment), so NFD degrades to no-split, never to a "
+               "wrong split, and no "
+               "token text is rewritten. Contrast 'NFD(田中さん, 様.)', "
+               "which matched before: Han does not decompose. NEITHER "
+               "tolerated NOR shape-tagged, deliberately: this table's "
+               "_has_cjk reads raw codepoints (jamo sit outside "
+               "_SCRIPT_RANGES), so a decomposed text is not CJK to the "
+               "purity gate and reaches no corpus; the row is a HEAD "
+               "pin only."),
+    Case("latin_title_written_nfd_is_still_a_title",
+         unicodedata.normalize("NFD", "Señor Juan Garcia"),
+         {"title": unicodedata.normalize("NFD", "Señor"),
+          "given": "Juan", "family": "Garcia"},
+         classification="fix(#322)",
+         notes="the Latin side of the NFC fork: the lookup fold "
+               "composes every non-ASCII word, not hangul alone, so a "
+               "decomposed spelling of a shipped diacritic entry "
+               "(señor, née, attaché) reaches it. 2.2.0 read given "
+               "Señor, middle Juan, family Garcia. The token keeps its "
+               "NFD text; only the lookup composes."),
+    Case("ko_leading_honorific_surname_with_a_period_keeps_the_given_name",
+         "양. 지훈",
+         {"family": "양.", "given": "지훈"},
+         classification="fix(#323)",
+         notes="the issue's own input. effective_script('양.') is "
+               "HANGUL once the classification fold drops the edge "
+               "stop, so the surname site lands on 양. -- which is "
+               "post-nominal vocabulary in the LEADING position, "
+               "which _is_post_nominal's docstring says the surname "
+               "site reads as an ANSWER rather than a token to step "
+               "past -- and declines, leaving 지훈 whole. The stop "
+               "stays on the token: nothing rewrites text (rules.md T "
+               "Background). 2.2.0 read given 양., middle 지, family "
+               "훈.",
+         tolerated=True),
+    Case("ko_leading_family_name_with_a_period_keeps_the_given_name",
+         "김. 민준",
+         {"family": "김.", "given": "민준"},
+         classification="fix(#323)",
+         notes="the non-honorific twin of the row above, and the row "
+               "that decides between #323's two candidate fixes: "
+               "consulting is_suffix_strict at the surname site would "
+               "have rescued 양. and left this one cut (김 is no "
+               "suffix), so the fix is the classification fold. The "
+               "site lands on 김. and matches on its CORE: 김 is itself "
+               "a listed surname, so nothing splits and the stop stays "
+               "on the family name (matched on the raw text, 김 was a "
+               "listed HEAD and the stop was the remainder, cutting "
+               "김 + '.'). 2.2.0 read given 김., middle 민, "
+               "family 준.",
+         tolerated=True),
+    Case("ko_trailing_period_keeps_the_family_first_order", "양 지훈.",
+         {"family": "양", "given": "지훈."},
+         classification="fix(#323)",
+         notes="the ORDER reader of the same None: assign's script "
+               "walk returns the declared order the moment one piece "
+               "has no script, so a stop on the LAST token flipped "
+               "the name to given-first. rules.md#W4's family-first "
+               "reading survives the stop now. 2.2.0 read given 양, "
+               "family 지훈..",
+         tolerated=True),
+    Case("ko_glued_honorific_with_a_period_peels", "김민준씨.",
+         {"family": "김", "given": "민준", "suffix": "씨."},
+         classification="fix(#323)",
+         notes="the W3 reading that was pinned by nothing (measured "
+               "2026-09-05 as title 김민준씨.): the peel now matches "
+               "its tail through the trailing stop and cuts before it, "
+               "so this divides exactly as '김민준 씨.' does and the "
+               "stop stays on the honorific. Peel first, then the "
+               "surname site divides 김민준. 2.2.0 read title 김민준씨.",
+         tolerated=True),
+    Case("ja_glued_honorific_with_a_period_peels", "田中さん.",
+         {"family": "田中", "suffix": "さん."},
+         classification="fix(#323)",
+         notes="the Japanese twin, and the one where nothing follows "
+               "the peel: 田中 is a lone Han token under the default "
+               "policy, so no division runs and the family stands "
+               "whole, as it does for '田中さん'. 2.2.0 read title "
+               "田中さん.",
+         tolerated=True),
+    Case("ko_lone_name_with_a_period_is_not_a_title", "김민준.",
+         {"family": "김", "given": "민준."},
+         classification="fix(#323)",
+         notes="reads this way since the surname site learned the "
+               "core match, NOT through H2's veto: HANGUL segmentation "
+               "is on by default and script_segment runs before "
+               "assign, so 김민준. is divided into 김 + 민준. before "
+               "any period-marked opening word exists for H2 to see. "
+               "Kept as the hangul reading of the shape; the veto's "
+               "own witness is the Han row below, where no default "
+               "segmentation stands in front. The stop rides with the "
+               "given name -- nothing rewrites text. 2.2.0 read title "
+               "김민준.",
+         tolerated=True),
+    Case("ko_period_marked_first_word_then_a_name_word", "김민준. 지훈",
+         {"family": "김", "given": "민준.", "middle": "지훈"},
+         classification="fix(#323)",
+         notes="the two-word hangul shape, divided by the surname "
+               "site before assign as the row above is: family 김, "
+               "given 민준., middle 지훈 -- the reading of '김민준 "
+               "지훈' with the stop kept. H2's veto is not what "
+               "decides it (see the row above); the Han two-word row "
+               "below is where the veto is the whole difference. "
+               "2.2.0 read title 김민준., family 지, given 훈 -- "
+               "hangul segmentation ran on the trailing word.",
+         tolerated=True),
+    Case("ja_lone_name_with_a_period_is_not_a_title", "田中.",
+         {"family": "田中."},
+         classification="fix(#323)",
+         notes="the H2 veto's witness: Han has no default segmentation, "
+               "so the period-marked word reaches assign whole, and "
+               "rules.md#H2's shape -- a Latin convention, an "
+               "abbreviation's period -- declines it because Han has "
+               "no period abbreviations (the #320 veto, extended from "
+               "is_initial to H2). A lone name word is the family "
+               "name. Remove the veto and this reads title 田中. "
+               "again, which is what 2.2.0 read.",
+         tolerated=True),
+    Case("ja_period_marked_first_word_then_a_name_word", "田中. 太郎",
+         {"family": "田中.", "given": "太郎"},
+         classification="fix(#323)",
+         notes="the two-word Han shape, where the veto is the whole "
+               "difference: without it H2 fires on 田中. and 太郎 "
+               "becomes the entire name. With it the pair reads as "
+               "'田中 太郎' does, family-first by script (rules.md#W4), "
+               "with the stop kept. The stop stays on 田中, the word "
+               "that carried it: family 田中., given 太郎. 2.2.0 read "
+               "title 田中., family 太郎. Stays tolerated like its "
+               "three #323 siblings, H2's Accepted clause being "
+               "illustrated in W3's tolerated example block rather "
+               "than by promoting this row, per the 2026-09-05 "
+               "precedent recorded in tools/differential/compare.py: "
+               "marking the row alone would leave the name enforced "
+               "and documented as demoted.",
+         tolerated=True),
+    Case("ja_katakana_lone_name_with_a_period_is_not_a_title", "マイケル.",
+         {"given": "マイケル."}, ambiguities=("given-or-family",),
+         classification="fix(#323)",
+         notes="the katakana arm of the H2 veto, and the one where it "
+               "cuts across rules.md#W4 -- a wholly-katakana name keeps "
+               "the declared order, so the lone word is the GIVEN name "
+               "-- the veto decides title-or-name, the order rule "
+               "decides which name. 2.2.0 read title マイケル.",
+         tolerated=True),
+    Case("latin_period_marked_opening_word_is_still_a_title",
+         "Smith. John",
+         {"title": "Smith.", "family": "John"},
+         classification="parity",
+         notes="the Latin side of the #323 veto's fork, pinned so the "
+               "veto can never widen onto Latin: Latin has "
+               "period abbreviations, H2's shape fires, and an "
+               "unlisted period-marked opening word is a title even "
+               "when it is a surname."),
+    Case("cyrillic_period_marked_opening_word_is_still_a_title",
+         "Проф. Иванов",
+         {"title": "Проф.", "family": "Иванов"},
+         classification="parity",
+         notes="the alphabet _policy._NO_INITIALS's own comment names "
+               "as the one it would be wrong to add: Cyrillic has "
+               "initials and abbreviations, so H2's shape fires and "
+               "the #323 veto stays out of its way. Pins the veto's "
+               "repertoire at the four CJK scripts from the other "
+               "side."),
+    Case("ko_name_with_a_period_in_a_bracketed_credential",
+         "(김민준.) John Smith",
+         {"given": "김", "middle": "민준. John", "family": "Smith"},
+         classification="fix(#323)",
+         notes="a recorded DEGRADATION, pinned so it cannot move "
+               "silently. rules.md#S1's bracketed-credential escape in "
+               "_extract calls a clause suffix-shaped when it ends in "
+               "an ASCII period -- an unwidened test, deliberately -- "
+               "so the brackets are dropped and the content reads as "
+               "if written bare. Bare, '김민준. John Smith' used to "
+               "reach H2 and give title 김민준. (2.2.0's reading); "
+               "since #323 the veto declines a period-marked opening "
+               "word written in an initialless script, so 김민준. is "
+               "name text, the surname site divides it, and the pieces "
+               "spread across the Latin name -- given 김, middle "
+               "'민준. John', family Smith. The TRAILING spelling "
+               "degrades the same way ('John Smith (김민준.)' reads "
+               "given John, middle 'Smith 김', family 민준., where "
+               "2.2.0 read given John, middle Smith, family 김민준.); "
+               "one row is enough, the mechanism being the unwrap in "
+               "front rather than the position. Latin wrapped around a "
+               "CJK name is the 2026-09-01 demotion's own ground, so "
+               "the row is tolerated and the degradation is recorded "
+               "in decisions.md#cjk-full-stops rather than fixed here",
+         tolerated=True),
+    Case("latin_suffix_with_an_ideographic_full_stop", "John Smith, Jr。",
+         {"given": "John", "family": "Smith", "suffix": "Jr。"},
+         classification="fix(#322)",
+         notes="the stop set is script-agnostic at the lookup fold, so "
+               "the reach it bought is not CJK-only: _normalize strips "
+               "any of the four FULL_STOPS off any word, and a LATIN "
+               "suffix wearing the ideographic stop now folds to its "
+               "entry. 2.2.0 read given 'Jr。' / family 'John Smith' -- "
+               "the stop defeated the lookup and the credential became "
+               "name text. Not tolerated and carrying no shape: the "
+               "text is Latin, which _has_cjk does not see, and the "
+               "row is a HEAD pin on the fold's Latin reach"),
+    Case("latin_roman_numeral_with_an_ideographic_full_stop",
+         "Smith, John V。",
+         {"given": "John", "family": "Smith", "suffix": "V。"},
+         classification="fix(#322)",
+         notes="the same reach where it costs something, and the "
+               "asymmetry worth pinning: 'Smith, John V.' still reads "
+               "middle 'V.', because _reads_as_a_trailing_suffix's "
+               "carve-out (_assign) tests an ASCII period ending the "
+               "piece's own text -- text.endswith('.') -- and nothing "
+               "else; is_initial is not the decider: is_initial('V') "
+               "is True, yet 'Smith, John V', no period at all, still "
+               "reads suffix 'V'. The WIDE stop does not end the text "
+               "in an ASCII period, so the carve-out never fires, the "
+               "fold takes the stop off, and 'v' is roman five -- "
+               "suffix. 2.2.0 read middle 'V。', the whole word being "
+               "unfoldable then. Neither reading was designed; the "
+               "bundle widened the stop set and this is where the "
+               "widening lands on Latin text, which "
+               "decisions.md#cjk-full-stops records as an unasked-for "
+               "reach rather than a promise"),
     Case("ko_honorific_glued_teacher", "김선생님",
          {"family": "김", "suffix": "선생님"},
          classification="fix(#307) + fix(#271)",
@@ -4999,6 +8771,65 @@ CASES: tuple[Case, ...] = (
                "which is why this row is one token before the comma; "
                "_peel_site's docstring derives the bound. "
                "1.4.0 gave first 'J.씨' / last 선생님",
+         tolerated=True),
+    Case("ko_honorific_glued_family_comma_stop_on_the_first_run",
+         "김민준씨., J.씨",
+         {"family": "김민준", "suffix": "씨., J.씨"},
+         classification="fix(#323)",
+         notes="the stop-bearing spelling of "
+               "ko_honorific_glued_family_comma_site_in_both_runs, "
+               "here because the FAMILY_COMMA decline is a gate of TWO "
+               "conjuncts and a trailing stop reaches exactly one of "
+               "them. Measured on this tree and on d37b8ec: the first "
+               "conjunct, is_wholly_suffix of the post-comma run, is "
+               "True on both -- the stop is not there. The SECOND, "
+               "segments[0] holding a peel site, is what the stop "
+               "flipped, False before #323 (the tail match ran on the "
+               "raw text and 김민준씨. ends in a stop, not in 씨) and "
+               "True now. So the decline stands, 씨. peels off 김민준씨. "
+               "and 'J.씨' is consumed whole. Agrees with the stop-less "
+               "twin field for field, the stop riding on the honorific "
+               "piece it arrived with (family 김민준, suffix '씨, J.씨' "
+               "there). 2.2.0 read given 'J.', family 김민준씨., suffix "
+               "씨 -- the junk 씨 peeled off 'J.씨' while the person's "
+               "own honorific stayed in the family name",
+         tolerated=True),
+    Case("ja_honorific_glued_family_comma_stop_on_the_first_run",
+         "田中さん., V.",
+         {"given": "V.", "family": "田中", "suffix": "さん."},
+         classification="fix(#323)",
+         notes="the kana twin of the row above, and the same conjunct: "
+               "is_wholly_suffix(['V.']) is True on both trees under "
+               "the lenient default, and the segments[0] site is False "
+               "before #323 and True now. Before, the gate therefore "
+               "did not decline, the scan crossed to 'V.', which ends "
+               "in no tail, and the peel was abandoned with さん. left "
+               "in the family name -- 2.2.0 read given 'V.', family "
+               "田中さん., no suffix at all. Agrees with "
+               "ja_honorific_glued_family_comma_suffixy_second_run "
+               "field for field (given 'V.', family 田中, suffix さん "
+               "there), the stop riding on the honorific",
+         tolerated=True),
+    Case("ko_honorific_glued_family_comma_stop_beyond_the_comma",
+         "이, J.씨.",
+         {"given": "J.", "family": "이", "suffix": "씨."},
+         classification="fix(#323)",
+         notes="the stop on the OTHER side of the comma, and the row "
+               "that keeps the two rows above from reading as 'a stop "
+               "moves the gate'. Measured on this tree and on d37b8ec, "
+               "NEITHER conjunct moves: the post-comma run is wholly "
+               "suffix-shaped on both, and segments[0] -- the lone 이 "
+               "-- holds no peel site on either, so the gate declines "
+               "nothing and the scan crosses the comma under #312 both "
+               "times. What the stop moved is the site scan itself. "
+               "'J.씨.' ended in no listed tail before #323, so the "
+               "peel found no site at all and the whole run went to "
+               "suffix (2.2.0 read family 이, suffix 'J.씨.'); now the "
+               "tail matches through the stop and the cut lands before "
+               "it. Agrees with "
+               "ko_honorific_glued_family_comma_site_only_beyond_the_"
+               "comma field for field (given 'J.', family 이, suffix "
+               "씨 there), the stop riding on 씨",
          tolerated=True),
     Case("ko_honorific_glued_given_after_family_comma", "김, 민준씨",
          {"family": "김", "given": "민준", "suffix": "씨"},
