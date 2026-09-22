@@ -828,7 +828,6 @@ SUFFIX_ACRONYMS = frozenset({
     'pfmp',
     'pg',
     'pgmp',
-    'ph',
     'pharmd',
     'phc',
     'phd',

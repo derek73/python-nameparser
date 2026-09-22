@@ -2173,21 +2173,35 @@ R4. Rationale: case repair is a display concern, applied only on
     conventions rather than by the bearer's. A spelling written in a
     single case is repaired even where its bearer meant it, because
     nothing in the text marks it as a choice; where the text does
-    mark one, R5 defers to it.
+    mark one, R5 defers to it. A credential acronym the exceptions map
+    does not carry is an initialism, so a single-case word the parse
+    put in the suffix role from the acronym vocabulary repairs to its
+    all-caps spelling rather than a title-cased one, and that repair
+    outranks the Mac/Mc convention where a word fits both (MCSE, not
+    McSe); a word in that vocabulary that parsed as an ordinary name
+    word repairs as that name word, and a suffix word that is neither
+    an acronym nor an exceptions-map entry -- the generational `jr`,
+    `sr` -- keeps its title case.
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "Juan McDonald"             →  capitalized_forced="Juan McDonald"
       "ANH DO"                    →  capitalized="Anh Do"
       "anh van do"                →  capitalized="Anh Van Do"
       "john smith phd"            →  capitalized="John Smith Ph.D."
+      "john smith mba"            →  capitalized="John Smith MBA"
+      "john smith mcse"           →  capitalized="John Smith MCSE"
+      "john smith jr"             →  capitalized="John Smith Jr"  · boundary
       "John Quincy Smith i"       →  capitalized_forced="John Quincy Smith I"
       "Carod i"                   →  capitalized_forced="Carod I"
       "Smith, John, and"          →  capitalized_forced="John Smith and"
       "Doe, Jane, and Jr."        →  capitalized_forced="Jane Doe and Jr."
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
-    Accepted: the clause reaches a part the parser read. A field
-    spliced in as raw text after the parse carries no reading of its
-    own, so a family set that way to "de la" stays lowercase where
-    those same two words parsed from a name are repaired to "De La".
+    Accepted: the all-particle clause reaches a part the parser read.
+    A field spliced in as raw text after the parse carries no reading
+    of its own, so a family set that way to "de la" stays lowercase
+    where those same two words parsed from a name are repaired to "De
+    La". The acronym repair is the contrast: it asks the role and the
+    vocabulary and not a reading, so a suffix spliced in as "mba" is
+    repaired to "MBA" exactly as a parsed one is.
     That is the boundary between splicing text into a field and
     revising a field through the parser — revise() classifies the
     value, so the repair follows it — rather than a gap between them.

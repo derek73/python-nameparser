@@ -401,6 +401,25 @@ CASES: tuple[Case, ...] = (
                "consideration reports: the parity note above is about "
                "the reading, not about whether a fork was called",
          shape=2),
+    Case("removed_ph_fragment_leaves_a_bare_trailing_ph_a_name_word",
+         "John Smith Ph.",
+         {"given": "John", "middle": "Smith", "family": "Ph."},
+         classification="fix(#459)",
+         notes="the accepted cost of 'ph' leaving SUFFIX_ACRONYMS "
+               "(#459/#521, 2026-09-13), pinned so the reversal is "
+               "visible. The fragment let the merged 'Ph. D.' token pass "
+               "the acronym test on its first piece, and #459's all-caps "
+               "repair would have read 'john smith ph. d.' as "
+               "'John Smith PH. D.'; the merge itself keys on the PH/D "
+               "regexes of _pipeline/_vocab.py and never needed the "
+               "entry. What the entry uniquely carried was a bare "
+               "trailing 'Ph.' -- no 'D.' behind it -- as a credential, "
+               "a spelling nobody writes; out of the set it falls to the "
+               "positional read, family 'Ph.', where every release since "
+               "1.4.0 read suffix. Same criterion as the esq rows above, "
+               "asked of the machinery: the entry described the merge, "
+               "not a word. decisions.md, Excluded (SUFFIX_ACRONYMS -- ph)",
+         shape=1),
     Case("suffix_word_esq_still_reads_as_a_suffix", "John Smith Esq",
          {"given": "John", "family": "Smith", "suffix": "Esq"},
          notes="the other half of the row above, and what the removal "
