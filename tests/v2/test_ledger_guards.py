@@ -2664,12 +2664,16 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "Washington Jr\\. MD, Franklin", "abdul Smith Jr Ma",
                "abdul Smith Jr V"}),
     # #397's maiden-clause rule, one corpus name per alternative -- a
-    # list of names, not a copy of any wordlist. What selects the two
-    # is the PLACEMENT of the link inside a clause, which no
+    # list of names, not a copy of any wordlist. What selects the
+    # three is the PLACEMENT of the link inside a clause, which no
     # vocabulary decides; a member spelled as the shape (a bare letter
     # after a maiden marker) would reach every clause name in the
-    # corpora and pre-excuse the readings the walk must refuse.
-    frozenset({"Doe, Jane nee Puig i Soler", "Jane Doe nee Puig i Soler"}),
+    # corpora and pre-excuse the readings the walk must refuse. The
+    # third member is rules.md#M2's `deviates: #538` example, which
+    # the corpus parses at the DEFAULT policy and so for this rule's
+    # own sentence rather than for #538's.
+    frozenset({"Doe, Jane nee Puig i Soler", "Jane Doe nee Puig i Soler",
+               "Smith, John, PhD née Puig Mr\\. - i Soler"}),
     # #397's join and its one-case report, one corpus name per
     # alternative -- lists of names, not copies of any wordlist. The
     # join's subject is a SHAPE the vocabulary participates in at one
@@ -3234,8 +3238,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # shape-tagged case rows, and this regex reaches every name
         # carrying a marker. Read name by name against the regex; no
         # role joined the list.
+        # 2026-09-22, #397 follow-up: 77 -> 78, the one new corpus
+        # name rules.md#M2's `deviates: #538` example adds,
+        # 'Smith, John, PhD née Puig Mr. - i Soler'. Reach again --
+        # it carries a marker -- and verified name by name; no role
+        # joined the list.
         "fix(#274) maiden markers consumed":
-            _Claim(77, ('family', 'maiden', 'middle'), 'd36e74b1f60d', None),
+            _Claim(78, ('family', 'maiden', 'middle'), '08e08f62622f', None),
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -3335,8 +3344,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the review's rows add, 'Rovira, Josep Carod i Jr.' -- the
         # comma form of the swallowed generation. Reach again, and
         # verified name by name.
+        # 2026-09-22, #397 follow-up: 363 -> 364, the one new comma
+        # name the M2 deviation example adds. Reach again, verified
+        # name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(363, ('given', 'suffix', 'title'), 'b628b4d25dfb', None),
+            _Claim(364, ('given', 'suffix', 'title'), 'e3bf2a2b8de9', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3390,8 +3402,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # the rule above and for the same reason.
         # 2026-09-20, #397 review: 359 -> 360, the same one new comma
         # name as the rule above and for the same reason.
+        # 2026-09-22, #397 follow-up: 363 -> 364, the same one new
+        # comma name as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(363, ('family', 'given'), 'b628b4d25dfb', None),
+            _Claim(364, ('family', 'given'), 'e3bf2a2b8de9', None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -3866,6 +3880,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#274/#436/#437) a clause the generational link ended, and the run it left renders with spaces":
             _Claim(1, ('family', 'maiden', 'middle', 'suffix'),
                    '7d64445a7252', None),
+        # 2026-09-22, #397 follow-up: new rule, one literal name --
+        # rules.md#M2's `deviates: #538` example, which this baseline
+        # reads as one long suffix.
+        "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the suffix field, link and all":
+            _Claim(1, ('maiden', 'suffix'), 'e20491ebfe62', None),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -4371,9 +4390,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(16, ('_initials',), "075dc34f9e95", ('DEFAULT',)),
         "fix(#461) a connective with a name word beside it stops contributing an initial":
             _Claim(13, ('_initials',), "3cc41f4bfc21", ('DEFAULT',)),
+        # 2026-09-22, #397 follow-up: 2 -> 3, the one new corpus name
+        # rules.md#M2's `deviates: #538` example adds, which this
+        # rule's own alternation now names. Verified name by name.
         "fix(#397) a link inside a maiden clause stays in the birth name":
-            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
-                   '32405b182f4e', ('DEFAULT',)),
+            _Claim(3, ('family', 'maiden', 'middle', 'suffix'),
+                   '4de0e7570bd6', ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -4659,9 +4681,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(17, ('_initials',), "797473971e75", ('DEFAULT',)),
         "fix(#461) a connective with a name word beside it stops contributing an initial":
             _Claim(13, ('_initials',), "3cc41f4bfc21", ('DEFAULT',)),
+        # 2026-09-22, #397 follow-up: 2 -> 3, the one new corpus name
+        # rules.md#M2's `deviates: #538` example adds, which this
+        # rule's own alternation now names. Verified name by name.
         "fix(#397) a link inside a maiden clause stays in the birth name":
-            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
-                   '32405b182f4e', ('DEFAULT',)),
+            _Claim(3, ('family', 'maiden', 'middle', 'suffix'),
+                   '4de0e7570bd6', ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
@@ -5138,9 +5163,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(16, ('_initials',), "075dc34f9e95", ('DEFAULT',)),
         "fix(#461) a connective with a name word beside it stops contributing an initial":
             _Claim(13, ('_initials',), "3cc41f4bfc21", ('DEFAULT',)),
+        # 2026-09-22, #397 follow-up: 2 -> 3, the one new corpus name
+        # rules.md#M2's `deviates: #538` example adds, which this
+        # rule's own alternation now names. Verified name by name.
         "fix(#397) a link inside a maiden clause stays in the birth name":
-            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
-                   '32405b182f4e', ('DEFAULT',)),
+            _Claim(3, ('family', 'maiden', 'middle', 'suffix'),
+                   '4de0e7570bd6', ('DEFAULT',)),
     },
     "expected_since_2.3.0.toml": {
         # #383/#479's three rules, the first this ledger carries. The
@@ -5293,9 +5321,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(17, ('_initials',), "797473971e75", ('DEFAULT',)),
         "fix(#461) a connective with a name word beside it stops contributing an initial":
             _Claim(22, ('_initials',), "e73827447b4e", ('DEFAULT',)),
+        # 2026-09-22, #397 follow-up: 2 -> 3, the one new corpus name
+        # rules.md#M2's `deviates: #538` example adds, which this
+        # rule's own alternation now names. Verified name by name.
         "fix(#397) a link inside a maiden clause stays in the birth name":
-            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
-                   '32405b182f4e', ('DEFAULT',)),
+            _Claim(3, ('family', 'maiden', 'middle', 'suffix'),
+                   '4de0e7570bd6', ('DEFAULT',)),
     },
 }
 

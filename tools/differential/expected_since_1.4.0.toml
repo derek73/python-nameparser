@@ -4284,10 +4284,13 @@ fields = ["family", "maiden", "middle"]
 
 
 # #397 review: A LINK INSIDE A MAIDEN CLAUSE STAYS IN THE BIRTH NAME
-# (2026-09-20). Two rules, because at this baseline two OTHER changes
-# ride along in the same diffs and one rule has to explain the whole
-# of each: the marker leaving the name (#274) and R1's space-joined
-# rendering of a suffix run v1 wrote with a comma (#436/#437).
+# (2026-09-20; a third rule added 2026-09-22 with rules.md#M2's
+# `deviates: #538` example). Separate rules rather than one, because
+# at this baseline OTHER changes ride along in the same diffs and one
+# rule has to explain the whole of each: the marker leaving the name
+# (#274), R1's space-joined rendering of a suffix run v1 wrote with a
+# comma (#436/#437), and -- for the name added last -- the suffix
+# field v1 put a whole suffix-comma tail in.
 #
 # The third new name, 'Jane Doe nee Puig i Soler', needs no rule here:
 # its diff at this baseline is {family, maiden, middle}, which the
@@ -4331,3 +4334,30 @@ issue = "fix(#274/#436/#437) a clause the generational link ended, and the run i
 # attribute this stop to the wrong reading.
 name_regex = "^Jane Doe nee Puig i III$"
 fields = ["family", "maiden", "middle", "suffix"]
+
+[[change]]
+issue = "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the suffix field, link and all"
+# 'Smith, John, PhD née Puig Mr. - i Soler', which arrives from
+# rules.md#M2 rather than from a report: it is the doc's
+# `deviates: #538` example, and the doc reaches that deviation with a
+# configured ' - ' this corpus does not apply. What the gate sees is
+# the DEFAULT facade reading, where the dash is an ordinary name word
+# like any other.
+#
+# v1 had no maiden markers at all, so everything behind the suffix
+# comma stayed in the suffix: suffix 'PhD née Puig Mr. - i Soler'
+# against the tree's 'PhD', maiden '' against 'Puig Mr. - i Soler'
+# (measured 2026-09-22). One rule for the whole of it -- the marker
+# leaving the name (#274) and, inside what it takes, the link kept in
+# the clause it stands in (#397), which is what puts 'i Soler' on the
+# maiden side of the same two fields.
+#
+# Not a widening of the fix(#274/#397) comma rule above: that one is
+# about a FAMILY comma, where v1 left a middle name behind and the
+# field list says so. This tail leaves v1 a suffix and nothing else.
+#
+# Literal, one name, for the reason those rules give: the shape would
+# be "a maiden marker and a bare letter", which reaches every clause
+# name in the corpora.
+name_regex = "^Smith, John, PhD née Puig Mr\\. - i Soler$"
+fields = ["maiden", "suffix"]

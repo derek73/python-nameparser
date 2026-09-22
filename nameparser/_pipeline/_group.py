@@ -292,9 +292,10 @@ def _join_takes_the_member(view: Sequence[Sequence[int]],
 # reason, and the class test is that rule's own. The take runs BEFORE
 # every join, so the link is still a piece of its own here and the
 # question is asked of the pieces as classify left them -- the same
-# inputs `_group_segment`'s `frozen` loop gives `_name_word_beside`,
-# which is why this calls that predicate rather than restating the
-# class (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+# inputs `_group_segment`'s `frozen` loop gives
+# `_between_name_words`, which is why this calls that predicate
+# rather than restating the class
+# (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
                                   pieces: Sequence[Sequence[int]],
                                   ptags: Sequence[Set[str]],
@@ -311,11 +312,11 @@ def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
     neither is one standing before the generation or the credential a
     clause ends with ('... nee Puig i III', '... i MA'): `hi` is where
     assign's peel begins, so those stand at or past it and
-    `_name_word_beside` refuses them by bound.
+    `_between_name_words` refuses them by bound.
 
     Defined here, beside its one caller, and forward-referencing the
     two predicates it is built out of: `_is_conj_piece` and
-    `_name_word_beside` are the JOIN's, further down this module, and
+    `_between_name_words` are the JOIN's, further down this module, and
     moving them up to meet this would say they belonged to the clause.
 
     `beside` is the caller's memo cell, filled on the first CONNECTIVE
@@ -330,10 +331,7 @@ def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
         return False
     if not beside:
         beside.append(_run_neighbours(pieces, ptags, tokens))
-    return (_name_word_beside(k, -1, lo, hi, pieces, ptags, tokens,
-                              beside[0])
-            and _name_word_beside(k, 1, lo, hi, pieces, ptags, tokens,
-                                  beside[0]))
+    return _between_name_words(k, lo, hi, pieces, ptags, tokens, beside[0])
 
 
 def _maiden_take(pieces: Sequence[Sequence[int]],
@@ -604,9 +602,35 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # marker is never the name word on a link's left, and a delimiter
     # core between the marker and that first word is below `lo` by
     # construction and cannot pass for one either. A core is the TAIL
-    # segment's alone (`extra_suffix_delimiters`, empty by default), so
-    # an ordinary dash is not one and does pass: 'PhD née - i Jones'
-    # keeps maiden '- i Jones' (measured 2026-09-20).
+    # segment's alone (`extra_suffix_delimiters`, empty by default),
+    # and a dash standing where no tail segment can hold it is an
+    # ordinary word at EITHER policy: 'PhD née - i Jones' keeps maiden
+    # '- i Jones' configured and unconfigured alike, there being no
+    # comma to make a tail out of. It takes the tail a suffix comma
+    # builds for the dash to be a core at all, and then the two
+    # policies part company -- 'Smith, John, PhD née - i Jones' keeps
+    # maiden '- i Jones' by default and declines under a configured
+    # ' - ', which is the pair
+    # test_a_core_between_the_marker_and_the_first_word_is_below_lo
+    # holds (all four readings measured 2026-09-22).
+    # NOT theoretical and not a whole claim about cores, both settled
+    # by measurement 2026-09-21 over corpus u cases.py u the property
+    # grids u a 50,925-name generated set with cores, under thirteen
+    # core-bearing policies: 25,536 of 596,392 maiden takes had a core
+    # standing exactly there, so the bound is load-bearing -- and PAST
+    # `lo` a core is no longer below it, is an ordinary index to
+    # `_run_neighbours` (which steps over connectives and nothing
+    # else), and DOES pass for the name word on a link's side. That
+    # reading is pinned as it stands rather than repaired here
+    # (test_a_core_beside_a_link_wrongly_passes_for_a_word_until_538):
+    # `_between_name_words` is asked about a core in 51,072 of 900,023
+    # calls, the answer differs from a core-skipping reading in 8,094
+    # parses over 1,278 texts, and 1,824 of those move `maiden` on 288
+    # texts -- none of them reachable at the default policy, which is
+    # why rules.md#M2 states it with a policy annotation beside the
+    # marker. The repair is `cores` threaded through
+    # three call sites into `_run_neighbours`, which is its own change
+    # (#538, and rules.md#M2 carries it as a `deviates:` example).
     # `peel_start` is where assign's trailing run begins over
     # the pieces as WRITTEN, so the generation or credential a clause
     # ends with is never the name word on a link's right ('... nee Puig
@@ -685,7 +709,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     return seen[m:m + run], seen[m + run:j]
 
 
-#: What `_name_word_beside` reads instead of walking: two arrays over
+#: What `_between_name_words` reads instead of walking: two arrays over
 #: the segment's pieces, giving for each index the nearest piece on
 #: its left and on its right that is NOT a connective -- `-1` and
 #: `len(pieces)` where the run reaches the end. Built by
@@ -700,7 +724,7 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     """The nearest non-connective piece on each side of every index.
 
     EVERY MEMBER OF ONE RUN HAS THE SAME ANSWER, which is the whole
-    of the fix: `_name_word_beside` used to walk the run itself, so a
+    of the fix: `_between_name_words` used to walk the run itself, so a
     name holding a run of n connectives walked it n times and the
     stage went quadratic in the run's length -- measured 2026-09-20,
     `"Josep " + "i " * n + "Rovira"` grew 3.8x per doubling against
@@ -718,11 +742,22 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     WHAT IT COSTS A SHORT NAME, because answering for the whole
     segment is not free where the walk would have stopped at once:
     this call, plus `_is_conj_piece` for the pieces the walk never
-    reached. Measured 2026-09-20 against b9ed1429 -- `Josep Carod i
-    Rovira` 304 -> 307 frames (one call and two more `_is_conj_piece`
-    over its four pieces) and `Jane Doe nee Puig i Soler` 307 -> 312.
-    An O(1) rise per link-bearing name against an unbounded saving:
-    the same name with a run of 64 links goes 6,741 -> 2,652.
+    reached. Re-measured 2026-09-21 on py3.11 against b9ed1429, the
+    whole pair through `tests/v2/test_benchmark.py`'s own
+    `_frames_for` shape -- `Josep Carod i Rovira` 311 -> 313 frames
+    (one call and two more `_is_conj_piece` over its four pieces,
+    less the frame the fold below saved) and `Jane Doe nee Puig i
+    Soler` 315 -> 319. An O(1) rise per link-bearing name against an
+    unbounded saving: the same name with a run of 64 links goes
+    6,741 -> 2,587. (The pair first written here read 304 -> 307 and
+    307 -> 312, with 6,741 -> 2,652 for the run of 64. Re-measured
+    2026-09-22 on py3.11, WHICH OF THOSE REPRODUCE is: the two
+    short-name pairs, neither of them; the run-of-64 pair, its left
+    half only -- b9ed1429 reads 6,741 exactly, while 6048eb5d, the
+    tree the 2,652 was taken on, reads 2,651 here. So the interpreter
+    splice ran through a single arrow, which is what the table
+    `tools/perf/call_count.py`'s own docstring warns about. Every
+    figure above is one interpreter, stated.)
     `tools/perf/call_count.py` is unmoved (parse=406.00,
     facade=443.00) -- its reference name carries no link -- and so are
     `John Smith`, `Smith, John`, `Juan Garcia y Lopez` and `Jane Doe
@@ -736,7 +771,7 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     Dropping either pass's `not` fails
     test_a_connective_piece_counts_toward_the_carve_outs_total
     (mutation-checked 2026-09-20; how the two arrays are READ is
-    checked in `_name_word_beside`, which reads them).
+    checked in `_between_name_words`, which reads them).
     """
     n = len(pieces)
     left = [-1] * n
@@ -807,13 +842,21 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 # when the maiden walk became a second caller: this reads a piece and
 # never edits one, and `_maiden_take` holds its pieces at the wider
 # type the stage's entry point hands it.
-def _name_word_beside(k: int, step: int, lo: int, hi: int,
-                      pieces: Sequence[Sequence[int]],
-                      ptags: Sequence[Set[str]],
-                      tokens: Sequence[WorkToken],
-                      beside: _Beside) -> bool:
-    """Whether such a word stands on the `step` side of the
-    connective piece at `k`.
+def _between_name_words(k: int, lo: int, hi: int,
+                        pieces: Sequence[Sequence[int]],
+                        ptags: Sequence[Set[str]],
+                        tokens: Sequence[WorkToken],
+                        beside: _Beside) -> bool:
+    """Whether such a word stands on EACH side of the connective piece
+    at `k`.
+
+    Both sides in one call because neither caller ever wants one: a
+    connective is placed to join only where a name word stands on both
+    sides of it, so the two answers were always ANDed at the call site
+    and the left one short-circuits the right either way. One frame per
+    generational connective rather than two, which is the whole of the
+    saving -- the left arm below is the old left call and the right arm
+    the old right one, unchanged (#397 follow-up).
 
     `lo` and `hi` bound the name's own words: assign peels the pieces
     below `lo` as its leading titles and those from `hi` up as its
@@ -836,27 +879,44 @@ def _name_word_beside(k: int, step: int, lo: int, hi: int,
     stepping already happened: `_run_neighbours` walked every run once
     for the whole segment, so this reads an index rather than walking
     to it. A SENTINEL OUT OF RANGE is how "the run ran out" arrives --
-    -1 on the left, `len(pieces)` on the right -- and the bound test
+    -1 on the left, `len(pieces)` on the right -- and each bound test
     below turns it into False, exactly as the walk did when it ran
     here and stopped at the same place. `lo` is never negative and
     `hi` never past `len(pieces)`, so neither sentinel can pass the
-    bound, and the two piece tests are never asked about an index
-    that is not one.
+    bound, and the piece tests are never asked about an index that is
+    not one.
 
-    Mutation-checked 2026-09-20, each side by a NAMED test: reading
-    the left array for both sides fails
-    test_a_connective_with_nothing_to_its_right_does_not_join, and
-    the right array for both fails
-    test_a_leading_title_on_the_left_is_no_name_word. SWAPPING the
-    two arrays outright is an EQUIVALENT mutant and no test fails:
-    both callers ask for a name word on each side and AND the two
-    answers, so which array answers which side is not a question the
-    conjunction can see.
+    Mutation-checked 2026-09-21, every arm of both sides by a NAMED
+    test. Reading the LEFT array for the right arm too fails
+    test_a_connective_with_nothing_to_its_right_does_not_join;
+    the RIGHT array for the left arm too fails
+    test_a_leading_title_on_the_left_is_no_name_word.
+    The bounds, WIDENED to the whole segment rather than dropped --
+    dropping the right one indexes past the pieces on the sentinel and
+    raises instead of failing a test -- fail
+    test_the_marker_is_not_the_name_word_on_the_links_left (left) and
+    test_the_right_hand_test_reads_the_peel_not_the_suffix_piece
+    (right). Either piece test on the LEFT fails
+    test_a_credential_or_honorific_mid_name_is_no_name_word_either;
+    either on the RIGHT fails
+    test_a_credential_or_honorific_mid_name_on_the_right_too, which is
+    the row the fold asked for: while this was two per-side calls a
+    mutation hit both sides at once and the left-hand rows covered for
+    the right-hand ones, whose own rows stand at the END of the name
+    where `hi` refuses them first. SWAPPING the two arrays outright is
+    an EQUIVALENT mutant and no test fails: the two arms are ANDed, so
+    which array answers which side is not a question the conjunction
+    can see.
     """
-    j = beside[0][k] if step < 0 else beside[1][k]
-    return (lo <= j < hi
-            and not is_suffix_piece(pieces[j], ptags[j], tokens)
-            and not is_title_piece(pieces[j], ptags[j], tokens))
+    left = beside[0][k]
+    if not (lo <= left < hi
+            and not is_suffix_piece(pieces[left], ptags[left], tokens)
+            and not is_title_piece(pieces[left], ptags[left], tokens)):
+        return False
+    right = beside[1][k]
+    return (lo <= right < hi
+            and not is_suffix_piece(pieces[right], ptags[right], tokens)
+            and not is_title_piece(pieces[right], ptags[right], tokens))
 
 
 def _group_segment(seg: tuple[int, ...], additional: int,
@@ -1126,10 +1186,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # per member -- quadratic in its length, 3.8x per
                 # doubling measured at `b9ed1429`.
                 beside = _run_neighbours(pieces, ptags, tokens)
-            if not (_name_word_beside(k, -1, lo, hi, pieces, ptags, tokens,
-                                      beside)
-                    and _name_word_beside(k, 1, lo, hi, pieces, ptags,
-                                          tokens, beside)):
+            if not _between_name_words(k, lo, hi, pieces, ptags, tokens,
+                                       beside):
                 frozen.add(piece[0])
         total = sum(_is_rootname(p, t, tokens)
                     for p, t in zip(pieces, ptags)

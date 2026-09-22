@@ -1517,6 +1517,31 @@ def test_a_credential_or_honorific_mid_name_is_no_name_word_either(
         ["Josep", "Lluis", "Mr. i Rovira"]]
 
 
+def test_a_credential_or_honorific_mid_name_on_the_right_too() -> None:
+    # the MIRROR of the pair above, and the two rows that make the
+    # right-hand piece tests mean something: the credential and the
+    # honorific rows further up stand at the END of the name, where
+    # `hi` refuses them before either piece test is asked, so with
+    # those rows alone the right-hand tests could be deleted and no
+    # test would fail (measured 2026-09-21 by mutation, which is what
+    # asking both sides in ONE call made visible -- a per-side call
+    # mutated both sides at once and the left-hand rows covered it).
+    # Mid-name on the RIGHT is inside both bounds, so only the piece
+    # tests keep the link from joining a credential or a title.
+    suffix = _grouped("Josep Lluis i Jr. Rovira", lexicon=_LINK_LEX)
+    assert _piece_texts(suffix) == [
+        ["Josep", "Lluis", "i", "Jr.", "Rovira"]]
+    title = _grouped("Josep Lluis i Mr. Rovira", lexicon=_LINK_LEX)
+    assert _piece_texts(title) == [
+        ["Josep", "Lluis", "i", "Mr.", "Rovira"]]
+    assert _piece_texts(_grouped("Josep Lluis i Jr. Rovira",
+                                  lexicon=_PLAIN_LEX)) == [
+        ["Josep", "Lluis i Jr.", "Rovira"]]
+    assert _piece_texts(_grouped("Josep Lluis i Mr. Rovira",
+                                  lexicon=_PLAIN_LEX)) == [
+        ["Josep", "Lluis i Mr.", "Rovira"]]
+
+
 def test_the_walk_looks_past_a_run_of_connectives() -> None:
     # a RUN joins as one, so the word the condition is about is the
     # first one past the run, not the connective beside the link.
@@ -1717,7 +1742,7 @@ def test_a_clause_link_with_nothing_on_its_right_still_ends_it(
 
 def test_a_generation_on_the_links_right_is_no_name_word() -> None:
     # the second control, refused by CLASS: 'jr' is suffix vocabulary,
-    # so `_name_word_beside` declines it wherever it stands.
+    # so `_between_name_words` declines it wherever it stands.
     out = _grouped("Jane Doe née Puig i jr", lexicon=_LINK_LEX)
     assert _maiden_texts(out) == ["Puig"]
     plain = _grouped("Jane Doe née Puig i jr", lexicon=_PLAIN_LEX)
@@ -1763,6 +1788,64 @@ def test_the_marker_is_not_the_name_word_on_the_links_left() -> None:
     assert _piece_texts(out) == [["Jane", "Doe", "née i Soler"]]
     plain = _grouped("Jane Doe née i Soler", lexicon=_PLAIN_LEX)
     assert _maiden_texts(plain) == ["i", "Soler"]
+
+
+def test_a_core_between_the_marker_and_the_first_word_is_below_lo(
+) -> None:
+    # A delimiter core is TAIL-segment structure that group() drops
+    # after this pass, so it is never a word of the clause -- and
+    # between the marker and the first word it is below `lo`, which
+    # the bound refuses without the piece tests ever being asked.
+    # Reachable, not theoretical: measured 2026-09-21 over corpus u
+    # cases.py u the property grids u a 50,925-name generated set with
+    # cores, under thirteen core-bearing policies, 25,536 of 596,392
+    # maiden takes had a core standing there.
+    out = _grouped("Smith, John, PhD née - i Jones", policy=_DASH,
+                   lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == []
+    # and the control that says the CORE is doing it: with no
+    # delimiter configured the dash is an ordinary word, so the link
+    # has a name word on its left and the clause keeps the run.
+    plain = _grouped("Smith, John, PhD née - i Jones", lexicon=_LINK_LEX)
+    assert _maiden_texts(plain) == ["-", "i", "Jones"]
+
+
+def test_a_core_beside_a_link_wrongly_passes_for_a_word_until_538(
+) -> None:
+    """A KNOWN-WRONG reading, pinned so the repair has to move it.
+
+    rules.md#M2 gives the link exception a name word on each side,
+    and a delimiter core is structure rather than a name word -- so
+    the clause below should end where its separator-less twin ends.
+    It does not. Update this test when #538 lands: the assertion
+    beneath the first parse is the deviation, not the contract, and
+    rules.md#M2's `deviates: #538` example is its other half.
+    """
+    # WHAT IS NOT TRUE OF A CORE PAST `lo`, pinned as it reads rather
+    # than as it ought to: inside the clause a core is an ordinary
+    # index to `_run_neighbours`, which steps over CONNECTIVES and
+    # nothing else, so it stands as the name word on the link's left
+    # and the clause runs on past a title it would otherwise stop at.
+    # `_between_name_words` is asked about a core on one side or the
+    # other in 51,072 of 900,023 calls over the population above, and
+    # the answer differs from a core-skipping reading in 8,094 parses
+    # (1,278 texts); 1,824 of those move the `maiden` field, on 288
+    # texts. None of the 288 is reachable at the default policy,
+    # `extra_suffix_delimiters` being empty there -- so the one of
+    # them rules.md#M2 now carries as a `deviates: #538` example (this
+    # row's first text) enters corpus_rules.jsonl as a name the gate
+    # parses with the DEFAULT facade, where it moves for the link fix
+    # and not for this. Reported, not fixed: the repair is `cores`
+    # threaded through three call sites into `_run_neighbours`, not a
+    # one-liner (#538).
+    out = _grouped("Smith, John, PhD née Puig Mr. - i Soler",
+                   policy=_DASH, lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig", "Mr.", "i", "Soler"]
+    # the same clause with the core taken out of it: the title IS the
+    # word on the link's left and refuses, so the clause ends there.
+    without = _grouped("Smith, John, PhD née Puig Mr. i Soler",
+                       policy=_DASH, lexicon=_LINK_LEX)
+    assert _maiden_texts(without) == ["Puig", "Mr."]
 
 
 def test_a_marker_with_nothing_after_it_declines_before_the_bound(
