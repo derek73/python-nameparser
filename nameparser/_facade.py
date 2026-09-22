@@ -32,7 +32,8 @@ import nameparser._render as _render
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
 from nameparser._lexicon import _normalize
 from nameparser._parser import Parser
-from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG, ParsedName,
+from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG,
+                               UNJOINED_CONJUNCTION_TAG, ParsedName,
                                Role, Token)
 
 _V2_FIELD = {"first": "given", "last": "family"}  # v1 name -> v2 name
@@ -521,7 +522,12 @@ class HumanName:
         self._resolve()
         if UNCLASSIFIED_TAG in tok.tags:
             return _render._reads_as_conjunction(tok.text, self._lexicon)
-        return "conjunction" in tok.tags
+        # #461: a connective with nothing in its part to join is not
+        # acting as one. The parse decided that and marked the token,
+        # and this reads the same mark the core's initials() reads, so
+        # the two views cannot disagree about it.
+        return ("conjunction" in tok.tags
+                and UNJOINED_CONJUNCTION_TAG not in tok.tags)
 
     def _split_last(self) -> tuple[list[str], list[str]]:
         # rules.md#R2: "a name part whose every word is particle
@@ -633,17 +639,37 @@ class HumanName:
                                  for tok in tokens)
         initials = []
         for word, conjunction in zip(words, conjunctions, strict=True):
-            if not (self._is_particle(word) or conjunction) or firstname:
+            # #461: the conjunction filter reaches EVERY group; only
+            # the particle filter is exempted for the given group.
+            if not conjunction and (firstname or not self._is_particle(word)):
                 initials.append(word[0])
         if len(initials) > 0:
             return self.initials_separator.join(initials)
         # Return '' (never empty_attribute_default, which may be None)
         # when a part has no initialable words. group_initials below
         # decides what that means: one such element among others is
-        # dropped; a group that yields nothing AND is wholly particles
-        # initials its words; and a group that yields nothing for any
-        # other reason -- a conjunction, or particles mixed with one --
-        # is still dropped ("Vega, Santa de y" drops its middle).
+        # dropped (`Alex van Johnson`'s `van`); a group that yields
+        # nothing AND is wholly particles initials its words; and a
+        # group that yields nothing for any other reason is still
+        # dropped.
+        #
+        # No group of a PARSED name reaches that third case any more,
+        # and #461 is why: any word that is neither a particle nor a
+        # connective initials, so a group reaching it is all particles
+        # and connectives; not being wholly particles it holds a
+        # connective; and that connective's part holds nothing but
+        # particles and connectives for it to join, so the mark
+        # readmits it and the group yields it. Measured 2026-09-20,
+        # zero such groups over 95,119 names -- every corpus and case
+        # text plus the review's generated grid -- where "Vega, Santa
+        # de y" was the example until #461 and now initials 'S. y. V.'.
+        #
+        # What still reaches it is the paths with no parse to read,
+        # where a connective is answered from the vocabulary and
+        # carries no mark: HumanName(first="Santa", middle="de y",
+        # last="Vega").initials() gives 'S. V.', the pre-#461 answer,
+        # and so does a subclass overriding middle_list with the same
+        # words (tests/v2/test_facade.py pins both).
         return ""
 
     def _initials_lists(self) -> tuple[list[str], list[str], list[str]]:

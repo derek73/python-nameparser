@@ -1820,6 +1820,41 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         # measured. The winners are pinned in _CROSS_RULE_WINNERS.
         "john e smith": ("_initials",),
         "john e jones": ("_initials",),
+        # #461's eleven, adjudicated 2026-09-20, below #528's pair and
+        # contested against the same rule for the same structural
+        # reason: `fix(#461) a connective holding its part alone
+        # contributes an initial` and `fix(initials-per-word) a
+        # connective run initials each word` both carry
+        # `fields = ["_initials"]`, so neither is narrower,
+        # `precedes_narrower` has no narrower rule to name, and file
+        # order is the whole decision. 'Carod y de Rovira i' carries
+        # TWO losers -- the particle-chain per-word rule reaches it
+        # through 'de Rovira' -- and one row covers both, as this
+        # dict's header says a row does.
+        #
+        # The ARGUMENT for the winner, and it is the same on all
+        # eleven: 1.4.0 rendered each of these names with the SAME
+        # granularity the tree does ('J. G.', never 'J G.'), so the
+        # per-word grouping moved nothing on them; what moved is the
+        # letter count, the connective holding its part alone
+        # contributing an initial again. Measured 2026-09-20 against
+        # the 1.4.0 wheel and against the parent 46651750: every one
+        # of the eleven AGREED with 1.4.0 before this bundle and
+        # diverges from it now, which no rule about a 2.0.0 rendering
+        # change can be describing. Deleting or narrowing the #461
+        # rule hands them back to the grouping rule silently, which is
+        # the handover these rows exist to catch.
+        "Carod y de Rovira i": ("_initials",),
+        "Garcia y Lopez": ("_initials",),
+        "John e Smith": ("_initials",),
+        "John e Smith III": ("_initials",),
+        "John e Smith, III": ("_initials",),
+        "John y Jane": ("_initials",),
+        "Jose e Maria": ("_initials",),
+        "Juan y Garcia": ("_initials",),
+        "Lt.Gov. juan e garcia": ("_initials",),
+        "john e jones, III": ("_initials",),
+        "juan y garcia": ("_initials",),
         # #289/#516's one, adjudicated 2026-09-18, below both cohorts
         # above for the same provenance reason. '田中 太郎, MA' entered
         # the corpus with this arc's own case row (radar tier, a

@@ -299,9 +299,10 @@ ambiguity is recorded and it becomes part of the surname — under any
 A single letter written against the name's own case is an initial and
 one written with it is the connective — but a name written wholly in
 one case, all upper or all lower, says nothing either way, and this is
-the set that decides it there. ``e`` is the one entry shipped: a bare
-``E`` initial is common where an ``e`` between two surnames is rare, and
-``y`` runs the other way, so ``y`` joins even written as a bare capital.
+the set that decides it there. ``e`` and ``i`` are the two entries
+shipped: a bare ``E`` or ``I`` initial is common where those letters
+between two surnames are rarer, and ``y`` runs the other way, so ``y``
+joins even written as a bare capital.
 
 .. doctest::
 
@@ -328,6 +329,16 @@ does in Spanish, take it out and the connective reading comes back:
     >>> lex = Lexicon.default().remove(conjunctions_ambiguous={"e"})
     >>> Parser(lexicon=lex).parse("jose e maria santos").given
     'jose e maria'
+
+If your data is Catalan or Polish, where ``i`` links two surnames the
+way ``y`` does in Spanish, take that one out instead and the link
+joins in a one-case name too:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().remove(conjunctions_ambiguous={"i"})
+    >>> Parser(lexicon=lex).parse("josep carod i rovira").family
+    'carod i rovira'
 
 If your data is Dutch, where a bare single letter is an initial and
 never a connective, add the other one instead:

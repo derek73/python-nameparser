@@ -34,8 +34,11 @@ _LEX = Lexicon(
     # test_cyrillic_initial_outranks_the_conjunction pins is one that
     # really ships and the reader can check against the defaults. The
     # copies are local: this file never reads the shipped sets.
-    conjunctions=frozenset({"and", "e", "y", "й"}),
-    conjunctions_ambiguous=frozenset({"e"}),
+    # 'i' (#397) is the second marked entry and the only one that is
+    # ALSO in suffix_words here, which is what makes the collision cell
+    # below reachable.
+    conjunctions=frozenset({"and", "e", "i", "y", "й"}),
+    conjunctions_ambiguous=frozenset({"e", "i"}),
     bound_given_names=frozenset({"abdul"}),
     # "née" and the unaccented "nee" are both shipped (English writes
     # the French marker either way, AGENTS.md); a clause-truncation
@@ -201,6 +204,47 @@ def test_emptying_the_subset_restores_joining_for_e() -> None:
     out = _classified_with("jose e maria santos", lex)
     assert "conjunction" in _tags(out, "e")
     assert "initial" not in _tags(out, "e")
+    assert out.ambiguities == ()
+
+
+def test_the_catalan_link_reads_as_an_initial_in_a_one_case_name(
+) -> None:
+    # #397's letter through #527's fork, and the reason it ships
+    # marked: a bare I initial is as common as a bare E, so a name
+    # with no case evidence reads the letter as an initial and says
+    # so. rules.md#P3 says the marked set is where that answer lives.
+    for text in ("josep carod i rovira", "JOSEP CAROD I ROVIRA"):
+        out = _classified(text)
+        letter = "i" if text.islower() else "I"
+        assert "initial" in _tags(out, letter), text
+        assert "conjunction" not in _tags(out, letter), text
+        kinds = [a.kind for a in out.ambiguities]
+        assert kinds == [AmbiguityKind.CONJUNCTION_OR_INITIAL], text
+        assert repr(letter) in out.ambiguities[0].detail, text
+
+
+def test_the_catalan_link_joins_where_the_writing_speaks() -> None:
+    # the mixed-case half, unchanged and unreported: a lowercase
+    # letter among capitals is the connective and a bare capital is
+    # an initial, exactly as for 'e'.
+    lower = _classified("Josep Carod i Rovira")
+    assert "conjunction" in _tags(lower, "i")
+    assert "initial" not in _tags(lower, "i")
+    upper = _classified("Josep Carod I Rovira")
+    assert "initial" in _tags(upper, "I")
+    assert "conjunction" not in _tags(upper, "I")
+    assert lower.ambiguities == () and upper.ambiguities == ()
+
+
+def test_removing_the_link_from_the_subset_restores_joining() -> None:
+    # the Catalan/Polish removal recipe docs/customize.rst teaches,
+    # exercised: drop 'i' from the marked subset and a one-case name
+    # joins it again, silently, which is what a ca/pl corpus wants.
+    lex = dataclasses.replace(
+        _LEX, conjunctions_ambiguous=_LEX.conjunctions_ambiguous - {"i"})
+    out = _classified_with("josep carod i rovira", lex)
+    assert "conjunction" in _tags(out, "i")
+    assert "initial" not in _tags(out, "i")
     assert out.ambiguities == ()
 
 

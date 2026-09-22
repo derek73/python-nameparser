@@ -517,6 +517,23 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     The joined part is ONE name word wherever another rule counts
     them, so a rule taking "one name word" takes the whole join and
     never half of it.
+    A connective counts as a name word wherever this rule counts them,
+    whatever else the vocabulary says the word is, where it is placed
+    to join. A word can be a connective and a generation at once — the
+    Catalan link is also the roman numeral one — and counting it as
+    the generation would let a connective raise the bar for its own
+    join, so the shortest linked name, which is the commonest one,
+    would be the only one that failed to link; while counting it as a
+    connective where it joins nothing lowers the bar for a different
+    connective's join instead.
+    A connective that is also generational vocabulary joins only where
+    a name word stands on each side of it — a word the rest of the
+    parse reads as a name word rather than as a generation, a
+    credential or an honorific, looked for past any run of
+    connectives standing between. A connective with nothing to its right is connecting
+    nothing, and a word of that vocabulary ending a name, or standing
+    before the credential a name ends with, is the generation it also
+    spells.
     Both questions this rule asks of a name — how many words it has,
     and whether it is written in one case — are asked of the name's
     OWN words: a maiden marker taken as one, and the words it takes
@@ -544,13 +561,20 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "Juan & Garcia"             →  given="Juan & Garcia"
       "Mr. Jack and Jill"         →  family="Jack and Jill"
       "Mr. Jack Jill"             →  given="Jack"
+      "Josep Carod i Rovira"      →  family="Carod i Rovira"
+      "Carod i Rovira, Josep"     →  family="Carod i Rovira"
+      "Josep i Rovira"            →  middle="i"
+      "John Quincy Smith i"       →  suffix="i"
+      "Carod i"                   →  suffix="i"
+      "Josep Lluis Carod i III"   →  suffix="i III"
+      "Carod y de Rovira i"       →  middle="y"
     Both exceptions are about the written FORM, not the word: the
     three-word carve-out counts letters, so a symbol connective joins
     at any length, and it reaches every single-letter connective the
-    vocabulary holds — Cyrillic и/і/й and Arabic و as well as y and
-    e. The initial reading counts letters too, and asks one more
-    question of them: a letter with no case at all (و) can be written
-    against nothing, so it never reads as an initial. A Cyrillic
+    vocabulary holds — Catalan i and Cyrillic и/і/й and Arabic و as
+    well as y and e. The initial reading counts letters too, and asks
+    one more question of them: a letter with no case at all (و) can be
+    written against nothing, so it never reads as an initial. A Cyrillic
     capital has case but is not the shape an initial is written in —
     Cyrillic abbreviates with a dotted letter — so in a name of more
     than one case it joins, the reading #267 blessed, and in a name
@@ -558,18 +582,20 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     letter.
     Which single letters a tradition actually wants joined differs by
     language, and the marked set is where that answer lives: "y" is
-    the commonest Hispanic compound and stays out of it, "e" is a
-    common bare initial and is the one entry shipped. A caller with
-    Portuguese data removes it; a caller with Dutch data adds "y".
+    the commonest Hispanic compound and stays out of it, while "e" and
+    Catalan "i" are both common bare initials and are the two entries
+    shipped. A caller with Portuguese data removes "e"; a caller with
+    Catalan or Polish data removes "i"; a caller with Dutch data adds
+    the letter "y" to it.
     The initial reading is visible beyond the fields, on the two
     derived views: parse("john e smith").initials() gives "j. e. s."
     and .capitalized() gives "John E Smith", where the connective
     reading gave "j. s." and "John e Smith" — a connective
     contributing no initial (R3) and keeping its lowercase (R4),
-    where an initial does neither. The v1 facade's initials() still
-    reads the letter by vocabulary and written shape rather than by
-    the parse's reading, so HumanName("john e smith").initials()
-    stays "j. s." for now; decisions.md#P3 records the split.
+    where an initial does neither. The v1 facade's initials() reads
+    the same parse, so HumanName("john e smith").initials() is
+    also "j. e. s."; #528 closed the split and decisions.md#P3
+    records it.
     Accepted: two 1.4.0 parity breaks, one in each direction. A bare
     capital in a name written wholly in upper case no longer reads as
     an initial, so "JUAN GARCIA Y LOPEZ" joins where 1.4.0 and
@@ -609,7 +635,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4, S2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -1077,7 +1103,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P5, P6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P3, P5, P6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -1238,6 +1264,13 @@ M2. Rationale: a maiden marker announces that what follows it is the
     credential, and never the first word after the marker — as the
     maiden name, and
     the marker itself is dropped.
+    One suffix word does not stop it. Where such a word is also a
+    connective standing between two name words of the clause (P3),
+    a link inside the birth name does not end it, and the words on
+    both sides of the link are the maiden name. A link with the
+    marker on one side of it, or with the trailing run on the
+    other, is joining nothing there and ends the clause like any
+    other suffix word.
     Those last two stops are each asked TWICE for one reason: the
     count of words to spare includes the very words the marker
     removes, so a reading taken over the name as written can be
@@ -1317,6 +1350,9 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Doe, Dr. nee Smith MA"     →  maiden="Smith MA"  · boundary
       "Berg, abdul nee Jones MA"  →  maiden="Jones MA"  · boundary
       "Jane Doe nee Smith DO DO"  →  maiden="Smith DO DO"  · boundary
+      "Jane Doe nee Puig i Soler" →  maiden="Puig i Soler"
+      "Jane Doe nee Puig i"       →  maiden="Puig"  · boundary
+      "Jane Doe nee Puig i"       →  suffix="i"  · boundary
       "Jane Doe (nee Smith MA)"   →  maiden="Smith MA"
       "Jane Doe (nee Smith Ma)"   →  maiden="Smith Ma"
       "Jane Doe (nee Smith) MA"   →  suffix="MA"
@@ -1341,7 +1377,9 @@ M2. Rationale: a maiden marker announces that what follows it is the
     Accepted: the marker reads the words as written, so a suffix word
     inside the maiden name ends it even where a connective beside it
     would have bound the two into one name word (P3); the connective
-    then builds a family name out of what is left.
+    then builds a family name out of what is left. A suffix word
+    that IS the connective is the exception stated above, and ends
+    the clause only where it joins nothing.
       "Jane née Jr y Jones"            →  maiden=""
     Accepted: a bare acronym the reading declines is maiden text all
     the same — the writing decides this one (S2), and the count such
@@ -1907,8 +1945,15 @@ A1. Rationale: a caller can only act on doubt that is reported.
     Parsing never fails on any input: where the text's structure or
     a word's reading is genuinely uncertain, the parse completes on
     the best reading and carries an ambiguity report naming the
-    doubt.
+    doubt. A report names the reading the parse took, so a report
+    whose fork the rest of the parse then resolved to NEITHER branch
+    is withdrawn rather than carried beside a reading it
+    contradicts: a letter both a connective and an initial, read as
+    the generation it also spells, is neither of the two the
+    connective-or-initial fork offered, and only that fork's report
+    goes — the generation's own stands.
       "Van Johnson"               →  ambiguities=("particle-or-given",)
+      "JOHN QUINCY SMITH I"       →  ambiguities=("suffix-or-name",)
       "Jane „JD Smith"            →  ambiguities=("unbalanced-delimiter",)
       "John Smith, MD, Bart"      →  ambiguities=("comma-structure",)
       "John Smith"                →  ambiguities=()  · boundary
@@ -1916,7 +1961,7 @@ A1. Rationale: a caller can only act on doubt that is reported.
     segmenter's own error, which propagates — a user-code error is
     not a content error. (Needs the optional extra to demonstrate,
     so no example line.)
-    implemented: nameparser/_pipeline/_state.py
+    history: decisions.md#A1 · interacts: P3, S2 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_state.py
 
 A2. Rationale: an input with no name content names nobody, and
     saying so beats inventing fields from punctuation.
@@ -2009,18 +2054,21 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     family word; titles, suffixes, particles and nicknames
     contribute nothing — except the particles of a part whose every
     word is one, which are not acting as particles there (R2) and
-    initial like any other name word. A CONJUNCTION never initials,
-    so a base that is one contributes nothing even then. That
-    carve-out is stated for the middle and base family words; the
-    GIVEN group is not settled here. A conjunction written among
-    given names does initial today, and this document does not yet
-    say whether it should — because two of its own rules answer
-    differently and neither answer has been taken: this rule counts
-    name words, while P3 makes a connective and its neighbours ONE
-    name word, so a joined given group owes one initial under P3 and
-    one per joined name word under the carve-out. Until that is
-    decided the given group's answer is pinned-but-undocumented
-    rather than specified, and no line below asserts it.
+    initial like any other name word. A connective contributes
+    nothing where it is joining: a part holding another name word for
+    it to join — the part's working particles set aside — is a part
+    where the connective is doing a connective's work and is no name
+    word of its own. A part holding nothing else is a part where it
+    is joining nothing, and there it initials like any other name
+    word, agreeing with the base.
+    The question is asked of the WHOLE PART, never of a word count. A
+    part of two words where one is the connective is still a part
+    where it joins — the base of "Jon Dough and" is "Dough and" and
+    its initials are "J. D." — and a part of three is no different.
+    One rule for every group. A connective written among given names
+    is a connective there too and contributes nothing where it joins,
+    so the group that was pinned-but-undocumented is now specified by
+    the same sentence as the other two.
     Which words a group contributes is one question; the ORDER they
     contribute in is a second, and its answer is the field's. Each
     group initials in the order its field reads — written order,
@@ -2040,7 +2088,11 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     A family that is ALL particles therefore contributes its words
     rather than nothing: they are the base (R2), so they initial.
       "Juan van der"              →  initials="J. v. d."
-      "Juan de y"                 →  initials="J."
+      "Juan de y"                 →  initials="J. y."
+      "John and Jane Smith"       →  initials="J. J. S."
+      "Duke of Edinburgh"         →  initials="D. E."
+      "Juan Velasquez y Garcia"   →  initials="J. V. G."
+      "Jon Dough and"             →  initials="J. D."
     Accepted: this rule reads a part the parser read. A field set as
     raw text after the parse carries no reading, and this view is
     handed no vocabulary to supply one — it takes a format spec and
@@ -2072,23 +2124,17 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     shapes need a field edited after the parse, or a rendering the
     other view does not have. decisions.md#R3 carries what all of it
     costs and where it is pinned.
-    Accepted: the unsettled given-group answer above is neither rare
-    nor hypothetical — 26 of the corpus names carry a conjunction
-    among the given names (measured 2026-09-13; recompute by parsing
-    the deduped corpus*.jsonl glob and keeping every name with a
-    GIVEN-role token tagged "conjunction"), every one of them
-    reachable from the default vocabulary, and it has initialed since
-    1.4.0. It carries no marked deviation, for the reason that
-    mechanism exists: a
-    marker states the INTENDED value, and one name, "John and Jane
-    Smith", has four candidates. Today gives "J. a. J. S."; the
-    carve-out read as written gives "J. J. S."; P3's one-name-word
-    join gives just "J. S."; and 1.4.0 gave "J a J. S.". Marking it
-    would put an invented value in a normative document and hold
-    the parser to it. #461 asks the neighbouring question about the
-    all-particle base and does not own this one; decisions.md#R2
-    carries the population and the measurements.
-    history: decisions.md#R3 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py
+    Accepted: the given group's answer is a 1.4.0 parity break, and
+    a second one in the other direction sits beside it. A connective
+    among given names contributed an initial from 1.4.0 until this
+    rule reached it, so "John and Jane Smith" gives "J. J. S." where
+    every release through 2.3 gave "J. a. J. S." and 1.4.0 gave the
+    run-together "J a J. S."; and a connective holding a part alone
+    now contributes one, so "محمد و علي" gives "م. و. ع." on both
+    views, which is 1.4.0's own answer restored. The rule is one
+    sentence for all three groups, and taking it is what made the
+    four candidate answers this group once had into one.
+    history: decisions.md#R3 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py, nameparser/_pipeline/_post_rules.py
 
 R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
@@ -2098,9 +2144,21 @@ R4. Rationale: case repair is a display concern, applied only on
     convention (McDonald), not only ordinary word-by-word casing, and
     a part whose every word is particle vocabulary is repaired as
     ordinary name words, since none of them is doing a particle's
-    work there (R2). A CONJUNCTION keeps its lowercase even inside
-    such a part, being no name word in any part — the carve-out R3
-    states for initials. A name already written the way repair would
+    work there (R2). A CONNECTIVE the parse placed among the name
+    words keeps its lowercase wherever it stands there, including
+    inside a part whose other words the unjoined mark has turned into
+    ordinary name words; one the parse read as the generation it also
+    spells is not a connective of this name at all, and is repaired
+    as the generation it was read as. That is this rule's own reading
+    and not a borrowing from R3: a connective that initials because
+    it joins nothing is still not written the way a name is written,
+    while a generation is written the way a generation is written.
+    The GENERATION is what that clause turns on and not the field:
+    a connective the suffix field merely holds, which the suffix
+    vocabulary does not know, was read as no generation and keeps its
+    lowercase there like any other connective — the third part of a
+    comma form is the shape that puts one there.
+    A name already written the way repair would
     write it comes back unchanged, measured by repair's own
     conventions rather than by the bearer's. A spelling written in a
     single case is repaired even where its bearer meant it, because
@@ -2111,6 +2169,10 @@ R4. Rationale: case repair is a display concern, applied only on
       "ANH DO"                    →  capitalized="Anh Do"
       "anh van do"                →  capitalized="Anh Van Do"
       "john smith phd"            →  capitalized="John Smith Ph.D."
+      "John Quincy Smith i"       →  capitalized_forced="John Quincy Smith I"
+      "Carod i"                   →  capitalized_forced="Carod I"
+      "Smith, John, and"          →  capitalized_forced="John Smith and"
+      "Doe, Jane, and Jr."        →  capitalized_forced="Jane Doe and Jr."
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
     Accepted: the clause reaches a part the parser read. A field
     spliced in as raw text after the parse carries no reading of its

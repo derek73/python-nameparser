@@ -880,12 +880,57 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # has no third token for the regex to require.
     "fix(N3) a nickname-led name with a trailing suffix keeps the suffix in `suffix`":
         ("'Smitty' Jones", "Jones Jr.", "'Smitty' Dr. Jones"),
-    # #451's remaining NOT-WANTED rule, literal-anchored to one corpus
-    # name: a three-token name with a rootname before or after is a
-    # different diff shape (or, for 'Carod i Rovira' and 'Lluis Carod
-    # i', no diff at all -- #397's still-open enhancement, not a
-    # 1.4-to-2.x regression).
-    "fix(#397)": ("Carod i Rovira", "Josep Carod i Rovira", "Lluis Carod i"),
+    # #451's remaining literal-anchored rule, now stating a DECIDED
+    # boundary rather than an open enhancement: a three-token name
+    # with a rootname before or after is a different diff shape
+    # ('Carod i Rovira' and 'Josep Carod i Rovira' now join and have
+    # fix(#397) rules of their own), and 'Lluis Carod i' is the same
+    # both-sides boundary one word longer, diffing nothing. The probe
+    # is unchanged: none of the three may be claimed by a regex
+    # anchored to the two-word shape.
+    #
+    # KEYED on the retitled issue rather than on the bare 'fix(#397)'
+    # it carried until 2026-09-20. The keys are `issue` SUBSTRINGS and
+    # there are three fix(#397) rules now; the bare key would apply
+    # this list to the join rule below, which claims 'Josep Carod i
+    # Rovira' on purpose.
+    "fix(#397) accepted":
+        ("Carod i Rovira", "Josep Carod i Rovira", "Lluis Carod i"),
+    # The join rule's own wall, and every probe is a name the join
+    # must NOT reach for a different reason: 'Josep i Rovira' is three
+    # words and under rules.md#P3's carve-out; 'Carod i' and 'John
+    # Quincy Smith i' have no name word to the link's right, the
+    # accepted cost the rule above states; 'Josep Lluis Carod i III'
+    # and 'Josep Lluis Carod i V' end in a generation run and are
+    # claimed by fix(#436/#437) and the suffix-routing rule beside it.
+    # A rule keyed on the SHAPE -- a single letter between two name
+    # words -- reaches all five.
+    "fix(#397) the Catalan/Polish link joins":
+        ("Josep i Rovira", "Carod i", "John Quincy Smith i",
+         "Josep Lluis Carod i III", "Josep Lluis Carod i V",
+         "Lluis Carod i"),
+    # The one-case report rule: mixed-case spellings are where the
+    # writing decides the letter, and the join moved their ROLES
+    # instead, so a regex reaching one would absorb the join's own
+    # regression. 'JUAN GARCIA Y LOPEZ' is the unmarked letter in the
+    # same one-case position, which emits no report at all.
+    "fix(#397) the Catalan link reports":
+        ("Josep Carod i Rovira", "Carod i Rovira, Josep",
+         "Josep Lluis Carod i Rovira", "JUAN GARCIA Y LOPEZ"),
+    # #461's two halves, each probed with the other half's names and
+    # with the boundary the rule is keyed on. The criterion is the
+    # PART and never a word count: 'Jon Dough and' has base 'Dough
+    # and' and keeps 'J. D.', 'Juan Velasquez y Garcia' keeps 'J. V.
+    # G.', and 'Juan Garcia Lopez y' is the trailing spelling of the
+    # same -- none of the three moves, measured 2026-09-20 against the
+    # parent 46651750, so no #461 rule may claim any of them.
+    "fix(#461) a connective holding its part alone":
+        ("Jon Dough and", "Juan Velasquez y Garcia",
+         "Juan Garcia Lopez y", "John and Jane Smith",
+         "Duke of Edinburgh"),
+    "fix(#461) a connective with a name word beside it":
+        ("Jon Dough and", "Juan Velasquez y Garcia",
+         "Juan Garcia Lopez y", "Juan de y", "johnny y"),
     # #342's rule is a literal alternation of five names, so a
     # widening reaching only names the corpora lack would leave
     # _CORPUS_CLAIMS unmoved. These probes are the wall, and every one
@@ -1018,6 +1063,29 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
         ("Smith, MD PhD", "John Smith, MD PhD", "Smith, MD, PhD",
          "Smith, MD - PhD - FACS", "John Doe, MD - PhD - FACS"),
+    # #397's maiden-clause rules, at every baseline. The key is a
+    # substring of BOTH spellings -- the bare 'fix(#397)' one at the
+    # 2.x baselines and the 'fix(#274/#397)' comma name at 1.4.0 --
+    # and every probe must miss both. The wall the comments argue
+    # for: the link with nothing to its right, the link before a
+    # generation and before a credential (each the generation it also
+    # spells, and the clause ends at it as it always did), the two
+    # spellings where the letter is an INITIAL and the clause keeps
+    # everything, the delimited form the writer settled, and the 'y'
+    # twin, which never had either reading at any baseline.
+    "a link inside a maiden clause stays in the birth name":
+        ("Jane Doe nee Puig i", "Jane Doe nee Puig i III",
+         "Jane Doe nee Puig i MA", "Jane Doe nee Puig I Soler",
+         "JANE DOE NEE PUIG I SOLER", "Jane Doe (nee Puig i Soler)",
+         "Jane Doe nee Puig y Soler"),
+    # The 1.4.0 rule for the control, whose diff there carries the
+    # marker's consumption and the run's rendering and not this
+    # change at all. It must not reach the names the link fix DOES
+    # move, nor the older generation run whose rendering the
+    # fix(#436/#437) rule at the head of that file owns.
+    "a clause the generational link ended":
+        ("Jane Doe nee Puig i Soler", "Doe, Jane nee Puig i Soler",
+         "Jane Doe nee Puig i", "Josep Lluis Carod i III"),
     "fix(#436/#437) the glued honorific and the roman numeral are one post-nominal run":
         ("田中さん V.", "田中さん 様.", "田中さん, Dr."),
     "fix(#436/#437) the glued honorific and the polite address are one post-nominal run":
@@ -1185,13 +1253,13 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#383/#479) a marked connective letter in a one-case name is reported":
         ("John e Smith", "John E Smith", "john e. smith",
          "john e jones, III", "johnny y", "der, y van"),
-    # The view-only rule's boundary: the mixed-case spelling where the
-    # capital Y is an initial and stays one, the all-lower spelling
-    # that already read this way, and the sibling name whose ROLES move
-    # (the first rule above claims that one).
-    "fix(#383/#479) a bare capital connective in an all-upper name stops initialing":
-        ("Juan Y Garcia", "juan y garcia", "JUAN GARCIA Y LOPEZ",
-         "juan q. xavier velasquez y garcia iii"),
+    # `fix(#383/#479) a bare capital connective in an all-upper name
+    # stops initialing` carried a probe tuple here until 2026-09-20.
+    # The rule is DELETED from expected_since_2.3.0.toml -- #461 gave
+    # 'JUAN Y GARCIA' its letter back and the name stopped diffing
+    # there -- and a key matching no rule empties its own pin
+    # silently, which the roster's own assertion refuses. The
+    # boundaries it pinned are now the #461 rules' below.
     # #528's rule is a literal alternation of four names, so
     # _CORPUS_CLAIMS cannot see a widening that reaches only names the
     # corpora lack -- these probes are the wall, and the key is the
@@ -1214,16 +1282,13 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
         ("John E Smith", "Juan Y. Garcia", "Juan y Garcia",
          "Scott E. Werner", "Jose E Maria Santos", "maria y lopez",
          "Ph. D., John", "john e jones, III", "juan y garcia"),
-    # The third feat(#269) rule, and the only one keyed on a derived
-    # view. Its boundary is the other two: the prefix chain and the
-    # Cyrillic pair are #269 recognitions as well, and both move ROLES,
-    # so an alternation that grew to reach them would be taking names
-    # off the rules that describe what actually happened to them.
-    "feat(#269) a recognized non-Latin connective contributes no initial":
-        ("محمد بن سلمان",
-         "ХОСЕ И МАРИЯ САНТОС",
-         "хосе и мария сантос",
-         "محمد و علي السيد"),
+    # The third feat(#269) rule, the only one keyed on a derived view,
+    # carried a probe tuple here until 2026-09-20. It is DELETED from
+    # expected_since_1.4.0.toml -- #461 gave 'محمد و علي' its 'و' back
+    # and the name gives 1.4.0's own answer again -- and a key matching
+    # no rule empties its own pin silently. The name still diffs at the
+    # four 2.x baselines, where the #461 readmission rule carries it
+    # and _MUST_NOT_MATCH pins that rule's boundary instead.
     # #289/#516's three rules are literal-anchored alternations, so
     # _CORPUS_CLAIMS cannot see a widening that reaches only names the
     # corpora lack -- these probes are the wall, and the keys are the
@@ -2485,8 +2550,14 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # list them. Scoped to that reason: facade initials that move
     # against 1.4.0 for OTHER reasons -- 'e and e' and 'juan garcia y
     # lopez', on the 2.0.0 per-word grouping -- are no part of the six.
-    frozenset({"john e smith", "john e jones", "jones, john e",
-               "JUAN Y GARCIA"}),
+    #
+    # 2026-09-20, #461: 'JUAN Y GARCIA' LEFT the alternation and the
+    # set is three. Its 'Y' holds the middle part alone, so it
+    # initials again on both surfaces and gives the 1.4.0 wheel's
+    # string; the name has no diff left at that baseline for this
+    # rule to explain. Nothing about the other three moved, and the
+    # set is still a list of names for the reason above.
+    frozenset({"john e smith", "john e jones", "jones, john e"}),
     # #533's rules, one corpus name per alternative -- lists of names,
     # not copies of any wordlist. What selects every one of them is a
     # SLOT the vocabulary participates in only at one end: a member of
@@ -2559,6 +2630,127 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "Jane Doe nee Smith MA PhD", "Jane Doe nee Smith Ma JD"}),
     frozenset({"JOHN NEE JONES SMITH MA PHD",
                "John n[ée]e Jones Smith Ma"}),
+    # 2026-09-20, #397: the #436/#437 rule's set grows at both the
+    # 1.4.0 ledger and the three 2.x ones, and the two stay separate
+    # for the reason the block above gives -- one comma-written
+    # generation run enters at 1.4.0 ('Josep Lluis Carod i III') and
+    # three at the 2.x baselines, 'Josep Lluis Carod i V' and 'Rovira,
+    # Josep Carod i Jr.' moving ROLES at 1.4.0 and so belonging to
+    # other rules there. Still a list of names and still about the
+    # SEPARATOR: the new members carry the roman numerals i/III/V and
+    # a jr, so a member copying SUFFIX_WORDS would reach every
+    # generation-bearing name in the corpora, most of which do not
+    # move.
+    frozenset({"JOHN DOE PHD MD", "John Doe MD PhD",
+               "John Smith MD PhD", "John Smith Mc V",
+               "Josep Lluis Carod i III",
+               "Kenneth Clarke QC MP", "Smith, John PhD I\\.",
+               "The Rt Hon Kenneth Clarke QC MP, HMG",
+               "Washington Jr\\. MD, Franklin", "abdul Smith Jr Ma",
+               "abdul Smith Jr V"}),
+    # 2026-09-20, #397 review: one more name joins the 2.x set and not
+    # the 1.4.0 one, for the reason 'Jane Doe nee Smith PhD MA' did --
+    # 'Jane Doe nee Puig i III' is a comma-written generation run
+    # those baselines share with the tree's spaced one, while at 1.4.0
+    # its ROLES move too and a rule of that ledger's own owns it.
+    frozenset({"JOHN DOE PHD MD", "Jane Doe nee Puig i III",
+               "Jane Doe nee Smith PhD MA",
+               "John Doe MD PhD",
+               "John Smith MD PhD", "John Smith Mc V",
+               "Josep Lluis Carod i III", "Josep Lluis Carod i V",
+               "Kenneth Clarke QC MP", "Rovira, Josep Carod i Jr\\.",
+               "Smith, John PhD I\\.",
+               "The Rt Hon Kenneth Clarke QC MP, HMG",
+               "Washington Jr\\. MD, Franklin", "abdul Smith Jr Ma",
+               "abdul Smith Jr V"}),
+    # #397's maiden-clause rule, one corpus name per alternative -- a
+    # list of names, not a copy of any wordlist. What selects the two
+    # is the PLACEMENT of the link inside a clause, which no
+    # vocabulary decides; a member spelled as the shape (a bare letter
+    # after a maiden marker) would reach every clause name in the
+    # corpora and pre-excuse the readings the walk must refuse.
+    frozenset({"Doe, Jane nee Puig i Soler", "Jane Doe nee Puig i Soler"}),
+    # #397's join and its one-case report, one corpus name per
+    # alternative -- lists of names, not copies of any wordlist. The
+    # join's subject is a SHAPE the vocabulary participates in at one
+    # end only: a connective standing between two name words, where
+    # the connective is also generational vocabulary. A member copying
+    # CONJUNCTIONS or CONJUNCTIONS_AMBIGUOUS would reach every
+    # connective-bearing name in the corpora, and most of them --
+    # 'Josep i Rovira' under the three-word carve-out, 'Carod i' and
+    # 'John Quincy Smith i' with nothing to the link's right -- do not
+    # move, which is the whole of #397's accepted cost. The report
+    # rule's three are the one-case spellings of the same names, and
+    # what selects THEM is the writing rather than any word.
+    # _MUST_NOT_MATCH carries both walls. The join set is identical in
+    # all five ledgers; the report set in the four 2.x ones, there
+    # being no `_ambiguities` to diff at 1.4.0.
+    frozenset({"Carod i Rovira, Josep", "Josep Carod i Rovira",
+               "Josep Carod i Rovira III", "Josep Carod i de Rovira",
+               "Josep Lluis Carod i Rovira"}),
+    frozenset({"JOSEP CAROD I ROVIRA", "JOSEP LLUIS CAROD I ROVIRA",
+               "josep carod i rovira"}),
+    # #461's two halves, one corpus name per alternative -- lists of
+    # names, not copies of any wordlist. Four sets, because each half
+    # holds a different population at different baselines and each
+    # ledger's own comment says which: the readmission half gains
+    # 'محمد و علي' from 2.0.0 (1.4.0 parity is RESTORED there, so it
+    # has no 1.4.0 member) and 'Juan y Garcia née Jones' from 2.2.0
+    # (below that the maiden clause moves its roles), and the joining
+    # half gains nine names at 2.3.0 that the #449 report masks at
+    # every earlier baseline.
+    #
+    # What selects every member is a PART -- whether the connective
+    # has a name word beside it to join -- which no wordlist can
+    # spell and no regex over the raw string can state. A member
+    # copying CONJUNCTIONS would reach both halves at once, they
+    # being the same vocabulary read in two positions, and would also
+    # reach 'Jon Dough and', 'Juan Velasquez y Garcia' and 'Juan
+    # Garcia Lopez y', which do not move at all. The non-Latin
+    # members are spelled literally rather than as script spans for
+    # the same reason: the sentence is about a part, in any script,
+    # so a span would declare a scope the rule does not have
+    # (_SPAN_BEARING_RULES records that neither rule declares one).
+    frozenset({"Carod y de Rovira i", "Fritz Freiherr und von Bar",
+               "Garcia y Lopez", "John e Smith", "John e Smith III",
+               "John e Smith, III", "John y Jane", "Jose e Maria",
+               "Juan de y", "Juan y Garcia", "Lt\\.Gov\\. juan e garcia",
+               "Smith, John e, III, Jr", "john e jones, III",
+               "johnny y", "juan y garcia"}),
+    frozenset({"Carod y de Rovira i", "Fritz Freiherr und von Bar",
+               "Garcia y Lopez", "John e Smith", "John e Smith III",
+               "John e Smith, III", "John y Jane", "Jose e Maria",
+               "Juan de y", "Juan y Garcia", "Lt\\.Gov\\. juan e garcia",
+               "Smith, John e, III, Jr", "john e jones, III",
+               "johnny y", "juan y garcia", "محمد و علي"}),
+    frozenset({"Carod y de Rovira i", "Fritz Freiherr und von Bar",
+               "Garcia y Lopez", "John e Smith", "John e Smith III",
+               "John e Smith, III", "John y Jane", "Jose e Maria",
+               "Juan de y", "Juan y Garcia", "Juan y Garcia née Jones",
+               "Lt\\.Gov\\. juan e garcia",
+               "Smith, John e, III, Jr", "john e jones, III",
+               "johnny y", "juan y garcia", "محمد و علي"}),
+    frozenset({"Assoc Dean of Chemistry Robert Johns",
+               "Dean of Chemistry Robert Johns",
+               "John and Jane Aznar y Lopez", "John and Jane Smith",
+               "Jose e Maria Santos", "Juan y Eva Garcia",
+               "Mr\\. and Mrs\\. John and Jane Smith",
+               "Rob And Beth Edmunds", "and Jon Dough",
+               "the and Jon Dough", "ХОСЕ И МАРИЯ САНТОС",
+               "Хосе И Мария Сантос", "хосе и мария сантос"}),
+    frozenset({"Assoc Dean of Chemistry Robert Johns",
+               "Dean of Chemistry", "Dean of Chemistry Robert Johns",
+               "Duke of Edinburgh", "Duke of Wellington",
+               "John & Jane", "John and Jane Aznar y Lopez",
+               "John and Jane Smith", "John of the Doe",
+               "Jose e Maria Santos", "Juan & Garcia",
+               "Juan and Garcia", "Juan y Eva Garcia",
+               "Mr\\. and Mrs\\. John and Jane Smith",
+               "Rob And Beth Edmunds", "and Jon Dough",
+               "part1 of The part2 of the part3 and part4",
+               "part1 of and The part2 of the part3 And part4",
+               "the and Jon Dough", "ХОСЕ И МАРИЯ САНТОС",
+               "Хосе И Мария Сантос", "хосе и мария сантос"}),
 })
 
 def _unjustified_reach(name_regex: str, members: set[str]) -> list[str]:
@@ -2978,8 +3170,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
         # change the row here before it reached the gate.
+        # 2026-09-20, #397: 10 -> 11, one new comma-written
+        # generation run ('Josep Lluis Carod i III'), which #397
+        # leaves byte-identical -- measured against the parent
+        # 46651750 -- and which arrived with that change's own case
+        # rows. Roles unmoved, `suffix` alone as before.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(10, ('suffix',), "30f5314a2662", None),
+            _Claim(11, ('suffix',), "eaece748b3c9", None),
         # #346's alternation. Four corpus names, `family` and
         # `given` together: the fold moves both roles at once, so a
         # widening taking one alone would change the roles here
@@ -3038,7 +3235,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # carrying a marker. Read name by name against the regex; no
         # role joined the list.
         "fix(#274) maiden markers consumed":
-            _Claim(73, ('family', 'maiden', 'middle'), 'a2e495d071dd', None),
+            _Claim(77, ('family', 'maiden', 'middle'), 'd36e74b1f60d', None),
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -3130,8 +3327,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # carrying a comma. Reach, not explanation: the regex is a
         # comma and every family-comma row this change added matches
         # it.
+        # 2026-09-20, #397: 358 -> 359, the one new corpus name
+        # carrying a comma, 'Carod i Rovira, Josep'. Reach, not
+        # explanation, and verified name by name: the claimed set
+        # gained that name and lost none.
+        # 2026-09-20, #397 review: 359 -> 360, the one new comma name
+        # the review's rows add, 'Rovira, Josep Carod i Jr.' -- the
+        # comma form of the swallowed generation. Reach again, and
+        # verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(358, ('given', 'suffix', 'title'), '0485bb024e5a', None),
+            _Claim(363, ('given', 'suffix', 'title'), 'b628b4d25dfb', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3181,9 +3386,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # comma names as the rule above and for the same reason.
         # 2026-09-19, #533: 343 -> 356, the same thirteen new comma
         # names as the rule above and for the same reason.
+        # 2026-09-20, #397: 358 -> 359, the same one new comma name as
+        # the rule above and for the same reason.
+        # 2026-09-20, #397 review: 359 -> 360, the same one new comma
+        # name as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(358, ('family', 'given'), '0485bb024e5a', None),
-        "fix(#397) NOT WANTED: a trailing Catalan/Polish linking 'i' is read as a generation marker and the family is lost":
+            _Claim(363, ('family', 'given'), 'b628b4d25dfb', None),
+        # 2026-09-20, #397: retitled in place, reach and digest
+        # unchanged -- the rule keeps 'Carod i', which the landing
+        # leaves byte-identical.
+        "fix(#397) accepted: a two-word Catalan link has no name word to its right and stays the generation":
             _Claim(1, ('family', 'suffix'), "498602f3cfd0", None),
         "fix(suffix-delimiter-rendering) no-space delimiter core token kept whole":
             _Claim(0, ('suffix',), "e3b0c44298fc", None),
@@ -3377,8 +3589,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # nothing had classified because no corpus name had exercised
         # it. Literal and caseless, so a second name here means the
         # alternation grew.
-        "feat(#269) a recognized non-Latin connective contributes no initial":
-            _Claim(1, ('_initials',), "770ce7374f32", ('DEFAULT',)),
+        # `feat(#269) a recognized non-Latin connective contributes
+        # no initial` had a row here until 2026-09-20 (reach 1,
+        # 'محمد و علي'). #461 gave that name its 'و' back on both
+        # surfaces, which is 1.4.0's own answer, so the rule stopped
+        # explaining anything and is deleted from the ledger.
         # #528's literal name list, added 2026-09-13 and sitting ahead
         # of the three vocabulary rules below because it shares their
         # `_initials` field, and because the first of them -- the
@@ -3386,8 +3601,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Four corpus names, `_initials` alone: the roles move on none,
         # which is what leaves the derived view as the whole diff. A
         # fifth name here means the alternation grew.
+        # 2026-09-20, #461: 4 -> 3. 'JUAN Y GARCIA' left the
+        # alternation -- its 'Y' holds its part alone and initials
+        # again on both surfaces, giving the 1.4.0 wheel's own string
+        # -- so the rule has nothing left to say about it. The other
+        # three are unmoved.
         "fix(#528) the facade's initials follow the parse's connective tags":
-            _Claim(4, ('_initials',), "7cb6b2f5779e", ('DEFAULT',)),
+            _Claim(3, ('_initials',), "3b5e8a0e39bb", ('DEFAULT',)),
         # 96 -> 97 on 2026-09-08: 'Prince of Wales Jr' joined the
         # rules corpus with the 2.3 title-run bundle -- a parity
         # row, kept as the boundary the peel floor declines -- and
@@ -3404,8 +3624,19 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # share a field and two corpus names -- and this rule's REACH
         # is unmoved by it: the regex did not change, and reach is
         # what this number counts.
+        # 2026-09-20, #397: 101 -> 102. One new corpus name holding a
+        # connective run, 'Juan Garcia y Lopez y' -- the negative
+        # control for the both-sides condition's class half, which is
+        # in the corpus because its row carries a shape tag. Reach
+        # again: the regex is unchanged and the claimed set gained
+        # that name alone.
+        # 2026-09-20, #397 review: 102 -> 103. One new corpus name
+        # holding a connective run, 'Carod y de Rovira i' -- the row
+        # pinning that a trailing link does not count itself for an
+        # unrelated 'y', which is in the corpus because its row
+        # carries a shape tag. Reach again, verified name by name.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(101, ('_initials',), "e91031622dca", ('DEFAULT',)),
+            _Claim(104, ('_initials',), "bc7dfeba1da5", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
         # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
         # nee Jones MA' -- the P5 pair this change added to record
@@ -3415,8 +3646,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-18: 109 -> 110. One new corpus name,
         # 'john van der berg ma' -- rules.md#P2's one-case contrast,
         # and a particle chain like every other member.
+        # 2026-09-20, #397 review: 111 -> 112. The same one new name
+        # as the connective-run rule above, 'Carod y de Rovira i',
+        # whose 'de Rovira' is a particle chain; two rules reach one
+        # name and neither widened. Verified name by name.
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(111, ('_initials',), '3729c1e3152d', ('DEFAULT',)),
+            _Claim(112, ('_initials',), 'b3b3b696a56e', ('DEFAULT',)),
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
             _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
@@ -3599,14 +3834,52 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('family', 'given', 'maiden', 'middle', 'suffix'), 'ae9d39617af1', None),
         "fix(#335/#533) a marker-led bracketed clause is the maiden name whatever its last word is":
             _Claim(3, ('maiden', 'nickname'), 'cc1045ecdc05', None),
+        # 2026-09-20, #397 and #461's three new rules at this
+        # baseline, all literal alternations of exactly the names each
+        # explains -- so a count that moves means the alternation
+        # grew, and _MUST_NOT_MATCH carries the walls a reach this
+        # small cannot be.
+        #
+        # The join reaches 5 and declares the union of its two diff
+        # shapes: {family, suffix} for the comma spelling, whose link
+        # was a GENERATION in v1's `suffix`, and {family, middle} for
+        # the four written straight. The suffix-routing rule reaches
+        # its 1 and declares the same three roles for a diff #397 does
+        # not cause at all -- a trailing two-word generation run that
+        # v2 has peeled whole since 2.0. #461's readmission rule
+        # reaches 15 on `_initials` alone: fifteen names whose
+        # connective holds its part alone, every one of which agreed
+        # with the 1.4.0 wheel before this bundle. It has no joining
+        # twin here, the joining half having diffed at this baseline
+        # since 2.0 on the per-word grouping rule.
+        "fix(#397) the Catalan/Polish link joins two surnames":
+            _Claim(5, ('family', 'middle', 'suffix'), "0c31a48b1867",
+                   ('DEFAULT',)),
+        "fix(suffix-routing) a two-word trailing generation run peels whole, and the name word before it is the family":
+            _Claim(1, ('family', 'middle', 'suffix'), "5ecc6ba1109e",
+                   ('DEFAULT',)),
+        "fix(#461) a connective holding its part alone contributes an initial":
+            _Claim(15, ('_initials',), "4d436d1ebeca", ('DEFAULT',)),
+        "fix(#274/#397) a link inside a maiden clause stays in the birth name, after a family comma":
+            _Claim(1, ('maiden', 'middle', 'suffix'), 'ad2442b1b12a',
+                   None),
+        "fix(#274/#436/#437) a clause the generational link ended, and the run it left renders with spaces":
+            _Claim(1, ('family', 'maiden', 'middle', 'suffix'),
+                   '7d64445a7252', None),
     },
     "expected_since_2.0.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
         # change the row here before it reached the gate.
+        # 2026-09-20, #397: 11 -> 14, three new comma-written
+        # generation runs ('Josep Lluis Carod i III', 'Josep Lluis
+        # Carod i V', 'Rovira, Josep Carod i Jr.'), each of which #397
+        # leaves byte-identical -- measured against the parent
+        # 46651750 -- and each of which arrived with that change's own
+        # case rows. Roles unmoved, `suffix` alone as before.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(11, ('suffix',), "e665eae5c5df", None),
+            _Claim(15, ('suffix',), "b610147f490b", None),
         # #449's six rules, second in every 2.x ledger. The
         # alternation reaches twenty-two corpus names and
         # `_ambiguities` alone: no role moves anywhere in this change,
@@ -4077,6 +4350,30 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle'), 'fa3fe4878b47', None),
         "fix(#411/#533) the bound-given pair after a comma, and the clause it keeps its credential in":
             _Claim(1, ('_ambiguities', 'given', 'maiden', 'middle'), '431d3dd24c14', None),
+        # 2026-09-20, #397 and #461's four new rules, all literal
+        # alternations of exactly the names each explains -- a count
+        # that moves means the alternation grew, and _MUST_NOT_MATCH
+        # carries the walls a reach this small cannot be.
+        #
+        # The join reaches 5 and declares the union of its two diff
+        # shapes; the one-case report rule reaches 3 on
+        # `_ambiguities` alone, no role moving on any of them. #461's
+        # two halves are 16 and 13 on `_initials` alone, and they
+        # are two rules and not one because a rule listing `_initials`
+        # may list nothing else, so the two readings of one sentence
+        # cannot share a row either.
+        "fix(#397) the Catalan/Polish link joins two surnames":
+            _Claim(5, ('family', 'middle', 'suffix'), "0c31a48b1867",
+                   ('DEFAULT',)),
+        "fix(#397) the Catalan link reports a connective-or-initial in a one-case name":
+            _Claim(3, ('_ambiguities',), "e43f9595ac02", ('DEFAULT',)),
+        "fix(#461) a connective holding its part alone contributes an initial":
+            _Claim(16, ('_initials',), "075dc34f9e95", ('DEFAULT',)),
+        "fix(#461) a connective with a name word beside it stops contributing an initial":
+            _Claim(13, ('_initials',), "3cc41f4bfc21", ('DEFAULT',)),
+        "fix(#397) a link inside a maiden clause stays in the birth name":
+            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
+                   '32405b182f4e', ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -4087,8 +4384,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
         # change the row here before it reached the gate.
+        # 2026-09-20, #397: 11 -> 14, three new comma-written
+        # generation runs ('Josep Lluis Carod i III', 'Josep Lluis
+        # Carod i V', 'Rovira, Josep Carod i Jr.'), each of which #397
+        # leaves byte-identical -- measured against the parent
+        # 46651750 -- and each of which arrived with that change's own
+        # case rows. Roles unmoved, `suffix` alone as before.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(11, ('suffix',), "e665eae5c5df", None),
+            _Claim(15, ('suffix',), "b610147f490b", None),
         # #449's six rules, second in every 2.x ledger. The
         # alternation reaches twenty-two corpus names and
         # `_ambiguities` alone: no role moves anywhere in this change,
@@ -4330,14 +4633,49 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # through.
         "fix(#533) the maiden clause ends at the credential in a native-script name too":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "6bab87214ddf", None),
+        # 2026-09-20, #397 and #461's four new rules, all literal
+        # alternations of exactly the names each explains -- a count
+        # that moves means the alternation grew, and _MUST_NOT_MATCH
+        # carries the walls a reach this small cannot be.
+        #
+        # The join reaches 5 and declares the union of its two diff
+        # shapes; the one-case report rule reaches 3 on
+        # `_ambiguities` alone, no role moving on any of them. #461's
+        # two halves are 17 and 13 on `_initials` alone, and they
+        # are two rules and not one because a rule listing `_initials`
+        # may list nothing else, so the two readings of one sentence
+        # cannot share a row either.
+        #
+        # The readmission half reaches one more name here than at
+        # 2.0.0/2.1.0 -- 'Juan y Garcia née Jones', whose roles move
+        # against the older wheels and so keep `_initials` out of its
+        # diff there.
+        "fix(#397) the Catalan/Polish link joins two surnames":
+            _Claim(5, ('family', 'middle', 'suffix'), "0c31a48b1867",
+                   ('DEFAULT',)),
+        "fix(#397) the Catalan link reports a connective-or-initial in a one-case name":
+            _Claim(3, ('_ambiguities',), "e43f9595ac02", ('DEFAULT',)),
+        "fix(#461) a connective holding its part alone contributes an initial":
+            _Claim(17, ('_initials',), "797473971e75", ('DEFAULT',)),
+        "fix(#461) a connective with a name word beside it stops contributing an initial":
+            _Claim(13, ('_initials',), "3cc41f4bfc21", ('DEFAULT',)),
+        "fix(#397) a link inside a maiden clause stays in the birth name":
+            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
+                   '32405b182f4e', ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
         # change the row here before it reached the gate.
+        # 2026-09-20, #397: 11 -> 14, three new comma-written
+        # generation runs ('Josep Lluis Carod i III', 'Josep Lluis
+        # Carod i V', 'Rovira, Josep Carod i Jr.'), each of which #397
+        # leaves byte-identical -- measured against the parent
+        # 46651750 -- and each of which arrived with that change's own
+        # case rows. Roles unmoved, `suffix` alone as before.
         "fix(#436/#437) a space-separated post-nominal run renders with spaces, not commas":
-            _Claim(11, ('suffix',), "e665eae5c5df", None),
+            _Claim(15, ('suffix',), "b610147f490b", None),
         # #449's six rules, second in every 2.x ledger. The
         # alternation reaches twenty-two corpus names and
         # `_ambiguities` alone: no role moves anywhere in this change,
@@ -4779,6 +5117,30 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle'), 'fa3fe4878b47', None),
         "fix(#411/#533) the bound-given pair after a comma, and the clause it keeps its credential in":
             _Claim(1, ('_ambiguities', 'given', 'maiden', 'middle'), '431d3dd24c14', None),
+        # 2026-09-20, #397 and #461's four new rules, all literal
+        # alternations of exactly the names each explains -- a count
+        # that moves means the alternation grew, and _MUST_NOT_MATCH
+        # carries the walls a reach this small cannot be.
+        #
+        # The join reaches 5 and declares the union of its two diff
+        # shapes; the one-case report rule reaches 3 on
+        # `_ambiguities` alone, no role moving on any of them. #461's
+        # two halves are 16 and 13 on `_initials` alone, and they
+        # are two rules and not one because a rule listing `_initials`
+        # may list nothing else, so the two readings of one sentence
+        # cannot share a row either.
+        "fix(#397) the Catalan/Polish link joins two surnames":
+            _Claim(5, ('family', 'middle', 'suffix'), "0c31a48b1867",
+                   ('DEFAULT',)),
+        "fix(#397) the Catalan link reports a connective-or-initial in a one-case name":
+            _Claim(3, ('_ambiguities',), "e43f9595ac02", ('DEFAULT',)),
+        "fix(#461) a connective holding its part alone contributes an initial":
+            _Claim(16, ('_initials',), "075dc34f9e95", ('DEFAULT',)),
+        "fix(#461) a connective with a name word beside it stops contributing an initial":
+            _Claim(13, ('_initials',), "3cc41f4bfc21", ('DEFAULT',)),
+        "fix(#397) a link inside a maiden clause stays in the birth name":
+            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
+                   '32405b182f4e', ('DEFAULT',)),
     },
     "expected_since_2.3.0.toml": {
         # #383/#479's three rules, the first this ledger carries. The
@@ -4801,8 +5163,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
                    "ec00806a06f0", ('DEFAULT',)),
         "fix(#383/#479) a marked connective letter in a one-case name is reported":
             _Claim(7, ('_ambiguities',), "2eb6eff33836", ('DEFAULT',)),
-        "fix(#383/#479) a bare capital connective in an all-upper name stops initialing":
-            _Claim(1, ('_initials',), "7ff29af96914", ('DEFAULT',)),
+        # `fix(#383/#479) a bare capital connective in an all-upper
+        # name stops initialing` had a row here until 2026-09-20
+        # (reach 1, 'JUAN Y GARCIA'). #461 gave that name its 'Y'
+        # back on both surfaces, which is what 2.3.0 itself gives, so
+        # the rule stopped explaining anything and is deleted from the
+        # ledger.
         # #289's alternation, appended with #516's and the report
         # rule's below it. Literal-anchored to the movers a written
         # case contrast decides, `orders` DEFAULT: the class is a
@@ -4901,6 +5267,35 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # through.
         "fix(#533) the maiden clause ends at the credential in a native-script name too":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix'), "6bab87214ddf", None),
+        # 2026-09-20, #397 and #461's four new rules, all literal
+        # alternations of exactly the names each explains -- a count
+        # that moves means the alternation grew, and _MUST_NOT_MATCH
+        # carries the walls a reach this small cannot be.
+        #
+        # The join reaches 5 and declares the union of its two diff
+        # shapes; the one-case report rule reaches 3 on
+        # `_ambiguities` alone, no role moving on any of them. #461's
+        # two halves are 17 and 22 on `_initials` alone, and they
+        # are two rules and not one because a rule listing `_initials`
+        # may list nothing else, so the two readings of one sentence
+        # cannot share a row either.
+        #
+        # Both halves are at their widest here: the readmission
+        # half holds 'Juan y Garcia née Jones' as at 2.2.0, and the
+        # joining half holds nine names the #449 report masks at every
+        # earlier baseline (compare.py's roles-identical guard, #484).
+        "fix(#397) the Catalan/Polish link joins two surnames":
+            _Claim(5, ('family', 'middle', 'suffix'), "0c31a48b1867",
+                   ('DEFAULT',)),
+        "fix(#397) the Catalan link reports a connective-or-initial in a one-case name":
+            _Claim(3, ('_ambiguities',), "e43f9595ac02", ('DEFAULT',)),
+        "fix(#461) a connective holding its part alone contributes an initial":
+            _Claim(17, ('_initials',), "797473971e75", ('DEFAULT',)),
+        "fix(#461) a connective with a name word beside it stops contributing an initial":
+            _Claim(22, ('_initials',), "e73827447b4e", ('DEFAULT',)),
+        "fix(#397) a link inside a maiden clause stays in the birth name":
+            _Claim(2, ('family', 'maiden', 'middle', 'suffix'),
+                   '32405b182f4e', ('DEFAULT',)),
     },
 }
 
@@ -5066,9 +5461,14 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         # because a later edit that moves either rule, or widens the
         # numeral rule's `fields`, would take one silently -- exactly the
         # absorption #451 exists to end.
+        # 2026-09-20, #397: the rule kept the name and was RETITLED in
+        # place -- its standing moved from NOT WANTED and unresolved
+        # to the decided boundary of a landed rule -- so this pin
+        # follows the new issue string. 'Carod i' itself is unchanged
+        # by that landing, measured against the parent 46651750.
         "Carod i":
-            "fix(#397) NOT WANTED: a trailing Catalan/Polish linking "
-            "'i' is read as a generation marker and the family is lost",
+            "fix(#397) accepted: a two-word Catalan link has no name "
+            "word to its right and stays the generation",
         # #289/#516's one. '田中 太郎, MA' is this arc's own case row
         # (radar tier): two whitespace tokens before the comma make it
         # two NAME words by rules.md#C1's count, so the suffix reading
@@ -5131,6 +5531,60 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         "john e jones":
             "fix(#528) the facade's initials follow the parse's "
             "connective tags",
+        # The eleven equal-`fields` contests #461 opened on
+        # 2026-09-20, the same shape as #528's pair above and against
+        # the same rule: both carry `fields = ["_initials"]`, so
+        # neither is narrower, `precedes_narrower` has nothing to
+        # declare, and classify() hands the name to whichever is
+        # written first. The #461 rule is written first and WINS each
+        # of them, because 1.4.0 rendered every one of these with the
+        # granularity the tree does -- the per-word grouping moved
+        # nothing on them, the letter COUNT did (measured 2026-09-20
+        # from the 1.4.0 wheel and from the parent 46651750: all
+        # eleven agreed with 1.4.0 before this bundle). 'Carod y de
+        # Rovira i' loses to the #461 rule on the particle-chain rule
+        # as well, and one row pins the name once.
+        #
+        # The other four names the #461 rule explains are NOT
+        # contested, each kept out by a different half of the
+        # connective alternation: 'Juan de y' and 'johnny y' end on
+        # their letter and the alternation wants whitespace after it;
+        # 'Smith, John e, III, Jr' has a comma there instead; and
+        # 'Fritz Freiherr und von Bar' carries 'und', which is in no
+        # alternation. None has a row.
+        "Carod y de Rovira i":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "Garcia y Lopez":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "John e Smith":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "John e Smith III":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "John e Smith, III":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "John y Jane":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "Jose e Maria":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "Juan y Garcia":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "Lt.Gov. juan e garcia":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "john e jones, III":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
+        "juan y garcia":
+            "fix(#461) a connective holding its part alone contributes "
+            "an initial",
         # the glued/spaced boundary. 'Andersonさん' and '김민준씨' left
         # suffix-routing for a rule that names them; '김민준 씨.' is
         # spaced and stays on the spaced rule, which #372 taught to

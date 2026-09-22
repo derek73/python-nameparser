@@ -704,3 +704,41 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
         # run goes in FRONT of what the pass before it took
         titled[:0] = rest[kept:peeled.names]
         rest = rest[:kept] + rest[peeled.names:]
+
+
+# rules.md#H5: "the title is TRANSPARENT to the suffix reading: where
+# two or more name words stand, what stands once the chain is taken
+# reads exactly as it would read written without the title, plus the
+# title"
+def trailing_start_past_titles(start: int,
+                                pieces: Sequence[Sequence[int]],
+                                ptags: Sequence[Set[str]],
+                                tokens: Sequence[WorkToken],
+                                *, one_case: bool | None) -> int:
+    """`trailing_start` read through H5's chain: where assign's
+    trailing suffix run begins once a trailing TITLE has stopped
+    hiding it.
+
+    `trailing_start` reads the pieces as WRITTEN, so a title standing
+    behind the suffix run makes the peel take nothing and the answer
+    is `len(pieces)` -- the reading assign itself has not had since
+    H5, because assign runs the peel and the chain to their fixed
+    point instead (`tail_reading`). A caller using that answer as the
+    right bound of the NAME is told a credential is a name word:
+    'John Quincy Adams i MA Prof.' read family 'Adams i MA' where
+    'John Quincy Adams i MA' reads family 'Adams' and suffix 'i MA'
+    (#397 second review). Every caller that bounds the name wants
+    this one; `trailing_start` stays for the callers that count a
+    trailing run of the pieces as they stand.
+
+    The returned index bounds the name from the right, and the
+    trailing titles the chain spliced out are not under it: they end
+    the segment, so they stand at or past the first suffix piece
+    whenever there is one. Where the peel takes nothing even past the
+    chain this returns `len(pieces)` as `trailing_start` does, and a
+    trailing title is then inside the bound and refused by the title
+    test the callers already run beside it.
+    """
+    rest, _titled, peeled = tail_reading(peel_walk(start, ptags),
+                                         pieces, ptags, tokens, one_case)
+    return rest[peeled.names] if peeled.names < len(rest) else len(pieces)

@@ -131,3 +131,69 @@ def test_ambiguity_with_all_indices_dropped_is_omitted() -> None:
     kinds = [a.kind for a in pn.ambiguities]
     assert AK.ORDER not in kinds          # fully dangled: omitted
     assert AK.UNBALANCED_DELIMITER in kinds  # born empty: kept
+
+
+def test_a_connective_or_initial_report_is_withdrawn_where_the_role_is_a_suffix(
+) -> None:
+    """rules.md#A1, the withdrawal (#397 second review).
+
+    classify's connective-or-initial fork offers a connective and an
+    initial and its detail says which it took. A generation is
+    neither, so where the parse goes on to role the letter SUFFIX the
+    report describes a branch nobody took -- and 'JOHN QUINCY SMITH
+    I' carried it beside a `suffix-or-name` saying the same token
+    reads as a generational suffix. 'i' is the first word that is
+    both a marked connective and suffix vocabulary, so no parse
+    before this cycle could reach the shape.
+
+    The shipped vocabulary is what these names need, so `parse` is
+    used rather than the trimmed `_LEX` above.
+    """
+    from nameparser import parse
+    withdrawn = {
+        "JOHN QUINCY SMITH I": ["suffix-or-name"],
+        "john smith i": ["suffix-or-name"],
+        "SMITH, JOHN I": [],
+        "HENRY I": ["suffix-or-name", "given-or-family"],
+    }
+    for text, kinds in withdrawn.items():
+        name = parse(text)
+        assert name.suffix.lower() == "i", text
+        assert sorted(a.kind.value for a in name.ambiguities) \
+            == sorted(kinds), text
+    # the contrast that keeps the withdrawal honest: where the parse
+    # roles the same letter a NAME word the fork DID resolve to one
+    # of its branches, and the report stands
+    for text in ("JOSEP CAROD I ROVIRA", "josep carod i rovira",
+                 "JOHN I SMITH", "JOSEP CAROD I ROVIRA III"):
+        name = parse(text)
+        assert "conjunction-or-initial" in [
+            a.kind.value for a in name.ambiguities], text
+    # ... and an unmarked-position letter of the same class reports
+    # nothing at all, which is the third state
+    assert [a.kind.value for a in parse("Josep Carod i Rovira").ambiguities] \
+        == []
+
+
+def test_the_withdrawal_reads_the_role_and_not_the_word() -> None:
+    """The same withdrawal asked of a TITLE, the other role a fork
+    between a connective and an initial cannot have resolved to.
+
+    Nothing shipped builds this state -- a marked letter roled TITLE
+    -- which is exactly why it is built here: an implementation
+    keyed on the suffix role alone would pass every row above and
+    fail this one (AGENTS.md: "Pin the decision, not the vocabulary").
+    """
+    import dataclasses
+    from nameparser._pipeline._state import PendingAmbiguity
+    from nameparser._types import AmbiguityKind as AK
+    state = run(ParseState(original="Dr. Jane", lexicon=_LEX,
+                           policy=Policy()))
+    dr = next(i for i, t in enumerate(state.tokens) if t.text == "Dr.")
+    assert state.tokens[dr].role is Role.TITLE
+    poisoned = dataclasses.replace(
+        state, ambiguities=state.ambiguities + (
+            PendingAmbiguity(AK.CONJUNCTION_OR_INITIAL,
+                             "read as an initial", (dr,)),))
+    assert AK.CONJUNCTION_OR_INITIAL not in [
+        a.kind for a in assemble(poisoned).ambiguities]

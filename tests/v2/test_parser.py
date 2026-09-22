@@ -11,7 +11,8 @@ from nameparser import (
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
 )
-from nameparser._types import AmbiguityKind, Role, Segmentation
+from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
+                               AmbiguityKind, Role, Segmentation)
 
 
 def test_parser_defaults_and_properties() -> None:
@@ -1065,6 +1066,69 @@ def test_revise_sets_a_missing_unjoined_mark() -> None:
     assert (revised.family, revised.family_base) == ("Do", "Do")
 
 
+def test_revise_recomputes_the_connective_mark_in_both_directions(
+) -> None:
+    # The mark says a connective stands in a part with nothing to
+    # join, which is a fact about the PART -- so the harvest that
+    # splices a sub-parse's tokens into one field invalidates it both
+    # ways, exactly as it does the particle mark above (rules.md#R3,
+    # #461).
+    p = Parser()
+    lone = p.parse("Juan de y")
+    assert lone.initials() == "J. y."
+    # STALE: the marked 'y' lands beside a name word
+    widened = p.revise(lone, family="y Garcia")
+    assert widened.initials() == "J. G."
+    # MISSING: a connective revised into a part of its own
+    narrowed = p.revise(p.parse("Juan Velasquez y Garcia"), family="y")
+    assert narrowed.initials() == "J. y."
+    # and the identity revise round-trips, which is the property the
+    # particle-mark tests above pin for R2
+    again = p.revise(lone, family=lone.family)
+    assert (again.family, again.initials()) == (lone.family,
+                                                lone.initials())
+
+
+def test_revise_writes_a_connective_mark_the_sub_parse_did_not(
+) -> None:
+    # The MISSING direction that role-forcing alone cannot produce,
+    # and the one input shape that does: the sub-parse of 'and y'
+    # reads 'and' as the given name and 'y' -- a particle under this
+    # caller's vocabulary -- as an all-particle family, so R2's mark
+    # is what the sub-parse writes on it. Forcing both into one field
+    # makes that part no longer all-particle, so R2's mark is cleared
+    # and #461's has to be written in its place, by the recompute
+    # rather than by any stage. Without it the 'y' carries no mark at
+    # all, drops as an ordinary family particle, and the field and
+    # the view disagree again.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    revised = p.revise(p.parse("John Smith"), family="and y")
+    assert revised.family == "and y"
+    assert revised.initials() == "J. a. y."
+    marks = {t.text: t.tags for t in revised.tokens
+             if t.role is Role.FAMILY}
+    assert UNJOINED_CONJUNCTION_TAG in marks["y"]
+    assert UNJOINED_TAG not in marks["y"]
+
+
+def test_revise_keeps_r2s_precedence_over_the_connective_mark(
+) -> None:
+    # The recompute mirrors the pipeline walk's `elif`, and this is
+    # the row where the two marks would otherwise both be written:
+    # 'de y' under a vocabulary that makes 'y' a particle is an
+    # all-particle part, so R2's mark readmits every word of it --
+    # the connective included -- and #461's is not written there. The
+    # rendered answer is the same either way, which is why this
+    # asserts the TAGS: the facade's own connective predicate reads
+    # the second mark, so writing it here would move that view alone.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    revised = p.revise(p.parse("John Smith"), family="de y")
+    assert revised.initials() == "J. d. y."
+    y = [t for t in revised.tokens if t.text == "y"][0]
+    assert UNJOINED_TAG in y.tags
+    assert UNJOINED_CONJUNCTION_TAG not in y.tags
+
+
 def test_revise_sub_parse_structural_behavior() -> None:
     # the docstring's three structural promises, pinned: delimiters
     # never become tokens, marker words are consumed as in parsing,
@@ -1784,3 +1848,35 @@ def test_a_phrase_marker_outranks_the_word_it_starts_with() -> None:
     assert configured.parse("Jane Smith geb von Braun").maiden == "Braun"
     assert configured.parse("Jane Smith geb Braun").maiden == "Braun"
     assert parse("Jane Smith geb von Braun").maiden == "von Braun"
+
+
+def test_the_catalan_recipe_unmarks_the_link_for_one_case_names() -> None:
+    """rules.md#P3's per-caller answer for Catalan and Polish data
+    (#397 second review), pinned rather than described.
+
+    `i` ships in the MARKED subset, so a name written wholly in one
+    case reads it as an initial and reports the fork. A caller whose
+    data is Catalan knows better, and the knob the rule names is
+    `remove(conjunctions_ambiguous={"i"})` -- which leaves the letter
+    a connective and takes the one-case fork out of its way. The
+    prose said so; nothing ran it.
+    """
+    catalan = Parser(
+        lexicon=Lexicon.default().remove(conjunctions_ambiguous={"i"}))
+    for text in ("JOSEP CAROD I ROVIRA", "josep carod i rovira"):
+        name = catalan.parse(text)
+        assert name.family == text.split(" ", 1)[1]
+        assert name.ambiguities == ()
+    # the three things the recipe does NOT change, and they are what
+    # make it safe to hand a Catalan user. The link with nothing on
+    # its right is still the generation it also spells ...
+    kept = catalan.parse("JOHN QUINCY SMITH I")
+    assert kept.suffix == "I"
+    assert kept.family == "SMITH"
+    # ... P3's three-word carve-out still leaves a lone letter a name
+    # word ...
+    assert catalan.parse("JOHN I SMITH").middle == "I"
+    # ... and no report is emitted anywhere, the fork the recipe
+    # removes being the only one these names raised
+    assert catalan.parse("JOHN I SMITH").ambiguities == ()
+    assert catalan.parse("JOHN QUINCY SMITH I").ambiguities == ()

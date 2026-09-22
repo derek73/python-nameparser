@@ -5,6 +5,7 @@ from typing import cast
 
 import pytest
 
+from nameparser import Parser
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import _group as _group_module
 from nameparser._pipeline._classify import classify
@@ -1396,3 +1397,490 @@ def test_the_marker_placements_reach_both_answers() -> None:
         tagged[text] = bool(runs)
     assert sum(tagged.values()) >= 4
     assert sum(not v for v in tagged.values()) >= 3
+
+
+# --- #397: the carve-out's count, and the both-sides condition ------
+# _LEX ships no single letter that is BOTH connective and generational
+# vocabulary, so each test below builds the overlap it is about. That
+# is the point of the rule -- it is keyed on the CLASS, never on the
+# letter -- and a test using the shipped sets would walk the right
+# branch while proving nothing about it (AGENTS.md: "Pin the decision,
+# not the vocabulary").
+_LINK_LEX = _LEX.add(conjunctions={"i"}, suffix_words={"i"})
+#: the same letter as a connective that is NOT generational vocabulary
+_PLAIN_LEX = _LEX.add(conjunctions={"i"})
+
+
+def test_a_connective_piece_counts_toward_the_carve_outs_total() -> None:
+    # rules.md#P3's count (#397). Four words, one of them the link,
+    # and the link is suffix vocabulary -- so the total reaches four
+    # only because a connective counts ITSELF. Without the count arm
+    # the total is three, the carve-out declines, and the link stays
+    # a name word in the middle.
+    out = _grouped("Josep Carod i Rovira", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Josep", "Carod i Rovira"]]
+
+
+def test_the_count_arm_is_what_moves_it_not_the_vocabulary() -> None:
+    # the control that separates the two halves of commit 1: with the
+    # letter a connective but NOT generational vocabulary, nothing
+    # refused it before and the join already fired. Same output, and
+    # the pair is what says the count arm is about the overlap.
+    out = _grouped("Josep Carod i Rovira", lexicon=_PLAIN_LEX)
+    assert _piece_texts(out) == [["Josep", "Carod i Rovira"]]
+
+
+def test_a_connective_with_nothing_to_its_right_does_not_join() -> None:
+    # the both-sides condition (#397). Four name words, so the count
+    # no longer declines -- what keeps the generation here is the
+    # condition, and dropping it reads 'Smith i' as one piece. The
+    # simplest shape of it: there is no piece to the right at all.
+    out = _grouped("John Quincy Smith i", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["John", "Quincy", "Smith", "i"]]
+
+
+# The condition asks about the NEIGHBOUR's class, and every arm of
+# that question has a LINK/PLAIN pair below: with the letter outside
+# the generational vocabulary nothing is asked and the link joins, so
+# each pair says which arm is doing the work rather than that some
+# arm is (#397 review -- the first cut asked about the link's
+# POSITION, which every one of these shapes satisfies).
+def test_a_suffix_word_on_the_right_is_no_name_word() -> None:
+    out = _grouped("Josep Lluis Carod i Jr.", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Josep", "Lluis", "Carod", "i", "Jr."]]
+    plain = _grouped("Josep Lluis Carod i Jr.", lexicon=_PLAIN_LEX)
+    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i Jr."]]
+
+
+def test_the_right_hand_test_reads_the_peel_not_the_suffix_piece(
+) -> None:
+    # the arm that forces trailing_start rather than is_suffix_piece:
+    # a ONE-CHARACTER suffix word is initial-shaped, so the
+    # suffix-piece test refuses it (rules.md#S2's initial veto) while
+    # assign's trailing peel takes it. Spelled with the piece test
+    # alone, the link would swallow the generation here.
+    lex = _LINK_LEX.add(suffix_words={"v"})
+    out = _grouped("Josep Lluis Carod i V", lexicon=lex)
+    assert _piece_texts(out) == [["Josep", "Lluis", "Carod", "i", "V"]]
+    plain = _grouped("Josep Lluis Carod i V",
+                     lexicon=_PLAIN_LEX.add(suffix_words={"v"}))
+    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i V"]]
+
+
+def test_a_title_on_the_right_is_no_name_word() -> None:
+    out = _grouped("Josep Lluis Carod i Mr.", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Josep", "Lluis", "Carod", "i", "Mr."]]
+    plain = _grouped("Josep Lluis Carod i Mr.", lexicon=_PLAIN_LEX)
+    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i Mr."]]
+
+
+def test_a_leading_title_on_the_left_is_no_name_word() -> None:
+    # the link opens the NAME even though a piece stands before it:
+    # assign peels the title run off the front.
+    out = _grouped("Mr. i Rovira Puig Vila", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Mr.", "i", "Rovira", "Puig", "Vila"]]
+    plain = _grouped("Mr. i Rovira Puig Vila", lexicon=_PLAIN_LEX)
+    assert _piece_texts(plain) == [["Mr. i Rovira", "Puig", "Vila"]]
+
+
+def test_an_unlisted_leading_abbreviation_is_no_name_word_either(
+) -> None:
+    # and THIS is the `lo` bound's own row, the listed spelling above
+    # being caught by the title-piece test as well. rules.md#H2 reads
+    # an unlisted abbreviation opening a name as a title by SHAPE, so
+    # the vocabulary says nothing about 'Xyz.' and only the bound
+    # assign's own title run draws keeps the link from joining it.
+    # Measured 2026-09-20: replace `lo` with 0 and this is the one
+    # test in the suite that dies.
+    out = _grouped("Xyz. i Rovira Puig Vila", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Xyz.", "i", "Rovira", "Puig", "Vila"]]
+    plain = _grouped("Xyz. i Rovira Puig Vila", lexicon=_PLAIN_LEX)
+    assert _piece_texts(plain) == [["Xyz. i Rovira", "Puig", "Vila"]]
+
+
+def test_a_credential_or_honorific_mid_name_is_no_name_word_either(
+) -> None:
+    # what the two bounds do NOT reach, and why the piece tests stay
+    # inside them: neither the title run nor the trailing peel walks
+    # into the middle of a name.
+    suffix = _grouped("Josep Lluis Jr. i Rovira", lexicon=_LINK_LEX)
+    assert _piece_texts(suffix) == [
+        ["Josep", "Lluis", "Jr.", "i", "Rovira"]]
+    title = _grouped("Josep Lluis Mr. i Rovira", lexicon=_LINK_LEX)
+    assert _piece_texts(title) == [
+        ["Josep", "Lluis", "Mr.", "i", "Rovira"]]
+    assert _piece_texts(_grouped("Josep Lluis Jr. i Rovira",
+                                  lexicon=_PLAIN_LEX)) == [
+        ["Josep", "Lluis", "Jr. i Rovira"]]
+    assert _piece_texts(_grouped("Josep Lluis Mr. i Rovira",
+                                  lexicon=_PLAIN_LEX)) == [
+        ["Josep", "Lluis", "Mr. i Rovira"]]
+
+
+def test_the_walk_looks_past_a_run_of_connectives() -> None:
+    # a RUN joins as one, so the word the condition is about is the
+    # first one past the run, not the connective beside the link.
+    out = _grouped("Carod i y Rovira", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Carod i y Rovira"]]
+
+
+def test_where_the_run_runs_out_there_is_no_name_word() -> None:
+    # the same walk reaching the end of the pieces: a link behind
+    # nothing but connectives is joining nothing, and the run may not
+    # absorb it either.
+    out = _grouped("Juan i y", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Juan", "i", "y"]]
+    assert _piece_texts(_grouped("Juan i y", lexicon=_PLAIN_LEX)) == [
+        ["Juan i y"]]
+    doubled = _grouped("Josep Lluis Carod i i", lexicon=_LINK_LEX)
+    assert _piece_texts(doubled) == [
+        ["Josep", "Lluis", "Carod", "i", "i"]]
+    assert _piece_texts(_grouped("Josep Lluis Carod i i",
+                                  lexicon=_PLAIN_LEX)) == [
+        ["Josep", "Lluis", "Carod i i"]]
+
+
+def test_a_link_that_joins_nothing_does_not_count_for_another_join(
+) -> None:
+    # the COUNT half agreeing with the join (#397 review). The
+    # trailing link joins nothing, so it is the generation -- and a
+    # generation is no rootname, so the total stays at three and the
+    # unrelated 'y' two pieces away keeps the carve-out. Counting it
+    # gave the total four and joined the 'y'.
+    out = _grouped("Carod y Rovira i", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Carod", "y", "Rovira", "i"]]
+    plain = _grouped("Carod y Rovira i", lexicon=_PLAIN_LEX)
+    assert _piece_texts(plain) == [["Carod y Rovira i"]]
+
+
+def test_a_connective_with_nothing_to_its_left_does_not_join() -> None:
+    # the other side of the same condition, and it needs four pieces
+    # to get past the count: a link OPENING the name has no name word
+    # behind it either.
+    out = _grouped("i Carod Rovira Puig", lexicon=_LINK_LEX)
+    assert _piece_texts(out)[0][0] == "i"
+
+
+def test_the_both_sides_condition_reads_the_class_not_the_letter(
+) -> None:
+    # the recorded negative control for the class test the freeze
+    # walk opens with, and the one the property invariants CANNOT
+    # give: with the same letter outside the generational vocabulary
+    # the condition declines to ask and the trailing connective
+    # joins, exactly as a trailing 'y' does today. Measured -- remove
+    # the "vocab:suffix" arm and this test is the one that dies.
+    out = _grouped("John Quincy Smith i", lexicon=_PLAIN_LEX)
+    assert _piece_texts(out) == [["John", "Quincy", "Smith i"]]
+
+
+def test_a_trailing_shipped_connective_is_untouched_by_the_condition(
+) -> None:
+    # the shipped-vocabulary half of the same control: 'y' is a
+    # connective and not a suffix word, so the condition never reaches
+    # it and 'Lopez y' stays one piece.
+    out = _grouped("Juan Garcia Lopez y")
+    assert _piece_texts(out) == [["Juan", "Garcia", "Lopez y"]]
+
+
+def test_the_three_word_carve_out_still_declines_before_both_sides(
+) -> None:
+    # the two gates are separate and this is what separates them:
+    # three name words, so the count refuses and the both-sides test
+    # is never reached. Delete the both-sides condition and this test
+    # still passes while its four-word sibling does not.
+    out = _grouped("Josep Carod i", lexicon=_LINK_LEX)
+    assert _piece_texts(out) == [["Josep", "Carod", "i"]]
+
+
+def test_a_one_case_letter_is_an_initial_and_never_counts() -> None:
+    # what keeps the one-case fork's count where it was: classify
+    # writes `initial` or `conjunction` on a single letter and never
+    # both, so a letter the fork read as an initial reaches
+    # _is_rootname with no conjunction tag at all, the count is
+    # unmoved, and the name reads as it always did. The EXCLUSIVITY is
+    # the load-bearing part, not the order of the two tests -- measured
+    # (swapping them moves nothing).
+    lex = _LINK_LEX.add(conjunctions_ambiguous={"i"})
+    out = _grouped("josep carod i rovira", lexicon=lex)
+    assert _piece_texts(out) == [["josep", "carod", "i", "rovira"]]
+
+
+def test_the_class_reaches_a_callers_own_connective() -> None:
+    # rules.md#P3 is keyed on the class throughout: a caller who adds
+    # 'v' to their connectives gets the Catalan link's behavior for
+    # it, because 'v' is generational vocabulary the way 'i' is.
+    p = Parser(lexicon=Lexicon.default().add(conjunctions={"v"}))
+    joined = p.parse("Josep Carod v Rovira")
+    assert (joined.given, joined.family) == ("Josep", "Carod v Rovira")
+    trailing = p.parse("John Quincy Smith v")
+    assert (trailing.family, trailing.suffix) == ("Smith", "v")
+
+
+def test_a_callers_non_generational_letter_is_outside_the_condition(
+) -> None:
+    # the recorded negative control, at the reading level: 'x' is a
+    # roman numeral letter that is NOT suffix vocabulary, so the
+    # both-sides condition declines to ask and BOTH positions join,
+    # which is what they did before this change too.
+    p = Parser(lexicon=Lexicon.default().add(conjunctions={"x"}))
+    assert p.parse("John Quincy Smith x").family == "Smith x"
+    assert p.parse("Josep Carod x Rovira").family == "Carod x Rovira"
+
+
+def test_the_count_reaches_a_connective_that_is_particle_vocabulary(
+) -> None:
+    # the ACCEPTED CONSEQUENCE of counting a connective whatever else
+    # it is: _is_rootname refuses a PARTICLE piece the same way it
+    # refuses a generational one, so a caller who makes 'y' a particle
+    # too used to get a different reading from the default lexicon.
+    # Now it agrees with it -- the direction the rule wants. Measured
+    # before this change: given 'Juan', middle 'Velasquez', family
+    # 'y Garcia', family_base 'Garcia'.
+    p = Parser(lexicon=Lexicon.default().add(particles={"y"}))
+    out = p.parse("Juan Velasquez y Garcia")
+    assert (out.given, out.middle, out.family) == (
+        "Juan", "", "Velasquez y Garcia")
+    # the cost that comes with it, pinned rather than hidden:
+    # family_base drops a particle wherever it stands and not only
+    # leading, so the joined run loses the letter here. A standing
+    # rules.md#R2 limit this row surfaces, not one it creates.
+    assert out.family_base == "Velasquez Garcia"
+
+
+# --- #397 review: the link inside a MAIDEN CLAUSE -------------------
+# rules.md#M2's link clause. The walk ends the birth name at the first
+# suffix WORD after the marker, and the link is one -- so it ended the
+# clause there, and what #397 added was to JOIN the words it left
+# standing into the current surname. Each branch below has the same
+# LINK/PLAIN pair the both-sides tests above use: with the letter
+# outside the generational vocabulary the walk never stopped at it in
+# the first place, so the pair says which arm does the work.
+#
+# `ma` is added to BOTH acronym sets where the right-hand neighbour
+# has to be an AMBIGUOUS credential: such a word carries no
+# `vocab:suffix` tag, so the piece test cannot refuse it and only the
+# peel bound keeps it out of the clause.
+_LINK_MA_LEX = _LINK_LEX.add(suffix_acronyms={"ma"},
+                             suffix_acronyms_ambiguous={"ma"})
+_PLAIN_MA_LEX = _PLAIN_LEX.add(suffix_acronyms={"ma"},
+                               suffix_acronyms_ambiguous={"ma"})
+
+
+def test_a_link_inside_a_maiden_clause_does_not_end_it() -> None:
+    # the statement of the rule. A birth-name word on each side of the
+    # link, so the walk steps over it and the clause takes all three
+    # words; without the exception the clause is 'Puig' and 'i Soler'
+    # is left for the joins to build a surname out of.
+    out = _grouped("Jane Doe née Puig i Soler", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig", "i", "Soler"]
+    assert _piece_texts(out) == [["Jane", "Doe"]]
+
+
+def test_the_clause_link_arm_is_what_moves_it_not_the_vocabulary(
+) -> None:
+    # the PLAIN twin: with the letter a connective but NOT generational
+    # vocabulary the walk never stopped at it, so the reading is the
+    # one it always had. The pair is what says the exception is about
+    # the overlap.
+    out = _grouped("Jane Doe née Puig i Soler", lexicon=_PLAIN_LEX)
+    assert _maiden_texts(out) == ["Puig", "i", "Soler"]
+
+
+def test_the_clause_link_survives_a_family_comma() -> None:
+    # the same walk under the GIVEN_SLOT reader, which is a different
+    # branch of the take rather than a second member of one shape:
+    # before the exception the leak landed in the given part.
+    out = _grouped("Doe, Jane née Puig i Soler", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig", "i", "Soler"]
+    assert _piece_texts(out) == [["Doe"], ["Jane"]]
+
+
+def test_a_clause_link_runs_twice_over() -> None:
+    # every link of the clause is asked, not just the first: the walk
+    # steps over each one it finds between two birth-name words.
+    out = _grouped("Jane Doe née Puig i Soler i Vila", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig", "i", "Soler", "i", "Vila"]
+
+
+def test_a_clause_link_with_nothing_on_its_right_still_ends_it(
+) -> None:
+    # the first control. Nothing stands after the link at all, so it
+    # is joining nothing and is the generation it also spells -- the
+    # clause ends at it exactly as it did before, and `_name_word_
+    # beside` walks off the end. The PLAIN twin keeps the letter,
+    # which is what says this row is the condition's doing.
+    out = _grouped("Jane Doe née Puig i", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig"]
+    plain = _grouped("Jane Doe née Puig i", lexicon=_PLAIN_LEX)
+    assert _maiden_texts(plain) == ["Puig"]
+
+
+def test_a_generation_on_the_links_right_is_no_name_word() -> None:
+    # the second control, refused by CLASS: 'jr' is suffix vocabulary,
+    # so `_name_word_beside` declines it wherever it stands.
+    out = _grouped("Jane Doe née Puig i jr", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig"]
+    plain = _grouped("Jane Doe née Puig i jr", lexicon=_PLAIN_LEX)
+    assert _maiden_texts(plain) == ["Puig", "i"]
+
+
+def test_an_ambiguous_credential_on_the_right_is_refused_by_bound(
+) -> None:
+    # the third control, and the one that pins WHICH right-hand bound
+    # the exception reads. 'MA' carries no `vocab:suffix` tag -- the
+    # piece test says nothing about it -- so what keeps it out of the
+    # clause is `peel_start`, where assign's trailing run begins over
+    # the pieces as written. Read the walk's own stop instead and this
+    # row takes 'i MA' into the birth name.
+    out = _grouped("Jane Doe née Puig i MA", lexicon=_LINK_MA_LEX)
+    assert _maiden_texts(out) == ["Puig"]
+    plain = _grouped("Jane Doe née Puig i MA", lexicon=_PLAIN_MA_LEX)
+    assert _maiden_texts(plain) == ["Puig", "i"]
+
+
+def test_a_suffix_word_that_is_no_connective_still_ends_the_clause(
+) -> None:
+    # the recorded negative control for the CLASS half of the
+    # exception, the shape 'Juan Garcia Lopez y' is for the join: 'jr'
+    # stands between two birth-name words and is not a connective at
+    # all, so the exception is never asked and the clause ends at it
+    # as it always did. Drop the connective conjunct and this row
+    # reads maiden 'Puig jr Soler' -- measured. Identical under both
+    # lexicons, the letter deciding nothing here.
+    out = _grouped("Jane Doe née Puig jr Soler", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == ["Puig"]
+    assert _piece_texts(out) == [["Jane", "Doe", "jr", "Soler"]]
+
+
+def test_the_marker_is_not_the_name_word_on_the_links_left() -> None:
+    # the fourth control, and the one the clause's own `lo` bound
+    # carries: the marker announces the name and is no word of it, so
+    # a link standing first inside the clause joins nothing there. The
+    # walk then stops at its very first piece and the pass declines
+    # altogether, leaving the marker an ordinary word (rules.md#M2).
+    out = _grouped("Jane Doe née i Soler", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == []
+    assert _piece_texts(out) == [["Jane", "Doe", "née i Soler"]]
+    plain = _grouped("Jane Doe née i Soler", lexicon=_PLAIN_LEX)
+    assert _maiden_texts(plain) == ["i", "Soler"]
+
+
+def test_a_marker_with_nothing_after_it_declines_before_the_bound(
+) -> None:
+    # the clause's `lo` is the first piece after the marker run, and
+    # with nothing behind the marker there is no such piece: the pass
+    # declines here rather than indexing for a bound it would never
+    # read. Unchanged behavior, and the row exists because the early
+    # return is what makes it unchanged.
+    out = _grouped("Jane Doe née", lexicon=_LINK_LEX)
+    assert _maiden_texts(out) == []
+    assert _piece_texts(out) == [["Jane", "Doe", "née"]]
+
+
+# --- #397 second review: the bound, the class and the frozen piece --
+
+def test_a_trailing_title_does_not_hide_the_suffix_run_from_the_join(
+) -> None:
+    # rules.md#H5 read where the JOIN asks its question (#397 second
+    # review). `trailing_start` reads the peel over the pieces as
+    # WRITTEN, so a title standing behind the suffix run makes the
+    # peel take nothing and the answer is `len(pieces)` -- and a
+    # caller using it as the right bound of the NAME is then told a
+    # credential is a name word. 'MA' carries no `vocab:suffix` tag,
+    # so the piece test cannot refuse it either and the join swallowed
+    # it: family 'Adams i MA', no report, and `initials()` gaining an
+    # 'M.'.
+    #
+    # The pair is the finding, and it is H5's own sentence: the name
+    # one title shorter has always read the other way.
+    # the SHIPPED vocabulary reaches this row -- 'i' is a default
+    # connective and a default suffix word, 'MA' a default ambiguous
+    # acronym and 'Prof.' a default title -- so this is one of the
+    # few #397 rows that needs no built lexicon at all.
+    shipped = Lexicon.default()
+    titled = _grouped("John Quincy Adams i MA Prof.", lexicon=shipped)
+    bare = _grouped("John Quincy Adams i MA", lexicon=shipped)
+    assert _piece_texts(titled) == [
+        ["John", "Quincy", "Adams", "i", "MA", "Prof."]]
+    assert _piece_texts(bare) == [["John", "Quincy", "Adams", "i", "MA"]]
+    # and end to end, where the fields say what the bound bought.
+    # The SHIPPED vocabulary reaches this: 'i' is a default
+    # connective and a default suffix word, and 'MA' a default
+    # ambiguous acronym, so no built lexicon is needed here and the
+    # row is a real parse rather than a configured one.
+    parser = Parser()
+    name = parser.parse("John Quincy Adams i MA Prof.")
+    assert name.as_dict() == {
+        "title": "Prof.", "given": "John", "middle": "Quincy",
+        "family": "Adams", "suffix": "i MA", "nickname": "", "maiden": ""}
+    assert name.initials() == "J. Q. A."
+    assert [a.kind.value for a in name.ambiguities] == ["suffix-or-name"]
+    # a LOWER-CASE title is the same shape and reaches the same
+    # bound: the vocabulary lookup is folded, so 'prof.' peels like
+    # 'Prof.'
+    lower_title = parser.parse("John Quincy Adams i MA prof.")
+    assert lower_title.title == "prof."
+    assert lower_title.suffix == "i MA"
+    # the ONE-CASE spellings never reached the defect and are pinned
+    # as the control: written wholly in one case the letter reads as
+    # an initial (rules.md#P3's marked subset), no join is attempted
+    # at all, and both spellings already agreed with each other and
+    # with the untitled name at dc3bdf9c -- which is what says the
+    # bound and not the marking is what this row is about.
+    for text, title in (("john quincy adams i ma prof.", "prof."),
+                        ("JOHN QUINCY ADAMS I MA PROF.", "PROF.")):
+        one_case = parser.parse(text)
+        assert one_case.title == title
+        assert one_case.suffix == text.split()[-2]
+
+
+def test_a_multi_letter_link_of_the_suffix_vocabulary_joins_by_the_same_rule(
+) -> None:
+    # rules.md#P3's both-sides clause names a CLASS -- "a connective
+    # that is also generational vocabulary" -- and says nothing about
+    # how the word is spelled (#397 second review). A `len(text) != 1`
+    # filter stood in the stage and narrowed the clause to one-letter
+    # connectives, untested and undocumented; this is the row that was
+    # caller-reachable past it. Nothing SHIPPED reaches it -- 'i' is
+    # the only member of the class in the default vocabulary and in
+    # every locale pack -- which is why the lexicon is built here.
+    lex = Lexicon.default().add(conjunctions={"og"},
+                                suffix_words={"og"})
+    parser = Parser(lexicon=lex)
+    # nothing on its right: it is the generation it also spells
+    lone = parser.parse("John Quincy Smith og")
+    assert lone.family == "Smith"
+    assert lone.suffix == "og"
+    # a name word on each side: it joins, exactly as a one-letter
+    # member does
+    joined = parser.parse("Josep Carod og Rovira")
+    assert joined.family == "Carod og Rovira"
+    # the three-word carve-out stays SINGLE-LETTER, which is what its
+    # own sentence says ("a single-letter connective in a three-word
+    # name"): 'og' is two letters, so it joins in a THREE-word name
+    # where the one-letter 'i' of the shipped vocabulary stays a name
+    # word in the middle.
+    assert parser.parse("Josep og Carod").given == "Josep og Carod"
+    assert Parser().parse("Josep i Carod").middle == "i"
+    # and with nothing on its right the class test decides before the
+    # carve-out is ever asked, for either spelling
+    assert parser.parse("Josep Carod og").suffix == "og"
+    assert Parser().parse("Josep Carod i").suffix == "i"
+
+
+def test_a_frozen_link_is_still_absorbed_by_a_neighbours_join() -> None:
+    # What freezing a piece claims and what it does not (#397 second
+    # review). `frozen` keeps a connective from being the SUBJECT of a
+    # join; it does not keep the word out of the span another
+    # connective's join takes. The trailing 'i' here has nothing on
+    # its right and is frozen, and the 'y' beside it joins across it
+    # all the same.
+    #
+    # Not a defect and not a silence: this is the reading the parent
+    # commit 46651750 gives the same name, the letter being no
+    # connective there at all, so the row is a CONTROL for the
+    # comment beside `frozen` rather than a behavior claim of its own.
+    out = Parser().parse("Josep Carod Rovira Puig y i")
+    assert out.family == "Puig y i"
+    assert out.middle == "Carod Rovira"
+    assert out.suffix == ""
