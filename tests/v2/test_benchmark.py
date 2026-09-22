@@ -290,7 +290,7 @@ _FACTOR = 4
 # repeated runs, inside the clean column, and neither number moved.
 # The thirteenth (link_run, #397 second review) arrived with its own
 # quadratic in hand as well, and it is the one this shape was added
-# FOR rather than one found by adding it: `_name_word_beside` walked
+# FOR rather than one found by adding it: `_between_name_words` walked
 # the run of connectives beside a link once per MEMBER of that run,
 # so at commit b9ed1429 the shape measures 8.48 at base 100, 10.29 at
 # 200 and 12.11 at 400 -- outside the bound at every one of them, and
@@ -506,14 +506,17 @@ def test_a_trailing_credential_run_does_not_cost_exponentially() -> None:
 #
 # One pair, not two: the defect here is a quadratic and there is no
 # exponential to order it against, so the 16-vs-64 pair is the whole
-# guard. Measured 2026-09-20 through this file's own `_frames_for`:
-# 876 frames at 16 and 2,652 at 64 on this tree (3.03x), against
-# 1,125 and 6,741 at b9ed1429 (5.99x), where `_name_word_beside`
-# walked the run once per member -- identical on three repeated runs
-# at each end, frame counts being deterministic.
+# guard. Re-measured 2026-09-21 on py3.11 through this file's own
+# `_frames_for`: 859 frames at 16 and 2,587 at 64 on this tree
+# (3.01x), against 1,125 and 6,741 at b9ed1429 (5.99x), where
+# `_between_name_words` walked the run once per member -- identical on
+# three repeated runs at each end, frame counts being deterministic.
+# One frame per link below the 875/2,651 this same helper read before
+# `_between_name_words` answered both sides in one call, and the pair
+# first recorded here (876/2,652) was one frame above that again.
 _CLAUSE_RUN_SMALL = 16
 _CLAUSE_RUN_LARGE = 64
-#: 3.03x measured here against 5.99x at b9ed1429: 4.5 sits ~1.5x over
+#: 3.01x measured here against 5.99x at b9ed1429: 4.5 sits ~1.5x over
 #: the measurement and ~1.3x under the regression. Frame counts are
 #: deterministic for a given tree and interpreter, so both margins are
 #: for a future shape change rather than for runner noise.
@@ -553,5 +556,5 @@ def test_a_clause_link_run_does_not_cost_quadratically() -> None:
         f"and one holding {_CLAUSE_RUN_LARGE} costs {large} -- "
         f"{ratio:.1f}x for 4x the input, where this tree measures 3.0x "
         f"and the per-member walk at b9ed1429 measured 6.0x. "
-        f"_group.py's `_name_word_beside` is walking the run per member "
+        f"_group.py's `_between_name_words` is walking the run per member "
         f"again (#397)")
