@@ -1017,15 +1017,37 @@ class Constants:
         # _normpairs raises _MaskValueError for exactly that shape, and
         # the except clause re-spells its offered fix for a v1 caller.
         # Caught by TYPE, so every other Lexicon error passes through
-        # unchanged. Measured: three of Lexicon's checks cannot fire
-        # from here, this method's translations satisfying them by
-        # construction (particles_ambiguous inside particles, the
-        # bound/never-given contradiction, and an ambiguous acronym in
-        # suffix_words); what does reach it is an entry normalizing to
-        # empty, in capitalization_exceptions or any set field
-        # (c.titles.add("...") raises Lexicon's own "normalizes to
-        # empty"), and a non-str value's TypeError -- a raise v1 also
-        # had, later, at capitalize().
+        # unchanged. Only the three SUBSET checks (particles_ambiguous
+        # inside particles, suffix_acronyms_ambiguous inside
+        # suffix_acronyms, honorific_tails inside suffix_words) are
+        # satisfied BY CONSTRUCTION: each is built below as an
+        # intersection or union with its OWN base -- particles_ambiguous
+        # from `particles` itself, honorific_tails from `suffix_words`
+        # itself -- so the image of a subset relation under any
+        # element-wise normalization is still a subset, whatever the
+        # raw spelling. The CONTRADICTION check (bound_given_names &
+        # particles inside particles_ambiguous) and the GATE-BYPASS
+        # check (suffix_acronyms_ambiguous disjoint from suffix_words)
+        # do NOT have that property -- each compares two sets built by
+        # SEPARATE set arithmetic (particles_ambiguous's own union
+        # includes `bound & particles`, computed before Lexicon
+        # normalizes anything; suffix_words above subtracts
+        # ambiguous_acronyms the same way) -- and are reachable through
+        # an entry carrying EDGE WHITESPACE: SetManager strips edge
+        # periods but not edge whitespace, while Lexicon's own
+        # normalization strips both, so `c.suffix_not_acronyms.add('ba
+        # ')` (raw 'ba ' survives the shim's subtraction against
+        # 'ba', then Lexicon normalizes both to 'ba' and the
+        # gate-bypass check collides) and `c.bound_first_names.add("'t
+        # ")` (analogous miss against the contradiction check) both
+        # reach Lexicon(...) and raise -- measured, and true of this
+        # method unchanged since before this session; pre-existing,
+        # not fixed here, and left for the orchestrator to file. What
+        # else reaches it is an entry normalizing to empty, in
+        # capitalization_exceptions or any set field (c.titles.add("...")
+        # raises Lexicon's own "normalizes to empty"), and a non-str
+        # value's TypeError -- a raise v1 also had, later, at
+        # capitalize().
         try:
             lexicon = Lexicon(
                 titles=frozenset(self.titles),
@@ -1115,8 +1137,15 @@ class Constants:
                     sorted(self.capitalization_exceptions.items())),  # type: ignore[arg-type]
             )
         except _MaskValueError as e:
+            # A v1-ONLY message built from the fields, not `{e}` --
+            # the 2.0 exception's own message offers the 2.0
+            # `capitalization_exceptions=((...),)` constructor spelling,
+            # which no v1 Constants caller can paste.
             raise ValueError(
-                f"{e} -- on a v1 Constants, write "
+                f"capitalization_exceptions value {e.value!r} for key "
+                f"{e.key!r} does not spell the key's letters and "
+                f"digits: a value is a case mask, the key's own "
+                f"letters and digits recased -- write "
                 f"constants.capitalization_exceptions[{e.key!r}] = "
                 f"{e.offered!r}"
             ) from e

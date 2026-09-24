@@ -889,6 +889,20 @@ def test_a_multiword_capitalization_exceptions_key_warns_exactly_once(
     assert len(multi) == 1
 
 
+def test_a_multiword_capitalization_exceptions_key_with_a_bad_mask_only_warns(
+) -> None:
+    """#459 review, shim half of test_a_multiword_key_skips_the_mask_
+    check_entirely in tests/v2/test_lexicon.py: a v1 caller's
+    multi-word key is unreachable through capitalized() regardless of
+    its value, so a value that does not spell it must not raise here
+    either."""
+    c = Constants(capitalization_exceptions={'ph d': 'Doctor'})
+    with pytest.warns(UserWarning, match="matched one word at a time"):
+        HumanName("John Smith", constants=c)
+    lexicon, _policy, _render = c._snapshot()
+    assert lexicon.capitalization_exceptions_map == {"ph d": "Doctor"}
+
+
 def test_2x_pickle_roundtrip_keeps_a_readded_dead_entry() -> None:
     # the all-eight gate: a 2.0 user's deliberate re-add of ONE legacy
     # string survives a round-trip (only a full pre-2.0 blob, which

@@ -19,11 +19,15 @@ a ``Lexicon`` is built from it. An acronym the suffix vocabulary
 already lists, written plainly or in dotted form, and a roman
 numeral need no entry: case repair writes a suffix of either kind in
 capitals by itself. A caller's OWN acronym -- one absent from
-``suffix_acronyms`` -- is not covered by that and parses as an
-ordinary name word instead; it needs either a ``suffix_acronyms``
-entry (``Lexicon.add(suffix_acronyms={...})`` in the 2.0 API,
-``constants.suffix_acronyms.add(...)`` in the v1 one) or a mask of
-its own.
+``suffix_acronyms`` -- depends on how it is written. Written
+PLAINLY (``dphil``) it parses as an ordinary name word and repairs
+as one (``Dphil``). Written DOTTED (``d.phil.``) it is a suffix by
+shape alone, with no vocabulary entry needed to read it as one, and
+repairs in all capitals the same as a listed acronym does
+(``D.PHIL.``). Either way, a caller who wants a specific spelling
+needs a ``suffix_acronyms`` entry (``Lexicon.add(suffix_acronyms=
+{...})`` in the 2.0 API, ``constants.suffix_acronyms.add(...)`` in
+the v1 one) or a mask of its own.
 """
 
 

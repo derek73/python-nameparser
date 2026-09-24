@@ -65,21 +65,10 @@ class WorkToken:
 #: cannot reach the other way).
 _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 
-# SHAPE_ACRONYM_TAG, imported from _types above -- where it lives
-# since #459, because case repair reads it too and _render may not
-# import the pipeline -- is the by-shape half of #289/#516's
-# ambiguous credential class: a token classify admits to
-# `vocab:suffix-ambiguous`'s READING by SHAPE rather than by the
-# listed vocabulary (`Policy.unlisted_dotted_suffixes` is the first
-# emitter; `Policy.unlisted_caps_suffixes` is the second, and
-# classify writes the tag from both branches). One constant, not a
-# string literal at each site, because the readers that must tell a
-# by-shape member apart from a listed one -- `_pieces.peel_trailing`
-# and `_pieces.listed_lean`, which `segment_suffix_reading` asks
-# through, so the reading it decides is second-hand -- cannot afford
-# to spell it several ways and have one of them typo silently past
-# the others. The two sites that want EITHER half read
-# `_AMBIGUOUS_CREDENTIAL_TAGS` below rather than this constant.
+# SHAPE_ACRONYM_TAG is defined and explained in _types (its #: block
+# above the constant, not restated here -- defined there so _render
+# can read it too); re-exported here beside the membership half below
+# because the stages read both halves from one module.
 
 #: The MEMBERSHIP half of the same class: classify's tag for a token
 #: the ambiguous credential vocabulary claims, by listing

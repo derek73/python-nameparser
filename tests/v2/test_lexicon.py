@@ -240,17 +240,37 @@ def test_the_mask_error_falls_back_when_upper_would_not_itself_validate(
         .capitalization_exceptions_map == {"straße": "straße"}
 
 
+def test_the_mask_error_echoes_the_callers_own_spelling_not_the_composed_one(
+) -> None:
+    """#459 review: the value used to be captured AFTER NFC
+    normalization, so the message (and _MaskValueError.value) showed
+    the composed spelling even when the caller wrote a decomposed one.
+    A decomposed 'e' + a combining acute and its NFC-composed 'é' look
+    identical printed, but are different str objects -- repr() shows
+    it (different escaping), and here it also changes len()."""
+    decomposed = "PhéD"  # 'PhéD', 'e' + U+0301 COMBINING ACUTE
+    composed = unicodedata.normalize("NFC", decomposed)
+    assert repr(decomposed) != repr(composed)
+    with pytest.raises(_MaskValueError) as caught:
+        Lexicon(capitalization_exceptions=(("phed", decomposed),))
+    assert caught.value.value == decomposed
+    assert repr(decomposed) in str(caught.value)
+    assert repr(composed) not in str(caught.value)
+
+
 def test_mask_value_error_survives_pickle_and_copy() -> None:
     """The inherited __reduce__ would re-call __init__ with self.args,
-    the message alone, and __init__ needs `key` and `offered` too --
-    so without the override a ProcessPoolExecutor worker raising it
-    would surface as BrokenProcessPool rather than this ValueError."""
+    the message alone, and __init__ needs `key`, `normalized_key` and
+    `value` too -- so without the override a ProcessPoolExecutor
+    worker raising it would surface as BrokenProcessPool rather than
+    this ValueError."""
     try:
         Lexicon(capitalization_exceptions=(("jr", "Junior"),))
     except _MaskValueError as caught:
         original = caught
     else:
         raise AssertionError("expected _MaskValueError")
+    original.add_note("seen in worker 3")
     for restored in (pickle.loads(pickle.dumps(original)),
                      copy.copy(original)):
         assert isinstance(restored, ValueError)
@@ -258,6 +278,10 @@ def test_mask_value_error_survives_pickle_and_copy() -> None:
         assert restored.key == original.key == "jr"
         assert restored.offered == original.offered
         assert str(restored) == str(original)
+        # __reduce__'s third element (self.__dict__) is what carries a
+        # note added after construction -- reconstructing from the
+        # three __init__ fields alone would drop it.
+        assert restored.__notes__ == ["seen in worker 3"]
 
 
 def test_add_and_remove_return_new_lexicons() -> None:
@@ -806,6 +830,21 @@ def test_multiword_capitalization_key_warns() -> None:
         dataclasses.replace(
             Lexicon.empty(),
             capitalization_exceptions=(("zqx zqy", "ZqXZqY"),))
+
+
+def test_a_multiword_key_skips_the_mask_check_entirely() -> None:
+    """#459 review: the mask check ran before the multi-word-key
+    warning, so a key that can never match -- 'ph d' has no word in
+    capitalized()'s per-word lookup -- still raised over a value that
+    does not spell it (AGENTS.md: an invariant guards harm, and an
+    unreachable entry does none). Reordered so a multi-word key only
+    warns, storing its value verbatim regardless of the mask
+    question."""
+    with pytest.warns(UserWarning, match="matched one word at a time"):
+        lex = dataclasses.replace(
+            Lexicon.empty(),
+            capitalization_exceptions=(("ph d", "Doctor"),))
+    assert lex.capitalization_exceptions_map == {"ph d": "Doctor"}
 
 
 def test_default_lexicon_builds_warning_free() -> None:

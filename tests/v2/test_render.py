@@ -662,7 +662,8 @@ def test_a_mask_recases_the_word_as_the_writer_punctuated_it() -> None:
                          ("john smith bsc", "BSc"),
                          ("JOHN SMITH MSC", "MSc")):
         assert parse(text).capitalized().suffix == suffix, text
-    # two tokens, and 'ph.' is no key: nothing to mask, nothing moves
+    # two tokens, and 'ph.' is no key: no mask applies, and each word
+    # title-cases on its own
     assert str(parse("john smith ph. d.").capitalized()) \
         == "John Smith Ph. D."
     # the mask is asked BEFORE the acronym clause, which would give
@@ -805,6 +806,10 @@ def test_a_split_initial_is_capitalized_only_where_the_mask_keeps_it_joined(
             (".a", "a", ".a"),         # single-letter mask never overrides
             ("a.", "a", "a."),
             ("2b.", "2b", "2b."),      # 'b' has no LETTER neighbor in '2b'
+            # a digit ends a run on the NEXT side too, not only the
+            # previous one the row above covers
+            ("b.2", "b2", "b.2"),
+            ("2.b.", "2b", "2.b."),
             # the mask's own 'A' already agrees, so this row alone
             # cannot tell the override from plain masking; the two
             # all-lowercase masks after it can
@@ -818,8 +823,23 @@ def test_a_split_initial_is_capitalized_only_where_the_mask_keeps_it_joined(
             # a fullwidth stop is a full stop too -- reachable by a
             # direct call only, since _WORD splits a token at it
             ("a．bc", "abc", "A．bc"),
+            ("ab．c", "abc", "ab．C"),  # fullwidth stop on the previous side
+            # a TITLECASE mask letter (Ǆ, the digraph DŽ's title form)
+            # reads as upper -- `not mask_chars[at].islower()` is true
+            # for it same as for a plain uppercase letter -- a
+            # documented limit (_apply_mask's own docstring)
+            ("ǆ", "ǅ", "Ǆ"),
     ):
         assert _apply_mask(word, mask) == expected, (word, mask)
+    # The override's two index guards ('i > 0' before reading
+    # word[i - 1], 'i < last' before reading word[i + 1]) matter only
+    # for a split letter at an actual EDGE of the word -- reachable
+    # here only by calling _apply_mask directly, since through
+    # _cap_text a hyphen is never handed to it: _WORD splits a token
+    # at a hyphen first (and the hyphen clause in _cap_text handles
+    # that text separately), so only a full stop reaches this far.
+    assert _apply_mask("ab-c", "abc") == "ab-c"
+    assert _apply_mask("a-bc.", "abc") == "a-bc."
     for text, suffix in (("john smith b.s.c.", "B.S.C."),
                          ("JOHN SMITH B.S.C.", "B.S.C."),
                          ("john smith m.s.c.", "M.S.C."),
@@ -864,6 +884,27 @@ def test_a_masks_upper_fallback_can_lengthen_a_word_through_ss() -> None:
                            "john a.ß smith").middle == "A.SS"
     assert _repaired_under((("straße", "STRAẞE"),),
                            "john straße").family == "STRASSE"
+
+
+def test_a_lengthening_mask_is_not_a_fixpoint_under_a_second_forced_pass(
+) -> None:
+    """decisions.md#R4 (2026-09-24 review, sub-clause (a)): capitalized()'s
+    own docstring claims every clause is a fixpoint, so a repaired name
+    comes back unchanged if repaired again -- true everywhere except
+    this one boundary. The FIRST forced pass over 'a.ß' under the
+    ('a.ß', 'aß') mask gives 'A.SS' (the previous test). Forcing that
+    OUTPUT through the same lexicon a second time folds it to 'a.ss',
+    which is a different letter sequence from the stored key 'a.ß' --
+    not merely a different case of the same one -- so the exceptions
+    map lookup that found the entry on the first pass misses on the
+    second, and the word falls through to plain title-casing."""
+    lex = dataclasses.replace(Lexicon.default(),
+                              capitalization_exceptions=(("a.ß", "aß"),))
+    first = parse("john a.ß smith").capitalized(lex, force=True)
+    assert first.middle == "A.SS"
+    second = first.capitalized(lex, force=True)
+    assert second.middle == "A.ss"
+    assert second.middle != first.middle
 
 
 def test_a_masks_punctuation_marks_its_joins_and_is_never_written() -> None:
@@ -927,6 +968,19 @@ def test_a_mask_cases_through_the_whole_word_for_context_sensitive_letters(
     # longer than the word, and there ß keeps its own lowercase under
     # the mask's lowercase letter
     assert _apply_mask("straße", "STRAßE") == "STRAßE"
+    # same fallback (the word's own upper/lower length still
+    # disagrees regardless of the mask's case), with a LOWERCASE mask
+    # this time: the per-character path lowers every letter,
+    # including ß's own, to 'straße'
+    assert _apply_mask("STRAßE", "straße") == "straße"
+    # `same_length` chains three lengths (lowered, uppered, word); the
+    # ß rows above both fail it through the UPPERED side ('ß' grows
+    # under .upper()). This row fails it through the LOWERED side
+    # instead -- 'İ' (capital dotted I) grows under .lower() to 'i̇'
+    # (dotless i + combining dot above) -- and the last row fails it
+    # through BOTH at once, mixing ß and İ in one word.
+    assert _apply_mask("İx", "ix") == "İx".lower()
+    assert _apply_mask("ßİ", "ßi") == "".join(c.lower() for c in "ßİ")
     # end to end, through a custom Lexicon: a per-character
     # c.lower()/c.upper() walk gave 'Κοσ' here (medial sigma), wrong
     lex = dataclasses.replace(Lexicon.default(),
@@ -1028,7 +1082,12 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
             # named-relative bound would wrongly read it as interior
             # and lower it
             ("jose -y-garcia-lopez", "Jose -Y-Garcia-Lopez"),
-            ("jose garcia-lopez-y-", "Jose Garcia-Lopez-Y-")):
+            ("jose garcia-lopez-y-", "Jose Garcia-Lopez-Y-"),
+            # a part holding only punctuation ('.') is not a worded
+            # neighbour -- the split is ['.', 'y', 'garcia'], so 'y'
+            # has only ONE worded neighbour and stays ordinary name
+            # text rather than reading as the connective
+            ("jose .-y-garcia", "Jose .-Y-Garcia")):
         assert str(parse(text).capitalized()) == repaired, text
     # mixed case is R5's: untouched unless forced
     mixed = parse("Jose Ortega-Y-Gasset")

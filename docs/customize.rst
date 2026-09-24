@@ -205,9 +205,13 @@ capitalized where the mask keeps that letter inside a longer run, so
 listed in ``suffix_acronyms`` — plain or dotted — and a roman numeral
 need no entry at all: case repair writes a suffix of either kind in
 capitals by itself. A caller's own acronym, one ``suffix_acronyms``
-doesn't already list, isn't covered by that and parses as an ordinary
-name word instead — give it a ``suffix_acronyms`` entry (or a mask of
-its own) rather than relying on this fallback.
+doesn't already list, depends on how it is written: plain (``dphil``)
+it parses as an ordinary name word and repairs as one (``Dphil``,
+above); dotted (``d.phil.``) it is a suffix by shape alone, with no
+vocabulary entry needed to read it as one, and repairs in all
+capitals the same as a listed acronym does (``D.PHIL.``). Either
+way, give it a ``suffix_acronyms`` entry (or a mask of its own)
+rather than relying on this fallback.
 
 Words that are also ordinary names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

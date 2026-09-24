@@ -174,6 +174,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_a_mismatched_exception_value_raises_at_the_first_parse(
         self,
     ) -> None:
+        from nameparser._lexicon import _MaskValueError
         c = Constants(capitalization_exceptions={'jr': 'Junior'})
         with pytest.raises(ValueError,
                            match="does not spell the key's letters") \
@@ -181,6 +182,12 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
             HumanName('john smith jr', constants=c)
         assert "constants.capitalization_exceptions['jr'] = 'JR'" \
             in str(caught.value)
+        # The v1 message is built fresh from the fields, not from the
+        # wrapped 2.0 exception's own text -- so it never carries the
+        # 2.0 constructor spelling a v1 caller cannot paste.
+        assert "Lexicon(" not in str(caught.value)
+        assert "capitalization_exceptions=((" not in str(caught.value)
+        assert isinstance(caught.value.__cause__, _MaskValueError)
         # pasted onto a fresh Constants, the offered fix works
         fixed = Constants()
         fixed.capitalization_exceptions['jr'] = 'JR'

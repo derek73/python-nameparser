@@ -422,7 +422,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # first, which is what keeps a conventionally mixed-case acronym as
     # it is written (bsc -> BSc) though it is listed here too. Gated
     # on the SUFFIX role so a word that is a family name only happens
-    # to be in the vocabulary (anh van DO) still repairs as an ordinary
+    # to be in the vocabulary (anh van do) still repairs as an ordinary
     # name word -- #459's given-role half, decided: repair follows the
     # role the parse chose ('qc mp' -> 'Qc MP').
     if role is Role.SUFFIX and (
@@ -460,20 +460,27 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     if "-" not in text:
         return _WORD.sub(cap, text)
     parts = text.split("-")
-    named = [at for at, part in enumerate(parts) if _WORD.search(part)]
+    # A "named" part needs an alphanumeric, not just a _WORD match:
+    # _WORD also matches a run of bare periods (or underscores), so a
+    # part holding only punctuation -- the family TOKEN of 'jose
+    # .-y-garcia' is '.-y-garcia', which splits to ['.', 'y', 'garcia']
+    # -- is not a worded neighbour and must not count as one.
+    named = [at for at, part in enumerate(parts)
+             if any(c.isalnum() for c in part)]
     if len(named) < 3:
         return _WORD.sub(cap, text)
     # rules.md#R4: "Inside a hyphenated word, a part that is
     # connective vocabulary with a worded part on each side of it
     # keeps its lowercase" (#478). Decided here, not in _cap_word,
-    # whose word has lost its neighbours. Only a part holding a word
-    # is a neighbour: an empty one is skipped ('garcia--y-lopez' keeps
-    # its 'y') and supplies none ('md-phd-'). An EDGE part stays
-    # ordinary name text ('juan e-f smith' keeps 'E-F'), so no word is
-    # re-read as connective or initial by its case (#458). A single
-    # letter with a period is an initial, as classify reads it, never
-    # the connective ('j.-e.-p. dupont' keeps 'E.'); the multi-letter
-    # 'und.' in 'hans smith-und.-jones' still lowers.
+    # whose word has lost its neighbours. Only a part holding an
+    # alphanumeric is a neighbour: an empty one is skipped
+    # ('garcia--y-lopez' still lowers its 'y') and supplies none
+    # ('md-phd-'). An EDGE part stays ordinary name text ('juan e-f
+    # smith' keeps 'E-F'), so no word is re-read as connective or
+    # initial by its case (#458). A single letter with a period is an
+    # initial, as classify reads it, never the connective
+    # ('j.-e.-p. dupont' keeps 'E.'); the multi-letter 'und.' in
+    # 'hans smith-und.-jones' still lowers.
     first, last = named[0], named[-1]
     return "-".join(
         part.lower()
@@ -514,7 +521,26 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     _cap_text, is a fixpoint on its own output, so a repaired name
     comes back unchanged whether or not the gate admits it again
     (a name whose non-suffix words are caseless, 'Kim Minjun' in
-    hangul with a 'phd', is admitted every time)."""
+    hangul with a 'phd', is admitted every time) -- except where a
+    LETTER'S OWN CASE MAPPING changes its length or splits the word
+    (decisions.md#R4's Unicode boundary; 'ß' recasing to 'SS' through
+    a mask is one example, not the only one). Lengthening: a mask's
+    own per-character casing fallback can turn one letter into a
+    different LETTER SEQUENCE ('ß' upper is 'SS', not one recased
+    letter), so the repaired word's own folded spelling ('a.ss') no
+    longer matches the exceptions map's key ('a.ß'), and a second
+    forced pass over that output cannot find the entry the first
+    pass did. The same lengthening reaches plain title-casing with no
+    mask involved: 'ŉ' (a single letter) upper-cases to the two
+    CASED characters 'ʼN', so str.capitalize() on 'ŉa' gives 'ʼNa'
+    but on THAT output gives 'ʼna' -- the 'N' is no longer the
+    word's first character, so the second pass lower-cases it.
+    Splitting: some letters upper-case to a base letter plus a
+    COMBINING MARK, which _WORD does not match -- 'ǰ' upper-cases to
+    'J' + a combining caron, so 'ǰo' capitalizes to 'J̌o', but
+    _cap_text reads THAT text as two separate words ('J', then 'o',
+    the combining mark between them matching neither), and 'o'
+    capitalized alone is 'O'."""
     if lexicon is not None and not isinstance(lexicon, Lexicon):
         # eager, before the gate: a garbage argument must not become a
         # silent no-op on mixed-case input or a deep AttributeError

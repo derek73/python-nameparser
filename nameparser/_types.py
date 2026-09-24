@@ -153,12 +153,20 @@ UNCLASSIFIED_TAG = "vocab:unclassified"
 
 #: The by-shape half of #289/#516's ambiguous credential class: the
 #: tag classify writes on a token it admits to the credential reading
-#: by its SHAPE rather than by listed vocabulary. Defined here, at
-#: the bottom of the graph, because a render view reads it as well
-#: as the pipeline: case repair writes such a suffix in capitals as
-#: it does a listed acronym (#459), and _render may not import
-#: _pipeline. _pipeline/_state.py re-exports it beside the
-#: membership half and says why the stages need ONE constant.
+#: by its SHAPE rather than by listed vocabulary (`Policy.
+#: unlisted_dotted_suffixes` is the first emitter, `Policy.
+#: unlisted_caps_suffixes` the second, classify writing the tag from
+#: both branches). Defined here, at the bottom of the graph, because
+#: a render view reads it as well as the pipeline: case repair writes
+#: such a suffix in capitals as it does a listed acronym (#459), and
+#: _render may not import _pipeline. One constant, not a string
+#: literal at each site, because the readers that must tell a
+#: by-shape member apart from a listed one -- `_pieces.peel_trailing`
+#: and `_pieces.listed_lean`, which `segment_suffix_reading` asks
+#: through, so the reading it decides is second-hand -- cannot afford
+#: to spell it several ways and have one of them typo silently past
+#: the others. `_pipeline/_state.py` re-exports it beside the
+#: membership half, since the stages read both halves from one module.
 SHAPE_ACRONYM_TAG = "shape:acronym"
 
 #: The one-element tag set its two producers stamp, built once.
