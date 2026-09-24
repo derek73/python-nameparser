@@ -194,7 +194,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
 
     # rules.md#R5 (#492): a suffix ASSIGNED to the facade after
     # construction carries UNCLASSIFIED_TAG (no `vocab:suffix` tag, no
-    # roman-numeral shape read from a parse) and still excluded from
+    # roman-numeral shape read from a parse) and is still excluded from
     # the one-case gate -- the gate reads the ROLE, not the tag.
     def test_capitalize_leaves_an_assigned_suffix_out_of_the_gate(
         self,

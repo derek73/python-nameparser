@@ -1011,40 +1011,21 @@ class Constants:
         suffix_words = frozenset(self.suffix_not_acronyms) - ambiguous_acronyms
         # keep in sync with _lexicon._default_lexicon() (pinned by
         # tests/v2/test_config_shim.py::test_snapshot_field_translation)
-        # The one shape the v1-spelled hint fits: _normpairs raises
-        # _MaskValueError, carrying the raw key and the offered fix,
-        # for exactly one shape -- a capitalization_exceptions value
-        # that does not spell its key. Caught by TYPE, not by a
-        # message-substring filter, so every OTHER ValueError Lexicon
-        # can raise passes through unchanged automatically -- no
-        # enumeration needed to keep them that way. Most of those never
-        # reach Lexicon at all: they are translated away by the
-        # computations above. An orphaned non_first_name_prefixes entry
-        # cannot put an entry in particles_ambiguous that is outside
-        # particles (it is built as two subtractions/intersections of
-        # particles, always inside it); a bound/particle contradiction
-        # cannot arise either (bound & particles is unconditionally
-        # folded into particles_ambiguous above, so the gate Lexicon
-        # checks is satisfied by construction); and the
-        # suffix_acronyms_ambiguous/suffix_words gate bypass cannot
-        # arise since suffix_words above already subtracts
-        # ambiguous_acronyms (measured: constructing each of the three
-        # configurations that would trigger Lexicon's corresponding
-        # check raises nothing through a v1 Constants). What DOES
-        # reach Lexicon here unchanged is an entry normalizing to
-        # empty -- in capitalization_exceptions or in any SET field
-        # (titles, particles, ...; measured: c.titles.add("...") then
-        # a parse raises Lexicon's own "entry '' normalizes to empty",
-        # unchanged) -- since nothing above translates that away, so
-        # it propagates by type, past this except clause, exactly as
-        # v1 never validated an entry's content either way. A
-        # wrong-TYPE value (the comment above: TupleManager never
-        # statically typed its values) does not need special handling
-        # for the same reason -- v1 never accepted one silently
-        # either, it raised at capitalize() trying to use the value as
-        # a string, so the TypeError _normpairs raises for it here
-        # reproduces a raise v1 already had, at an earlier point in
-        # the same call chain rather than a new one.
+        # A capitalization_exceptions value that does not spell its key
+        # is the one DECIDED exception to this method's never-raise
+        # rule (#459, decisions.md#R4 and #3-0-reevaluations).
+        # _normpairs raises _MaskValueError for exactly that shape, and
+        # the except clause re-spells its offered fix for a v1 caller.
+        # Caught by TYPE, so every other Lexicon error passes through
+        # unchanged. Measured: three of Lexicon's checks cannot fire
+        # from here, this method's translations satisfying them by
+        # construction (particles_ambiguous inside particles, the
+        # bound/never-given contradiction, and an ambiguous acronym in
+        # suffix_words); what does reach it is an entry normalizing to
+        # empty, in capitalization_exceptions or any set field
+        # (c.titles.add("...") raises Lexicon's own "normalizes to
+        # empty"), and a non-str value's TypeError -- a raise v1 also
+        # had, later, at capitalize().
         try:
             lexicon = Lexicon(
                 titles=frozenset(self.titles),
@@ -1129,13 +1110,7 @@ class Constants:
                 # TupleManager is dict[str, object] (v1 parity: values were
                 # never statically str-typed); every real entry is a str,
                 # same assumption _DelimiterManager's sentinel lookup makes.
-                # NOT translated: the one DECIDED exception to this
-                # method's never-raise rule (#459, decisions.md#R4 and
-                # #3-0-reevaluations) -- a value that does not spell its
-                # key's letters and digits -- and the key-normalizes-to-
-                # empty case beside it are both explained in the comment
-                # above the try: block, which is where the catching
-                # happens now.
+                # NOT translated: see the comment above the try: block.
                 capitalization_exceptions=tuple(
                     sorted(self.capitalization_exceptions.items())),  # type: ignore[arg-type]
             )

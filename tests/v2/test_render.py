@@ -7,7 +7,7 @@ import pytest
 from nameparser import FAMILY_FIRST, HumanName, Parser, Policy, parse
 from nameparser._lexicon import Lexicon
 from nameparser.config import Constants
-from nameparser._render import _collapse, render
+from nameparser._render import _apply_mask, _collapse, render
 from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG, UNJOINED_TAG,
                                Ambiguity, AmbiguityKind, ParsedName, Role,
                                Span, Token)
@@ -642,6 +642,15 @@ def test_capitalized_with_explicit_lexicon() -> None:
     assert out.suffix == "Phd"
 
 
+def _repaired_under(pairs: tuple[tuple[str, str], ...], text: str, *,
+                    force: bool = True) -> ParsedName:
+    """`text` parsed and repaired under the default lexicon with its
+    exceptions map replaced by `pairs`."""
+    p = Parser(lexicon=dataclasses.replace(
+        Lexicon.default(), capitalization_exceptions=pairs))
+    return p.capitalized(p.parse(text), force=force)
+
+
 def test_a_mask_recases_the_word_as_the_writer_punctuated_it() -> None:
     """rules.md#R4's mask (#459): an exceptions-map value is its key's
     letters in the case each takes, laid over the word as written --
@@ -665,10 +674,8 @@ def test_a_mask_recases_the_word_as_the_writer_punctuated_it() -> None:
     # the mask is also asked BEFORE the numeral clause, which would
     # give 'III' -- an identity mask ('iii' stays lowercase) proves
     # the mask decided rather than merely agreeing with it
-    lower_iii = dataclasses.replace(
-        Lexicon.default(), capitalization_exceptions=(("iii", "iii"),))
-    p = Parser(lexicon=lower_iii)
-    assert p.capitalized(p.parse("john smith iii")).suffix == "iii"
+    assert _repaired_under((("iii", "iii"),), "john smith iii",
+                           force=False).suffix == "iii"
 
 
 def test_a_mask_applies_whatever_role_the_word_took() -> None:
@@ -768,7 +775,6 @@ def test_a_suffix_numeral_repairs_to_capitals_by_its_shape() -> None:
 
 
 def test_the_mask_keeps_every_non_letter_and_declines_a_miscount() -> None:
-    from nameparser._render import _apply_mask
     assert _apply_mask("ph.d.", "PhD") == "Ph.D."
     assert _apply_mask("PHD", "PhD") == "PhD"
     assert _apply_mask("bsc", "BSc") == "BSc"
@@ -779,25 +785,18 @@ def test_the_mask_keeps_every_non_letter_and_declines_a_miscount() -> None:
     decomposed = unicodedata.normalize("NFD", "씨")
     assert len(decomposed) == 2
     assert _apply_mask(decomposed, "씨") is None
-    lex = dataclasses.replace(Lexicon.default(),
-                              capitalization_exceptions=(("씨", "씨"),))
-    p = Parser(lexicon=lex)
-    name = p.parse(unicodedata.normalize("NFD", "John Smith 씨"))
-    assert p.capitalized(name, force=True).suffix == decomposed
+    assert _repaired_under((("씨", "씨"),), unicodedata.normalize(
+        "NFD", "John Smith 씨")).suffix == decomposed
 
 
 def test_a_split_initial_is_capitalized_only_where_the_mask_keeps_it_joined(
 ) -> None:
     """rules.md#R4 (#459 review, narrowed): a letter written alone
     beside a full stop is an initial ONLY where the MASK writes that
-    same letter inside a run of two or more letters -- the writer
-    split a chunk the mask keeps together, so each split piece is an
-    initial. Where the mask spells the letter alone too, there is no
-    split to repair, and the mask's own case stands unchanged -- a
-    caller's own 'h.c' mask on 'h.c.' stays 'h.c.'. A run of two or
-    more letters beside a full stop ('sc' in 'b.sc.') is never an
-    initial either way."""
-    from nameparser._render import _apply_mask
+    same letter inside a run of two or more letters. Where the mask
+    spells it alone too, the mask's own case stands ('h.c' on 'h.c.'
+    stays 'h.c.'), and a run of two or more letters beside a full
+    stop ('sc' in 'b.sc.') is never an initial."""
     for word, mask, expected in (
             ("p.h.d.", "PhD", "P.H.D."),
             ("b.sc.", "BSc", "B.Sc."),
@@ -806,39 +805,18 @@ def test_a_split_initial_is_capitalized_only_where_the_mask_keeps_it_joined(
             (".a", "a", ".a"),         # single-letter mask never overrides
             ("a.", "a", "a."),
             ("2b.", "2b", "2b."),      # 'b' has no LETTER neighbor in '2b'
-            # a full stop on one side only, under a multi-letter mask:
-            # 'a' splits from the mask's 'Abc' run and is forced
-            # upper; 'b' and 'c' sit next to each other in the WORD
-            # (not lone) and take the mask's own lowercase case. Weak
-            # as a mutation pin -- the mask's own 'A' is ALREADY
-            # upper, so mask-driven casing alone (override skipped)
-            # gives the same answer; the next two rows use a mask
-            # with no letter already capitalized, so only the
-            # override, not the mask's own case, can produce the 'A'.
+            # the mask's own 'A' already agrees, so this row alone
+            # cannot tell the override from plain masking; the two
+            # all-lowercase masks after it can
             ("a.bc", "Abc", "A.bc"),
-            # stop on the NEXT side, at the mask's run START: 'a'
-            # splits from the mask's one run 'abc' and is forced
-            # upper; 'b'/'c' are not lone in the word and take the
-            # mask's own (here lowercase) case
-            ("a.bc", "abc", "A.bc"),
-            # stop on the PREVIOUS side, at the mask's run END: 'c'
-            # splits from the same one-run mask and is forced upper;
-            # 'a'/'b' are not lone and stay lowercase
-            ("ab.c", "abc", "ab.C"),
-            # a digit breaks a letter run on BOTH sides: 'x2bc' is two
-            # runs, {x} and {bc} (the digit itself gets no run, and
-            # is not a letter, so it never triggers the override
-            # either). 'x' is adjacent to the DIGIT '2' -- not a full
-            # stop -- so it is never even beside-a-stop and keeps the
-            # mask's lowercase; 'b' and 'c' are each lone in the word
-            # AND inside the mask's {bc} run, so both are forced upper
+            ("a.bc", "abc", "A.bc"),   # stop after the run's first letter
+            ("ab.c", "abc", "ab.C"),   # stop before the run's last letter
+            # a digit ends a run: the mask's runs are {x} and {bc}, so
+            # 'x' keeps its lowercase (and has no stop beside it) while
+            # the split 'b' and 'c' are forced upper
             ("x2b.c", "x2bc", "x2B.C"),
-            # the fullwidth stop U+FF0E is a FULL_STOPS member, so the
-            # word-side adjacency test reads it like an ASCII period
-            # -- but _render._WORD ("(\\w|\\.)+") only ever yields the
-            # ASCII period inside a token's text, so a word carrying
-            # this stop reaches _apply_mask only through a direct
-            # call, never through _cap_text's normal tokenizing
+            # a fullwidth stop is a full stop too -- reachable by a
+            # direct call only, since _WORD splits a token at it
             ("a．bc", "abc", "A．bc"),
     ):
         assert _apply_mask(word, mask) == expected, (word, mask)
@@ -856,84 +834,53 @@ def test_a_split_initial_is_capitalized_only_where_the_mask_keeps_it_joined(
     # end to end: a caller's own mask that ALSO spells each letter
     # alone (honoris causa -- "Dr. h.c.") leaves the split-looking
     # word unchanged rather than forcing capitals nobody asked for
-    lex = dataclasses.replace(Lexicon.default(),
-                              capitalization_exceptions=(("h.c", "h.c"),))
-    p = Parser(lexicon=lex)
-    assert str(p.capitalized(p.parse("dr. h.c. hans meier"),
-                             force=True)) == "Dr. h.c. Hans Meier"
+    assert str(_repaired_under((("h.c", "h.c"),), "dr. h.c. hans meier")) \
+        == "Dr. h.c. Hans Meier"
 
 
 def test_a_decomposed_mask_value_reads_the_same_split_as_composed() -> None:
-    """A mask value is stored NFC-composed (#459 review): the split-off-
-    initial rule (_letter_run_ge2) walks the mask's alphanumeric
-    characters one at a time, so a decomposed value spells one
-    composed letter as a base letter plus a non-alpha combining mark
-    -- reading the base as split off beside a non-letter rather than
-    inside a run. Both spellings of the same value must therefore
-    repair the split word identically."""
+    """A mask value is stored NFC-composed (#459 review): decomposed,
+    'é' would be a base letter plus a non-alpha combining mark, and
+    the split-off-initial rule would read the base as split off. Both
+    spellings of one value must repair the split word identically."""
     composed = unicodedata.normalize("NFC", "Péx")
     decomposed = unicodedata.normalize("NFD", "Péx")
     assert decomposed != composed
     for value in (composed, decomposed):
-        lex = dataclasses.replace(
-            Lexicon.default(),
-            capitalization_exceptions=(("pé.x.", value),))
-        p = Parser(lexicon=lex)
-        assert p.capitalized(p.parse("john smith pé.x."),
-                             force=True).suffix == "Pé.X."
+        assert _repaired_under((("pé.x.", value),),
+                               "john smith pé.x.").suffix == "Pé.X."
 
 
 def test_a_masks_upper_fallback_can_lengthen_a_word_through_ss() -> None:
-    """decisions.md#R4 (2026-09-24 review): _apply_mask's `c.upper()`
-    fallback, taken whenever the whole-word uppered form does not
-    keep the word's length, can lengthen a word through ss exactly as
-    the acronym/numeral clauses' plain `word.upper()` can
-    (decisions.md#R4's 2026-09-23 Unicode-boundary bullet): the
-    boundary applies to every clause that upper-cases, not only those
-    two. And it is not only the split-off-initial force that reaches
-    it -- the ORDINARY mask branch (the plain `else` arm, no full
-    stop involved) falls back to `c.upper()` the same way whenever the
-    mask's own letter at that position is not lower and the word is
-    not same-length under `.upper()`. An identity mask validates fine
-    ('aß' spells 'a.ß's own letters unchanged; 'STRAẞE' -- the actual
-    German capital ẞ, not 'STRASSE' -- spells 'straße's own letters
-    unchanged too), so both are reachable with no separate defect in
-    the validator: the validator's refusal of ('straße', 'STRASSE') is
-    about the VALUE failing to spell the KEY, a different question
-    from what the applier's output can be once a mask DOES validate."""
-    split = dataclasses.replace(
-        Lexicon.default(), capitalization_exceptions=(("a.ß", "aß"),))
-    p = Parser(lexicon=split)
-    assert p.capitalized(p.parse("john a.ß smith"),
-                         force=True).middle == "A.SS"
-    ordinary = dataclasses.replace(
-        Lexicon.default(),
-        capitalization_exceptions=(("straße", "STRAẞE"),))
-    p = Parser(lexicon=ordinary)
-    assert p.capitalized(p.parse("john straße"),
-                         force=True).family == "STRASSE"
+    """decisions.md#R4 (2026-09-24 review): where the whole-word
+    upper-casing does not keep the word's length, _apply_mask falls
+    back to a per-character `c.upper()`, which lengthens 'ß' to 'SS'
+    as the acronym/numeral clauses' `word.upper()` does -- whether
+    the letter is upper by the split-off-initial override ('a.ß') or
+    by the mask's own case ('STRAẞE', with the capital ẞ). Both masks
+    validate, spelling their keys' own letters; the validator's
+    refusal of ('straße', 'STRASSE') is a different question."""
+    assert _repaired_under((("a.ß", "aß"),),
+                           "john a.ß smith").middle == "A.SS"
+    assert _repaired_under((("straße", "STRAẞE"),),
+                           "john straße").family == "STRASSE"
 
 
 def test_a_masks_punctuation_marks_its_joins_and_is_never_written() -> None:
     """#459 review: a value's punctuation is never written into the
-    word -- 'md' repairs to 'MD' and 'm.d.' to 'M.D.' under the
-    ('md','M.D.') mask, identically to what the plain 'MD' mask
-    gives -- but it is not IGNORED either: it marks which of the
-    mask's letters are one run versus split apart, and the
-    lone-initial clause reads that structure. Two masks that differ
-    ONLY in punctuation, 'h.c' and 'hc', therefore give DIFFERENT
-    output on the same split-looking word: the writer wrote 'h.c.',
-    and whether that reads as one abbreviation or two initials
-    depends on how the mask itself joins the letters."""
+    word -- under ('md', 'M.D.') 'md' repairs to 'MD' and 'm.d.' to
+    'M.D.', as under a plain 'MD' -- but it is not IGNORED: it marks
+    which of the mask's letters are one run, and the split-off-initial
+    rule reads that. So 'h.c' and 'hc', differing ONLY in punctuation,
+    repair the writer's 'h.c.' differently."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         lex = dataclasses.replace(
             Lexicon.default(),
             capitalization_exceptions=(("md", "M.D."),))
-    assert str(Parser(lexicon=lex).capitalized(
-        Parser(lexicon=lex).parse("john smith md"))) == "John Smith MD"
-    assert str(Parser(lexicon=lex).capitalized(
-        Parser(lexicon=lex).parse("john smith m.d."))) \
+    p = Parser(lexicon=lex)
+    assert str(p.capitalized(p.parse("john smith md"))) == "John Smith MD"
+    assert str(p.capitalized(p.parse("john smith m.d."))) \
         == "John Smith M.D."
     # the facade twin: warning-free at the first parse, where the
     # shim's lazily built Lexicon snapshot is the one place a
@@ -958,15 +905,10 @@ def test_a_masks_punctuation_marks_its_joins_and_is_never_written() -> None:
 
 
 def test_a_mask_recases_a_digit_key_unchanged() -> None:
-    """#459 review: the mask walks ALPHANUMERICS, not letters alone,
-    so a digit in the word is carried through unchanged (it has no
-    case) while the surrounding letters still take the mask's case.
-    The mask clause reads no ROLE or TAGS, unlike the acronym and
-    numeral clauses that follow it -- an entry applies wherever its
-    word stands. A synthetic GIVEN-roled token proves that: a role
-    the acronym/numeral clauses would never reach still finds the
-    mask, without depending on how '2nd' happens to parse on its
-    own."""
+    """#459 review: the mask walks ALPHANUMERICS, so a digit is carried
+    through (it has no case) while the letters take the mask's case.
+    A synthetic GIVEN-roled token keeps the row off the role-gated
+    acronym/numeral clauses and off how '2nd' happens to parse."""
     lex = dataclasses.replace(Lexicon.default(),
                               capitalization_exceptions=(("2nd", "2ND"),))
     assert _pn("2nd", [
@@ -976,25 +918,14 @@ def test_a_mask_recases_a_digit_key_unchanged() -> None:
 
 def test_a_mask_cases_through_the_whole_word_for_context_sensitive_letters(
 ) -> None:
-    """#459 review: casing goes through word.lower()/word.upper()
-    when both keep the word's length, not a per-character
-    str.lower()/str.upper() call, which is context-free and gets some
-    letters wrong that the whole-word form gets right -- a Greek
-    medial sigma where a FINAL one belongs, here. A titlecase mask
-    letter reads as upper rather than lower (a known limit: no
-    per-character titlecase mapping is attempted, so a digraph's
-    OWN titlecase spelling is not reproduced -- only the Greek case
-    is pinned here, since it recovers the correct written form)."""
-    from nameparser._render import _apply_mask
-    assert _apply_mask("ΚΟΣ", "Κος") \
-        == "Κος"  # 'ΚΟΣ' under 'Κος' -> 'Κος' (final sigma)
-    # the FALLBACK side of the same branch: 'straße'.upper() is
-    # 'STRASSE' (ß grows to two letters), longer than the 6-char
-    # word, so same_length is False and this exercises the
-    # per-character c.upper()/c.lower() path rather than the
-    # whole-word indexed lookup -- ß keeps its own lowercase form
-    # under the mask's lowercase letter there (c.lower() on 'ß' is
-    # 'ß', not the two-letter 'ss' casefold() would give)
+    """#459 review: casing goes through word.lower()/word.upper() when
+    both keep the word's length, since a per-character call is
+    context-free and writes a Greek medial sigma where a FINAL one
+    belongs."""
+    assert _apply_mask("ΚΟΣ", "Κος") == "Κος"  # final sigma
+    # the per-character fallback: 'straße'.upper() is 'STRASSE',
+    # longer than the word, and there ß keeps its own lowercase under
+    # the mask's lowercase letter
     assert _apply_mask("straße", "STRAßE") == "STRAßE"
     # end to end, through a custom Lexicon: a per-character
     # c.lower()/c.upper() walk gave 'Κοσ' here (medial sigma), wrong

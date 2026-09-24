@@ -381,39 +381,27 @@ def _alnum(text: str) -> str:
 
 
 def _offered_mask(normalized_key: str) -> str:
-    """The spelling _normpairs' mismatched-value error offers as a
-    working replacement, and what the shim's re-raise (_config_shim's
-    _build_snapshot) offers a v1 caller too -- factored so the two
-    messages can never name different fixes for the same key.
-
-    .upper() can change a letter's COUNT ('straße' -> 'STRASSE', ß
-    growing to two letters), which would fail the mask check itself
-    if pasted back in. Falling back to the key unchanged -- an
-    identity mask, always legal -- keeps the offer actionable in
-    every case rather than only the common one."""
+    """The working value a mismatched-mask error offers (carried to the
+    v1 shim's re-raise on _MaskValueError, so both name one fix): the
+    key upper-cased, or the key unchanged -- an identity mask, always
+    legal -- where .upper() changes the letter count ('straße' ->
+    'STRASSE') and would fail the check if pasted back in."""
     upper = normalized_key.upper()
     return upper if _alnum(_normalize(upper)) == _alnum(
         normalized_key) else normalized_key
 
 
 class _MaskValueError(ValueError):
-    """Raised by _normpairs for a value that does not spell its key;
-    carries the raw key and the offered fix (`key`, `offered`) so a
-    caller reached through another surface -- the v1 shim's
-    _build_snapshot -- can re-spell the same fix for that surface
-    rather than re-deriving it from the message text.
+    """_normpairs' error for a value that does not spell its key. It
+    carries the raw `key` and the `offered` fix so the v1 shim can
+    re-spell that fix for its own surface without parsing the message.
 
-    __reduce__ pickles/copies as (message, key, offered) rather than
-    the default (args,) -- ValueError's own __reduce__ would call
-    type(self)(*self.args), and self.args holds only the message
-    (super().__init__ below is passed the message alone), so the
-    default would call this __init__ with two required arguments
-    missing. This is an exception, not one of _types.py's frozen
-    dataclasses, so the _guarded_getstate/slots convention there does
-    not apply -- a plain __reduce__ is the right-sized fix. A worker
-    in a ProcessPoolExecutor pickles an exception raised in the
-    worker to deliver it to the caller, so an unpicklable one there
-    surfaces as BrokenProcessPool instead."""
+    __reduce__ is explicit because the inherited one re-calls
+    __init__ with self.args, which holds the message alone, so
+    pickling or copying would fail -- and a ProcessPoolExecutor
+    pickles a worker's exception to deliver it, surfacing an
+    unpicklable one as BrokenProcessPool. (An exception, so
+    _types.py's frozen-dataclass pickle guards do not apply.)"""
 
     def __init__(self, message: str, key: str, offered: str) -> None:
         super().__init__(message)
@@ -477,30 +465,18 @@ def _normpairs(
                 f"nothing)"
             )
         # A value is a case MASK (#459): the key's own letters and
-        # digits recased. Its punctuation marks where its letters are
-        # JOINED -- letters written side by side are one run, and any
-        # character that is not a letter between them (a full stop, a
-        # space, a digit) ends the run, so the mask's own case stands
-        # for a letter it spells alone ('h.c' on 'h.c.' stays 'h.c.').
-        # It is never written into the word: case repair keeps the
-        # WRITER's own punctuation, not the mask's. Compared through
-        # the same fold as the key, which keeps interior periods
-        # ('Ph.D.' is stored 'ph.d') and composes NFC, so both sides
-        # are read alike. A raise, not a warning: a mismatched value
-        # used to be SUBSTITUTED for the word, and rules.md#R4:
-        # "Repair changes case and nothing else", so there is no
-        # reading of one that repair can honor.
-        # Stored NFC-composed (case-preserving -- unicodedata.normalize,
-        # not _normalize, which also lowercases). _apply_mask walks the
-        # mask's alphanumeric characters one at a time
-        # (_letter_run_ge2), so a decomposed value spells one composed
-        # letter as two characters -- a base letter plus a combining
-        # mark that is not alpha -- and the base reads as a
-        # SPLIT-OFF letter next to a non-letter, changing which
-        # letters _apply_mask reads as an initial beside a full stop.
-        # The check just above already compares composed to composed
-        # (_normalize NFC-composes both sides), so a decomposed value
-        # passes it and would otherwise be stored exactly as written.
+        # digits recased, compared through the key's own fold. Its
+        # punctuation marks which letters are joined into one run
+        # (_render._apply_mask reads that) and is never written into
+        # the word. A raise, not a warning: a mismatched value used to
+        # be SUBSTITUTED for the word, and rules.md#R4: "Repair
+        # changes case and nothing else", so there is no reading of
+        # one that repair can honor.
+        # Stored NFC-composed, case kept (unicodedata, not _normalize):
+        # _apply_mask reads the mask one character at a time, and a
+        # decomposed letter would read as a base letter split off
+        # beside a non-alpha combining mark. The check below passes
+        # either spelling, _normalize composing both of its sides.
         v = unicodedata.normalize("NFC", v)
         if _alnum(_normalize(v)) != _alnum(normalized_key):
             offered = _offered_mask(normalized_key)

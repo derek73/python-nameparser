@@ -88,27 +88,18 @@ _UNJOINED_MARKS = frozenset({UNJOINED_TAG, UNJOINED_CONJUNCTION_TAG})
 # still not worth the import layering forbids.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
-#: The hyphen clause's own initial test (_cap_text, #478): _INITIAL's
-#: period alternative alone. The bare-capital half is deliberately not
-#: used here -- admitting it would exempt a capital connective from
-#: the clause on its CASE alone, reading it as an initial and leaving
-#: it uppercase. The dotted test runs before the vocabulary test, and
-#: a capital DOES lower there: 'Y' in 'JOSE ORTEGA-Y-GASSET' reaches
-#: the vocabulary test and lowers to 'Ortega-y-Gasset'. Exempting it
-#: on case is exactly the reading #458 removed from case repair
-#: generally. Registered in tests/v2/test_regex_sync.py as the period
-#: alternative of _INITIAL's pattern, so the two cannot drift apart
-#: unnoticed.
+#: The hyphen clause's initial test (_cap_text, #478): _INITIAL's
+#: period alternative alone. The bare-capital half would exempt a
+#: capital connective on its CASE -- 'Y' in 'JOSE ORTEGA-Y-GASSET'
+#: must lower -- the reading #458 removed. Pinned as that alternative
+#: by tests/v2/test_regex_sync.py.
 _DOTTED_INITIAL = re.compile(r"^\w\.$")
 
-# v1 regexes.py "roman_numeral" -- the pipeline's _vocab._ROMAN,
-# copied by hand because layering forbids this module the import
-# (the reason _INITIAL above is a copy too) and pinned against config
-# by tests/v2/test_regex_sync.py. Its one reader is _cap_word's
-# numeral clause, which asks a RENDERING question of a word the parse
-# already put in the suffix role -- how a numeral is written -- and
-# not the parse's own question of whether the word is a suffix, so
-# the role is honored rather than re-derived
+# v1 regexes.py "roman_numeral", the pipeline's _vocab._ROMAN copied
+# by hand (layering, as for _INITIAL above) and pinned by
+# tests/v2/test_regex_sync.py. Read only by _cap_word's numeral
+# clause, which asks how a word the parse already put in the suffix
+# role is WRITTEN, never whether it is a suffix
 # (mechanisms.md#RENDER-HONORS-THE-PARSE).
 _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 
@@ -236,92 +227,61 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
 
 
 def _letter_run_ge2(text: str) -> list[bool]:
-    """One flag per alphanumeric character of `text`, in the order
-    _apply_mask below walks them: True where that character is a
-    LETTER with a letter immediately before or after it WITHIN
-    `text` -- a full stop or a digit breaks a run, exactly as either
-    breaks one in the word _apply_mask is casing. A digit's own flag
-    is always False; the initial-beside-a-stop exception only ever
-    concerns letters."""
-    n = len(text)
-    flags: list[bool] = []
-    for i, c in enumerate(text):
-        if not c.isalnum():
-            continue
-        if not c.isalpha():
-            flags.append(False)
-            continue
-        prev_letter = i > 0 and text[i - 1].isalpha()
-        next_letter = i + 1 < n and text[i + 1].isalpha()
-        flags.append(prev_letter or next_letter)
-    return flags
+    """One flag per alphanumeric character of `text`, in order: True
+    where it is a LETTER with a letter immediately before or after
+    it. Any other character -- a full stop, a space, a digit -- ends
+    a run, and a digit's own flag is always False."""
+    last = len(text) - 1
+    return [c.isalpha() and ((i > 0 and text[i - 1].isalpha())
+                             or (i < last and text[i + 1].isalpha()))
+            for i, c in enumerate(text) if c.isalnum()]
 
 
 # rules.md#R4: "the writer split a chunk the mask keeps together, so
-# the split-off letter is an initial" -- the split-initial exception
-# the docstring below states in one sentence and defers to.
+# the split-off letter is an initial" -- the one override below.
 def _apply_mask(word: str, mask: str) -> str | None:
     """rules.md#R4's mask: `word` with each letter or digit recased to
-    the case of the mask's alphanumeric in the same position, and
-    every other character kept where the writer put it -- 'ph.d.'
-    under 'PhD' is 'Ph.D.'. None where the two alphanumeric counts
-    differ. The lookup key makes that rare and not impossible: the
-    key is the word NFC-composed, so a word written in decomposed
-    hangul spells one syllable in two letters and still finds a
-    one-letter key. The caller falls through to its next clause
-    rather than guess.
+    the case of the mask's alphanumeric in the same position, every
+    other character kept where the writer put it ('ph.d.' under 'PhD'
+    is 'Ph.D.'). None where the two alphanumeric counts differ --
+    rare, since the key is the word folded, but a word in decomposed
+    hangul spells one syllable in two letters and still finds its
+    one-letter key -- and the caller falls through rather than guess.
 
-    One exception the mask does not decide: a SINGLE LETTER split off
-    alone beside a full stop is written in capitals whatever the mask
-    says there, but only where the mask itself writes that letter
-    inside a run of two or more letters (the rule stated above this
-    function). What the code adds past that statement: a run is of
-    LETTERS only, so a DIGIT ends one exactly as a full stop does; the
-    full stop tested is any of FULL_STOPS, not the ASCII period alone
-    (#322) -- though through capitalized() only the ASCII period is
-    ever reachable, since _WORD splits a token at any other stop and
-    this function never sees the rest of the word; the fullwidth row
-    in test_render pins the direct call, which is reachable.
+    The override cited above: a letter standing alone beside a full
+    stop (any of FULL_STOPS, though through capitalized() only the
+    ASCII period reaches here, _WORD splitting a token at any other)
+    is written upper wherever the mask writes it inside a run of two
+    or more letters (_letter_run_ge2).
 
-    Casing goes through the WHOLE word (word.lower()/word.upper())
-    rather than per character, when both have the same length as
-    `word`: a per-character str.lower()/str.upper() call is
-    context-free and gets some letters wrong that the whole-word form
-    gets right -- a medial sigma where Greek wants a final one, for
-    one. A mask letter is read as upper when it is not lower
-    (`not letter.islower()`), so a titlecase letter (Unicode category
-    Lt) reads as upper rather than lower -- a known limit: no
-    per-character titlecase mapping is attempted."""
+    Casing goes through the whole word (word.lower()/word.upper())
+    when both keep its length, since per-character casing is
+    context-free (a Greek final sigma needs its neighbours). A mask
+    letter that is not lowercase reads as upper, so a titlecase
+    letter (Lt) is written upper -- a known limit."""
     mask_chars = [c for c in mask if c.isalnum()]
     if len(mask_chars) != sum(1 for c in word if c.isalnum()):
         return None
     mask_run = _letter_run_ge2(mask)
-    lowered = word.lower()
-    uppered = word.upper()
-    same_length = len(lowered) == len(word) and len(uppered) == len(word)
-    n = len(word)
+    word_run = _letter_run_ge2(word)
+    lowered, uppered = word.lower(), word.upper()
+    same_length = len(lowered) == len(uppered) == len(word)
+    last = len(word) - 1
     out: list[str] = []
     at = 0
     for i, c in enumerate(word):
         if not c.isalnum():
             out.append(c)
             continue
-        mask_char = mask_chars[at]
-        in_mask_run = mask_run[at]
+        upper = not mask_chars[at].islower() or (
+            mask_run[at] and c.isalpha() and not word_run[at]
+            and ((i > 0 and word[i - 1] in FULL_STOPS)
+                 or (i < last and word[i + 1] in FULL_STOPS)))
         at += 1
-        if c.isalpha():
-            prev_letter = i > 0 and word[i - 1].isalpha()
-            next_letter = i + 1 < n and word[i + 1].isalpha()
-            beside_stop = (i > 0 and word[i - 1] in FULL_STOPS) or (
-                i + 1 < n and word[i + 1] in FULL_STOPS)
-            if (not prev_letter and not next_letter and beside_stop
-                    and in_mask_run):
-                out.append(uppered[i] if same_length else c.upper())
-                continue
-        if mask_char.islower():
-            out.append(lowered[i] if same_length else c.lower())
+        if same_length:
+            out.append(uppered[i] if upper else lowered[i])
         else:
-            out.append(uppered[i] if same_length else c.upper())
+            out.append(c.upper() if upper else c.lower())
     return "".join(out)
 
 
@@ -445,7 +405,8 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # rules.md#R4: "Repair changes case and nothing else". Role-free,
     # as the map always was: an entry is the caller saying how a word
     # is written wherever it stands.
-    for key in (normalized, normalized.replace(".", "")):
+    undotted = normalized.replace(".", "")
+    for key in (normalized, undotted):
         mask = lex.capitalization_exceptions_map.get(key)
         if mask is not None:
             masked = _apply_mask(word, mask)
@@ -465,7 +426,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # name word -- #459's given-role half, decided: repair follows the
     # role the parse chose ('qc mp' -> 'Qc MP').
     if role is Role.SUFFIX and (
-            normalized.replace(".", "") in lex.suffix_acronyms
+            undotted in lex.suffix_acronyms
             or SHAPE_ACRONYM_TAG in tags):
         return word.upper()
     # rules.md#R4: "A roman numeral the parse put in the suffix role is
@@ -504,24 +465,15 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
         return _WORD.sub(cap, text)
     # rules.md#R4: "Inside a hyphenated word, a part that is
     # connective vocabulary with a worded part on each side of it
-    # keeps its lowercase" -- the hyphens are the writer joining the
-    # name around it, as the spaced connective would (#478). Position
-    # and vocabulary both come from the whole token, which is why
-    # this sits here and not in _cap_word, whose word has lost its
-    # neighbours. It does NOT re-derive the conjunction-versus-
-    # initial class from a word's CASE, the thing #458 removed: an
-    # EDGE part has a part on one side only and stays ordinary name
-    # text, so 'juan e-f smith' keeps 'E-F'. A 'part' is one holding
-    # a word; an empty part does not count and is skipped, so a
-    # trailing hyphen ('md-phd-') supplies no neighbour while a
-    # doubled one changes nothing ('garcia--y-lopez' keeps its 'y'
-    # lowercase), and the two-part compound ('mcnabb-smith') never
-    # gets past the count above. The period is the one punctuation
-    # mark classify itself reads as an initial: a single letter marked
-    # with a period is read as an initial there, as the parse reads
-    # it, never as the connective, so 'j.-e.-p. dupont' keeps 'E.'
-    # while the multi-letter 'und.' in 'hans smith-und.-jones' still
-    # lowers.
+    # keeps its lowercase" (#478). Decided here, not in _cap_word,
+    # whose word has lost its neighbours. Only a part holding a word
+    # is a neighbour: an empty one is skipped ('garcia--y-lopez' keeps
+    # its 'y') and supplies none ('md-phd-'). An EDGE part stays
+    # ordinary name text ('juan e-f smith' keeps 'E-F'), so no word is
+    # re-read as connective or initial by its case (#458). A single
+    # letter with a period is an initial, as classify reads it, never
+    # the connective ('j.-e.-p. dupont' keeps 'E.'); the multi-letter
+    # 'und.' in 'hans smith-und.-jones' still lowers.
     first, last = named[0], named[-1]
     return "-".join(
         part.lower()

@@ -176,25 +176,15 @@ def test_a_mask_may_recase_a_digit_key_unchanged() -> None:
 
 
 def test_a_decomposed_value_is_compared_and_stored_nfc_composed() -> None:
-    """Both the key and the value fold through _normalize, which NFC-
-    composes non-ASCII text (#459's decomposed-hangul note applies
-    here too), so a value written in decomposed form is accepted
-    against a key written composed: both sides read the same letters
-    once composed. The value is also STORED NFC-composed, not as
-    written -- _apply_mask walks the mask's alphanumeric characters
-    one at a time, and a decomposed value spells one composed letter
-    as a base letter plus a non-alpha combining mark, which changes
-    which letters read as split off beside a full stop. Both
-    spellings of the same value therefore construct to the identical
-    stored value."""
+    """A decomposed value is accepted against a composed key, the
+    check folding both sides through _normalize, and is STORED
+    composed, so both spellings of one value construct alike
+    (test_render's decomposed-mask test shows why that matters)."""
     composed = unicodedata.normalize("NFC", "CAFÉ")
     decomposed = unicodedata.normalize("NFD", "CAFÉ")
     assert decomposed != composed  # the draw actually decomposed something
     lex = Lexicon(capitalization_exceptions=(("café", decomposed),))
     assert lex.capitalization_exceptions_map["café"] == composed
-    same = Lexicon(capitalization_exceptions=(("café", composed),))
-    assert (lex.capitalization_exceptions_map["café"]
-            == same.capitalization_exceptions_map["café"])
 
 
 @pytest.mark.parametrize("key, value", [
@@ -251,14 +241,10 @@ def test_the_mask_error_falls_back_when_upper_would_not_itself_validate(
 
 
 def test_mask_value_error_survives_pickle_and_copy() -> None:
-    """_MaskValueError's default __reduce__ (inherited from
-    ValueError -> BaseException, which calls type(self)(*self.args))
-    would call __init__ with only the message -- self.args holds just
-    that, key/offered being stored as separate attributes -- and
-    __init__ requires all three positionally. A worker process in a
-    ProcessPoolExecutor pickles an exception raised in the worker to
-    deliver it to the caller, so an unpicklable one surfaces as
-    BrokenProcessPool there instead of the ValueError HEAD delivered."""
+    """The inherited __reduce__ would re-call __init__ with self.args,
+    the message alone, and __init__ needs `key` and `offered` too --
+    so without the override a ProcessPoolExecutor worker raising it
+    would surface as BrokenProcessPool rather than this ValueError."""
     try:
         Lexicon(capitalization_exceptions=(("jr", "Junior"),))
     except _MaskValueError as caught:
