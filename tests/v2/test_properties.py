@@ -2539,11 +2539,14 @@ def test_case_repair_changes_case_and_nothing_else() -> None:
     under the shipped lexicon and under one whose exceptions map is
     empty. casefold(), not a character-for-character check, is the
     comparator because the rule was never stated against Python's own
-    casing tables: 'ss'/'SS' both fold to 'ss' though 'ß'.upper() is
-    'SS' (two characters for one), and the roman-numeral shape under
-    re.I admits the dotless 'ı', which lower()s to itself but
-    upper()s to 'I' -- both are casing this walk accepts, not length
-    changes rules.md#R4 promises against.
+    casing tables: 'ß'.upper() is 'SS', two characters for one, and
+    'ß' and 'ss' fold alike, so a lengthened word still passes -- and
+    so would a repair trading 'ss' for 'ß', the comparator's recorded
+    blind spot. It is not blind the other way: the roman-numeral
+    shape under re.I admits the dotless 'ı', which upper()s to 'I',
+    and 'I' does NOT fold back to 'ı', so a name spelling a numeral
+    with it would fail this walk; none in the walk does. Both cases
+    are decisions.md#R4's Unicode boundary.
 
     Recorded negative control, measured 2026-09-23 over this walk: at
     the parent 4d0680e6, where the exceptions map SUBSTITUTED its

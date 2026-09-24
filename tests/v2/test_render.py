@@ -591,6 +591,27 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
         == ["PhD", "MD"]
 
 
+def test_the_gate_and_the_parser_read_a_cased_suffix_differently() -> None:
+    """decisions.md#R5's split: the parser's own one-case readings
+    (rules.md#P3, #S2) still count a cased suffix, while R5's gate
+    leaves it out. So 'john e jones III' is MIXED to the parser, which
+    reads its 'e' as a connective, and one-case to the gate, which
+    repairs it -- keeping the connective lowercase -- where the one-case
+    'john e jones iii' reads 'e' as an initial. The gate follows the
+    parse's suffix call, the ambiguous credential class included, so
+    'jack MA' (S2's lean read MA as the credential) and 'MD, PhD'
+    (family MD, suffix PhD) repair on the default path too."""
+    mixed = parse("john e jones III")
+    one_case = parse("john e jones iii")
+    assert "conjunction" in mixed.tokens[1].tags
+    assert "initial" in one_case.tokens[1].tags
+    for name, repaired in ((mixed, "John e Jones III"),
+                           (one_case, "John E Jones III"),
+                           (parse("jack MA"), "Jack MA"),
+                           (parse("MD, PhD"), "Md PhD")):
+        assert str(name.capitalized()) == repaired, name.original
+
+
 def test_capitalized_is_idempotent() -> None:
     once = _lowercase_mac().capitalized()
     assert once.capitalized() == once

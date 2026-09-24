@@ -385,9 +385,10 @@ def _normpairs(
 ) -> tuple[tuple[str, str], ...]:
     """Canonicalize capitalization_exceptions input: _normset's sibling
     for the one pair-valued field. Dedupes on the NORMALIZED key so the
-    tuple and the derived map always agree ("Ph.D." and "phd" collide
-    after normalization); last occurrence wins, matching dict semantics
-    and the right-bias rule used elsewhere."""
+    tuple and the derived map always agree ("PHD" and "phd" collide
+    after normalization; "Ph.D." does not, the fold keeping interior
+    periods, so it is a key of its own, "ph.d"); last occurrence wins,
+    matching dict semantics and the right-bias rule used elsewhere."""
     if isinstance(raw, str):
         raise TypeError(
             "capitalization_exceptions must be a mapping or an "
@@ -457,8 +458,9 @@ def _normpairs(
                 normalized_key) else normalized_key
             raise ValueError(
                 f"capitalization_exceptions value {v!r} for key {k!r} "
-                f"does not spell the key's letters: a value is a case "
-                f"mask, the key's own letters recased -- e.g. "
+                f"does not spell the key's letters and digits: a value "
+                f"is a case mask, the key's own letters and digits "
+                f"recased -- e.g. "
                 f"capitalization_exceptions=(({normalized_key!r}, "
                 f"{offered!r}),)")
         # capitalized() looks words up one at a time (the _WORD regex
@@ -607,7 +609,7 @@ class Lexicon:
     #: where its letters are joined into one run versus split apart,
     #: and is never written into the word -- repair keeps the writer's
     #: own punctuation. A value that does not spell the key's letters
-    #: raises ValueError. Pair-valued: change it with
+    #: and digits raises ValueError. Pair-valued: change it with
     #: dataclasses.replace(), not add()/remove(); read it as a mapping
     #: via capitalization_exceptions_map. Full default mapping:
     #: :data:`~nameparser.config.capitalization.CAPITALIZATION_EXCEPTIONS`.

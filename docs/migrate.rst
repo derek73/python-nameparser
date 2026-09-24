@@ -220,7 +220,13 @@ fields:
    * - ``capitalization_exceptions``
      - ``capitalization_exceptions``
      - Pair-valued; set it via ``dataclasses.replace(lexicon,
-       capitalization_exceptions={...})``, not ``add()``/``remove()``
+       capitalization_exceptions={...})``, not ``add()``/``remove()``.
+       Since 2.4 a value is a case mask — the key's own letters and
+       digits recased (``{"phd": "PhD"}``) — laid over the word as
+       written, so ``{"md": "M.D."}`` repairs ``md`` to ``MD``, not
+       ``M.D.``; a value that spells anything else raises
+       ``ValueError`` on both APIs, at the first parse for a v1
+       ``Constants``
 
 The vocabulary that feeds both columns lives in ``nameparser.config``,
 and in 2.2 its module and constant names moved to the vocabulary the
@@ -315,13 +321,13 @@ could hold two disagreeing defaults with nothing to say so.
 
 ``CAPITALIZATION_EXCEPTIONS`` is the constant the freeze left out. It
 is a mapping rather than a set, and it is still a plain mutable
-``dict`` — ``CAPITALIZATION_EXCEPTIONS["phd"] = "PhD"`` runs on 2.2 and
+``dict`` — ``CAPITALIZATION_EXCEPTIONS["dphil"] = "DPhil"`` runs on 2.2 and
 raises nothing. Everything just said about split defaults still applies
 to it, unchanged and measured on 2.2: an edit after the first parse
 reaches a freshly built ``Constants``, and neither
 ``Lexicon.default()`` nor the shared ``CONSTANTS``. The advice below is
 the same advice — configure the object, with
-``constants.capitalization_exceptions["phd"] = "PhD"`` on a private
+``constants.capitalization_exceptions["dphil"] = "DPhil"`` on a private
 ``Constants``, or ``dataclasses.replace(lexicon,
 capitalization_exceptions={...})`` for the 2.0 API.
 

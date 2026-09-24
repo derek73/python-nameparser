@@ -1097,7 +1097,7 @@ class Constants:
             # NOT translated: the one DECIDED exception to this
             # method's never-raise rule (#459, decisions.md#R4 and
             # #3-0-reevaluations) is a value that does not spell its
-            # key's letters, which raises ValueError from Lexicon
+            # key's letters and digits, which raises ValueError from Lexicon
             # here, at the first parse -- v1 substituted such a value
             # for the word, 2.4 repair only recases, so there is no
             # v1 behavior left to reproduce, and no such value was

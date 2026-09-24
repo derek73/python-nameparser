@@ -498,8 +498,10 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     # initial class from a word's CASE, the thing #458 removed: an
     # EDGE part has a part on one side only and stays ordinary name
     # text, so 'juan e-f smith' keeps 'E-F'. A 'part' is one holding
-    # a word, so a doubled or trailing hyphen ('md-phd-') supplies no
-    # neighbour, and the two-part compound ('mcnabb-smith') never
+    # a word; an empty part does not count and is skipped, so a
+    # trailing hyphen ('md-phd-') supplies no neighbour while a
+    # doubled one changes nothing ('garcia--y-lopez' keeps its 'y'
+    # lowercase), and the two-part compound ('mcnabb-smith') never
     # gets past the count above. The period is the one mark classify
     # itself reads as an initial: a single letter marked with a
     # period is read as an initial there, as the parse reads it,
