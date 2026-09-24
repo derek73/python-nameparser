@@ -704,12 +704,25 @@ _SET_FIELDS = _VOCAB_FIELDS
 
 
 @st.composite
+def _recased(draw: st.DrawFn, word: str) -> str:
+    """A capitalization_exceptions value for `word`: its own letters,
+    each drawn upper or lower. Any other value is a ValueError at
+    construction (#459's case mask), so an independent draw would
+    turn every fuzzed Lexicon holding a pair into a raise."""
+    flips = draw(st.lists(st.booleans(), min_size=len(word),
+                          max_size=len(word)))
+    return "".join(c.upper() if flip else c.lower()
+                   for c, flip in zip(word, flips))
+
+
+@st.composite
 def _lexicons(draw: st.DrawFn) -> Lexicon:
     fields = {name: draw(st.frozensets(
         _TITLE_VOCAB if name == "given_name_titles" else _VOCAB,
         max_size=5))
               for name in _SET_FIELDS}
-    caps = draw(st.lists(st.tuples(_VOCAB, _VOCAB), max_size=3))
+    keys = draw(st.lists(_VOCAB, max_size=3))
+    caps = [(key, draw(_recased(key))) for key in keys]
     return Lexicon(capitalization_exceptions=tuple(caps),
                    **_fix_invariants(**fields))
 

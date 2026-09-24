@@ -151,6 +151,16 @@ FOLDED_TAG = "vocab:folded-middle"
 #: not the signal either -- an ordinary parsed name word carries none.
 UNCLASSIFIED_TAG = "vocab:unclassified"
 
+#: The by-shape half of #289/#516's ambiguous credential class: the
+#: tag classify writes on a token it admits to the credential reading
+#: by its SHAPE rather than by listed vocabulary. Defined here, at
+#: the bottom of the graph, because a render view reads it as well
+#: as the pipeline: case repair writes such a suffix in capitals as
+#: it does a listed acronym (#459), and _render may not import
+#: _pipeline. _pipeline/_state.py re-exports it beside the
+#: membership half and says why the stages need ONE constant.
+SHAPE_ACRONYM_TAG = "shape:acronym"
+
 #: The one-element tag set its two producers stamp, built once.
 _UNCLASSIFIED = frozenset({UNCLASSIFIED_TAG})
 

@@ -1093,7 +1093,19 @@ class Constants:
             honorific_tails=GLUED_HONORIFICS & suffix_words,
             # TupleManager is dict[str, object] (v1 parity: values were
             # never statically str-typed); every real entry is a str,
-            # same assumption _DelimiterManager's sentinel lookup makes
+            # same assumption _DelimiterManager's sentinel lookup makes.
+            # NOT translated: the one DECIDED exception to this
+            # method's never-raise rule (#459, decisions.md#R4 and
+            # #3-0-reevaluations) is a value that does not spell its
+            # key's letters, which raises ValueError from Lexicon
+            # here, at the first parse -- v1 substituted such a value
+            # for the word, 2.4 repair only recases, so there is no
+            # v1 behavior left to reproduce, and no such value was
+            # found in the tracker, the docs or any test. A value that
+            # merely carries punctuation is NOT such an exception --
+            # it is a legal mask (the punctuation marks which letters
+            # are joined and is never written into the word), so it
+            # passes through untranslated and unwarned like any other.
             capitalization_exceptions=tuple(
                 sorted(self.capitalization_exceptions.items())),  # type: ignore[arg-type]
         )

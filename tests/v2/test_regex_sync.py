@@ -129,6 +129,9 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_render", "_SPACE_BEFORE_COMMA"): "space_before_comma",
     ("_render", "_MAC"): "mac",
     ("_render", "_WORD"): "word",
+    # the numeral clause's copy of _vocab._ROMAN (#459); layering
+    # forbids _render the import, so it is pinned here instead
+    ("_render", "_ROMAN"): "roman_numeral",
     ("_vocab", "_PERIOD_NOT_AT_END"): "period_not_at_end",
     # Deliberately NOT a straight copy -- pinned by the dedicated tests
     # above, which assert the documented RELATIONSHIP instead:

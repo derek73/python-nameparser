@@ -375,6 +375,18 @@ def test_v14_pickle_restores_and_parses_warning_free() -> None:
         HumanName("Jane Roe", constants=c)
 
 
+def test_a_non_str_exception_value_raises_typeerror_at_the_first_parse(
+) -> None:
+    """The shim does not translate or otherwise intercept a
+    capitalization_exceptions value -- a caller's non-str entry
+    (v1's TupleManager stores dict[str, object], never statically
+    str-typed) reaches Lexicon's own TypeError unchanged, at the
+    first parse where the snapshot is built."""
+    c = Constants(capitalization_exceptions={'phd': 42})
+    with pytest.raises(TypeError, match="str -> str"):
+        HumanName("john smith phd", constants=c)
+
+
 def test_snapshot_keeps_a_multi_word_first_name_title() -> None:
     # v1 looks first_name_titles up on the joined title string, so a
     # multi-word entry is reachable with only its WORDS in titles.

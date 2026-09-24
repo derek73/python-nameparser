@@ -3358,8 +3358,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-22, #397 follow-up: 363 -> 364, the one new comma
         # name the M2 deviation example adds. Reach again, verified
         # name by name.
+        # 2026-09-23, #459: 364 -> 366, the two comma-written numeral
+        # lines rules.md#R4 gained ('john smith, v', 'john smith, vi');
+        # its forced 'Dr. med. univ. Margit Popp, MSc' line was already
+        # in corpus_issues.jsonl. Reach, verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(364, ('given', 'suffix', 'title'), 'e3bf2a2b8de9', None),
+            _Claim(366, ('given', 'suffix', 'title'), '0b1a15dd9b78', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3415,8 +3419,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # name as the rule above and for the same reason.
         # 2026-09-22, #397 follow-up: 363 -> 364, the same one new
         # comma name as the rule above and for the same reason.
+        # 2026-09-23, #459: 364 -> 366, the two comma-written numeral
+        # lines rules.md#R4 gained ('john smith, v', 'john smith, vi');
+        # its forced 'Dr. med. univ. Margit Popp, MSc' line was already
+        # in corpus_issues.jsonl. Reach, verified name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(364, ('family', 'given'), 'e3bf2a2b8de9', None),
+            _Claim(366, ('family', 'given'), '0b1a15dd9b78', None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -3582,8 +3590,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # and pins the shape alone.
         "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`":
             _Claim(6, ('family', 'suffix'), "dd3fc23d90a1", None),
+        # 2026-09-23, #459: 2 -> 3, 'qc mp', rules.md#R4's name-role
+        # boundary line. Reach, verified name by name.
         "fix(suffix-routing) a two-token name ending in a credential acronym keeps it in `suffix`":
-            _Claim(2, ('family', 'suffix'), "ed72c9672214", None),
+            _Claim(3, ('family', 'suffix'), "07c5470c399e", None),
         "fix(suffix-routing) the dotted M.A. spelling reads as a credential (ma-do)":
             _Claim(1, ('family', 'suffix'), "17379620526b", None),
         # #484's six `_initials` rules. Four of them reach far more
@@ -3677,8 +3687,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # name and neither widened. Verified name by name.
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
             _Claim(112, ('_initials',), 'b3b3b696a56e', ('DEFAULT',)),
+        # 2026-09-23, #459: 18 -> 19, 'john smith ph. d.', rules.md#R4's
+        # two-token line. Reach, verified name by name.
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
-            _Claim(18, ('_initials',), "f67d8ebddd56", ('DEFAULT',)),
+            _Claim(19, ('_initials',), "adfdec5a9e13", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
         # ledger. All five are anchored on NAMES, so the reach IS the
         # mover list: 2 names for the run keying, 1 for the esq drop,
@@ -3958,8 +3970,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # strings and the corpora are one set.
         "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name":
             _Claim(6, ('_ambiguities',), "9ee2a07d96c8", None),
+        # 2026-09-23, #459: 2 -> 3, 'qc mp', rules.md#R4's name-role
+        # boundary line. Same digest in all three 2.x ledgers.
         "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
-            _Claim(2, ('_ambiguities',), "e0756e2e1cd4", None),
+            _Claim(3, ('_ambiguities',), "6d5341766f53", None),
         # The join clause's own rule, added by the #518 review round:
         # hoisting the clause out from under O5's field-deciding
         # guards reached two corpus names, both a peeled title in
@@ -4474,8 +4488,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # strings and the corpora are one set.
         "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name":
             _Claim(6, ('_ambiguities',), "9ee2a07d96c8", None),
+        # 2026-09-23, #459: 2 -> 3, 'qc mp', rules.md#R4's name-role
+        # boundary line. Same digest in all three 2.x ledgers.
         "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
-            _Claim(2, ('_ambiguities',), "e0756e2e1cd4", None),
+            _Claim(3, ('_ambiguities',), "6d5341766f53", None),
         # The join clause's own rule, added by the #518 review round:
         # hoisting the clause out from under O5's field-deciding
         # guards reached two corpus names, both a peeled title in
@@ -4767,8 +4783,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # strings and the corpora are one set.
         "feat(#491) an all-titles input reports title-or-name for the word the title peel left as the name":
             _Claim(6, ('_ambiguities',), "9ee2a07d96c8", None),
+        # 2026-09-23, #459: 2 -> 3, 'qc mp', rules.md#R4's name-role
+        # boundary line. Same digest in all three 2.x ledgers.
         "feat(#491) an all-suffix input reports suffix-or-name for the word it made the name":
-            _Claim(2, ('_ambiguities',), "e0756e2e1cd4", None),
+            _Claim(3, ('_ambiguities',), "6d5341766f53", None),
         # The join clause's own rule, added by the #518 review round:
         # hoisting the clause out from under O5's field-deciding
         # guards reached two corpus names, both a peeled title in
@@ -6736,7 +6754,11 @@ class _Excluded(NamedTuple):
 #: revisit the day one does.
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
     "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
-        _Excluded(3, "5a12a8117651",
+        _Excluded(6, "69491e3986b1",
+                  # 2026-09-23, #459: 3 -> 6 captures, rules.md#R4's
+                  # three new trailing Ph. D. spellings
+                  # ('john smith ph.d.', 'JOHN SMITH PH.D.',
+                  # 'john smith ph. d.'); absorbed_by unchanged.
                   # fix(comma-precomma-family) JOINED this tuple in #372,
                   # it did not replace anything: it claims the {given,
                   # family} readings, which it legitimately describes for a
@@ -6772,7 +6794,8 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
                   #
                   # Decided rather than absorbed. The rule's regex is
                   # the bare fragment `\bph\. d\.`, which reaches all
-                  # 18 corpus spellings while explaining the two
+                  # 19 corpus spellings (18 until #459's 'john smith
+                  # ph. d.' line, 2026-09-23) while explaining the two
                   # LEADING ones it is named for; a trailing 'Ph. D.'
                   # is what this entry protects, and the exclusion
                   # refuses those names before any rule is consulted,

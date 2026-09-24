@@ -376,6 +376,10 @@ def _normset(
     return frozenset(normalized)
 
 
+def _alnum(text: str) -> str:
+    return "".join(c for c in text if c.isalnum())
+
+
 def _normpairs(
     raw: Mapping[str, str] | Iterable[tuple[str, str]],
 ) -> tuple[tuple[str, str], ...]:
@@ -427,6 +431,36 @@ def _normpairs(
                 f"empty (lowercase + strip full stops/whitespace leaves "
                 f"nothing)"
             )
+        # A value is a case MASK (#459): the key's own letters and
+        # digits recased. Its punctuation marks where its letters are
+        # JOINED -- letters written side by side are one run, and any
+        # character that is not a letter between them (a full stop, a
+        # space, a digit) ends the run, so the mask's own case stands
+        # for a letter it spells alone ('h.c' on 'h.c.' stays 'h.c.').
+        # It is never written into the word: case repair keeps the
+        # WRITER's own punctuation, not the mask's. Compared through
+        # the same fold as the key, which keeps interior periods
+        # ('Ph.D.' is stored 'ph.d') and composes NFC, so both sides
+        # are read alike. A raise, not a warning: a mismatched value
+        # used to be SUBSTITUTED for the word, and rules.md#R4:
+        # "Repair changes case and nothing else", so there is no
+        # reading of one that repair can honor.
+        if _alnum(_normalize(v)) != _alnum(normalized_key):
+            upper = normalized_key.upper()
+            # The offered spelling must itself construct: .upper() can
+            # change a letter's COUNT ('straße' -> 'STRASSE', ß -> SS),
+            # which would fail the very check above if pasted. Falling
+            # back to the key unchanged -- an identity mask, always
+            # legal -- keeps the offer actionable in every case rather
+            # than only the common one.
+            offered = upper if _alnum(_normalize(upper)) == _alnum(
+                normalized_key) else normalized_key
+            raise ValueError(
+                f"capitalization_exceptions value {v!r} for key {k!r} "
+                f"does not spell the key's letters: a value is a case "
+                f"mask, the key's own letters recased -- e.g. "
+                f"capitalization_exceptions=(({normalized_key!r}, "
+                f"{offered!r}),)")
         # capitalized() looks words up one at a time (the _WORD regex
         # never yields spaces), so a multi-word key is unreachable.
         # interior whitespace test; split() covers all Unicode whitespace
@@ -566,8 +600,14 @@ class Lexicon:
     #: vocabulary is. Full default list:
     #: :data:`~nameparser.config.suffixes.GLUED_HONORIFICS`.
     honorific_tails: frozenset[str] = frozenset()
-    #: Lowercase word -> exact-cased replacement used by capitalized()
-    #: ("phd" -> "Ph.D."). Pair-valued: change it with
+    #: Lowercase word -> case mask used by capitalized(): the word's
+    #: own letters and digits, each in the case it takes ("phd" ->
+    #: "PhD"), laid over the word as written, so the one entry
+    #: repairs "ph.d." to "Ph.D.". The mask's own punctuation marks
+    #: where its letters are joined into one run versus split apart,
+    #: and is never written into the word -- repair keeps the writer's
+    #: own punctuation. A value that does not spell the key's letters
+    #: raises ValueError. Pair-valued: change it with
     #: dataclasses.replace(), not add()/remove(); read it as a mapping
     #: via capitalization_exceptions_map. Full default mapping:
     #: :data:`~nameparser.config.capitalization.CAPITALIZATION_EXCEPTIONS`.

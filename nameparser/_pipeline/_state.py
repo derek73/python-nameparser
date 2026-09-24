@@ -17,7 +17,8 @@ from enum import Enum, auto
 
 from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
-from nameparser._types import AmbiguityKind, Role, Segmenter, Span
+from nameparser._types import (SHAPE_ACRONYM_TAG, AmbiguityKind,
+                               Role, Segmenter, Span)
 
 
 # The comma characters (ASCII/Arabic/fullwidth, #265). Shared here so
@@ -64,20 +65,21 @@ class WorkToken:
 #: cannot reach the other way).
 _NEVER_FLIPPED = frozenset({"vocab:bound-given", "initial"})
 
-#: The by-shape half of #289/#516's ambiguous credential class: a
-#: token classify admits to `vocab:suffix-ambiguous`'s READING by
-#: SHAPE rather than by the listed vocabulary
-#: (`Policy.unlisted_dotted_suffixes` is the first emitter;
-#: `Policy.unlisted_caps_suffixes` is the second, and classify writes
-#: the tag from both branches). One constant, not a string literal at
-#: each site, because the readers that must tell a by-shape member
-#: apart from a listed one -- `_pieces.peel_trailing` and
-#: `_pieces.listed_lean`, which `segment_suffix_reading` asks through,
-#: so the reading it decides is second-hand -- cannot afford to spell
-#: it several ways and have one of them typo silently past the
-#: others. The two sites that want EITHER half read
-#: `_AMBIGUOUS_CREDENTIAL_TAGS` below rather than this constant.
-SHAPE_ACRONYM_TAG = "shape:acronym"
+# SHAPE_ACRONYM_TAG, imported from _types above -- where it lives
+# since #459, because case repair reads it too and _render may not
+# import the pipeline -- is the by-shape half of #289/#516's
+# ambiguous credential class: a token classify admits to
+# `vocab:suffix-ambiguous`'s READING by SHAPE rather than by the
+# listed vocabulary (`Policy.unlisted_dotted_suffixes` is the first
+# emitter; `Policy.unlisted_caps_suffixes` is the second, and
+# classify writes the tag from both branches). One constant, not a
+# string literal at each site, because the readers that must tell a
+# by-shape member apart from a listed one -- `_pieces.peel_trailing`
+# and `_pieces.listed_lean`, which `segment_suffix_reading` asks
+# through, so the reading it decides is second-hand -- cannot afford
+# to spell it several ways and have one of them typo silently past
+# the others. The two sites that want EITHER half read
+# `_AMBIGUOUS_CREDENTIAL_TAGS` below rather than this constant.
 
 #: The MEMBERSHIP half of the same class: classify's tag for a token
 #: the ambiguous credential vocabulary claims, by listing

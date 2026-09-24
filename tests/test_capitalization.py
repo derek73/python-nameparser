@@ -5,6 +5,7 @@ import pickle
 import pytest
 
 from nameparser import HumanName
+from nameparser.config import Constants
 
 from tests.base import HumanNameTestBase
 
@@ -90,22 +91,27 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalize_single_suffix_still_works(self) -> None:
         hn = HumanName('JOHN DOE PHD')
         hn.capitalize()
-        self.assertEqual(hn.suffix_list, ['Ph.D.'])
+        self.assertEqual(hn.suffix_list, ['PhD'])
 
     def test_capitalize_multiple_suffixes_still_split_correctly(self) -> None:
         hn = HumanName('JOHN DOE PHD MD')
         hn.capitalize()
         # The split this guards is capitalize() giving each word its own
-        # exception form rather than title-casing the run, and that is
-        # untouched. The two words are ONE entry since #436 -- the writer
-        # spaced them, so they render with a space -- and one entry is one
-        # suffix_list element. A deliberate deviation from 1.4.0, which
-        # inserted a comma into a run the writer had spaced.
-        self.assertEqual(hn.suffix_list, ['Ph.D. M.D.'])
+        # repair rather than title-casing the run, and that is
+        # untouched: PHD by the exceptions map's mask, MD by the acronym
+        # clause since #459 took md out of the map. The two words are
+        # ONE entry since #436 -- the writer spaced them, so they render
+        # with a space -- and one entry is one suffix_list element. A
+        # deliberate deviation from 1.4.0, which inserted a comma into a
+        # run the writer had spaced, and gave 'Ph.D.', 'M.D.' besides.
+        self.assertEqual(hn.suffix_list, ['PhD MD'])
 
     def test_capitalize_suffix_acronym_with_dots(self) -> None:
-        # Suffixes already written with dots (e.g. "M.D.") should capitalize
-        # to their exception form, not title-case to "M.d." (issue #141)
+        # Suffixes already written with dots (e.g. "M.D.") keep them and
+        # do not title-case to "M.d." (issue #141). Through 2.3 the
+        # exceptions map gave this string by SUBSTITUTING 'M.D.'; since
+        # #459 md is a listed acronym the acronym clause writes in
+        # capitals, recasing the word as written.
         hn = HumanName('GREGORY HOUSE M.D.')
         hn.capitalize()
         self.assertEqual(hn.suffix, 'M.D.')
@@ -124,16 +130,42 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
             hn.capitalize()
             self.m(str(hn), expect, hn)
 
-    # The exceptions map's five keep their special casing; the new
-    # all-caps path must not shadow them (#459).
+    # The exceptions map is asked before the all-caps acronym clause,
+    # and since #459 it holds case MASKS: bsc and msc are listed
+    # acronyms too, and the mask is what keeps them mixed-case where
+    # the acronym clause would give 'BSC'. md left the map and reads
+    # 'MD' by the acronym clause; 1.4.0 through 2.3.0 gave 'M.D.' and
+    # 'Ph.D.', the map substituting its value for the word.
     def test_capitalize_exceptions_still_win_over_acronyms(self) -> None:
         for src, expect in [
-            ('john smith md', 'John Smith M.D.'),
-            ('john smith phd', 'John Smith Ph.D.'),
+            ('john smith md', 'John Smith MD'),
+            ('john smith phd', 'John Smith PhD'),
+            ('john smith ph.d.', 'John Smith Ph.D.'),
+            ('john smith bsc', 'John Smith BSc'),
+            ('JOHN SMITH MSC', 'John Smith MSc'),
         ]:
             hn = HumanName(src)
             hn.capitalize()
             self.m(str(hn), expect, hn)
+
+    # #459: a capitalization_exceptions value is a case MASK -- the
+    # key's own letters recased -- so a v1 Constants carrying any other
+    # value raises at the first parse, where the snapshot builds the
+    # Lexicon. A DECIDED exception to the shim's never-raise rule
+    # (decisions.md#R4, and #3-0-reevaluations): 1.4.0 substituted
+    # such a value for the word, repair now only recases, and no such
+    # value was found in the tracker, the docs or any test.
+    def test_a_mismatched_exception_value_raises_at_the_first_parse(
+        self,
+    ) -> None:
+        c = Constants(capitalization_exceptions={'jr': 'Junior'})
+        with pytest.raises(ValueError,
+                           match="does not spell the key's letters"):
+            HumanName('john smith jr', constants=c)
+        ok = Constants(capitalization_exceptions={'jr': 'JR'})
+        hn = HumanName('john smith jr', constants=ok)
+        hn.capitalize()
+        self.m(str(hn), 'John Smith JR', hn)
 
     # A word in the acronym vocabulary that parses as a family name
     # still repairs as an ordinary name word, not an acronym (#459).
