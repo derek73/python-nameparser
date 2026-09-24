@@ -951,6 +951,59 @@ def test_capitalized_lowers_the_words_the_parse_tagged_conjunction() -> None:
     assert hyphenated.capitalized(force=True).middle == "E-F"
 
 
+def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
+    """rules.md#R4 (#478): inside one hyphenated word, a part that is
+    connective vocabulary with a worded part on each side of it keeps
+    its lowercase, in every role. At either END it is ordinary name
+    text -- #458's answer, kept -- and a word outside the connective
+    vocabulary is never reached, the Maori 'a' among them. A single
+    letter marked with a period is an initial there too, never the
+    connective -- a multi-letter word marked with a period is not."""
+    for text, repaired in (
+            ("jose ortega-y-gasset", "Jose Ortega-y-Gasset"),
+            ("JOSE ORTEGA-Y-GASSET", "Jose Ortega-y-Gasset"),
+            ("maria silva-e-sousa", "Maria Silva-e-Sousa"),
+            ("mary-e-smith", "Mary-e-Smith"),
+            ("john smith-and-jones", "John Smith-and-Jones"),
+            # edges
+            ("juan e-f smith", "Juan E-F Smith"),
+            ("juan y-garcia", "Juan Y-Garcia"),
+            ("jose ortega-y-", "Jose Ortega-Y-"),
+            ("jose -y-gasset", "Jose -Y-Gasset"),
+            # no connective, and the particle arm's own per-word answer
+            ("donovan mcnabb-smith", "Donovan McNabb-Smith"),
+            ("maria da-silva", "Maria da-Silva"),
+            # three worded parts on the ambiguous side of `first < at
+            # < last`, so a mutant dropping that bound cannot pass
+            ("juan y-garcia-lopez", "Juan Y-Garcia-Lopez"),
+            ("juan garcia-lopez-y", "Juan Garcia-Lopez-Y")):
+        assert str(parse(text).capitalized()) == repaired, text
+    # mixed case is R5's: untouched unless forced
+    mixed = parse("Jose Ortega-Y-Gasset")
+    assert mixed.capitalized() == mixed
+    assert str(mixed.capitalized(force=True)) == "Jose Ortega-y-Gasset"
+    # not connective vocabulary, so not reached (decisions.md#R4)
+    assert "a" not in Lexicon.default().conjunctions
+    assert str(parse("Te Awanui-a-Rangi Black").capitalized(
+        force=True)) == "Te Awanui-A-Rangi Black"
+    # a single letter marked with a period is an initial there,
+    # exactly as in spaced text, never the connective -- `_normalize`
+    # strips the period, so a naive vocabulary check alone would read
+    # 'e.'/'y.' as the connective and lower it
+    assert str(parse("j.-e.-p. dupont").capitalized(
+        force=True)) == "J.-E.-P. Dupont"
+    assert str(parse("J.-Y.-M. COUSTEAU").capitalized()) == \
+        "J.-Y.-M. Cousteau"
+    # a MULTI-letter word marked with a period is not an initial, and
+    # stays reachable as the connective, the same as its spaced
+    # reading ('hans smith und. jones' tags 'und.' a conjunction)
+    assert str(parse("hans smith-und.-jones").capitalized(
+        force=True)) == "Hans Smith-und.-Jones"
+    # every role, not only FAMILY above
+    assert str(parse("smith, jose ortega-y-gasset").capitalized(
+        force=True)) == "Jose Ortega-y-Gasset Smith"
+
+
 def test_case_repair_falls_back_for_text_the_parse_never_read() -> None:
     """A token carrying UNCLASSIFIED_TAG holds raw text no parse read,
     so there is no decision to honor and case repair -- which is handed

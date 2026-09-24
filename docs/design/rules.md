@@ -2207,6 +2207,13 @@ R4. Rationale: case repair is a display concern, applied only on
     phd smith gives PhD Smith), and a suffix word that is neither an
     acronym, a numeral nor an exceptions-map entry -- the
     generational `jr`, `sr` -- keeps its title case.
+    Inside a hyphenated word, a part that is connective vocabulary
+    with a worded part on each side of it keeps its lowercase, the
+    hyphens joining the name around it as the spaced connective would
+    (Ortega-y-Gasset); at either end of the hyphenated word it is
+    repaired as ordinary name text. A single letter marked with a
+    period is read as an initial there, as the parse reads it, never
+    as the connective.
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "Juan McDonald"             →  capitalized_forced="Juan McDonald"
       "ANH DO"                    →  capitalized="Anh Do"
@@ -2243,6 +2250,16 @@ R4. Rationale: case repair is a display concern, applied only on
       "Smith, John, and"          →  capitalized_forced="John Smith and"
       "Doe, Jane, and Jr."        →  capitalized_forced="Jane Doe and Jr."
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
+      "jose ortega-y-gasset"      →  capitalized="Jose Ortega-y-Gasset"
+      "JOSE ORTEGA-Y-GASSET"      →  capitalized="Jose Ortega-y-Gasset"
+      "maria silva-e-sousa"       →  capitalized="Maria Silva-e-Sousa"
+      "Jose Ortega-Y-Gasset"      →  capitalized_forced="Jose Ortega-y-Gasset"
+      "juan e-f smith"            →  capitalized="Juan E-F Smith"  · boundary
+      "juan y-garcia"             →  capitalized="Juan Y-Garcia"  · boundary
+      "donovan mcnabb-smith"      →  capitalized="Donovan McNabb-Smith"
+      "maria da-silva"            →  capitalized="Maria da-Silva"
+      "juan y-garcia-lopez"       →  capitalized="Juan Y-Garcia-Lopez"  · boundary
+      "j.-e.-p. dupont"           →  capitalized_forced="J.-E.-P. Dupont"  · boundary
     Accepted: the all-particle clause reaches a part the parser read.
     A field spliced in as raw text after the parse carries no reading
     of its own, so a family set that way to "de la" stays lowercase
@@ -2261,10 +2278,12 @@ R4. Rationale: case repair is a display concern, applied only on
     rather than per field: the conjunction carve-out reaches a word
     the parse read as a conjunction, and where the parse read nothing
     at all it reaches what the vocabulary says. A word of that
-    vocabulary standing inside a longer written word is not a
-    conjunction, because the parse read that word as one ordinary
-    name word — but a field spliced in as raw text was read by
-    nobody, so repair asks the vocabulary and a family set to "de y"
+    vocabulary standing at either end of a longer written word is
+    not a conjunction there, because the hyphen clause above reaches
+    only a worded part with a worded part on each side, and an edge
+    part is outside that reach — but a field spliced in as raw
+    text was read by nobody, so repair asks the vocabulary and a
+    family set to "de y"
     keeps its "y" lowercase. Whether a word is the conjunction or an
     initial is a property of the word, which a vocabulary can answer;
     whether a particle is acting as a particle is a property of the
@@ -2285,7 +2304,7 @@ R4. Rationale: case repair is a display concern, applied only on
     both of the parsed name's views: a middle revised to "e-f"
     repairs to "E-F" as the parsed name does, where splicing the same
     text in gives "e-F".
-    history: decisions.md#R4 · interacts: R2, R3, R5, S3 · implemented: nameparser/_render.py, nameparser/_lexicon.py
+    history: decisions.md#R4 · interacts: P3, R2, R3, R5, S3 · implemented: nameparser/_render.py, nameparser/_lexicon.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name
     deliberately, and a repair cannot tell a deliberate spelling from

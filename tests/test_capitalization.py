@@ -415,9 +415,11 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
                 # an initial, not the Italian conjunction
                 ('middle', 'e.', 'John E. Smith'),
                 # v1 asks per WORD of the assigned text, so the
-                # conjunction inside a hyphenated word IS lowered here
-                # -- the opposite of the parsed reading pinned below,
-                # and the difference is that one carries a reading
+                # conjunction ENDING a hyphenated word IS lowered here
+                # -- the opposite of the parsed reading, where an edge
+                # part is ordinary name text (pinned below), and the
+                # difference is that one carries a reading. An
+                # interior link is lowered on both paths since #478.
                 ('last', 'smith-y', 'John Smith-y')):
             hn = HumanName('john smith')
             setattr(hn, field, value)
@@ -440,22 +442,32 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         uppered.capitalize()
         self.m(str(uppered), 'Juan E-F Smith', uppered)
 
-    # The same shape on a real name, which is what the release note
-    # cites: Ortega y Gasset is routinely hyphenated in catalogues, and
-    # `y` is conjunction vocabulary. Before #458 the two spellings
-    # repaired to 'Jose Ortega-y-Gasset' and 'Jose Ortega-Y-Gasset'
-    # (measured on the pre-#458 tree). The SPACED form is the contrast
-    # and is untouched -- there `y` is a token of its own and IS the
-    # conjunction, so it keeps the lowercase Spanish convention.
-    def test_a_hyphenated_compound_surname_capitalizes_its_conjunction(
+    # #478: Ortega y Gasset is routinely hyphenated in catalogues, and
+    # inside one hyphenated word a connective with a part on each side
+    # keeps its lowercase -- the hyphens are the writer joining the name
+    # around it, as the spaced connective does (rules.md#R4). This
+    # reverses #458's answer for the INTERIOR position ('Jose
+    # Ortega-Y-Gasset' at 2.2.0 and 2.3.0) and keeps it at the edges,
+    # where a part has a neighbour on one side only and is ordinary
+    # name text ('juan e-f smith' above, 'juan y-garcia' here). Both
+    # one-case spellings now agree; 1.4.0 re-decided per word and gave
+    # 'Jose Ortega-y-Gasset' lowered but 'Jose Ortega-Y-Gasset' upper
+    # (measured on the released wheel), so the all-caps half is a
+    # parity break, #479's one-case precedent. The SPACED form is the
+    # contrast and was never in question -- there `y` is a token of its
+    # own and the parse tags it the conjunction.
+    def test_a_hyphenated_compound_surname_keeps_its_link_lowercase(
         self,
     ) -> None:
         lowered = HumanName('jose ortega-y-gasset')
         lowered.capitalize(force=True)
-        self.m(str(lowered), 'Jose Ortega-Y-Gasset', lowered)
+        self.m(str(lowered), 'Jose Ortega-y-Gasset', lowered)
         uppered = HumanName('JOSE ORTEGA-Y-GASSET')
         uppered.capitalize()
-        self.m(str(uppered), 'Jose Ortega-Y-Gasset', uppered)
+        self.m(str(uppered), 'Jose Ortega-y-Gasset', uppered)
+        edge = HumanName('juan y-garcia')
+        edge.capitalize()
+        self.m(str(edge), 'Juan Y-Garcia', edge)
         spaced = HumanName('jose ortega y gasset')
         spaced.capitalize(force=True)
         self.m(str(spaced), 'Jose Ortega y Gasset', spaced)

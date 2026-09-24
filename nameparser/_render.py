@@ -479,7 +479,39 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     # vocabulary asked per word: the parse would have made one token
     # per word of that text, so this is the granularity its answer
     # would have had.
-    return _WORD.sub(lambda m: _cap_word(m.group(0), role, tags, lex), text)
+    def cap(match: re.Match[str]) -> str:
+        return _cap_word(match.group(0), role, tags, lex)
+
+    if "-" not in text:
+        return _WORD.sub(cap, text)
+    parts = text.split("-")
+    named = [at for at, part in enumerate(parts) if _WORD.search(part)]
+    if len(named) < 3:
+        return _WORD.sub(cap, text)
+    # rules.md#R4: "Inside a hyphenated word, a part that is
+    # connective vocabulary with a worded part on each side of it
+    # keeps its lowercase" -- the hyphens are the writer joining the
+    # name around it, as the spaced connective would (#478). Position
+    # and vocabulary both come from the whole token, which is why
+    # this sits here and not in _cap_word, whose word has lost its
+    # neighbours. It does NOT re-derive the conjunction-versus-
+    # initial class from a word's CASE, the thing #458 removed: an
+    # EDGE part has a part on one side only and stays ordinary name
+    # text, so 'juan e-f smith' keeps 'E-F'. A 'part' is one holding
+    # a word, so a doubled or trailing hyphen ('md-phd-') supplies no
+    # neighbour, and the two-part compound ('mcnabb-smith') never
+    # gets past the count above. The period is the one mark classify
+    # itself reads as an initial: a single letter marked with a
+    # period is read as an initial there, as the parse reads it,
+    # never as the connective, so 'j.-e.-p. dupont' keeps 'E.' while
+    # the multi-letter 'und.' in 'hans smith-und.-jones' still lowers.
+    first, last = named[0], named[-1]
+    return "-".join(
+        part.lower()
+        if (first < at < last and not re.fullmatch(r"\w\.", part)
+                and _normalize(part) in lex.conjunctions)
+        else _WORD.sub(cap, part)
+        for at, part in enumerate(parts))
 
 
 # rules.md#R4: "case repair returns a repaired copy and never mutates
