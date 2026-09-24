@@ -166,18 +166,43 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # Lexicon. A DECIDED exception to the shim's never-raise rule
     # (decisions.md#R4, and #3-0-reevaluations): 1.4.0 substituted
     # such a value for the word, repair now only recases, and no such
-    # value was found in the tracker, the docs or any test.
+    # value was found in the tracker, the docs or any test. The raise
+    # carries a v1-spelled hint: the 2.0 message's own offer
+    # ("capitalization_exceptions=(('jr', 'JR'),)") is a Lexicon()
+    # constructor call, and a v1 caller is looking at a TupleManager
+    # assignment through Constants, not that constructor.
     def test_a_mismatched_exception_value_raises_at_the_first_parse(
         self,
     ) -> None:
         c = Constants(capitalization_exceptions={'jr': 'Junior'})
         with pytest.raises(ValueError,
-                           match="does not spell the key's letters"):
+                           match="does not spell the key's letters") \
+                as caught:
             HumanName('john smith jr', constants=c)
+        assert "constants.capitalization_exceptions['jr'] = 'JR'" \
+            in str(caught.value)
+        # pasted onto a fresh Constants, the offered fix works
+        fixed = Constants()
+        fixed.capitalization_exceptions['jr'] = 'JR'
+        hn = HumanName('john smith jr', constants=fixed)
+        hn.capitalize()
+        self.m(str(hn), 'John Smith JR', hn)
         ok = Constants(capitalization_exceptions={'jr': 'JR'})
         hn = HumanName('john smith jr', constants=ok)
         hn.capitalize()
         self.m(str(hn), 'John Smith JR', hn)
+
+    # rules.md#R5 (#492): a suffix ASSIGNED to the facade after
+    # construction carries UNCLASSIFIED_TAG (no `vocab:suffix` tag, no
+    # roman-numeral shape read from a parse) and still excluded from
+    # the one-case gate -- the gate reads the ROLE, not the tag.
+    def test_capitalize_leaves_an_assigned_suffix_out_of_the_gate(
+        self,
+    ) -> None:
+        hn = HumanName('juan garcia')
+        hn.suffix = 'III'
+        hn.capitalize()
+        self.m(str(hn), 'Juan Garcia III', hn)
 
     # A word in the acronym vocabulary that parses as a family name
     # still repairs as an ordinary name word, not an acronym (#459).
@@ -420,7 +445,8 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
                 # part is ordinary name text (pinned below), and the
                 # difference is that one carries a reading. An
                 # interior link is lowered on both paths since #478.
-                ('last', 'smith-y', 'John Smith-y')):
+                ('last', 'smith-y', 'John Smith-y'),
+                ('last', 'smith-y-jones', 'John Smith-y-Jones')):
             hn = HumanName('john smith')
             setattr(hn, field, value)
             hn.capitalize(force=True)

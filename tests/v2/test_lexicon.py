@@ -1,3 +1,4 @@
+import copy
 import dataclasses
 import pickle
 import unicodedata
@@ -8,8 +9,8 @@ import pytest
 
 from nameparser import Parser
 from nameparser._lexicon import (
-    Lexicon, _PHRASE_FIELDS, _VOCAB_FIELDS, _default_lexicon, _normalize,
-    _title_key,
+    Lexicon, _MaskValueError, _PHRASE_FIELDS, _VOCAB_FIELDS, _default_lexicon,
+    _normalize, _title_key,
 )
 from nameparser._policy import Script, _SCRIPT_RANGES
 from nameparser.config import Constants
@@ -166,24 +167,34 @@ def test_an_exception_value_that_does_not_spell_its_key_raises(
 
 
 def test_a_mask_may_recase_a_digit_key_unchanged() -> None:
-    """#459 review: the mask compares ALPHANUMERICS, not letters alone
-    (_alnum, not the old letters-only _letters), so a digit is part of
-    what a value must spell -- '2nd' accepts '2ND' ('2' unchanged,
-    letters recased) and rejects '3ND' above."""
+    """#459 review: the mask compares ALPHANUMERICS (_lexicon._alnum),
+    not letters alone, so a digit is part of what a value must spell
+    -- '2nd' accepts '2ND' ('2' unchanged, letters recased) and
+    rejects '3ND' above."""
     lex = Lexicon(capitalization_exceptions=(("2nd", "2ND"),))
     assert lex.capitalization_exceptions_map["2nd"] == "2ND"
 
 
-def test_a_decomposed_value_is_compared_nfc_composed() -> None:
+def test_a_decomposed_value_is_compared_and_stored_nfc_composed() -> None:
     """Both the key and the value fold through _normalize, which NFC-
     composes non-ASCII text (#459's decomposed-hangul note applies
-    here too): a value written in decomposed form is accepted against
-    a key written composed, since both sides read the same letters
-    once composed."""
+    here too), so a value written in decomposed form is accepted
+    against a key written composed: both sides read the same letters
+    once composed. The value is also STORED NFC-composed, not as
+    written -- _apply_mask walks the mask's alphanumeric characters
+    one at a time, and a decomposed value spells one composed letter
+    as a base letter plus a non-alpha combining mark, which changes
+    which letters read as split off beside a full stop. Both
+    spellings of the same value therefore construct to the identical
+    stored value."""
+    composed = unicodedata.normalize("NFC", "CAFÉ")
     decomposed = unicodedata.normalize("NFD", "CAFÉ")
-    assert decomposed != "CAFÉ"  # the draw actually decomposed something
+    assert decomposed != composed  # the draw actually decomposed something
     lex = Lexicon(capitalization_exceptions=(("café", decomposed),))
-    assert lex.capitalization_exceptions_map["café"] == decomposed
+    assert lex.capitalization_exceptions_map["café"] == composed
+    same = Lexicon(capitalization_exceptions=(("café", composed),))
+    assert (lex.capitalization_exceptions_map["café"]
+            == same.capitalization_exceptions_map["café"])
 
 
 @pytest.mark.parametrize("key, value", [
@@ -195,8 +206,8 @@ def test_a_value_may_carry_punctuation_that_marks_its_joins(
     """#459 review: a value's punctuation is not ignored -- it marks
     which of the key's letters are JOINED (one run) versus split, and
     _apply_mask's initial rule reads that structure -- but it is never
-    WRITTEN into the word, so there is nothing here for a warning to
-    catch. Every one of these constructs silently."""
+    WRITTEN into the word. Every one of these is warning-free at
+    construction, where a construction diagnostic could be raised."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         lex = Lexicon(capitalization_exceptions=((key, value),))
@@ -237,6 +248,30 @@ def test_the_mask_error_falls_back_when_upper_would_not_itself_validate(
     # pasted, the offered spelling constructs
     assert Lexicon(capitalization_exceptions=(('straße', 'straße'),)) \
         .capitalization_exceptions_map == {"straße": "straße"}
+
+
+def test_mask_value_error_survives_pickle_and_copy() -> None:
+    """_MaskValueError's default __reduce__ (inherited from
+    ValueError -> BaseException, which calls type(self)(*self.args))
+    would call __init__ with only the message -- self.args holds just
+    that, key/offered being stored as separate attributes -- and
+    __init__ requires all three positionally. A worker process in a
+    ProcessPoolExecutor pickles an exception raised in the worker to
+    deliver it to the caller, so an unpicklable one surfaces as
+    BrokenProcessPool there instead of the ValueError HEAD delivered."""
+    try:
+        Lexicon(capitalization_exceptions=(("jr", "Junior"),))
+    except _MaskValueError as caught:
+        original = caught
+    else:
+        raise AssertionError("expected _MaskValueError")
+    for restored in (pickle.loads(pickle.dumps(original)),
+                     copy.copy(original)):
+        assert isinstance(restored, ValueError)
+        assert isinstance(restored, _MaskValueError)
+        assert restored.key == original.key == "jr"
+        assert restored.offered == original.offered
+        assert str(restored) == str(original)
 
 
 def test_add_and_remove_return_new_lexicons() -> None:

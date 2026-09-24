@@ -88,6 +88,19 @@ _UNJOINED_MARKS = frozenset({UNJOINED_TAG, UNJOINED_CONJUNCTION_TAG})
 # still not worth the import layering forbids.
 _INITIAL = re.compile(r"^(\w\.|[A-Z])$")
 
+#: The hyphen clause's own initial test (_cap_text, #478): _INITIAL's
+#: period alternative alone. The bare-capital half is deliberately not
+#: used here -- admitting it would exempt a capital connective from
+#: the clause on its CASE alone, reading it as an initial and leaving
+#: it uppercase. The dotted test runs before the vocabulary test, and
+#: a capital DOES lower there: 'Y' in 'JOSE ORTEGA-Y-GASSET' reaches
+#: the vocabulary test and lowers to 'Ortega-y-Gasset'. Exempting it
+#: on case is exactly the reading #458 removed from case repair
+#: generally. Registered in tests/v2/test_regex_sync.py as the period
+#: alternative of _INITIAL's pattern, so the two cannot drift apart
+#: unnoticed.
+_DOTTED_INITIAL = re.compile(r"^\w\.$")
+
 # v1 regexes.py "roman_numeral" -- the pipeline's _vocab._ROMAN,
 # copied by hand because layering forbids this module the import
 # (the reason _INITIAL above is a copy too) and pinned against config
@@ -244,6 +257,9 @@ def _letter_run_ge2(text: str) -> list[bool]:
     return flags
 
 
+# rules.md#R4: "the writer split a chunk the mask keeps together, so
+# the split-off letter is an initial" -- the split-initial exception
+# the docstring below states in one sentence and defers to.
 def _apply_mask(word: str, mask: str) -> str | None:
     """rules.md#R4's mask: `word` with each letter or digit recased to
     the case of the mask's alphanumeric in the same position, and
@@ -256,18 +272,16 @@ def _apply_mask(word: str, mask: str) -> str | None:
     rather than guess.
 
     One exception the mask does not decide: a SINGLE LETTER split off
-    alone beside a full stop (FULL_STOPS, not the ASCII period alone
-    -- #322) is written in capitals whatever the mask says there --
-    but only where the MASK ALSO writes that letter inside a run of
-    two or more letters: the writer split a chunk the mask keeps
-    together, so the split-off letter is an initial. 'p.h.d.' under
-    'PhD' is 'P.H.D.': p, h and d all sit inside the mask's ONE run,
-    'PhD', so each, written alone beside a stop, is an initial and is
-    capitalized. Where the mask spells the letter alone too -- a
-    caller's own 'h.c' mask on 'h.c.' -- there is no split to repair,
-    and the mask's own case stands unchanged. A run of two or more
-    letters beside a full stop ('sc' in 'b.sc.') is never an initial
-    either way and always takes the mask's case letter by letter.
+    alone beside a full stop is written in capitals whatever the mask
+    says there, but only where the mask itself writes that letter
+    inside a run of two or more letters (the rule stated above this
+    function). What the code adds past that statement: a run is of
+    LETTERS only, so a DIGIT ends one exactly as a full stop does; the
+    full stop tested is any of FULL_STOPS, not the ASCII period alone
+    (#322) -- though through capitalized() only the ASCII period is
+    ever reachable, since _WORD splits a token at any other stop and
+    this function never sees the rest of the word; the fullwidth row
+    in test_render pins the direct call, which is reachable.
 
     Casing goes through the WHOLE word (word.lower()/word.upper())
     rather than per character, when both have the same length as
@@ -454,10 +468,10 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
             normalized.replace(".", "") in lex.suffix_acronyms
             or SHAPE_ACRONYM_TAG in tags):
         return word.upper()
-    # A roman numeral the parse put in the suffix role is written in
-    # capitals whether or not the vocabulary lists it: 'vi' through
-    # 'x' carry no vocabulary tag and title-cased to 'Vi'/'Ix' until
-    # #459, while 'ii'/'iii'/'iv' rode the exceptions map, which is
+    # rules.md#R4: "A roman numeral the parse put in the suffix role is
+    # written in capitals" whether or not the vocabulary lists it: 'vi'
+    # through 'x' carry no vocabulary tag and title-cased to 'Vi'/'Ix'
+    # until #459, while 'ii'/'iii'/'iv' rode the exceptions map, which is
     # why they left it. Suffix-gated for the acronym clause's reason
     # -- 'Vi' is a given name -- and it is also what writes a
     # generational 'i' the connective arm's `generation` guard let
@@ -502,15 +516,16 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     # trailing hyphen ('md-phd-') supplies no neighbour while a
     # doubled one changes nothing ('garcia--y-lopez' keeps its 'y'
     # lowercase), and the two-part compound ('mcnabb-smith') never
-    # gets past the count above. The period is the one mark classify
-    # itself reads as an initial: a single letter marked with a
-    # period is read as an initial there, as the parse reads it,
-    # never as the connective, so 'j.-e.-p. dupont' keeps 'E.' while
-    # the multi-letter 'und.' in 'hans smith-und.-jones' still lowers.
+    # gets past the count above. The period is the one punctuation
+    # mark classify itself reads as an initial: a single letter marked
+    # with a period is read as an initial there, as the parse reads
+    # it, never as the connective, so 'j.-e.-p. dupont' keeps 'E.'
+    # while the multi-letter 'und.' in 'hans smith-und.-jones' still
+    # lowers.
     first, last = named[0], named[-1]
     return "-".join(
         part.lower()
-        if (first < at < last and not re.fullmatch(r"\w\.", part)
+        if (first < at < last and not _DOTTED_INITIAL.fullmatch(part)
                 and _normalize(part) in lex.conjunctions)
         else _WORD.sub(cap, part)
         for at, part in enumerate(parts))
@@ -526,8 +541,9 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     the joined texts of every token not roled SUFFIX (#492) -- not
     render() output, so it stays decoupled from spec formatting and
     the #254 collapse.
-    Repair changes case and nothing else: an exceptions-map value is
-    a mask recasing the word as written (#459), never a replacement.
+    Repair changes case and nothing else (see the rules.md#R4 citation
+    in _cap_word): an exceptions-map value is a mask recasing the word
+    as written (#459), never a replacement.
     The repair reads token TAGS as well as texts: a part whose every
     word is particle vocabulary is repaired as ordinary name words,
     and the mark saying so comes from the pipeline, as does the

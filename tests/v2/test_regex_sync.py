@@ -99,6 +99,18 @@ def test_initial_copies_agree_with_each_other_and_config() -> None:
     assert source.flags == _vocab._INITIAL.flags
 
 
+def test_dotted_initial_is_the_period_alternative_of_initial() -> None:
+    # _render._DOTTED_INITIAL (#478's hyphen clause) is _INITIAL's
+    # period alternative alone -- the bare-capital half is deliberately
+    # not used there (#458). _INITIAL is "^(\\w\\.|[A-Z])$"; splitting
+    # its alternation and re-wrapping the first half must reproduce
+    # _DOTTED_INITIAL exactly, so the two cannot drift apart unnoticed.
+    inner = _render._INITIAL.pattern[2:-2]  # strip "^(" and ")$"
+    period_alt = inner.split("|")[0]
+    assert _render._DOTTED_INITIAL.pattern == f"^{period_alt}$"
+    assert _render._DOTTED_INITIAL.flags == _render._INITIAL.flags
+
+
 # The roster above grew one test at a time, and four hand-copies were
 # never added to it -- _render's _SPACES, _SPACE_BEFORE_COMMA, _MAC and
 # _WORD. They had not diverged, but nothing would have said so, which
@@ -137,6 +149,7 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # above, which assert the documented RELATIONSHIP instead:
     ("_render", "_INITIAL"): None,      # config's pattern minus one "?"
     ("_vocab", "_INITIAL"): None,       # same
+    ("_render", "_DOTTED_INITIAL"): None,  # _INITIAL's period alternative
     ("_tokenize", "_BIDI"): None,       # re_bidi, not a REGEXES key
     # Mirrors _pipeline._state.COMMA_CHARS, not nameparser.config
     ("_render", "_COMMA_CHAR"): None,

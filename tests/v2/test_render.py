@@ -564,8 +564,25 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
                            ("juan garcia PhD", "Juan Garcia PhD"),
                            ("JUAN GARCIA Jr.", "Juan Garcia Jr."),
                            ("dr. juan garcia III", "Dr. Juan Garcia III"),
-                           ("JUAN GARCIA iii", "Juan Garcia III")):
+                           ("JUAN GARCIA iii", "Juan Garcia III"),
+                           # a cased suffix that is NOT the trailing
+                           # token: the gate excludes every SUFFIX-roled
+                           # token, not only the last one
+                           ("juan garcia PhD MD", "Juan Garcia PhD MD"),
+                           ("juan garcia, PhD, MD", "Juan Garcia PhD, MD"),
+                           # an untagged suffix: 'VI' reads suffix by
+                           # shape (roman numeral) and carries no
+                           # vocab:* tag, so a tag-driven gate would
+                           # wrongly keep it in the one-case test
+                           ("juan garcia VI", "Juan Garcia VI"),
+                           # the gate over each comma shape: SUFFIX_COMMA,
+                           # FAMILY_COMMA, and a FAMILY_COMMA plus a
+                           # trailing suffix segment
+                           ("juan garcia, III", "Juan Garcia III"),
+                           ("garcia, juan III", "Juan Garcia III"),
+                           ("GARCIA, JUAN, Jr.", "Juan Garcia Jr.")):
         assert str(parse(text).capitalized()) == repaired, text
+    assert parse("juan garcia VI").tokens[-1].tags == frozenset()
     for untouched in ("Dr. juan garcia", "DR. juan garcia III",
                       "Juan garcia III", "Juan Garcia iii",
                       # NICKNAME and MAIDEN tokens stay IN the gate
@@ -645,6 +662,13 @@ def test_a_mask_recases_the_word_as_the_writer_punctuated_it() -> None:
     # forced: a mixed-case corpus name R5 would otherwise hold back
     assert str(parse("Dr. med. univ. Margit Popp, MSc").capitalized(
         force=True)) == "Dr. Med. Univ. Margit Popp MSc"
+    # the mask is also asked BEFORE the numeral clause, which would
+    # give 'III' -- an identity mask ('iii' stays lowercase) proves
+    # the mask decided rather than merely agreeing with it
+    lower_iii = dataclasses.replace(
+        Lexicon.default(), capitalization_exceptions=(("iii", "iii"),))
+    p = Parser(lexicon=lower_iii)
+    assert p.capitalized(p.parse("john smith iii")).suffix == "iii"
 
 
 def test_a_mask_applies_whatever_role_the_word_took() -> None:
@@ -735,6 +759,12 @@ def test_a_suffix_numeral_repairs_to_capitals_by_its_shape() -> None:
         Token("smith", Span(5, 10), Role.FAMILY),
         Token("vi", Span(11, 13), Role.SUFFIX),
     ]).capitalized(Lexicon.empty()).suffix == "VI"
+    # the documented Unicode boundary of the case-only invariant: _ROMAN
+    # matches under re.I, which admits the dotless Turkish 'ı' (casefold-
+    # unequal to 'i') as a roman-numeral suffix, and the numeral clause
+    # writes it in capitals same as any other
+    assert "ı".casefold() != "i".casefold()
+    assert parse("john smith ıv").capitalized().suffix == "IV"
 
 
 def test_the_mask_keeps_every_non_letter_and_declines_a_miscount() -> None:
@@ -833,6 +863,57 @@ def test_a_split_initial_is_capitalized_only_where_the_mask_keeps_it_joined(
                              force=True)) == "Dr. h.c. Hans Meier"
 
 
+def test_a_decomposed_mask_value_reads_the_same_split_as_composed() -> None:
+    """A mask value is stored NFC-composed (#459 review): the split-off-
+    initial rule (_letter_run_ge2) walks the mask's alphanumeric
+    characters one at a time, so a decomposed value spells one
+    composed letter as a base letter plus a non-alpha combining mark
+    -- reading the base as split off beside a non-letter rather than
+    inside a run. Both spellings of the same value must therefore
+    repair the split word identically."""
+    composed = unicodedata.normalize("NFC", "Péx")
+    decomposed = unicodedata.normalize("NFD", "Péx")
+    assert decomposed != composed
+    for value in (composed, decomposed):
+        lex = dataclasses.replace(
+            Lexicon.default(),
+            capitalization_exceptions=(("pé.x.", value),))
+        p = Parser(lexicon=lex)
+        assert p.capitalized(p.parse("john smith pé.x."),
+                             force=True).suffix == "Pé.X."
+
+
+def test_a_masks_upper_fallback_can_lengthen_a_word_through_ss() -> None:
+    """decisions.md#R4 (2026-09-24 review): _apply_mask's `c.upper()`
+    fallback, taken whenever the whole-word uppered form does not
+    keep the word's length, can lengthen a word through ss exactly as
+    the acronym/numeral clauses' plain `word.upper()` can
+    (decisions.md#R4's 2026-09-23 Unicode-boundary bullet): the
+    boundary applies to every clause that upper-cases, not only those
+    two. And it is not only the split-off-initial force that reaches
+    it -- the ORDINARY mask branch (the plain `else` arm, no full
+    stop involved) falls back to `c.upper()` the same way whenever the
+    mask's own letter at that position is not lower and the word is
+    not same-length under `.upper()`. An identity mask validates fine
+    ('aß' spells 'a.ß's own letters unchanged; 'STRAẞE' -- the actual
+    German capital ẞ, not 'STRASSE' -- spells 'straße's own letters
+    unchanged too), so both are reachable with no separate defect in
+    the validator: the validator's refusal of ('straße', 'STRASSE') is
+    about the VALUE failing to spell the KEY, a different question
+    from what the applier's output can be once a mask DOES validate."""
+    split = dataclasses.replace(
+        Lexicon.default(), capitalization_exceptions=(("a.ß", "aß"),))
+    p = Parser(lexicon=split)
+    assert p.capitalized(p.parse("john a.ß smith"),
+                         force=True).middle == "A.SS"
+    ordinary = dataclasses.replace(
+        Lexicon.default(),
+        capitalization_exceptions=(("straße", "STRAẞE"),))
+    p = Parser(lexicon=ordinary)
+    assert p.capitalized(p.parse("john straße"),
+                         force=True).family == "STRASSE"
+
+
 def test_a_masks_punctuation_marks_its_joins_and_is_never_written() -> None:
     """#459 review: a value's punctuation is never written into the
     word -- 'md' repairs to 'MD' and 'm.d.' to 'M.D.' under the
@@ -854,8 +935,9 @@ def test_a_masks_punctuation_marks_its_joins_and_is_never_written() -> None:
     assert str(Parser(lexicon=lex).capitalized(
         Parser(lexicon=lex).parse("john smith m.d."))) \
         == "John Smith M.D."
-    # the facade twin: warning-free at the first parse (the shim's
-    # Lexicon snapshot is built lazily, so this is where it would fire)
+    # the facade twin: warning-free at the first parse, where the
+    # shim's lazily built Lexicon snapshot is the one place a
+    # construction diagnostic could be raised
     c = Constants(capitalization_exceptions={'md': 'M.D.'})
     with warnings.catch_warnings():
         warnings.simplefilter("error")
@@ -879,9 +961,12 @@ def test_a_mask_recases_a_digit_key_unchanged() -> None:
     """#459 review: the mask walks ALPHANUMERICS, not letters alone,
     so a digit in the word is carried through unchanged (it has no
     case) while the surrounding letters still take the mask's case.
-    The clause reads no vocabulary (like the roman-numeral test
-    above), so a synthetic token proves it without depending on how
-    '2nd' happens to parse on its own."""
+    The mask clause reads no ROLE or TAGS, unlike the acronym and
+    numeral clauses that follow it -- an entry applies wherever its
+    word stands. A synthetic GIVEN-roled token proves that: a role
+    the acronym/numeral clauses would never reach still finds the
+    mask, without depending on how '2nd' happens to parse on its
+    own."""
     lex = dataclasses.replace(Lexicon.default(),
                               capitalization_exceptions=(("2nd", "2ND"),))
     assert _pn("2nd", [
@@ -997,7 +1082,22 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
             # three worded parts on the ambiguous side of `first < at
             # < last`, so a mutant dropping that bound cannot pass
             ("juan y-garcia-lopez", "Juan Y-Garcia-Lopez"),
-            ("juan garcia-lopez-y", "Juan Garcia-Lopez-Y")):
+            ("juan garcia-lopez-y", "Juan Garcia-Lopez-Y"),
+            # non-link parts inside a THREE-part hyphenated token still
+            # get the full per-word repair -- the particle arm
+            # ("de"/"la") and the Mac rule ("mcnabb") each apply per
+            # part, not only to a two-part compound
+            ("juan garcia-de-la-vega", "Juan Garcia-de-la-Vega"),
+            ("donovan mcnabb-y-smith", "Donovan McNabb-y-Smith"),
+            # a leading EMPTY part shifts which named index is "first":
+            # 'y' sits at the edge of the NAMED parts (index 0 of
+            # ['y', 'garcia', 'lopez']) though it is not part 0 of the
+            # split, so it stays ordinary name text -- a mutant using
+            # the raw part index (0 < at < len(parts)-1) instead of the
+            # named-relative bound would wrongly read it as interior
+            # and lower it
+            ("jose -y-garcia-lopez", "Jose -Y-Garcia-Lopez"),
+            ("jose garcia-lopez-y-", "Jose Garcia-Lopez-Y-")):
         assert str(parse(text).capitalized()) == repaired, text
     # mixed case is R5's: untouched unless forced
     mixed = parse("Jose Ortega-Y-Gasset")

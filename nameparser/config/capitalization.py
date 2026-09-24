@@ -14,10 +14,16 @@ written and keeps every other character where the writer put it, so
 ``Ph.D.``. The mask's own punctuation marks where its letters are
 joined into one run versus split apart, and is never written into
 the word -- repair keeps the writer's own punctuation. A value that
-does not spell its key's letters is a ``ValueError`` when a
-``Lexicon`` is built from it. A credential acronym written all in
-capitals and a roman numeral need no entry: case repair writes a
-suffix of either kind in capitals by itself.
+does not spell its key's letters and digits is a ``ValueError`` when
+a ``Lexicon`` is built from it. An acronym the suffix vocabulary
+already lists, written plainly or in dotted form, and a roman
+numeral need no entry: case repair writes a suffix of either kind in
+capitals by itself. A caller's OWN acronym -- one absent from
+``suffix_acronyms`` -- is not covered by that and parses as an
+ordinary name word instead; it needs either a ``suffix_acronyms``
+entry (``Lexicon.add(suffix_acronyms={...})`` in the 2.0 API,
+``constants.suffix_acronyms.add(...)`` in the v1 one) or a mask of
+its own.
 """
 
 

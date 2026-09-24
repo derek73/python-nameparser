@@ -380,6 +380,50 @@ def _alnum(text: str) -> str:
     return "".join(c for c in text if c.isalnum())
 
 
+def _offered_mask(normalized_key: str) -> str:
+    """The spelling _normpairs' mismatched-value error offers as a
+    working replacement, and what the shim's re-raise (_config_shim's
+    _build_snapshot) offers a v1 caller too -- factored so the two
+    messages can never name different fixes for the same key.
+
+    .upper() can change a letter's COUNT ('straße' -> 'STRASSE', ß
+    growing to two letters), which would fail the mask check itself
+    if pasted back in. Falling back to the key unchanged -- an
+    identity mask, always legal -- keeps the offer actionable in
+    every case rather than only the common one."""
+    upper = normalized_key.upper()
+    return upper if _alnum(_normalize(upper)) == _alnum(
+        normalized_key) else normalized_key
+
+
+class _MaskValueError(ValueError):
+    """Raised by _normpairs for a value that does not spell its key;
+    carries the raw key and the offered fix (`key`, `offered`) so a
+    caller reached through another surface -- the v1 shim's
+    _build_snapshot -- can re-spell the same fix for that surface
+    rather than re-deriving it from the message text.
+
+    __reduce__ pickles/copies as (message, key, offered) rather than
+    the default (args,) -- ValueError's own __reduce__ would call
+    type(self)(*self.args), and self.args holds only the message
+    (super().__init__ below is passed the message alone), so the
+    default would call this __init__ with two required arguments
+    missing. This is an exception, not one of _types.py's frozen
+    dataclasses, so the _guarded_getstate/slots convention there does
+    not apply -- a plain __reduce__ is the right-sized fix. A worker
+    in a ProcessPoolExecutor pickles an exception raised in the
+    worker to deliver it to the caller, so an unpicklable one there
+    surfaces as BrokenProcessPool instead."""
+
+    def __init__(self, message: str, key: str, offered: str) -> None:
+        super().__init__(message)
+        self.key = key
+        self.offered = offered
+
+    def __reduce__(self) -> tuple[type[_MaskValueError], tuple[str, str, str]]:
+        return (type(self), (self.args[0], self.key, self.offered))
+
+
 def _normpairs(
     raw: Mapping[str, str] | Iterable[tuple[str, str]],
 ) -> tuple[tuple[str, str], ...]:
@@ -446,23 +490,27 @@ def _normpairs(
         # used to be SUBSTITUTED for the word, and rules.md#R4:
         # "Repair changes case and nothing else", so there is no
         # reading of one that repair can honor.
+        # Stored NFC-composed (case-preserving -- unicodedata.normalize,
+        # not _normalize, which also lowercases). _apply_mask walks the
+        # mask's alphanumeric characters one at a time
+        # (_letter_run_ge2), so a decomposed value spells one composed
+        # letter as two characters -- a base letter plus a combining
+        # mark that is not alpha -- and the base reads as a
+        # SPLIT-OFF letter next to a non-letter, changing which
+        # letters _apply_mask reads as an initial beside a full stop.
+        # The check just above already compares composed to composed
+        # (_normalize NFC-composes both sides), so a decomposed value
+        # passes it and would otherwise be stored exactly as written.
+        v = unicodedata.normalize("NFC", v)
         if _alnum(_normalize(v)) != _alnum(normalized_key):
-            upper = normalized_key.upper()
-            # The offered spelling must itself construct: .upper() can
-            # change a letter's COUNT ('straße' -> 'STRASSE', ß -> SS),
-            # which would fail the very check above if pasted. Falling
-            # back to the key unchanged -- an identity mask, always
-            # legal -- keeps the offer actionable in every case rather
-            # than only the common one.
-            offered = upper if _alnum(_normalize(upper)) == _alnum(
-                normalized_key) else normalized_key
-            raise ValueError(
+            offered = _offered_mask(normalized_key)
+            raise _MaskValueError(
                 f"capitalization_exceptions value {v!r} for key {k!r} "
                 f"does not spell the key's letters and digits: a value "
                 f"is a case mask, the key's own letters and digits "
                 f"recased -- e.g. "
                 f"capitalization_exceptions=(({normalized_key!r}, "
-                f"{offered!r}),)")
+                f"{offered!r}),)", key=k, offered=offered)
         # capitalized() looks words up one at a time (the _WORD regex
         # never yields spaces), so a multi-word key is unreachable.
         # interior whitespace test; split() covers all Unicode whitespace
