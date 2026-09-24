@@ -2295,15 +2295,26 @@ R5. Rationale: mixed case is evidence that the writer cased the name
     could not be bothered — so repair proceeds there, which is a
     choice about how to act absent evidence rather than a claim that
     nothing can be lost by it.
-    Case repair acts only on a name written entirely in one case. A
-    name written in more than one case is kept as it was written,
-    and whether that casing is right does not enter into it, unless
-    repair was asked for anyway.
+    Case repair acts only on a name written entirely in one case.
+    The suffixes are left out of that test: a suffix says nothing
+    about how the writer cased the name — III, PhD, Jr. are written
+    that way whatever the name's case — so the test reads every word
+    the parse did not put in the suffix role. A title is not left
+    out, and a cased title still holds repair back. A name whose
+    words outside the suffix are written in more than one case is
+    kept as it was written, and whether that casing is right does
+    not enter into it, unless repair was asked for anyway.
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "SHIRLEY MACLAINE"          →  capitalized="Shirley MacLaine"
       "Shirley Maclaine"          →  capitalized="Shirley Maclaine"
       "Shirley Maclaine"          →  capitalized_forced="Shirley MacLaine"  · boundary
-    history: decisions.md#R5 · interacts: R4 · implemented: nameparser/_render.py
+      "juan garcia III"           →  capitalized="Juan Garcia III"
+      "juan garcia PhD"           →  capitalized="Juan Garcia PhD"
+      "JUAN GARCIA Jr."           →  capitalized="Juan Garcia Jr."
+      "dr. juan garcia III"       →  capitalized="Dr. Juan Garcia III"
+      "Dr. juan garcia"           →  capitalized="Dr. juan garcia"  · boundary
+      "Juan garcia III"           →  capitalized="Juan garcia III"  · boundary
+    history: decisions.md#R5 · interacts: R4, P3, S2 · implemented: nameparser/_render.py
 
 ## Construction & configuration diagnostics (D)
 

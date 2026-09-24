@@ -16,13 +16,25 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Juan Q. Xavier Velasquez y Garcia III', hn)
 
-    # FIXME: this test does not pass due to a known issue
-    # http://code.google.com/p/python-nameparser/issues/detail?id=22
-    @pytest.mark.xfail(reason="#492")
-    def test_capitalization_exception_for_already_capitalized_III_KNOWN_FAILURE(self) -> None:
+    # A known failure since 2012 (the Google Code tracker's issue 22)
+    # until #492: the one-case gate read the SUFFIX as evidence that
+    # the writer cased the whole name, so 'III' held the lowercase
+    # name back. The gate now leaves the suffixes out (rules.md#R5):
+    # a generation written the way one is written says nothing about
+    # how the name was cased. The name words still count, and so
+    # does a title -- the two boundary rows.
+    def test_capitalization_exception_for_already_capitalized_III(
+        self,
+    ) -> None:
         hn = HumanName('juan garcia III')
         hn.capitalize()
         self.m(str(hn), 'Juan Garcia III', hn)
+        mixed = HumanName('Juan garcia III')
+        mixed.capitalize()
+        self.m(str(mixed), 'Juan garcia III', mixed)
+        titled = HumanName('Dr. juan garcia')
+        titled.capitalize()
+        self.m(str(titled), 'Dr. juan garcia', titled)
 
     def test_capitalize_title(self) -> None:
         hn = HumanName('lt. gen. john a. kenneth doe iv')

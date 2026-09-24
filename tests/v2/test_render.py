@@ -554,6 +554,43 @@ def test_capitalized_preserves_mixed_case_unless_forced() -> None:
     assert pn.capitalized(force=True).family == "MacLaine"
 
 
+def test_the_gate_leaves_the_suffixes_out() -> None:
+    """rules.md#R5 (#492): a credential or a generation written the
+    way one is written ('III', 'PhD', 'Jr.') is no evidence about how
+    the NAME was cased, so the one-case test reads every token but
+    the SUFFIX-roled ones. Titles stay in -- a cased title still holds
+    repair back -- and so does every name word."""
+    for text, repaired in (("juan garcia III", "Juan Garcia III"),
+                           ("juan garcia PhD", "Juan Garcia PhD"),
+                           ("JUAN GARCIA Jr.", "Juan Garcia Jr."),
+                           ("dr. juan garcia III", "Dr. Juan Garcia III"),
+                           ("JUAN GARCIA iii", "Juan Garcia III")):
+        assert str(parse(text).capitalized()) == repaired, text
+    for untouched in ("Dr. juan garcia", "DR. juan garcia III",
+                      "Juan garcia III", "Juan Garcia iii",
+                      # NICKNAME and MAIDEN tokens stay IN the gate
+                      # text -- only SUFFIX is excluded, so a cased
+                      # nickname or maiden word still holds repair
+                      # back (a mutant that also filtered those
+                      # roles survived the whole suite otherwise)
+                      "jane doe nee SMITH III", "juan garcia (Bob)"):
+        name = parse(untouched)
+        assert name.capitalized() == name, untouched
+    # a caseless name with a MIXED-CASE suffix: the old gate counted
+    # the suffix, read the whole joined text as mixed case and
+    # refused; the new gate excludes it, and the non-suffix text has
+    # no case at all (trivially one-case), so only the suffix repairs
+    assert str(parse("김민준 Phd").capitalized()) == "민준 김 PhD"
+    # no non-suffix token at all -- a synthetic name only, since every
+    # parse names somebody (rules.md#H4): the empty text is one-case
+    only_suffixes = _pn("phd md", [
+        Token("phd", Span(0, 3), Role.SUFFIX),
+        Token("md", Span(4, 6), Role.SUFFIX),
+    ])
+    assert [t.text for t in only_suffixes.capitalized().tokens] \
+        == ["PhD", "MD"]
+
+
 def test_capitalized_is_idempotent() -> None:
     once = _lowercase_mac().capitalized()
     assert once.capitalized() == once

@@ -487,10 +487,11 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
 def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
                 force: bool) -> ParsedName:
     """Case-fixing transform -> new ParsedName, same spans, new token
-    texts. Gate (v1 parity): only single-case input is
-    touched unless force=True; the gate reads the joined token texts
-    (not render() output -- the case gate stays decoupled from spec
-    formatting and the #254 collapse).
+    texts. Gate: only a name whose words outside the suffix are
+    written in one case is touched unless force=True; the gate reads
+    the joined texts of every token not roled SUFFIX (#492) -- not
+    render() output, so it stays decoupled from spec formatting and
+    the #254 collapse.
     Repair changes case and nothing else: an exceptions-map value is
     a mask recasing the word as written (#459), never a replacement.
     The repair reads token TAGS as well as texts: a part whose every
@@ -507,18 +508,26 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     'de y' keeps the 'y' lowercase, as the parse does and as 1.4.0
     did. Parser.revise() is the edit that classifies the value, and
     gives 'De La' (rules.md#R4's Accepted boundary).
-    Idempotent: without force, a capitalized result is mixed-case and
-    the gate returns it unchanged; with force, every _cap_word rule is
-    a fixpoint on its own output."""
+    Idempotent: every _cap_word rule, and the hyphen rule in
+    _cap_text, is a fixpoint on its own output, so a repaired name
+    comes back unchanged whether or not the gate admits it again
+    (a name whose non-suffix words are caseless, 'Kim Minjun' in
+    hangul with a 'phd', is admitted every time)."""
     if lexicon is not None and not isinstance(lexicon, Lexicon):
         # eager, before the gate: a garbage argument must not become a
         # silent no-op on mixed-case input or a deep AttributeError
         raise TypeError(f"lexicon must be a Lexicon or None, got {lexicon!r}")
     lex = Lexicon.default() if lexicon is None else lexicon
-    joined = " ".join(t.text for t in name.tokens)
     # rules.md#R5: "case repair acts only on a name written entirely
-    # in one case"
-    if not force and joined not in (joined.upper(), joined.lower()):
+    # in one case" -- and "the suffixes are left out of that test": a
+    # credential or a generation written the way one is written
+    # ('III', 'PhD', 'Jr.') says nothing about how the writer cased
+    # the NAME (#492). Titles stay in because title repair is not yet
+    # trusted to act on a cased title (decisions.md#R5 names the three
+    # titles that showed why).
+    gate = " ".join(t.text for t in name.tokens
+                     if t.role is not Role.SUFFIX)
+    if not force and gate not in (gate.upper(), gate.lower()):
         return name
     new_tokens = tuple(
         Token(_cap_text(t.text, t.role, t.tags, lex), t.span, t.role, t.tags)

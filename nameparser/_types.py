@@ -1115,7 +1115,8 @@ class ParsedName:
         token texts. Needs a lexicon for capitalization_exceptions and
         particle rules; None uses the DEFAULT lexicon -- if this name
         came from a custom Parser, pass its lexicon or use
-        Parser.capitalized. force=False preserves mixed-case input
-        (v1 parity). Idempotent."""
+        Parser.capitalized. force=False preserves a name whose words
+        outside the suffix are written in more than one case
+        (rules.md#R5). Idempotent."""
         import nameparser._render as _render
         return _render.capitalized(self, lexicon, force=force)
