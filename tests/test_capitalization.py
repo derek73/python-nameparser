@@ -155,6 +155,10 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
             ('john smith ph.d.', 'John Smith Ph.D.'),
             ('john smith bsc', 'John Smith BSc'),
             ('JOHN SMITH MSC', 'John Smith MSc'),
+            # the conventionally mixed-case acronyms given masks on
+            # 2026-09-24; without one, the acronym clause gave 'PSYD'
+            ('john smith psyd', 'John Smith PsyD'),
+            ('JOHN SMITH PHARMD', 'John Smith PharmD'),
         ]:
             hn = HumanName(src)
             hn.capitalize()

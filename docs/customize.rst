@@ -188,9 +188,10 @@ instead, and pass the result to ``capitalized()``:
 
 Note the ``tuple(...) + ...``: assigning a bare ``(("dphil", "DPhil"),)``
 would *replace* the default exceptions rather than extend them, so
-``phd``, ``bsc`` and ``msc`` would lose their masks and fall back to
-the all-capitals acronym repair: ``john smith phd`` would give
-``John Smith PHD`` rather than ``John Smith PhD``.
+the shipped masks (``phd``, ``bsc``, ``psyd`` and the rest) would be
+lost and those words fall back to the all-capitals acronym repair:
+``john smith phd`` would give ``John Smith PHD`` rather than
+``John Smith PhD``.
 
 The key is matched against the token with punctuation normalized away,
 not against the raw text, so one ``"phd"`` entry covers ``"phd"``,
@@ -204,7 +205,15 @@ capitalized where the mask keeps that letter inside a longer run, so
 ``p.h.d.`` repairs to ``P.H.D.`` under ``"PhD"``. An acronym already
 listed in ``suffix_acronyms`` — plain or dotted — and a roman numeral
 need no entry at all: case repair writes a suffix of either kind in
-capitals by itself. A caller's own acronym, one ``suffix_acronyms``
+capitals by itself. Most of the listed acronyms whose usual spelling
+is not all capitals already carry a shipped mask (``DSc``, ``PsyD``,
+``PharmD``, ``MDiv`` and others), so ``john smith psyd`` gives
+``John Smith PsyD``. The exception is an acronym that is also a name
+word, such as ``meng`` or ``edd``: a mask applies wherever its word
+stands, so it would re-spell a person called Meng or Edd, and these
+get none — ``john smith edd`` gives ``John Smith EDD`` (the reasoning
+is the Excluded block for ``CAPITALIZATION_EXCEPTIONS`` under ``R4``
+in ``docs/design/decisions.md``). A caller's own acronym, one ``suffix_acronyms``
 doesn't already list, depends on how it is written: plain (``dphil``)
 it parses as an ordinary name word and repairs as one (``Dphil``,
 above); dotted (``d.phil.``) it is a suffix by shape alone, with no
@@ -887,6 +896,9 @@ signatures:
   default on the assumption that someone already capitalized it on
   purpose. The suffixes don't count toward that: ``III`` or ``PhD``
   written the usual way says nothing about how the name was cased.
+  A suffix written in more than one case is the writer's spelling
+  and is kept as written (``john smith EdD`` gives ``John Smith
+  EdD``) unless you pass ``force=True``.
 
 .. doctest::
 

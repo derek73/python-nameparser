@@ -1124,7 +1124,9 @@ class ParsedName:
         particle rules; None uses the DEFAULT lexicon -- if this name
         came from a custom Parser, pass its lexicon or use
         Parser.capitalized. force=False preserves a name whose words
-        outside the suffix are written in more than one case
-        (rules.md#R5). Idempotent."""
+        outside the suffix are written in more than one case, and in a
+        name it does repair keeps a suffix written in more than one
+        case as written ('EdD'), repairing only one written in a
+        single case (rules.md#R5). Idempotent."""
         import nameparser._render as _render
         return _render.capitalized(self, lexicon, force=force)

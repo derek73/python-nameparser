@@ -490,6 +490,12 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
         for at, part in enumerate(parts))
 
 
+def _in_one_case(text: str) -> bool:
+    """R5's test: `text` is written all upper or all lower (a caseless
+    text is both, and so passes)."""
+    return text in (text.upper(), text.lower())
+
+
 # rules.md#R4: "case repair returns a repaired copy and never mutates
 # the parse"
 def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
@@ -499,7 +505,11 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     written in one case is touched unless force=True; the gate reads
     the joined texts of every token not roled SUFFIX (#492) -- not
     render() output, so it stays decoupled from spec formatting and
-    the #254 collapse.
+    the #254 collapse. The same one-case test is then asked of each
+    SUFFIX token on its own, and unless force=True one written in more
+    than one case is kept as written -- 'EdD', 'B.Tech.', and the
+    garbled 'Iii' alike -- while one written in a single case is
+    repaired like any other token.
     Repair changes case and nothing else (see the rules.md#R4 citation
     in _cap_word): an exceptions-map value is a mask recasing the word
     as written (#459), never a replacement.
@@ -555,10 +565,21 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     # titles that showed why).
     gate = " ".join(t.text for t in name.tokens
                      if t.role is not Role.SUFFIX)
-    if not force and gate not in (gate.upper(), gate.lower()):
+    if not force and not _in_one_case(gate):
         return name
+    # rules.md#R5: "a suffix written in more than one case is the
+    # writer's spelling and is kept as written where repair was not
+    # forced" -- the gate's own test, asked of each suffix token. The
+    # gate leaves the suffixes out because a cased one says nothing
+    # about the NAME; read to its end, that also means repair has no
+    # business re-spelling it ('EdD' stays 'EdD', where the acronym
+    # clause would write 'EDD'). The cost is the garbled spelling kept
+    # with the deliberate one ('Iii' stays 'Iii'); force repairs both.
     new_tokens = tuple(
-        Token(_cap_text(t.text, t.role, t.tags, lex), t.span, t.role, t.tags)
+        t if (not force and t.role is Role.SUFFIX
+              and not _in_one_case(t.text))
+        else Token(_cap_text(t.text, t.role, t.tags, lex),
+                   t.span, t.role, t.tags)
         for t in name.tokens)
     # equal tokens (possible only for synthetic span=None duplicates)
     # collapse to one mapping entry -- benign: the rebuilt ambiguity

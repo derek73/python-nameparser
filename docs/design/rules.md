@@ -2209,11 +2209,15 @@ R4. Rationale: case repair is a display concern, applied only on
     generational `jr`, `sr` -- keeps its title case.
     Inside a hyphenated word, a part that is connective vocabulary
     with a worded part on each side of it keeps its lowercase, the
-    hyphens joining the name around it as the spaced connective would
+    hyphens being the writer joining the name around it
     (Ortega-y-Gasset); at either end of the hyphenated word it is
     repaired as ordinary name text. A single letter marked with a
     period is read as an initial there, as the parse reads it, never
-    as the connective.
+    as the connective. A bare letter is not: the hyphen is the
+    writer's join, so the interior connective is read as one even in
+    a name written wholly in one case, where the same letter spaced
+    reads as an initial if the vocabulary marks it as reading both
+    ways (P3).
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "Juan McDonald"             →  capitalized_forced="Juan McDonald"
       "ANH DO"                    →  capitalized="Anh Do"
@@ -2224,6 +2228,7 @@ R4. Rationale: case repair is a display concern, applied only on
       "john smith p.h.d."         →  capitalized="John Smith P.H.D."
       "john smith ph. d."         →  capitalized="John Smith Ph. D."
       "john smith bsc"            →  capitalized="John Smith BSc"
+      "john smith psyd"           →  capitalized="John Smith PsyD"
       "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp MSc"
       "MSc Dr. med. univ."        →  capitalized_forced="MSc Dr. Med. Univ."
       "Md Abdul Karim"            →  capitalized_forced="Md Abdul Karim"
@@ -2260,6 +2265,14 @@ R4. Rationale: case repair is a display concern, applied only on
       "maria da-silva"            →  capitalized="Maria da-Silva"
       "juan y-garcia-lopez"       →  capitalized="Juan Y-Garcia-Lopez"  · boundary
       "j.-e.-p. dupont"           →  capitalized_forced="J.-E.-P. Dupont"  · boundary
+      "J-E-P DUPONT"              →  capitalized="J-e-P Dupont"  · boundary
+    Accepted: a name written in one case whose hyphenated bare
+    initials spell a connective pays for the hyphen clause — its
+    interior letter is lowered as the connective though the writer
+    meant an initial, where the same letters spaced keep their
+    capitals. The hyphen is the writer's join, and reading the one
+    shape both ways would need the case evidence a one-case name does
+    not carry.
     Accepted: the all-particle clause reaches a part the parser read.
     A field spliced in as raw text after the parse carries no reading
     of its own, so a family set that way to "de la" stays lowercase
@@ -2322,7 +2335,11 @@ R5. Rationale: mixed case is evidence that the writer cased the name
     out, and a cased title still holds repair back. A name whose
     words outside the suffix are written in more than one case is
     kept as it was written, and whether that casing is right does
-    not enter into it, unless repair was asked for anyway.
+    not enter into it, unless repair was asked for anyway. The same
+    test is then asked of each suffix on its own: a suffix written
+    in more than one case is the writer's spelling and is kept as
+    written where repair was not forced; one written in a single
+    case is repaired like any other.
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "SHIRLEY MACLAINE"          →  capitalized="Shirley MacLaine"
       "Shirley Maclaine"          →  capitalized="Shirley Maclaine"
@@ -2333,6 +2350,9 @@ R5. Rationale: mixed case is evidence that the writer cased the name
       "dr. juan garcia III"       →  capitalized="Dr. Juan Garcia III"
       "Dr. juan garcia"           →  capitalized="Dr. juan garcia"  · boundary
       "Juan garcia III"           →  capitalized="Juan garcia III"  · boundary
+      "john smith EdD"            →  capitalized="John Smith EdD"
+      "juan garcia Iii"           →  capitalized="Juan Garcia Iii"  · boundary
+      "john smith EdD"            →  capitalized_forced="John Smith EDD"
     history: decisions.md#R5 · interacts: R4, P3, S2 · implemented: nameparser/_render.py
 
 ## Construction & configuration diagnostics (D)

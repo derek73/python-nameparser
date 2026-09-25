@@ -596,8 +596,11 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
     # a caseless name with a MIXED-CASE suffix: the old gate counted
     # the suffix, read the whole joined text as mixed case and
     # refused; the new gate excludes it, and the non-suffix text has
-    # no case at all (trivially one-case), so only the suffix repairs
-    assert str(parse("김민준 Phd").capitalized()) == "민준 김 PhD"
+    # no case at all (trivially one-case), so the name is admitted --
+    # and then the suffix, written in more than one case, is kept as
+    # written (2026-09-24), while one written in one case repairs
+    assert str(parse("김민준 Phd").capitalized()) == "민준 김 Phd"
+    assert str(parse("김민준 PHD").capitalized()) == "민준 김 PhD"
     # no non-suffix token at all -- a synthetic name only, since every
     # parse names somebody (rules.md#H4): the empty text is one-case
     only_suffixes = _pn("phd md", [
@@ -606,6 +609,46 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
     ])
     assert [t.text for t in only_suffixes.capitalized().tokens] \
         == ["PhD", "MD"]
+
+
+def test_a_suffix_written_in_more_than_one_case_is_kept_as_written(
+) -> None:
+    """rules.md#R5 (decided 2026-09-24): the gate leaves the suffixes
+    out because a cased suffix says nothing about the NAME, and read
+    to its end that also means repair has no business re-spelling
+    one. So where repair was not forced, a SUFFIX token written in
+    more than one case is kept as written -- 'EdD' stays 'EdD' where
+    the acronym clause would write 'EDD' -- while one written in a
+    single case is repaired as before. Force repairs both. The cost is
+    the garbled spelling kept with the deliberate one ('Iii'), pinned
+    here as a boundary. Both surfaces."""
+    for text, plain, forced in (
+            ("john smith EdD", "John Smith EdD", "John Smith EDD"),
+            ("JANE DOE, DSc", "Jane Doe DSc", "Jane Doe DSc"),
+            ("juan garcia PsyD", "Juan Garcia PsyD", "Juan Garcia PsyD"),
+            ("john smith B.Tech.", "John Smith B.Tech.",
+             "John Smith B.TECH."),
+            ("john smith, EdD, PhD", "John Smith EdD, PhD",
+             "John Smith EDD, PhD"),
+            # boundary: the garbled spelling is kept too
+            ("juan garcia Iii", "Juan Garcia Iii", "Juan Garcia III"),
+            ("john smith Mba", "John Smith Mba", "John Smith MBA"),
+            # a suffix written in ONE case is repaired as any token is
+            ("juan garcia III", "Juan Garcia III", "Juan Garcia III"),
+            ("JUAN GARCIA iii", "Juan Garcia III", "Juan Garcia III"),
+            ("john smith edd", "John Smith EDD", "John Smith EDD"),
+            # unchanged by the rule: already written as repair writes
+            ("juan garcia PhD", "Juan Garcia PhD", "Juan Garcia PhD"),
+            ("juan garcia Jr.", "Juan Garcia Jr.", "Juan Garcia Jr.")):
+        name = parse(text)
+        assert str(name.capitalized()) == plain, text
+        assert str(name.capitalized(force=True)) == forced, text
+        hn = HumanName(text)
+        hn.capitalize()
+        assert str(hn) == plain, text
+        hn = HumanName(text)
+        hn.capitalize(force=True)
+        assert str(hn) == forced, text
 
 
 def test_the_gate_and_the_parser_read_a_cased_suffix_differently() -> None:
@@ -1113,6 +1156,82 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
     # every role, not only FAMILY above
     assert str(parse("smith, jose ortega-y-gasset").capitalized(
         force=True)) == "Jose Ortega-y-Gasset Smith"
+
+
+def test_the_hyphen_is_the_writers_join_even_in_a_one_case_name() -> None:
+    """rules.md#R4's hyphen clause against rules.md#P3's one-case fork,
+    a split DECIDED 2026-09-24 (decisions.md#R4): spaced, a marked
+    letter in a name written in one case reads as an initial and
+    repairs to a capital; hyphenated, the writer joined the surname on
+    purpose, so the interior word is the connective whatever case the
+    name is in. The cost is a one-case name whose hyphenated bare
+    initials spell a connective -- 'J-E-P DUPONT' repairs to
+    'J-e-P Dupont', where 1.4.0 and the parent gave 'J-E-P'. And
+    conjunctions_ambiguous, P3's knob, does not reach a hyphenated
+    word: marking 'y' moves the spaced spelling only."""
+    for text, repaired in (("J-E-P DUPONT", "J-e-P Dupont"),
+                           ("JOHN A-Y-B SMITH", "John A-y-B Smith"),
+                           ("maria silva-e-sousa", "Maria Silva-e-Sousa"),
+                           ("maria silva e sousa", "Maria Silva E Sousa")):
+        assert str(parse(text).capitalized()) == repaired, text
+        hn = HumanName(text)
+        hn.capitalize()
+        assert str(hn) == repaired, text
+    marked = Parser(lexicon=Lexicon.default().add(
+        conjunctions_ambiguous={"y"}))
+    for text, default, under_mark in (
+            ("JOSE ORTEGA Y GASSET", "Jose Ortega y Gasset",
+             "Jose Ortega Y Gasset"),
+            ("JOSE ORTEGA-Y-GASSET", "Jose Ortega-y-Gasset",
+             "Jose Ortega-y-Gasset")):
+        assert str(parse(text).capitalized()) == default, text
+        assert str(marked.capitalized(marked.parse(text))) == under_mark, \
+            text
+
+
+def test_a_shipped_mask_spells_its_suffix_in_either_single_case() -> None:
+    """#459 (decisions.md#R4, 2026-09-24): the PROPERTY every shipped
+    mask pair serves, derived from the pairs rather than restating
+    them -- `john smith <key>` puts the key in the suffix role, and
+    repair spells it as the mask whether it was written all lower or
+    all upper, where the acronym clause alone would write it in
+    capitals. Both surfaces."""
+    pairs = tuple(Lexicon.default().capitalization_exceptions)
+    assert pairs  # an empty map would make the loop vacuous
+    for key, mask in pairs:
+        for text in (f"john smith {key}", f"JOHN SMITH {key.upper()}"):
+            name = parse(text)
+            assert name.suffix.lower() == key, text
+            assert name.capitalized().suffix == mask, text
+            hn = HumanName(text)
+            hn.capitalize()
+            assert hn.suffix == mask, text
+
+
+def test_a_listed_acronym_that_is_a_name_word_gets_no_mask() -> None:
+    """decisions.md#R4's Excluded block for CAPITALIZATION_EXCEPTIONS
+    (meng, edd, lac, ded): a mask applies in every role, so an acronym
+    that is also a name word must not carry one. The fork it protects:
+    in a NAME role the word repairs as a title-cased name word, and in
+    the suffix role, with no mask, the acronym clause writes it in
+    capitals. The recorded negative control is the mask added back,
+    which re-spells the person."""
+    for text, repaired in (("MENG LI", "Meng Li"),
+                           ("edd smith", "Edd Smith"),
+                           ("john smith meng", "John Smith MENG"),
+                           ("john smith edd", "John Smith EDD")):
+        assert str(parse(text).capitalized()) == repaired, text
+        hn = HumanName(text)
+        hn.capitalize()
+        assert str(hn) == repaired, text
+    default = Lexicon.default()
+    masked = Parser(lexicon=dataclasses.replace(
+        default, capitalization_exceptions=tuple(
+            default.capitalization_exceptions)
+        + (("meng", "MEng"), ("edd", "EdD"))))
+    for text, respelled in (("MENG LI", "MEng Li"),
+                            ("edd smith", "EdD Smith")):
+        assert str(masked.capitalized(masked.parse(text))) == respelled
 
 
 def test_case_repair_falls_back_for_text_the_parse_never_read() -> None:
