@@ -491,7 +491,8 @@ CASES: tuple[Case, ...] = (
     # decisions.md#suffix-acronym-collisions and it compares
     # FREQUENCIES: how common the word is as a borne name in the
     # trailing position against how common it is as a credential.
-    # Rough balance earns the ambiguous marking (ba, do, ed, jd, ma);
+    # Rough balance earns the ambiguous marking (ba, do, ed, jd, ma,
+    # and since #540 lac and meng);
     # the name reading dominating REMOVES the entry, a caller adding
     # it back with Lexicon.default().add(suffix_acronyms={"cha"});
     # the credential dominating leaves it unambiguous. Length is a
@@ -590,6 +591,117 @@ CASES: tuple[Case, ...] = (
                "NOT move -- only the flag is new. The twin of "
                "ambiguous_acronym_is_a_suffix_when_a_family_name_remains "
                "above"),
+    # -- #540: 'meng' and 'lac' take the marking 'ba' took, on the same
+    # criterion (decisions.md#suffix-acronym-collisions). MEng and LAc
+    # are live credentials; Meng is a Chinese surname and given name,
+    # Lac a Vietnamese given name (the trailing word in native order,
+    # Nguyen Van Lac) and a French surname, and both stand in the one
+    # slot the suffix vocabulary claims, the last word of a name. No rule
+    # moves: these rows are rules.md#S2's forks read through two more
+    # members, written all-lower so the count decides unless the
+    # writing says otherwise, and shape-tagged so the differential's
+    # contract tier sees them -- no corpus name had either word.
+    Case("bare_meng_is_a_surname", "wang meng",
+         {"given": "wang", "family": "meng"},
+         ambiguities=("suffix-or-name",),
+         notes="#540's subject: with only two pieces the credential "
+               "reading would leave no family name, so S2's "
+               "words-to-spare guard keeps it and reports the fork. "
+               "2.0.0 through 2.3.0 read suffix 'meng' with no family "
+               "(2.3.0 reporting given-or-family, the one-word-name "
+               "fork, which was the wrong fork); 1.4.0 read family "
+               "'meng' unflagged, so this row restores 1.4.0's roles "
+               "and adds the flag. The twin of bare_ba_is_a_surname",
+         shape=1),
+    Case("bare_lac_is_a_surname", "tran lac",
+         {"given": "tran", "family": "lac"},
+         ambiguities=("suffix-or-name",),
+         notes="the same fork for the other word, with the same "
+               "history: suffix 'lac' and no family from 2.0.0 "
+               "through 2.3.0, family 'lac' at 1.4.0",
+         shape=1),
+    Case("meng_is_a_suffix_when_a_family_name_remains",
+         "john smith meng",
+         {"given": "john", "family": "smith", "suffix": "meng"},
+         ambiguities=("suffix-or-name",),
+         notes="the words-to-spare half: a full name in front leaves "
+               "the credential reading available, and a name written "
+               "wholly in one case says nothing about any word in it, "
+               "so the count decides. The role does NOT move -- every "
+               "release read suffix 'meng' -- only the flag is new",
+         shape=1),
+    Case("lac_is_a_suffix_when_a_family_name_remains",
+         "nguyen van lac",
+         {"given": "nguyen", "family": "van", "suffix": "lac"},
+         ambiguities=("suffix-or-name",),
+         notes="the words-to-spare half for 'lac', read by every "
+               "release since 1.4.0 as it is here; only the flag is "
+               "new. The Title-case 'Nguyen Van Lac' does NOT read "
+               "this way: in a name written in more than one case a "
+               "Title-case member is the name even with words to "
+               "spare, so it gives family 'Van Lac' -- the same "
+               "mechanism the next row pins for 'MEng', though for "
+               "this Vietnamese name it is the gain: a person, not "
+               "a credential",
+         shape=1),
+    Case("mixed_case_meng_after_a_full_name_reads_as_the_name",
+         "john smith MEng",
+         {"given": "john", "middle": "smith", "family": "MEng"},
+         classification="fix(#540)",
+         ambiguities=("suffix-or-name",),
+         notes="the marking's accepted cost, stated rather than "
+               "discovered: in a name written in more than one case, "
+               "S2 reads a member written neither in capitals nor all "
+               "lower as the name even with words to spare, and MEng "
+               "is conventionally written exactly that way. Every "
+               "release from 1.4.0 read suffix 'MEng'. The twin of "
+               "S2's 'John Smith Ma'; 'John Smith MENG' keeps the "
+               "credential on the capitals lean",
+         shape=1),
+    Case("comma_mixed_case_meng_reads_as_a_middle_name",
+         "Smith, John MEng",
+         {"given": "John", "middle": "MEng", "family": "Smith"},
+         classification="fix(#540)",
+         ambiguities=("suffix-or-name",),
+         notes="the marking's comma cost: it is the same S2 case "
+               "reading the row above pins, arriving after a family "
+               "comma, where C1 has already settled the word count "
+               "and the writing is the only evidence left. Every "
+               "release from 1.4.0 read suffix 'MEng'. 'John Smith, "
+               "MEng' keeps the suffix on C1's name-word count",
+         shape=2),
+    Case("comma_lone_meng_reads_as_the_given_name", "Smith, meng",
+         {"given": "meng", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="the marking's one-word-before-the-comma path, the "
+               "reading 'Smith, Ma' gets, arriving for another "
+               "member: with the word ambiguous, S2 declines the "
+               "post-comma credential and, with the count leaving it "
+               "a name, C1 reads it as the given name. 2.0.0 through "
+               "2.3.0 read "
+               "family 'Smith', suffix 'meng'; 1.4.0 read given "
+               "'meng', so this row restores 1.4.0's reading and "
+               "adds the flag",
+         shape=2),
+    Case("comma_lone_mixed_case_meng_reads_as_the_given_name",
+         "Smith, MEng",
+         {"given": "MEng", "family": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="the same path for the conventional spelling, which "
+               "is the cost side of it: a writer who meant the "
+               "credential gets given 'MEng' instead, where 'Smith, "
+               "MENG' keeps the suffix on the capitals lean and "
+               "'Smith, John MEng' "
+               "(comma_mixed_case_meng_reads_as_a_middle_name) reads "
+               "it as a middle name. 1.4.0 read given 'MEng' too, so "
+               "this row also restores 1.4.0's reading",
+         shape=2),
+    Case("leading_meng_is_a_given_name", "meng li",
+         {"given": "meng", "family": "li"},
+         notes="the control: the marking acts only at the slots S2 "
+               "reports from, and a leading word is none of them. No "
+               "report, and every release read it this way",
+         shape=1),
     Case("by_design_trailing_mc_reads_as_a_credential", "Donald Mc",
          {"given": "Donald", "suffix": "Mc"},
          classification="fix(suffix-routing)",
@@ -3061,7 +3173,7 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Doe", "suffix": "BA"},
          classification="fix(#531)",
          ambiguities=("suffix-or-name",),
-         notes="'ba' is another listed member (one of the five "
+         notes="'ba' is another listed member (one of those "
                "decisions.md#suffix-acronym-collisions marked "
                "ambiguous rather than removing), so the slot is not a "
                "rule about 'ma' -- it is the whole class",

@@ -1215,10 +1215,22 @@ def test_a_listed_acronym_that_is_a_name_word_gets_no_mask() -> None:
     in a NAME role the word repairs as a title-cased name word, and in
     the suffix role, with no mask, the acronym clause writes it in
     capitals. The recorded negative control is the mask added back,
-    which re-spells the person."""
+    which re-spells the person.
+
+    Since #540 `meng` and `lac` are ambiguous acronyms, so a bare
+    trailing one after a lone given name is the FAMILY name
+    (decisions.md#suffix-acronym-collisions): `wang meng` repairs to
+    `Wang Meng`, where the credential reading gave `Wang MENG`. With
+    words to spare the credential reading, and its capitals, stay.
+    That puts the trailing slot on both sides of the fork, and the
+    control shows the mask re-spelling the surname there too:
+    `Wang MEng`, `Tran LAc`."""
     for text, repaired in (("MENG LI", "Meng Li"),
                            ("edd smith", "Edd Smith"),
+                           ("wang meng", "Wang Meng"),
+                           ("tran lac", "Tran Lac"),
                            ("john smith meng", "John Smith MENG"),
+                           ("nguyen van lac", "Nguyen Van LAC"),
                            ("john smith edd", "John Smith EDD")):
         assert str(parse(text).capitalized()) == repaired, text
         hn = HumanName(text)
@@ -1228,9 +1240,11 @@ def test_a_listed_acronym_that_is_a_name_word_gets_no_mask() -> None:
     masked = Parser(lexicon=dataclasses.replace(
         default, capitalization_exceptions=tuple(
             default.capitalization_exceptions)
-        + (("meng", "MEng"), ("edd", "EdD"))))
+        + (("meng", "MEng"), ("edd", "EdD"), ("lac", "LAc"))))
     for text, respelled in (("MENG LI", "MEng Li"),
-                            ("edd smith", "EdD Smith")):
+                            ("edd smith", "EdD Smith"),
+                            ("wang meng", "Wang MEng"),
+                            ("tran lac", "Tran LAc")):
         assert str(masked.capitalized(masked.parse(text))) == respelled
 
 

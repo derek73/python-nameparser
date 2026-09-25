@@ -248,7 +248,13 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # Where the CREDENTIAL dominates, the entry stays unambiguous.
     # LENGTH is a correlate and not the test -- a short acronym is
     # more often a common credential AND more often a name -- so do
-    # not read the letter counts here as a rule.
+    # not read the letter counts here as a rule. #540 (2026-09-25)
+    # marked 'lac' and 'meng', the first entries here longer than
+    # two letters: MEng and LAc are credentials people write after
+    # their names, and Meng and Lac are borne in the trailing slot
+    # by real people, and neither reading is rare enough to give the
+    # word to the other -- so the marking, whatever the letter
+    # count.
     #
     # Removal takes the DOTTED spelling with it too, except by
     # accident: "John Smith R.A.I." still reads suffix 'R.A.I.' only
@@ -283,7 +289,13 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     'do',
     'ed',
     'jd',
+    # #540: LAc, Licensed Acupuncturist; Lac is a Vietnamese given name
+    # (the trailing word in native order, Nguyen Van Lac) and a French
+    # surname
+    'lac',
     'ma',
+    # #540: MEng, Master of Engineering; Meng, a Chinese surname and given name
+    'meng',
 })
 """
 

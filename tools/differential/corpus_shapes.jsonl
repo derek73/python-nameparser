@@ -104,11 +104,17 @@
 {"name": "jane doe nee smith ma", "shape": 1}
 {"name": "john e smith", "shape": 1}
 {"name": "john smith MA", "shape": 1}
+{"name": "john smith MEng", "shape": 1}
+{"name": "john smith meng", "shape": 1}
 {"name": "john smith x.y.z.", "shape": 1}
 {"name": "jose e maria santos", "shape": 1}
 {"name": "josep carod i rovira", "shape": 1}
 {"name": "juan garcia y lopez", "shape": 1}
 {"name": "juan y garcia", "shape": 1}
+{"name": "meng li", "shape": 1}
+{"name": "nguyen van lac", "shape": 1}
+{"name": "tran lac", "shape": 1}
+{"name": "wang meng", "shape": 1}
 {"name": "ХОСЕ И МАРИЯ САНТОС", "shape": 1}
 {"name": "Хосе И Мария Сантос", "shape": 1}
 {"name": "хосе и мария сантос", "shape": 1}
@@ -189,10 +195,13 @@
 {"name": "Smith, E.S.Q.", "shape": 2}
 {"name": "Smith, John", "shape": 2}
 {"name": "Smith, John Jr.", "shape": 2}
+{"name": "Smith, John MEng", "shape": 2}
 {"name": "Smith, John V, Jr.", "shape": 2}
 {"name": "Smith, John, Extra, Jr.", "shape": 2}
 {"name": "Smith, MA", "shape": 2}
+{"name": "Smith, MEng", "shape": 2}
 {"name": "Smith, Ma", "shape": 2}
+{"name": "Smith, meng", "shape": 2}
 {"name": "de la Vega, Juan", "shape": 2}
 {"name": "doe, john ma", "shape": 2}
 {"name": "Davis Royce, Ed", "shape": 3}
