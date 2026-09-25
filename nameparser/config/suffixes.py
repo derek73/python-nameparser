@@ -225,8 +225,10 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # own -- a given name or nickname (e.g. 'jd', 'ed') or a common
     # surname (e.g. 'ma', 'do'). Unambiguous certifications/degrees
     # (e.g. 'mba', 'cpa', 'phd') don't need an entry. In 2.0 this set
-    # also gates bare recognition: an ambiguous acronym counts as a
-    # suffix only when written with periods ('M.A.' yes, 'Ma' no), so
+    # also gates bare recognition: a bare ambiguous acronym reads as
+    # the credential only with words to spare in front of it, or
+    # written in capitals inside a mixed-case name, and the parse
+    # reports the fork where it decides one (rules.md#S2), so
     # 'Jack Ma' keeps its family name.
     #
     # The other half of the criterion, added 2026-09-07 with #342.
@@ -300,9 +302,10 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
 """
 
 Acronym suffixes from SUFFIX_ACRONYMS that also plausibly collide with a
-common given-name nickname. Not a partition of SUFFIX_ACRONYMS -- a small,
-standalone exception list, read by the delimited-content escape in
-``_pipeline/_extract.py`` and by ``_pipeline/_vocab.py``'s period gate.
+word borne as a name -- a given name, nickname or surname. Not a
+partition of SUFFIX_ACRONYMS -- a small, standalone exception list, read
+by the delimited-content escape in ``_pipeline/_extract.py`` and by
+``_pipeline/_vocab.py``'s period gate.
 
 """
 SUFFIX_ACRONYMS = frozenset({
