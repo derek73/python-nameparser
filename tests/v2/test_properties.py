@@ -31,6 +31,7 @@ from nameparser._pipeline._vocab import effective_script
 from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
                                AmbiguityKind, ParsedName, Role, Token)
 
+from .cases import CASES
 from .conftest import differential_corpus
 
 _ALPHABET = st.sampled_from(
@@ -704,12 +705,25 @@ _SET_FIELDS = _VOCAB_FIELDS
 
 
 @st.composite
+def _recased(draw: st.DrawFn, word: str) -> str:
+    """A capitalization_exceptions value for `word`: its own letters,
+    each drawn upper or lower. Any other value is a ValueError at
+    construction (#459's case mask), so an independent draw would
+    turn every fuzzed Lexicon holding a pair into a raise."""
+    flips = draw(st.lists(st.booleans(), min_size=len(word),
+                          max_size=len(word)))
+    return "".join(c.upper() if flip else c.lower()
+                   for c, flip in zip(word, flips))
+
+
+@st.composite
 def _lexicons(draw: st.DrawFn) -> Lexicon:
     fields = {name: draw(st.frozensets(
         _TITLE_VOCAB if name == "given_name_titles" else _VOCAB,
         max_size=5))
               for name in _SET_FIELDS}
-    caps = draw(st.lists(st.tuples(_VOCAB, _VOCAB), max_size=3))
+    keys = draw(st.lists(_VOCAB, max_size=3))
+    caps = [(key, draw(_recased(key))) for key in keys]
     return Lexicon(capitalization_exceptions=tuple(caps),
                    **_fix_invariants(**fields))
 
@@ -940,6 +954,18 @@ def test_any_valid_config_still_parses_totally(
     assert isinstance(str(parsed), str)
     assert isinstance(parsed.capitalized().given, str)
     assert isinstance(parsed.initials(), str)
+    # rules.md#R4 under configuration: what this buys is COVERAGE of
+    # the non-mask clauses (shape-acronym, numeral, plain word) across
+    # drawn vocabularies and policies -- it falsifies on e.g. a clause
+    # that strips a period -- not DETECTION of a mask substitution.
+    # _recased draws each mask as the key's own letters recased, so
+    # under this fuzzer every masked word already differs from its
+    # mask only in case (`_apply_mask` returning `mask` verbatim still
+    # passes here); the shipped-map walk at the end of this module is
+    # what covers substitution.
+    repaired = parser.capitalized(parsed, force=True)
+    assert ([t.text.casefold() for t in repaired.tokens]
+            == [t.text.casefold() for t in parsed.tokens])
 
 
 @given(_lexicons(), _policies())
@@ -2447,3 +2473,110 @@ def test_no_birth_name_word_reads_as_a_word_of_the_current_name() -> None:
     assert not failures, (
         f"{len(failures)} birth-name word(s) read as a word of the "
         f"current name:\n" + "\n".join(failures[:10]))
+
+
+# --- #459/#492/#478: case repair changes case and nothing else ------
+# Not a grid, and deliberately not joined to one: the three grids
+# above generate connective shapes under variant lexicons, and this
+# invariant is about every name a caller has actually written -- the
+# deduped corpus glob plus the case table's texts -- under the two
+# lexicons that decide what the exceptions map can do, the shipped one
+# and one with the map emptied. The fuzzed half rides the existing
+# hypothesis walk instead (test_any_valid_config_still_parses_totally),
+# which already draws masks. Measured 2026-09-23 on py3.11: 1606 texts,
+# and the whole walk -- two lexicons, both surfaces, plain and forced
+# -- under a second (`--durations`).
+
+_CASE_ONLY_TEXTS = list(dict.fromkeys(
+    [*_FORK_CORPUS, *(case.text for case in CASES)]))
+_FACADE_LISTS = ("title_list", "first_list", "middle_list", "last_list",
+                 "suffix_list", "nickname_list", "maiden_list")
+
+
+def _case_only_violations() -> list[str]:
+    """Every repaired token, and every repaired facade list element,
+    that differs from what it repaired by more than case. Compared
+    token by token on the core and list by list on the facade, never
+    through a rendered string, so render spacing cannot hide or fake
+    a difference."""
+    emptied = dataclasses.replace(Lexicon.default(),
+                                  capitalization_exceptions=())
+    configs = (("default", Parser(), Constants()),
+               ("map emptied", Parser(lexicon=emptied),
+                Constants(capitalization_exceptions={})))
+    out: list[str] = []
+    for label, parser, constants in configs:
+        for text in _CASE_ONLY_TEXTS:
+            name = parser.parse(text)
+            for force in (False, True):
+                repaired = parser.capitalized(name, force=force)
+                for was, now in zip(name.tokens, repaired.tokens,
+                                    strict=True):
+                    if was.text.casefold() != now.text.casefold():
+                        out.append(
+                            f"[core, {label}, force={force}] {text!r}: "
+                            f"{was.text!r} -> {now.text!r}")
+            human = HumanName(text, constants=constants)
+            before = {attr: getattr(human, attr) for attr in _FACADE_LISTS}
+            # capitalize() mutates in place, so the forced call repairs
+            # the plain call's output -- still compared against the
+            # lists as parsed, which casefold equality makes transitive
+            for force in (False, True):
+                human.capitalize(force=force)
+                for attr in _FACADE_LISTS:
+                    after = getattr(human, attr)
+                    if ([s.casefold() for s in after]
+                            != [s.casefold() for s in before[attr]]):
+                        out.append(
+                            f"[facade, {label}, force={force}] {text!r} "
+                            f"{attr}: {before[attr]!r} -> {after!r}")
+    return out
+
+
+def test_case_repair_changes_case_and_nothing_else() -> None:
+    """rules.md#R4 read as an invariant: a repaired token equals its
+    input under str.casefold(), on both surfaces, plain and forced,
+    under the shipped lexicon and under one whose exceptions map is
+    empty. casefold(), not a character-for-character check, is the
+    comparator because the rule was never stated against Python's own
+    casing tables: 'ß'.upper() is 'SS', two characters for one, and
+    'ß' and 'ss' fold alike, so a lengthened word still passes -- and
+    so would a repair trading 'ss' for 'ß', the comparator's recorded
+    blind spot. It is not blind the other way: the roman-numeral
+    shape under re.I admits the dotless 'ı', which upper()s to 'I',
+    and 'I' does NOT fold back to 'ı', so a name spelling a numeral
+    with it would fail this walk; none in the walk does. Both cases
+    are decisions.md#R4's Unicode boundary.
+
+    Recorded negative control, measured 2026-09-23 over this walk: at
+    the parent 4d0680e6, where the exceptions map SUBSTITUTED its
+    value ('md' -> 'M.D.', 'iii.' -> 'III'), this fails on 257
+    repairs, every one under the shipped lexicon and none with the map
+    emptied. The live control is the test below.
+    """
+    failures = _case_only_violations()
+    assert not failures, (
+        f"{len(failures)} repair(s) changed more than case:\n"
+        + "\n".join(failures[:10]))
+
+
+def test_the_case_only_walk_can_fail(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The walk above must be able to report a violation, or its
+    silence proves nothing. Putting the pre-#459 substitution back --
+    the mask applier returning the map's value verbatim -- has to be
+    seen. Measured 2026-09-23, it fails on 16 repairs: 8 token repairs
+    counted on both surfaces (core and facade), the same way the
+    parent's 257 is counted -- the five texts that write Ph.D. with
+    its periods, in either case, including the all-initials spelling
+    p.h.d., which the mask 'PhD' would strip of them. Far fewer than
+    the parent's 257 because the shipped map no longer holds a value
+    spelled unlike its key's common spellings; the count is a floor on
+    the walk's reach, not a target.
+    """
+    import nameparser._render as render_module
+    monkeypatch.setattr(render_module, "_apply_mask",
+                        lambda word, mask: mask)
+    failures = _case_only_violations()
+    assert failures, "the case-only walk cannot see a substitution"
+    assert any("'Ph.D.' -> 'PhD'" in line for line in failures), failures

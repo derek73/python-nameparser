@@ -28,7 +28,7 @@ from collections.abc import (
 )
 from typing import NamedTuple, Self
 
-from nameparser._lexicon import Lexicon, _title_key
+from nameparser._lexicon import Lexicon, _MaskValueError, _title_key
 from nameparser._parser import Parser
 from nameparser._policy import PatronymicRule, Policy
 from nameparser.util import lc
@@ -1011,92 +1011,144 @@ class Constants:
         suffix_words = frozenset(self.suffix_not_acronyms) - ambiguous_acronyms
         # keep in sync with _lexicon._default_lexicon() (pinned by
         # tests/v2/test_config_shim.py::test_snapshot_field_translation)
-        lexicon = Lexicon(
-            titles=frozenset(self.titles),
-            # TRANSLATE, do not filter. The two versions build the same
-            # lookup key differently: v1 joins the raw title run and
-            # then applies lc(), which strips only the whole string's
-            # edge periods, so an interior word keeps its own ("lt.
-            # col"). v2 normalizes each token and then joins ("lt col").
-            # Re-folding per word converts a v1 entry into the v2
-            # spelling; filtering instead dropped every multi-word
-            # honorific containing an abbreviation or a conjunction and
-            # silently swapped given and family.
-            # Only entries v1 could actually match: its key is the
-            # joined title run, so always single-spaced and never
-            # empty. An entry holding a whitespace run was inert there
-            # (translating it would start matching), and one that folds
-            # away entirely would trip _normset's empty-entry check on
-            # a config v1 simply ignored.
-            given_name_titles=frozenset(
-                t for t in (
-                    _title_key(e.split())
-                    for e in self.first_name_titles
-                    if e == " ".join(e.split())
-                ) if t),
-            suffix_acronyms=acronyms,
-            suffix_words=suffix_words,
-            # Intersect with acronyms: Lexicon enforces ambiguous <=
-            # acronyms; v1 behaves the same when an acronym is deleted
-            # but its ambiguous entry lingers (the entry stops
-            # mattering).
-            suffix_acronyms_ambiguous=ambiguous_acronyms,
-            particles=particles,
-            # complement translation: v1 marks the never-given subset;
-            # v2 marks the may-be-given subset. The trailing union keeps
-            # a config v1 accepted: particles.py asserts its own data has
-            # no word in both NON_GIVEN_NAME_PARTICLES and
-            # BOUND_GIVEN_NAMES, but nothing stops a caller adding one at
-            # runtime, and v1 then lets the bound rule win (leading "dos
-            # Santos Silva" parses first="dos Santos"). Treating such a
-            # word as may-be-given reproduces that rather than raising.
-            #
-            # KNOWN DEVIATION, pinned by
-            # test_bound_never_given_prefix_deviates_on_two_pieces: v1's
-            # join has a reserve_last guard, so with only two pieces it
-            # does NOT fire and the word stays never-given ("dos Santos"
-            # -> last="dos Santos"). Promotion here is unconditional, so
-            # that case reads given="dos", family="Santos". v1's rule is
-            # piece-count dependent and a static vocabulary set cannot
-            # express it; the alternative is raising on a config v1
-            # accepted, which is worse. Only reachable via a runtime
-            # config the shipped data forbids.
-            particles_ambiguous=(
-                particles - frozenset(self.non_first_name_prefixes))
-            | (bound & particles),
-            conjunctions=conjunctions,
-            # no v1 manager of its own: the ambiguous-connective
-            # subset is 2.4 behavior (#383/#479), so it rides in the
-            # snapshot only. Lexicon does NOT check this pair -- unlike
-            # honorific_tails against suffix_words below -- so the
-            # intersection is a provable no-op, kept only for
-            # `_snapshot() == Lexicon.default()` legibility; the v1
-            # knob (deleting the conjunction) turns the marking off
-            # through the fork's own base-vocabulary test rather than
-            # through this intersection.
-            conjunctions_ambiguous=CONJUNCTIONS_AMBIGUOUS & conjunctions,
-            bound_given_names=bound,
-            # v1 Constants has no manager for these (#274 is 2.0
-            # behavior); the data module is the only source
-            maiden_markers=MAIDEN_MARKERS,
-            # likewise no v1 manager: the unspaced-name segmentation
-            # vocabulary is 2.0 behavior (#271), so it rides in the
-            # snapshot only -- v1's Constants surface stays frozen.
-            surnames=KOREAN_SURNAMES,
-            # likewise no v1 manager: the glued-honorific tail set is
-            # 2.1 behavior (#308), so it rides in the snapshot only.
-            # Intersect with the word set: Lexicon enforces tails <=
-            # suffix_words, and v1 semantics are that deleting a suffix
-            # word turns the behavior off -- a lingering tail simply
-            # stops mattering, the same rule ambiguous_acronyms gets
-            # against suffix_acronyms above.
-            honorific_tails=GLUED_HONORIFICS & suffix_words,
-            # TupleManager is dict[str, object] (v1 parity: values were
-            # never statically str-typed); every real entry is a str,
-            # same assumption _DelimiterManager's sentinel lookup makes
-            capitalization_exceptions=tuple(
-                sorted(self.capitalization_exceptions.items())),  # type: ignore[arg-type]
-        )
+        # A capitalization_exceptions value that does not spell its key
+        # is the one DECIDED exception to this method's never-raise
+        # rule (#459, decisions.md#R4 and #3-0-reevaluations).
+        # _normpairs raises _MaskValueError for exactly that shape, and
+        # the except clause re-spells its offered fix for a v1 caller.
+        # Caught by TYPE, so every other Lexicon error passes through
+        # unchanged. Only the three SUBSET checks (particles_ambiguous
+        # inside particles, suffix_acronyms_ambiguous inside
+        # suffix_acronyms, honorific_tails inside suffix_words) are
+        # satisfied BY CONSTRUCTION: each is built below as an
+        # intersection or union with its OWN base -- particles_ambiguous
+        # from `particles` itself, honorific_tails from `suffix_words`
+        # itself -- so the image of a subset relation under any
+        # element-wise normalization is still a subset, whatever the
+        # raw spelling. The CONTRADICTION check (bound_given_names &
+        # particles inside particles_ambiguous) and the GATE-BYPASS
+        # check (suffix_acronyms_ambiguous disjoint from suffix_words)
+        # do NOT have that property -- each compares two sets built by
+        # SEPARATE set arithmetic (particles_ambiguous's own union
+        # includes `bound & particles`, computed before Lexicon
+        # normalizes anything; suffix_words above subtracts
+        # ambiguous_acronyms the same way) -- and are reachable through
+        # an entry carrying EDGE WHITESPACE: SetManager strips edge
+        # periods but not edge whitespace, while Lexicon's own
+        # normalization strips both, so `c.suffix_not_acronyms.add('ba
+        # ')` (raw 'ba ' survives the shim's subtraction against
+        # 'ba', then Lexicon normalizes both to 'ba' and the
+        # gate-bypass check collides) and `c.bound_first_names.add("'t
+        # ")` (analogous miss against the contradiction check) both
+        # reach Lexicon(...) and raise -- measured, and true of this
+        # method unchanged since before this session; pre-existing,
+        # not fixed here, and left for the orchestrator to file. What
+        # else reaches it is an entry normalizing to empty, in
+        # capitalization_exceptions or any set field (c.titles.add("...")
+        # raises Lexicon's own "normalizes to empty"), and a non-str
+        # value's TypeError -- a raise v1 also had, later, at
+        # capitalize().
+        try:
+            lexicon = Lexicon(
+                titles=frozenset(self.titles),
+                # TRANSLATE, do not filter. The two versions build the same
+                # lookup key differently: v1 joins the raw title run and
+                # then applies lc(), which strips only the whole string's
+                # edge periods, so an interior word keeps its own ("lt.
+                # col"). v2 normalizes each token and then joins ("lt col").
+                # Re-folding per word converts a v1 entry into the v2
+                # spelling; filtering instead dropped every multi-word
+                # honorific containing an abbreviation or a conjunction and
+                # silently swapped given and family.
+                # Only entries v1 could actually match: its key is the
+                # joined title run, so always single-spaced and never
+                # empty. An entry holding a whitespace run was inert there
+                # (translating it would start matching), and one that folds
+                # away entirely would trip _normset's empty-entry check on
+                # a config v1 simply ignored.
+                given_name_titles=frozenset(
+                    t for t in (
+                        _title_key(e.split())
+                        for e in self.first_name_titles
+                        if e == " ".join(e.split())
+                    ) if t),
+                suffix_acronyms=acronyms,
+                suffix_words=suffix_words,
+                # Intersect with acronyms: Lexicon enforces ambiguous <=
+                # acronyms; v1 behaves the same when an acronym is deleted
+                # but its ambiguous entry lingers (the entry stops
+                # mattering).
+                suffix_acronyms_ambiguous=ambiguous_acronyms,
+                particles=particles,
+                # complement translation: v1 marks the never-given subset;
+                # v2 marks the may-be-given subset. The trailing union keeps
+                # a config v1 accepted: particles.py asserts its own data has
+                # no word in both NON_GIVEN_NAME_PARTICLES and
+                # BOUND_GIVEN_NAMES, but nothing stops a caller adding one at
+                # runtime, and v1 then lets the bound rule win (leading "dos
+                # Santos Silva" parses first="dos Santos"). Treating such a
+                # word as may-be-given reproduces that rather than raising.
+                #
+                # KNOWN DEVIATION, pinned by
+                # test_bound_never_given_prefix_deviates_on_two_pieces: v1's
+                # join has a reserve_last guard, so with only two pieces it
+                # does NOT fire and the word stays never-given ("dos Santos"
+                # -> last="dos Santos"). Promotion here is unconditional, so
+                # that case reads given="dos", family="Santos". v1's rule is
+                # piece-count dependent and a static vocabulary set cannot
+                # express it; the alternative is raising on a config v1
+                # accepted, which is worse. Only reachable via a runtime
+                # config the shipped data forbids.
+                particles_ambiguous=(
+                    particles - frozenset(self.non_first_name_prefixes))
+                | (bound & particles),
+                conjunctions=conjunctions,
+                # no v1 manager of its own: the ambiguous-connective
+                # subset is 2.4 behavior (#383/#479), so it rides in the
+                # snapshot only. Lexicon does NOT check this pair -- unlike
+                # honorific_tails against suffix_words below -- so the
+                # intersection is a provable no-op, kept only for
+                # `_snapshot() == Lexicon.default()` legibility; the v1
+                # knob (deleting the conjunction) turns the marking off
+                # through the fork's own base-vocabulary test rather than
+                # through this intersection.
+                conjunctions_ambiguous=CONJUNCTIONS_AMBIGUOUS & conjunctions,
+                bound_given_names=bound,
+                # v1 Constants has no manager for these (#274 is 2.0
+                # behavior); the data module is the only source
+                maiden_markers=MAIDEN_MARKERS,
+                # likewise no v1 manager: the unspaced-name segmentation
+                # vocabulary is 2.0 behavior (#271), so it rides in the
+                # snapshot only -- v1's Constants surface stays frozen.
+                surnames=KOREAN_SURNAMES,
+                # likewise no v1 manager: the glued-honorific tail set is
+                # 2.1 behavior (#308), so it rides in the snapshot only.
+                # Intersect with the word set: Lexicon enforces tails <=
+                # suffix_words, and v1 semantics are that deleting a suffix
+                # word turns the behavior off -- a lingering tail simply
+                # stops mattering, the same rule ambiguous_acronyms gets
+                # against suffix_acronyms above.
+                honorific_tails=GLUED_HONORIFICS & suffix_words,
+                # TupleManager is dict[str, object] (v1 parity: values were
+                # never statically str-typed); every real entry is a str,
+                # same assumption _DelimiterManager's sentinel lookup makes.
+                # NOT translated: see the comment above the try: block.
+                capitalization_exceptions=tuple(
+                    sorted(self.capitalization_exceptions.items())),  # type: ignore[arg-type]
+            )
+        except _MaskValueError as e:
+            # A v1-ONLY message built from the fields, not `{e}` --
+            # the 2.0 exception's own message offers the 2.0
+            # `capitalization_exceptions=((...),)` constructor spelling,
+            # which no v1 Constants caller can paste.
+            raise ValueError(
+                f"capitalization_exceptions value {e.value!r} for key "
+                f"{e.key!r} does not spell the key's letters and "
+                f"digits: a value is a case mask, the key's own "
+                f"letters and digits recased -- write "
+                f"constants.capitalization_exceptions[{e.key!r}] = "
+                f"{e.offered!r}"
+            ) from e
         rules = frozenset({PatronymicRule.EAST_SLAVIC, PatronymicRule.TURKIC}) \
             if self.patronymic_name_order else frozenset()
         policy = Policy(

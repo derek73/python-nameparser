@@ -271,7 +271,8 @@ class HumanName:
         """Re-capitalize the current parse against the bound lexicon.
         force=None reads the bound Constants' render default
         (force_mixed_case_capitalization); the core's capitalized()
-        implements the single-case gate (v1 parity) -- not
+        implements the one-case gate (rules.md#R5, suffixes left out
+        since #492) -- not
         re-implemented here."""
         self._resolve()
         if force is None:

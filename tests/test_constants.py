@@ -749,9 +749,9 @@ class ConstantsCustomizationTests(HumanNameTestBase):
         ``del tm['key']`` are the same operation.
         """
         c = Constants()
-        self.assertIn('ii', c.capitalization_exceptions)
-        del c.capitalization_exceptions.ii  # type: ignore[attr-defined]
-        self.assertNotIn('ii', c.capitalization_exceptions)
+        self.assertIn('phd', c.capitalization_exceptions)
+        del c.capitalization_exceptions.phd  # type: ignore[attr-defined]
+        self.assertNotIn('phd', c.capitalization_exceptions)
 
     def test_assigning_iterable_to_set_attr_wraps_and_normalizes(self) -> None:
         """Assigning a plain iterable to a set field wraps it in a SetManager.

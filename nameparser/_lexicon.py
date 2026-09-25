@@ -376,14 +376,68 @@ def _normset(
     return frozenset(normalized)
 
 
+def _alnum(text: str) -> str:
+    return "".join(c for c in text if c.isalnum())
+
+
+def _offered_mask(normalized_key: str) -> str:
+    """The working value a mismatched-mask error offers (carried to the
+    v1 shim's re-raise on _MaskValueError, so both name one fix): the
+    key upper-cased, or the key unchanged -- an identity mask, always
+    legal -- where .upper() changes the letter count ('straße' ->
+    'STRASSE') and would fail the check if pasted back in."""
+    upper = normalized_key.upper()
+    return upper if _alnum(_normalize(upper)) == _alnum(
+        normalized_key) else normalized_key
+
+
+class _MaskValueError(ValueError):
+    """_normpairs' error for a value that does not spell its key.
+    Built in the UnicodeDecodeError idiom -- structure in, message
+    out: `key`, `normalized_key` and `value` are the offending inputs;
+    `offered` (the v1 shim's re-spelled fix, and the v2 one quoted in
+    the message below) is computed from them, not carried separately.
+
+    __reduce__ is explicit because the inherited one re-calls
+    __init__ with self.args, which holds the message alone, not the
+    three fields __init__ needs -- and a ProcessPoolExecutor pickles a
+    worker's exception to deliver it, surfacing a construction failure
+    as BrokenProcessPool. Passing self.__dict__ as reduce's third
+    element (restored via a plain __dict__.update, there being no
+    __setstate__ here) carries along anything added after construction
+    -- e.g. add_note() -- that reconstructing from the three fields
+    alone would not. (An exception, so _types.py's frozen-dataclass
+    pickle guards do not apply.)"""
+
+    def __init__(self, key: str, normalized_key: str, value: str) -> None:
+        self.key = key
+        self.normalized_key = normalized_key
+        self.value = value
+        self.offered = _offered_mask(normalized_key)
+        super().__init__(
+            f"capitalization_exceptions value {value!r} for key {key!r} "
+            f"does not spell the key's letters and digits: a value "
+            f"is a case mask, the key's own letters and digits "
+            f"recased -- e.g. "
+            f"capitalization_exceptions=(({normalized_key!r}, "
+            f"{self.offered!r}),)")
+
+    def __reduce__(
+        self,
+    ) -> tuple[type[_MaskValueError], tuple[str, str, str], dict[str, object]]:
+        return (type(self), (self.key, self.normalized_key, self.value),
+                self.__dict__)
+
+
 def _normpairs(
     raw: Mapping[str, str] | Iterable[tuple[str, str]],
 ) -> tuple[tuple[str, str], ...]:
     """Canonicalize capitalization_exceptions input: _normset's sibling
     for the one pair-valued field. Dedupes on the NORMALIZED key so the
-    tuple and the derived map always agree ("Ph.D." and "phd" collide
-    after normalization); last occurrence wins, matching dict semantics
-    and the right-bias rule used elsewhere."""
+    tuple and the derived map always agree ("PHD" and "phd" collide
+    after normalization; "Ph.D." does not, the fold keeping interior
+    periods, so it is a key of its own, "ph.d"); last occurrence wins,
+    matching dict semantics and the right-bias rule used elsewhere."""
     if isinstance(raw, str):
         raise TypeError(
             "capitalization_exceptions must be a mapping or an "
@@ -427,14 +481,53 @@ def _normpairs(
                 f"empty (lowercase + strip full stops/whitespace leaves "
                 f"nothing)"
             )
+        # Stored NFC-composed, case kept (unicodedata, not _normalize):
+        # _apply_mask reads the mask one character at a time, and a
+        # decomposed letter would read as a base letter split off
+        # beside a non-alpha combining mark. The mask check below
+        # passes either spelling, _normalize composing both of its
+        # sides. `written` keeps the caller's own spelling -- composed
+        # or not -- for the mismatch error below: a decomposed value
+        # (e.g. 'e' + a combining acute) and its NFC form print
+        # identically to a reader's eye but are different str objects,
+        # so echoing the composed spelling back would show the caller
+        # a value they did not write.
+        written = v
+        v = unicodedata.normalize("NFC", v)
         # capitalized() looks words up one at a time (the _WORD regex
-        # never yields spaces), so a multi-word key is unreachable.
+        # never yields spaces), so a multi-word key is unreachable --
+        # checked FIRST, ahead of the mask check below, because an
+        # invariant guards harm and a value that can never be read
+        # does no harm no matter what it says (AGENTS.md: "a check
+        # guards harm, not no-ops"). Raising the mask error for such a
+        # key -- as a naive mask-first order does -- would refuse a
+        # config that was always going to be a no-op.
         # interior whitespace test; split() covers all Unicode whitespace
         if normalized_key != "".join(normalized_key.split()):
             _warn_dead_entry(
                 f"capitalization_exceptions keys are matched one word "
                 f"at a time; multi-word key {k!r} can never match. "
                 f"Split it into per-word entries")
+            deduped[normalized_key] = v
+            continue
+        # A value is a case MASK (#459): the key's own letters and
+        # digits recased, compared through the key's own fold. Its
+        # punctuation marks which letters are joined into one run
+        # (_render._apply_mask reads that) and is never written into
+        # the word. A raise, not a warning: a mismatched value used to
+        # be SUBSTITUTED for the word, and rules.md#R4: "Repair
+        # changes case and nothing else", so there is no reading of
+        # one that repair can honor.
+        if _alnum(_normalize(v)) != _alnum(normalized_key):
+            # key is the RAW key, not normalized_key: the v1 shim's
+            # hint must overwrite the offending dict entry, which is
+            # stored under the raw spelling -- writing the normalized
+            # spelling would add a second entry and still raise
+            # (measured with {"PHD": "Junior"}: the shim's suggested
+            # constants.capitalization_exceptions['PHD'] = ... has to
+            # match the key already there, not 'phd'). `written`, not
+            # `v`: the caller's own spelling, not the NFC-composed one.
+            raise _MaskValueError(k, normalized_key, written)
         deduped[normalized_key] = v
     return tuple(sorted(deduped.items()))
 
@@ -566,8 +659,14 @@ class Lexicon:
     #: vocabulary is. Full default list:
     #: :data:`~nameparser.config.suffixes.GLUED_HONORIFICS`.
     honorific_tails: frozenset[str] = frozenset()
-    #: Lowercase word -> exact-cased replacement used by capitalized()
-    #: ("phd" -> "Ph.D."). Pair-valued: change it with
+    #: Lowercase word -> case mask used by capitalized(): the word's
+    #: own letters and digits, each in the case it takes ("phd" ->
+    #: "PhD"), laid over the word as written, so the one entry
+    #: repairs "ph.d." to "Ph.D.". The mask's own punctuation marks
+    #: where its letters are joined into one run versus split apart,
+    #: and is never written into the word -- repair keeps the writer's
+    #: own punctuation. A value that does not spell the key's letters
+    #: and digits raises ValueError. Pair-valued: change it with
     #: dataclasses.replace(), not add()/remove(); read it as a mapping
     #: via capitalization_exceptions_map. Full default mapping:
     #: :data:`~nameparser.config.capitalization.CAPITALIZATION_EXCEPTIONS`.

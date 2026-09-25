@@ -5,6 +5,7 @@ import pickle
 import pytest
 
 from nameparser import HumanName
+from nameparser.config import Constants
 
 from tests.base import HumanNameTestBase
 
@@ -15,13 +16,25 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Juan Q. Xavier Velasquez y Garcia III', hn)
 
-    # FIXME: this test does not pass due to a known issue
-    # http://code.google.com/p/python-nameparser/issues/detail?id=22
-    @pytest.mark.xfail(reason="#492")
-    def test_capitalization_exception_for_already_capitalized_III_KNOWN_FAILURE(self) -> None:
+    # A known failure since 2012 (the Google Code tracker's issue 22)
+    # until #492: the one-case gate read the SUFFIX as evidence that
+    # the writer cased the whole name, so 'III' held the lowercase
+    # name back. The gate now leaves the suffixes out (rules.md#R5):
+    # a generation written the way one is written says nothing about
+    # how the name was cased. The name words still count, and so
+    # does a title -- the two boundary rows.
+    def test_capitalization_exception_for_already_capitalized_III(
+        self,
+    ) -> None:
         hn = HumanName('juan garcia III')
         hn.capitalize()
         self.m(str(hn), 'Juan Garcia III', hn)
+        mixed = HumanName('Juan garcia III')
+        mixed.capitalize()
+        self.m(str(mixed), 'Juan garcia III', mixed)
+        titled = HumanName('Dr. juan garcia')
+        titled.capitalize()
+        self.m(str(titled), 'Dr. juan garcia', titled)
 
     def test_capitalize_title(self) -> None:
         hn = HumanName('lt. gen. john a. kenneth doe iv')
@@ -90,22 +103,27 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     def test_capitalize_single_suffix_still_works(self) -> None:
         hn = HumanName('JOHN DOE PHD')
         hn.capitalize()
-        self.assertEqual(hn.suffix_list, ['Ph.D.'])
+        self.assertEqual(hn.suffix_list, ['PhD'])
 
     def test_capitalize_multiple_suffixes_still_split_correctly(self) -> None:
         hn = HumanName('JOHN DOE PHD MD')
         hn.capitalize()
         # The split this guards is capitalize() giving each word its own
-        # exception form rather than title-casing the run, and that is
-        # untouched. The two words are ONE entry since #436 -- the writer
-        # spaced them, so they render with a space -- and one entry is one
-        # suffix_list element. A deliberate deviation from 1.4.0, which
-        # inserted a comma into a run the writer had spaced.
-        self.assertEqual(hn.suffix_list, ['Ph.D. M.D.'])
+        # repair rather than title-casing the run, and that is
+        # untouched: PHD by the exceptions map's mask, MD by the acronym
+        # clause since #459 took md out of the map. The two words are
+        # ONE entry since #436 -- the writer spaced them, so they render
+        # with a space -- and one entry is one suffix_list element. A
+        # deliberate deviation from 1.4.0, which inserted a comma into a
+        # run the writer had spaced, and gave 'Ph.D.', 'M.D.' besides.
+        self.assertEqual(hn.suffix_list, ['PhD MD'])
 
     def test_capitalize_suffix_acronym_with_dots(self) -> None:
-        # Suffixes already written with dots (e.g. "M.D.") should capitalize
-        # to their exception form, not title-case to "M.d." (issue #141)
+        # Suffixes already written with dots (e.g. "M.D.") keep them and
+        # do not title-case to "M.d." (issue #141). Through 2.3 the
+        # exceptions map gave this string by SUBSTITUTING 'M.D.'; since
+        # #459 md is a listed acronym the acronym clause writes in
+        # capitals, recasing the word as written.
         hn = HumanName('GREGORY HOUSE M.D.')
         hn.capitalize()
         self.assertEqual(hn.suffix, 'M.D.')
@@ -124,16 +142,78 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
             hn.capitalize()
             self.m(str(hn), expect, hn)
 
-    # The exceptions map's five keep their special casing; the new
-    # all-caps path must not shadow them (#459).
+    # The exceptions map is asked before the all-caps acronym clause,
+    # and since #459 it holds case MASKS: bsc and msc are listed
+    # acronyms too, and the mask is what keeps them mixed-case where
+    # the acronym clause would give 'BSC'. md left the map and reads
+    # 'MD' by the acronym clause; 1.4.0 through 2.3.0 gave 'M.D.' and
+    # 'Ph.D.', the map substituting its value for the word.
     def test_capitalize_exceptions_still_win_over_acronyms(self) -> None:
         for src, expect in [
-            ('john smith md', 'John Smith M.D.'),
-            ('john smith phd', 'John Smith Ph.D.'),
+            ('john smith md', 'John Smith MD'),
+            ('john smith phd', 'John Smith PhD'),
+            ('john smith ph.d.', 'John Smith Ph.D.'),
+            ('john smith bsc', 'John Smith BSc'),
+            ('JOHN SMITH MSC', 'John Smith MSc'),
+            # the conventionally mixed-case acronyms given masks on
+            # 2026-09-24; without one, the acronym clause gave 'PSYD'
+            ('john smith psyd', 'John Smith PsyD'),
+            ('JOHN SMITH PHARMD', 'John Smith PharmD'),
         ]:
             hn = HumanName(src)
             hn.capitalize()
             self.m(str(hn), expect, hn)
+
+    # #459: a capitalization_exceptions value is a case MASK -- the
+    # key's own letters recased -- so a v1 Constants carrying any other
+    # value raises at the first parse, where the snapshot builds the
+    # Lexicon. A DECIDED exception to the shim's never-raise rule
+    # (decisions.md#R4, and #3-0-reevaluations): 1.4.0 substituted
+    # such a value for the word, repair now only recases, and no such
+    # value was found in the tracker, the docs or any test. The raise
+    # carries a v1-spelled hint: the 2.0 message's own offer
+    # ("capitalization_exceptions=(('jr', 'JR'),)") is a Lexicon()
+    # constructor call, and a v1 caller is looking at a TupleManager
+    # assignment through Constants, not that constructor.
+    def test_a_mismatched_exception_value_raises_at_the_first_parse(
+        self,
+    ) -> None:
+        from nameparser._lexicon import _MaskValueError
+        c = Constants(capitalization_exceptions={'jr': 'Junior'})
+        with pytest.raises(ValueError,
+                           match="does not spell the key's letters") \
+                as caught:
+            HumanName('john smith jr', constants=c)
+        assert "constants.capitalization_exceptions['jr'] = 'JR'" \
+            in str(caught.value)
+        # The v1 message is built fresh from the fields, not from the
+        # wrapped 2.0 exception's own text -- so it never carries the
+        # 2.0 constructor spelling a v1 caller cannot paste.
+        assert "Lexicon(" not in str(caught.value)
+        assert "capitalization_exceptions=((" not in str(caught.value)
+        assert isinstance(caught.value.__cause__, _MaskValueError)
+        # pasted onto a fresh Constants, the offered fix works
+        fixed = Constants()
+        fixed.capitalization_exceptions['jr'] = 'JR'
+        hn = HumanName('john smith jr', constants=fixed)
+        hn.capitalize()
+        self.m(str(hn), 'John Smith JR', hn)
+        ok = Constants(capitalization_exceptions={'jr': 'JR'})
+        hn = HumanName('john smith jr', constants=ok)
+        hn.capitalize()
+        self.m(str(hn), 'John Smith JR', hn)
+
+    # rules.md#R5 (#492): a suffix ASSIGNED to the facade after
+    # construction carries UNCLASSIFIED_TAG (no `vocab:suffix` tag, no
+    # roman-numeral shape read from a parse) and is still excluded from
+    # the one-case gate -- the gate reads the ROLE, not the tag.
+    def test_capitalize_leaves_an_assigned_suffix_out_of_the_gate(
+        self,
+    ) -> None:
+        hn = HumanName('juan garcia')
+        hn.suffix = 'III'
+        hn.capitalize()
+        self.m(str(hn), 'Juan Garcia III', hn)
 
     # A word in the acronym vocabulary that parses as a family name
     # still repairs as an ordinary name word, not an acronym (#459).
@@ -371,10 +451,13 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
                 # an initial, not the Italian conjunction
                 ('middle', 'e.', 'John E. Smith'),
                 # v1 asks per WORD of the assigned text, so the
-                # conjunction inside a hyphenated word IS lowered here
-                # -- the opposite of the parsed reading pinned below,
-                # and the difference is that one carries a reading
-                ('last', 'smith-y', 'John Smith-y')):
+                # conjunction ENDING a hyphenated word IS lowered here
+                # -- the opposite of the parsed reading, where an edge
+                # part is ordinary name text (pinned below), and the
+                # difference is that one carries a reading. An
+                # interior link is lowered on both paths since #478.
+                ('last', 'smith-y', 'John Smith-y'),
+                ('last', 'smith-y-jones', 'John Smith-y-Jones')):
             hn = HumanName('john smith')
             setattr(hn, field, value)
             hn.capitalize(force=True)
@@ -396,22 +479,32 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         uppered.capitalize()
         self.m(str(uppered), 'Juan E-F Smith', uppered)
 
-    # The same shape on a real name, which is what the release note
-    # cites: Ortega y Gasset is routinely hyphenated in catalogues, and
-    # `y` is conjunction vocabulary. Before #458 the two spellings
-    # repaired to 'Jose Ortega-y-Gasset' and 'Jose Ortega-Y-Gasset'
-    # (measured on the pre-#458 tree). The SPACED form is the contrast
-    # and is untouched -- there `y` is a token of its own and IS the
-    # conjunction, so it keeps the lowercase Spanish convention.
-    def test_a_hyphenated_compound_surname_capitalizes_its_conjunction(
+    # #478: Ortega y Gasset is routinely hyphenated in catalogues, and
+    # inside one hyphenated word a connective with a part on each side
+    # keeps its lowercase -- the hyphens are the writer joining the name
+    # around it, as the spaced connective does (rules.md#R4). This
+    # reverses #458's answer for the INTERIOR position ('Jose
+    # Ortega-Y-Gasset' at 2.2.0 and 2.3.0) and keeps it at the edges,
+    # where a part has a neighbour on one side only and is ordinary
+    # name text ('juan e-f smith' above, 'juan y-garcia' here). Both
+    # one-case spellings now agree; 1.4.0 re-decided per word and gave
+    # 'Jose Ortega-y-Gasset' lowered but 'Jose Ortega-Y-Gasset' upper
+    # (measured on the released wheel), so the all-caps half is a
+    # parity break, #479's one-case precedent. The SPACED form is the
+    # contrast and was never in question -- there `y` is a token of its
+    # own and the parse tags it the conjunction.
+    def test_a_hyphenated_compound_surname_keeps_its_link_lowercase(
         self,
     ) -> None:
         lowered = HumanName('jose ortega-y-gasset')
         lowered.capitalize(force=True)
-        self.m(str(lowered), 'Jose Ortega-Y-Gasset', lowered)
+        self.m(str(lowered), 'Jose Ortega-y-Gasset', lowered)
         uppered = HumanName('JOSE ORTEGA-Y-GASSET')
         uppered.capitalize()
-        self.m(str(uppered), 'Jose Ortega-Y-Gasset', uppered)
+        self.m(str(uppered), 'Jose Ortega-y-Gasset', uppered)
+        edge = HumanName('juan y-garcia')
+        edge.capitalize()
+        self.m(str(edge), 'Juan Y-Garcia', edge)
         spaced = HumanName('jose ortega y gasset')
         spaced.capitalize(force=True)
         self.m(str(spaced), 'Jose Ortega y Gasset', spaced)

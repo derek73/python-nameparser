@@ -228,25 +228,34 @@ def is_one_case(texts: Sequence[str]) -> bool:
     reading of words that did not change.
 
     Mirrors the SHAPE of the comparison the R5 gate in
-    `_render.capitalized` makes, not its SPAN: R5 joins every token,
-    nickname and maiden content included, while classify's caller hands
-    in only the name's own words (rules.md#P3's own-words doctrine, see
-    above) -- so a clause-bearing name can be one-case to this function
-    and mixed to R5 (measured: `'JUAN GARCIA Y LOPEZ née Jones'` is one
-    case here, mixed there). Not shared by import today -- render is a
-    layer this module does not reach into, and #492 is where the two
-    spans are reconciled if they ever need to be.
+    `_render.capitalized` makes, not its SPAN: R5 joins every token but
+    the suffixes, nickname and maiden content included, while
+    classify's caller hands in only the name's own words (rules.md#P3's
+    own-words doctrine, see above) -- so a clause-bearing name can be
+    one-case to this function and mixed to R5 (measured:
+    `'JUAN GARCIA Y LOPEZ née Jones'` is one case here, mixed there),
+    and a name with a cased suffix mixed here and one-case there
+    (`'john e jones III'`). Not shared by import today -- render is a
+    layer this module does not reach into -- and #492 left the two
+    spans apart by decision (decisions.md#R5, "THE R5 / PARSER SPLIT").
 
     `Sequence`, not `Iterable`: the caller passes a list it already
     built rather than a fresh generator, so `is_one_case` costs one
     profiler frame per parse rather than one per token (#475).
 
     A CASELESS script answers True, harmlessly: `'محمد و علي'.upper()`
-    is the string itself, so the comparison holds, and the only caller
-    also requires a token whose own `upper()` and `lower()` differ --
-    which a caseless letter's never do. So a caseless name never
-    reaches the decision this gates, and "one case" is the honest
-    verdict for text that has only one.
+    is the string itself, so the comparison holds. There are two
+    callers, classify and -- where a comma form asks -- segment, and
+    both record the answer as `ParseState.one_case`; the decisions
+    that read it each also require the token they judge to be CASED:
+    classify's connective-or-initial fork asks for a token whose own
+    `upper()` and `lower()` differ, `ambiguous_lean` -- which the
+    suffix readers in `_pieces`, `_group` and `_assign` reach through
+    `listed_lean` -- returns no lean for a caseless token, and
+    `caps_shape_candidate` requires
+    `isupper()`. A caseless letter is none of those, so a caseless
+    name never reaches a decision this gates, and "one case" is the
+    honest verdict for text that has only one.
     """
     joined = " ".join(texts)
     return joined in (joined.upper(), joined.lower())

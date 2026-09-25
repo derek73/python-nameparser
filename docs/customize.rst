@@ -161,10 +161,14 @@ Fixing the case of a particular word
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``capitalization_exceptions`` is the one pair-valued field — each entry
-maps a lowercase key to its exact-cased replacement (``"phd"`` →
-``"Ph.D."``), so it isn't a fit for ``add()``/``remove()``. Change it with
-``dataclasses.replace()`` instead, and pass the result to
-``capitalized()``:
+maps a lowercase key to a *case mask*: the key's own letters and
+digits, each in the case it should take (``"phd"`` → ``"PhD"``). Case
+repair lays the mask over the word as it was written and keeps every
+other character where it stood, so it recases a word and never
+re-spells it. A value that spells anything else raises ``ValueError``
+when the lexicon is built. Being pair-valued, the field isn't a fit for
+``add()``/``remove()``. Change it with ``dataclasses.replace()``
+instead, and pass the result to ``capitalized()``:
 
 .. doctest::
 
@@ -179,15 +183,44 @@ maps a lowercase key to its exact-cased replacement (``"phd"`` →
     ...     + (("dphil", "DPhil"),))
     >>> str(parse("jane smith dphil").capitalized(lex))
     'Jane Smith DPhil'
+    >>> str(parse("JANE SMITH D.PHIL.").capitalized(lex))
+    'Jane Smith D.Phil.'
 
 Note the ``tuple(...) + ...``: assigning a bare ``(("dphil", "DPhil"),)``
 would *replace* the default exceptions rather than extend them, so
-``"phd"`` and the rest would stop being fixed.
+the shipped masks (``phd``, ``bsc``, ``psyd`` and the rest) would be
+lost and those words fall back to the all-capitals acronym repair:
+``john smith phd`` would give ``John Smith PHD`` rather than
+``John Smith PhD``.
 
 The key is matched against the token with punctuation normalized away,
 not against the raw text, so one ``"phd"`` entry covers ``"phd"``,
 ``"Phd"``, and ``"Ph.D."`` alike — you don't need a separate key for
-each way a source might punctuate it.
+each way a source might punctuate it, and each keeps its own
+punctuation: ``Ph.D.`` repairs to ``Ph.D.``, not ``PhD``. Punctuation
+in the *value* is never written into the word; it only marks which of
+the mask's letters are joined. That matters for one case: a single
+letter the writer split off beside a full stop is an initial, and is
+capitalized where the mask keeps that letter inside a longer run, so
+``p.h.d.`` repairs to ``P.H.D.`` under ``"PhD"``. An acronym already
+listed in ``suffix_acronyms`` — plain or dotted — and a roman numeral
+need no entry at all: case repair writes a suffix of either kind in
+capitals by itself. Most of the listed acronyms whose usual spelling
+is not all capitals already carry a shipped mask (``DSc``, ``PsyD``,
+``PharmD``, ``MDiv`` and others), so ``john smith psyd`` gives
+``John Smith PsyD``. The exception is an acronym that is also a name
+word, such as ``meng`` or ``edd``: a mask applies wherever its word
+stands, so it would re-spell a person called Meng or Edd, and these
+get none — ``john smith edd`` gives ``John Smith EDD`` (the reasoning
+is the Excluded block for ``CAPITALIZATION_EXCEPTIONS`` under ``R4``
+in ``docs/design/decisions.md``). A caller's own acronym, one ``suffix_acronyms``
+doesn't already list, depends on how it is written: plain (``dphil``)
+it parses as an ordinary name word and repairs as one (``Dphil``,
+above); dotted (``d.phil.``) it is a suffix by shape alone, with no
+vocabulary entry needed to read it as one, and repairs in all
+capitals the same as a listed acronym does (``D.PHIL.``). Either
+way, give it a ``suffix_acronyms`` entry (or a mask of its own)
+rather than relying on this fallback.
 
 Words that are also ordinary names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -858,9 +891,14 @@ signatures:
   first letters, with its own ``delimiter``/``separator`` arguments.
 * :meth:`~nameparser.ParsedName.capitalized` returns a new, case-fixed
   :class:`~nameparser.ParsedName` instead of a string. It only touches
-  input that's already single-case (all lower, all upper) unless you
-  pass ``force=True`` — mixed case is left alone by default on the
-  assumption that someone already capitalized it on purpose.
+  a name whose words are written in a single case (all lower, all
+  upper) unless you pass ``force=True`` — mixed case is left alone by
+  default on the assumption that someone already capitalized it on
+  purpose. The suffixes don't count toward that: ``III`` or ``PhD``
+  written the usual way says nothing about how the name was cased.
+  A suffix written in more than one case is the writer's spelling
+  and is kept as written (``john smith EdD`` gives ``John Smith
+  EdD``) unless you pass ``force=True``.
 
 .. doctest::
 
@@ -876,6 +914,8 @@ signatures:
     'JuAn DE LA vEGA'
     >>> str(parse("JuAn DE LA vEGA").capitalized(force=True))
     'Juan de la Vega'
+    >>> str(parse("juan garcia III").capitalized())
+    'Juan Garcia III'
 
 Looking for v1's ``string_format``? It's the ``render(spec)`` argument
 now — pass your own format string per call instead of setting it once

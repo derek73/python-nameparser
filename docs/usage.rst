@@ -931,8 +931,16 @@ empties and ``family_base`` takes the whole field.
 A token the parse never saw carries no decision to honor, so a view
 that is *handed* a vocabulary can fall back to it — of the parsed
 name's own views, :meth:`~nameparser.ParsedName.capitalized` is the
-one that is, and it falls back for one question only: whether a word
-is a conjunction or an initial, which a word answers on its own.
+one that is. It asks the vocabulary whether a word is a conjunction
+or an initial, which a word answers on its own. Its other special
+cases never needed a reading in the first place: an exceptions-map
+mask applies wherever its word stands, and a credential acronym the
+vocabulary lists or a roman numeral is written in capitals wherever
+the field is the suffix, so a spliced word repairs as a parsed one
+does — ``replace(suffix="mba")`` repairs to ``MBA`` and
+``suffix="vi"`` to ``VI``. A credential recognised only by its dotted
+shape is the exception, since the shape is something the parse
+records.
 (The v1 :class:`~nameparser.parser.HumanName` facade's ``initials()``
 is the other view that is handed one, and takes the same fallback for
 spliced text; it is not a method of the parsed name and is not what

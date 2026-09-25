@@ -363,7 +363,7 @@ def test_render_default_setters_validate() -> None:
 def test_capitalize_gate_and_force() -> None:
     n = HumanName("bob v. de la macdole-eisenhower phd")
     n.capitalize()
-    assert str(n) == "Bob V. de la MacDole-Eisenhower Ph.D."
+    assert str(n) == "Bob V. de la MacDole-Eisenhower PhD"
     m = HumanName("Shirley Maclaine")        # mixed case: untouched
     m.capitalize()
     assert str(m) == "Shirley Maclaine"

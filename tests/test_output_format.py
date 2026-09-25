@@ -28,7 +28,7 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         c = Constants()
         c.capitalize_name = True
         hn = HumanName("bob v. de la macdole-eisenhower phd", constants=c)
-        self.assertEqual(str(hn), "Bob V. de la MacDole-Eisenhower Ph.D.")
+        self.assertEqual(str(hn), "Bob V. de la MacDole-Eisenhower PhD")
 
     def test_force_mixed_case_capitalization_constants_attribute(self) -> None:
         c = Constants()

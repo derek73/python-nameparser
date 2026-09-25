@@ -375,6 +375,33 @@ def test_v14_pickle_restores_and_parses_warning_free() -> None:
         HumanName("Jane Roe", constants=c)
 
 
+def test_an_unrelated_capitalization_exceptions_valueerror_has_no_v1_hint(
+) -> None:
+    """The v1-spelled hint is added ONLY for _MaskValueError -- a value
+    that does not spell its key -- caught by TYPE in _build_snapshot's
+    try/except. A capitalization_exceptions key normalizing to empty
+    is a plain ValueError (_normpairs raises the base class for it,
+    not _MaskValueError), so it passes through the except clause
+    unchanged: no v1-spelled hint is appended to an error about a
+    shape the hint does not fit."""
+    c = Constants(capitalization_exceptions={'...': 'x'})
+    with pytest.raises(ValueError, match="normalizes to empty") as caught:
+        HumanName("john smith", constants=c)
+    assert "on a v1 Constants" not in str(caught.value)
+
+
+def test_a_non_str_exception_value_raises_typeerror_at_the_first_parse(
+) -> None:
+    """The shim does not translate or otherwise intercept a
+    capitalization_exceptions value -- a caller's non-str entry
+    (v1's TupleManager stores dict[str, object], never statically
+    str-typed) reaches Lexicon's own TypeError unchanged, at the
+    first parse where the snapshot is built."""
+    c = Constants(capitalization_exceptions={'phd': 42})
+    with pytest.raises(TypeError, match="str -> str"):
+        HumanName("john smith phd", constants=c)
+
+
 def test_snapshot_keeps_a_multi_word_first_name_title() -> None:
     # v1 looks first_name_titles up on the joined title string, so a
     # multi-word entry is reachable with only its WORDS in titles.
@@ -845,7 +872,35 @@ def test_multiword_warning_through_shim_points_at_caller() -> None:
         warnings.simplefilter("always")
         HumanName("John Smith", constants=c)   # snapshot builds lazily here
     multi = [x for x in w if "matched one word at a time" in str(x.message)]
-    assert multi and all(x.filename == __file__ for x in multi)
+    assert len(multi) == 1
+    assert multi[0].filename == __file__
+
+
+def test_a_multiword_capitalization_exceptions_key_warns_exactly_once(
+) -> None:
+    """_build_snapshot's Lexicon(...) construction is the ONLY place
+    capitalization_exceptions is validated, so a multi-word key must
+    warn once, not twice."""
+    c = Constants(capitalization_exceptions={'zqx zqy': 'ZqXZqY'})
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        HumanName("John Smith", constants=c)   # snapshot builds lazily here
+    multi = [x for x in w if "matched one word at a time" in str(x.message)]
+    assert len(multi) == 1
+
+
+def test_a_multiword_capitalization_exceptions_key_with_a_bad_mask_only_warns(
+) -> None:
+    """#459 review, shim half of test_a_multiword_key_skips_the_mask_
+    check_entirely in tests/v2/test_lexicon.py: a v1 caller's
+    multi-word key is unreachable through capitalized() regardless of
+    its value, so a value that does not spell it must not raise here
+    either."""
+    c = Constants(capitalization_exceptions={'ph d': 'Doctor'})
+    with pytest.warns(UserWarning, match="matched one word at a time"):
+        HumanName("John Smith", constants=c)
+    lexicon, _policy, _render = c._snapshot()
+    assert lexicon.capitalization_exceptions_map == {"ph d": "Doctor"}
 
 
 def test_2x_pickle_roundtrip_keeps_a_readded_dead_entry() -> None:

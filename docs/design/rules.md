@@ -2150,7 +2150,7 @@ R4. Rationale: case repair is a display concern, applied only on
     request and never destructively.
     Case repair returns a repaired copy and never mutates the parse.
     Where it acts at all — R5 decides where — the copy honors the
-    casing a vocabulary entry records (Ph.D.) and the Mac/Mc
+    casing a vocabulary entry records (PhD, BSc) and the Mac/Mc
     convention (McDonald), not only ordinary word-by-word casing, and
     a part whose every word is particle vocabulary is repaired as
     ordinary name words, since none of them is doing a particle's
@@ -2168,6 +2168,25 @@ R4. Rationale: case repair is a display concern, applied only on
     vocabulary does not know, was read as no generation and keeps its
     lowercase there like any other connective — the third part of a
     comma form is the shape that puts one there.
+    Repair changes case and nothing else: the repaired word is the
+    word as written, recased. A vocabulary entry records casing as a
+    mask — its word's letters, each in the case it takes — and repair
+    lays it over the word as the writer punctuated it, so the one
+    entry for phd repairs phd to PhD and ph.d. to Ph.D.; the mask
+    applies wherever the word stands, whatever the parse read it as.
+    A single letter split off alone beside a full stop is written as
+    an initial and takes capitals whatever the mask says there — but
+    only where the mask itself writes that letter inside a run of two
+    or more letters: the writer split a chunk the mask keeps
+    together, so the split-off letter is an initial. A run is of
+    LETTERS only, so a digit ends one exactly as a full stop does. A
+    run of two or more letters beside a full stop takes the mask's
+    case letter by letter and is never an initial. Where the mask
+    writes the letter as a run of one too, there is no split to
+    repair, and the mask's own case stands. So ph.d. is Ph.D. under
+    the phd mask, and p.h.d. — three initials, not the mask's one run
+    'PhD' — is P.H.D.; but h.c. under a caller's own h.c mask, which
+    spells each letter alone, stays h.c.
     A name already written the way repair would
     write it comes back unchanged, measured by repair's own
     conventions rather than by the bearer's. A spelling written in a
@@ -2175,18 +2194,59 @@ R4. Rationale: case repair is a display concern, applied only on
     nothing in the text marks it as a choice; where the text does
     mark one, R5 defers to it. A credential acronym the exceptions map
     does not carry is an initialism, so a single-case word the parse
-    put in the suffix role from the acronym vocabulary repairs to its
+    put in the suffix role from the acronym vocabulary, or read as a
+    credential by its dotted shape alone (S3), repairs to its
     all-caps spelling rather than a title-cased one, and that repair
     outranks the Mac/Mc convention where a word fits both (MCSE, not
-    McSe); a word in that vocabulary that parsed as an ordinary name
-    word repairs as that name word, and a suffix word that is neither
-    an acronym nor an exceptions-map entry -- the generational `jr`,
-    `sr` -- keeps its title case.
+    McSe). A roman numeral the parse put in the suffix role is
+    written in capitals the way a generation is written, whether or
+    not the vocabulary lists it (VI as well as III). Those two
+    classes read the role and the mask does not, so a word of either
+    class that parsed as an ordinary name word repairs as that name
+    word unless the exceptions map carries it (qc mp gives Qc MP,
+    phd smith gives PhD Smith), and a suffix word that is neither an
+    acronym, a numeral nor an exceptions-map entry -- the
+    generational `jr`, `sr` -- keeps its title case.
+    Inside a hyphenated word, a part that is connective vocabulary
+    with a worded part on each side of it keeps its lowercase, the
+    hyphens being the writer joining the name around it
+    (Ortega-y-Gasset); at either end of the hyphenated word it is
+    repaired as ordinary name text. A single letter marked with a
+    period is read as an initial there, as the parse reads it, never
+    as the connective. A bare letter is not: the hyphen is the
+    writer's join, so the interior connective is read as one even in
+    a name written wholly in one case, where the same letter spaced
+    reads as an initial if the vocabulary marks it as reading both
+    ways (P3).
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "Juan McDonald"             →  capitalized_forced="Juan McDonald"
       "ANH DO"                    →  capitalized="Anh Do"
       "anh van do"                →  capitalized="Anh Van Do"
-      "john smith phd"            →  capitalized="John Smith Ph.D."
+      "john smith phd"            →  capitalized="John Smith PhD"
+      "john smith ph.d."          →  capitalized="John Smith Ph.D."
+      "JOHN SMITH PH.D."          →  capitalized="John Smith Ph.D."
+      "john smith p.h.d."         →  capitalized="John Smith P.H.D."
+      "john smith ph. d."         →  capitalized="John Smith Ph. D."
+      "john smith bsc"            →  capitalized="John Smith BSc"
+      "john smith psyd"           →  capitalized="John Smith PsyD"
+      "Dr. med. univ. Margit Popp, MSc"  →  capitalized_forced="Dr. Med. Univ. Margit Popp MSc"
+      "MSc Dr. med. univ."        →  capitalized_forced="MSc Dr. Med. Univ."
+      "Md Abdul Karim"            →  capitalized_forced="Md Abdul Karim"
+      "john smith md"             →  capitalized="John Smith MD"
+      "john smith m.d."           →  capitalized="John Smith M.D."
+      "john smith iii."           →  capitalized="John Smith III."
+      "john smith x.y.z."         →  capitalized="John Smith X.Y.Z."
+      "John Smith R.A.I."         →  capitalized_forced="John Smith R.A.I."
+      "john doe q.c."             →  capitalized="John Doe Q.C."
+      "Jack X.Y.Z."               →  capitalized_forced="Jack X.y.z."  · boundary
+      "qc mp"                     →  capitalized="Qc MP"  · boundary
+      "john smith ed"             →  capitalized="John Smith ED"
+      "john smith vi"             →  capitalized="John Smith VI"
+      "john smith ix"             →  capitalized="John Smith IX"
+      "john smith iii"            →  capitalized="John Smith III"
+      "john smith, v"             →  capitalized="John Smith V"
+      "john smith xi"             →  capitalized="John Smith Xi"  · boundary
+      "john smith, vi"            →  capitalized="Vi John Smith"  · boundary
       "john smith mba"            →  capitalized="John Smith MBA"
       "john smith mcse"           →  capitalized="John Smith MCSE"
       "john smith jr"             →  capitalized="John Smith Jr"  · boundary
@@ -2195,6 +2255,24 @@ R4. Rationale: case repair is a display concern, applied only on
       "Smith, John, and"          →  capitalized_forced="John Smith and"
       "Doe, Jane, and Jr."        →  capitalized_forced="Jane Doe and Jr."
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
+      "jose ortega-y-gasset"      →  capitalized="Jose Ortega-y-Gasset"
+      "JOSE ORTEGA-Y-GASSET"      →  capitalized="Jose Ortega-y-Gasset"
+      "maria silva-e-sousa"       →  capitalized="Maria Silva-e-Sousa"
+      "Jose Ortega-Y-Gasset"      →  capitalized_forced="Jose Ortega-y-Gasset"
+      "juan e-f smith"            →  capitalized="Juan E-F Smith"  · boundary
+      "juan y-garcia"             →  capitalized="Juan Y-Garcia"  · boundary
+      "donovan mcnabb-smith"      →  capitalized="Donovan McNabb-Smith"
+      "maria da-silva"            →  capitalized="Maria da-Silva"
+      "juan y-garcia-lopez"       →  capitalized="Juan Y-Garcia-Lopez"  · boundary
+      "j.-e.-p. dupont"           →  capitalized_forced="J.-E.-P. Dupont"  · boundary
+      "J-E-P DUPONT"              →  capitalized="J-e-P Dupont"  · boundary
+    Accepted: a name written in one case whose hyphenated bare
+    initials spell a connective pays for the hyphen clause — its
+    interior letter is lowered as the connective though the writer
+    meant an initial, where the same letters spaced keep their
+    capitals. The hyphen is the writer's join, and reading the one
+    shape both ways would need the case evidence a one-case name does
+    not carry.
     Accepted: the all-particle clause reaches a part the parser read.
     A field spliced in as raw text after the parse carries no reading
     of its own, so a family set that way to "de la" stays lowercase
@@ -2213,10 +2291,12 @@ R4. Rationale: case repair is a display concern, applied only on
     rather than per field: the conjunction carve-out reaches a word
     the parse read as a conjunction, and where the parse read nothing
     at all it reaches what the vocabulary says. A word of that
-    vocabulary standing inside a longer written word is not a
-    conjunction, because the parse read that word as one ordinary
-    name word — but a field spliced in as raw text was read by
-    nobody, so repair asks the vocabulary and a family set to "de y"
+    vocabulary standing at either end of a longer written word is
+    not a conjunction there, because the hyphen clause above reaches
+    only a worded part with a worded part on each side, and an edge
+    part is outside that reach — but a field spliced in as raw
+    text was read by nobody, so repair asks the vocabulary and a
+    family set to "de y"
     keeps its "y" lowercase. Whether a word is the conjunction or an
     initial is a property of the word, which a vocabulary can answer;
     whether a particle is acting as a particle is a property of the
@@ -2237,7 +2317,7 @@ R4. Rationale: case repair is a display concern, applied only on
     both of the parsed name's views: a middle revised to "e-f"
     repairs to "E-F" as the parsed name does, where splicing the same
     text in gives "e-F".
-    history: decisions.md#R4 · interacts: R2, R3, R5 · implemented: nameparser/_render.py
+    history: decisions.md#R4 · interacts: P3, R2, R3, R5, S3 · implemented: nameparser/_render.py, nameparser/_lexicon.py
 
 R5. Rationale: mixed case is evidence that the writer cased the name
     deliberately, and a repair cannot tell a deliberate spelling from
@@ -2247,15 +2327,33 @@ R5. Rationale: mixed case is evidence that the writer cased the name
     could not be bothered — so repair proceeds there, which is a
     choice about how to act absent evidence rather than a claim that
     nothing can be lost by it.
-    Case repair acts only on a name written entirely in one case. A
-    name written in more than one case is kept as it was written,
-    and whether that casing is right does not enter into it, unless
-    repair was asked for anyway.
+    Case repair acts only on a name written entirely in one case.
+    The suffixes are left out of that test: a suffix says nothing
+    about how the writer cased the name — III, PhD, Jr. are written
+    that way whatever the name's case — so the test reads every word
+    the parse did not put in the suffix role. A title is not left
+    out, and a cased title still holds repair back. A name whose
+    words outside the suffix are written in more than one case is
+    kept as it was written, and whether that casing is right does
+    not enter into it, unless repair was asked for anyway. The same
+    test is then asked of each suffix on its own: a suffix written
+    in more than one case is the writer's spelling and is kept as
+    written where repair was not forced; one written in a single
+    case is repaired like any other.
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "SHIRLEY MACLAINE"          →  capitalized="Shirley MacLaine"
       "Shirley Maclaine"          →  capitalized="Shirley Maclaine"
       "Shirley Maclaine"          →  capitalized_forced="Shirley MacLaine"  · boundary
-    history: decisions.md#R5 · interacts: R4 · implemented: nameparser/_render.py
+      "juan garcia III"           →  capitalized="Juan Garcia III"
+      "juan garcia PhD"           →  capitalized="Juan Garcia PhD"
+      "JUAN GARCIA Jr."           →  capitalized="Juan Garcia Jr."
+      "dr. juan garcia III"       →  capitalized="Dr. Juan Garcia III"
+      "Dr. juan garcia"           →  capitalized="Dr. juan garcia"  · boundary
+      "Juan garcia III"           →  capitalized="Juan garcia III"  · boundary
+      "john smith EdD"            →  capitalized="John Smith EdD"
+      "juan garcia Iii"           →  capitalized="Juan Garcia Iii"  · boundary
+      "john smith EdD"            →  capitalized_forced="John Smith EDD"
+    history: decisions.md#R5 · interacts: R4, P3, S2 · implemented: nameparser/_render.py
 
 ## Construction & configuration diagnostics (D)
 
