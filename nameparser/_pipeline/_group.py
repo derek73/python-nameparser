@@ -38,7 +38,6 @@ _is_conj_piece, _is_rootname and _is_maiden_marker_piece.
 from __future__ import annotations
 
 import bisect
-import dataclasses
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
 from typing import assert_never
@@ -52,7 +51,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
-    WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS,
+    WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
 )
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import delimiter_cores
@@ -1687,7 +1686,7 @@ def group(state: ParseState) -> ParseState:
             dropped.extend(marker_piece)
             for piece in maiden_pieces:
                 for i in piece:
-                    tokens[i] = dataclasses.replace(
+                    tokens[i] = copy_with(
                         tokens[i], role=Role.MAIDEN)
         # rules.md#C1: "a part that is nothing but suffix words is the
         # credential run and reads as suffixes, whole" -- WHOLE is this
@@ -1737,7 +1736,7 @@ def group(state: ParseState) -> ParseState:
         for piece, piece_tags_ in zip(pieces, ptags):
             if "suffix" in piece_tags_ and len(piece) > 1:
                 for i in piece[1:]:
-                    tokens[i] = dataclasses.replace(
+                    tokens[i] = copy_with(
                         tokens[i], tags=tokens[i].tags | {"joined"})
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
@@ -1816,7 +1815,7 @@ def group(state: ParseState) -> ParseState:
             if (first + run < len(tokens)
                     and tokens[first + run].span.end <= clause.end):
                 dropped.extend(range(first, first + run))
-    return dataclasses.replace(
+    return copy_with(
         state, tokens=tuple(tokens), pieces=tuple(all_pieces),
         piece_tags=tuple(all_ptags), dropped=tuple(dropped),
         ambiguities=tuple(ambiguities))

@@ -1,9 +1,13 @@
 import dataclasses
 
+import pytest
+
 from nameparser._lexicon import Lexicon
-from nameparser._pipeline._state import ParseState, Structure, WorkToken
+from nameparser._pipeline._state import (
+    ParseState, PendingAmbiguity, Structure, WorkToken, copy_with,
+)
 from nameparser._policy import Policy
-from nameparser._types import Role, Span
+from nameparser._types import AmbiguityKind, Role, Span
 
 
 def _state(text: str) -> ParseState:
@@ -27,6 +31,49 @@ def test_state_is_frozen_and_replace_works() -> None:
     s2 = dataclasses.replace(s, tokens=(tok,))
     assert s.tokens == () and s2.tokens == (tok,)
     assert s2.tokens[0].role is None and s2.tokens[0].tags == frozenset()
+
+
+def test_copy_with_builds_what_dataclasses_replace_builds() -> None:
+    # copy_with stands in for dataclasses.replace on every pipeline
+    # dataclass, so the two have to agree on each of them.
+    tok = WorkToken("x", Span(0, 1))
+    pending = PendingAmbiguity(AmbiguityKind.COMMA_STRUCTURE, "detail")
+    for obj, changes in (
+        (_state("x"), {"tokens": (tok,), "one_case": True}),
+        (tok, {"role": Role.GIVEN, "tags": frozenset({"initial"})}),
+        (pending, {"indices": (0,)}),
+    ):
+        assert copy_with(obj, **changes) == dataclasses.replace(obj, **changes)
+        assert copy_with(obj) == obj and copy_with(obj) is not obj
+
+
+def test_copy_with_rejects_a_field_the_class_does_not_have() -> None:
+    with pytest.raises(TypeError, match="no field named rol"):
+        copy_with(WorkToken("x", Span(0, 1)), rol=Role.GIVEN)
+
+
+@dataclasses.dataclass(frozen=True)
+class _Validated:
+    value: int
+
+    def __post_init__(self) -> None:
+        if self.value < 0:
+            raise ValueError("negative")
+
+
+@dataclasses.dataclass(frozen=True)
+class _Derived:
+    value: int
+    doubled: int = dataclasses.field(init=False, default=0)
+
+
+@pytest.mark.parametrize("obj", [_Validated(1), _Derived(1)])
+def test_copy_with_refuses_a_class_whose_init_does_more_than_assign(
+        obj: object) -> None:
+    # Copying fields would skip the validation or recompute the
+    # init=False field that dataclasses.replace goes through __init__ for.
+    with pytest.raises(TypeError, match="cannot copy"):
+        copy_with(obj, value=2)
 
 
 def test_worktoken_carries_optional_role() -> None:

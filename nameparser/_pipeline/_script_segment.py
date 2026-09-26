@@ -58,13 +58,12 @@ the bail's own comment, and honorific_tails' field note).
 """
 from __future__ import annotations
 
-import dataclasses
 import functools
 from collections.abc import Sequence
 
 from nameparser._lexicon import FULL_STOPS
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken,
+    ParseState, PendingAmbiguity, Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
     effective_script, is_suffix_strict, is_wholly_suffix,
@@ -157,11 +156,11 @@ def _split(state: ParseState, i: int, splits: tuple[int, ...],
     start = 0
     for piece in _pieces(token.text, splits):
         end = start + len(piece)
-        parts.append(dataclasses.replace(
+        parts.append(copy_with(
             token, text=piece, span=Span(base + start, base + end)))
         start = end
     if tail_tag is not None:
-        parts[-1] = dataclasses.replace(
+        parts[-1] = copy_with(
             parts[-1], tags=parts[-1].tags | {tail_tag})
     added = len(splits)
     tokens = state.tokens[:i] + tuple(parts) + state.tokens[i + 1:]
@@ -172,14 +171,14 @@ def _split(state: ParseState, i: int, splits: tuple[int, ...],
     # pointing at the head.
     segments = tuple(_remap(run, i, added) for run in state.segments)
     ambiguities = tuple(
-        dataclasses.replace(a, indices=tuple(
+        copy_with(a, indices=tuple(
             j + added if j > i else j for j in a.indices))
         for a in state.ambiguities)
     if detail is not None:
         ambiguities += (PendingAmbiguity(
             AmbiguityKind.SEGMENTATION, detail,
             tuple(range(i, i + added + 1))),)
-    return dataclasses.replace(state, tokens=tokens, segments=segments,
+    return copy_with(state, tokens=tokens, segments=segments,
                                ambiguities=ambiguities)
 
 

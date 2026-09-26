@@ -20,14 +20,13 @@ forced-role sub-parse (#511); `post_rules` runs the same worker last.
 """
 from __future__ import annotations
 
-import dataclasses
 import re
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._assign import _name_positions
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
-    WorkToken, _NEVER_FLIPPED, comma_bucket,
+    WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import delimiter_cores
 from nameparser._policy import PatronymicRule
@@ -193,7 +192,7 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
             else tokens[between].role not in _RENDERS_ELSEWHERE
             for between in range(previous + 1, current))
         if same_part and not parted:
-            tokens[current] = dataclasses.replace(
+            tokens[current] = copy_with(
                 tokens[current], tags=tokens[current].tags | {"joined"})
 
 
@@ -214,7 +213,7 @@ def suffix_entries(state: ParseState) -> ParseState:
     nothing else."""
     tokens = list(state.tokens)
     _mark_suffix_entries(tokens, state)
-    return dataclasses.replace(state, tokens=tuple(tokens))
+    return copy_with(state, tokens=tuple(tokens))
 
 
 def _idx(tokens: list[WorkToken], role: Role) -> list[int]:
@@ -247,7 +246,7 @@ def _leading_name_piece(state: ParseState,
 
 
 def _retag(tokens: list[WorkToken], i: int, role: Role) -> None:
-    tokens[i] = dataclasses.replace(tokens[i], role=role)
+    tokens[i] = copy_with(tokens[i], role=role)
 
 
 # rules.md#P2: "a particle joins the words after it into one name
@@ -652,7 +651,7 @@ def post_rules(state: ParseState) -> ParseState:
                     f"of its own",
                     tuple(sorted(run))))
             for j in run:
-                tokens[j] = dataclasses.replace(
+                tokens[j] = copy_with(
                     tokens[j], role=Role.FAMILY,
                     tags=tokens[j].tags | {FOLDED_TAG})
             # recomputed for H1's reason, stated at H1: a stale index
@@ -811,7 +810,7 @@ def post_rules(state: ParseState) -> ParseState:
                     f"rather than standing as a name word of its own",
                     tuple(run)))
             for i in run:
-                tokens[i] = dataclasses.replace(
+                tokens[i] = copy_with(
                     tokens[i], role=Role.FAMILY,
                     tags=tokens[i].tags | {FOLDED_TAG})
 
@@ -822,7 +821,7 @@ def post_rules(state: ParseState) -> ParseState:
     # tags the token, and the rendering views consult the tag"
     if state.policy.middle_as_family:
         for i in _idx(tokens, Role.MIDDLE):
-            tokens[i] = dataclasses.replace(
+            tokens[i] = copy_with(
                 tokens[i], role=Role.FAMILY,
                 tags=tokens[i].tags | {FOLDED_TAG})
     # rules.md#R2: "a name part whose every word is particle
@@ -874,7 +873,7 @@ def post_rules(state: ParseState) -> ParseState:
                     others += 1
         if all_particle:
             for i in part:
-                tokens[i] = dataclasses.replace(
+                tokens[i] = copy_with(
                     tokens[i], tags=tokens[i].tags | {UNJOINED_TAG})
         elif conj and not others:
             # #461: nothing here for the connective to join. The `elif`
@@ -883,9 +882,9 @@ def post_rules(state: ParseState) -> ParseState:
             # and connective included, which is what keeps a caller's
             # `add(particles={"y"})` readings unchanged.
             for i in conj:
-                tokens[i] = dataclasses.replace(
+                tokens[i] = copy_with(
                     tokens[i],
                     tags=tokens[i].tags | {UNJOINED_CONJUNCTION_TAG})
     _mark_suffix_entries(tokens, state)
-    return dataclasses.replace(state, tokens=tuple(tokens),
+    return copy_with(state, tokens=tuple(tokens),
                                ambiguities=tuple(ambiguities))
