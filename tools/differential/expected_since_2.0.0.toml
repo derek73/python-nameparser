@@ -3412,8 +3412,8 @@ issue = "fix(#540) accepted: a credential run behind a suffix comma that ends in
 # family 'john smith', suffix 'meng' (the count then peels 'meng'
 # with a word to spare). Every release read the whole run as a suffix.
 # The pre-existing 'john smith, phd ma' path, which #540 routes two
-# more words into; a follow-up issue is to be filed on the mechanism
-# itself.
+# more words into; #544 asks whether the run should keep its
+# comma.
 #
 # Literal, two names, fields the union of what each moves ('middle' is
 # the first name's alone -- the OVER-DECLARED check accepts a field

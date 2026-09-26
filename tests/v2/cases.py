@@ -707,7 +707,7 @@ CASES: tuple[Case, ...] = (
                "the first credential as the given name. Every "
                "release read suffix 'PhD MEng' -- the pre-existing "
                "'john smith, phd ma' path, which #540 routes two "
-               "more words into. A follow-up issue is to be filed",
+               "more words into; #544 asks whether to keep the comma",
          shape=3),
     Case("comma_lower_credential_run_ending_in_meng_re_reads_the_comma",
          "john smith, phd meng",
@@ -756,7 +756,7 @@ CASES: tuple[Case, ...] = (
                "given name is the family), not S2's gate -- so this "
                "row is parity. 'John Smith M.Eng.' keeps the suffix "
                "by the count and reports; the period-gate question "
-               "goes to the follow-up issue",
+               "goes to #544",
          shape=1),
     Case("leading_meng_is_a_given_name", "meng li",
          {"given": "meng", "family": "li"},
