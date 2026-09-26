@@ -320,11 +320,13 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     report and not this rule's.
     Accepted: the chain reads PIECES, so a join that ran earlier
     puts the word out of reach. A particle chain (P2) has already
-    taken the trailing word into the family name, and a maiden
-    marker (M2) has already taken it into the maiden name; in
-    neither is a title word standing in the trailing slot at all.
+    taken the trailing word into the family name, and no title word
+    is standing in the trailing slot at all. A maiden clause is not
+    such a join: the clause's walk reads the end of the name through
+    this chain (M2), so a trailing title ends the clause and is a
+    title.
       "John van der Berg Prof."   →  family="van der Berg Prof."
-      "Mary Smith née Jones Prof." →  maiden="Jones Prof."
+      "Mary Smith née Jones Prof." →  title="Prof."
     Accepted: what the chain leaves is also what counts as a name
     word to spare (P5). A trailing title word is not one, so a bound
     given-name word behind one joins exactly as it joins with the
@@ -1274,7 +1276,13 @@ M2. Rationale: a maiden marker announces that what follows it is the
     reading the name left standing reads the word as the
     credential, and never the first word after the marker — as the
     maiden name, and
-    the marker itself is dropped.
+    the marker itself is dropped. Where a trailing rule reads the
+    words, a trailing title ends it too: a period-marked word the
+    trailing title chain takes (H5), read together with the trailing
+    suffix run to where neither takes more, so a credential or a
+    numeral in front of the title stops the take exactly as it does
+    with the title absent. No stop takes the first word after the
+    marker.
     One suffix word does not stop it. Where such a word is also a
     connective standing between two name words of the clause (P3),
     a link inside the birth name does not end it, and the words on
@@ -1286,7 +1294,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     word, and the link exception reads past it: the word on a link's
     side is the one beyond the separator, so the clause reads as the
     same clause written without it.
-    Those last two stops are each asked TWICE for one reason: the
+    Those stops are each asked TWICE for one reason: the
     count of words to spare includes the very words the marker
     removes, so a reading taken over the name as written can be
     wrong about the name the take would leave. WHICH rule does the
@@ -1295,10 +1303,13 @@ M2. Rationale: a maiden marker announces that what follows it is the
     the part before a SUFFIX comma, which that rule reads the same
     way — that rule is the reader. After a family comma it is the
     reading the end of the given part takes, where the comma has
-    already settled the count and the writing decides alone. Before
-    a family comma, and in a part after a second one, no trailing
-    rule reads those words at all: the clause keeps them and says
-    nothing about them.
+    already settled the count and the writing decides alone. A lone
+    numeral reads as a suffix there only where no comma part follows
+    the given one, exactly as it does outside a marker's clause; with
+    one behind it the numeral stays name text and the clause keeps
+    it. Before a family comma, and in a part after a second one, no
+    trailing rule reads those words at all: the clause keeps them and
+    says nothing about them.
     That the credential stop spares the first word after the marker
     is a deliberate divergence from what certain suffix vocabulary
     gets in the same position, where the marker declines and stays
@@ -1326,6 +1337,9 @@ M2. Rationale: a maiden marker announces that what follows it is the
     rule sees it, which would carry a word of the BIRTH name into
     the current one. In both the clause keeps the word, and reports
     it as it reports every member it keeps.
+    A title the clause gives up is held to the same test, of the
+    whole run the stop gives up: it reads as titles or post-nominals,
+    or the clause keeps it.
     Delimiters outrank every reading inside them. Where a recognized
     marker stands inside a delimited clause, the whole span is the
     maiden name whatever its last word is, and whether or not the
@@ -1370,6 +1384,19 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Doe nee Puig i"       →  suffix="i"  · boundary
       "Smith, John, PhD née Puig Mr. - i Soler" extra_suffix_delimiters-dash →  maiden="Puig Mr."
       "Smith, John, PhD née Puig - i Soler" extra_suffix_delimiters-dash →  maiden="Puig i Soler"
+      "Jane Doe nee Smith Prof."       →  maiden="Smith"
+      "Jane Doe nee Smith Prof."       →  title="Prof."
+      "Jane Doe nee Smith MA Prof."    →  suffix="MA"
+      "Jane Doe nee Smith Prof. MA"    →  maiden="Smith"
+      "Jane Doe nee Smith V Prof."     →  suffix="V"
+      "Jane Doe nee King."             →  maiden="King."  · boundary
+      "Jane Doe nee Prof. Dr."         →  maiden="Prof."  · boundary
+      "Dr. nee Jones Smith Prof."      →  maiden="Jones Smith Prof."  · boundary
+      "Doe nee Smith Prof., Jane"      →  maiden="Smith Prof."  · boundary
+      "Jane van der Berg nee Smith Prof."  →  maiden="Smith Prof."  · boundary
+      "Berg, abdul nee Smith V"        →  maiden="Smith V"  · boundary
+      "Jane Doe nee King. ba"          →  suffix="ba"  · boundary
+      "Doe, Jane nee Smith V, PhD"     →  maiden="Smith V"
       "Jane Doe (nee Smith MA)"   →  maiden="Smith MA"
       "Jane Doe (nee Smith Ma)"   →  maiden="Smith Ma"
       "Jane Doe (nee Smith) MA"   →  suffix="MA"
@@ -1403,14 +1430,13 @@ M2. Rationale: a maiden marker announces that what follows it is the
     a reading needs is taken over the name the take would leave
     rather than over the words as they stand.
       "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
-    Accepted: a trailing title is not transparent inside a clause,
-    and the two spellings disagree — the walk reads the trailing
-    credential run and not the title chain behind it, so a title
-    AFTER a member of that class hides it and a title before it
-    does not.
-      "Jane Doe nee Smith MA Prof."    →  maiden="Smith MA Prof."  · boundary
-      "Jane Doe nee Smith Prof. MA"    →  maiden="Smith Prof."  · boundary
-    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
+    Accepted: bracket content ending in a period is suffix-shaped
+    (S1), so the brackets are dropped and the clause is read as if
+    written bare — the delimiter precedence above does not reach it,
+    and a trailing title inside gives itself up as the bare
+    clause's does.
+      "Jane Doe (nee Smith Prof.)"     →  title="Prof."
+    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
     maiden, but a recognized marker word inside it does — the clause

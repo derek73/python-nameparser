@@ -2705,7 +2705,7 @@ issue = "fix(#533) a credential ending a maiden clause reads as a credential"
 # Literal-anchored for the reason fix(#531)'s rules give: the subject
 # is a SLOT, so a regex for it would claim the names whose WRITING
 # declines the word as readily as the ones it takes.
-name_regex = "^(?:Doe, Jane Q\\. nee Smith MA|Doe, Jane nee Smith DO|Doe, Jane nee Smith MA|Doe, Jane nee Smith ma|JANE DOE NEE SMITH MA|JANE DOE NEE YO-YO MA|Jane Doe geb\\. Smith MA|Jane Doe nee Smith MA|Jane Doe nee Smith MA JD|Jane Doe nee Smith MA PhD|Jane Doe nee Smith Ma JD|Jane Doe nee Smith Prof\\. MA|Jane Doe nee Smith V MA|Jane Doe nee Smith do|jane doe nee smith ma)$"
+name_regex = "^(?:Doe, Jane Q\\. nee Smith MA|Doe, Jane nee Smith DO|Doe, Jane nee Smith MA|Doe, Jane nee Smith ma|JANE DOE NEE SMITH MA|JANE DOE NEE YO-YO MA|Jane Doe geb\\. Smith MA|Jane Doe nee Smith MA|Jane Doe nee Smith MA JD|Jane Doe nee Smith MA PhD|Jane Doe nee Smith Ma JD|Jane Doe nee Smith V MA|Jane Doe nee Smith do|jane doe nee smith ma)$"
 fields = ["_ambiguities", "maiden", "suffix"]
 
 [[change]]
@@ -2733,16 +2733,21 @@ issue = "fix(#533) the maiden clause reports the credential it keeps"
 # Doe nee Smith Ma', 'Jane Doe nee Yo-Yo Ma', 'Doe, Jane nee Smith
 # Ma'); a member that is the ONLY word after the marker stays the
 # maiden name whatever its writing says ('Jane Doe nee MA'); and
-# 'Doe, J. nee MA ba' is the CLAMP, whose roles this baseline already
-# reads the way the tree does -- maiden 'MA', suffix 'ba' -- so from
-# here the clamp is visible only as the report it raises.
+# 'Doe, J. nee MA ba' and 'Jane Doe nee King. ba' are the FLOOR's own
+# pair, whose roles this baseline already reads the way the tree does
+# -- maiden 'MA'/'King.', suffix 'ba' -- so from here the floor is
+# visible only as the report it raises. The floor keeps a chained
+# first word in the re-peel's count, which the parent's walk (it had
+# no chain at all) never removed it from in the first place; so #535
+# moves nothing here either, and the second name's whole diff is
+# #533's, exactly as the first's.
 #
 # Reporting a DECLINED fork is #530's stated rule -- the report
 # tracks the fork consulted, not the lean -- and it is why this is a
 # rule of its own rather than a widening of the one above: `fields`
 # is `_ambiguities` alone, so it cannot absorb a role diff on any of
-# the five.
-name_regex = "^(?:Doe, Dr\\. nee Smith MA|Doe, J\\. nee MA ba|Doe, Jane nee Smith Ma|Jane Doe nee MA|Jane Doe nee MA PhD|Jane Doe nee Smith DO DO|Jane Doe nee Smith Ma|Jane Doe nee Yo-Yo Ma)$"
+# the six.
+name_regex = "^(?:Doe, Dr\\. nee Smith MA|Doe, J\\. nee MA ba|Doe, Jane nee Smith Ma|Jane Doe nee MA|Jane Doe nee MA PhD|Jane Doe nee King\\. ba|Jane Doe nee Smith DO DO|Jane Doe nee Smith Ma|Jane Doe nee Yo-Yo Ma)$"
 fields = ["_ambiguities"]
 
 [[change]]
@@ -2958,6 +2963,90 @@ fields = ["_ambiguities", "maiden", "suffix"]
 # count decision and the both-sides scope, decisions.md#R3 the
 # criterion and its measured blast radius.
 # ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#399) a maiden marker bounds the particle chain that swallowed it, two trailing words"
+# 'Jane van der Berg nee Smith Prof.' moves {family, maiden} at this
+# baseline whether or not #535 exists -- verified against the parent
+# tree d9d80492, which already reads family 'van der Berg', maiden
+# 'Smith Prof.' identically to HEAD, before #535 touched anything.
+# It is the #399 rule's own shape: rules.md#P2: "a maiden marker
+# takes the words after it (M2), or the name ends" -- but the chain
+# here swallows the marker and BOTH trailing words before the maiden
+# consumer could see any of them, and the general rule's anchor takes
+# exactly one word after the marker (`\\sn[ée]e\\s+\\S+$`), so this
+# name's two-word clause needs its own literal rather than widening
+# that regex's reach past what its own review measured. #535 moves
+# nothing here.
+name_regex = "^Jane van der Berg nee Smith Prof\\.$"
+fields = ["family", "maiden"]
+
+[[change]]
+issue = "fix(#296/#535) a trailing title after a dropped postnominal Dr."
+# 'Jane Doe nee Prof. Dr.' moves {suffix, title} at this baseline for
+# two reasons together: this baseline still has 'dr' in the suffix
+# vocabulary (#296 had not run yet), so it reads suffix 'Dr.' --
+# rules.md#S2: "A trailing word of the suffix vocabulary reads as a
+# suffix" -- where the parent tree d9d80492, before #535, already
+# reads maiden 'Prof. Dr.' (dr having left the suffix vocabulary by
+# #296, so the clause keeps it as a name word). #535 then moves that
+# word on into `title`, returning maiden to 'Prof.' -- the SAME value
+# this baseline reads there, which is why `maiden` itself does not
+# move net baseline-to-HEAD even though it moves in between.
+# Literal-anchored for the reason fix(#533)'s rules give.
+name_regex = "^Jane Doe nee Prof\\. Dr\\.$"
+fields = ["suffix", "title"]
+
+[[change]]
+issue = "fix(#533/#535) a title in front of the credential the clause gives up"
+# 'Jane Doe nee Smith Prof. MA' moves at this baseline for two
+# reasons together: #533 already gives 'MA' up to the credential
+# reading and reports the fork (`suffix='MA'`, `maiden='Smith
+# Prof.'`, SUFFIX_OR_NAME -- rules.md#S2's ambiguity flag: "either
+# reading carries the ambiguity flag") before #535 exists -- verified
+# against the parent tree d9d80492, which already differs from this
+# baseline exactly that way. #535 then reads the trailing title chain
+# through the credential, so the title standing in front of 'MA'
+# leaves the maiden name too (`title='Prof.'`, `maiden='Smith'`).
+# Literal-anchored for the reason fix(#533)'s rules give.
+name_regex = "^Jane Doe nee Smith Prof\\. MA$"
+fields = ["_ambiguities", "maiden", "suffix", "title"]
+
+[[change]]
+issue = "fix(#535) a trailing title ends the maiden clause"
+# rules.md#M2: "Where a trailing rule reads the words, a trailing
+# title ends it too" -- the walk reads the end of the name through
+# the trailing title chain -- rules.md#H5: "successive single words
+# that wear the abbreviation shape and are title vocabulary chain
+# into the title from the end" -- so the title leaves the clause and
+# the credential or numeral in front of it gets the stop it gets with
+# the title absent; the pair 'Smith MA Prof.' / 'Smith Prof. MA' now
+# agrees. Literal-anchored for the reason fix(#533)'s rules give: the
+# subject is a SLOT, and a regex would claim the names whose view
+# check keeps the title as readily as the ones that release it. Three
+# names moved to their own rules above ('Jane van der Berg nee Smith
+# Prof.', 'Jane Doe nee Prof. Dr.', 'Jane Doe nee Smith Prof. MA'),
+# each because the parent tree d9d80492 already differed from this
+# baseline before #535 touched it; the seven names here are ones
+# where #535 is the sole cause, verified the same way.
+name_regex = "^(?:Doe, Jane nee Smith MA Prof\\.|Jane Doe \\x28nee Smith Prof\\.\\x29|Jane Doe nee Smith MA Prof\\.|Jane Doe nee Smith Ma Prof\\.|Jane Doe nee Smith Prof\\.|Jane Doe nee Smith V Prof\\.|Mary Smith née Jones Prof\\.)$"
+fields = ["_ambiguities", "maiden", "suffix", "title"]
+
+[[change]]
+issue = "fix(#411/#535) the numeral stop asks the join question"
+# 'Berg, abdul nee Smith V' moves at this baseline for two reasons
+# together: #411 (the bound-given reserve) already decides how much
+# of the tail the given join takes before #535 exists -- rules.md#P5:
+# "The marker and the words it will take are not among the words to
+# spare: they leave the name, so counting them asks the question
+# about a name that will not exist" -- verified against the parent
+# tree d9d80492, which already reads given 'abdul V', maiden 'Smith',
+# differing from this baseline's given 'abdul nee', middle 'Smith',
+# suffix 'V'. #535 then moves the released V from given back into
+# maiden (given 'abdul V' -> 'abdul', maiden 'Smith' -> 'Smith V').
+# Literal-anchored for the same SLOT reason fix(#533)'s rules give.
+name_regex = "^(?:Berg, abdul nee Smith V)$"
+fields = ["given", "middle", "suffix", "maiden"]
 
 [[change]]
 issue = "fix(#397) the Catalan/Polish link joins two surnames"

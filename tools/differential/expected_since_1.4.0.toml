@@ -4270,6 +4270,87 @@ name_regex = "^Jane Doe nee Smith X\\.Y\\.Z\\.$"
 fields = ["family", "maiden", "middle", "suffix"]
 
 [[change]]
+issue = "fix(#274) a trailing title after the marker with nothing else in the name"
+# 'Dr. nee Jones Smith Prof.' moves the same fields at this baseline
+# whether or not #535 exists: v1 has no maiden reading at all, so
+# 'nee' stays given text and 'Jones Smith Prof.' stays split across
+# middle/family -- the whole diff is #274's (maiden markers
+# consumed), and #535 moves NOTHING here (verified: the parent tree
+# d9d80492, before #535, already reads title 'Dr.', maiden 'Jones
+# Smith Prof.', identically to HEAD). Not folded into the '#274
+# maiden markers consumed' rule above because that rule's `fields`
+# lack `given`, which only this name's shape moves. Only a TITLE
+# precedes the marker here, so no name word is left standing ahead of
+# it, and it is this
+# absence, not the marker's own reading, that this rule's SLOT is
+# about. Literal-anchored for the reason fix(#533)'s rules give: that
+# SLOT is not a vocabulary a regex could describe more broadly.
+name_regex = "^Dr\\. nee Jones Smith Prof\\.$"
+fields = ["family", "given", "maiden", "middle"]
+
+[[change]]
+issue = "fix(#274/#296/#535) a trailing title after a dropped postnominal Dr., with no maiden reading either"
+# 'Jane Doe nee Prof. Dr.' moves at this baseline for two reasons v1
+# and 2.0.0/2.1.0 both still carry: v1 has no maiden reading at all
+# (#274, so it reads middle 'Doe nee' and last 'Prof.' where the
+# tree reads family 'Doe' and maiden 'Prof.') AND 'dr' is still suffix
+# vocabulary there (#296 had not yet run) -- rules.md#S2: "A trailing
+# word of the suffix vocabulary reads as a suffix" -- so this
+# baseline reads suffix 'Dr.' where the parent tree d9d80492, before
+# #535, already reads maiden 'Prof. Dr.' (dr having left the suffix
+# vocabulary by #296, so the clause keeps it as a name word). #535
+# then moves that word on into `title`, returning maiden to 'Prof.'.
+# `given` does NOT move (both read 'Jane'). Literal-anchored for the
+# reason fix(#533)'s rules give.
+name_regex = "^Jane Doe nee Prof\\. Dr\\.$"
+fields = ["family", "maiden", "middle", "suffix", "title"]
+
+[[change]]
+issue = "fix(#274/#535) a trailing title ends the maiden clause"
+# v1 has no maiden reading at all, so every one of these names' diff
+# from this baseline is #274's (maiden markers consumed) as well as
+# #535's (the title stop) -- verified against the parent tree
+# d9d80492: before #535, seven of these eight already differed from
+# 1.4.0 on exactly {family, maiden, middle}, and the eighth (the
+# family-comma one, 'Doe, Jane nee Smith MA Prof.') on exactly
+# {maiden, middle, suffix} instead -- `family` there already matches,
+# the comma having fixed it. #535 additionally moves `title` (and
+# `suffix` for the credential-bearing ones among the
+# seven). rules.md#M2: "Where a trailing rule reads the words, a
+# trailing title ends it too" -- the walk reads the end of the name
+# through the trailing title chain -- rules.md#H5: "successive
+# single words that wear the abbreviation shape and are title
+# vocabulary chain into the title from the end" -- so the title
+# leaves the clause and the credential or numeral in front of it gets
+# the stop it gets with the title absent; the pair 'Smith MA Prof.' /
+# 'Smith Prof. MA' now agrees. Literal-anchored for the reason
+# fix(#533)'s rules give: the subject is a SLOT, and a regex would
+# claim the names whose view check keeps the title as readily as the
+# ones that release it.
+name_regex = "^(?:Doe, Jane nee Smith MA Prof\\.|Jane Doe \\x28nee Smith Prof\\.\\x29|Jane Doe nee Smith MA Prof\\.|Jane Doe nee Smith Ma Prof\\.|Jane Doe nee Smith Prof\\.|Jane Doe nee Smith Prof\\. MA|Jane Doe nee Smith V Prof\\.|Mary Smith née Jones Prof\\.)$"
+fields = ["middle", "family", "title", "suffix", "maiden"]
+
+[[change]]
+issue = "fix(#411/#535) the numeral stop asks the join question"
+# 'Berg, abdul nee Smith V' reads IDENTICALLY at this baseline and at
+# 2.0.0 -- given 'abdul nee', middle 'Smith', family 'Berg', suffix
+# 'V' -- so #274 (v1 has no maiden reading) moves nothing here; this
+# name simply never exercises a maiden reading before #411 lands.
+# Two reasons together move it from this baseline to HEAD: the
+# bound-given reserve (#411) decides how much of the tail the given
+# join takes before #535 ever asks anything -- rules.md#P5: "The
+# marker and the words it will take are not among the words to
+# spare: they leave the name, so counting them asks the question
+# about a name that will not exist" -- and the parent tree d9d80492,
+# before #535, already reads given 'abdul V', maiden 'Smith',
+# differing from this baseline; #535 is what moves the released V
+# from given back into maiden (`given` 'abdul V' -> 'abdul', `maiden`
+# 'Smith' -> 'Smith V'). Literal-anchored for the same SLOT reason
+# fix(#533)'s rules give.
+name_regex = "^(?:Berg, abdul nee Smith V)$"
+fields = ["given", "middle", "suffix", "maiden"]
+
+[[change]]
 issue = "fix(#434/#533) a marker PHRASE takes the maiden name, and its clause ends at the credential"
 # 'Maria Kowalska z domu Nowak MA'. fix(#274)'s regex is the
 # n[ée]e/geb alternation and cannot reach a phrase entry at all --

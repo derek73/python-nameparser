@@ -421,7 +421,12 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     leave, where the acronym fork's piece COUNT no longer describes
     the name -- calls the `peel_walk` + `peel_trailing` pair this
     wraps and reads the half it wants (#533). A `numeral_only` flag
-    lived here for that one caller and cost it a frame."""
+    lived here for that one caller and cost it a frame. That caller is
+    now the NONE reader alone: every other reader's view check reads
+    the same pieces through `tail_reading` instead, which folds this
+    pair's peel together with H5's title chain to a fixed point
+    (#535 review) -- this function's own two forks stay true only
+    where no trailing rule's title chain also reads the pieces."""
     rest = peel_walk(start, ptags, skip)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
     return rest[peeled.names] if peeled.names < len(rest) else len(pieces)
@@ -446,9 +451,12 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
 # and the frame argument holds transitively because both of them ask
 # inline -- `AMBIGUOUS_ACRONYM_TAG in tok.tags` after a
 # `len(piece) == 1` at assign's given-part trailing slot, and the
-# same pair inside the `all(...)` of `_group.py`'s `_maiden_take`
-# view check. So no non-member piece reaches this function down that
-# route either.
+# same pair in `_group.py`'s `_release_reads_off` (its GIVEN_SLOT
+# branch) and in the acronym fork of `_maiden_take` (#535 review
+# folded the view check's own `all(...)` into the shared release
+# check, but the pre-check pair travelled with it rather than moving
+# into this function). So no non-member piece reaches this function
+# down that route either.
 def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     """`ambiguous_lean` for a LISTED bare-ambiguous token, or None if
     the token is not tagged a listed member, is admitted by SHAPE
@@ -471,13 +479,16 @@ def credential_at_the_given_slot(token: WorkToken,
     particle vocabulary reads as the credential on a POSITIVE lean
     alone, P6's attachment keeping every other spelling.
 
-    Two callers since #533 -- assign's walk over the given part, and
-    the maiden walk's second check over the name the take would leave
-    (rules.md#M2) -- so the reading is a function rather than a
-    condition written twice
-    (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It is a
-    text-and-tags question, which is what puts it in this module
-    rather than beside either caller.
+    Three call sites now: assign's walk over the given part;
+    `_release_reads_off`'s GIVEN_SLOT branch, the shared release check
+    every maiden-walk stop asks (rules.md#M2); and the acronym fork of
+    `_maiden_take`, asked of the member itself rather than the span
+    around it (#535 review split what used to be the maiden walk's one
+    second check into these last two). One function rather than a
+    condition written three times
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It is a text-and-tags
+    question, which is what puts it in this module rather than beside
+    any caller.
 
     The membership half of that contract is CHECKED rather than
     trusted, because getting it wrong is silent: all three of
@@ -597,7 +608,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 # WORD is while disagreeing, deliberately, about what a title SHAPE is.
 def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      ptags: Sequence[Set[str]],
-                     tokens: Sequence[WorkToken]) -> int:
+                     tokens: Sequence[WorkToken],
+                     floor: int = 1) -> int:
     """How many pieces of `rest` the trailing title chain LEAVES
     standing: `rest[:kept]` are the name pieces and `rest[kept:]` the
     period-marked title words the chain took, in piece order. Counted
@@ -631,7 +643,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     stops (decisions.md#parse-cost).
     """
     k = len(rest)
-    while k > 1:
+    while k > floor:
         idx = rest[k - 1]
         piece = pieces[idx]
         # no #323 veto on the shape here, unlike is_leading_title's:
@@ -647,6 +659,24 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     return k
 
 
+# rules.md#H5: "successive single words that wear the abbreviation
+# shape and are title vocabulary chain into the title from the end"
+# -- one word's half of that, for a caller asking it of a piece the
+# chain did not walk to: the maiden walk's release check, after a
+# family comma (#535). `trailing_titles` asks the same three tests
+# INLINE, in the same order, for the frame budget its docstring
+# states; keep the two in step.
+def is_trailing_title_word(piece: Sequence[int], ptags: Set[str],
+                           tokens: Sequence[WorkToken]) -> bool:
+    """Whether one piece is a word H5's trailing chain takes: a lone
+    token wearing the abbreviation shape that the title vocabulary
+    lists. Position is the caller's question -- this answers only
+    what the word is."""
+    return (len(piece) == 1
+            and _PERIOD_ABBREV.match(tokens[piece[0]].text) is not None
+            and is_title_piece(piece, ptags, tokens))
+
+
 # rules.md#H5: "the title is TRANSPARENT to the suffix reading: where
 # two or more name words stand, what stands once the chain is taken
 # reads exactly as it would read written without the title, plus the
@@ -655,6 +685,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   ptags: Sequence[Set[str]],
                   tokens: Sequence[WorkToken],
                   one_case: bool | None,
+                  floor: int = 1,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what
@@ -692,12 +723,21 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     rebinds this local -- so a caller's own reference still names the
     walk it built. Both callers read the one returned here instead,
     which is the one the final peel partitions.
+
+    `floor` is `trailing_titles`' own: how many leading positions of
+    `rest` the chain may never take. 1 everywhere but the maiden walk,
+    whose `rest` opens with the marker and whose FIRST word after it
+    stays the maiden name whatever it is (rules.md#M2) -- a chain that
+    took that word spliced it out of the count the re-peel reads, and
+    'Jane Doe nee King. ba' lost the suffix 'Jane Doe nee Smith ba'
+    keeps (#535 review). The splice only ever removes positions at or
+    past the floor, so the floor names the same pieces every pass.
     """
     titled: list[int] = []
     while True:
         peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
         kept = trailing_titles(rest[:peeled.names], pieces, ptags,
-                               tokens)
+                               tokens, floor)
         if kept == peeled.names:
             return rest, tuple(titled), peeled
         # the chain's pieces reach this list back to front, so each

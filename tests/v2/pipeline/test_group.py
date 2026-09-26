@@ -1987,3 +1987,83 @@ def test_a_frozen_link_is_still_absorbed_by_a_neighbours_join() -> None:
     assert out.family == "Puig y i"
     assert out.middle == "Carod Rovira"
     assert out.suffix == ""
+
+
+def test_the_title_stop_needs_a_name_word_left_standing() -> None:
+    """rules.md#M2 (#535): the title stop is asked over the name the
+    take would leave. 'Dr. nee Jones Smith Prof.' would leave 'Dr.
+    Prof.', where H5's chain has no name word to stand behind and the
+    title would read as the family name -- so the clause keeps it."""
+    out = _grouped("Dr. nee Jones Smith Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Jones", "Smith", "Prof."]
+    # the control: with a name word ahead of the marker the same clause
+    # gives the title up
+    ok = _grouped("Jane Doe nee Jones Smith Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Jones", "Smith"]
+
+
+def test_a_released_title_behind_a_particle_is_withdrawn() -> None:
+    """P2's chain runs on over a trailing title (rules.md#H5 Accepted),
+    so a title the clause gives up with a particle ahead of it in the
+    remaining name would join the family; the release is withdrawn."""
+    out = _grouped("Jane van der Berg nee Smith Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith", "Prof."]
+    out = _grouped("Jane Doe nee Smith MA do Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith", "MA", "do"]
+
+
+def test_the_numeral_stop_asks_the_join_question() -> None:
+    """The numeral fork never asked whether a join below the take
+    would absorb the word it releases: after a family comma the
+    bound-given join took the V ('Berg, abdul nee Smith V' read given
+    'abdul V' through 2.3.0). It asks now, through the shared check."""
+    out = _grouped("Berg, abdul nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith", "V"]
+    # the control: with no bound word the numeral is released as before
+    ok = _grouped("Berg, Jane nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Smith"]
+
+
+def test_the_first_word_floor_clamps_the_title_stop() -> None:
+    """A title straight after the marker stays the maiden name; where
+    the chain took it and words behind it, only the first stays."""
+    assert _maiden_texts(_grouped("Jane Doe nee King.", lexicon=Lexicon.default())) == ["King."]
+    assert _maiden_texts(_grouped("Jane Doe nee Prof. Dr.", lexicon=Lexicon.default())) == ["Prof."]
+
+
+def test_the_floor_keeps_the_first_word_in_the_chains_count() -> None:
+    """rules.md#M2 (#535 review): the floor lives in the chain now,
+    not in a clamp read after the fact -- the chain may not take the
+    first word after the marker, so the re-peel's count still holds
+    it and a trailing suffix behind a chained title reads as
+    'Jane Doe nee Smith ba' reads it."""
+    out = _grouped("Jane Doe nee King. ba", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["King."]
+    # the control: an unlisted first word gives the same count
+    ok = _grouped("Jane Doe nee Smith ba", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Smith"]
+
+
+def test_a_given_slot_numeral_with_a_credential_tail_stays() -> None:
+    """rules.md#M2/#144 (#535 review): after a family comma the given
+    slot reads a lone numeral as a suffix only where the given part is
+    the LAST comma part -- a third comma part behind it withdraws the
+    release, so 'Doe, Jane nee Smith V, PhD' keeps the V where
+    'Doe, Jane nee Smith V' (no tail) gives it up."""
+    out = _grouped("Doe, Jane nee Smith V, PhD", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith", "V"]
+    ok = _grouped("Doe, Jane nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Smith"]
+
+
+def test_the_bound_given_half_of_the_join_model_is_the_given_slots_alone() -> None:
+    """rules.md#P5 (#535 review): the LENIENT bound-given join only
+    applies after a family comma; before one the STRICT reserve
+    declines a join that would change a suffix reading, so a numeral
+    the peel already reads as a suffix stays given up -- 'abdul nee
+    Smith V' (no comma) keeps the release where 'Berg, abdul nee
+    Smith V' (after a comma) withdraws it."""
+    out = _grouped("abdul nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith"]
+    ok = _grouped("Berg, abdul nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Smith", "V"]

@@ -578,17 +578,20 @@ issue = "fix(#533) a credential ending a maiden clause reads as a credential"
 # `do` collision, where the capitals decide ('Doe, Jane nee Smith DO'
 # beside 'Jane Doe nee Smith do', whose comma-less spelling P6 never
 # reaches); the clause that leaves ONE name word, which rules.md#M4
-# makes the family ('John née Jones Smith MA'); and the CLAMP, where
+# makes the family ('John née Jones Smith MA'); and the FLOOR, where
 # the member is the only word the marker would otherwise leave and
 # only what stands BEHIND it is given up ('Doe, J. nee MA ba' keeps
-# maiden 'MA' and reads suffix 'ba').
+# maiden 'MA' and reads suffix 'ba'; 'Jane Doe nee King. ba' is the
+# same shape with a title-vocabulary first word -- this baseline's
+# own reading of it never split the credential at all, so the whole
+# diff is #533's and #535 moves nothing here).
 #
 # Literal-anchored for the reason fix(#531)'s rules give, and it is
 # the same reason here: the subject is a SLOT, so a regex for it
 # would claim the names whose WRITING declines the word -- which keep
 # their maiden reading and have the rule below -- as readily as the
 # ones it takes. _MUST_NOT_MATCH carries both directions.
-name_regex = "^(?:Doe, J\\. nee MA ba|Doe, Jane Q\\. nee Smith MA|Doe, Jane nee Smith DO|Doe, Jane nee Smith MA|Doe, Jane nee Smith ma|JANE DOE NEE SMITH MA|JANE DOE NEE YO-YO MA|Jane Doe geb\\. Smith MA|Jane Doe nee Smith MA|Jane Doe nee Smith MA JD|Jane Doe nee Smith MA PhD|Jane Doe nee Smith Ma JD|Jane Doe nee Smith Prof\\. MA|Jane Doe nee Smith V MA|Jane Doe nee Smith do|John née Jones Smith MA|Maria Kowalska z domu Nowak MA|jane doe nee smith ma)$"
+name_regex = "^(?:Doe, J\\. nee MA ba|Doe, Jane Q\\. nee Smith MA|Doe, Jane nee Smith DO|Doe, Jane nee Smith MA|Doe, Jane nee Smith ma|JANE DOE NEE SMITH MA|JANE DOE NEE YO-YO MA|Jane Doe geb\\. Smith MA|Jane Doe nee King\\. ba|Jane Doe nee Smith MA|Jane Doe nee Smith MA JD|Jane Doe nee Smith MA PhD|Jane Doe nee Smith Ma JD|Jane Doe nee Smith V MA|Jane Doe nee Smith do|John née Jones Smith MA|Maria Kowalska z domu Nowak MA|jane doe nee smith ma)$"
 fields = ["_ambiguities", "maiden", "suffix"]
 
 [[change]]
@@ -715,6 +718,72 @@ fields = ["_ambiguities", "maiden", "suffix"]
 # count decision and the both-sides scope, decisions.md#R3 the
 # criterion and its measured blast radius.
 # ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#533/#535) a title in front of the credential the clause gives up"
+# 'Jane Doe nee Smith Prof. MA' moves at this baseline for two
+# reasons together: #533 already gives 'MA' up to the credential
+# reading and reports the fork (`suffix='MA'`, `maiden='Smith
+# Prof.'`, SUFFIX_OR_NAME -- rules.md#S2's ambiguity flag: "either
+# reading carries the ambiguity flag") before #535 exists -- verified
+# against the parent tree d9d80492, which already differs from this
+# baseline exactly that way. #535 then reads the trailing title chain
+# through the credential, so the title standing in front of 'MA'
+# leaves the maiden name too (`title='Prof.'`, `maiden='Smith'`).
+# Literal-anchored for the reason fix(#533)'s rules give.
+name_regex = "^Jane Doe nee Smith Prof\\. MA$"
+fields = ["_ambiguities", "maiden", "suffix", "title"]
+
+[[change]]
+issue = "fix(#535) a trailing title ends the maiden clause"
+# rules.md#M2: "Where a trailing rule reads the words, a trailing
+# title ends it too" -- the walk reads the end of the name through
+# the trailing title chain -- rules.md#H5: "successive single words
+# that wear the abbreviation shape and are title vocabulary chain
+# into the title from the end" -- so the title leaves the clause and
+# the credential or numeral in front of it gets the stop it gets with
+# the title absent; the pair 'Smith MA Prof.' / 'Smith Prof. MA' now
+# agrees. Literal-anchored for the reason fix(#533)'s rules give: the
+# subject is a SLOT, and a regex would claim the names whose view
+# check keeps the title as readily as the ones that release it. One
+# name moved to its own rule above ('Jane Doe nee Smith Prof. MA'),
+# because the parent tree d9d80492 already differed from this
+# baseline before #535 touched it; the eight names here are ones
+# where #535 is the sole cause, verified the same way. ('Jane Doe nee
+# Prof. Dr.' and 'Jane van der Berg nee Smith Prof.' need no such
+# split at THIS baseline -- #296 and #399 both predate it, so this
+# baseline already reads them as HEAD does apart from #535's own move,
+# unlike at 2.0.0/2.1.0.)
+name_regex = "^(?:Doe, Jane nee Smith MA Prof\\.|Jane Doe \\x28nee Smith Prof\\.\\x29|Jane Doe nee Prof\\. Dr\\.|Jane Doe nee Smith MA Prof\\.|Jane Doe nee Smith Ma Prof\\.|Jane Doe nee Smith Prof\\.|Jane Doe nee Smith V Prof\\.|Mary Smith née Jones Prof\\.)$"
+fields = ["title", "maiden", "suffix", "_ambiguities"]
+
+[[change]]
+issue = "fix(#535) the numeral stop asks the join question"
+# rules.md#M2 (#535): the numeral stop now asks the join question
+# too -- released, the numeral was taken by the bound-given join
+# after a family comma and read as part of the given name
+# ('Berg, abdul nee Smith V' read given 'abdul V' at this
+# baseline and at the other 2.2/2.3 baseline, before #535 ever ran;
+# 2.0/2.1 read given 'abdul nee', suffix 'V' instead -- their own
+# copy of this rule is fix(#411/#535) for that reason).
+# Literal-anchored for the same SLOT reason fix(#533)'s rules give.
+name_regex = "^(?:Berg, abdul nee Smith V)$"
+fields = ["given", "maiden"]
+
+[[change]]
+issue = "fix(#535) a given-slot numeral with a credential tail stays"
+# 'Doe, Jane nee Smith V, PhD' moves {middle, maiden} at this
+# baseline: after a family comma the given slot reads a lone numeral
+# as a suffix only where the given part is the LAST comma part
+# (#144), asked of the maiden clause too since this review -- a third
+# comma part behind it withdraws the release, so the clause keeps 'V'
+# where it would otherwise give it up. Verified against the parent
+# tree d9d80492, which already reads middle 'V', maiden 'Smith'
+# exactly as this baseline does -- an M2 violation #535's own arc had
+# carried rather than caused, now fixed. Literal-anchored for the
+# same SLOT reason fix(#533)'s rules give.
+name_regex = "^Doe, Jane nee Smith V, PhD$"
+fields = ["middle", "maiden"]
 
 [[change]]
 issue = "fix(#397) the Catalan/Polish link joins two surnames"

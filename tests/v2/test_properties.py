@@ -497,6 +497,113 @@ def test_a_word_the_clause_gives_up_lands_in_suffix() -> None:
         f"name; the rest cannot exercise M2 at all")
 
 
+def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
+    """rules.md#H5's transparency, asked where #535 found it broken:
+    a maiden clause ending '<run> Prof.' and one ending 'Prof. <run>'
+    must read alike in every field but the order of the title words,
+    wherever a trailing rule reads the clause -- no comma, the part
+    before a suffix comma, the given part after a family comma.
+
+    An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so it
+    consults no rule statement. RECORDED NEGATIVE CONTROL: at e0f1a2fa,
+    before the walk read the chain, these 36 pairs disagreed on 72
+    fields ('Jane Doe nee Smith MA Prof.' read maiden 'Smith MA Prof.'
+    against 'Smith Prof.' and suffix 'MA').
+    """
+    forms = ("Jane Doe nee Smith {}", "Doe, Jane nee Smith {}",
+             "JANE DOE NEE SMITH {}", "jane doe nee smith {}",
+             "Prof. Jane Doe nee Smith {}", "Jane Doe nee Smith {}, PhD")
+    runs = ("MA", "V", "PhD", "Jr.", "MA JD", "M.A.")
+    failures = []
+    for form in forms:
+        for run in runs:
+            title = "Prof."
+            if form == form.upper():
+                run, title = run.upper(), title.upper()
+            elif form == form.lower():
+                run, title = run.lower(), title.lower()
+            a = parse(form.format(f"{run} {title}"))
+            b = parse(form.format(f"{title} {run}"))
+            for field in ("given", "middle", "family", "suffix", "maiden"):
+                if str(getattr(a, field)) != str(getattr(b, field)):
+                    failures.append(
+                        f"{form!r} {run!r} {field}: "
+                        f"{str(getattr(a, field))!r} vs "
+                        f"{str(getattr(b, field))!r}")
+            if sorted(str(a.title).split()) != sorted(str(b.title).split()):
+                failures.append(f"{form!r} {run!r} title")
+    assert not failures, "\n".join(failures)
+
+
+def test_a_title_the_clause_gives_up_lands_in_title() -> None:
+    """rules.md#M2's invariant for the title stop (#535): a
+    period-marked title word written after the marker ends the parse
+    in the maiden name or in the title field, never in a name part.
+
+    Over heads that reach every reader and every guard: no comma, a
+    suffix comma, the given part after a family comma, before a
+    family comma (NONE), a bare title head (the view check), a particle
+    head (the chain), a bound-given head (P5). It holds at e0f1a2fa too,
+    where the clause kept every title, so its control is a mutation:
+    RECORDED NEGATIVE CONTROL, the title stop's release check replaced
+    by `if True:` fails 54 tokens across 49 of these 160 texts.
+    """
+    heads = ("Jane Doe", "Doe, Jane", "Doe, Prof.", "Dr.", "J.",
+             "Jane van der Berg", "Berg, abdul", "Jane Doe, PhD")
+    bodies = ("Smith Prof.", "Smith MA Prof.", "Smith Prof. MA",
+              "Smith V Prof.", "Smith Ma Prof.", "Smith Prof. Dr.",
+              "Prof.", "Prof. Dr.", "Smith King.", "Smith MA do Prof.")
+    failures = []
+    for head in heads:
+        for body in bodies:
+            for text in (f"{head} nee {body}",
+                         f"{head} nee {body}".upper()):
+                name = parse(text)
+                marker = text.lower().index(" nee ") + 5
+                for tok in name.tokens:
+                    if (tok.span is not None and tok.span.start >= marker
+                            and "vocab:title" in tok.tags
+                            and tok.text.endswith(".")
+                            and tok.role not in (Role.MAIDEN, Role.TITLE)):
+                        failures.append(
+                            f"{text!r}: {tok.text!r} -> {tok.role.value}")
+    assert not failures, "\n".join(failures)
+
+
+def test_a_title_first_word_counts_as_a_word() -> None:
+    """rules.md#M2's first-word floor, over two INPUTS (#535 review):
+    the floor is the chain's own now (H5's `trailing_titles` takes it),
+    so whether the first word after the marker IS title vocabulary
+    ('King.') or not ('Smith') must not change what a trailing
+    credential behind it reads as -- the floor holds either word out
+    of the chain's count, so the credential is read the same way in
+    both.
+
+    An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so
+    it consults no rule statement. RECORDED NEGATIVE CONTROL, measured
+    2026-09-26: with the walk's chain allowed to take the first word
+    after the marker (no `floor`, the first-word floor applied instead
+    as a clamp on the title stop, `stop = max(min(chained), seen[m +
+    run + 1])`), 14 of these 30 pairs disagree -- 'Jane Doe nee King.
+    ba' read no suffix.
+    """
+    forms = ("Jane Doe nee {} {}", "Doe, Jane nee {} {}")
+    runs = ("ba", "MA", "V", "PhD", "MA JD")
+    heads = ("King.", "Smith")
+    failures = []
+    for form in forms:
+        for run in runs:
+            texts = [form.format(h, run) for h in heads]
+            for variant in (texts, [t.upper() for t in texts],
+                            [t.lower() for t in texts]):
+                a, b = (parse(t) for t in variant)
+                if str(a.suffix) != str(b.suffix):
+                    failures.append(
+                        f"{variant[0]!r} vs {variant[1]!r}: "
+                        f"{str(a.suffix)!r} vs {str(b.suffix)!r}")
+    assert not failures, "\n".join(failures)
+
+
 def test_no_two_ambiguities_name_the_same_token_span() -> None:
     """The maiden walk and assign's trailing peel both report at this
     class, and group's particle-chain emitter stands beside them. None

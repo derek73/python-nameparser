@@ -3713,34 +3713,210 @@ CASES: tuple[Case, ...] = (
          shape=1),
     Case("the_peel_never_reaches_a_title_behind_the_member",
          "Jane Doe nee Smith MA Prof.",
-         {"given": "Jane", "family": "Doe", "maiden": "Smith MA Prof."},
-         classification="fix(#274)",
-         ambiguities=(),
-         notes="the H5 BOUNDARY, recorded rather than fixed: the "
-               "maiden walk has always read peel_trailing alone, and "
-               "the trailing-title chain lives in tail_reading, which "
-               "trailing_start does not run -- so the peel breaks at "
-               "'Prof.' and never reaches the member behind it. This "
-               "change inherits that boundary rather than creating "
-               "it, and a follow-up carries the question of whether "
-               "the walk should move onto tail_reading (both forks, "
-               "numeral included). Silent, because nothing was asked",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "suffix": "MA", "maiden": "Smith"},
+         classification="fix(#535)",
+         ambiguities=("suffix-or-name",),
+         notes="the H5 boundary #533 recorded, now closed: the walk "
+               "reads the end of the name through the trailing-title "
+               "chain as assign does (tail_reading), so 'Prof.' is a "
+               "stop and no longer hides the member in front of it, "
+               "which the credential stop then gives up as it does in "
+               "'Jane Doe nee Smith MA'. The report is assign's peel "
+               "of 'MA'. 2.3.0 read maiden 'Smith MA Prof.'",
          shape=1),
     Case("a_title_in_front_of_the_member_is_the_other_spelling",
          "Jane Doe nee Smith Prof. MA",
-         {"given": "Jane", "family": "Doe", "suffix": "MA",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "suffix": "MA", "maiden": "Smith"},
+         classification="fix(#535)",
+         ambiguities=("suffix-or-name",),
+         notes="the pair is the finding, and it now AGREES: with the "
+               "title read as the chain reads it, 'Prof. MA' and "
+               "'MA Prof.' give one answer, as they do at the given "
+               "part's trailing slot (#531's 'Doe, John MA Prof.' / "
+               "'Doe, John Prof. MA') and in 'Jane Doe MA Prof.'. "
+               "2.3.0 read maiden 'Smith Prof. MA', no suffix",
+         shape=1),
+    Case("a_trailing_title_ends_the_maiden_clause",
+         "Jane Doe nee Smith Prof.",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "maiden": "Smith"},
+         classification="fix(#535)",
+         notes="rules.md#M2's title stop: a period-marked word the "
+               "trailing title chain takes (H5) ends the clause, as "
+               "'Jane Doe Prof.' reads the title. 2.3.0 read maiden "
+               "'Smith Prof.'",
+         shape=1),
+    Case("a_title_behind_the_numeral_hides_it_no_longer",
+         "Jane Doe nee Smith V Prof.",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "suffix": "V", "maiden": "Smith"},
+         classification="fix(#535)",
+         ambiguities=("suffix-or-name",),
+         notes="#424's numeral stop through the title: reads as "
+               "'Jane Doe nee Smith Prof. V' and as 'Jane Doe nee "
+               "Smith V' plus the title. 2.3.0 read maiden 'Smith V "
+               "Prof.'",
+         shape=1),
+    Case("a_declined_member_before_a_title_stays_and_reports",
+         "Jane Doe nee Smith Ma Prof.",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "maiden": "Smith Ma"},
+         classification="fix(#535)",
+         ambiguities=("suffix-or-name",),
+         notes="the writing declines 'Ma' as it does in 'Jane Doe nee "
+               "Smith Ma', and the clause now ENDS on it, so M2's "
+               "report of the member it keeps fires. 2.3.0 read maiden "
+               "'Smith Ma Prof.' and reported nothing",
+         shape=1),
+    Case("a_trailing_title_after_a_family_comma_clause",
+         "Doe, Jane nee Smith MA Prof.",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "suffix": "MA", "maiden": "Smith"},
+         classification="fix(#535)",
+         ambiguities=("suffix-or-name",),
+         notes="the given part's own slot reads the chain too "
+               "('Doe, Jane MA Prof.' gives title and suffix). 2.3.0 "
+               "read maiden 'Smith MA Prof.'",
+         shape=2),
+    Case("the_first_word_after_the_marker_stays_even_as_a_title",
+         "Jane Doe nee King.",
+         {"given": "Jane", "family": "Doe", "maiden": "King."},
+         notes="rules.md#M2's first-word floor covers the title stop: "
+               "the marker announced a name, and 'King.' is a borne "
+               "surname the title vocabulary also lists. Unchanged "
+               "from 2.3.0"),
+    Case("the_first_word_floor_is_a_clamp_for_titles_too",
+         "Jane Doe nee Prof. Dr.",
+         {"title": "Dr.", "given": "Jane", "family": "Doe",
+          "maiden": "Prof."},
+         classification="fix(#535)",
+         notes="the chain took both words; the floor keeps only the "
+               "first, as 'Doe, J. nee MA ba' keeps 'MA' and gives up "
+               "'ba'. 2.3.0 read maiden 'Prof. Dr.'"),
+    Case("a_title_stop_that_leaves_no_name_word_is_no_stop",
+         "Dr. nee Jones Smith Prof.",
+         {"title": "Dr.", "maiden": "Jones Smith Prof."},
+         notes="the view check: the take would leave 'Dr. Prof.', "
+               "where H5's chain has no name word to stand behind and "
+               "'Prof.' would be the family name, so the clause keeps "
+               "it. Unchanged from 2.3.0"),
+    Case("no_title_stop_before_a_family_comma",
+         "Doe nee Smith Prof., Jane",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith Prof."},
+         notes="before a family comma no trailing rule reads these "
+               "words ('Doe Prof., Jane' keeps family 'Doe Prof.'), so "
+               "there is no chain to consult and the clause keeps the "
+               "title. Unchanged from 2.3.0"),
+    Case("a_particle_ahead_would_chain_the_released_title",
+         "Jane van der Berg nee Smith Prof.",
+         {"given": "Jane", "family": "van der Berg",
           "maiden": "Smith Prof."},
+         notes="P2's chain runs on over a trailing title (rules.md#H5's "
+               "Accepted 'John van der Berg Prof.'), so releasing the "
+               "title would put it in the family; the clause keeps it. "
+               "Unchanged from 2.3.0"),
+    Case("a_numeral_the_bound_join_would_take_stays_maiden",
+         "Berg, abdul nee Smith V",
+         {"given": "abdul", "family": "Berg", "maiden": "Smith V"},
+         classification="fix(#535)",
+         notes="the numeral stop now asks M2's join question too: "
+               "released, the V was taken by the bound-given join "
+               "after the comma (P5) and read given 'abdul V' at "
+               "2.3.0 -- a word of the birth name in the current one"),
+    Case("a_period_final_bracket_reads_as_the_bare_clause",
+         "Jane Doe (nee Smith Prof.)",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "maiden": "Smith"},
+         classification="fix(#535)",
+         notes="rules.md#M2 Accepted: bracket content ending in a "
+               "period is not extracted, so the brackets drop and the "
+               "clause is read bare -- and the bare clause now gives "
+               "the title up. 2.3.0 read maiden 'Smith Prof.' for the "
+               "same reason the bare form did"),
+    Case("the_floor_keeps_the_first_word_out_of_the_chains_count",
+         "Jane Doe nee King. ba",
+         {"given": "Jane", "family": "Doe", "suffix": "ba",
+          "maiden": "King."},
          classification="fix(#533)",
          ambiguities=("suffix-or-name",),
-         notes="the boundary's other side, and the pair is the "
-               "finding: the two spellings DISAGREE here, where at "
-               "the given part's own trailing slot they agree "
-               "(#531's 'Doe, John MA Prof.' and 'Doe, John Prof. "
-               "MA' land on one answer). The peel reaches 'MA' "
-               "because nothing stands behind it, so the clause stops "
-               "and 'Prof.' stays maiden text. 1.4.0 read family "
-               "'Prof.', suffix 'MA'",
-         shape=1),
+         notes="2.3.0 read maiden 'King. ba' as it read 'Smith ba' -- "
+               "no credential stop before #533; the floor keeps the "
+               "first word in the chain-and-peel count, so the "
+               "reading #533 gave stands"),
+    Case("a_given_slot_numeral_with_a_credential_tail_stays",
+         "Doe, Jane nee Smith V, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD",
+          "maiden": "Smith V"},
+         classification="fix(#535)",
+         notes="rules.md#M2's given-slot reader declines the numeral "
+               "where a third comma part follows (#144's own "
+               "condition, asked of the maiden clause too): the given "
+               "part is not the LAST comma part, so the release is "
+               "withdrawn and the clause keeps 'V'. 2.3.0 read middle "
+               "'V', maiden 'Smith', suffix 'PhD' -- an M2 violation "
+               "predating #535, which had widened it onto 'Smith V "
+               "Prof., PhD' below rather than fixing it"),
+    Case("a_title_behind_that_numeral_still_stays",
+         "Doe, Jane nee Smith V Prof., PhD",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "suffix": "PhD", "maiden": "Smith V"},
+         classification="fix(#535)",
+         notes="the same third-comma-part decline reaches through the "
+               "title chain: the numeral stays maiden text and the "
+               "title behind it still leaves the clause. 2.3.0 read "
+               "maiden 'Smith V Prof.', suffix 'PhD', with no title at "
+               "all"),
+    Case("the_bound_given_join_is_the_given_slots_alone",
+         "abdul nee Smith V",
+         {"given": "abdul", "suffix": "V", "maiden": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="P5's bound-given join is LENIENT only after a family "
+               "comma; before one the STRICT reserve declines a join "
+               "that would change a suffix reading, so the release "
+               "here is not withdrawn and the clause gives 'V' up as "
+               "'Berg, abdul nee Smith V' does not. Unchanged from "
+               "2.3.0"),
+    Case("a_title_released_from_the_bound_given_pair",
+         "abdul nee Smith Dr.",
+         {"title": "Dr.", "family": "abdul", "maiden": "Smith"},
+         classification="fix(#535)",
+         notes="the same STRICT-reserve reading for a title behind the "
+               "bound word: 'Dr.' leaves the clause and 'abdul' reads "
+               "as the family the title stands in front of, as "
+               "'abdul Dr.' reads it bare. 2.3.0 read given 'abdul', "
+               "maiden 'Smith Dr.'"),
+    Case("a_numeral_straight_after_the_marker_declines_through_a_title",
+         "Jane Doe nee V Prof.",
+         {"title": "Prof.", "given": "Jane", "middle": "Doe",
+          "family": "nee", "suffix": "V"},
+         classification="fix(#535)",
+         ambiguities=("suffix-or-name",),
+         notes="the numeral stop reads FROM the marker by design, "
+               "unlike the credential and title stops, so a numeral "
+               "standing straight after it declines the clause "
+               "outright rather than sparing the word -- as 'Jane "
+               "Smith née V' does bare (rules.md#M2) -- and the title "
+               "behind the numeral then reads the declined name as "
+               "'Jane Doe nee V' plus the title would. 2.3.0 read "
+               "maiden 'V Prof.'"),
+    Case("a_title_behind_a_tail_bound_numeral_keeps_both",
+         "Doe, Jane nee Smith Prof. V, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD",
+          "maiden": "Smith Prof. V"},
+         classification="fix(#535)",
+         notes="NOT the transparent twin of 'Doe, Jane nee Smith V "
+               "Prof., PhD' (title 'Prof.', maiden 'Smith V'): the "
+               "third comma part's credential tail withdraws the "
+               "numeral's release before the title chain is ever "
+               "asked, so this spelling never reaches H5 at all and "
+               "the title stays maiden text behind the numeral. The "
+               "same asymmetry is the bare given slot's own, with no "
+               "marker in it -- 'Doe, Jane Prof. V, PhD' reads middle "
+               "'Prof. V' (no title) where 'Doe, Jane V Prof., PhD' "
+               "reads title 'Prof.', middle 'V'. 2.3.0 read middle "
+               "'V', maiden 'Smith Prof.'"),
     Case("a_connective_behind_the_member_stops_the_peel",
          "Jane Doe nee Smith MA y",
          {"given": "Jane", "family": "Doe", "maiden": "Smith MA y"},
@@ -7620,16 +7796,15 @@ CASES: tuple[Case, ...] = (
                "2026-09-09)"),
     Case("title_word_trailing_after_a_maiden_take",
          "Mary Smith née Jones Prof.",
-         {"given": "Mary", "family": "Smith", "maiden": "Jones Prof."},
-         classification="fix(#274)",
-         notes="negative control for the trailing walk, and rules.md#"
-               "H5's M2 boundary: M2's take runs to the name's end "
-               "and the title is inside what it takes, so no title "
-               "word is in trailing position at all. Unchanged by "
-               "#316/#489 -- master reads the same (measured "
-               "2026-09-09). 1.4.0 had no maiden support and read "
-               "first 'Mary' / middle 'Smith née Jones' / last "
-               "'Prof.'"),
+         {"title": "Prof.", "given": "Mary", "family": "Smith",
+          "maiden": "Jones"},
+         classification="fix(#535)",
+         notes="rules.md#H5's M2 boundary, removed by #535: the maiden "
+               "walk now reads the trailing title chain, so the title "
+               "ends the clause and reads as 'Mary Smith Prof.' would "
+               "read it. 2.3.0 read maiden 'Jones Prof.'; 1.4.0 had no "
+               "maiden support and read first 'Mary' / middle 'Smith "
+               "née Jones' / last 'Prof.'"),
     Case("title_word_trailing_ahead_of_a_maiden_marker",
          "Mary Jones Prof. née Smith",
          {"title": "Prof.", "given": "Mary", "family": "Jones",
