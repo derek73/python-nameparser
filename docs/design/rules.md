@@ -1039,6 +1039,12 @@ S2. Rationale: generational suffixes and credentials are recognized
       "JACK MA"                   →  family="MA"
       "JOHN SMITH MA"             →  suffix="MA"
       "John Smith Ma"             →  family="Ma"
+      "wang meng"                 →  family="meng"  · boundary
+      "tran lac"                  →  family="lac"
+      "john smith meng"           →  suffix="meng"
+      "john smith MEng"           →  family="MEng"
+      "Nguyen Van Lac"            →  family="Van Lac"
+      "Wang M.Eng."               →  family="M.Eng."
       "Smith, MA"                 →  suffix="MA"
       "Smith, Ma"                 →  given="Ma"
       "Doe, John MA"              →  suffix="MA"

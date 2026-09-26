@@ -3091,17 +3091,22 @@ issue = "fix(#385/#402) an all-particle name part initials its words (R2)"
 # 1.4.0 contributed nothing for such a part ('Anh Do' -> 'A.'; the
 # tree gives 'A. D.'). The fields did not move, only the view, which
 # is why no rule could classify this until #484 gave the gate an
-# initials column. Reach exactly the 28 names that move (25 spellings,
-# three of them case variants), listed literally rather than shaped
-# -- 'anh van mc' joined on 2026-09-18 with the case row that
-# admitted it to the corpus, the unambiguous-vocabulary twin of the
-# 'anh van do' already here:
+# initials column. Reach exactly the names that move, listed
+# literally rather than shaped (31 corpus names over 26 spellings on
+# 2026-09-25; _CORPUS_CLAIMS holds the live reach) -- 'anh van mc'
+# joined on 2026-09-18 with the case row that admitted it to the
+# corpus, the unambiguous-vocabulary twin of the 'anh van do' already
+# here, and 'nguyen van lac' on 2026-09-25 with #540's, its family
+# 'van' a one-particle part whose initial 1.4.0 dropped ('n.' ->
+# 'n. v.'), which is this rule's reason and not #540's -- the
+# case-insensitive regex reaches the later Title-case 'Nguyen Van
+# Lac' too, one spelling for two corpus names:
 # the shape is "a part of nothing but particles", which no regex over
 # the raw string can state, and the fix(#445) rule above set the
 # precedent for a name list in THIS ledger (fix(#410) and fix(#335)
 # are two more). 'de los Santos' is NOT here: its
 # initials moved for a different reason (the rule below).
-name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|anh van mc|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen, van le|van berg jan de)$"
+name_regex = "(?i)^(?:anh do|smith van der|yin le|yin a le|vai la|jong van der|jong, van der|juan van der|mesnil garcia de|mesnil garcia van|mesnil de|sander van|van ma van|anh van do|anh van mc|beethoven ludwig van|berg jan de jr\\.|john van mc|jong anke de|juan de|ménil christophe de|ménil de|nguyen thi van|nguyen van lac|nguyen, van le|van berg jan de)$"
 fields = ["_initials"]
 orders = ["DEFAULT"]
 
@@ -4390,3 +4395,97 @@ issue = "change(suffix-acronym-collisions) ph leaves the acronym set"
 # unexplained here by design: widen this rule to it, do not file it.
 name_regex = "^John Smith Ph\\.$"
 fields = ["family", "middle", "suffix"]
+
+# ---------------------------------------------------------------
+# #540: MENG AND LAC ARE AMBIGUOUS CREDENTIAL ACRONYMS. Four rules here
+# where the 2.x ledgers carry eight. 'wang meng' and 'tran lac' read the
+# family at 1.4.0 as the tree does, 'Smith, meng' and 'Smith, MEng' read
+# the given name the same way, and 'john smith meng' and 'nguyen van lac'
+# keep 1.4.0's suffix -- their only new thing is a report, and
+# `_ambiguities` is a v2 surface this baseline does not compare. ('nguyen
+# van lac' does diff here, on `_initials`, for fix(#385/#402)'s reason,
+# and that rule's list carries it; the Title-case 'Nguyen Van Lac'
+# reaches that same rule too, case-insensitively, but its role move is
+# explained by the Title-case Lac rule below instead.) 'Wang M.Eng.'
+# also reads the family here, for an unrelated reason -- its two-piece
+# rule (a lone word after the given name is the family), not S2's
+# gate -- which is why that rule is 2.x only. What is left is four
+# rules: the marking's cost, paid twice
+# (once bare behind a full name, once after a family comma), the same
+# cost arriving as a credential run behind a suffix comma, and the
+# Title-case Lac gain that is the cost's mirror.
+# decisions.md#suffix-acronym-collisions records the decision.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#540) accepted: a mixed-case MEng behind a full name reads as the family name"
+# 'john smith MEng': given 'john', middle 'smith', family 'MEng',
+# where 1.4.0 read suffix 'MEng'. In a name written in more than one
+# case rules.md#S2 reads a member "written in any other cased form
+# that is not wholly lower" as the name "even with words to spare",
+# and MEng is conventionally written in exactly that form. The same
+# rule as the 2.x ledgers' of this name, without `_ambiguities`.
+#
+# 'John Smith MEng PhD' pays the same cost and keeps going: the
+# declined pick stops the walk (family 'MEng'), but the unambiguous
+# credential behind it is still peeled (suffix 'PhD'), where 1.4.0
+# read suffix 'MEng, PhD'.
+#
+# Literal, two names; the one-case spellings are _MUST_NOT_MATCH
+# probes.
+name_regex = "^(?:John Smith MEng PhD|john smith MEng)$"
+fields = ["family", "middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) accepted: a mixed-case MEng after a family comma reads as a middle name"
+# 'Smith, John MEng': given 'John', middle 'MEng', family 'Smith',
+# where 1.4.0 read suffix 'MEng'. The same S2 case reading the rule
+# above pins, arriving after a family comma, where C1 has already
+# settled the word count and the writing is the only evidence left.
+#
+# Literal, one name; 'John Smith, MEng' keeps the suffix on C1's
+# name-word count, and the all-lower 'Smith, John meng' keeps the
+# credential too -- both are _MUST_NOT_MATCH probes.
+name_regex = "^Smith, John MEng$"
+fields = ["middle", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) accepted: a credential run behind a suffix comma that ends in meng re-reads the comma as a family comma"
+# 'John Smith, PhD MEng' and 'john smith, phd meng': a credential run
+# behind a suffix comma is no longer wholly suffix-shaped once its last
+# word is a bare ambiguous member, so C1 reads the comma as a family
+# comma instead and the run's own words fall into the usual post-comma
+# name slots. 'John Smith, PhD MEng' gives given 'PhD', middle 'MEng',
+# family 'John Smith'; 'john smith, phd meng' gives given 'phd',
+# family 'john smith', suffix 'meng' (the count then peels 'meng'
+# with a word to spare). 1.4.0 read the whole run as a suffix. The
+# pre-existing 'john smith, phd ma' path, which #540 routes two more
+# words into; #544 asks whether the run should keep its comma.
+#
+# Literal, two names, fields the union of what each moves ('middle' is
+# the first name's alone -- the OVER-DECLARED check accepts a field
+# that at least one explained name moves). Probes: 'John Smith, MEng'
+# (a lone credential after the comma keeps the suffix, C1's count) and
+# 'John Smith, PhD' (a lone credential of the other shape, also kept)
+# are _MUST_NOT_MATCH, along with the superstring 'Dr. John Smith, PhD
+# MEng'.
+name_regex = "^(?:John Smith, PhD MEng|john smith, phd meng)$"
+fields = ["given", "middle", "family", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) a Title-case Lac behind a particle is the family name"
+# 'Nguyen Van Lac': given 'Nguyen', family 'Van Lac', where 1.4.0 read
+# family 'Van', suffix 'Lac'. The mixed-case name's Title-case member
+# leans 'name' with words to spare (S2) -- the gain side of the
+# marking's cost, for a Vietnamese name (Lac is the trailing word in
+# native order, Nguyen Van Lac).
+#
+# Literal, one name; the all-lower 'nguyen van lac' keeps its 1.4.0
+# suffix and is a _MUST_NOT_MATCH probe, along with the superstring
+# 'Dr. Nguyen Van Lac'.
+name_regex = "^Nguyen Van Lac$"
+fields = ["family", "suffix"]
+orders = ["DEFAULT"]

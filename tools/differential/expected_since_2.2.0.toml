@@ -1651,3 +1651,181 @@ issue = "change(suffix-acronym-collisions) ph leaves the acronym set"
 # unexplained here by design: widen this rule to it, do not file it.
 name_regex = "^John Smith Ph\\.$"
 fields = ["family", "middle", "suffix"]
+
+# ---------------------------------------------------------------
+# #540: MENG AND LAC ARE AMBIGUOUS CREDENTIAL ACRONYMS. Eight rules
+# -- the two names whose family name comes back, the marking's
+# cost behind a full name, the same cost after a family comma, the
+# lone word after a family comma (given name back, cost for the
+# conventional spelling), the same cost arriving as a credential
+# run behind a suffix comma, the chunked dotted M.Eng. cost, the
+# Title-case Lac gain that is the cost's mirror, and the two that
+# keep the credential and gain a report. No rule of the parser
+# changed: the two words joined suffix_acronyms_ambiguous, and
+# rules.md#S2 reads them as it reads 'ma' and 'ba' -- "A BARE
+# ambiguous acronym is consumed only when the name has words to
+# spare". decisions.md#suffix-acronym-collisions records the
+# decision, and the removal and the masks it declined.
+#
+# Every name here is one of #540's own shape-tagged case rows. No
+# corpus name written before the change carried a bare trailing
+# 'meng' or 'lac' (measured 2026-09-25 over the corpus glob at
+# 120033b5), so the gate saw nothing until the rows admitted it.
+# One set of eight rules for the four 2.x ledgers; the 1.4.0
+# ledger carries four of them (every rule but the family-comes-back
+# one, the lone-word one, the dotted one and the report one), 1.4.0
+# having read the other seven names' roles as the tree does.
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#540) meng and lac are ambiguous credential acronyms, so a bare trailing Meng or Lac with no words to spare is the family name"
+# 'wang meng' and 'tran lac': given 'wang', family 'meng' (and
+# 'tran', 'lac') with a suffix-or-name report, where this baseline
+# read suffix 'meng' and no family name at all -- reporting nothing
+# at 2.0.0 through 2.2.0, and given-or-family at 2.3.0, the
+# one-word-name fork, which was the wrong fork. 1.4.0 read the
+# family, which is why that ledger has no copy of this rule.
+#
+# Literal-anchored to the two names. The class is every name whose
+# last word is a bare member with nothing to spare, and a regex for
+# it would stand ready to explain a regression on the spellings that
+# did not move; _MUST_NOT_MATCH in tests/v2/test_ledger_guards.py
+# carries 'meng li', where the word LEADS and nothing moved. The
+# members are names, not a copy of any wordlist, which is what
+# _NOT_A_VOCABULARY_COPY records.
+name_regex = "^(?:tran lac|wang meng)$"
+fields = ["family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) accepted: a mixed-case MEng behind a full name reads as the family name"
+# 'john smith MEng': given 'john', middle 'smith', family 'MEng', with
+# a suffix-or-name report, where every release read suffix 'MEng'.
+# The marking's stated cost. In a name written in more than one case
+# rules.md#S2 reads a member "written in any other cased form that is
+# not wholly lower" as the name "even with words to spare", and MEng
+# and LAc are conventionally written in exactly that form -- the cost
+# 'John Smith Ma' already carries.
+#
+# 'John Smith MEng PhD' pays the same cost and keeps going: the
+# declined pick stops the walk (family 'MEng'), but the unambiguous
+# credential behind it is still peeled (suffix 'PhD'), where every
+# release read suffix 'MEng PhD' ('MEng, PhD' through 2.2).
+#
+# A rule of its own rather than a member of the one above, so the
+# gate's summary and the release note name the cost under its own
+# heading. Literal, two names: the one-case spellings 'john smith
+# meng' and 'JOHN SMITH MENG' keep the credential, the count deciding
+# where the writing says nothing, and are _MUST_NOT_MATCH probes.
+name_regex = "^(?:John Smith MEng PhD|john smith MEng)$"
+fields = ["family", "middle", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) accepted: a mixed-case MEng after a family comma reads as a middle name"
+# 'Smith, John MEng': given 'John', middle 'MEng', family 'Smith',
+# with a suffix-or-name report, where every release read suffix
+# 'MEng'. The same S2 case reading the rule above pins, arriving
+# after a family comma, where C1 has already settled the word count
+# and the writing is the only evidence left.
+#
+# Literal, one name; 'John Smith, MEng' keeps the suffix on C1's
+# name-word count, and the all-lower 'Smith, John meng' keeps the
+# credential too -- both are _MUST_NOT_MATCH probes.
+name_regex = "^Smith, John MEng$"
+fields = ["middle", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) a lone meng or MEng after a family comma reads as the given name"
+# 'Smith, meng' and 'Smith, MEng': given 'meng'/'MEng', family
+# 'Smith', with a suffix-or-name report, where this baseline read
+# suffix and no given name at all -- the third comma path, S2
+# declining the post-comma credential when the word count leaves it
+# a name and C1 reading it as the given name. 1.4.0 already read
+# the given name here, so that ledger carries no copy of this rule:
+# the all-lower spelling restores 1.4.0's reading, and the
+# mixed-case spelling is the cost side of the same path.
+#
+# Literal, two names; 'Smith, MENG' keeps the credential on the
+# capitals lean, and 'Smith, John MEng' belongs to the middle-name
+# rule above -- both are _MUST_NOT_MATCH probes.
+name_regex = "^Smith, (?:MEng|meng)$"
+fields = ["given", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) a bare trailing meng or lac with words to spare stays the credential and reports the fork"
+# 'john smith meng' and 'nguyen van lac': every role is what this
+# baseline read -- suffix 'meng', suffix 'lac' -- because a full name
+# in front leaves the credential reading available, and what is new
+# is the report rules.md#S2 makes at the trailing slot, where "either
+# reading carries the ambiguity flag". `_ambiguities` alone, so this
+# rule cannot absorb a ROLE diff on either name, which is the point
+# of keeping it apart from the two above.
+name_regex = "^(?:john smith meng|nguyen van lac)$"
+fields = ["_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) accepted: a credential run behind a suffix comma that ends in meng re-reads the comma as a family comma"
+# 'John Smith, PhD MEng' and 'john smith, phd meng': a credential run
+# behind a suffix comma is no longer wholly suffix-shaped once its last
+# word is a bare ambiguous member, so C1 reads the comma as a family
+# comma instead and the run's own words fall into the usual post-comma
+# name slots. 'John Smith, PhD MEng' gives given 'PhD', middle 'MEng',
+# family 'John Smith'; 'john smith, phd meng' gives given 'phd',
+# family 'john smith', suffix 'meng' (the count then peels 'meng'
+# with a word to spare). Every release read the whole run as a suffix.
+# The pre-existing 'john smith, phd ma' path, which #540 routes two
+# more words into; #544 asks whether the run should keep its
+# comma.
+#
+# Literal, two names, fields the union of what each moves ('middle' is
+# the first name's alone -- the OVER-DECLARED check accepts a field
+# that at least one explained name moves). Probes: 'John Smith, MEng'
+# (a lone credential after the comma keeps the suffix, C1's count) and
+# 'John Smith, PhD' (a lone credential of the other shape, also kept)
+# are _MUST_NOT_MATCH, along with the superstring 'Dr. John Smith, PhD
+# MEng'.
+name_regex = "^(?:John Smith, PhD MEng|john smith, phd meng)$"
+fields = ["given", "middle", "family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) a Title-case Lac behind a particle is the family name"
+# 'Nguyen Van Lac': given 'Nguyen', family 'Van Lac', with a
+# suffix-or-name report, where every release read family 'Van', suffix
+# 'Lac'. The mixed-case name's Title-case member leans 'name' with
+# words to spare (S2) -- the gain side of the marking's cost, for a
+# Vietnamese name (Lac is the trailing word in native order, Nguyen
+# Van Lac).
+#
+# Literal, one name; the all-lower 'nguyen van lac' keeps the suffix
+# (the words-to-spare rule above) and is a _MUST_NOT_MATCH probe,
+# along with the superstring 'Dr. Nguyen Van Lac'.
+name_regex = "^Nguyen Van Lac$"
+fields = ["family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#540) accepted: a chunked dotted M.Eng. with nothing to spare is the family name"
+# 'Wang M.Eng.': given 'Wang', family 'M.Eng.', with a suffix-or-name
+# report, where every release from 2.0.0 read suffix 'M.Eng.' with no family name.
+# S2's period gate counts a member as unambiguous only when it is
+# written one period per letter ('M.A.'), and MEng and LAc are the
+# first members whose conventional dotted spelling is chunked instead,
+# so 'M.Eng.' with nothing to spare reads as the ambiguous bare word
+# does and the family name comes back. Accepted and recorded rather
+# than widening the period gate (Derek, 2026-09-25); 1.4.0 already read
+# this family, unflagged, for an unrelated reason (its two-piece rule:
+# a lone word after the given name is the family), so that ledger
+# carries no copy of this rule.
+#
+# Literal, one name; 'John Smith M.Eng.' keeps the suffix by the count
+# (words to spare) and 'Wang M.A.' keeps the suffix too (M.A. passes
+# the period gate, unaffected by this change) -- both are
+# _MUST_NOT_MATCH probes, along with the superstring 'Dr. Wang M.Eng.'.
+name_regex = "^Wang M\\.Eng\\.$"
+fields = ["family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]

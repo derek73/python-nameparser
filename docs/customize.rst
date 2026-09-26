@@ -228,9 +228,9 @@ Words that are also ordinary names
 Three fields — ``suffix_acronyms_ambiguous``, ``particles_ambiguous``
 and ``conjunctions_ambiguous`` — mark entries from ``suffix_acronyms``,
 ``particles`` and ``conjunctions`` that are also plausible as ordinary
-name words on their own (an acronym suffix that doubles as a nickname,
-a particle that doubles as a given name, a connective letter that
-doubles as an initial). They don't add new vocabulary by themselves;
+name words on their own (an acronym suffix that is also
+borne as a name, a particle that doubles as a given name, a connective
+letter that doubles as an initial). They don't add new vocabulary by themselves;
 they narrow how an existing
 entry is read when it appears alone. If you're not sure whether a word
 you're adding is one of these ambiguous cases, weigh how often it is a
