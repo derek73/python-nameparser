@@ -63,7 +63,6 @@ joined unit carrying title vocabulary.
 """
 from __future__ import annotations
 
-import dataclasses
 from collections.abc import Sequence, Set
 from typing import NamedTuple
 
@@ -78,7 +77,7 @@ from nameparser._pipeline._pieces import (
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
-    WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED,
+    WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
 from nameparser._policy import Policy, Script
 from nameparser._types import AmbiguityKind, Role
@@ -86,7 +85,7 @@ from nameparser._types import AmbiguityKind, Role
 def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
                role: Role) -> None:
     for i in piece:
-        tokens[i] = dataclasses.replace(tokens[i], role=role)
+        tokens[i] = copy_with(tokens[i], role=role)
 
 
 #: Tags that say the word's own reading was claimed before position
@@ -672,7 +671,7 @@ def assign(state: ParseState) -> ParseState:
             #: reads `.role`, verified by reading all three
             #: (2026-09-19). The one thing this segment's code rewrites
             #: between the two passes is the role, through `_set_roles`,
-            #: which is a `dataclasses.replace(role=...)` and leaves
+            #: which is a `copy_with(role=...)` and leaves
             #: text and tags identical.
             floors: dict[tuple[int, ...], tuple[int, bool]] = {}
 
@@ -1024,6 +1023,6 @@ def assign(state: ParseState) -> ParseState:
     for seg_idx in range(tail, len(state.segments)):
         for piece in state.pieces[seg_idx]:
             _set_roles(tokens, piece, Role.SUFFIX)
-    return dataclasses.replace(state, tokens=tuple(tokens),
+    return copy_with(state, tokens=tuple(tokens),
                                order=order,
                                ambiguities=tuple(ambiguities))

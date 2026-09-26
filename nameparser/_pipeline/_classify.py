@@ -49,12 +49,11 @@ is what lets the fork be reported without being taken.
 """
 from __future__ import annotations
 
-import dataclasses
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
-    WorkToken,
+    WorkToken, copy_with,
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
@@ -264,7 +263,7 @@ def classify(state: ParseState) -> ParseState:
     # class they consult. No extra frame -- it is one more boolean in a
     # comprehension that already walks every token.
     tokens = tuple(
-        dataclasses.replace(
+        copy_with(
             t, tags=_tags_for(t, folded[i], state, marker_tags.get(i),
                               one_case_own=one_case and i < clause_at
                               and t.role is None, one_case=one_case))
@@ -324,6 +323,6 @@ def classify(state: ParseState) -> ParseState:
                 (i,)))
     # The write rides the replace this stage already makes, so
     # recording the fact costs no frame of its own.
-    return dataclasses.replace(state, tokens=tokens,
+    return copy_with(state, tokens=tokens,
                                ambiguities=tuple(ambiguities),
                                one_case=one_case)

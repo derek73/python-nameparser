@@ -15,11 +15,10 @@ original exactly as given (v1 contrast: decisions.md#T1).
 from __future__ import annotations
 
 import bisect
-import dataclasses
 import re
 
 from nameparser._pipeline._state import (
-    COMMA_CHARS, ParseState, WorkToken,
+    COMMA_CHARS, ParseState, WorkToken, copy_with,
 )
 from nameparser._policy import Policy, _SCRIPT_RANGES, _script_matcher
 from nameparser._types import Role, Span
@@ -189,9 +188,9 @@ def tokenize(state: ParseState) -> ParseState:
 
         ambiguities = tuple(
             a if a.origin is None
-            else dataclasses.replace(a, indices=_containing(a.origin))
+            else copy_with(a, indices=_containing(a.origin))
             for a in ambiguities)
-    return dataclasses.replace(state, tokens=tuple(tokens),
+    return copy_with(state, tokens=tuple(tokens),
                                comma_offsets=tuple(sorted(commas)),
                                interpunct_offsets=tuple(sorted(interpuncts)),
                                ambiguities=ambiguities)

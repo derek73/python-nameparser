@@ -11,14 +11,57 @@ tests/v2/test_layering.py).
 from __future__ import annotations
 
 import bisect
+import dataclasses
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum, auto
+from typing import TypeVar
 
 from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
 from nameparser._types import (SHAPE_ACRONYM_TAG, AmbiguityKind,
                                Role, Segmenter, Span)
+
+
+_T = TypeVar("_T")
+
+#: Field names per class, recorded the first time `copy_with` copies one.
+_COPY_FIELDS: dict[type, tuple[str, ...]] = {}
+
+
+def copy_with(obj: _T, /, **changes: object) -> _T:
+    """`dataclasses.replace` for the pipeline's own dataclasses, without
+    its per-call cost.
+
+    Every stage returns a copy of the state, and several copy tokens one
+    at a time, so this runs many times per parse. The stdlib replace
+    walks `fields()` and goes through `__init__` on every call; for a
+    class whose `__init__` only assigns its fields, copying the fields
+    directly gives the same object. `_copy_fields` checks that once per
+    class and refuses any class where it would not hold
+    (decisions.md#parse-cost has the measurement).
+    """
+    cls = type(obj)
+    names = _COPY_FIELDS.get(cls) or _copy_fields(cls)
+    new = object.__new__(cls)
+    for name in names:
+        value = changes.pop(name) if name in changes else getattr(obj, name)
+        object.__setattr__(new, name, value)
+    if changes:
+        raise TypeError(
+            f"{cls.__name__} has no field named {', '.join(sorted(changes))}")
+    return new
+
+
+def _copy_fields(cls: type) -> tuple[str, ...]:
+    params = getattr(cls, "__dataclass_params__", None)
+    if (params is None or not params.init or hasattr(cls, "__post_init__")
+            or not all(f.init for f in dataclasses.fields(cls))):
+        raise TypeError(
+            f"copy_with cannot copy {cls.__name__}: it needs a dataclass "
+            "whose generated __init__ only assigns its fields")
+    names = _COPY_FIELDS[cls] = tuple(f.name for f in dataclasses.fields(cls))
+    return names
 
 
 # The comma characters (ASCII/Arabic/fullwidth, #265). Shared here so
@@ -126,7 +169,7 @@ class PendingAmbiguity:
 @dataclass(frozen=True, slots=True)
 class ParseState:
     """Carried through the stage fold. Frozen; stages return copies via
-    dataclasses.replace. Fields are filled progressively:
+    copy_with. Fields are filled progressively:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
     sorted)/comma_offsets/interpunct_offsets (the 间隔号 offsets the
     order and segmentation decisions consult, #298; the nakaguro
