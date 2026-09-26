@@ -4290,7 +4290,8 @@ fields = ["family", "maiden", "middle"]
 
 # #397 review: A LINK INSIDE A MAIDEN CLAUSE STAYS IN THE BIRTH NAME
 # (2026-09-20; a third rule added 2026-09-22 with rules.md#M2's
-# `deviates: #538` example). Separate rules rather than one, because
+# `deviates: #538` example -- a live example since #538, 2026-09-26).
+# Separate rules rather than one, because
 # at this baseline OTHER changes ride along in the same diffs and one
 # rule has to explain the whole of each: the marker leaving the name
 # (#274), R1's space-joined rendering of a suffix run v1 wrote with a
@@ -4343,11 +4344,11 @@ fields = ["family", "maiden", "middle", "suffix"]
 [[change]]
 issue = "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the suffix field, link and all"
 # 'Smith, John, PhD née Puig Mr. - i Soler', which arrives from
-# rules.md#M2 rather than from a report: it is the doc's
-# `deviates: #538` example, and the doc reaches that deviation with a
-# configured ' - ' this corpus does not apply. What the gate sees is
-# the DEFAULT facade reading, where the dash is an ordinary name word
-# like any other.
+# rules.md#M2 rather than from a report: it is one of rules.md#M2's
+# live examples of the #538 fix (under a configured ' - ' it reads
+# maiden 'Puig Mr.'). This corpus does not configure that delimiter,
+# so what the gate sees is the DEFAULT facade reading, where the dash
+# is an ordinary name word like any other.
 #
 # v1 had no maiden markers at all, so everything behind the suffix
 # comma stayed in the suffix: suffix 'PhD née Puig Mr. - i Soler'
@@ -4361,10 +4362,18 @@ issue = "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the su
 # about a FAMILY comma, where v1 left a middle name behind and the
 # field list says so. This tail leaves v1 a suffix and nothing else.
 #
-# Literal, one name, for the reason those rules give: the shape would
+# Literal, two names, for the reason those rules give: the shape would
 # be "a maiden marker and a bare letter", which reaches every clause
-# name in the corpora.
-name_regex = "^Smith, John, PhD née Puig Mr\\. - i Soler$"
+# name in the corpora. 'Smith, John, PhD née Puig - i Soler' joined
+# this alternation with #538 (2026-09-26): it is rules.md#M2's second
+# live example, and it reaches the DEFAULT facade the same way its
+# neighbour does -- no delimiter configured here either, so the dash
+# is an ordinary name word. Measured at this baseline: suffix
+# 'PhD née Puig - i Soler' -> 'PhD', maiden '' -> 'Puig - i Soler' --
+# the same shape as the neighbour's own reading with 'Mr.' dropped
+# from it; the tree's reading (suffix 'PhD', maiden 'Puig - i Soler')
+# is unchanged by the fix, and only the corpus name is new.
+name_regex = "^(?:Smith, John, PhD née Puig Mr\\. - i Soler|Smith, John, PhD née Puig - i Soler)$"
 fields = ["maiden", "suffix"]
 
 [[change]]

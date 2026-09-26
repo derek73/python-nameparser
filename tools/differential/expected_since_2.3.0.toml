@@ -918,25 +918,34 @@ issue = "fix(#397) a link inside a maiden clause stays in the birth name"
 # twin is the property invariant in tests/v2/test_properties.py.
 #
 # The THIRD name arrives from rules.md#M2 rather than from a report:
-# 'Smith, John, PhD née Puig Mr. - i Soler' is the doc's
-# `deviates: #538` example, and the doc reaches the deviation with a
-# configured ' - ' that this corpus does not apply. Parsed with the
-# DEFAULT facade, as the gate parses it, the dash is an ordinary name
-# word, so the link has one on each side and the clause keeps
-# 'i Soler' where this baseline left it in the suffix: suffix
+# 'Smith, John, PhD née Puig Mr. - i Soler' is one of rules.md#M2's
+# live examples of the #538 fix (under a configured ' - ' it reads
+# maiden 'Puig Mr.'). This corpus does not configure that delimiter,
+# so the gate parses it with the DEFAULT facade, where the dash is an
+# ordinary name word: the link has one on each side and the clause
+# keeps 'i Soler' where this baseline left it in the suffix: suffix
 # 'PhD i Soler' -> 'PhD', maiden 'Puig Mr. -' -> 'Puig Mr. - i Soler'
 # (measured 2026-09-22 at all four 2.x baselines, identical at each).
 # That is this rule's own sentence and no part of #538, whose reading
 # needs the delimiter declared; {maiden, suffix} is a subset of the
 # union above.
 #
-# Literal-anchored to the three. The shape is "a one-letter connective
+# Literal-anchored to the four. The shape is "a one-letter connective
 # inside a maiden clause", which would stand ready to excuse every
 # future regression at this walk -- and the walk's whole design is
 # that some such letters must NOT be taken. _MUST_NOT_MATCH carries
 # the wall: the i-last control, the generation behind it, and the
 # spellings where the letter is an initial.
-name_regex = "^(?:Doe, Jane nee Puig i Soler|Jane Doe nee Puig i Soler|Smith, John, PhD née Puig Mr\\. - i Soler)$"
+#
+# 'Smith, John, PhD née Puig - i Soler' joined the alternation with
+# #538 (2026-09-26): it is rules.md#M2's second live example, and it
+# reaches the DEFAULT facade the same way its neighbour does -- no
+# delimiter configured here either, so the dash is an ordinary name
+# word. Measured at this baseline: suffix 'PhD i Soler' -> 'PhD',
+# maiden 'Puig -' -> 'Puig - i Soler' -- the same shape as the
+# neighbour's own reading with 'Mr.' dropped from it, unchanged by
+# the fix; only the corpus name is new.
+name_regex = "^(?:Doe, Jane nee Puig i Soler|Jane Doe nee Puig i Soler|Smith, John, PhD née Puig Mr\\. - i Soler|Smith, John, PhD née Puig - i Soler)$"
 fields = ["family", "maiden", "middle", "suffix"]
 orders = ["DEFAULT"]
 

@@ -1810,42 +1810,62 @@ def test_a_core_between_the_marker_and_the_first_word_is_below_lo(
     assert _maiden_texts(plain) == ["-", "i", "Jones"]
 
 
-def test_a_core_beside_a_link_wrongly_passes_for_a_word_until_538(
+def test_a_core_beside_a_link_is_stepped_over_like_a_connective(
 ) -> None:
-    """A KNOWN-WRONG reading, pinned so the repair has to move it.
+    """rules.md#M2 gives the link exception a name word on each side,
+    and a delimiter core is structure the caller declared rather than
+    a name word -- so the word on a link's side is the one past the
+    core, and the clause reads as the same text written without it
+    (#538).
 
-    rules.md#M2 gives the link exception a name word on each side,
-    and a delimiter core is structure rather than a name word -- so
-    the clause below should end where its separator-less twin ends.
-    It does not. Update this test when #538 lands: the assertion
-    beneath the first parse is the deviation, not the contract, and
-    rules.md#M2's `deviates: #538` example is its other half.
+    Past the clause's first word the core used to be an ordinary index
+    to the neighbour walk, which stepped over connectives and nothing
+    else, so it stood in for the name word on the link's left and the
+    clause ran on past a title it otherwise stops at. The population is
+    decisions.md's 2026-09-22 #397 follow-up entry: none of it
+    reachable at the default policy, `extra_suffix_delimiters` being
+    empty there.
     """
-    # WHAT IS NOT TRUE OF A CORE PAST `lo`, pinned as it reads rather
-    # than as it ought to: inside the clause a core is an ordinary
-    # index to `_run_neighbours`, which steps over CONNECTIVES and
-    # nothing else, so it stands as the name word on the link's left
-    # and the clause runs on past a title it would otherwise stop at.
-    # `_between_name_words` is asked about a core on one side or the
-    # other in 51,072 of 900,023 calls over the population above, and
-    # the answer differs from a core-skipping reading in 8,094 parses
-    # (1,278 texts); 1,824 of those move the `maiden` field, on 288
-    # texts. None of the 288 is reachable at the default policy,
-    # `extra_suffix_delimiters` being empty there -- so the one of
-    # them rules.md#M2 now carries as a `deviates: #538` example (this
-    # row's first text) enters corpus_rules.jsonl as a name the gate
-    # parses with the DEFAULT facade, where it moves for the link fix
-    # and not for this. Reported, not fixed: the repair is `cores`
-    # threaded through three call sites into `_run_neighbours`, not a
-    # one-liner (#538).
     out = _grouped("Smith, John, PhD née Puig Mr. - i Soler",
                    policy=_DASH, lexicon=_LINK_LEX)
-    assert _maiden_texts(out) == ["Puig", "Mr.", "i", "Soler"]
+    assert _maiden_texts(out) == ["Puig", "Mr."]
     # the same clause with the core taken out of it: the title IS the
     # word on the link's left and refuses, so the clause ends there.
     without = _grouped("Smith, John, PhD née Puig Mr. i Soler",
                        policy=_DASH, lexicon=_LINK_LEX)
     assert _maiden_texts(without) == ["Puig", "Mr."]
+    # and between two NAME words the core is stepped over too, so the
+    # link joins exactly as it joins written without the core -- the
+    # skip reading, not a boundary one, which would have ended the
+    # clause at 'Puig' and pushed the link into the credentials.
+    between = _grouped("Smith, John, PhD née Puig - i Soler",
+                       policy=_DASH, lexicon=_LINK_LEX)
+    assert _maiden_texts(between) == ["Puig", "i", "Soler"]
+
+
+def test_a_core_beside_a_link_in_a_credential_tail_is_dropped() -> None:
+    """The same stepping applies outside a maiden clause, in the
+    `frozen` loop's own `_run_neighbours` call. In BOTH texts below,
+    what stands beyond the core is a credential or nothing -- never a
+    name word -- so the link's neighbour search, stepping past the
+    core, finds no name word there either and stays a lone suffix
+    word rather than joining. The core is then a lone piece with
+    nothing joined to it, which the #206 drop removes exactly as it
+    removes any lone core, and the entries it stood between separate
+    the way they already do in 'PhD - MD' -> 'PhD, MD' (#538). Where a
+    name word stands beyond the core instead, the link joins across it
+    and the core survives in the suffix text -- not this test's shape;
+    rules.md#P3's separator sentence states the join, decisions.md's
+    #538 entry the surviving core.
+
+    RECORDED NEGATIVE CONTROL: at e0f1a2fa, before the frozen loop
+    stepped over a core, these read suffix 'PhD - i Soler' and
+    '- i Puig' -- the core kept inside the piece the link joined.
+    """
+    dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
+    assert str(dash.parse("Smith, John, PhD - i Soler").suffix) == \
+        "PhD, i Soler"
+    assert str(dash.parse("Smith, John, - i Puig").suffix) == "i Puig"
 
 
 def test_a_marker_with_nothing_after_it_declines_before_the_bound(

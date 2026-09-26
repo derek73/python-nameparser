@@ -300,7 +300,8 @@ def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
                                   pieces: Sequence[Sequence[int]],
                                   ptags: Sequence[Set[str]],
                                   tokens: Sequence[WorkToken],
-                                  beside: list[_Beside]) -> bool:
+                                  beside: list[_Beside],
+                                  cores: Set[str]) -> bool:
     """Whether the suffix piece at `k` is a connective PLACED TO JOIN
     between two name words of the clause `lo`..`hi`.
 
@@ -330,7 +331,7 @@ def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
     if not _is_conj_piece(pieces[k], ptags[k], tokens):
         return False
     if not beside:
-        beside.append(_run_neighbours(pieces, ptags, tokens))
+        beside.append(_run_neighbours(pieces, ptags, tokens, cores))
     return _between_name_words(k, lo, hi, pieces, ptags, tokens, beside[0])
 
 
@@ -386,6 +387,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     the segment as written, which is why this returns indices rather
     than a slice.
     """
+    # the lone-core test; also in _run_neighbours and group()'s #206
+    # drop -- keep in step
     seen = [k for k in range(len(pieces))
             if not (len(pieces[k]) == 1
                     and tokens[pieces[k][0]].text in cores)]
@@ -613,24 +616,16 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # ' - ', which is the pair
     # test_a_core_between_the_marker_and_the_first_word_is_below_lo
     # holds (all four readings measured 2026-09-22).
-    # NOT theoretical and not a whole claim about cores, both settled
-    # by measurement 2026-09-21 over corpus u cases.py u the property
-    # grids u a 50,925-name generated set with cores, under thirteen
-    # core-bearing policies: 25,536 of 596,392 maiden takes had a core
-    # standing exactly there, so the bound is load-bearing -- and PAST
-    # `lo` a core is no longer below it, is an ordinary index to
-    # `_run_neighbours` (which steps over connectives and nothing
-    # else), and DOES pass for the name word on a link's side. That
-    # reading is pinned as it stands rather than repaired here
-    # (test_a_core_beside_a_link_wrongly_passes_for_a_word_until_538):
-    # `_between_name_words` is asked about a core in 51,072 of 900,023
-    # calls, the answer differs from a core-skipping reading in 8,094
-    # parses over 1,278 texts, and 1,824 of those move `maiden` on 288
-    # texts -- none of them reachable at the default policy, which is
-    # why rules.md#M2 states it with a policy annotation beside the
-    # marker. The repair is `cores` threaded through
-    # three call sites into `_run_neighbours`, which is its own change
-    # (#538, and rules.md#M2 carries it as a `deviates:` example).
+    # NOT theoretical, settled by measurement 2026-09-21 over corpus u
+    # cases.py u the property grids u a 50,925-name generated set with
+    # cores, under thirteen core-bearing policies: 25,536 of 596,392
+    # maiden takes had a core standing exactly there, so the bound is
+    # load-bearing. PAST `lo` the bound no longer reaches a core, and
+    # `_run_neighbours` steps over it as it steps over a connective
+    # (#538): a core is structure, so the word on a link's side is the
+    # one past it, and the clause reads as the same text written
+    # without the core ('Smith, John, PhD née Puig Mr. - i Soler' stops
+    # at the title as '... Puig Mr. i Soler' does).
     # `peel_start` is where assign's trailing run begins over
     # the pieces as WRITTEN, so the generation or credential a clause
     # ends with is never the name word on a link's right ('... nee Puig
@@ -658,7 +653,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                                     tokens)
                 or _link_joins_inside_the_clause(seen[j], lo, peel_start,
                                                  pieces, ptags, tokens,
-                                                 beside))):
+                                                 beside, cores))):
         j += 1
     # j == m + run means nothing followed the marker but a suffix, so
     # the pass declines and the marker stays ordinary words
@@ -720,8 +715,17 @@ _Beside = tuple[list[int], list[int]]
 
 def _run_neighbours(pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]],
-                    tokens: Sequence[WorkToken]) -> _Beside:
-    """The nearest non-connective piece on each side of every index.
+                    tokens: Sequence[WorkToken],
+                    cores: Set[str]) -> _Beside:
+    """The nearest piece that is neither a connective nor a delimiter
+    core, on each side of every index.
+
+    A tail segment's delimiter CORE (`cores`, empty off a tail segment
+    and at the default policy) is stepped over exactly as a connective
+    is: it is structure the caller declared, the #206 drop takes it out
+    of the output, and a link read with it present must read as the
+    same text read without it (rules.md#M2, #538). Asked inline, beside
+    `_is_conj_piece`, so an empty set costs no frame.
 
     EVERY MEMBER OF ONE RUN HAS THE SAME ANSWER, which is the whole
     of the fix: `_between_name_words` used to walk the run itself, so a
@@ -780,7 +784,11 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     prev = -1
     for k in range(n):
         left[k] = prev
-        is_conj = _is_conj_piece(pieces[k], ptags[k], tokens)
+        # the lone-core test; also in _maiden_take and group()'s #206
+        # drop -- keep in step
+        is_conj = (_is_conj_piece(pieces[k], ptags[k], tokens)
+                   or (len(pieces[k]) == 1
+                       and tokens[pieces[k][0]].text in cores))
         conj[k] = is_conj
         if not is_conj:
             prev = k
@@ -838,6 +846,8 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 # is the CALLER's half: `_group_segment`'s `frozen` set is where a
 # connective this refuses is placed as the generation, and
 # `_link_joins_inside_the_clause` is the maiden walk's.
+# rules.md#P3: "the search reads past it as it reads past a
+# connective" (#538) -- `cores` in `beside`, below.
 # `Sequence[Sequence[int]]` rather than `Sequence[Piece]`, widened
 # when the maiden walk became a second caller: this reads a piece and
 # never edits one, and `_maiden_take` holds its pieces at the wider
@@ -876,9 +886,11 @@ def _between_name_words(k: int, lo: int, hi: int,
     one ('Carod i y Rovira'), so the word this rule is about is the
     first one past the run -- and where the run runs out ('Juan i e')
     there is no name word on that side at all. `beside` is where that
-    stepping already happened: `_run_neighbours` walked every run once
-    for the whole segment, so this reads an index rather than walking
-    to it. A SENTINEL OUT OF RANGE is how "the run ran out" arrives --
+    stepping already happened, a lone delimiter core stepped over the
+    same way too (#538, rules.md#P3's separator sentence):
+    `_run_neighbours` walked every run once for the whole segment, so
+    this reads an index rather than walking to it. A SENTINEL OUT OF
+    RANGE is how "the run ran out" arrives --
     -1 on the left, `len(pieces)` on the right -- and each bound test
     below turns it into False, exactly as the walk did when it ran
     here and stopped at the same place. `lo` is never negative and
@@ -1184,8 +1196,11 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # of connectives has the same nearest name word on
                 # each side, and asking per member walked the run once
                 # per member -- quadratic in its length, 3.8x per
-                # doubling measured at `b9ed1429`.
-                beside = _run_neighbours(pieces, ptags, tokens)
+                # doubling measured at `b9ed1429`. `cores` is passed
+                # deliberately here too: a link beside a declared
+                # delimiter reads as it would with the delimiter absent
+                # (#538).
+                beside = _run_neighbours(pieces, ptags, tokens, cores)
             if not _between_name_words(k, lo, hi, pieces, ptags, tokens,
                                        beside):
                 frozen.add(piece[0])
@@ -1721,6 +1736,8 @@ def group(state: ParseState) -> ParseState:
         if seg_cores:
             kept: list[int] = []
             for k in range(len(pieces)):
+                # the lone-core test; also in _maiden_take and
+                # _run_neighbours -- keep in step
                 is_core = (len(pieces[k]) == 1
                            and tokens[pieces[k][0]].text in seg_cores
                            and len(pieces) > 1)

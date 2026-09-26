@@ -534,6 +534,11 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     nothing, and a word of that vocabulary ending a name, or standing
     before the credential a name ends with, is the generation it also
     spells.
+    A separator the caller declared is not a word of the name, and
+    the search reads past it as it reads past a connective: the word
+    on the connective's side is the first one beyond the separator,
+    so a connective of that vocabulary beside one joins exactly where
+    it would with the separator absent.
     Both questions this rule asks of a name — how many words it has,
     and whether it is written in one case — are asked of the name's
     OWN words: a maiden marker taken as one, and the words it takes
@@ -635,7 +640,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions.md#P3 · interacts: H1, P1, M2, R3, R4, S2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P3 · interacts: H1, P1, M2, R1, R3, R4, S2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -1277,6 +1282,10 @@ M2. Rationale: a maiden marker announces that what follows it is the
     marker on one side of it, or with the trailing run on the
     other, is joining nothing there and ends the clause like any
     other suffix word.
+    A separator the caller declared is structure rather than a name
+    word, and the link exception reads past it: the word on a link's
+    side is the one beyond the separator, so the clause reads as the
+    same clause written without it.
     Those last two stops are each asked TWICE for one reason: the
     count of words to spare includes the very words the marker
     removes, so a reading taken over the name as written can be
@@ -1359,6 +1368,8 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Doe nee Puig i Soler" →  maiden="Puig i Soler"
       "Jane Doe nee Puig i"       →  maiden="Puig"  · boundary
       "Jane Doe nee Puig i"       →  suffix="i"  · boundary
+      "Smith, John, PhD née Puig Mr. - i Soler" extra_suffix_delimiters-dash →  maiden="Puig Mr."
+      "Smith, John, PhD née Puig - i Soler" extra_suffix_delimiters-dash →  maiden="Puig i Soler"
       "Jane Doe (nee Smith MA)"   →  maiden="Smith MA"
       "Jane Doe (nee Smith Ma)"   →  maiden="Smith Ma"
       "Jane Doe (nee Smith) MA"   →  suffix="MA"
@@ -1399,17 +1410,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     does not.
       "Jane Doe nee Smith MA Prof."    →  maiden="Smith MA Prof."  · boundary
       "Jane Doe nee Smith Prof. MA"    →  maiden="Smith Prof."  · boundary
-    Deviation: the link exception asks for a name word on each side,
-    and a separator the caller declared is structure rather than a
-    name word — so a link with one beside it is joining nothing and
-    ends the clause like any other suffix word. A declared separator
-    standing inside the clause, past its first word, is read as that
-    name word instead, and the clause runs on across a link it should
-    have ended at. The same clause written without the separator,
-    which leaves the title as the word on the link's left, does end
-    there.
-      "Smith, John, PhD née Puig Mr. - i Soler" extra_suffix_delimiters-dash →  maiden="Puig Mr."  deviates: #538 (today: maiden="Puig Mr. i Soler")
-    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
     maiden, but a recognized marker word inside it does — the clause
@@ -2014,6 +2015,7 @@ R1. Rationale: a field is a way of reading the parse, not a stored
       "Smith, MD PhD"                      →  suffix="MD PhD"
       "John Smith MD PhD"                  →  suffix="MD PhD"
       "John Smith, MD, Bart"               →  suffix="MD, Bart"
+      "Smith, John, PhD - i Soler" extra_suffix_delimiters-dash →  suffix="PhD, i Soler"
     Accepted: a suffix value handed to revise() derives its entries the
     same way, from the value's own commas, so a name's rendered suffix
     revises back to itself wherever the value's words read as the
@@ -2030,7 +2032,7 @@ R1. Rationale: a field is a way of reading the parse, not a stored
     instead. Stated without an example line because every line here
     names an input string, and this shape needs a field revised after
     the parse.
-    history: decisions.md#C1 · interacts: O3, P6, R3 · implemented: nameparser/_parser.py, nameparser/_pipeline/_post_rules.py, nameparser/_types.py
+    history: decisions.md#C1 · interacts: O3, P3, P6, R3, M2 · implemented: nameparser/_parser.py, nameparser/_pipeline/_post_rules.py, nameparser/_types.py
 
 R2. Rationale: callers need the surname with and without its
     particles — sorting wants "Vega", display wants "de la Vega".

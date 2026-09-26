@@ -2580,3 +2580,45 @@ def test_the_case_only_walk_can_fail(
     failures = _case_only_violations()
     assert failures, "the case-only walk cannot see a substitution"
     assert any("'Ph.D.' -> 'PhD'" in line for line in failures), failures
+
+
+def test_a_delimiter_core_reads_as_if_it_were_not_written() -> None:
+    """#538: under a core-bearing policy, a maiden clause reads exactly
+    as the same text written without the core. The core is structure
+    the caller declared, the #206 drop takes it out of the output, and
+    rules.md#M2's link exception asks for a NAME word on each side of
+    the link -- so the word on a link's side is the one past the core.
+
+    Asked of the `maiden` field only, because that is the field #538
+    is about: a core that lands inside a connective run the join
+    merges ('Puig Dr. i - y Soler') stays in the SUFFIX text under this
+    policy and the default alike, which is a separate gap.
+
+    RECORDED NEGATIVE CONTROL: at e0f1a2fa, before the core was stepped
+    over, 6 of these 81 texts disagreed ('Puig Mr. - i Soler' read
+    maiden 'Puig Mr. i Soler' against 'Puig Mr.', and the same for
+    'Puig Dr. - i y Soler', under each of the three heads).
+    """
+    dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
+    heads = ("Smith, John, PhD née", "Smith, John, MD née",
+             "Doe, Jane, PhD nee")
+    bodies = ("Puig Mr. i Soler", "Puig i Soler", "Puig Dr. i y Soler",
+              "Puig i i Soler", "Carod i Rovira Mr.", "Puig Mr. i Dr. Soler",
+              "Jones Smith i Soler", "Puig y Soler", "Puig Jr. i Soler")
+    failures = []
+    total = 0
+    for head in heads:
+        for body in bodies:
+            parts = body.split()
+            # a core in every gap PAST the first word: one between the
+            # marker and that word is below the clause's bound already
+            # (test_a_core_between_the_marker_and_the_first_word_is_below_lo)
+            for gap in range(1, len(parts)):
+                written = " ".join(parts[:gap] + ["-"] + parts[gap:])
+                total += 1
+                got = str(dash.parse(f"{head} {written}").maiden)
+                want = str(dash.parse(f"{head} {body}").maiden)
+                if got != want:
+                    failures.append(f"{head} {written!r}: {got!r} != {want!r}")
+    assert total == 81
+    assert not failures, "\n".join(failures)

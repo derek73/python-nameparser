@@ -2188,6 +2188,13 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "Jane Doe nee MA PhD"}),
     frozenset({"Jane Doe \\(nee Smith MA\\)", "Jane Doe \\(nee Smith Ma\\)",
                "Jane Doe \\(nee Smith\\) MA"}),
+    # rules.md#M2's two live examples of the delimiter-core fix (#538),
+    # one alternative per corpus name. A list of names, not a copy of
+    # any wordlist: what selects them is the doc's own choice of
+    # examples for a policy this corpus does not configure, so there
+    # is no vocabulary here for the alternation to drift from.
+    frozenset({"Smith, John, PhD née Puig Mr\\. - i Soler",
+               "Smith, John, PhD née Puig - i Soler"}),
     # fix(#400)'s two openings: start-of-name or just after a family
     # comma. `abd` joins forward on the given side wherever that side
     # begins, and the alternation is over ANCHORS, not over words --
@@ -2728,15 +2735,16 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "abdul Smith Jr V"}),
     # #397's maiden-clause rule, one corpus name per alternative -- a
     # list of names, not a copy of any wordlist. What selects the
-    # three is the PLACEMENT of the link inside a clause, which no
+    # first two is the PLACEMENT of the link inside a clause, which no
     # vocabulary decides; a member spelled as the shape (a bare letter
     # after a maiden marker) would reach every clause name in the
     # corpora and pre-excuse the readings the walk must refuse. The
-    # third member is rules.md#M2's `deviates: #538` example, which
-    # the corpus parses at the DEFAULT policy and so for this rule's
-    # own sentence rather than for #538's.
+    # last two are rules.md#M2's two live examples of the #538 fix,
+    # which the corpus parses at the DEFAULT policy and so for this
+    # rule's own sentence rather than for #538's.
     frozenset({"Doe, Jane nee Puig i Soler", "Jane Doe nee Puig i Soler",
-               "Smith, John, PhD née Puig Mr\\. - i Soler"}),
+               "Smith, John, PhD née Puig Mr\\. - i Soler",
+               "Smith, John, PhD née Puig - i Soler"}),
     # #397's join and its one-case report, one corpus name per
     # alternative -- lists of names, not copies of any wordlist. The
     # join's subject is a SHAPE the vocabulary participates in at one
@@ -3328,8 +3336,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Smith, John, PhD née Puig Mr. - i Soler'. Reach again --
         # it carries a marker -- and verified name by name; no role
         # joined the list.
+        # 2026-09-26, #538: 78 -> 79, rules.md#M2's second live
+        # example, 'Smith, John, PhD née Puig - i Soler', added to the
+        # corpus. Reach again -- it carries a marker -- and verified
+        # name by name; no role joined the list.
         "fix(#274) maiden markers consumed":
-            _Claim(78, ('family', 'maiden', 'middle'), '08e08f62622f', None),
+            _Claim(79, ('family', 'maiden', 'middle'), 'd59ba52f8a86', None),
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -3443,8 +3455,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-25, #540: 369 -> 371, 'John Smith, PhD MEng' and
         # 'john smith, phd meng', the credential-run comma rows'
         # shape landing here too.
+        # 2026-09-26, #538: 371 -> 372, 'Smith, John, PhD née Puig - i
+        # Soler', rules.md#M2's second live example, its comma landing
+        # in this rule's reach too. Reach again, verified name by
+        # name.
+        # 2026-09-26, #538 (frozen-loop half): 372 -> 373, 'Smith,
+        # John, PhD - i Soler', rules.md#R1's new example, its comma
+        # landing in this rule's reach too. Reach again, verified name
+        # by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(371, ('given', 'suffix', 'title'), 'af9e870177b7', None),
+            _Claim(373, ('given', 'suffix', 'title'), 'f3a72aefca26', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3516,8 +3536,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-25, #540: 369 -> 371, 'John Smith, PhD MEng' and
         # 'john smith, phd meng', the credential-run comma rows'
         # shape landing here too.
+        # 2026-09-26, #538: 371 -> 372, the same one new comma name as
+        # the rule above and for the same reason.
+        # 2026-09-26, #538 (frozen-loop half): 372 -> 373, the same
+        # one new comma name as the rule above and for the same
+        # reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(371, ('family', 'given'), 'af9e870177b7', None),
+            _Claim(373, ('family', 'given'), 'f3a72aefca26', None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -4007,8 +4032,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-22, #397 follow-up: new rule, one literal name --
         # rules.md#M2's `deviates: #538` example, which this baseline
         # reads as one long suffix.
+        # 2026-09-26, #538: 1 -> 2, rules.md#M2's second live example,
+        # 'Smith, John, PhD née Puig - i Soler', joining the same
+        # alternation for the same reason.
         "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the suffix field, link and all":
-            _Claim(1, ('maiden', 'suffix'), 'e20491ebfe62', None),
+            _Claim(2, ('maiden', 'suffix'), '168b8bdef5db', None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -4558,9 +4586,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-22, #397 follow-up: 2 -> 3, the one new corpus name
         # rules.md#M2's `deviates: #538` example adds, which this
         # rule's own alternation now names. Verified name by name.
+        # 2026-09-26, #538: 3 -> 4, rules.md#M2's second live example,
+        # 'Smith, John, PhD née Puig - i Soler', joining the same
+        # alternation for the same reason. Verified name by name.
         "fix(#397) a link inside a maiden clause stays in the birth name":
-            _Claim(3, ('family', 'maiden', 'middle', 'suffix'),
-                   '4de0e7570bd6', ('DEFAULT',)),
+            _Claim(4, ('family', 'maiden', 'middle', 'suffix'),
+                   '4556aa8f93e5', ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -4877,9 +4908,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-22, #397 follow-up: 2 -> 3, the one new corpus name
         # rules.md#M2's `deviates: #538` example adds, which this
         # rule's own alternation now names. Verified name by name.
+        # 2026-09-26, #538: 3 -> 4, rules.md#M2's second live example,
+        # 'Smith, John, PhD née Puig - i Soler', joining the same
+        # alternation for the same reason. Verified name by name.
         "fix(#397) a link inside a maiden clause stays in the birth name":
-            _Claim(3, ('family', 'maiden', 'middle', 'suffix'),
-                   '4de0e7570bd6', ('DEFAULT',)),
+            _Claim(4, ('family', 'maiden', 'middle', 'suffix'),
+                   '4556aa8f93e5', ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5396,9 +5430,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-22, #397 follow-up: 2 -> 3, the one new corpus name
         # rules.md#M2's `deviates: #538` example adds, which this
         # rule's own alternation now names. Verified name by name.
+        # 2026-09-26, #538: 3 -> 4, rules.md#M2's second live example,
+        # 'Smith, John, PhD née Puig - i Soler', joining the same
+        # alternation for the same reason. Verified name by name.
         "fix(#397) a link inside a maiden clause stays in the birth name":
-            _Claim(3, ('family', 'maiden', 'middle', 'suffix'),
-                   '4de0e7570bd6', ('DEFAULT',)),
+            _Claim(4, ('family', 'maiden', 'middle', 'suffix'),
+                   '4556aa8f93e5', ('DEFAULT',)),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5580,9 +5617,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-22, #397 follow-up: 2 -> 3, the one new corpus name
         # rules.md#M2's `deviates: #538` example adds, which this
         # rule's own alternation now names. Verified name by name.
+        # 2026-09-26, #538: 3 -> 4, rules.md#M2's second live example,
+        # 'Smith, John, PhD née Puig - i Soler', joining the same
+        # alternation for the same reason. Verified name by name.
         "fix(#397) a link inside a maiden clause stays in the birth name":
-            _Claim(3, ('family', 'maiden', 'middle', 'suffix'),
-                   '4de0e7570bd6', ('DEFAULT',)),
+            _Claim(4, ('family', 'maiden', 'middle', 'suffix'),
+                   '4556aa8f93e5', ('DEFAULT',)),
     },
 }
 
