@@ -491,8 +491,8 @@ CASES: tuple[Case, ...] = (
     # decisions.md#suffix-acronym-collisions and it compares
     # FREQUENCIES: how common the word is as a borne name in the
     # trailing position against how common it is as a credential.
-    # Rough balance earns the ambiguous marking (ba, do, ed, jd, ma,
-    # and since #540 lac and meng);
+    # Rough balance earns the ambiguous marking (the members of
+    # SUFFIX_ACRONYMS_AMBIGUOUS; the frozenset is the roster);
     # the name reading dominating REMOVES the entry, a caller adding
     # it back with Lexicon.default().add(suffix_acronyms={"cha"});
     # the credential dominating leaves it unambiguous. Length is a
@@ -696,6 +696,68 @@ CASES: tuple[Case, ...] = (
                "it as a middle name. 1.4.0 read given 'MEng' too, so "
                "this row also restores 1.4.0's reading",
          shape=2),
+    Case("comma_credential_run_ending_in_meng_re_reads_the_comma",
+         "John Smith, PhD MEng",
+         {"given": "PhD", "middle": "MEng", "family": "John Smith"},
+         classification="fix(#540)",
+         ambiguities=("suffix-or-name",),
+         notes="the run behind a suffix comma is no longer wholly "
+               "suffix-shaped once its last word is a bare ambiguous "
+               "member, so C1 reads the comma as a family comma and "
+               "the first credential as the given name. Every "
+               "release read suffix 'PhD MEng' -- the pre-existing "
+               "'john smith, phd ma' path, which #540 routes two "
+               "more words into. A follow-up issue is to be filed",
+         shape=3),
+    Case("comma_lower_credential_run_ending_in_meng_re_reads_the_comma",
+         "john smith, phd meng",
+         {"given": "phd", "family": "john smith", "suffix": "meng"},
+         classification="fix(#540)",
+         ambiguities=("suffix-or-name",),
+         notes="the same re-read in one case -- the count then "
+               "peels 'meng' with a word to spare, so the writing's "
+               "case does not save it, and neither does the "
+               "all-caps 'JOHN SMITH, PHD MENG' (given 'PHD', "
+               "family 'JOHN SMITH', suffix 'MENG')",
+         shape=3),
+    Case("title_case_lac_behind_a_particle_is_the_name",
+         "Nguyen Van Lac",
+         {"given": "Nguyen", "family": "Van Lac"},
+         classification="fix(#540)",
+         ambiguities=("suffix-or-name",),
+         notes="the mixed-case name's Title-case member leans "
+               "'name' with words to spare (S2), the gain for a "
+               "Vietnamese name; every release from 1.4.0 read "
+               "family 'Van', suffix 'Lac'",
+         shape=1),
+    Case("the_accepted_cost_survives_a_credential_behind_it",
+         "John Smith MEng PhD",
+         {"given": "John", "middle": "Smith", "family": "MEng",
+          "suffix": "PhD"},
+         classification="fix(#540)",
+         ambiguities=("suffix-or-name",),
+         notes="the declined pick stops the walk, and the "
+               "unambiguous credential behind it is still peeled; "
+               "every release read suffix 'MEng PhD' ('MEng, PhD' "
+               "through 2.2)",
+         shape=1),
+    Case("dotted_meng_with_nothing_to_spare_is_the_name",
+         "Wang M.Eng.",
+         {"given": "Wang", "family": "M.Eng."},
+         ambiguities=("suffix-or-name",),
+         notes="S2's period gate counts a member as unambiguous "
+               "only written one period per letter ('M.A.'), and "
+               "MEng and LAc are the first members whose "
+               "conventional dotted spelling is chunked, so "
+               "'M.Eng.' with nothing to spare is the family name; "
+               "accepted and recorded (Derek, 2026-09-25). 1.4.0 "
+               "read the same family, unflagged, for a different "
+               "reason -- its two-piece rule (a lone word after the "
+               "given name is the family), not S2's gate -- so this "
+               "row is parity. 'John Smith M.Eng.' keeps the suffix "
+               "by the count and reports; the period-gate question "
+               "goes to the follow-up issue",
+         shape=1),
     Case("leading_meng_is_a_given_name", "meng li",
          {"given": "meng", "family": "li"},
          notes="the control: the marking acts only at the slots S2 "

@@ -1209,8 +1209,8 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "change(suffix-acronym-collisions) ph leaves the acronym set":
         ("John Smith Ph. D.", "Smith, Ph. D.", "john smith phd",
          "John Smith Ph.D."),
-    # #540's five rules, keyed on the full issue since all five carry
-    # `fix(#540)`. Each wall is the other rules' names plus the
+    # #540's eight rules, keyed on the full issue since all eight
+    # carry `fix(#540)`. Each wall is the other rules' names plus the
     # spellings a case-blind widening would reach: 'meng li' leads
     # with the word and nothing moved; the one-case 'john smith meng'
     # and 'JOHN SMITH MENG' keep the credential, so the cost rule has
@@ -1221,16 +1221,27 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # the comma-cost rule must not reach the bare-word, no-comma or
     # all-lower spellings. The lone-word comma rule must not reach
     # its own capitals-lean probe or the two-word comma rule's name.
+    # Every #540 rule carries one superstring probe too, after a
+    # mutant dropping the ^...$ anchors passed every other guard here.
     "fix(#540) meng and lac are ambiguous credential acronyms, so a bare trailing Meng or Lac with no words to spare is the family name":
-        ("meng li", "Meng Li", "john smith meng", "john smith MEng"),
+        ("meng li", "Meng Li", "john smith meng", "john smith MEng",
+         "Dr. wang meng"),
     "fix(#540) accepted: a mixed-case MEng behind a full name reads as the family name":
-        ("john smith meng", "JOHN SMITH MENG", "John Smith MENG"),
+        ("john smith meng", "JOHN SMITH MENG", "John Smith MENG",
+         "Dr. john smith MEng"),
     "fix(#540) a bare trailing meng or lac with words to spare stays the credential and reports the fork":
-        ("wang meng", "tran lac", "john smith MEng", "meng li"),
+        ("wang meng", "tran lac", "john smith MEng", "meng li",
+         "Dr. john smith meng"),
     "fix(#540) accepted: a mixed-case MEng after a family comma reads as a middle name":
-        ("John Smith, MEng", "Smith, John meng"),
+        ("John Smith, MEng", "Smith, John meng", "Dr. Smith, John MEng"),
     "fix(#540) a lone meng or MEng after a family comma reads as the given name":
-        ("Smith, MENG", "Smith, John MEng"),
+        ("Smith, MENG", "Smith, John MEng", "Dr. Smith, meng"),
+    "fix(#540) accepted: a credential run behind a suffix comma that ends in meng re-reads the comma as a family comma":
+        ("John Smith, MEng", "John Smith, PhD", "Dr. John Smith, PhD MEng"),
+    "fix(#540) a Title-case Lac behind a particle is the family name":
+        ("nguyen van lac", "Dr. Nguyen Van Lac"),
+    "fix(#540) accepted: a chunked dotted M.Eng. with nothing to spare is the family name":
+        ("John Smith M.Eng.", "Wang M.A.", "Dr. Wang M.Eng."),
     # The esq boundary is every spelling SUFFIX_WORDS still carries,
     # in each of the three positions the corpora write it in.
     "change(suffix-acronym-collisions) esq leaves the acronym set":
@@ -2471,6 +2482,14 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # SUFFIX_ACRONYMS_AMBIGUOUS's bare 'meng' either, the same reason
     # as the two lists above.
     frozenset({"MEng", "meng"}),
+    # #540's second pair: the widened cost rule (a full name pair,
+    # the credential run behind it kept as a separate word) and the
+    # credential-run rule (a full name pair sharing no literal
+    # prefix, so its alternation IS over full names like the two
+    # lists above). Neither copies SUFFIX_ACRONYMS_AMBIGUOUS -- same
+    # reason as the rest of this roster.
+    frozenset({"John Smith MEng PhD", "john smith MEng"}),
+    frozenset({"John Smith, PhD MEng", "john smith, phd meng"}),
     # fix(#462)'s letter shape: a bare capital E/Y or a dotted E./Y.
     # It is the initial SHAPE (v1's `initial` regex, _render._INITIAL)
     # intersected with the single-letter conjunctions, not a copy of
@@ -3220,15 +3239,22 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # zero role movers at review time.
         "change(suffix-acronym-collisions) ph leaves the acronym set":
             _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
-        # #540's two cost rules, the only #540 rules this baseline
-        # needs: one literal name each, the mixed-case credential S2
-        # reads as the name even with words to spare, no-comma and
-        # after a family comma. Roles without `_ambiguities`, which
-        # 1.4.0 does not compare.
+        # #540's four rules, the only #540 rules this baseline needs
+        # (every one of them either an accepted cost or the gain that
+        # is its mirror): the mixed-case credential read as the name
+        # even with words to spare, no-comma (now also the credential
+        # run behind it, widened in) and after a family comma; the
+        # credential run behind a suffix comma re-reading it as a
+        # family comma; and the Title-case Lac gain. Roles without
+        # `_ambiguities`, which 1.4.0 does not compare.
         "fix(#540) accepted: a mixed-case MEng behind a full name reads as the family name":
-            _Claim(1, ('family', 'middle', 'suffix'), "8547712f3964", ('DEFAULT',)),
+            _Claim(2, ('family', 'middle', 'suffix'), "28537bf159a3", ('DEFAULT',)),
         "fix(#540) accepted: a mixed-case MEng after a family comma reads as a middle name":
             _Claim(1, ('middle', 'suffix'), "84dcae6d2ff5", ('DEFAULT',)),
+        "fix(#540) accepted: a credential run behind a suffix comma that ends in meng re-reads the comma as a family comma":
+            _Claim(2, ('family', 'given', 'middle', 'suffix'), "17e8a418c176", ('DEFAULT',)),
+        "fix(#540) a Title-case Lac behind a particle is the family name":
+            _Claim(1, ('family', 'suffix'), "828c38e0abaa", ('DEFAULT',)),
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
@@ -3414,8 +3440,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # comma-cost row's shape landing in this rule's reach too.
         # 2026-09-25, #540: 367 -> 369, 'Smith, meng' and 'Smith,
         # MEng', the lone-word comma rows' shape landing here too.
+        # 2026-09-25, #540: 369 -> 371, 'John Smith, PhD MEng' and
+        # 'john smith, phd meng', the credential-run comma rows'
+        # shape landing here too.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(369, ('given', 'suffix', 'title'), '5bf76967bc46', None),
+            _Claim(371, ('given', 'suffix', 'title'), 'af9e870177b7', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3484,8 +3513,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # comma-cost row's shape landing in this rule's reach too.
         # 2026-09-25, #540: 367 -> 369, 'Smith, meng' and 'Smith,
         # MEng', the lone-word comma rows' shape landing here too.
+        # 2026-09-25, #540: 369 -> 371, 'John Smith, PhD MEng' and
+        # 'john smith, phd meng', the credential-run comma rows'
+        # shape landing here too.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(369, ('family', 'given'), '5bf76967bc46', None),
+            _Claim(371, ('family', 'given'), 'af9e870177b7', None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -3678,8 +3710,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # case row admitted and which this rule explains here: its
         # family 'van' is a one-particle part, this rule's reason and
         # not #540's.
+        # 2026-09-25, #540: 30 -> 31, 'Nguyen Van Lac' -- reached, not
+        # explained, by this rule: its role move is explained by the
+        # Title-case Lac rule instead, so `_initials` never enters its
+        # diff here.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(30, ('_initials',), "8b99d25622a3", ('DEFAULT',)),
+            _Claim(31, ('_initials',), "001fb4be2f76", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # #269's derived-view rule, added 2026-09-13. One corpus name,
@@ -3981,20 +4017,26 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # zero role movers at review time.
         "change(suffix-acronym-collisions) ph leaves the acronym set":
             _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
-        # #540's five rules: three literal alternations and two
+        # #540's eight rules: five literal alternations and three
         # literal names, every name one of #540's own case rows. The
         # report rule's `_ambiguities`-only roles are its point: a
         # widening that took a role would change them here first.
         "fix(#540) meng and lac are ambiguous credential acronyms, so a bare trailing Meng or Lac with no words to spare is the family name":
             _Claim(2, ('_ambiguities', 'family', 'suffix'), "34801c7cd448", ('DEFAULT',)),
         "fix(#540) accepted: a mixed-case MEng behind a full name reads as the family name":
-            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "8547712f3964", ('DEFAULT',)),
+            _Claim(2, ('_ambiguities', 'family', 'middle', 'suffix'), "28537bf159a3", ('DEFAULT',)),
         "fix(#540) accepted: a mixed-case MEng after a family comma reads as a middle name":
             _Claim(1, ('_ambiguities', 'middle', 'suffix'), "84dcae6d2ff5", ('DEFAULT',)),
         "fix(#540) a lone meng or MEng after a family comma reads as the given name":
             _Claim(2, ('_ambiguities', 'given', 'suffix'), "96bf15fae64b", ('DEFAULT',)),
         "fix(#540) a bare trailing meng or lac with words to spare stays the credential and reports the fork":
             _Claim(2, ('_ambiguities',), "4a72b3bde603", ('DEFAULT',)),
+        "fix(#540) accepted: a credential run behind a suffix comma that ends in meng re-reads the comma as a family comma":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "17e8a418c176", ('DEFAULT',)),
+        "fix(#540) a Title-case Lac behind a particle is the family name":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "828c38e0abaa", ('DEFAULT',)),
+        "fix(#540) accepted: a chunked dotted M.Eng. with nothing to spare is the family name":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "1d95a4b7cfc9", ('DEFAULT',)),
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
@@ -4277,15 +4319,19 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "feat(#395)/fix(#296) a comma followed only by a title leaves the pre-comma name to the declared order's fold, the given-last spelling":
             _Claim(1, ('family', 'given', 'middle', 'suffix', 'title'), "3e43a2be022e", ('FAMILY_FIRST_GIVEN_LAST',)),
         # #484's two `_initials` rules. Both are literal name lists;
-        # reach 30 and 1, explaining 29 and 1 (2026-09-25), the gap
-        # being 'nguyen van lac' below -- and both digests match the
-        # 1.4.0 ledger's, which is the point of copying the list
-        # verbatim rather than restating it.
+        # reach 31 and 1, explaining 29 and 1 (2026-09-25), the gap
+        # being 'nguyen van lac' and 'Nguyen Van Lac' below -- and
+        # both digests match the 1.4.0 ledger's, which is the point
+        # of copying the list verbatim rather than restating it.
         # 2026-09-25, #540: 29 -> 30, 'nguyen van lac', reached and
         # NOT explained at this baseline -- its report moves here,
         # which keeps `_initials` out of its diff (#484).
+        # 2026-09-25, #540: 30 -> 31, 'Nguyen Van Lac' -- the
+        # case-insensitive regex matches it too, and its role move is
+        # explained by the Title-case Lac rule below, so #484 keeps
+        # `_initials` out of its diff the same way.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(30, ('_initials',), "8b99d25622a3", ('DEFAULT',)),
+            _Claim(31, ('_initials',), "001fb4be2f76", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # fix(#462) reaches more than it explains -- the reach is the
@@ -4527,20 +4573,26 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # zero role movers at review time.
         "change(suffix-acronym-collisions) ph leaves the acronym set":
             _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
-        # #540's five rules: three literal alternations and two
+        # #540's eight rules: five literal alternations and three
         # literal names, every name one of #540's own case rows. The
         # report rule's `_ambiguities`-only roles are its point: a
         # widening that took a role would change them here first.
         "fix(#540) meng and lac are ambiguous credential acronyms, so a bare trailing Meng or Lac with no words to spare is the family name":
             _Claim(2, ('_ambiguities', 'family', 'suffix'), "34801c7cd448", ('DEFAULT',)),
         "fix(#540) accepted: a mixed-case MEng behind a full name reads as the family name":
-            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "8547712f3964", ('DEFAULT',)),
+            _Claim(2, ('_ambiguities', 'family', 'middle', 'suffix'), "28537bf159a3", ('DEFAULT',)),
         "fix(#540) accepted: a mixed-case MEng after a family comma reads as a middle name":
             _Claim(1, ('_ambiguities', 'middle', 'suffix'), "84dcae6d2ff5", ('DEFAULT',)),
         "fix(#540) a lone meng or MEng after a family comma reads as the given name":
             _Claim(2, ('_ambiguities', 'given', 'suffix'), "96bf15fae64b", ('DEFAULT',)),
         "fix(#540) a bare trailing meng or lac with words to spare stays the credential and reports the fork":
             _Claim(2, ('_ambiguities',), "4a72b3bde603", ('DEFAULT',)),
+        "fix(#540) accepted: a credential run behind a suffix comma that ends in meng re-reads the comma as a family comma":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "17e8a418c176", ('DEFAULT',)),
+        "fix(#540) a Title-case Lac behind a particle is the family name":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "828c38e0abaa", ('DEFAULT',)),
+        "fix(#540) accepted: a chunked dotted M.Eng. with nothing to spare is the family name":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "1d95a4b7cfc9", ('DEFAULT',)),
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
@@ -4836,20 +4888,26 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # zero role movers at review time.
         "change(suffix-acronym-collisions) ph leaves the acronym set":
             _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
-        # #540's five rules: three literal alternations and two
+        # #540's eight rules: five literal alternations and three
         # literal names, every name one of #540's own case rows. The
         # report rule's `_ambiguities`-only roles are its point: a
         # widening that took a role would change them here first.
         "fix(#540) meng and lac are ambiguous credential acronyms, so a bare trailing Meng or Lac with no words to spare is the family name":
             _Claim(2, ('_ambiguities', 'family', 'suffix'), "34801c7cd448", ('DEFAULT',)),
         "fix(#540) accepted: a mixed-case MEng behind a full name reads as the family name":
-            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "8547712f3964", ('DEFAULT',)),
+            _Claim(2, ('_ambiguities', 'family', 'middle', 'suffix'), "28537bf159a3", ('DEFAULT',)),
         "fix(#540) accepted: a mixed-case MEng after a family comma reads as a middle name":
             _Claim(1, ('_ambiguities', 'middle', 'suffix'), "84dcae6d2ff5", ('DEFAULT',)),
         "fix(#540) a lone meng or MEng after a family comma reads as the given name":
             _Claim(2, ('_ambiguities', 'given', 'suffix'), "96bf15fae64b", ('DEFAULT',)),
         "fix(#540) a bare trailing meng or lac with words to spare stays the credential and reports the fork":
             _Claim(2, ('_ambiguities',), "4a72b3bde603", ('DEFAULT',)),
+        "fix(#540) accepted: a credential run behind a suffix comma that ends in meng re-reads the comma as a family comma":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "17e8a418c176", ('DEFAULT',)),
+        "fix(#540) a Title-case Lac behind a particle is the family name":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "828c38e0abaa", ('DEFAULT',)),
+        "fix(#540) accepted: a chunked dotted M.Eng. with nothing to spare is the family name":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "1d95a4b7cfc9", ('DEFAULT',)),
         # #436/#437's Latin alternation, first in every ledger.
         # Ten corpus names, `suffix` alone: the rule moves the
         # SEPARATOR and no role, so a widening that took a role would
@@ -5113,8 +5171,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # files carry the same literal list.
         # 2026-09-25, #540: 29 -> 30, 'nguyen van lac', reached and
         # not explained here, as in the 2.0.0 mapping.
+        # 2026-09-25, #540: 30 -> 31, 'Nguyen Van Lac', reached and
+        # not explained here, as in the 2.0.0 mapping.
         "fix(#385/#402) an all-particle name part initials its words (R2)":
-            _Claim(30, ('_initials',), "8b99d25622a3", ('DEFAULT',)),
+            _Claim(31, ('_initials',), "001fb4be2f76", ('DEFAULT',)),
         "fix(#360) los joined the particles, so it no longer initials":
             _Claim(1, ('_initials',), "cd721215f463", ('DEFAULT',)),
         # fix(#462), reach and digest as in the 2.0.0 mapping: the same
@@ -5347,20 +5407,26 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # zero role movers at review time.
         "change(suffix-acronym-collisions) ph leaves the acronym set":
             _Claim(1, ('family', 'middle', 'suffix'), '8a2e1dbb972d', None),
-        # #540's five rules: three literal alternations and two
+        # #540's eight rules: five literal alternations and three
         # literal names, every name one of #540's own case rows. The
         # report rule's `_ambiguities`-only roles are its point: a
         # widening that took a role would change them here first.
         "fix(#540) meng and lac are ambiguous credential acronyms, so a bare trailing Meng or Lac with no words to spare is the family name":
             _Claim(2, ('_ambiguities', 'family', 'suffix'), "34801c7cd448", ('DEFAULT',)),
         "fix(#540) accepted: a mixed-case MEng behind a full name reads as the family name":
-            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "8547712f3964", ('DEFAULT',)),
+            _Claim(2, ('_ambiguities', 'family', 'middle', 'suffix'), "28537bf159a3", ('DEFAULT',)),
         "fix(#540) accepted: a mixed-case MEng after a family comma reads as a middle name":
             _Claim(1, ('_ambiguities', 'middle', 'suffix'), "84dcae6d2ff5", ('DEFAULT',)),
         "fix(#540) a lone meng or MEng after a family comma reads as the given name":
             _Claim(2, ('_ambiguities', 'given', 'suffix'), "96bf15fae64b", ('DEFAULT',)),
         "fix(#540) a bare trailing meng or lac with words to spare stays the credential and reports the fork":
             _Claim(2, ('_ambiguities',), "4a72b3bde603", ('DEFAULT',)),
+        "fix(#540) accepted: a credential run behind a suffix comma that ends in meng re-reads the comma as a family comma":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "17e8a418c176", ('DEFAULT',)),
+        "fix(#540) a Title-case Lac behind a particle is the family name":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "828c38e0abaa", ('DEFAULT',)),
+        "fix(#540) accepted: a chunked dotted M.Eng. with nothing to spare is the family name":
+            _Claim(1, ('_ambiguities', 'family', 'suffix'), "1d95a4b7cfc9", ('DEFAULT',)),
         # #383/#479's three rules, the first this ledger carries. The
         # role rule is the 2.x shape of the 1.4.0 rule of the same
         # name -- two corpus names, the union of two disjoint role

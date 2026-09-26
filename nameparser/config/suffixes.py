@@ -211,14 +211,11 @@ as address terms, and only their -님 forms ship.
 """
 SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # Suffix acronyms that also commonly work as given-name nicknames on
-    # their own (e.g. "Ed", "JD"). Two readers in 2.x, not the single v1
-    # one this comment used to name: _extract._suffix_shaped, deciding
-    # whether parenthesized/quoted content is a nickname or a suffix
-    # (content matching one of these stays a nickname, the more common
-    # reading in ambiguous, delimiter-only context), and _vocab's
-    # suffix_as_written, which excludes the ambiguous subset from plain
-    # acronym membership so the period gate below is not dead code.
-    # _classify also tags membership as "vocab:suffix-ambiguous".
+    # their own (e.g. "Ed", "JD"). Read wherever the pipeline decides an
+    # acronym's bare reading (rules.md#S2) and by the delimited-content
+    # escape (content matching one of these stays a nickname, the more
+    # common reading in ambiguous, delimiter-only context). _classify
+    # also tags membership as "vocab:suffix-ambiguous".
     #
     # When adding a new entry to SUFFIX_ACRONYMS, also add it here only if
     # the exact letter sequence could plausibly be someone's name on its
@@ -227,9 +224,11 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # (e.g. 'mba', 'cpa', 'phd') don't need an entry. In 2.0 this set
     # also gates bare recognition: a bare ambiguous acronym reads as
     # the credential only with words to spare in front of it, or
-    # written in capitals inside a mixed-case name, and the parse
-    # reports the fork where it decides one (rules.md#S2), so
-    # 'Jack Ma' keeps its family name.
+    # written in capitals inside a mixed-case name; inside a
+    # mixed-case name any other cased form that is not wholly lower
+    # ('Ma', 'MEng') reads as the name even with words to spare --
+    # rules.md#S2. The parse reports the fork where it decides one,
+    # so 'Jack Ma' keeps its family name.
     #
     # The other half of the criterion, added 2026-09-07 with #342.
     # Being borne at all is only the entry ticket; what decides among
@@ -304,8 +303,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
 Acronym suffixes from SUFFIX_ACRONYMS that also plausibly collide with a
 word borne as a name -- a given name, nickname or surname. Not a
 partition of SUFFIX_ACRONYMS -- a small, standalone exception list, read
-by the delimited-content escape in ``_pipeline/_extract.py`` and by
-``_pipeline/_vocab.py``'s period gate.
+wherever the pipeline decides an acronym's bare reading (rules.md#S2).
 
 """
 SUFFIX_ACRONYMS = frozenset({

@@ -58,6 +58,7 @@
 {"name": "John Smith E.S.Q.", "shape": 1}
 {"name": "John Smith J.u.n.i.o.r.", "shape": 1}
 {"name": "John Smith Jr.", "shape": 1}
+{"name": "John Smith MEng PhD", "shape": 1}
 {"name": "John Smith Ma", "shape": 1}
 {"name": "John Smith Ph.", "shape": 1}
 {"name": "John Smith Q.W.E.R.T.", "shape": 1}
@@ -95,7 +96,9 @@
 {"name": "Md Abdul Karim", "shape": 1}
 {"name": "Minjun KIM", "shape": 1}
 {"name": "Mr MA", "shape": 1}
+{"name": "Nguyen Van Lac", "shape": 1}
 {"name": "Sir Bob Andrew Dole", "shape": 1}
+{"name": "Wang M.Eng.", "shape": 1}
 {"name": "X.Y.Z. Smith", "shape": 1}
 {"name": "abdul Smith Jr Ma", "shape": 1}
 {"name": "anh van do", "shape": 1}
@@ -214,8 +217,10 @@
 {"name": "John Smith, MD, Ma", "shape": 3}
 {"name": "John Smith, MD, R.A.I.", "shape": 3}
 {"name": "John Smith, PhD", "shape": 3}
+{"name": "John Smith, PhD MEng", "shape": 3}
 {"name": "Steven Hardman, MD, DO, DDS", "shape": 3}
 {"name": "john smith, ma", "shape": 3}
+{"name": "john smith, phd meng", "shape": 3}
 {"name": "John Smith, Dr.", "shape": 4}
 {"name": "de Mesnil Jean, Dr.", "shape": 4}
 {"name": "de la Cruz Juan Carlos", "shape": 4}
