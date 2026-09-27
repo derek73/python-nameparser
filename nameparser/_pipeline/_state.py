@@ -11,9 +11,12 @@ tests/v2/test_layering.py).
 from __future__ import annotations
 
 import bisect
-from collections.abc import Sequence
+import dataclasses
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, auto
+from types import MappingProxyType
+from typing import TYPE_CHECKING, TypeVar
 
 from nameparser._lexicon import Lexicon
 from nameparser._policy import Policy
@@ -126,7 +129,7 @@ class PendingAmbiguity:
 @dataclass(frozen=True, slots=True)
 class ParseState:
     """Carried through the stage fold. Frozen; stages return copies via
-    dataclasses.replace. Fields are filled progressively:
+    copy_with. Fields are filled progressively:
     extract_delimited -> extracted/masked; tokenize -> tokens (span-
     sorted)/comma_offsets/interpunct_offsets (the 间隔号 offsets the
     order and segmentation decisions consult, #298; the nakaguro
@@ -210,3 +213,57 @@ class ParseState:
     #: lean) rather than asking again.
     one_case: bool | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()
+
+
+def _copyable_fields(cls: type) -> tuple[str, ...]:
+    """The fields `copy_with` carries for `cls`, or TypeError where a
+    field copy would not build what `dataclasses.replace` builds: the
+    class must be decorated itself (not inherit the decoration) and keep
+    the generated `__init__`, with no `__post_init__` and no
+    `init=False` field."""
+    params = cls.__dict__.get("__dataclass_params__")
+    init = cls.__dict__.get("__init__")
+    # dataclasses compiles the __init__ it generates from a string; one
+    # written in the class body carries its source file instead.
+    generated = init is not None and init.__code__.co_filename == "<string>"
+    if (params is None or not generated
+            or hasattr(cls, "__post_init__")
+            or not all(f.init for f in dataclasses.fields(cls))):
+        raise TypeError(
+            f"copy_with cannot copy {cls.__name__}: it needs a dataclass "
+            "whose generated __init__ only assigns its fields")
+    return tuple(f.name for f in dataclasses.fields(cls))
+
+
+#: Built once, at import: a pipeline class that stops qualifying fails
+#: here rather than in a parse, and `copy_with` copies nothing else.
+_COPY_FIELDS: Mapping[type, tuple[str, ...]] = MappingProxyType({
+    cls: _copyable_fields(cls)
+    for cls in (WorkToken, PendingAmbiguity, ParseState)})
+
+_T = TypeVar("_T")
+
+if TYPE_CHECKING:
+    # mypy's dataclass plugin checks replace's keywords against the
+    # class, which a `**changes: object` signature would not.
+    from dataclasses import replace as copy_with
+else:
+    def copy_with(obj: _T, /, **changes: object) -> _T:
+        """`dataclasses.replace` for the pipeline's own dataclasses,
+        without its per-call cost: a direct field copy, which for the
+        classes in `_COPY_FIELDS` builds the same object
+        (decisions.md#parse-cost has the measurement)."""
+        cls = type(obj)
+        names = _COPY_FIELDS.get(cls)
+        if names is None:
+            raise TypeError(
+                f"copy_with copies only the pipeline's own dataclasses, "
+                f"not {cls.__name__}")
+        new = object.__new__(cls)
+        for name in names:
+            value = changes.pop(name) if name in changes else getattr(obj, name)
+            object.__setattr__(new, name, value)
+        if changes:
+            raise TypeError(f"{cls.__name__} has no field named "
+                            f"{', '.join(sorted(changes))}")
+        return new

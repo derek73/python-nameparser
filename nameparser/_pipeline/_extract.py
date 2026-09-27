@@ -32,12 +32,11 @@ pairs share an OPEN character.
 from __future__ import annotations
 
 import bisect
-import dataclasses
 import functools
 
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._state import (
-    COMMA_CHARS, ParseState, PendingAmbiguity,
+    COMMA_CHARS, ParseState, PendingAmbiguity, copy_with,
 )
 from nameparser._pipeline._vocab import maiden_marker_run
 from nameparser._types import AmbiguityKind, Role, Span
@@ -298,6 +297,6 @@ def extract_delimited(state: ParseState) -> ParseState:
                 continue
             reported.add(j)
             ambiguities.append(_unmatched(close, j)[1])
-    return dataclasses.replace(
+    return copy_with(
         state, extracted=tuple(extracted), masked=tuple(masked),
         ambiguities=state.ambiguities + tuple(ambiguities))

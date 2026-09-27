@@ -1,9 +1,15 @@
 import dataclasses
+from collections.abc import Callable
+
+import pytest
 
 from nameparser._lexicon import Lexicon
-from nameparser._pipeline._state import ParseState, Structure, WorkToken
+from nameparser._pipeline._state import (
+    ParseState, PendingAmbiguity, Structure, WorkToken, _copyable_fields,
+    copy_with,
+)
 from nameparser._policy import Policy
-from nameparser._types import Role, Span
+from nameparser._types import AmbiguityKind, Role, Span
 
 
 def _state(text: str) -> ParseState:
@@ -27,6 +33,117 @@ def test_state_is_frozen_and_replace_works() -> None:
     s2 = dataclasses.replace(s, tokens=(tok,))
     assert s.tokens == () and s2.tokens == (tok,)
     assert s2.tokens[0].role is None and s2.tokens[0].tags == frozenset()
+
+
+def test_copy_with_builds_what_dataclasses_replace_builds() -> None:
+    # copy_with stands in for dataclasses.replace on every pipeline
+    # dataclass, so the two have to agree on each of them.
+    tok = WorkToken("x", Span(0, 1))
+    pending = PendingAmbiguity(AmbiguityKind.COMMA_STRUCTURE, "detail")
+    for obj, changes in (
+        (_state("x"), {"tokens": (tok,), "one_case": True}),
+        (tok, {"role": Role.GIVEN, "tags": frozenset({"initial"})}),
+        (pending, {"indices": (0,)}),
+    ):
+        assert copy_with(obj, **changes) == dataclasses.replace(obj, **changes)
+        assert copy_with(obj) == obj and copy_with(obj) is not obj
+
+
+def test_copy_with_rejects_a_field_the_class_does_not_have() -> None:
+    with pytest.raises(TypeError, match="no field named rol"):
+        copy_with(WorkToken("x", Span(0, 1)), rol=Role.GIVEN)  # type: ignore[call-arg]
+
+
+def test_copy_with_copies_only_the_pipeline_dataclasses() -> None:
+    with pytest.raises(TypeError, match="not _Validated"):
+        copy_with(_Validated(1), value=2)
+
+
+@dataclasses.dataclass(frozen=True)
+class _Validated:
+    value: int
+
+    def __post_init__(self) -> None:
+        if self.value < 0:
+            raise ValueError("negative")
+
+
+@dataclasses.dataclass(frozen=True)
+class _OwnInit:
+    value: int
+
+    def __init__(self, value: int) -> None:
+        if value < 0:
+            raise ValueError("negative")
+        object.__setattr__(self, "value", value)
+
+
+@dataclasses.dataclass(frozen=True)
+class _Derived:
+    value: int
+    doubled: int = dataclasses.field(init=False, default=0)
+
+
+@dataclasses.dataclass
+class _Base:
+    value: int
+
+
+class _Undecorated(_Base):
+    def __init__(self, value: int) -> None:
+        super().__init__(value)
+        self.extra = "set by __init__"
+
+
+def _derived_with_doubled_set() -> _Derived:
+    obj = _Derived(1)
+    object.__setattr__(obj, "doubled", 2)
+    return obj
+
+
+def _unguarded_copy(obj: object, **changes: object) -> object:
+    new = object.__new__(type(obj))
+    for f in dataclasses.fields(obj):  # type: ignore[arg-type]
+        object.__setattr__(new, f.name, changes.get(f.name, getattr(obj, f.name)))
+    return new
+
+
+def _outcome(copy: Callable[[], object]) -> object:
+    """What a caller reads off the copy: every field, plus any attribute
+    set outside the fields, or the error the copy raised."""
+    try:
+        result = copy()
+    except ValueError as exc:
+        return type(exc).__name__
+    names = [f.name for f in dataclasses.fields(result)]  # type: ignore[arg-type]
+    return {name: getattr(result, name) for name in dict.fromkeys([*names, *vars(result)])}
+
+
+#: What dataclasses.replace builds for each class the guard refuses, and
+#: what a field copy without the guard would build instead: the negative
+#: control, recorded so the refusal test cannot pass vacuously.
+_UNGUARDED_EFFECT = [
+    ("validating __post_init__", _Validated(1), {"value": -1},
+     "ValueError", {"value": -1}),
+    ("validating __init__", _OwnInit(1), {"value": -1},
+     "ValueError", {"value": -1}),
+    ("init=False field", _derived_with_doubled_set(), {"value": 3},
+     {"value": 3, "doubled": 0}, {"value": 3, "doubled": 2}),
+    ("undecorated subclass", _Undecorated(1), {"value": 2},
+     {"value": 2, "extra": "set by __init__"}, {"value": 2}),
+]
+
+
+@pytest.mark.parametrize(
+    "shape,obj,changes,by_replace,by_field_copy", _UNGUARDED_EFFECT,
+    ids=[row[0] for row in _UNGUARDED_EFFECT])
+def test_the_guard_refuses_a_class_a_field_copy_would_get_wrong(
+        shape: str, obj: object, changes: dict[str, object],
+        by_replace: object, by_field_copy: object) -> None:
+    assert _outcome(lambda: dataclasses.replace(obj, **changes)) == by_replace  # type: ignore[type-var]
+    assert _outcome(lambda: _unguarded_copy(obj, **changes)) == by_field_copy
+    with pytest.raises(TypeError, match="cannot copy"):
+        _copyable_fields(type(obj))
 
 
 def test_worktoken_carries_optional_role() -> None:

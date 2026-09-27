@@ -59,12 +59,16 @@ from nameparser._policy import Policy
 #: are the two interpreters on the author's machine; 3.12, 3.13 and
 #: 3.15 are CI's, seeded from a review measurement and confirmed by
 #: the first green run -- a wrong seed fails with the real number.
+#:
+#: Lowered 2026-09-26 when the stages stopped copying state through
+#: dataclasses.replace (decisions.md#parse-cost). All five rows were
+#: re-measured with that harness, each on its own interpreter.
 _CALL_BASELINE = {
-    (3, 11): {"parse": 410, "facade": 447},
-    (3, 12): {"parse": 388, "facade": 425},
-    (3, 13): {"parse": 406, "facade": 443},
-    (3, 14): {"parse": 406, "facade": 443},
-    (3, 15): {"parse": 406, "facade": 443},
+    (3, 11): {"parse": 370, "facade": 407},
+    (3, 12): {"parse": 348, "facade": 385},
+    (3, 13): {"parse": 348, "facade": 385},
+    (3, 14): {"parse": 348, "facade": 385},
+    (3, 15): {"parse": 348, "facade": 385},
 }
 _BAND = 0.02
 
@@ -596,8 +600,11 @@ def test_a_clause_link_run_does_not_cost_quadratically() -> None:
 # are NOT recorded below, because recording them would put a number
 # under a band without a run behind it. Reproduce one on its own
 # interpreter and add the row.
+#
+# Lowered 2026-09-26 from 2587 with `_CALL_BASELINE` above, for the
+# same reason (decisions.md#parse-cost).
 _LINK_BASELINE = {
-    (3, 11): 2587,
+    (3, 11): 2301,
 }
 #: The same +-2% `_CALL_BASELINE` uses, and for the same reason: frame
 #: counts are deterministic for a given tree and interpreter, so the

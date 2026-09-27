@@ -37,11 +37,9 @@ decision site below; history in decisions.md#C1.
 """
 from __future__ import annotations
 
-import dataclasses
-
 from nameparser._pipeline._pieces import own_words
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, comma_bucket,
+    ParseState, PendingAmbiguity, Structure, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, caps_shape_candidate,
@@ -56,11 +54,11 @@ from nameparser._types import AmbiguityKind
 def segment(state: ParseState) -> ParseState:
     main = [i for i, t in enumerate(state.tokens) if t.role is None]
     if not main:
-        return dataclasses.replace(state, segments=(),
-                                   structure=Structure.NO_COMMA)
+        return copy_with(state, segments=(),
+                         structure=Structure.NO_COMMA)
     if not state.comma_offsets:
-        return dataclasses.replace(state, segments=(tuple(main),),
-                                   structure=Structure.NO_COMMA)
+        return copy_with(state, segments=(tuple(main),),
+                         structure=Structure.NO_COMMA)
     buckets: list[list[int]] = [[] for _ in range(len(state.comma_offsets) + 1)]
     for i in main:
         # _state.comma_bucket, not a local bisect: classify asks the
@@ -79,8 +77,8 @@ def segment(state: ParseState) -> ParseState:
         groups.pop()
     if len(groups) <= 1:
         segs = tuple(groups) if groups and groups[0] else (tuple(main),)
-        return dataclasses.replace(state, segments=segs,
-                                   structure=Structure.NO_COMMA)
+        return copy_with(state, segments=segs,
+                         structure=Structure.NO_COMMA)
 
     # The case fact, asked LAZILY: only a comma form can turn on it
     # here, and only where the part after the first comma is a single
@@ -306,7 +304,7 @@ def segment(state: ParseState) -> ParseState:
                 f"segment {texts_joined!r} beyond the recognized comma "
                 f"structures; consumed as suffix best-effort",
                 tuple(seg)))
-    return dataclasses.replace(state, segments=tuple(groups),
-                               structure=structure,
-                               ambiguities=tuple(ambiguities),
-                               one_case=one_case)
+    return copy_with(state, segments=tuple(groups),
+                     structure=structure,
+                     ambiguities=tuple(ambiguities),
+                     one_case=one_case)
