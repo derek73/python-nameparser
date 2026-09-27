@@ -1024,5 +1024,5 @@ def assign(state: ParseState) -> ParseState:
         for piece in state.pieces[seg_idx]:
             _set_roles(tokens, piece, Role.SUFFIX)
     return copy_with(state, tokens=tuple(tokens),
-                               order=order,
-                               ambiguities=tuple(ambiguities))
+                     order=order,
+                     ambiguities=tuple(ambiguities))

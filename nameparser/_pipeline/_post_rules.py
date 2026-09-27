@@ -887,4 +887,4 @@ def post_rules(state: ParseState) -> ParseState:
                     tags=tokens[i].tags | {UNJOINED_CONJUNCTION_TAG})
     _mark_suffix_entries(tokens, state)
     return copy_with(state, tokens=tuple(tokens),
-                               ambiguities=tuple(ambiguities))
+                     ambiguities=tuple(ambiguities))

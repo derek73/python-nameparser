@@ -191,6 +191,6 @@ def tokenize(state: ParseState) -> ParseState:
             else copy_with(a, indices=_containing(a.origin))
             for a in ambiguities)
     return copy_with(state, tokens=tuple(tokens),
-                               comma_offsets=tuple(sorted(commas)),
-                               interpunct_offsets=tuple(sorted(interpuncts)),
-                               ambiguities=ambiguities)
+                     comma_offsets=tuple(sorted(commas)),
+                     interpunct_offsets=tuple(sorted(interpuncts)),
+                     ambiguities=ambiguities)

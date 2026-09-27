@@ -324,5 +324,5 @@ def classify(state: ParseState) -> ParseState:
     # The write rides the replace this stage already makes, so
     # recording the fact costs no frame of its own.
     return copy_with(state, tokens=tokens,
-                               ambiguities=tuple(ambiguities),
-                               one_case=one_case)
+                     ambiguities=tuple(ambiguities),
+                     one_case=one_case)

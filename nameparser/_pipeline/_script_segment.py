@@ -179,7 +179,7 @@ def _split(state: ParseState, i: int, splits: tuple[int, ...],
             AmbiguityKind.SEGMENTATION, detail,
             tuple(range(i, i + added + 1))),)
     return copy_with(state, tokens=tokens, segments=segments,
-                               ambiguities=ambiguities)
+                     ambiguities=ambiguities)
 
 
 @functools.lru_cache(maxsize=16)
