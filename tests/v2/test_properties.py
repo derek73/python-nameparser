@@ -497,6 +497,144 @@ def test_a_word_the_clause_gives_up_lands_in_suffix() -> None:
         f"name; the rest cannot exercise M2 at all")
 
 
+def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
+    """rules.md#H5's transparency, asked where #535 found it broken:
+    a maiden clause ending '<run> Prof.' and one ending 'Prof. <run>'
+    must read alike in every field but the order of the title words,
+    wherever a trailing rule reads the clause -- no comma, the part
+    before a suffix comma, the given part after a family comma -- and
+    the run behind the title reads as post-nominals, i.e. the clause
+    gives the credential up, and nothing ahead stands to take the
+    title (no particle chain, no bound-given join, no name left
+    empty). The invariant is claimed over the forms below and no
+    wider. Where the clause KEEPS the credential the spellings differ,
+    a clause being one contiguous run: 'Doe nee Smith ba Prof.' gives
+    the title up, 'Doe nee Smith Prof. ba' cannot; and where something
+    in or ahead of the clause would take the title they differ too
+    ('Jane van der Berg nee Smith PhD Prof.' against '... Prof. PhD',
+    'Jane Doe nee Smith do MA Prof.' against '... do Prof. MA') --
+    rules.md#M2's Accepted pairs, which are examples rather than a
+    complete list. No head or run below has a particle, a bound given
+    name or an empty name in or ahead of the clause.
+
+    An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so it
+    consults no rule statement. RECORDED NEGATIVE CONTROL: at e0f1a2fa,
+    before the walk read the chain, these 36 pairs disagreed on 72
+    fields ('Jane Doe nee Smith MA Prof.' read maiden 'Smith MA Prof.'
+    against 'Smith Prof.' and suffix 'MA').
+    """
+    forms = ("Jane Doe nee Smith {}", "Doe, Jane nee Smith {}",
+             "JANE DOE NEE SMITH {}", "jane doe nee smith {}",
+             "Prof. Jane Doe nee Smith {}", "Jane Doe nee Smith {}, PhD")
+    runs = ("MA", "V", "PhD", "Jr.", "MA JD", "M.A.")
+    failures = []
+    for form in forms:
+        for tail in runs:
+            title = "Prof."
+            if form == form.upper():
+                tail, title = tail.upper(), title.upper()
+            elif form == form.lower():
+                tail, title = tail.lower(), title.lower()
+            a = parse(form.format(f"{tail} {title}"))
+            b = parse(form.format(f"{title} {tail}"))
+            for field in ("given", "middle", "family", "suffix", "maiden"):
+                if str(getattr(a, field)) != str(getattr(b, field)):
+                    failures.append(
+                        f"{form!r} {tail!r} {field}: "
+                        f"{str(getattr(a, field))!r} vs "
+                        f"{str(getattr(b, field))!r}")
+            if sorted(str(a.title).split()) != sorted(str(b.title).split()):
+                failures.append(f"{form!r} {tail!r} title")
+    assert not failures, "\n".join(failures)
+
+
+def test_a_title_the_clause_gives_up_lands_in_title() -> None:
+    """rules.md#M2's invariant for the title stop (#535): a
+    period-marked title word written after the marker ends the parse
+    in the maiden name or in the title field, never in a name part.
+
+    Over heads reaching all three readers and the guards: no comma
+    (TRAILING), the given part after a family comma (GIVEN_SLOT), a
+    tail segment behind a suffix comma ('Jane Doe, PhD', NONE), a bare
+    title head (the view check), a particle head (the chain), a
+    bound-given head (P5). No head puts the clause before a family
+    comma, the other place NONE reads. It holds at e0f1a2fa too,
+    where the clause kept every title, so its control is a mutation:
+    RECORDED NEGATIVE CONTROL, re-measured 2026-09-26 after the link
+    and particle-title bodies joined: the title stop's release check
+    replaced by `if True:` fails 83 tokens across 78 of these 240
+    texts (54 across 49 of the first 160). 240 parses, about 0.03s on
+    CPython 3.11 (measured the same day).
+    """
+    heads = ("Jane Doe", "Doe, Jane", "Doe, Prof.", "Dr.", "J.",
+             "Jane van der Berg", "Berg, abdul", "Jane Doe, PhD")
+    bodies = ("Smith Prof.", "Smith MA Prof.", "Smith Prof. MA",
+              "Smith V Prof.", "Smith Ma Prof.", "Smith Prof. Dr.",
+              "Prof.", "Prof. Dr.", "Smith King.", "Smith MA do Prof.",
+              "Smith i DO Prof.", "Smith i MA Prof.", "Smith St.",
+              "Smith MA St.", "Smith V St.")
+    failures = []
+    for head in heads:
+        for body in bodies:
+            for text in (f"{head} nee {body}",
+                         f"{head} nee {body}".upper()):
+                name = parse(text)
+                marker = text.lower().index(" nee ") + 5
+                for tok in name.tokens:
+                    if (tok.span is not None and tok.span.start >= marker
+                            and "vocab:title" in tok.tags
+                            and tok.text.endswith(".")
+                            and tok.role not in (Role.MAIDEN, Role.TITLE)):
+                        failures.append(
+                            f"{text!r}: {tok.text!r} -> {tok.role.value}")
+    assert not failures, "\n".join(failures)
+
+
+def test_a_title_first_word_counts_as_a_word() -> None:
+    """rules.md#M2's first-word floor, over two INPUTS: the floor is
+    the title chain's own (`trailing_titles` takes it), so whether the
+    first word after the marker IS title vocabulary ('King.') or not
+    ('Smith') must not change what a trailing credential behind it
+    reads as -- the floor holds either word out of the chain's count,
+    so the credential is read the same way in both. Both sides must
+    also take a clause whose first word is that head, so two declined
+    clauses cannot pass by agreeing about nothing.
+
+    An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so
+    it consults no rule statement. RECORDED NEGATIVE CONTROL, measured
+    2026-09-26 on a copy of this tree with the floor removed entirely
+    (`tail_reading` handed 1 in `_maiden_take`): every one of the 30
+    pairs fails, on the head check alone -- the chain takes 'King.',
+    the clause declines, and the suffixes still agree (0 of 30
+    disagree), which is why the head check is here. This replaces a
+    figure recorded for a clamp-based variant, which a later attempt
+    could not reproduce from its description.
+    """
+    forms = ("Jane Doe nee {} {}", "Doe, Jane nee {} {}")
+    runs = ("ba", "MA", "V", "PhD", "MA JD")
+    heads = ("King.", "Smith")
+    failures = []
+    for form in forms:
+        for tail in runs:
+            texts = [form.format(h, tail) for h in heads]
+            for variant in (texts, [t.upper() for t in texts],
+                            [t.lower() for t in texts]):
+                a, b = (parse(t) for t in variant)
+                if str(a.suffix) != str(b.suffix):
+                    failures.append(
+                        f"{variant[0]!r} vs {variant[1]!r}: "
+                        f"{str(a.suffix)!r} vs {str(b.suffix)!r}")
+                # both sides take a clause, and its first word is the
+                # head -- otherwise agreeing suffixes could be two
+                # declined clauses agreeing about nothing
+                for name, text in ((a, variant[0]), (b, variant[1])):
+                    head = text.split(" nee ", 1)[-1].split(" NEE ", 1)[-1]
+                    if str(name.maiden).split()[:1] != head.split()[:1]:
+                        failures.append(
+                            f"{text!r}: maiden {str(name.maiden)!r}")
+    assert not failures, "\n".join(failures)
+
+
 def test_no_two_ambiguities_name_the_same_token_span() -> None:
     """The maiden walk and assign's trailing peel both report at this
     class, and group's particle-chain emitter stands beside them. None
@@ -2580,3 +2718,46 @@ def test_the_case_only_walk_can_fail(
     failures = _case_only_violations()
     assert failures, "the case-only walk cannot see a substitution"
     assert any("'Ph.D.' -> 'PhD'" in line for line in failures), failures
+
+
+def test_a_delimiter_core_reads_as_if_it_were_not_written() -> None:
+    """#538: under a core-bearing policy, a maiden clause reads exactly
+    as the same text written without the core. The core is structure
+    the caller declared, the #206 drop takes a LONE core out of the
+    output, and
+    rules.md#M2's link exception asks for a NAME word on each side of
+    the link -- so the word on a link's side is the one past the core.
+
+    Asked of the `maiden` field only, because that is the field #538
+    is about: a core that lands inside a connective run the join
+    merges ('Puig Dr. i - y Soler') stays in the SUFFIX text under this
+    policy and the default alike, which is a separate gap.
+
+    RECORDED NEGATIVE CONTROL: at e0f1a2fa, before the core was stepped
+    over, 6 of these 81 texts disagreed ('Puig Mr. - i Soler' read
+    maiden 'Puig Mr. i Soler' against 'Puig Mr.', and the same for
+    'Puig Dr. - i y Soler', under each of the three heads).
+    """
+    dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
+    heads = ("Smith, John, PhD née", "Smith, John, MD née",
+             "Doe, Jane, PhD nee")
+    bodies = ("Puig Mr. i Soler", "Puig i Soler", "Puig Dr. i y Soler",
+              "Puig i i Soler", "Carod i Rovira Mr.", "Puig Mr. i Dr. Soler",
+              "Jones Smith i Soler", "Puig y Soler", "Puig Jr. i Soler")
+    failures = []
+    total = 0
+    for head in heads:
+        for body in bodies:
+            parts = body.split()
+            # a core in every gap PAST the first word: one between the
+            # marker and that word is below the clause's bound already
+            # (test_a_core_between_the_marker_and_the_first_word_is_below_lo)
+            for gap in range(1, len(parts)):
+                written = " ".join(parts[:gap] + ["-"] + parts[gap:])
+                total += 1
+                got = str(dash.parse(f"{head} {written}").maiden)
+                want = str(dash.parse(f"{head} {body}").maiden)
+                if got != want:
+                    failures.append(f"{head} {written!r}: {got!r} != {want!r}")
+    assert total == 81
+    assert not failures, "\n".join(failures)

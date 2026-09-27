@@ -11,7 +11,8 @@ from nameparser._pipeline import _group as _group_module
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited, _maiden_marked
 from nameparser._pipeline._group import (
-    TailReader, _group_segment, group, marker_run_length,
+    TailReader, _group_segment, _release_reads_off, group,
+    marker_run_length,
 )
 from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
@@ -1142,6 +1143,19 @@ def test_an_unmapped_reader_is_a_loud_failure_rather_than_a_default(
                        maiden_ambiguities=[])
 
 
+def test_the_release_check_fails_loudly_on_an_unmapped_reader(
+) -> None:
+    """`_release_reads_off` dispatches on the two readers that reach it
+    and ends with `assert_never`, as `_maiden_take`'s one dispatch
+    does. Unreachable at runtime by construction, so reached here with
+    a value outside the enum -- the loudness pinned, and the line kept
+    from being an uncovered statement."""
+    with pytest.raises(AssertionError):
+        _release_reads_off([[0]], [set()], [], 0, 1, 0,
+                           cast(TailReader, 99), None,  # type: ignore[arg-type]
+                           tail_follows=False)
+
+
 def test_the_reader_is_pinned_to_the_structure_it_is_read_from(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1810,42 +1824,62 @@ def test_a_core_between_the_marker_and_the_first_word_is_below_lo(
     assert _maiden_texts(plain) == ["-", "i", "Jones"]
 
 
-def test_a_core_beside_a_link_wrongly_passes_for_a_word_until_538(
+def test_a_core_beside_a_link_is_stepped_over_like_a_connective(
 ) -> None:
-    """A KNOWN-WRONG reading, pinned so the repair has to move it.
+    """rules.md#M2 gives the link exception a name word on each side,
+    and a delimiter core is structure the caller declared rather than
+    a name word -- so the word on a link's side is the one past the
+    core, and the clause reads as the same text written without it
+    (#538).
 
-    rules.md#M2 gives the link exception a name word on each side,
-    and a delimiter core is structure rather than a name word -- so
-    the clause below should end where its separator-less twin ends.
-    It does not. Update this test when #538 lands: the assertion
-    beneath the first parse is the deviation, not the contract, and
-    rules.md#M2's `deviates: #538` example is its other half.
+    Past the clause's first word the core used to be an ordinary index
+    to the neighbour walk, which stepped over connectives and nothing
+    else, so it stood in for the name word on the link's left and the
+    clause ran on past the link it otherwise ends at. The population is
+    decisions.md's 2026-09-22 #397 follow-up entry: none of it
+    reachable at the default policy, `extra_suffix_delimiters` being
+    empty there.
     """
-    # WHAT IS NOT TRUE OF A CORE PAST `lo`, pinned as it reads rather
-    # than as it ought to: inside the clause a core is an ordinary
-    # index to `_run_neighbours`, which steps over CONNECTIVES and
-    # nothing else, so it stands as the name word on the link's left
-    # and the clause runs on past a title it would otherwise stop at.
-    # `_between_name_words` is asked about a core on one side or the
-    # other in 51,072 of 900,023 calls over the population above, and
-    # the answer differs from a core-skipping reading in 8,094 parses
-    # (1,278 texts); 1,824 of those move the `maiden` field, on 288
-    # texts. None of the 288 is reachable at the default policy,
-    # `extra_suffix_delimiters` being empty there -- so the one of
-    # them rules.md#M2 now carries as a `deviates: #538` example (this
-    # row's first text) enters corpus_rules.jsonl as a name the gate
-    # parses with the DEFAULT facade, where it moves for the link fix
-    # and not for this. Reported, not fixed: the repair is `cores`
-    # threaded through three call sites into `_run_neighbours`, not a
-    # one-liner (#538).
     out = _grouped("Smith, John, PhD née Puig Mr. - i Soler",
                    policy=_DASH, lexicon=_LINK_LEX)
-    assert _maiden_texts(out) == ["Puig", "Mr.", "i", "Soler"]
+    assert _maiden_texts(out) == ["Puig", "Mr."]
     # the same clause with the core taken out of it: the title IS the
     # word on the link's left and refuses, so the clause ends there.
     without = _grouped("Smith, John, PhD née Puig Mr. i Soler",
                        policy=_DASH, lexicon=_LINK_LEX)
     assert _maiden_texts(without) == ["Puig", "Mr."]
+    # and between two NAME words the core is stepped over too, so the
+    # link joins exactly as it joins written without the core -- the
+    # skip reading, not a boundary one, which would have ended the
+    # clause at 'Puig' and pushed the link into the credentials.
+    between = _grouped("Smith, John, PhD née Puig - i Soler",
+                       policy=_DASH, lexicon=_LINK_LEX)
+    assert _maiden_texts(between) == ["Puig", "i", "Soler"]
+
+
+def test_a_core_beside_a_link_in_a_credential_tail_is_dropped() -> None:
+    """The same stepping applies outside a maiden clause, in the
+    `frozen` loop's own `_run_neighbours` call. In BOTH texts below,
+    what stands beyond the core is a credential or nothing -- never a
+    name word -- so the link's neighbour search, stepping past the
+    core, finds no name word there either and stays a lone suffix
+    word rather than joining. The core is then a lone piece with
+    nothing joined to it, which the #206 drop removes exactly as it
+    removes any lone core, and the entries it stood between separate
+    the way they already do in 'PhD - MD' -> 'PhD, MD' (#538). Where a
+    name word stands beyond the core instead, the link joins across it
+    and the core survives in the suffix text -- not this test's shape;
+    rules.md#P3's separator sentence states the join, decisions.md's
+    #538 entry the surviving core.
+
+    RECORDED NEGATIVE CONTROL: at e0f1a2fa, before the frozen loop
+    stepped over a core, these read suffix 'PhD - i Soler' and
+    '- i Puig' -- the core kept inside the piece the link joined.
+    """
+    dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
+    assert str(dash.parse("Smith, John, PhD - i Soler").suffix) == \
+        "PhD, i Soler"
+    assert str(dash.parse("Smith, John, - i Puig").suffix) == "i Puig"
 
 
 def test_a_marker_with_nothing_after_it_declines_before_the_bound(
@@ -1967,3 +2001,157 @@ def test_a_frozen_link_is_still_absorbed_by_a_neighbours_join() -> None:
     assert out.family == "Puig y i"
     assert out.middle == "Carod Rovira"
     assert out.suffix == ""
+
+
+def test_the_title_stop_needs_a_name_word_left_standing() -> None:
+    """rules.md#M2 (#535): the title stop is asked over the name the
+    take would leave. 'Dr. nee Jones Smith Prof.' would leave 'Dr.
+    Prof.', where H5's chain has no name word to stand behind and the
+    title would read as the family name -- so the clause keeps it."""
+    out = _grouped("Dr. nee Jones Smith Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Jones", "Smith", "Prof."]
+    # the control: with a name word ahead of the marker the same clause
+    # gives the title up
+    ok = _grouped("Jane Doe nee Jones Smith Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Jones", "Smith"]
+
+
+def test_a_released_title_behind_a_particle_is_withdrawn() -> None:
+    """P2's chain runs on over a trailing title (rules.md#H5 Accepted),
+    so a title the clause gives up with a particle ahead of it in the
+    remaining name would join the family; the release is withdrawn."""
+    out = _grouped("Jane van der Berg nee Smith Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith", "Prof."]
+    out = _grouped("Jane Doe nee Smith MA do Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith", "MA", "do"]
+
+
+def test_the_numeral_stop_asks_the_join_question() -> None:
+    """The numeral fork never asked whether a join below the take
+    would absorb the word it releases: after a family comma the
+    bound-given join took the V ('Berg, abdul nee Smith V' read given
+    'abdul V' at 2.2.0 and 2.3.0). It asks now, through the shared
+    check."""
+    out = _grouped("Berg, abdul nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith", "V"]
+    # the control: with no bound word the numeral is released as before
+    ok = _grouped("Berg, Jane nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Smith"]
+
+
+def test_the_first_word_floor_holds_a_title_out_of_the_chain() -> None:
+    """A title straight after the marker stays the maiden name: the
+    floor is the title chain's own, so the chain never takes that word
+    and stops at it, taking only the titles behind it."""
+    assert _maiden_texts(_grouped("Jane Doe nee King.", lexicon=Lexicon.default())) == ["King."]
+    assert _maiden_texts(_grouped("Jane Doe nee Prof. Dr.", lexicon=Lexicon.default())) == ["Prof."]
+
+
+def test_the_floor_keeps_the_first_word_in_the_chains_count() -> None:
+    """rules.md#M2 (#535 review): the floor lives in the chain now,
+    not in a clamp read after the fact -- the chain may not take the
+    first word after the marker, so the re-peel's count still holds
+    it and a trailing suffix behind a chained title reads as
+    'Jane Doe nee Smith ba' reads it."""
+    out = _grouped("Jane Doe nee King. ba", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["King."]
+    # the control: an unlisted first word gives the same count
+    ok = _grouped("Jane Doe nee Smith ba", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Smith"]
+
+
+def test_a_given_slot_numeral_with_a_credential_tail_stays() -> None:
+    """rules.md#M2/#144 (#535 review): after a family comma the given
+    slot reads a lone numeral as a suffix only where the given part is
+    the LAST comma part -- a third comma part behind it withdraws the
+    release, so 'Doe, Jane nee Smith V, PhD' keeps the V where
+    'Doe, Jane nee Smith V' (no tail) gives it up."""
+    out = _grouped("Doe, Jane nee Smith V, PhD", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith", "V"]
+    ok = _grouped("Doe, Jane nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Smith"]
+
+
+def test_the_bound_given_half_of_the_join_model_is_the_given_slots_alone() -> None:
+    """rules.md#P5 (#535 review): the LENIENT bound-given join only
+    applies after a family comma; before one the STRICT reserve
+    declines a join that would change a suffix reading, so a numeral
+    the peel already reads as a suffix stays given up -- 'abdul nee
+    Smith V' (no comma) keeps the release where 'Berg, abdul nee
+    Smith V' (after a comma) withdraws it."""
+    out = _grouped("abdul nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(out) == ["Smith"]
+    ok = _grouped("Berg, abdul nee Smith V", lexicon=Lexicon.default())
+    assert _maiden_texts(ok) == ["Smith", "V"]
+
+
+def test_the_given_title_chain_stops_at_a_member_with_a_title_behind() -> None:
+    """rules.md#M2 after a family comma (#535): the given part's title
+    chain is read from the end over what its first suffix pass leaves,
+    and that pass takes a class member only where every piece behind
+    it is taken too -- so 'MA' with 'Prof.' behind it is a name word
+    there and the chain stops at it ('Doe, Jane Dr. MA Prof.' reads
+    middle 'Dr.'). A clause that released 'Rev.' as a title would put
+    it in the middle name; it keeps it instead, and only the title
+    behind the member and the member itself leave. And the lenient
+    trailing numeral (#144) counts as that pass's suffix once the
+    numeral stop has asked it, so 'Prof. V' leaves the clause whole,
+    as 'Doe, Jane Prof. V' reads."""
+    rev = _grouped("Doe, Jane nee Smith Rev. MA Prof.",
+                   lexicon=Lexicon.default())
+    assert _maiden_texts(rev) == ["Smith", "Rev."]
+    num = _grouped("Doe, Jane nee Smith Prof. V", lexicon=Lexicon.default())
+    assert _maiden_texts(num) == ["Smith"]
+
+
+def test_a_link_the_walk_stops_at_gives_up_only_a_run_that_reads_off(
+) -> None:
+    """rules.md#M2 (#535): with the title chained, the link exception
+    can refuse a link it used to join, and a stop at a link gives up
+    the words behind it. 'i DO Prof.' left standing behind 'Jane Doe'
+    does not read as post-nominals, so the clause keeps the link and
+    the DO ('Doe i' was the middle name without the check); 'i MA
+    Prof.' does, so there the link and the credential leave."""
+    kept = _grouped("Jane Doe nee Smith i DO Prof.",
+                    lexicon=Lexicon.default())
+    assert _maiden_texts(kept) == ["Smith", "i", "DO"]
+    given_up = _grouped("Jane Doe nee Smith i MA Prof.",
+                        lexicon=Lexicon.default())
+    assert _maiden_texts(given_up) == ["Smith"]
+
+
+def test_only_a_link_the_title_chain_refused_asks_the_release_question(
+) -> None:
+    """The link check is asked only where reading the title chain made
+    the link exception refuse a link it joined over the words as
+    written. A link refused either way stops as it always did: 'Doe,
+    Jane nee Smith i V' gives up 'i V' (a check that fired here kept a
+    dangling 'i' in the birth name). And the given part's lenient
+    numeral counts as a suffix where only chained titles stand behind
+    it, as bare 'Doe, Jane i V Prof.' reads suffix 'i V' -- but not
+    where another comma part follows, where it is a middle initial."""
+    plain = _grouped("Doe, Jane nee Smith i V", lexicon=Lexicon.default())
+    assert _maiden_texts(plain) == ["Smith"]
+    titled = _grouped("Doe, Jane nee Smith i V Prof.",
+                      lexicon=Lexicon.default())
+    assert _maiden_texts(titled) == ["Smith"]
+    tail = _grouped("Doe, Jane nee Smith i V Prof., PhD",
+                    lexicon=Lexicon.default())
+    assert _maiden_texts(tail) == ["Smith", "i", "V"]
+
+
+def test_a_released_particle_title_is_kept_after_a_family_comma() -> None:
+    """rules.md#M2 with P6 (#535): after a family comma a released
+    title that is also a particle would be attached to the family by
+    P6 ('Doe, Jane St.' reads family 'St. Doe'), so the clause keeps
+    it. A title that is no particle still leaves, and so does the
+    credential DO, which the given slot's own lean reads (#533); with
+    no comma P6 does not run and 'St.' leaves as a title."""
+    kept = _grouped("Doe, Jane nee Smith St.", lexicon=Lexicon.default())
+    assert _maiden_texts(kept) == ["Smith", "St."]
+    title = _grouped("Doe, Jane nee Smith Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(title) == ["Smith"]
+    credential = _grouped("Doe, Jane nee Smith DO", lexicon=Lexicon.default())
+    assert _maiden_texts(credential) == ["Smith"]
+    no_comma = _grouped("Jane Doe nee Smith St.", lexicon=Lexicon.default())
+    assert _maiden_texts(no_comma) == ["Smith"]

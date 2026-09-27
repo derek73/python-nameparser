@@ -38,9 +38,12 @@
 {"name": "Jane Doe nee Smith MA y", "shape": 1}
 {"name": "Jane Doe nee Smith Ma", "shape": 1}
 {"name": "Jane Doe nee Smith Ma JD", "shape": 1}
+{"name": "Jane Doe nee Smith Ma Prof.", "shape": 1}
 {"name": "Jane Doe nee Smith PhD MA", "shape": 1}
+{"name": "Jane Doe nee Smith Prof.", "shape": 1}
 {"name": "Jane Doe nee Smith Prof. MA", "shape": 1}
 {"name": "Jane Doe nee Smith V", "shape": 1}
+{"name": "Jane Doe nee Smith V Prof.", "shape": 1}
 {"name": "Jane Doe nee Smith XYZ", "shape": 1}
 {"name": "Jane Doe nee Smith do", "shape": 1}
 {"name": "Jane Doe nee Yo-Yo Ma", "shape": 1}
@@ -142,6 +145,7 @@
 {"name": "Doe, Jane nee Smith DO", "shape": 2}
 {"name": "Doe, Jane nee Smith Do", "shape": 2}
 {"name": "Doe, Jane nee Smith MA", "shape": 2}
+{"name": "Doe, Jane nee Smith MA Prof.", "shape": 2}
 {"name": "Doe, Jane nee Smith MA do", "shape": 2}
 {"name": "Doe, Jane nee Smith Ma", "shape": 2}
 {"name": "Doe, Jane nee Smith do", "shape": 2}
