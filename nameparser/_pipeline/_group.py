@@ -807,12 +807,17 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # point, and a row for one name would have to be guessed for
         # the four interpreters only CI runs.
         #
-        # And `stop < trailing`: a stop at or past the numeral stop
-        # would move the clause's end the wrong way. The walked piece
-        # is bounded by `trailing`, but the FLOOR is an index, and the
-        # title chain's splice can leave the numeral stop in front of
-        # it -- 'Jane Doe nee V Prof.' chains the title, the numeral
-        # stop lands on 'V', and the floor names the piece after it.
+        # And `stop < trailing`, DEFENSIVE: a stop at or past the
+        # numeral stop would move the clause's end the wrong way. The
+        # walked piece is bounded by `trailing`, but the FLOOR is an
+        # index, and the title chain's splice can leave the numeral
+        # stop in front of it ('Jane Doe nee V Prof.' reaches `stop >
+        # trailing` above, though its head is no class member and the
+        # tag test below declines it anyway). Measured 2026-09-26: no
+        # input on the maiden grids has a class-member head with `stop
+        # >= trailing`, and dropping the guard changes no reading there --
+        # kept because a caller's vocabulary can list a title as a
+        # class member.
         if (stop < trailing and len(head) == 1
                 and AMBIGUOUS_ACRONYM_TAG in tokens[head[0]].tags):
             left = [i for i in seen if i < seen[m] or i >= stop]
