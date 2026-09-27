@@ -511,10 +511,12 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     one question of the whole span they give up
     (`_release_reads_off`), and each spares the first word after the
     marker. The numeral stop does not: it reads FROM the marker by
-    design, so a numeral standing straight after it declines the
-    clause outright rather than sparing the word -- 'Jane Smith née V'
-    (rules.md#M2) stays a marker with nothing behind it and the name
-    has no maiden clause at all.
+    design, so a numeral standing straight after it is not spared: it
+    declines the clause where the name left standing reads it as a
+    suffix -- 'Jane Smith née V' (rules.md#M2) stays a marker with
+    nothing behind it and the name has no maiden clause at all -- and
+    otherwise the clause keeps it ('Dr. nee V' keeps maiden 'V',
+    nothing being left for the numeral to be the suffix of).
 
     A tail segment's delimiter cores (`cores`, empty elsewhere) are
     structure, not words, and group() drops them after the pass --

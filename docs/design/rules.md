@@ -1283,7 +1283,8 @@ M2. Rationale: a maiden marker announces that what follows it is the
     numeral in front of the title stops the take exactly as it does
     with the title absent. Neither the credential stop nor the title
     stop takes the first word after the marker; a numeral there
-    declines the clause, as it does written alone.
+    declines the clause where the name left standing reads it as a
+    suffix, and otherwise the clause keeps it.
     One suffix word does not stop it. Where such a word is also a
     connective standing between two name words of the clause (P3),
     a link inside the birth name does not end it, and the words on
@@ -1375,6 +1376,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "John née Jones Smith V"    →  maiden="Jones Smith"
       "John née Jones Smith V"    →  suffix="V"
       "Jane Smith née V"          →  suffix="V"
+      "Dr. nee V"                 →  maiden="V"  · boundary
       "J. née Jones Smith V"      →  maiden="Jones Smith V"  · boundary
       "Jane née Jones J. V"       →  maiden="Jones J. V"  · boundary
       "Jane Doe nee Smith MA"     →  maiden="Smith"
@@ -1450,6 +1452,22 @@ M2. Rationale: a maiden marker announces that what follows it is the
     behind it, and the two spellings differ.
       "Doe nee Smith ba Prof."         →  maiden="Smith ba"
       "Doe nee Smith Prof. ba"         →  maiden="Smith Prof. ba"
+    Accepted: where the clause gives the credential up in both
+    spellings, the title still leaves only where nothing ahead stands
+    to take it. A particle chain ahead runs on over a trailing title
+    (H5), and a bound given-name join or a name left with no name
+    word would absorb it too, so a title in front of the credential
+    stays in the clause while one behind it, which the first suffix
+    word has already cut off, leaves — the split H5 already accepts
+    for the same name written without a marker.
+      "Jane van der Berg nee Smith PhD Prof."  →  title="Prof."
+      "Jane van der Berg nee Smith Prof. PhD"  →  maiden="Smith Prof."
+    Accepted: a released particle with a title behind it is withdrawn,
+    because the particle chain would run on over the title (P2, H5);
+    so the particle written in front of the title stays in the clause,
+    while written behind it, it leaves with the title.
+      "Jane Doe nee Smith DO Prof."    →  maiden="Smith DO"
+      "Jane Doe nee Smith Prof. DO"    →  suffix="DO"
     Accepted: H5's reach into the ordinary surnames the title
     vocabulary holds reaches the end of a clause as it reaches the end
     of a name: a period written behind one ends the clause as a title

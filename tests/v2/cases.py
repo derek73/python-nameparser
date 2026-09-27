@@ -3858,6 +3858,19 @@ CASES: tuple[Case, ...] = (
                "'V', maiden 'Smith', suffix 'PhD' -- an M2 violation "
                "predating #535, which had widened it onto 'Smith V "
                "Prof., PhD' below rather than fixing it"),
+    Case("a_lone_numeral_before_a_credential_tail_stays_maiden",
+         "Doe, Jane nee V, PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD",
+          "maiden": "V"},
+         classification="fix(#535)",
+         notes="the numeral stop reads FROM the marker, so a numeral "
+               "straight after it declines the clause only where the "
+               "name left standing reads it as a suffix; the given "
+               "slot does not with a third comma part behind it "
+               "(#144's condition, asked of the clause since #535), so "
+               "the clause keeps 'V'. 2.3.0 and the parent d9d80492 "
+               "read middle 'nee V', the marker a name word; "
+               "'Doe, Jane nee V, Jr.' moves the same way"),
     Case("a_title_behind_that_numeral_still_stays",
          "Doe, Jane nee Smith V Prof., PhD",
          {"title": "Prof.", "given": "Jane", "family": "Doe",
@@ -3895,8 +3908,9 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="the numeral stop reads FROM the marker by design, "
                "unlike the credential and title stops, so a numeral "
-               "standing straight after it declines the clause "
-               "outright rather than sparing the word -- as 'Jane "
+               "standing straight after it is not spared: where the "
+               "name left standing reads it as a suffix, as here, it "
+               "declines the clause -- as 'Jane "
                "Smith née V' does bare (rules.md#M2) -- and the title "
                "behind the numeral then reads the declined name as "
                "'Jane Doe nee V' plus the title would. 2.3.0 read "

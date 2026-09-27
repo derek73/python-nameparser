@@ -767,6 +767,30 @@ name_regex = "^(?:Doe nee Smith ba Prof\\.|Doe, Jane nee Smith MA Prof\\.|Jane D
 fields = ["title", "maiden", "suffix", "_ambiguities"]
 
 [[change]]
+issue = "fix(#535) a particle in front of a trailing title stays in the clause"
+# rules.md#M2's Accepted pair on a released particle: the span 'DO
+# Prof.' holds a particle with a title behind it, and P2's chain would
+# run on over the title, so the particle's release is withdrawn and
+# the clause keeps 'Smith DO' while the title stop still gives 'Prof.'
+# up. The parent tree d9d80492 reads maiden 'Smith DO Prof.' as this
+# baseline does, so #535 is the cause alone. Literal-anchored for the
+# SLOT reason fix(#533)'s rules give.
+name_regex = "^Jane Doe nee Smith DO Prof\\.$"
+fields = ["title", "maiden", "_ambiguities"]
+
+[[change]]
+issue = "fix(#533/#535) a particle behind a trailing title leaves the clause with it"
+# The other half of that pair: written behind the title the particle
+# is released with nothing behind it, so the title and 'DO' both leave
+# the clause. Two causes together, checked against the parent tree
+# d9d80492 (maiden 'Smith Prof.', suffix 'DO', reported): #533 already
+# gives 'DO' up and reports the fork; #535 then reads the title in
+# front of it off the clause, as for 'Jane Doe nee Smith Prof. MA'.
+# Literal-anchored for the SLOT reason fix(#533)'s rules give.
+name_regex = "^Jane Doe nee Smith Prof\\. DO$"
+fields = ["title", "suffix", "maiden", "_ambiguities"]
+
+[[change]]
 issue = "fix(#535) the numeral stop asks the join question"
 # rules.md#M2 (#535): the numeral stop now asks the join question
 # too -- released, the numeral was taken by the bound-given join

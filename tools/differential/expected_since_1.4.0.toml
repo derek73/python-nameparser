@@ -4335,7 +4335,7 @@ issue = "fix(#274/#342/#445/#535) a title behind a credential the clause keeps s
 # rules.md#M2's Accepted transparency boundary, the half that gives
 # the title up: the clause keeps 'ba' (one name word left, none to
 # spare) and the title behind it still ends the clause, so title
-# 'Prof.', family 'Doe', maiden 'Smith ba'. Two causes together,
+# 'Prof.', family 'Doe', maiden 'Smith ba'. Four causes together,
 # checked against the parent tree d9d80492 (family 'Doe', maiden
 # 'Smith ba Prof.', no report): before #535, v1 has no maiden reading (#274), #342 marked 'ba' an ambiguous acronym, so the clause no longer stops at it as a plain suffix word, and #445 makes the lone name word beside a maiden clause the family;
 # #535 then reads the title off the end of the clause.
@@ -4354,6 +4354,51 @@ issue = "fix(#274/#342/#445/#533) a title in front of a credential the clause ke
 # Literal-anchored for the SLOT reason fix(#533)'s rules give.
 name_regex = "^Doe nee Smith Prof\\. ba$"
 fields = ["given", "middle", "family", "suffix", "maiden"]
+
+[[change]]
+issue = "fix(#274/#535) a particle in front of a trailing title stays in the clause"
+# rules.md#M2's Accepted pair on a released particle: the span 'DO
+# Prof.' holds a particle with a title behind it, and P2's chain would
+# run on over the title, so the particle's release is withdrawn and
+# the clause keeps 'Smith DO' while the title stop still gives 'Prof.'
+# up. The parent tree d9d80492 reads maiden 'Smith DO Prof.', so the
+# move is #535's together with #274 (v1 had no maiden reading at
+# all). Literal-anchored for the SLOT reason fix(#533)'s rules give.
+name_regex = "^Jane Doe nee Smith DO Prof\\.$"
+fields = ["title", "middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#274/#535) a particle behind a trailing title leaves the clause with it"
+# The other half of that pair: written behind the title the particle
+# is released with nothing behind it, so the title and 'DO' both leave
+# the clause. v1 had no maiden reading (#274); #535 reads the title
+# off the clause, as for 'Jane Doe nee Smith Prof. MA', which this
+# ledger also labels #274/#535. Literal-anchored for the SLOT reason
+# fix(#533)'s rules give.
+name_regex = "^Jane Doe nee Smith Prof\\. DO$"
+fields = ["title", "middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#274/#316) a trailing title behind a maiden clause's first suffix word"
+# rules.md#M2's Accepted pair on a title something ahead would take:
+# the first-suffix-word stop ends the clause at 'PhD', so 'Prof.'
+# stands behind the clause and reads as a trailing title. The parent
+# tree d9d80492 and 2.3.0 read it as HEAD does, so #535 moves nothing;
+# v1 had no maiden reading (#274) and read no trailing title (#316).
+# Literal-anchored: one corpus name, the doc's own example.
+name_regex = "^Jane van der Berg nee Smith PhD Prof\\.$"
+fields = ["title", "middle", "family", "suffix", "maiden"]
+
+[[change]]
+issue = "fix(#274) a numeral straight after the marker stays maiden where nothing reads it as a suffix"
+# rules.md#M2's boundary: a numeral straight after the marker declines
+# the clause only where the name left standing reads it as a suffix,
+# and 'Dr.' alone reads nothing, so the clause keeps 'V'. Every 2.x
+# baseline reads it so; v1 had no maiden reading (#274) and read given
+# 'nee', family 'V'. Literal-anchored: one corpus name, the doc's own
+# example.
+name_regex = "^Dr\\. nee V$"
+fields = ["given", "family", "maiden"]
 
 [[change]]
 issue = "fix(#411/#535) the numeral stop asks the join question"

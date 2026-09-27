@@ -504,11 +504,16 @@ def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
     wherever a trailing rule reads the clause -- no comma, the part
     before a suffix comma, the given part after a family comma -- and
     the run behind the title reads as post-nominals, i.e. the clause
-    gives the credential up. Where the clause KEEPS it the spellings
-    differ by design, a clause being one contiguous run: 'Doe nee Smith
-    ba Prof.' gives the title up, 'Doe nee Smith Prof. ba' cannot
-    (rules.md#M2's Accepted pair). Every head and run below is one
-    where the credential is given up.
+    gives the credential up, and nothing ahead stands to take the
+    title (no particle chain, no bound-given join, no name left
+    empty). Where the clause KEEPS it the spellings differ by design,
+    a clause being one contiguous run: 'Doe nee Smith ba Prof.' gives
+    the title up, 'Doe nee Smith Prof. ba' cannot; and where something
+    ahead would take the title they differ too ('Jane van der Berg nee
+    Smith PhD Prof.' against '... Prof. PhD') -- rules.md#M2's Accepted
+    pairs. Every head and run below is one where the credential is
+    given up and no particle, bound given name or empty name stands
+    ahead.
 
     An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so it
     consults no rule statement. RECORDED NEGATIVE CONTROL: at e0f1a2fa,
