@@ -727,8 +727,8 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abdul Smith V"             →  family="Smith"
       "abdul Smith V"             →  suffix="V"
       "abdul Smith Jr V"          →  family="Smith"
-      "abdul Smith Jr Ma"         →  given="abdul Smith"
-      "abdul Smith Jr Ma"         →  middle="Jr"
+      "abdul Smith Jr Ma"         →  given="abdul"
+      "abdul Smith Jr Ma"         →  suffix="Jr Ma"
       "abdul Smith Ma"            →  given="abdul Smith"
       "abdul Smith Berg Ma"       →  middle="Berg"  · boundary
       "abdul Sir Smith Berg"      →  given="abdul Sir"
@@ -1024,6 +1024,22 @@ S2. Rationale: generational suffixes and credentials are recognized
     count leaves the word a name. At the trailing slot of the given
     part the comma has already settled the count, so the writing is
     the only evidence there is.
+    Company is evidence that outranks both. A member of the ambiguous
+    set standing BEHIND an unambiguous credential in one run of
+    suffix words — members of the class between them passing the run
+    on — reads as the credential whatever its writing and whatever
+    the count, at every trailing slot this rule names: the degree in
+    front says what the run is. Only a credential in FRONT speaks; one
+    behind the member says nothing about it. A connective (P3) and a
+    single-letter roman numeral — initial-shaped, as a bare middle
+    initial is, unlike a multi-letter one such as 'III' — speak for
+    nothing and end the run; so does any name word. A word of both
+    the title and the suffix vocabulary opening
+    the given part is a title there, and speaks for nothing either,
+    though it speaks wherever else it stands. At the trailing slot of
+    the given part this company outranks P6's attachment, as the
+    capitals do. It does not reach across a maiden marker's clause
+    (M2), whose name words stand between.
     An unlisted word joins this same ambiguous class by SHAPE where
     the caller asks for it. Two or more period-separated chunks is
     one such shape, admitted by default (S3); an unlisted all-caps
@@ -1090,13 +1106,18 @@ S2. Rationale: generational suffixes and credentials are recognized
     Accepted: an unambiguous suffix is consumed even when that
     leaves no family name at all.
       "Smith Jr."                 →  family=""
-    Accepted: the case signal costs a genuine suffix standing behind
-    a name-leaning acronym. The walk stops at the declined pick
-    rather than continuing past it, so a suffix word in front of one
-    is never reached and reads as a name word.
+    Accepted: a name-leaning member with nothing in front of it to
+    speak for it ends the name, words to spare or not, and whatever
+    stands in front of it is name text. Where a credential does
+    stand in front, the company above decides instead, except in
+    three shapes that keep it out of reach, each of which reads the
+    member as the name: a credential written split across two words
+    with no comma after the name, a title standing between the
+    credential and the member, and a member a particle chain (P2)
+    has already taken.
       "Jack Wei Ma"               →  family="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
-      "abdul Smith Jr Ma"         →  middle="Jr"
+      "abdul Smith Jr Ma"         →  suffix="Jr Ma"
     Accepted: the title chain no longer takes the word this rule
     needs, and the argument a descriptive note here asked for is
     made. A title run leaves one NAME word standing and a

@@ -71,7 +71,7 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
-    credential_at_the_given_slot,
+    credential_anchors, credential_at_the_given_slot,
     is_suffix_piece, leading_titles, peel_walk,
     segment_suffix_reading, tail_reading, trailing_titles,
 )
@@ -674,6 +674,27 @@ def assign(state: ParseState) -> ParseState:
             #: which is a `copy_with(role=...)` and leaves
             #: text and tags identical.
             floors: dict[tuple[int, ...], tuple[int, bool]] = {}
+            #: #544's anchors, per `titled` value like `floors` and for
+            #: the same reason: `credential_anchors` over the pieces the
+            #: chain kept, computed once, the first time a member's own
+            #: writing declines, so a run of members is read in one
+            #: forward pass rather than one look-behind per member.
+            anchor_memo: dict[tuple[int, ...], dict[int, bool]] = {}
+
+            def anchored(m: int, titled: tuple[int, ...]) -> bool:
+                memo = anchor_memo.get(titled)
+                if memo is None:
+                    # from past the leading title run: a title/suffix
+                    # dual opening the part is a TITLE there and
+                    # anchors nothing ('Smith, MD MA Ma')
+                    order = [q for q in range(
+                                 leading_titles(pieces, ptags, tokens),
+                                 len(pieces))
+                             if q not in titled]
+                    memo = dict(zip(order, credential_anchors(
+                        order, pieces, ptags, tokens)))
+                    anchor_memo[titled] = memo
+                return memo.get(m, False)
 
             def trailing_floor(m: int, titled: tuple[int, ...]) -> int:
                 """Where the trailing suffix run starts, walked as far
@@ -833,8 +854,13 @@ def assign(state: ParseState) -> ParseState:
                             # unchanged). Measured 2026-09-19 per
                             # `Parser.parse`; Derek took that trade
                             # deliberately.
+                            # #544: an unambiguous credential in front
+                            # of it in the same run anchors it -- asked
+                            # through a thunk, so only a member the
+                            # writing declines pays for the pass
                             if credential_at_the_given_slot(
-                                    tok, state.one_case):
+                                    tok, state.one_case,
+                                    lambda: anchored(m, titled)):
                                 return True
                 prev = previous_kept(m, titled)
                 # trailing piece of a two-part name is unambiguously

@@ -1655,18 +1655,20 @@ CASES: tuple[Case, ...] = (
                "row is unchanged in every release. The pair above and "
                "below it is what makes the count visible",
          shape=2),
-    Case("a_declined_ambiguous_pick_stops_the_walk",
+    Case("a_credential_in_front_anchors_a_declined_pick",
          "abdul Smith Jr Ma",
-         {"given": "abdul Smith", "middle": "Jr", "family": "Ma"},
-         classification="fix(#289)",
+         {"given": "abdul", "family": "Smith", "suffix": "Jr Ma"},
+         classification="fix(#436/#437)",
          ambiguities=("suffix-or-name",),
-         notes="an ACCEPTED cost, pinned rather than repaired "
-               "(decisions.md#S2): the surname lean breaks the peel "
-               "AT 'Ma', so the unambiguous 'Jr' in front of it is "
-               "never reached and becomes a name word. The walk stops "
-               "at the declined pick rather than continuing past it, "
-               "and a name-leaning acronym blocking a genuine suffix "
-               "behind it is the shape that costs",
+         notes="the cost #289 had accepted, reversed by #544: the "
+               "surname lean declines 'Ma', but the unambiguous 'Jr' "
+               "in FRONT of it anchors it, so the peel takes both and "
+               "P5's reserve, seeing the family the join would take, "
+               "declines the join. The roles are 1.4.0's and 2.3.0's; "
+               "what the classification records is the suffix STRING, "
+               "which 1.4.0 wrote 'Jr, Ma'. The walk still stops at a "
+               "declined pick with nothing in front of it ('Jack Wei "
+               "Ma')",
          shape=1),
     Case("a_tail_segment_of_leaning_credentials_is_a_run",
          "Steven Hardman, MD, DO, DDS",

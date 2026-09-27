@@ -233,6 +233,15 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #                             frozen loop declines it on the tag
 #                             ('i und ' reaches nothing, 'i Und '
 #                             reaches everything)
+#   S2 ANCHOR pass            credential_run ONLY -- a Title-case
+#                             member in a mixed-case name declines on
+#                             its writing, so the peel asks
+#                             `credential_anchors` (#544), and every
+#                             'Ma' stands behind a 'PhD' that anchors
+#                             it: 39 of the 40 words of 'PhD Ma ' x20
+#                             read as the suffix. 'PhD MA ' reads the
+#                             same and never asks the pass at all, the
+#                             capitals deciding each member first
 _SHAPES = {
     "delimiter_pairs": "(a) ",      # extract: matched pairs -> masked spans
     "quote_pairs": '"a" ',          # extract: the open==close path
@@ -247,6 +256,7 @@ _SHAPES = {
     "bound_given": "abdul ",        # group: the P5 reserve over every piece
     "maiden_clause": "nee MA ",     # group: M2's view over the segment
     "link_run": "i Und ",           # group: P3's both-sides walk (#397)
+    "credential_run": "PhD Ma ",    # pieces: S2's anchor pass (#544)
 }
 
 _BASE = 800
@@ -304,6 +314,13 @@ _FACTOR = 4
 # neither number moved. The absolute cost is the shape's own price
 # and is paid at the top of the clean range: 11.6ms at base 800
 # against 48.7ms at 3200.
+# The fourteenth (credential_run, #544) was measured against the
+# per-member look-behind the one-pass anchor replaces -- each position
+# walking back over the whole run in front of it, behavior-identical
+# -- which reads 14.8 at base 200, 15.1 at 400 and 15.8 at 800, the
+# strongest signal on record. The shape reads 4.13-4.21 at every one
+# of the three bases on this tree (py3.11, 2026-09-27), inside the
+# clean column; neither number moved.
 _MAX_RATIO = 6.0
 
 

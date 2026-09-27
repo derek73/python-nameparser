@@ -44,7 +44,7 @@ from typing import Literal, assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
-    credential_at_the_given_slot,
+    credential_anchors, credential_at_the_given_slot,
     is_leading_title, is_suffix_piece, is_title_piece,
     is_trailing_title_word,
     Peel, leading_titles, peel_trailing, peel_walk, tail_reading,
@@ -410,6 +410,21 @@ def _release_reads_off(view: Sequence[Sequence[int]],
         last = len(view) - 1
         chain_ok = [False] * len(view)
         members_ok = running = True
+        # #544: the anchors `credential_at_the_given_slot` may ask for,
+        # over the view as the take would leave it -- the reading
+        # assign's given slot makes of the same pieces, from past the
+        # leading title run. One forward pass for both loops below,
+        # run only the first time a member's writing leaves the
+        # question open; each call site hands over a lambda, so no
+        # frame is spent building the question either.
+        anchor_cell: list[list[bool]] = []
+
+        def anchored_at(q: int) -> bool:
+            if not anchor_cell:
+                lead = leading_titles(view, view_tags, tokens)
+                anchor_cell.append([False] * lead + credential_anchors(
+                    range(lead, len(view)), view, view_tags, tokens))
+            return anchor_cell[0][q]
         for q in range(last, -1, -1):
             piece = view[q]
             if (is_suffix_piece(piece, view_tags[q], tokens)
@@ -420,8 +435,9 @@ def _release_reads_off(view: Sequence[Sequence[int]],
                 continue
             if (members_ok and len(piece) == 1
                     and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags
-                    and credential_at_the_given_slot(tokens[piece[0]],
-                                                     one_case)):
+                    and credential_at_the_given_slot(
+                        tokens[piece[0]], one_case,
+                        lambda: anchored_at(q))):
                 chain_ok[q] = running
                 continue
             members_ok = False
@@ -448,8 +464,9 @@ def _release_reads_off(view: Sequence[Sequence[int]],
                 return False
             if (len(piece) == 1
                     and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags
-                    and credential_at_the_given_slot(tokens[piece[0]],
-                                                     one_case)):
+                    and credential_at_the_given_slot(
+                        tokens[piece[0]], one_case,
+                        lambda: anchored_at(q))):
                 continue
             return False
     elif reader is TailReader.TRAILING:
@@ -844,9 +861,15 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                 # 'Doe, Jane MA do' does with them, middle 'MA' and
                 # family 'do Doe'). The member is asked here, the span
                 # behind it and the name word ahead of it by the
-                # shared check below.
-                takes = credential_at_the_given_slot(tokens[head[0]],
-                                                     one_case)
+                # shared check below. Anchored (#544) as assign's given
+                # slot anchors it: over the view up to the member, from
+                # past the leading title run.
+                takes = credential_at_the_given_slot(
+                    tokens[head[0]], one_case,
+                    lambda: credential_anchors(
+                        range(min(leading_titles(view, view_tags, tokens),
+                                  at), at + 1),
+                        view, view_tags, tokens)[-1])
                 start = at + 1
             else:
                 # TRAILING: the peel over the view IS the member's

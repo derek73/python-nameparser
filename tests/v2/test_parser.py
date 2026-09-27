@@ -574,13 +574,14 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
         n, m = parse(bound), parse(plain)
         assert (n.family, n.suffix) == (m.family, m.suffix)
         assert n.family != ""
-    # MOVED by #289, not deleted: 'Ed' is Title-case in a mixed-case
-    # name, so it now leans SURNAME and the peel declines it with
-    # words to spare -- the walk stops at the declined pick, 'Jr'
-    # never reached behind it, and both join as name words
-    # (decisions.md#S2's accepted cost, the 'abdul Smith Jr Ma' shape).
-    n = parse("abu Bakar Jr Ed")
-    assert (n.family, n.suffix) == ("Ed", "")
+    # MOVED by #289, then back by #544: 'Ed' is Title-case in a
+    # mixed-case name, so its writing leans SURNAME, but the
+    # unambiguous 'Jr' in front of it anchors it, so the peel takes
+    # both and the reserve spares the family as for 'abdul Smith Jr
+    # Ma' above -- the ordinary-given twin reads the same
+    n, m = parse("abu Bakar Jr Ed"), parse("John Bakar Jr Ed")
+    assert (n.family, n.suffix) == (m.family, m.suffix) == ("Bakar",
+                                                            "Jr Ed")
     # and the join never turns a suffix into a name: unjoined, the
     # acronym is a credential with words to spare, so 'abdul Smith
     # Ma' reads as 'John Smith Ma' does (1.4.0 parity restored)
@@ -590,6 +591,20 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
     # name word instead of a credential (decisions.md#S2).
     n, m = parse("abdul Smith Ma"), parse("John Smith Ma")
     assert (n.family, n.suffix) == (m.family, m.suffix) == ("Ma", "")
+
+
+def test_the_leading_piece_never_anchors_under_any_name_order() -> None:
+    # #544: the walk's leading position is the piece the
+    # H4 carve-out keeps regardless of which ROLE it ends up in, so
+    # the fix must hold under every name_order -- FAMILY_FIRST puts
+    # the same 'PhD'/'Om' word in the FAMILY slot instead, and it
+    # still must not anchor 'Ma' behind it.
+    for order in (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
+        p = Parser(policy=Policy(name_order=order))
+        n = p.parse("Om Ma")
+        assert (n.given, n.family, n.suffix) == ("Ma", "Om", "")
+        n = p.parse("PhD Ma")
+        assert (n.given, n.family, n.suffix) == ("Ma", "PhD", "")
 
 
 def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
