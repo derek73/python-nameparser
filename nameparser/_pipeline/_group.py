@@ -835,8 +835,9 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # `_run_neighbours` steps over it as it steps over a connective
     # (#538): a core is structure, so the word on a link's side is the
     # one past it, and the clause reads as the same text written
-    # without the core ('Smith, John, PhD née Puig Mr. - i Soler' stops
-    # at the title as '... Puig Mr. i Soler' does).
+    # without the core ('Smith, John, PhD née Puig Mr. - i Soler' ends
+    # at the link after the title, as '... Puig Mr. i Soler' does --
+    # the title is the word on the link's left and refuses).
     # `peel_start` is where assign's trailing run begins over
     # the pieces as WRITTEN, so the generation or credential a clause
     # ends with is never the name word on a link's right ('... nee Puig

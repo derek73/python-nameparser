@@ -502,7 +502,13 @@ def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
     a maiden clause ending '<run> Prof.' and one ending 'Prof. <run>'
     must read alike in every field but the order of the title words,
     wherever a trailing rule reads the clause -- no comma, the part
-    before a suffix comma, the given part after a family comma.
+    before a suffix comma, the given part after a family comma -- and
+    the run behind the title reads as post-nominals, i.e. the clause
+    gives the credential up. Where the clause KEEPS it the spellings
+    differ by design, a clause being one contiguous run: 'Doe nee Smith
+    ba Prof.' gives the title up, 'Doe nee Smith Prof. ba' cannot
+    (rules.md#M2's Accepted pair). Every head and run below is one
+    where the credential is given up.
 
     An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so it
     consults no rule statement. RECORDED NEGATIVE CONTROL: at e0f1a2fa,

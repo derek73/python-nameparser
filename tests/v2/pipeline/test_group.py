@@ -1821,7 +1821,7 @@ def test_a_core_beside_a_link_is_stepped_over_like_a_connective(
     Past the clause's first word the core used to be an ordinary index
     to the neighbour walk, which stepped over connectives and nothing
     else, so it stood in for the name word on the link's left and the
-    clause ran on past a title it otherwise stops at. The population is
+    clause ran on past the link it otherwise ends at. The population is
     decisions.md's 2026-09-22 #397 follow-up entry: none of it
     reachable at the default policy, `extra_suffix_delimiters` being
     empty there.

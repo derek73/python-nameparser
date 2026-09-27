@@ -1451,8 +1451,33 @@ issue = "fix(#535) a trailing title ends the maiden clause"
 # split at THIS baseline -- #296 and #399 both predate it, so this
 # baseline already reads them as HEAD does apart from #535's own move,
 # unlike at 2.0.0/2.1.0.)
-name_regex = "^(?:Doe, Jane nee Smith MA Prof\\.|Jane Doe \\x28nee Smith Prof\\.\\x29|Jane Doe nee Prof\\. Dr\\.|Jane Doe nee Smith MA Prof\\.|Jane Doe nee Smith Ma Prof\\.|Jane Doe nee Smith Prof\\.|Jane Doe nee Smith V Prof\\.|Mary Smith née Jones Prof\\.)$"
+name_regex = "^(?:Doe, Jane nee Smith MA Prof\\.|Jane Doe \\x28nee Smith Prof\\.\\x29|Jane Doe nee Prof\\. Dr\\.|Jane Doe nee Smith King\\.|Jane Doe nee Smith MA Prof\\.|Jane Doe nee Smith Ma Prof\\.|Jane Doe nee Smith Prof\\.|Jane Doe nee Smith V Prof\\.|Mary Smith née Jones Prof\\.)$"
 fields = ["title", "maiden", "suffix", "_ambiguities"]
+
+[[change]]
+issue = "fix(#342/#535) a title behind a credential the clause keeps still leaves it"
+# rules.md#M2's Accepted transparency boundary, the half that gives
+# the title up: the clause keeps 'ba' (one name word left, none to
+# spare) and the title behind it still ends the clause, so title
+# 'Prof.', family 'Doe', maiden 'Smith ba'. Two causes together,
+# checked against the parent tree d9d80492 (family 'Doe', maiden
+# 'Smith ba Prof.', no report): before #535, #342 marked 'ba' an ambiguous acronym, so the clause no longer stops at it as a plain suffix word;
+# #535 then reads the title off the end of the clause.
+# Literal-anchored for the SLOT reason fix(#533)'s rules give.
+name_regex = "^Doe nee Smith ba Prof\\.$"
+fields = ["title", "given", "middle", "family", "maiden", "_ambiguities"]
+
+[[change]]
+issue = "fix(#342/#533) a title in front of a credential the clause keeps stays in it"
+# rules.md#M2's Accepted transparency boundary, the half that keeps
+# the title: a title in FRONT of the kept 'ba' cannot leave without
+# it, so the clause keeps 'Smith Prof. ba' and reports the kept
+# credential. The parent tree d9d80492 reads it exactly as HEAD
+# does, so #535 moves nothing here: #342 marked 'ba' an ambiguous acronym, so the clause no longer stops at it as a plain suffix word, and #533 reports
+# the credential the clause keeps.
+# Literal-anchored for the SLOT reason fix(#533)'s rules give.
+name_regex = "^Doe nee Smith Prof\\. ba$"
+fields = ["suffix", "maiden", "_ambiguities"]
 
 [[change]]
 issue = "fix(#535) the numeral stop asks the join question"

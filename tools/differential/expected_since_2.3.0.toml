@@ -632,9 +632,14 @@ issue = "fix(#533) the maiden clause reports the credential it keeps"
 # is `_ambiguities` alone, so it cannot absorb a role diff on any of
 # the eight.
 #
+# 'Doe nee Smith Prof. ba' (a rules.md#M2 Accepted example) is
+# the same declining half: one name word is left, so the clause
+# keeps 'ba' and reports it, and the title in front of it cannot
+# leave without it -- the parent tree d9d80492 reads it as HEAD
+# does, so #535 moves nothing.
 # Literal-anchored: the class is the slot's declining half, and a
 # regex for it would claim the seventeen movers above.
-name_regex = "^(?:Berg, Jane van der nee Smith DO|Berg, abdul nee Jones MA|Doe, Dr\\. nee Smith MA|Doe, Jane nee Smith Do|Doe, Jane nee Smith MA do|Doe, Jane nee Smith Ma|Doe, Jane nee Smith do|JOHN NEE JONES SMITH MA PHD|Jane Doe nee MA|Jane Doe nee MA PhD|Jane Doe nee Smith DO DO|Jane Doe nee Smith Ma|Jane Doe nee Yo-Yo Ma|John née Jones Smith Ma)$"
+name_regex = "^(?:Berg, Jane van der nee Smith DO|Berg, abdul nee Jones MA|Doe nee Smith Prof\\. ba|Doe, Dr\\. nee Smith MA|Doe, Jane nee Smith Do|Doe, Jane nee Smith MA do|Doe, Jane nee Smith Ma|Doe, Jane nee Smith do|JOHN NEE JONES SMITH MA PHD|Jane Doe nee MA|Jane Doe nee MA PhD|Jane Doe nee Smith DO DO|Jane Doe nee Smith Ma|Jane Doe nee Yo-Yo Ma|John née Jones Smith Ma)$"
 fields = ["_ambiguities"]
 
 [[change]]
@@ -748,13 +753,17 @@ issue = "fix(#535) a trailing title ends the maiden clause"
 # check keeps the title as readily as the ones that release it. One
 # name moved to its own rule above ('Jane Doe nee Smith Prof. MA'),
 # because the parent tree d9d80492 already differed from this
-# baseline before #535 touched it; the eight names here are ones
-# where #535 is the sole cause, verified the same way. ('Jane Doe nee
+# baseline before #535 touched it; the ten names here are ones
+# where #535 is the sole cause, verified the same way. Two of them
+# are rules.md#M2 Accepted examples: 'Jane Doe nee Smith King.',
+# H5's ordinary-surname reach at the end of a clause, and 'Doe nee
+# Smith ba Prof.', the title leaving from behind a credential the
+# clause keeps (the parent tree reads maiden 'Smith ba Prof.'). ('Jane Doe nee
 # Prof. Dr.' and 'Jane van der Berg nee Smith Prof.' need no such
 # split at THIS baseline -- #296 and #399 both predate it, so this
 # baseline already reads them as HEAD does apart from #535's own move,
 # unlike at 2.0.0/2.1.0.)
-name_regex = "^(?:Doe, Jane nee Smith MA Prof\\.|Jane Doe \\x28nee Smith Prof\\.\\x29|Jane Doe nee Prof\\. Dr\\.|Jane Doe nee Smith MA Prof\\.|Jane Doe nee Smith Ma Prof\\.|Jane Doe nee Smith Prof\\.|Jane Doe nee Smith V Prof\\.|Mary Smith née Jones Prof\\.)$"
+name_regex = "^(?:Doe nee Smith ba Prof\\.|Doe, Jane nee Smith MA Prof\\.|Jane Doe \\x28nee Smith Prof\\.\\x29|Jane Doe nee Prof\\. Dr\\.|Jane Doe nee Smith King\\.|Jane Doe nee Smith MA Prof\\.|Jane Doe nee Smith Ma Prof\\.|Jane Doe nee Smith Prof\\.|Jane Doe nee Smith V Prof\\.|Mary Smith née Jones Prof\\.)$"
 fields = ["title", "maiden", "suffix", "_ambiguities"]
 
 [[change]]
