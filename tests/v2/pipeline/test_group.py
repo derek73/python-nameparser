@@ -1152,7 +1152,8 @@ def test_the_release_check_fails_loudly_on_an_unmapped_reader(
     from being an uncovered statement."""
     with pytest.raises(AssertionError):
         _release_reads_off([[0]], [set()], [], 0, 1, 0,
-                           cast(TailReader, 99), None)  # type: ignore[arg-type]
+                           cast(TailReader, 99), None,  # type: ignore[arg-type]
+                           tail_follows=False)
 
 
 def test_the_reader_is_pinned_to_the_structure_it_is_read_from(
@@ -2117,6 +2118,26 @@ def test_a_link_the_walk_stops_at_gives_up_only_a_run_that_reads_off(
     given_up = _grouped("Jane Doe nee Smith i MA Prof.",
                         lexicon=Lexicon.default())
     assert _maiden_texts(given_up) == ["Smith"]
+
+
+def test_only_a_link_the_title_chain_refused_asks_the_release_question(
+) -> None:
+    """The link check is asked only where reading the title chain made
+    the link exception refuse a link it joined over the words as
+    written. A link refused either way stops as it always did: 'Doe,
+    Jane nee Smith i V' gives up 'i V' (a check that fired here kept a
+    dangling 'i' in the birth name). And the given part's lenient
+    numeral counts as a suffix where only chained titles stand behind
+    it, as bare 'Doe, Jane i V Prof.' reads suffix 'i V' -- but not
+    where another comma part follows, where it is a middle initial."""
+    plain = _grouped("Doe, Jane nee Smith i V", lexicon=Lexicon.default())
+    assert _maiden_texts(plain) == ["Smith"]
+    titled = _grouped("Doe, Jane nee Smith i V Prof.",
+                      lexicon=Lexicon.default())
+    assert _maiden_texts(titled) == ["Smith"]
+    tail = _grouped("Doe, Jane nee Smith i V Prof., PhD",
+                    lexicon=Lexicon.default())
+    assert _maiden_texts(tail) == ["Smith", "i", "V"]
 
 
 def test_a_released_particle_title_is_kept_after_a_family_comma() -> None:

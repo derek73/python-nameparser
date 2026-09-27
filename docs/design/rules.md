@@ -1290,11 +1290,13 @@ M2. Rationale: a maiden marker announces that what follows it is the
     both sides of the link are the maiden name. A link with the
     marker on one side of it, or with the trailing run on the
     other, is joining nothing there and ends the clause like any
-    other suffix word. Where a trailing rule reads the words and the
-    link is not the first word after the marker, a link that ends the
-    clause gives up the words behind it only where the name left
-    standing reads them as post-nominals or titles; otherwise the
-    clause keeps the link and runs on.
+    other suffix word. Where a trailing rule reads the words, a link
+    that ends the clause only because a trailing title is read as
+    one — a link that, read over the words as written, would join —
+    gives up the words behind it only where the name left standing
+    reads them as post-nominals or titles; otherwise the clause keeps
+    the link and runs on. The link first after the marker is not
+    asked: stopping there declines the clause.
     A separator the caller declared is structure rather than a name
     word, and the link exception reads past it: the word on a link's
     side is the one beyond the separator, so the clause reads as the

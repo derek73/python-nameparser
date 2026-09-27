@@ -340,7 +340,8 @@ def _release_reads_off(view: Sequence[Sequence[int]],
                                        TailReader.GIVEN_SLOT],
                        one_case: bool | None,
                        reading: tuple[list[int], tuple[int, ...], Peel]
-                       | None = None) -> bool:
+                       | None = None,
+                       *, tail_follows: bool) -> bool:
     """Whether the name the take would leave (`view`) reads every
     piece in `start`..`end` as a title or a suffix, and no join below
     this pass absorbs any piece from `at` on.
@@ -397,19 +398,24 @@ def _release_reads_off(view: Sequence[Sequence[int]],
         # middle 'Dr.', and a clause that gave 'Dr. MA Prof.' up put
         # 'Dr.' in the middle name (#535). `chain_ok[q]` says whether
         # the chain, walking from the end, is still running at `q`.
-        # The one suffix that pass reads which `is_suffix_piece` does
-        # not is the lenient trailing numeral (#144): the LAST piece, a
-        # suffix word the initial veto refuses, and only where a later
-        # numeral stop (`end` short of the view) has already asked it
-        # -- 'Doe, Jane nee Smith Prof. V' gives the title and the V up
-        # together, as 'Doe, Jane Prof. V' reads them.
+        # The one suffix these passes read which `is_suffix_piece` does
+        # not is the lenient numeral (#144): a suffix word the initial
+        # veto refuses, read as a suffix only where no comma part
+        # follows the given one (`tail_follows`, assign's own
+        # two-segment condition) and only where it is the given part's
+        # LAST word -- the literal last piece in the first pass, and
+        # the last one standing once the chain has taken the titles
+        # behind it in the second ('Doe, Jane i V Prof.' reads suffix
+        # 'i V', title 'Prof.', as 'Doe, Jane nee Smith i V Prof.' must
+        # be able to give them up).
         last = len(view) - 1
         chain_ok = [False] * len(view)
         members_ok = running = True
         for q in range(last, -1, -1):
             piece = view[q]
             if (is_suffix_piece(piece, view_tags[q], tokens)
-                    or (q == last and end <= last and len(piece) == 1
+                    or (q == last and not tail_follows
+                        and len(piece) == 1
                         and "vocab:suffix" in tokens[piece[0]].tags)):
                 chain_ok[q] = running
                 continue
@@ -423,9 +429,19 @@ def _release_reads_off(view: Sequence[Sequence[int]],
             if not is_trailing_title_word(piece, view_tags[q], tokens):
                 running = False
             chain_ok[q] = running
+        titles_behind = [False] * (len(view) + 1)
+        titles_behind[len(view)] = True
+        for q in range(last, -1, -1):
+            titles_behind[q] = (titles_behind[q + 1] and chain_ok[q]
+                                and is_trailing_title_word(
+                                    view[q], view_tags[q], tokens))
         for q in range(start, end):
             piece = view[q]
             if is_suffix_piece(piece, view_tags[q], tokens):
+                continue
+            if (not tail_follows and titles_behind[q + 1]
+                    and len(piece) == 1
+                    and "vocab:suffix" in tokens[piece[0]].tags):
                 continue
             if is_trailing_title_word(piece, view_tags[q], tokens):
                 if chain_ok[q]:
@@ -640,6 +656,9 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # site branches on `reads`, which is the reader where a trailing
     # rule reads these words and None where none does.
     reads: Literal[TailReader.TRAILING, TailReader.GIVEN_SLOT] | None
+    # the walk as written, before any chain splices it: the link check
+    # below re-asks the link exception with its pre-#535 bound
+    written = rest
     if reader is TailReader.NONE:
         reads = None
         chained: tuple[int, ...] = ()
@@ -716,7 +735,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                     or tail_follows
                     or not _release_reads_off(
                         view, view_tags, tokens, at + 1, len(view), at,
-                        reads, one_case, view_reading))
+                        reads, one_case, view_reading,
+                        tail_follows=tail_follows))
         if kept:
             trailing = len(pieces)
     # #533: the ACRONYM fork, asked the way the numeral is -- the peel
@@ -838,7 +858,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             # asked too (#533 review, #535).
             if takes and _release_reads_off(view, view_tags, tokens,
                                             start, len(view), at, reads,
-                                            one_case):
+                                            one_case,
+                                            tail_follows=tail_follows):
                 trailing = stop
     # rules.md#M2 (#535): a trailing title the H5 chain takes ends the
     # clause too -- asked as the other two stops are, over the name the
@@ -860,7 +881,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             end = (left.index(trailing) if trailing < len(pieces)
                    else len(view))
             if _release_reads_off(view, view_tags, tokens, at, end, at,
-                                  reads, one_case):
+                                  reads, one_case,
+                                  tail_follows=tail_follows):
                 trailing = stop
     # The walk starts past the WHOLE marker: a phrase's second word is
     # the marker, not the first word it takes. With nothing behind the
@@ -935,28 +957,41 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             continue
         # rules.md#M2: "a word the clause gives up reads as a
         # post-nominal or the clause keeps it" -- asked here of a LINK
-        # the exception refused, and only of one. The exception reads
-        # the end of the name through the title chain where a trailing
-        # rule reads the clause, so a link can now stop the walk where
-        # it used to join ('Jane Doe nee Smith i DO Prof.': the DO is
-        # the peel's once the title is chained), and a stop at a link
-        # gives up the words behind it too. Where the name left
-        # standing would not read that run as post-nominals and
-        # titles, the clause keeps the link as it kept it before --
-        # otherwise 'Doe i' became a middle name (#535). A suffix word
-        # that is no link is #548's question and is left to it, and so
-        # is a link standing FIRST after the marker: stopping there
-        # declines the clause outright, which gives nothing up.
+        # the exception refused only BECAUSE the title chain moved its
+        # bound, and of no other stop. The exception reads the end of
+        # the name through the chain where a trailing rule reads the
+        # clause, so a link can now stop the walk where, bounded by the
+        # peel over the words as written, it joined ('Jane Doe nee
+        # Smith i DO Prof.': the DO is the peel's once the title is
+        # chained), and that new stop gives up the words behind it
+        # too. Where the name left standing would not read that run as
+        # post-nominals and titles, the clause keeps the link as it
+        # kept it before -- otherwise 'Doe i' became a middle name
+        # (#535). A link the as-written bound refuses too stops as it
+        # always did ('Doe, Jane nee Smith i V' gives suffix 'i V'),
+        # and a suffix word that is no link is #548's question. So is
+        # a link standing FIRST after the marker: stopping there
+        # declines the clause outright, which gives nothing up. The
+        # as-written peel is read only here, on a refused link.
         if (j > m + run and reads is not None
                 and _is_conj_piece(pieces[k], ptags[k], tokens)):
-            left = [i for i in seen if i < seen[m] or i >= k]
-            view = [pieces[i] for i in left]
-            view_tags = [ptags[i] for i in left]
-            at = left.index(k)
-            if not _release_reads_off(view, view_tags, tokens, at,
-                                      len(view), at, reads, one_case):
-                j += 1
-                continue
+            as_written = peel_trailing(written, pieces, ptags, tokens,
+                                       one_case)
+            written_start = (written[as_written.names]
+                             if as_written.names < len(written)
+                             else len(pieces))
+            if _link_joins_inside_the_clause(k, lo, written_start,
+                                             pieces, ptags, tokens,
+                                             beside, cores):
+                left = [i for i in seen if i < seen[m] or i >= k]
+                view = [pieces[i] for i in left]
+                view_tags = [ptags[i] for i in left]
+                at = left.index(k)
+                if not _release_reads_off(view, view_tags, tokens, at,
+                                          len(view), at, reads, one_case,
+                                          tail_follows=tail_follows):
+                    j += 1
+                    continue
         break
     # j == m + run means nothing followed the marker but a suffix, so
     # the pass declines and the marker stays ordinary words
