@@ -1596,9 +1596,21 @@ C1. Rationale: a credential run after the comma means the name is in
     credential run however that part is written, and only where the
     count leaves the word a name — one name word before the comma —
     is the case read, capitals in a mixed-case name making it the
-    credential there too (S2). A decision either way at this comma
-    is reported. It is one of TWO places the comma's own decision is
-    reported, the other being the word trailing the given part after
+    credential there too (S2). The same count reads a part of two or
+    more words as the credential run when every word of it is a
+    suffix word or a word of this class, at least one of them of this
+    class, and none of them a single-letter roman numeral, which is a
+    generation rather than a credential. A word of both the title and
+    the suffix vocabulary opening such a part counts as a suffix word
+    there, the name before the comma being complete. Where every word
+    of this class in the part is written in capitals in a mixed-case
+    name, the writing has already made each of them the credential
+    (S2), and the part reads as the credential run on that evidence
+    rather than on the count. A decision either way at this comma
+    is reported; for a run of words the decision is the flip to the
+    credential run, and a run the count leaves in the listing form
+    reports only as S2 reads the words in it. It is one of TWO
+    places the comma's own decision is reported, the other being the word trailing the given part after
     it (S2), which is a second decision about a second word and never
     the same fork twice; an attachment decided after a family comma
     (P6) reports on its own. C2's comma-structure flag reports what the

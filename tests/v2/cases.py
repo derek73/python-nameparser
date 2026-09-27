@@ -696,29 +696,27 @@ CASES: tuple[Case, ...] = (
                "it as a middle name. 1.4.0 read given 'MEng' too, so "
                "this row also restores 1.4.0's reading",
          shape=2),
-    Case("comma_credential_run_ending_in_meng_re_reads_the_comma",
+    Case("comma_credential_run_ending_in_meng_keeps_the_suffix_comma",
          "John Smith, PhD MEng",
-         {"given": "PhD", "middle": "MEng", "family": "John Smith"},
-         classification="fix(#540)",
+         {"given": "John", "family": "Smith", "suffix": "PhD MEng"},
          ambiguities=("suffix-or-name",),
-         notes="the run behind a suffix comma is no longer wholly "
-               "suffix-shaped once its last word is a bare ambiguous "
-               "member, so C1 reads the comma as a family comma and "
-               "the first credential as the given name. Every "
-               "release read suffix 'PhD MEng' -- the pre-existing "
-               "'john smith, phd ma' path, which #540 routes two "
-               "more words into; #544 asks whether to keep the comma",
+         notes="C1's name-word count reads a RUN as it reads one word "
+               "(#544): every word after the comma is suffix "
+               "vocabulary or a class member, and two name words "
+               "stand before it, so the part is the credential run "
+               "the lone 'John Smith, MEng' already is, and the flip "
+               "reports. 1.4.0 read the same suffix; #540 had re-read "
+               "the comma as a family comma (given 'PhD', middle "
+               "'MEng'), the cost #544 reverses",
          shape=3),
-    Case("comma_lower_credential_run_ending_in_meng_re_reads_the_comma",
+    Case("comma_lower_credential_run_ending_in_meng_keeps_the_suffix_comma",
          "john smith, phd meng",
-         {"given": "phd", "family": "john smith", "suffix": "meng"},
-         classification="fix(#540)",
+         {"given": "john", "family": "smith", "suffix": "phd meng"},
          ambiguities=("suffix-or-name",),
-         notes="the same re-read in one case -- the count then "
-               "peels 'meng' with a word to spare, so the writing's "
-               "case does not save it, and neither does the "
-               "all-caps 'JOHN SMITH, PHD MENG' (given 'PHD', "
-               "family 'JOHN SMITH', suffix 'MENG')",
+         notes="the same run in one case: the count decides "
+               "whatever case the name is written in, so 'JOHN "
+               "SMITH, PHD MENG' reads the suffix too. 1.4.0 read "
+               "the same; #540 had read given 'phd', suffix 'meng'",
          shape=3),
     Case("title_case_lac_behind_a_particle_is_the_name",
          "Nguyen Van Lac",
@@ -2362,20 +2360,19 @@ CASES: tuple[Case, ...] = (
     # caps run test's `all()`. Identical to the default reading.
     Case("caps_switch_run_test_declines_a_pure_listed_run",
          "John Smith, Ed Ma",
-         {"given": "Ed", "middle": "Ma", "family": "John Smith"},
+         {"given": "John", "family": "Smith", "suffix": "Ed Ma"},
          policy=Policy(unlisted_caps_suffixes=True),
-         classification="fix(#531)",
-         ambiguities=("suffix-or-name", "suffix-or-name"),
+         ambiguities=("suffix-or-name",),
          notes="'Ed' and 'Ma' are both LISTED ambiguous members, "
                "Title-case (leans NAME, #289) -- the caps run test "
                "must not admit a run the listed class already reads "
-               "on its own. #531 adds the SECOND report and moves no "
-               "field: this is a family-comma name whose given part "
-               "now ends in a class member, and 'Ma' is Title-cased, "
-               "so the slot consults the fork and declines it "
-               "exactly as 'Doe, John Ma' does. The report tracks "
-               "the fork CONSULTED (#530), which is why a declined "
-               "reading still says so"),
+               "on its own, and it does not: what reads this part is "
+               "C1's listed run (#544), which counts the two name "
+               "words before the comma exactly as it does with the "
+               "switch off, so the part is the credential run and "
+               "the flip reports once. 1.4.0 read the same suffix; "
+               "before #544 the part was the given name 'Ed', "
+               "middle 'Ma'"),
     # #516 review round (second finding): the caps branch read
     # `one_case_own` -- true only for a token INSIDE the maiden
     # clause's own-words span -- where it needed the bare NAME-level

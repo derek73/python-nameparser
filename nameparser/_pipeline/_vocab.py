@@ -547,6 +547,93 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     return _normalize(text) in lexicon.suffix_acronyms_ambiguous
 
 
+# #544's inline gate for the comma-run test's common token, named and
+# tested here rather than hand-copied at the call site (quality-review
+# finding on the first cut): a SIMPLE token -- ASCII, no INTERIOR
+# period -- is fully resolved from the vocabulary sets directly, at
+# less cost than either real predicate it stands in for; a non-simple
+# token is left to them ("ask").
+def run_word_fold(
+        text: str, lexicon: Lexicon,
+        policy: Policy) -> Literal["member", "reject", "defer", "ask"]:
+    """The #544 comma-run test's per-token gate (`_segment.py`).
+
+    "member": TEXT, with its trailing periods stripped, matches
+    `suffix_acronyms_ambiguous` exactly and carries NO period at all
+    -- `ambiguous_class_member`'s own test, reached here without
+    paying for that call. Provably the same answer for a simple token:
+    `ambiguous_class_member` is exactly "no period, and the fold is a
+    listed ambiguous acronym", which this branch tests directly.
+
+    "reject": no suffix vocabulary set, the Ph./D. halves ("ph", "d"),
+    or a configured delimiter core could ever accept this token --
+    `is_wholly_suffix([text], lexicon, policy)` is False at EVERY
+    `Policy`, so the run test may stop without asking it. Universal
+    because `is_wholly_suffix` reads only two `Policy` fields,
+    `lenient_comma_suffixes` and `extra_suffix_delimiters`, and this
+    branch's own guard (`not policy.extra_suffix_delimiters`) already
+    requires the second to be empty -- a delimiter policy turns what
+    would have been "reject" into "defer" instead, never leaving this
+    branch's verdict to answer for one. The first selects between
+    `is_suffix_lenient` and `is_suffix_strict`, and both are
+    membership in the same three vocabulary sets this branch has
+    already excluded the fold from (plus `period_joined_vocab`,
+    which checks the identical two sets chunk-wise and finds no
+    interior period to chunk on a simple token) -- so
+    `lenient_comma_suffixes` cannot move the answer either.
+
+    "defer": simple, not a member, not rejected either -- vocabulary-
+    eligible but not the ambiguous set, so the token is left for
+    `is_wholly_suffix` to count as a RUN member later, and calling
+    `ambiguous_class_candidate` here would only confirm False: for a
+    simple token that fold's `"." in text` gate already reads False
+    (no interior period) or, with a lone trailing period, finds no
+    "shape" verdict (`period_joined_vocab` requires a period that is
+    NOT at the end) -- so "defer" is `ambiguous_class_candidate`'s
+    answer too, paid for with zero calls instead of one.
+
+    "ask": every NON-simple token (an interior period, or non-ASCII):
+    the caller falls back to `ambiguous_class_candidate` for
+    membership, exactly as it always did.
+
+    All four cases are checked, over `Lexicon.default()`'s whole
+    suffix vocabulary plus name-word controls, mixed case, a trailing
+    period, both `Policy.lenient_comma_suffixes` settings and a
+    delimiter-core policy, by
+    `tests/v2/pipeline/test_vocab.py::test_run_word_fold_agrees_with_the_real_predicates`
+    (its docstring carries a negative control: with one acceptance
+    path dropped, the sweep fails).
+
+    Measured (2026-09-27, #544, by a
+    profiler-frame count over one parse), for an ORDINARY comma name
+    that enters the run loop and breaks on its very first token --
+    'Doe Smith, Jane Q.', 'Garcia Lopez, Maria Jose': asking
+    `ambiguous_class_candidate` of that token directly, with this
+    whole gate skipped, costs 325 and 338 frames; this named function
+    costs 319 and 332; the ORIGINAL hand-inlined gate (before it was
+    a named function at all) cost 317 and 330. So the gate itself
+    saves 8 frames against asking the predicate directly; making it a
+    named, testable call gives back 2 of those 8 (the call's own
+    frame); net 6 -- still the frame a comma name with no credential
+    in it pays less than it would with no gate at all, and the price
+    of a gate a test can reach on its own rather than one hand-copied
+    at the call site.
+    """
+    core = text.rstrip(".")
+    if not (text.isascii() and "." not in core):
+        return "ask"
+    folded = core.lower()
+    if folded in lexicon.suffix_acronyms_ambiguous and core == text:
+        return "member"
+    if (not policy.extra_suffix_delimiters
+            and folded not in lexicon.suffix_acronyms
+            and folded not in lexicon.suffix_words
+            and folded not in lexicon.suffix_acronyms_ambiguous
+            and folded not in ("ph", "d")):
+        return "reject"
+    return "defer"
+
+
 # #516's all-caps half, ONE PREDICATE for the shape test and its
 # WHOLE-VOCABULARY exclusion, shared by the three sites that each
 # needed the identical question answered (classify's tag emission,
