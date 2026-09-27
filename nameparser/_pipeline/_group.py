@@ -81,9 +81,12 @@ MaidenIndices = tuple[list[int], list[int]]
 
 class TailReader(IntEnum):
     """Which rule reads the words the maiden walk would leave standing
-    at the end of this segment -- the reader the acronym fork's second
-    check has to ask, since a stop is only right where that reader
-    takes the word (rules.md#M2, #533).
+    at the end of this segment -- the reader every stop's release
+    check (`_release_reads_off`) has to ask, since a stop is only right
+    where that reader takes what the stop gives up (rules.md#M2, #533,
+    #535). It also decides whether the walk reads the trailing title
+    chain at all: TRAILING and GIVEN_SLOT read the end of the clause
+    through `tail_reading`, NONE through the peel alone.
 
     NONE is a statement and not a default: before a family comma the
     words are the family the comma already named, and a tail segment
@@ -102,7 +105,7 @@ class TailReader(IntEnum):
     """
 
     NONE = 0        # FAMILY_COMMA segment 0, and every tail segment
-    TRAILING = 1    # the S2 peel: NO_COMMA, SUFFIX_COMMA segment 0
+    TRAILING = 1    # S2 peel + H5 chain: NO_COMMA, SUFFIX_COMMA seg 0
     GIVEN_SLOT = 2  # #531's reading: FAMILY_COMMA segment 1
 
 
@@ -123,7 +126,10 @@ class BoundJoin(IntEnum):
 # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
 # suffix" -- group does not decide that; it stops before whatever
 # trailing_start says the run is, so the chain and the maiden walk
-# end where assign's peel begins (#424).
+# end where assign's peel begins (#424). The maiden walk reads the
+# title-aware `tail_reading` instead wherever a trailing rule reads
+# the clause (#535), so there it ends where assign's peel and title
+# chain together begin.
 # rules.md#P2: "a particle joins the words after it into one name
 # part, the join running until the next particle starts a group of
 # its own, a trailing suffix begins" -- and on to the maiden marker
@@ -139,9 +145,11 @@ def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
 
 
 # rules.md#M2: "a recognized maiden marker standing after at least one
-# name word takes the words after it" -- up to any suffix word, or the
-# trailing numeral assign reads as the suffix, as the maiden name, the
-# marker itself dropped (history: decisions.md#M2)
+# name word takes the words after it" -- up to any suffix word, the
+# trailing numeral or credential assign reads as the suffix, or (where
+# a trailing rule reads the clause) a trailing title H5's chain takes,
+# as the maiden name, the marker itself dropped (history:
+# decisions.md#M2)
 #
 # A marker piece is a LONE marker -- M2's own "standing as a word of
 # its own". The consumer runs before every join but the Ph. D. merge
