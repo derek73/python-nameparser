@@ -94,9 +94,11 @@ class TailReader(IntEnum):
     there and the clause keeps what it has -- a stop would hand a word
     to `family` rather than to `suffix`.
 
-    A CLOSED set: `_maiden_take` dispatches on it exhaustively
-    (`typing.assert_never`), so a fourth member is a type error at
-    every reader until it is given a reading. group() is the one
+    A CLOSED set: `_maiden_take` dispatches on it exhaustively, ONCE
+    (`typing.assert_never`), and every later site there branches on
+    the narrowed reading that dispatch binds; `_release_reads_off`
+    dispatches on the two readers that reach it the same way. So a
+    fourth member is a type error until it is given a reading. group() is the one
     place (structure, segment index) is mapped onto it, and
     tests/v2/pipeline/test_group.py's
     `test_the_reader_is_pinned_to_the_structure_it_is_read_from`
@@ -633,10 +635,17 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # `rest[-1]` the numeral and `rest[peeled.names]` the first piece
     # the peel took. Where no rule reads them (NONE) there is no chain
     # to consult and the peel alone stands, as before.
+    # THE reader dispatch: exhaustive here, once, so a fourth
+    # `TailReader` member is a type error at this line; every later
+    # site branches on `reads`, which is the reader where a trailing
+    # rule reads these words and None where none does.
+    reads: Literal[TailReader.TRAILING, TailReader.GIVEN_SLOT] | None
     if reader is TailReader.NONE:
+        reads = None
         chained: tuple[int, ...] = ()
         peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
     elif reader is TailReader.TRAILING or reader is TailReader.GIVEN_SLOT:
+        reads = reader
         # the FIRST-WORD FLOOR, as the chain's own: `rest` opens with
         # the marker run, and the word after it stays the maiden name
         # whatever it is, so the chain may not take it -- taken, it
@@ -678,11 +687,10 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # remains). The acronym fork builds a view of its own below.
         view_rest = peel_walk(leading_titles(view, view_tags, tokens),
                               view_tags)
-        if reader is TailReader.NONE:
+        if reads is None:
             kept = peel_trailing(view_rest, view, view_tags, tokens,
                                  one_case).numeral is None
-        elif (reader is TailReader.TRAILING
-              or reader is TailReader.GIVEN_SLOT):
+        else:
             # the view read through the chain too, and the span behind
             # the numeral asked the shared release question -- which
             # includes the joins, the half this fork never asked:
@@ -708,9 +716,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                     or tail_follows
                     or not _release_reads_off(
                         view, view_tags, tokens, at + 1, len(view), at,
-                        reader, one_case, view_reading))
-        else:
-            assert_never(reader)
+                        reads, one_case, view_reading))
         if kept:
             trailing = len(pieces)
     # #533: the ACRONYM fork, asked the way the numeral is -- the peel
@@ -722,7 +728,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # peel, one view built once per take: O(pieces) for the take, not
     # per member, and no re-entrancy -- the predicate never calls the
     # walk that calls it.
-    if (reader is not TailReader.NONE and peeled.names < len(rest)
+    if (reads is not None and peeled.names < len(rest)
             and m + run + 1 < len(seen)):
         # THE FIRST-WORD FLOOR: the stop never takes the FIRST word
         # after the marker -- a class member standing alone there
@@ -800,7 +806,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             # member itself reads as the family name ('JOHN NEE JONES
             # SMITH MA PHD' left 'JOHN MA PHD', whose MA is the family).
             at = left.index(stop)
-            if reader is TailReader.GIVEN_SLOT:
+            if reads is TailReader.GIVEN_SLOT:
                 # after a family comma the words to spare are there by
                 # construction, so the reader is #531's -- the member's
                 # own reading, asked through the one predicate that
@@ -818,22 +824,20 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                 takes = credential_at_the_given_slot(tokens[head[0]],
                                                      one_case)
                 start = at + 1
-            elif reader is TailReader.TRAILING:
-                # the peel over the view IS the member's question here,
-                # so the shared check asks it from the member itself:
-                # covered means the reading of the name left standing
-                # took this piece as the credential, so one
-                # `tail_reading` answers both questions.
+            else:
+                # TRAILING: the peel over the view IS the member's
+                # question here, so the shared check asks it from the
+                # member itself: covered means the reading of the name
+                # left standing took this piece as the credential, so
+                # one `tail_reading` answers both questions.
                 takes = True
                 start = at
-            else:
-                assert_never(reader)
             # rules.md#M2: "a word the clause gives up reads as a
             # post-nominal or the clause keeps it" -- of the whole span
             # the stop gives up, and with the joins below this pass
             # asked too (#533 review, #535).
             if takes and _release_reads_off(view, view_tags, tokens,
-                                            start, len(view), at, reader,
+                                            start, len(view), at, reads,
                                             one_case):
                 trailing = stop
     # rules.md#M2 (#535): a trailing title the H5 chain takes ends the
@@ -846,7 +850,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # marker having announced one ('Jane Doe nee King.'), and where
     # titles follow it only the ones behind it go ('Jane Doe nee Prof.
     # Dr.' reads maiden 'Prof.', title 'Dr.').
-    if chained and reader is not TailReader.NONE:
+    if chained and reads is not None:
         stop = min(chained)
         if stop < trailing:
             left = [i for i in seen if i < seen[m] or i >= stop]
@@ -856,7 +860,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             end = (left.index(trailing) if trailing < len(pieces)
                    else len(view))
             if _release_reads_off(view, view_tags, tokens, at, end, at,
-                                  reader, one_case):
+                                  reads, one_case):
                 trailing = stop
     # The walk starts past the WHOLE marker: a phrase's second word is
     # the marker, not the first word it takes. With nothing behind the
@@ -943,21 +947,16 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # that is no link is #548's question and is left to it, and so
         # is a link standing FIRST after the marker: stopping there
         # declines the clause outright, which gives nothing up.
-        if (j > m + run and reader is not TailReader.NONE
+        if (j > m + run and reads is not None
                 and _is_conj_piece(pieces[k], ptags[k], tokens)):
-            if (reader is TailReader.TRAILING
-                    or reader is TailReader.GIVEN_SLOT):
-                left = [i for i in seen if i < seen[m] or i >= k]
-                view = [pieces[i] for i in left]
-                view_tags = [ptags[i] for i in left]
-                at = left.index(k)
-                if not _release_reads_off(view, view_tags, tokens, at,
-                                          len(view), at, reader,
-                                          one_case):
-                    j += 1
-                    continue
-            else:
-                assert_never(reader)
+            left = [i for i in seen if i < seen[m] or i >= k]
+            view = [pieces[i] for i in left]
+            view_tags = [ptags[i] for i in left]
+            at = left.index(k)
+            if not _release_reads_off(view, view_tags, tokens, at,
+                                      len(view), at, reads, one_case):
+                j += 1
+                continue
         break
     # j == m + run means nothing followed the marker but a suffix, so
     # the pass declines and the marker stays ordinary words
@@ -997,7 +996,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # the 905,796-parse oracle at the same frame counts.
     last = pieces[seen[j - 1]]
     word = tokens[last[0]]
-    if (reader is not TailReader.NONE
+    if (reads is not None
             and not word.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS)):
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,

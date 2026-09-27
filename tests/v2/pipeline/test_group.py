@@ -11,7 +11,8 @@ from nameparser._pipeline import _group as _group_module
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited, _maiden_marked
 from nameparser._pipeline._group import (
-    TailReader, _group_segment, group, marker_run_length,
+    TailReader, _group_segment, _release_reads_off, group,
+    marker_run_length,
 )
 from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
@@ -1140,6 +1141,18 @@ def test_an_unmapped_reader_is_a_loud_failure_rather_than_a_default(
                        ambiguities=[], one_case=state.one_case,
                        reader=cast(TailReader, 99),
                        maiden_ambiguities=[])
+
+
+def test_the_release_check_fails_loudly_on_an_unmapped_reader(
+) -> None:
+    """`_release_reads_off` dispatches on the two readers that reach it
+    and ends with `assert_never`, as `_maiden_take`'s one dispatch
+    does. Unreachable at runtime by construction, so reached here with
+    a value outside the enum -- the loudness pinned, and the line kept
+    from being an uncovered statement."""
+    with pytest.raises(AssertionError):
+        _release_reads_off([[0]], [set()], [], 0, 1, 0,
+                           cast(TailReader, 99), None)  # type: ignore[arg-type]
 
 
 def test_the_reader_is_pinned_to_the_structure_it_is_read_from(
