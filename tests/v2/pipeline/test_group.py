@@ -2016,7 +2016,8 @@ def test_the_numeral_stop_asks_the_join_question() -> None:
     """The numeral fork never asked whether a join below the take
     would absorb the word it releases: after a family comma the
     bound-given join took the V ('Berg, abdul nee Smith V' read given
-    'abdul V' through 2.3.0). It asks now, through the shared check."""
+    'abdul V' at 2.2.0 and 2.3.0). It asks now, through the shared
+    check."""
     out = _grouped("Berg, abdul nee Smith V", lexicon=Lexicon.default())
     assert _maiden_texts(out) == ["Smith", "V"]
     # the control: with no bound word the numeral is released as before
@@ -2024,9 +2025,10 @@ def test_the_numeral_stop_asks_the_join_question() -> None:
     assert _maiden_texts(ok) == ["Smith"]
 
 
-def test_the_first_word_floor_clamps_the_title_stop() -> None:
-    """A title straight after the marker stays the maiden name; where
-    the chain took it and words behind it, only the first stays."""
+def test_the_first_word_floor_holds_a_title_out_of_the_chain() -> None:
+    """A title straight after the marker stays the maiden name: the
+    floor is the title chain's own, so the chain never takes that word
+    and stops at it, taking only the titles behind it."""
     assert _maiden_texts(_grouped("Jane Doe nee King.", lexicon=Lexicon.default())) == ["King."]
     assert _maiden_texts(_grouped("Jane Doe nee Prof. Dr.", lexicon=Lexicon.default())) == ["Prof."]
 

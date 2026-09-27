@@ -41,7 +41,7 @@ import bisect
 import dataclasses
 from collections.abc import Iterable, Sequence, Set
 from enum import IntEnum
-from typing import assert_never
+from typing import Literal, assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
@@ -106,7 +106,7 @@ class TailReader(IntEnum):
 
     NONE = 0        # FAMILY_COMMA segment 0, and every tail segment
     TRAILING = 1    # S2 peel + H5 chain: NO_COMMA, SUFFIX_COMMA seg 0
-    GIVEN_SLOT = 2  # #531's reading: FAMILY_COMMA segment 1
+    GIVEN_SLOT = 2  # #531's reading + H5 chain: FAMILY_COMMA seg 1
 
 
 class BoundJoin(IntEnum):
@@ -269,59 +269,54 @@ def _join_takes_the_member(view: Sequence[Sequence[int]],
     now from the other side ('Berg, Jane van der nee Smith DO' read
     family 'van der DO Berg').
 
-    Two joins can reach it, and each is modelled by the shape it needs
-    rather than by running it: P2's chain, where the member is
-    particle vocabulary standing behind a particle piece or beside
-    another released one ('Jane Doe nee Smith DO DO' read family
-    'DO DO'), and P5's bound-given join, where the member is the word
-    after the bound one ('Berg, abdul nee Jones MA' read given
-    'abdul MA'). Both over-decline rather than predict: a shape that
-    only MIGHT join keeps its word in the maiden name, which is the
-    conservative direction M2's invariant asks for.
+    Three joins can reach it, and each is modelled by the shape it
+    needs rather than by running it:
 
-    The P5 half is asked for the GIVEN_SLOT reader alone (`reader is
-    TailReader.GIVEN_SLOT` guards it): that join is `BoundJoin.LENIENT`
-    only after a family comma, joining whatever follows the bound
-    word; before one the reserve is `BoundJoin.STRICT` and reads the
-    same peel and chain the release was just asked of (rules.md#P5),
-    so a span that reading already covered is never joined there and
-    asking anyway over-declines a release `BoundJoin.STRICT` would
-    have kept -- 'abdul nee Smith V' (no comma) read maiden 'Smith V'
-    before this guard was scoped (#535 review)."""
+    * P2's chain, where the member is particle vocabulary standing
+      behind a particle piece, beside another released one ('Jane Doe
+      nee Smith DO DO' read family 'DO DO'), or with a title behind
+      it, the chain running on over a trailing title (rules.md#H5's
+      Accepted 'John van der Berg Prof.'; 'Jane Doe nee Smith MA do
+      Prof.').
+    * P6's attachment, after a family comma, where the member is a
+      TITLE that is also particle vocabulary: P6 attaches a particle
+      trailing the given part to the family ('Doe, Jane nee Smith St.'
+      would read family 'St. Doe'). Titles only -- a credential that
+      is also a particle ('DO') is the given slot's own lean, which
+      the credential stop has already asked (#533).
+    * P5's bound-given join, where the member is the word after the
+      bound one ('Berg, abdul nee Jones MA' read given 'abdul MA').
+      Asked for the GIVEN_SLOT reader alone: that join is
+      `BoundJoin.LENIENT` only after a family comma, and before one
+      the reserve is `BoundJoin.STRICT`, which reads the same peel and
+      chain the release was just asked of and so never joins a span
+      that reading covered (rules.md#P5).
+
+    All three over-decline rather than predict: a shape that only
+    MIGHT join keeps its word in the maiden name, which is the
+    conservative direction M2's invariant asks for."""
     member = tokens[view[at][0]]
-    # rules.md#P6 attaches a particle trailing the given part after a
-    # family comma to the family, and a released TITLE that is also
-    # particle vocabulary is exactly that ('Doe, Jane nee Smith St.'
-    # read family 'St. Doe'). Titles only: a credential that is also a
-    # particle ('DO') is read by the given slot's own lean first, which
-    # the credential stop has already asked (#533).
+    # P6's half (see the docstring): a released title that is also a
+    # particle, after a family comma.
     if (reader is TailReader.GIVEN_SLOT and "particle" in member.tags
             and is_title_piece(view[at], view_tags[at], tokens)):
         return True
     if "particle" in member.tags:
         if at and _is_prefix_piece(view[at - 1], view_tags[at - 1], tokens):
             return True
-        # the chain runs on over a trailing TITLE as over a particle
-        # (rules.md#H5's Accepted 'John van der Berg Prof.'), so a
-        # released particle with a title behind it takes the title
-        # into the family ('Jane Doe nee Smith MA do Prof.', #535)
+        # a title behind it: the chain runs on over it (docstring)
         for q in range(at + 1, len(view)):
             if len(view[q]) == 1 and "particle" in tokens[view[q][0]].tags:
                 return True
             if is_title_piece(view[q], view_tags[q], tokens):
                 return True
-    # P5 joins the first non-title piece to the one after it, so the
-    # member is at risk exactly where it IS the one after it -- after a
-    # family comma, where the pair joins whatever follows
-    # (rules.md#P5, `BoundJoin.LENIENT`). Before one the reserve is
-    # `BoundJoin.STRICT` and reads the same peel and chain the release
-    # was just asked of: rules.md
-    # #P5: "a word the peel reads as a suffix unjoined must read so
-    # joined, or the join declines", so a span that reading covered is
-    # never joined, and asking here over-declined 'abdul nee Smith V'
-    # (#535 review). The tag pair is tested before `leading_titles` is
-    # asked, which keeps the ordinary credential release from paying
-    # that frame.
+    # rules.md#P5: "a word the peel reads as a suffix unjoined must
+    # read so joined, or the join declines" -- why the STRICT reserve
+    # needs no model here and only the GIVEN_SLOT reader asks. P5
+    # joins the first non-title piece to the one after it, so the
+    # member is at risk exactly where it IS the one after it. The tag
+    # pair is tested before `leading_titles` is asked, which keeps the
+    # ordinary credential release from paying that frame.
     return (reader is TailReader.GIVEN_SLOT
             and at > 0 and len(view[at - 1]) == 1
             and "vocab:bound-given" in tokens[view[at - 1][0]].tags
@@ -339,7 +334,8 @@ def _release_reads_off(view: Sequence[Sequence[int]],
                        view_tags: Sequence[Set[str]],
                        tokens: Sequence[WorkToken],
                        start: int, end: int, at: int,
-                       reader: TailReader,
+                       reader: Literal[TailReader.TRAILING,
+                                       TailReader.GIVEN_SLOT],
                        one_case: bool | None,
                        reading: tuple[list[int], tuple[int, ...], Peel]
                        | None = None) -> bool:
@@ -380,8 +376,8 @@ def _release_reads_off(view: Sequence[Sequence[int]],
     of the span is asked `_join_takes_the_member`. Both decline rather
     than predict, which is the conservative direction M2 asks for.
 
-    NONE never reaches this: no trailing rule reads those words, so no
-    stop is made for this to check.
+    NONE never reaches this, and the annotation says so: no trailing
+    rule reads those words, so no stop is made for this to check.
 
     `reading` is the TRAILING reader's `tail_reading` of this same
     view, where the caller has one in hand (the numeral fork reads it
@@ -439,7 +435,7 @@ def _release_reads_off(view: Sequence[Sequence[int]],
                                                      one_case)):
                 continue
             return False
-    else:
+    elif reader is TailReader.TRAILING:
         rest, chained, peeled = reading or tail_reading(
             peel_walk(leading_titles(view, view_tags, tokens), view_tags),
             view, view_tags, tokens, one_case)
@@ -448,6 +444,8 @@ def _release_reads_off(view: Sequence[Sequence[int]],
         if not all(q in covered or "suffix" in view_tags[q]
                    for q in range(start, end)):
             return False
+    else:
+        assert_never(reader)
     if (any(is_title_piece(view[q], view_tags[q], tokens)
             for q in range(at, len(view)))
             and any(_is_prefix_piece(view[q], view_tags[q], tokens)
@@ -515,7 +513,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                  one_case: bool | None,
                  reader: TailReader,
                  ambiguities: list[PendingAmbiguity],
-                 tail_follows: bool = False,
+                 *, tail_follows: bool,
                  ) -> MaidenIndices | None:
     """The PIECE indices the marker pass removes, split the way
     MaidenIndices declares them: the MARKER's pieces (one, or several
@@ -555,9 +553,10 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     trailing rule: the walk reads the end of the name through H5's
     chain as assign does, so the title ends the clause and a
     credential or numeral in front of it gets the stops it gets with
-    the title absent. The credential and title stops are each asked
-    one question of the whole span they give up
-    (`_release_reads_off`), and each spares the first word after the
+    the title absent. All three stops -- the numeral, the credential
+    and the title -- ask one question of the whole span they give up
+    (`_release_reads_off`), and so does a link the walk stops at. Only
+    the credential and title stops spare the first word after the
     marker. The numeral stop does not: it reads FROM the marker by
     design, so a numeral standing straight after it is not held to
     the first-word floor and may decline the clause -- 'Jane Smith née
@@ -579,7 +578,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     than a slice.
     """
     # the lone-core test; also in _run_neighbours and group()'s #206
-    # drop -- keep in step
+    # drop, whose copy adds `len(pieces) > 1` -- keep in step
     seen = [k for k in range(len(pieces))
             if not (len(pieces[k]) == 1
                     and tokens[pieces[k][0]].text in cores)]
@@ -637,7 +636,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     if reader is TailReader.NONE:
         chained: tuple[int, ...] = ()
         peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
-    else:
+    elif reader is TailReader.TRAILING or reader is TailReader.GIVEN_SLOT:
         # the FIRST-WORD FLOOR, as the chain's own: `rest` opens with
         # the marker run, and the word after it stays the maiden name
         # whatever it is, so the chain may not take it -- taken, it
@@ -649,6 +648,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         floor = rest.index(first) + 1 if first in rest else 1
         rest, chained, peeled = tail_reading(rest, pieces, ptags, tokens,
                                              one_case, floor)
+    else:
+        assert_never(reader)
     trailing = rest[-1] if peeled.numeral is not None else len(pieces)
     # The fork reads the piece before the numeral, and the take
     # REMOVES that piece: afterwards assign sees the piece before the
@@ -665,9 +666,12 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         left = [i for i in seen if i < seen[m] or i >= trailing]
         view = [pieces[i] for i in left]
         view_tags = [ptags[i] for i in left]
-        # The same peel pair as above, read over the view -- and only
-        # `Peel.numeral` off it, because the bare-acronym fork COUNTS
-        # pieces and this view no longer holds the pieces it counted
+        # The same peel pair as above, read over the view -- and, for
+        # the NONE reader, only `Peel.numeral` off it (every other
+        # reader reads the view through `tail_reading` and asks the
+        # shared release check below), because the bare-acronym fork
+        # COUNTS pieces and this view no longer holds the pieces it
+        # counted
         # ('John née Jones Smith Ma' peeled over the pieces as written
         # reads the acronym as a credential with words to spare, and
         # once 'Jones Smith' has left it is the family of what
@@ -677,7 +681,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         if reader is TailReader.NONE:
             kept = peel_trailing(view_rest, view, view_tags, tokens,
                                  one_case).numeral is None
-        else:
+        elif (reader is TailReader.TRAILING
+              or reader is TailReader.GIVEN_SLOT):
             # the view read through the chain too, and the span behind
             # the numeral asked the shared release question -- which
             # includes the joins, the half this fork never asked:
@@ -697,11 +702,15 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                                         tokens, one_case)
             view_peel = view_reading[2]
             at = left.index(trailing)
+            # `tail_follows` is only ever true for the GIVEN_SLOT
+            # reader: group() computes it from that reader.
             kept = (view_peel.numeral is None
-                    or (reader is TailReader.GIVEN_SLOT and tail_follows)
+                    or tail_follows
                     or not _release_reads_off(
                         view, view_tags, tokens, at + 1, len(view), at,
                         reader, one_case, view_reading))
+        else:
+            assert_never(reader)
         if kept:
             trailing = len(pieces)
     # #533: the ACRONYM fork, asked the way the numeral is -- the peel
@@ -772,14 +781,13 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # point, and a row for one name would have to be guessed for
         # the four interpreters only CI runs.
         #
-        # A THIRD condition stood here and is gone: `stop < trailing`
-        # guarded nothing, `stop` being the larger of a walked piece
-        # and the floor and both bounded by `trailing`, so at worst
-        # `stop == trailing` and the assignment below sets `trailing`
-        # to what it already is. Measured over 1,760,904 parses:
-        # `stop > trailing` never once, `stop == trailing` 15,696
-        # times, and the tag test declined every one of those.
-        if (len(head) == 1
+        # And `stop < trailing`: a stop at or past the numeral stop
+        # would move the clause's end the wrong way. The walked piece
+        # is bounded by `trailing`, but the FLOOR is an index, and the
+        # title chain's splice can leave the numeral stop in front of
+        # it -- 'Jane Doe nee V Prof.' chains the title, the numeral
+        # stop lands on 'V', and the floor names the piece after it.
+        if (stop < trailing and len(head) == 1
                 and AMBIGUOUS_ACRONYM_TAG in tokens[head[0]].tags):
             left = [i for i in seen if i < seen[m] or i >= stop]
             view = [pieces[i] for i in left]
@@ -814,11 +822,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                 # the peel over the view IS the member's question here,
                 # so the shared check asks it from the member itself:
                 # covered means the reading of the name left standing
-                # took this piece as the credential. One `tail_reading`
-                # where a `trailing_start_past_titles` and the check's
-                # own reading were two, byte-identical over the #535
-                # sweep and 15 frames cheaper on 'Jane Doe nee Smith
-                # MA' (measured 2026-09-26, py3.11).
+                # took this piece as the credential, so one
+                # `tail_reading` answers both questions.
                 takes = True
                 start = at
             else:
@@ -841,7 +846,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # marker having announced one ('Jane Doe nee King.'), and where
     # titles follow it only the ones behind it go ('Jane Doe nee Prof.
     # Dr.' reads maiden 'Prof.', title 'Dr.').
-    if chained:
+    if chained and reader is not TailReader.NONE:
         stop = min(chained)
         if stop < trailing:
             left = [i for i in seen if i < seen[m] or i >= stop]
@@ -889,25 +894,26 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # without the core ('Smith, John, PhD née Puig Mr. - i Soler' ends
     # at the link after the title, as '... Puig Mr. i Soler' does --
     # the title is the word on the link's left and refuses).
-    # `peel_start` is where assign's trailing run begins over
-    # the pieces as WRITTEN, so the generation or credential a clause
-    # ends with is never the name word on a link's right ('... nee Puig
-    # i III', '... i MA', whose MA carries no `vocab:suffix` tag for
-    # the piece test to refuse it by).
+    # `peel_start` is where assign's trailing run begins -- over the
+    # pieces as written for a NONE reader (`trailing_start`'s whole
+    # answer, read off the peel pair above rather than re-running it),
+    # and for any other reader `tail_reading`'s title-aware answer
+    # (`rest[peeled.names]`, `rest` having been read through the H5
+    # chain, so a chained title is not in it). Either way the
+    # generation or credential a clause ends with is never the name
+    # word on a link's right ('... nee Puig i III', '... i MA', whose
+    # MA carries no `vocab:suffix` tag for the piece test to refuse it
+    # by).
     #
-    # `peel_start` is `trailing_start`'s whole answer for a NONE
-    # reader, read off the peel pair above rather than re-running it,
-    # which is the reading that function's own docstring sends this
-    # caller here for; for any other reader it is `tail_reading`'s own
-    # title-aware answer instead (`rest[peeled.names]`, `rest` having
-    # been read through the H5 chain). Dated snapshot of the
-    # PRE-#535 population, measured 2026-09-20 with a probe here over
-    # the whole suite -- 93,408 reaches of this site, `peel_start >
-    # trailing` 0 of them: that no longer holds once a reader other
-    # than NONE reaches this site, since the title stop can now set
-    # `trailing` to a piece the chain read PAST -- 'Jane Doe nee Smith
-    # Prof.' reaches here with `peel_start` 5 and `trailing` 4 (#535
-    # review).
+    # It can stand PAST `trailing`: the title stop sets `trailing` to
+    # a piece the chain read past ('Jane Doe nee Smith Prof.' reaches
+    # here with `peel_start` 5 and `trailing` 4). That is harmless: the
+    # walk below never reaches `trailing`, so the link exception is
+    # never asked about a piece at or past it, and a bound past the
+    # walk's own end cannot let a link join across anything the walk
+    # visits. A dated snapshot from before #535, measured 2026-09-20
+    # with a probe here over the whole suite: 93,408 reaches of this
+    # site, `peel_start > trailing` 0 of them.
     lo = seen[m + run]
     peel_start = (rest[peeled.names] if peeled.names < len(rest)
                   else len(pieces))
@@ -939,14 +945,19 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # declines the clause outright, which gives nothing up.
         if (j > m + run and reader is not TailReader.NONE
                 and _is_conj_piece(pieces[k], ptags[k], tokens)):
-            left = [i for i in seen if i < seen[m] or i >= k]
-            view = [pieces[i] for i in left]
-            view_tags = [ptags[i] for i in left]
-            at = left.index(k)
-            if not _release_reads_off(view, view_tags, tokens, at,
-                                      len(view), at, reader, one_case):
-                j += 1
-                continue
+            if (reader is TailReader.TRAILING
+                    or reader is TailReader.GIVEN_SLOT):
+                left = [i for i in seen if i < seen[m] or i >= k]
+                view = [pieces[i] for i in left]
+                view_tags = [ptags[i] for i in left]
+                at = left.index(k)
+                if not _release_reads_off(view, view_tags, tokens, at,
+                                          len(view), at, reader,
+                                          one_case):
+                    j += 1
+                    continue
+            else:
+                assert_never(reader)
         break
     # j == m + run means nothing followed the marker but a suffix, so
     # the pass declines and the marker stays ordinary words
@@ -1015,8 +1026,8 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
 
     A tail segment's delimiter CORE (`cores`, empty off a tail segment
     and at the default policy) is stepped over exactly as a connective
-    is: it is structure the caller declared, the #206 drop takes it out
-    of the output, and a link read with it present must read as the
+    is: it is structure the caller declared, the #206 drop takes a LONE
+    core out of the output, and a link read with it present must read as the
     same text read without it (rules.md#M2, #538). Asked inline, beside
     `_is_conj_piece`, so an empty set costs no frame.
 
@@ -1078,7 +1089,7 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     for k in range(n):
         left[k] = prev
         # the lone-core test; also in _maiden_take and group()'s #206
-        # drop -- keep in step
+        # drop, whose copy adds `len(pieces) > 1` -- keep in step
         is_conj = (_is_conj_piece(pieces[k], ptags[k], tokens)
                    or (len(pieces[k]) == 1
                        and tokens[pieces[k][0]].text in cores))
@@ -1391,7 +1402,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # returns what it took, and group() records the drop and the roles.
     taken: MaidenTake | None = None
     take = _maiden_take(pieces, ptags, tokens, cores, one_case,
-                        reader, maiden_ambiguities, tail_follows)
+                        reader, maiden_ambiguities,
+                        tail_follows=tail_follows)
     if take is not None:
         marker_ks, maiden_ks = take
         taken = ([i for k in marker_ks for i in pieces[k]],
@@ -2033,7 +2045,9 @@ def group(state: ParseState) -> ParseState:
             kept: list[int] = []
             for k in range(len(pieces)):
                 # the lone-core test; also in _maiden_take and
-                # _run_neighbours -- keep in step
+                # _run_neighbours -- keep in step. This copy alone adds
+                # `len(pieces) > 1`: a segment that is nothing but its
+                # core keeps it
                 is_core = (len(pieces[k]) == 1
                            and tokens[pieces[k][0]].text in seg_cores
                            and len(pieces) > 1)

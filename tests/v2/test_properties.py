@@ -553,10 +553,12 @@ def test_a_title_the_clause_gives_up_lands_in_title() -> None:
     period-marked title word written after the marker ends the parse
     in the maiden name or in the title field, never in a name part.
 
-    Over heads that reach every reader and every guard: no comma, a
-    suffix comma, the given part after a family comma, before a
-    family comma (NONE), a bare title head (the view check), a particle
-    head (the chain), a bound-given head (P5). It holds at e0f1a2fa too,
+    Over heads reaching all three readers and the guards: no comma
+    (TRAILING), the given part after a family comma (GIVEN_SLOT), a
+    tail segment behind a suffix comma ('Jane Doe, PhD', NONE), a bare
+    title head (the view check), a particle head (the chain), a
+    bound-given head (P5). No head puts the clause before a family
+    comma, the other place NONE reads. It holds at e0f1a2fa too,
     where the clause kept every title, so its control is a mutation:
     RECORDED NEGATIVE CONTROL, re-measured 2026-09-26 after the link
     and particle-title bodies joined: the title stop's release check
@@ -589,21 +591,24 @@ def test_a_title_the_clause_gives_up_lands_in_title() -> None:
 
 
 def test_a_title_first_word_counts_as_a_word() -> None:
-    """rules.md#M2's first-word floor, over two INPUTS (#535 review):
-    the floor is the chain's own now (H5's `trailing_titles` takes it),
-    so whether the first word after the marker IS title vocabulary
-    ('King.') or not ('Smith') must not change what a trailing
-    credential behind it reads as -- the floor holds either word out
-    of the chain's count, so the credential is read the same way in
-    both.
+    """rules.md#M2's first-word floor, over two INPUTS: the floor is
+    the title chain's own (`trailing_titles` takes it), so whether the
+    first word after the marker IS title vocabulary ('King.') or not
+    ('Smith') must not change what a trailing credential behind it
+    reads as -- the floor holds either word out of the chain's count,
+    so the credential is read the same way in both. Both sides must
+    also take a clause whose first word is that head, so two declined
+    clauses cannot pass by agreeing about nothing.
 
     An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so
     it consults no rule statement. RECORDED NEGATIVE CONTROL, measured
-    2026-09-26: with the walk's chain allowed to take the first word
-    after the marker (no `floor`, the first-word floor applied instead
-    as a clamp on the title stop, `stop = max(min(chained), seen[m +
-    run + 1])`), 14 of these 30 pairs disagree -- 'Jane Doe nee King.
-    ba' read no suffix.
+    2026-09-26 on a copy of this tree with the floor removed entirely
+    (`tail_reading` handed 1 in `_maiden_take`): every one of the 30
+    pairs fails, on the head check alone -- the chain takes 'King.',
+    the clause declines, and the suffixes still agree (0 of 30
+    disagree), which is why the head check is here. This replaces a
+    figure recorded for a clamp-based variant, which a later attempt
+    could not reproduce from its description.
     """
     forms = ("Jane Doe nee {} {}", "Doe, Jane nee {} {}")
     runs = ("ba", "MA", "V", "PhD", "MA JD")
@@ -619,6 +624,14 @@ def test_a_title_first_word_counts_as_a_word() -> None:
                     failures.append(
                         f"{variant[0]!r} vs {variant[1]!r}: "
                         f"{str(a.suffix)!r} vs {str(b.suffix)!r}")
+                # both sides take a clause, and its first word is the
+                # head -- otherwise agreeing suffixes could be two
+                # declined clauses agreeing about nothing
+                for name, text in ((a, variant[0]), (b, variant[1])):
+                    head = text.split(" nee ", 1)[-1].split(" NEE ", 1)[-1]
+                    if str(name.maiden).split()[:1] != head.split()[:1]:
+                        failures.append(
+                            f"{text!r}: maiden {str(name.maiden)!r}")
     assert not failures, "\n".join(failures)
 
 
@@ -2710,7 +2723,8 @@ def test_the_case_only_walk_can_fail(
 def test_a_delimiter_core_reads_as_if_it_were_not_written() -> None:
     """#538: under a core-bearing policy, a maiden clause reads exactly
     as the same text written without the core. The core is structure
-    the caller declared, the #206 drop takes it out of the output, and
+    the caller declared, the #206 drop takes a LONE core out of the
+    output, and
     rules.md#M2's link exception asks for a NAME word on each side of
     the link -- so the word on a link's side is the one past the core.
 

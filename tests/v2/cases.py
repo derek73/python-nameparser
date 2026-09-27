@@ -3787,14 +3787,16 @@ CASES: tuple[Case, ...] = (
                "the marker announced a name, and 'King.' is a borne "
                "surname the title vocabulary also lists. Unchanged "
                "from 2.3.0"),
-    Case("the_first_word_floor_is_a_clamp_for_titles_too",
+    Case("the_first_word_floor_holds_for_titles_too",
          "Jane Doe nee Prof. Dr.",
          {"title": "Dr.", "given": "Jane", "family": "Doe",
           "maiden": "Prof."},
          classification="fix(#535)",
-         notes="the chain took both words; the floor keeps only the "
-               "first, as 'Doe, J. nee MA ba' keeps 'MA' and gives up "
-               "'ba'. 2.3.0 read maiden 'Prof. Dr.'"),
+         notes="the floor is the title chain's own: the chain may not "
+               "take the first word after the marker, so it takes 'Dr.' "
+               "and stops at 'Prof.', which stays the maiden name, as "
+               "'Doe, J. nee MA ba' keeps 'MA' and gives up 'ba'. 2.3.0 "
+               "read maiden 'Prof. Dr.'"),
     Case("a_title_stop_that_leaves_no_name_word_is_no_stop",
          "Dr. nee Jones Smith Prof.",
          {"title": "Dr.", "maiden": "Jones Smith Prof."},
@@ -3856,8 +3858,7 @@ CASES: tuple[Case, ...] = (
                "part is not the LAST comma part, so the release is "
                "withdrawn and the clause keeps 'V'. 2.3.0 read middle "
                "'V', maiden 'Smith', suffix 'PhD' -- an M2 violation "
-               "predating #535, which had widened it onto 'Smith V "
-               "Prof., PhD' below rather than fixing it"),
+               "predating #535"),
     Case("a_lone_numeral_before_a_credential_tail_stays_maiden",
          "Doe, Jane nee V, PhD",
          {"given": "Jane", "family": "Doe", "suffix": "PhD",
@@ -3868,9 +3869,9 @@ CASES: tuple[Case, ...] = (
                "read a lone numeral as a suffix with a third comma part "
                "behind it (#144's condition, asked of the clause since "
                "#535), so the clause keeps 'V', as 2.0.0 and 2.1.0 read "
-               "it. 2.2.0, 2.3.0 and the parent d9d80492 read middle "
-               "'nee V', the marker a name word; 'Doe, Jane nee V, Jr.' "
-               "moves the same way"),
+               "it. 2.2.0, 2.3.0 and the #538 commit d9d80492 read "
+               "middle 'nee V', the marker a name word; 'Doe, Jane nee "
+               "V, Jr.' moves the same way"),
     Case("the_given_title_chain_stops_at_a_member_with_a_title_behind",
          "Doe, Jane nee Smith Rev. MA Prof.",
          {"title": "Prof.", "given": "Jane", "family": "Doe",
@@ -3883,8 +3884,8 @@ CASES: tuple[Case, ...] = (
                "stands behind it -- 'Doe, Jane Dr. MA Prof.' reads "
                "middle 'Dr.' -- so the chain stops at 'MA' and 'Rev.' "
                "stays in the clause; only 'MA' and 'Prof.' leave. 2.3.0 "
-               "and the parent d9d80492 read maiden 'Smith Rev. MA "
-               "Prof.'"),
+               "and the #538 commit d9d80492 read maiden 'Smith Rev. "
+               "MA Prof.'"),
     Case("a_lenient_numeral_leaves_with_the_title_in_front",
          "Doe, Jane nee Smith Prof. V",
          {"title": "Prof.", "given": "Jane", "family": "Doe",
@@ -3947,9 +3948,11 @@ CASES: tuple[Case, ...] = (
          notes="NOT the transparent twin of 'Doe, Jane nee Smith V "
                "Prof., PhD' (title 'Prof.', maiden 'Smith V'): the "
                "third comma part's credential tail withdraws the "
-               "numeral's release before the title chain is ever "
-               "asked, so this spelling never reaches H5 at all and "
-               "the title stays maiden text behind the numeral. The "
+               "numeral's release, so 'V' stays a name word, and the "
+               "title stop is then asked and declines -- the given "
+               "part's chain runs from the end and stops at 'V', so "
+               "it never reaches 'Prof.', and the title stays maiden "
+               "text in front of the numeral. The "
                "same asymmetry is the bare given slot's own, with no "
                "marker in it -- 'Doe, Jane Prof. V, PhD' reads middle "
                "'Prof. V' (no title) where 'Doe, Jane V Prof., PhD' "
