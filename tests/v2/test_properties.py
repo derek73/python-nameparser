@@ -529,22 +529,22 @@ def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
     runs = ("MA", "V", "PhD", "Jr.", "MA JD", "M.A.")
     failures = []
     for form in forms:
-        for run in runs:
+        for tail in runs:
             title = "Prof."
             if form == form.upper():
-                run, title = run.upper(), title.upper()
+                tail, title = tail.upper(), title.upper()
             elif form == form.lower():
-                run, title = run.lower(), title.lower()
-            a = parse(form.format(f"{run} {title}"))
-            b = parse(form.format(f"{title} {run}"))
+                tail, title = tail.lower(), title.lower()
+            a = parse(form.format(f"{tail} {title}"))
+            b = parse(form.format(f"{title} {tail}"))
             for field in ("given", "middle", "family", "suffix", "maiden"):
                 if str(getattr(a, field)) != str(getattr(b, field)):
                     failures.append(
-                        f"{form!r} {run!r} {field}: "
+                        f"{form!r} {tail!r} {field}: "
                         f"{str(getattr(a, field))!r} vs "
                         f"{str(getattr(b, field))!r}")
             if sorted(str(a.title).split()) != sorted(str(b.title).split()):
-                failures.append(f"{form!r} {run!r} title")
+                failures.append(f"{form!r} {tail!r} title")
     assert not failures, "\n".join(failures)
 
 
@@ -605,8 +605,8 @@ def test_a_title_first_word_counts_as_a_word() -> None:
     heads = ("King.", "Smith")
     failures = []
     for form in forms:
-        for run in runs:
-            texts = [form.format(h, run) for h in heads]
+        for tail in runs:
+            texts = [form.format(h, tail) for h in heads]
             for variant in (texts, [t.upper() for t in texts],
                             [t.lower() for t in texts]):
                 a, b = (parse(t) for t in variant)
