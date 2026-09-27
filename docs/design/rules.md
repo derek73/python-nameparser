@@ -958,8 +958,9 @@ S2. Rationale: generational suffixes and credentials are recognized
     A trailing word of the suffix vocabulary reads as a suffix —
     generational forms and credential acronyms alike, and an
     ambiguous acronym written with its periods, one after each
-    letter, counts unambiguously; a single trailing period is the
-    abbreviation shape any word can wear and does not. A
+    letter or one after each of two or more letter chunks, counts
+    unambiguously; a single trailing period is the abbreviation
+    shape any word can wear and does not. A
     BARE ambiguous acronym is consumed only when the name has words
     to spare — as the second of two words it stays the family
     name — and at the slots that report, either reading carries the
@@ -1051,7 +1052,7 @@ S2. Rationale: generational suffixes and credentials are recognized
       "john smith meng"           →  suffix="meng"
       "john smith MEng"           →  family="MEng"
       "Nguyen Van Lac"            →  family="Van Lac"
-      "Wang M.Eng."               →  family="M.Eng."
+      "Wang M.Eng."               →  suffix="M.Eng."
       "Smith, MA"                 →  suffix="MA"
       "Smith, Ma"                 →  given="Ma"
       "Doe, John MA"              →  suffix="MA"

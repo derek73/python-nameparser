@@ -131,6 +131,9 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_vocab", "_PERIOD_ABBREV"): "period_abbreviation",
     ("_group", "_D"): None,
     ("_vocab", "_DOTTED"): None,
+    # #544: the chunked sibling of _DOTTED ('M.Eng.'), S2's period gate
+    # for a member with a lower-case tail; no config key to mirror
+    ("_vocab", "_CHUNKED"): None,
     ("_group", "_PH"): None,
     ("_vocab", "_ROMAN"): "roman_numeral",
     ("_post_rules", "_EAST_SLAVIC"): "east_slavic_patronymic",

@@ -207,6 +207,19 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
             and not is_initial_shaped(preceding))
 
 
+# #544: a single-letter roman numeral ('V', 'v', 'I.') is about a
+# GENERATION, not a credential -- rules.md#S3 retires the same class
+# from the chunk rule for the same reason -- so it neither anchors an
+# ambiguous member behind it nor counts toward C1's multi-word
+# credential run. It still peels exactly as before; this answers only
+# those two questions.
+def is_single_letter_numeral(text: str) -> bool:
+    """One letter, optionally followed by periods, that is a roman
+    numeral ('V', 'v', 'I.', 'X')."""
+    letters = text.rstrip(".")
+    return len(letters) == 1 and _ROMAN.match(letters) is not None
+
+
 def is_initial(text: str) -> bool:
     """'A.' / 'j.' / bare capital -- v1's is_an_initial, narrowed to
     scripts that HAVE initials (#320). v1's \\w is Unicode-aware and
@@ -315,16 +328,25 @@ def ambiguous_lean(text: str, one_case: bool) -> Lean | None:
 
 
 _DOTTED = re.compile(r"(?:[^\W\d_]\.)+")
+# #544: the CHUNKED spelling -- two or more runs of letters, each
+# closed by a period ('M.Eng.', 'L.Ac.'). Both callers compare the
+# period-free letters against the listed member, so the chunks must
+# spell it; one chunk ('Ma.', 'Ed.') is the single trailing period and
+# stays outside the gate.
+_CHUNKED = re.compile(r"(?:[^\W\d_]+\.){2,}")
 
 
 def _dotted(text: str) -> bool:
     """Written with its periods: one after each letter ('M.A.',
-    'J.D.'), the acronym's own spelling. A single trailing period
-    ('Ma.', 'Ed.', 'Ms.') is the abbreviation shape any word can wear
-    -- the honorific's, a name's -- and is not the gate's "written
-    with periods" (rules.md#S2). Until #296's review the gate was
-    "any period", and 'Smith, Ms.' passed it as the degree."""
-    return _DOTTED.fullmatch(text) is not None
+    'J.D.'), the acronym's own spelling, or -- since #544 -- two or
+    more letter chunks each closed by a period ('M.Eng.', 'L.Ac.'), the
+    spelling a member with a lower-case tail is written in. A single
+    trailing period ('Ma.', 'Ed.', 'Ms.') is the abbreviation shape any
+    word can wear -- the honorific's, a name's -- and is not the gate's
+    "written with periods" (rules.md#S2). Until #296's review the gate
+    was "any period", and 'Smith, Ms.' passed it as the degree."""
+    return (_DOTTED.fullmatch(text) is not None
+            or _CHUNKED.fullmatch(text) is not None)
 
 
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
@@ -508,7 +530,8 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     clause).
 
     The '.' gate here is DELIBERATELY STRICTER than S2's own
-    dotted-form test (`_dotted`, a period after EACH letter): '.'
+    dotted-form test (`_dotted`, a period after EACH letter or after
+    each of two or more letter chunks): '.'
     anywhere excludes membership, so a single TRAILING period ('MA.',
     'Ed.') is excluded here even though the LEAN still reads it as
     the bare acronym's case ('Smith, MA.' -> suffix 'MA.', measured).

@@ -741,22 +741,21 @@ CASES: tuple[Case, ...] = (
                "every release read suffix 'MEng PhD' ('MEng, PhD' "
                "through 2.2)",
          shape=1),
-    Case("dotted_meng_with_nothing_to_spare_is_the_name",
+    Case("dotted_meng_passes_the_period_gate",
          "Wang M.Eng.",
-         {"given": "Wang", "family": "M.Eng."},
-         ambiguities=("suffix-or-name",),
-         notes="S2's period gate counts a member as unambiguous "
-               "only written one period per letter ('M.A.'), and "
-               "MEng and LAc are the first members whose "
-               "conventional dotted spelling is chunked, so "
-               "'M.Eng.' with nothing to spare is the family name; "
-               "accepted and recorded (Derek, 2026-09-25). 1.4.0 "
-               "read the same family, unflagged, for a different "
-               "reason -- its two-piece rule (a lone word after the "
-               "given name is the family), not S2's gate -- so this "
-               "row is parity. 'John Smith M.Eng.' keeps the suffix "
-               "by the count and reports; the period-gate question "
-               "goes to #544",
+         {"given": "Wang", "suffix": "M.Eng."},
+         classification="fix(#544)",
+         ambiguities=("given-or-family",),
+         notes="S2's period gate counts a listed member written in "
+               "two or more letter chunks, each closed by a period, "
+               "as it counts one written with a period after each "
+               "letter: 'M.Eng.' reads as 'M.A.' does, a suffix even "
+               "with nothing to spare, and the one-word name reports "
+               "the given-or-family fork 'Wang M.A.' reports. #540 "
+               "had accepted family 'M.Eng.' pending this question; "
+               "1.4.0 read the family too, by its two-piece rule, and "
+               "2.3.0 the suffix. A single trailing period ('Wang "
+               "Ma.') stays outside the gate",
          shape=1),
     Case("leading_meng_is_a_given_name", "meng li",
          {"given": "meng", "family": "li"},

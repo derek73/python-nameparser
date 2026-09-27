@@ -10,6 +10,7 @@ from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
     caps_shape_candidate,
     effective_script, is_initial, is_initial_shaped, is_one_case,
+    is_single_letter_numeral,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
     maiden_marker_run, name_word_count, period_joined_vocab,
     resolve_script_set, single_script,
@@ -784,3 +785,32 @@ def test_ambiguous_lean_reads_the_written_case() -> None:
     # neither way even where the name around it is mixed
     assert ambiguous_lean("씨", one_case=False) is None
     assert ambiguous_lean("毛", one_case=False) is None
+
+
+def test_a_listed_member_written_in_period_closed_chunks_is_dotted(
+) -> None:
+    """#544: S2's period gate counts a listed member written in two or
+    more letter chunks, each closed by a period ('M.Eng.'), as it
+    counts one written with a period after each letter ('M.A.'). One
+    chunk is the single trailing period any word can wear and stays
+    outside the gate, and the chunks must still spell the member: the
+    gate reads the spelling, the membership test the letters."""
+    lex = Lexicon(
+        suffix_acronyms=frozenset({"meng", "lac", "ma", "phd"}),
+        suffix_acronyms_ambiguous=frozenset({"meng", "lac", "ma"}),
+    )
+    for text in ("M.Eng.", "m.eng.", "L.Ac.", "M.A."):
+        assert is_suffix_strict(text, lex), text
+    # one chunk, a missing closing period, the bare word, and chunks
+    # that spell nothing listed
+    for text in ("Meng.", "Ma.", "M.Eng", "MEng", "X.Eng."):
+        assert not is_suffix_strict(text, lex), text
+
+
+def test_is_single_letter_numeral() -> None:
+    """#544: the generation class C1's run and the anchor both leave
+    out -- one letter, periods allowed, that is a roman numeral."""
+    for text in ("V", "v", "I", "I.", "x", "X."):
+        assert is_single_letter_numeral(text), text
+    for text in ("II", "IV", "Jr", "B", "", ".", "Ma"):
+        assert not is_single_letter_numeral(text), text
