@@ -289,6 +289,15 @@ def _join_takes_the_member(view: Sequence[Sequence[int]],
     have kept -- 'abdul nee Smith V' (no comma) read maiden 'Smith V'
     before this guard was scoped (#535 review)."""
     member = tokens[view[at][0]]
+    # rules.md#P6 attaches a particle trailing the given part after a
+    # family comma to the family, and a released TITLE that is also
+    # particle vocabulary is exactly that ('Doe, Jane nee Smith St.'
+    # read family 'St. Doe'). Titles only: a credential that is also a
+    # particle ('DO') is read by the given slot's own lean first, which
+    # the credential stop has already asked (#533).
+    if (reader is TailReader.GIVEN_SLOT and "particle" in member.tags
+            and is_title_piece(view[at], view_tags[at], tokens)):
+        return True
     if "particle" in member.tags:
         if at and _is_prefix_piece(view[at - 1], view_tags[at - 1], tokens):
             return True
@@ -906,13 +915,39 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # The link exception's memo cell, filled inside the predicate on
     # the first connective it is asked about (see its docstring).
     beside: list[_Beside] = []
-    while (j < len(seen) and seen[j] < trailing
-           and (not is_suffix_piece(pieces[seen[j]], ptags[seen[j]],
-                                    tokens)
-                or _link_joins_inside_the_clause(seen[j], lo, peel_start,
+    while j < len(seen) and seen[j] < trailing:
+        k = seen[j]
+        if (not is_suffix_piece(pieces[k], ptags[k], tokens)
+                or _link_joins_inside_the_clause(k, lo, peel_start,
                                                  pieces, ptags, tokens,
-                                                 beside, cores))):
-        j += 1
+                                                 beside, cores)):
+            j += 1
+            continue
+        # rules.md#M2: "a word the clause gives up reads as a
+        # post-nominal or the clause keeps it" -- asked here of a LINK
+        # the exception refused, and only of one. The exception reads
+        # the end of the name through the title chain where a trailing
+        # rule reads the clause, so a link can now stop the walk where
+        # it used to join ('Jane Doe nee Smith i DO Prof.': the DO is
+        # the peel's once the title is chained), and a stop at a link
+        # gives up the words behind it too. Where the name left
+        # standing would not read that run as post-nominals and
+        # titles, the clause keeps the link as it kept it before --
+        # otherwise 'Doe i' became a middle name (#535). A suffix word
+        # that is no link is #548's question and is left to it, and so
+        # is a link standing FIRST after the marker: stopping there
+        # declines the clause outright, which gives nothing up.
+        if (j > m + run and reader is not TailReader.NONE
+                and _is_conj_piece(pieces[k], ptags[k], tokens)):
+            left = [i for i in seen if i < seen[m] or i >= k]
+            view = [pieces[i] for i in left]
+            view_tags = [ptags[i] for i in left]
+            at = left.index(k)
+            if not _release_reads_off(view, view_tags, tokens, at,
+                                      len(view), at, reader, one_case):
+                j += 1
+                continue
+        break
     # j == m + run means nothing followed the marker but a suffix, so
     # the pass declines and the marker stays ordinary words
     # (rules.md#M2).

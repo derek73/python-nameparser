@@ -3955,6 +3955,66 @@ CASES: tuple[Case, ...] = (
                "'Prof. V' (no title) where 'Doe, Jane V Prof., PhD' "
                "reads title 'Prof.', middle 'V'. 2.3.0 read middle "
                "'V', maiden 'Smith Prof.'"),
+    Case("a_link_the_walk_stops_at_gives_up_only_what_reads_off",
+         "Jane Doe nee Smith i DO Prof.",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "maiden": "Smith i DO"},
+         classification="fix(#397/#535)",
+         ambiguities=("suffix-or-name",),
+         notes="with the title chained, the DO is the trailing peel's, "
+               "so the link exception refuses 'i' and the walk would "
+               "stop there -- and a stop at a link gives up the words "
+               "behind it. The name left standing ('Jane Doe i DO "
+               "Prof.') does not read 'i DO' as post-nominals, so the "
+               "clause keeps the link and the DO (reporting the kept "
+               "credential), and only the title leaves. 2.3.0 read "
+               "middle 'Doe i', family 'DO Prof.', maiden 'Smith' ('i' "
+               "was a plain suffix word there); the #538 commit "
+               "d9d80492 read maiden 'Smith i DO Prof.'"),
+    Case("a_link_whose_run_would_land_in_a_name_part_stays",
+         "Berg, abdul nee Smith i V Prof., MD",
+         {"given": "abdul", "family": "Berg", "suffix": "MD",
+          "maiden": "Smith i V Prof."},
+         classification="fix(#397)",
+         notes="the given-slot twin of the row above: giving up "
+               "'i V Prof.' would leave the V a middle name behind the "
+               "bound pair, so the clause keeps the whole run. 2.3.0 "
+               "read middle 'V', title 'Prof.', suffix 'i, MD', maiden "
+               "'Smith'; the #538 commit d9d80492 read as this does"),
+    Case("a_released_particle_title_is_kept_after_a_family_comma",
+         "Doe, Jane nee Smith St.",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith St."},
+         classification="fix(#274)",
+         notes="'St.' is a title and a particle. Released after a "
+               "family comma, P6 would attach it to the family ('Doe, "
+               "Jane St.' reads family 'St. Doe'), a word of the birth "
+               "name carried into the current one, so the clause keeps "
+               "it. Unchanged from 2.3.0"),
+    Case("a_released_particle_title_behind_a_credential_is_kept",
+         "Doe, Jane nee Smith MA St.",
+         {"given": "Jane", "family": "Doe", "maiden": "Smith MA St."},
+         classification="fix(#274)",
+         notes="the same guard with a credential in front of the "
+               "title: releasing 'MA St.' would hand 'St.' to the "
+               "family, so the clause keeps both. Unchanged from 2.3.0"),
+    Case("a_split_credential_behind_the_member_counts_as_released",
+         "Jane Doe nee Smith MA Ph. D.",
+         {"given": "Jane", "family": "Doe", "suffix": "MA Ph. D.",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the TRAILING reader's release check counts a piece "
+               "group already flagged a credential ('Ph. D.', merged "
+               "from two tokens) as read off, so 'MA Ph. D.' leaves "
+               "whole. 2.3.0 read maiden 'Smith MA', suffix 'Ph. D.'"),
+    Case("a_split_credential_behind_the_member_after_a_family_comma",
+         "Doe, Jane nee Smith MA Ph. D.",
+         {"given": "Jane", "family": "Doe", "suffix": "MA Ph. D.",
+          "maiden": "Smith"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="the given-slot twin of the row above. 2.3.0 read "
+               "maiden 'Smith MA', suffix 'Ph. D.'"),
     Case("a_connective_behind_the_member_stops_the_peel",
          "Jane Doe nee Smith MA y",
          {"given": "Jane", "family": "Doe", "maiden": "Smith MA y"},

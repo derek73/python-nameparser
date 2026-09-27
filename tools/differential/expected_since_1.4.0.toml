@@ -4424,6 +4424,21 @@ name_regex = "^Jane Doe nee Smith do Prof\\. MA$"
 fields = ["title", "middle", "family", "maiden"]
 
 [[change]]
+issue = "fix(#274/#397/#535) a link the clause stops at keeps a run that would not read off"
+# rules.md#M2: a link that ends the clause gives up the words behind
+# it only where the name left standing reads them as post-nominals or
+# titles. With the title chained the link exception refuses 'i', but
+# 'Jane Doe i DO Prof.' does not read 'i DO' off, so the clause keeps
+# the link and the DO (reporting the kept credential) and only 'Prof.'
+# leaves. Checked against the parent tree d9d80492, which read maiden
+# 'Smith i DO Prof.': v1 had no maiden reading (#274) and no Catalan
+# link, 'i' being a plain suffix word, and #397 joins the link inside
+# the clause; #535 then reads the title off. Literal-anchored: one
+# corpus name, the doc's own example.
+name_regex = "^Jane Doe nee Smith i DO Prof\\.$"
+fields = ["title", "middle", "family", "maiden"]
+
+[[change]]
 issue = "fix(#411/#535) the numeral stop asks the join question"
 # 'Berg, abdul nee Smith V' reads IDENTICALLY at this baseline and at
 # 2.0.0 -- given 'abdul nee', middle 'Smith', family 'Berg', suffix

@@ -558,14 +558,19 @@ def test_a_title_the_clause_gives_up_lands_in_title() -> None:
     family comma (NONE), a bare title head (the view check), a particle
     head (the chain), a bound-given head (P5). It holds at e0f1a2fa too,
     where the clause kept every title, so its control is a mutation:
-    RECORDED NEGATIVE CONTROL, the title stop's release check replaced
-    by `if True:` fails 54 tokens across 49 of these 160 texts.
+    RECORDED NEGATIVE CONTROL, re-measured 2026-09-26 after the link
+    and particle-title bodies joined: the title stop's release check
+    replaced by `if True:` fails 83 tokens across 78 of these 240
+    texts (54 across 49 of the first 160). 240 parses, about 0.03s on
+    CPython 3.11 (measured the same day).
     """
     heads = ("Jane Doe", "Doe, Jane", "Doe, Prof.", "Dr.", "J.",
              "Jane van der Berg", "Berg, abdul", "Jane Doe, PhD")
     bodies = ("Smith Prof.", "Smith MA Prof.", "Smith Prof. MA",
               "Smith V Prof.", "Smith Ma Prof.", "Smith Prof. Dr.",
-              "Prof.", "Prof. Dr.", "Smith King.", "Smith MA do Prof.")
+              "Prof.", "Prof. Dr.", "Smith King.", "Smith MA do Prof.",
+              "Smith i DO Prof.", "Smith i MA Prof.", "Smith St.",
+              "Smith MA St.", "Smith V St.")
     failures = []
     for head in heads:
         for body in bodies:

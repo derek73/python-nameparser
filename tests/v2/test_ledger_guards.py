@@ -3495,7 +3495,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # both carry a marker -- and verified name by name; no role
         # joined the list.
         "fix(#274) maiden markers consumed":
-            _Claim(103, ('family', 'maiden', 'middle'), '865751a8c114', None),
+            _Claim(105, ('family', 'maiden', 'middle'), 'c48af99f8184', None),
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -3626,7 +3626,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # landing in this rule's reach too. Reach again, verified name
         # by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(379, ('given', 'suffix', 'title'), '134de133f2f2', None),
+            _Claim(380, ('given', 'suffix', 'title'), '658cb8403f4b', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3710,7 +3710,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-26, #535 review: 376 -> 377, the same one new comma
         # name as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(379, ('family', 'given'), '134de133f2f2', None),
+            _Claim(380, ('family', 'given'), '658cb8403f4b', None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -4305,6 +4305,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#274/#535) a particle inside the clause lets a credential behind the title go":
             _Claim(1, ('family', 'maiden', 'middle', 'title'),
                    '8db3f5842115', None),
+        # 2026-09-26: the one-name rule for rules.md#M2's example
+        # of a link the clause stops at and keeps.
+        "fix(#274/#397/#535) a link the clause stops at keeps a run that would not read off":
+            _Claim(1, ('family', 'maiden', 'middle', 'title'),
+                   '1b74e094fed9', None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -4958,6 +4963,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) accepted: before a family comma the numeral the walk gives up goes to the family":
             _Claim(1, ('family', 'maiden'),
                    '339279b78f2f', None),
+        # 2026-09-26: the one-name rule for rules.md#M2's example
+        # of a link the clause stops at and keeps.
+        "fix(#397/#535) a link the clause stops at keeps a run that would not read off":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'title'),
+                   '1b74e094fed9', None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5350,6 +5360,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#533/#535) a particle inside the clause lets a credential behind the title go":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix', 'title'),
                    '8db3f5842115', None),
+        # 2026-09-26: the one-name rule for rules.md#M2's example
+        # of a link the clause stops at and keeps.
+        "fix(#397/#535) a link the clause stops at keeps a run that would not read off":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'title'),
+                   '1b74e094fed9', None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5970,6 +5985,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#424) accepted: before a family comma the numeral the walk gives up goes to the family":
             _Claim(1, ('family', 'maiden'),
                    '339279b78f2f', None),
+        # 2026-09-26: the one-name rule for rules.md#M2's example
+        # of a link the clause stops at and keeps.
+        "fix(#397/#535) a link the clause stops at keeps a run that would not read off":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'title'),
+                   '1b74e094fed9', None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6216,6 +6236,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#533/#535) a particle inside the clause lets a credential behind the title go":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix', 'title'),
                    '8db3f5842115', None),
+        # 2026-09-26: the one-name rule for rules.md#M2's example
+        # of a link the clause stops at and keeps.
+        "fix(#397/#535) a link the clause stops at keeps a run that would not read off":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'title'),
+                   '1b74e094fed9', None),
     },
 }
 

@@ -2086,3 +2086,36 @@ def test_the_given_title_chain_stops_at_a_member_with_a_title_behind() -> None:
     assert _maiden_texts(rev) == ["Smith", "Rev."]
     num = _grouped("Doe, Jane nee Smith Prof. V", lexicon=Lexicon.default())
     assert _maiden_texts(num) == ["Smith"]
+
+
+def test_a_link_the_walk_stops_at_gives_up_only_a_run_that_reads_off(
+) -> None:
+    """rules.md#M2 (#535): with the title chained, the link exception
+    can refuse a link it used to join, and a stop at a link gives up
+    the words behind it. 'i DO Prof.' left standing behind 'Jane Doe'
+    does not read as post-nominals, so the clause keeps the link and
+    the DO ('Doe i' was the middle name without the check); 'i MA
+    Prof.' does, so there the link and the credential leave."""
+    kept = _grouped("Jane Doe nee Smith i DO Prof.",
+                    lexicon=Lexicon.default())
+    assert _maiden_texts(kept) == ["Smith", "i", "DO"]
+    given_up = _grouped("Jane Doe nee Smith i MA Prof.",
+                        lexicon=Lexicon.default())
+    assert _maiden_texts(given_up) == ["Smith"]
+
+
+def test_a_released_particle_title_is_kept_after_a_family_comma() -> None:
+    """rules.md#M2 with P6 (#535): after a family comma a released
+    title that is also a particle would be attached to the family by
+    P6 ('Doe, Jane St.' reads family 'St. Doe'), so the clause keeps
+    it. A title that is no particle still leaves, and so does the
+    credential DO, which the given slot's own lean reads (#533); with
+    no comma P6 does not run and 'St.' leaves as a title."""
+    kept = _grouped("Doe, Jane nee Smith St.", lexicon=Lexicon.default())
+    assert _maiden_texts(kept) == ["Smith", "St."]
+    title = _grouped("Doe, Jane nee Smith Prof.", lexicon=Lexicon.default())
+    assert _maiden_texts(title) == ["Smith"]
+    credential = _grouped("Doe, Jane nee Smith DO", lexicon=Lexicon.default())
+    assert _maiden_texts(credential) == ["Smith"]
+    no_comma = _grouped("Jane Doe nee Smith St.", lexicon=Lexicon.default())
+    assert _maiden_texts(no_comma) == ["Smith"]

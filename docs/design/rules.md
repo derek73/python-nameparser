@@ -1290,7 +1290,11 @@ M2. Rationale: a maiden marker announces that what follows it is the
     both sides of the link are the maiden name. A link with the
     marker on one side of it, or with the trailing run on the
     other, is joining nothing there and ends the clause like any
-    other suffix word.
+    other suffix word. Where a trailing rule reads the words and the
+    link is not the first word after the marker, a link that ends the
+    clause gives up the words behind it only where the name left
+    standing reads them as post-nominals or titles; otherwise the
+    clause keeps the link and runs on.
     A separator the caller declared is structure rather than a name
     word, and the link exception reads past it: the word on a link's
     side is the one beyond the separator, so the clause reads as the
@@ -1343,7 +1347,9 @@ M2. Rationale: a maiden marker announces that what follows it is the
     trailing credential and the trailing title each give up a run
     only where the name the take leaves
     reads the WHOLE run, not only the word the stop is made at, as
-    titles or post-nominals; otherwise the clause keeps it.
+    titles or post-nominals; otherwise the clause keeps it. After a
+    family comma a released title that is also a particle is kept,
+    since the particle attachment (P6) would carry it into the family.
     Delimiters outrank every reading inside them. Where a recognized
     marker stands inside a delimited clause, the whole span is the
     maiden name whatever its last word is, and whether or not the
@@ -1391,6 +1397,8 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Doe nee Puig i Soler" →  maiden="Puig i Soler"
       "Jane Doe nee Puig i"       →  maiden="Puig"  · boundary
       "Jane Doe nee Puig i"       →  suffix="i"  · boundary
+      "Jane Doe nee Smith i DO Prof."  →  maiden="Smith i DO"
+      "Doe, Jane nee Smith St."        →  maiden="Smith St."
       "Smith, John, PhD née Puig Mr. - i Soler" extra_suffix_delimiters-dash →  maiden="Puig Mr."
       "Smith, John, PhD née Puig - i Soler" extra_suffix_delimiters-dash →  maiden="Puig i Soler"
       "Jane Doe nee Smith Prof."       →  maiden="Smith"
