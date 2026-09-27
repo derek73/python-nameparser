@@ -380,11 +380,49 @@ def _release_reads_off(view: Sequence[Sequence[int]],
     if reader is TailReader.GIVEN_SLOT:
         if not _a_name_word_ahead(view, view_tags, tokens, at):
             return False
-        for q in range(start, end):
+        # The given part's title chain is read the way assign reads it
+        # after a family comma: over the pieces its FIRST suffix pass
+        # leaves, from the end. That pass takes a class member as the
+        # credential only where every piece behind it is taken too, so
+        # a member with a title behind it is still a name word there
+        # and the chain stops at it -- 'Doe, Jane Dr. MA Prof.' reads
+        # middle 'Dr.', and a clause that gave 'Dr. MA Prof.' up put
+        # 'Dr.' in the middle name (#535). `chain_ok[q]` says whether
+        # the chain, walking from the end, is still running at `q`.
+        # The one suffix that pass reads which `is_suffix_piece` does
+        # not is the lenient trailing numeral (#144): the LAST piece, a
+        # suffix word the initial veto refuses, and only where a later
+        # numeral stop (`end` short of the view) has already asked it
+        # -- 'Doe, Jane nee Smith Prof. V' gives the title and the V up
+        # together, as 'Doe, Jane Prof. V' reads them.
+        last = len(view) - 1
+        chain_ok = [False] * len(view)
+        members_ok = running = True
+        for q in range(last, -1, -1):
             piece = view[q]
             if (is_suffix_piece(piece, view_tags[q], tokens)
-                    or is_trailing_title_word(piece, view_tags[q], tokens)):
+                    or (q == last and end <= last and len(piece) == 1
+                        and "vocab:suffix" in tokens[piece[0]].tags)):
+                chain_ok[q] = running
                 continue
+            if (members_ok and len(piece) == 1
+                    and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags
+                    and credential_at_the_given_slot(tokens[piece[0]],
+                                                     one_case)):
+                chain_ok[q] = running
+                continue
+            members_ok = False
+            if not is_trailing_title_word(piece, view_tags[q], tokens):
+                running = False
+            chain_ok[q] = running
+        for q in range(start, end):
+            piece = view[q]
+            if is_suffix_piece(piece, view_tags[q], tokens):
+                continue
+            if is_trailing_title_word(piece, view_tags[q], tokens):
+                if chain_ok[q]:
+                    continue
+                return False
             if (len(piece) == 1
                     and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags
                     and credential_at_the_given_slot(tokens[piece[0]],

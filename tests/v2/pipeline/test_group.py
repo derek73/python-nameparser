@@ -2067,3 +2067,22 @@ def test_the_bound_given_half_of_the_join_model_is_the_given_slots_alone() -> No
     assert _maiden_texts(out) == ["Smith"]
     ok = _grouped("Berg, abdul nee Smith V", lexicon=Lexicon.default())
     assert _maiden_texts(ok) == ["Smith", "V"]
+
+
+def test_the_given_title_chain_stops_at_a_member_with_a_title_behind() -> None:
+    """rules.md#M2 after a family comma (#535): the given part's title
+    chain is read from the end over what its first suffix pass leaves,
+    and that pass takes a class member only where every piece behind
+    it is taken too -- so 'MA' with 'Prof.' behind it is a name word
+    there and the chain stops at it ('Doe, Jane Dr. MA Prof.' reads
+    middle 'Dr.'). A clause that released 'Rev.' as a title would put
+    it in the middle name; it keeps it instead, and only the title
+    behind the member and the member itself leave. And the lenient
+    trailing numeral (#144) counts as that pass's suffix once the
+    numeral stop has asked it, so 'Prof. V' leaves the clause whole,
+    as 'Doe, Jane Prof. V' reads."""
+    rev = _grouped("Doe, Jane nee Smith Rev. MA Prof.",
+                   lexicon=Lexicon.default())
+    assert _maiden_texts(rev) == ["Smith", "Rev."]
+    num = _grouped("Doe, Jane nee Smith Prof. V", lexicon=Lexicon.default())
+    assert _maiden_texts(num) == ["Smith"]

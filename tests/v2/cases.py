@@ -3871,6 +3871,30 @@ CASES: tuple[Case, ...] = (
                "the clause keeps 'V'. 2.3.0 and the parent d9d80492 "
                "read middle 'nee V', the marker a name word; "
                "'Doe, Jane nee V, Jr.' moves the same way"),
+    Case("the_given_title_chain_stops_at_a_member_with_a_title_behind",
+         "Doe, Jane nee Smith Rev. MA Prof.",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "suffix": "MA", "maiden": "Smith Rev."},
+         classification="fix(#535)",
+         ambiguities=("suffix-or-name",),
+         notes="after a family comma the given part's title chain runs "
+               "from the end over what its first suffix pass leaves, "
+               "and that pass leaves 'MA' a name word while a title "
+               "stands behind it -- 'Doe, Jane Dr. MA Prof.' reads "
+               "middle 'Dr.' -- so the chain stops at 'MA' and 'Rev.' "
+               "stays in the clause; only 'MA' and 'Prof.' leave. 2.3.0 "
+               "and the parent d9d80492 read maiden 'Smith Rev. MA "
+               "Prof.'"),
+    Case("a_lenient_numeral_leaves_with_the_title_in_front",
+         "Doe, Jane nee Smith Prof. V",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "suffix": "V", "maiden": "Smith"},
+         classification="fix(#535)",
+         notes="the lenient trailing numeral (#144) is a suffix of the "
+               "given part's first pass once the numeral stop has asked "
+               "it, so the title in front of it leaves the clause too, "
+               "as 'Doe, Jane Prof. V' reads title 'Prof.', suffix 'V'. "
+               "2.3.0 read maiden 'Smith Prof.', suffix 'V'"),
     Case("a_title_behind_that_numeral_still_stays",
          "Doe, Jane nee Smith V Prof., PhD",
          {"title": "Prof.", "given": "Jane", "family": "Doe",
