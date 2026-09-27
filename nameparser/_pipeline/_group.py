@@ -345,10 +345,11 @@ def _release_reads_off(view: Sequence[Sequence[int]],
     the span test does not, and pass `at + 1`). `end` is where it
     stops: `len(view)`, except for the title stop when a numeral or
     credential stop stands behind it -- that stop has already had its
-    own span asked, in the way ITS word reads, and the given slot's
-    lenient numeral is a reading this check does not model ('Doe, Jane
-    nee Smith Prof. V' gives the V up by the numeral fork, and the
-    title in front of it must then be asked only of itself).
+    own span asked, in the way ITS word reads: the span check does not
+    ask the given slot's lenient numeral itself -- the numeral fork has
+    ('Doe, Jane nee Smith Prof. V' gives the V up there) -- though the
+    GIVEN_SLOT title chain below counts it as the first pass's suffix,
+    so the title in front of it is asked only of itself.
 
     Each reader is asked the way it READS, because the release is only
     right where that reader places the span:
