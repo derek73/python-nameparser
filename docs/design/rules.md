@@ -1282,9 +1282,8 @@ M2. Rationale: a maiden marker announces that what follows it is the
     suffix run to where neither takes more, so a credential or a
     numeral in front of the title stops the take exactly as it does
     with the title absent. Neither the credential stop nor the title
-    stop takes the first word after the marker; a numeral there
-    declines the clause where the name left standing reads it as a
-    suffix, and otherwise the clause keeps it.
+    stop takes the first word after the marker; the numeral stop is
+    not held to that, and a numeral there may decline the clause.
     One suffix word does not stop it. Where such a word is also a
     connective standing between two name words of the clause (P3),
     a link inside the birth name does not end it, and the words on
@@ -1340,8 +1339,9 @@ M2. Rationale: a maiden marker announces that what follows it is the
     rule sees it, which would carry a word of the BIRTH name into
     the current one. In both the clause keeps the word, and reports
     it as it reports every member it keeps.
-    The trailing numeral, the trailing credential and the trailing
-    title each give up a run only where the name the take leaves
+    Where a trailing rule reads the words, the trailing numeral, the
+    trailing credential and the trailing title each give up a run
+    only where the name the take leaves
     reads the WHOLE run, not only the word the stop is made at, as
     titles or post-nominals; otherwise the clause keeps it.
     Delimiters outrank every reading inside them. Where a recognized
@@ -1465,9 +1465,15 @@ M2. Rationale: a maiden marker announces that what follows it is the
     Accepted: a released particle with a title behind it is withdrawn,
     because the particle chain would run on over the title (P2, H5);
     so the particle written in front of the title stays in the clause,
-    while written behind it, it leaves with the title.
+    while written behind it, it leaves with the title. A particle
+    standing INSIDE the clause, ahead of the credential, does the
+    same from the other side: its chain would take the credential,
+    so the clause keeps the credential, and a title can leave only
+    from behind it.
       "Jane Doe nee Smith DO Prof."    →  maiden="Smith DO"
       "Jane Doe nee Smith Prof. DO"    →  suffix="DO"
+      "Jane Doe nee Smith do MA Prof."  →  maiden="Smith do MA"
+      "Jane Doe nee Smith do Prof. MA"  →  suffix="MA"
     Accepted: H5's reach into the ordinary surnames the title
     vocabulary holds reaches the end of a clause as it reaches the end
     of a name: a period written behind one ends the clause as a title
@@ -1476,8 +1482,13 @@ M2. Rationale: a maiden marker announces that what follows it is the
     Accepted: the stop at the first suffix word asks no question of
     what it gives up, so a clause that ends there can hand a word
     behind it to a name part, where the invariant stated above says
-    the clause keeps it. Open: #548.
+    the clause keeps it. Before a family comma, where the statement
+    above says no trailing rule reads the words and the clause keeps
+    them, the trailing numeral's stop is still made, asked of the
+    peel alone with no such question, and a lone numeral written
+    there goes to the family. Open: #548.
       "Doe nee Smith Jr. Prof., Jane"  →  family="Doe Prof."
+      "Doe nee Smith V, Jane"          →  family="Doe V"
     history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means

@@ -3495,7 +3495,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # both carry a marker -- and verified name by name; no role
         # joined the list.
         "fix(#274) maiden markers consumed":
-            _Claim(100, ('family', 'maiden', 'middle'), '2aa82831e1d4', None),
+            _Claim(103, ('family', 'maiden', 'middle'), '865751a8c114', None),
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -3626,7 +3626,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # landing in this rule's reach too. Reach again, verified name
         # by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(378, ('given', 'suffix', 'title'), '291e3b07607b', None),
+            _Claim(379, ('given', 'suffix', 'title'), '134de133f2f2', None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3710,7 +3710,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-26, #535 review: 376 -> 377, the same one new comma
         # name as the rule above and for the same reason.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(378, ('family', 'given'), '291e3b07607b', None),
+            _Claim(379, ('family', 'given'), '134de133f2f2', None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -4296,6 +4296,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#274) a numeral straight after the marker stays maiden where nothing reads it as a suffix":
             _Claim(1, ('family', 'given', 'maiden'),
                    '4ff67af4187f', None),
+        # 2026-09-26: one-name rules for rules.md#M2's
+        # Accepted examples (the particle-inside-the-clause pair, and
+        # 'Doe nee Smith V, Jane' at 2.0.0/2.1.0).
+        "fix(#274/#535) a particle inside the clause keeps the credential in front of a trailing title":
+            _Claim(1, ('family', 'maiden', 'middle', 'title'),
+                   '647659c5eafc', None),
+        "fix(#274/#535) a particle inside the clause lets a credential behind the title go":
+            _Claim(1, ('family', 'maiden', 'middle', 'title'),
+                   '8db3f5842115', None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -4937,6 +4946,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#399) a maiden marker bounds the particle chain ahead of a title the clause keeps":
             _Claim(1, ('family', 'maiden'),
                    '58cf2330fed6', None),
+        # 2026-09-26: one-name rules for rules.md#M2's
+        # Accepted examples (the particle-inside-the-clause pair, and
+        # 'Doe nee Smith V, Jane' at 2.0.0/2.1.0).
+        "fix(#535) a particle inside the clause keeps the credential in front of a trailing title":
+            _Claim(1, ('_ambiguities', 'maiden', 'title'),
+                   '647659c5eafc', None),
+        "fix(#533/#535) a particle inside the clause lets a credential behind the title go":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix', 'title'),
+                   '8db3f5842115', None),
+        "fix(#424) accepted: before a family comma the numeral the walk gives up goes to the family":
+            _Claim(1, ('family', 'maiden'),
+                   '339279b78f2f', None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5320,6 +5341,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#316) a trailing title behind a maiden clause's first suffix word":
             _Claim(1, ('family', 'middle', 'suffix', 'title'),
                    'd58b847181aa', None),
+        # 2026-09-26: one-name rules for rules.md#M2's
+        # Accepted examples (the particle-inside-the-clause pair, and
+        # 'Doe nee Smith V, Jane' at 2.0.0/2.1.0).
+        "fix(#535) a particle inside the clause keeps the credential in front of a trailing title":
+            _Claim(1, ('_ambiguities', 'maiden', 'title'),
+                   '647659c5eafc', None),
+        "fix(#533/#535) a particle inside the clause lets a credential behind the title go":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix', 'title'),
+                   '8db3f5842115', None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5928,6 +5958,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#399) a maiden marker bounds the particle chain ahead of a title the clause keeps":
             _Claim(1, ('family', 'maiden'),
                    '58cf2330fed6', None),
+        # 2026-09-26: one-name rules for rules.md#M2's
+        # Accepted examples (the particle-inside-the-clause pair, and
+        # 'Doe nee Smith V, Jane' at 2.0.0/2.1.0).
+        "fix(#535) a particle inside the clause keeps the credential in front of a trailing title":
+            _Claim(1, ('_ambiguities', 'maiden', 'title'),
+                   '647659c5eafc', None),
+        "fix(#533/#535) a particle inside the clause lets a credential behind the title go":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix', 'title'),
+                   '8db3f5842115', None),
+        "fix(#424) accepted: before a family comma the numeral the walk gives up goes to the family":
+            _Claim(1, ('family', 'maiden'),
+                   '339279b78f2f', None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6165,6 +6207,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#533/#535) a particle behind a trailing title leaves the clause with it":
             _Claim(1, ('_ambiguities', 'maiden', 'suffix', 'title'),
                    '97e10b3d2aa8', None),
+        # 2026-09-26: one-name rules for rules.md#M2's
+        # Accepted examples (the particle-inside-the-clause pair, and
+        # 'Doe nee Smith V, Jane' at 2.0.0/2.1.0).
+        "fix(#535) a particle inside the clause keeps the credential in front of a trailing title":
+            _Claim(1, ('_ambiguities', 'maiden', 'title'),
+                   '647659c5eafc', None),
+        "fix(#533/#535) a particle inside the clause lets a credential behind the title go":
+            _Claim(1, ('_ambiguities', 'maiden', 'suffix', 'title'),
+                   '8db3f5842115', None),
     },
 }
 

@@ -4401,6 +4401,29 @@ name_regex = "^Dr\\. nee V$"
 fields = ["given", "family", "maiden"]
 
 [[change]]
+issue = "fix(#274/#535) a particle inside the clause keeps the credential in front of a trailing title"
+# rules.md#M2's Accepted pair on a particle INSIDE the clause: the
+# particle's chain would take the credential behind it, so the clause
+# keeps 'Smith do MA' and only the title behind the credential leaves.
+# The parent tree d9d80492 reads maiden 'Smith do MA Prof.' with no
+# report, and v1 had no maiden reading at all (#274), so the move is
+# #535's together with #274. Literal-anchored: one corpus name, the
+# doc's own example.
+name_regex = "^Jane Doe nee Smith do MA Prof\\.$"
+fields = ["title", "middle", "family", "maiden"]
+
+[[change]]
+issue = "fix(#274/#535) a particle inside the clause lets a credential behind the title go"
+# The other half of that pair: with the title in front of 'MA', the
+# credential is released and the title leaves with it, so maiden
+# 'Smith do', suffix 'MA', title 'Prof.'. v1 had no maiden reading
+# (#274); #535 reads the title off the clause, as for 'Jane Doe nee
+# Smith Prof. MA', which this ledger also labels #274/#535.
+# Literal-anchored: one corpus name, the doc's own example.
+name_regex = "^Jane Doe nee Smith do Prof\\. MA$"
+fields = ["title", "middle", "family", "maiden"]
+
+[[change]]
 issue = "fix(#411/#535) the numeral stop asks the join question"
 # 'Berg, abdul nee Smith V' reads IDENTICALLY at this baseline and at
 # 2.0.0 -- given 'abdul nee', middle 'Smith', family 'Berg', suffix

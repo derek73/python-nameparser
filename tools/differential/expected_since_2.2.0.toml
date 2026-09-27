@@ -1516,6 +1516,29 @@ name_regex = "^Jane van der Berg nee Smith PhD Prof\\.$"
 fields = ["title", "middle", "family", "suffix"]
 
 [[change]]
+issue = "fix(#535) a particle inside the clause keeps the credential in front of a trailing title"
+# rules.md#M2's Accepted pair on a particle INSIDE the clause: the
+# particle's chain would take the credential behind it, so the clause
+# keeps 'Smith do MA' and only the title behind the credential leaves.
+# The parent tree d9d80492 reads maiden 'Smith do MA Prof.' with no
+# report, as this baseline does, so #535 is the whole cause.
+# Literal-anchored: one corpus name, the doc's own example.
+name_regex = "^Jane Doe nee Smith do MA Prof\\.$"
+fields = ["title", "maiden", "_ambiguities"]
+
+[[change]]
+issue = "fix(#533/#535) a particle inside the clause lets a credential behind the title go"
+# The other half of that pair: with the title in front of 'MA', the
+# credential is released and the title leaves with it, so maiden
+# 'Smith do', suffix 'MA', title 'Prof.'. Two causes together, checked
+# against the parent tree d9d80492 (maiden 'Smith do Prof.', suffix
+# 'MA', reported): #533 already gives 'MA' up and reports the fork;
+# #535 then reads the title in front of it off the clause.
+# Literal-anchored: one corpus name, the doc's own example.
+name_regex = "^Jane Doe nee Smith do Prof\\. MA$"
+fields = ["title", "suffix", "maiden", "_ambiguities"]
+
+[[change]]
 issue = "fix(#535) the numeral stop asks the join question"
 # rules.md#M2 (#535): the numeral stop now asks the join question
 # too -- released, the numeral was taken by the bound-given join

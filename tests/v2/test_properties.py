@@ -506,14 +506,16 @@ def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
     the run behind the title reads as post-nominals, i.e. the clause
     gives the credential up, and nothing ahead stands to take the
     title (no particle chain, no bound-given join, no name left
-    empty). Where the clause KEEPS it the spellings differ by design,
+    empty). The invariant is claimed over the forms below and no
+    wider. Where the clause KEEPS the credential the spellings differ,
     a clause being one contiguous run: 'Doe nee Smith ba Prof.' gives
     the title up, 'Doe nee Smith Prof. ba' cannot; and where something
-    ahead would take the title they differ too ('Jane van der Berg nee
-    Smith PhD Prof.' against '... Prof. PhD') -- rules.md#M2's Accepted
-    pairs. Every head and run below is one where the credential is
-    given up and no particle, bound given name or empty name stands
-    ahead.
+    in or ahead of the clause would take the title they differ too
+    ('Jane van der Berg nee Smith PhD Prof.' against '... Prof. PhD',
+    'Jane Doe nee Smith do MA Prof.' against '... do Prof. MA') --
+    rules.md#M2's Accepted pairs, which are examples rather than a
+    complete list. No head or run below has a particle, a bound given
+    name or an empty name in or ahead of the clause.
 
     An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so it
     consults no rule statement. RECORDED NEGATIVE CONTROL: at e0f1a2fa,

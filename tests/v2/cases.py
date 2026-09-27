@@ -3863,14 +3863,14 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Doe", "suffix": "PhD",
           "maiden": "V"},
          classification="fix(#535)",
-         notes="the numeral stop reads FROM the marker, so a numeral "
-               "straight after it declines the clause only where the "
-               "name left standing reads it as a suffix; the given "
-               "slot does not with a third comma part behind it "
-               "(#144's condition, asked of the clause since #535), so "
-               "the clause keeps 'V'. 2.3.0 and the parent d9d80492 "
-               "read middle 'nee V', the marker a name word; "
-               "'Doe, Jane nee V, Jr.' moves the same way"),
+         notes="the numeral stop reads FROM the marker and is not held "
+               "to the first-word floor; here the given slot does not "
+               "read a lone numeral as a suffix with a third comma part "
+               "behind it (#144's condition, asked of the clause since "
+               "#535), so the clause keeps 'V', as 2.0.0 and 2.1.0 read "
+               "it. 2.2.0, 2.3.0 and the parent d9d80492 read middle "
+               "'nee V', the marker a name word; 'Doe, Jane nee V, Jr.' "
+               "moves the same way"),
     Case("the_given_title_chain_stops_at_a_member_with_a_title_behind",
          "Doe, Jane nee Smith Rev. MA Prof.",
          {"title": "Prof.", "given": "Jane", "family": "Doe",
@@ -3932,9 +3932,9 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="the numeral stop reads FROM the marker by design, "
                "unlike the credential and title stops, so a numeral "
-               "standing straight after it is not spared: where the "
-               "name left standing reads it as a suffix, as here, it "
-               "declines the clause -- as 'Jane "
+               "standing straight after it is not held to the "
+               "first-word floor, and here it declines the clause -- "
+               "as 'Jane "
                "Smith née V' does bare (rules.md#M2) -- and the title "
                "behind the numeral then reads the declined name as "
                "'Jane Doe nee V' plus the title would. 2.3.0 read "
