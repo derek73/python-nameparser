@@ -55,8 +55,8 @@ uv run pytest tests/test_python_api.py::HumanNamePythonTests::test_utf8
 # Type check (covers nameparser/ and tests/, per pyproject.toml's [tool.mypy] packages)
 uv run mypy
 
-# Lint
-uv run ruff check nameparser/
+# Lint (the whole repo, tests and tools included -- what CI's "Run linter" step runs)
+uv run ruff check
 
 # Debug how a specific name string is parsed: 2.0 core parse() --
 # prints the ParsedName repr raw and capitalized, then initials;
