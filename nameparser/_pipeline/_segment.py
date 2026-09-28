@@ -216,7 +216,9 @@ def segment(state: ParseState) -> ParseState:
     # un-narrowed call per token moved `'John Smith, Ed Ma'`, `'John
     # Smith, ma do'` and `'John Smith, X.Y.Z. A.B.'` to a credential
     # run through the CAPS switch. Since #544 all three are credential
-    # runs at every policy, by the listed-and-dotted run test below and
+    # runs under every policy that keeps their words in the class
+    # (`unlisted_dotted_suffixes=False` leaves 'X.Y.Z.' a name word),
+    # by the listed-and-dotted run test below and
     # its name-word count -- a different question, asked with the
     # switch off too, so this narrowing still stands.
     #
@@ -286,9 +288,12 @@ def segment(state: ParseState) -> ParseState:
                 settled = (settled and text.isupper()
                            and (fold == "member"
                                 or ambiguous_class_member(text, lexicon)))
-            elif is_single_letter_numeral(text):
-                break
+            # "reject" first: a name word ends the run without the
+            # numeral test's frame, and the numeral cannot be a
+            # "reject" (it is suffix vocabulary, so it folds "defer")
             elif fold == "reject":
+                break
+            elif is_single_letter_numeral(text):
                 break
             else:
                 rest.append(text)

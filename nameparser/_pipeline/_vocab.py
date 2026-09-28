@@ -606,20 +606,18 @@ def run_word_fold(
     (its docstring carries a negative control: with one acceptance
     path dropped, the sweep fails).
 
-    Measured (2026-09-27, #544, by a
-    profiler-frame count over one parse), for an ORDINARY comma name
-    that enters the run loop and breaks on its very first token --
-    'Doe Smith, Jane Q.', 'Garcia Lopez, Maria Jose': asking
-    `ambiguous_class_candidate` of that token directly, with this
-    whole gate skipped, costs 325 and 338 frames; this named function
-    costs 319 and 332; the ORIGINAL hand-inlined gate (before it was
-    a named function at all) cost 317 and 330. So the gate itself
-    saves 8 frames against asking the predicate directly; making it a
-    named, testable call gives back 2 of those 8 (the call's own
-    frame); net 6 -- still the frame a comma name with no credential
-    in it pays less than it would with no gate at all, and the price
-    of a gate a test can reach on its own rather than one hand-copied
-    at the call site.
+    Measured (2026-09-28, #544, by a profiler-frame count over one
+    parse, py3.11), for an ORDINARY comma name that enters the run
+    loop and breaks on its very first token -- 'Doe Smith, Jane Q.',
+    'Garcia Lopez, Maria Jose': the tree costs 318 and 331 frames
+    against e10e83b4's 317 and 330 (no run rule at all), the one
+    frame being this call's own; the loop tests "reject" before the
+    numeral so a name word pays nothing more. Asking
+    `ambiguous_class_candidate` of every token directly instead, with
+    this gate skipped, cost 325 and 338 when measured on 2026-09-27
+    (the numeral test then stood ahead of "reject") -- the price of a
+    gate a test can reach on its own rather than one hand-copied at
+    the call site is that one frame.
     """
     core = text.rstrip(".")
     if not (text.isascii() and "." not in core):
