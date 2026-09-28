@@ -460,6 +460,14 @@ class AmbiguityKind(StrEnum):
     #: site and this kind stays out of the way -- "Doe, John do" gives
     #: family ``do Doe`` and one ``PARTICLE_OR_GIVEN``, never two
     #: reports of one word.
+    #: Since #544 C1's name-word count reports its flip once over a
+    #: whole RUN after the comma ("John Smith, Ed Ma" reads suffix
+    #: ``Ed Ma``), and a member an unambiguous credential in front of
+    #: it speaks for (rules.md#S2) is a pick like a counted one,
+    #: reported by the peel or the given part's trailing slot that took
+    #: it ("John Smith PhD MEng", "Doe, Jane PhD MEng"). The
+    #: first-piece emitter still asks its own piece only, so "Smith,
+    #: PhD MEng" reads suffix ``PhD MEng`` and reports nothing.
     #: Since 2.4 a maiden marker's clause reports at ITS trailing slot
     #: too, in both directions: "Doe, Jane nee Smith MA" gives maiden
     #: ``Smith`` with suffix ``MA`` and says so, "Doe, Jane nee Smith

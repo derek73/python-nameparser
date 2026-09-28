@@ -996,8 +996,10 @@ CASES: tuple[Case, ...] = (
          "smith, v ed",
          {"given": "v", "family": "smith", "suffix": "ed"},
          ambiguities=("suffix-or-name",),
-         notes="a single-letter roman numeral is a generation, not a "
-               "credential, so it speaks for nothing: 'ed' is read by "
+         notes="a single-letter roman numeral is initial-shaped, "
+               "written as a middle initial is, so it speaks for "
+               "nothing (a multi-letter one such as 'III' would): "
+               "'ed' is read by "
                "the given slot's own rule. 1.4.0 read the same; 2.3.0 "
                "read middle 'ed'"),
     Case("an_anchored_particle_member_outranks_p6",

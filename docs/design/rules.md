@@ -1152,7 +1152,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P3, P5, P6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -1645,10 +1645,12 @@ C1. Rationale: a credential run after the comma means the name is in
     generation rather than a credential. A word of both the title and
     the suffix vocabulary opening such a part counts as a suffix word
     there, the name before the comma being complete. Where every word
-    of this class in the part is written in capitals in a mixed-case
-    name, the writing has already made each of them the credential
-    (S2), and the part reads as the credential run on that evidence
-    rather than on the count. A decision either way at this comma
+    of this class in the part is a LISTED word written in capitals in
+    a mixed-case name, the writing has already made each of them the
+    credential (S2), and the part reads as the credential run on that
+    evidence rather than on the count; a word of the class by shape
+    alone carries no such lean, so a part holding one is read by the
+    count. A decision either way at this comma
     is reported; for a run of words the decision is the flip to the
     credential run, and a run the count leaves in the listing form
     reports only as S2 reads the words in it. It is one of TWO
