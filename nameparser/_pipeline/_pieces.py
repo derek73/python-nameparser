@@ -498,10 +498,13 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         return None
     out: list[bool] = []
     # #544: `credential_anchors` over the whole part, computed the
-    # first time a member's writing declines. Every piece in front of
-    # such a member has already been read as a suffix, a title, a
-    # member or a numeral -- a name word returns None first -- so a
-    # comma part holding a name word never pays for the pass.
+    # first time a member's writing declines with a suffix piece in
+    # reach in front of it (`anchor_in_reach`, asked only while the
+    # pass does not exist yet). A member opening the part has nothing
+    # in front and asks neither ('Smith, Ed', 'Smith, Ma John'); a
+    # name word in front returns None before the member is reached;
+    # and a title in front ends the reach test, so 'Smith, Dr. Ma'
+    # pays that one test and no pass.
     anchors: list[bool] | None = None
     # Whether every piece so far stands in the part's leading title
     # run (titles, and title/suffix duals), and whether a dual has
@@ -530,6 +533,10 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
             out.append(True)
         elif (member and not dual_led
                 and SHAPE_ACRONYM_TAG not in tokens[piece[0]].tags
+                and (anchors is not None
+                     or (bool(out) and anchor_in_reach(
+                         range(len(out) - 1, -1, -1), pieces, ptags,
+                         tokens)))
                 and (anchors := anchors if anchors is not None
                      else credential_anchors(
                          range(len(pieces)), pieces, ptags, tokens,

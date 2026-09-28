@@ -686,3 +686,19 @@ def test_a_name_word_ends_the_comma_run_before_the_numeral_test() -> None:
     text = "Doe Smith, Jane Q."
     assert _frames_for(text, only="run_word_fold") >= 1
     assert _frames_for(text, only="is_single_letter_numeral") == 0
+
+
+def test_a_member_opening_a_comma_part_asks_no_anchor_pass() -> None:
+    """rules.md#S2's company clause speaks only for a member with a
+    credential in FRONT of it, so a member opening the part after a
+    one-word family comma ('Smith, Ed') is never anchored, and
+    `segment_suffix_reading` builds no `credential_anchors` pass for
+    it: the pass is built only where `anchor_in_reach` finds a suffix
+    piece in front. RECORDED NEGATIVE CONTROL: with the pass built
+    for every member whose writing declines, `credential_anchors` is
+    entered once for each of these (measured 2026-09-28)."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("Smith, Ed", "Smith, Ma", "Smith, Ed John"):
+        assert parse(text).family == "Smith", text
+        assert _frames_for(text, only="credential_anchors") == 0, text

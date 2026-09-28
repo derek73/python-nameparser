@@ -1042,14 +1042,15 @@ S2. Rationale: generational suffixes and credentials are recognized
     initial is written in, where a multi-letter one such as 'III'
     speaks — speak for nothing and end the run; so does any name
     word. A particle of this class standing behind a credential is
-    still spoken for: the exclusion is of the word in front. A word of both the title and the suffix vocabulary
-    standing in the given part's leading title run is a title there
-    and speaks for nothing, and no credential behind it speaks for a
-    word of this class in that part: the title reading makes the next
-    word the given name, and from there the part reads as any given
-    part does, the given part's own company included. A part holding
-    no such word, or only words whose capitals decide them, reads as
-    it did. Anywhere else such a word speaks like any suffix word.
+    still spoken for: the exclusion is of the word in front. A word
+    of both the title and the suffix vocabulary standing in the given
+    part's leading title run is a title there and speaks for
+    nothing, and no credential behind it speaks for a word of this
+    class in that part: the title reading makes the next word the
+    given name, and from there the part reads as any given part does,
+    the given part's own company included. A part holding no such
+    word, or only words whose capitals decide them, reads as it did.
+    Anywhere else such a word speaks like any suffix word.
     At the trailing slot of the given part this company outranks P6's
     attachment, as the capitals do. It does not reach across a maiden
     marker's clause (M2), whose name words stand between. A member

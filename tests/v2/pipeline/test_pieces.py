@@ -6,6 +6,7 @@ These pin the two contracts that shape cannot reach: a defensive branch
 no parse can produce, and the stability its readers rest on.
 """
 import dataclasses
+import itertools
 from collections.abc import Sequence, Set
 
 import pytest
@@ -24,10 +25,14 @@ from nameparser._pipeline._pieces import (
     trailing_titles,
 )
 from nameparser._pipeline._segment import segment
-from nameparser._pipeline._state import ParseState, WorkToken
+from nameparser._pipeline._state import (
+    AMBIGUOUS_ACRONYM_TAG, ParseState, WorkToken,
+)
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import is_one_case, is_title_shaped, tag_marker_runs
 from nameparser._policy import Policy
+
+from ..cases import CASES
 
 
 def _through_group(text: str, policy: Policy = Policy()) -> ParseState:
@@ -756,3 +761,64 @@ def test_tag_marker_runs_answers_in_ascending_index_order() -> None:
                                     state.lexicon.maiden_markers,
                                     folded))
         assert keys == sorted(keys), text
+
+
+#: The run words of the reach sweep below: unambiguous credentials,
+#: members (one a particle too), the two particles of the suffix
+#: vocabulary, a one-letter numeral, titles and a name word.
+_REACH_WORDS = ("PhD", "Jr", "MA", "Ma", "Ed", "Do", "vd", "Mc", "V",
+                "Prof.", "Dr.", "Jones")
+
+
+def _reach_failures(texts: Sequence[str]) -> list[str]:
+    """Every (text, segment, position, first_kept, start) at which
+    `anchor_in_reach` answers False while `credential_anchors` anchors
+    the lone member standing there -- the direction the reach test
+    must never get wrong, since a False skips the pass. Asked of every
+    segment of every text, over `order` both from the segment's first
+    piece and from past its leading title run, and with the leading
+    position both kept and read, the reach walking everything in
+    front each time (the superset every caller passes)."""
+    out = []
+    for text in texts:
+        state = _through_group(text)
+        tokens = state.tokens
+        for seg, (pieces, ptags) in enumerate(
+                zip(state.pieces, state.piece_tags)):
+            for start in {0, leading_titles(pieces, ptags, tokens)}:
+                order = range(start, len(pieces))
+                for first_kept in (True, False):
+                    anchors = credential_anchors(order, pieces, ptags,
+                                                 tokens, first_kept)
+                    for pos, m in enumerate(order):
+                        piece = pieces[m]
+                        if not (len(piece) == 1 and AMBIGUOUS_ACRONYM_TAG
+                                in tokens[piece[0]].tags):
+                            continue
+                        if anchors[pos] and not anchor_in_reach(
+                                range(m - 1, -1, -1), pieces, ptags,
+                                tokens):
+                            out.append(f"{text!r} seg {seg} at {m} "
+                                       f"first_kept={first_kept} "
+                                       f"start={start}")
+    return out
+
+
+def test_anchor_in_reach_never_hides_an_anchor() -> None:
+    """`anchor_in_reach` False implies `credential_anchors` False, at
+    every lone member of every segment, over the case table's texts
+    and every run of one to three `_REACH_WORDS` behind 'John Smith '
+    and 'Doe, Jane ' (4,497 distinct texts, 742 of them the table's;
+    0.23s on py3.11, measured 2026-09-28). RECORDED NEGATIVE CONTROL:
+    with the reach test reading a "vocab:suffix" token as no suffix
+    piece (returning False there), 878 positions fail (measured
+    2026-09-28)."""
+    texts = {case.text for case in CASES if case.policy is None
+             and case.locale is None}
+    for n in (1, 2, 3):
+        for run in itertools.product(_REACH_WORDS, repeat=n):
+            for head in ("John Smith ", "Doe, Jane "):
+                texts.add(head + " ".join(run))
+    failures = _reach_failures(sorted(texts))
+    assert not failures, (f"{len(failures)} anchored member(s) the "
+                          f"reach test hides:\n" + "\n".join(failures[:15]))
