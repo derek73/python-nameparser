@@ -761,6 +761,258 @@ CASES: tuple[Case, ...] = (
                "reports from, and a leading word is none of them. No "
                "report, and every release read it this way",
          shape=1),
+    # ---- #544: a credential run keeps its ambiguous members ---------
+    # C1's name-word count reads a RUN after the comma as it reads one
+    # word, and S2's company clause lets an unambiguous credential IN
+    # FRONT of a member speak for it at every trailing slot. The rows
+    # below are the issue's names and the boundaries each half keeps.
+    Case("comma_run_of_title_case_members_is_the_credential_run",
+         "John Smith, Ed Ma",
+         {"given": "John", "family": "Smith", "suffix": "Ed Ma"},
+         ambiguities=("suffix-or-name",),
+         notes="C1's run rule with no unambiguous word in it: two "
+               "members, both Title case, and two name words before "
+               "the comma, so the count reads the part as the "
+               "credential run and the flip reports once over the "
+               "whole part. 1.4.0 read the same; 2.0.0 through 2.3.0 "
+               "read given 'Ed', middle 'Ma'",
+         shape=3),
+    Case("comma_run_led_by_a_member_is_the_credential_run",
+         "John Smith, MEng PhD",
+         {"given": "John", "family": "Smith", "suffix": "MEng PhD"},
+         ambiguities=("suffix-or-name",),
+         notes="a member OPENING the run: the count, not the company, "
+               "decides after a comma, so the order of the words does "
+               "not matter. 1.4.0 and 2.3.0 read the same; #540 had "
+               "read given 'MEng', family 'John Smith'",
+         shape=3),
+    Case("comma_run_opened_by_a_dual_is_the_credential_run",
+         "Jane Doe, MS LAc",
+         {"given": "Jane", "family": "Doe", "suffix": "MS LAc"},
+         ambiguities=("suffix-or-name",),
+         notes="the issue's headline: 'MS' is title and suffix "
+               "vocabulary both, and opening the part after a FULL "
+               "name it counts as the suffix word it is, as the "
+               "legacy test already counts it in 'Jane Doe, MS PhD'. "
+               "1.4.0 and 2.3.0 read the same; #540 had read title "
+               "'MS', given 'LAc', family 'Jane Doe', silently",
+         shape=3),
+    Case("comma_run_opened_by_a_dual_before_a_meng",
+         "John Smith, MD MEng",
+         {"given": "John", "family": "Smith", "suffix": "MD MEng"},
+         ambiguities=("suffix-or-name",),
+         notes="the same dual after a full name, before the other "
+               "chunked member. 1.4.0 and 2.3.0 read the same suffix; "
+               "#540 had read title 'MD', given 'MEng'",
+         shape=3),
+    Case("comma_run_in_one_case_is_the_credential_run",
+         "john smith, md ma",
+         {"given": "john", "family": "smith", "suffix": "md ma"},
+         ambiguities=("suffix-or-name",),
+         notes="one case says nothing, and the count decides as it "
+               "does in mixed case. 1.4.0 read the same; 2.3.0 read "
+               "title 'md', given 'ma', family 'john smith', silently",
+         shape=3),
+    Case("comma_run_opened_by_an_honorific_dual_is_the_accepted_cost",
+         "John Smith, Ms Ma",
+         {"given": "John", "family": "Smith", "suffix": "Ms Ma"},
+         ambiguities=("suffix-or-name",),
+         notes="the accepted cost of reading a dual opening the part "
+               "as its suffix: 'Ms' is the honorific here, read as "
+               "'John Smith, Ms' alone already reads it, and the flip "
+               "reports so a caller can see the call (Derek, "
+               "2026-09-27). 1.4.0 read the same; 2.3.0 read title "
+               "'Ms', given 'Ma'. With ONE name word before the comma "
+               "the dual is a title ('Smith, Ms Ma')",
+         shape=3),
+    Case("comma_run_the_capitals_already_settle_is_not_flipped",
+         "John Smith, PhD MA",
+         {"given": "John", "family": "Smith", "suffix": "PhD MA"},
+         notes="every member written in capitals in a mixed-case name "
+               "leans credential, so the listing form already reads "
+               "the part as the credential run and the run rule stands "
+               "down: no flip, and no report the part did not already "
+               "make. Pinned because the reading now rests on the "
+               "family-comma path alone. 1.4.0 read the same; 2.3.0 "
+               "read given 'PhD', middle 'MA'"),
+    Case("comma_run_by_shape_member_takes_the_count",
+         "John Smith, X.Y.Z. MA",
+         {"given": "John", "family": "Smith", "suffix": "X.Y.Z. MA"},
+         classification="fix(#544)",
+         ambiguities=("suffix-or-name",),
+         notes="the lean that lets a settled run stand down is the "
+               "LISTED set's alone (S2): 'X.Y.Z.' joins the class by "
+               "shape and carries no writing to read, so the run is "
+               "the count's and flips though both words are in "
+               "capitals. 1.4.0 read given 'X.Y.Z.', family 'John "
+               "Smith', suffix 'MA'",
+         shape=3),
+    Case("a_degree_in_front_anchors_a_trailing_meng",
+         "John Smith PhD MEng",
+         {"given": "John", "family": "Smith", "suffix": "PhD MEng"},
+         classification="fix(#436/#437)",
+         ambiguities=("suffix-or-name",),
+         notes="S2's company clause: 'MEng' is written the way the "
+               "name lean reads, but the unambiguous 'PhD' in front "
+               "of it anchors it, so the peel takes both and reports "
+               "the member it picked. The roles are 1.4.0's and "
+               "2.3.0's; the classification records the suffix "
+               "STRING, 1.4.0's 'PhD, MEng'. #540 had read middle "
+               "'Smith PhD', family 'MEng'",
+         shape=1),
+    Case("a_degree_in_front_anchors_a_trailing_ma",
+         "John Smith PhD Ma",
+         {"given": "John", "family": "Smith", "suffix": "PhD Ma"},
+         classification="fix(#436/#437)",
+         ambiguities=("suffix-or-name",),
+         notes="the same company for a member marked since 2.0: the "
+               "#289 lean had read middle 'Smith PhD', family 'Ma' "
+               "(bisected to dfb31709). 1.4.0 and 2.3.0 read the "
+               "roles; 1.4.0 wrote the suffix 'PhD, Ma'",
+         shape=1),
+    Case("the_anchor_passes_through_a_run_of_members",
+         "John Smith PhD Ed Ma",
+         {"given": "John", "family": "Smith", "suffix": "PhD Ed Ma"},
+         classification="fix(#436/#437)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="a member behind a member behind the degree: the "
+               "first passes the anchor on, and each reports as a "
+               "pick. 1.4.0 and 2.3.0 read the roles; 1.4.0 wrote "
+               "'PhD, Ed, Ma'",
+         shape=1),
+    Case("a_degree_behind_the_member_anchors_nothing",
+         "Wang Ma PhD",
+         {"given": "Wang", "family": "Ma", "suffix": "PhD"},
+         ambiguities=("suffix-or-name",),
+         notes="the company is IN FRONT only: 'PhD' behind 'Ma' says "
+               "nothing about it, so the Title-case member is the "
+               "family name and the degree is peeled on its own. "
+               "1.4.0 and 2.3.0 read the same roles",
+         shape=1),
+    Case("the_anchor_reads_inside_the_maiden_clause",
+         "Jane Doe nee Smith PhD MEng",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD MEng",
+          "maiden": "Smith"},
+         classification="fix(#544)",
+         ambiguities=("suffix-or-name",),
+         notes="the maiden walk reads the end of the clause through "
+               "the same peel, so the anchored member ends it too and "
+               "the clause keeps 'Smith'. 2.3.0 read the same; #540 "
+               "had read middle 'Doe PhD', family 'MEng'. 1.4.0 had "
+               "no maiden routing",
+         shape=1),
+    Case("a_title_between_degree_and_member_keeps_it_a_name",
+         "John Smith PhD Prof. Ma",
+         {"given": "John", "middle": "Smith PhD Prof.", "family": "Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#S2's Accepted limit: a title standing between "
+               "the credential and the member ends the run, so the "
+               "member's writing decides and the degree and title are "
+               "name text. Unchanged by #544; 2.3.0 read title 'Prof.', "
+               "suffix 'PhD Ma', and 1.4.0 middle 'Smith PhD', last "
+               "'Prof.', suffix 'Ma'"),
+    Case("a_split_degree_in_front_is_out_of_the_walk",
+         "John Smith Ph. D. MEng",
+         {"given": "John", "middle": "Smith", "family": "MEng",
+          "suffix": "Ph. D."},
+         classification="fix(#540)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#S2's Accepted limit: the merged 'Ph. D.' is "
+               "read as a suffix at any position and so is not in the "
+               "no-comma walk the company is read over, and the "
+               "member's writing decides. The comma and given-slot "
+               "spellings do reach it ('Doe, Jane Ph. D. MEng' reads "
+               "suffix 'Ph. D. MEng'). Unchanged by #544; 2.3.0 read "
+               "suffix 'Ph. D. MEng', and 1.4.0 'Ph. D., MEng'"),
+    Case("a_member_the_particle_chain_took_is_out_of_reach",
+         "John Smith PhD Do Do",
+         {"given": "John", "middle": "Smith PhD", "family": "Do Do"},
+         notes="rules.md#S2's Accepted limit: 'Do' is particle "
+               "vocabulary too, and P2's chain joins 'Do Do' into one "
+               "piece before the peel, so no lone member stands behind "
+               "the degree. Unchanged by #544; 1.4.0 and 2.3.0 read "
+               "the same"),
+    Case("the_anchor_does_not_reach_across_a_maiden_clause",
+         "Jane Doe Jr. nee Smith Ma",
+         {"given": "Jane", "family": "Doe", "suffix": "Jr.",
+          "maiden": "Smith Ma"},
+         classification="fix(#533)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#M2's boundary: the clause's name words stand "
+               "between 'Jr.' and 'Ma', so the credential in front "
+               "speaks for nothing past the marker and the clause keeps "
+               "its member, where 'Jane Doe Jr. Ma' reads suffix 'Jr. "
+               "Ma'. Unchanged by #544; 2.3.0 read the same fields "
+               "without the report, and 1.4.0 had no maiden routing",
+         shape=1),
+    Case("a_degree_after_a_one_word_family_anchors_the_member",
+         "Smith, PhD MEng",
+         {"family": "Smith", "suffix": "PhD MEng"},
+         classification="fix(#544)",
+         notes="one name word before the comma, so C1 reads the "
+               "listing form, and the part holds no name word once "
+               "'PhD' anchors 'MEng': the credential run, whole, with "
+               "no report, 'PhD' not being a member. 2.3.0 read the "
+               "same; #540 had read given 'PhD', middle 'MEng', and "
+               "1.4.0 title 'PhD', first 'MEng'",
+         shape=2),
+    Case("a_degree_in_the_given_part_anchors_the_member",
+         "Doe, Jane PhD MEng",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD MEng"},
+         classification="fix(#436/#437)",
+         ambiguities=("suffix-or-name",),
+         notes="the given part's trailing slot (#531) asks the "
+               "company once the member's writing declines. 2.3.0 read "
+               "the same fields; #540 had read middle 'MEng', and "
+               "1.4.0 wrote the suffix 'PhD, MEng'",
+         shape=2),
+    Case("the_anchor_reads_inside_a_clause_after_a_comma",
+         "Doe, Jane nee Smith PhD MEng",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD MEng",
+          "maiden": "Smith"},
+         classification="fix(#544)",
+         ambiguities=("suffix-or-name",),
+         notes="the maiden walk's given-slot reader asks the same "
+               "company over the name the take would leave. 2.3.0 "
+               "read the same; #540 had read middle 'MEng', and 1.4.0 "
+               "had no maiden routing",
+         shape=2),
+    Case("a_dual_opening_the_given_part_is_a_title_there",
+         "Smith, Ms Ma",
+         {"title": "Ms", "given": "Ma", "family": "Smith"},
+         notes="the dual exclusion's scope: with ONE name word before "
+               "the comma 'Ms' opens the given part, reads as the "
+               "title there, and speaks for nothing, so 'Ma' stays the "
+               "given name. 1.4.0 and 2.3.0 read the same",
+         shape=2),
+    Case("a_dual_opening_the_given_part_anchors_nothing",
+         "Smith, MD MEng",
+         {"title": "MD", "given": "MEng", "family": "Smith"},
+         notes="the same exclusion for the other chunked member. "
+               "1.4.0 read the same; 2.3.0 read suffix 'MD MEng', "
+               "the reading #540's marking moved"),
+    Case("a_numeral_in_front_anchors_nothing",
+         "smith, v ed",
+         {"given": "v", "family": "smith", "suffix": "ed"},
+         ambiguities=("suffix-or-name",),
+         notes="a single-letter roman numeral is a generation, not a "
+               "credential, so it speaks for nothing: 'ed' is read by "
+               "the given slot's own rule. 1.4.0 read the same; 2.3.0 "
+               "read middle 'ed'"),
+    Case("an_anchored_particle_member_outranks_p6",
+         "doe, jane v phd do",
+         {"given": "jane", "family": "doe", "suffix": "v phd do"},
+         classification="fix(#436/#437)",
+         ambiguities=("suffix-or-name",),
+         notes="'do' is a member AND a particle, and written in one "
+               "case it leans nothing, so P6's attachment would take "
+               "it (as in 'NASCIMENTO, EDSON ARANTES DO'); the degree "
+               "in front outranks the attachment as the capitals do "
+               "(Derek, 2026-09-27). The roles are 1.4.0's; 2.3.0 "
+               "read family 'do doe', and 1.4.0 wrote the suffix "
+               "'v, phd, do'",
+         shape=2),
     Case("by_design_trailing_mc_reads_as_a_credential", "Donald Mc",
          {"given": "Donald", "suffix": "Mc"},
          classification="fix(suffix-routing)",

@@ -1069,6 +1069,13 @@ S2. Rationale: generational suffixes and credentials are recognized
       "john smith MEng"           →  family="MEng"
       "Nguyen Van Lac"            →  family="Van Lac"
       "Wang M.Eng."               →  suffix="M.Eng."
+      "John Smith PhD MEng"       →  suffix="PhD MEng"
+      "John Smith PhD Ed Ma"      →  suffix="PhD Ed Ma"
+      "Wang Ma PhD"               →  family="Ma"  · boundary
+      "Smith, PhD MEng"           →  suffix="PhD MEng"
+      "Smith, Ms Ma"              →  given="Ma"  · boundary
+      "Doe, Jane PhD MEng"        →  suffix="PhD MEng"
+      "doe, jane v phd do"        →  suffix="v phd do"
       "Smith, MA"                 →  suffix="MA"
       "Smith, Ma"                 →  given="Ma"
       "Doe, John MA"              →  suffix="MA"
@@ -1114,7 +1121,14 @@ S2. Rationale: generational suffixes and credentials are recognized
     member as the name: a credential written split across two words
     with no comma after the name, a title standing between the
     credential and the member, and a member a particle chain (P2)
-    has already taken.
+    has already taken. Each reading of the three is older than the
+    company clause, so they are witnessed by tests/v2/cases.py's
+    a_split_degree_in_front_is_out_of_the_walk,
+    a_title_between_degree_and_member_keeps_it_a_name and
+    a_member_the_particle_chain_took_is_out_of_reach rather than by
+    lines here, which would bring each name into the corpus that
+    enforces them at released baselines for a reading this clause
+    did not make.
       "Jack Wei Ma"               →  family="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "abdul Smith Jr Ma"         →  suffix="Jr Ma"
@@ -1521,6 +1535,13 @@ M2. Rationale: a maiden marker announces that what follows it is the
     there goes to the family. Open: #548.
       "Doe nee Smith Jr. Prof., Jane"  →  family="Doe Prof."
       "Doe nee Smith V, Jane"          →  family="Doe V"
+    Accepted: a credential written in front of the marker speaks for
+    no word of the clause (S2's company), the clause's own words
+    standing between the two, so the clause keeps a member its
+    writing declines even where the same name written without the
+    clause reads that member as the credential.
+      "Jane Doe Jr. nee Smith Ma"      →  maiden="Smith Ma"
+      "Jane Doe Jr. Ma"                →  suffix="Jr. Ma"  · boundary
     history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
@@ -1699,6 +1720,10 @@ C1. Rationale: a credential run after the comma means the name is in
       "Royce, Ed"                 →  given="Ed"  · boundary
       "Smith Jr., MA"             →  suffix="Jr., MA"
       "Smith Jr., Ma"             →  given="Ma"  · boundary
+      "John Smith, PhD MEng"      →  suffix="PhD MEng"
+      "John Smith, Ed Ma"         →  suffix="Ed Ma"
+      "Jane Doe, MS LAc"          →  suffix="MS LAc"
+      "Smith, PhD MEng"           →  family="Smith"  · boundary
       "John Smith, A.B."          →  suffix="A.B."
       "John Smith, A.B."  unlisted_dotted_suffixes-off  →  given="A.B."
       "Smith, A.B."               →  given="A.B."  · boundary
