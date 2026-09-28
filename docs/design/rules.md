@@ -496,7 +496,7 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2, C2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
@@ -1812,6 +1812,13 @@ C2. Rationale: text beyond the recognized comma parts should be
     S2's other by-shape half, the unlisted all-caps word, does not
     reach here under its switch either: the shape a tail segment is
     recognized by is the dotted one alone.
+    A part the parse consumes wholly as suffixes raises no report
+    about reading a word of it as a name, whether it is the part
+    after a suffix comma (C1) or a part beyond the second: nothing
+    in it is read as one, so a particle chain run over it (P2)
+    reports neither a particle chained onto a name word nor an
+    acronym taken into the name. What such a part reports is its
+    own — C1's flip and this rule's flag.
       "John Smith, MD, Bart"      →  suffix="MD, Bart"
       "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
       "John Smith, MD, R.A.I."    →  suffix="MD, R.A.I."
@@ -1821,7 +1828,17 @@ C2. Rationale: text beyond the recognized comma parts should be
       "Steven Hardman, MD, DO, DDS"  →  ambiguities=()
       "STEVEN HARDMAN, MD, DO, DDS"  →  ambiguities=("comma-structure",)  · boundary
       "John Smith, MD, XYZ"  unlisted_caps_suffixes-on  →  ambiguities=("comma-structure",)
-    history: decisions.md#C1, decisions.md#S2 · interacts: C1, S2, S3 · implemented: nameparser/_pipeline/_segment.py
+    Accepted: the no-name-reading clause carries no example line of
+    its own. What it moves is a report with no field beside it, and
+    an example line would enter the rules corpus for that report
+    alone; its executable witnesses are the case rows
+    a_credential_run_after_the_comma_reports_no_chain_fork and
+    a_part_past_the_second_reports_no_particle_fork in
+    tests/v2/cases.py, read beside the two rows the chain still
+    reports on outside a tail:
+    the_chain_reports_the_acronym_it_takes and
+    titled_particle_chain_survives_a_title_that_is_also_a_particle.
+    history: decisions.md#C1, decisions.md#S2 · interacts: C1, P2, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_group.py
 
 ## Name order (O)
 

@@ -1321,15 +1321,16 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # segment's structure, and a default would be this module guessing
     # what that caller already knows. group() passes `None` on the
     # first for the chain emitter after a family comma -- the comma
-    # fixed the family, so that fork is settled -- and #533's is not
-    # that fork: a credential ending a maiden clause is a question the
+    # fixed the family, so that fork is settled -- and in a tail
+    # segment, which assign reads wholly as suffixes. #533's fork is
+    # neither: a credential ending a maiden clause is a question the
     # comma settles nothing about, which is why the two channels are
     # two parameters. They are given the SAME list wherever nothing is
-    # suppressed, which is every segment that is NOT after a family
-    # comma; what the split buys is the other case, where `None` on
-    # the first must not reach the second -- a maiden channel
-    # defaulting to whatever the first was would let a caller passing
-    # `ambiguities=None` silence both (the review's finding).
+    # suppressed, which is every segment that is neither after a
+    # family comma nor a tail; what the split buys is the other case,
+    # where `None` on the first must not reach the second -- a maiden
+    # channel defaulting to whatever the first was would let a caller
+    # passing `ambiguities=None` silence both (the review's finding).
 
     def title(k: int) -> bool:
         return is_title_piece(pieces[k], ptags[k], tokens)
@@ -2038,7 +2039,13 @@ def group(state: ParseState) -> ParseState:
             bound_join = BoundJoin.STRICT
         # Suppressed after a family comma for the same reason _assign
         # suppresses it there: the family name is already fixed, so
-        # there is no fork left to report.
+        # there is no fork left to report. Suppressed in a tail segment
+        # as well, after either comma: assign reads that segment
+        # wholly as suffixes, so a chain report there -- a particle
+        # chained onto a name piece, or an acronym taken into the name
+        # -- names a reading the parse never takes. rules.md#C2: "a part
+        # the parse consumes wholly as suffixes raises no report about
+        # reading a word of it as a name"
         tail = tail_start is not None and seg_idx >= tail_start
         seg_cores = cores if tail else frozenset()
         # #533: which rule reads what the maiden walk would leave, off
@@ -2054,7 +2061,7 @@ def group(state: ParseState) -> ParseState:
             reader = TailReader.TRAILING
         pieces, ptags, taken = _group_segment(
             seg, additional, tokens, bound_join,
-            None if family_comma else ambiguities,
+            None if (family_comma or tail) else ambiguities,
             seg_cores,
             state.lexicon.given_name_titles,
             opens_the_name=(seg_idx == 0 and not family_comma),

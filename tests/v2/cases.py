@@ -1523,6 +1523,18 @@ CASES: tuple[Case, ...] = (
                "'first piece that is not a title' test broke: it "
                "skipped 'St'/'Do'/'Freiherr' and collapsed the "
                "untitled 'St John Smith' into one given name"),
+    Case("a_part_past_the_second_reports_no_particle_fork",
+         "John Smith, Jr., Freiherr von Richthofen",
+         {"given": "John", "family": "Smith",
+          "suffix": "Jr., Freiherr von Richthofen"},
+         ambiguities=("comma-structure",),
+         notes="the row above as a part past the second comma, which "
+               "is consumed wholly as suffixes (C2): 'von' still "
+               "chains in group, but it ends a suffix, so the "
+               "particle-or-given report that 'von' was chained onto "
+               "a name piece named a reading the parse never makes. "
+               "Every 2.x release through 2.3.0 carried it; the "
+               "comma-structure flag is the part's own report"),
     Case("titled_ambiguous_particle_no_op_chain", "St Van Jr.",
          {"title": "St", "family": "Van", "suffix": "Jr."},
          notes="the piece after the particle is a suffix, so the chain "
@@ -2330,6 +2342,20 @@ CASES: tuple[Case, ...] = (
                "and the emitter's `j > k + 1` floor is what both have "
                "to clear",
          shape=1),
+    Case("a_credential_run_after_the_comma_reports_no_chain_fork",
+         "John Smith, PhD Do Ma",
+         {"given": "John", "family": "Smith", "suffix": "PhD Do Ma"},
+         ambiguities=("suffix-or-name",),
+         notes="the row above behind a suffix comma: the part after it "
+               "is the credential run C1 flips to, and assign reads a "
+               "tail segment wholly as suffixes, so 'Ma' ends a suffix. "
+               "The chain still runs there ('Do' takes 'Ma') but may "
+               "not report taking it into the name, a reading the "
+               "parse never makes (rules.md#C2); the one report is "
+               "C1's flip over the whole part. Carried a second, "
+               "contradicting suffix-or-name on 'Ma' until 2026-09-28. "
+               "1.4.0 read the same fields; 2.3.0 read given 'PhD', "
+               "middle 'Do Ma', family 'John Smith'"),
     Case("the_chain_reports_the_by_shape_half_too",
          "John van der Berg X.Y.Z.",
          {"given": "John", "family": "van der Berg X.Y.Z."},
