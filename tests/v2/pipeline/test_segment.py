@@ -238,7 +238,8 @@ def test_the_name_word_count_reads_a_run_as_it_reads_one_word() -> None:
 def test_the_run_test_declines_a_name_word_and_a_numeral() -> None:
     # a name word anywhere in the part, or a word that is neither
     # vocabulary nor a member, keeps the listing form -- and so does a
-    # single-letter roman numeral, a generation rather than a credential
+    # single-letter roman numeral, in any case, for its one-letter
+    # shape (a multi-letter one runs: 'John Smith, III Ma')
     for text in ("John Smith, Jones Ma", "John Smith, PhD Jones Ma",
                  "John Smith, V Ma", "John Smith, PhD v Ma",
                  "John Smith, PhD Ma.", "John Smith, J. Ma"):

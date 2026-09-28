@@ -45,13 +45,15 @@ Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
 particles_ambiguous token with more pieces following ("Van Johnson",
 and since #367 "Dr. Van Johnson" too, a title no longer displacing the
 particle out of that position) -- whatever role name_order assigns.
-Emits SUFFIX_OR_NAME at FIVE sites: the trailing roman numeral, each
+Emits SUFFIX_OR_NAME at SIX sites: the trailing roman numeral, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491),
 -- since #289 -- the FAMILY-COMMA path's own read of the first
-post-comma piece, and -- since #531 -- the class member ENDING that
-path's given part, which the first-piece emitter could never reach.
+post-comma piece, -- since #531 -- the class member ENDING that
+path's given part, which the first-piece emitter could never reach,
+and -- since #544 -- each member a credential in front of it made the
+credential in a post-comma part read wholly as credentials.
 Further emitters of the same kind live in
 `_segment.py`, `_group.py` and `_post_rules.py`; they are not
 assign's and are not counted here. And
@@ -539,9 +541,11 @@ def assign(state: ParseState) -> ParseState:
         # positional read peels a trailing suffix first: 'Smith Jr.,
         # Mr.' has two pieces and one name, and read positionally lost
         # its family (the code review).
+        anchored_picks: list[int] = []
         reading = segment_suffix_reading(
             state.pieces[1], state.piece_tags[1], tokens,
-            state.policy.lenient_comma_suffixes, state.one_case)
+            state.policy.lenient_comma_suffixes, state.one_case,
+            anchored_picks)
         # rules.md#C1's exception, scoped to the ambiguous credential
         # class: this is the first report of the comma's OWN decision
         # (listing or credential run), where the writing left the
@@ -901,6 +905,21 @@ def assign(state: ParseState) -> ParseState:
                     _set_roles(tokens, piece,
                                Role.SUFFIX if reading[k] else Role.TITLE)
                 n = len(pieces)
+                # rules.md#S2's company, reported where it decided: a
+                # member the anchor read as a credential after its own
+                # writing declined is a pick, as the peel's are (#544).
+                # Never piece 0, which nothing stands in front of, so
+                # never the first-piece report's word above; a member
+                # whose capitals lean credential is not among them
+                # ('Smith, PhD MA' stays silent).
+                for k in anchored_picks:
+                    i2 = pieces[k][0]
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                        f"{tokens[i2].text!r} behind a credential after "
+                        f"the comma is also an ordinary name word; read "
+                        f"as a credential",
+                        (i2,)))
             else:
                 n = _peel_leading_titles(pieces, ptags, tokens)
                 # rules.md#H5: "the title is TRANSPARENT to the suffix

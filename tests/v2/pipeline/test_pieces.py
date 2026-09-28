@@ -130,6 +130,54 @@ def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
     assert segment_suffix_reading(*args, False, state.one_case) is None
 
 
+def _comma_part_reading(text: str) -> tuple[tuple[bool, ...] | None,
+                                            list[int]]:
+    state = _through_group(text)
+    picks: list[int] = []
+    reading = segment_suffix_reading(
+        state.pieces[1], state.piece_tags[1], list(state.tokens), True,
+        state.one_case, picks)
+    return reading, picks
+
+
+def test_the_reading_names_the_picks_its_anchor_made() -> None:
+    """#544: the members the anchor read as credentials after their
+    own writing declined -- the picks assign reports. A member whose
+    capitals lean credential decided itself and is not among them,
+    and nothing stands in front of piece 0 to anchor it."""
+    assert _comma_part_reading("Smith, PhD Ma") == ((True, True), [1])
+    assert _comma_part_reading("Smith, PhD MA") == ((True, True), [])
+    assert _comma_part_reading("Smith, Dr. PhD Ed Ma") == (
+        (False, True, True, True), [2, 3])
+    assert _comma_part_reading("Smith, MA PhD ba") == (
+        (True, True, True), [2])
+
+
+def test_a_dual_in_the_leading_title_run_turns_the_anchor_off() -> None:
+    """#544: a title/suffix dual standing in the given part's leading
+    title run is a title there, and this reading then anchors nothing
+    in the part -- neither by that dual, nor by a second one in the
+    same run, nor by a credential behind them -- so the walk reads it
+    as the parent did, its given slot's company starting past the
+    given name. A plain title does not do this, and a dual behind a
+    credential anchors like any suffix word."""
+    for text in ("Smith, Ms Ma", "Smith, Ms MD Ma", "Smith, MD PhD Ma",
+                 "Smith, MD MS Ma", "SMITH, MD MS BA",
+                 "Smith, Prof. MD Ma", "smith, prof. md ma",
+                 "Smith, Dr. MD PhD Ma"):
+        assert _comma_part_reading(text)[0] is None, text
+    assert _comma_part_reading("Smith, Dr. PhD LAc") == (
+        (False, True, True), [2])
+    assert _comma_part_reading("Smith, PhD Ms Ma") == (
+        (True, True, True), [2])
+    # with no member to anchor, the dual reads as the suffix it is
+    assert _comma_part_reading("Smith, MD PhD") == ((True, True), [])
+    # and the walk's given slot, past the given name, reads its own
+    # company as behind any given name
+    assert parse("Smith, MD PhD Jr Ma").suffix == "Jr Ma"
+    assert parse("Smith, MD PhD Jr Ma").given == "PhD"
+
+
 def _leading(text: str) -> int:
     state = _through_group(text)
     return leading_titles(state.pieces[0], state.piece_tags[0],
@@ -403,9 +451,10 @@ def test_credential_anchors_reads_in_front_and_through_members() -> None:
 def test_credential_anchors_stops_at_a_numeral_or_a_name_word() -> None:
     # the piece straight behind the credential is marked whatever it
     # is; what matters is the member past it, which a single-letter
-    # numeral (initial-shaped, like a bare middle initial) or a name
-    # word leaves unanchored. A multi-letter numeral is not this
-    # shape and anchors like any other suffix piece (pinned below).
+    # roman numeral (one letter, in any case, the shape a bare middle
+    # initial is written in) or a name word leaves unanchored. A
+    # multi-letter numeral is not this shape and anchors like any
+    # other suffix piece (pinned below).
     assert _anchored_words("John Smith PhD v Ma") == ["v"]
     assert _anchored_words("John Smith PhD Jones Ma") == ["Jones"]
     assert _anchored_words("John Smith PhD III Ma") == ["III", "Ma"]
@@ -414,8 +463,8 @@ def test_credential_anchors_stops_at_a_numeral_or_a_name_word() -> None:
 def test_a_connective_or_a_numeral_suffix_word_anchors_nothing() -> None:
     # the generational 'i' is also Catalan's conjunction, and between
     # two name words it is a link (rules.md#P3); a single-letter roman
-    # numeral is INITIAL-SHAPED, the same shape a middle initial
-    # writes in -- not excluded for being "no credential", since a
+    # numeral, in any case, is ONE LETTER, the shape a middle initial
+    # is written in -- not excluded for being "no credential", since a
     # multi-letter numeral ('III') anchors like any other suffix word
     # (pinned in `test_credential_anchors_stops_at_a_numeral...` and
     # `test_a_multi_letter_numeral_anchors_like_any_suffix_word`
@@ -437,6 +486,10 @@ def test_a_connective_or_a_numeral_suffix_word_anchors_nothing() -> None:
     # peel's Accepted limit, the merged piece standing outside its walk)
     assert parse("Doe, Jane Ph. D. MEng").suffix == "Ph. D. MEng"
     assert parse("Smith, Ph. D. MEng").suffix == "Ph. D. MEng"
+    # and the member it speaks for reports as the pick it is
+    assert [(a.kind.value, [t.text for t in a.tokens])
+            for a in parse("Smith, Ph. D. MEng").ambiguities] == [
+        ("suffix-or-name", ["MEng"])]
 
 
 def test_a_multi_letter_numeral_anchors_like_any_suffix_word() -> None:

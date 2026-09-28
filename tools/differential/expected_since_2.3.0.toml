@@ -489,9 +489,16 @@ issue = "fix(#531) a member the writing declines keeps its name reading and repo
 # fix(given-part-trailing-slot), whose comment records that #531
 # changed which names it holds rather than retiring it.
 #
+# 2026-09-28: 'Smith, MD PhD Ma' joins -- a title/suffix dual opening the
+# given part is a title there, 'PhD' is the given name, and the
+# Title-case 'Ma' ending the part is this slot's declining half,
+# reported. No role moves from this baseline; #544 keeps it so
+# (rules.md#S2: nothing in a part whose leading title run holds a dual
+# speaks for the member).
+#
 # Literal-anchored: the class is the slot's declining half, and a
 # regex for it would claim the thirteen movers above.
-name_regex = "^(?:Doe, John Ed|Doe, John MA Ma|Doe, John Ma|Doe, Mary Jo Ma)$"
+name_regex = "^(?:Doe, John Ed|Doe, John MA Ma|Doe, John Ma|Doe, Mary Jo Ma|Smith, MD PhD Ma)$"
 fields = ["_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -1283,11 +1290,15 @@ issue = "fix(#544) a run of ambiguous members after a suffix comma reads by the 
 # LISTED member only -- so its run flips too. 1.4.0 read the listed-
 # member names as suffixes as well.
 #
+# 2026-09-28: 'John Smith, PhD Ma' joins, the same run with an
+# unambiguous word in front of the member, which the count reads whole
+# like the rest.
+#
 # Literal; `fields` is the union the names move ('title' is the duals').
 # Probes: 'Smith, Ed Ma' (one name word before the comma keeps the
 # listing form), 'Smith, Ms Ma' (a dual opening the given part is a
 # title) and the superstring 'Dr. John Smith, Ed Ma' are _MUST_NOT_MATCH.
-name_regex = "^(?:John Smith, Ed Ma|John Smith, Ms Ma|John Smith, X\\.Y\\.Z\\. MA|john smith, md ma)$"
+name_regex = "^(?:John Smith, Ed Ma|John Smith, Ms Ma|John Smith, PhD Ma|John Smith, X\\.Y\\.Z\\. MA|john smith, md ma)$"
 fields = ["given", "middle", "family", "suffix", "title", "_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -1304,10 +1315,15 @@ issue = "fix(#544) an unambiguous credential in front anchors the member behind 
 # writes as the writer spaced it (#436/#437), so one rule explains the
 # whole of each diff.
 #
+# 2026-09-28: 'Smith, PhD MEng' joins. The one-word family comma leaves
+# its part holding no name word once 'PhD' speaks for 'MEng', so the
+# part reads wholly as the credential run -- the fields this baseline
+# read -- and the pick the company made reports where it was made.
+#
 # Literal. Probes: 'Wang Ma PhD' (the credential BEHIND the member speaks
 # for nothing) and the superstring 'Dr. John Smith PhD MEng' are
 # _MUST_NOT_MATCH.
-name_regex = "^(?:Doe, Jane PhD MEng|Doe, Jane nee Smith PhD MEng|Jane Doe nee Smith PhD MEng|John Smith PhD MEng)$"
+name_regex = "^(?:Doe, Jane PhD MEng|Doe, Jane nee Smith PhD MEng|Jane Doe nee Smith PhD MEng|John Smith PhD MEng|Smith, PhD MEng)$"
 fields = ["_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -1339,4 +1355,22 @@ issue = "fix(#540) a Title-case Lac behind a particle is the family name"
 # along with the superstring 'Dr. Nguyen Van Lac'.
 name_regex = "^Nguyen Van Lac$"
 fields = ["family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#544) a credential in front anchors a member after a one-word family comma, and the pick reports"
+# 'Smith, PhD Ma': family 'Smith', suffix 'PhD Ma', reporting the
+# Title-case 'Ma', where this baseline read given 'PhD', middle 'Ma'.
+# rules.md#S2's company clause: 'PhD' in front speaks for 'Ma', so the
+# part after the one-word family comma holds no name word and reads
+# wholly as the credential run, and "a member the company decides
+# reports the fork as a counted pick does". 'Smith, PhD MEng', whose
+# roles this baseline already read, is the anchor rule's above.
+#
+# Literal. Probes: 'Smith, PhD MA' (the capitals decide the member,
+# nothing new to report), 'Smith, MD PhD Ma' (a dual in the leading
+# title run: nothing in the part speaks) and the superstring 'Dr.
+# Smith, PhD Ma' are _MUST_NOT_MATCH.
+name_regex = "^Smith, PhD Ma$"
+fields = ["given", "middle", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]

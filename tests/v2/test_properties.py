@@ -383,6 +383,17 @@ def _outside_its_company(name: ParsedName) -> list[str]:
     reads family 'Ma', because 'PhD' is the name the reserve kept, not
     a credential run's own member).
 
+    A dual in the given part's leading title run also keeps a
+    credential BEHIND it from speaking for a member in that part
+    ('Smith, MD PhD Ma' keeps given 'PhD', middle 'Ma'), and that
+    exemption is NOT modelled here: no head of the
+    walk opens a comma part with a title/suffix dual, so it would be
+    code no parse reaches. The case rows
+    `a_dual_opening_the_given_part_turns_the_anchor_off` and
+    `a_dual_opening_the_given_part_silences_a_later_degree`, and
+    test_pieces' `test_a_dual_in_the_leading_title_run_turns_the_anchor_off`,
+    pin it instead.
+
     Deliberately does NOT require the front to already be in the
     SUFFIX role: that was tried and it blinded the check to exactly
     the no-comma half of the defect this exists for -- with the

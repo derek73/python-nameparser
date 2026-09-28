@@ -240,13 +240,17 @@ def segment(state: ParseState) -> ParseState:
     # word of this class, at least one of them of this class" -- the
     # single-token rule above generalized to RUNS (#544): 'John Smith,
     # PhD MEng' is the credential run the single-token 'John Smith,
-    # MEng' already is. A single-letter roman numeral voids the run (a
-    # generation is not a credential, `is_single_letter_numeral`),
-    # while a title/suffix DUAL opening the part counts as the suffix
-    # vocabulary it is: with a full name before the comma the name is
-    # complete, and the legacy disjunct below already counts a dual
-    # that way ('John Smith, MS MA'). The given part's head is where a
-    # dual reads as a title ('Smith, Ms Ma'), and that exclusion is
+    # MEng' already is. A single-letter roman numeral, in any case,
+    # voids the run for its SHAPE -- one letter is how a middle initial
+    # is written, and S3 retired single-character vocabulary matches
+    # for the same reason (`is_single_letter_numeral`) -- not for
+    # being a generation: 'John Smith, III Ma' and 'John Smith, Jr Ma'
+    # are runs. A title/suffix DUAL opening the part counts as the
+    # suffix vocabulary it is: with a full name before the comma the
+    # name is complete, and the legacy disjunct below already counts a
+    # dual that way ('John Smith, MS MA'). The given part's leading
+    # title run is where a dual reads as a title ('Smith, Ms Ma',
+    # 'Smith, MD PhD Ma'), and that exclusion is
     # `_pieces.segment_suffix_reading`'s, one name word before the
     # comma never reaching the flip.
     #

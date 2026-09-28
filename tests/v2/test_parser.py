@@ -251,6 +251,36 @@ def test_every_ambiguous_acronym_in_a_name_is_reported() -> None:
         ["JD", "MA"]
 
 
+def _reports(text: str) -> list[tuple[AmbiguityKind, list[str]]]:
+    return [(a.kind, [t.text for t in a.tokens])
+            for a in parse(text).ambiguities]
+
+
+def test_a_member_the_company_decides_after_a_family_comma_reports() -> None:
+    # #544: a part after a one-word family comma that a credential in
+    # front reads wholly as credentials reports each member it decided
+    # -- and only those: a member whose capitals already lean
+    # credential decided itself, so the same fields are silent
+    n = parse("Smith, PhD Ma")
+    assert (n.family, n.given, n.suffix) == ("Smith", "", "PhD Ma")
+    assert _reports("Smith, PhD Ma") == [
+        (AmbiguityKind.SUFFIX_OR_NAME, ["Ma"])]
+    n = parse("Smith, PhD MA")
+    assert (n.family, n.given, n.suffix) == ("Smith", "", "PhD MA")
+    assert n.ambiguities == ()
+
+
+def test_a_dotted_credential_is_no_title_run_dual() -> None:
+    # 'M.D.' carries the suffix reading and not the title one, so it
+    # does not stand in the given part's leading title run: 'PhD'
+    # behind it still speaks for 'Ma', and the pick reports (the parent
+    # read given 'M.D.', middle 'Ma', suffix 'PhD')
+    n = parse("Smith, M.D. PhD Ma")
+    assert (n.family, n.given, n.suffix) == ("Smith", "", "M.D. PhD Ma")
+    assert _reports("Smith, M.D. PhD Ma") == [
+        (AmbiguityKind.SUFFIX_OR_NAME, ["Ma"])]
+
+
 def test_ambiguous_acronym_detail_names_the_role_it_got() -> None:
     # the unpeeled piece is the last NAME piece, which is the family
     # name only under GIVEN_FIRST -- FAMILY_FIRST puts it in given, so

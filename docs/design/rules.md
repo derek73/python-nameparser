@@ -785,18 +785,22 @@ P6. Rationale: a particle ending the name has nothing to link
     the word is BOTH a particle and suffix vocabulary, this
     attachment outranks the suffix reading (S2): a trailing
     abbreviation after a family comma is the tussenvoegsel far more
-    often than the decoration it collides with. One exception, and it
-    is where the capitals speak: a word of the AMBIGUOUS credential
-    class, written in capitals in a name written in more than one
-    case, reads as the credential and this attachment stands down —
-    unless a particle stands immediately in front of it, the two
-    being one particle run by then, which this rule takes whole.
-    Every other spelling of such a word attaches as it did before,
-    and the kind rule below gives it this rule's particle fork rather
-    than S2's credential one. In a name written wholly in one case
-    the two readings cannot be told apart and the particle keeps it,
-    which is right about a Portuguese record and wrong about a
-    credential; the report is how a caller finds the second.
+    often than the decoration it collides with. Two exceptions. The
+    first is where the capitals speak: a word of the AMBIGUOUS
+    credential class, written in capitals in a name written in more
+    than one case, reads as the credential and this attachment stands
+    down — unless a particle stands immediately in front of it, the
+    two being one particle run by then, which this rule takes whole.
+    The second is S2's company: such a word standing behind an
+    unambiguous credential in one run of suffix words reads as the
+    credential in any spelling and any case, reported as S2's
+    credential fork. Every other spelling of such a word attaches as
+    it did before, and the kind rule below gives it this rule's
+    particle fork rather than S2's credential one. In a name written
+    wholly in one case, with nothing in front of the word to speak
+    for it, the two readings cannot be told apart and the particle
+    keeps it, which is right about a Portuguese record and wrong
+    about a credential; the report is how a caller finds the second.
       "Jong, Anke de"             →  family="de Jong"
       "Beethoven, Ludwig van"     →  family="van Beethoven"
       "Berg, Jan vd"              →  family="vd Berg"
@@ -1006,7 +1010,8 @@ S2. Rationale: generational suffixes and credentials are recognized
     name text, asked nothing and reporting nothing. One member of
     this class is particle vocabulary as well, and where it stands
     alone at this slot P6 decides it: the capitals take it as the
-    credential and every other spelling attaches to the family,
+    credential, as does an unambiguous credential in front of it (the
+    company below), and every other spelling attaches to the family,
     reported there as P6's fork rather than as this one. Behind
     another particle it does not stand alone — the two are one
     particle run by then — and the run attaches whatever the capitals
@@ -1031,15 +1036,25 @@ S2. Rationale: generational suffixes and credentials are recognized
     the count, at every trailing slot this rule names: the degree in
     front says what the run is. Only a credential in FRONT speaks; one
     behind the member says nothing about it. A connective (P3) and a
-    single-letter roman numeral — initial-shaped, as a bare middle
-    initial is, unlike a multi-letter one such as 'III' — speak for
-    nothing and end the run; so does any name word. A word of both
-    the title and the suffix vocabulary opening
-    the given part is a title there, and speaks for nothing either,
-    though it speaks wherever else it stands. At the trailing slot of
-    the given part this company outranks P6's attachment, as the
-    capitals do. It does not reach across a maiden marker's clause
-    (M2), whose name words stand between.
+    single-letter roman numeral, in any case — one letter, the shape
+    a bare middle initial is written in, where a multi-letter one
+    such as 'III' speaks — speak for nothing and end the run; so does
+    any name word. A word of both the title and the suffix vocabulary
+    standing in the given part's leading title run is a title there
+    and speaks for nothing, and no credential behind it speaks for a
+    word of this class in that part: the title reading makes the next
+    word the given name, and from there the part reads as any given
+    part does, the given part's own company included. A part holding
+    no such word, or only words whose capitals decide them, reads as
+    it did. Anywhere else such a word speaks like any suffix word.
+    At the trailing slot of the given part this company outranks P6's
+    attachment, as the capitals do. It does not reach across a maiden
+    marker's clause (M2), whose name words stand between. A member
+    the company decides reports the fork as a counted pick does,
+    wherever it stands: at the trailing slots above, and in a part
+    after a family comma that the company leaves holding no name
+    word, which reads wholly as the credential run. A member its own
+    capitals already made the credential reports nothing new.
     An unlisted word joins this same ambiguous class by SHAPE where
     the caller asks for it. Two or more period-separated chunks is
     one such shape, admitted by default (S3); an unlisted all-caps
@@ -1074,6 +1089,9 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Wang Ma PhD"               →  family="Ma"  · boundary
       "Smith, PhD MEng"           →  suffix="PhD MEng"
       "Smith, Ms Ma"              →  given="Ma"  · boundary
+      "Smith, PhD Ma"             →  suffix="PhD Ma"
+      "Smith, PhD Ma"             →  ambiguities=("suffix-or-name",)
+      "Smith, MD PhD Ma"          →  given="PhD"  · boundary
       "Doe, Jane PhD MEng"        →  suffix="PhD MEng"
       "doe, jane v phd do"        →  suffix="v phd do"
       "Smith, MA"                 →  suffix="MA"
@@ -1641,10 +1659,13 @@ C1. Rationale: a credential run after the comma means the name is in
     credential there too (S2). The same count reads a part of two or
     more words as the credential run when every word of it is a
     suffix word or a word of this class, at least one of them of this
-    class, and none of them a single-letter roman numeral, which is a
-    generation rather than a credential. A word of both the title and
-    the suffix vocabulary opening such a part counts as a suffix word
-    there, the name before the comma being complete. Where every word
+    class, and none of them a single-letter roman numeral, in any
+    case: one letter is the shape a middle initial is written in,
+    and S3 retires single-character matches for the same reason,
+    while a multi-letter numeral or generational word stands in a
+    run like any suffix word ('John Smith, III Ma'). A word of both
+    the title and the suffix vocabulary opening such a part counts as
+    a suffix word there, the name before the comma being complete. Where every word
     of this class in the part is a LISTED word written in capitals in
     a mixed-case name, the writing has already made each of them the
     credential (S2), and the part reads as the credential run on that
@@ -1652,9 +1673,15 @@ C1. Rationale: a credential run after the comma means the name is in
     alone carries no such lean, so a part holding one is read by the
     count. A decision either way at this comma
     is reported; for a run of words the decision is the flip to the
-    credential run, and a run the count leaves in the listing form
-    reports only as S2 reads the words in it. It is one of TWO
-    places the comma's own decision is reported, the other being the word trailing the given part after
+    credential run, reported once over the whole part. A run the
+    count leaves in the listing form reports as S2 reads the words
+    in it: a word of this class read as the credential because a
+    credential in front speaks for it reports, and one its own
+    capitals made the credential does not, so a run whose every such
+    word is written in capitals reads whole in silence
+    ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part read as
+    titles before a lone given name ('Smith, Ms MD Ma'). It is one
+    of TWO places the comma's own decision is reported, the other being the word trailing the given part after
     it (S2), which is a second decision about a second word and never
     the same fork twice; an attachment decided after a family comma
     (P6) reports on its own. C2's comma-structure flag reports what the

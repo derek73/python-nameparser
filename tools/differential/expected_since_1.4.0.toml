@@ -753,6 +753,9 @@ issue = "fix(#325) a split credential followed by another suffix after a one-wor
 # company clause), so the run after the one-word family comma collapses
 # whole into `suffix` where the tree before #544 read given 'PhD',
 # middle 'MEng'.
+# 2026-09-28: 'Smith, PhD Ma' likewise, the same run with the Title-case
+# member of the older marking; both are pinned in _RECORDED_DIFFS
+# beside 'Smith, PhD Jr.'.
 name_regex = "(?i)^smith,\\s*ph\\.?\\s?d\\.?\\s"
 fields = ["title", "given", "suffix"]
 
@@ -4751,3 +4754,20 @@ issue = "fix(#540) a Title-case Lac behind a particle is the family name"
 name_regex = "^Nguyen Van Lac$"
 fields = ["family", "suffix"]
 orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#296) phd is not a prenominal, so behind a dual title it is the given name"
+# 'Smith, MD PhD Ma': title 'MD', given 'PhD', middle 'Ma', where v1
+# read title 'MD PhD', first 'Ma'. 'phd' left TITLES (#296), so the
+# title run ends at the dual 'MD' and 'PhD' is the given name, with
+# 'Ma' ending the given part as a middle name (#531's slot, which keeps
+# a Title-case member a name). #544 leaves the reading where it was:
+# nothing in a part whose leading title run holds a dual speaks for the
+# member (rules.md#S2).
+#
+# Literal. Probes: 'Smith, MD PhD MA' (the capitals make the member a
+# credential and the part reads whole), 'Smith, Ms MD Ma' (v1's
+# reading, unchanged) and the superstring 'Dr. Smith, MD PhD Ma' are
+# _MUST_NOT_MATCH.
+name_regex = "^Smith, MD PhD Ma$"
+fields = ["title", "given", "middle"]

@@ -746,6 +746,10 @@ issue = "fix(#325) a split credential followed by another suffix after a one-wor
 # company clause), so the run after the one-word family comma collapses
 # whole into `suffix` where the tree before #544 read given 'PhD',
 # middle 'MEng'.
+# 2026-09-28: the regex still reaches 'Smith, PhD MEng', and now 'Smith,
+# PhD Ma', but explains neither: each reports the pick its member is,
+# and this rule declares no `_ambiguities`. Both are the
+# fix(#296/#544) rule's at the foot of this file.
 name_regex = "(?i)^smith,\\s*ph\\.?\\s?d\\.?\\s"
 fields = ["title", "given", "suffix"]
 
@@ -3621,11 +3625,15 @@ issue = "fix(#544) a run of ambiguous members after a suffix comma reads by the 
 # LISTED member only -- so its run flips too. 1.4.0 read the listed-
 # member names as suffixes as well.
 #
+# 2026-09-28: 'John Smith, PhD Ma' joins, the same run with an
+# unambiguous word in front of the member, which the count reads whole
+# like the rest.
+#
 # Literal; `fields` is the union the names move ('title' is the duals').
 # Probes: 'Smith, Ed Ma' (one name word before the comma keeps the
 # listing form), 'Smith, Ms Ma' (a dual opening the given part is a
 # title) and the superstring 'Dr. John Smith, Ed Ma' are _MUST_NOT_MATCH.
-name_regex = "^(?:John Smith, Ed Ma|John Smith, Ms Ma|John Smith, X\\.Y\\.Z\\. MA|john smith, md ma)$"
+name_regex = "^(?:John Smith, Ed Ma|John Smith, Ms Ma|John Smith, PhD Ma|John Smith, X\\.Y\\.Z\\. MA|john smith, md ma)$"
 fields = ["given", "middle", "family", "suffix", "title", "_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -3683,4 +3691,42 @@ issue = "fix(#540) a Title-case Lac behind a particle is the family name"
 # along with the superstring 'Dr. Nguyen Van Lac'.
 name_regex = "^Nguyen Van Lac$"
 fields = ["family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#296/#544) a credential in front anchors a member after a one-word family comma, and the pick reports"
+# 'Smith, PhD Ma' and 'Smith, PhD MEng': family 'Smith', suffix 'PhD
+# Ma' / 'PhD MEng', each reporting its member, where this baseline read
+# title 'PhD' and given 'Ma' (suffix 'MEng'). Two changes make the one
+# diff, so the label is joint: 'phd' left TITLES (#296, the 2.2 audit),
+# which is what lets the part after the comma read as a credential run
+# at all, and rules.md#S2's company clause (#544), 'PhD' speaking for
+# the member behind it and the pick reporting where it was made. The
+# fix(#325) rule above reaches both names by its regex and explains
+# neither any longer, declaring no `_ambiguities`.
+#
+# Literal. Probes: 'Smith, PhD MA' (the capitals decide the member),
+# 'Smith, MD PhD Ma' (a dual in the leading title run: nothing in the
+# part speaks) and the superstring 'Dr. Smith, PhD Ma' are
+# _MUST_NOT_MATCH.
+name_regex = "^(?:Smith, PhD MEng|Smith, PhD Ma)$"
+fields = ["title", "given", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#296/#531) phd is not a prenominal, so behind a dual title it is the given name and the member ending the part reports"
+# 'Smith, MD PhD Ma': title 'MD', given 'PhD', middle 'Ma', reporting
+# 'Ma', where this baseline read title 'MD PhD', given 'Ma'. 'phd' left
+# TITLES (#296), so the title run ends at the dual 'MD' and 'PhD' is
+# the given name; the Title-case 'Ma' ending the given part is #531's
+# slot, which keeps it a name and reports the fork. #544 leaves the
+# reading where it was: nothing in a part whose leading title run holds
+# a dual speaks for the member (rules.md#S2).
+#
+# Literal. Probes: 'Smith, MD PhD MA' (the capitals make the member a
+# credential and the part reads whole), 'Smith, Ms MD Ma' (the title
+# run leaves 'Ma' the given name) and the superstring 'Dr. Smith, MD
+# PhD Ma' are _MUST_NOT_MATCH.
+name_regex = "^Smith, MD PhD Ma$"
+fields = ["title", "given", "middle", "_ambiguities"]
 orders = ["DEFAULT"]

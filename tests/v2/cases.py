@@ -950,13 +950,54 @@ CASES: tuple[Case, ...] = (
          "Smith, PhD MEng",
          {"family": "Smith", "suffix": "PhD MEng"},
          classification="fix(#544)",
+         ambiguities=("suffix-or-name",),
          notes="one name word before the comma, so C1 reads the "
                "listing form, and the part holds no name word once "
-               "'PhD' anchors 'MEng': the credential run, whole, with "
-               "no report, 'PhD' not being a member. 2.3.0 read the "
-               "same; #540 had read given 'PhD', middle 'MEng', and "
-               "1.4.0 title 'PhD', first 'MEng'",
+               "'PhD' anchors 'MEng': the credential run, whole, and "
+               "'MEng' reports as the pick the anchor made, its own "
+               "writing having declined. 2.3.0 read the same fields "
+               "without the report; #540 had read given 'PhD', middle "
+               "'MEng', reporting 'MEng', and 1.4.0 title 'PhD', first "
+               "'MEng'",
          shape=2),
+    Case("an_anchored_pick_after_a_one_word_family_reports",
+         "Smith, PhD Ma",
+         {"family": "Smith", "suffix": "PhD Ma"},
+         classification="fix(#544)",
+         ambiguities=("suffix-or-name",),
+         notes="the part is read wholly as credentials because 'PhD' "
+               "speaks for the Title-case 'Ma' (S2's company), and the "
+               "pick is reported where the anchor made it. 2.2.0 "
+               "and 2.3.0 read given 'PhD', middle 'Ma'; 1.4.0 through "
+               "2.1.0 title 'PhD', first 'Ma'. 'Smith, PhD MA' reads the "
+               "same fields in silence, the capitals having decided "
+               "the member",
+         shape=2),
+    Case("an_anchored_pick_before_a_trailing_title_reports",
+         "John Smith, PhD Ma Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "PhD Ma"},
+         classification="fix(#544)",
+         ambiguities=("suffix-or-name",),
+         notes="the trailing title keeps C1's run test from flipping "
+               "the comma, so the family-comma path reads the part "
+               "wholly as credentials plus the title (H5), 'John "
+               "Smith' keeping its positional read, and the member "
+               "the anchor decided reports on that path: one report "
+               "for 'Ma', where the twin 'John Smith, PhD Ma' reports "
+               "C1's flip once over the whole part. 2.3.0 read title "
+               "'Prof.', given 'PhD', middle 'Ma', family 'John "
+               "Smith', and 2.2.0 middle 'Ma Prof.'; 1.4.0 through "
+               "2.1.0 title 'PhD', first 'Ma', middle 'Prof.'"),
+    Case("an_anchored_pick_twin_without_the_title_reports_the_flip",
+         "John Smith, PhD Ma",
+         {"given": "John", "family": "Smith", "suffix": "PhD Ma"},
+         ambiguities=("suffix-or-name",),
+         notes="C1's run rule, reporting once over the whole part; the "
+               "pair to the row above. 1.4.0 read the same; 2.2.0 "
+               "and 2.3.0 read given 'PhD', middle 'Ma', family 'John "
+               "Smith', and 2.0.0 and 2.1.0 title 'PhD', given 'Ma'",
+         shape=3),
     Case("a_degree_in_the_given_part_anchors_the_member",
          "Doe, Jane PhD MEng",
          {"given": "Jane", "family": "Doe", "suffix": "PhD MEng"},
@@ -992,13 +1033,37 @@ CASES: tuple[Case, ...] = (
          notes="the same exclusion for the other chunked member. "
                "1.4.0 read the same; 2.3.0 read suffix 'MD MEng', "
                "the reading #540's marking moved"),
+    Case("a_dual_opening_the_given_part_turns_the_anchor_off",
+         "Smith, Ms MD Ma",
+         {"title": "Ms MD", "given": "Ma", "family": "Smith"},
+         notes="a dual opening the given part is a title there, and a "
+               "part whose leading title run holds one is anchored by "
+               "nothing, the second dual standing in that same run. "
+               "1.4.0 and 2.3.0 read the same",
+         shape=2),
+    Case("a_dual_opening_the_given_part_silences_a_later_degree",
+         "Smith, MD PhD Ma",
+         {"title": "MD", "given": "PhD", "middle": "Ma",
+          "family": "Smith"},
+         classification="fix(#296)",
+         ambiguities=("suffix-or-name",),
+         notes="the title reading of the opening dual makes 'PhD' the "
+               "given name, and reading the whole part as credentials "
+               "instead would stack the anchor's guess on the dual's, "
+               "so 'PhD' speaks for nothing here and 'Ma' ends the "
+               "given part as a middle name, reported by the given "
+               "slot. 2.2.0 and 2.3.0 read the same fields; 1.4.0 "
+               "through 2.1.0 title 'MD PhD', first 'Ma', 'phd' being "
+               "title vocabulary until #296",
+         shape=2),
     Case("a_numeral_in_front_anchors_nothing",
          "smith, v ed",
          {"given": "v", "family": "smith", "suffix": "ed"},
          ambiguities=("suffix-or-name",),
-         notes="a single-letter roman numeral is initial-shaped, "
-               "written as a middle initial is, so it speaks for "
-               "nothing (a multi-letter one such as 'III' would): "
+         notes="a single-letter roman numeral, in any case, speaks "
+               "for nothing for its shape, one letter being how a "
+               "middle initial is written (a multi-letter one such as "
+               "'III' would speak): "
                "'ed' is read by "
                "the given slot's own rule. 1.4.0 read the same; 2.3.0 "
                "read middle 'ed'"),

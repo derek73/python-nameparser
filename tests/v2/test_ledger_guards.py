@@ -1271,6 +1271,16 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#544) a degree in front outranks P6's attachment for a particle member":
         ("doe, jane do", "NASCIMENTO, EDSON ARANTES DO",
          "Dr. doe, jane v phd do"),
+    # 2026-09-28: the one-word-family-comma rule is fix(#544) at 2.2.0
+    # and 2.3.0 and fix(#296/#544) at 2.0.0 and 2.1.0, so its key drops
+    # the tag as the anchor rule's does; the dual-title rules are
+    # fix(#296) at 1.4.0 and fix(#296/#531) at 2.0.0 and 2.1.0, keyed by
+    # the words they share. Walls: the capitals-settled member, the
+    # dual in the leading title run, and a superstring each.
+    "#544) a credential in front anchors a member after a one-word family comma, and the pick reports":
+        ("Smith, PhD MA", "Smith, MD PhD Ma", "Dr. Smith, PhD Ma"),
+    "phd is not a prenominal, so behind a dual title it is the given name":
+        ("Smith, MD PhD MA", "Smith, Ms MD Ma", "Dr. Smith, MD PhD Ma"),
     # The esq boundary is every spelling SUFFIX_WORDS still carries,
     # in each of the three positions the corpora write it in.
     "change(suffix-acronym-collisions) esq leaves the acronym set":
@@ -2481,6 +2491,12 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "Smith nee Jones, Jane MA", "doe, john ma"}),
     frozenset({"Doe, John Ed", "Doe, John MA Ma", "Doe, John Ma",
                "Doe, Mary Jo Ma"}),
+    # 2026-09-28: the 2.2.0 and 2.3.0 copies of the declining rule
+    # gain 'Smith, MD PhD Ma', the member ending a given part that a
+    # dual title opens; 1.4.0's fix(given-part-trailing-slot) keeps
+    # the four above.
+    frozenset({"Doe, John Ed", "Doe, John MA Ma", "Doe, John Ma",
+               "Doe, Mary Jo Ma", "Smith, MD PhD Ma"}),
     # The third set. What selects these five is a WORD that is both
     # particle and credential vocabulary standing last after a family
     # comma -- `mc` and `do` -- and a member copying PARTICLES would
@@ -3014,9 +3030,17 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "Jane Doe nee Smith PhD MEng"}),
     frozenset({r"jack\s+m\.a\.", r"wang\s+m\.eng\."}),
     frozenset({"John Smith, Ed Ma", "John Smith, Ms Ma",
-               r"John Smith, X\.Y\.Z\. MA", "john smith, md ma"}),
+               "John Smith, PhD Ma", r"John Smith, X\.Y\.Z\. MA",
+               "john smith, md ma"}),
     frozenset({"Doe, Jane PhD MEng", "Doe, Jane nee Smith PhD MEng",
                "Jane Doe nee Smith PhD MEng", "John Smith PhD MEng"}),
+    # 2026-09-28: the anchor rule at 2.2.0 and 2.3.0 gains 'Smith, PhD
+    # MEng', whose roles those baselines read; at 2.0.0 and 2.1.0 the
+    # name moves roles and is the one-word-family-comma pair's.
+    frozenset({"Doe, Jane PhD MEng", "Doe, Jane nee Smith PhD MEng",
+               "Jane Doe nee Smith PhD MEng", "John Smith PhD MEng",
+               "Smith, PhD MEng"}),
+    frozenset({"Smith, PhD MEng", "Smith, PhD Ma"}),
     frozenset({"Jane Doe, MS LAc", "John Smith, MD MEng",
                "John Smith, MEng PhD", "John Smith, PhD MEng",
                "john smith, phd meng"}),
@@ -3687,8 +3711,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: 380 -> 392; gains 'Doe, Jane PhD MEng',
         # 'Doe, Jane nee Smith PhD MEng', 'Jane Doe, MS LAc', 'John
         # Smith, Ed Ma' and 8 more.
+        # 2026-09-28, #544: 392 -> 396; gains 'John Smith, PhD Ma',
+        # 'Smith, MD PhD Ma', 'Smith, Ms MD Ma', 'Smith, PhD Ma'.
+        # Reach, verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(392, ('given', 'suffix', 'title'), "86492f9f87ba", None),
+            _Claim(396, ('given', 'suffix', 'title'), "1c2cfbb3f881", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3726,8 +3753,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) a lone post-comma credential is a suffix":
             _Claim(23, ('family', 'given', 'suffix', 'title'), "54c1ae9911e1", None),
         # 2026-09-27, #544: 6 -> 7; gains 'Smith, PhD MEng'.
+        # 2026-09-28, #544: 7 -> 8; gains 'Smith, PhD Ma'.
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
-            _Claim(7, ('given', 'suffix', 'title'), "6ab773e59aeb", None),
+            _Claim(8, ('given', 'suffix', 'title'), "81e29a5745e7", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
             _Claim(1, ('suffix', 'title'), "f025c5f70a4e", None),
         "fix(#367) an inferred title no longer displaces a leading particle either":
@@ -3775,8 +3803,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: 380 -> 392; gains 'Doe, Jane PhD MEng',
         # 'Doe, Jane nee Smith PhD MEng', 'Jane Doe, MS LAc', 'John
         # Smith, Ed Ma' and 8 more.
+        # 2026-09-28, #544: 392 -> 396; the same four comma names.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(392, ('family', 'given'), "86492f9f87ba", None),
+            _Claim(396, ('family', 'given'), "1c2cfbb3f881", None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -4389,6 +4418,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: new, 1; gains 'John Smith, X.Y.Z. MA'.
         "fix(#544) a run of ambiguous members after a suffix comma reads by the name-word count":
             _Claim(1, ('family', 'given', 'suffix'), "23c792cefe18", ('DEFAULT',)),
+        # 2026-09-28, #544: new, 1; 'Smith, MD PhD Ma'.
+        "fix(#296) phd is not a prenominal, so behind a dual title it is the given name":
+            _Claim(1, ('given', 'middle', 'title'), "8e9913f5df8b", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -4665,8 +4697,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) a lone post-comma credential is a suffix":
             _Claim(23, ('suffix', 'title'), "54c1ae9911e1", None),
         # 2026-09-27, #544: 6 -> 7; gains 'Smith, PhD MEng'.
+        # 2026-09-28, #544: 7 -> 8; gains 'Smith, PhD Ma'.
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
-            _Claim(7, ('given', 'suffix', 'title'), "6ab773e59aeb", None),
+            _Claim(8, ('given', 'suffix', 'title'), "81e29a5745e7", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
             _Claim(1, ('suffix', 'title'), "f025c5f70a4e", None),
         "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
@@ -5071,8 +5104,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('_ambiguities',), "bac52af569e4", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'John Smith, Ed Ma', 'John
         # Smith, Ms Ma', 'John Smith, X.Y.Z. MA', 'john smith, md ma'.
+        # 2026-09-28, #544: 4 -> 5; gains 'John Smith, PhD Ma'.
         "fix(#544) a run of ambiguous members after a suffix comma reads by the name-word count":
-            _Claim(4, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "65222cc6fe3d", ('DEFAULT',)),
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "4123358beccd", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'Doe, Jane PhD MEng', 'Doe,
         # Jane nee Smith PhD MEng', 'Jane Doe nee Smith PhD MEng',
         # 'John Smith PhD MEng'. Relabelled the same day
@@ -5083,6 +5117,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: new, 1; gains 'doe, jane v phd do'.
         "fix(#544) a degree in front outranks P6's attachment for a particle member":
             _Claim(1, ('_ambiguities', 'middle', 'suffix'), "a2b8cea490a7", ('DEFAULT',)),
+        # 2026-09-28, #544: new, 2; 'Smith, PhD MEng', 'Smith, PhD Ma'.
+        "fix(#296/#544) a credential in front anchors a member after a one-word family comma, and the pick reports":
+            _Claim(2, ('_ambiguities', 'given', 'suffix', 'title'), "9fe346e1f150", ('DEFAULT',)),
+        # 2026-09-28, #544: new, 1; 'Smith, MD PhD Ma'.
+        "fix(#296/#531) phd is not a prenominal, so behind a dual title it is the given name and the member ending the part reports":
+            _Claim(1, ('_ambiguities', 'given', 'middle', 'title'), "8e9913f5df8b", ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5341,8 +5381,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # {middle, suffix} instead.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
             _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
+        # 2026-09-28, #544: 4 -> 5; gains 'Smith, MD PhD Ma'.
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
-            _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
+            _Claim(5, ('_ambiguities',), "f73bc2fc5408", ('DEFAULT',)),
         "fix(#531) capitals take the do collision from the family-comma particle attachment":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "8ad64f404621", ('DEFAULT',)),
         "fix(#531) the trailing slot's positional reading reaches a caseless script":
@@ -5499,18 +5540,23 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('_ambiguities',), "bac52af569e4", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'John Smith, Ed Ma', 'John
         # Smith, Ms Ma', 'John Smith, X.Y.Z. MA', 'john smith, md ma'.
+        # 2026-09-28, #544: 4 -> 5; gains 'John Smith, PhD Ma'.
         "fix(#544) a run of ambiguous members after a suffix comma reads by the name-word count":
-            _Claim(4, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "65222cc6fe3d", ('DEFAULT',)),
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "4123358beccd", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'Doe, Jane PhD MEng', 'Doe,
         # Jane nee Smith PhD MEng', 'Jane Doe nee Smith PhD MEng',
         # 'John Smith PhD MEng'. Relabelled the same day
         # fix(#436/#437/#544), the `suffix` it claims being R1's
         # spacing alone; reach, roles and digest unchanged.
+        # 2026-09-28, #544: 4 -> 5; gains 'Smith, PhD MEng'.
         "fix(#436/#437/#544) an unambiguous credential in front anchors the member behind it":
-            _Claim(4, ('_ambiguities', 'suffix'), "c9d1d53dee20", ('DEFAULT',)),
+            _Claim(5, ('_ambiguities', 'suffix'), "5807b060ae87", ('DEFAULT',)),
         # 2026-09-27, #544: new, 1; gains 'doe, jane v phd do'.
         "fix(#544) a degree in front outranks P6's attachment for a particle member":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "a2b8cea490a7", ('DEFAULT',)),
+        # 2026-09-28, #544: new, 1; 'Smith, PhD Ma'.
+        "fix(#544) a credential in front anchors a member after a one-word family comma, and the pick reports":
+            _Claim(1, ('_ambiguities', 'given', 'middle', 'suffix'), "b2b939a7b814", ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5763,8 +5809,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#296) a lone post-comma credential is a suffix":
             _Claim(23, ('suffix', 'title'), "54c1ae9911e1", None),
         # 2026-09-27, #544: 6 -> 7; gains 'Smith, PhD MEng'.
+        # 2026-09-28, #544: 7 -> 8; gains 'Smith, PhD Ma'.
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
-            _Claim(7, ('given', 'suffix', 'title'), "6ab773e59aeb", None),
+            _Claim(8, ('given', 'suffix', 'title'), "81e29a5745e7", None),
         "fix(#325) a credential run across a second comma reads as suffixes":
             _Claim(1, ('suffix', 'title'), "f025c5f70a4e", None),
         "fix(#296) a glued honorific before a lone credential: the credential is the postnominal":
@@ -6160,8 +6207,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('_ambiguities',), "bac52af569e4", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'John Smith, Ed Ma', 'John
         # Smith, Ms Ma', 'John Smith, X.Y.Z. MA', 'john smith, md ma'.
+        # 2026-09-28, #544: 4 -> 5; gains 'John Smith, PhD Ma'.
         "fix(#544) a run of ambiguous members after a suffix comma reads by the name-word count":
-            _Claim(4, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "65222cc6fe3d", ('DEFAULT',)),
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "4123358beccd", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'Doe, Jane PhD MEng', 'Doe,
         # Jane nee Smith PhD MEng', 'Jane Doe nee Smith PhD MEng',
         # 'John Smith PhD MEng'. Relabelled the same day
@@ -6172,6 +6220,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: new, 1; gains 'doe, jane v phd do'.
         "fix(#544) a degree in front outranks P6's attachment for a particle member":
             _Claim(1, ('_ambiguities', 'middle', 'suffix'), "a2b8cea490a7", ('DEFAULT',)),
+        # 2026-09-28, #544: new, 2; 'Smith, PhD MEng', 'Smith, PhD Ma'.
+        "fix(#296/#544) a credential in front anchors a member after a one-word family comma, and the pick reports":
+            _Claim(2, ('_ambiguities', 'given', 'suffix', 'title'), "9fe346e1f150", ('DEFAULT',)),
+        # 2026-09-28, #544: new, 1; 'Smith, MD PhD Ma'.
+        "fix(#296/#531) phd is not a prenominal, so behind a dual title it is the given name and the member ending the part reports":
+            _Claim(1, ('_ambiguities', 'given', 'middle', 'title'), "8e9913f5df8b", ('DEFAULT',)),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6290,8 +6344,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # {middle, suffix} instead.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
             _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
+        # 2026-09-28, #544: 4 -> 5; gains 'Smith, MD PhD Ma'.
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
-            _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
+            _Claim(5, ('_ambiguities',), "f73bc2fc5408", ('DEFAULT',)),
         "fix(#531) capitals take the do collision from the family-comma particle attachment":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "8ad64f404621", ('DEFAULT',)),
         "fix(#531) the trailing slot's positional reading reaches a caseless script":
@@ -6437,16 +6492,21 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('_ambiguities',), "bac52af569e4", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'John Smith, Ed Ma', 'John
         # Smith, Ms Ma', 'John Smith, X.Y.Z. MA', 'john smith, md ma'.
+        # 2026-09-28, #544: 4 -> 5; gains 'John Smith, PhD Ma'.
         "fix(#544) a run of ambiguous members after a suffix comma reads by the name-word count":
-            _Claim(4, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "65222cc6fe3d", ('DEFAULT',)),
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "4123358beccd", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'Doe, Jane PhD MEng', 'Doe,
         # Jane nee Smith PhD MEng', 'Jane Doe nee Smith PhD MEng',
         # 'John Smith PhD MEng'.
+        # 2026-09-28, #544: 4 -> 5; gains 'Smith, PhD MEng'.
         "fix(#544) an unambiguous credential in front anchors the member behind it":
-            _Claim(4, ('_ambiguities',), "c9d1d53dee20", ('DEFAULT',)),
+            _Claim(5, ('_ambiguities',), "5807b060ae87", ('DEFAULT',)),
         # 2026-09-27, #544: new, 1; gains 'doe, jane v phd do'.
         "fix(#544) a degree in front outranks P6's attachment for a particle member":
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "a2b8cea490a7", ('DEFAULT',)),
+        # 2026-09-28, #544: new, 1; 'Smith, PhD Ma'.
+        "fix(#544) a credential in front anchors a member after a one-word family comma, and the pick reports":
+            _Claim(1, ('_ambiguities', 'given', 'middle', 'suffix'), "b2b939a7b814", ('DEFAULT',)),
     },
 }
 
@@ -6906,6 +6966,12 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         # same regex and won by the same file order, so the argument
         # above carries over whole.
         "Smith, PhD MEng":
+            "fix(#325) a split credential followed by another suffix "
+            "after a one-word family comma reads as suffixes",
+        # 2026-09-28: 'Smith, PhD Ma' likewise -- 1.4.0 title 'PhD',
+        # first 'Ma', collapsing whole into `suffix` -- the same
+        # contest, won by the same file order on the same argument.
+        "Smith, PhD Ma":
             "fix(#325) a split credential followed by another suffix "
             "after a one-word family comma reads as suffixes",
         # PAIR B, three names, OVERLAPPING `fields`. This is the pair

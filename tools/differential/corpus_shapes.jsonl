@@ -214,10 +214,13 @@
 {"name": "Smith, John V, Jr.", "shape": 2}
 {"name": "Smith, John, Extra, Jr.", "shape": 2}
 {"name": "Smith, MA", "shape": 2}
+{"name": "Smith, MD PhD Ma", "shape": 2}
 {"name": "Smith, MEng", "shape": 2}
 {"name": "Smith, Ma", "shape": 2}
+{"name": "Smith, Ms MD Ma", "shape": 2}
 {"name": "Smith, Ms Ma", "shape": 2}
 {"name": "Smith, PhD MEng", "shape": 2}
+{"name": "Smith, PhD Ma", "shape": 2}
 {"name": "Smith, meng", "shape": 2}
 {"name": "de la Vega, Juan", "shape": 2}
 {"name": "doe, jane v phd do", "shape": 2}
@@ -238,6 +241,7 @@
 {"name": "John Smith, Ms Ma", "shape": 3}
 {"name": "John Smith, PhD", "shape": 3}
 {"name": "John Smith, PhD MEng", "shape": 3}
+{"name": "John Smith, PhD Ma", "shape": 3}
 {"name": "John Smith, X.Y.Z. MA", "shape": 3}
 {"name": "Steven Hardman, MD, DO, DDS", "shape": 3}
 {"name": "john smith, ma", "shape": 3}

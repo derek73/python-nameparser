@@ -464,10 +464,13 @@ class AmbiguityKind(StrEnum):
     #: whole RUN after the comma ("John Smith, Ed Ma" reads suffix
     #: ``Ed Ma``), and a member an unambiguous credential in front of
     #: it speaks for (rules.md#S2) is a pick like a counted one,
-    #: reported by the peel or the given part's trailing slot that took
-    #: it ("John Smith PhD MEng", "Doe, Jane PhD MEng"). The
-    #: first-piece emitter still asks its own piece only, so "Smith,
-    #: PhD MEng" reads suffix ``PhD MEng`` and reports nothing.
+    #: reported where it was decided: by the peel, by the given part's
+    #: trailing slot, or by the reading of a part after a family comma
+    #: that the company leaves holding no name word ("John Smith PhD
+    #: MEng", "Doe, Jane PhD MEng" and "Smith, PhD MEng" each report
+    #: ``MEng``). A member its own capitals already made the
+    #: credential reports nothing new, so "Smith, PhD MA" and "John
+    #: Smith, PhD MA" read suffix ``PhD MA`` in silence.
     #: Since 2.4 a maiden marker's clause reports at ITS trailing slot
     #: too, in both directions: "Doe, Jane nee Smith MA" gives maiden
     #: ``Smith`` with suffix ``MA`` and says so, "Doe, Jane nee Smith

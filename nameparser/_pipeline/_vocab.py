@@ -207,12 +207,14 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
             and not is_initial_shaped(preceding))
 
 
-# #544: a single-letter roman numeral ('V', 'v', 'I.') is about a
-# GENERATION, not a credential -- rules.md#S3 retires the same class
-# from the chunk rule for the same reason -- so it neither anchors an
-# ambiguous member behind it nor counts toward C1's multi-word
-# credential run. It still peels exactly as before; this answers only
-# those two questions.
+# #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,
+# is excluded for its SHAPE -- one letter is how a middle initial is
+# written, and rules.md#S3 retires single-character matches for the
+# same reason -- not for being a generation: a multi-letter numeral
+# ('III', 'Jr') anchors and runs like any suffix word. So it neither
+# anchors an ambiguous member behind it nor counts toward C1's
+# multi-word credential run. It still peels exactly as before; this
+# answers only those two questions.
 def is_single_letter_numeral(text: str) -> bool:
     """One letter, optionally followed by periods, that is a roman
     numeral ('V', 'v', 'I.', 'X')."""

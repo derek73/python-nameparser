@@ -292,16 +292,18 @@ def _anchors(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     A connective anchors nothing because between two name words it is
     a link -- the generational 'i' is also Catalan's 'i' (rules.md#P3)
     -- and 'Jane Doe nee Puig i Ma' must keep its clause. A
-    single-letter numeral anchors nothing because it is
-    INITIAL-SHAPED, the same shape a middle initial writes in ('V' can
-    be one) -- not because a numeral itself is no credential, since a
-    MULTI-letter one ('Jr', 'III') anchors like any other suffix piece
-    (`is_single_letter_numeral`). A title/suffix
-    DUAL ('ms', 'md', 'sr') does anchor, except at the head of the
-    given part, where it stands in title position ('Smith, Ms Ma' is
-    Ms. Ma Smith); that exclusion is the callers', which start their
-    walks past the leading title run or test the head themselves
-    (`segment_suffix_reading`).
+    single-letter roman numeral, in any case ('V', 'v', 'I.'), anchors
+    nothing for its SHAPE: one letter is the shape a middle initial
+    is written in ('V' can be one), and S3 retired single-character
+    vocabulary matches for the same reason. Not because a numeral is
+    no credential -- a MULTI-letter one ('Jr', 'III') anchors like
+    any other suffix piece (`is_single_letter_numeral`). A title/suffix
+    DUAL ('ms', 'md', 'sr') does anchor, except in the given part's
+    leading title run, where it stands in title position ('Smith, Ms
+    Ma' is Ms. Ma Smith); that exclusion is the callers', which start
+    their walks past the leading title run or, in
+    `segment_suffix_reading`, read no anchor at all in a part whose
+    leading title run holds one.
 
     Asked only of a piece `is_suffix_piece` accepted, and only once a
     member's own writing has declined, so an ordinary name never pays
@@ -363,6 +365,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            tokens: Sequence[WorkToken],
                            lenient: bool,
                            one_case: bool | None,
+                           anchored: list[int] | None = None,
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
@@ -379,8 +382,27 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     A listed member ANCHORED by an unambiguous credential in front of
     it in the same run reads as a credential too, whatever its writing
     (#544, `credential_anchors`): 'Smith, PhD MEng' is family 'Smith'
-    with two degrees. A dual opening the part is a title there and
-    anchors nothing ('Smith, Ms Ma' keeps its given name).
+    with two degrees. A title/suffix dual standing in the part's
+    LEADING TITLE RUN -- every piece ahead of it a title or another
+    such dual -- is a title there, and in a part that holds one this
+    reading anchors nothing at all, not by the dual and not by a
+    later credential: the dual makes the next name-position word the
+    given name, and reading the part wholly as credentials would
+    stack the anchor's guess on the dual's ('Smith, Ms Ma', 'Smith,
+    Ms MD Ma' and 'Smith, MD PhD Ma' keep a given name, 'Smith,
+    Prof. MD Ma' too). The walk then reads the part, and its given
+    slot's company starts past that given name ('Smith, MD PhD Jr
+    Ma' reads suffix 'Jr Ma'). A plain title ahead of the credential
+    does not stop this reading ('Smith, Dr. PhD LAc' reads title
+    'Dr.', suffix 'PhD LAc').
+
+    `anchored`, when the caller passes a list, receives the index of
+    every piece the anchor read as a credential after its own writing
+    declined -- the picks the caller reports, since this decides them
+    (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE). A member whose own
+    capitals lean credential is not among them. Meaningful only when
+    the answer is not None: a segment the walk abandons part-way may
+    have appended to it first.
 
     ONE answer for two readers, both in _assign.py -- the no-name gate
     and the router -- because they must agree piece for piece. #429
@@ -429,6 +451,11 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     # members and cleared by anything else; asked `_anchors` only when
     # a member's writing has declined. Keep the two in step.
     anchor: Sequence[int] | None = None
+    # Whether every piece so far stands in the part's leading title
+    # run (titles, and title/suffix duals), and whether a dual has
+    # stood there: once one has, nothing in the part anchors.
+    leading = True
+    dual_led = False
     for piece, tags in zip(pieces, ptags):
         # the verdict just recorded IS "stands behind a suffix" -- keeping
         # a separate flag meant maintaining that equality by hand at three
@@ -436,27 +463,32 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         # have diverged silently
         after_suffix = bool(out) and out[-1]
         if is_suffix_piece(piece, tags, tokens):
-            # a title/suffix dual with nothing read as a suffix ahead of
-            # it stands in the part's title position and anchors nothing
-            # ('Smith, Ms Ma'); `any` is a builtin, not a frame
-            anchor = (None if (len(piece) == 1
-                               and "vocab:title" in tokens[piece[0]].tags
-                               and not any(out))
-                      else piece)
+            if (leading and len(piece) == 1
+                    and "vocab:title" in tokens[piece[0]].tags):
+                dual_led = True
+            else:
+                leading = False
+            anchor = piece
             out.append(True)
             continue
         member = (len(piece) == 1
                   and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags)
         if not member:
             anchor = None
-        if member and (listed_lean(tokens[piece[0]], one_case)
-                       == "credential"
-                       or (anchor is not None
-                           and SHAPE_ACRONYM_TAG not in tokens[piece[0]].tags
-                           and _anchors(anchor, tokens))):
+        if member and listed_lean(tokens[piece[0]], one_case) \
+                == "credential":
+            leading = False
+            out.append(True)
+        elif (member and anchor is not None and not dual_led
+                and SHAPE_ACRONYM_TAG not in tokens[piece[0]].tags
+                and _anchors(anchor, tokens)):
+            leading = False
+            if anchored is not None:
+                anchored.append(len(out))
             out.append(True)
         elif (lenient and after_suffix
                 and _numeral_behind_the_initial_veto(piece, tokens)):
+            leading = False
             out.append(True)
         elif is_leading_title(piece, tags, tokens):
             out.append(False)
