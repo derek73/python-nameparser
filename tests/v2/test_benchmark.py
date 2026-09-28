@@ -22,6 +22,7 @@ reach the code under it.
 import sys
 import time
 from collections.abc import Callable
+from types import FrameType
 
 import pytest
 
@@ -238,8 +239,10 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #                             its writing, so the peel asks
 #                             `credential_anchors` (#544), and every
 #                             'Ma' stands behind a 'PhD' that anchors
-#                             it: 39 of the 40 words of 'PhD Ma ' x20
-#                             read as the suffix. 'PhD MA ' reads the
+#                             it: 38 of the 40 words of 'PhD Ma ' x20
+#                             read as the suffix, the reserve keeping
+#                             the first 'PhD' and 'Ma' as given and
+#                             family. 'PhD MA ' reads the
 #                             same and never asks the pass at all, the
 #                             capitals deciding each member first
 _SHAPES = {
@@ -454,8 +457,9 @@ _RUN_MAX_RATIO = 6.0
 _RUN_HUGE_MAX_RATIO = 5.0
 
 
-def _frames_for(text: str) -> int:
-    """Python frame entries for ONE parse of `text`.
+def _frames_for(text: str, only: str | None = None) -> int:
+    """Python frame entries for ONE parse of `text` -- of every
+    function, or of the one named `only`.
 
     One parse, not a mean: this measures growth between two inputs, and
     the count is deterministic for a given (tree, interpreter) -- see
@@ -465,9 +469,10 @@ def _frames_for(text: str) -> int:
     parse("warm up the caches")
     calls = 0
 
-    def counter(frame: object, event: str, arg: object) -> None:
+    def counter(frame: FrameType, event: str, arg: object) -> None:
         nonlocal calls
-        if event == "call":
+        if event == "call" and (only is None
+                                or frame.f_code.co_name == only):
             calls += 1
 
     sys.setprofile(counter)
@@ -665,3 +670,19 @@ def test_a_link_costs_what_it_is_pinned_at() -> None:
         f"see it: check whether `_group._between_name_words` still "
         f"answers both sides of a link in one call, then move the "
         f"baseline deliberately (#397)")
+
+
+def test_a_name_word_ends_the_comma_run_before_the_numeral_test() -> None:
+    """rules.md#C1's run test (#544) asks `run_word_fold`'s "reject"
+    before `is_single_letter_numeral`, so an ordinary comma name whose
+    part holds a name word pays no frame for the numeral test. The
+    fold is asked (the reachability probe: the name enters the run
+    loop at all, two words standing before the comma) and the numeral
+    test never is. RECORDED NEGATIVE CONTROL: with the two tests in
+    the other order, `is_single_letter_numeral` is entered once for
+    'Doe Smith, Jane Q.' (measured 2026-09-28)."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    text = "Doe Smith, Jane Q."
+    assert _frames_for(text, only="run_word_fold") >= 1
+    assert _frames_for(text, only="is_single_letter_numeral") == 0

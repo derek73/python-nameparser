@@ -397,7 +397,8 @@ def test_run_word_fold_agrees_with_the_real_predicates() -> None:
     vocabulary plus a few name-word controls, in lower/Title/UPPER
     case, bare and with one trailing period, under both
     `Policy.lenient_comma_suffixes` settings and one delimiter-core
-    policy (11,880 built cases) -- is asked, with NO skip of its own:
+    policy (11,880 built cases, measured 2026-09-28) -- is asked,
+    with NO skip of its own:
     whichever verdict `run_word_fold` returns is checked against the
     real predicates, or, for "ask", left unchecked here and pinned
     instead by the fixed non-simple list below. "member" must agree
@@ -411,11 +412,11 @@ def test_run_word_fold_agrees_with_the_real_predicates() -> None:
     576 of the 11,880 built cases, every Hebrew/Devanagari/Bengali/
     CJK honorific in the shipped vocabulary among them, times three
     policies) settles to "ask" here like any other non-simple token,
-    checked by nothing but its own verdict -- no longer skipped
-    before `run_word_fold` is even called, which is what let a drift
-    in the SIMPLE-token gate go unseen (11,304 of the 11,880 cases
-    are actually asserted against the real predicates; the rest are
-    "ask" and pinned only by the fixed list below).
+    checked by nothing but its own verdict: 11,304 of the 11,880
+    cases are asserted against the real predicates, and the rest are
+    "ask" and pinned only by the fixed list below. Nothing is skipped
+    before `run_word_fold` is called, so a drift in the SIMPLE-token
+    gate cannot hide behind a filter.
 
     A fixed list of non-simple tokens pins "ask" directly, since the
     built sweep above never asserts it: an interior-period acronym
@@ -882,7 +883,7 @@ def test_a_listed_member_written_in_period_closed_chunks_is_dotted(
 
 
 def test_is_single_letter_numeral() -> None:
-    """#544: the generation class C1's run and the anchor both leave
+    """#544: the one-letter shape C1's run and the anchor both leave
     out -- one letter, periods allowed, that is a roman numeral."""
     for text in ("V", "v", "I", "I.", "x", "X."):
         assert is_single_letter_numeral(text), text

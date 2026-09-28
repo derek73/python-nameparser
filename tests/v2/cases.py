@@ -933,6 +933,26 @@ CASES: tuple[Case, ...] = (
                "piece before the peel, so no lone member stands behind "
                "the degree. Unchanged by #544; 1.4.0 and 2.3.0 read "
                "the same"),
+    Case("a_particle_in_front_of_a_member_anchors_nothing",
+         "Jan vd Ma",
+         {"given": "Jan", "family": "vd Ma"},
+         classification="fix(#289)",
+         ambiguities=("suffix-or-name",),
+         notes="S2's company clause: 'vd' is particle AND suffix "
+               "vocabulary, and a particle is the head of the family "
+               "name behind it rather than a credential that could "
+               "speak for 'Ma', so the Title-case member's own writing "
+               "decides and the chain keeps it. 2.3.0 read suffix 'vd "
+               "Ma', and 1.4.0 last 'vd', suffix 'Ma'"),
+    Case("a_particle_in_front_of_a_member_anchors_nothing_before_a_comma",
+         "Smith vd Ma, John",
+         {"given": "John", "family": "Smith vd Ma"},
+         classification="fix(#289)",
+         notes="the same exclusion in the part before a family comma, "
+               "where a particle standing as the anchor split the "
+               "family around a suffix 'vd'. 2.3.0 read family 'Smith "
+               "Ma', suffix 'vd', and 1.4.0 last 'Smith', suffix 'vd, "
+               "Ma'"),
     Case("the_anchor_does_not_reach_across_a_maiden_clause",
          "Jane Doe Jr. nee Smith Ma",
          {"given": "Jane", "family": "Doe", "suffix": "Jr.",
@@ -1019,6 +1039,31 @@ CASES: tuple[Case, ...] = (
                "read the same; #540 had read middle 'MEng', and 1.4.0 "
                "had no maiden routing",
          shape=2),
+    Case("the_clause_gives_up_a_member_a_later_suffix_anchors",
+         "Doe, Jane nee Smith MA Jr Ed",
+         {"given": "Jane", "family": "Doe", "suffix": "MA Jr Ed",
+          "maiden": "Smith"},
+         classification="fix(#544)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="the release check the maiden walk asks at the member "
+               "it stops on reads the span behind it the way assign's "
+               "given slot does, anchors included: 'Jr' speaks for the "
+               "Title-case 'Ed', so every word behind 'MA' reads as a "
+               "suffix and the clause gives 'MA' up. 2.3.0 read "
+               "middle 'Ed', suffix 'Jr', maiden 'Smith MA', and 1.4.0 "
+               "had no maiden routing"),
+    Case("the_clause_gives_up_a_title_a_later_suffix_anchors_past",
+         "Doe, Jane nee Smith Dr. Jr Ma",
+         {"title": "Dr.", "given": "Jane", "family": "Doe",
+          "suffix": "Jr Ma", "maiden": "Smith"},
+         classification="fix(#544)",
+         ambiguities=("suffix-or-name",),
+         notes="the same release check at a title the walk stops on: "
+               "the given part's title chain runs from the end through "
+               "'Ma' only because 'Jr' anchors it, and so reaches "
+               "'Dr.', which the clause gives up. 2.3.0 read middle "
+               "'Ma', suffix 'Jr', maiden 'Smith Dr.', and 1.4.0 had "
+               "no maiden routing"),
     Case("a_dual_opening_the_given_part_is_a_title_there",
          "Smith, Ms Ma",
          {"title": "Ms", "given": "Ma", "family": "Smith"},

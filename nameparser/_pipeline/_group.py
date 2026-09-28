@@ -44,7 +44,7 @@ from typing import Literal, assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
-    credential_anchors, credential_at_the_given_slot,
+    anchor_in_reach, credential_anchors, credential_at_the_given_slot,
     is_leading_title, is_suffix_piece, is_title_piece,
     is_trailing_title_word,
     Peel, leading_titles, peel_trailing, peel_walk, tail_reading,
@@ -421,6 +421,11 @@ def _release_reads_off(view: Sequence[Sequence[int]],
 
         def anchored_at(q: int) -> bool:
             if not anchor_cell:
+                # the reach test first, and only before the pass
+                # exists (`_pieces.anchor_in_reach`)
+                if not anchor_in_reach(range(q - 1, -1, -1), view,
+                                       view_tags, tokens):
+                    return False
                 lead = leading_titles(view, view_tags, tokens)
                 anchor_cell.append([False] * lead + credential_anchors(
                     range(lead, len(view)), view, view_tags, tokens))
@@ -866,7 +871,9 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                 # past the leading title run.
                 takes = credential_at_the_given_slot(
                     tokens[head[0]], one_case,
-                    lambda: credential_anchors(
+                    lambda: anchor_in_reach(
+                        range(at - 1, -1, -1), view, view_tags, tokens)
+                    and credential_anchors(
                         range(min(leading_titles(view, view_tags, tokens),
                                   at), at + 1),
                         view, view_tags, tokens)[-1])
@@ -1322,7 +1329,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # what that caller already knows. group() passes `None` on the
     # first for the chain emitter after a family comma -- the comma
     # fixed the family, so that fork is settled -- and in a tail
-    # segment, which assign reads wholly as suffixes. #533's fork is
+    # segment, which assign reads wholly as suffixes outside a maiden
+    # clause standing in it. #533's fork is
     # neither: a credential ending a maiden clause is a question the
     # comma settles nothing about, which is why the two channels are
     # two parameters. They are given the SAME list wherever nothing is
@@ -1330,7 +1338,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # family comma nor a tail; what the split buys is the other case,
     # where `None` on the first must not reach the second -- a maiden
     # channel defaulting to whatever the first was would let a caller
-    # passing `ambiguities=None` silence both (the review's finding).
+    # passing `ambiguities=None` silence both.
 
     def title(k: int) -> bool:
         return is_title_piece(pieces[k], ptags[k], tokens)
@@ -2040,8 +2048,10 @@ def group(state: ParseState) -> ParseState:
         # Suppressed after a family comma for the same reason _assign
         # suppresses it there: the family name is already fixed, so
         # there is no fork left to report. Suppressed in a tail segment
-        # as well, after either comma: assign reads that segment
-        # wholly as suffixes, so a chain report there -- a particle
+        # as well, after either comma: assign reads that segment,
+        # outside a maiden clause standing in it ('Jane Doe, PhD, Jr
+        # nee van Ma' keeps maiden 'van Ma'), wholly as suffixes, so a
+        # chain report there -- a particle
         # chained onto a name piece, or an acronym taken into the name
         # -- names a reading the parse never takes. rules.md#C2: "a part
         # the parse consumes wholly as suffixes raises no report about

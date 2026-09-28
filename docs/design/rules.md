@@ -1035,11 +1035,14 @@ S2. Rationale: generational suffixes and credentials are recognized
     on — reads as the credential whatever its writing and whatever
     the count, at every trailing slot this rule names: the degree in
     front says what the run is. Only a credential in FRONT speaks; one
-    behind the member says nothing about it. A connective (P3) and a
-    single-letter roman numeral, in any case — one letter, the shape
-    a bare middle initial is written in, where a multi-letter one
-    such as 'III' speaks — speak for nothing and end the run; so does
-    any name word. A word of both the title and the suffix vocabulary
+    behind the member says nothing about it. A connective (P3), a
+    particle (P2) — a word of both the particle and the suffix
+    vocabulary heads the family name behind it — and a single-letter
+    roman numeral, in any case — one letter, the shape a bare middle
+    initial is written in, where a multi-letter one such as 'III'
+    speaks — speak for nothing and end the run; so does any name
+    word. A particle of this class standing behind a credential is
+    still spoken for: the exclusion is of the word in front. A word of both the title and the suffix vocabulary
     standing in the given part's leading title run is a title there
     and speaks for nothing, and no credential behind it speaks for a
     word of this class in that part: the title reading makes the next
@@ -1815,10 +1818,11 @@ C2. Rationale: text beyond the recognized comma parts should be
     A part the parse consumes wholly as suffixes raises no report
     about reading a word of it as a name, whether it is the part
     after a suffix comma (C1) or a part beyond the second: nothing
-    in it is read as one, so a particle chain run over it (P2)
-    reports neither a particle chained onto a name word nor an
-    acronym taken into the name. What such a part reports is its
-    own — C1's flip and this rule's flag.
+    in it is read as one outside a maiden clause standing in it
+    (M2), so a particle chain run over it (P2) reports neither a
+    particle chained onto a name word nor an acronym taken into the
+    name. What such a part reports is its own — C1's flip and this
+    rule's flag.
       "John Smith, MD, Bart"      →  suffix="MD, Bart"
       "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
       "John Smith, MD, R.A.I."    →  suffix="MD, R.A.I."

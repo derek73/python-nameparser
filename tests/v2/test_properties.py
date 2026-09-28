@@ -285,7 +285,8 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: (a caps member leans credential on both sides and a lower one is
 #: counted on both, so neither disagrees); 0 with the anchor off, which
 #: is the recorded negative control. The one-case class's 1,026 is
-#: unmoved by the two heads #544 added, both being mixed case.
+#: unmoved by the three heads #544 added ('Jane Doe PhD', 'Doe, Jane
+#: PhD', 'PhD'), all three being mixed case.
 _MAIDEN_ANCHORED_HEAD_EXCEPTIONS = 810
 _MAIDEN_ANCHORED_HEAD_DIGEST = (
     "c5a8f5277e49fe583e0edc834346f623dd02459845ccd6ab9325ecfe7a167c7c")
@@ -308,11 +309,12 @@ def _qualifying_front(toks: list[tuple[Token, tuple[int, int]]], i: int,
     member of the ambiguous class) through lone members to the piece
     that would speak for their company, and return it -- with its OWN
     index, which a caller's role question needs -- if it structurally
-    qualifies: unambiguous suffix vocabulary, not a connective, not a
-    single-letter roman numeral, and nothing but a comma or a maiden
-    marker stands between it and `toks[i]` (the company does not
-    reach across a clause, rules.md#M2). None if no such piece exists
-    or it fails one of those tests.
+    qualifies: unambiguous suffix vocabulary, not tagged an initial,
+    not a connective, not a particle, not a single-letter roman
+    numeral, and neither a comma nor a maiden marker stands between it
+    and `toks[i]` (the company is read within one comma part, and does
+    not reach across a clause, rules.md#M2). None if no such piece exists or it fails one
+    of those tests.
 
     Says NOTHING about either token's ROLE -- not `toks[i]`'s, and not
     the front's. That is deliberate: a caller checking whether the
@@ -335,6 +337,7 @@ def _qualifying_front(toks: list[tuple[Token, tuple[int, int]]], i: int,
             or "vocab:suffix" not in front.tags
             or "initial" in front.tags
             or "conjunction" in front.tags
+            or "particle" in front.tags
             or (len(letters) == 1 and letters.lower() in "ivx")):
         return None
     return front, j
@@ -349,8 +352,9 @@ def _reserve_kept(toks: list[tuple[Token, tuple[int, int]]], j: int,
     is this shape (the reserve keeps 'PhD'); 'Smith, PhD Ma' is NOT --
     a family already exists from before the comma, so nothing here
     is H4's carve-out, whatever `segment_suffix_reading` does with
-    the given part on its own account (not modelled by this walk; see
-    the docstring below on where that shape is pinned instead). A
+    the given part on its own account (not modelled by this walk;
+    `_outside_its_company`'s docstring names where that shape is
+    pinned instead). A
     comma anywhere before `toks[j]` therefore answers False outright.
 
     A maiden clause crossed on the way answers nothing on its own: a
@@ -439,10 +443,10 @@ def _credential_without_suffix_role(
     word stands in front of it must have that FRONT word in the
     SUFFIX role too -- the front cannot itself be reserved as the
     given or family name while lending its credential-ness to the
-    member behind it. 'PhD Ma' read given 'PhD', suffix 'Ma', family
-    '' before this fix: 'Ma' inherited PhD's company while PhD itself
-    was handed back to the given slot the walk had to reserve, losing
-    the family entirely. Same `_qualifying_front` walk-back as
+    member behind it. 'PhD Ma' reading given 'PhD', suffix 'Ma',
+    family '' is the shape this catches: 'Ma' inheriting PhD's company
+    while PhD itself is handed back to the given slot the walk has to
+    reserve, losing the family entirely (the recorded control below). Same `_qualifying_front` walk-back as
     `_outside_its_company`, checked the other way; the two properties
     then ask DIFFERENT role questions of the front on purpose (see
     `_qualifying_front`'s docstring) -- this one does NOT exempt a
@@ -535,13 +539,15 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
     another: `assert not company` is the company check's recorded
     negative control, `assert not orphaned` the converse's.
     RECORDED NEGATIVE CONTROL for `assert not company`: with
-    `credential_anchors` answering False and `segment_suffix_reading`'s
-    inline anchor off, it fails on 48 of the walk's parses ('Jane Doe
-    Jr. Ma' reading family 'Ma'); 0 here. RECORDED NEGATIVE CONTROL
-    for `assert not orphaned`: with only `credential_anchors`'
-    leading-position exclusion removed (the position-0 defect this
-    commit fixes), it fails on 30 of the walk's plain-form parses
-    ('PhD Ma' reading given 'PhD', suffix 'Ma'); 0 here.
+    `credential_anchors` answering False, it fails on 48 of the walk's
+    parses ('Jane Doe Jr. Ma' reading family 'Ma'); 0 here. RECORDED
+    NEGATIVE CONTROL for `assert not orphaned`: the walk's own leading
+    piece never anchors, and the no-comma peel holds that twice --
+    `credential_anchors` skips the position, and the peel's reach test
+    (`anchor_in_reach`) never looks at it. With both removed it fails
+    on 42 of the walk's plain-form parses ('PhD Ma' reading given
+    'PhD', suffix 'Ma', and the by-shape 'PhD X.Y.Z.' alike); with
+    either one alone removed, 0; 0 here (measured 2026-09-28).
     """
     members = ("ba", "do", "ed", "jd", "ma", "x.y.z.", "r.a.i.")
     heads = ("Jane Doe", "Doe, Jane", "John", "J.", "Dr.", "Jane",

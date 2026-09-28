@@ -1218,8 +1218,7 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
          "John Smith Ph.D."),
     # #540's rules, keyed on the full issue since all of them carry
     # `fix(#540)` -- eight when written, six since #544 (2026-09-27)
-    # read the comma run and the chunked dotted spelling again, which
-    # retired the comma-cost rule the sentences below still name.
+    # read the comma run and the chunked dotted spelling again.
     # Each wall is the other rules' names plus the
     # spellings a case-blind widening would reach: 'meng li' leads
     # with the word and nothing moved; the one-case 'john smith meng'
@@ -1227,9 +1226,8 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # no business with either. Its third probe, 'John Smith MENG', is
     # not one-case either -- MENG's own capitals keep the credential
     # on the capitals lean, in a name otherwise written Title-case.
-    # The report rule must not reach the names whose ROLES move, and
-    # the comma-cost rule must not reach the bare-word, no-comma or
-    # all-lower spellings. The lone-word comma rule must not reach
+    # The report rule must not reach the names whose ROLES move. The
+    # lone-word comma rule must not reach
     # its own capitals-lean probe or the two-word comma rule's name.
     # Every #540 rule carries one superstring probe too, after a
     # mutant dropping the ^...$ anchors passed every other guard here.

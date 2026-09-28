@@ -52,8 +52,9 @@ gets its first word made into the name (H4's suffix half, #491),
 -- since #289 -- the FAMILY-COMMA path's own read of the first
 post-comma piece, -- since #531 -- the class member ENDING that
 path's given part, which the first-piece emitter could never reach,
-and -- since #544 -- each member a credential in front of it made the
-credential in a post-comma part read wholly as credentials.
+and -- since #544 -- each member of a post-comma part read wholly as
+credentials that was read as one only because a credential in front
+of it anchors it.
 Further emitters of the same kind live in
 `_segment.py`, `_group.py` and `_post_rules.py`; they are not
 assign's and are not counted here. And
@@ -73,7 +74,7 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
-    credential_anchors, credential_at_the_given_slot,
+    anchor_in_reach, credential_anchors, credential_at_the_given_slot,
     is_suffix_piece, leading_titles, peel_walk,
     segment_suffix_reading, tail_reading, trailing_titles,
 )
@@ -688,6 +689,14 @@ def assign(state: ParseState) -> ParseState:
             def anchored(m: int, titled: tuple[int, ...]) -> bool:
                 memo = anchor_memo.get(titled)
                 if memo is None:
+                    # nothing in front the pass could read as an
+                    # anchor: the ordinary 'Smith, John Ma' stops here.
+                    # Asked only before the pass exists -- once it
+                    # does it answers in one lookup, where the reach
+                    # test walks back through the run
+                    if not anchor_in_reach(range(m - 1, -1, -1), pieces,
+                                           ptags, tokens, titled):
+                        return False
                     # from past the leading title run: a title/suffix
                     # dual opening the part is a TITLE there and
                     # anchors nothing ('Smith, MD MA Ma')

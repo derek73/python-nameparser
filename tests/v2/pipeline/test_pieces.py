@@ -17,7 +17,8 @@ from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._group import group
 from nameparser._pipeline._pieces import (
-    _anchors, _numeral_behind_the_initial_veto, credential_anchors,
+    _anchors, _numeral_behind_the_initial_veto, anchor_in_reach,
+    credential_anchors,
     credential_at_the_given_slot, is_leading_title, leading_titles,
     own_words, peel_trailing, peel_walk, segment_suffix_reading,
     trailing_titles,
@@ -389,9 +390,8 @@ def test_the_walks_own_leading_piece_never_anchors_what_follows_it(
     # anchor a member behind it, because that leading position is
     # always the name H4's carve-out keeps. Anchoring it let the run
     # collapse entirely: 'PhD Ma' read given 'PhD', suffix 'Ma',
-    # losing the family outright, rather than 'PhD Ma' keeping its
-    # parent reading (given 'PhD', family 'Ma', decided by the count
-    # alone, as it was before this commit existed).
+    # losing the family outright, rather than 'PhD Ma' keeping the
+    # reading the count alone gives it (given 'PhD', family 'Ma').
     for text, family in (("Om Ma", "Ma"), ("PhD Ma", "Ma"),
                          ("Jr Ma", "Ma")):
         rest, pieces, ptags, tokens = _peel_inputs(text)
@@ -480,6 +480,52 @@ def test_a_connective_or_a_numeral_suffix_word_anchors_nothing() -> None:
     state = _through_group("John Smith v Ma")
     v = next(i for i, t in enumerate(state.tokens) if t.text == "v")
     assert not _anchors((v,), state.tokens)
+    # a particle that is also suffix vocabulary is the head of the
+    # family name behind it, not a credential: the same 'Jr' tagged a
+    # particle anchors nothing either
+    tokens[jr] = dataclasses.replace(
+        tokens[jr], tags=(tokens[jr].tags - {"conjunction"}) | {"particle"})
+    assert not _anchors((jr,), tokens)
+
+
+@pytest.mark.parametrize("text, fields", [
+    ("Jan vd Ma", {"given": "Jan", "family": "vd Ma"}),
+    ("Smith vd Ma, John", {"given": "John", "family": "Smith vd Ma"}),
+    ("Smith Mc Ma, John", {"given": "John", "family": "Smith Mc Ma"}),
+    ("D. Mc Ba Ed, Smith", {"given": "Smith", "family": "D. Mc Ba Ed"}),
+])
+def test_a_particle_in_suffix_vocabulary_anchors_nothing(
+        text: str, fields: dict[str, str]) -> None:
+    # #544: 'vd' and 'mc' are particle AND unambiguous suffix
+    # vocabulary; standing in front of a member they head the family
+    # name, and anchoring there split it around a suffix ('Smith vd
+    # Ma, John' read family 'Smith Ma', suffix 'vd'). A particle
+    # MEMBER is still anchored by a credential in front of it.
+    n = parse(text)
+    assert {k: v for k, v in n.as_dict().items() if v} == fields
+    assert parse("doe, jane v phd do").suffix == "v phd do"
+
+
+def test_anchor_in_reach_is_false_only_where_the_pass_is() -> None:
+    # the reach test is a necessary condition for the pass: False
+    # where the first piece in front past the lone members is no
+    # suffix piece, True (ask the pass) otherwise -- including where
+    # the pass then answers False, a non-anchoring suffix piece
+    # ('v') or the kept leading piece being in reach
+    for text, expect in (("John Smith Ma", False),
+                         ("John Smith Ed Ma", False),
+                         ("John Smith PhD Ma", True),
+                         ("John Smith PhD Ed Ma", True),
+                         ("John Smith PhD v Ma", True)):
+        rest, pieces, ptags, tokens = _peel_inputs(text)
+        back = rest[len(rest) - 2::-1]
+        assert anchor_in_reach(back, pieces, ptags, tokens) is expect, text
+        if not expect:
+            assert not credential_anchors(rest, pieces, ptags, tokens)[-1]
+    # `skip` splices pieces out of the walk
+    rest, pieces, ptags, tokens = _peel_inputs("John Smith PhD Ma")
+    assert not anchor_in_reach(rest[2::-1], pieces, ptags, tokens,
+                               skip={rest[2]})
     # a merged split credential is ONE suffix piece of two tokens, and
     # it anchors as the unsplit spelling does wherever it is in the
     # walk -- after a comma ('John Smith Ph. D. MEng' is the no-comma

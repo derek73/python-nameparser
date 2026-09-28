@@ -210,8 +210,8 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
 # #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,
 # is excluded for its SHAPE -- one letter is how a middle initial is
 # written, and rules.md#S3 retires single-character matches for the
-# same reason -- not for being a generation: a multi-letter numeral
-# ('III', 'Jr') anchors and runs like any suffix word. So it neither
+# same reason -- not for being a generation: a multi-letter suffix
+# word ('III', 'Jr') anchors and runs like any other. So it neither
 # anchors an ambiguous member behind it nor counts toward C1's
 # multi-word credential run. It still peels exactly as before; this
 # answers only those two questions.
@@ -550,8 +550,7 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
 
 
 # #544's inline gate for the comma-run test's common token, named and
-# tested here rather than hand-copied at the call site (quality-review
-# finding on the first cut): a SIMPLE token -- ASCII, no INTERIOR
+# tested here rather than hand-copied at the call site: a SIMPLE token -- ASCII, no INTERIOR
 # period -- is fully resolved from the vocabulary sets directly, at
 # less cost than either real predicate it stands in for; a non-simple
 # token is left to them ("ask").
@@ -612,12 +611,9 @@ def run_word_fold(
     'Garcia Lopez, Maria Jose': the tree costs 318 and 331 frames
     against e10e83b4's 317 and 330 (no run rule at all), the one
     frame being this call's own; the loop tests "reject" before the
-    numeral so a name word pays nothing more. Asking
-    `ambiguous_class_candidate` of every token directly instead, with
-    this gate skipped, cost 325 and 338 when measured on 2026-09-27
-    (the numeral test then stood ahead of "reject") -- the price of a
-    gate a test can reach on its own rather than one hand-copied at
-    the call site is that one frame.
+    numeral so a name word pays nothing more. That one frame is the
+    price of a gate a test can reach on its own rather than one
+    hand-copied at the call site.
     """
     core = text.rstrip(".")
     if not (text.isascii() and "." not in core):

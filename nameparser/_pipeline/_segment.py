@@ -34,14 +34,13 @@ additionally needs `one_case` to decide membership at all, which this
 stage's own lazy gate supplies. The #544 run test reads
 _vocab.run_word_fold, _vocab.ambiguous_class_candidate (its "ask"
 fallback), _vocab.ambiguous_class_member (the settled-lean check for
-a fold-deferred member), _vocab.is_single_letter_numeral,
-_vocab.ambiguous_lean and _vocab.is_wholly_suffix (once, over the
-leftovers) -- six calls, not the two `ambiguous_class_candidate`/
-`is_wholly_suffix` a reader of the earlier, un-named fold might
-expect. `run_word_fold` ANSWERS membership for a simple token
-outright (its own docstring proves it agrees with
-`ambiguous_class_candidate` there); it is a shortcut around a real
-predicate, not a condition gating a second call to one.
+a member admitted through that "ask" fallback),
+_vocab.is_single_letter_numeral, _vocab.ambiguous_lean and
+_vocab.is_wholly_suffix (once, over the leftovers). `run_word_fold`
+ANSWERS membership for a simple token outright (its own docstring
+proves it agrees with `ambiguous_class_candidate` there); it is a
+shortcut around a real predicate, not a condition gating a second
+call to one.
 
 Implements rules C1 and C2 of docs/design/rules.md, cited at the
 decision site below; history in decisions.md#C1.
@@ -267,9 +266,9 @@ def segment(state: ParseState) -> ParseState:
     # without calling them at all, and only a non-simple token, or one
     # `run_word_fold` defers, still takes the real predicate --
     # `ambiguous_class_candidate` for membership, `is_wholly_suffix`
-    # once over the leftovers. A part holding a name word ('Doe, Jane
-    # Q. Public') breaks on that word's "reject" without entering a
-    # Python frame for either predicate.
+    # once over the leftovers. A part holding a name word ('Doe Smith,
+    # Jane Q. Public') breaks on that word's "reject" without entering
+    # a Python frame for either predicate.
     if not candidate and len(groups[1]) >= 2 and len(groups[0]) >= 2:
         members: list[str] = []
         rest: list[str] = []
@@ -350,7 +349,7 @@ def segment(state: ParseState) -> ParseState:
         # the attachment. rules.md#C1's comma-quiet policy gains its
         # exception for this class and no other.
         #
-        # `disp`/the index tuple cover the WHOLE post-comma part --
+        # The quoted text and the index tuple cover the WHOLE post-comma part --
         # the same text as before for the single-token listed and
         # dotted halves (a join of one element is that element), while
         # the caps half's run ('LEED AP') is the first time this class
@@ -362,12 +361,20 @@ def segment(state: ParseState) -> ParseState:
         # comma name (`John Smith, MA`, `John Smith, A.B.`, `Davis
         # Royce, Ed`) +2 frames at the DEFAULT policy, a path this
         # switch must not touch at all (#516 review round, F4).
-        disp = (state.tokens[groups[1][0]].text if len(groups[1]) == 1
-                else " ".join(state.tokens[i].text for i in groups[1]))
+        #
+        # A RUN (#544) is named as holding such a word rather than
+        # being one: in 'John Smith, PhD MEng' only 'MEng' is also a
+        # name word.
+        if len(groups[1]) == 1:
+            what = (f"{state.tokens[groups[1][0]].text!r} after the "
+                    f"comma is also an ordinary name word")
+        else:
+            what = (f"{' '.join(state.tokens[i].text for i in groups[1])!r}"
+                    f" after the comma holds a word that is also an "
+                    f"ordinary name word")
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{disp!r} after the comma is also an "
-            f"ordinary name word; the part before the comma holds "
+            f"{what}; the part before the comma holds "
             f"{pre_comma_names} name words, so it is read as a "
             f"credential run",
             groups[1]))
