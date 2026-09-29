@@ -44,7 +44,7 @@ from typing import Literal, assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
-    anchor_in_reach, credential_anchors, credential_at_the_given_slot,
+    anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     is_leading_title, is_suffix_piece, is_title_piece,
     is_trailing_title_word,
     Peel, leading_titles, peel_trailing, peel_walk, tail_reading,
@@ -417,19 +417,20 @@ def _release_reads_off(view: Sequence[Sequence[int]],
         # run only the first time a member's writing leaves the
         # question open; each call site hands over a lambda, so no
         # frame is spent building the question either.
-        anchor_cell: list[list[bool]] = []
+        anchors: list[bool] | None = None
 
         def anchored_at(q: int) -> bool:
-            if not anchor_cell:
+            nonlocal anchors
+            if anchors is None:
                 # the reach test first, and only before the pass
                 # exists (`_pieces.anchor_in_reach`)
                 if not anchor_in_reach(range(q - 1, -1, -1), view,
                                        view_tags, tokens):
                     return False
-                lead = leading_titles(view, view_tags, tokens)
-                anchor_cell.append([False] * lead + credential_anchors(
-                    range(lead, len(view)), view, view_tags, tokens))
-            return anchor_cell[0][q]
+                anchors = given_slot_anchors(
+                    view, view_tags, tokens,
+                    leading_titles(view, view_tags, tokens))
+            return anchors[q]
         for q in range(last, -1, -1):
             piece = view[q]
             if (is_suffix_piece(piece, view_tags[q], tokens)
@@ -873,10 +874,10 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                     tokens[head[0]], one_case,
                     lambda: anchor_in_reach(
                         range(at - 1, -1, -1), view, view_tags, tokens)
-                    and credential_anchors(
-                        range(min(leading_titles(view, view_tags, tokens),
-                                  at), at + 1),
-                        view, view_tags, tokens)[-1])
+                    and given_slot_anchors(
+                        view, view_tags, tokens,
+                        leading_titles(view, view_tags, tokens),
+                        at + 1)[at])
                 start = at + 1
             else:
                 # TRAILING: the peel over the view IS the member's

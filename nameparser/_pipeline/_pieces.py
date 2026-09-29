@@ -375,6 +375,30 @@ def credential_anchors(order: Sequence[int],
     return out
 
 
+def given_slot_anchors(pieces: Sequence[Sequence[int]],
+                       ptags: Sequence[Set[str]],
+                       tokens: Sequence[WorkToken],
+                       start: int, end: int | None = None,
+                       skip: Container[int] = ()) -> list[bool]:
+    """`credential_anchors` for the given part's slot, indexed by PIECE
+    rather than by position: the pass over `start` to `end`, `skip`
+    spliced out, and False before `start`, from `end` on and at every
+    skipped piece. `start` is where the leading title run ends, so a
+    title/suffix dual standing in it anchors nothing ('Smith, MD MA
+    Ma'), and the piece at `start` is the given name the reserve keeps.
+    The one home of that query for assign's given slot, group's
+    GIVEN_SLOT reader, and the maiden clause's take."""
+    stop = len(pieces) if end is None else end
+    order: Sequence[int] = range(start, stop)
+    if skip:
+        order = [q for q in order if q not in skip]
+    out = [False] * len(pieces)
+    for q, anchored in zip(order, credential_anchors(order, pieces, ptags,
+                                                     tokens)):
+        out[q] = anchored
+    return out
+
+
 def anchor_in_reach(back: Iterable[int],
                     pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]],
@@ -508,7 +532,10 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     anchors: list[bool] | None = None
     # Whether every piece so far stands in the part's leading title
     # run (titles, and title/suffix duals), and whether a dual has
-    # stood there: once one has, nothing in the part anchors.
+    # stood there: once one has, nothing in the part anchors. Tracked
+    # here rather than read off `leading_titles`, whose period-shape
+    # inference counts a suffix like 'Esq.' into the run ('Smith, Esq.
+    # MD Ma' keeps its anchored 'Ma' only by this walk's reading).
     leading = True
     dual_led = False
     for piece, tags in zip(pieces, ptags):
@@ -531,21 +558,20 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                 == "credential":
             leading = False
             out.append(True)
-        elif (member and not dual_led
-                and SHAPE_ACRONYM_TAG not in tokens[piece[0]].tags
-                and (anchors is not None
-                     or (bool(out) and anchor_in_reach(
-                         range(len(out) - 1, -1, -1), pieces, ptags,
-                         tokens)))
-                and (anchors := anchors if anchors is not None
-                     else credential_anchors(
-                         range(len(pieces)), pieces, ptags, tokens,
-                         first_kept=False))[len(out)]):
-            leading = False
-            if anchored is not None:
-                anchored.append(len(out))
-            out.append(True)
-        elif (lenient and after_suffix
+            continue
+        if (member and not dual_led
+                and SHAPE_ACRONYM_TAG not in tokens[piece[0]].tags):
+            if anchors is None and out and anchor_in_reach(
+                    range(len(out) - 1, -1, -1), pieces, ptags, tokens):
+                anchors = credential_anchors(range(len(pieces)), pieces,
+                                             ptags, tokens, first_kept=False)
+            if anchors is not None and anchors[len(out)]:
+                leading = False
+                if anchored is not None:
+                    anchored.append(len(out))
+                out.append(True)
+                continue
+        if (lenient and after_suffix
                 and _numeral_behind_the_initial_veto(piece, tokens)):
             leading = False
             out.append(True)

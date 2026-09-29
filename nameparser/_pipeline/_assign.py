@@ -74,7 +74,7 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
-    anchor_in_reach, credential_anchors, credential_at_the_given_slot,
+    anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     is_suffix_piece, leading_titles, peel_walk,
     segment_suffix_reading, tail_reading, trailing_titles,
 )
@@ -680,11 +680,11 @@ def assign(state: ParseState) -> ParseState:
             #: text and tags identical.
             floors: dict[tuple[int, ...], tuple[int, bool]] = {}
             #: #544's anchors, per `titled` value like `floors` and for
-            #: the same reason: `credential_anchors` over the pieces the
+            #: the same reason: `given_slot_anchors` over the pieces the
             #: chain kept, computed once, the first time a member's own
             #: writing declines, so a run of members is read in one
             #: forward pass rather than one look-behind per member.
-            anchor_memo: dict[tuple[int, ...], dict[int, bool]] = {}
+            anchor_memo: dict[tuple[int, ...], list[bool]] = {}
 
             def anchored(m: int, titled: tuple[int, ...]) -> bool:
                 memo = anchor_memo.get(titled)
@@ -697,17 +697,13 @@ def assign(state: ParseState) -> ParseState:
                     if not anchor_in_reach(range(m - 1, -1, -1), pieces,
                                            ptags, tokens, titled):
                         return False
-                    # from past the leading title run: a title/suffix
-                    # dual opening the part is a TITLE there and
-                    # anchors nothing ('Smith, MD MA Ma')
-                    order = [q for q in range(
-                                 leading_titles(pieces, ptags, tokens),
-                                 len(pieces))
-                             if q not in titled]
-                    memo = dict(zip(order, credential_anchors(
-                        order, pieces, ptags, tokens)))
+                    # from past the leading title run, which `n` already
+                    # counts: this closure is reached only from the walk
+                    # below `_peel_leading_titles` sets it on
+                    memo = given_slot_anchors(pieces, ptags, tokens, n,
+                                              skip=titled)
                     anchor_memo[titled] = memo
-                return memo.get(m, False)
+                return memo[m]
 
             def trailing_floor(m: int, titled: tuple[int, ...]) -> int:
                 """Where the trailing suffix run starts, walked as far

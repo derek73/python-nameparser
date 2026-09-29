@@ -12,8 +12,6 @@ import hashlib
 import itertools
 import re
 import warnings
-from collections.abc import Callable
-
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
@@ -29,8 +27,9 @@ from nameparser._pipeline import run
 from nameparser._pipeline._state import (AMBIGUOUS_ACRONYM_TAG,
                                          ParseState)
 from nameparser._pipeline._vocab import ambiguous_lean, effective_script
-from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
-                               AmbiguityKind, ParsedName, Role, Token)
+from nameparser._types import (SHAPE_ACRONYM_TAG, UNJOINED_CONJUNCTION_TAG,
+                               UNJOINED_TAG, AmbiguityKind, ParsedName,
+                               Role, Token)
 
 from .cases import CASES
 from .conftest import differential_corpus
@@ -326,7 +325,7 @@ def _qualifying_front(toks: list[tuple[Token, tuple[int, int]]], i: int,
     tok, span = toks[i]
     j = i - 1
     while (j >= 0 and AMBIGUOUS_ACRONYM_TAG in toks[j][0].tags
-           and "shape:acronym" not in toks[j][0].tags):
+           and SHAPE_ACRONYM_TAG not in toks[j][0].tags):
         j -= 1
     if j < 0:
         return None
@@ -422,7 +421,7 @@ def _outside_its_company(name: ParsedName) -> list[str]:
     for i, (tok, span) in enumerate(toks):
         if (tok.role is Role.SUFFIX
                 or AMBIGUOUS_ACRONYM_TAG not in tok.tags
-                or "shape:acronym" in tok.tags):
+                or SHAPE_ACRONYM_TAG in tok.tags):
             continue
         qualifies = _qualifying_front(toks, i, name.original)
         if qualifies is None:
@@ -435,9 +434,7 @@ def _outside_its_company(name: ParsedName) -> list[str]:
     return out
 
 
-def _credential_without_suffix_role(
-        name: ParsedName,
-        one_case_thunk: Callable[[], bool | None]) -> list[str]:
+def _credential_without_suffix_role(name: ParsedName) -> list[str]:
     """The converse of `_outside_its_company` (#544): a
     member read as a credential (role SUFFIX) because a qualifying
     word stands in front of it must have that FRONT word in the
@@ -454,15 +451,10 @@ def _credential_without_suffix_role(
     defect took: the reserve-kept front is the one whose SUFFIX role
     went missing.
 
-    `one_case_thunk` computes `_one_case(name.original)` -- a full
-    extra pipeline run -- and is forced only for a SURVIVING
-    candidate: a member with a qualifying front that is itself
-    outside both TITLE and SUFFIX, i.e. exactly the shape that is
-    about to be reported. Every other member is decided by role tests
-    alone (cheap), so the vast majority of parses -- which have no
-    such front at all -- never force the thunk; a rare text with more
-    than one surviving candidate forces it once per candidate rather
-    than caching, since that shape is itself the exception.
+    `_one_case(name.original)` is a full extra pipeline run, asked
+    only for a SURVIVING candidate: a member whose qualifying front is
+    outside both TITLE and SUFFIX. Every other member is decided by
+    role tests alone.
 
     Skips a member whose OWN case-based lean (rules.md#S2, #289 -- an
     ALL-CAPS member of a mixed-case name) already reads it as a
@@ -481,14 +473,14 @@ def _credential_without_suffix_role(
         front, _ = qualifies
         if front.role is Role.TITLE or front.role is Role.SUFFIX:
             continue
-        # a surviving candidate: only now is the thunk worth its cost
-        one_case = one_case_thunk()
+        # a surviving candidate: only now is the extra run worth its cost
+        one_case = _one_case(name.original)
         # inlined `_pieces.listed_lean`'s own gate, over the public
         # `Token` rather than the pipeline's `WorkToken` -- the two
         # types share `.text`/`.tags`, and this is a second
         # implementation on purpose, like the rest of this function
         own_lean = (None if (one_case is None
-                            or "shape:acronym" in tok.tags)
+                            or SHAPE_ACRONYM_TAG in tok.tags)
                     else ambiguous_lean(tok.text, one_case))
         if own_lean == "credential":
             continue
@@ -593,6 +585,13 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
     # SUFFIX role, never handed back to a given/family reserve while
     # still lending its credential-ness behind it
     orphaned: list[str] = []
+
+    def audit(label: str, text: str, name: ParsedName) -> None:
+        company.extend(f"[{label}] {text!r}: {bad}"
+                       for bad in _outside_its_company(name))
+        orphaned.extend(f"[{label}] {text!r}: {bad}"
+                        for bad in _credential_without_suffix_role(name))
+
     failures = []
     for label, policy in policies:
         parser = Parser(policy=policy)
@@ -604,25 +603,13 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
                 for word in (base.lower(), base.title(), base.upper()):
                     plain = f"{head} {word}"
                     plain_name = parser.parse(plain)
-                    company += [f"[{label}] {plain!r}: {bad}" for bad
-                                in _outside_its_company(plain_name)]
-                    orphaned += [f"[{label}] {plain!r}: {bad}" for bad
-                                 in _credential_without_suffix_role(
-                                     plain_name,
-                                     lambda: _one_case(plain))]
+                    audit(label, plain, plain_name)
                     plain_side = side(plain_name, word)
                     for body in bodies:
                         for marker in markers:
                             clause = f"{head} {marker} {body} {word}"
                             clause_name = parser.parse(clause)
-                            company += [
-                                f"[{label}] {clause!r}: {bad}" for bad
-                                in _outside_its_company(clause_name)]
-                            orphaned += [
-                                f"[{label}] {clause!r}: {bad}" for bad
-                                in _credential_without_suffix_role(
-                                    clause_name,
-                                    lambda: _one_case(clause))]
+                            audit(label, clause, clause_name)
                             clause_side = side(clause_name, word)
                             pairs += 1
                             if clause_side == plain_side:

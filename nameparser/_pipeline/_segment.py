@@ -211,15 +211,10 @@ def segment(state: ParseState) -> ParseState:
     # `ambiguous_class_candidate`: the run is a property of the CAPS
     # class ALONE (#516 review round, F2), the other two halves being
     # single-token by construction, so `all()` over more than one of
-    # THEM asks a question the design never posed. Measured, the
-    # un-narrowed call per token moved `'John Smith, Ed Ma'`, `'John
-    # Smith, ma do'` and `'John Smith, X.Y.Z. A.B.'` to a credential
-    # run through the CAPS switch. Since #544 all three are credential
-    # runs under every policy that keeps their words in the class
-    # (`unlisted_dotted_suffixes=False` leaves 'X.Y.Z.' a name word),
-    # by the listed-and-dotted run test below and
-    # its name-word count -- a different question, asked with the
-    # switch off too, so this narrowing still stands.
+    # THEM asks a question the design never posed: un-narrowed, a
+    # listed or dotted run ('John Smith, Ed Ma') would pass as a CAPS
+    # run through this switch, and such runs are the question of the
+    # listed-and-dotted run test below, asked with the switch off too.
     #
     # `one_case=False` asks the case-free question -- "if this name
     # turned out mixed, would EVERY token in the run join the CAPS
@@ -290,9 +285,7 @@ def segment(state: ParseState) -> ParseState:
             # "reject" first: a name word ends the run without the
             # numeral test's frame, and the numeral cannot be a
             # "reject" (it is suffix vocabulary, so it folds "defer")
-            elif fold == "reject":
-                break
-            elif is_single_letter_numeral(text):
+            elif fold == "reject" or is_single_letter_numeral(text):
                 break
             else:
                 rest.append(text)
