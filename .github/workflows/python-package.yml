@@ -95,6 +95,12 @@ jobs:
       # the step still passes green. This line is what makes that
       # failure loud -- without it the job proves nothing on the day it
       # matters.
+      #
+      # NO COVERAGE here, on purpose: this is the one job that runs the
+      # _PREFIXED_SHAPES clock guard in tests/v2/test_benchmark.py,
+      # which skips under a tracer because coverage dilutes the C-level
+      # cost it measures below its bound (#553). Adding --cov to this
+      # step retires that guard from CI.
       run: |
         uv run python -c "import namedivider"
         uv run pytest tests/v2/ -q

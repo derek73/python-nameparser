@@ -18,6 +18,9 @@ shape the scaling test ALREADY had ("(a) "), and still went unseen,
 because the stage is gated on an opt-in Policy field that bare parse()
 leaves empty. A shape guards nothing if the default policy cannot
 reach the code under it.
+
+_PREFIXED_SHAPES exists for a shape that needs a prefix before its
+repeated run, which _SHAPES cannot express (#553).
 """
 import sys
 import time
@@ -369,16 +372,37 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 #
 # Base 1600, not `_BASE`, and the recorded negative control is why.
 # Measured 2026-09-28 on py3.11, three runs of each on the tree before
-# the fix, ratio for 4x the run:
+# the fix (003b4962), ratio for 4x the run:
 #
-#   base   given_part_run      given_part_titles
-#    800   6.71  7.60  5.97    7.83  8.31  8.16
-#   1600   8.67  8.43  8.51   10.09 10.95 10.29
+#   base           given_part_run      given_part_titles
+#    800 (_BASE)   6.71  7.60  5.97    7.83  8.31  8.16
+#   1600           8.67  8.43  8.51   10.09 10.95 10.29
 #
-# against 3.94-4.32 for both rows at both bases on this tree. At 800
-# the run row's quadratic read 5.97 once, under `_MAX_RATIO` -- a
-# coin-flip guard; at 1600 the bound sits ~1.4x over the worst clean
-# run and ~1.4x under the weakest broken one, so it did not move.
+# against 3.94-4.32 for both rows at both bases on the fixed tree
+# (60aa9028). At 800 the run row's quadratic read 5.97 once, under
+# `_MAX_RATIO` -- a coin-flip guard; at 1600 the bound sits ~1.4x over
+# the worst clean run and ~1.4x under the weakest broken one, so
+# `_MAX_RATIO` did not move. Each row also fails, three runs of three,
+# against a copy reverting only ITS half of the fix, and passes against
+# a copy reverting only the other half.
+#
+# SKIPPED UNDER A TRACER, which is every CI build job but `ja-extra`:
+# coverage slows every Python line and leaves a C-level scan alone, so
+# the quadratic becomes a smaller share of the parse. Measured the same
+# day under `coverage run` on py3.11, three runs each:
+#
+#   base    broken: run    broken: titles    fixed: run / titles
+#   1600    5.46 - 5.52     6.50 - 6.54            --
+#   3200    6.61 - 6.70     8.19 - 8.23      4.16 / 4.17
+#   6400    8.19 - 8.29    10.03 - 10.23     4.21-4.28 / 4.22-4.25
+#
+# so at this base the run row PASSES a broken tree under coverage.
+# 6400 separates the populations again and costs 15.6s a job under
+# coverage (4.9s without), against ~1s here; declined for the CI time
+# AGENTS.md's grid rules guard. `ja-extra` runs `tests/v2/` on py3.14
+# with no coverage, where this base reads 9.27-10.95 broken against
+# 3.95-4.03 fixed -- that job is this guard, and its workflow step
+# says so.
 _PREFIXED_BASE = 1600
 _PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
     # every word of the run is a middle name, so the walk asks the
@@ -388,8 +412,9 @@ _PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
         lambda text: parse(text).middle.split() == text.split()[2:],
     ),
     # every trailing title joins the H5 chain, so the walk asks the
-    # titled membership test once per piece and keys its memos on the
-    # whole chain
+    # titled membership test once per piece, and the name word in
+    # front of the chain asks it again at every step of walking down
+    # through it (`previous_kept`)
     "given_part_titles": (
         "Doe, Jane Smith ", "Prof. ",
         lambda text: parse(text).title.split() == text.split()[3:],
@@ -397,11 +422,31 @@ _PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
 }
 
 
+def _tracer_installed() -> bool:
+    """A coverage tracer, by either of the two hooks coverage uses:
+    `sys.settrace` (the C tracer) or, on 3.12+, `sys.monitoring`."""
+    if sys.gettrace() is not None:
+        return True
+    monitoring = getattr(sys, "monitoring", None)
+    return (monitoring is not None
+            and monitoring.get_tool(monitoring.COVERAGE_ID) is not None)
+
+
 @pytest.mark.parametrize("prefix,unit,reaches", _PREFIXED_SHAPES.values(),
                          ids=list(_PREFIXED_SHAPES))
 def test_prefixed_cost_grows_no_worse_than_linearly(
         prefix: str, unit: str, reaches: Callable[[str], bool]) -> None:
-    assert reaches(prefix + unit * 4), "shape no longer reaches the walk"
+    # at the measured size, and with the comma's own reading asserted:
+    # without it the titles row reads the same title on the comma-less
+    # path, and would go on timing that instead of the walk
+    text = prefix + unit * _PREFIXED_BASE
+    assert reaches(text), "shape no longer reaches the walk"
+    name = parse(text)
+    assert (name.given, name.family) == ("Jane", "Doe"), (
+        "shape no longer takes the family-comma path")
+    if _tracer_installed():
+        pytest.skip("a tracer dilutes a C-level cost below the bound; "
+                    "CI's ja-extra job runs this without one")
     _assert_grows_linearly(unit, parse, prefix=prefix, base=_PREFIXED_BASE)
 
 
