@@ -23,7 +23,7 @@ from nameparser import (
 )
 from nameparser.config import Constants
 from nameparser._lexicon import _VOCAB_FIELDS
-from nameparser._pipeline import run
+from nameparser._pipeline import _segment, run
 from nameparser._pipeline._state import (AMBIGUOUS_ACRONYM_TAG,
                                          ParseState)
 from nameparser._pipeline._vocab import ambiguous_lean, effective_script
@@ -924,6 +924,88 @@ def test_a_title_first_word_counts_as_a_word() -> None:
                         failures.append(
                             f"{text!r}: maiden {str(name.maiden)!r}")
     assert not failures, "\n".join(failures)
+
+
+_SETTLED_MEMBERS = ("MA", "BA", "ED", "DO", "JD", "MENG", "LAC", "Ma", "Do")
+_SETTLED_WORDS = ("PhD", "MD", "MS", "Jr", "Esq.", "Sr", "III", "Ms")
+#: The settled path's one recorded exception, rules.md#S2's limit for a
+#: member that is particle vocabulary too: behind another particle it is
+#: part of a particle run, which P6 attaches, so a run ending on two of
+#: them is read as name text whole.
+_SETTLED_EXCEPTION_TAIL = " DO DO"
+_SETTLED_EXCEPTIONS = 10
+
+
+def _comma_state(text: str) -> ParseState:
+    return run(ParseState(original=text, lexicon=Lexicon.default(),
+                          policy=Policy()))
+
+
+def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """#555: C1's run test declines the flip for a run every member of
+    which the WRITING settles as a credential (capitals in a mixed-case
+    name, S2's lean), on the promise that the family-comma path already
+    reads that part wholly as the credential run. Segment runs before
+    group, so it cannot ask assign's reading; it mirrors it with
+    `isupper()` and `ambiguous_lean`. This checks the mirror against
+    what assign then does.
+
+    The settled set is MEASURED, not restated: a text is on the settled
+    path when switching the exemption off (segment's `ambiguous_lean`
+    answering None) changes its structure or its reports. Every such
+    parse must put each word after the comma in SUFFIX or TITLE.
+
+    Grid: runs of two and three words behind 'John Smith, ', each a
+    member of the class or a suffix word, at least one a member.
+    'Jane Doe, ' was dropped: over this grid it gives the same role
+    and structure signature for every run (measured 2026-09-29). The
+    two Title-case members are there for the control: no Title-case
+    run may be settled, and only such runs can show the mirror
+    over-promising. 4,626 texts, 3,024 of them on the settled path,
+    two parses each: 0.94s on 3.11 (`--durations`).
+
+    RECORDED NEGATIVE CONTROL: the two halves of the mirror cover for
+    each other, so removing either alone fails nothing -- forcing the
+    lean to "credential" leaves Title-case members behind `isupper()`,
+    and dropping `isupper()` leaves them to a lean that answers "name".
+    With both removed it fails on 1,239 texts beyond the exceptions
+    ('John Smith, MA Ma' reading family 'John Smith', given 'MA',
+    middle 'Ma'), and the exceptions grow from 10 to 12; 0 and 10 here
+    (measured 2026-09-29).
+    """
+    texts = [f"John Smith, {' '.join(words)}"
+             for n in (2, 3)
+             for words in itertools.product(
+                 _SETTLED_MEMBERS + _SETTLED_WORDS, repeat=n)
+             if any(w in _SETTLED_MEMBERS for w in words)]
+    settled, exceptions, failures = 0, [], []
+    for text in texts:
+        with monkeypatch.context() as m:
+            m.setattr(_segment, "ambiguous_lean", lambda text, one_case: None)
+            unexempt = _comma_state(text)
+        state = _comma_state(text)
+        if ((state.structure, state.ambiguities)
+                == (unexempt.structure, unexempt.ambiguities)):
+            continue
+        settled += 1
+        comma = text.index(",")
+        named = [t.text for t in state.tokens
+                 if t.span.start > comma
+                 and t.role not in (Role.SUFFIX, Role.TITLE)]
+        if not named:
+            continue
+        if text.endswith(_SETTLED_EXCEPTION_TAIL):
+            exceptions.append(text)
+        else:
+            failures.append(f"{text!r}: {named} read as name text")
+    assert not failures, (
+        f"{len(failures)} run(s) C1 left as settled were not read as "
+        f"credentials: {failures[:5]}")
+    assert len(exceptions) == _SETTLED_EXCEPTIONS, exceptions
+    # the grid has to reach the path it is about
+    assert settled > len(texts) // 2, (
+        f"only {settled} of {len(texts)} texts took the settled path")
 
 
 def test_no_two_ambiguities_name_the_same_token_span() -> None:
