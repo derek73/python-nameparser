@@ -28,6 +28,16 @@ jobs:
       # Without this, uv sync honors .python-version (3.11) over the
       # matrix interpreter and every job silently tests 3.11.
       UV_PYTHON: ${{ matrix.python-version }}
+      # Coverage is collected in ONE job, the one that uploads it; the
+      # others would pay for a report nobody reads. 3.14 because
+      # coverage.py runs its sys.monitoring core there by default, which
+      # stops reporting a line once it is recorded: a line tracer
+      # (sys.settrace, its core below 3.14) is called on every line
+      # every time, and cost CI's 3.12 job most of its ~12 minutes on
+      # the property grids in tests/v2/test_properties.py. The package
+      # has no version-conditional code, so one interpreter's report
+      # stands for all of them.
+      COVERAGE_ON: ${{ matrix.python-version == '3.14' }}
 
     steps:
     - uses: actions/checkout@v7
@@ -48,14 +58,18 @@ jobs:
       run: uv run mypy
     - name: Run Tests
       run: |
-        uv run pytest --cov=nameparser --cov-report=xml
+        if [ "$COVERAGE_ON" = "true" ]; then
+          uv run pytest --cov=nameparser --cov-report=xml
+        else
+          uv run pytest
+        fi
         uv run --with build python -m build --sdist
         uv run --with twine twine check dist/*
         uv run sphinx-build -b html docs dist/docs
         uv run sphinx-build -b doctest docs dist/doctest
         uv run python -m doctest README.rst
     - name: Upload coverage to Codecov
-      if: matrix.python-version == '3.13'
+      if: env.COVERAGE_ON == 'true'
       uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -99,11 +113,13 @@ jobs:
       # The _PREFIXED_SHAPES clock guard in tests/v2/test_benchmark.py
       # skips under a LINE tracer (sys.settrace -- coverage's core below
       # py3.14), which dilutes the C-level cost it measures below its
-      # bound (#553). This job must measure it, so the env var below
-      # makes a line tracer here fail those rows rather than skip them:
-      # a Python downgrade under coverage, COVERAGE_CORE=ctrace, or a
-      # debugger. Coverage's sys.monitoring core, its 3.14 default, does
-      # not dilute the cost and is not caught, nor needs to be.
+      # bound (#553). No CI job installs one today -- coverage runs on
+      # 3.14 alone, under its sys.monitoring core, which does not dilute
+      # the cost -- but this job is the one that must measure it
+      # whatever the build matrix's coverage setup becomes, so the env
+      # var below makes a line tracer here fail those rows rather than
+      # skip them: a Python downgrade under coverage,
+      # COVERAGE_CORE=ctrace, or a debugger.
       env:
         NAMEPARSER_REQUIRE_CLOCK_GUARDS: "1"
       run: |
