@@ -218,15 +218,17 @@ class ParseState:
 def _copyable_fields(cls: type) -> tuple[str, ...]:
     """The fields `copy_with` carries for `cls`, or TypeError where a
     field copy would not build what `dataclasses.replace` builds: the
-    class must be decorated itself (not inherit the decoration) and keep
-    the generated `__init__`, with no `__post_init__` and no
-    `init=False` field."""
-    params = cls.__dict__.get("__dataclass_params__")
+    class must keep the generated `__init__` in its own body and
+    `object.__new__`, with no `__post_init__` and no `init=False`
+    field."""
     init = cls.__dict__.get("__init__")
     # dataclasses compiles the __init__ it generates from a string; one
     # written in the class body carries its source file instead.
     generated = init is not None and init.__code__.co_filename == "<string>"
-    if (params is None or not generated
+    # replace calls cls(...), so a __new__ defined above object runs
+    # there and would not run here.
+    own_new = any("__new__" in vars(k) for k in cls.__mro__[:-1])
+    if (not generated or own_new
             or hasattr(cls, "__post_init__")
             or not all(f.init for f in dataclasses.fields(cls))):
         raise TypeError(

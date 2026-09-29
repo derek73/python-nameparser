@@ -95,6 +95,16 @@ class _Undecorated(_Base):
         self.extra = "set by __init__"
 
 
+@dataclasses.dataclass(frozen=True)
+class _OwnNew:
+    value: int
+
+    def __new__(cls, value: int) -> "_OwnNew":
+        if value < 0:
+            raise ValueError("negative")
+        return super().__new__(cls)
+
+
 def _derived_with_doubled_set() -> _Derived:
     obj = _Derived(1)
     object.__setattr__(obj, "doubled", 2)
@@ -126,6 +136,8 @@ _UNGUARDED_EFFECT = [
     ("validating __post_init__", _Validated(1), {"value": -1},
      "ValueError", {"value": -1}),
     ("validating __init__", _OwnInit(1), {"value": -1},
+     "ValueError", {"value": -1}),
+    ("validating __new__", _OwnNew(1), {"value": -1},
      "ValueError", {"value": -1}),
     ("init=False field", _derived_with_doubled_set(), {"value": 3},
      {"value": 3, "doubled": 0}, {"value": 3, "doubled": 2}),
