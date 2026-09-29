@@ -22,6 +22,7 @@ reach the code under it.
 _PREFIXED_SHAPES exists for a shape that needs a prefix before its
 repeated run, which _SHAPES cannot express (#553).
 """
+import os
 import sys
 import time
 from collections.abc import Callable
@@ -386,8 +387,9 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 # against a copy reverting only ITS half of the fix, and passes against
 # a copy reverting only the other half.
 #
-# SKIPPED UNDER A TRACER, which is every CI build job but `ja-extra`:
-# coverage slows every Python line and leaves a C-level scan alone, so
+# SKIPPED UNDER A LINE TRACER (`sys.settrace`), the core coverage.py
+# 7.15 uses below py3.14 -- so CI's 3.11-3.13 build jobs. A line
+# tracer slows every Python line and leaves a C-level scan alone, so
 # the quadratic becomes a smaller share of the parse. Measured the same
 # day under `coverage run` on py3.11, three runs each:
 #
@@ -396,13 +398,17 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 #   3200    6.61 - 6.70     8.19 - 8.23      4.16 / 4.17
 #   6400    8.19 - 8.29    10.03 - 10.23     4.21-4.28 / 4.22-4.25
 #
-# so at this base the run row PASSES a broken tree under coverage.
+# so at this base the run row PASSES a broken tree under that tracer.
 # 6400 separates the populations again and costs 15.6s a job under
 # coverage (4.9s without), against ~1s here; declined for the CI time
-# AGENTS.md's grid rules guard. `ja-extra` runs `tests/v2/` on py3.14
-# with no coverage, where this base reads 9.27-10.95 broken against
-# 3.95-4.03 fixed -- that job is this guard, and its workflow step
-# says so.
+# AGENTS.md's grid rules guard. The `sys.monitoring` core coverage
+# uses from 3.14 does NOT dilute it -- 8.87-10.91 broken against
+# 3.99-4.08 fixed at this base, GIL py3.14, same day -- so the rows
+# run there, and in `ja-extra`, which runs `tests/v2/` on py3.14 with
+# no coverage (9.27-10.95 broken against 3.95-4.03 fixed). That job
+# sets NAMEPARSER_REQUIRE_CLOCK_GUARDS, under which a line tracer
+# FAILS these rows instead of skipping them: whatever else changes,
+# one job cannot retire this guard in silence.
 _PREFIXED_BASE = 1600
 _PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
     # every word of the run is a middle name, so the walk asks the
@@ -422,16 +428,6 @@ _PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
 }
 
 
-def _tracer_installed() -> bool:
-    """A coverage tracer, by either of the two hooks coverage uses:
-    `sys.settrace` (the C tracer) or, on 3.12+, `sys.monitoring`."""
-    if sys.gettrace() is not None:
-        return True
-    monitoring = getattr(sys, "monitoring", None)
-    return (monitoring is not None
-            and monitoring.get_tool(monitoring.COVERAGE_ID) is not None)
-
-
 @pytest.mark.parametrize("prefix,unit,reaches", _PREFIXED_SHAPES.values(),
                          ids=list(_PREFIXED_SHAPES))
 def test_prefixed_cost_grows_no_worse_than_linearly(
@@ -444,9 +440,13 @@ def test_prefixed_cost_grows_no_worse_than_linearly(
     name = parse(text)
     assert (name.given, name.family) == ("Jane", "Doe"), (
         "shape no longer takes the family-comma path")
-    if _tracer_installed():
-        pytest.skip("a tracer dilutes a C-level cost below the bound; "
-                    "CI's ja-extra job runs this without one")
+    if sys.gettrace() is not None:
+        reason = ("a line tracer dilutes a C-level cost below the bound "
+                  "(#553)")
+        if os.environ.get("NAMEPARSER_REQUIRE_CLOCK_GUARDS"):
+            pytest.fail(f"{reason}, and this run is the one that must "
+                        f"measure it: drop the tracer from this job")
+        pytest.skip(reason)
     _assert_grows_linearly(unit, parse, prefix=prefix, base=_PREFIXED_BASE)
 
 
