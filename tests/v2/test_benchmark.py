@@ -388,7 +388,9 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 # a copy reverting only the other half.
 #
 # SKIPPED UNDER A LINE TRACER (`sys.settrace`), the core coverage.py
-# 7.15 uses below py3.14 -- so CI's 3.11-3.13 build jobs. A line
+# 7.15 uses below py3.14 -- a local `pytest --cov` on 3.11-3.13, or a
+# debugger; CI collects coverage on 3.14 alone, so no CI job has one
+# and every CI job measures these rows. A line
 # tracer slows every Python line and leaves a C-level scan alone, so
 # the quadratic becomes a smaller share of the parse. Measured the same
 # day under `coverage run` on py3.11, three runs each:
@@ -404,11 +406,11 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 # AGENTS.md's grid rules guard. The `sys.monitoring` core coverage
 # uses from 3.14 does NOT dilute it -- 8.87-10.91 broken against
 # 3.99-4.08 fixed at this base, GIL py3.14, same day -- so the rows
-# run there, and in `ja-extra`, which runs `tests/v2/` on py3.14 with
-# no coverage (9.27-10.95 broken against 3.95-4.03 fixed). That job
-# sets NAMEPARSER_REQUIRE_CLOCK_GUARDS, under which a line tracer
-# FAILS these rows instead of skipping them: whatever else changes,
-# one job cannot retire this guard in silence.
+# run in CI's coverage job too. `ja-extra` (py3.14, no coverage:
+# 9.27-10.95 broken against 3.95-4.03 fixed) also sets
+# NAMEPARSER_REQUIRE_CLOCK_GUARDS, under which a line tracer FAILS
+# these rows instead of skipping them: whatever the build matrix's
+# coverage setup becomes, one job cannot retire this guard in silence.
 _PREFIXED_BASE = 1600
 _PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
     # every word of the run is a middle name, so the walk asks the
