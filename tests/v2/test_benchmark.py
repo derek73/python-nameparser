@@ -18,7 +18,11 @@ shape the scaling test ALREADY had ("(a) "), and still went unseen,
 because the stage is gated on an opt-in Policy field that bare parse()
 leaves empty. A shape guards nothing if the default policy cannot
 reach the code under it.
+
+_PREFIXED_SHAPES exists for a shape that needs a prefix before its
+repeated run, which _SHAPES cannot express (#553).
 """
+import os
 import sys
 import time
 from collections.abc import Callable
@@ -342,19 +346,108 @@ def _best(text: str, parse_: Callable[[str], object],
 
 
 def _assert_grows_linearly(unit: str,
-                           parse_: Callable[[str], object]) -> None:
-    small = _best(unit * _BASE, parse_)
-    large = _best(unit * (_BASE * _FACTOR), parse_)
+                           parse_: Callable[[str], object],
+                           prefix: str = "", base: int = _BASE) -> None:
+    small = _best(prefix + unit * base, parse_)
+    large = _best(prefix + unit * (base * _FACTOR), parse_)
     ratio = large / small
     assert ratio < _MAX_RATIO, (
-        f"{unit!r} x{_BASE} took {small * 1e3:.2f}ms, "
-        f"x{_BASE * _FACTOR} took {large * 1e3:.2f}ms -- {ratio:.1f}x for "
+        f"{prefix!r} + {unit!r} x{base} took {small * 1e3:.2f}ms, "
+        f"x{base * _FACTOR} took {large * 1e3:.2f}ms -- {ratio:.1f}x for "
         f"{_FACTOR}x the input, which is superlinear (linear is ~{_FACTOR})")
 
 
 @pytest.mark.parametrize("unit", _SHAPES.values(), ids=list(_SHAPES))
 def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
     _assert_grows_linearly(unit, parse)
+
+
+# Shapes that need a PREFIX, which `_SHAPES` cannot express: it repeats
+# a unit and nothing else, and the walk these guard runs only on the
+# given part AFTER a family comma. `"a, "` puts the comma in every unit
+# and measures segment count instead; `"Smith "` alone never takes the
+# comma path. So each row is (prefix, unit, reachability probe), timed
+# on the clock like `_SHAPES` -- the defect is C-level work (a list
+# scanned by `in`, a tuple re-hashed as a dict key), which emits no
+# frame, so the frame-ratio guards below were blind to it (#553).
+#
+# Base 1600, not `_BASE`, and the recorded negative control is why.
+# Measured 2026-09-28 on py3.11, three runs of each on the tree before
+# the fix (003b4962), ratio for 4x the run:
+#
+#   base           given_part_run      given_part_titles
+#    800 (_BASE)   6.71  7.60  5.97    7.83  8.31  8.16
+#   1600           8.67  8.43  8.51   10.09 10.95 10.29
+#
+# against 3.94-4.32 for both rows at both bases on the fixed tree
+# (60aa9028). At 800 the run row's quadratic read 5.97 once, under
+# `_MAX_RATIO` -- a coin-flip guard; at 1600 the bound sits ~1.4x over
+# the worst clean run and ~1.4x under the weakest broken one, so
+# `_MAX_RATIO` did not move. Each row also fails, three runs of three,
+# against a copy reverting only ITS half of the fix, and passes against
+# a copy reverting only the other half.
+#
+# SKIPPED UNDER A LINE TRACER (`sys.settrace`), the core coverage.py
+# 7.15 uses below py3.14 -- so CI's 3.11-3.13 build jobs. A line
+# tracer slows every Python line and leaves a C-level scan alone, so
+# the quadratic becomes a smaller share of the parse. Measured the same
+# day under `coverage run` on py3.11, three runs each:
+#
+#   base    broken: run    broken: titles    fixed: run / titles
+#   1600    5.46 - 5.52     6.50 - 6.54            --
+#   3200    6.61 - 6.70     8.19 - 8.23      4.16 / 4.17
+#   6400    8.19 - 8.29    10.03 - 10.23     4.21-4.28 / 4.22-4.25
+#
+# so at this base the run row PASSES a broken tree under that tracer.
+# 6400 separates the populations again and costs 15.6s a job under
+# coverage (4.9s without), against ~1s here; declined for the CI time
+# AGENTS.md's grid rules guard. The `sys.monitoring` core coverage
+# uses from 3.14 does NOT dilute it -- 8.87-10.91 broken against
+# 3.99-4.08 fixed at this base, GIL py3.14, same day -- so the rows
+# run there, and in `ja-extra`, which runs `tests/v2/` on py3.14 with
+# no coverage (9.27-10.95 broken against 3.95-4.03 fixed). That job
+# sets NAMEPARSER_REQUIRE_CLOCK_GUARDS, under which a line tracer
+# FAILS these rows instead of skipping them: whatever else changes,
+# one job cannot retire this guard in silence.
+_PREFIXED_BASE = 1600
+_PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
+    # every word of the run is a middle name, so the walk asks the
+    # untitled membership test once per piece
+    "given_part_run": (
+        "Doe, Jane ", "Smith ",
+        lambda text: parse(text).middle.split() == text.split()[2:],
+    ),
+    # every trailing title joins the H5 chain, so the walk asks the
+    # titled membership test once per piece, and the name word in
+    # front of the chain asks it again at every step of walking down
+    # through it (`previous_kept`)
+    "given_part_titles": (
+        "Doe, Jane Smith ", "Prof. ",
+        lambda text: parse(text).title.split() == text.split()[3:],
+    ),
+}
+
+
+@pytest.mark.parametrize("prefix,unit,reaches", _PREFIXED_SHAPES.values(),
+                         ids=list(_PREFIXED_SHAPES))
+def test_prefixed_cost_grows_no_worse_than_linearly(
+        prefix: str, unit: str, reaches: Callable[[str], bool]) -> None:
+    # at the measured size, and with the comma's own reading asserted:
+    # without it the titles row reads the same title on the comma-less
+    # path, and would go on timing that instead of the walk
+    text = prefix + unit * _PREFIXED_BASE
+    assert reaches(text), "shape no longer reaches the walk"
+    name = parse(text)
+    assert (name.given, name.family) == ("Jane", "Doe"), (
+        "shape no longer takes the family-comma path")
+    if sys.gettrace() is not None:
+        reason = ("a line tracer dilutes a C-level cost below the bound "
+                  "(#553)")
+        if os.environ.get("NAMEPARSER_REQUIRE_CLOCK_GUARDS"):
+            pytest.fail(f"{reason}, and this run is the one that must "
+                        f"measure it: drop the tracer from this job")
+        pytest.skip(reason)
+    _assert_grows_linearly(unit, parse, prefix=prefix, base=_PREFIXED_BASE)
 
 
 # Shapes that need a NON-DEFAULT POLICY to reach the code they guard.
@@ -394,13 +487,14 @@ _POLICY_SHAPES: dict[str, tuple[str, Parser, Callable[[Parser], bool]]] = {
 
 def test_shape_tables_are_not_empty() -> None:
     # pytest turns an EMPTY parametrize into a SKIP, not a failure, so
-    # deleting the last entry of either table would retire its guard
+    # deleting the last entry of any of these tables would retire its guard
     # into the skip count with nothing going red. _POLICY_SHAPES is
     # the nearer risk, holding only shapes whose stage a default parse
     # cannot reach at all -- so it gains an entry only when an opt-in
     # Policy field turns out to have a scaling cliff behind it.
     assert _SHAPES
     assert _POLICY_SHAPES
+    assert _PREFIXED_SHAPES
 
 
 @pytest.mark.parametrize("unit,parser,reaches", _POLICY_SHAPES.values(),
