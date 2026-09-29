@@ -96,12 +96,14 @@ jobs:
       # failure loud -- without it the job proves nothing on the day it
       # matters.
       #
-      # NO COVERAGE here, on purpose, and the env var below enforces it:
-      # the _PREFIXED_SHAPES clock guard in tests/v2/test_benchmark.py
-      # skips under a line tracer (coverage's core below py3.14), which
-      # dilutes the C-level cost it measures below its bound (#553).
-      # With NAMEPARSER_REQUIRE_CLOCK_GUARDS set, a tracer here fails
-      # those rows instead of skipping them.
+      # The _PREFIXED_SHAPES clock guard in tests/v2/test_benchmark.py
+      # skips under a LINE tracer (sys.settrace -- coverage's core below
+      # py3.14), which dilutes the C-level cost it measures below its
+      # bound (#553). This job must measure it, so the env var below
+      # makes a line tracer here fail those rows rather than skip them:
+      # a Python downgrade under coverage, COVERAGE_CORE=ctrace, or a
+      # debugger. Coverage's sys.monitoring core, its 3.14 default, does
+      # not dilute the cost and is not caught, nor needs to be.
       env:
         NAMEPARSER_REQUIRE_CLOCK_GUARDS: "1"
       run: |
