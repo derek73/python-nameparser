@@ -44,7 +44,7 @@ from typing import Literal, assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
-    credential_at_the_given_slot,
+    anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     is_leading_title, is_suffix_piece, is_title_piece,
     is_trailing_title_word,
     Peel, leading_titles, peel_trailing, peel_walk, tail_reading,
@@ -410,6 +410,27 @@ def _release_reads_off(view: Sequence[Sequence[int]],
         last = len(view) - 1
         chain_ok = [False] * len(view)
         members_ok = running = True
+        # #544: the anchors `credential_at_the_given_slot` may ask for,
+        # over the view as the take would leave it -- the reading
+        # assign's given slot makes of the same pieces, from past the
+        # leading title run. One forward pass for both loops below,
+        # run only the first time a member's writing leaves the
+        # question open; each call site hands over a lambda, so no
+        # frame is spent building the question either.
+        anchors: list[bool] | None = None
+
+        def anchored_at(q: int) -> bool:
+            nonlocal anchors
+            if anchors is None:
+                # the reach test first, and only before the pass
+                # exists (`_pieces.anchor_in_reach`)
+                if not anchor_in_reach(range(q - 1, -1, -1), view,
+                                       view_tags, tokens):
+                    return False
+                anchors = given_slot_anchors(
+                    view, view_tags, tokens,
+                    leading_titles(view, view_tags, tokens))
+            return anchors[q]
         for q in range(last, -1, -1):
             piece = view[q]
             if (is_suffix_piece(piece, view_tags[q], tokens)
@@ -420,8 +441,9 @@ def _release_reads_off(view: Sequence[Sequence[int]],
                 continue
             if (members_ok and len(piece) == 1
                     and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags
-                    and credential_at_the_given_slot(tokens[piece[0]],
-                                                     one_case)):
+                    and credential_at_the_given_slot(
+                        tokens[piece[0]], one_case,
+                        lambda: anchored_at(q))):
                 chain_ok[q] = running
                 continue
             members_ok = False
@@ -448,8 +470,9 @@ def _release_reads_off(view: Sequence[Sequence[int]],
                 return False
             if (len(piece) == 1
                     and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags
-                    and credential_at_the_given_slot(tokens[piece[0]],
-                                                     one_case)):
+                    and credential_at_the_given_slot(
+                        tokens[piece[0]], one_case,
+                        lambda: anchored_at(q))):
                 continue
             return False
     elif reader is TailReader.TRAILING:
@@ -844,9 +867,17 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                 # 'Doe, Jane MA do' does with them, middle 'MA' and
                 # family 'do Doe'). The member is asked here, the span
                 # behind it and the name word ahead of it by the
-                # shared check below.
-                takes = credential_at_the_given_slot(tokens[head[0]],
-                                                     one_case)
+                # shared check below. Anchored (#544) as assign's given
+                # slot anchors it: over the view up to the member, from
+                # past the leading title run.
+                takes = credential_at_the_given_slot(
+                    tokens[head[0]], one_case,
+                    lambda: anchor_in_reach(
+                        range(at - 1, -1, -1), view, view_tags, tokens)
+                    and given_slot_anchors(
+                        view, view_tags, tokens,
+                        leading_titles(view, view_tags, tokens),
+                        at + 1)[at])
                 start = at + 1
             else:
                 # TRAILING: the peel over the view IS the member's
@@ -1298,15 +1329,17 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # segment's structure, and a default would be this module guessing
     # what that caller already knows. group() passes `None` on the
     # first for the chain emitter after a family comma -- the comma
-    # fixed the family, so that fork is settled -- and #533's is not
-    # that fork: a credential ending a maiden clause is a question the
+    # fixed the family, so that fork is settled -- and in a tail
+    # segment, which assign reads wholly as suffixes outside a maiden
+    # clause standing in it. #533's fork is
+    # neither: a credential ending a maiden clause is a question the
     # comma settles nothing about, which is why the two channels are
     # two parameters. They are given the SAME list wherever nothing is
-    # suppressed, which is every segment that is NOT after a family
-    # comma; what the split buys is the other case, where `None` on
-    # the first must not reach the second -- a maiden channel
-    # defaulting to whatever the first was would let a caller passing
-    # `ambiguities=None` silence both (the review's finding).
+    # suppressed, which is every segment that is neither after a
+    # family comma nor a tail; what the split buys is the other case,
+    # where `None` on the first must not reach the second -- a maiden
+    # channel defaulting to whatever the first was would let a caller
+    # passing `ambiguities=None` silence both.
 
     def title(k: int) -> bool:
         return is_title_piece(pieces[k], ptags[k], tokens)
@@ -2015,7 +2048,15 @@ def group(state: ParseState) -> ParseState:
             bound_join = BoundJoin.STRICT
         # Suppressed after a family comma for the same reason _assign
         # suppresses it there: the family name is already fixed, so
-        # there is no fork left to report.
+        # there is no fork left to report. Suppressed in a tail segment
+        # as well, after either comma: assign reads that segment,
+        # outside a maiden clause standing in it ('Jane Doe, PhD, Jr
+        # nee van Ma' keeps maiden 'van Ma'), wholly as suffixes, so a
+        # chain report there -- a particle
+        # chained onto a name piece, or an acronym taken into the name
+        # -- names a reading the parse never takes. rules.md#C2: "a part
+        # the parse consumes wholly as suffixes raises no report about
+        # reading a word of it as a name"
         tail = tail_start is not None and seg_idx >= tail_start
         seg_cores = cores if tail else frozenset()
         # #533: which rule reads what the maiden walk would leave, off
@@ -2031,7 +2072,7 @@ def group(state: ParseState) -> ParseState:
             reader = TailReader.TRAILING
         pieces, ptags, taken = _group_segment(
             seg, additional, tokens, bound_join,
-            None if family_comma else ambiguities,
+            None if (family_comma or tail) else ambiguities,
             seg_cores,
             state.lexicon.given_name_titles,
             opens_the_name=(seg_idx == 0 and not family_comma),

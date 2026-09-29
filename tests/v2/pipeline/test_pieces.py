@@ -5,25 +5,34 @@ its predicates were reached only end to end through the case table.
 These pin the two contracts that shape cannot reach: a defensive branch
 no parse can produce, and the stability its readers rest on.
 """
+import dataclasses
+import itertools
 from collections.abc import Sequence, Set
 
 import pytest
 
+from nameparser import parse
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
 from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._group import group
 from nameparser._pipeline._pieces import (
-    _numeral_behind_the_initial_veto, is_leading_title, leading_titles,
+    _anchors, _numeral_behind_the_initial_veto, anchor_in_reach,
+    credential_anchors,
+    credential_at_the_given_slot, is_leading_title, leading_titles,
     own_words, peel_trailing, peel_walk, segment_suffix_reading,
     trailing_titles,
 )
 from nameparser._pipeline._segment import segment
-from nameparser._pipeline._state import ParseState, WorkToken
+from nameparser._pipeline._state import (
+    AMBIGUOUS_ACRONYM_TAG, ParseState, WorkToken,
+)
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import is_one_case, is_title_shaped, tag_marker_runs
 from nameparser._policy import Policy
+
+from ..cases import CASES
 
 
 def _through_group(text: str, policy: Policy = Policy()) -> ParseState:
@@ -125,6 +134,54 @@ def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
     args = (state.pieces[1], state.piece_tags[1], list(state.tokens))
     assert segment_suffix_reading(*args, True, state.one_case) == (True, True)
     assert segment_suffix_reading(*args, False, state.one_case) is None
+
+
+def _comma_part_reading(text: str) -> tuple[tuple[bool, ...] | None,
+                                            list[int]]:
+    state = _through_group(text)
+    picks: list[int] = []
+    reading = segment_suffix_reading(
+        state.pieces[1], state.piece_tags[1], list(state.tokens), True,
+        state.one_case, picks)
+    return reading, picks
+
+
+def test_the_reading_names_the_picks_its_anchor_made() -> None:
+    """#544: the members the anchor read as credentials after their
+    own writing declined -- the picks assign reports. A member whose
+    capitals lean credential decided itself and is not among them,
+    and nothing stands in front of piece 0 to anchor it."""
+    assert _comma_part_reading("Smith, PhD Ma") == ((True, True), [1])
+    assert _comma_part_reading("Smith, PhD MA") == ((True, True), [])
+    assert _comma_part_reading("Smith, Dr. PhD Ed Ma") == (
+        (False, True, True, True), [2, 3])
+    assert _comma_part_reading("Smith, MA PhD ba") == (
+        (True, True, True), [2])
+
+
+def test_a_dual_in_the_leading_title_run_turns_the_anchor_off() -> None:
+    """#544: a title/suffix dual standing in the given part's leading
+    title run is a title there, and this reading then anchors nothing
+    in the part -- neither by that dual, nor by a second one in the
+    same run, nor by a credential behind them -- so the walk reads it
+    as the parent did, its given slot's company starting past the
+    given name. A plain title does not do this, and a dual behind a
+    credential anchors like any suffix word."""
+    for text in ("Smith, Ms Ma", "Smith, Ms MD Ma", "Smith, MD PhD Ma",
+                 "Smith, MD MS Ma", "SMITH, MD MS BA",
+                 "Smith, Prof. MD Ma", "smith, prof. md ma",
+                 "Smith, Dr. MD PhD Ma"):
+        assert _comma_part_reading(text)[0] is None, text
+    assert _comma_part_reading("Smith, Dr. PhD LAc") == (
+        (False, True, True), [2])
+    assert _comma_part_reading("Smith, PhD Ms Ma") == (
+        (True, True, True), [2])
+    # with no member to anchor, the dual reads as the suffix it is
+    assert _comma_part_reading("Smith, MD PhD") == ((True, True), [])
+    # and the walk's given slot, past the given name, reads its own
+    # company as behind any given name
+    assert parse("Smith, MD PhD Jr Ma").suffix == "Jr Ma"
+    assert parse("Smith, MD PhD Jr Ma").given == "PhD"
 
 
 def _leading(text: str) -> int:
@@ -312,14 +369,229 @@ def test_peel_trailing_keeps_its_two_piece_floor_under_a_lean() -> None:
     assert peeled.picks == ()
 
 
-def test_peel_trailing_stops_at_a_declined_ambiguous_pick() -> None:
-    # The accepted cost (decisions.md#S2): the surname lean breaks the
-    # walk AT 'Ma', so the unambiguous 'Jr' in front of it is never
-    # reached and becomes a name word. The walk stops at the declined
-    # pick rather than continuing past it.
+def test_peel_trailing_takes_a_declined_pick_an_anchor_stands_before(
+) -> None:
+    # #544 reverses the cost decisions.md#S2 had accepted: the surname
+    # lean declines 'Ma', but the unambiguous 'Jr' IN FRONT of it
+    # anchors it, so the walk takes it and reaches 'Jr' too -- and the
+    # member is still a pick, reported as a counted one is.
     rest, pieces, ptags, tokens = _peel_inputs("abdul Smith Jr Ma")
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case=False)
-    assert peeled.names == len(rest)
+    assert peeled.names == len(rest) - 2
+    assert len(peeled.picks) == 1
+    # a credential BEHIND the member anchors nothing: the walk peels
+    # 'PhD' and stops at the declined 'Ma', a name word
+    rest, pieces, ptags, tokens = _peel_inputs("Wang Ma PhD")
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case=False)
+    assert peeled.names == len(rest) - 1
+
+
+def test_the_walks_own_leading_piece_never_anchors_what_follows_it(
+) -> None:
+    # #544: a
+    # bare unambiguous suffix word standing in the walk's OWN leading
+    # position -- 'PhD'/'Om'/'Jr' are each unambiguous suffix
+    # vocabulary and also plausible given names/surnames -- must never
+    # anchor a member behind it, because that leading position is
+    # always the name H4's carve-out keeps. Anchoring it let the run
+    # collapse entirely: 'PhD Ma' read given 'PhD', suffix 'Ma',
+    # losing the family outright, rather than 'PhD Ma' keeping the
+    # reading the count alone gives it (given 'PhD', family 'Ma').
+    for text, family in (("Om Ma", "Ma"), ("PhD Ma", "Ma"),
+                         ("Jr Ma", "Ma")):
+        rest, pieces, ptags, tokens = _peel_inputs(text)
+        peeled = peel_trailing(rest, pieces, ptags, tokens, one_case=None)
+        assert peeled.names == len(rest), text
+    n = parse("Om Ma")
+    assert (n.given, n.family, n.suffix) == ("Om", "Ma", "")
+    n = parse("Om Ma Jr")
+    assert (n.given, n.family, n.suffix) == ("Om", "Ma", "Jr")
+    n = parse("PhD Ma")
+    assert (n.given, n.family, n.suffix) == ("PhD", "Ma", "")
+    # a genuine given name ahead of it frees the SAME word to anchor:
+    # 'Om' is no longer the walk's own leading piece once 'John' is,
+    # so it anchors 'Ma' exactly as any other unambiguous credential
+    # standing in front does
+    n = parse("John Om Ma")
+    assert (n.family, n.suffix) == ("", "Om Ma")
+
+
+def test_a_reserve_kept_leading_piece_beside_a_genuine_family_loss(
+) -> None:
+    # decisions.md#S2's Accepted boundary ("an unambiguous suffix is
+    # consumed even when that leaves no family name at all", 'Smith
+    # Jr.' -> family='') applies just the same when the LEADING piece
+    # is itself listed suffix vocabulary rather than an ordinary name:
+    # 'Om' is the walk's own leading piece and stays given (the
+    # reserve), but 'Jr' -- NOT the leading piece -- is still consumed
+    # unconditionally, leaving no family at all.
+    n = parse("Om Jr")
+    assert (n.given, n.family, n.suffix) == ("Om", "", "Jr")
+    # and 'Jr', standing in front of 'Ma' but not itself the leading
+    # piece, anchors it exactly as any other unambiguous credential
+    # does -- the boundary costs the family, not the anchor
+    n = parse("Om Jr Ma")
+    assert (n.given, n.family, n.suffix) == ("Om", "", "Jr Ma")
+
+
+def _anchored_words(text: str) -> list[str]:
+    rest, pieces, ptags, tokens = _peel_inputs(text)
+    return [" ".join(tokens[t].text for t in pieces[i])
+            for i, anchored in zip(
+                rest, credential_anchors(rest, pieces, ptags, tokens))
+            if anchored]
+
+
+def test_credential_anchors_reads_in_front_and_through_members() -> None:
+    # #544: a position is anchored when the run in FRONT of it holds a
+    # suffix piece that may anchor, and a lone member passes the
+    # anchor on to the member behind it
+    assert _anchored_words("John Smith PhD Ma") == ["Ma"]
+    assert _anchored_words("John Smith PhD Ed Ma") == ["Ed", "Ma"]
+    # the credential behind anchors nothing
+    assert _anchored_words("John Smith Ma PhD") == []
+    assert _anchored_words("Wang Ma PhD") == []
+
+
+def test_credential_anchors_stops_at_a_numeral_or_a_name_word() -> None:
+    # the piece straight behind the credential is marked whatever it
+    # is; what matters is the member past it, which a single-letter
+    # roman numeral (one letter, in any case, the shape a bare middle
+    # initial is written in) or a name word leaves unanchored. A
+    # multi-letter numeral is not this shape and anchors like any
+    # other suffix piece (pinned below).
+    assert _anchored_words("John Smith PhD v Ma") == ["v"]
+    assert _anchored_words("John Smith PhD Jones Ma") == ["Jones"]
+    assert _anchored_words("John Smith PhD III Ma") == ["III", "Ma"]
+
+
+def test_a_connective_or_a_numeral_suffix_word_anchors_nothing() -> None:
+    # the generational 'i' is also Catalan's conjunction, and between
+    # two name words it is a link (rules.md#P3); a single-letter roman
+    # numeral, in any case, is ONE LETTER, the shape a middle initial
+    # is written in -- not excluded for being "no credential", since a
+    # multi-letter numeral ('III') anchors like any other suffix word
+    # (pinned in `test_credential_anchors_stops_at_a_numeral...` and
+    # `test_a_multi_letter_numeral_anchors_like_any_suffix_word`
+    # below). Neither a connective nor a single-letter numeral may
+    # anchor.
+    state = _through_group("John Smith Jr Ma")
+    tokens = list(state.tokens)
+    jr = next(i for i, t in enumerate(tokens) if t.text == "Jr")
+    assert _anchors((jr,), tokens)
+    tokens[jr] = dataclasses.replace(
+        tokens[jr], tags=tokens[jr].tags | {"conjunction"})
+    assert not _anchors((jr,), tokens)
+    state = _through_group("John Smith v Ma")
+    v = next(i for i, t in enumerate(state.tokens) if t.text == "v")
+    assert not _anchors((v,), state.tokens)
+    # a particle that is also suffix vocabulary is the head of the
+    # family name behind it, not a credential: the same 'Jr' tagged a
+    # particle anchors nothing either
+    tokens[jr] = dataclasses.replace(
+        tokens[jr], tags=(tokens[jr].tags - {"conjunction"}) | {"particle"})
+    assert not _anchors((jr,), tokens)
+
+
+@pytest.mark.parametrize("text, fields", [
+    ("Jan vd Ma", {"given": "Jan", "family": "vd Ma"}),
+    ("Smith vd Ma, John", {"given": "John", "family": "Smith vd Ma"}),
+    ("Smith Mc Ma, John", {"given": "John", "family": "Smith Mc Ma"}),
+    ("D. Mc Ba Ed, Smith", {"given": "Smith", "family": "D. Mc Ba Ed"}),
+])
+def test_a_particle_in_suffix_vocabulary_anchors_nothing(
+        text: str, fields: dict[str, str]) -> None:
+    # #544: 'vd' and 'mc' are particle AND unambiguous suffix
+    # vocabulary; standing in front of a member they head the family
+    # name, and anchoring there split it around a suffix ('Smith vd
+    # Ma, John' read family 'Smith Ma', suffix 'vd'). A particle
+    # MEMBER is still anchored by a credential in front of it.
+    n = parse(text)
+    assert {k: v for k, v in n.as_dict().items() if v} == fields
+    assert parse("doe, jane v phd do").suffix == "v phd do"
+
+
+def test_anchor_in_reach_is_false_only_where_the_pass_is() -> None:
+    # the reach test is a necessary condition for the pass: False
+    # where the first piece in front past the lone members is no
+    # suffix piece, True (ask the pass) otherwise -- including where
+    # the pass then answers False, a non-anchoring suffix piece
+    # ('v') or the kept leading piece being in reach
+    for text, expect in (("John Smith Ma", False),
+                         ("John Smith Ed Ma", False),
+                         ("John Smith PhD Ma", True),
+                         ("John Smith PhD Ed Ma", True),
+                         ("John Smith PhD v Ma", True)):
+        rest, pieces, ptags, tokens = _peel_inputs(text)
+        back = rest[len(rest) - 2::-1]
+        assert anchor_in_reach(back, pieces, ptags, tokens) is expect, text
+        if not expect:
+            assert not credential_anchors(rest, pieces, ptags, tokens)[-1]
+    # `skip` splices pieces out of the walk
+    rest, pieces, ptags, tokens = _peel_inputs("John Smith PhD Ma")
+    assert not anchor_in_reach(rest[2::-1], pieces, ptags, tokens,
+                               skip={rest[2]})
+    # a merged split credential is ONE suffix piece of two tokens, and
+    # it anchors as the unsplit spelling does wherever it is in the
+    # walk -- after a comma ('John Smith Ph. D. MEng' is the no-comma
+    # peel's Accepted limit, the merged piece standing outside its walk)
+    assert parse("Doe, Jane Ph. D. MEng").suffix == "Ph. D. MEng"
+    assert parse("Smith, Ph. D. MEng").suffix == "Ph. D. MEng"
+    # and the member it speaks for reports as the pick it is
+    assert [(a.kind.value, [t.text for t in a.tokens])
+            for a in parse("Smith, Ph. D. MEng").ambiguities] == [
+        ("suffix-or-name", ["MEng"])]
+
+
+def test_a_multi_letter_numeral_anchors_like_any_suffix_word() -> None:
+    # #544: the exclusion is about SHAPE (a single letter
+    # reads as a middle initial, 'John Smith PhD V Ma' keeping 'V' a
+    # name word), not about numerals being no credential -- 'III' is
+    # unambiguous suffix vocabulary of more than one letter and
+    # anchors exactly as 'Jr' does.
+    n = parse("John Smith PhD III Ma")
+    assert (n.family, n.suffix) == ("Smith", "PhD III Ma")
+    n = parse("John Smith PhD V Ma")
+    assert (n.middle, n.family, n.suffix) == ("Smith PhD V", "Ma", "")
+
+
+def test_the_anchor_pass_starts_past_the_leading_title_run() -> None:
+    # a title/suffix dual opening the given part is a title there and
+    # anchors nothing, at the given slot and in the part read whole
+    assert parse("Smith, MD MA Ma").middle == "Ma"
+    assert parse("Smith, Ms Ma").given == "Ma"
+    # past that position the same dual anchors
+    assert parse("John Smith MD MEng").suffix == "MD MEng"
+
+
+def test_the_given_slot_asks_the_anchor_only_when_the_writing_declines(
+) -> None:
+    # #544: `credential_at_the_given_slot` takes the anchor as a THUNK
+    # and asks it last, so a member the writing already settles never
+    # pays for the anchor pass
+    calls: list[str] = []
+
+    def anchored() -> bool:
+        calls.append("asked")
+        return True
+
+    tokens = _through_group("Doe, John MA Ma do").tokens
+    caps, title, particle = (
+        next(t for t in tokens if t.text == text)
+        for text in ("MA", "Ma", "do"))
+    # the capitals lean credential, and one case leans nothing (the
+    # count's reading): neither asks
+    assert credential_at_the_given_slot(caps, False, anchored)
+    assert credential_at_the_given_slot(title, True, anchored)
+    assert calls == []
+    # a Title-case member and a particle member with no lean decline,
+    # so the anchor answers -- once each
+    assert credential_at_the_given_slot(title, False, anchored)
+    assert credential_at_the_given_slot(particle, True, anchored)
+    assert calls == ["asked", "asked"]
+    # with no anchor to ask, the declined reading stands
+    assert not credential_at_the_given_slot(title, False)
+    assert not credential_at_the_given_slot(particle, True)
 
 
 def test_a_shape_only_token_reports_without_being_taken() -> None:
@@ -489,3 +761,64 @@ def test_tag_marker_runs_answers_in_ascending_index_order() -> None:
                                     state.lexicon.maiden_markers,
                                     folded))
         assert keys == sorted(keys), text
+
+
+#: The run words of the reach sweep below: unambiguous credentials,
+#: members (one a particle too), the two particles of the suffix
+#: vocabulary, a one-letter numeral, titles and a name word.
+_REACH_WORDS = ("PhD", "Jr", "MA", "Ma", "Ed", "Do", "vd", "Mc", "V",
+                "Prof.", "Dr.", "Jones")
+
+
+def _reach_failures(texts: Sequence[str]) -> list[str]:
+    """Every (text, segment, position, first_kept, start) at which
+    `anchor_in_reach` answers False while `credential_anchors` anchors
+    the lone member standing there -- the direction the reach test
+    must never get wrong, since a False skips the pass. Asked of every
+    segment of every text, over `order` both from the segment's first
+    piece and from past its leading title run, and with the leading
+    position both kept and read, the reach walking everything in
+    front each time (the superset every caller passes)."""
+    out = []
+    for text in texts:
+        state = _through_group(text)
+        tokens = state.tokens
+        for seg, (pieces, ptags) in enumerate(
+                zip(state.pieces, state.piece_tags)):
+            for start in {0, leading_titles(pieces, ptags, tokens)}:
+                order = range(start, len(pieces))
+                for first_kept in (True, False):
+                    anchors = credential_anchors(order, pieces, ptags,
+                                                 tokens, first_kept)
+                    for pos, m in enumerate(order):
+                        piece = pieces[m]
+                        if not (len(piece) == 1 and AMBIGUOUS_ACRONYM_TAG
+                                in tokens[piece[0]].tags):
+                            continue
+                        if anchors[pos] and not anchor_in_reach(
+                                range(m - 1, -1, -1), pieces, ptags,
+                                tokens):
+                            out.append(f"{text!r} seg {seg} at {m} "
+                                       f"first_kept={first_kept} "
+                                       f"start={start}")
+    return out
+
+
+def test_anchor_in_reach_never_hides_an_anchor() -> None:
+    """`anchor_in_reach` False implies `credential_anchors` False, at
+    every lone member of every segment, over the case table's texts
+    and every run of one to three `_REACH_WORDS` behind 'John Smith '
+    and 'Doe, Jane ' (4,497 distinct texts, 742 of them the table's;
+    0.23s on py3.11, measured 2026-09-28). RECORDED NEGATIVE CONTROL:
+    with the reach test reading a "vocab:suffix" token as no suffix
+    piece (returning False there), 878 positions fail (measured
+    2026-09-28)."""
+    texts = {case.text for case in CASES if case.policy is None
+             and case.locale is None}
+    for n in (1, 2, 3):
+        for run in itertools.product(_REACH_WORDS, repeat=n):
+            for head in ("John Smith ", "Doe, Jane "):
+                texts.add(head + " ".join(run))
+    failures = _reach_failures(sorted(texts))
+    assert not failures, (f"{len(failures)} anchored member(s) the "
+                          f"reach test hides:\n" + "\n".join(failures[:15]))

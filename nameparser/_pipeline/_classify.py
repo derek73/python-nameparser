@@ -68,8 +68,9 @@ from nameparser._pipeline._pieces import own_words
 # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
 # suffix — generational forms and credential acronyms alike, and an
 # ambiguous acronym written with its periods, one after each
-# letter, counts unambiguously; a single trailing period is the
-# abbreviation shape any word can wear and does not. A
+# letter or one after each of two or more letter chunks, counts
+# unambiguously; a single trailing period is the abbreviation shape
+# any word can wear and does not. A
 # bare ambiguous acronym is consumed only when the name has words to
 # spare"
 def _tags_for(token: WorkToken, n: str, state: ParseState,

@@ -785,15 +785,14 @@ def test_the_reserve_mirrors_the_bare_acronym_fork() -> None:
     # now runs that same peel over the view and declines (#425); it
     # used to count 'Ma' as a name word and join.
     #
-    # MOVED by #289, not deleted: 'Ma' is Title-case in a mixed-case
-    # name, so it leans SURNAME and the peel declines it even with
-    # words to spare -- the walk stops at the declined pick, 'jr'
-    # never reached behind it, so the reserve now sees the SAME
-    # suffixes on both sides of the join (none) and the join stands
-    # (the accepted cost decisions.md#S2 records for
-    # 'abdul Smith Jr Ma').
+    # MOVED by #289, then back by #544: 'Ma' is Title-case in a
+    # mixed-case name, so its writing leans SURNAME, but the
+    # unambiguous 'jr' IN FRONT of it anchors it (the peel's
+    # `credential_anchors`), so the peel takes both unjoined. Joined,
+    # the view would be two name pieces and the family would be gone,
+    # so the reserve declines the join again, as it did before #289.
     out = _grouped("abdul Smith jr Ma", lexicon=_AMBIGUOUS_LEX)
-    assert _piece_texts(out) == [["abdul Smith", "jr", "Ma"]]
+    assert _piece_texts(out) == [["abdul", "Smith", "jr", "Ma"]]
 
 
 def test_the_join_never_turns_a_suffix_into_a_name() -> None:

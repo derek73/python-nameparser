@@ -45,13 +45,16 @@ Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
 particles_ambiguous token with more pieces following ("Van Johnson",
 and since #367 "Dr. Van Johnson" too, a title no longer displacing the
 particle out of that position) -- whatever role name_order assigns.
-Emits SUFFIX_OR_NAME at FIVE sites: the trailing roman numeral, each
+Emits SUFFIX_OR_NAME at SIX sites: the trailing roman numeral, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491),
 -- since #289 -- the FAMILY-COMMA path's own read of the first
-post-comma piece, and -- since #531 -- the class member ENDING that
-path's given part, which the first-piece emitter could never reach.
+post-comma piece, -- since #531 -- the class member ENDING that
+path's given part, which the first-piece emitter could never reach,
+and -- since #544 -- each member of a post-comma part read wholly as
+credentials that was read as one only because a credential in front
+of it anchors it.
 Further emitters of the same kind live in
 `_segment.py`, `_group.py` and `_post_rules.py`; they are not
 assign's and are not counted here. And
@@ -71,7 +74,7 @@ from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
-    credential_at_the_given_slot,
+    anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     is_suffix_piece, leading_titles, peel_walk,
     segment_suffix_reading, tail_reading, trailing_titles,
 )
@@ -539,9 +542,11 @@ def assign(state: ParseState) -> ParseState:
         # positional read peels a trailing suffix first: 'Smith Jr.,
         # Mr.' has two pieces and one name, and read positionally lost
         # its family (the code review).
+        anchored_picks: list[int] = []
         reading = segment_suffix_reading(
             state.pieces[1], state.piece_tags[1], tokens,
-            state.policy.lenient_comma_suffixes, state.one_case)
+            state.policy.lenient_comma_suffixes, state.one_case,
+            anchored_picks)
         # rules.md#C1's exception, scoped to the ambiguous credential
         # class: this is the first report of the comma's OWN decision
         # (listing or credential run), where the writing left the
@@ -674,6 +679,31 @@ def assign(state: ParseState) -> ParseState:
             #: which is a `copy_with(role=...)` and leaves
             #: text and tags identical.
             floors: dict[tuple[int, ...], tuple[int, bool]] = {}
+            #: #544's anchors, per `titled` value like `floors` and for
+            #: the same reason: `given_slot_anchors` over the pieces the
+            #: chain kept, computed once, the first time a member's own
+            #: writing declines, so a run of members is read in one
+            #: forward pass rather than one look-behind per member.
+            anchor_memo: dict[tuple[int, ...], list[bool]] = {}
+
+            def anchored(m: int, titled: tuple[int, ...]) -> bool:
+                memo = anchor_memo.get(titled)
+                if memo is None:
+                    # nothing in front the pass could read as an
+                    # anchor: the ordinary 'Smith, John Ma' stops here.
+                    # Asked only before the pass exists -- once it
+                    # does it answers in one lookup, where the reach
+                    # test walks back through the run
+                    if not anchor_in_reach(range(m - 1, -1, -1), pieces,
+                                           ptags, tokens, titled):
+                        return False
+                    # from past the leading title run, which `n` already
+                    # counts: this closure is reached only from the walk
+                    # below `_peel_leading_titles` sets it on
+                    memo = given_slot_anchors(pieces, ptags, tokens, n,
+                                              skip=titled)
+                    anchor_memo[titled] = memo
+                return memo[m]
 
             def trailing_floor(m: int, titled: tuple[int, ...]) -> int:
                 """Where the trailing suffix run starts, walked as far
@@ -833,8 +863,13 @@ def assign(state: ParseState) -> ParseState:
                             # unchanged). Measured 2026-09-19 per
                             # `Parser.parse`; Derek took that trade
                             # deliberately.
+                            # #544: an unambiguous credential in front
+                            # of it in the same run anchors it -- asked
+                            # through a thunk, so only a member the
+                            # writing declines pays for the pass
                             if credential_at_the_given_slot(
-                                    tok, state.one_case):
+                                    tok, state.one_case,
+                                    lambda: anchored(m, titled)):
                                 return True
                 prev = previous_kept(m, titled)
                 # trailing piece of a two-part name is unambiguously
@@ -875,6 +910,21 @@ def assign(state: ParseState) -> ParseState:
                     _set_roles(tokens, piece,
                                Role.SUFFIX if reading[k] else Role.TITLE)
                 n = len(pieces)
+                # rules.md#S2's company, reported where it decided: a
+                # member the anchor read as a credential after its own
+                # writing declined is a pick, as the peel's are (#544).
+                # Never piece 0, which nothing stands in front of, so
+                # never the first-piece report's word above; a member
+                # whose capitals lean credential is not among them
+                # ('Smith, PhD MA' stays silent).
+                for k in anchored_picks:
+                    i2 = pieces[k][0]
+                    ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                        f"{tokens[i2].text!r} behind a credential after "
+                        f"the comma is also an ordinary name word; read "
+                        f"as a credential",
+                        (i2,)))
             else:
                 n = _peel_leading_titles(pieces, ptags, tokens)
                 # rules.md#H5: "the title is TRANSPARENT to the suffix

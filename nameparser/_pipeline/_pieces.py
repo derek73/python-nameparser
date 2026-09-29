@@ -52,7 +52,8 @@ helper.
 """
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence, Set
+from collections.abc import (
+    Callable, Container, Iterable, Mapping, Sequence, Set)
 from typing import NamedTuple
 
 from nameparser._pipeline._state import (
@@ -60,7 +61,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, Lean, ambiguous_lean, in_initialless_script,
-    is_trailing_numeral_suffix, tag_marker_runs,
+    is_single_letter_numeral, is_trailing_numeral_suffix, tag_marker_runs,
 )
 
 
@@ -285,11 +286,163 @@ def _numeral_behind_the_initial_veto(piece: Sequence[int],
     return "vocab:suffix" in tags and "initial" in tags
 
 
+def _anchors(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
+    """Whether a suffix piece may ANCHOR an ambiguous member behind it
+    (#544): not a connective, not a particle, and not a single-letter
+    roman numeral.
+
+    A connective anchors nothing because between two name words it is
+    a link -- the generational 'i' is also Catalan's 'i' (rules.md#P3)
+    -- and 'Jane Doe nee Puig i Ma' must keep its clause. A particle
+    anchors nothing for the same reason from the other side: it joins
+    the name word behind it (rules.md#P2), so a word that is both
+    particle and suffix vocabulary ('vd', 'mc') standing in front of
+    a member is the head of a family name, not a credential list --
+    'Smith vd Ma, John' keeps family 'Smith vd Ma' and 'Jan vd Ma'
+    family 'vd Ma'. A particle MEMBER is still anchored by a
+    credential in front of it ('doe, jane v phd do'); the exclusion is
+    of the anchor only. A single-letter roman numeral, in any case
+    ('V', 'v', 'I.'), anchors nothing for its SHAPE: one letter is
+    the shape a middle initial is written in ('V' can be one), and S3
+    retired single-character vocabulary matches for the same reason.
+    Not because a numeral is no credential -- a multi-letter suffix
+    word ('III', 'Jr') anchors like any other suffix piece
+    (`is_single_letter_numeral`). A title/suffix DUAL ('ms', 'md',
+    'sr') does anchor, except in the given part's
+    leading title run, where it stands in title position ('Smith, Ms
+    Ma' is Ms. Ma Smith); that exclusion is the callers', which start
+    their walks past the leading title run or, in
+    `segment_suffix_reading`, read no anchor at all in a part whose
+    leading title run holds one.
+
+    Asked only of a piece `is_suffix_piece` accepted, and only once a
+    member's own writing has declined, so an ordinary name never pays
+    for it."""
+    if len(piece) != 1:
+        return True
+    tok = tokens[piece[0]]
+    return ("conjunction" not in tok.tags
+            and "particle" not in tok.tags
+            and not is_single_letter_numeral(tok.text))
+
+
+# #544: an ambiguous member standing BEHIND an unambiguous credential
+# in one run is described by that credential's company, not by its
+# own writing -- 'PhD MEng' is a list of degrees whatever case 'MEng'
+# is written in. ONE forward pass per question, so a run of members
+# is read in linear time: a look-behind per member is quadratic in
+# the run, which test_benchmark's frame-ratio guard is built to catch.
+def credential_anchors(order: Sequence[int],
+                       pieces: Sequence[Sequence[int]],
+                       ptags: Sequence[Set[str]],
+                       tokens: Sequence[WorkToken],
+                       first_kept: bool = True) -> list[bool]:
+    """For each position of `order` (piece indices in text order),
+    whether a lone listed member standing there is ANCHORED: the
+    contiguous run of pieces in FRONT of it that are suffix pieces or
+    lone ambiguous members ends in -- counting back past the members --
+    a suffix piece that may anchor (`_anchors`). Any other piece ends
+    the run. The anchor is in front only: 'Wang Ma PhD' leaves 'Ma'
+    unanchored.
+
+    The caller decides where the walk starts, and starts it past the
+    leading title run, where a title/suffix dual reads as a title
+    ('Smith, MD MA Ma' keeps its middle name). Where `order` holds the
+    name part, its own leading position is the name the reserve keeps
+    -- `rest[0]` at the no-comma peel, the given part's own first
+    piece at the given-slot call sites -- so ITS writing never anchors
+    what stands behind it, whatever vocabulary it carries: 'PhD Ma'
+    keeps the count's reading, family 'Ma', rather than reading as a
+    credential list headed by the given name itself. `first_kept`
+    False is the one caller with no reserve, `segment_suffix_reading`,
+    asking whether a comma part is a credential run at all: there the
+    first piece is a run member like any other ('Smith, PhD MEng')."""
+    out: list[bool] = []
+    anchor = False
+    for pos, idx in enumerate(order):
+        out.append(anchor)
+        if pos == 0 and first_kept:
+            continue
+        piece = pieces[idx]
+        if is_suffix_piece(piece, ptags[idx], tokens):
+            # a suffix piece that may not anchor still ENDS the run it
+            # would have anchored: 'PhD v Ma' is not a credential list
+            # through the numeral
+            anchor = _anchors(piece, tokens)
+        elif not (len(piece) == 1
+                  and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags):
+            anchor = False
+    return out
+
+
+def given_slot_anchors(pieces: Sequence[Sequence[int]],
+                       ptags: Sequence[Set[str]],
+                       tokens: Sequence[WorkToken],
+                       start: int, end: int | None = None,
+                       skip: Container[int] = ()) -> list[bool]:
+    """`credential_anchors` for the given part's slot, indexed by PIECE
+    rather than by position: the pass over `start` to `end`, `skip`
+    spliced out, and False before `start`, from `end` on and at every
+    skipped piece. `start` is where the leading title run ends, so a
+    title/suffix dual standing in it anchors nothing ('Smith, MD MA
+    Ma'), and the piece at `start` is the given name the reserve keeps.
+    The one home of that query for assign's given slot, group's
+    GIVEN_SLOT reader, and the maiden clause's take."""
+    stop = len(pieces) if end is None else end
+    order: Sequence[int] = range(start, stop)
+    if skip:
+        order = [q for q in order if q not in skip]
+    out = [False] * len(pieces)
+    for q, anchored in zip(order, credential_anchors(order, pieces, ptags,
+                                                     tokens)):
+        out[q] = anchored
+    return out
+
+
+def anchor_in_reach(back: Iterable[int],
+                    pieces: Sequence[Sequence[int]],
+                    ptags: Sequence[Set[str]],
+                    tokens: Sequence[WorkToken],
+                    skip: Container[int] = ()) -> bool:
+    """False where `credential_anchors` must answer False for the
+    member standing just behind `back` -- the piece indices in front
+    of it, nearest first, `skip` spliced out: past the lone members
+    in front, the first other piece is no suffix piece, or there is
+    none. True means only "ask the pass".
+
+    Exact in that direction because the test is weaker than the
+    pass's: a suffix piece carries "suffix" in its ptags or is one
+    token carrying "vocab:suffix" (`is_suffix_piece`), so a piece
+    failing both can neither anchor nor carry a run on. Read from tags
+    alone, with no frame per piece, so the ordinary name ending in a
+    Title-case member ('John Smith Ma', 'Doe, John Q. Ma') spends one
+    frame here rather than the pass's one per piece. Callers pass the
+    positions the pass itself would read or a superset reaching
+    further back: the walk meets any anchor the pass would find before
+    it reaches past the pass's start, so reaching further can cost a
+    pass that finds nothing and never a reading."""
+    for q in back:
+        if q in skip:
+            continue
+        piece = pieces[q]
+        if "suffix" in ptags[q]:
+            return True
+        if len(piece) != 1:
+            return False
+        tags = tokens[piece[0]].tags
+        if "vocab:suffix" in tags:
+            return True
+        if AMBIGUOUS_ACRONYM_TAG not in tags:
+            return False
+    return False
+
+
 def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            ptags: Sequence[Set[str]],
                            tokens: Sequence[WorkToken],
                            lenient: bool,
                            one_case: bool | None,
+                           anchored: list[int] | None = None,
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
@@ -302,6 +455,31 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     suffix 'MA'). Only the LEAN reaches here: a token admitted to the
     class by SHAPE takes the count instead, which is decided at the
     comma and not in this walk ('Smith, A.B.' -> given 'A.B.').
+
+    A listed member ANCHORED by an unambiguous credential in front of
+    it in the same run reads as a credential too, whatever its writing
+    (#544, `credential_anchors`): 'Smith, PhD MEng' is family 'Smith'
+    with two degrees. A title/suffix dual standing in the part's
+    LEADING TITLE RUN -- every piece ahead of it a title or another
+    such dual -- is a title there, and in a part that holds one this
+    reading anchors nothing at all, not by the dual and not by a
+    later credential: the dual makes the next name-position word the
+    given name, and reading the part wholly as credentials would
+    stack the anchor's guess on the dual's ('Smith, Ms Ma', 'Smith,
+    Ms MD Ma' and 'Smith, MD PhD Ma' keep a given name, 'Smith,
+    Prof. MD Ma' too). The walk then reads the part, and its given
+    slot's company starts past that given name ('Smith, MD PhD Jr
+    Ma' reads suffix 'Jr Ma'). A plain title ahead of the credential
+    does not stop this reading ('Smith, Dr. PhD LAc' reads title
+    'Dr.', suffix 'PhD LAc').
+
+    `anchored`, when the caller passes a list, receives the index of
+    every piece the anchor read as a credential after its own writing
+    declined -- the picks the caller reports, since this decides them
+    (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE). A member whose own
+    capitals lean credential is not among them. Meaningful only when
+    the answer is not None: a segment the walk abandons part-way may
+    have appended to it first.
 
     ONE answer for two readers, both in _assign.py -- the no-name gate
     and the router -- because they must agree piece for piece. #429
@@ -343,6 +521,23 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     if not pieces:
         return None
     out: list[bool] = []
+    # #544: `credential_anchors` over the whole part, computed the
+    # first time a member's writing declines with a suffix piece in
+    # reach in front of it (`anchor_in_reach`, asked only while the
+    # pass does not exist yet). A member opening the part has nothing
+    # in front and asks neither ('Smith, Ed', 'Smith, Ma John'); a
+    # name word in front returns None before the member is reached;
+    # and a title in front ends the reach test, so 'Smith, Dr. Ma'
+    # pays that one test and no pass.
+    anchors: list[bool] | None = None
+    # Whether every piece so far stands in the part's leading title
+    # run (titles, and title/suffix duals), and whether a dual has
+    # stood there: once one has, nothing in the part anchors. Tracked
+    # here rather than read off `leading_titles`, whose period-shape
+    # inference counts a suffix like 'Esq.' into the run ('Smith, Esq.
+    # MD Ma' keeps its anchored 'Ma' only by this walk's reading).
+    leading = True
+    dual_led = False
     for piece, tags in zip(pieces, ptags):
         # the verdict just recorded IS "stands behind a suffix" -- keeping
         # a separate flag meant maintaining that equality by hand at three
@@ -350,14 +545,35 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         # have diverged silently
         after_suffix = bool(out) and out[-1]
         if is_suffix_piece(piece, tags, tokens):
+            if (leading and len(piece) == 1
+                    and "vocab:title" in tokens[piece[0]].tags):
+                dual_led = True
+            else:
+                leading = False
             out.append(True)
-        elif (len(piece) == 1
-                and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags
-                and listed_lean(tokens[piece[0]], one_case)
-                == "credential"):
+            continue
+        member = (len(piece) == 1
+                  and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags)
+        if member and listed_lean(tokens[piece[0]], one_case) \
+                == "credential":
+            leading = False
             out.append(True)
-        elif (lenient and after_suffix
+            continue
+        if (member and not dual_led
+                and SHAPE_ACRONYM_TAG not in tokens[piece[0]].tags):
+            if anchors is None and out and anchor_in_reach(
+                    range(len(out) - 1, -1, -1), pieces, ptags, tokens):
+                anchors = credential_anchors(range(len(pieces)), pieces,
+                                             ptags, tokens, first_kept=False)
+            if anchors is not None and anchors[len(out)]:
+                leading = False
+                if anchored is not None:
+                    anchored.append(len(out))
+                out.append(True)
+                continue
+        if (lenient and after_suffix
                 and _numeral_behind_the_initial_veto(piece, tokens)):
+            leading = False
             out.append(True)
         elif is_leading_title(piece, tags, tokens):
             out.append(False)
@@ -383,10 +599,11 @@ class Peel(NamedTuple):
 
 # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
 # suffix — generational forms and credential acronyms alike, and an
-# ambiguous acronym written with its periods, one after each letter,
-# counts unambiguously; a single trailing period is the abbreviation
-# shape any word can wear and does not. A BARE ambiguous acronym is
-# consumed only when the name has words to spare"
+# ambiguous acronym written with its periods, one after each letter or
+# one after each of two or more letter chunks, counts unambiguously; a
+# single trailing period is the abbreviation shape any word can wear
+# and does not. A BARE ambiguous acronym is consumed only when the name
+# has words to spare"
 # (v1's are_suffixes tail rule, with the roman-numeral special)
 def peel_walk(start: int, ptags: Sequence[Set[str]],
                skip: Set[int] = frozenset()) -> list[int]:
@@ -469,8 +686,9 @@ def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     return ambiguous_lean(token.text, one_case)
 
 
-def credential_at_the_given_slot(token: WorkToken,
-                                 one_case: bool | None) -> bool:
+def credential_at_the_given_slot(
+        token: WorkToken, one_case: bool | None,
+        anchored: Callable[[], bool] | None = None) -> bool:
     """#531's reading of a class MEMBER ending the given part after a
     family comma: the credential unless the writing says otherwise.
     The caller decides membership and that the piece ends that part.
@@ -479,6 +697,15 @@ def credential_at_the_given_slot(token: WorkToken,
     count says nothing and only the lean does; a member that is also
     particle vocabulary reads as the credential on a POSITIVE lean
     alone, P6's attachment keeping every other spelling.
+
+    Or where the member is ANCHORED (#544): an unambiguous credential
+    in front of it in the same run (`credential_anchors`) makes it the
+    credential whatever its writing says, a particle member included
+    -- a degree in front outranks P6's attachment, as the capitals do
+    ('doe, jane v phd do' reads suffix 'v phd do'). Only the caller
+    knows the run, so it computes the anchor; `anchored` is a THUNK,
+    asked last, so a member the writing already settles never pays
+    for the walk.
 
     Called from assign's walk over the given part, from
     `_release_reads_off`'s GIVEN_SLOT branch (the shared release check
@@ -506,8 +733,10 @@ def credential_at_the_given_slot(token: WorkToken,
         f"and is not one. The caller decides membership -- test "
         f"AMBIGUOUS_ACRONYM_TAG before calling")
     lean = listed_lean(token, one_case)
-    return lean == "credential" or (lean is None
-                                    and "particle" not in token.tags)
+    if lean == "credential" or (lean is None
+                                and "particle" not in token.tags):
+        return True
+    return anchored is not None and anchored()
 
 
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
@@ -528,6 +757,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     """
     picks: list[tuple[int, ...]] = []
     numeral: tuple[int, ...] | None = None
+    anchors: list[bool] | None = None
     k = len(rest)
     while k > 0:
         piece = pieces[rest[k - 1]]
@@ -591,6 +821,30 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             # peeling still leaves given + family, or the writing says
             # to peel anyway
             if lean == "credential" or (lean is None and k >= 3):
+                k -= 1
+                continue
+            # #544: or an unambiguous credential stands IN FRONT of it
+            # in the same run -- 'John Smith PhD MEng' is a list of
+            # degrees, not a family name 'MEng'. Computed once per
+            # walk, and only when a member has declined and a suffix
+            # piece is in reach, so an ordinary name never pays for
+            # it. Still a pick: the fork is reported as a counted
+            # member's is.
+            #
+            # `rest[k - 2:0:-1]` is what stands in front of the member
+            # down to, not including, `rest[0]`, the name the reserve
+            # keeps, which never anchors (`credential_anchors`). So a
+            # member at k == 2 finds nothing in reach -- and that is
+            # every by-shape member that gets here, a lean of None
+            # with k >= 3 having been consumed above, so the by-shape
+            # half takes the count with no test of its own.
+            # The pass, once built, answers first: asked of every
+            # member, the reach test would walk back through the run
+            # each time, one look-behind per member.
+            if anchors is None and anchor_in_reach(
+                    rest[k - 2:0:-1], pieces, ptags, tokens):
+                anchors = credential_anchors(rest, pieces, ptags, tokens)
+            if anchors is not None and anchors[k - 1]:
                 k -= 1
                 continue
         break

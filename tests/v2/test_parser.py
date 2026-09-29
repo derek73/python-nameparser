@@ -251,6 +251,36 @@ def test_every_ambiguous_acronym_in_a_name_is_reported() -> None:
         ["JD", "MA"]
 
 
+def _reports(text: str) -> list[tuple[AmbiguityKind, list[str]]]:
+    return [(a.kind, [t.text for t in a.tokens])
+            for a in parse(text).ambiguities]
+
+
+def test_a_member_the_company_decides_after_a_family_comma_reports() -> None:
+    # #544: a part after a one-word family comma that a credential in
+    # front reads wholly as credentials reports each member it decided
+    # -- and only those: a member whose capitals already lean
+    # credential decided itself, so the same fields are silent
+    n = parse("Smith, PhD Ma")
+    assert (n.family, n.given, n.suffix) == ("Smith", "", "PhD Ma")
+    assert _reports("Smith, PhD Ma") == [
+        (AmbiguityKind.SUFFIX_OR_NAME, ["Ma"])]
+    n = parse("Smith, PhD MA")
+    assert (n.family, n.given, n.suffix) == ("Smith", "", "PhD MA")
+    assert n.ambiguities == ()
+
+
+def test_a_dotted_credential_is_no_title_run_dual() -> None:
+    # 'M.D.' carries the suffix reading and not the title one, so it
+    # does not stand in the given part's leading title run: 'PhD'
+    # behind it still speaks for 'Ma', and the pick reports (the parent
+    # read given 'M.D.', middle 'Ma', suffix 'PhD')
+    n = parse("Smith, M.D. PhD Ma")
+    assert (n.family, n.given, n.suffix) == ("Smith", "", "M.D. PhD Ma")
+    assert _reports("Smith, M.D. PhD Ma") == [
+        (AmbiguityKind.SUFFIX_OR_NAME, ["Ma"])]
+
+
 def test_ambiguous_acronym_detail_names_the_role_it_got() -> None:
     # the unpeeled piece is the last NAME piece, which is the family
     # name only under GIVEN_FIRST -- FAMILY_FIRST puts it in given, so
@@ -574,13 +604,14 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
         n, m = parse(bound), parse(plain)
         assert (n.family, n.suffix) == (m.family, m.suffix)
         assert n.family != ""
-    # MOVED by #289, not deleted: 'Ed' is Title-case in a mixed-case
-    # name, so it now leans SURNAME and the peel declines it with
-    # words to spare -- the walk stops at the declined pick, 'Jr'
-    # never reached behind it, and both join as name words
-    # (decisions.md#S2's accepted cost, the 'abdul Smith Jr Ma' shape).
-    n = parse("abu Bakar Jr Ed")
-    assert (n.family, n.suffix) == ("Ed", "")
+    # MOVED by #289, then back by #544: 'Ed' is Title-case in a
+    # mixed-case name, so its writing leans SURNAME, but the
+    # unambiguous 'Jr' in front of it anchors it, so the peel takes
+    # both and the reserve spares the family as for 'abdul Smith Jr
+    # Ma' above -- the ordinary-given twin reads the same
+    n, m = parse("abu Bakar Jr Ed"), parse("John Bakar Jr Ed")
+    assert (n.family, n.suffix) == (m.family, m.suffix) == ("Bakar",
+                                                            "Jr Ed")
     # and the join never turns a suffix into a name: unjoined, the
     # acronym is a credential with words to spare, so 'abdul Smith
     # Ma' reads as 'John Smith Ma' does (1.4.0 parity restored)
@@ -590,6 +621,20 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
     # name word instead of a credential (decisions.md#S2).
     n, m = parse("abdul Smith Ma"), parse("John Smith Ma")
     assert (n.family, n.suffix) == (m.family, m.suffix) == ("Ma", "")
+
+
+def test_the_leading_piece_never_anchors_under_any_name_order() -> None:
+    # #544: the walk's leading position is the piece the
+    # H4 carve-out keeps regardless of which ROLE it ends up in, so
+    # the fix must hold under every name_order -- FAMILY_FIRST puts
+    # the same 'PhD'/'Om' word in the FAMILY slot instead, and it
+    # still must not anchor 'Ma' behind it.
+    for order in (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
+        p = Parser(policy=Policy(name_order=order))
+        n = p.parse("Om Ma")
+        assert (n.given, n.family, n.suffix) == ("Ma", "Om", "")
+        n = p.parse("PhD Ma")
+        assert (n.given, n.family, n.suffix) == ("Ma", "PhD", "")
 
 
 def test_a_joined_pair_is_never_peeled_as_a_title() -> None:

@@ -496,7 +496,7 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2, C2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
@@ -727,8 +727,8 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abdul Smith V"             →  family="Smith"
       "abdul Smith V"             →  suffix="V"
       "abdul Smith Jr V"          →  family="Smith"
-      "abdul Smith Jr Ma"         →  given="abdul Smith"
-      "abdul Smith Jr Ma"         →  middle="Jr"
+      "abdul Smith Jr Ma"         →  given="abdul"
+      "abdul Smith Jr Ma"         →  suffix="Jr Ma"
       "abdul Smith Ma"            →  given="abdul Smith"
       "abdul Smith Berg Ma"       →  middle="Berg"  · boundary
       "abdul Sir Smith Berg"      →  given="abdul Sir"
@@ -785,18 +785,22 @@ P6. Rationale: a particle ending the name has nothing to link
     the word is BOTH a particle and suffix vocabulary, this
     attachment outranks the suffix reading (S2): a trailing
     abbreviation after a family comma is the tussenvoegsel far more
-    often than the decoration it collides with. One exception, and it
-    is where the capitals speak: a word of the AMBIGUOUS credential
-    class, written in capitals in a name written in more than one
-    case, reads as the credential and this attachment stands down —
-    unless a particle stands immediately in front of it, the two
-    being one particle run by then, which this rule takes whole.
-    Every other spelling of such a word attaches as it did before,
-    and the kind rule below gives it this rule's particle fork rather
-    than S2's credential one. In a name written wholly in one case
-    the two readings cannot be told apart and the particle keeps it,
-    which is right about a Portuguese record and wrong about a
-    credential; the report is how a caller finds the second.
+    often than the decoration it collides with. Two exceptions. The
+    first is where the capitals speak: a word of the AMBIGUOUS
+    credential class, written in capitals in a name written in more
+    than one case, reads as the credential and this attachment stands
+    down — unless a particle stands immediately in front of it, the
+    two being one particle run by then, which this rule takes whole.
+    The second is S2's company: such a word standing behind an
+    unambiguous credential in one run of suffix words reads as the
+    credential in any spelling and any case, reported as S2's
+    credential fork. Every other spelling of such a word attaches as
+    it did before, and the kind rule below gives it this rule's
+    particle fork rather than S2's credential one. In a name written
+    wholly in one case, with nothing in front of the word to speak
+    for it, the two readings cannot be told apart and the particle
+    keeps it, which is right about a Portuguese record and wrong
+    about a credential; the report is how a caller finds the second.
       "Jong, Anke de"             →  family="de Jong"
       "Beethoven, Ludwig van"     →  family="van Beethoven"
       "Berg, Jan vd"              →  family="vd Berg"
@@ -958,8 +962,9 @@ S2. Rationale: generational suffixes and credentials are recognized
     A trailing word of the suffix vocabulary reads as a suffix —
     generational forms and credential acronyms alike, and an
     ambiguous acronym written with its periods, one after each
-    letter, counts unambiguously; a single trailing period is the
-    abbreviation shape any word can wear and does not. A
+    letter or one after each of two or more letter chunks, counts
+    unambiguously; a single trailing period is the abbreviation
+    shape any word can wear and does not. A
     BARE ambiguous acronym is consumed only when the name has words
     to spare — as the second of two words it stays the family
     name — and at the slots that report, either reading carries the
@@ -1005,7 +1010,8 @@ S2. Rationale: generational suffixes and credentials are recognized
     name text, asked nothing and reporting nothing. One member of
     this class is particle vocabulary as well, and where it stands
     alone at this slot P6 decides it: the capitals take it as the
-    credential and every other spelling attaches to the family,
+    credential, as does an unambiguous credential in front of it (the
+    company below), and every other spelling attaches to the family,
     reported there as P6's fork rather than as this one. Behind
     another particle it does not stand alone — the two are one
     particle run by then — and the run attaches whatever the capitals
@@ -1023,6 +1029,36 @@ S2. Rationale: generational suffixes and credentials are recognized
     count leaves the word a name. At the trailing slot of the given
     part the comma has already settled the count, so the writing is
     the only evidence there is.
+    Company is evidence that outranks both. A member of the ambiguous
+    set standing BEHIND an unambiguous credential in one run of
+    suffix words — members of the class between them passing the run
+    on — reads as the credential whatever its writing and whatever
+    the count, at every trailing slot this rule names: the degree in
+    front says what the run is. Only a credential in FRONT speaks; one
+    behind the member says nothing about it. A connective (P3), a
+    particle (P2) — a word of both the particle and the suffix
+    vocabulary heads the family name behind it — and a single-letter
+    roman numeral, in any case — one letter, the shape a bare middle
+    initial is written in, where a multi-letter one such as 'III'
+    speaks — speak for nothing and end the run; so does any name
+    word. A particle of this class standing behind a credential is
+    still spoken for: the exclusion is of the word in front. A word
+    of both the title and the suffix vocabulary standing in the given
+    part's leading title run is a title there and speaks for
+    nothing, and no credential behind it speaks for a word of this
+    class in that part: the title reading makes the next word the
+    given name, and from there the part reads as any given part does,
+    the given part's own company included. A part holding no such
+    word, or only words whose capitals decide them, reads as it did.
+    Anywhere else such a word speaks like any suffix word.
+    At the trailing slot of the given part this company outranks P6's
+    attachment, as the capitals do. It does not reach across a maiden
+    marker's clause (M2), whose name words stand between. A member
+    the company decides reports the fork as a counted pick does,
+    wherever it stands: at the trailing slots above, and in a part
+    after a family comma that the company leaves holding no name
+    word, which reads wholly as the credential run. A member its own
+    capitals already made the credential reports nothing new.
     An unlisted word joins this same ambiguous class by SHAPE where
     the caller asks for it. Two or more period-separated chunks is
     one such shape, admitted by default (S3); an unlisted all-caps
@@ -1051,7 +1087,17 @@ S2. Rationale: generational suffixes and credentials are recognized
       "john smith meng"           →  suffix="meng"
       "john smith MEng"           →  family="MEng"
       "Nguyen Van Lac"            →  family="Van Lac"
-      "Wang M.Eng."               →  family="M.Eng."
+      "Wang M.Eng."               →  suffix="M.Eng."
+      "John Smith PhD MEng"       →  suffix="PhD MEng"
+      "John Smith PhD Ed Ma"      →  suffix="PhD Ed Ma"
+      "Wang Ma PhD"               →  family="Ma"  · boundary
+      "Smith, PhD MEng"           →  suffix="PhD MEng"
+      "Smith, Ms Ma"              →  given="Ma"  · boundary
+      "Smith, PhD Ma"             →  suffix="PhD Ma"
+      "Smith, PhD Ma"             →  ambiguities=("suffix-or-name",)
+      "Smith, MD PhD Ma"          →  given="PhD"  · boundary
+      "Doe, Jane PhD MEng"        →  suffix="PhD MEng"
+      "doe, jane v phd do"        →  suffix="v phd do"
       "Smith, MA"                 →  suffix="MA"
       "Smith, Ma"                 →  given="Ma"
       "Doe, John MA"              →  suffix="MA"
@@ -1089,13 +1135,25 @@ S2. Rationale: generational suffixes and credentials are recognized
     Accepted: an unambiguous suffix is consumed even when that
     leaves no family name at all.
       "Smith Jr."                 →  family=""
-    Accepted: the case signal costs a genuine suffix standing behind
-    a name-leaning acronym. The walk stops at the declined pick
-    rather than continuing past it, so a suffix word in front of one
-    is never reached and reads as a name word.
+    Accepted: a name-leaning member with nothing in front of it to
+    speak for it ends the name, words to spare or not, and whatever
+    stands in front of it is name text. Where a credential does
+    stand in front, the company above decides instead, except in
+    three shapes that keep it out of reach, each of which reads the
+    member as the name: a credential written split across two words
+    with no comma after the name, a title standing between the
+    credential and the member, and a member a particle chain (P2)
+    has already taken. Each reading of the three is older than the
+    company clause, so they are witnessed by tests/v2/cases.py's
+    a_split_degree_in_front_is_out_of_the_walk,
+    a_title_between_degree_and_member_keeps_it_a_name and
+    a_member_the_particle_chain_took_is_out_of_reach rather than by
+    lines here, which would bring each name into the corpus that
+    enforces them at released baselines for a reading this clause
+    did not make.
       "Jack Wei Ma"               →  family="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
-      "abdul Smith Jr Ma"         →  middle="Jr"
+      "abdul Smith Jr Ma"         →  suffix="Jr Ma"
     Accepted: the title chain no longer takes the word this rule
     needs, and the argument a descriptive note here asked for is
     made. A title run leaves one NAME word standing and a
@@ -1116,7 +1174,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P3, P5, P6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -1499,6 +1557,13 @@ M2. Rationale: a maiden marker announces that what follows it is the
     there goes to the family. Open: #548.
       "Doe nee Smith Jr. Prof., Jane"  →  family="Doe Prof."
       "Doe nee Smith V, Jane"          →  family="Doe V"
+    Accepted: a credential written in front of the marker speaks for
+    no word of the clause (S2's company), the clause's own words
+    standing between the two, so the clause keeps a member its
+    writing declines even where the same name written without the
+    clause reads that member as the credential.
+      "Jane Doe Jr. nee Smith Ma"      →  maiden="Smith Ma"
+      "Jane Doe Jr. Ma"                →  suffix="Jr. Ma"  · boundary
     history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
@@ -1595,9 +1660,32 @@ C1. Rationale: a credential run after the comma means the name is in
     credential run however that part is written, and only where the
     count leaves the word a name — one name word before the comma —
     is the case read, capitals in a mixed-case name making it the
-    credential there too (S2). A decision either way at this comma
-    is reported. It is one of TWO places the comma's own decision is
-    reported, the other being the word trailing the given part after
+    credential there too (S2). The same count reads a part of two or
+    more words as the credential run when every word of it is a
+    suffix word or a word of this class, at least one of them of this
+    class, and none of them a single-letter roman numeral, in any
+    case: one letter is the shape a middle initial is written in,
+    and S3 retires single-character matches for the same reason,
+    while a multi-letter numeral or generational word stands in a
+    run like any suffix word ('John Smith, III Ma'). A word of both
+    the title and the suffix vocabulary opening such a part counts as
+    a suffix word there, the name before the comma being complete. Where every word
+    of this class in the part is a LISTED word written in capitals in
+    a mixed-case name, the writing has already made each of them the
+    credential (S2), and the part reads as the credential run on that
+    evidence rather than on the count; a word of the class by shape
+    alone carries no such lean, so a part holding one is read by the
+    count. A decision either way at this comma
+    is reported; for a run of words the decision is the flip to the
+    credential run, reported once over the whole part. A run the
+    count leaves in the listing form reports as S2 reads the words
+    in it: a word of this class read as the credential because a
+    credential in front speaks for it reports, and one its own
+    capitals made the credential does not, so a run whose every such
+    word is written in capitals reads whole in silence
+    ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part read as
+    titles before a lone given name ('Smith, Ms MD Ma'). It is one
+    of TWO places the comma's own decision is reported, the other being the word trailing the given part after
     it (S2), which is a second decision about a second word and never
     the same fork twice; an attachment decided after a family comma
     (P6) reports on its own. C2's comma-structure flag reports what the
@@ -1665,6 +1753,10 @@ C1. Rationale: a credential run after the comma means the name is in
       "Royce, Ed"                 →  given="Ed"  · boundary
       "Smith Jr., MA"             →  suffix="Jr., MA"
       "Smith Jr., Ma"             →  given="Ma"  · boundary
+      "John Smith, PhD MEng"      →  suffix="PhD MEng"
+      "John Smith, Ed Ma"         →  suffix="Ed Ma"
+      "Jane Doe, MS LAc"          →  suffix="MS LAc"
+      "Smith, PhD MEng"           →  family="Smith"  · boundary
       "John Smith, A.B."          →  suffix="A.B."
       "John Smith, A.B."  unlisted_dotted_suffixes-off  →  given="A.B."
       "Smith, A.B."               →  given="A.B."  · boundary
@@ -1724,6 +1816,14 @@ C2. Rationale: text beyond the recognized comma parts should be
     S2's other by-shape half, the unlisted all-caps word, does not
     reach here under its switch either: the shape a tail segment is
     recognized by is the dotted one alone.
+    A part the parse consumes wholly as suffixes raises no report
+    about reading a word of it as a name, whether it is the part
+    after a suffix comma (C1) or a part beyond the second: nothing
+    in it is read as one outside a maiden clause standing in it
+    (M2), so a particle chain run over it (P2) reports neither a
+    particle chained onto a name word nor an acronym taken into the
+    name. What such a part reports is its own — C1's flip and this
+    rule's flag.
       "John Smith, MD, Bart"      →  suffix="MD, Bart"
       "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
       "John Smith, MD, R.A.I."    →  suffix="MD, R.A.I."
@@ -1733,7 +1833,17 @@ C2. Rationale: text beyond the recognized comma parts should be
       "Steven Hardman, MD, DO, DDS"  →  ambiguities=()
       "STEVEN HARDMAN, MD, DO, DDS"  →  ambiguities=("comma-structure",)  · boundary
       "John Smith, MD, XYZ"  unlisted_caps_suffixes-on  →  ambiguities=("comma-structure",)
-    history: decisions.md#C1, decisions.md#S2 · interacts: C1, S2, S3 · implemented: nameparser/_pipeline/_segment.py
+    Accepted: the no-name-reading clause carries no example line of
+    its own. What it moves is a report with no field beside it, and
+    an example line would enter the rules corpus for that report
+    alone; its executable witnesses are the case rows
+    a_credential_run_after_the_comma_reports_no_chain_fork and
+    a_part_past_the_second_reports_no_particle_fork in
+    tests/v2/cases.py, read beside the two rows the chain still
+    reports on outside a tail:
+    the_chain_reports_the_acronym_it_takes and
+    titled_particle_chain_survives_a_title_that_is_also_a_particle.
+    history: decisions.md#C1, decisions.md#S2 · interacts: C1, P2, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_group.py
 
 ## Name order (O)
 

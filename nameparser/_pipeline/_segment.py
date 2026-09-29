@@ -7,7 +7,8 @@ be EMPTY -- doubled commas keep their structural position), structure,
 one_case where the comma form asked for it, COMMA_STRUCTURE
 ambiguities for unrecognized extra segments, and SUFFIX_OR_NAME where
 the comma FLIPPED the structure for a member of the ambiguous
-credential class. The flip and nothing else: where the structure did
+credential class, or for a run of suffix words holding one (#544).
+The flip and nothing else: where the structure did
 not move, the word's reading is still open and `assign` takes it on
 the family-comma path, so it reports there.
 Reads: Lexicon suffix vocabulary and Policy, both through
@@ -30,7 +31,16 @@ by-shape half, dotted or caps (#516). An unlisted dotted or all-caps
 token joins the ambiguous credential class by SHAPE at this stage's
 own candidate tests the same way a listed member does; the caps half
 additionally needs `one_case` to decide membership at all, which this
-stage's own lazy gate supplies.
+stage's own lazy gate supplies. The #544 run test reads
+_vocab.run_word_fold, _vocab.ambiguous_class_candidate (its "ask"
+fallback), _vocab.ambiguous_class_member (the settled-lean check for
+a member admitted through that "ask" fallback),
+_vocab.is_single_letter_numeral, _vocab.ambiguous_lean and
+_vocab.is_wholly_suffix (once, over the leftovers). `run_word_fold`
+ANSWERS membership for a simple token outright (its own docstring
+proves it agrees with `ambiguous_class_candidate` there); it is a
+shortcut around a real predicate, not a condition gating a second
+call to one.
 
 Implements rules C1 and C2 of docs/design/rules.md, cited at the
 decision site below; history in decisions.md#C1.
@@ -42,8 +52,9 @@ from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    ambiguous_class_candidate, ambiguous_class_member, caps_shape_candidate,
-    is_one_case, is_wholly_suffix, name_word_count,
+    ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
+    caps_shape_candidate, is_one_case, is_single_letter_numeral,
+    is_wholly_suffix, name_word_count, run_word_fold,
 )
 from nameparser._types import AmbiguityKind
 
@@ -167,10 +178,11 @@ def segment(state: ParseState) -> ParseState:
     # And for the AMBIGUOUS class the count is of NAME words, not of
     # words: 'Smith Jr., MA' is two tokens and one name, and the token
     # count hands its family to `given` (#289/#516). One rule for the
-    # whole class: the listed and dotted halves are asked only of a
-    # single-token part, a member of either being always exactly one
-    # token (a bare word, or one glued acronym), while the caps half
-    # may come as a RUN ('LEED AP', below).
+    # whole class: the listed and dotted halves are asked of a
+    # single-token part here, a member of either being always exactly
+    # one token (a bare word, or one glued acronym), and of a RUN of
+    # such tokens among suffix words by the #544 run test below, while
+    # the caps half comes as a run of its own ('LEED AP', below).
     #
     # Membership is tested CASE-FREE first (`ambiguous_class_candidate`,
     # the listed set OR -- since 2.4 -- a by-shape member Policy
@@ -199,10 +211,10 @@ def segment(state: ParseState) -> ParseState:
     # `ambiguous_class_candidate`: the run is a property of the CAPS
     # class ALONE (#516 review round, F2), the other two halves being
     # single-token by construction, so `all()` over more than one of
-    # THEM asks a question the design never posed. Measured, the
-    # un-narrowed call per token moved `'John Smith, Ed Ma'`, `'John
-    # Smith, ma do'` and `'John Smith, X.Y.Z. A.B.'` to a credential
-    # run neither the spec nor any case row wants.
+    # THEM asks a question the design never posed: un-narrowed, a
+    # listed or dotted run ('John Smith, Ed Ma') would pass as a CAPS
+    # run through this switch, and such runs are the question of the
+    # listed-and-dotted run test below, asked with the switch off too.
     #
     # `one_case=False` asks the case-free question -- "if this name
     # turned out mixed, would EVERY token in the run join the CAPS
@@ -219,6 +231,83 @@ def segment(state: ParseState) -> ParseState:
                                          one_case=False)
                     for i in groups[1])):
         candidate = case_class() is False
+    # rules.md#C1: "The same count reads a part of two or more words as
+    # the credential run when every word of it is a suffix word or a
+    # word of this class, at least one of them of this class" -- the
+    # single-token rule above generalized to RUNS (#544): 'John Smith,
+    # PhD MEng' is the credential run the single-token 'John Smith,
+    # MEng' already is. A single-letter roman numeral, in any case,
+    # voids the run for its SHAPE -- one letter is how a middle initial
+    # is written, and S3 retired single-character vocabulary matches
+    # for the same reason (`is_single_letter_numeral`) -- not for
+    # being a generation: 'John Smith, III Ma' and 'John Smith, Jr Ma'
+    # are runs. A title/suffix DUAL opening the part counts as the
+    # suffix vocabulary it is: with a full name before the comma the
+    # name is complete, and the legacy disjunct below already counts a
+    # dual that way ('John Smith, MS MA'). The given part's leading
+    # title run is where a dual reads as a title ('Smith, Ms Ma',
+    # 'Smith, MD PhD Ma'), and that exclusion is
+    # `_pieces.segment_suffix_reading`'s, one name word before the
+    # comma never reaching the flip.
+    #
+    # Asked only where the flip is possible at all: two or more words
+    # before the comma is a necessary condition for two NAME words
+    # there, so 'Smith, J. Q.' and 'Smith, PhD MEng' never enter the
+    # loop. Inside it, class membership is asked first and the suffix
+    # predicate only of what is left, once, as a run. `run_word_fold`
+    # answers a SIMPLE token -- ASCII, no interior period -- from the
+    # vocabulary sets directly, at less cost than either real
+    # predicate below; a member or a definite reject is settled
+    # without calling them at all, and only a non-simple token, or one
+    # `run_word_fold` defers, still takes the real predicate --
+    # `ambiguous_class_candidate` for membership, `is_wholly_suffix`
+    # once over the leftovers. A part holding a name word ('Doe Smith,
+    # Jane Q. Public') breaks on that word's "reject" without entering
+    # a Python frame for either predicate.
+    if not candidate and len(groups[1]) >= 2 and len(groups[0]) >= 2:
+        members: list[str] = []
+        rest: list[str] = []
+        settled = True
+        lexicon = state.lexicon
+        for i in groups[1]:
+            text = state.tokens[i].text
+            fold = run_word_fold(text, lexicon, state.policy)
+            is_member = (fold == "member"
+                         or (fold == "ask" and ambiguous_class_candidate(
+                             text, lexicon, state.policy)))
+            if is_member:
+                members.append(text)
+                # the lean is the LISTED set's alone (S2): a member
+                # admitted by shape ('X.Y.Z.') is read by the count
+                settled = (settled and text.isupper()
+                           and (fold == "member"
+                                or ambiguous_class_member(text, lexicon)))
+            # "reject" first: a name word ends the run without the
+            # numeral test's frame, and the numeral cannot be a
+            # "reject" (it is suffix vocabulary, so it folds "defer")
+            elif fold == "reject" or is_single_letter_numeral(text):
+                break
+            else:
+                rest.append(text)
+        else:
+            # Every word is a member or left to the suffix predicate.
+            # A run whose every member the WRITING already settles as a
+            # credential (capitals in a mixed-case name, S2's lean) is
+            # not this rule's decision: the listing form reads such a
+            # part wholly as the credential run and reports it as it
+            # always did ('John Smith, PhD MA'), so it is left there --
+            # no flip, no new report. `settled` (every member listed
+            # and in capitals) is a necessary condition for that lean,
+            # asked inline so a run with a Title-case member never
+            # forces the case fact here; `ambiguous_lean` is what
+            # answers.
+            candidate = (bool(members)
+                         and (not rest or is_wholly_suffix(
+                             rest, lexicon, state.policy))
+                         and not (settled and case_class() is False
+                                  and all(ambiguous_lean(t, False)
+                                          == "credential"
+                                          for t in members)))
     # Computed only where `candidate` is true, alongside `case_class()`
     # -- the same lazy gate: a non-candidate comma name never counts
     # its pre-comma words either. Hoisted to a local because the
@@ -253,7 +342,7 @@ def segment(state: ParseState) -> ParseState:
         # the attachment. rules.md#C1's comma-quiet policy gains its
         # exception for this class and no other.
         #
-        # `disp`/the index tuple cover the WHOLE post-comma part --
+        # The quoted text and the index tuple cover the WHOLE post-comma part --
         # the same text as before for the single-token listed and
         # dotted halves (a join of one element is that element), while
         # the caps half's run ('LEED AP') is the first time this class
@@ -265,12 +354,20 @@ def segment(state: ParseState) -> ParseState:
         # comma name (`John Smith, MA`, `John Smith, A.B.`, `Davis
         # Royce, Ed`) +2 frames at the DEFAULT policy, a path this
         # switch must not touch at all (#516 review round, F4).
-        disp = (state.tokens[groups[1][0]].text if len(groups[1]) == 1
-                else " ".join(state.tokens[i].text for i in groups[1]))
+        #
+        # A RUN (#544) is named as holding such a word rather than
+        # being one: in 'John Smith, PhD MEng' only 'MEng' is also a
+        # name word.
+        if len(groups[1]) == 1:
+            what = (f"{state.tokens[groups[1][0]].text!r} after the "
+                    f"comma is also an ordinary name word")
+        else:
+            what = (f"{' '.join(state.tokens[i].text for i in groups[1])!r}"
+                    f" after the comma holds a word that is also an "
+                    f"ordinary name word")
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{disp!r} after the comma is also an "
-            f"ordinary name word; the part before the comma holds "
+            f"{what}; the part before the comma holds "
             f"{pre_comma_names} name words, so it is read as a "
             f"credential run",
             groups[1]))

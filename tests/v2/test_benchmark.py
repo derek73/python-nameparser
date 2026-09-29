@@ -22,6 +22,7 @@ reach the code under it.
 import sys
 import time
 from collections.abc import Callable
+from types import FrameType
 
 import pytest
 
@@ -233,6 +234,17 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #                             frozen loop declines it on the tag
 #                             ('i und ' reaches nothing, 'i Und '
 #                             reaches everything)
+#   S2 ANCHOR pass            credential_run ONLY -- a Title-case
+#                             member in a mixed-case name declines on
+#                             its writing, so the peel asks
+#                             `credential_anchors` (#544), and every
+#                             'Ma' stands behind a 'PhD' that anchors
+#                             it: 38 of the 40 words of 'PhD Ma ' x20
+#                             read as the suffix, the reserve keeping
+#                             the first 'PhD' and 'Ma' as given and
+#                             family. 'PhD MA ' reads the
+#                             same and never asks the pass at all, the
+#                             capitals deciding each member first
 _SHAPES = {
     "delimiter_pairs": "(a) ",      # extract: matched pairs -> masked spans
     "quote_pairs": '"a" ',          # extract: the open==close path
@@ -247,6 +259,7 @@ _SHAPES = {
     "bound_given": "abdul ",        # group: the P5 reserve over every piece
     "maiden_clause": "nee MA ",     # group: M2's view over the segment
     "link_run": "i Und ",           # group: P3's both-sides walk (#397)
+    "credential_run": "PhD Ma ",    # pieces: S2's anchor pass (#544)
 }
 
 _BASE = 800
@@ -304,6 +317,13 @@ _FACTOR = 4
 # neither number moved. The absolute cost is the shape's own price
 # and is paid at the top of the clean range: 11.6ms at base 800
 # against 48.7ms at 3200.
+# The fourteenth (credential_run, #544) was measured against the
+# per-member look-behind the one-pass anchor replaces -- each position
+# walking back over the whole run in front of it, behavior-identical
+# -- which reads 14.8 at base 200, 15.1 at 400 and 15.8 at 800, the
+# strongest signal on record. The shape reads 4.13-4.21 at every one
+# of the three bases on this tree (py3.11, 2026-09-27), inside the
+# clean column; neither number moved.
 _MAX_RATIO = 6.0
 
 
@@ -437,8 +457,9 @@ _RUN_MAX_RATIO = 6.0
 _RUN_HUGE_MAX_RATIO = 5.0
 
 
-def _frames_for(text: str) -> int:
-    """Python frame entries for ONE parse of `text`.
+def _frames_for(text: str, only: str | None = None) -> int:
+    """Python frame entries for ONE parse of `text` -- of every
+    function, or of the one named `only`.
 
     One parse, not a mean: this measures growth between two inputs, and
     the count is deterministic for a given (tree, interpreter) -- see
@@ -448,9 +469,10 @@ def _frames_for(text: str) -> int:
     parse("warm up the caches")
     calls = 0
 
-    def counter(frame: object, event: str, arg: object) -> None:
+    def counter(frame: FrameType, event: str, arg: object) -> None:
         nonlocal calls
-        if event == "call":
+        if event == "call" and (only is None
+                                or frame.f_code.co_name == only):
             calls += 1
 
     sys.setprofile(counter)
@@ -648,3 +670,35 @@ def test_a_link_costs_what_it_is_pinned_at() -> None:
         f"see it: check whether `_group._between_name_words` still "
         f"answers both sides of a link in one call, then move the "
         f"baseline deliberately (#397)")
+
+
+def test_a_name_word_ends_the_comma_run_before_the_numeral_test() -> None:
+    """rules.md#C1's run test (#544) asks `run_word_fold`'s "reject"
+    before `is_single_letter_numeral`, so an ordinary comma name whose
+    part holds a name word pays no frame for the numeral test. The
+    fold is asked (the reachability probe: the name enters the run
+    loop at all, two words standing before the comma) and the numeral
+    test never is. RECORDED NEGATIVE CONTROL: with the two tests in
+    the other order, `is_single_letter_numeral` is entered once for
+    'Doe Smith, Jane Q.' (measured 2026-09-28)."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    text = "Doe Smith, Jane Q."
+    assert _frames_for(text, only="run_word_fold") >= 1
+    assert _frames_for(text, only="is_single_letter_numeral") == 0
+
+
+def test_a_member_opening_a_comma_part_asks_no_anchor_pass() -> None:
+    """rules.md#S2's company clause speaks only for a member with a
+    credential in FRONT of it, so a member opening the part after a
+    one-word family comma ('Smith, Ed') is never anchored, and
+    `segment_suffix_reading` builds no `credential_anchors` pass for
+    it: the pass is built only where `anchor_in_reach` finds a suffix
+    piece in front. RECORDED NEGATIVE CONTROL: with the pass built
+    for every member whose writing declines, `credential_anchors` is
+    entered once for each of these (measured 2026-09-28)."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("Smith, Ed", "Smith, Ma", "Smith, Ed John"):
+        assert parse(text).family == "Smith", text
+        assert _frames_for(text, only="credential_anchors") == 0, text

@@ -207,6 +207,21 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
             and not is_initial_shaped(preceding))
 
 
+# #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,
+# is excluded for its SHAPE -- one letter is how a middle initial is
+# written, and rules.md#S3 retires single-character matches for the
+# same reason -- not for being a generation: a multi-letter suffix
+# word ('III', 'Jr') anchors and runs like any other. So it neither
+# anchors an ambiguous member behind it nor counts toward C1's
+# multi-word credential run. It still peels exactly as before; this
+# answers only those two questions.
+def is_single_letter_numeral(text: str) -> bool:
+    """One letter, optionally followed by periods, that is a roman
+    numeral ('V', 'v', 'I.', 'X')."""
+    letters = text.rstrip(".")
+    return len(letters) == 1 and _ROMAN.match(letters) is not None
+
+
 def is_initial(text: str) -> bool:
     """'A.' / 'j.' / bare capital -- v1's is_an_initial, narrowed to
     scripts that HAVE initials (#320). v1's \\w is Unicode-aware and
@@ -315,16 +330,25 @@ def ambiguous_lean(text: str, one_case: bool) -> Lean | None:
 
 
 _DOTTED = re.compile(r"(?:[^\W\d_]\.)+")
+# #544: the CHUNKED spelling -- two or more runs of letters, each
+# closed by a period ('M.Eng.', 'L.Ac.'). Both callers compare the
+# period-free letters against the listed member, so the chunks must
+# spell it; one chunk ('Ma.', 'Ed.') is the single trailing period and
+# stays outside the gate.
+_CHUNKED = re.compile(r"(?:[^\W\d_]+\.){2,}")
 
 
 def _dotted(text: str) -> bool:
     """Written with its periods: one after each letter ('M.A.',
-    'J.D.'), the acronym's own spelling. A single trailing period
-    ('Ma.', 'Ed.', 'Ms.') is the abbreviation shape any word can wear
-    -- the honorific's, a name's -- and is not the gate's "written
-    with periods" (rules.md#S2). Until #296's review the gate was
-    "any period", and 'Smith, Ms.' passed it as the degree."""
-    return _DOTTED.fullmatch(text) is not None
+    'J.D.'), the acronym's own spelling, or -- since #544 -- two or
+    more letter chunks each closed by a period ('M.Eng.', 'L.Ac.'), the
+    spelling a member with a lower-case tail is written in. A single
+    trailing period ('Ma.', 'Ed.', 'Ms.') is the abbreviation shape any
+    word can wear -- the honorific's, a name's -- and is not the gate's
+    "written with periods" (rules.md#S2). Until #296's review the gate
+    was "any period", and 'Smith, Ms.' passed it as the degree."""
+    return (_DOTTED.fullmatch(text) is not None
+            or _CHUNKED.fullmatch(text) is not None)
 
 
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
@@ -508,7 +532,8 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     clause).
 
     The '.' gate here is DELIBERATELY STRICTER than S2's own
-    dotted-form test (`_dotted`, a period after EACH letter): '.'
+    dotted-form test (`_dotted`, a period after EACH letter or after
+    each of two or more letter chunks): '.'
     anywhere excludes membership, so a single TRAILING period ('MA.',
     'Ed.') is excluded here even though the LEAN still reads it as
     the bare acronym's case ('Smith, MA.' -> suffix 'MA.', measured).
@@ -522,6 +547,87 @@ def ambiguous_class_member(text: str, lexicon: Lexicon) -> bool:
     if "." in text:
         return False
     return _normalize(text) in lexicon.suffix_acronyms_ambiguous
+
+
+# #544's inline gate for the comma-run test's common token, named and
+# tested here rather than hand-copied at the call site: a SIMPLE token -- ASCII, no INTERIOR
+# period -- is fully resolved from the vocabulary sets directly, at
+# less cost than either real predicate it stands in for; a non-simple
+# token is left to them ("ask").
+def run_word_fold(
+        text: str, lexicon: Lexicon,
+        policy: Policy) -> Literal["member", "reject", "defer", "ask"]:
+    """The #544 comma-run test's per-token gate (`_segment.py`).
+
+    "member": TEXT, with its trailing periods stripped, matches
+    `suffix_acronyms_ambiguous` exactly and carries NO period at all
+    -- `ambiguous_class_member`'s own test, reached here without
+    paying for that call. Provably the same answer for a simple token:
+    `ambiguous_class_member` is exactly "no period, and the fold is a
+    listed ambiguous acronym", which this branch tests directly.
+
+    "reject": no suffix vocabulary set, the Ph./D. halves ("ph", "d"),
+    or a configured delimiter core could ever accept this token --
+    `is_wholly_suffix([text], lexicon, policy)` is False at EVERY
+    `Policy`, so the run test may stop without asking it. Universal
+    because `is_wholly_suffix` reads only two `Policy` fields,
+    `lenient_comma_suffixes` and `extra_suffix_delimiters`, and this
+    branch's own guard (`not policy.extra_suffix_delimiters`) already
+    requires the second to be empty -- a delimiter policy turns what
+    would have been "reject" into "defer" instead, never leaving this
+    branch's verdict to answer for one. The first selects between
+    `is_suffix_lenient` and `is_suffix_strict`, and both are
+    membership in the same three vocabulary sets this branch has
+    already excluded the fold from (plus `period_joined_vocab`,
+    which checks the identical two sets chunk-wise and finds no
+    interior period to chunk on a simple token) -- so
+    `lenient_comma_suffixes` cannot move the answer either.
+
+    "defer": simple, not a member, not rejected either -- vocabulary-
+    eligible but not the ambiguous set, so the token is left for
+    `is_wholly_suffix` to count as a RUN member later, and calling
+    `ambiguous_class_candidate` here would only confirm False: for a
+    simple token that fold's `"." in text` gate already reads False
+    (no interior period) or, with a lone trailing period, finds no
+    "shape" verdict (`period_joined_vocab` requires a period that is
+    NOT at the end) -- so "defer" is `ambiguous_class_candidate`'s
+    answer too, paid for with zero calls instead of one.
+
+    "ask": every NON-simple token (an interior period, or non-ASCII):
+    the caller falls back to `ambiguous_class_candidate` for
+    membership, exactly as it always did.
+
+    All four cases are checked, over `Lexicon.default()`'s whole
+    suffix vocabulary plus name-word controls, mixed case, a trailing
+    period, both `Policy.lenient_comma_suffixes` settings and a
+    delimiter-core policy, by
+    `tests/v2/pipeline/test_vocab.py::test_run_word_fold_agrees_with_the_real_predicates`
+    (its docstring carries a negative control: with one acceptance
+    path dropped, the sweep fails).
+
+    Measured (2026-09-28, #544, by a profiler-frame count over one
+    parse, py3.11), for an ORDINARY comma name that enters the run
+    loop and breaks on its very first token -- 'Doe Smith, Jane Q.',
+    'Garcia Lopez, Maria Jose': the tree costs 318 and 331 frames
+    against e10e83b4's 317 and 330 (no run rule at all), the one
+    frame being this call's own; the loop tests "reject" before the
+    numeral so a name word pays nothing more. That one frame is the
+    price of a gate a test can reach on its own rather than one
+    hand-copied at the call site.
+    """
+    core = text.rstrip(".")
+    if not (text.isascii() and "." not in core):
+        return "ask"
+    folded = core.lower()
+    if folded in lexicon.suffix_acronyms_ambiguous and core == text:
+        return "member"
+    if (not policy.extra_suffix_delimiters
+            and folded not in lexicon.suffix_acronyms
+            and folded not in lexicon.suffix_words
+            and folded not in lexicon.suffix_acronyms_ambiguous
+            and folded not in ("ph", "d")):
+        return "reject"
+    return "defer"
 
 
 # #516's all-caps half, ONE PREDICATE for the shape test and its

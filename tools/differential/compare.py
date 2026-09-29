@@ -1807,6 +1807,13 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Smith, Ph. D. MD": ("suffix", "title"),
         "Smith, Ph.D. Jr.": ("given", "suffix"),
         "Smith, PhD Jr.": ("given", "suffix", "title"),
+        # #544, 2026-09-27: the same contest and the same argument as
+        # 'Smith, PhD Jr.' above -- the unambiguous PhD anchors the
+        # MEng behind it, so the run collapses whole into `suffix`.
+        "Smith, PhD MEng": ("given", "suffix", "title"),
+        # 2026-09-28: 'Smith, PhD Ma', the same run with the Title-case
+        # member of the older marking, on the same terms.
+        "Smith, PhD Ma": ("given", "suffix", "title"),
         # #528's two, adjudicated 2026-09-13, and kept BELOW #498's
         # block so the three cohorts read down the dict in the order
         # the PROVENANCE note above tells them. Both are contested by

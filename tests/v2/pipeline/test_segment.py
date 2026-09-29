@@ -207,3 +207,100 @@ def test_the_structure_flip_report_counts_the_real_pre_comma_words() -> None:
     (amb,) = [a for a in state.ambiguities
              if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
     assert "holds 3 name words" in amb.detail
+
+
+def _flip_reports(state: ParseState) -> list[list[str]]:
+    return [_texts(state, a.indices) for a in state.ambiguities
+            if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+
+
+def test_the_name_word_count_reads_a_run_as_it_reads_one_word() -> None:
+    # rules.md#C1 (#544): a part of two or more words, every one of
+    # them suffix vocabulary or a class member and at least one a
+    # member, reads by the same NAME-word count as the single token,
+    # and the flip reports once, over the whole part.
+    for text in ("John Smith, PhD Ma", "John Smith, Ed Ma",
+                 "John Smith, Ma PhD", "john smith, phd ma",
+                 "JOHN SMITH, PHD MA", "John Smith, MD Ma",
+                 "John Smith, A.B. PhD", "John Smith, Ph. D. Ma"):
+        out = _segmented(text)
+        assert out.structure is Structure.SUFFIX_COMMA, text
+        assert _flip_reports(out) == [_texts(out, out.segments[1])], text
+    # one name word before the comma: the count leaves the listing form
+    # and the run test is not even asked, so the case fact stays unasked
+    out = _segmented("Smith, PhD Ma")
+    assert out.structure is Structure.FAMILY_COMMA
+    assert out.one_case is None
+    assert _segmented("Smith Jr., PhD Ma").structure \
+        is Structure.FAMILY_COMMA
+
+
+def test_the_run_test_declines_a_name_word_and_a_numeral() -> None:
+    # a name word anywhere in the part, or a word that is neither
+    # vocabulary nor a member, keeps the listing form -- and so does a
+    # single-letter roman numeral, in any case, for its one-letter
+    # shape (a multi-letter one runs: 'John Smith, III Ma')
+    for text in ("John Smith, Jones Ma", "John Smith, PhD Jones Ma",
+                 "John Smith, V Ma", "John Smith, PhD v Ma",
+                 "John Smith, PhD Ma.", "John Smith, J. Ma"):
+        out = _segmented(text)
+        assert out.structure is Structure.FAMILY_COMMA, text
+        assert not _flip_reports(out), text
+
+
+def test_a_run_the_writing_settles_is_left_to_the_listing_form() -> None:
+    # every member written in capitals in a mixed-case name leans
+    # credential (S2), so the part is already the credential run on
+    # that evidence: no flip here and no report from this stage
+    out = _segmented("John Smith, PhD MA")
+    assert out.structure is Structure.FAMILY_COMMA
+    assert not _flip_reports(out)
+    assert out.one_case is False
+    # the lean is the LISTED set's alone: a member admitted by SHAPE
+    # is read by the count, capitals or not
+    out = _segmented("John Smith, X.Y.Z. MA")
+    assert out.structure is Structure.SUFFIX_COMMA
+    # and one Title-case member is enough to make it the count's call
+    assert _segmented("John Smith, MA Ed").structure \
+        is Structure.SUFFIX_COMMA
+
+
+def test_the_run_test_reads_a_delimiter_core_transparently() -> None:
+    # a configured delimiter core is _vocab.run_word_fold's "defer"
+    # (#544): without a delimiter policy
+    # the bare token is a definite "reject" (no suffix set, no core)
+    # and the run test breaks on it before it ever reaches
+    # `is_wholly_suffix`; with the core configured the SAME token is
+    # left for `is_wholly_suffix`'s own `text in cores` disjunct,
+    # which admits it, so the two members either side of it still
+    # complete the run.
+    text = "John Smith, Ma - Ed"
+    assert _segmented(text).structure is Structure.FAMILY_COMMA
+    state = ParseState(
+        original=text, lexicon=_LEX,
+        policy=dataclasses.replace(
+            Policy(), extra_suffix_delimiters=frozenset({" - "})))
+    out = segment(tokenize(extract_delimited(state)))
+    assert out.structure is Structure.SUFFIX_COMMA
+
+
+def test_the_run_test_reads_lenient_comma_suffixes() -> None:
+    # rules.md#C1's leftovers ask `is_wholly_suffix`'s own POLICY-
+    # selected predicate (#544): an
+    # initial-shaped suffix WORD ('B.') that is not a single-letter
+    # roman numeral is a member of neither the ambiguous class nor
+    # `is_single_letter_numeral`'s carve-out, so it reaches `rest` and
+    # is read by `is_wholly_suffix` alone -- lenient by default (v1's
+    # is_suffix_lenient bypasses the initial veto), strict under
+    # Policy(lenient_comma_suffixes=False) (v1's is_suffix, which the
+    # veto reads as a middle initial instead).
+    lex = _LEX.add(suffix_words={"b"})
+    text = "John Smith, Ma B."
+    state = ParseState(original=text, lexicon=lex, policy=Policy())
+    out = segment(tokenize(extract_delimited(state)))
+    assert out.structure is Structure.SUFFIX_COMMA
+    state = ParseState(
+        original=text, lexicon=lex,
+        policy=dataclasses.replace(Policy(), lenient_comma_suffixes=False))
+    out = segment(tokenize(extract_delimited(state)))
+    assert out.structure is Structure.FAMILY_COMMA

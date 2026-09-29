@@ -12,7 +12,6 @@ import hashlib
 import itertools
 import re
 import warnings
-
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
@@ -27,9 +26,10 @@ from nameparser._lexicon import _VOCAB_FIELDS
 from nameparser._pipeline import run
 from nameparser._pipeline._state import (AMBIGUOUS_ACRONYM_TAG,
                                          ParseState)
-from nameparser._pipeline._vocab import effective_script
-from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
-                               AmbiguityKind, ParsedName, Role, Token)
+from nameparser._pipeline._vocab import ambiguous_lean, effective_script
+from nameparser._types import (SHAPE_ACRONYM_TAG, UNJOINED_CONJUNCTION_TAG,
+                               UNJOINED_TAG, AmbiguityKind, ParsedName,
+                               Role, Token)
 
 from .cases import CASES
 from .conftest import differential_corpus
@@ -274,6 +274,21 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: single-policy grid held -- three markers x three policies, and the
 #: class is indifferent to both, which is the finding. (Before #533
 #: the same grid had 186 allowlisted and 984 failing.)
+#:
+#: The ANCHORED-HEAD class beside it (#544), pinned the same way: a
+#: head ending in an unambiguous credential anchors a member written
+#: straight after it and not one written after a clause (rules.md#M2's
+#: boundary). Recorded 2026-09-27 on the #544 tree: 810 of the 20,412
+#: pairs, 270 for each head ending in a credential ('Jane Doe Jr.',
+#: 'Jane Doe PhD', 'Doe, Jane PhD') and every one a Title-case member
+#: (a caps member leans credential on both sides and a lower one is
+#: counted on both, so neither disagrees); 0 with the anchor off, which
+#: is the recorded negative control. The one-case class's 1,026 is
+#: unmoved by the three heads #544 added ('Jane Doe PhD', 'Doe, Jane
+#: PhD', 'PhD'), all three being mixed case.
+_MAIDEN_ANCHORED_HEAD_EXCEPTIONS = 810
+_MAIDEN_ANCHORED_HEAD_DIGEST = (
+    "c5a8f5277e49fe583e0edc834346f623dd02459845ccd6ab9325ecfe7a167c7c")
 _MAIDEN_AGREEMENT_EXCEPTIONS = 1026
 _MAIDEN_AGREEMENT_DIGEST = (
     "4b70727a2633fea1a9c219173d48b223cc0866a5d340b69a9eb4f14fc386ae6a")
@@ -285,6 +300,193 @@ def _one_case(text: str) -> bool | None:
     about."""
     return run(ParseState(original=text, lexicon=Lexicon.default(),
                           policy=Policy())).one_case
+
+
+def _qualifying_front(toks: list[tuple[Token, tuple[int, int]]], i: int,
+                      original: str) -> tuple[Token, int] | None:
+    """rules.md#S2's company clause: walk back from `toks[i]` (a
+    member of the ambiguous class) through lone members to the piece
+    that would speak for their company, and return it -- with its OWN
+    index, which a caller's role question needs -- if it structurally
+    qualifies: unambiguous suffix vocabulary, not tagged an initial,
+    not a connective, not a particle, not a single-letter roman
+    numeral, and neither a comma nor a maiden marker stands between it
+    and `toks[i]` (the company is read within one comma part, and does
+    not reach across a clause, rules.md#M2). None if no such piece exists or it fails one
+    of those tests.
+
+    Says NOTHING about either token's ROLE -- not `toks[i]`'s, and not
+    the front's. That is deliberate: a caller checking whether the
+    front SPEAKS asks its own role question afterward (a title heading
+    the part speaks for nothing, 'Smith, Ms Ma'; the piece a name
+    reserve keeps speaks for nothing either, `_reserve_kept` below),
+    and the two properties this feeds ask DIFFERENT things of the
+    SAME front's role -- shared here only where they agree."""
+    tok, span = toks[i]
+    j = i - 1
+    while (j >= 0 and AMBIGUOUS_ACRONYM_TAG in toks[j][0].tags
+           and SHAPE_ACRONYM_TAG not in toks[j][0].tags):
+        j -= 1
+    if j < 0:
+        return None
+    front, front_span = toks[j]
+    between = original[front_span[1]:span[0]]
+    letters = front.text.rstrip(".")
+    if ("," in between or _MARKER_RE.search(between)
+            or "vocab:suffix" not in front.tags
+            or "initial" in front.tags
+            or "conjunction" in front.tags
+            or "particle" in front.tags
+            or (len(letters) == 1 and letters.lower() in "ivx")):
+        return None
+    return front, j
+
+
+def _reserve_kept(toks: list[tuple[Token, tuple[int, int]]], j: int,
+                  original: str) -> bool:
+    """Whether `toks[j]` is the reserve rules.md#H4's no-comma
+    carve-out keeps regardless of its own vocabulary: the name's
+    first non-TITLE piece, in a name with NO COMMA anywhere before
+    it, and no GIVEN/MIDDLE/FAMILY token before it either. 'PhD Ma'
+    is this shape (the reserve keeps 'PhD'); 'Smith, PhD Ma' is NOT --
+    a family already exists from before the comma, so nothing here
+    is H4's carve-out, whatever `segment_suffix_reading` does with
+    the given part on its own account (not modelled by this walk;
+    `_outside_its_company`'s docstring names where that shape is
+    pinned instead). A
+    comma anywhere before `toks[j]` therefore answers False outright.
+
+    A maiden clause crossed on the way answers nothing on its own: a
+    MAIDEN-role token is simply not a name role, so the walk continues
+    through it exactly as it does through a TITLE, to whatever real
+    name may stand on the far side of the marker -- 'Jane nee Doe PhD
+    Ma' finds 'Jane' (GIVEN) past the clause and answers False, PhD
+    not being the reserve there either."""
+    for k in range(j - 1, -1, -1):
+        tok, span = toks[k]
+        _, next_span = toks[k + 1]
+        between = original[span[1]:next_span[0]]
+        if "," in between:
+            return False
+        if tok.role in (Role.GIVEN, Role.MIDDLE, Role.FAMILY):
+            return False
+    return True
+
+
+def _outside_its_company(name: ParsedName) -> list[str]:
+    """rules.md#S2's company clause, read off a finished parse (#544):
+    a LISTED member of the ambiguous class written behind an
+    unambiguous credential -- with nothing but listed members between
+    them, in the same comma part and on the same side of a maiden
+    marker -- is read as a credential. The word in front must
+    structurally qualify (`_qualifying_front`) and speak for itself:
+    not read as a TITLE, which is how the parse reads a dual opening
+    the given part ('Smith, Ms Ma'), and not the piece a name reserve
+    keeps regardless of its own vocabulary (`_reserve_kept`: 'PhD Ma'
+    reads family 'Ma', because 'PhD' is the name the reserve kept, not
+    a credential run's own member).
+
+    A dual in the given part's leading title run also keeps a
+    credential BEHIND it from speaking for a member in that part
+    ('Smith, MD PhD Ma' keeps given 'PhD', middle 'Ma'), and that
+    exemption is NOT modelled here: no head of the
+    walk opens a comma part with a title/suffix dual, so it would be
+    code no parse reaches. The case rows
+    `a_dual_opening_the_given_part_turns_the_anchor_off` and
+    `a_dual_opening_the_given_part_silences_a_later_degree`, and
+    test_pieces' `test_a_dual_in_the_leading_title_run_turns_the_anchor_off`,
+    pin it instead.
+
+    Deliberately does NOT require the front to already be in the
+    SUFFIX role: that was tried and it blinded the check to exactly
+    the no-comma half of the defect this exists for -- with the
+    anchor off, a lost anchor costs the credential IN FRONT its
+    SUFFIX role too ('Jane Doe Jr. Ma' read middle 'Doe Jr.' before
+    #544), and a check requiring `front.role is Role.SUFFIX` would
+    have passed on that very defect by exempting every front it broke.
+
+    The walk this test runs never puts a bare, real family name
+    before a comma with nothing but a credential run after it
+    ('Smith, PhD Ma') -- every head either has no comma at all or
+    already carries a given name across it. That comma-side shape is
+    pinned separately: `tests/v2/cases.py`'s `family_comma_lone_degree`
+    and `family_comma_two_credentials` rows, and rules.md#S2's
+    'Smith, PhD' boundary example.
+
+    DELIBERATELY A SECOND IMPLEMENTATION of `_pieces.credential_anchors`,
+    over the finished parse's tokens, tags and roles rather than over
+    pieces."""
+    toks = _placed(name)
+    out = []
+    for i, (tok, span) in enumerate(toks):
+        if (tok.role is Role.SUFFIX
+                or AMBIGUOUS_ACRONYM_TAG not in tok.tags
+                or SHAPE_ACRONYM_TAG in tok.tags):
+            continue
+        qualifies = _qualifying_front(toks, i, name.original)
+        if qualifies is None:
+            continue
+        front, j = qualifies
+        if front.role is Role.TITLE or _reserve_kept(toks, j, name.original):
+            continue
+        out.append(f"{tok.text!r} -> {tok.role.value} behind "
+                   f"{front.text!r}")
+    return out
+
+
+def _credential_without_suffix_role(name: ParsedName) -> list[str]:
+    """The converse of `_outside_its_company` (#544): a
+    member read as a credential (role SUFFIX) because a qualifying
+    word stands in front of it must have that FRONT word in the
+    SUFFIX role too -- the front cannot itself be reserved as the
+    given or family name while lending its credential-ness to the
+    member behind it. 'PhD Ma' reading given 'PhD', suffix 'Ma',
+    family '' is the shape this catches: 'Ma' inheriting PhD's company
+    while PhD itself is handed back to the given slot the walk has to
+    reserve, losing the family entirely (the recorded control below). Same `_qualifying_front` walk-back as
+    `_outside_its_company`, checked the other way; the two properties
+    then ask DIFFERENT role questions of the front on purpose (see
+    `_qualifying_front`'s docstring) -- this one does NOT exempt a
+    front the reserve kept, because that is exactly the shape the
+    defect took: the reserve-kept front is the one whose SUFFIX role
+    went missing.
+
+    `_one_case(name.original)` is a full extra pipeline run, asked
+    only for a SURVIVING candidate: a member whose qualifying front is
+    outside both TITLE and SUFFIX. Every other member is decided by
+    role tests alone.
+
+    Skips a member whose OWN case-based lean (rules.md#S2, #289 -- an
+    ALL-CAPS member of a mixed-case name) already reads it as a
+    credential with no company at all: that class predates #544 and
+    reaches the very same H4 carve-out on its own ('PhD MA' -> given
+    'PhD', suffix 'MA' on 1.4.0), so it is not this property's
+    question."""
+    toks = _placed(name)
+    out = []
+    for i, (tok, span) in enumerate(toks):
+        if tok.role is not Role.SUFFIX or AMBIGUOUS_ACRONYM_TAG not in tok.tags:
+            continue
+        qualifies = _qualifying_front(toks, i, name.original)
+        if qualifies is None:
+            continue
+        front, _ = qualifies
+        if front.role is Role.TITLE or front.role is Role.SUFFIX:
+            continue
+        # a surviving candidate: only now is the extra run worth its cost
+        one_case = _one_case(name.original)
+        # inlined `_pieces.listed_lean`'s own gate, over the public
+        # `Token` rather than the pipeline's `WorkToken` -- the two
+        # types share `.text`/`.tags`, and this is a second
+        # implementation on purpose, like the rest of this function
+        own_lean = (None if (one_case is None
+                            or SHAPE_ACRONYM_TAG in tok.tags)
+                    else ambiguous_lean(tok.text, one_case))
+        if own_lean == "credential":
+            continue
+        out.append(f"{front.text!r} -> {front.role.value} in "
+                   f"front of {tok.text!r}, which reads suffix")
+    return out
 
 
 def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
@@ -305,25 +507,58 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
     Measured on this tree before #533: 984 of 2016 pairs disagreed
     outside the allowlist. After: 0, and the allowlist holds exactly
     its recorded size.
+
+    #544 joins this walk rather than opening a grid: every parse it
+    takes is also asked `_outside_its_company` and
+    `_credential_without_suffix_role` (rules.md#S2's company clause,
+    both directions), and the two heads ending in 'PhD' were added so
+    that the given slot holds members behind a credential beside the
+    comma-less trailing slot 'Jane Doe Jr.' already held. A third
+    head, the bare 'PhD', was added so `_credential_without_suffix_role`
+    has a shape to catch at all -- none of the other heads is itself a
+    bare listed-suffix word, so none reaches the walk's own leading
+    position, which is exactly the shape the converse question is
+    about. Each text is parsed ONCE -- the plain form once per head
+    and member, not once per body and marker -- which took the walk
+    from 3.25s to 2.53s on 3.11 while the grid grew from 18,144 pairs
+    to 20,412 (measured 2026-09-27, `--durations`; `_credential_without_suffix_role`
+    forces its own extra parse, `_one_case`, only for a surviving
+    candidate a qualifying front's role has not already decided,
+    rather than unconditionally for every parse).
+
+    The `company` and `orphaned` asserts below run BEFORE `failures`,
+    so each control here trips its OWN assert rather than one masking
+    another: `assert not company` is the company check's recorded
+    negative control, `assert not orphaned` the converse's.
+    RECORDED NEGATIVE CONTROL for `assert not company`: with
+    `credential_anchors` answering False, it fails on 48 of the walk's
+    parses ('Jane Doe Jr. Ma' reading family 'Ma'); 0 here. RECORDED
+    NEGATIVE CONTROL for `assert not orphaned`: the walk's own leading
+    piece never anchors, and the no-comma peel holds that twice --
+    `credential_anchors` skips the position, and the peel's reach test
+    (`anchor_in_reach`) never looks at it. With both removed it fails
+    on 42 of the walk's plain-form parses ('PhD Ma' reading given
+    'PhD', suffix 'Ma', and the by-shape 'PhD X.Y.Z.' alike); with
+    either one alone removed, 0; 0 here (measured 2026-09-28).
     """
     members = ("ba", "do", "ed", "jd", "ma", "x.y.z.", "r.a.i.")
     heads = ("Jane Doe", "Doe, Jane", "John", "J.", "Dr.", "Jane",
              "Jane van der Berg", "JANE DOE", "jane doe", "DOE, JANE",
              "doe, jane", "Jane Q. Doe", "Doe, Dr. Jane", "Doe, J.",
-             "Smith, Jane", "Jane Doe Jr.")
+             "Smith, Jane", "Jane Doe Jr.", "Jane Doe PhD",
+             "Doe, Jane PhD", "PhD")
     bodies = ("Smith", "Yo-Yo", "van der Berg", "Jones Smith", "MA",
               "Ma")
     # three markers and the two 2.4 switches beside the default: the
     # switches change WHICH tokens are in the class, and the marker
     # spellings are what `own_words` stops at, so both are dimensions
     # the allowlist's structural argument rests on.
-    markers = ("nee", "n\u00e9e", "geb.")
+    markers = ("nee", "née", "geb.")
     policies = (("default", Policy()),
                 ("caps", Policy(unlisted_caps_suffixes=True)),
                 ("nodot", Policy(unlisted_dotted_suffixes=False)))
 
-    def side(parser: Parser, text: str, word: str) -> str:
-        name = parser.parse(text)
+    def side(name: ParsedName, word: str) -> str:
         hits = [t for t in name.tokens if t.text == word]
         if not hits:
             return "gone"
@@ -332,33 +567,89 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
 
     pairs = 0
     allowed: list[str] = []
+    # #544: the ANCHORED-HEAD class. A head that ENDS in an unambiguous
+    # credential ('Jane Doe Jr.') anchors a member written straight
+    # after it ('Jane Doe Jr. Ma' reads suffix 'Jr. Ma'), while the
+    # clause puts its name words between the two ('Jane Doe Jr. nee
+    # Smith Ma'), and the anchor never reaches across a clause
+    # (rules.md#M2, decided, a boundary). So the pair differs by
+    # construction, and in ONE direction only: the clause reads a name,
+    # the plain form a credential. Admitted only where the parser
+    # itself gives the head's last token the suffix role and the pair
+    # disagrees in that direction, and pinned by count and digest like
+    # the class above.
+    anchored_head: list[str] = []
+    company: list[str] = []
+    # #544: the converse of `company` -- a member reading
+    # SUFFIX because of its company must have that company ALSO in the
+    # SUFFIX role, never handed back to a given/family reserve while
+    # still lending its credential-ness behind it
+    orphaned: list[str] = []
+
+    def audit(label: str, text: str, name: ParsedName) -> None:
+        company.extend(f"[{label}] {text!r}: {bad}"
+                       for bad in _outside_its_company(name))
+        orphaned.extend(f"[{label}] {text!r}: {bad}"
+                        for bad in _credential_without_suffix_role(name))
+
     failures = []
     for label, policy in policies:
         parser = Parser(policy=policy)
         for head in heads:
-            for body in bodies:
-                for base in members:
-                    for word in (base.lower(), base.title(),
-                                 base.upper()):
+            head_tokens = parser.parse(head).tokens
+            head_ends_in_credential = bool(head_tokens) and (
+                head_tokens[-1].role is Role.SUFFIX)
+            for base in members:
+                for word in (base.lower(), base.title(), base.upper()):
+                    plain = f"{head} {word}"
+                    plain_name = parser.parse(plain)
+                    audit(label, plain, plain_name)
+                    plain_side = side(plain_name, word)
+                    for body in bodies:
                         for marker in markers:
                             clause = f"{head} {marker} {body} {word}"
-                            plain = f"{head} {word}"
+                            clause_name = parser.parse(clause)
+                            audit(label, clause, clause_name)
+                            clause_side = side(clause_name, word)
                             pairs += 1
-                            if side(parser, clause, word) == side(
-                                    parser, plain, word):
+                            if clause_side == plain_side:
                                 continue
                             if _one_case(clause) and not _one_case(plain):
                                 allowed.append(
                                     f"{label}|{marker}|{clause}")
                                 continue
+                            if (head_ends_in_credential
+                                    and clause_side == "name"
+                                    and plain_side == "credential"):
+                                anchored_head.append(
+                                    f"{label}|{marker}|{clause}")
+                                continue
                             failures.append(
                                 f"[{label}] {clause!r} reads "
-                                f"{side(parser, clause, word)} but "
-                                f"{plain!r} reads "
-                                f"{side(parser, plain, word)}")
+                                f"{clause_side} but {plain!r} reads "
+                                f"{plain_side}")
+    # company and orphaned assert BEFORE failures: each is its own
+    # control (the anchor-off/reserve-regression negative controls
+    # this test's docstring records), and a pair-agreement failure
+    # elsewhere in the grid must never mask either one
+    assert not company, (
+        f"{len(company)} member(s) read as a name behind an "
+        f"unambiguous credential:\n" + "\n".join(company[:15]))
+    assert not orphaned, (
+        f"{len(orphaned)} member(s) read as a credential behind a "
+        f"word not itself in the suffix role:\n"
+        + "\n".join(orphaned[:15]))
     assert not failures, (
         f"{len(failures)} of {pairs} pair(s) disagree outside the "
         f"one-case-head class:\n" + "\n".join(failures[:15]))
+    anchored_digest = hashlib.sha256(
+        "\n".join(sorted(anchored_head)).encode()).hexdigest()
+    assert (len(anchored_head), anchored_digest) == (
+        _MAIDEN_ANCHORED_HEAD_EXCEPTIONS, _MAIDEN_ANCHORED_HEAD_DIGEST), (
+        f"the anchored-head class holds {len(anchored_head)} of {pairs} "
+        f"pairs with digest {anchored_digest}. Re-record both "
+        f"deliberately, saying why. Members:\n"
+        + "\n".join(sorted(anchored_head)[:10]))
     digest = hashlib.sha256(
         "\n".join(sorted(allowed)).encode()).hexdigest()
     assert (len(allowed), digest) == (
