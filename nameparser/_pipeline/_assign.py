@@ -621,8 +621,8 @@ def assign(state: ParseState) -> ParseState:
             # path below, which reads the whole segment as a
             # credential run and leaves no piece for the walk to
             # place.
-            titled_idx: tuple[int, ...] = ()
-            walkable: list[int] = []
+            titled_idx: frozenset[int] = frozenset()
+            walkable: frozenset[int] = frozenset()
             #: Where the trailing suffix run starts, for the #531
             #: report below: `trailing_floor`'s answer, read once on
             #: the first member the loop meets and -1 until then (no
@@ -633,7 +633,7 @@ def assign(state: ParseState) -> ParseState:
             #: LESS of the walk than the first one did.
             run_floor = -1
 
-            def previous_kept(m: int, titled: tuple[int, ...]) -> int:
+            def previous_kept(m: int, titled: frozenset[int]) -> int:
                 """The piece before `m` that the H5 chain did NOT
                 take. Both readings this segment needs are that one:
                 the piece the lenient tail test measures against, and
@@ -678,15 +678,15 @@ def assign(state: ParseState) -> ParseState:
             #: between the two passes is the role, through `_set_roles`,
             #: which is a `copy_with(role=...)` and leaves
             #: text and tags identical.
-            floors: dict[tuple[int, ...], tuple[int, bool]] = {}
+            floors: dict[frozenset[int], tuple[int, bool]] = {}
             #: #544's anchors, per `titled` value like `floors` and for
             #: the same reason: `given_slot_anchors` over the pieces the
             #: chain kept, computed once, the first time a member's own
             #: writing declines, so a run of members is read in one
             #: forward pass rather than one look-behind per member.
-            anchor_memo: dict[tuple[int, ...], list[bool]] = {}
+            anchor_memo: dict[frozenset[int], list[bool]] = {}
 
-            def anchored(m: int, titled: tuple[int, ...]) -> bool:
+            def anchored(m: int, titled: frozenset[int]) -> bool:
                 memo = anchor_memo.get(titled)
                 if memo is None:
                     # nothing in front the pass could read as an
@@ -705,7 +705,7 @@ def assign(state: ParseState) -> ParseState:
                     anchor_memo[titled] = memo
                 return memo[m]
 
-            def trailing_floor(m: int, titled: tuple[int, ...]) -> int:
+            def trailing_floor(m: int, titled: frozenset[int]) -> int:
                 """Where the trailing suffix run starts, walked as far
                 down as `m` needs it: `m >= trailing_floor(m, titled)`
                 is exactly "every kept piece behind `m` reads as a
@@ -767,7 +767,7 @@ def assign(state: ParseState) -> ParseState:
                     floors[titled] = (low, final)
                 return low
 
-            def reads_as_a_suffix(m: int, titled: tuple[int, ...]) -> bool:
+            def reads_as_a_suffix(m: int, titled: frozenset[int]) -> bool:
                 """Does this segment's walk read piece `m` as a suffix?
 
                 Asked twice, and by one predicate rather than by two
@@ -955,10 +955,21 @@ def assign(state: ParseState) -> ParseState:
                 # 'Smith, II Mr. V' a middle 'Mr.' where the title is
                 # (24 inputs of that shape move, of 191,146 generated,
                 # measured 2026-09-09).
-                walkable = [k for k in range(n, len(pieces))
-                            if k == n or not reads_as_a_suffix(k, ())]
-                kept = trailing_titles(walkable, pieces, ptags, tokens)
-                titled_idx = tuple(walkable[kept:])
+                #
+                # Kept as a list only as long as ORDER is asked of it:
+                # the walk below asks membership, once per piece, and
+                # a list answers that by scanning, so the walk was
+                # quadratic in the part's length (#553). The same goes
+                # for the chain's pieces, which the walk and every
+                # memo below it key on -- and a tuple, unlike a
+                # frozenset, re-hashes its whole length at every
+                # lookup.
+                candidates = [k for k in range(n, len(pieces))
+                              if k == n
+                              or not reads_as_a_suffix(k, frozenset())]
+                kept = trailing_titles(candidates, pieces, ptags, tokens)
+                walkable = frozenset(candidates)
+                titled_idx = frozenset(candidates[kept:])
                 for k in titled_idx:
                     _set_roles(tokens, pieces[k], Role.TITLE)
             # v1 walk order: the first non-title piece is ALWAYS the

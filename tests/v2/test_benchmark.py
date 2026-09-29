@@ -342,19 +342,67 @@ def _best(text: str, parse_: Callable[[str], object],
 
 
 def _assert_grows_linearly(unit: str,
-                           parse_: Callable[[str], object]) -> None:
-    small = _best(unit * _BASE, parse_)
-    large = _best(unit * (_BASE * _FACTOR), parse_)
+                           parse_: Callable[[str], object],
+                           prefix: str = "", base: int = _BASE) -> None:
+    small = _best(prefix + unit * base, parse_)
+    large = _best(prefix + unit * (base * _FACTOR), parse_)
     ratio = large / small
     assert ratio < _MAX_RATIO, (
-        f"{unit!r} x{_BASE} took {small * 1e3:.2f}ms, "
-        f"x{_BASE * _FACTOR} took {large * 1e3:.2f}ms -- {ratio:.1f}x for "
+        f"{prefix!r} + {unit!r} x{base} took {small * 1e3:.2f}ms, "
+        f"x{base * _FACTOR} took {large * 1e3:.2f}ms -- {ratio:.1f}x for "
         f"{_FACTOR}x the input, which is superlinear (linear is ~{_FACTOR})")
 
 
 @pytest.mark.parametrize("unit", _SHAPES.values(), ids=list(_SHAPES))
 def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
     _assert_grows_linearly(unit, parse)
+
+
+# Shapes that need a PREFIX, which `_SHAPES` cannot express: it repeats
+# a unit and nothing else, and the walk these guard runs only on the
+# given part AFTER a family comma. `"a, "` puts the comma in every unit
+# and measures segment count instead; `"Smith "` alone never takes the
+# comma path. So each row is (prefix, unit, reachability probe), timed
+# on the clock like `_SHAPES` -- the defect is C-level work (a list
+# scanned by `in`, a tuple re-hashed as a dict key), which emits no
+# frame, so the frame-ratio guards below were blind to it (#553).
+#
+# Base 1600, not `_BASE`, and the recorded negative control is why.
+# Measured 2026-09-28 on py3.11, three runs of each on the tree before
+# the fix, ratio for 4x the run:
+#
+#   base   given_part_run      given_part_titles
+#    800   6.71  7.60  5.97    7.83  8.31  8.16
+#   1600   8.67  8.43  8.51   10.09 10.95 10.29
+#
+# against 3.94-4.32 for both rows at both bases on this tree. At 800
+# the run row's quadratic read 5.97 once, under `_MAX_RATIO` -- a
+# coin-flip guard; at 1600 the bound sits ~1.4x over the worst clean
+# run and ~1.4x under the weakest broken one, so it did not move.
+_PREFIXED_BASE = 1600
+_PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
+    # every word of the run is a middle name, so the walk asks the
+    # untitled membership test once per piece
+    "given_part_run": (
+        "Doe, Jane ", "Smith ",
+        lambda text: parse(text).middle.split() == text.split()[2:],
+    ),
+    # every trailing title joins the H5 chain, so the walk asks the
+    # titled membership test once per piece and keys its memos on the
+    # whole chain
+    "given_part_titles": (
+        "Doe, Jane Smith ", "Prof. ",
+        lambda text: parse(text).title.split() == text.split()[3:],
+    ),
+}
+
+
+@pytest.mark.parametrize("prefix,unit,reaches", _PREFIXED_SHAPES.values(),
+                         ids=list(_PREFIXED_SHAPES))
+def test_prefixed_cost_grows_no_worse_than_linearly(
+        prefix: str, unit: str, reaches: Callable[[str], bool]) -> None:
+    assert reaches(prefix + unit * 4), "shape no longer reaches the walk"
+    _assert_grows_linearly(unit, parse, prefix=prefix, base=_PREFIXED_BASE)
 
 
 # Shapes that need a NON-DEFAULT POLICY to reach the code they guard.
@@ -394,13 +442,14 @@ _POLICY_SHAPES: dict[str, tuple[str, Parser, Callable[[Parser], bool]]] = {
 
 def test_shape_tables_are_not_empty() -> None:
     # pytest turns an EMPTY parametrize into a SKIP, not a failure, so
-    # deleting the last entry of either table would retire its guard
+    # deleting the last entry of any of these tables would retire its guard
     # into the skip count with nothing going red. _POLICY_SHAPES is
     # the nearer risk, holding only shapes whose stage a default parse
     # cannot reach at all -- so it gains an entry only when an opt-in
     # Policy field turns out to have a scaling cliff behind it.
     assert _SHAPES
     assert _POLICY_SHAPES
+    assert _PREFIXED_SHAPES
 
 
 @pytest.mark.parametrize("unit,parser,reaches", _POLICY_SHAPES.values(),
