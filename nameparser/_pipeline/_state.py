@@ -216,24 +216,33 @@ class ParseState:
 
 
 def _copyable_fields(cls: type) -> tuple[str, ...]:
-    """The fields `copy_with` carries for `cls`, or TypeError where a
-    field copy would not build what `dataclasses.replace` builds: the
-    class must keep the generated `__init__` in its own body and
-    `object.__new__`, with no `__post_init__` and no `init=False`
-    field."""
+    """The fields `copy_with` carries for `cls`, or TypeError unless a
+    field copy provably builds what `dataclasses.replace` builds.
+
+    Required rather than refused: `replace` calls `cls(...)`, and every
+    hook that call can run -- a metaclass `__call__`, a `__new__`, the
+    `__init__`, a `__setattr__` it goes through, a `__post_init__` --
+    is one a field copy skips. So the class must be a frozen dataclass
+    whose `__init__` was generated for it, built by the default
+    metaclass, with no `__new__`, no `__post_init__` and no
+    `init=False` field (decisions.md#parse-cost records the row that
+    each condition alone refuses)."""
+    params = getattr(cls, "__dataclass_params__", None)
     init = cls.__dict__.get("__init__")
-    # dataclasses compiles the __init__ it generates from a string; one
-    # written in the class body carries its source file instead.
-    generated = init is not None and init.__code__.co_filename == "<string>"
-    # replace calls cls(...), so a __new__ defined above object runs
-    # there and would not run here.
-    own_new = any("__new__" in vars(k) for k in cls.__mro__[:-1])
-    if (not generated or own_new
+    # dataclasses compiles the __init__ it generates from a string and
+    # names it after the class; one written in a class body carries its
+    # source file, and one borrowed from another class keeps that
+    # class's name.
+    generated = (init is not None and init.__code__.co_filename == "<string>"
+                 and init.__qualname__ == f"{cls.__qualname__}.__init__")
+    if (params is None or not params.frozen or not generated
+            or type(cls) is not type
+            or any("__new__" in vars(k) for k in cls.__mro__[:-1])
             or hasattr(cls, "__post_init__")
             or not all(f.init for f in dataclasses.fields(cls))):
         raise TypeError(
-            f"copy_with cannot copy {cls.__name__}: it needs a dataclass "
-            "whose generated __init__ only assigns its fields")
+            f"copy_with cannot copy {cls.__name__}: it needs a frozen "
+            "dataclass whose generated __init__ only assigns its fields")
     return tuple(f.name for f in dataclasses.fields(cls))
 
 

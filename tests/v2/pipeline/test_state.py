@@ -105,6 +105,43 @@ class _OwnNew:
         return super().__new__(cls)
 
 
+@dataclasses.dataclass(frozen=True)
+class _FrozenBase:
+    value: int
+
+
+@dataclasses.dataclass(frozen=True)
+class _Other:
+    value: int
+    extra: str = "set by _Other.__init__"
+
+
+class _Borrower(_FrozenBase):
+    __init__ = _Other.__init__  # type: ignore[assignment]
+
+
+@dataclasses.dataclass
+class _Guarded:
+    value: int
+
+    def __setattr__(self, name: str, value: object) -> None:
+        if name == "value" and isinstance(value, int) and value < 0:
+            raise ValueError("negative")
+        super().__setattr__(name, value)
+
+
+class _ValidatingMeta(type):
+    def __call__(cls, *args: object, **kwargs: object) -> object:
+        if any(isinstance(v, int) and v < 0 for v in (*args, *kwargs.values())):
+            raise ValueError("negative")
+        return super().__call__(*args, **kwargs)
+
+
+@dataclasses.dataclass(frozen=True)
+class _MetaBuilt(metaclass=_ValidatingMeta):
+    value: int
+
+
 def _derived_with_doubled_set() -> _Derived:
     obj = _Derived(1)
     object.__setattr__(obj, "doubled", 2)
@@ -143,6 +180,12 @@ _UNGUARDED_EFFECT = [
      {"value": 3, "doubled": 0}, {"value": 3, "doubled": 2}),
     ("undecorated subclass", _Undecorated(1), {"value": 2},
      {"value": 2, "extra": "set by __init__"}, {"value": 2}),
+    ("borrowed __init__", _Borrower(1), {"value": 2},
+     {"value": 2, "extra": "set by _Other.__init__"}, {"value": 2}),
+    ("validating __setattr__", _Guarded(1), {"value": -1},
+     "ValueError", {"value": -1}),
+    ("validating metaclass __call__", _MetaBuilt(1), {"value": -1},
+     "ValueError", {"value": -1}),
 ]
 
 
