@@ -215,23 +215,61 @@ class ParseState:
     ambiguities: tuple[PendingAmbiguity, ...] = ()
 
 
-def _copyable_fields(cls: type) -> tuple[str, ...]:
-    """The fields `copy_with` carries for `cls`, or TypeError where a
-    field copy would not build what `dataclasses.replace` builds: the
-    class must be decorated itself (not inherit the decoration) and keep
-    the generated `__init__`, with no `__post_init__` and no
-    `init=False` field."""
+def _copy_refusals(cls: type) -> list[str]:
+    """Why a field copy of `cls` might not build what
+    `dataclasses.replace` builds, one reason per unmet condition.
+
+    `replace` calls `obj.__class__(...)`, and every hook that call can
+    run -- a metaclass `__call__`, a `__new__`, the `__init__` and any
+    `__setattr__` it goes through, a `__post_init__`, an `InitVar` it
+    demands for want of a default -- is one a field copy skips. These conditions are a
+    TRIPWIRE for a realistic edit to the pipeline's three classes, not
+    a proof against any class at all: a forged `__qualname__` on a
+    borrowed `__init__` combined with its own decoration, or a
+    `__class__` property, is out of scope, and `copy_with` copies
+    nothing but those three anyway."""
+    reasons = []
     params = cls.__dict__.get("__dataclass_params__")
+    if params is None:
+        reasons.append("not decorated as a dataclass itself")
+    elif not params.frozen:
+        reasons.append("not frozen")
     init = cls.__dict__.get("__init__")
-    # dataclasses compiles the __init__ it generates from a string; one
-    # written in the class body carries its source file instead.
-    generated = init is not None and init.__code__.co_filename == "<string>"
-    if (params is None or not generated
-            or hasattr(cls, "__post_init__")
-            or not all(f.init for f in dataclasses.fields(cls))):
+    # dataclasses compiles the __init__ it generates from a string and
+    # names it after the class; one written in a class body carries its
+    # source file, and one borrowed from another class keeps that
+    # class's name.
+    if (init is None or init.__code__.co_filename != "<string>"
+            or init.__qualname__ != f"{cls.__qualname__}.__init__"):
+        reasons.append("__init__ not generated for it")
+        init = None
+    fields = dataclasses.fields(cls)
+    if init is not None:
+        # an InitVar is an __init__ parameter that is not a field
+        code = init.__code__
+        taken = code.co_argcount + code.co_kwonlyargcount - 1
+        if taken != sum(f.init for f in fields):
+            reasons.append("__init__ does not take exactly its init fields")
+    if type(cls) is not type:
+        reasons.append("built by a metaclass")
+    if any("__new__" in vars(k) for k in cls.__mro__[:-1]):
+        reasons.append("defines __new__")
+    if hasattr(cls, "__post_init__"):
+        reasons.append("defines __post_init__")
+    if not all(f.init for f in fields):
+        reasons.append("has an init=False field")
+    return reasons
+
+
+def _copyable_fields(cls: type) -> tuple[str, ...]:
+    """The fields `copy_with` carries for `cls`, or TypeError naming
+    every condition of `_copy_refusals` it fails."""
+    reasons = _copy_refusals(cls)
+    if reasons:
         raise TypeError(
-            f"copy_with cannot copy {cls.__name__}: it needs a dataclass "
-            "whose generated __init__ only assigns its fields")
+            f"copy_with cannot copy {cls.__name__}: it needs a frozen "
+            "dataclass whose generated __init__ only assigns its fields "
+            f"({'; '.join(reasons)})")
     return tuple(f.name for f in dataclasses.fields(cls))
 
 
