@@ -930,9 +930,9 @@ _SETTLED_TITLE_CASE = ("Ma", "Do")
 _SETTLED_MEMBERS = ("MA", "BA", "ED", "DO", "JD", "MENG", "LAC", "X.Y.",
                     *_SETTLED_TITLE_CASE)
 _SETTLED_WORDS = ("PhD", "MD", "MS", "Jr", "Esq.", "Sr", "III", "Ms")
-#: A KNOWN DEFECT (#562): a run ending in two particle members. S2
-#: chains the pair into a particle run that the capitals no longer
-#: decide, so C1's shortcut, which assumes the capitals made every
+#: A KNOWN DEFECT (#562): a run ending in two particle members. Group
+#: chains the pair into one particle run (P2), which S2 says the
+#: capitals no longer decide, so C1's shortcut, which assumes the capitals made every
 #: member a credential, settles a run the family-comma path does not
 #: read as one -- assign already reads the part as name text. 'John
 #: Smith, PhD DO DO' reads given 'PhD', family 'DO DO John Smith' (P6

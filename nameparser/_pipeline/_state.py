@@ -221,8 +221,8 @@ def _copy_refusals(cls: type) -> list[str]:
 
     `replace` calls `obj.__class__(...)`, and every hook that call can
     run -- a metaclass `__call__`, a `__new__`, the `__init__` and any
-    `__setattr__` it goes through, a `__post_init__`, the `InitVar`s
-    it demands -- is one a field copy skips. These conditions are a
+    `__setattr__` it goes through, a `__post_init__`, an `InitVar` it
+    demands for want of a default -- is one a field copy skips. These conditions are a
     TRIPWIRE for a realistic edit to the pipeline's three classes, not
     a proof against any class at all: a forged `__qualname__` on a
     borrowed `__init__` combined with its own decoration, or a
@@ -249,7 +249,7 @@ def _copy_refusals(cls: type) -> list[str]:
         code = init.__code__
         taken = code.co_argcount + code.co_kwonlyargcount - 1
         if taken != sum(f.init for f in fields):
-            reasons.append("__init__ takes more than its fields")
+            reasons.append("__init__ does not take exactly its init fields")
     if type(cls) is not type:
         reasons.append("built by a metaclass")
     if any("__new__" in vars(k) for k in cls.__mro__[:-1]):

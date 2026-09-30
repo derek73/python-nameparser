@@ -211,7 +211,7 @@ _UNGUARDED_EFFECT = [
      {"value": 2, "extra": "set by _Other.__init__"}, {"value": 2},
      ["not decorated as a dataclass itself"]),
     ("InitVar", _WithInitVar(1, 5), {"value": 2},
-     "raises", {"value": 2}, ["__init__ takes more than its fields"]),
+     "raises", {"value": 2}, ["__init__ does not take exactly its init fields"]),
     ("validating __setattr__", _Guarded(1), {"value": -1},
      "raises", {"value": -1}, ["not frozen"]),
     ("validating metaclass __call__", _MetaBuilt(1), {"value": -1},
