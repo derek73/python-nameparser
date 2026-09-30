@@ -930,12 +930,15 @@ _SETTLED_TITLE_CASE = ("Ma", "Do")
 _SETTLED_MEMBERS = ("MA", "BA", "ED", "DO", "JD", "MENG", "LAC", "X.Y.",
                     *_SETTLED_TITLE_CASE)
 _SETTLED_WORDS = ("PhD", "MD", "MS", "Jr", "Esq.", "Sr", "III", "Ms")
-#: A KNOWN DEFECT, not a rule (#562): a run ending in two particle
-#: members, which group chains into one particle run. The shortcut
-#: settles it, and the family-comma path then puts the run in a name
-#: field -- 'John Smith, PhD DO DO' reads given 'PhD', family 'DO DO
-#: John Smith', where the declined flip reads suffix 'PhD DO DO'. Pinned
-#: by count so that the fix fails here and takes the pin out with it.
+#: A KNOWN DEFECT (#562): a run ending in two particle members. S2
+#: chains the pair into a particle run that the capitals no longer
+#: decide, so C1's shortcut, which assumes the capitals made every
+#: member a credential, settles a run the family-comma path does not
+#: read as one -- assign already reads the part as name text. 'John
+#: Smith, PhD DO DO' reads given 'PhD', family 'DO DO John Smith' (P6
+#: moving the pair), and 'John Smith, DO DO DO' given 'DO', middle 'DO
+#: DO', where the declined flip reads each as suffix. Pinned by count so
+#: that the fix fails here and takes the pin out with it.
 _SETTLED_EXCEPTION_TAIL = " DO DO"
 _SETTLED_EXCEPTIONS = 10
 _SETTLED_COUNT = 3024
@@ -967,9 +970,9 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
     and structure signature for every run (measured 2026-09-29). The
     two Title-case members and the unlisted dotted 'X.Y.' are there
     for the controls below: each is a member the mirror must NOT
-    settle, and only such members can show it over-promising. 5,580
-    texts, 3,024 of them on the settled path, two parses each: 1.1s
-    on 3.11 (`--durations`).
+    settle, and only such members can show it over-promising. Measured
+    2026-09-29: 5,580 texts, 3,024 of them on the settled path (the
+    pin below), two parses each, 1.1s on 3.11 (`--durations`).
 
     RECORDED NEGATIVE CONTROL: the two halves of the mirror cover for
     each other, so removing either alone fails nothing -- forcing the
@@ -1015,7 +1018,9 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
         f"{len(failures)} run(s) C1 left as settled were not read as "
         f"credentials: {failures[:5]}")
     assert len(exceptions) == _SETTLED_EXCEPTIONS, exceptions
-    # a Title-case member is never settled: the writing leans it a name
+    # a Title-case member is never settled: the writing leans it a name.
+    # The count pin below would catch one too, short of a compensating
+    # move; this assert is the message that names it.
     assert not titled, titled[:5]
     # the grid has to reach the path it is about, and exactly this much
     # of it: a move in the settled path's reach is re-recorded here
