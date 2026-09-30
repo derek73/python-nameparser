@@ -926,14 +926,19 @@ def test_a_title_first_word_counts_as_a_word() -> None:
     assert not failures, "\n".join(failures)
 
 
-_SETTLED_MEMBERS = ("MA", "BA", "ED", "DO", "JD", "MENG", "LAC", "Ma", "Do")
+_SETTLED_TITLE_CASE = ("Ma", "Do")
+_SETTLED_MEMBERS = ("MA", "BA", "ED", "DO", "JD", "MENG", "LAC", "X.Y.",
+                    *_SETTLED_TITLE_CASE)
 _SETTLED_WORDS = ("PhD", "MD", "MS", "Jr", "Esq.", "Sr", "III", "Ms")
-#: The settled path's one recorded exception, rules.md#S2's limit for a
-#: member that is particle vocabulary too: behind another particle it is
-#: part of a particle run, which P6 attaches, so a run ending on two of
-#: them is read as name text whole.
+#: A KNOWN DEFECT, not a rule (#562): a run ending in two particle
+#: members, which group chains into one particle run. The shortcut
+#: settles it, and the family-comma path then puts the run in a name
+#: field -- 'John Smith, PhD DO DO' reads given 'PhD', family 'DO DO
+#: John Smith', where the declined flip reads suffix 'PhD DO DO'. Pinned
+#: by count so that the fix fails here and takes the pin out with it.
 _SETTLED_EXCEPTION_TAIL = " DO DO"
 _SETTLED_EXCEPTIONS = 10
+_SETTLED_COUNT = 3024
 
 
 def _comma_state(text: str) -> ParseState:
@@ -960,10 +965,11 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
     member of the class or a suffix word, at least one a member.
     'Jane Doe, ' was dropped: over this grid it gives the same role
     and structure signature for every run (measured 2026-09-29). The
-    two Title-case members are there for the control: no Title-case
-    run may be settled, and only such runs can show the mirror
-    over-promising. 4,626 texts, 3,024 of them on the settled path,
-    two parses each: 0.94s on 3.11 (`--durations`).
+    two Title-case members and the unlisted dotted 'X.Y.' are there
+    for the controls below: each is a member the mirror must NOT
+    settle, and only such members can show it over-promising. 5,580
+    texts, 3,024 of them on the settled path, two parses each: 1.1s
+    on 3.11 (`--durations`).
 
     RECORDED NEGATIVE CONTROL: the two halves of the mirror cover for
     each other, so removing either alone fails nothing -- forcing the
@@ -971,8 +977,11 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
     and dropping `isupper()` leaves them to a lean that answers "name".
     With both removed it fails on 1,239 texts beyond the exceptions
     ('John Smith, MA Ma' reading family 'John Smith', given 'MA',
-    middle 'Ma'), and the exceptions grow from 10 to 12; 0 and 10 here
-    (measured 2026-09-29).
+    middle 'Ma'), and the exceptions grow from 10 to 12. RECORDED
+    NEGATIVE CONTROL for the listed-set half (a member admitted only
+    by shape has no lean, S2): dropped, it fails on 751 texts ('John
+    Smith, MA X.Y.' reading family 'John Smith', given 'MA', suffix
+    'X.Y.'), with 11 exceptions. 0 and 10 here (measured 2026-09-29).
     """
     texts = [f"John Smith, {' '.join(words)}"
              for n in (2, 3)
@@ -980,6 +989,7 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
                  _SETTLED_MEMBERS + _SETTLED_WORDS, repeat=n)
              if any(w in _SETTLED_MEMBERS for w in words)]
     settled, exceptions, failures = 0, [], []
+    titled: list[str] = []
     for text in texts:
         with monkeypatch.context() as m:
             m.setattr(_segment, "ambiguous_lean", lambda text, one_case: None)
@@ -989,6 +999,8 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
                 == (unexempt.structure, unexempt.ambiguities)):
             continue
         settled += 1
+        if any(w in _SETTLED_TITLE_CASE for w in text.split()):
+            titled.append(text)
         comma = text.index(",")
         named = [t.text for t in state.tokens
                  if t.span.start > comma
@@ -1003,9 +1015,12 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
         f"{len(failures)} run(s) C1 left as settled were not read as "
         f"credentials: {failures[:5]}")
     assert len(exceptions) == _SETTLED_EXCEPTIONS, exceptions
-    # the grid has to reach the path it is about
-    assert settled > len(texts) // 2, (
-        f"only {settled} of {len(texts)} texts took the settled path")
+    # a Title-case member is never settled: the writing leans it a name
+    assert not titled, titled[:5]
+    # the grid has to reach the path it is about, and exactly this much
+    # of it: a move in the settled path's reach is re-recorded here
+    assert settled == _SETTLED_COUNT, (
+        f"{settled} of {len(texts)} texts took the settled path")
 
 
 def test_no_two_ambiguities_name_the_same_token_span() -> None:
