@@ -1,11 +1,13 @@
 import dataclasses
+import inspect
 from collections.abc import Callable
 
 import pytest
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken, _copyable_fields,
+    ParseState, PendingAmbiguity, Structure, WorkToken, _copy_refusals,
+    _copyable_fields,
     copy_with,
 )
 from nameparser._policy import Policy
@@ -112,12 +114,28 @@ class _FrozenBase:
 
 @dataclasses.dataclass(frozen=True)
 class _Other:
+    # `extra` is set by the __init__ without being one of its
+    # parameters, so a class borrowing it takes exactly its own fields
     value: int
-    extra: str = "set by _Other.__init__"
+    extra: str = dataclasses.field(
+        default_factory=lambda: "set by _Other.__init__", init=False)
 
 
 class _Borrower(_FrozenBase):
-    __init__ = _Other.__init__  # type: ignore[assignment]
+    __init__ = _Other.__init__
+
+
+class _Spoof(_FrozenBase):
+    # borrows _Other's __init__ and takes its name, so the name test
+    # passes and only the missing decoration gives it away
+    __init__ = _Other.__init__
+    __qualname__ = "_Other"
+
+
+@dataclasses.dataclass(frozen=True)
+class _WithInitVar:
+    value: int
+    token: dataclasses.InitVar[int]
 
 
 @dataclasses.dataclass
@@ -157,11 +175,13 @@ def _unguarded_copy(obj: object, **changes: object) -> object:
 
 def _outcome(copy: Callable[[], object]) -> object:
     """What a caller reads off the copy: every field, plus any attribute
-    set outside the fields, or the error the copy raised."""
+    set outside the fields, or "raises" where the copy refused (a
+    missing InitVar is a ValueError to `replace` through 3.12 and a
+    TypeError from 3.13)."""
     try:
         result = copy()
-    except ValueError as exc:
-        return type(exc).__name__
+    except (ValueError, TypeError):
+        return "raises"
     names = [f.name for f in dataclasses.fields(result)]  # type: ignore[arg-type]
     return {name: getattr(result, name) for name in dict.fromkeys([*names, *vars(result)])}
 
@@ -171,34 +191,55 @@ def _outcome(copy: Callable[[], object]) -> object:
 #: control, recorded so the refusal test cannot pass vacuously.
 _UNGUARDED_EFFECT = [
     ("validating __post_init__", _Validated(1), {"value": -1},
-     "ValueError", {"value": -1}),
+     "raises", {"value": -1}, ["defines __post_init__"]),
     ("validating __init__", _OwnInit(1), {"value": -1},
-     "ValueError", {"value": -1}),
+     "raises", {"value": -1}, ["__init__ not generated for it"]),
     ("validating __new__", _OwnNew(1), {"value": -1},
-     "ValueError", {"value": -1}),
+     "raises", {"value": -1}, ["defines __new__"]),
     ("init=False field", _derived_with_doubled_set(), {"value": 3},
-     {"value": 3, "doubled": 0}, {"value": 3, "doubled": 2}),
+     {"value": 3, "doubled": 0}, {"value": 3, "doubled": 2},
+     ["has an init=False field"]),
     ("undecorated subclass", _Undecorated(1), {"value": 2},
-     {"value": 2, "extra": "set by __init__"}, {"value": 2}),
+     {"value": 2, "extra": "set by __init__"}, {"value": 2},
+     ["not decorated as a dataclass itself",
+      "__init__ not generated for it"]),
     ("borrowed __init__", _Borrower(1), {"value": 2},
-     {"value": 2, "extra": "set by _Other.__init__"}, {"value": 2}),
+     {"value": 2, "extra": "set by _Other.__init__"}, {"value": 2},
+     ["not decorated as a dataclass itself",
+      "__init__ not generated for it"]),
+    ("borrowed __init__ under the lender's name", _Spoof(1), {"value": 2},
+     {"value": 2, "extra": "set by _Other.__init__"}, {"value": 2},
+     ["not decorated as a dataclass itself"]),
+    ("InitVar", _WithInitVar(1, 5), {"value": 2},
+     "raises", {"value": 2}, ["__init__ takes more than its fields"]),
     ("validating __setattr__", _Guarded(1), {"value": -1},
-     "ValueError", {"value": -1}),
+     "raises", {"value": -1}, ["not frozen"]),
     ("validating metaclass __call__", _MetaBuilt(1), {"value": -1},
-     "ValueError", {"value": -1}),
+     "raises", {"value": -1}, ["built by a metaclass"]),
 ]
 
 
 @pytest.mark.parametrize(
-    "shape,obj,changes,by_replace,by_field_copy", _UNGUARDED_EFFECT,
+    "shape,obj,changes,by_replace,by_field_copy,refusals", _UNGUARDED_EFFECT,
     ids=[row[0] for row in _UNGUARDED_EFFECT])
 def test_the_guard_refuses_a_class_a_field_copy_would_get_wrong(
         shape: str, obj: object, changes: dict[str, object],
-        by_replace: object, by_field_copy: object) -> None:
+        by_replace: object, by_field_copy: object,
+        refusals: list[str]) -> None:
     assert _outcome(lambda: dataclasses.replace(obj, **changes)) == by_replace  # type: ignore[type-var]
     assert _outcome(lambda: _unguarded_copy(obj, **changes)) == by_field_copy
+    assert _copy_refusals(type(obj)) == refusals
     with pytest.raises(TypeError, match="cannot copy"):
         _copyable_fields(type(obj))
+
+
+def test_every_guard_condition_alone_refuses_a_recorded_shape() -> None:
+    # The table is the guard's negative control, so each condition must
+    # be the ONLY reason for at least one row: otherwise dropping it
+    # would fail nothing here. The count ties the table to the code.
+    sole = {row[5][0] for row in _UNGUARDED_EFFECT if len(row[5]) == 1}
+    conditions = inspect.getsource(_copy_refusals).count("reasons.append(")
+    assert len(sole) == conditions, sorted(sole)
 
 
 def test_worktoken_carries_optional_role() -> None:
