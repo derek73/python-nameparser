@@ -506,9 +506,9 @@ listed below.
        the exception: they are how a person's initials are written,
        and the words before the comma may be one surname of two
        words, so ``"García Márquez, G.J."`` keeps given ``G.J.``
-       (reported) unless a suffix word in front of them that is not
-       also a title, or another unlisted dotted word beside them, says
-       otherwise (``"John Smith, PhD X.Y."`` gives suffix
+       (reported) unless an unambiguous post-nominal in front of them
+       that is not also a title, or another unlisted dotted word beside
+       them, says otherwise (``"John Smith, PhD X.Y."`` gives suffix
        ``PhD X.Y.``, while ``"García Márquez, Ms G.J."`` gives title
        ``Ms``, given ``G.J.``).
        Case is irrelevant — the periods are the signal.

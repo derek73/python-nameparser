@@ -169,24 +169,31 @@ def test_paired_initials_need_a_word_to_speak_for_them() -> None:
     for alone, spoken in (("García Márquez, G.J.", "García Márquez, G.J.R."),
                           ("De La Cruz, M.J. PhD", "De La Cruz, PhD M.J."),
                           ("John Smith, X.Y. MA", "John Smith, X.Y. P.Q."),
-                          ("García Márquez, G.J.", "García Márquez, Jr G.J.")):
+                          ("García Márquez, G.J.", "García Márquez, Jr G.J."),
+                          # a class member in front speaks for nothing,
+                          # as S2's company has it; an unambiguous one does
+                          ("García Márquez, Ma G.J.", "García Márquez, PhD G.J.")):
         assert _segmented(alone).structure is Structure.FAMILY_COMMA, alone
         assert _segmented(spoken).structure is Structure.SUFFIX_COMMA, spoken
 
 
-def test_a_flip_on_dotted_shape_alone_is_silent() -> None:
-    # rules.md#C1 (#563): with paired initials set aside, a word the
-    # class admits by its dotted shape has no name reading to report,
-    # while a LISTED member in the same position still reports the
-    # flip -- the control that keeps the silence from being a lost
-    # emitter.
+def test_a_flip_no_listed_member_takes_part_in_is_silent() -> None:
+    # rules.md#C1 (#563): a flip in which no listed member takes part
+    # is silent, while a LISTED member in the same position still
+    # reports the flip -- the control that keeps the silence from
+    # being a lost emitter -- and so do paired initials spoken for
+    # only by each other, each of them a word a reader takes for a
+    # name. A pair beside a three-letter word, or behind PhD, is
+    # spoken for by something else and stays silent.
     for text in ("John Smith, X.Y.Z.", "John Smith, B.Tech.",
-                 "John Smith, X.Y.Z. P.D.Q.", "John Smith, PhD P.D.Q."):
+                 "John Smith, X.Y.Z. P.D.Q.", "John Smith, PhD P.D.Q.",
+                 "John Smith, X.Y.Z. G.J.", "John Smith, PhD G.J. K.L."):
         out = _segmented(text)
         assert out.structure is Structure.SUFFIX_COMMA, text
         assert _flip_reports(out) == [], text
     for text in ("John Smith, Ma", "John Smith, PhD Ma",
-                 "John Smith, X.Y.Z. MA"):
+                 "John Smith, X.Y.Z. MA", "De La Cruz, M.J. K.L.",
+                 "John Smith, X.Y. P.Q."):
         out = _segmented(text)
         assert out.structure is Structure.SUFFIX_COMMA, text
         assert _flip_reports(out) == [_texts(out, out.segments[1])], text

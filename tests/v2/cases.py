@@ -2300,10 +2300,36 @@ CASES: tuple[Case, ...] = (
          "John Smith, X.Y. P.Q.",
          {"given": "John", "family": "Smith", "suffix": "X.Y. P.Q."},
          classification="fix(#563)",
+         ambiguities=("suffix-or-name",),
          notes="nobody writes initials as two dotted groups, so a "
                "second by-shape word makes the part the credential "
-               "run (rules.md#C1). 1.4.0 read given 'X.Y.', middle "
+               "run (rules.md#C1) -- reported, since here the pairs "
+               "speak only for each other and each is a word a reader "
+               "takes for a name. 1.4.0 read given 'X.Y.', middle "
                "'P.Q.'",
+         shape=3),
+    Case("two_pairs_behind_a_two_word_surname_report_the_flip",
+         "De La Cruz, M.J. K.L.",
+         {"family": "De La Cruz", "suffix": "M.J. K.L."},
+         classification="fix(#563)",
+         ambiguities=("suffix-or-name",),
+         notes="#563 second review round: the cost of the two-pair "
+               "line is a surname with no given name, so the flip it "
+               "makes is reported rather than silent (rules.md#C1). "
+               "1.4.0 read given 'M.J.', middle 'K.L.'",
+         shape=3),
+    Case("a_class_member_in_front_of_paired_initials_does_not_speak",
+         "García Márquez, Ed G.J.",
+         {"given": "Ed", "family": "García Márquez", "suffix": "G.J."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="#563 second review round: 'Ed' is a listed ambiguous "
+               "member, and S2's company lets only an unambiguous "
+               "credential speak, so the comma keeps the family. 'G.J.' "
+               "then ends the given part, the slot #563 left alone, "
+               "where the dotted shape reads a credential as in 'Doe, "
+               "John R.T.'; both forks report. 1.4.0 and 2.3.0 read "
+               "middle 'G.J.'",
          shape=3),
     Case("three_run_together_initials_behind_a_double_surname_read_as_a_credential",
          "García Márquez, G.J.R.",

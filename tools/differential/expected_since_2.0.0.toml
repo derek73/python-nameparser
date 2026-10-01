@@ -2587,11 +2587,15 @@ issue = "fix(#563) paired initials after a comma read as the given name unless a
 # the degree standing behind them, and so does 'García Márquez, Ms
 # G.J.', a title in front ("a suffix word in front of them that is
 # not also title vocabulary"), which moves nothing at any baseline.
-# The second period is optional ('García Márquez, G.J'). Against a 2.x baseline the names
+# The second period is optional ('García Márquez, G.J'). Two pairs
+# speaking only for each other make the run and report it ('De La
+# Cruz, M.J. K.L.'); a listed member in front speaks for nothing
+# ('García Márquez, Ed G.J.' keeps the family comma, and the fix(#531)
+# rule claims what its given part's trailing slot then reads). Against a 2.x baseline the names
 # whose roles match the baseline's move only the report, which a
 # 1.4.0 comparison cannot see; that ledger lists the three role movers
 # alone.
-name_regex = "^(?:De La Cruz, M\\.J\\. PhD|García Márquez, G\\.J|García Márquez, G\\.J\\.|García Márquez, PhD G\\.J\\.|John Smith, A\\.B\\.|John Smith, A\\.B\\. Ph\\.D\\.|John Smith, PhD X\\.Y\\.|John Smith, X\\.Y\\. P\\.Q\\.)$"
+name_regex = "^(?:De La Cruz, M\\.J\\. K\\.L\\.|De La Cruz, M\\.J\\. PhD|García Márquez, G\\.J|García Márquez, G\\.J\\.|García Márquez, PhD G\\.J\\.|John Smith, A\\.B\\.|John Smith, A\\.B\\. Ph\\.D\\.|John Smith, PhD X\\.Y\\.|John Smith, X\\.Y\\. P\\.Q\\.)$"
 fields = ["family", "given", "middle", "suffix", "title", "_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -2728,7 +2732,7 @@ issue = "fix(#531) a credential ending the given part of a family-comma listing 
 # measured name by name: what grew is the CORPUS, not the rule, and
 # a `fix(#533)` rule for them would attribute a #531 reading to the
 # wrong change.
-name_regex = "^(?:DOE, JOHN MA|DOE, MARY JO MA|Doe, Dr\\. John MA|Doe, J\\. MA|Doe, J\\. ba|Doe, John BA|Doe, John MA|Doe, John MA JD|Doe, John MA Jr|Doe, John MA PhD|Doe, John PhD MA|Doe, John Q\\. MA|Doe, John X\\.Y\\.Z\\.|Smith nee Jones, Jane MA|doe, john ma)$"
+name_regex = "^(?:DOE, JOHN MA|DOE, MARY JO MA|Doe, Dr\\. John MA|Doe, J\\. MA|Doe, J\\. ba|Doe, John BA|Doe, John MA|Doe, John MA JD|Doe, John MA Jr|Doe, John MA PhD|Doe, John PhD MA|Doe, John Q\\. MA|Doe, John X\\.Y\\.Z\\.|García Márquez, Ed G\\.J\\.|Smith nee Jones, Jane MA|doe, john ma)$"
 fields = ["_ambiguities", "middle", "suffix"]
 orders = ["DEFAULT"]
 

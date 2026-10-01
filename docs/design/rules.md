@@ -1075,8 +1075,9 @@ S2. Rationale: generational suffixes and credentials are recognized
     reported. The dotted shape does not take every promise of the
     class with it: at the first slot after a comma, C1 reads paired
     initials as the given name unless something speaks for them, and
-    makes a flip to the credential run on dotted-shape words alone in
-    silence, where a listed member would report it.
+    makes a flip to the credential run in which no listed member takes
+    part in silence, unless paired initials speak only for each
+    other.
       "John Smith Jr."            →  suffix="Jr."
       "John Smith M.A."           →  suffix="M.A."
       "John Smith PhD"            →  suffix="PhD"
@@ -1201,8 +1202,9 @@ S3. Rationale: credentials are often written run together with
     having already named it the family. C1 states two exceptions at
     the first slot after a comma: paired initials ('M.J.') read as
     the given name unless something in the part speaks for them, and
-    a flip to the credential run made on words of this second half
-    alone, paired initials or not, is not reported. Case says nothing here — the
+    a flip to the credential run in which no listed member of the
+    class takes part is not reported, unless paired initials speak
+    only for each other. Case says nothing here — the
     periods are the evidence — and three shapes are outside it: a
     single trailing period is not this shape at all, a chunk that is
     not wholly alphabetic is no acronym letter, and a word carrying
@@ -1674,11 +1676,17 @@ C1. Rationale: a credential run after the comma means the name is in
     person's own initials are written in, read as the given name
     after the comma, because two words before the comma may be one
     surname written in two ('García Márquez') and the count cannot
-    tell them from a given name and a family name. Only a suffix word in front of them that
-    is not also title vocabulary, or another word the class admits by
-    its dotted shape standing in the same part, makes them the
-    credential run: a word of both vocabularies in front of them is
-    the title of the given part they open, as S2 reads it there. The same count reads a part of two or
+    tell them from a given name and a family name. Only an
+    unambiguous suffix word in front of them that is not also title
+    vocabulary, or another word the class admits by its dotted shape
+    standing in the same part, makes them the credential run. A word
+    of this class in front of them speaks for nothing, as S2's
+    company has it, and where nothing but words of both the suffix
+    and the title vocabulary stands in front of them, those are the
+    titles of the given part the initials open, as S2 reads them
+    there. Paired initials that are not the only shape word in the
+    part are a credential however little else speaks for them, since
+    no one writes a person's initials as two dotted groups. The same count reads a part of two or
     more words as the credential run when every word of it is a
     suffix word or a word of this class, at least one of them of this
     class, and none of them a single-letter roman numeral, in any
@@ -1687,7 +1695,8 @@ C1. Rationale: a credential run after the comma means the name is in
     while a multi-letter numeral or generational word stands in a
     run like any suffix word ('John Smith, III Ma'). A word of both
     the title and the suffix vocabulary opening such a part counts as
-    a suffix word there, the name before the comma being complete. Where every word
+    a suffix word there, the name before the comma being complete,
+    except as the titles of paired initials, above. Where every word
     of this class in the part is a LISTED word written in capitals in
     a mixed-case name, the writing has already made each of them the
     credential (S2), and the part reads as the credential run on that
@@ -1695,11 +1704,16 @@ C1. Rationale: a credential run after the comma means the name is in
     alone carries no such lean, so a part holding one is read by the
     count. A decision either way at this comma
     is reported; for a run of words the decision is the flip to the
-    credential run, reported once over the whole part. A flip made on
-    words the class admits by their dotted shape alone is the
-    exception and is made in silence: paired initials are the one
-    such word a reader would take for a name, and a flip reaches them
-    only where a word beside them has already said otherwise. A run the
+    credential run, reported once over the whole part. A flip in which
+    no listed word of this class takes part is the exception and is
+    made in silence, since only paired initials among such words are
+    ever taken for a name, and the flip reaches them only where
+    something else in the part has said otherwise — unless what said
+    so is nothing but other paired initials: each of those is a word
+    a reader takes for a name, and that flip is reported. Paired
+    initials the comma keeps as the given name report where they open
+    the part; behind a title they do not, the comma's report reaching
+    only the first word after it ('Smith, Ms G.J.'). A run the
     count leaves in the listing form reports as S2 reads the words
     in it: a word of this class read as the credential because a
     credential in front speaks for it reports, and one its own
@@ -1788,10 +1802,12 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, A.B."          →  given="A.B."
       "John Smith, A.B."          →  ambiguities=("suffix-or-name",)
       "John Smith, X.Y. P.Q."     →  suffix="X.Y. P.Q."
+      "De La Cruz, M.J. K.L."     →  ambiguities=("suffix-or-name",)
       "John Smith, PhD X.Y."      →  suffix="PhD X.Y."
       "García Márquez, G.J"       →  given="G.J"
       "De La Cruz, M.J. PhD"      →  given="M.J."  · boundary
       "García Márquez, Ms G.J."   →  given="G.J."  · boundary
+      "García Márquez, Ed G.J."   →  given="Ed"  · boundary
       "John Smith, A.B. Ph.D."    →  given="A.B."  · boundary
     Accepted: three or more initials run together with periods behind
     a surname of two words read as a credential. Initials are
