@@ -970,8 +970,10 @@ S2. Rationale: generational suffixes and credentials are recognized
     name — and at the slots that report, either reading carries the
     ambiguity flag. Those slots are the trailing slot of a name, the
     first slot after a family comma, the trailing slot of the GIVEN
-    part after that comma, the trailing slot of a maiden marker's
-    clause (M2), and the segments beyond it. A word this document
+    part after that comma, and the trailing slot of a maiden
+    marker's clause (M2). A part beyond the second comma is not one
+    of them: it is consumed wholly as suffixes and reports only its
+    own structural flag (C2). A word this document
     says is READ at one of those slots is not always a word one of
     them reports: where a reading moves a word out of the slot that
     asked about it, what reports is the slot it lands in, and that
@@ -1187,7 +1189,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the

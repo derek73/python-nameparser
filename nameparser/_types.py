@@ -450,8 +450,11 @@ class AmbiguityKind(StrEnum):
     #: and this is the boundary rather than an omission to be read
     #: past. The emitters cover the trailing slot of a name, the FIRST
     #: PIECE after a family comma -- that piece and no further -- the
-    #: trailing slot of that listing's GIVEN part, the trailing slot
-    #: of a maiden marker's clause, and the extra segments beyond it.
+    #: trailing slot of that listing's GIVEN part, and the trailing
+    #: slot of a maiden marker's clause. A part beyond the second
+    #: comma is not among them: it reads wholly as suffixes and
+    #: reports only ``COMMA_STRUCTURE`` (rules.md#C2), so "Smith,
+    #: John, MA" is silent.
     #: Since 2.4 the given part's trailing slot reports whichever way
     #: it read the word: "Doe, John MA" reads suffix ``MA`` and says
     #: so, "Doe, John Ma" keeps middle ``Ma`` and says so too. Not in
