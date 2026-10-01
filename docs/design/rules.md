@@ -1702,7 +1702,9 @@ C1. Rationale: a credential run after the comma means the name is in
     credential (S2), and the part reads as the credential run on that
     evidence rather than on the count; a word of the class by shape
     alone carries no such lean, so a part holding one is read by the
-    count. A decision either way at this comma
+    count, and so is a part holding two particles side by side,
+    which S2 joins into one particle run rather than leaving either
+    to its capitals. A decision either way at this comma
     is reported; for a run of words the decision is the flip to the
     credential run, reported once over the whole part. A flip in which
     no listed word of this class takes part is the exception and is
@@ -1718,8 +1720,9 @@ C1. Rationale: a credential run after the comma means the name is in
     in it: a word of this class read as the credential because a
     credential in front speaks for it reports, and one its own
     capitals made the credential does not, so a run whose every such
-    word is written in capitals reads whole in silence
-    ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part read as
+    word is written in capitals, no two particles side by side,
+    reads whole in silence ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part
+    read as
     titles before a lone given name ('Smith, Ms MD Ma'). It is one
     of TWO places the comma's own decision is reported, the other being the word trailing the given part after
     it (S2), which is a second decision about a second word and never
@@ -1793,6 +1796,9 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, Ed Ma"         →  suffix="Ed Ma"
       "Jane Doe, MS LAc"          →  suffix="MS LAc"
       "Smith, PhD MEng"           →  family="Smith"  · boundary
+      "John Smith, PhD DO DO"     →  suffix="PhD DO DO"
+      "John Smith, PhD DO DO"     →  ambiguities=("suffix-or-name",)
+      "John Smith, PhD vd DO"     →  suffix="PhD vd DO"
       "John Smith, X.Y.Z."        →  suffix="X.Y.Z."
       "John Smith, X.Y.Z."        →  ambiguities=()
       "John Smith, X.Y.Z."  unlisted_dotted_suffixes-off  →  given="X.Y.Z."

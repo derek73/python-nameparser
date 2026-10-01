@@ -247,9 +247,11 @@
 {"name": "John Smith, MEng PhD", "shape": 3}
 {"name": "John Smith, Ms Ma", "shape": 3}
 {"name": "John Smith, PhD", "shape": 3}
+{"name": "John Smith, PhD DO DO", "shape": 3}
 {"name": "John Smith, PhD MEng", "shape": 3}
 {"name": "John Smith, PhD Ma", "shape": 3}
 {"name": "John Smith, PhD X.Y.", "shape": 3}
+{"name": "John Smith, PhD vd DO", "shape": 3}
 {"name": "John Smith, X.Y. P.Q.", "shape": 3}
 {"name": "John Smith, X.Y.Z.", "shape": 3}
 {"name": "John Smith, X.Y.Z. MA", "shape": 3}

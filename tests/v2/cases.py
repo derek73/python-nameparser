@@ -835,6 +835,35 @@ CASES: tuple[Case, ...] = (
                "make. Pinned because the reading now rests on the "
                "family-comma path alone. 1.4.0 read the same; 2.3.0 "
                "read given 'PhD', middle 'MA'"),
+    Case("comma_run_with_a_particle_chain_takes_the_count",
+         "John Smith, PhD DO DO",
+         {"given": "John", "family": "Smith", "suffix": "PhD DO DO"},
+         ambiguities=("suffix-or-name",),
+         notes="#562: the two 'DO's stand side by side, so S2 joins "
+               "them into one particle run rather than leaving either "
+               "to its capitals, and the row above's stand-down does "
+               "not apply: the run is the count's, flipped and "
+               "reported. 1.4.0 read the same; 2.0.0 read title "
+               "'PhD', given 'DO DO', and 2.3.0 given 'PhD', family "
+               "'DO DO John Smith'",
+         shape=3),
+    Case("comma_run_chained_behind_a_suffix_particle_takes_the_count",
+         "John Smith, PhD vd DO",
+         {"given": "John", "family": "Smith", "suffix": "PhD vd DO"},
+         ambiguities=("suffix-or-name",),
+         notes="#562: the particles need not be members of the class "
+               "-- 'vd' is particle and unambiguous suffix vocabulary, "
+               "and 'DO' beside it is chained all the same. 1.4.0 read the same; 2.3.0 read given 'PhD', "
+               "family 'vd DO John Smith'",
+         shape=3),
+    Case("comma_run_with_a_lone_trailing_particle_member_stays_settled",
+         "John Smith, PhD DO",
+         {"given": "John", "family": "Smith", "suffix": "PhD DO"},
+         notes="#562's boundary: one 'DO' beside no other particle "
+               "is left to its capitals (S2), so the run stays settled "
+               "and silent, as 'John Smith, PhD MA' is. Untagged: every "
+               "2.x release misread it, and its fix is #289's (#530), "
+               "not #562's"),
     Case("comma_run_by_shape_member_takes_the_count",
          "John Smith, X.Y.Z. MA",
          {"given": "John", "family": "Smith", "suffix": "X.Y.Z. MA"},

@@ -930,18 +930,7 @@ _SETTLED_TITLE_CASE = ("Ma", "Do")
 _SETTLED_MEMBERS = ("MA", "BA", "ED", "DO", "JD", "MENG", "LAC", "X.Y.",
                     *_SETTLED_TITLE_CASE)
 _SETTLED_WORDS = ("PhD", "MD", "MS", "Jr", "Esq.", "Sr", "III", "Ms")
-#: A KNOWN DEFECT (#562): a run ending in two particle members. Group
-#: chains the pair into one particle run (P2), which S2 says the
-#: capitals no longer decide, so C1's shortcut, which assumes the capitals made every
-#: member a credential, settles a run the family-comma path does not
-#: read as one -- assign already reads the part as name text. 'John
-#: Smith, PhD DO DO' reads given 'PhD', family 'DO DO John Smith' (P6
-#: moving the pair), and 'John Smith, DO DO DO' given 'DO', middle 'DO
-#: DO', where the declined flip reads each as suffix. Pinned by count so
-#: that the fix fails here and takes the pin out with it.
-_SETTLED_EXCEPTION_TAIL = " DO DO"
-_SETTLED_EXCEPTIONS = 10
-_SETTLED_COUNT = 3024
+_SETTLED_COUNT = 2994
 
 
 def _comma_state(text: str) -> ParseState:
@@ -971,27 +960,32 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
     two Title-case members and the unlisted dotted 'X.Y.' are there
     for the controls below: each is a member the mirror must NOT
     settle, and only such members can show it over-promising. Measured
-    2026-09-29: 5,580 texts, 3,024 of them on the settled path (the
-    pin below), two parses each, 1.1s on 3.11 (`--durations`).
+    2026-09-29: 5,580 texts, 3,024 of them on the settled path, two
+    parses each, 1.1s on 3.11 (`--durations`); 2,994 since #562 (the
+    pin below, 2026-10-01), whose particle chains ('PhD DO DO') left
+    the settled path for the count and so are no longer exceptions
+    here.
 
     RECORDED NEGATIVE CONTROL: the two halves of the mirror cover for
     each other, so removing either alone fails nothing -- forcing the
     lean to "credential" leaves Title-case members behind `isupper()`,
     and dropping `isupper()` leaves them to a lean that answers "name".
-    With both removed it fails on 1,239 texts beyond the exceptions
-    ('John Smith, MA Ma' reading family 'John Smith', given 'MA',
-    middle 'Ma'), and the exceptions grow from 10 to 12. RECORDED
-    NEGATIVE CONTROL for the listed-set half (a member admitted only
-    by shape has no lean, S2): dropped, it fails on 751 texts ('John
-    Smith, MA X.Y.' reading family 'John Smith', given 'MA', suffix
-    'X.Y.'), with 11 exceptions. 0 and 10 here (measured 2026-09-29).
+    With both removed ("credential" for any lean at all) it fails on
+    1,142 texts ('John Smith, MA Ma' reading family 'John Smith', given
+    'MA', middle 'Ma'). RECORDED NEGATIVE CONTROL for the listed-set
+    half (a member admitted only by shape has no lean, S2): dropped, it
+    fails on 215 texts ('John Smith, PhD X.Y.' reading 'PhD' as name
+    text). 0 here (measured 2026-10-01, #562). Over the 2026-09-29
+    tree, before #563 and #562, the two read 1,239 and 751 beyond ten
+    pinned #562 exceptions; #563 moved the second to 215 and #562 the
+    first to 1,142.
     """
     texts = [f"John Smith, {' '.join(words)}"
              for n in (2, 3)
              for words in itertools.product(
                  _SETTLED_MEMBERS + _SETTLED_WORDS, repeat=n)
              if any(w in _SETTLED_MEMBERS for w in words)]
-    settled, exceptions, failures = 0, [], []
+    settled, failures = 0, []
     titled: list[str] = []
     for text in texts:
         with monkeypatch.context() as m:
@@ -1008,16 +1002,11 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
         named = [t.text for t in state.tokens
                  if t.span.start > comma
                  and t.role not in (Role.SUFFIX, Role.TITLE)]
-        if not named:
-            continue
-        if text.endswith(_SETTLED_EXCEPTION_TAIL):
-            exceptions.append(text)
-        else:
+        if named:
             failures.append(f"{text!r}: {named} read as name text")
     assert not failures, (
         f"{len(failures)} run(s) C1 left as settled were not read as "
         f"credentials: {failures[:5]}")
-    assert len(exceptions) == _SETTLED_EXCEPTIONS, exceptions
     # a Title-case member is never settled: the writing leans it a name.
     # The count pin below would catch one too, short of a compensating
     # move; this assert is the message that names it.

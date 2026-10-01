@@ -306,6 +306,7 @@ def segment(state: ParseState) -> ParseState:
         shaped = 0
         pairs = 0
         lexicon = state.lexicon
+        prev_particle = False
         for i in groups[1]:
             text = state.tokens[i].text
             fold = run_word_fold(text, lexicon, state.policy)
@@ -337,6 +338,19 @@ def segment(state: ParseState) -> ParseState:
                 break
             else:
                 rest.append(text)
+            # #562, rules.md#C1: "and so is a part holding two
+            # particles side by side, which S2 joins into one particle
+            # run rather than leaving either to its capitals" -- group
+            # chains the pair ('PhD DO DO', 'PhD vd DO', 'MA vd vd'),
+            # the family-comma path then reads the chain as name text,
+            # so the run is the count's to read, whatever its case.
+            # Asked only while the run is still settled -- nothing
+            # re-settles it -- with classify's own particle test, since
+            # group's chain is what the capitals lose to.
+            if settled:
+                particle = _normalize(text) in lexicon.particles
+                settled = not (particle and prev_particle)
+                prev_particle = particle
         else:
             # Every word is a member or left to the suffix predicate.
             # A run whose every member the WRITING already settles as a

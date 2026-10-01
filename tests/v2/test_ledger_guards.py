@@ -1415,6 +1415,11 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
          "García Márquez, G.J.R.", "Smith Jr., A.B.", "Smith, J. R. R.",
          "John Smith X.Y.", "García Márquez, Ms G.J.",
          "García Márquez, Ed G.J."),
+    # #562: the shapes the particle chain does not reach. One particle
+    # beside no other is left to its capitals and stays settled; one
+    # name word before the comma keeps the listing form, chain or not.
+    "fix(#562) a comma credential run holding a particle chain reads by the name-word count":
+        ("John Smith, PhD DO", "Smith, PhD DO DO", "John Smith, PhD MA"),
     # Policy.unlisted_caps_suffixes is OFF by default, so its whole
     # population is a probe here: the corpora run at the default, and
     # a rule of this arc reaching one of these names would mean the
@@ -2476,6 +2481,10 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                r"García Márquez, G\.J\.", r"García Márquez, PhD G\.J\.",
                r"John Smith, A\.B\.", r"John Smith, A\.B\. Ph\.D\.",
                r"John Smith, PhD X\.Y\.", r"John Smith, X\.Y\. P\.Q\."}),
+    # #562's particle-chain rule, literal-anchored to its two movers:
+    # what selects them is two particles side by side in a comma
+    # credential run, which no wordlist spells.
+    frozenset({"John Smith, PhD DO DO", "John Smith, PhD vd DO"}),
     frozenset({"Doe, MA Smith", r"J\.A\. K\.D\.", r"Jack X\.Y\.Z\.",
                r"John Smith J\.u\.n\.i\.o\.r\.", r"John Smith R\.A\.I\.",
                "Royce, Ed", r"Smith Jr\., A\.B\.", r"Smith, A\.B\.",
@@ -3639,8 +3648,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # added. Reach, not explanation: all three are the contest
         # fix(#274) is now declared to outrank.
         # 2026-09-27, #544: 26 -> 27; gains 'doe, jane v phd do'.
+        # 2026-10-01, #562: 27 -> 29, 'John Smith, PhD DO DO'
+        # and 'John Smith, PhD vd DO', #562's rules.md#C1 examples
+        # and case rows. Reach, verified name by name.
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
-            _Claim(27, ('family', 'middle'), "48aafe72402e", None),
+            _Claim(29, ('family', 'middle'), "36879da9fc51", None),
         "fix(#380) a trailing vd after a family comma is the tussenvoegsel, not a post-nominal":
             _Claim(2, ('family', 'suffix'), "ec0d45289dc1", None),
         # 279 -> 280 with #371, and the growth is corpus, not behavior:
@@ -3746,8 +3758,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-30, #563: 396 -> 408, the twelve names #563's rules.md#C1
         # examples and case rows add, every one written with a comma.
         # Reach, verified name by name.
+        # 2026-10-01, #562: 408 -> 410, 'John Smith, PhD DO DO'
+        # and 'John Smith, PhD vd DO', #562's rules.md#C1 examples
+        # and case rows. Reach, verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(408, ('given', 'suffix', 'title'), "6f26a85296fb", None),
+            _Claim(410, ('given', 'suffix', 'title'), "2b67e34c920c", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3839,8 +3854,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-30, #563: 396 -> 408, the twelve names #563's rules.md#C1
         # examples and case rows add, every one written with a comma.
         # Reach, verified name by name.
+        # 2026-10-01, #562: 408 -> 410, 'John Smith, PhD DO DO'
+        # and 'John Smith, PhD vd DO', #562's rules.md#C1 examples
+        # and case rows. Reach, verified name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(408, ('family', 'given'), "6f26a85296fb", None),
+            _Claim(410, ('family', 'given'), "2b67e34c920c", None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -4627,7 +4645,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-19, #533: 21 -> 24, the same three new corpus
         # names as the 1.4.0 copy -- the do pair this change added
         # after a family comma.
-            _Claim(27, ('_ambiguities', 'family', 'middle'), "48aafe72402e", None),
+        # 2026-10-01, #562: 27 -> 29, 'John Smith, PhD DO DO'
+        # and 'John Smith, PhD vd DO', #562's rules.md#C1 examples
+        # and case rows. Reach, verified name by name.
+            _Claim(29, ('_ambiguities', 'family', 'middle'), "36879da9fc51", None),
         # 2026-09-18: 126 -> 131. Five corpus names arrived with
         # #289/#516's own case rows -- 'J.씨', 'John Smith 田.中.',
         # '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- all of them
@@ -4932,6 +4953,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # four role movers and five names whose only diff is the report.
         "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
             _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "3550ea3b5804", ('DEFAULT',)),
+        "fix(#562) a comma credential run holding a particle chain reads by the name-word count":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "29c98be5c6c7", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -5425,6 +5448,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # four role movers and five names whose only diff is the report.
         "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
             _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "3550ea3b5804", ('DEFAULT',)),
+        "fix(#562) a comma credential run holding a particle chain reads by the name-word count":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'suffix'), "29c98be5c6c7", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -5795,7 +5820,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-19, #533: 21 -> 24, the same three new corpus
         # names as the 1.4.0 copy -- the do pair this change added
         # after a family comma.
-            _Claim(27, ('_ambiguities', 'family', 'middle'), "48aafe72402e", None),
+        # 2026-10-01, #562: 27 -> 29, 'John Smith, PhD DO DO'
+        # and 'John Smith, PhD vd DO', #562's rules.md#C1 examples
+        # and case rows. Reach, verified name by name.
+            _Claim(29, ('_ambiguities', 'family', 'middle'), "36879da9fc51", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":
@@ -6053,6 +6081,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # four role movers and five names whose only diff is the report.
         "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
             _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "3550ea3b5804", ('DEFAULT',)),
+        "fix(#562) a comma credential run holding a particle chain reads by the name-word count":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'suffix', 'title'), "29c98be5c6c7", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -6412,6 +6442,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # four role movers and five names whose only diff is the report.
         "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
             _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "3550ea3b5804", ('DEFAULT',)),
+        "fix(#562) a comma credential run holding a particle chain reads by the name-word count":
+            _Claim(2, ('_ambiguities', 'family', 'given', 'suffix'), "29c98be5c6c7", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
