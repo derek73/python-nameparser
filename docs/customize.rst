@@ -502,7 +502,13 @@ listed below.
        ending a maiden marker's clause, also since 2.4:
        ``"Jane Doe nee Smith X.Y.Z."`` gives maiden ``Smith`` with
        suffix ``X.Y.Z.``, where ``False`` keeps maiden
-       ``Smith X.Y.Z.``.
+       ``Smith X.Y.Z.``. Two single letters right after a comma are
+       the exception: they are how a person's initials are written,
+       and the words before the comma may be one surname of two
+       words, so ``"García Márquez, G.J."`` keeps given ``G.J.``
+       (reported) unless a credential in front of them or another
+       dotted word beside them says otherwise
+       (``"John Smith, PhD X.Y."`` gives suffix ``PhD X.Y.``).
        Case is irrelevant — the periods are the signal.
        Whole-token vocabulary still wins (``M.A.``, ``Ph.D.``), and a
        single trailing period is not this shape

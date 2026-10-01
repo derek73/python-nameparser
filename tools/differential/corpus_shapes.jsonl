@@ -226,7 +226,10 @@
 {"name": "doe, jane v phd do", "shape": 2}
 {"name": "doe, john ma", "shape": 2}
 {"name": "Davis Royce, Ed", "shape": 3}
+{"name": "De La Cruz, M.J. PhD", "shape": 3}
 {"name": "Dr. John P. Doe-Ray, CLU, CFP, LUTC", "shape": 3}
+{"name": "García Márquez, G.J.", "shape": 3}
+{"name": "García Márquez, G.J.R.", "shape": 3}
 {"name": "JOHN SMITH, MA", "shape": 3}
 {"name": "Jane Doe, MS LAc", "shape": 3}
 {"name": "John Smith Jr., PhD", "shape": 3}
@@ -242,6 +245,9 @@
 {"name": "John Smith, PhD", "shape": 3}
 {"name": "John Smith, PhD MEng", "shape": 3}
 {"name": "John Smith, PhD Ma", "shape": 3}
+{"name": "John Smith, PhD X.Y.", "shape": 3}
+{"name": "John Smith, X.Y. P.Q.", "shape": 3}
+{"name": "John Smith, X.Y.Z.", "shape": 3}
 {"name": "John Smith, X.Y.Z. MA", "shape": 3}
 {"name": "Steven Hardman, MD, DO, DDS", "shape": 3}
 {"name": "john smith, ma", "shape": 3}
