@@ -1026,7 +1026,15 @@ S2. Rationale: generational suffixes and credentials are recognized
     to write in. After a family comma this evidence is SECOND at the
     FIRST slot after it: the count of name words before the comma
     decides there first (C1), and the case is read only where that
-    count leaves the word a name. At the trailing slot of the given
+    count leaves the word a name. C1 states the one exception: a part
+    of two or more words whose every word of this class is listed and
+    written in capitals in a mixed-case name, no two particles side
+    by side, is read on its capitals before the count is asked, so
+    the comma keeps its family reading,
+    and only a word of the class opening the part reports, as the
+    first word after the comma ('John Smith, MA MA' reports on the
+    first 'MA' alone, where a counted flip reports over the whole
+    part). At the trailing slot of the given
     part the comma has already settled the count, so the writing is
     the only evidence there is.
     Company is evidence that outranks both. A member of the ambiguous
