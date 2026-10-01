@@ -202,10 +202,9 @@ def segment(state: ParseState) -> ParseState:
                      state.policy))
     # Whether the flip reports: rules.md#C1, "A flip in which no listed
     # word of this class takes part is the exception and is made in
-    # silence" -- `flip_reports` starts as that listed word, or the caps run,
-    # which the class reaches through a switch (#563). The run test
-    # below adds the one other flip that reports, paired initials
-    # spoken for only by each other.
+    # silence" -- set below by a listed word taking part, by the caps
+    # run, or (run test) by paired initials spoken for only by each
+    # other (#563).
     flip_reports = False
     if candidate:
         lone = state.tokens[groups[1][0]].text
@@ -296,17 +295,14 @@ def segment(state: ParseState) -> ParseState:
         # #563, rules.md#C1: "Only an unambiguous suffix word in front
         # of them that is not also title vocabulary, or another word
         # the class admits by its dotted shape standing in the same
-        # part, makes them the credential run." `rest` holds exactly
-        # the run's unambiguous suffix words, so `unspoken_pair` is a
-        # pair with none of them in front that is not also a title --
-        # a class member in front speaks for nothing ('Ed G.J.'), and
-        # 'Ms G.J.' is a title and initials. `shaped` counts the run's
-        # by-shape words and `pairs` the pairs among them: a second
-        # shape word speaks for a pair, and where every shape word is
-        # a pair, the flip reports ("unless what said so is nothing
-        # but other paired initials"). The title lookup runs only
-        # once a pair is met, so a run without one pays nothing.
+        # part, makes them the credential run." `unspoken_pair`: the
+        # FIRST pair has only class members ('Ed G.J.') or titles ('Ms
+        # G.J.') in front of it. Only the first can change the answer
+        # -- every later pair has the same words in front and more --
+        # so the title scan runs once, not once per pair, which made
+        # 'MD MD ... G.J. G.J. ...' quadratic.
         unspoken_pair = False
+        any_listed = False
         shaped = 0
         pairs = 0
         lexicon = state.lexicon
@@ -317,16 +313,18 @@ def segment(state: ParseState) -> ParseState:
                          or (fold == "ask" and ambiguous_class_candidate(
                              text, lexicon, state.policy)))
             if is_member:
-                listed = (fold == "member"
-                          or ambiguous_class_member(text, lexicon))
+                # LISTED is exactly "no period" for a member, as at the
+                # single-token test above
+                listed = "." not in text
                 if listed:
-                    flip_reports = True
+                    any_listed = True
                 else:
                     shaped += 1
                     if is_paired_initials(text):
                         pairs += 1
-                        if all(_normalize(w) in lexicon.titles
-                               for w in rest):
+                        if pairs == 1 and all(
+                                _normalize(w) in lexicon.titles
+                                for w in rest):
                             unspoken_pair = True
                 members.append(text)
                 # the lean is the LISTED set's alone (S2): a member
@@ -351,16 +349,20 @@ def segment(state: ParseState) -> ParseState:
             # asked inline so a run with a Title-case member never
             # forces the case fact here; `ambiguous_lean` is what
             # answers.
+            # "unless what said so is nothing but other paired
+            # initials": every shape word a pair, the first unspoken.
+            # Alone, the pair keeps the family comma; with others, the
+            # run flips and reports.
+            pair_only = unspoken_pair and pairs == shaped
             candidate = (bool(members)
-                         and not (unspoken_pair and shaped == 1)
+                         and not (pair_only and shaped == 1)
                          and (not rest or is_wholly_suffix(
                              rest, lexicon, state.policy))
                          and not (settled and case_class() is False
                                   and all(ambiguous_lean(t, False)
                                           == "credential"
                                           for t in members)))
-            if candidate and unspoken_pair and pairs == shaped:
-                flip_reports = True
+            flip_reports = candidate and (any_listed or pair_only)
     # Computed only where `candidate` is true, alongside `case_class()`
     # -- the same lazy gate: a non-candidate comma name never counts
     # its pre-comma words either. Hoisted to a local because the
@@ -379,7 +381,7 @@ def segment(state: ParseState) -> ParseState:
             or (pre_comma_names is not None and pre_comma_names >= 2))
         else Structure.FAMILY_COMMA)
     ambiguities = list(state.ambiguities)
-    if candidate and flip_reports and structure is Structure.SUFFIX_COMMA:
+    if flip_reports and structure is Structure.SUFFIX_COMMA:
         # The first report of the comma's OWN structure call in the
         # library, and it is emitted for the branch taken HERE only --
         # the flip. Where the structure did not move, that token's

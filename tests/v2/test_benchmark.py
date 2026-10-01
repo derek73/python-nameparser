@@ -687,6 +687,51 @@ def test_a_clause_link_run_does_not_cost_quadratically() -> None:
         f"again (#397)")
 
 
+# #563 simplify round: segment's paired-initials speaker test scanned
+# every word in front of EACH pair for a non-title speaker, so a comma
+# run of title/suffix duals followed by pairs ('MD MD ... G.J. G.J.
+# ...') cost duals x pairs `_normalize` calls. Only the first pair's
+# scan can change the answer, and the fix asks it once. A `_SHAPES` row
+# cannot express it -- the run needs the 'John Smith, ' prefix -- and
+# the cost is Python-level, so it is counted in `_normalize` frames,
+# which isolates the scan from the rest of the parse. Measured
+# 2026-09-30 on py3.11 through `_frames_for(..., only="_normalize")`,
+# k duals and k pairs: 107 at k=8 and 395 at k=32 on this tree (3.7x),
+# against 163 and 1,387 at c125f69b (8.5x), where every pair rescanned.
+# 6.0 sits between them; counts are deterministic, so the margins are
+# for future shape changes, not noise.
+_PAIR_SCAN_SMALL = 8
+_PAIR_SCAN_LARGE = 32
+_PAIR_SCAN_MAX_RATIO = 6.0
+
+
+def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    small_text = "John Smith, " + "MD " * _PAIR_SCAN_SMALL + "G.J. " * _PAIR_SCAN_SMALL
+    large_text = "John Smith, " + "MD " * _PAIR_SCAN_LARGE + "G.J. " * _PAIR_SCAN_LARGE
+    # REACHABILITY: the flip REPORTS only where the scan ran and found
+    # nothing but titles in front of the first pair, every shape word
+    # being a pair (rules.md#C1's "nothing but other paired initials").
+    # A change that stopped the scan being asked -- 'MD' leaving the
+    # titles, the pair test moving -- loses the report and fails here
+    # rather than leaving this guard measuring nothing.
+    for text, k in ((small_text, _PAIR_SCAN_SMALL),
+                    (large_text, _PAIR_SCAN_LARGE)):
+        name = parse(text)
+        assert len(name.suffix.split()) == 2 * k, text
+        assert [a.kind.value for a in name.ambiguities] == ["suffix-or-name"]
+    small = _frames_for(small_text, only="_normalize")
+    large = _frames_for(large_text, only="_normalize")
+    ratio = large / small
+    assert ratio < _PAIR_SCAN_MAX_RATIO, (
+        f"{_PAIR_SCAN_SMALL} duals and pairs cost {small} _normalize calls "
+        f"and {_PAIR_SCAN_LARGE} cost {large} -- {ratio:.1f}x for 4x the "
+        f"input, where this tree measures 3.7x and the per-pair rescan at "
+        f"c125f69b measured 8.5x. _segment.py's paired-initials title scan "
+        f"is running once per pair again (#563)")
+
+
 # THE ABSOLUTE COST OF A LINK, which the ratio above cannot see: a
 # change costing ONE MORE FRAME PER LINK moves both ends of the pair
 # and leaves the ratio where it was. Re-splitting the #397 follow-up's
