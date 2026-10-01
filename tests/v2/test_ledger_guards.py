@@ -1401,7 +1401,20 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
          # earlier and so cannot exercise this one); and the
          # alphabetic-chunk gate at a COMMA ('John Smith, 1.4', the
          # comma twin of the bare 'John Smith 1.4' already here).
-         "John Smith 田.中.", "Bridge (A.B)", "John Smith, 1.4"),
+         "John Smith 田.中.", "Bridge (A.B)", "John Smith, 1.4",
+         # 2026-09-30, #563: paired initials after a comma are the
+         # paired-initials rule's, never this one's
+         "John Smith, A.B.", "García Márquez, G.J."),
+    # #563: the shapes the exception does not reach. One word before
+    # the comma never flips (#516's reading, reported there); three
+    # letters run together read by the count (#516's rule claims them);
+    # a pair after a suffix-bearing family keeps the given by the
+    # name-word count alone; spaced initials are separate words.
+    "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
+        ("Smith, A.B.", "Tolkien, J.R.R.", "John Smith, X.Y.Z.",
+         "García Márquez, G.J.R.", "Smith Jr., A.B.", "Smith, J. R. R.",
+         "John Smith X.Y.", "García Márquez, Ms G.J.",
+         "García Márquez, Ed G.J."),
     # Policy.unlisted_caps_suffixes is OFF by default, so its whole
     # population is a probe here: the corpora run at the default, and
     # a rule of this arc reaching one of these names would mean the
@@ -2447,11 +2460,22 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "John Smith, Ma", "John de Ma", "John van der Berg Ma",
                r"Smith Jr\., MA", r"Smith Jr\., Ma", "Smith, MA",
                "abdul Smith Berg Ma", "abdul Smith Ma", "john smith, ma"}),
-    frozenset({r"Jack X\.Y\.I\.", r"John Smith B\.Tech\.",
-               r"John Smith C\.H\.A\.", r"John Smith E\.S\.Q\.",
-               r"John Smith Q\.W\.E\.R\.T\.", r"John Smith X\.Y\.Z\.",
-               r"John Smith, A\.B\.", r"Smith, E\.S\.Q\.",
-               r"john smith x\.y\.z\."}),
+    frozenset({r"García Márquez, G\.J\.R\.", r"Jack X\.Y\.I\.",
+               r"John Smith B\.Tech\.", r"John Smith C\.H\.A\.",
+               r"John Smith E\.S\.Q\.", r"John Smith Q\.W\.E\.R\.T\.",
+               r"John Smith X\.Y\.Z\.", r"John Smith, X\.Y\.Z\.",
+               r"Smith, E\.S\.Q\.", r"john smith x\.y\.z\."}),
+    # #563's paired-initials rule, literal-anchored the same way and
+    # for the same reason: what selects its names is two dotted single
+    # letters and what stands around them, which no wordlist spells.
+    # The 1.4.0 ledger lists the three role movers alone.
+    frozenset({r"De La Cruz, M\.J\. K\.L\.", r"García Márquez, PhD G\.J\.",
+               r"John Smith, PhD X\.Y\.", r"John Smith, X\.Y\. P\.Q\."}),
+    frozenset({r"De La Cruz, M\.J\. K\.L\.",
+               r"De La Cruz, M\.J\. PhD", r"García Márquez, G\.J",
+               r"García Márquez, G\.J\.", r"García Márquez, PhD G\.J\.",
+               r"John Smith, A\.B\.", r"John Smith, A\.B\. Ph\.D\.",
+               r"John Smith, PhD X\.Y\.", r"John Smith, X\.Y\. P\.Q\."}),
     frozenset({"Doe, MA Smith", r"J\.A\. K\.D\.", r"Jack X\.Y\.Z\.",
                r"John Smith J\.u\.n\.i\.o\.r\.", r"John Smith R\.A\.I\.",
                "Royce, Ed", r"Smith Jr\., A\.B\.", r"Smith, A\.B\.",
@@ -2486,7 +2510,14 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "Doe, John MA", "Doe, John MA JD", "Doe, John MA Jr",
                "Doe, John MA PhD", "Doe, John PhD MA",
                r"Doe, John Q\. MA", r"Doe, John X\.Y\.Z\.",
+               r"García Márquez, Ed G\.J\.",
                "Smith nee Jones, Jane MA", "doe, john ma"}),
+    # 2026-09-30, #563: 'García Márquez, Ed G.J.' joins that set in
+    # every 2.x ledger -- the same slot, a by-shape member ending the
+    # given part, reached because a class member in front of a pair
+    # no longer flips the comma -- and the 1.4.0 ledger's
+    # single-name dotted rule becomes this two-name alternation.
+    frozenset({r"Doe, John X\.Y\.Z\.", r"García Márquez, Ed G\.J\."}),
     frozenset({"Doe, John Ed", "Doe, John MA Ma", "Doe, John Ma",
                "Doe, Mary Jo Ma"}),
     # 2026-09-28: the 2.2.0 and 2.3.0 copies of the declining rule
@@ -3712,8 +3743,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-28, #544: 392 -> 396; gains 'John Smith, PhD Ma',
         # 'Smith, MD PhD Ma', 'Smith, Ms MD Ma', 'Smith, PhD Ma'.
         # Reach, verified name by name.
+        # 2026-09-30, #563: 396 -> 408, the twelve names #563's rules.md#C1
+        # examples and case rows add, every one written with a comma.
+        # Reach, verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(396, ('given', 'suffix', 'title'), "1c2cfbb3f881", None),
+            _Claim(408, ('given', 'suffix', 'title'), "6f26a85296fb", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3802,8 +3836,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Doe, Jane nee Smith PhD MEng', 'Jane Doe, MS LAc', 'John
         # Smith, Ed Ma' and 8 more.
         # 2026-09-28, #544: 392 -> 396; the same four comma names.
+        # 2026-09-30, #563: 396 -> 408, the twelve names #563's rules.md#C1
+        # examples and case rows add, every one written with a comma.
+        # Reach, verified name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(396, ('family', 'given'), "1c2cfbb3f881", None),
+            _Claim(408, ('family', 'given'), "6f26a85296fb", None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -4083,8 +4120,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # name and neither widened. Verified name by name.
         # 2026-09-26, #535: 112 -> 113, 'Jane van der Berg nee Smith
         # Prof.' -- another particle chain, 'van der Berg'. Reach again.
+        # 2026-09-30, #563: 115 -> 117, 'De La Cruz, M.J. PhD' and
+        # 'De La Cruz, M.J. K.L.' -- a particle chain, 'De La Cruz'.
+        # Reach, verified name by name.
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(115, ('_initials',), '5f9056683f2f', ('DEFAULT',)),
+            _Claim(117, ('_initials',), '0820bd80678d', ('DEFAULT',)),
         # 2026-09-23, #459: 18 -> 19, 'john smith ph. d.', rules.md#R4's
         # two-token line. Reach, verified name by name.
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
@@ -4182,8 +4222,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
         # probes and not this number are what bound it.
+        # 2026-09-30, #563: 9 -> 10, a different set. 'John Smith, A.B.'
+        # leaves for the #563 rule (paired initials, rules.md#C1), and
+        # 'John Smith, X.Y.Z.' and 'García Márquez, G.J.R.' join, the
+        # comma form's by-count movers. Literal-anchored, so the reach
+        # IS the mover list.
         "fix(#516) an unlisted dotted acronym is read by position":
-            _Claim(9, ('family', 'given', 'middle', 'suffix'), "9bbaf4e84dc0", ('DEFAULT',)),
+            _Claim(10, ('family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
+        # 2026-09-30, #563: new. Literal-anchored to its movers --
+        # the four role movers; a report-only diff is invisible at this baseline.
+        "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
+            _Claim(4, ('family', 'given', 'middle', 'suffix', 'title'), "ff266bb1798d", ('DEFAULT',)),
         # 2026-09-18, verification round. ONE name, and a rule this PR
         # did not earn: 'Doe, John MA' has read middle since 2.0.0 and
         # reads suffix at 1.4.0, so the diff exists at this baseline
@@ -4213,8 +4262,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # trailing slot at all; and the fix(#380) decision read over
         # the two other collision words, five names this PR measured
         # byte-identical at cc78c960.
+        # 2026-09-30, #563: 1 -> 2, 'García Márquez, Ed G.J.' -- a
+        # class member in front of a pair keeps the family comma, and
+        # the pair then ends the given part. Literal-anchored.
         "fix(#531) a dotted credential ending the given part leaves 1.4's middle name":
-            _Claim(1, ('middle', 'suffix'), "5800f141483d", ('DEFAULT',)),
+            _Claim(2, ('middle', 'suffix'), "0d423d266341", ('DEFAULT',)),
         "fix(comma-family) an interior credential acronym stays a middle-name word":
             _Claim(1, ('middle', 'suffix'), "4831097f5067", ('DEFAULT',)),
         # 2026-09-19, #531 fix round: two rules land, each literal-
@@ -4869,8 +4921,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
         # probes and not this number are what bound it.
+        # 2026-09-30, #563: 9 -> 10, a different set. 'John Smith, A.B.'
+        # leaves for the #563 rule (paired initials, rules.md#C1), and
+        # 'John Smith, X.Y.Z.' and 'García Márquez, G.J.R.' join, the
+        # comma form's by-count movers. Literal-anchored, so the reach
+        # IS the mover list.
         "fix(#516) an unlisted dotted acronym is read by position":
-            _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9bbaf4e84dc0", ('DEFAULT',)),
+            _Claim(10, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
+        # 2026-09-30, #563: new. Literal-anchored to its movers --
+        # four role movers and five names whose only diff is the report.
+        "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
+            _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "3550ea3b5804", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -4896,8 +4957,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `Doe, John DO` moves {middle, suffix} here and
         # {family, suffix} from 2.2.0 on, which is P6's own shipping
         # date showing through.
+        # 2026-09-30, #563: 15 -> 16, 'García Márquez, Ed G.J.' -- a
+        # class member in front of a pair keeps the family comma, and
+        # the pair then ends the given part. Literal-anchored.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
-            _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
+            _Claim(16, ('_ambiguities', 'middle', 'suffix'), "2da482a17f0e", ('DEFAULT',)),
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
             _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
         "fix(#531) capitals take the do collision from the family-comma particle attachment":
@@ -5350,8 +5414,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
         # probes and not this number are what bound it.
+        # 2026-09-30, #563: 9 -> 10, a different set. 'John Smith, A.B.'
+        # leaves for the #563 rule (paired initials, rules.md#C1), and
+        # 'John Smith, X.Y.Z.' and 'García Márquez, G.J.R.' join, the
+        # comma form's by-count movers. Literal-anchored, so the reach
+        # IS the mover list.
         "fix(#516) an unlisted dotted acronym is read by position":
-            _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9bbaf4e84dc0", ('DEFAULT',)),
+            _Claim(10, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
+        # 2026-09-30, #563: new. Literal-anchored to its movers --
+        # four role movers and five names whose only diff is the report.
+        "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
+            _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "3550ea3b5804", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -5377,8 +5450,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `Doe, John DO` moves {family, suffix} here, P6 having
         # shipped in 2.3; at 2.0.0 and 2.1.0 the same name moves
         # {middle, suffix} instead.
+        # 2026-09-30, #563: 15 -> 16, 'García Márquez, Ed G.J.' -- a
+        # class member in front of a pair keeps the family comma, and
+        # the pair then ends the given part. Literal-anchored.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
-            _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
+            _Claim(16, ('_ambiguities', 'middle', 'suffix'), "2da482a17f0e", ('DEFAULT',)),
         # 2026-09-28, #544: 4 -> 5; gains 'Smith, MD PhD Ma'.
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
             _Claim(5, ('_ambiguities',), "f73bc2fc5408", ('DEFAULT',)),
@@ -5966,8 +6042,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
         # probes and not this number are what bound it.
+        # 2026-09-30, #563: 9 -> 10, a different set. 'John Smith, A.B.'
+        # leaves for the #563 rule (paired initials, rules.md#C1), and
+        # 'John Smith, X.Y.Z.' and 'García Márquez, G.J.R.' join, the
+        # comma form's by-count movers. Literal-anchored, so the reach
+        # IS the mover list.
         "fix(#516) an unlisted dotted acronym is read by position":
-            _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9bbaf4e84dc0", ('DEFAULT',)),
+            _Claim(10, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
+        # 2026-09-30, #563: new. Literal-anchored to its movers --
+        # four role movers and five names whose only diff is the report.
+        "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
+            _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "3550ea3b5804", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -5993,8 +6078,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `Doe, John DO` moves {middle, suffix} here and
         # {family, suffix} from 2.2.0 on, which is P6's own shipping
         # date showing through.
+        # 2026-09-30, #563: 15 -> 16, 'García Márquez, Ed G.J.' -- a
+        # class member in front of a pair keeps the family comma, and
+        # the pair then ends the given part. Literal-anchored.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
-            _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
+            _Claim(16, ('_ambiguities', 'middle', 'suffix'), "2da482a17f0e", ('DEFAULT',)),
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
             _Claim(4, ('_ambiguities',), "c6d26d145ee1", ('DEFAULT',)),
         "fix(#531) capitals take the do collision from the family-comma particle attachment":
@@ -6313,8 +6401,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
         # probes and not this number are what bound it.
+        # 2026-09-30, #563: 9 -> 10, a different set. 'John Smith, A.B.'
+        # leaves for the #563 rule (paired initials, rules.md#C1), and
+        # 'John Smith, X.Y.Z.' and 'García Márquez, G.J.R.' join, the
+        # comma form's by-count movers. Literal-anchored, so the reach
+        # IS the mover list.
         "fix(#516) an unlisted dotted acronym is read by position":
-            _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9bbaf4e84dc0", ('DEFAULT',)),
+            _Claim(10, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
+        # 2026-09-30, #563: new. Literal-anchored to its movers --
+        # four role movers and five names whose only diff is the report.
+        "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
+            _Claim(9, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "3550ea3b5804", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -6340,8 +6437,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `Doe, John DO` moves {family, suffix} here, P6 having
         # shipped in 2.3; at 2.0.0 and 2.1.0 the same name moves
         # {middle, suffix} instead.
+        # 2026-09-30, #563: 15 -> 16, 'García Márquez, Ed G.J.' -- a
+        # class member in front of a pair keeps the family comma, and
+        # the pair then ends the given part. Literal-anchored.
         "fix(#531) a credential ending the given part of a family-comma listing reads as a credential":
-            _Claim(15, ('_ambiguities', 'middle', 'suffix'), "f17532bb4ff1", ('DEFAULT',)),
+            _Claim(16, ('_ambiguities', 'middle', 'suffix'), "2da482a17f0e", ('DEFAULT',)),
         # 2026-09-28, #544: 4 -> 5; gains 'Smith, MD PhD Ma'.
         "fix(#531) a member the writing declines keeps its name reading and reports the fork":
             _Claim(5, ('_ambiguities',), "f73bc2fc5408", ('DEFAULT',)),
@@ -7894,7 +7994,12 @@ class _Excluded(NamedTuple):
 #: revisit the day one does.
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
     "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
-        _Excluded(6, "69491e3986b1",
+        _Excluded(7, "85dd96d1f55e",
+                  # 2026-09-30, #563: 6 -> 7 captures, 'John Smith,
+                  # A.B. Ph.D.', a rules.md#C1 boundary line whose
+                  # trailing 'Ph.D.' the end anchor reaches. It reads
+                  # as 1.4.0 read it, so nothing is silenced;
+                  # absorbed_by unchanged.
                   # 2026-09-23, #459: 3 -> 6 captures, rules.md#R4's
                   # three new trailing Ph. D. spellings
                   # ('john smith ph.d.', 'JOHN SMITH PH.D.',

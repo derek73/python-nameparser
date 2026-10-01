@@ -47,14 +47,16 @@ decision site below; history in decisions.md#C1.
 """
 from __future__ import annotations
 
+from nameparser._lexicon import _normalize
 from nameparser._pipeline._pieces import own_words
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
-    caps_shape_candidate, is_one_case, is_single_letter_numeral,
-    is_wholly_suffix, name_word_count, run_word_fold,
+    caps_shape_candidate, is_one_case, is_paired_initials,
+    is_single_letter_numeral, is_wholly_suffix, name_word_count,
+    run_word_fold,
 )
 from nameparser._types import AmbiguityKind
 
@@ -198,6 +200,27 @@ def segment(state: ParseState) -> ParseState:
                  and ambiguous_class_candidate(
                      state.tokens[groups[1][0]].text, state.lexicon,
                      state.policy))
+    # Whether the flip reports: rules.md#C1, "A flip in which no listed
+    # word of this class takes part is the exception and is made in
+    # silence" -- set below by a listed word taking part, by the caps
+    # run, or (run test) by paired initials spoken for only by each
+    # other (#563).
+    flip_reports = False
+    if candidate:
+        lone = state.tokens[groups[1][0]].text
+        # For a word that passed the candidate test, LISTED is exactly
+        # "no period": `ambiguous_class_member` declines any period,
+        # and the dotted shape needs one. Asked inline -- a second
+        # membership call cost every reporting comma name ('John
+        # Smith, MA') two frames to learn what this already says.
+        flip_reports = "." not in lone
+        # rules.md#C1: "Paired initials are the exception to the
+        # count" -- 'García Márquez, G.J.' has two words before the
+        # comma and one surname. Alone in the part, nothing speaks
+        # for them, so the structure stays the family comma and
+        # assign reads and reports them as the given name (#563).
+        if not flip_reports and is_paired_initials(lone):
+            candidate = False
     # The all-caps half (Policy.unlisted_caps_suffixes, #516) is the
     # FIRST shape this class can wear across more than one token --
     # 'LEED AP' is two separate all-caps words, not one glued acronym
@@ -231,6 +254,7 @@ def segment(state: ParseState) -> ParseState:
                                          one_case=False)
                     for i in groups[1])):
         candidate = case_class() is False
+        flip_reports = candidate
     # rules.md#C1: "The same count reads a part of two or more words as
     # the credential run when every word of it is a suffix word or a
     # word of this class, at least one of them of this class" -- the
@@ -268,6 +292,19 @@ def segment(state: ParseState) -> ParseState:
         members: list[str] = []
         rest: list[str] = []
         settled = True
+        # #563, rules.md#C1: "Only an unambiguous suffix word in front
+        # of them that is not also title vocabulary, or another word
+        # the class admits by its dotted shape standing in the same
+        # part, makes them the credential run." `unspoken_pair`: the
+        # FIRST pair has only class members ('Ed G.J.') or titles ('Ms
+        # G.J.') in front of it. Only the first can change the answer
+        # -- every later pair has the same words in front and more --
+        # so the title scan runs once, not once per pair, which made
+        # 'MD MD ... G.J. G.J. ...' quadratic.
+        unspoken_pair = False
+        any_listed = False
+        shaped = 0
+        pairs = 0
         lexicon = state.lexicon
         for i in groups[1]:
             text = state.tokens[i].text
@@ -276,12 +313,23 @@ def segment(state: ParseState) -> ParseState:
                          or (fold == "ask" and ambiguous_class_candidate(
                              text, lexicon, state.policy)))
             if is_member:
+                # LISTED is exactly "no period" for a member, as at the
+                # single-token test above
+                listed = "." not in text
+                if listed:
+                    any_listed = True
+                else:
+                    shaped += 1
+                    if is_paired_initials(text):
+                        pairs += 1
+                        if pairs == 1 and all(
+                                _normalize(w) in lexicon.titles
+                                for w in rest):
+                            unspoken_pair = True
                 members.append(text)
                 # the lean is the LISTED set's alone (S2): a member
                 # admitted by shape ('X.Y.Z.') is read by the count
-                settled = (settled and text.isupper()
-                           and (fold == "member"
-                                or ambiguous_class_member(text, lexicon)))
+                settled = settled and listed and text.isupper()
             # "reject" first: a name word ends the run without the
             # numeral test's frame, and the numeral cannot be a
             # "reject" (it is suffix vocabulary, so it folds "defer")
@@ -301,13 +349,20 @@ def segment(state: ParseState) -> ParseState:
             # asked inline so a run with a Title-case member never
             # forces the case fact here; `ambiguous_lean` is what
             # answers.
+            # "unless what said so is nothing but other paired
+            # initials": every shape word a pair, the first unspoken.
+            # Alone, the pair keeps the family comma; with others, the
+            # run flips and reports.
+            pair_only = unspoken_pair and pairs == shaped
             candidate = (bool(members)
+                         and not (pair_only and shaped == 1)
                          and (not rest or is_wholly_suffix(
                              rest, lexicon, state.policy))
                          and not (settled and case_class() is False
                                   and all(ambiguous_lean(t, False)
                                           == "credential"
                                           for t in members)))
+            flip_reports = candidate and (any_listed or pair_only)
     # Computed only where `candidate` is true, alongside `case_class()`
     # -- the same lazy gate: a non-candidate comma name never counts
     # its pre-comma words either. Hoisted to a local because the
@@ -326,7 +381,7 @@ def segment(state: ParseState) -> ParseState:
             or (pre_comma_names is not None and pre_comma_names >= 2))
         else Structure.FAMILY_COMMA)
     ambiguities = list(state.ambiguities)
-    if candidate and structure is Structure.SUFFIX_COMMA:
+    if flip_reports and structure is Structure.SUFFIX_COMMA:
         # The first report of the comma's OWN structure call in the
         # library, and it is emitted for the branch taken HERE only --
         # the flip. Where the structure did not move, that token's
@@ -351,7 +406,7 @@ def segment(state: ParseState) -> ParseState:
         # expression is its own frame on 3.11 regardless of element
         # count (unlike a list comprehension, which PEP 709 inlines
         # only from 3.12), so the join alone cost every REPORTING
-        # comma name (`John Smith, MA`, `John Smith, A.B.`, `Davis
+        # comma name (`John Smith, MA`, `John Smith, Ed`, `Davis
         # Royce, Ed`) +2 frames at the DEFAULT policy, a path this
         # switch must not touch at all (#516 review round, F4).
         #

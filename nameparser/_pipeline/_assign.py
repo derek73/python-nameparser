@@ -83,7 +83,7 @@ from nameparser._pipeline._state import (
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
 from nameparser._policy import Policy, Script
-from nameparser._types import AmbiguityKind, Role
+from nameparser._types import SHAPE_ACRONYM_TAG, AmbiguityKind, Role
 
 def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
                role: Role) -> None:
@@ -433,11 +433,18 @@ def _assign_main(seg_idx: int, state: ParseState,
         taken, declined = (
             ("a suffix", "a name part") if token.role is Role.SUFFIX
             else (f"a {token.role.value} name", "a post-nominal"))
+        # A word in the class by SHAPE (rules.md#S2, #S3) is in no
+        # wordlist and may be written with its periods, so the listed
+        # member's wording would misdescribe it on both counts (#563)
+        what = ("is shaped like a post-nominal but listed in no "
+                "vocabulary, so it may be an ordinary name"
+                if SHAPE_ACRONYM_TAG in token.tags
+                else "written without periods is both a post-nominal "
+                     "and an ordinary name")
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{token.text!r} written without periods is both a "
-            f"post-nominal and an ordinary name; read as {taken} "
-            f"rather than {declined}",
+            f"{token.text!r} {what}; read as {taken} rather than "
+            f"{declined}",
             piece))
     # leading ambiguous particle read as a name (#121 surfaced)
     if name_pieces:

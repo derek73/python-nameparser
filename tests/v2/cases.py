@@ -2231,13 +2231,115 @@ CASES: tuple[Case, ...] = (
                "report is new",
          shape=1),
     Case("the_comma_structure_moves_with_the_shape_class",
-         "John Smith, A.B.",
-         {"given": "John", "family": "Smith", "suffix": "A.B."},
+         "John Smith, X.Y.Z.",
+         {"given": "John", "family": "Smith", "suffix": "X.Y.Z."},
          classification="fix(#516)",
-         ambiguities=("suffix-or-name",),
          notes="two NAME words before the comma read the part after "
                "it as the credential run, for the by-shape half "
-               "exactly as for the listed one (rules.md#C1)",
+               "exactly as for the listed one (rules.md#C1). Silent "
+               "since #563: three letters run together have no name "
+               "reading a reader would weigh",
+         shape=3),
+    Case("paired_initials_after_a_two_word_surname_stay_the_given",
+         "García Márquez, G.J.",
+         {"given": "G.J.", "family": "García Márquez"},
+         ambiguities=("suffix-or-name",),
+         notes="#563: two words before the comma may be ONE surname, "
+               "and two dotted letters are how a person's own initials "
+               "are written, so the count gives way (rules.md#C1). "
+               "2.4's first reading was given 'García', family "
+               "'Márquez', suffix 'G.J.'; 1.4.0 and 2.3.0 read it as "
+               "here, and only the report is new",
+         shape=3),
+    Case("paired_initials_after_a_full_name_are_still_a_fork",
+         "John Smith, A.B.",
+         {"given": "A.B.", "family": "John Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="#563: the same shape as the row above with a given "
+               "name before the comma, which the parser cannot see. "
+               "A.B. is also the degree, so the report is the point: "
+               "the reading goes to the initials, and the fork is said",
+         shape=3),
+    Case("a_credential_behind_paired_initials_does_not_speak",
+         "De La Cruz, M.J. PhD",
+         {"given": "M.J.", "family": "De La Cruz", "suffix": "PhD"},
+         ambiguities=("suffix-or-name",),
+         notes="#563, S2's company rule: only a credential IN FRONT "
+               "speaks for a word, so the degree behind the initials "
+               "leaves them the given name. Every release reads it "
+               "this way; the report is new",
+         shape=3),
+    Case("a_credential_in_front_speaks_for_paired_initials",
+         "John Smith, PhD X.Y.",
+         {"given": "John", "family": "Smith", "suffix": "PhD X.Y."},
+         classification="fix(#563)",
+         notes="the contrast to the row above: the degree in front "
+               "makes the pair a credential, and a flip on a dotted "
+               "word admitted by shape is silent (rules.md#C1). 2.3.0 "
+               "read given 'PhD', middle 'X.Y.'",
+         shape=3),
+    Case("a_title_in_front_of_paired_initials_does_not_speak",
+         "García Márquez, Ms G.J.",
+         {"title": "Ms", "given": "G.J.", "family": "García Márquez"},
+         notes="#563 review round: 'Ms' is both title and suffix "
+               "vocabulary, and in front of paired initials it is the "
+               "title of the given part they open (rules.md#C1, as S2 "
+               "reads a dual in that part's title run). The first fix "
+               "let it speak and split the surname in silence. Every "
+               "release reads it this way",
+         shape=3),
+    Case("a_credential_in_front_of_paired_initials_speaks",
+         "García Márquez, PhD G.J.",
+         {"given": "García", "family": "Márquez", "suffix": "PhD G.J."},
+         classification="fix(#563)",
+         notes="the contrast to the row above: 'PhD' is no title, so "
+               "it speaks for the pair and the part is the credential "
+               "run, flipped in silence",
+         shape=3),
+    Case("a_second_dotted_word_speaks_for_paired_initials",
+         "John Smith, X.Y. P.Q.",
+         {"given": "John", "family": "Smith", "suffix": "X.Y. P.Q."},
+         classification="fix(#563)",
+         ambiguities=("suffix-or-name",),
+         notes="nobody writes initials as two dotted groups, so a "
+               "second by-shape word makes the part the credential "
+               "run (rules.md#C1) -- reported, since here the pairs "
+               "speak only for each other and each is a word a reader "
+               "takes for a name. 1.4.0 read given 'X.Y.', middle "
+               "'P.Q.'",
+         shape=3),
+    Case("two_pairs_behind_a_two_word_surname_report_the_flip",
+         "De La Cruz, M.J. K.L.",
+         {"family": "De La Cruz", "suffix": "M.J. K.L."},
+         classification="fix(#563)",
+         ambiguities=("suffix-or-name",),
+         notes="#563 second review round: the cost of the two-pair "
+               "line is a surname with no given name, so the flip it "
+               "makes is reported rather than silent (rules.md#C1). "
+               "1.4.0 read given 'M.J.', middle 'K.L.'",
+         shape=3),
+    Case("a_class_member_in_front_of_paired_initials_does_not_speak",
+         "García Márquez, Ed G.J.",
+         {"given": "Ed", "family": "García Márquez", "suffix": "G.J."},
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="#563 second review round: 'Ed' is a listed ambiguous "
+               "member, and S2's company lets only an unambiguous "
+               "credential speak, so the comma keeps the family. 'G.J.' "
+               "then ends the given part, the slot #563 left alone, "
+               "where the dotted shape reads a credential as in 'Doe, "
+               "John R.T.'; both forks report. 1.4.0 and 2.3.0 read "
+               "middle 'G.J.'",
+         shape=3),
+    Case("three_run_together_initials_behind_a_double_surname_read_as_a_credential",
+         "García Márquez, G.J.R.",
+         {"given": "García", "family": "Márquez", "suffix": "G.J.R."},
+         classification="fix(#516)",
+         notes="the ACCEPTED cost of #563's line (rules.md#C1): "
+               "initials are conventionally written apart ('J. R. "
+               "R.'), so three letters run together read as a "
+               "credential even where the name before the comma is "
+               "one surname. 1.4.0 read given 'G.J.R.'",
          shape=3),
     Case("one_word_before_the_comma_keeps_the_given", "Smith, A.B.",
          {"given": "A.B.", "family": "Smith"},

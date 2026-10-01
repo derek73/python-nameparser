@@ -143,15 +143,60 @@ def test_structure_flips_for_the_ambiguous_class_on_a_name_word_count() -> None:
 
 def test_structure_flips_for_a_by_shape_member_too() -> None:
     # #516: an unlisted dotted token joins the class the same way, via
-    # `_vocab.ambiguous_class_candidate` -- 'A.B.' is two unclaimed
+    # `_vocab.ambiguous_class_candidate` -- 'X.Y.Z.' is three unclaimed
     # single-letter chunks, not vocabulary at all, so this is the
-    # by-shape twin of the test above. 'Smith Jr., A.B.' does not flip
-    # for the SAME reason 'Smith Jr., MA' does not (#516 review round:
-    # is_wholly_suffix must never admit the shape class here, or C1's
-    # legacy TOKEN-count disjunct flips it wrongly on 'Jr.').
-    assert _segmented("John Smith, A.B.").structure is Structure.SUFFIX_COMMA
-    assert _segmented("Smith, A.B.").structure is Structure.FAMILY_COMMA
-    assert _segmented("Smith Jr., A.B.").structure is Structure.FAMILY_COMMA
+    # by-shape twin of the test above. 'Smith Jr., X.Y.Z.' does not
+    # flip for the SAME reason 'Smith Jr., MA' does not (#516 review
+    # round: is_wholly_suffix must never admit the shape class here, or
+    # C1's legacy TOKEN-count disjunct flips it wrongly on 'Jr.').
+    assert _segmented("John Smith, X.Y.Z.").structure \
+        is Structure.SUFFIX_COMMA
+    assert _segmented("Smith, X.Y.Z.").structure is Structure.FAMILY_COMMA
+    assert _segmented("Smith Jr., X.Y.Z.").structure \
+        is Structure.FAMILY_COMMA
+
+
+def test_paired_initials_need_a_word_to_speak_for_them() -> None:
+    # rules.md#C1 (#563): two dotted single letters are how a person's
+    # own initials are written, and two words before the comma may be
+    # one surname, so alone they keep the family comma. Each contrast
+    # pair differs in the one thing that speaks: a third letter, a
+    # credential IN FRONT (not behind), a second by-shape word. A
+    # generational word in front speaks like any suffix word; the
+    # title-vocabulary exception needs titles this lexicon lacks, so
+    # its contrast is the case-table pair
+    # a_title_in_front_of_paired_initials_does_not_speak.
+    for alone, spoken in (("García Márquez, G.J.", "García Márquez, G.J.R."),
+                          ("De La Cruz, M.J. PhD", "De La Cruz, PhD M.J."),
+                          ("John Smith, X.Y. MA", "John Smith, X.Y. P.Q."),
+                          ("García Márquez, G.J.", "García Márquez, Jr G.J."),
+                          # a class member in front speaks for nothing,
+                          # as S2's company has it; an unambiguous one does
+                          ("García Márquez, Ma G.J.", "García Márquez, PhD G.J.")):
+        assert _segmented(alone).structure is Structure.FAMILY_COMMA, alone
+        assert _segmented(spoken).structure is Structure.SUFFIX_COMMA, spoken
+
+
+def test_a_flip_no_listed_member_takes_part_in_is_silent() -> None:
+    # rules.md#C1 (#563): a flip in which no listed member takes part
+    # is silent, while a LISTED member in the same position still
+    # reports the flip -- the control that keeps the silence from
+    # being a lost emitter -- and so do paired initials spoken for
+    # only by each other, each of them a word a reader takes for a
+    # name. A pair beside a three-letter word, or behind PhD, is
+    # spoken for by something else and stays silent.
+    for text in ("John Smith, X.Y.Z.", "John Smith, B.Tech.",
+                 "John Smith, X.Y.Z. P.D.Q.", "John Smith, PhD P.D.Q.",
+                 "John Smith, X.Y.Z. G.J.", "John Smith, PhD G.J. K.L."):
+        out = _segmented(text)
+        assert out.structure is Structure.SUFFIX_COMMA, text
+        assert _flip_reports(out) == [], text
+    for text in ("John Smith, Ma", "John Smith, PhD Ma",
+                 "John Smith, X.Y.Z. MA", "De La Cruz, M.J. K.L.",
+                 "John Smith, X.Y. P.Q."):
+        out = _segmented(text)
+        assert out.structure is Structure.SUFFIX_COMMA, text
+        assert _flip_reports(out) == [_texts(out, out.segments[1])], text
 
 
 def test_segment_records_the_case_fact_only_where_it_asked() -> None:
@@ -222,7 +267,7 @@ def test_the_name_word_count_reads_a_run_as_it_reads_one_word() -> None:
     for text in ("John Smith, PhD Ma", "John Smith, Ed Ma",
                  "John Smith, Ma PhD", "john smith, phd ma",
                  "JOHN SMITH, PHD MA", "John Smith, MD Ma",
-                 "John Smith, A.B. PhD", "John Smith, Ph. D. Ma"):
+                 "John Smith, X.Y.Z. MA", "John Smith, Ph. D. Ma"):
         out = _segmented(text)
         assert out.structure is Structure.SUFFIX_COMMA, text
         assert _flip_reports(out) == [_texts(out, out.segments[1])], text

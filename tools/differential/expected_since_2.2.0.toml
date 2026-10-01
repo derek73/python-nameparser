@@ -1013,8 +1013,11 @@ issue = "fix(#516) an unlisted dotted acronym is read by position"
 # reading reported (rules.md#S3). Case says nothing here -- the
 # periods are the evidence -- which is why 'john smith x.y.z.' moves
 # with 'John Smith X.Y.Z.'. The same admission reaches the comma form,
-# where the NAME-word count decides ('John Smith, A.B.' -> suffix
-# 'A.B.'; 'Smith, A.B.' keeps its given and only reports).
+# where the NAME-word count decides ('John Smith, X.Y.Z.' -> suffix
+# 'X.Y.Z.'; 'Smith, A.B.' keeps its given and only reports). Paired
+# initials ('John Smith, A.B.') are the exception to that count and
+# have their own rule below (#563); 'García Márquez, G.J.R.' is the
+# exception's accepted boundary, three letters reading by the count.
 #
 # Two names here restore a reading a PRIOR bundle's vocabulary change
 # took away, by a different route than it lost it: 'John Smith E.S.Q.'
@@ -1043,7 +1046,32 @@ issue = "fix(#516) an unlisted dotted acronym is read by position"
 # ledgers, for the reason the fix(#289) rule above gives: the class is
 # a SHAPE, and a regex for the shape would claim every dotted token
 # the vocabulary already answers for.
-name_regex = "^(?:Jack X\\.Y\\.I\\.|John Smith B\\.Tech\\.|John Smith C\\.H\\.A\\.|John Smith E\\.S\\.Q\\.|John Smith Q\\.W\\.E\\.R\\.T\\.|John Smith X\\.Y\\.Z\\.|John Smith, A\\.B\\.|Smith, E\\.S\\.Q\\.|john smith x\\.y\\.z\\.)$"
+name_regex = "^(?:García Márquez, G\\.J\\.R\\.|Jack X\\.Y\\.I\\.|John Smith B\\.Tech\\.|John Smith C\\.H\\.A\\.|John Smith E\\.S\\.Q\\.|John Smith Q\\.W\\.E\\.R\\.T\\.|John Smith X\\.Y\\.Z\\.|John Smith, X\\.Y\\.Z\\.|Smith, E\\.S\\.Q\\.|john smith x\\.y\\.z\\.)$"
+fields = ["family", "given", "middle", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#563) paired initials after a comma read as the given name unless a word speaks for them"
+# rules.md#C1: "Paired initials are the exception to the count" --
+# two words before the comma may be one surname ('García Márquez,
+# G.J.'), so two dotted single letters alone after it stay the given
+# name and report the fork, where #516 had read them as a credential.
+# "Only a credential in front of them, or another word the class
+# admits by its dotted shape standing in the same part, makes them the
+# credential run": 'John Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.'
+# move to the run, while 'De La Cruz, M.J. PhD' keeps its initials,
+# the degree standing behind them, and so does 'García Márquez, Ms
+# G.J.', a title in front ("a suffix word in front of them that is
+# not also title vocabulary"), which moves nothing at any baseline.
+# The second period is optional ('García Márquez, G.J'). Two pairs
+# speaking only for each other make the run and report it ('De La
+# Cruz, M.J. K.L.'); a listed member in front speaks for nothing
+# ('García Márquez, Ed G.J.' keeps the family comma, and the fix(#531)
+# rule claims what its given part's trailing slot then reads). Against a 2.x baseline the names
+# whose roles match the baseline's move only the report, which a
+# 1.4.0 comparison cannot see; that ledger lists the three role movers
+# alone.
+name_regex = "^(?:De La Cruz, M\\.J\\. K\\.L\\.|De La Cruz, M\\.J\\. PhD|García Márquez, G\\.J|García Márquez, G\\.J\\.|García Márquez, PhD G\\.J\\.|John Smith, A\\.B\\.|John Smith, A\\.B\\. Ph\\.D\\.|John Smith, PhD X\\.Y\\.|John Smith, X\\.Y\\. P\\.Q\\.)$"
 fields = ["family", "given", "middle", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -1172,7 +1200,7 @@ issue = "fix(#531) a credential ending the given part of a family-comma listing 
 # measured name by name: what grew is the CORPUS, not the rule, and
 # a `fix(#533)` rule for them would attribute a #531 reading to the
 # wrong change.
-name_regex = "^(?:DOE, JOHN MA|DOE, MARY JO MA|Doe, Dr\\. John MA|Doe, J\\. MA|Doe, J\\. ba|Doe, John BA|Doe, John MA|Doe, John MA JD|Doe, John MA Jr|Doe, John MA PhD|Doe, John PhD MA|Doe, John Q\\. MA|Doe, John X\\.Y\\.Z\\.|Smith nee Jones, Jane MA|doe, john ma)$"
+name_regex = "^(?:DOE, JOHN MA|DOE, MARY JO MA|Doe, Dr\\. John MA|Doe, J\\. MA|Doe, J\\. ba|Doe, John BA|Doe, John MA|Doe, John MA JD|Doe, John MA Jr|Doe, John MA PhD|Doe, John PhD MA|Doe, John Q\\. MA|Doe, John X\\.Y\\.Z\\.|García Márquez, Ed G\\.J\\.|Smith nee Jones, Jane MA|doe, john ma)$"
 fields = ["_ambiguities", "middle", "suffix"]
 orders = ["DEFAULT"]
 

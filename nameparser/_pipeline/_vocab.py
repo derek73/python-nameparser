@@ -351,6 +351,23 @@ def _dotted(text: str) -> bool:
             or _CHUNKED.fullmatch(text) is not None)
 
 
+# #563: exactly two single letters, each closed by a period -- the way
+# a given and a middle initial are written run together ('M.J.',
+# 'G.J.'). The trailing period is optional, as `period_joined_vocab`'s
+# shape verdict lets it be.
+_PAIRED_INITIALS = re.compile(r"[^\W\d_]\.[^\W\d_]\.?")
+
+
+def is_paired_initials(text: str) -> bool:
+    """Two single letters run together with periods ('M.J.'): the one
+    unlisted dotted shape a person's own initials take, so after a
+    comma it is a name until something in front of it, or another
+    dotted word beside it, says it is a credential (rules.md#C1).
+    Three or more letters ('X.Y.Z.') and any longer chunk ('B.Tech.')
+    are outside it."""
+    return _PAIRED_INITIALS.fullmatch(text) is not None
+
+
 def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
     """Counts as a suffix as written, with NO initial veto (the veto
     differs by caller): unambiguous suffix vocabulary, or an ambiguous
@@ -830,7 +847,7 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     self-contradicting report ("holds 1 name words, so it is read as
     a credential run") -- proved by mutation testing to be otherwise
     unreached: nothing but this predicate's own two unit tests
-    depended on it, and 'John Smith, A.B.' still flips correctly
+    depended on it, and 'John Smith, X.Y.Z.' still flips correctly
     through `pre_comma_names >= 2` alone (#516 review round). Neither
     by-shape class, dotted or caps, reaches the comma form through
     this predicate at all -- only through `_vocab.

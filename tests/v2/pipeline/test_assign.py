@@ -133,6 +133,25 @@ def test_the_family_comma_report_detail_is_verbatim() -> None:
         "a credential")
 
 
+def test_a_by_shape_pick_is_not_described_as_a_listed_member() -> None:
+    # #563: the trailing slot's listed-member wording ("written without
+    # periods is both a post-nominal") is false of a word the class
+    # admits by SHAPE -- 'X.Y.Z.' is written WITH its periods and is in
+    # no wordlist. Both readings of the fork, so neither branch of the
+    # template can keep the old wording; 'MA' in the test below is the
+    # listed control that keeps it.
+    for text, taken, declined in (
+            ("John Smith X.Y.Z.", "a suffix", "a name part"),
+            ("Jack X.Y.Z.", "a family name", "a post-nominal")):
+        out = _assigned(text, lexicon=Lexicon.default())
+        (amb,) = [a for a in out.ambiguities
+                  if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+        assert amb.detail == (
+            f"'X.Y.Z.' is shaped like a post-nominal but listed in no "
+            f"vocabulary, so it may be an ordinary name; read as "
+            f"{taken} rather than {declined}"), text
+
+
 def test_jack_ma_s_two_detail_strings_are_verbatim() -> None:
     # The trailing slot's OWN report existed before #289 (a bare
     # ambiguous acronym was always a coin-flip); what #289 changes is
