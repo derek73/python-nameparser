@@ -4016,11 +4016,14 @@ issue = "fix(#563) paired initials after a comma read as the given name unless a
 # admits by its dotted shape standing in the same part, makes them the
 # credential run": 'John Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.'
 # move to the run, while 'De La Cruz, M.J. PhD' keeps its initials,
-# the degree standing behind them. Against a 2.x baseline the names
+# the degree standing behind them, and so does 'García Márquez, Ms
+# G.J.', a title in front ("a suffix word in front of them that is
+# not also title vocabulary"), which moves nothing at any baseline.
+# The second period is optional ('García Márquez, G.J'). Against a 2.x baseline the names
 # whose roles match the baseline's move only the report, which a
-# 1.4.0 comparison cannot see; that ledger lists the two role movers
+# 1.4.0 comparison cannot see; that ledger lists the three role movers
 # alone.
-name_regex = "^(?:John Smith, PhD X\\.Y\\.|John Smith, X\\.Y\\. P\\.Q\\.)$"
+name_regex = "^(?:García Márquez, PhD G\\.J\\.|John Smith, PhD X\\.Y\\.|John Smith, X\\.Y\\. P\\.Q\\.)$"
 fields = ["family", "given", "middle", "suffix", "title"]
 orders = ["DEFAULT"]
 

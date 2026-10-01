@@ -161,10 +161,15 @@ def test_paired_initials_need_a_word_to_speak_for_them() -> None:
     # own initials are written, and two words before the comma may be
     # one surname, so alone they keep the family comma. Each contrast
     # pair differs in the one thing that speaks: a third letter, a
-    # credential IN FRONT (not behind), a second by-shape word.
+    # credential IN FRONT (not behind), a second by-shape word. A
+    # generational word in front speaks like any suffix word; the
+    # title-vocabulary exception needs titles this lexicon lacks, so
+    # its contrast is the case-table pair
+    # a_title_in_front_of_paired_initials_does_not_speak.
     for alone, spoken in (("García Márquez, G.J.", "García Márquez, G.J.R."),
                           ("De La Cruz, M.J. PhD", "De La Cruz, PhD M.J."),
-                          ("John Smith, X.Y. MA", "John Smith, X.Y. P.Q.")):
+                          ("John Smith, X.Y. MA", "John Smith, X.Y. P.Q."),
+                          ("García Márquez, G.J.", "García Márquez, Jr G.J.")):
         assert _segmented(alone).structure is Structure.FAMILY_COMMA, alone
         assert _segmented(spoken).structure is Structure.SUFFIX_COMMA, spoken
 

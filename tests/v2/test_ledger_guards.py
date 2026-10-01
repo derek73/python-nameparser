@@ -1413,7 +1413,7 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
         ("Smith, A.B.", "Tolkien, J.R.R.", "John Smith, X.Y.Z.",
          "García Márquez, G.J.R.", "Smith Jr., A.B.", "Smith, J. R. R.",
-         "John Smith X.Y."),
+         "John Smith X.Y.", "García Márquez, Ms G.J."),
     # Policy.unlisted_caps_suffixes is OFF by default, so its whole
     # population is a probe here: the corpora run at the default, and
     # a rule of this arc reaching one of these names would mean the
@@ -2467,11 +2467,13 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # #563's paired-initials rule, literal-anchored the same way and
     # for the same reason: what selects its names is two dotted single
     # letters and what stands around them, which no wordlist spells.
-    # The 1.4.0 ledger lists the two role movers alone.
-    frozenset({r"John Smith, PhD X\.Y\.", r"John Smith, X\.Y\. P\.Q\."}),
-    frozenset({r"De La Cruz, M\.J\. PhD", r"García Márquez, G\.J\.",
-               r"John Smith, A\.B\.", r"John Smith, PhD X\.Y\.",
+    # The 1.4.0 ledger lists the three role movers alone.
+    frozenset({r"García Márquez, PhD G\.J\.", r"John Smith, PhD X\.Y\.",
                r"John Smith, X\.Y\. P\.Q\."}),
+    frozenset({r"De La Cruz, M\.J\. PhD", r"García Márquez, G\.J",
+               r"García Márquez, G\.J\.", r"García Márquez, PhD G\.J\.",
+               r"John Smith, A\.B\.", r"John Smith, A\.B\. Ph\.D\.",
+               r"John Smith, PhD X\.Y\.", r"John Smith, X\.Y\. P\.Q\."}),
     frozenset({"Doe, MA Smith", r"J\.A\. K\.D\.", r"Jack X\.Y\.Z\.",
                r"John Smith J\.u\.n\.i\.o\.r\.", r"John Smith R\.A\.I\.",
                "Royce, Ed", r"Smith Jr\., A\.B\.", r"Smith, A\.B\.",
@@ -3732,11 +3734,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-28, #544: 392 -> 396; gains 'John Smith, PhD Ma',
         # 'Smith, MD PhD Ma', 'Smith, Ms MD Ma', 'Smith, PhD Ma'.
         # Reach, verified name by name.
-        # 2026-09-30, #563: 396 -> 402, the six names #563's rules.md#C1
+        # 2026-09-30, #563: 396 -> 406, the ten names #563's rules.md#C1
         # examples and case rows add, every one written with a comma.
         # Reach, verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(402, ('given', 'suffix', 'title'), "8debde8498a7", None),
+            _Claim(406, ('given', 'suffix', 'title'), "b9c06a439909", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3825,11 +3827,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Doe, Jane nee Smith PhD MEng', 'Jane Doe, MS LAc', 'John
         # Smith, Ed Ma' and 8 more.
         # 2026-09-28, #544: 392 -> 396; the same four comma names.
-        # 2026-09-30, #563: 396 -> 402, the six names #563's rules.md#C1
+        # 2026-09-30, #563: 396 -> 406, the ten names #563's rules.md#C1
         # examples and case rows add, every one written with a comma.
         # Reach, verified name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(402, ('family', 'given'), "8debde8498a7", None),
+            _Claim(406, ('family', 'given'), "b9c06a439909", None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -4218,9 +4220,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#516) an unlisted dotted acronym is read by position":
             _Claim(10, ('family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
         # 2026-09-30, #563: new. Literal-anchored to its movers --
-        # the two role movers; a report-only diff is invisible at this baseline.
+        # the three role movers; a report-only diff is invisible at this baseline.
         "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
-            _Claim(2, ('family', 'given', 'middle', 'suffix', 'title'), "51a4e28cc311", ('DEFAULT',)),
+            _Claim(3, ('family', 'given', 'middle', 'suffix', 'title'), "6fd58479dfbb", ('DEFAULT',)),
         # 2026-09-18, verification round. ONE name, and a rule this PR
         # did not earn: 'Doe, John MA' has read middle since 2.0.0 and
         # reads suffix at 1.4.0, so the diff exists at this baseline
@@ -4914,9 +4916,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#516) an unlisted dotted acronym is read by position":
             _Claim(10, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
         # 2026-09-30, #563: new. Literal-anchored to its movers --
-        # two role movers and three names whose only diff is the report.
+        # three role movers and five names whose only diff is the report.
         "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "d8b3d86286b0", ('DEFAULT',)),
+            _Claim(8, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "41401b0e336e", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -5404,9 +5406,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#516) an unlisted dotted acronym is read by position":
             _Claim(10, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
         # 2026-09-30, #563: new. Literal-anchored to its movers --
-        # two role movers and three names whose only diff is the report.
+        # three role movers and five names whose only diff is the report.
         "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "d8b3d86286b0", ('DEFAULT',)),
+            _Claim(8, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "41401b0e336e", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -6029,9 +6031,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#516) an unlisted dotted acronym is read by position":
             _Claim(10, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
         # 2026-09-30, #563: new. Literal-anchored to its movers --
-        # two role movers and three names whose only diff is the report.
+        # three role movers and five names whose only diff is the report.
         "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "d8b3d86286b0", ('DEFAULT',)),
+            _Claim(8, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "41401b0e336e", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -6385,9 +6387,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#516) an unlisted dotted acronym is read by position":
             _Claim(10, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "9efed4efb90b", ('DEFAULT',)),
         # 2026-09-30, #563: new. Literal-anchored to its movers --
-        # two role movers and three names whose only diff is the report.
+        # three role movers and five names whose only diff is the report.
         "fix(#563) paired initials after a comma read as the given name unless a word speaks for them":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "d8b3d86286b0", ('DEFAULT',)),
+            _Claim(8, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "41401b0e336e", ('DEFAULT',)),
         # The report-only rule. `_ambiguities` alone, so a widening that
         # took a ROLE would change the roles here before it reached
         # the gate -- which is the one thing this row can say about a
@@ -7967,7 +7969,12 @@ class _Excluded(NamedTuple):
 #: revisit the day one does.
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
     "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
-        _Excluded(6, "69491e3986b1",
+        _Excluded(7, "85dd96d1f55e",
+                  # 2026-09-30, #563: 6 -> 7 captures, 'John Smith,
+                  # A.B. Ph.D.', a rules.md#C1 boundary line whose
+                  # trailing 'Ph.D.' the end anchor reaches. It reads
+                  # as 1.4.0 read it, so nothing is silenced;
+                  # absorbed_by unchanged.
                   # 2026-09-23, #459: 3 -> 6 captures, rules.md#R4's
                   # three new trailing Ph. D. spellings
                   # ('john smith ph.d.', 'JOHN SMITH PH.D.',

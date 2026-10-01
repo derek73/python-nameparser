@@ -2278,6 +2278,24 @@ CASES: tuple[Case, ...] = (
                "word admitted by shape is silent (rules.md#C1). 2.3.0 "
                "read given 'PhD', middle 'X.Y.'",
          shape=3),
+    Case("a_title_in_front_of_paired_initials_does_not_speak",
+         "García Márquez, Ms G.J.",
+         {"title": "Ms", "given": "G.J.", "family": "García Márquez"},
+         notes="#563 review round: 'Ms' is both title and suffix "
+               "vocabulary, and in front of paired initials it is the "
+               "title of the given part they open (rules.md#C1, as S2 "
+               "reads a dual in that part's title run). The first fix "
+               "let it speak and split the surname in silence. Every "
+               "release reads it this way",
+         shape=3),
+    Case("a_credential_in_front_of_paired_initials_speaks",
+         "García Márquez, PhD G.J.",
+         {"given": "García", "family": "Márquez", "suffix": "PhD G.J."},
+         classification="fix(#563)",
+         notes="the contrast to the row above: 'PhD' is no title, so "
+               "it speaks for the pair and the part is the credential "
+               "run, flipped in silence",
+         shape=3),
     Case("a_second_dotted_word_speaks_for_paired_initials",
          "John Smith, X.Y. P.Q.",
          {"given": "John", "family": "Smith", "suffix": "X.Y. P.Q."},

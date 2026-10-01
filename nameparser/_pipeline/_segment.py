@@ -47,6 +47,7 @@ decision site below; history in decisions.md#C1.
 """
 from __future__ import annotations
 
+from nameparser._lexicon import _normalize
 from nameparser._pipeline._pieces import own_words
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket, copy_with,
@@ -206,7 +207,12 @@ def segment(state: ParseState) -> ParseState:
     listed_flip = False
     if candidate:
         lone = state.tokens[groups[1][0]].text
-        listed_flip = ambiguous_class_member(lone, state.lexicon)
+        # For a word that passed the candidate test, LISTED is exactly
+        # "no period": `ambiguous_class_member` declines any period,
+        # and the dotted shape needs one. Asked inline -- a second
+        # membership call cost every reporting comma name ('John
+        # Smith, MA') two frames to learn what this already says.
+        listed_flip = "." not in lone
         # rules.md#C1: "Paired initials are the exception to the
         # count" -- 'García Márquez, G.J.' has two words before the
         # comma and one surname. Alone in the part, nothing speaks
@@ -285,12 +291,15 @@ def segment(state: ParseState) -> ParseState:
         members: list[str] = []
         rest: list[str] = []
         settled = True
-        # #563, rules.md#C1: "Only a credential in front of them, or
-        # another word the class admits by its dotted shape standing
-        # in the same part, makes them the credential run." A pair
-        # OPENING the run has nothing in front of it; `shaped` counts
-        # the run's by-shape words, the pair among them, so a second
-        # one speaks for it.
+        # #563, rules.md#C1: "Only a suffix word in front of them that
+        # is not also title vocabulary, or another word the class
+        # admits by its dotted shape standing in the same part, makes
+        # them the credential run" -- `unspoken_pair` is a pair with no
+        # such word in front -- 'Ms G.J.' is a title and initials, the
+        # given part's own title run (S2) -- and `shaped` counts the
+        # run's by-shape words, the pair among them, so a second one
+        # speaks for it. The title lookup runs only once a pair is
+        # met, so a run without one pays nothing for it.
         unspoken_pair = False
         shaped = 0
         lexicon = state.lexicon
@@ -307,8 +316,9 @@ def segment(state: ParseState) -> ParseState:
                     listed_flip = True
                 else:
                     shaped += 1
-                    if (not members and not rest
-                            and is_paired_initials(text)):
+                    if (is_paired_initials(text)
+                            and all(_normalize(w) in lexicon.titles
+                                    for w in members + rest)):
                         unspoken_pair = True
                 members.append(text)
                 # the lean is the LISTED set's alone (S2): a member
