@@ -1724,6 +1724,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         tail = len(pieces) - trailing_start(name_start, pieces, ptags,
                                              tokens, one_case=one_case)
         def chain(tail: int) -> None:
+            # `pieces[:titled]` are known to be leading titles. merge(k,
+            # j) changes only indices from k on, and k only grows, so a
+            # piece behind k is final and its answer can be kept: the
+            # cursor makes the all-titles-ahead test below one walk per
+            # chain rather than one per chain site (#559).
+            titled = 0
             k = 0
             while k < len(pieces):
                 if k == leading or not prefix(k):
@@ -1743,8 +1749,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # A fork whose two sides are decided in different stages
                 # needs an emitter in each.
                 #
-                # Narrow, and #367 is why. `all(is_leading_title(...))`
-                # says every piece ahead of this one is a title, and the
+                # Narrow, and #367 is why. `titled == k` says every
+                # piece ahead of this one is a title, and the
                 # loop skipped k == leading, so `leading` is STRICTLY
                 # before k -- and being before k it is one of those titles,
                 # while being `leading` it satisfies `not title or prefix`.
@@ -1784,17 +1790,18 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # an ambiguous particle, while title() is a call per piece.)
                 if (j > k + 1
                         and "vocab:particle-ambiguous"
-                        in tokens[pieces[k][0]].tags
-                        and all(is_leading_title(pieces[x], ptags[x],
-                                                  tokens)
-                                for x in range(k))):
-                    i = pieces[k][0]
-                    ambiguities.append(PendingAmbiguity(
-                        AmbiguityKind.PARTICLE_OR_GIVEN,
-                        f"{tokens[i].text!r} was chained onto the following "
-                        f"name piece; it is also a given name in other "
-                        f"names",
-                        (i,)))
+                        in tokens[pieces[k][0]].tags):
+                    while titled < k and is_leading_title(
+                            pieces[titled], ptags[titled], tokens):
+                        titled += 1
+                    if titled == k:
+                        i = pieces[k][0]
+                        ambiguities.append(PendingAmbiguity(
+                            AmbiguityKind.PARTICLE_OR_GIVEN,
+                            f"{tokens[i].text!r} was chained onto the "
+                            f"following name piece; it is also a given "
+                            f"name in other names",
+                            (i,)))
                 # rules.md#S2: "A BARE ambiguous acronym is consumed
                 # only when the name has words to spare — as the second
                 # of two words it stays the family name — and at the
