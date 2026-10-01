@@ -50,6 +50,10 @@ Release Log
 
     - **Fix a long given part after a family comma costing quadratic time.** Since 2.3.0, parsing ``"Doe, Jane " + "Smith " * n`` took time growing with the square of the part's length: going from 1,600 to 6,400 words cost 8.4x the time, where 2.2.0 and the comma-less form cost 4x. A run of trailing titles in the same place (``Doe, Jane Smith Prof. Prof. ...``) cost 10x. Both cost 4x again (Python 3.11, measured 2026-09-28). No field moves (closes #553)
 
+    - **Fix a name ending in alternating credentials and titles costing quadratic time.** Since 2.3.0, parsing ``"John Smith " + "MA Prof. " * n`` took time growing with the square of ``n``: going from 400 to 1,600 pairs cost 12.9x the time, where 2.2.0 cost 4x. It costs 4x again (Python 3.11, ``HumanName``, measured 2026-10-01). No field moves (closes #558)
+
+    - **Fix many leading titles plus many surname particles costing quadratic time.** Parsing ``"Dr. " * n + "Jan " + "van Berg " * n`` took time growing with the product of the two counts in every 2.x release: going from 400 to 1,600 of each cost 12.2x the time at 2.2.0 and 2.3.0, and 12.5x at 2.0.0. It costs 4x now (Python 3.11, ``HumanName``, measured 2026-10-01). No field moves (closes #559)
+
     **Additions**
 
     - **Add Lexicon.conjunctions_ambiguous, the one-letter connectives that read as initials.** A subset of ``conjunctions`` holding ``e`` and ``i`` by default; it is the knob for the change above rather than a switch. Portuguese data, where ``e`` links surnames the way ``y`` does in Spanish, takes it out: ``Lexicon.default().remove(conjunctions_ambiguous={"e"})`` restores the joining reading. Dutch data, where a bare single letter is an initial and never a connective, adds the other one: ``Lexicon.default().add(conjunctions_ambiguous={"y"})``. A v1 ``Constants`` has no manager of its own for it -- deleting the word from ``conjunctions`` is what turns the marking off, the same rule the glued-honorific tails follow. See ``docs/customize.rst`` (#383, #479)

@@ -11,7 +11,7 @@ from collections.abc import Sequence, Set
 
 import pytest
 
-from nameparser import parse
+from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
 from nameparser._pipeline._assign import assign
@@ -822,3 +822,19 @@ def test_anchor_in_reach_never_hides_an_anchor() -> None:
     failures = _reach_failures(sorted(texts))
     assert not failures, (f"{len(failures)} anchored member(s) the "
                           f"reach test hides:\n" + "\n".join(failures[:15]))
+
+
+def test_a_title_the_fixed_point_splices_out_keeps_no_peel_pick() -> None:
+    # tail_reading's resumed pass (#558) carries the picks of the walk
+    # before it, and that walk STOPPED at the title the chain then took:
+    # where the title is also an ambiguous acronym the stop was a pick,
+    # and a fresh walk over the spliced pieces never meets the word.
+    # No default title is an ambiguous acronym, so a caller's lexicon is
+    # the only way here. Recorded negative control (2026-10-01): with
+    # the drop removed, this reads the same fields and reports
+    # 'suffix-or-name' on 'Ma.', a word the parse took as a title.
+    parser = Parser(lexicon=Lexicon.default().add(titles={"ma"}))
+    name = parser.parse("John Smith Ma. PhD Jr.")
+    assert (name.title, name.given, name.family, name.suffix) == (
+        "Ma.", "John", "Smith", "PhD Jr.")
+    assert name.ambiguities == ()

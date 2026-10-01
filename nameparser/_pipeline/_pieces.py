@@ -590,11 +590,17 @@ class Peel(NamedTuple):
     one token long: `numeral` is the piece the roman-numeral fork
     took (None when it did not fire; always the walk's last piece),
     `picks` the bare ambiguous acronyms the peel had to resolve, in
-    peel order, either way (the last may sit at rest[names - 1])."""
+    peel order, either way (the last may sit at rest[names - 1]).
+    `anchors` is `peel_trailing`'s working state for `tail_reading`
+    alone -- the walk's `credential_anchors` pass over `rest` where a
+    member needed one, handed to the next pass of the fixed point
+    (`peel_trailing`'s `start`). No caller reads it, and the Peel
+    `tail_reading` returns carries None."""
 
     names: int
     numeral: tuple[int, ...] | None
     picks: tuple[tuple[int, ...], ...]
+    anchors: list[bool] | None
 
 
 # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
@@ -742,7 +748,9 @@ def credential_at_the_given_slot(
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
                    tokens: Sequence[WorkToken],
-                   one_case: bool | None) -> Peel:
+                   one_case: bool | None,
+                   start: int | None = None,
+                   anchors: list[bool] | None = None) -> Peel:
     """The S2 trailing peel over `rest`, a peel_walk list. In the
     piece layer rather than in assign because group's bound-given
     reserve asks the same question of the view the join would leave
@@ -754,11 +762,18 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     nobody asked, which is every caller that has no state to ask with,
     and reads as "no lean" -- rules.md#S2's count alone, the behavior
     of every release before this one.
+
+    `start` and `anchors` resume a walk rather than begin one: the
+    walk picks up at `rest[start - 1]`, as though the pieces from
+    `start` on were already peeled, with `anchors` the pass an earlier
+    walk built (or None). Only `tail_reading` passes them, and its
+    docstring states when that answers what a fresh walk would. The
+    returned picks are the resumed walk's own; the numeral is never
+    read, `start` standing short of the walk's last piece.
     """
     picks: list[tuple[int, ...]] = []
     numeral: tuple[int, ...] | None = None
-    anchors: list[bool] | None = None
-    k = len(rest)
+    k = len(rest) if start is None else start
     while k > 0:
         piece = pieces[rest[k - 1]]
         if is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
@@ -848,7 +863,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                 k -= 1
                 continue
         break
-    return Peel(k, numeral, tuple(picks))
+    return Peel(k, numeral, tuple(picks), anchors)
 
 
 # rules.md#H5: "only a word the vocabulary knows as a title is one,
@@ -863,7 +878,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      ptags: Sequence[Set[str]],
                      tokens: Sequence[WorkToken],
-                     floor: int = 1) -> int:
+                     floor: int = 1,
+                     end: int | None = None) -> int:
     """How many pieces of `rest` the trailing title chain LEAVES
     standing: `rest[:kept]` are the name pieces and `rest[kept:]` the
     period-marked title words the chain took, in piece order. Counted
@@ -872,7 +888,8 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     on the no-comma path what the S2 peel left, after a family comma
     the segment's pieces that the segment's own suffix reading does
     not claim, and in `tail_reading` the leftovers of whichever peel
-    is current.
+    is current. `end`, where given, reads `rest[:end]` without the
+    copy, for `tail_reading`'s passes.
     Floor: `floor` leading positions of `rest` are never taken --
     1 by default, so one name piece stands and a name is never all
     title; the maiden walk passes the position just past the marker's
@@ -900,7 +917,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     period-marked word, so the ordinary parse pays the one match and
     stops (decisions.md#parse-cost).
     """
-    k = len(rest)
+    k = len(rest) if end is None else end
     while k > floor:
         idx = rest[k - 1]
         piece = pieces[idx]
@@ -968,7 +985,10 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     written and wherever the peel then stops. Iterating ONCE reads a
     second title only half way -- 'John Prof. MA Prof.' un-peeled the
     acronym and re-exposed the first title, reading family 'Prof.'
-    with suffix 'MA' where 'John Prof. MA' reads family 'MA'.
+    with suffix 'MA' where 'John Prof. MA' read family 'MA' (written
+    in one case today: since #289 capitals in a mixed-case name take
+    the acronym whatever the count, so 'john prof. ma prof.' and
+    'john prof. ma' are the pair that still reads family 'ma').
 
     One function for assign's placement, group's bound-given reserve
     (P5), which must count the name words assign will leave, and the
@@ -991,18 +1011,75 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     'Jane Doe nee King. ba' lost the suffix 'Jane Doe nee Smith ba'
     keeps. The splice only ever removes positions at or
     past the floor, so the floor names the same pieces every pass.
+
+    Linear in the walk (#558). Re-peeling the whole walk every pass
+    re-read each suffix the passes before had already peeled, so a
+    name ending 'MA Prof. MA Prof. ...' cost the square of its tail.
+    A pass instead RESUMES the walk where the splice left it, over
+    `rest` as written: the pieces in front of the splice are the ones
+    a fresh walk would meet, and `credential_anchors` reads each
+    position off the pieces in front of it, so the carried pass
+    answers for them too. What a fresh walk reads differently is the
+    position COUNT of the pieces it already peeled, which the splice
+    lowers, and two tests of the walk read it. The acronym fork's
+    words to spare: a member whose count falls below three can
+    decline where it was taken -- 'john prof. ma ma prof.' is exactly
+    that, keeping family 'ma' only because the second pass walks
+    afresh -- so a pass resumes only with two or more pieces in front
+    of the splice, every peeled piece then counting three or more.
+    And the numeral fork, which reads the walk's last piece against
+    the one before it: a pass resumes only with two or more peeled
+    pieces behind the splice, so that pair is the one the first walk
+    read. Elsewhere -- a splice near the front of the walk, or before
+    two pieces have been peeled -- the pass walks afresh over the
+    spliced pieces. The fuzz that checked this against the
+    re-peeling loop, the three conditions each shown load-bearing by
+    a weakened copy failing it, is recorded on the PR closing #558.
+    The splice itself is never materialized in between: the runs are
+    collected back to front and joined once.
     """
-    titled: list[int] = []
-    while True:
-        peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
-        kept = trailing_titles(rest[:peeled.names], pieces, ptags,
-                               tokens, floor)
-        if kept == peeled.names:
-            return rest, tuple(titled), peeled
-        # the chain's pieces reach this list back to front, so each
-        # run goes in FRONT of what the pass before it took
-        titled[:0] = rest[kept:peeled.names]
-        rest = rest[:kept] + rest[peeled.names:]
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
+    kept = trailing_titles(rest, pieces, ptags, tokens, floor,
+                           peeled.names)
+    if kept == peeled.names:
+        return rest, (), peeled
+    # `rest[:hi]` stands as written; `behind` holds the peeled runs
+    # the splices left after it, and `titled` the chained ones, each
+    # back to front -- a pass's run goes in FRONT of what the pass
+    # before it took
+    hi = len(rest)
+    behind: list[list[int]] = []
+    behind_count = 0
+    titled: list[list[int]] = []
+    picks = list(peeled.picks)
+    numeral = peeled.numeral
+    while kept < peeled.names:
+        names = peeled.names
+        titled.append(rest[kept:names])
+        behind.append(rest[names:hi])
+        behind_count += hi - names
+        # the walk stopped AT the chain's last title, and a fresh walk
+        # will not meet that piece: drop the pick it made there
+        if picks and picks[-1] == tuple(pieces[rest[names - 1]]):
+            picks.pop()
+        hi = kept
+        if kept >= 2 and behind_count >= 2:
+            peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
+                                   start=hi, anchors=peeled.anchors)
+            picks.extend(peeled.picks)
+        else:
+            rest = rest[:hi] + [j for run in reversed(behind) for j in run]
+            hi = len(rest)
+            behind, behind_count = [], 0
+            peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
+            picks = list(peeled.picks)
+            numeral = peeled.numeral
+        kept = trailing_titles(rest, pieces, ptags, tokens, floor,
+                               peeled.names)
+    if behind:
+        rest = rest[:hi] + [j for run in reversed(behind) for j in run]
+    return (rest, tuple(j for run in reversed(titled) for j in run),
+            Peel(peeled.names, numeral, tuple(picks), None))
 
 
 # rules.md#H5: "the title is TRANSPARENT to the suffix reading: where

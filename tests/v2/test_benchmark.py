@@ -30,7 +30,7 @@ from types import FrameType
 
 import pytest
 
-from nameparser import Parser, parse
+from nameparser import ParsedName, Parser, parse
 from nameparser._policy import Policy
 
 
@@ -497,6 +497,7 @@ def test_shape_tables_are_not_empty() -> None:
     assert _SHAPES
     assert _POLICY_SHAPES
     assert _PREFIXED_SHAPES
+    assert _REREAD_SHAPES
 
 
 @pytest.mark.parametrize("unit,parser,reaches", _POLICY_SHAPES.values(),
@@ -730,6 +731,81 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
         f"input, where this tree measures 3.7x and the per-pair rescan at "
         f"c125f69b measured 8.5x. _segment.py's paired-initials title scan "
         f"is running once per pair again (#563)")
+
+
+# Fixed points and scans that re-read what they had already read, each
+# found by the `_pipeline/` sweep for #553. A `_SHAPES` row cannot
+# express any of them: the tail ones need a name in front of the run,
+# and the chain one grows at BOTH ends. The cost is Python-level, so it
+# is counted in frames of the one function each re-ran, which isolates
+# it from the rest of the parse and holds under a line tracer.
+#
+#   tail     #558: `tail_reading` re-peeled the whole walk once per
+#            title the H5 chain took, asking `listed_lean` of every
+#            member it had already peeled.
+#   clause   #558 again, through the maiden walk, which runs that fixed
+#            point three times (the clause's take, its release check,
+#            and `trailing_start_past_titles`).
+#   chain    #559: the particle chain asked "is every piece ahead of
+#            this one a title?" afresh at every chain site, so leading
+#            titles x particle sites `is_leading_title` calls.
+#
+# Measured 2026-10-01 on py3.11 through `_frames_for(..., only=...)`, k
+# units, ratio for 4x the units:
+#
+#             k=8 -> k=32, fixed     k=8 -> k=32, at fc682e36 (broken)
+#   tail      9 -> 33      3.67x     36 -> 528       14.67x
+#   clause    27 -> 99     3.67x     108 -> 1,584    14.67x
+#   chain     52 -> 196    3.77x     108 -> 1,188    11.00x
+#
+# 6.0 sits between the populations with room on both sides; counts are
+# deterministic, so the margin is for future shape changes, not noise.
+# Each probe pins the reading the shape needs, so a change that stops
+# the shape reaching the walk fails here instead of leaving the row
+# counting nothing.
+_REREAD_SMALL = 8
+_REREAD_LARGE = 32
+_REREAD_MAX_RATIO = 6.0
+_REREAD_SHAPES: dict[str, tuple[Callable[[int], str], str,
+                                Callable[[ParsedName, int], bool]]] = {
+    "tail": (
+        lambda k: "John Smith " + "MA Prof. " * k, "listed_lean",
+        lambda n, k: (n.title.split() == ["Prof."] * k
+                      and n.suffix.split() == ["MA"] * k
+                      and n.family == "Smith"),
+    ),
+    "clause": (
+        lambda k: "Jane Doe nee Smith " + "MA Prof. " * k, "listed_lean",
+        lambda n, k: (n.title.split() == ["Prof."] * k
+                      and n.suffix.split() == ["MA"] * k
+                      and n.maiden == "Smith"),
+    ),
+    "chain": (
+        lambda k: "Dr. " * k + "Jan " + "van Berg " * k, "is_leading_title",
+        lambda n, k: (n.title.split() == ["Dr."] * k
+                      and n.given == "Jan" and n.family == "van Berg"),
+    ),
+}
+
+
+@pytest.mark.parametrize("text,only,reaches", _REREAD_SHAPES.values(),
+                         ids=list(_REREAD_SHAPES))
+def test_a_fixed_point_does_not_reread_what_it_has_read(
+        text: Callable[[int], str], only: str,
+        reaches: Callable[[ParsedName, int], bool]) -> None:
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for k in (_REREAD_SMALL, _REREAD_LARGE):
+        assert reaches(parse(text(k)), k), (
+            f"shape no longer reaches the walk at k={k}")
+    small = _frames_for(text(_REREAD_SMALL), only=only)
+    large = _frames_for(text(_REREAD_LARGE), only=only)
+    ratio = large / small
+    assert ratio < _REREAD_MAX_RATIO, (
+        f"{_REREAD_SMALL} units cost {small} {only} calls and "
+        f"{_REREAD_LARGE} cost {large} -- {ratio:.1f}x for 4x the input, "
+        f"where this tree measured under 3.8x and the re-reading walk "
+        f"11.0-14.7x (#558, #559)")
 
 
 # THE ABSOLUTE COST OF A LINK, which the ratio above cannot see: a
