@@ -1702,7 +1702,9 @@ C1. Rationale: a credential run after the comma means the name is in
     credential (S2), and the part reads as the credential run on that
     evidence rather than on the count; a word of the class by shape
     alone carries no such lean, so a part holding one is read by the
-    count. A decision either way at this comma
+    count, and so is a part holding two particles side by side,
+    which P2 joins into one particle run that S2 leaves to no word's
+    capitals. A decision either way at this comma
     is reported; for a run of words the decision is the flip to the
     credential run, reported once over the whole part. A flip in which
     no listed word of this class takes part is the exception and is
@@ -1793,6 +1795,9 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, Ed Ma"         →  suffix="Ed Ma"
       "Jane Doe, MS LAc"          →  suffix="MS LAc"
       "Smith, PhD MEng"           →  family="Smith"  · boundary
+      "John Smith, PhD DO DO"     →  suffix="PhD DO DO"
+      "John Smith, PhD DO DO"     →  ambiguities=("suffix-or-name",)
+      "John Smith, PhD vd DO"     →  suffix="PhD vd DO"
       "John Smith, X.Y.Z."        →  suffix="X.Y.Z."
       "John Smith, X.Y.Z."        →  ambiguities=()
       "John Smith, X.Y.Z."  unlisted_dotted_suffixes-off  →  given="X.Y.Z."
@@ -1849,7 +1854,7 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions.md#C1 · interacts: H2, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1 · interacts: H2, P2, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.

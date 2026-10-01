@@ -339,6 +339,28 @@ fields = ["family", "given", "middle", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]
 
 [[change]]
+issue = "fix(#562) a comma credential run holding a particle chain reads by the name-word count"
+# rules.md#C1: a part whose every member is a listed word in capitals
+# in a mixed-case name reads as the credential run on that writing
+# rather than on the count, "and so is a part holding two particles
+# side by side, which P2 joins into one particle run that S2 leaves
+# to no word's capitals" -- read by the count, that is,
+# which two name words before the comma flip to the credential run,
+# reported. The family-comma path had read the part as name text:
+# this baseline read given 'PhD', family 'DO DO John Smith', P6
+# attaching the chain. 'John Smith, PhD vd DO' is the same chain
+# with a particle that is not a member ('vd', particle and
+# unambiguous suffix vocabulary). 1.4.0 read both as suffixes, so
+# that ledger has no rule.
+#
+# Literal. Probes: 'John Smith, PhD DO' (one particle beside no other
+# stays settled and silent) and 'Smith, PhD DO DO' (one name word
+# before the comma keeps the listing form) are _MUST_NOT_MATCH.
+name_regex = "^(?:John Smith, PhD DO DO|John Smith, PhD vd DO)$"
+fields = ["given", "family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
 issue = "fix(#563) paired initials after a comma read as the given name unless a word speaks for them"
 # rules.md#C1: "Paired initials are the exception to the count" --
 # two words before the comma may be one surname ('García Márquez,
