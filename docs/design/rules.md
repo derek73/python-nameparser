@@ -970,8 +970,10 @@ S2. Rationale: generational suffixes and credentials are recognized
     name — and at the slots that report, either reading carries the
     ambiguity flag. Those slots are the trailing slot of a name, the
     first slot after a family comma, the trailing slot of the GIVEN
-    part after that comma, the trailing slot of a maiden marker's
-    clause (M2), and the segments beyond it. A word this document
+    part after that comma, and the trailing slot of a maiden
+    marker's clause (M2). A part beyond the second comma is not one
+    of them; what such a part does report is C2's to say. A word
+    this document
     says is READ at one of those slots is not always a word one of
     them reports: where a reading moves a word out of the slot that
     asked about it, what reports is the slot it lands in, and that
@@ -1026,7 +1028,15 @@ S2. Rationale: generational suffixes and credentials are recognized
     to write in. After a family comma this evidence is SECOND at the
     FIRST slot after it: the count of name words before the comma
     decides there first (C1), and the case is read only where that
-    count leaves the word a name. At the trailing slot of the given
+    count leaves the word a name. C1 states the one exception: a part
+    of two or more words whose every word of this class is listed and
+    written in capitals in a mixed-case name, no two particles side
+    by side, is read on its capitals before the count is asked, so
+    the comma keeps its family reading,
+    and only a word of the class opening the part reports, as the
+    first word after the comma ('John Smith, MA MA' reports on the
+    first 'MA' alone, where a counted flip reports over the whole
+    part). At the trailing slot of the given
     part the comma has already settled the count, so the writing is
     the only evidence there is.
     Company is evidence that outranks both. A member of the ambiguous
@@ -1179,7 +1189,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, S3, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -1719,10 +1729,13 @@ C1. Rationale: a credential run after the comma means the name is in
     count leaves in the listing form reports as S2 reads the words
     in it: a word of this class read as the credential because a
     credential in front speaks for it reports, and one its own
-    capitals made the credential does not, so a run whose every such
-    word is written in capitals reads whole in silence
-    ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part read as
-    titles before a lone given name ('Smith, Ms MD Ma'). It is one
+    capitals made the credential does not unless it opens the part,
+    where it is the first word after the comma and reports as that
+    word always does ('Doe, MA PhD', 'John Smith, MA MA'). So a run
+    whose every such word is written in capitals reads whole in
+    silence only behind another credential ('John Smith, PhD MA',
+    'Smith, PhD MA'), as does a part read as titles before a lone
+    given name ('Smith, Ms MD Ma'). It is one
     of TWO places the comma's own decision is reported, the other being the word trailing the given part after
     it (S2), which is a second decision about a second word and never
     the same fork twice; an attachment decided after a family comma
@@ -1775,6 +1788,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "Smith, John V"             →  suffix="V"  · boundary
       "Smith, Ph. D. Jr."         →  suffix="Ph. D. Jr."
       "Smith, MD PhD"             →  suffix="MD PhD"
+      "Doe, MA PhD"               →  ambiguities=("suffix-or-name",)
       "Smith, Dr."                →  title="Dr."
       "Smith, Dr. Jr."            →  suffix="Jr."
       "John Smith, Mr."           →  given="John"
