@@ -119,6 +119,7 @@ filterwarnings = [
 extend-select = [
   "ANN",   # flake8-annotations
   "UP",    # pyupgrade
+  "B033",  # duplicate set items: a frozenset drops them silently, so a bulk vocabulary import can carry them unseen
 ]
 ignore = [
   "E74",     # ambiguous-{variable,class,function}-name (I have trouble believing that these are real rules)
