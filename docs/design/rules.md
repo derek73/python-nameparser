@@ -1719,10 +1719,13 @@ C1. Rationale: a credential run after the comma means the name is in
     count leaves in the listing form reports as S2 reads the words
     in it: a word of this class read as the credential because a
     credential in front speaks for it reports, and one its own
-    capitals made the credential does not, so a run whose every such
-    word is written in capitals reads whole in silence
-    ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part read as
-    titles before a lone given name ('Smith, Ms MD Ma'). It is one
+    capitals made the credential does not unless it opens the part,
+    where it is the first word after the comma and reports as that
+    word always does ('Doe, MA PhD', 'John Smith, MA MA'). So a run
+    whose every such word is written in capitals reads whole in
+    silence only behind another credential ('John Smith, PhD MA',
+    'Smith, PhD MA'), as does a part read as titles before a lone
+    given name ('Smith, Ms MD Ma'). It is one
     of TWO places the comma's own decision is reported, the other being the word trailing the given part after
     it (S2), which is a second decision about a second word and never
     the same fork twice; an attachment decided after a family comma
@@ -1775,6 +1778,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "Smith, John V"             →  suffix="V"  · boundary
       "Smith, Ph. D. Jr."         →  suffix="Ph. D. Jr."
       "Smith, MD PhD"             →  suffix="MD PhD"
+      "Doe, MA PhD"               →  ambiguities=("suffix-or-name",)
       "Smith, Dr."                →  title="Dr."
       "Smith, Dr. Jr."            →  suffix="Jr."
       "John Smith, Mr."           →  given="John"
