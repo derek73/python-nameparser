@@ -976,9 +976,11 @@ def test_a_run_c1_leaves_as_settled_is_read_wholly_as_credentials(
     half (a member admitted only by shape has no lean, S2): dropped, it
     fails on 215 texts ('John Smith, PhD X.Y.' reading 'PhD' as name
     text). 0 here (measured 2026-10-01, #562). Over the 2026-09-29
-    tree, before #563 and #562, the two read 1,239 and 751 beyond ten
-    pinned #562 exceptions; #563 moved the second to 215 and #562 the
-    first to 1,142.
+    tree, before #563 and #562, the two read 1,239 and 751 failures
+    beyond the pinned #562 exceptions, which grew from 10 to 12 and to
+    11 under them; #563 moved the second to 215 and #562 the first to
+    1,142. Without #562's particle check the test fails on exactly the
+    ten texts it used to pin as exceptions.
     """
     texts = [f"John Smith, {' '.join(words)}"
              for n in (2, 3)

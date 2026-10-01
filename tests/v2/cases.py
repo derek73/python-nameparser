@@ -856,6 +856,16 @@ CASES: tuple[Case, ...] = (
                "and 'DO' beside it is chained all the same. 1.4.0 read the same; 2.3.0 read given 'PhD', "
                "family 'vd DO John Smith'",
          shape=3),
+    Case("comma_run_a_particle_pair_opens_is_flipped_and_reported",
+         "John Smith, vd DO",
+         {"given": "John", "family": "Smith", "suffix": "vd DO"},
+         ambiguities=("suffix-or-name",),
+         notes="#562's accepted cost: the family-comma path already "
+               "read this part whole, but the pair is a particle run "
+               "the capitals do not settle, so the count flips it to "
+               "the same fields and reports the call, as every flip "
+               "at this comma does. 2.3.0 read family 'John Smith vd "
+               "DO'"),
     Case("comma_run_with_a_lone_trailing_particle_member_stays_settled",
          "John Smith, PhD DO",
          {"given": "John", "family": "Smith", "suffix": "PhD DO"},

@@ -339,11 +339,13 @@ def segment(state: ParseState) -> ParseState:
             else:
                 rest.append(text)
             # #562, rules.md#C1: "and so is a part holding two
-            # particles side by side, which S2 joins into one particle
-            # run rather than leaving either to its capitals" -- group
-            # chains the pair ('PhD DO DO', 'PhD vd DO', 'MA vd vd'),
-            # the family-comma path then reads the chain as name text,
-            # so the run is the count's to read, whatever its case.
+            # particles side by side, which P2 joins into one particle
+            # run that S2 leaves to no word's capitals" -- group chains
+            # the pair, and the family-comma path can no longer promise
+            # to read the part whole: it read 'PhD DO DO', 'PhD vd DO'
+            # and 'MA vd vd' as name text. Where it did read the part
+            # whole ('VD DO', 'MD DO DO'), the count flips it to the
+            # same fields and reports the call, as any flip does.
             # Asked only while the run is still settled -- nothing
             # re-settles it -- with classify's own particle test, since
             # group's chain is what the capitals lose to.

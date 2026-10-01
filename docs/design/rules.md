@@ -1703,8 +1703,8 @@ C1. Rationale: a credential run after the comma means the name is in
     evidence rather than on the count; a word of the class by shape
     alone carries no such lean, so a part holding one is read by the
     count, and so is a part holding two particles side by side,
-    which S2 joins into one particle run rather than leaving either
-    to its capitals. A decision either way at this comma
+    which P2 joins into one particle run that S2 leaves to no word's
+    capitals. A decision either way at this comma
     is reported; for a run of words the decision is the flip to the
     credential run, reported once over the whole part. A flip in which
     no listed word of this class takes part is the exception and is
@@ -1720,9 +1720,8 @@ C1. Rationale: a credential run after the comma means the name is in
     in it: a word of this class read as the credential because a
     credential in front speaks for it reports, and one its own
     capitals made the credential does not, so a run whose every such
-    word is written in capitals, no two particles side by side,
-    reads whole in silence ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part
-    read as
+    word is written in capitals reads whole in silence
+    ('John Smith, PhD MA', 'Smith, PhD MA'), as does a part read as
     titles before a lone given name ('Smith, Ms MD Ma'). It is one
     of TWO places the comma's own decision is reported, the other being the word trailing the given part after
     it (S2), which is a second decision about a second word and never
@@ -1855,7 +1854,7 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions.md#C1 · interacts: H2, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1 · interacts: H2, P2, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.
