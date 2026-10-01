@@ -3067,8 +3067,12 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"Doe, Jane nee Smith PhD MEng", "Jane Doe nee Smith PhD MA",
                "Jane Doe nee Smith PhD MEng"}),
     frozenset({r"jack\s+m\.a\.", r"wang\s+m\.eng\."}),
-    frozenset({"John Smith, Ed Ma", "John Smith, Ms Ma",
-               "John Smith, PhD Ma", r"John Smith, X\.Y\.Z\. MA",
+    # 2026-10-01, #554: the run rule gains rules.md#C1's particle-and-
+    # suffix examples, a vocabulary word in front of a member, which
+    # copies no set either.
+    frozenset({"JOHN SMITH, VD MA", "John Smith, Ed Ma",
+               "John Smith, Ms Ma", "John Smith, PhD Ma",
+               r"John Smith, X\.Y\.Z\. MA", "John Smith, vd Ma",
                "john smith, md ma"}),
     frozenset({"Doe, Jane PhD MEng", "Doe, Jane nee Smith PhD MEng",
                "Jane Doe nee Smith PhD MEng", "John Smith PhD MEng"}),
@@ -3761,8 +3765,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #562: 408 -> 410, 'John Smith, PhD DO DO'
         # and 'John Smith, PhD vd DO', #562's rules.md#C1 examples
         # and case rows. Reach, verified name by name.
+        # 2026-10-01, #554: 410 -> 412, 'John Smith, vd Ma' and
+        # 'JOHN SMITH, VD MA', #554's rules.md#C1 examples. Reach,
+        # verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(410, ('given', 'suffix', 'title'), "2b67e34c920c", None),
+            _Claim(412, ('given', 'suffix', 'title'), "d9217453f0df", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3857,8 +3864,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #562: 408 -> 410, 'John Smith, PhD DO DO'
         # and 'John Smith, PhD vd DO', #562's rules.md#C1 examples
         # and case rows. Reach, verified name by name.
+        # 2026-10-01, #554: 410 -> 412, 'John Smith, vd Ma' and
+        # 'JOHN SMITH, VD MA', #554's rules.md#C1 examples. Reach,
+        # verified name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(410, ('family', 'given'), "2b67e34c920c", None),
+            _Claim(412, ('family', 'given'), "d9217453f0df", None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -5190,8 +5200,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: new, 4; gains 'John Smith, Ed Ma', 'John
         # Smith, Ms Ma', 'John Smith, X.Y.Z. MA', 'john smith, md ma'.
         # 2026-09-28, #544: 4 -> 5; gains 'John Smith, PhD Ma'.
+        # 2026-10-01, #554: 5 -> 7; gains 'John Smith, vd Ma' and
+        # 'JOHN SMITH, VD MA'.
         "fix(#544) a run of ambiguous members after a suffix comma reads by the name-word count":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "4123358beccd", ('DEFAULT',)),
+            _Claim(7, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "890e7723c601", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'Doe, Jane PhD MEng', 'Doe,
         # Jane nee Smith PhD MEng', 'Jane Doe nee Smith PhD MEng',
         # 'John Smith PhD MEng'. Relabelled the same day
@@ -5640,8 +5652,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: new, 4; gains 'John Smith, Ed Ma', 'John
         # Smith, Ms Ma', 'John Smith, X.Y.Z. MA', 'john smith, md ma'.
         # 2026-09-28, #544: 4 -> 5; gains 'John Smith, PhD Ma'.
+        # 2026-10-01, #554: 5 -> 7; gains 'John Smith, vd Ma' and
+        # 'JOHN SMITH, VD MA'.
         "fix(#544) a run of ambiguous members after a suffix comma reads by the name-word count":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "4123358beccd", ('DEFAULT',)),
+            _Claim(7, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "890e7723c601", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'Doe, Jane PhD MEng', 'Doe,
         # Jane nee Smith PhD MEng', 'Jane Doe nee Smith PhD MEng',
         # 'John Smith PhD MEng'. Relabelled the same day
@@ -6324,8 +6338,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: new, 4; gains 'John Smith, Ed Ma', 'John
         # Smith, Ms Ma', 'John Smith, X.Y.Z. MA', 'john smith, md ma'.
         # 2026-09-28, #544: 4 -> 5; gains 'John Smith, PhD Ma'.
+        # 2026-10-01, #554: 5 -> 7; gains 'John Smith, vd Ma' and
+        # 'JOHN SMITH, VD MA'.
         "fix(#544) a run of ambiguous members after a suffix comma reads by the name-word count":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "4123358beccd", ('DEFAULT',)),
+            _Claim(7, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "890e7723c601", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'Doe, Jane PhD MEng', 'Doe,
         # Jane nee Smith PhD MEng', 'Jane Doe nee Smith PhD MEng',
         # 'John Smith PhD MEng'. Relabelled the same day
@@ -6623,8 +6639,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: new, 4; gains 'John Smith, Ed Ma', 'John
         # Smith, Ms Ma', 'John Smith, X.Y.Z. MA', 'john smith, md ma'.
         # 2026-09-28, #544: 4 -> 5; gains 'John Smith, PhD Ma'.
+        # 2026-10-01, #554: 5 -> 7; gains 'John Smith, vd Ma' and
+        # 'JOHN SMITH, VD MA'.
         "fix(#544) a run of ambiguous members after a suffix comma reads by the name-word count":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "4123358beccd", ('DEFAULT',)),
+            _Claim(7, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "890e7723c601", ('DEFAULT',)),
         # 2026-09-27, #544: new, 4; gains 'Doe, Jane PhD MEng', 'Doe,
         # Jane nee Smith PhD MEng', 'Jane Doe nee Smith PhD MEng',
         # 'John Smith PhD MEng'.
