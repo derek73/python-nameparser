@@ -494,7 +494,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'marcher',
     'marchess',
     'marketing',
-    'marquis',
     'mathematician',
     'mathematics',
     'matriarch',
