@@ -972,8 +972,8 @@ S2. Rationale: generational suffixes and credentials are recognized
     first slot after a family comma, the trailing slot of the GIVEN
     part after that comma, and the trailing slot of a maiden
     marker's clause (M2). A part beyond the second comma is not one
-    of them: it is consumed wholly as suffixes and reports only its
-    own structural flag (C2). A word this document
+    of them; what such a part does report is C2's to say. A word
+    this document
     says is READ at one of those slots is not always a word one of
     them reports: where a reading moves a word out of the slot that
     asked about it, what reports is the slot it lands in, and that
