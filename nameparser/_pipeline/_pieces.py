@@ -591,10 +591,11 @@ class Peel(NamedTuple):
     took (None when it did not fire; always the walk's last piece),
     `picks` the bare ambiguous acronyms the peel had to resolve, in
     peel order, either way (the last may sit at rest[names - 1]).
-    `anchors` is the walk's `credential_anchors` pass over `rest`, or
-    None where no member needed it. It is `tail_reading`'s alone,
-    handed to the next pass of its fixed point (`peel_trailing`'s
-    `start`); no caller reads it."""
+    `anchors` is `peel_trailing`'s working state for `tail_reading`
+    alone -- the walk's `credential_anchors` pass over `rest` where a
+    member needed one, handed to the next pass of the fixed point
+    (`peel_trailing`'s `start`). No caller reads it, and the Peel
+    `tail_reading` returns carries None."""
 
     names: int
     numeral: tuple[int, ...] | None
@@ -984,7 +985,10 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     written and wherever the peel then stops. Iterating ONCE reads a
     second title only half way -- 'John Prof. MA Prof.' un-peeled the
     acronym and re-exposed the first title, reading family 'Prof.'
-    with suffix 'MA' where 'John Prof. MA' reads family 'MA'.
+    with suffix 'MA' where 'John Prof. MA' read family 'MA' (written
+    in one case today: since #289 capitals in a mixed-case name take
+    the acronym whatever the count, so 'john prof. ma prof.' and
+    'john prof. ma' are the pair that still reads family 'ma').
 
     One function for assign's placement, group's bound-given reserve
     (P5), which must count the name words assign will leave, and the
@@ -1019,8 +1023,9 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     position COUNT of the pieces it already peeled, which the splice
     lowers, and two tests of the walk read it. The acronym fork's
     words to spare: a member whose count falls below three can
-    decline where it was taken -- 'John Prof. MA Prof.' is exactly
-    that -- so a pass resumes only with two or more pieces in front
+    decline where it was taken -- 'john prof. ma ma prof.' is exactly
+    that, keeping family 'ma' only because the second pass walks
+    afresh -- so a pass resumes only with two or more pieces in front
     of the splice, every peeled piece then counting three or more.
     And the numeral fork, which reads the walk's last piece against
     the one before it: a pass resumes only with two or more peeled
