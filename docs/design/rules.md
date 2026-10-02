@@ -518,7 +518,8 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     have gone the other way, and is reported.
     The joined part is ONE name word wherever another rule counts
     them, so a rule taking "one name word" takes the whole join and
-    never half of it.
+    never half of it — except C1's count of the words before a comma,
+    which counts particle surnames alone and states why.
     A connective counts as a name word wherever this rule counts them,
     whatever else the vocabulary says the word is, where it is placed
     to join. A word can be a connective and a generation at once — the
@@ -1670,17 +1671,24 @@ C1. Rationale: a credential run after the comma means the name is in
     listing form, the part before the comma being the family name.
     Only the part after the first comma decides.
     Wherever this rule counts the words before the comma, a particle
-    and the name word it attaches to are one word, as P2 joins them:
-    the listing form puts a surname before the comma, and a particle
-    surname is one surname ('De La Cruz, Ed' reads as 'Royce, Ed'
-    does, 'van der Berg, PhD' as 'Berg, PhD'). That settles P1's fork
-    for a leading particle that could be a given name, the comma
-    being the evidence that the part is a surname. The particle
-    reaches the one word it attaches to and no further, so a word
-    after that one is a second word. A connective join and a bound
-    given name are not one word here: a single-letter connective in
-    a three-word name stays a name word (P3), and a bound given name
-    builds a given name rather than a surname (P5).
+    run and the one name word it attaches to are one word, the reach
+    P1's fold counts rather than the whole of P2's chain: the listing
+    form puts a surname before the comma, and a particle surname is
+    one surname ('De La Cruz, Ed' reads as 'Royce, Ed' does, 'van der
+    Berg, PhD' as 'Berg, PhD'). Where that surname is the whole part,
+    the comma settles P1's fork for a leading particle that could be
+    a given name, being the evidence that the part is a surname; a
+    word after the one the particle attaches to is a second word, and
+    a suffix word ends the particle's reach. A word that is also
+    title vocabulary or a bound given name is not a particle to this
+    count, reading in front of a name as the title (H1) or the
+    given-name join (P5) it also is. A connective join and a bound
+    given name are not one word here: whether P3 joins a connective
+    depends on the words of the whole name, which this count is part
+    of deciding, and a bound given name builds a given name rather
+    than a surname (P5). A title in front is a word to the count an
+    unambiguous credential takes, so 'Dr. van der Berg, PhD' reads as
+    its part does alone.
     For the ambiguous credential class — a bare acronym the
     vocabulary marks as also an ordinary name, and a word admitted
     to the class by shape, which S3 defines and bounds — the
@@ -1862,6 +1870,14 @@ C1. Rationale: a credential run after the comma means the name is in
       "García Márquez, Ms G.J."   →  given="G.J."  · boundary
       "García Márquez, Ed G.J."   →  given="Ed"  · boundary
       "John Smith, A.B. Ph.D."    →  given="A.B."  · boundary
+    Accepted: a title in front of a particle surname, before the
+    credential class's word, is read into the family. The surname
+    counts once and the title is no name word, so the count reads the
+    listing form, and the listing form keeps a title before the comma
+    in the family, as it already did for any one-word surname ('Prof.
+    Cruz, Ed', 'Freiherr Berg, Ed'). The count had read 'von' as a
+    second name word and kept the title apart.
+      "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
     Accepted: three or more initials run together with periods behind
     a surname of two words read as a credential. Initials are
     conventionally written apart ('J. R. R.'), and a token of three or

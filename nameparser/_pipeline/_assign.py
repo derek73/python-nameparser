@@ -71,8 +71,8 @@ from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    SURNAME_UNIT_TAGS, effective_script, is_suffix_lenient,
-    resolve_script_set, unit_ends,
+    effective_script, is_suffix_lenient, resolve_script_set,
+    surname_unit_facts, unit_ends,
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
@@ -1087,12 +1087,25 @@ def assign(state: ParseState) -> ParseState:
         # positionally lost 'van' to the given name. The comma is the
         # evidence that settles that fork: the listing form puts a
         # surname before it. The same facts as segment's count
-        # (`_vocab.SURNAME_UNIT_TAGS`), so the two agree.
-        if reading is not None and len(unit_ends([
-                tokens[i].tags & SURNAME_UNIT_TAGS
-                for k, piece in enumerate(fam_pieces)
-                if not is_suffix_piece(piece, fam_tags[k], tokens)
-                for i in piece], chain=False)) > 1:
+        # (`_vocab.surname_unit_facts`), over EVERY token, so a suffix
+        # word still stops a particle ('van Jr. Berg, Mr.' is two name
+        # words); a unit counts when a non-suffix piece holds a token
+        # of it.
+        positional = False
+        if reading is not None:
+            idx = [i for piece in fam_pieces for i in piece]
+            named = {i for k, piece in enumerate(fam_pieces)
+                     if not is_suffix_piece(piece, fam_tags[k], tokens)
+                     for i in piece}
+            names = 0
+            start = 0
+            for end in unit_ends([surname_unit_facts(tokens[i].tags)
+                                  for i in idx], chain=False):
+                if not named.isdisjoint(idx[start:end]):
+                    names += 1
+                start = end
+            positional = names > 1
+        if positional:
             order = _assign_main(0, state, tokens, ambiguities)
         else:
             for k, piece in enumerate(fam_pieces):

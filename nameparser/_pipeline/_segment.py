@@ -393,7 +393,7 @@ def segment(state: ParseState) -> ParseState:
         pre_comma_names = name_word_count(texts(groups[0]), state.lexicon,
                                           state.policy)
     # rules.md#C1's "more than one word precedes the comma" counts a
-    # particle chain and a connective join as one word (#575): v1's
+    # particle and the word it attaches to as one word (#575): v1's
     # token count split 'van der Berg, PhD' into given 'van', family
     # 'der Berg'. The token count stays first, so a one-token part
     # never builds the units.

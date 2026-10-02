@@ -776,14 +776,15 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
 
 
 # mechanisms.md#UNIT-PARTITION: "A rule that counts name words counts
-# those units, and takes each whole or not at all." The walk is shared
+# those units, and takes each whole or not at all" -- C1's count before
+# a comma being the stated exception (`SURNAME_UNIT_TAGS`). The walk is shared
 # by two readers that hold the facts in different forms: post_rules
 # reads classify's TAGS, and segment, which runs before classify has
 # tagged anything, builds the same tag names from the vocabulary
 # (`surname_unit_tags`). One walk over tag sets, so the two cannot
 # disagree about where a unit ends (mechanisms.md#ONE-PREDICATE-PER-
 # QUESTION) -- only, at worst, about a token's facts, which
-# test_vocab's agreement test pins.
+# test_classify's agreement test pins.
 def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
     """The END (one past the last index) of each unit of `tags`, in
     order, partitioning `range(len(tags))`: one name word each, except
@@ -849,30 +850,46 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
 
 
 #: The facts rules.md#C1's count before a comma reads (#575): a
-#: particle chain is one surname, and a suffix word stops it. Neither
-#: of the other two joins `unit_ends` knows is read there. A bound
+#: particle starts a surname unit, and a suffix word stops it. A word
+#: that is ALSO title vocabulary ('Freiherr', 'St') or a bound
+#: given-name head ('Abu') is not a particle here: in front of a name
+#: it reads as the title or the given-name join it also is (rules.md
+#: H1, P5), so 'Freiherr von Berg, PhD' keeps its title. Neither of
+#: the other two joins `unit_ends` knows is read either. A bound
 #: given-name pair builds a GIVEN name, and P5 gives up a family word
 #: where the name has no other ('abdul Salam' alone is given 'abdul',
-#: family 'Salam'), so before a comma it is not one surname. A
-#: connective join is P3's to decide, and P3 declines the commonest
-#: connective surname outright -- a single-letter connective in a
-#: three-word name stays a name word, so 'Ortega y Gasset' is three --
-#: on conditions (that exception, the case fork, generational
-#: connectives) segment could only rebuild by copying P3. Segment
-#: builds these from the vocabulary (`surname_unit_tags`); assign
-#: intersects classify's tags with this set, so the two counts read
-#: one set of facts.
+#: family 'Salam'), so before a comma it is not one surname. Whether
+#: P3 joins a single-letter connective depends on the words of the
+#: whole name -- 'Carod i Rovira, Josep' joins as four words where
+#: 'Ortega y Gasset' alone, three words, does not -- and the count is
+#: part of deciding what the whole name is, so segment could reach
+#: P3's answer only by copying P3. Segment builds these facts from the
+#: vocabulary (`surname_unit_tags`); assign derives them from
+#: classify's tags (`surname_unit_facts`), so the two counts read one
+#: set of facts.
 SURNAME_UNIT_TAGS = frozenset({"particle", "vocab:suffix"})
 _PARTICLE_ONLY = frozenset({"particle"})
 _SUFFIX_ONLY = frozenset({"vocab:suffix"})
 _NO_TAGS: frozenset[str] = frozenset()
+_NOT_A_SURNAME_PARTICLE = frozenset({"vocab:title", "vocab:bound-given"})
+
+
+def surname_unit_facts(tags: Set[str]) -> frozenset[str]:
+    """`SURNAME_UNIT_TAGS` for one token, from classify's tags: the
+    reading assign's count before a comma takes."""
+    particle = ("particle" in tags
+                and tags.isdisjoint(_NOT_A_SURNAME_PARTICLE))
+    if "vocab:suffix" in tags:
+        return SURNAME_UNIT_TAGS if particle else _SUFFIX_ONLY
+    return _PARTICLE_ONLY if particle else _NO_TAGS
 
 
 def surname_unit_tags(text: str, lexicon: Lexicon) -> frozenset[str]:
-    """`SURNAME_UNIT_TAGS` for one token from the vocabulary alone --
-    segment's view of classify's tags, built before classify runs, and
-    classify's own tests: particle membership, `suffix_as_written`, and
-    the period-joined derivation. Kept from drifting by
+    """`surname_unit_facts` for one token from the vocabulary alone --
+    segment's view of classify's tags, built before classify runs, with
+    classify's own tests: particle, title and bound given-name
+    membership, `suffix_as_written`, and the period-joined derivation.
+    Kept from drifting by
     test_classify.test_surname_unit_tags_agree_with_classify."""
     n = _normalize(text)
     # classify's whole-token test, then its period-joined derivation
@@ -881,9 +898,11 @@ def surname_unit_tags(text: str, lexicon: Lexicon) -> frozenset[str]:
     suffix = suffix_as_written(n, text, lexicon) or (
         "." in text and n not in lexicon.titles
         and period_joined_vocab(text, lexicon) == "suffix")
-    if n in lexicon.particles:
-        return SURNAME_UNIT_TAGS if suffix else _PARTICLE_ONLY
-    return _SUFFIX_ONLY if suffix else _NO_TAGS
+    particle = (n in lexicon.particles and n not in lexicon.titles
+                and n not in lexicon.bound_given_names)
+    if suffix:
+        return SURNAME_UNIT_TAGS if particle else _SUFFIX_ONLY
+    return _PARTICLE_ONLY if particle else _NO_TAGS
 
 
 def surname_unit_count(texts: Sequence[str], lexicon: Lexicon) -> int:
@@ -893,10 +912,11 @@ def surname_unit_count(texts: Sequence[str], lexicon: Lexicon) -> int:
     of a part that is wholly suffix words (#575), with a particle
     reaching as P1's fold does (`unit_ends`'s `chain=False`). 'van der
     Berg' is one surname, so 'van der Berg, PhD' reads as 'Berg, PhD'
-    does."""
+    does. A connective join is not one unit here: `SURNAME_UNIT_TAGS`."""
     # With no particle, every token is a unit of its own, so the count
     # is the token count: the suffix tests and the walk are skipped for
-    # the commonest comma names ('John Smith, PhD').
+    # the commonest comma names ('John Smith, PhD'). A superset test --
+    # a title-particle passes it -- so it only ever skips work.
     if not any(_normalize(t) in lexicon.particles for t in texts):
         return len(texts)
     return len(unit_ends([surname_unit_tags(t, lexicon) for t in texts],

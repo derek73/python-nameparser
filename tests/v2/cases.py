@@ -1071,6 +1071,41 @@ CASES: tuple[Case, ...] = (
                "('abdul Salam' alone is given 'abdul', family 'Salam'), "
                "so it is not one surname before a comma",
          shape=3),
+    Case("a_title_particle_before_a_comma_is_still_a_title",
+         "Freiherr von Berg, PhD",
+         {"title": "Freiherr", "family": "von Berg", "suffix": "PhD"},
+         ambiguities=("particle-or-given",),
+         notes="#575 boundary: a word of both the title and the particle "
+               "vocabulary is not a particle to the count before the "
+               "comma, so it stays a title in front of the surname. The "
+               "first draft of #575 counted 'Freiherr von Berg' as one "
+               "surname and folded the title into the family"),
+    Case("a_bound_given_particle_before_a_comma_is_still_a_given_name",
+         "Abu Bakar, Ed",
+         {"given": "Abu", "family": "Bakar", "suffix": "Ed"},
+         ambiguities=("suffix-or-name", "particle-or-given"),
+         notes="#575 boundary: 'abu' is a bound given-name head as well "
+               "as a particle, and in front of a name it reads as the "
+               "given-name join (P5), so it is not one surname with the "
+               "word after it"),
+    Case("a_suffix_inside_the_part_stops_the_particle",
+         "van Jr. Berg, Mr.",
+         {"title": "Mr.", "given": "van", "middle": "Jr.",
+          "family": "Berg"},
+         ambiguities=("particle-or-given",),
+         notes="#575 boundary: the particle reaches no further than a "
+               "suffix word, so 'van' and 'Berg' are two name words and "
+               "the part keeps its positional read. A first draft "
+               "walked past the suffix and read family 'van Berg'"),
+    Case("a_title_in_front_keeps_the_particle_fork",
+         "Dr. van der Berg, PhD",
+         {"title": "Dr.", "given": "van", "family": "der Berg",
+          "suffix": "PhD"},
+         ambiguities=("particle-or-given",),
+         notes="#575 boundary: the count for an unambiguous credential "
+               "counts the title as a word, so the comma reads as a "
+               "credential comma and the part reads as it does alone, "
+               "P1's fork and all. Unchanged"),
     Case("the_anchor_does_not_reach_across_a_maiden_clause",
          "Jane Doe Jr. nee Smith Ma",
          {"given": "Jane", "family": "Doe", "suffix": "Jr.",

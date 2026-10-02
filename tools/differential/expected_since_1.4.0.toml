@@ -783,8 +783,23 @@ issue = "fix(#575) a particle surname before a comma is one name word"
 #
 # Literal; the probe 'John van Buren, Ed' (two name words: the
 # credential reading stays) is _MUST_NOT_MATCH.
-name_regex = "^(?:De La Cruz, Ed|Van Buren, Ed|de la Cruz, Ma)$"
-fields = ["given", "family", "suffix"]
+# 'Freiherr von Berg, Ed' joins as rules.md#C1's accepted
+# consequence: the surname counts once and 'Freiherr' is no name word,
+# so the listing form reads it and keeps the title in the family, as
+# it does for 'Prof. Cruz, Ed'. 1.4.0 read title 'Freiherr', first
+# 'von Berg', suffix 'Ed'.
+name_regex = "^(?:De La Cruz, Ed|Freiherr von Berg, Ed|Van Buren, Ed|de la Cruz, Ma)$"
+fields = ["title", "given", "family", "suffix"]
+
+[[change.precedes_narrower]]
+issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
+why = """
+The later rule describes a lone post-comma piece LEAVING `first` for
+`suffix` or `title`. These names move the other way: the word after
+the comma ARRIVES in `given`, because the particle surname before it
+is one name word (rules.md#C1, #575), and that is what this rule
+names.
+"""
 
 [[change.precedes_narrower]]
 issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
@@ -4051,8 +4066,12 @@ issue = "fix(#563) paired initials after a comma read as the given name unless a
 # G.J.', a title in front ("a suffix word in front of them that is
 # not also title vocabulary"), which moves nothing at any baseline.
 # The second period is optional ('García Márquez, G.J'). Two pairs
-# speaking only for each other make the run and report it ('De La
-# Cruz, M.J. K.L.'); a listed member in front speaks for nothing
+# speaking only for each other make the run and report it behind two
+# name words ('John Smith, X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz,
+# M.J. K.L.' is no longer that case -- 'De La Cruz' is one name word,
+# so the count no longer reaches it and it reads as 'Cruz, M.J. K.L.'
+# does, given 'M.J.', suffix 'K.L.', reporting both; a listed member
+# in front speaks for nothing
 # ('García Márquez, Ed G.J.' keeps the family comma, and the fix(#531)
 # rule claims what its given part's trailing slot then reads). Against a 2.x baseline the names
 # whose roles match the baseline's move only the report, which a
