@@ -35,6 +35,7 @@ from __future__ import annotations
 import unicodedata
 from dataclasses import dataclass
 
+from nameparser._policy import CapsSuffixes
 from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, GIVEN_FIRST,
                          Policy)
 # Not in nameparser.__all__: _order_repr renders a name_order for an
@@ -522,16 +523,18 @@ CASES: tuple[Case, ...] = (
                "'Smith' becomes a middle name. The shape-plus-position "
                "heuristic that would recover it is a parking-lot "
                "bullet of decisions.md#suffix-acronym-collisions"),
-    Case("removed_credential_after_a_comma_reads_as_the_given_name",
+    Case("removed_credential_after_a_comma_reads_by_its_capitals",
          "Ahmad Jayadi, CHA",
-         {"given": "CHA", "family": "Ahmad Jayadi"},
-         classification="fix(#342)",
-         notes="the comma form moves the OTHER way and is why the "
-               "ledger rule declares four fields rather than two. "
-               "With 'cha' gone the comma is an ordinary family "
-               "comma (C1): the pre-comma run is the family and the "
-               "post-comma word is the given name. 'John Smith, RAI' "
-               "is the same shape and moves with it"),
+         {"given": "Ahmad", "family": "Jayadi", "suffix": "CHA"},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="with 'cha' gone from the vocabulary (#342) the word is "
+               "unlisted, and since #564 an unlisted all-caps word "
+               "after a comma behind two name words is a credential by "
+               "default (rules.md#C1, S2), so the comma is a suffix "
+               "comma again and reports the call. 2.3.0 read given "
+               "'CHA', family 'Ahmad Jayadi'; 'John Smith, RAI' moves "
+               "with it"),
     Case("removed_credential_loses_the_dotted_spelling_too",
          "John Smith C.H.A.",
          {"given": "John", "family": "Smith", "suffix": "C.H.A."},
@@ -2799,7 +2802,7 @@ CASES: tuple[Case, ...] = (
     Case("the_caps_shape_never_reaches_a_tail_segment",
          "John Smith, MD, XYZ",
          {"given": "John", "family": "Smith", "suffix": "MD, XYZ"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          ambiguities=("comma-structure",),
          classification="fix(#516)",
          notes="the SECOND way C2's quiet is narrow, and the half its "
@@ -2810,12 +2813,14 @@ CASES: tuple[Case, ...] = (
                "the same one the default policy raises. Folding "
                "`caps_shape_candidate` into the class run would make "
                "this row fail"),
-    # #516's all-caps half, and it is OPT-IN. The rows come in pairs:
-    # the same name under the DEFAULT policy, where nothing moves and
-    # nothing is reported, and under Policy(unlisted_caps_suffixes=
-    # True), where the shape reads. The French and Korean names are
-    # why the default is off (mechanisms.md#VOCABULARY-EXERCISES-FORKS
-    # -- each pair pins the switch, not the words). A row that sets
+    # #516's all-caps half. Its trailing slots are OPT-IN
+    # (CapsSuffixes.EVERYWHERE); since #564 the default reads the part
+    # after a comma behind two name words, which the all-caps surname
+    # convention never writes in. The rows come in pairs: the same name
+    # under the DEFAULT policy and under EVERYWHERE. The French and
+    # Korean names are why the trailing slots stay off
+    # (mechanisms.md#VOCABULARY-EXERCISES-FORKS -- each pair pins the
+    # setting, not the words). A row that sets
     # the non-default policy carries no `shape=` tag: the contract
     # corpus (build_shapes_corpus.py) keys only on (shape, text), with
     # no policy of its own, so admitting one of these texts under a
@@ -2832,7 +2837,7 @@ CASES: tuple[Case, ...] = (
     Case("caps_surname_is_swallowed_with_the_switch_on",
          "Jean Pierre DUPONT",
          {"given": "Jean", "family": "Pierre", "suffix": "DUPONT"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#516)",
          ambiguities=("suffix-or-name",),
          notes="the cost of the switch, pinned so nobody turns it on "
@@ -2849,7 +2854,7 @@ CASES: tuple[Case, ...] = (
     Case("caps_surname_reports_but_does_not_move_at_two_words",
          "Jean DUPONT",
          {"given": "Jean", "family": "DUPONT"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          ambiguities=("suffix-or-name",),
          notes="one name word is never enough to spend the credential "
                "reading, so the family stays 'DUPONT' -- but the fork "
@@ -2874,7 +2879,7 @@ CASES: tuple[Case, ...] = (
     Case("unlisted_caps_reads_by_position_with_the_switch_on",
          "John Smith XYZ",
          {"given": "John", "family": "Smith", "suffix": "XYZ"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#516)",
          ambiguities=("suffix-or-name",),
          notes="what the switch buys: the shape reads, and the "
@@ -2887,17 +2892,177 @@ CASES: tuple[Case, ...] = (
                "where a fork could be said to exist, because the "
                "reading was never on offer (#516)",
          shape=1),
+    # #564: the comma position is read by default
+    # (CapsSuffixes.AFTER_COMMA); the trailing one stays opt-in.
+    Case("an_all_caps_word_after_a_full_name_and_a_comma_is_a_credential",
+         "John Smith, XYZ",
+         {"given": "John", "family": "Smith", "suffix": "XYZ"},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="the all-caps SURNAME convention never writes the "
+               "capitals after a comma behind a full name, so the "
+               "default reads the comma position (rules.md#C1, S2). "
+               "2.3.0 read given 'XYZ', family 'John Smith'"),
+    Case("the_comma_caps_reading_can_be_switched_off",
+         "John Smith, XYZ",
+         {"given": "XYZ", "family": "John Smith"},
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.OFF),
+         notes="#564: CapsSuffixes.OFF is 2.3.0's reading, and the one "
+               "way to keep a given name written in capitals after a "
+               "two-word surname ('García Márquez, GABRIEL')"),
+    Case("a_lone_two_letter_caps_word_after_a_comma_is_the_given_name",
+         "García Márquez, MJ",
+         {"given": "MJ", "family": "García Márquez"},
+         notes="#564 boundary: two capitals alone are how initials are "
+               "written undotted, and two words before the comma may "
+               "be one surname -- the case #563 decides for 'M.J.'. No "
+               "report: the comma position declines it outright"),
+    Case("an_all_caps_record_keeps_its_given_name_beside_a_mixed_credential",
+         "LLOYD WEBBER, ANDREW PhD",
+         {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "PhD"},
+         notes="#564 boundary: an all-caps word joins C1's run only where "
+               "the NAME carries the contrast, a word of its own before "
+               "the comma holding a capital and ending in lowercase "
+               "-- here the only "
+               "lowercase is the credential's own, and a record written "
+               "wholly in capitals keeps its given name. A review-round "
+               "draft let 'PhD' supply the contrast and read suffix "
+               "'ANDREW PhD'"),
+    Case("a_maiden_clause_supplies_no_contrast_for_the_caps_shape",
+         "LLOYD WEBBER née Smith, ANDREW PhD",
+         {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "PhD",
+          "maiden": "Smith"},
+         notes="#564 boundary: the contrast is the name's OWN words "
+               "(own_words): a maiden clause's lowercase is not the "
+               "name's, so the all-caps record keeps its given name. A "
+               "review-round draft counted every pre-comma token and "
+               "read suffix 'ANDREW PhD'"),
+    Case("a_title_supplies_no_contrast_for_the_caps_shape",
+         "Mr LLOYD WEBBER, ANDREW PhD",
+         {"given": "ANDREW", "family": "Mr LLOYD WEBBER", "suffix": "PhD"},
+         notes="#564 boundary: titles and particles are written in "
+               "lowercase in a record that capitalizes its surname, so "
+               "neither counts as the name's contrast and the given name "
+               "stays. The title in the family is the listing form's "
+               "long-standing reading of a title before the comma "
+               "('Prof. Cruz, Ed'), master's too"),
+    Case("a_generation_supplies_no_contrast_for_the_caps_shape",
+         "LLOYD WEBBER Jr., ANDREW",
+         {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "Jr."},
+         notes="#564 boundary: only the name's own words written as a "
+               "name is (a capital, and a lowercase last letter), "
+               "unclaimed by the vocabulary and unmarked by a period, "
+               "supply the contrast; 'Jr.' is none of those, "
+               "so the 'SURNAME Jr., GIVEN' record "
+               "keeps its given name. A review-round draft excluded "
+               "titles and particles only and read suffix 'Jr., ANDREW'"),
+    Case("a_connective_supplies_no_contrast_for_the_caps_shape",
+         "GARCÍA y LÓPEZ, ANDREW",
+         {"given": "ANDREW", "family": "GARCÍA y LÓPEZ"},
+         notes="#564 boundary: a lowercase connective in a record that "
+               "capitalizes its surnames is the record's convention, "
+               "not the name's contrast"),
+    Case("a_later_comma_part_supplies_no_contrast_for_the_caps_shape",
+         "JOHN SMITH, ANDREW, Jr.",
+         {"given": "ANDREW", "family": "JOHN SMITH", "suffix": "Jr."},
+         notes="#564 boundary: the contrast is read before the comma; "
+               "a generation in a third part is not the name's. The "
+               "whole-name case test of an earlier draft read suffix "
+               "'ANDREW, Jr.'; master keeps given 'ANDREW' too"),
+    Case("a_glued_particle_supplies_no_contrast_for_the_caps_shape",
+         "GISCARD d'ESTAING, VALÉRY",
+         {"given": "VALÉRY", "family": "GISCARD d'ESTAING"},
+         notes="#564 (Derek): the name carries the contrast only through "
+               "a word holding a capital and ending in lowercase that no "
+               "wordlist claims as non-name text. A surname written in "
+               "capitals ends in a capital whatever is glued to it -- the "
+               "French convention the trailing slot stays off for. A "
+               "draft counting any lowercase letter read suffix "
+               "'VALÉRY'"),
+    Case("an_unlisted_lowercase_word_supplies_no_contrast_for_the_caps_shape",
+         "LLOYD ap RHYS, DAFYDD",
+         {"given": "DAFYDD", "family": "LLOYD ap RHYS"},
+         notes="#564 boundary: 'ap' is in no wordlist, but a word written "
+               "wholly in lowercase never carries the contrast, so no "
+               "list has to know it"),
+    Case("an_all_lowercase_name_carries_no_contrast_for_the_caps_shape",
+         "john smith, XYZ",
+         {"given": "XYZ", "family": "john smith"},
+         notes="#564 (Derek): a lowercase-only name holds no capital, "
+               "so the default keeps the "
+               "listing form; the cost of the criterion, accepted with "
+               "it"),
+    Case("a_lone_capital_supplies_no_contrast_for_the_caps_shape",
+         "de GAULLE C, CHARLES",
+         {"given": "CHARLES", "family": "de GAULLE C"},
+         notes="#564 boundary: an undotted initial is a single capital, "
+               "with no lowercase letter behind it. A draft testing "
+               "`istitle()`, which accepts 'C', read suffix 'CHARLES' "
+               "with no given name"),
+    Case("a_glued_capitalized_prefix_supplies_no_contrast",
+         "LLOYD FitzGERALD, RONALD",
+         {"given": "RONALD", "family": "LLOYD FitzGERALD"},
+         notes="#564 (Derek): a surname written in capitals ends in a "
+               "capital whatever is glued in front of it ('FitzGERALD', "
+               "'McDONALD', 'DeVITO', 'St-PIERRE'), so the record keeps "
+               "its given name. The capital-then-lowercase draft took "
+               "'Fi' as the contrast and read suffix 'RONALD'"),
+    Case("a_mc_prefix_on_a_capitalized_surname_supplies_no_contrast",
+         "LLOYD McDONALD, RONALD",
+         {"given": "RONALD", "family": "LLOYD McDONALD"},
+         notes="#564: 'McDONALD' ends in a capital, so no Mc/Mac case is "
+               "needed; 'McDonald' ends lowercase and carries the "
+               "contrast"),
+    Case("an_interior_capital_carries_the_contrast",
+         "DiCaprio LaBeouf, XYZ",
+         {"given": "DiCaprio", "family": "LaBeouf", "suffix": "XYZ"},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="#564 (Derek): a capital anywhere in a word ending "
+               "lowercase is the contrast, so an interior capital counts "
+               "('DiCaprio', 'IJzerman', 'al-Rashid'). "
+               "The `istitle()` draft read given 'XYZ' here"),
+    Case("a_name_typed_with_decomposed_accents_carries_the_contrast",
+         "Jose\u0301 Andre\u0301, XYZ",
+         {"given": "Jose\u0301", "family": "Andre\u0301", "suffix": "XYZ"},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="#564: the contrast test reads a word's last LETTER after "
+               "composing it, so 'André' typed with a combining accent "
+               "ends in 'é' and reads as its composed spelling does. A "
+               "draft reading the last character took the accent and "
+               "kept given 'XYZ'"),
+    Case("a_trailing_caseless_letter_is_no_evidence_against_the_contrast",
+         "Asmāʾ Wafāʾ, XYZ",
+         {"given": "Asmāʾ", "family": "Wafāʾ", "suffix": "XYZ"},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="#564: the contrast test reads the last letter that has "
+               "case, passing over the caseless transliteration letter "
+               "'ʾ' as it passes over an apostrophe. A draft stopping at "
+               "it kept given 'XYZ'"),
+    Case("a_capitalized_given_name_behind_a_two_word_surname_is_the_accepted_cost",
+         "García Márquez, JUAN Jr.",
+         {"given": "García", "family": "Márquez", "suffix": "JUAN Jr."},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="#564's accepted cost (Derek): a given name written in "
+               "capitals behind a two-word surname without particles, "
+               "in a mixed-case name, reads as the credential -- with a "
+               "generation behind it as alone ('García Márquez, "
+               "GABRIEL'). Reported, and CapsSuffixes.OFF keeps given "
+               "'JUAN'"),
     Case("the_caps_comma_count_needs_two_name_words",
          "John Smith, XYZ",
          {"given": "John", "family": "Smith", "suffix": "XYZ"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#516)",
          ambiguities=("suffix-or-name",),
          notes="the comma structure moves with this half too, on the "
                "same NAME-word count"),
     Case("the_caps_comma_count_declines_at_one_word", "Smith, XYZ",
          {"given": "XYZ", "family": "Smith"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          ambiguities=("suffix-or-name",),
          notes="its control, switch and all: one name word before the "
                "comma is never enough, so the capitalised word stays "
@@ -2905,7 +3070,7 @@ CASES: tuple[Case, ...] = (
     Case("one_case_input_never_reaches_the_caps_switch",
          "JOHN SMITH XYZ",
          {"given": "JOHN", "middle": "SMITH", "family": "XYZ"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="the one-case control, and it needs the switch ON to "
                "mean anything: capitals against capitals are no "
                "contrast, so the shape never fires and the row is "
@@ -2913,7 +3078,7 @@ CASES: tuple[Case, ...] = (
     Case("suffix_vocabulary_never_reaches_the_caps_switch",
          "John Smith MC",
          {"given": "John", "family": "Smith", "suffix": "MC"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="UNLISTED is the load-bearing word: 'mc' is suffix "
                "vocabulary, so the whole-token lookup claims it before "
                "any shape reading and this row reads the same with "
@@ -2921,24 +3086,20 @@ CASES: tuple[Case, ...] = (
     Case("the_caps_comma_count_reaches_a_multi_word_run",
          "John Smith, LEED AP",
          {"given": "John", "family": "Smith", "suffix": "LEED AP"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#516)",
          ambiguities=("suffix-or-name",),
          notes="the first time this class reaches the comma form as "
                "MORE than one token: 'LEED' and 'AP' are two separate "
                "all-caps words, and every token in the run must be a "
-               "candidate for the run itself to be one -- rules.md#C1's "
-               "`deviates: #291` line comes true ONLY under this "
-               "switch. At the DEFAULT this exact text still reads "
-               "given 'LEED', middle 'AP', family 'John Smith' -- the "
-               "deviation stands there unchanged -- so nothing in "
-               "this arc may remove rules.md#C1's `deviates: #291` "
-               "marker on this switch's account; the switch only "
-               "narrows what makes the deviation true"),
+               "candidate for the run itself to be one. Since #564 the "
+               "DEFAULT reads it the same way, the comma position being "
+               "on by default, and rules.md#C1's `deviates: #291` "
+               "marker came off with that change"),
     Case("the_caps_comma_multi_word_run_declines_at_one_word",
          "Smith, LEED AP",
          {"given": "LEED", "family": "Smith", "suffix": "AP"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#531)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="the one-pre-comma-word twin of the row above, and the "
@@ -2969,13 +3130,13 @@ CASES: tuple[Case, ...] = (
     # (`Case.shape`'s own docstring).
     Case("caps_switch_does_not_silence_the_listed_lean", "Jack MA",
          {"given": "Jack", "suffix": "MA"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          ambiguities=("suffix-or-name", "given-or-family"),
          notes="the switch must not touch a LISTED member's own "
                "#289 lean: identical to the default reading"),
     Case("caps_switch_does_not_silence_the_comma_lean", "Smith, MA",
          {"family": "Smith", "suffix": "MA"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          ambiguities=("suffix-or-name",),
          notes="the comma-form twin of the row above, same guarantee"),
     # #516 review round: UNLISTED means in no wordlist at all, not
@@ -2985,14 +3146,14 @@ CASES: tuple[Case, ...] = (
     Case("caps_switch_does_not_claim_a_capitalized_particle",
          "John Smith DE",
          {"given": "John", "middle": "Smith", "family": "DE"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="'de' is a particle, not merely absent from suffix "
                "vocabulary -- identical to the default reading with "
                "the switch on"),
     Case("caps_switch_does_not_claim_a_capitalized_particle_phrase",
          "John Smith, DE LA",
          {"family": "John Smith DE LA"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="the multi-token twin: 'DE' and 'LA' are both "
                "particles, so the RUN test (#516's own 'LEED AP' "
                "shape) must decline them too -- identical to the "
@@ -3006,7 +3167,7 @@ CASES: tuple[Case, ...] = (
     # and the reason these controls read identically on or off.
     Case("caps_switch_does_not_move_a_roman_numeral", "Jack VI",
          {"given": "Jack", "suffix": "VI"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          ambiguities=("suffix-or-name", "given-or-family"),
          notes="the roman-numeral fork claims 'VI' before this "
                "switch's lean/count is consulted -- identical to the "
@@ -3014,19 +3175,19 @@ CASES: tuple[Case, ...] = (
     Case("caps_switch_does_not_move_a_roman_numeral_with_words_to_spare",
          "John Smith VI",
          {"given": "John", "family": "Smith", "suffix": "VI"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          ambiguities=("suffix-or-name",),
          notes="the words-to-spare twin of the row above, same "
                "mechanism, same guarantee"),
     Case("caps_switch_does_not_move_a_title_floor_control", "Mr XXX",
          {"title": "Mr", "family": "XXX"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="one piece behind a title never reaches the peel's "
                "`k >= 2` floor -- identical to the default reading"),
     Case("caps_switch_does_not_reach_delimited_content",
          "Andrew Perkins (XYZ)",
          {"given": "Andrew", "family": "Perkins", "nickname": "XYZ"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="delimited content is decided by the clause escape, "
                "never at the trailing slot -- identical to the "
                "default reading"),
@@ -3039,7 +3200,7 @@ CASES: tuple[Case, ...] = (
     Case("caps_switch_run_test_declines_a_pure_listed_run",
          "John Smith, Ed Ma",
          {"given": "John", "family": "Smith", "suffix": "Ed Ma"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          ambiguities=("suffix-or-name",),
          notes="'Ed' and 'Ma' are both LISTED ambiguous members, "
                "Title-case (leans NAME, #289) -- the caps run test "
@@ -3062,14 +3223,14 @@ CASES: tuple[Case, ...] = (
     Case("caps_switch_does_not_claim_a_one_case_maiden_marker",
          "JOHN SMITH NEE",
          {"given": "JOHN", "middle": "SMITH", "family": "NEE"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="one case, and a maiden marker with no clause to open "
                "(nothing follows it) -- identical to the default "
                "reading either way"),
     Case("caps_switch_does_not_claim_a_mixed_case_maiden_marker",
          "John Smith NEE",
          {"given": "John", "middle": "Smith", "family": "NEE"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="the mixed-case twin: 'NEE' is unlisted by the caps "
                "shape test's OWN membership check too, so this one "
                "was already declining before this fix -- pinned "
@@ -3080,7 +3241,7 @@ CASES: tuple[Case, ...] = (
     Case("caps_switch_reads_the_name_level_case_past_a_clause",
          "née JONES XYZ",
          {"given": "née", "middle": "JONES", "family": "XYZ"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="the positive half of the two NEE rows above, and the "
                "row that fails if classify's caps branch is reverted "
                "to `one_case_own`: a marker OPENING the name leaves "
@@ -3093,7 +3254,7 @@ CASES: tuple[Case, ...] = (
     Case("caps_one_case_comma_declines_a_single_token",
          "JOHN SMITH, XYZ",
          {"given": "XYZ", "family": "JOHN SMITH"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="the comma control for the one-case gate: two name "
                "words before the comma would flip the structure for a "
                "LISTED member, but the caps class needs a case "
@@ -3103,31 +3264,37 @@ CASES: tuple[Case, ...] = (
     Case("caps_one_case_comma_declines_a_run",
          "JOHN SMITH, LEED AP",
          {"given": "LEED", "middle": "AP", "family": "JOHN SMITH"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="the multi-token twin: segment's run test asks "
                "`caps_shape_candidate` of every token and then reads "
                "the case fact ONCE, so a one-case name declines the "
                "whole run rather than per token"),
     Case("caps_run_needs_every_token_not_any",
+         "John Smith, LEED Jones",
+         {"given": "LEED", "middle": "Jones", "family": "John Smith"},
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="pins `all()` rather than `any()` in the all-caps run "
+               "test: a name word in the part leaves it no caps run, so "
+               "the structure stays the listing form, and no other "
+               "route reaches it (the #544 run test breaks on the name "
+               "word). The report is assign's post-comma one, fired on "
+               "'LEED', which carries the shape tag from classify. Until "
+               "#564 this row used 'John Smith, LEED BA', whose listed "
+               "'BA' the run test now reads beside a caps member as one "
+               "credential run (the row below)"),
+    Case("a_caps_word_and_a_listed_credential_make_one_run",
          "John Smith, LEED BA",
-         {"given": "LEED", "family": "John Smith", "suffix": "BA"},
-         policy=Policy(unlisted_caps_suffixes=True),
-         classification="fix(#531)",
-         ambiguities=("suffix-or-name", "suffix-or-name"),
-         notes="pins `all()` rather than `any()`: 'BA' is a LISTED "
-               "ambiguous acronym, so the caps shape test excludes it "
-               "and the run is no caps run -- the structure stays the "
-               "listing form. The first report is assign's post-comma "
-               "one, fired on 'LEED' alone, which carries the shape "
-               "tag from classify whatever segment made of the run. "
-               "#531 moves 'BA' itself: this is a family-comma name "
-               "whose given part now ends in a class member, and the "
-               "member is written in CAPITALS in a name written in "
-               "more than one case, so it leans credential (#289) and "
-               "reads suffix where it read middle -- its own second "
-               "report. What #516 pins here is untouched: the caps "
-               "run test still declines, and the structure is still "
-               "the listing form"),
+         {"given": "John", "family": "Smith", "suffix": "LEED BA"},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="#564: an unlisted all-caps word is a member of C1's run "
+               "by shape, so beside a listed credential it reads as the "
+               "run it is -- as 'John Smith, PhD XYZ' and 'John Smith, "
+               "XYZ Jr.' do. Until #564 the listing form read given "
+               "'LEED' with the switch on, and more evidence for a "
+               "credential produced a name reading"),
     Case("the_comma_count_counts_names_not_words_behind_a_title",
          "Mr Smith, Ma",
          {"given": "Ma", "family": "Mr Smith"},
@@ -3174,14 +3341,14 @@ CASES: tuple[Case, ...] = (
                "word and reporting all three forks"),
     Case("caps_run_declines_a_bound_given_head", "John Smith, ABDUL AP",
          {"given": "ABDUL AP", "family": "John Smith"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="the exclusion end to end rather than at the "
                "predicate: 'ABDUL' is bound-given vocabulary, so the "
                "run is no caps run and the part after the comma is "
                "the given name it would be at the default"),
     Case("caps_run_declines_a_conjunction", "John Smith, AND AP",
          {"given": "AND AP", "family": "John Smith"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="the same end to end for `conjunctions`, the row "
                "test_classify.py's predicate table names as the one "
                "that genuinely exercises that arm ('Y' declines at "
@@ -3189,7 +3356,7 @@ CASES: tuple[Case, ...] = (
     Case("caps_switch_leaves_a_capitalized_title_a_title",
          "John Smith, MR",
          {"title": "MR", "given": "John", "family": "Smith"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          notes="`titles` end to end: the post-comma part holds no "
                "name word, so C1's no-name-word clause keeps the "
                "pre-comma positional read and 'MR' is the title it "
@@ -3273,7 +3440,7 @@ CASES: tuple[Case, ...] = (
     Case("two_caps_credentials_peel_as_a_run",
          "John MA XYZ",
          {"given": "John", "suffix": "MA XYZ"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#516)",
          ambiguities=("given-or-family", "suffix-or-name",
                       "suffix-or-name"),
@@ -3288,7 +3455,7 @@ CASES: tuple[Case, ...] = (
     Case("the_caps_shape_is_script_agnostic_cyrillic",
          "Иван Петр ИВАНОВ",
          {"given": "Иван", "family": "Петр", "suffix": "ИВАНОВ"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#516)",
          ambiguities=("suffix-or-name",),
          notes="the switch's docstring claims `isupper()` is "
@@ -3331,7 +3498,7 @@ CASES: tuple[Case, ...] = (
     Case("the_caps_shape_is_script_agnostic_accented",
          "Jean Pierre ÉCOLE",
          {"given": "Jean", "family": "Pierre", "suffix": "ÉCOLE"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#516)",
          ambiguities=("suffix-or-name",),
          notes="the other half of the same claim: a non-ASCII LATIN "
@@ -4368,7 +4535,7 @@ CASES: tuple[Case, ...] = (
          "Jane Doe nee Smith XYZ",
          {"given": "Jane", "family": "Doe", "suffix": "XYZ",
           "maiden": "Smith"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#533)",
          ambiguities=("suffix-or-name",),
          notes="the opt-in class reaches this slot like any other, "
@@ -5487,7 +5654,7 @@ CASES: tuple[Case, ...] = (
     Case("the_caps_switch_reaches_the_trailing_slot",
          "Doe, John XYZ",
          {"given": "John", "family": "Doe", "suffix": "XYZ"},
-         policy=Policy(unlisted_caps_suffixes=True),
+         policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
          classification="fix(#531)",
          ambiguities=("suffix-or-name",),
          notes="the by-shape class reaches this slot through the "

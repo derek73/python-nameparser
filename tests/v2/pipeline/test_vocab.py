@@ -2,6 +2,7 @@ import unicodedata
 
 import pytest
 
+from nameparser._policy import CapsSuffixes
 from nameparser import Parser
 from nameparser._lexicon import (
     Lexicon, _VOCAB_FIELDS, _normalize, _title_key,
@@ -12,7 +13,7 @@ from nameparser._pipeline._vocab import (
     effective_script, is_initial, is_initial_shaped, is_one_case,
     is_single_letter_numeral,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
-    maiden_marker_run, name_word_count, period_joined_vocab,
+    maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
     resolve_script_set, run_word_fold, single_script,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
@@ -470,7 +471,7 @@ def test_a_callers_own_conjunction_marker_keeps_its_word_a_name() -> None:
     # 'ZZQ' with the switch on and the default vocabulary; one
     # wordlist entry is the whole difference (2026-09-18 review
     # round).
-    on = Policy(unlisted_caps_suffixes=True)
+    on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     plain = Parser(policy=on).parse("John Smith ZZQ")
     assert (plain.family, plain.suffix) == ("Smith", "ZZQ")
     listed = Parser(
@@ -494,7 +495,7 @@ def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
     # loop adds the same unlisted word to ONE field and checks the
     # predicate declines it. A field whose exclusion is dropped fails
     # here by name.
-    on = Policy(unlisted_caps_suffixes=True)
+    on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     base = Lexicon.default()
     assert caps_shape_candidate("ZZQX", base, on, False)
     for field in _VOCAB_FIELDS:
@@ -889,3 +890,31 @@ def test_is_single_letter_numeral() -> None:
         assert is_single_letter_numeral(text), text
     for text in ("II", "IV", "Jr", "B", "", ".", "Ma"):
         assert not is_single_letter_numeral(text), text
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Smith", True), ("DiCaprio", True), ("IJzerman", True),
+    ("al-Rashid", True), ("d'Estaing", True), ("McDonald", True),
+    ("MacLeod", True), ("Mack", True), ("O'Neil", True),
+    ("ǅokić", True), ("E\u0301lodie", True), ("Andre\u0301", True),
+    ("Ha\u0300", True), ("Jones'", True), ("Smith2", True),
+    ("Smith)", True), ("Weiß", True), ("KAĸ", False),
+    ("Jones\u02bc", True), ("Wafāʾ", True), ("Smith李", True),
+    ("SMITHʾ", False),
+    ("ANDRE\u0301", False),
+    ("SMITH", False), ("smith", False), ("C", False), ("ap", False),
+    ("d'ESTAING", False), ("al-ASSAD", False), ("McDONALD", False),
+    ("MacDONALD", False), ("FitzGERALD", False), ("DeVITO", False),
+    ("LaFLEUR", False), ("St-PIERRE", False), ("SMITH-McDONALD", False),
+    ("WEIß", False), ("O'NEIL", False),
+    # no letter carrying case evidence at all
+    ("李", False), ("2", False), ("ß", False), ("", False),
+])
+def test_written_as_a_name(text: str, expected: bool) -> None:
+    # #564 (Derek): the name's case contrast is a word holding a
+    # capital and ending in a lowercase letter -- a surname written in
+    # capitals ends in one whatever is glued in front of it. The last
+    # LETTER: composed first, so a decomposed accent at the end counts
+    # as its letter; trailing non-letters and a lowercase letter with
+    # no single capital (ß, ĸ) are passed over.
+    assert written_as_a_name(text) is expected

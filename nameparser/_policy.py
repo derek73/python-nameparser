@@ -12,7 +12,9 @@ from dataclasses import dataclass, field
 from enum import Enum, StrEnum, auto
 from typing import Any
 
-from nameparser._types import Role, _guarded_getstate, _guarded_setstate
+from nameparser._types import (
+    Role, _coerce_enum, _guarded_getstate, _guarded_setstate,
+)
 
 
 class PatronymicRule(StrEnum):
@@ -28,6 +30,25 @@ class PatronymicRule(StrEnum):
     #: (etc.) binds to the preceding name as a patronymic. Enabled by
     #: locales.TR_AZ.
     TURKIC = "turkic"
+
+
+class CapsSuffixes(StrEnum):
+    """Where ``Policy.unlisted_caps_suffixes`` reads an unlisted
+    all-caps word as a credential (#516, #564)."""
+
+    #: Nowhere: such a word is name material in every position, as
+    #: 2.3 read it.
+    OFF = "off"
+    #: Only after a comma, behind two or more name words ("John Smith,
+    #: XYZ" gives suffix ``XYZ``). The default: the all-caps SURNAME
+    #: convention ("Jean DUPONT", "DUPONT, Jean") never writes the
+    #: capitals there.
+    AFTER_COMMA = "after-comma"
+    #: After a comma and ending a name with no comma ("John Smith XYZ"
+    #: gives suffix ``XYZ``), where the all-caps surname convention
+    #: does write them -- "Jean Pierre DUPONT" then gives family
+    #: ``Pierre``, suffix ``DUPONT``.
+    EVERYWHERE = "everywhere"
 
 
 class Script(StrEnum):
@@ -686,35 +707,40 @@ class Policy:
     #: claimed; the roman-chunk retirement (rules.md#S3) is not
     #: behind this switch, and still reports the fork.
     unlisted_dotted_suffixes: bool = True
-    #: Reads an UNLISTED all-caps word of two or more letters, with no
-    #: period in it, in a name written in more than one case as a
-    #: credential where the position allows it: with this on,
-    #: "John Smith XYZ" gives suffix ``XYZ`` and "Smith, XYZ" still
-    #: gives given ``XYZ``, the same words-to-spare rule the rest of
-    #: the class takes. A listed member keeps its own case lean
-    #: regardless of this switch ("Jack MA" still gives suffix ``MA``
-    #: on or off), and the roman-numeral fork still claims a bare
-    #: numeral first either way ("Jack VI" is unaffected by this
-    #: switch, on or off). OFF BY DEFAULT, and the asymmetry with
-    #: ``unlisted_dotted_suffixes`` is deliberate: an all-caps surname
-    #: is a real writing convention that shape cannot separate from a
-    #: credential -- "Jean Pierre DUPONT" gives family ``Pierre``,
-    #: suffix ``DUPONT`` with this on, and a swallowed family name is
-    #: the worse failure. The two-word "Jean DUPONT" and "Minjun KIM"
-    #: read as family names at the default and KEEP that family with
-    #: this on too (one word before the credential is never enough,
-    #: the same words-to-spare rule above) -- but a genuine candidate
-    #: this switch does not move still gains the fork's report: it
-    #: was a real fork the parser considered and declined, and that
-    #: is reported even where the reading did not change. Off,
-    #: nothing changes and nothing is reported. A digit anywhere
+    #: Where an UNLISTED all-caps word of two or more letters, with no
+    #: period in it, reads as a credential (:class:`CapsSuffixes`). The
+    #: name must contrast it: a word of the name holding a capital whose
+    #: last letter is lowercase ("Smith", "DiCaprio") that the
+    #: vocabulary does not claim as a title, particle
+    #: or credential -- a record written wholly in capitals or wholly in
+    #: lowercase keeps every word a name word. A listed member keeps its
+    #: own case lean in every setting ("Jack MA" gives suffix ``MA``),
+    #: and the roman-numeral fork claims a bare numeral first ("Jack
+    #: VI" is unaffected).
+    #:
+    #: ``AFTER_COMMA``, the default, reads it only in the part after a
+    #: comma with two or more name words before it: "John Smith, XYZ"
+    #: gives suffix ``XYZ``, while "Smith, XYZ" keeps given ``XYZ`` (one
+    #: name word) and "García Márquez, MJ" keeps given ``MJ`` -- a lone
+    #: two-letter word is how a person's initials are written, and two
+    #: words before the comma may be one surname, the case #563 decides
+    #: for "M.J." too. The all-caps SURNAME convention ("Jean DUPONT",
+    #: "DUPONT, Jean") writes the capitals at the end of a name or
+    #: before a comma, never after one behind a full name, which is why
+    #: this position is on by default and the others are not.
+    #:
+    #: ``EVERYWHERE`` adds the end of a name with no comma, the
+    #: convention's own position: "John Smith XYZ" gives suffix ``XYZ``,
+    #: and "Jean Pierre DUPONT" gives family ``Pierre``, suffix
+    #: ``DUPONT`` -- the cost, a swallowed family name being the worse
+    #: failure. The two-word "Jean DUPONT" and "Minjun KIM" keep their
+    #: family even then (one word before the credential is never
+    #: enough), but gain the fork's report. ``OFF`` reads no such word
+    #: as a credential anywhere and reports nothing, as 2.3 did. A digit
     #: disqualifies the token and a single capital stays an initial.
-    #: ``isupper()`` is script-agnostic, so this is the same
-    #: convention and the same reason for being off in ANY script
-    #: that has a case contrast at all, not just Latin -- an all-caps
-    #: Cyrillic surname ("Иван ИВАНОВ") or an accented Latin one
-    #: ("Jean ÉCOLE") joins this class exactly as an ASCII one does.
-    unlisted_caps_suffixes: bool = False
+    #: ``isupper()`` is script-agnostic, so the same holds in any script
+    #: with a case contrast ("Иван ИВАНОВ", "Jean ÉCOLE").
+    unlisted_caps_suffixes: CapsSuffixes = CapsSuffixes.AFTER_COMMA
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate
@@ -821,6 +847,18 @@ class Policy:
                 raise TypeError(
                     f"{flag} must be a bool, got {value!r}"
                 )
+        # A bool is the likeliest wrong value: the field was a bool
+        # flag until #564, and `True` is an `int` the enum would read
+        # as no member. Name both spellings that replace it.
+        caps = self.unlisted_caps_suffixes
+        if isinstance(caps, bool):
+            raise TypeError(
+                f"unlisted_caps_suffixes must be a CapsSuffixes, got "
+                f"{caps!r}; use CapsSuffixes.EVERYWHERE for the old "
+                f"True and CapsSuffixes.OFF for the old False")
+        object.__setattr__(self, "unlisted_caps_suffixes", _coerce_enum(
+            caps, CapsSuffixes, "unlisted_caps_suffixes value",
+            "values"))
 
     def __repr__(self) -> str:
         # Bounded: only fields that deviate from the default are shown
@@ -855,7 +893,7 @@ class Policy:
 #: Every bool-valued Policy field, read off the dataclass rather than
 #: listed: `__post_init__`'s bool check sweeps this, so a flag added to
 #: the class above is validated the day it lands and cannot ship
-#: unchecked the way `unlisted_dotted_suffixes` and
+#: unchecked the way `unlisted_dotted_suffixes` and the then-bool
 #: `unlisted_caps_suffixes` did. `from __future__ import annotations`
 #: makes every annotation a string, so the comparison is against the
 #: SPELLING "bool" -- which is also what a reader of the class body
@@ -912,7 +950,7 @@ class PolicyPatch:
     # sequences equal, so a field inserted on one side would have to be
     # inserted on the other and both would re-bind together.
     unlisted_dotted_suffixes: bool | _Unset = UNSET
-    unlisted_caps_suffixes: bool | _Unset = UNSET
+    unlisted_caps_suffixes: CapsSuffixes | _Unset = UNSET
 
     # in the class body so @dataclass(slots=True) keeps them
     __getstate__ = _guarded_getstate

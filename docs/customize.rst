@@ -529,20 +529,30 @@ listed below.
        ``"John Smith 1.4.2"`` keeps family ``1.4.2``; that retirement
        is not behind this switch).
    * - ``unlisted_caps_suffixes``
-     - ``bool``
-     - Reads an unlisted all-caps word of two or more letters, with no
-       period in it, in a name written in more than one case as a
-       credential where the position allows it: ``"John Smith XYZ"``
-       gives suffix ``XYZ``, and since 2.4 so do the family-comma
-       form ``"Doe, John XYZ"`` and the word ending a maiden marker's
+     - ``CapsSuffixes``
+     - Where an unlisted all-caps word of two or more letters, with no
+       period in it, reads as a credential. The name must contrast it
+       with a word holding a capital whose last letter is lowercase
+       (``Smith``, ``DiCaprio``) that the vocabulary
+       does not claim as a title, particle or credential: a record
+       written wholly in capitals, or wholly in lowercase, keeps every
+       word a name word. ``CapsSuffixes.AFTER_COMMA``, the default, reads
+       it only in the part right after a comma with two or more name
+       words before it: ``"John Smith, XYZ"`` gives suffix ``XYZ``,
+       while ``"Smith, XYZ"`` keeps given ``XYZ`` and a lone two-letter
+       word, how initials are written, stays the given name
+       (``"García Márquez, MJ"``). The all-caps SURNAME convention
+       (``"Jean DUPONT"``, ``"DUPONT, Jean"``) never writes the
+       capitals there. ``CapsSuffixes.EVERYWHERE`` also reads the end
+       of a name, the given part's last word after a family comma
+       (``"Doe, John XYZ"``) and the word ending a maiden marker's
        clause (``"Jane Doe nee Smith XYZ"`` gives maiden ``Smith``
-       with suffix ``XYZ``, where off it keeps maiden
-       ``Smith XYZ``). Defaults to ``False``, and
-       deliberately:
-       an all-caps surname is a real writing convention that shape
-       cannot separate from a credential, so ``"Jean Pierre DUPONT"``
-       gives family ``Pierre``, suffix ``DUPONT`` with this on. Off,
-       nothing changes and nothing is reported.
+       with suffix ``XYZ``), where that convention does write them:
+       ``"Jean Pierre DUPONT"`` then gives family ``Pierre``, suffix
+       ``DUPONT``. ``CapsSuffixes.OFF`` reads none of them and reports
+       nothing, 2.3's reading -- and the way to keep a given name
+       written in capitals after a two-word surname, which the default
+       reads as a credential (``"García Márquez, GABRIEL"``).
    * - ``strip_emoji``
      - ``bool``
      - Excludes emoji from tokenization — they appear in no field or

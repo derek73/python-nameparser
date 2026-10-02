@@ -16,6 +16,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from nameparser._policy import CapsSuffixes
 from nameparser import (
     DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
     GIVEN_FIRST, HumanName, Lexicon, Parser, PatronymicRule, Policy,
@@ -555,7 +556,7 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
     # the allowlist's structural argument rests on.
     markers = ("nee", "née", "geb.")
     policies = (("default", Policy()),
-                ("caps", Policy(unlisted_caps_suffixes=True)),
+                ("caps", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)),
                 ("nodot", Policy(unlisted_dotted_suffixes=False)))
 
     def side(name: ParsedName, word: str) -> str:
@@ -698,7 +699,7 @@ def _maiden_clause_grid() -> list[tuple[str, Parser, str]]:
               "Smith V MA", "MA", "MA PhD", "MA ba", "Smith Jones MA",
               "Smith PhD", "Smith Jr", "Jones Smith Ma", "Smith MA PhD")
     policies = (("default", Policy()),
-                ("caps", Policy(unlisted_caps_suffixes=True)),
+                ("caps", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)),
                 ("nodot", Policy(unlisted_dotted_suffixes=False)))
     parsers = [(label, Parser(policy=p)) for label, p in policies]
     texts: list[str] = []
@@ -1063,7 +1064,7 @@ def test_no_two_ambiguities_name_the_same_token_span() -> None:
               "Jones Smith")
     parsers = [Parser(),
                Parser(policy=Policy(unlisted_dotted_suffixes=False)),
-               Parser(policy=Policy(unlisted_caps_suffixes=True))]
+               Parser(policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))]
     failures = []
     multi = 0
     for head in heads:

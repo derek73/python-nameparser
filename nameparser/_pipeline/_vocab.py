@@ -49,7 +49,7 @@ from typing import Literal
 from nameparser._lexicon import (
     FULL_STOPS, Lexicon, _VOCAB_FIELDS, _normalize,
 )
-from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
+from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
 from nameparser._pipeline._state import WorkToken, comma_bucket
 
@@ -653,11 +653,11 @@ def run_word_fold(
 # `_segment.py`'s multi-token run test, and this module's own unit
 # tests), where it had been spelled three times over (quality-review
 # finding). The usual objection to sharing -- a call costing every
-# default-policy parse a frame it cannot use -- does not apply: every
-# caller's own first conjunct is `policy.unlisted_caps_suffixes`,
-# False by default, so neither this call nor the loop inside it is
-# ever reached at the default (confirmed against the 412/449 frame
-# band and the default comma harness).
+# default-policy parse a frame it cannot use -- does not apply: the
+# trailing position is behind `CapsSuffixes.EVERYWHERE` (classify's
+# first conjunct), and since #564 the comma run test, which IS on by
+# default, asks a C-level `isupper()` of the part's first word before
+# calling, so a comma name with no all-caps word never reaches it.
 def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
                          one_case: bool | None) -> bool:
     """Whether TEXT is an UNLISTED all-caps credential candidate: two
@@ -695,14 +695,78 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     `_segment.py`'s run test relies on exactly that rather than
     calling both.
     """
-    if not (policy.unlisted_caps_suffixes and one_case is False
+    if not (policy.unlisted_caps_suffixes is not CapsSuffixes.OFF
+            and one_case is False
             and len(text) >= 2 and text.isalpha() and text.isupper()):
         return False
-    n = _normalize(text)
+    return not in_any_wordlist(_normalize(text), lexicon)
+
+
+def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:
+    """Whether the folded word `n` is in ANY of the lexicon's wordlists
+    (`_lexicon._VOCAB_FIELDS`, the whole roster): the caps shape's
+    "unlisted" (`caps_shape_candidate`), where a word a caller listed
+    even as a SURNAME must never become a credential."""
     for field in _VOCAB_FIELDS:
         if n in getattr(lexicon, field):
-            return False
-    return True
+            return True
+    return False
+
+
+#: The wordlists that claim a word as something OTHER than name text.
+#: `surnames` and `bound_given_names` are left out: they say a word IS
+#: a name word ('Kim', 'Abdul'), the opposite claim.
+_NON_NAME_FIELDS = tuple(f for f in _VOCAB_FIELDS
+                         if f not in ("surnames", "bound_given_names"))
+
+
+def written_as_a_name(text: str) -> bool:
+    """Whether TEXT is written the way a name is written in mixed case:
+    it holds a capital (or titlecase letter) and its last LETTER is
+    lowercase -- #564's test for the name's case contrast (Derek).
+    'Smith', 'DiCaprio', 'IJzerman', 'al-Rashid', "d'Estaing",
+    'McDonald', 'ǅokić' pass. A surname written in capitals fails
+    whatever is glued in front of it ("d'ESTAING", 'al-ASSAD',
+    'McDONALD', 'FitzGERALD', 'DeVITO', 'St-PIERRE'), and so do a lone
+    capital and a lowercase-only word.
+
+    The letter read is the last one that carries case evidence, not the
+    last character. The word is composed first (NFC), so a name typed
+    with decomposed accents reads as its composed spelling ('André'
+    ends in 'é', not in the combining accent). Passed over, as no
+    evidence of case: every non-letter ("Jones'", 'Smith2', 'Smith)'),
+    every caseless letter ("Jonesʼ" with U+02BC, 'Wafāʾ', 'Smith李'),
+    and a lowercase letter whose capital is not a single character
+    ('ß' -> 'SS', 'ĸ' with none): 'WEIß' and 'KAĸ' are written in
+    capitals, 'Weiß' is not. One call and no generator, so a word costs
+    one frame."""
+    word = unicodedata.normalize("NFC", text)
+    i = len(word)
+    while i:
+        i -= 1
+        ch = word[i]
+        if not (ch.isupper() or ch.islower() or ch.istitle()):
+            continue  # a non-letter or a caseless letter
+        upper = ch.upper()
+        if ch.islower() and (upper == ch or len(upper) != 1):
+            continue
+        # the capital is asked here, of the word that has a letter to
+        # read; one with none falls through below ('李', '2', 'ß')
+        return ch.islower() and text != text.lower()
+    return False
+
+
+def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:
+    """Whether a wordlist claims the folded word `n` as a title,
+    particle, connective, credential, generation, maiden marker or
+    honorific -- not name text. #564's `name_contrast` (`_segment.py`)
+    asks it: such a word does not supply the name's case contrast. A
+    different question from `in_any_wordlist`'s, which a surname list
+    must also answer yes to."""
+    for field in _NON_NAME_FIELDS:
+        if n in getattr(lexicon, field):
+            return True
+    return False
 
 
 # The comma form's own candidate test (rules.md#C1, decisions.md#S2).

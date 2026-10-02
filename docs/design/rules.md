@@ -1075,15 +1075,18 @@ S2. Rationale: generational suffixes and credentials are recognized
     one such shape, admitted by default (S3); an unlisted all-caps
     alphabetic word of two or more letters, standing in a suffix
     position of a mixed-case name and belonging to no wordlist, is
-    the other, admitted only under the caller switch the example
-    lines below name. That second shape is OFF by default because
-    French and Korean records write the SURNAME in capitals, so it
-    is a surname as often as it is a credential and only the caller
-    knows which corpus this is; the cost of turning it on is that a
-    three-word name gives up its family name to the acronym, while a
-    two-word name keeps it — there are no words to spare there, so
-    the class is considered and declined and only the fork is
-    reported. The dotted shape does not take every promise of the
+    the other. By default that second shape is admitted in one
+    position only, the part after a comma with two or more name
+    words before it (C1): French and Korean records write the
+    SURNAME in capitals, and that convention puts the capitals at
+    the end of a name or before a comma, never after a comma behind
+    a full name. Everywhere else it is admitted only under the
+    caller setting the example lines below name, being a surname
+    there as often as a credential, which only the caller can know;
+    the cost of that setting is that a three-word name gives up its
+    family name to the acronym, while a two-word name keeps it —
+    there are no words to spare there, so the class is considered
+    and declined and only the fork is reported. The dotted shape does not take every promise of the
     class with it: at the first slot after a comma, C1 reads paired
     initials as the given name unless something speaks for them, and
     makes a flip to the credential run in which no listed member takes
@@ -1129,10 +1132,10 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Doe, John DO Ed"           →  middle="DO Ed"  · boundary
       "Doe, John DO Ed"           →  ambiguities=()  · boundary
       "John Smith XYZ"            →  family="XYZ"
-      "John Smith XYZ"  unlisted_caps_suffixes-on  →  suffix="XYZ"
-      "Jean DUPONT"  unlisted_caps_suffixes-on  →  family="DUPONT"
-      "Jean Pierre DUPONT"  unlisted_caps_suffixes-on  →  suffix="DUPONT"
-      "Jean Pierre DUPONT"  unlisted_caps_suffixes-on  →  family="Pierre"
+      "John Smith XYZ"  unlisted_caps_suffixes-everywhere  →  suffix="XYZ"
+      "Jean DUPONT"  unlisted_caps_suffixes-everywhere  →  family="DUPONT"
+      "Jean Pierre DUPONT"  unlisted_caps_suffixes-everywhere  →  suffix="DUPONT"
+      "Jean Pierre DUPONT"  unlisted_caps_suffixes-everywhere  →  family="Pierre"
       "Jack Ma."                  →  family="Ma."  · boundary
       "Ph. D. Van Johnson"        →  family="Van Johnson"
       "Ph. D. Van Johnson"        →  title="Ph."
@@ -1719,7 +1722,25 @@ C1. Rationale: a credential run after the comma means the name is in
     there. Behind two or more name words, paired initials that are
     not the only shape word in the part are a credential however
     little else speaks for them, since no one writes a person's
-    initials as two dotted groups. The same count reads a part of two or
+    initials as two dotted groups. An unlisted all-caps word joins
+    the class in such a part only where the name carries the
+    contrast: one of its own words before the comma written the way a
+    name is written in mixed case, holding a capital with its last
+    cased letter lowercase — read after composing the word, passing
+    over every non-letter and caseless letter and any lowercase letter
+    whose capital is not a single letter, as ß's is not — with no
+    period and not claimed by the vocabulary
+    as a title, particle, connective, credential or generation. A
+    surname written in capitals ends in a capital whatever is glued in
+    front of it, and a word written wholly in lowercase holds none, so
+    such a record keeps its given name beside its lowercase particles,
+    titles and clauses ("GISCARD d'ESTAING, VALÉRY", 'LLOYD
+    FitzGERALD, RONALD'), and a name written wholly in lowercase reads
+    the listing form. Where the name carries it, an
+    unlisted word of two capitals after the comma is the paired
+    initials' shape undotted and is decided at this comma exactly as
+    they are, by the sentences above ('García Márquez, MJ' and 'García
+    Márquez, MJ PhD' keep given 'MJ'). The same count reads a part of two or
     more words as the credential run when every word of it is a
     suffix word or a word of this class, at least one of them of this
     class, and none of them a single-letter roman numeral, in any
@@ -1850,6 +1871,16 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, X.Y.Z."        →  suffix="X.Y.Z."
       "John Smith, X.Y.Z."        →  ambiguities=()
       "John Smith, X.Y.Z."  unlisted_dotted_suffixes-off  →  given="X.Y.Z."
+      "John Smith, XYZ"           →  suffix="XYZ"
+      "John Smith, XYZ"           →  ambiguities=("suffix-or-name",)
+      "John Smith, XYZ"  unlisted_caps_suffixes-off  →  given="XYZ"
+      "John Smith, LEED AP"       →  suffix="LEED AP"
+      "Smith, XYZ"                →  given="XYZ"  · boundary
+      "García Márquez, MJ"        →  given="MJ"  · boundary
+      "MÜLLER WEIß, HANS"         →  given="HANS"  · boundary
+      "García Márquez, MJ PhD"    →  given="MJ"  · boundary
+      "García Márquez, MJ JK"     →  suffix="MJ JK"
+      "John Smith, PhD XYZ"       →  suffix="PhD XYZ"
       "Smith, A.B."               →  given="A.B."  · boundary
       "García Márquez, G.J."      →  given="G.J."
       "García Márquez, G.J."      →  family="García Márquez"
@@ -1911,7 +1942,6 @@ C1. Rationale: a credential run after the comma means the name is in
     not structure — v1 applied the delimiter to the suffix-comma
     form alone, and that limitation is kept as parity: "Smith, RN -
     CRNA" reads given "RN" under the policy as without it.
-      "John Smith, LEED AP"       →  family="Smith"  deviates: #291 (today: family="John Smith")
     Accepted: the further-comma qualifier carries no example line of
     its own. It discriminates PAIRS and spans both branches, so
     exemplifying it means a with-comma partner for each — every one
@@ -1945,7 +1975,7 @@ C2. Rationale: text beyond the recognized comma parts should be
     whether the name is written in one case so that nothing leans at
     all, or the member is written the way a name is written. And
     S2's other by-shape half, the unlisted all-caps word, does not
-    reach here under its switch either: the shape a tail segment is
+    reach here in any setting: the shape a tail segment is
     recognized by is the dotted one alone.
     A part the parse consumes wholly as suffixes raises no report
     about reading a word of it as a name, whether it is the part
@@ -1963,7 +1993,7 @@ C2. Rationale: text beyond the recognized comma parts should be
       "John Smith, MD, Ma"        →  ambiguities=("comma-structure",)  · boundary
       "Steven Hardman, MD, DO, DDS"  →  ambiguities=()
       "STEVEN HARDMAN, MD, DO, DDS"  →  ambiguities=("comma-structure",)  · boundary
-      "John Smith, MD, XYZ"  unlisted_caps_suffixes-on  →  ambiguities=("comma-structure",)
+      "John Smith, MD, XYZ"  unlisted_caps_suffixes-everywhere  →  ambiguities=("comma-structure",)
     Accepted: the no-name-reading clause carries no example line of
     its own. What it moves is a report with no field beside it, and
     an example line would enter the rules corpus for that report
@@ -2533,8 +2563,9 @@ R4. Rationale: case repair is a display concern, applied only on
     mark one, R5 defers to it. A credential acronym the exceptions map
     does not carry is an initialism, so a single-case word the parse
     put in the suffix role from the acronym vocabulary, or read as a
-    credential by its dotted shape alone (S3), repairs to its
-    all-caps spelling rather than a title-cased one, and that repair
+    credential by its dotted shape alone (S3) or by its capitals
+    (S2), repairs to its all-caps spelling rather than a title-cased
+    one, and that repair
     outranks the Mac/Mc convention where a word fits both (MCSE, not
     McSe). A roman numeral the parse put in the suffix role is
     written in capitals the way a generation is written, whether or

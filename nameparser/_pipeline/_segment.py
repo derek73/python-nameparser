@@ -49,13 +49,16 @@ from __future__ import annotations
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._pieces import own_words
+from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
     caps_shape_candidate, is_one_case, is_paired_initials,
-    is_single_letter_numeral, is_wholly_suffix, name_word_count,
+    claimed_as_non_name, is_single_letter_numeral, is_wholly_suffix,
+    written_as_a_name,
+    name_word_count,
     surname_unit_count,
     run_word_fold,
 )
@@ -103,20 +106,60 @@ def segment(state: ParseState) -> ParseState:
     # field two sites would not otherwise share).
     one_case = state.one_case
 
+    # The own-words walk, once per parse: `case_class` reads the words
+    # and `name_contrast` (#564) the clause boundary.
+    # Inline in both rather than a third helper: a wrapper is a frame
+    # every case-forcing comma name ('John Smith, MA') would pay.
+    own_span: tuple[list[str], int] | None = None
+
     def case_class() -> bool:
-        nonlocal one_case
+        nonlocal one_case, own_span
         if one_case is None:
-            # `own, _` rather than `[0]`: the second element is the
-            # maiden clause's start index, which this stage has no use
-            # for, and saying so by name is what stops a reader having
-            # to go and look up what a bare subscript dropped.
-            own, _ = own_words(state.tokens, state.comma_offsets,
-                               state.lexicon.maiden_markers)
-            one_case = is_one_case(own)
+            if own_span is None:
+                own_span = own_words(state.tokens, state.comma_offsets,
+                                     state.lexicon.maiden_markers)
+            one_case = is_one_case(own_span[0])
         return one_case
 
     def texts(seg: tuple[int, ...]) -> list[str]:
         return [state.tokens[i].text for i in seg]
+
+    # #564 (Derek): the contrast the caps shape needs is the NAME's,
+    # and the name carries it only if one of its own words before the
+    # comma (no maiden clause, no delimited content, as `own_words`
+    # defines them for `case_class` above) is written the way a name is
+    # written in mixed case -- a capital in it and its last letter
+    # lowercase (`written_as_a_name`) -- and is not claimed as a
+    # title, particle, connective, credential or generation
+    # (`claimed_as_non_name`); a word with a period is an abbreviation
+    # or an initial, not one. A lone capital ('de GAULLE C'), a
+    # lowercase-only word and a surname written in capitals with
+    # anything glued in front ("d'ESTAING", 'FitzGERALD', 'McDONALD')
+    # all fail it, so such a record keeps its given name beside its
+    # lowercase particles, clauses and titles ('LLOYD ap RHYS', 'HAFEZ
+    # al-ASSAD', 'LLOYD WEBBER née Smith') and beside a mixed-case
+    # credential ('LLOYD WEBBER, ANDREW PhD').
+    # Asked only once a caps word is in hand: a part with no lowercase
+    # at all is settled in one C-level comparison; past that it is
+    # linear in the words before the comma, about four frames a word
+    # (the generator, the case test's call, and the own-words walk's
+    # fold and marker test), plus a fold and a wordlist test where the
+    # case test passes -- and constant in a word's letters.
+    def name_contrast() -> bool:
+        before = "".join([state.tokens[i].text for i in groups[0]])
+        if before == before.upper():
+            return False
+        nonlocal own_span
+        if own_span is None:
+            own_span = own_words(state.tokens, state.comma_offsets,
+                                 state.lexicon.maiden_markers)
+        clause_at = own_span[1]
+        lex = state.lexicon
+        return any(
+            i < clause_at and (tok := state.tokens[i]).role is None
+            and "." not in tok.text and written_as_a_name(tok.text)
+            and not claimed_as_non_name(_normalize(tok.text), lex)
+            for i in groups[0])
 
     # Inlined rather than built on `texts` (measured, #289/#516's
     # eager-gate fix round): every comma parse calls `suffixy` at
@@ -227,9 +270,9 @@ def segment(state: ParseState) -> ParseState:
     # 'LEED AP' is two separate all-caps words, not one glued acronym
     # -- and the one membership test in this class that NEEDS the case
     # fact to answer membership at all: 'XYZ' is only credential-shaped
-    # where the name contrasts it. Gated on the switch (default off, so
-    # a non-candidate comma name never enters this branch) and tried
-    # only where the single-token test above already declined.
+    # where the name contrasts it. Gated on the setting (on by default
+    # since #564, behind the cheap conjuncts below) and tried only
+    # where the single-token test above already declined.
     #
     # `caps_shape_candidate` directly, not the un-narrowed
     # `ambiguous_class_candidate`: the run is a property of the CAPS
@@ -249,12 +292,33 @@ def segment(state: ParseState) -> ParseState:
     # left, and the verdict is `case_class() is False` directly rather
     # than a second walk that could only reach the same answer (a
     # quality-review finding: the walk was provably redundant).
-    if (not candidate and state.policy.unlisted_caps_suffixes and groups[1]
-            and all(caps_shape_candidate(state.tokens[i].text,
-                                         state.lexicon, state.policy,
-                                         one_case=False)
+    #
+    # #564: on by default (`CapsSuffixes.AFTER_COMMA`), so three cheap
+    # C-level conjuncts go before the call: two or more words before
+    # the comma, a necessary condition for the two NAME words the flip
+    # needs (as at the run test below -- 'Smith, JOHN', the commonest
+    # record format, never reaches the call); the first word written
+    # in capitals at all, which every word of the run must be; and a
+    # LONE two-letter word declined -- it is how a
+    # person's initials are written, and two words before the comma
+    # may be one surname ('García Márquez, MJ'), the case #563 decides
+    # for the dotted 'M.J.' (rules.md#C1). A run holding a longer word
+    # ('LEED AP') is not that shape.
+    first = state.tokens[groups[1][0]].text if groups[1] else ""
+    if (not candidate
+            and state.policy.unlisted_caps_suffixes is not CapsSuffixes.OFF
+            and len(groups[0]) >= 2
+            and first.isalpha() and first.isupper()
+            and first.lower() not in state.lexicon.suffix_acronyms
+            and first.lower() not in state.lexicon.suffix_words
+            and not (len(groups[1]) == 1 and len(first) < 3)
+            and all((t := state.tokens[i].text).isalpha() and t.isupper()
+                    and t.lower() not in state.lexicon.suffix_acronyms
+                    and t.lower() not in state.lexicon.suffix_words
+                    and caps_shape_candidate(t, state.lexicon, state.policy,
+                                             one_case=False)
                     for i in groups[1])):
-        candidate = case_class() is False
+        candidate = name_contrast()
         flip_reports = candidate
     # rules.md#C1: "The same count reads a part of two or more words as
     # the credential run when every word of it is a suffix word or a
@@ -304,6 +368,8 @@ def segment(state: ParseState) -> ParseState:
         # 'MD MD ... G.J. G.J. ...' quadratic.
         unspoken_pair = False
         any_listed = False
+        caps_member = False
+        caps_on = state.policy.unlisted_caps_suffixes is not CapsSuffixes.OFF
         shaped = 0
         pairs = 0
         lexicon = state.lexicon
@@ -314,15 +380,38 @@ def segment(state: ParseState) -> ParseState:
             is_member = (fold == "member"
                          or (fold == "ask" and ambiguous_class_candidate(
                              text, lexicon, state.policy)))
+            # #564: an unlisted all-caps word is a member BY SHAPE too,
+            # so a run mixing it with listed credentials ('PhD XYZ',
+            # 'XYZ Jr.') reads as the all-caps run alone already does,
+            # rather than more evidence for a credential producing a
+            # name reading. `isupper()` first, in C; the predicate
+            # declines every listed word, so it never re-admits one.
+            # The C-level prechecks decline only what the predicate
+            # would decline too (it needs `isalpha()`/`isupper()` and
+            # excludes every wordlist, and a word whose `lower()` is a
+            # listed entry is one of those), so a listed credential
+            # ('MD', 'CPA') never pays for the call.
+            caps = (not is_member and caps_on and text.isalpha()
+                    and text.isupper()
+                    and text.lower() not in lexicon.suffix_acronyms
+                    and text.lower() not in lexicon.suffix_words
+                    and caps_shape_candidate(text, lexicon, state.policy,
+                                             one_case=False))
+            if caps:
+                is_member = caps_member = True
             if is_member:
-                # LISTED is exactly "no period" for a member, as at the
-                # single-token test above
-                listed = "." not in text
+                # LISTED is exactly "no period" for a listed or dotted
+                # member, as at the single-token test above; a caps
+                # member is by shape
+                listed = "." not in text and not caps
                 if listed:
                     any_listed = True
                 else:
                     shaped += 1
-                    if is_paired_initials(text):
+                    # two capitals are paired initials undotted, read
+                    # as #563 reads 'M.J.': 'García Márquez, MJ PhD'
+                    # keeps given 'MJ' as 'De La Cruz, M.J. PhD' does
+                    if is_paired_initials(text) or (caps and len(text) == 2):
                         pairs += 1
                         if pairs == 1 and all(
                                 _normalize(w) in lexicon.titles
@@ -378,8 +467,17 @@ def segment(state: ParseState) -> ParseState:
                          and not (settled and case_class() is False
                                   and all(ambiguous_lean(t, False)
                                           == "credential"
-                                          for t in members)))
-            flip_reports = candidate and (any_listed or pair_only)
+                                          for t in members))
+                         # the caps shape needs the contrast, and it has
+                         # to come from the NAME: beside a mixed-case
+                         # credential the credential's own lowercase
+                         # would supply it, and an all-caps record
+                         # ('LLOYD WEBBER, ANDREW PhD') would lose its
+                         # given name to it
+                         and not (caps_member and not name_contrast()))
+            # a caps member reports its flip as the all-caps run does
+            flip_reports = candidate and (any_listed or pair_only
+                                          or caps_member)
     # Computed only where `candidate` is true, alongside `case_class()`
     # -- the same lazy gate: a non-candidate comma name never counts
     # its pre-comma words either. Hoisted to a local because the

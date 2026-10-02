@@ -349,3 +349,15 @@ def test_the_run_test_reads_lenient_comma_suffixes() -> None:
         policy=dataclasses.replace(Policy(), lenient_comma_suffixes=False))
     out = segment(tokenize(extract_delimited(state)))
     assert out.structure is Structure.FAMILY_COMMA
+
+
+def test_a_listed_surname_still_carries_the_name_contrast() -> None:
+    # #564: a word a caller lists as a SURNAME is name text, so it
+    # carries the contrast the comma caps reading needs
+    # (`_vocab.claimed_as_non_name` leaves the surname and bound-given
+    # lists out); `in_any_wordlist`, the caps shape's own "unlisted",
+    # is a different question. A draft shared one predicate for both
+    # and this read given 'XYZ'.
+    from nameparser import Lexicon, Parser
+    parser = Parser(lexicon=Lexicon.default().add(surnames={"smith", "jones"}))
+    assert parser.parse("Smith Jones, XYZ").suffix == "XYZ"

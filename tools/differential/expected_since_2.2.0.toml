@@ -352,6 +352,12 @@ issue = "fix(#342) rai and cha left the credential acronyms, so a trailing Rai o
 #   'John Smith RAI'     {middle, family, suffix}  same
 #   'John Smith, RAI'    {given, family, suffix}   an ordinary family comma (C1)
 #   'Ahmad Jayadi, CHA'  {given, family, suffix}   same
+# 2026-10-01, #564: the comma pair reads suffix again by its capitals
+# (an unlisted all-caps word after a comma behind two name words), so
+# it no longer moves {given, family, suffix} here; at 1.4.0 it reaches
+# parity, at 2.x only the comma's report differs (the fix(#564) rule).
+# `given` therefore leaves `fields`, which the OVER-DECLARED check
+# requires: no name here moves it any more.
 # The comma pair is why `fields` declares four roles rather than the
 # two the pre-2.3 fix(#342) rule declared: with no credential after
 # the comma, C1 reads the pre-comma run as the family and the
@@ -375,7 +381,7 @@ issue = "fix(#342) rai and cha left the credential acronyms, so a trailing Rai o
 # reach at 5 with its digest, and _MUST_NOT_MATCH carries the
 # boundaries the paragraph above argues.
 name_regex = "^(?:Ahmad Jayadi, CHA|Aishwarya Rai|John Smith RAI|John Smith, RAI|Lala Lajpat Rai)$"
-fields = ["family", "given", "middle", "suffix"]
+fields = ["family", "middle", "suffix"]
 
 [[change]]
 issue = "fix(#462) the facade keeps an initial-shaped conjunction letter"
@@ -2200,4 +2206,27 @@ issue = "fix(#575) a particle surname before a comma is one name word"
 # _MUST_NOT_MATCH.
 name_regex = "^van der Berg, PhD$"
 fields = ["given", "family", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default"
+# rules.md#C1 and S2 (#564): Policy.unlisted_caps_suffixes defaults to
+# CapsSuffixes.AFTER_COMMA, so the part after a comma with two or more
+# name words before it reads an unlisted all-caps word as the
+# credential, alone or in C1's run, where the name contrasts it, and
+# reports the call; a lone two-letter word is declined as initials. The all-caps SURNAME convention never writes the
+# capitals there. 'John Smith, XYZ' and 'John Smith, LEED AP' are the
+# C1 examples (the latter closing the #291 deviation the doc carried);
+# 'The Rt Hon Kenneth Clarke QC MP, HMG' is a radar corpus name.
+# 'John Smith, PhD XYZ' is a caps word in C1's run beside a listed
+# credential, and 'García Márquez, MJ JK' two words of two capitals,
+# read as #563 reads two pairs (both C1 examples). 'John Smith, RAI' and 'Ahmad Jayadi, CHA' read
+# suffix again, as this baseline read them by vocabulary before #342
+# removed both words, and differ only by the comma's report.
+#
+# Literal; the probes 'Smith, XYZ' (one name word), 'García Márquez,
+# MJ' (a lone two-letter word) and 'John Smith XYZ' (no comma: the
+# trailing position stays opt-in) are _MUST_NOT_MATCH.
+name_regex = "^(?:Ahmad Jayadi, CHA|García Márquez, MJ JK|John Smith, LEED AP|John Smith, PhD XYZ|John Smith, RAI|John Smith, XYZ|The Rt Hon Kenneth Clarke QC MP, HMG)$"
+fields = ["title", "given", "middle", "family", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]
