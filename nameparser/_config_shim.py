@@ -627,16 +627,17 @@ def _v1_matchable(entry: str) -> bool:
     ``lc()`` of a parsed piece, and a piece comes from a whitespace
     split, re-joined only with single spaces, so it is never empty and
     never holds edge whitespace, a whitespace run or a non-space
-    whitespace character. An entry failing this test matched nothing in
+    whitespace character. An entry failing the whitespace test matched nothing in
     1.x; translating it either starts matching (Lexicon strips the
     whitespace) or trips a Lexicon invariant the set algebra in
     ``_build_snapshot`` could not see (#541). ``lc`` first, for a
     ``capitalization_exceptions`` key, which TupleManager stores as
-    written; set entries are already ``lc()``-folded. Nor one Lexicon
-    folds to empty, which since 2.3.0 includes a lone CJK full stop
-    (FULL_STOPS): v1 could match a token made of that full stop, but 2.x
-    folds both the entry and the token away, so translating it only
-    raises (#582)."""
+    written; set entries are already ``lc()``-folded. The one exception,
+    and the one departure from 1.4.0: an entry Lexicon folds to empty,
+    which since 2.3.0 (FULL_STOPS, #322) includes a lone CJK full stop.
+    1.4.0 through 2.2.0 could match a token made of that full stop, but
+    since 2.3.0 Lexicon's fold empties both the entry and that token's
+    lookup key, so translating it only raises (#582)."""
     folded = lc(entry)
     return (bool(folded) and folded == " ".join(folded.split())
             and bool(_normalize(folded)))
@@ -665,7 +666,7 @@ def _warn_unmatchable(dropped: list[tuple[str, str]]) -> None:
         for field, entry in dropped)
     _warn_dead_entry(
         f"ignoring Constants entries that match no name word (each is "
-        f"empty, only full stops, or holds whitespace no name word "
+        f"empty, only full stops and spaces, or holds whitespace no name word "
         f"carries): {listed}. "
         f"Add the stripped word if one was meant, and remove these: "
         f"{remedy}")
@@ -1047,14 +1048,17 @@ class Constants:
         from nameparser.config.surnames import KOREAN_SURNAMES
         # Every set field and every capitalization_exceptions key passes
         # _v1_matchable BEFORE any set algebra below: an entry v1 could
-        # never match is dropped and named in one warning (#541).
+        # never match, or one Lexicon folds to empty (#582), is dropped
+        # and named in one warning (#541); the survivors are folded as
+        # Lexicon will fold them, so the set algebra below compares what
+        # Lexicon compares.
         dropped: list[tuple[str, str]] = []
 
         def matchable(field: str) -> frozenset[str]:
             kept = []
             for entry in sorted(getattr(self, field)):
                 if _v1_matchable(entry):
-                    kept.append(entry)
+                    kept.append(_normalize(entry))
                 elif (field, entry) not in _V14_SHIPPED_UNMATCHABLE:
                     dropped.append((field, entry))
             return frozenset(kept)
@@ -1106,11 +1110,10 @@ class Constants:
         # particles inside particles_ambiguous) and the GATE-BYPASS check
         # (suffix_acronyms_ambiguous disjoint from suffix_words) do NOT
         # have that property -- each compares two sets built by SEPARATE
-        # set arithmetic on the shim's own strings, and SetManager's lc()
-        # strips edge periods but not whitespace while Lexicon strips
-        # both. They hold here because every entry v1 could not match --
-        # the only ones whose two folds disagree on whitespace -- was
-        # dropped by _v1_matchable before the arithmetic ran (#541).
+        # set arithmetic on the shim's own strings. They hold here
+        # because the set algebra runs on entries already filtered by
+        # _v1_matchable AND folded by _normalize, so the strings it
+        # compares are the ones Lexicon sees (#541, #582).
         # What else reaches it is a non-str value's TypeError -- a raise
         # v1 also had, later, at capitalize().
         try:
