@@ -378,15 +378,16 @@ def test_v14_pickle_restores_and_parses_warning_free() -> None:
 
 
 def test_an_unrelated_capitalization_exceptions_valueerror_has_no_v1_hint(
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """The v1-spelled hint is added ONLY for _MaskValueError -- a value
     that does not spell its key -- caught by TYPE in _build_snapshot's
-    try/except. A capitalization_exceptions key that Lexicon folds to
-    empty but v1's lc() does not (a lone ideographic full stop, so
-    v1-matchable and kept by the shim) is a plain ValueError
-    (_normpairs raises the base class for it, not _MaskValueError), so
-    it passes through the except clause unchanged: no v1-spelled hint
-    is appended to an error about a shape the hint does not fit."""
+    try/except. Since #582 the shim drops every key Lexicon would fold
+    to empty, so no config reaches a plain ValueError from _normpairs
+    here; the filter is switched off to force one, so the except clause
+    is still pinned to catch by TYPE and to pass an unrelated ValueError
+    through without the v1 hint."""
+    monkeypatch.setattr(_config_shim, "_v1_matchable", lambda e: True)
     c = Constants(capitalization_exceptions={'\u3002': 'x'})
     with pytest.raises(ValueError, match="normalizes to empty") as caught:
         HumanName("john smith", constants=c)
@@ -927,7 +928,9 @@ def test_2x_pickle_roundtrip_keeps_a_readded_dead_entry() -> None:
 # other than a single space (a tab, NBSP, newline). Each row names a text
 # on which the entry WOULD act if the shim translated it, so a row that
 # reads like the entry-free parse proves the drop rather than an inert
-# word. (field, entry, text, mask value for capitalization_exceptions)
+# word. An entry holding only full stops is dropped too: Lexicon folds
+# it to empty (#582), although v1 could match a token made of that full
+# stop. (field, entry, text, mask value for capitalization_exceptions)
 _V1_UNMATCHABLE_ROWS = [
     ("titles", " dean ", "dean john smith", None),
     ("titles", "dean\t", "dean john smith", None),
@@ -946,6 +949,11 @@ _V1_UNMATCHABLE_ROWS = [
     ("capitalization_exceptions", " zzc ", "john zzc", "ZzC"),
     ("capitalization_exceptions", "...", "john zzc", "ZzC"),
     ("first_name_titles", "grand  duke", "Grand Duke John", None),
+    ("titles", "。", "。 john smith", None),
+    ("prefixes", "．", "john ． smith", None),
+    ("suffix_acronyms", "｡", "john smith ｡", None),
+    ("conjunctions", "。 。", "john 。 。 jane smith", None),
+    ("capitalization_exceptions", "。", "john zzc", "。"),
 ]
 
 # Recorded negative control: what each row did with the filter off
@@ -971,6 +979,11 @@ _UNFILTERED_OUTCOME = {
     ("capitalization_exceptions", " zzc "): "activates",
     ("capitalization_exceptions", "..."): "raises",
     ("first_name_titles", "grand  duke"): "activates",
+    ("titles", "。"): "raises",
+    ("prefixes", "．"): "raises",
+    ("suffix_acronyms", "｡"): "raises",
+    ("conjunctions", "。 。"): "raises",
+    ("capitalization_exceptions", "。"): "raises",
 }
 
 
@@ -1025,6 +1038,12 @@ def test_the_unmatchable_entry_filter_has_a_recorded_control(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(_config_shim, "_v1_matchable", lambda e: True)
+    # the three rows that recorded "raises" through the two cross-set
+    # checks ('ma ', 'ba ', "'t ") raise only while those compare RAW
+    # spellings; the shim now folds them there (#582), which would turn
+    # them into "inert". This control measures the filter alone, so that
+    # fold is switched off beside it.
+    monkeypatch.setattr(_config_shim, "_normalize", lambda e: e)
     baseline = _reading(_base(field), text)
     c = _with_entry(field, entry, value)
     with warnings.catch_warnings():
@@ -1036,6 +1055,118 @@ def test_the_unmatchable_entry_filter_has_a_recorded_control(
         else:
             outcome = "activates" if got != baseline else "inert"
     assert outcome == _UNFILTERED_OUTCOME[(field, entry)]
+
+
+# -- an edge full stop and the two cross-set checks (#582) ---------------
+#
+# Lexicon strips a CJK full stop at an entry's edge, v1's lc() does not.
+# Lexicon folds each field on its own, but re-checks two relations
+# between separately built sets AFTER its fold, and the shim built those
+# two from raw strings: 'ma。' beside the ambiguous 'ma' (suffix word vs
+# ambiguous acronym) and a bound 'zed。' beside the particle 'zed' (bound
+# given name vs particles_ambiguous). 1.4.0 through 2.2.0 accepted both.
+# Each row: (id, plain entries as (field, word), the field and spelling
+# carrying the edge full stop, text).
+_EDGE_COLLISION_ROWS = [
+    # (case, the config's entries, text): each fold folds BOTH of its
+    # operands, so each computation gets a row with the full stop on
+    # either side of the pair
+    ("ambiguous-vs-word", [("suffix_not_acronyms", "ma\u3002")], "jack ma"),
+    ("word-vs-ambiguous",
+     [("suffix_acronyms", "zq\u3002"),
+      ("suffix_acronyms_ambiguous", "zq\u3002"),
+      ("suffix_not_acronyms", "zq")], "john smith zq"),
+    ("bound-vs-particle",
+     [("prefixes", "zed"), ("non_first_name_prefixes", "zed"),
+      ("bound_first_names", "zed\u3002")], "zed bakr smith"),
+    ("particle-vs-bound",
+     [("prefixes", "zed\u3002"), ("non_first_name_prefixes", "zed\u3002"),
+      ("bound_first_names", "zed")], "zed bakr smith"),
+]
+
+# Recorded negative control: with the shim's fold switched to identity
+# all four raise ValueError at the first parse (measured 2026-10-02).
+# It measures the raise only; the readings are pinned by the tests below.
+_UNFOLDED_OUTCOME = {
+    "ambiguous-vs-word": "raises",
+    "word-vs-ambiguous": "raises",
+    "bound-vs-particle": "raises",
+    "particle-vs-bound": "raises",
+}
+
+
+def _edge_config(entries: list[tuple[str, str]]) -> Constants:
+    c = Constants()
+    for field, word in entries:
+        getattr(c, field).add(word)
+    return c
+
+
+@pytest.mark.parametrize(("case", "entries", "text"), _EDGE_COLLISION_ROWS,
+                         ids=[r[0] for r in _EDGE_COLLISION_ROWS])
+def test_an_edge_full_stop_collision_reads_as_its_folded_spelling(
+    case: str, entries: list[tuple[str, str]], text: str,
+) -> None:
+    folded = [(f, w.strip("\u3002\uff0e\uff61")) for f, w in entries]
+    want = _reading(_edge_config(folded), text)
+    got = _reading(_edge_config(entries), text)   # error filter: no warning
+    assert got == want
+
+
+@pytest.mark.parametrize(("case", "entries", "text"), _EDGE_COLLISION_ROWS,
+                         ids=[r[0] for r in _EDGE_COLLISION_ROWS])
+def test_the_edge_full_stop_fold_has_a_recorded_control(
+    case: str, entries: list[tuple[str, str]], text: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(_config_shim, "_normalize", lambda e: e)
+    try:
+        _reading(_edge_config(entries), text)
+    except ValueError:
+        outcome = "raises"
+    else:
+        outcome = "reads"
+    assert outcome == _UNFOLDED_OUTCOME[case]
+
+
+def _fields(first: str, last: str, suffix: str, title: str = "") -> dict[str, str]:
+    return {"title": title, "first": first, "middle": "", "last": last,
+            "suffix": suffix, "nickname": "", "maiden": ""}
+
+
+# Readings recorded 2026-10-02 on the tree before any shim fold (afc45f35,
+# a scratch `git archive` copy), where these configs never raised: the
+# fold must not move them. A field Lexicon folds on its own is NOT
+# re-folded by the shim, so 'zz。' in non_first_name_prefixes beside the
+# particle 'zz' still leaves 'zz' a given name.
+_UNCHANGED_READINGS = [
+    ("never-given-edge-stop",
+     [("prefixes", "zz")], "non_first_name_prefixes", "zz\u3002", "zz smith",
+     (_fields("zz", "smith", ""), "Zz Smith")),
+    ("never-given-fullwidth-stop",
+     [("prefixes", "zz")], "non_first_name_prefixes", "zz\uff0e", "zz smith",
+     (_fields("zz", "smith", ""), "Zz Smith")),
+    ("never-given-nfd-nfc",
+     [("prefixes", "z\u00e9")], "non_first_name_prefixes", "ze\u0301",
+     "z\u00e9 smith",
+     (_fields("z\u00e9", "smith", ""), "Z\u00e9 Smith")),
+    ("ambiguous-edge-stop",
+     [("suffix_acronyms", "zq")], "suffix_acronyms_ambiguous", "zq\u3002",
+     "john zq", (_fields("john", "", "zq"), "John ZQ")),
+    ("title-edge-stop",
+     [], "titles", "dean\u3002", "dean john smith",
+     (_fields("john", "smith", "", "dean"), "Dean John Smith")),
+]
+
+
+@pytest.mark.parametrize(("case", "plain", "field", "entry", "text", "want"),
+                         _UNCHANGED_READINGS,
+                         ids=[r[0] for r in _UNCHANGED_READINGS])
+def test_an_edge_full_stop_entry_outside_the_two_checks_reads_as_before(
+    case: str, plain: list[tuple[str, str]], field: str, entry: str,
+    text: str, want: tuple[dict[str, str], str],
+) -> None:
+    assert _reading(_edge_config([*plain, (field, entry)]), text) == want
 
 
 def test_the_offered_remedy_runs_and_silences_the_warning() -> None:
@@ -1123,12 +1254,13 @@ def test_the_1_4_shipped_unmatchable_roster_is_exactly_the_pickles() -> None:
     assert found == _config_shim._V14_SHIPPED_UNMATCHABLE
 
 
-def test_a_first_name_title_lexicon_folds_to_nothing_is_dropped_quietly() -> None:
-    # '\u3002' survives v1's lc() (so the shim keeps it) but Lexicon's
-    # fold empties it; the guard on given_name_titles is what keeps that
-    # from raising. No warning expected: the error filter enforces it.
+def test_a_first_name_title_lexicon_folds_to_nothing_is_dropped_with_the_warning(
+) -> None:
+    # '。' survives v1's lc() but Lexicon's fold empties it (#582):
+    # dropped like any other entry that matches no name word
     c = Constants()
-    c.first_name_titles.add("\u3002")
-    lexicon, _, _ = c._snapshot()
+    c.first_name_titles.add("。")
+    with pytest.warns(UserWarning, match="first_name_titles: '。'"):
+        lexicon, _, _ = c._snapshot()
     assert "" not in lexicon.given_name_titles
     assert HumanName("john smith", constants=c).last == "smith"

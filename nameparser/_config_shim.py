@@ -29,7 +29,7 @@ from collections.abc import (
 from typing import NamedTuple, Self
 
 from nameparser._lexicon import (
-    Lexicon, _MaskValueError, _title_key, _warn_dead_entry,
+    Lexicon, _MaskValueError, _normalize, _title_key, _warn_dead_entry,
 )
 from nameparser._parser import Parser
 from nameparser._policy import PatronymicRule, Policy
@@ -623,18 +623,24 @@ _MANAGER_FIELDS = _SET_FIELDS + (
 
 
 def _v1_matchable(entry: str) -> bool:
-    """Could nameparser 1.x have matched this config entry? v1 compared
+    """Should the shim translate this config entry at all? v1 compared
     ``lc()`` of a parsed piece, and a piece comes from a whitespace
     split, re-joined only with single spaces, so it is never empty and
     never holds edge whitespace, a whitespace run or a non-space
-    whitespace character. An entry failing this test matched nothing in
-    1.x; translating it either starts matching (Lexicon strips the
+    whitespace character. An entry failing the whitespace test matched
+    nothing in 1.x; translating it either starts matching (Lexicon strips the
     whitespace) or trips a Lexicon invariant the set algebra in
     ``_build_snapshot`` could not see (#541). ``lc`` first, for a
     ``capitalization_exceptions`` key, which TupleManager stores as
-    written; set entries are already ``lc()``-folded."""
+    written; set entries are already ``lc()``-folded. The one exception,
+    and the one departure from 1.4.0: an entry Lexicon folds to empty,
+    which since 2.3.0 (FULL_STOPS, #322) includes a lone CJK full stop.
+    1.4.0 through 2.2.0 could match a token made of that full stop, but
+    since 2.3.0 Lexicon's fold empties both the entry and that token's
+    lookup key, so translating it only raises (#582)."""
     folded = lc(entry)
-    return bool(folded) and folded == " ".join(folded.split())
+    return (bool(folded) and folded == " ".join(folded.split())
+            and bool(_normalize(folded)))
 
 
 # Two entries of nameparser 1.4.0's own shipped TITLES carry a trailing
@@ -659,8 +665,9 @@ def _warn_unmatchable(dropped: list[tuple[str, str]]) -> None:
         else f"constants.{field}.remove({entry!r})"
         for field, entry in dropped)
     _warn_dead_entry(
-        f"ignoring Constants entries nameparser 1.x never matched (each "
-        f"is empty or holds whitespace no name word can carry): {listed}. "
+        f"ignoring Constants entries that match no name word (each is "
+        f"empty, only full stops and spaces, or holds whitespace no name word "
+        f"carries): {listed}. "
         f"Add the stripped word if one was meant, and remove these: "
         f"{remedy}")
 
@@ -1041,7 +1048,10 @@ class Constants:
         from nameparser.config.surnames import KOREAN_SURNAMES
         # Every set field and every capitalization_exceptions key passes
         # _v1_matchable BEFORE any set algebra below: an entry v1 could
-        # never match is dropped and named in one warning (#541).
+        # never match, or one Lexicon folds to empty (#582), is dropped
+        # and named in one warning (#541). The survivors are passed RAW,
+        # as Lexicon folds each field on its own; only the two cross-set
+        # computations below compare folded spellings.
         dropped: list[tuple[str, str]] = []
 
         def matchable(field: str) -> frozenset[str]:
@@ -1071,7 +1081,20 @@ class Constants:
         # dropping it from the AMBIGUOUS set instead ungated the word
         # and lost the family name -- a silent misparse worse than the
         # raise it avoided.
-        suffix_words = matchable("suffix_not_acronyms") - ambiguous_acronyms
+        # Folded here, and only here (#582): Lexicon folds each field on
+        # its own but checks this disjointness AFTER its fold, so the
+        # shim must compare folded spellings exactly where Lexicon
+        # re-checks. Folding anything else would change readings on
+        # configs that never raised.
+        ambiguous_folded = {_normalize(a) for a in ambiguous_acronyms}
+        suffix_words = frozenset(
+            w for w in matchable("suffix_not_acronyms")
+            if _normalize(w) not in ambiguous_folded)
+        # Likewise folded only here (#582): Lexicon checks bound_given_names
+        # & particles against particles_ambiguous after its own fold.
+        bound_folded = {_normalize(b) for b in bound}
+        bound_particles = frozenset(
+            p for p in particles if _normalize(p) in bound_folded)
         capitalization_exceptions: list[tuple[str, object]] = []
         for key, value in sorted(self.capitalization_exceptions.items()):
             if _v1_matchable(key):
@@ -1100,14 +1123,13 @@ class Constants:
         # particles inside particles_ambiguous) and the GATE-BYPASS check
         # (suffix_acronyms_ambiguous disjoint from suffix_words) do NOT
         # have that property -- each compares two sets built by SEPARATE
-        # set arithmetic on the shim's own strings, and SetManager's lc()
-        # strips edge periods but not whitespace while Lexicon strips
-        # both. They hold here because every entry v1 could not match --
-        # the only ones whose two folds disagree on whitespace -- was
-        # dropped by _v1_matchable before the arithmetic ran (#541).
-        # What else reaches it is an entry Lexicon folds to empty that
-        # v1's lc() did not, e.g. a lone non-ASCII full stop ('。',
-        # v1-matchable, kept), and a non-str value's TypeError -- a raise
+        # set arithmetic on the shim's own strings. They hold here
+        # because the entries are filtered by _v1_matchable and the two
+        # cross-set computations (suffix_words, bound_particles) compare
+        # _normalize'd spellings, which are the ones Lexicon compares;
+        # every other field is passed raw, as Lexicon folds it itself
+        # (#541, #582).
+        # What else reaches it is a non-str value's TypeError -- a raise
         # v1 also had, later, at capitalize().
         try:
             lexicon = Lexicon(
@@ -1121,14 +1143,11 @@ class Constants:
                 # spelling; filtering instead dropped every multi-word
                 # honorific containing an abbreviation or a conjunction and
                 # silently swapped given and family.
-                # Entries v1 could never match were dropped above
-                # (_v1_matchable); one that Lexicon folds away entirely
-                # that v1's lc() did not -- a lone non-ASCII full stop
-                # ('。') -- is dropped by `if t`, since _normset would
-                # reject it.
+                # Entries that match no name word were dropped above
+                # (_v1_matchable); since that includes every entry
+                # Lexicon folds to empty, no key built here is empty.
                 given_name_titles=frozenset(
-                    t for t in (_title_key(e.split())
-                                for e in first_name_titles) if t),
+                    _title_key(e.split()) for e in first_name_titles),
                 suffix_acronyms=acronyms,
                 suffix_words=suffix_words,
                 # Intersect with acronyms: Lexicon enforces ambiguous <=
@@ -1158,7 +1177,7 @@ class Constants:
                 # config the shipped data forbids.
                 particles_ambiguous=(
                     particles - non_given)
-                | (bound & particles),
+                | bound_particles,
                 conjunctions=conjunctions,
                 # no v1 manager of its own: the ambiguous-connective
                 # subset is 2.4 behavior (#383/#479), so it rides in the
