@@ -1722,16 +1722,17 @@ C1. Rationale: a credential run after the comma means the name is in
     there. Behind two or more name words, paired initials that are
     not the only shape word in the part are a credential however
     little else speaks for them, since no one writes a person's
-    initials as two dotted groups. In a name written in more than one
-    case, an unlisted word of two capitals after the comma is that
-    shape undotted and is read exactly as paired initials are, by the
-    sentences above ('García Márquez, MJ' and 'García Márquez, MJ PhD'
-    keep given 'MJ'). An unlisted all-caps word joins the class in
-    such a part only where the name's own words before the comma,
-    titles and particles aside, carry a lowercase letter: the contrast
-    is the name's, so a record that writes its surname in capitals
-    keeps its given name beside a mixed-case credential, a lowercase
-    title or particle, or a maiden clause. The same count reads a part of two or
+    initials as two dotted groups. An unlisted all-caps word joins
+    the class in such a part only where the name carries the contrast:
+    a lowercase letter in one of its own words before the comma that
+    no wordlist claims and no period marks, so a record that writes
+    its surname in capitals keeps its given name beside a mixed-case
+    credential, or a title, particle, connective, generation or maiden
+    clause written in lowercase. Where the name carries it, an
+    unlisted word of two capitals after the comma is the paired
+    initials' shape undotted and is decided at this comma exactly as
+    they are, by the sentences above ('García Márquez, MJ' and 'García
+    Márquez, MJ PhD' keep given 'MJ'). The same count reads a part of two or
     more words as the credential run when every word of it is a
     suffix word or a word of this class, at least one of them of this
     class, and none of them a single-letter roman numeral, in any

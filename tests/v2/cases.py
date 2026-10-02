@@ -2944,6 +2944,27 @@ CASES: tuple[Case, ...] = (
                "stays. The title in the family is the listing form's "
                "long-standing reading of a title before the comma "
                "('Prof. Cruz, Ed'), master's too"),
+    Case("a_generation_supplies_no_contrast_for_the_caps_shape",
+         "LLOYD WEBBER Jr., ANDREW",
+         {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "Jr."},
+         notes="#564 boundary: only the name's own words that no "
+               "wordlist claims and no period marks supply the contrast; "
+               "'Jr.' is neither, so the 'SURNAME Jr., GIVEN' record "
+               "keeps its given name. A review-round draft excluded "
+               "titles and particles only and read suffix 'Jr., ANDREW'"),
+    Case("a_connective_supplies_no_contrast_for_the_caps_shape",
+         "GARCÍA y LÓPEZ, ANDREW",
+         {"given": "ANDREW", "family": "GARCÍA y LÓPEZ"},
+         notes="#564 boundary: a lowercase connective in a record that "
+               "capitalizes its surnames is the record's convention, "
+               "not the name's contrast"),
+    Case("a_later_comma_part_supplies_no_contrast_for_the_caps_shape",
+         "JOHN SMITH, ANDREW, Jr.",
+         {"given": "ANDREW", "family": "JOHN SMITH", "suffix": "Jr."},
+         notes="#564 boundary: the contrast is read before the comma; "
+               "a generation in a third part is not the name's. The "
+               "whole-name case test of an earlier draft read suffix "
+               "'ANDREW, Jr.'; master keeps given 'ANDREW' too"),
     Case("a_capitalized_given_name_behind_a_two_word_surname_is_the_accepted_cost",
          "García Márquez, JUAN Jr.",
          {"given": "García", "family": "Márquez", "suffix": "JUAN Jr."},

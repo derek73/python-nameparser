@@ -699,11 +699,21 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
             and one_case is False
             and len(text) >= 2 and text.isalpha() and text.isupper()):
         return False
-    n = _normalize(text)
+    return not in_any_wordlist(_normalize(text), lexicon)
+
+
+def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:
+    """Whether the folded word `n` is in ANY of the lexicon's wordlists
+    (`_lexicon._VOCAB_FIELDS`, the whole roster). The caps shape's
+    "unlisted" (`caps_shape_candidate`), and the test of which words
+    before a comma are the NAME's own (#564's `name_contrast` in
+    `_segment.py`): a word some wordlist claims -- title, particle,
+    connective, suffix, bound given name -- is not one, so it neither
+    joins the caps class nor supplies the name's case contrast."""
     for field in _VOCAB_FIELDS:
         if n in getattr(lexicon, field):
-            return False
-    return True
+            return True
+    return False
 
 
 # The comma form's own candidate test (rules.md#C1, decisions.md#S2).

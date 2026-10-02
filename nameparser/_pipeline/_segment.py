@@ -56,7 +56,8 @@ from nameparser._pipeline._state import (
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
     caps_shape_candidate, is_one_case, is_paired_initials,
-    is_single_letter_numeral, is_wholly_suffix, name_word_count,
+    in_any_wordlist, is_single_letter_numeral, is_wholly_suffix,
+    name_word_count,
     surname_unit_count,
     run_word_fold,
 )
@@ -124,13 +125,16 @@ def segment(state: ParseState) -> ParseState:
 
     # #564: the contrast the caps shape needs is the NAME's -- its own
     # words before the comma (no maiden clause, no delimited content,
-    # as `own_words` defines them for `case_class` above), less titles
-    # and particles, which a record writing its surname in capitals
-    # still writes in lowercase ('Mr LLOYD WEBBER', 'de GAULLE').
-    # Neither the credential's own lowercase nor a clause's may supply
-    # it, or an all-caps record loses its given name ('LLOYD WEBBER,
-    # ANDREW PhD', 'LLOYD WEBBER née Smith, ANDREW PhD'). Asked only
-    # once a caps word is in hand, and in one C-level comparison.
+    # as `own_words` defines them for `case_class` above), and of those
+    # only the words no wordlist claims and no period marks: a record
+    # writing its surname in capitals still writes its titles,
+    # particles, connectives and generations as it likes ('Mr LLOYD
+    # WEBBER', 'de GAULLE', 'GARCÍA y LÓPEZ', 'LLOYD WEBBER Jr.',
+    # 'Insp. LLOYD WEBBER'). Neither those nor the credential's own
+    # lowercase nor a clause's may supply it, or an all-caps record
+    # loses its given name. Asked only once a caps word is in hand:
+    # an all-caps part is settled in one C-level comparison, and past
+    # that each word before the comma costs a fold.
     def name_contrast() -> bool:
         # no lowercase before the comma at all: an all-caps record,
         # settled in C before the walk
@@ -146,8 +150,8 @@ def segment(state: ParseState) -> ParseState:
         words = "".join(
             tok.text for i in groups[0]
             if i < clause_at and (tok := state.tokens[i]).role is None
-            and (n := _normalize(tok.text)) not in lex.titles
-            and n not in lex.particles)
+            and "." not in tok.text
+            and not in_any_wordlist(_normalize(tok.text), lex))
         return words != words.upper()
 
     # Inlined rather than built on `texts` (measured, #289/#516's
