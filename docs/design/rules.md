@@ -1703,15 +1703,17 @@ C1. Rationale: a credential run after the comma means the name is in
     case: one letter is the shape a middle initial is written in,
     and S3 retires single-character matches for the same reason,
     while a multi-letter numeral or generational word stands in a
-    run like any suffix word ('John Smith, III Ma'). A word of both
-    the particle and the unambiguous suffix vocabulary counts as a
-    suffix word there too ('John Smith, vd Ma'): membership in this
-    part asks what the word is, while S2's company asks whether it
-    speaks for the word behind it, which a particle never does, so
-    the company run it ends is S2's and not this one. A word of both
-    the title and the suffix vocabulary opening such a part counts as
-    a suffix word there, the name before the comma being complete,
-    except as the titles of paired initials, above. Where every word
+    run like any suffix word ('John Smith, III Ma'). A word's
+    particle reading does not take it out of the run: a word of both
+    the particle and the unambiguous suffix vocabulary is a suffix
+    word there too ('John Smith, vd Ma'). Run membership asks what
+    the word is, and S2's company asks whether it speaks for the word
+    behind it, which a particle never does; the run S2 says such a
+    word ends is the company's, not this count's. A word of both the
+    title and the suffix vocabulary opening a part the count reads as
+    a run counts as a suffix word there, the name before the comma
+    being complete, except as the titles of paired initials, above.
+    Where every word
     of this class in the part is a LISTED word written in capitals in
     a mixed-case name, the writing has already made each of them the
     credential (S2), and the part reads as the credential run on that
@@ -1819,6 +1821,9 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, PhD vd DO"     →  suffix="PhD vd DO"
       "John Smith, vd Ma"         →  suffix="vd Ma"
       "JOHN SMITH, VD MA"         →  suffix="VD MA"
+      "JOHN SMITH, VD MA"         →  ambiguities=("suffix-or-name",)
+      "John Smith, Jr vd"         →  ambiguities=()
+      "John Smith, Jr do"         →  ambiguities=("suffix-or-name",)  · boundary
       "John Smith, X.Y.Z."        →  suffix="X.Y.Z."
       "John Smith, X.Y.Z."        →  ambiguities=()
       "John Smith, X.Y.Z."  unlisted_dotted_suffixes-off  →  given="X.Y.Z."
