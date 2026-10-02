@@ -28,7 +28,9 @@ from collections.abc import (
 )
 from typing import NamedTuple, Self
 
-from nameparser._lexicon import Lexicon, _MaskValueError, _title_key
+from nameparser._lexicon import (
+    Lexicon, _MaskValueError, _title_key, _warn_dead_entry,
+)
 from nameparser._parser import Parser
 from nameparser._policy import PatronymicRule, Policy
 from nameparser.util import lc
@@ -619,6 +621,50 @@ _MANAGER_FIELDS = _SET_FIELDS + (
     "capitalization_exceptions", "nickname_delimiters", "maiden_delimiters",
 )
 
+
+def _v1_matchable(entry: str) -> bool:
+    """Could nameparser 1.x have matched this config entry? v1 compared
+    ``lc()`` of a parsed piece, and a piece comes from a whitespace
+    split, re-joined only with single spaces, so it is never empty and
+    never holds edge whitespace, a whitespace run or a non-space
+    whitespace character. An entry failing this test matched nothing in
+    1.x; translating it either starts matching (Lexicon strips the
+    whitespace) or trips a Lexicon invariant the set algebra in
+    ``_build_snapshot`` could not see (#541). ``lc`` first, for a
+    ``capitalization_exceptions`` key, which TupleManager stores as
+    written; set entries are already ``lc()``-folded."""
+    folded = lc(entry)
+    return bool(folded) and folded == " ".join(folded.split())
+
+
+# Two entries of nameparser 1.4.0's own shipped TITLES carry a trailing
+# space, so 1.4.0 never matched them ("Actor John Smith" -> first
+# "Actor"). A restored 1.4 pickle carries them and the user never wrote
+# them: they are dropped like any unmatchable entry but not named in the
+# warning. The 2.x data module spells them without the space. Not the
+# same roster as _LEGACY_DEAD_ENTRIES, on purpose: that one is subtracted
+# in __setstate__, only when the whole pre-2.0 set is present, so a user's
+# own re-added entry survives; this one is skipped at snapshot time from
+# any source, and nothing else about it depends on how the entry got here.
+_V14_SHIPPED_UNMATCHABLE = frozenset({
+    ("titles", "actor "), ("titles", "television "),
+})
+
+
+def _warn_unmatchable(dropped: list[tuple[str, str]]) -> None:
+    listed = ", ".join(f"{field}: {entry!r}" for field, entry in dropped)
+    remedy = "; ".join(
+        f"del constants.capitalization_exceptions[{entry!r}]"
+        if field == "capitalization_exceptions"
+        else f"constants.{field}.remove({entry!r})"
+        for field, entry in dropped)
+    _warn_dead_entry(
+        f"ignoring Constants entries nameparser 1.x never matched (each "
+        f"is empty or holds whitespace no name word can carry): {listed}. "
+        f"Add the stripped word if one was meant, and remove these: "
+        f"{remedy}")
+
+
 #: v1's Constants.__repr__ field order (#221) -- kept as its own tuple
 #: rather than reusing _SET_FIELDS, whose order differs (v1 lists
 #: suffix_acronyms_ambiguous last, not fourth).
@@ -993,11 +1039,28 @@ class Constants:
         from nameparser.config.maiden_markers import MAIDEN_MARKERS
         from nameparser.config.suffixes import GLUED_HONORIFICS
         from nameparser.config.surnames import KOREAN_SURNAMES
-        acronyms = frozenset(self.suffix_acronyms)
-        particles = frozenset(self.prefixes)
-        conjunctions = frozenset(self.conjunctions)
-        bound = frozenset(self.bound_first_names)
-        ambiguous_acronyms = frozenset(self.suffix_acronyms_ambiguous) & acronyms
+        # Every set field and every capitalization_exceptions key passes
+        # _v1_matchable BEFORE any set algebra below: an entry v1 could
+        # never match is dropped and named in one warning (#541).
+        dropped: list[tuple[str, str]] = []
+
+        def matchable(field: str) -> frozenset[str]:
+            kept = []
+            for entry in sorted(getattr(self, field)):
+                if _v1_matchable(entry):
+                    kept.append(entry)
+                elif (field, entry) not in _V14_SHIPPED_UNMATCHABLE:
+                    dropped.append((field, entry))
+            return frozenset(kept)
+
+        acronyms = matchable("suffix_acronyms")
+        particles = matchable("prefixes")
+        conjunctions = matchable("conjunctions")
+        bound = matchable("bound_first_names")
+        titles = matchable("titles")
+        first_name_titles = matchable("first_name_titles")
+        non_given = matchable("non_first_name_prefixes")
+        ambiguous_acronyms = matchable("suffix_acronyms_ambiguous") & acronyms
         # Drop any ambiguous acronym from the word set rather than the
         # other way round. Lexicon forbids the overlap because the word
         # branch bypasses the period gate, and adding an ambiguous
@@ -1008,7 +1071,15 @@ class Constants:
         # dropping it from the AMBIGUOUS set instead ungated the word
         # and lost the family name -- a silent misparse worse than the
         # raise it avoided.
-        suffix_words = frozenset(self.suffix_not_acronyms) - ambiguous_acronyms
+        suffix_words = matchable("suffix_not_acronyms") - ambiguous_acronyms
+        capitalization_exceptions: list[tuple[str, object]] = []
+        for key, value in sorted(self.capitalization_exceptions.items()):
+            if _v1_matchable(key):
+                capitalization_exceptions.append((key, value))
+            else:
+                dropped.append(("capitalization_exceptions", key))
+        if dropped:
+            _warn_unmatchable(dropped)
         # keep in sync with _lexicon._default_lexicon() (pinned by
         # tests/v2/test_config_shim.py::test_snapshot_field_translation)
         # A capitalization_exceptions value that does not spell its key
@@ -1026,31 +1097,21 @@ class Constants:
         # itself -- so the image of a subset relation under any
         # element-wise normalization is still a subset, whatever the
         # raw spelling. The CONTRADICTION check (bound_given_names &
-        # particles inside particles_ambiguous) and the GATE-BYPASS
-        # check (suffix_acronyms_ambiguous disjoint from suffix_words)
-        # do NOT have that property -- each compares two sets built by
-        # SEPARATE set arithmetic (particles_ambiguous's own union
-        # includes `bound & particles`, computed before Lexicon
-        # normalizes anything; suffix_words above subtracts
-        # ambiguous_acronyms the same way) -- and are reachable through
-        # an entry carrying EDGE WHITESPACE: SetManager strips edge
-        # periods but not edge whitespace, while Lexicon's own
-        # normalization strips both, so `c.suffix_not_acronyms.add('ba
-        # ')` (raw 'ba ' survives the shim's subtraction against
-        # 'ba', then Lexicon normalizes both to 'ba' and the
-        # gate-bypass check collides) and `c.bound_first_names.add("'t
-        # ")` (analogous miss against the contradiction check) both
-        # reach Lexicon(...) and raise -- measured, and true of this
-        # method unchanged since before this session; pre-existing,
-        # not fixed here, and left for the orchestrator to file. What
-        # else reaches it is an entry normalizing to empty, in
-        # capitalization_exceptions or any set field (c.titles.add("...")
-        # raises Lexicon's own "normalizes to empty"), and a non-str
-        # value's TypeError -- a raise v1 also had, later, at
-        # capitalize().
+        # particles inside particles_ambiguous) and the GATE-BYPASS check
+        # (suffix_acronyms_ambiguous disjoint from suffix_words) do NOT
+        # have that property -- each compares two sets built by SEPARATE
+        # set arithmetic on the shim's own strings, and SetManager's lc()
+        # strips edge periods but not whitespace while Lexicon strips
+        # both. They hold here because every entry v1 could not match --
+        # the only ones whose two folds disagree on whitespace -- was
+        # dropped by _v1_matchable before the arithmetic ran (#541).
+        # What else reaches it is an entry Lexicon folds to empty that
+        # v1's lc() did not, e.g. a lone non-ASCII full stop ('。',
+        # v1-matchable, kept), and a non-str value's TypeError -- a raise
+        # v1 also had, later, at capitalize().
         try:
             lexicon = Lexicon(
-                titles=frozenset(self.titles),
+                titles=titles,
                 # TRANSLATE, do not filter. The two versions build the same
                 # lookup key differently: v1 joins the raw title run and
                 # then applies lc(), which strips only the whole string's
@@ -1060,18 +1121,14 @@ class Constants:
                 # spelling; filtering instead dropped every multi-word
                 # honorific containing an abbreviation or a conjunction and
                 # silently swapped given and family.
-                # Only entries v1 could actually match: its key is the
-                # joined title run, so always single-spaced and never
-                # empty. An entry holding a whitespace run was inert there
-                # (translating it would start matching), and one that folds
-                # away entirely would trip _normset's empty-entry check on
-                # a config v1 simply ignored.
+                # Entries v1 could never match were dropped above
+                # (_v1_matchable); one that Lexicon folds away entirely
+                # that v1's lc() did not -- a lone non-ASCII full stop
+                # ('。') -- is dropped by `if t`, since _normset would
+                # reject it.
                 given_name_titles=frozenset(
-                    t for t in (
-                        _title_key(e.split())
-                        for e in self.first_name_titles
-                        if e == " ".join(e.split())
-                    ) if t),
+                    t for t in (_title_key(e.split())
+                                for e in first_name_titles) if t),
                 suffix_acronyms=acronyms,
                 suffix_words=suffix_words,
                 # Intersect with acronyms: Lexicon enforces ambiguous <=
@@ -1100,7 +1157,7 @@ class Constants:
                 # accepted, which is worse. Only reachable via a runtime
                 # config the shipped data forbids.
                 particles_ambiguous=(
-                    particles - frozenset(self.non_first_name_prefixes))
+                    particles - non_given)
                 | (bound & particles),
                 conjunctions=conjunctions,
                 # no v1 manager of its own: the ambiguous-connective
@@ -1133,8 +1190,7 @@ class Constants:
                 # never statically str-typed); every real entry is a str,
                 # same assumption _DelimiterManager's sentinel lookup makes.
                 # NOT translated: see the comment above the try: block.
-                capitalization_exceptions=tuple(
-                    sorted(self.capitalization_exceptions.items())),  # type: ignore[arg-type]
+                capitalization_exceptions=tuple(capitalization_exceptions),  # type: ignore[arg-type]
             )
         except _MaskValueError as e:
             # A v1-ONLY message built from the fields, not `{e}` --
