@@ -871,7 +871,7 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     # assertions are about the TRAILING slot EVERYWHERE adds. Default
     # costs, same harness against master: 'Smith, John' 183 -> 183,
     # 'Smith, XYZ' 182 -> 182 (the comma test needs two words before
-    # the comma), 'John Smith, XYZ' 251 -> 265 (decisions.md#S2).
+    # the comma), 'John Smith, XYZ' 251 -> 268 (decisions.md#S2).
     from nameparser import Parser
 
     on = Parser(policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))

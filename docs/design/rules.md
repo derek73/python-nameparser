@@ -1724,8 +1724,10 @@ C1. Rationale: a credential run after the comma means the name is in
     little else speaks for them, since no one writes a person's
     initials as two dotted groups. An unlisted all-caps word joins
     the class in such a part only where the name carries the
-    contrast: one of its own words before the comma written in Title
-    case, the way a name is written (S2), with no period and not
+    contrast: one of its own words before the comma written the way a
+    name is written in mixed case, a capital directly followed by a
+    lowercase letter (a leading Mc or Mac before a capital aside),
+    with no period and not
     claimed by the vocabulary as a title, particle, connective,
     credential or generation. A word written wholly in lowercase never
     carries it, so a record that writes its surname in capitals keeps

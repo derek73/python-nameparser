@@ -13,7 +13,7 @@ from nameparser._pipeline._vocab import (
     effective_script, is_initial, is_initial_shaped, is_one_case,
     is_single_letter_numeral,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
-    maiden_marker_run, name_word_count, period_joined_vocab,
+    maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
     resolve_script_set, run_word_fold, single_script,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
@@ -890,3 +890,19 @@ def test_is_single_letter_numeral() -> None:
         assert is_single_letter_numeral(text), text
     for text in ("II", "IV", "Jr", "B", "", ".", "Ma"):
         assert not is_single_letter_numeral(text), text
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Smith", True), ("DiCaprio", True), ("IJzerman", True),
+    ("al-Rashid", True), ("d'Estaing", True), ("McDonald", True),
+    ("MacLeod", True), ("Mack", True), ("Macy", True),
+    ("SMITH", False), ("smith", False), ("C", False), ("ap", False),
+    ("d'ESTAING", False), ("al-ASSAD", False), ("McDONALD", False),
+    ("MacDONALD", False),
+])
+def test_written_as_a_name(text: str, expected: bool) -> None:
+    # #564 (Derek): the name's case contrast is a capital directly
+    # followed by a lowercase letter, a leading Mc/Mac skipped where a
+    # capital follows it -- so a lowercase prefix glued to a surname
+    # written in capitals carries none, and an interior capital does.
+    assert written_as_a_name(text) is expected

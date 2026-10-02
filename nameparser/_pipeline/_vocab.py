@@ -720,6 +720,22 @@ _NON_NAME_FIELDS = tuple(f for f in _VOCAB_FIELDS
                          if f not in ("surnames", "bound_given_names"))
 
 
+def written_as_a_name(text: str) -> bool:
+    """Whether TEXT is written the way a name is written in mixed case:
+    a capital directly followed by a lowercase letter ('Smith',
+    'DiCaprio', 'IJzerman', 'al-Rashid', "d'Estaing") -- #564's test
+    for the name's case contrast (Derek). A word written wholly in one
+    case has no such pair, and nor does a lowercase prefix glued to a
+    surname written in capitals ("d'ESTAING", 'al-ASSAD'). A leading
+    'Mc'/'Mac' is skipped where a capital follows it, so 'McDONALD'
+    has no pair while 'McDonald' keeps 'Do' and 'Mack' its own 'Ma'."""
+    if text.startswith("Mc") and text[2:3].isupper():
+        text = text[2:]
+    elif text.startswith("Mac") and text[3:4].isupper():
+        text = text[3:]
+    return any(a.isupper() and b.islower() for a, b in zip(text, text[1:]))
+
+
 def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:
     """Whether a wordlist claims the folded word `n` as a title,
     particle, connective, credential, generation, maiden marker or

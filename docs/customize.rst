@@ -532,7 +532,8 @@ listed below.
      - ``CapsSuffixes``
      - Where an unlisted all-caps word of two or more letters, with no
        period in it, reads as a credential. The name must contrast it
-       with a word written in Title case (``Smith``) that the vocabulary
+       with a word holding a capital followed by a lowercase letter
+       (``Smith``, ``DiCaprio``) that the vocabulary
        does not claim as a title, particle or credential: a record
        written wholly in capitals, or wholly in lowercase, keeps every
        word a name word. ``CapsSuffixes.AFTER_COMMA``, the default, reads
