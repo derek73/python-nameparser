@@ -460,8 +460,10 @@ P2. Rationale: a particle is written as part of the surname it
     word behind it, whatever case the name is written in, and is not
     read as a suffix standing between two family words; with a suffix
     word or nothing behind it, it reads as the suffix it is there. A
-    lone letter behind it is a name word here, not a numeral, as in
-    the same part without the particle ('SMITH V, JOHN').
+    lone letter behind it reads as it does in the same part without
+    the particle: a capital is a name word ('SMITH VD V, JOHN' as
+    'SMITH V, JOHN'), a lowercase letter the numeral ('smith vd v,
+    john' as 'smith v, john').
       "John van der Berg"         →  family="van der Berg"
       "John van der Berg Smith"   →  family="van der Berg Smith"
       "Vincent van Gogh van Beethoven"  →  middle="van Gogh"

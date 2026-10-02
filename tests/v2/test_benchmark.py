@@ -749,6 +749,14 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
 #   chain    #559: the particle chain asked "is every piece ahead of
 #            this one a title?" afresh at every chain site, so leading
 #            titles x particle sites `is_leading_title` calls.
+#   lead     #573: the given slot asked each member whether the
+#            never-given particle run in front of it was all
+#            particles, rescanning the run per member. That scan lived
+#            in generator expressions, so this row counts every
+#            `<genexpr>` frame in the parse -- NOT isolated like the
+#            three above: the pre-#573 tree already reads 3.39x on
+#            this input from generators elsewhere, and the signal sits
+#            on top of that background.
 #
 # Measured 2026-10-01 on py3.11 through `_frames_for(..., only=...)`, k
 # units, ratio for 4x the units:
@@ -757,9 +765,13 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
 #   tail      9 -> 33      3.67x     36 -> 528       14.67x
 #   clause    27 -> 99     3.67x     108 -> 1,584    14.67x
 #   chain     52 -> 196    3.77x     108 -> 1,188    11.00x
+#   lead      212 -> 716   3.38x     408 -> 3,072    7.53x  (at 30e38ed5,
+#                                                   measured 2026-10-02)
 #
-# 6.0 sits between the populations with room on both sides; counts are
-# deterministic, so the margin is for future shape changes, not noise.
+# 6.0 sits between the populations with room on both sides for the
+# first three; for `lead` the broken side's margin is thin (7.53x), so
+# a shape change there wants re-measuring. Counts are deterministic,
+# so the margin is for future shape changes, not noise.
 # Each probe pins the reading the shape needs, so a change that stops
 # the shape reaching the walk fails here instead of leaving the row
 # counting nothing.
@@ -815,7 +827,7 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
         f"{_REREAD_SMALL} units cost {small} {only} calls and "
         f"{_REREAD_LARGE} cost {large} -- {ratio:.1f}x for 4x the input, "
         f"where this tree measured under 3.8x and the re-reading walk "
-        f"11.0-14.7x (#558, #559)")
+        f"7.5-14.7x (#558, #559, #573)")
 
 
 # THE ABSOLUTE COST OF A LINK, which the ratio above cannot see: a
