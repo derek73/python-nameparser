@@ -1038,8 +1038,11 @@ def test_the_unmatchable_entry_filter_has_a_recorded_control(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(_config_shim, "_v1_matchable", lambda e: True)
-    # the fold also runs before the set algebra now (#582); this control
-    # measures the filter alone, so the fold is switched off beside it
+    # the three rows that recorded "raises" through the two cross-set
+    # checks ('ma ', 'ba ', "'t ") raise only while those compare RAW
+    # spellings; the shim now folds them there (#582), which would turn
+    # them into "inert". This control measures the filter alone, so that
+    # fold is switched off beside it.
     monkeypatch.setattr(_config_shim, "_normalize", lambda e: e)
     baseline = _reading(_base(field), text)
     c = _with_entry(field, entry, value)
@@ -1054,41 +1057,29 @@ def test_the_unmatchable_entry_filter_has_a_recorded_control(
     assert outcome == _UNFILTERED_OUTCOME[(field, entry)]
 
 
-# -- an edge full stop folds before the set algebra (#582) ---------------
+# -- an edge full stop and the two cross-set checks (#582) ---------------
 #
-# Lexicon strips a CJK full stop at an entry's edge, v1's lc() does not,
-# and the shim's set algebra compares strings: left raw, 'ma。' and 'ma'
-# were two words to the algebra and one to Lexicon, which then rejected
-# the pair. 1.4.0 through 2.2.0 accepted every config below. Each row:
-# (id, plain entries as (field, word) beside it, the field and spelling
-# carrying the edge full stop, text). The config with the full stop must read as
-# the config with the plain word.
-_EDGE_FULL_STOP_ROWS = [
+# Lexicon strips a CJK full stop at an entry's edge, v1's lc() does not.
+# Lexicon folds each field on its own, but re-checks two relations
+# between separately built sets AFTER its fold, and the shim built those
+# two from raw strings: 'ma。' beside the ambiguous 'ma' (suffix word vs
+# ambiguous acronym) and a bound 'zed。' beside the particle 'zed' (bound
+# given name vs particles_ambiguous). 1.4.0 through 2.2.0 accepted both.
+# Each row: (id, plain entries as (field, word), the field and spelling
+# carrying the edge full stop, text).
+_EDGE_COLLISION_ROWS = [
     ("ambiguous-vs-word", [], "suffix_not_acronyms", "ma。", "jack ma"),
     ("bound-vs-particle",
      [("prefixes", "zed"), ("non_first_name_prefixes", "zed")],
      "bound_first_names", "zed。", "zed bakr smith"),
-    ("title", [], "titles", "dean。", "dean john smith"),
-    ("ambiguous-intersection",
-     [("suffix_acronyms", "zq"), ("suffix_not_acronyms", "zq")],
-     "suffix_acronyms_ambiguous", "zq。", "john zq"),
-    ("fullwidth-stop",
-     [("suffix_acronyms", "zq"), ("suffix_not_acronyms", "zq")],
-     "suffix_acronyms_ambiguous", "zq．", "john zq"),
-    ("halfwidth-stop", [], "prefixes", "｡zz", "john zz smith"),
 ]
 
-# Recorded negative control: with the shim's fold switched to identity,
-# the two rows that pair an edge-stopped entry with a plain one raise
-# (measured 2026-10-02 on afc45f35); the rest read identically either way
-# and are swept so the whole family is covered.
+# Recorded negative control: with the shim's fold switched to identity
+# these two raise ValueError at the first parse (measured 2026-10-02).
+# It measures the raise only; the readings are pinned by the tests below.
 _UNFOLDED_OUTCOME = {
     "ambiguous-vs-word": "raises",
     "bound-vs-particle": "raises",
-    "title": "same",
-    "ambiguous-intersection": "same",
-    "fullwidth-stop": "same",
-    "halfwidth-stop": "same",
 }
 
 
@@ -1102,9 +1093,9 @@ def _edge_config(plain: list[tuple[str, str]], field: str,
 
 
 @pytest.mark.parametrize(("case", "plain", "field", "entry", "text"),
-                         _EDGE_FULL_STOP_ROWS,
-                         ids=[r[0] for r in _EDGE_FULL_STOP_ROWS])
-def test_an_edge_full_stop_entry_reads_as_its_folded_spelling(
+                         _EDGE_COLLISION_ROWS,
+                         ids=[r[0] for r in _EDGE_COLLISION_ROWS])
+def test_an_edge_full_stop_collision_reads_as_its_folded_spelling(
     case: str, plain: list[tuple[str, str]], field: str, entry: str,
     text: str,
 ) -> None:
@@ -1115,8 +1106,8 @@ def test_an_edge_full_stop_entry_reads_as_its_folded_spelling(
 
 
 @pytest.mark.parametrize(("case", "plain", "field", "entry", "text"),
-                         _EDGE_FULL_STOP_ROWS,
-                         ids=[r[0] for r in _EDGE_FULL_STOP_ROWS])
+                         _EDGE_COLLISION_ROWS,
+                         ids=[r[0] for r in _EDGE_COLLISION_ROWS])
 def test_the_edge_full_stop_fold_has_a_recorded_control(
     case: str, plain: list[tuple[str, str]], field: str, entry: str,
     text: str, monkeypatch: pytest.MonkeyPatch,
@@ -1124,14 +1115,52 @@ def test_the_edge_full_stop_fold_has_a_recorded_control(
     monkeypatch.setattr(_config_shim, "_normalize", lambda e: e)
     c = _edge_config(plain, field, entry)
     try:
-        # a raw stop-only token would not be dropped either, but no row
-        # here is stop-only
         _reading(c, text)
     except ValueError:
         outcome = "raises"
     else:
-        outcome = "same"
+        outcome = "reads"
     assert outcome == _UNFOLDED_OUTCOME[case]
+
+
+def _fields(first: str, last: str, suffix: str, title: str = "") -> dict[str, str]:
+    return {"title": title, "first": first, "middle": "", "last": last,
+            "suffix": suffix, "nickname": "", "maiden": ""}
+
+
+# Readings recorded 2026-10-02 on the tree before any shim fold (afc45f35,
+# a scratch `git archive` copy), where these configs never raised: the
+# fold must not move them. A field Lexicon folds on its own is NOT
+# re-folded by the shim, so 'zz。' in non_first_name_prefixes beside the
+# particle 'zz' still leaves 'zz' a given name.
+_UNCHANGED_READINGS = [
+    ("never-given-edge-stop",
+     [("prefixes", "zz")], "non_first_name_prefixes", "zz\u3002", "zz smith",
+     (_fields("zz", "smith", ""), "Zz Smith")),
+    ("never-given-fullwidth-stop",
+     [("prefixes", "zz")], "non_first_name_prefixes", "zz\uff0e", "zz smith",
+     (_fields("zz", "smith", ""), "Zz Smith")),
+    ("never-given-nfd-nfc",
+     [("prefixes", "z\u00e9")], "non_first_name_prefixes", "ze\u0301",
+     "z\u00e9 smith",
+     (_fields("z\u00e9", "smith", ""), "Z\u00e9 Smith")),
+    ("ambiguous-edge-stop",
+     [("suffix_acronyms", "zq")], "suffix_acronyms_ambiguous", "zq\u3002",
+     "john zq", (_fields("john", "", "zq"), "John ZQ")),
+    ("title-edge-stop",
+     [], "titles", "dean\u3002", "dean john smith",
+     (_fields("john", "smith", "", "dean"), "Dean John Smith")),
+]
+
+
+@pytest.mark.parametrize(("case", "plain", "field", "entry", "text", "want"),
+                         _UNCHANGED_READINGS,
+                         ids=[r[0] for r in _UNCHANGED_READINGS])
+def test_an_edge_full_stop_entry_outside_the_two_checks_reads_as_before(
+    case: str, plain: list[tuple[str, str]], field: str, entry: str,
+    text: str, want: tuple[dict[str, str], str],
+) -> None:
+    assert _reading(_edge_config(plain, field, entry), text) == want
 
 
 def test_the_offered_remedy_runs_and_silences_the_warning() -> None:

@@ -627,8 +627,8 @@ def _v1_matchable(entry: str) -> bool:
     ``lc()`` of a parsed piece, and a piece comes from a whitespace
     split, re-joined only with single spaces, so it is never empty and
     never holds edge whitespace, a whitespace run or a non-space
-    whitespace character. An entry failing the whitespace test matched nothing in
-    1.x; translating it either starts matching (Lexicon strips the
+    whitespace character. An entry failing the whitespace test matched
+    nothing in 1.x; translating it either starts matching (Lexicon strips the
     whitespace) or trips a Lexicon invariant the set algebra in
     ``_build_snapshot`` could not see (#541). ``lc`` first, for a
     ``capitalization_exceptions`` key, which TupleManager stores as
@@ -1049,16 +1049,16 @@ class Constants:
         # Every set field and every capitalization_exceptions key passes
         # _v1_matchable BEFORE any set algebra below: an entry v1 could
         # never match, or one Lexicon folds to empty (#582), is dropped
-        # and named in one warning (#541); the survivors are folded as
-        # Lexicon will fold them, so the set algebra below compares what
-        # Lexicon compares.
+        # and named in one warning (#541). The survivors are passed RAW,
+        # as Lexicon folds each field on its own; only the two cross-set
+        # computations below compare folded spellings.
         dropped: list[tuple[str, str]] = []
 
         def matchable(field: str) -> frozenset[str]:
             kept = []
             for entry in sorted(getattr(self, field)):
                 if _v1_matchable(entry):
-                    kept.append(_normalize(entry))
+                    kept.append(entry)
                 elif (field, entry) not in _V14_SHIPPED_UNMATCHABLE:
                     dropped.append((field, entry))
             return frozenset(kept)
@@ -1081,7 +1081,20 @@ class Constants:
         # dropping it from the AMBIGUOUS set instead ungated the word
         # and lost the family name -- a silent misparse worse than the
         # raise it avoided.
-        suffix_words = matchable("suffix_not_acronyms") - ambiguous_acronyms
+        # Folded here, and only here (#582): Lexicon folds each field on
+        # its own but checks this disjointness AFTER its fold, so the
+        # shim must compare folded spellings exactly where Lexicon
+        # re-checks. Folding anything else would change readings on
+        # configs that never raised.
+        ambiguous_folded = {_normalize(a) for a in ambiguous_acronyms}
+        suffix_words = frozenset(
+            w for w in matchable("suffix_not_acronyms")
+            if _normalize(w) not in ambiguous_folded)
+        # Likewise folded only here (#582): Lexicon checks bound_given_names
+        # & particles against particles_ambiguous after its own fold.
+        bound_folded = {_normalize(b) for b in bound}
+        bound_particles = frozenset(
+            p for p in particles if _normalize(p) in bound_folded)
         capitalization_exceptions: list[tuple[str, object]] = []
         for key, value in sorted(self.capitalization_exceptions.items()):
             if _v1_matchable(key):
@@ -1111,9 +1124,11 @@ class Constants:
         # (suffix_acronyms_ambiguous disjoint from suffix_words) do NOT
         # have that property -- each compares two sets built by SEPARATE
         # set arithmetic on the shim's own strings. They hold here
-        # because the set algebra runs on entries already filtered by
-        # _v1_matchable AND folded by _normalize, so the strings it
-        # compares are the ones Lexicon sees (#541, #582).
+        # because the entries are filtered by _v1_matchable and the two
+        # cross-set computations (suffix_words, bound_particles) compare
+        # _normalize'd spellings, which are the ones Lexicon compares;
+        # every other field is passed raw, as Lexicon folds it itself
+        # (#541, #582).
         # What else reaches it is a non-str value's TypeError -- a raise
         # v1 also had, later, at capitalize().
         try:
@@ -1162,7 +1177,7 @@ class Constants:
                 # config the shipped data forbids.
                 particles_ambiguous=(
                     particles - non_given)
-                | (bound & particles),
+                | bound_particles,
                 conjunctions=conjunctions,
                 # no v1 manager of its own: the ambiguous-connective
                 # subset is 2.4 behavior (#383/#479), so it rides in the
