@@ -609,9 +609,10 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     ('ǰ' to 'J' + a combining caron) is not such a case since #542:
     a word runs on through its marks (_sub_words), so 'J̌o' is one
     word on the second pass and comes back unchanged.
-    A name typed decomposed (NFD) repairs as its composed twin does,
-    every clause reading a mark as part of the letter before it, and
-    keeps the form it was typed in."""
+    A name typed decomposed (NFD) repairs as its composed twin does
+    and keeps the form it was typed in: the splitter and the mask read
+    a mark as part of the letter before it, and the shape tests (Mac/Mc,
+    the initial tests) ask about the composed spelling."""
     if lexicon is not None and not isinstance(lexicon, Lexicon):
         # eager, before the gate: a garbage argument must not become a
         # silent no-op on mixed-case input or a deep AttributeError
