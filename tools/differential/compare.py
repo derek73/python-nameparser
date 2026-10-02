@@ -1881,6 +1881,14 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         # nesting, so neither is the narrower and file order is the
         # whole decision. The shape is this run's, not guessed.
         "Smith, MA": ("given", "suffix"),
+        # #575 (2026-10-01): 1.4.0 read suffix 'Ed'/'Ma' with no given
+        # name, and the particle surname is now one name word, so the
+        # word after the comma is the given name. The lone-post-comma
+        # routing rule's Latin comma regex reaches both and `fields`
+        # overlap on {given, suffix} without nesting, so the #575 rule
+        # stands ahead of it on purpose. The shape is this run's.
+        "De La Cruz, Ed": ("given", "suffix"),
+        "de la Cruz, Ma": ("given", "suffix"),
     },
     # #501's six, moved here from _WATCHED_DIFFS with their shapes
     # unchanged. The four CJK rows sit at 2.0.0 alone: the honorific

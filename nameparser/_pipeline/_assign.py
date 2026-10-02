@@ -71,7 +71,8 @@ from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    effective_script, is_suffix_lenient, resolve_script_set,
+    SURNAME_UNIT_TAGS, effective_script, is_suffix_lenient,
+    resolve_script_set, unit_ends,
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
@@ -1079,9 +1080,19 @@ def assign(state: ParseState) -> ParseState:
                             f"read as "
                             f"{'a credential' if suffix_here else 'a name'}",
                             (i2,)))
-        if reading is not None and sum(
-                1 for k, piece in enumerate(fam_pieces)
-                if not is_suffix_piece(piece, fam_tags[k], tokens)) > 1:
+        # The two name words are counted as UNITS (#575,
+        # mechanisms.md#UNIT-PARTITION): group leaves an ambiguous
+        # leading particle a piece of its own (P1's fork), so 'van der
+        # Berg, PhD' holds two name pieces and one surname, and read
+        # positionally lost 'van' to the given name. The comma is the
+        # evidence that settles that fork: the listing form puts a
+        # surname before it. The same facts as segment's count
+        # (`_vocab.SURNAME_UNIT_TAGS`), so the two agree.
+        if reading is not None and len(unit_ends([
+                tokens[i].tags & SURNAME_UNIT_TAGS
+                for k, piece in enumerate(fam_pieces)
+                if not is_suffix_piece(piece, fam_tags[k], tokens)
+                for i in piece], chain=False)) > 1:
             order = _assign_main(0, state, tokens, ambiguities)
         else:
             for k, piece in enumerate(fam_pieces):

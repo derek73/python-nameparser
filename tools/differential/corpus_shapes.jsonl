@@ -139,6 +139,8 @@
 {"name": "Carod i Rovira, Josep", "shape": 2}
 {"name": "DOE, JOHN MA", "shape": 2}
 {"name": "DOE, MARY JO MA", "shape": 2}
+{"name": "De La Cruz, Ed", "shape": 2}
+{"name": "De La Cruz, M.J. K.L.", "shape": 2}
 {"name": "Doe, Dr. John MA", "shape": 2}
 {"name": "Doe, Dr. MA", "shape": 2}
 {"name": "Doe, Dr. MA Smith", "shape": 2}
@@ -222,11 +224,14 @@
 {"name": "Smith, PhD MEng", "shape": 2}
 {"name": "Smith, PhD Ma", "shape": 2}
 {"name": "Smith, meng", "shape": 2}
+{"name": "Van Buren, Ed", "shape": 2}
+{"name": "de la Cruz, Ma", "shape": 2}
 {"name": "de la Vega, Juan", "shape": 2}
 {"name": "doe, jane v phd do", "shape": 2}
 {"name": "doe, john ma", "shape": 2}
+{"name": "van der Berg, MA", "shape": 2}
+{"name": "van der Berg, PhD", "shape": 2}
 {"name": "Davis Royce, Ed", "shape": 3}
-{"name": "De La Cruz, M.J. K.L.", "shape": 3}
 {"name": "De La Cruz, M.J. PhD", "shape": 3}
 {"name": "Dr. John P. Doe-Ray, CLU, CFP, LUTC", "shape": 3}
 {"name": "García Márquez, Ed G.J.", "shape": 3}
@@ -255,7 +260,10 @@
 {"name": "John Smith, X.Y. P.Q.", "shape": 3}
 {"name": "John Smith, X.Y.Z.", "shape": 3}
 {"name": "John Smith, X.Y.Z. MA", "shape": 3}
+{"name": "John van Buren, Ed", "shape": 3}
+{"name": "Ortega y Gasset, Ed", "shape": 3}
 {"name": "Steven Hardman, MD, DO, DDS", "shape": 3}
+{"name": "abdul Salam, Ed", "shape": 3}
 {"name": "john smith, ma", "shape": 3}
 {"name": "john smith, md ma", "shape": 3}
 {"name": "john smith, phd meng", "shape": 3}

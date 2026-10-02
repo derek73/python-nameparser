@@ -1381,6 +1381,10 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     "fix(#289) a written case contrast decides a bare ambiguous acronym":
         ("JOHN SMITH MA", "ANH DO", "anh van do", "jack ma", "Jack Ma",
          "Jack Ma.", "毛泽东, MA", "Smith, A.B.C.", "Jack M.A."),
+    # #575: two name words before the comma, a given name and a
+    # particle surname, keep the credential reading.
+    "fix(#575) a particle surname before a comma is one name word":
+        ("John van Buren, Ed", "John van der Berg, PhD"),
     # #516's dotted rule must never reach the shapes the vocabulary
     # SETTLES (a whole-token match, or a surviving chunk claim), the
     # leading dotted runs rules.md#S2 excludes by position, the single
@@ -2458,13 +2462,19 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "John de Ma", "John van der Berg Ma", r"Smith Jr\., MA",
                r"Smith Jr\., Ma", "Smith, MA", "abdul Smith Berg Ma",
                "abdul Smith Ma", "john smith, ma"}),
-    frozenset({"Davis Royce, Ed", r"Doe, Dr\. MA", "Doe, MA", "Doe, MA PhD",
-               r"Doe, Mr\. MA PhD", "Freiherr von Berg MA", "JOHN SMITH, MA",
-               "Jack MA", r"Jack MA\.", "Jack Wei Ma", r"John Prof\. MA",
+    # 2026-10-01, #575: the 2.x copy gains seven C1 examples, comma
+    # names whose post-comma word is a listed member -- no set copied.
+    frozenset({"Davis Royce, Ed", "De La Cruz, Ed", r"Doe, Dr\. MA",
+               "Doe, MA", "Doe, MA PhD", r"Doe, Mr\. MA PhD",
+               "Freiherr von Berg MA", "JOHN SMITH, MA", "Jack MA",
+               r"Jack MA\.", "Jack Wei Ma", r"John Prof\. MA",
                "John Smith Ma", "John Smith, Ed", "John Smith, MA",
-               "John Smith, Ma", "John de Ma", "John van der Berg Ma",
+               "John Smith, Ma", "John de Ma", "John van Buren, Ed",
+               "John van der Berg Ma", "Ortega y Gasset, Ed",
                r"Smith Jr\., MA", r"Smith Jr\., Ma", "Smith, MA",
-               "abdul Smith Berg Ma", "abdul Smith Ma", "john smith, ma"}),
+               "Van Buren, Ed", "abdul Salam, Ed", "abdul Smith Berg Ma",
+               "abdul Smith Ma", "de la Cruz, Ma", "john smith, ma",
+               "van der Berg, MA"}),
     frozenset({r"García Márquez, G\.J\.R\.", r"Jack X\.Y\.I\.",
                r"John Smith B\.Tech\.", r"John Smith C\.H\.A\.",
                r"John Smith E\.S\.Q\.", r"John Smith Q\.W\.E\.R\.T\.",
@@ -3067,6 +3077,9 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"Doe, Jane nee Smith PhD MEng", "Jane Doe nee Smith PhD MA",
                "Jane Doe nee Smith PhD MEng"}),
     frozenset({r"jack\s+m\.a\.", r"wang\s+m\.eng\."}),
+    # 2026-10-01, #575: rules.md#C1's particle-surname examples at
+    # 1.4.0, literal names that copy no set.
+    frozenset({"De La Cruz, Ed", "Van Buren, Ed", "de la Cruz, Ma"}),
     # 2026-10-01, #554: the run rule gains rules.md#C1's particle-and-
     # suffix examples, a vocabulary word in front of a member, which
     # copies no set either.
@@ -3775,8 +3788,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'JOHN SMITH, VD MA', 'John Smith, Jr vd' and 'John Smith,
         # Jr do', #554's rules.md#C1 examples. Reach, verified name by
         # name.
+        # 2026-10-01, #575: 414 -> 422, its eight rules.md#C1 and
+        # case-row names, every one a comma name. Reach, verified
+        # name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(414, ('given', 'suffix', 'title'), "46663c4aa90a", None),
+            _Claim(422, ('given', 'suffix', 'title'), "de00a0ee1e57", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3875,8 +3891,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'JOHN SMITH, VD MA', 'John Smith, Jr vd' and 'John Smith,
         # Jr do', #554's rules.md#C1 examples. Reach, verified name by
         # name.
+        # 2026-10-01, #575: 414 -> 422, its eight rules.md#C1 and
+        # case-row names, every one a comma name. Reach, verified
+        # name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(414, ('family', 'given'), "46663c4aa90a", None),
+            _Claim(422, ('family', 'given'), "de00a0ee1e57", None),
+        # 2026-10-01, #575: new, 3; 'De La Cruz, Ed', 'Van Buren, Ed',
+        # 'de la Cruz, Ma'.
+        "fix(#575) a particle surname before a comma is one name word":
+            _Claim(3, ('family', 'given', 'suffix'), "a1d6626eb35f", None),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -4137,16 +4160,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # pinning that a trailing link does not count itself for an
         # unrelated 'y', which is in the corpus because its row
         # carries a shape tag. Reach again, verified name by name.
+        # 2026-10-01, #575: 104 -> 105, 'Ortega y Gasset, Ed'. Reach.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(104, ('_initials',), "bc7dfeba1da5", ('DEFAULT',)),
+            _Claim(105, ('_initials',), "231bbda6768a", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
         # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
         # nee Jones MA' -- the P5 pair this change added to record
         # that the clause form now agrees with the bare one.
         # 2026-09-26, #535: 43 -> 44, 'Berg, abdul nee Smith V' --
         # another opening bound-given word. Reach again.
+        # 2026-10-01, #575: 44 -> 45, 'abdul Salam, Ed'. Reach.
         "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
-            _Claim(44, ('_initials',), "4d6f497bebf7", ('DEFAULT',)),
+            _Claim(45, ('_initials',), "690d9625f120", ('DEFAULT',)),
         # 2026-09-18: 109 -> 110. One new corpus name,
         # 'john van der berg ma' -- rules.md#P2's one-case contrast,
         # and a particle chain like every other member.
@@ -4159,8 +4184,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-30, #563: 115 -> 117, 'De La Cruz, M.J. PhD' and
         # 'De La Cruz, M.J. K.L.' -- a particle chain, 'De La Cruz'.
         # Reach, verified name by name.
+        # 2026-10-01, #575: 117 -> 123, its six particle-surname
+        # names ('De La Cruz, Ed', 'de la Cruz, Ma', 'van der Berg,
+        # MA', 'Van Buren, Ed', 'van der Berg, PhD', 'John van Buren,
+        # Ed'). Reach, verified name by name.
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(117, ('_initials',), '0820bd80678d', ('DEFAULT',)),
+            _Claim(123, ('_initials',), 'ca2598e60110', ('DEFAULT',)),
         # 2026-09-23, #459: 18 -> 19, 'john smith ph. d.', rules.md#R4's
         # two-token line. Reach, verified name by name.
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
@@ -4960,7 +4989,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Doe, Mr. MA PhD' -- 'Doe, Dr. MA' with a credential run
         # behind the member. Verified to be that name and no other;
         # no role joined the list.
-            _Claim(23, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "1f21a81740ea", ('DEFAULT',)),
+        # 2026-10-01, #575: 23 -> 30, the seven C1 examples the
+        # alternation gained. Reach, verified name by name.
+            _Claim(30, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "dda7ec083d1e", ('DEFAULT',)),
+        # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
+        "fix(#575) a particle surname before a comma is one name word":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -5457,7 +5491,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Doe, Mr. MA PhD' -- 'Doe, Dr. MA' with a credential run
         # behind the member. Verified to be that name and no other;
         # no role joined the list.
-            _Claim(23, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "1f21a81740ea", ('DEFAULT',)),
+        # 2026-10-01, #575: 23 -> 30, the seven C1 examples the
+        # alternation gained. Reach, verified name by name.
+            _Claim(30, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "dda7ec083d1e", ('DEFAULT',)),
+        # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
+        "fix(#575) a particle surname before a comma is one name word":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -6097,7 +6136,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Doe, Mr. MA PhD' -- 'Doe, Dr. MA' with a credential run
         # behind the member. Verified to be that name and no other;
         # no role joined the list.
-            _Claim(23, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "1f21a81740ea", ('DEFAULT',)),
+        # 2026-10-01, #575: 23 -> 30, the seven C1 examples the
+        # alternation gained. Reach, verified name by name.
+            _Claim(30, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "dda7ec083d1e", ('DEFAULT',)),
+        # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
+        "fix(#575) a particle surname before a comma is one name word":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -6460,7 +6504,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Doe, Mr. MA PhD' -- 'Doe, Dr. MA' with a credential run
         # behind the member. Verified to be that name and no other;
         # no role joined the list.
-            _Claim(23, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "1f21a81740ea", ('DEFAULT',)),
+        # 2026-10-01, #575: 23 -> 30, the seven C1 examples the
+        # alternation gained. Reach, verified name by name.
+            _Claim(30, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "dda7ec083d1e", ('DEFAULT',)),
+        # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
+        "fix(#575) a particle surname before a comma is one name word":
+            _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -7280,6 +7329,14 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         "MD, DO, DDS":
             "fix(#296) a dropped prenominal takes the name position it "
             "occupies",
+        # #575 (2026-10-01): the routing rule describes a lone
+        # post-comma piece LEAVING `first`; these two move a piece INTO
+        # `given`, because the particle surname before the comma is one
+        # name word (rules.md#C1). The rule that says so wins.
+        "De La Cruz, Ed":
+            "fix(#575) a particle surname before a comma is one name word",
+        "de la Cruz, Ma":
+            "fix(#575) a particle surname before a comma is one name word",
     },
     # The two 2.x ledgers had NO section here until #452, and the
     # coverage assertion below was `<=`, so their absence read as "no
@@ -8429,6 +8486,10 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
          "fix(comma-family) lone post-comma piece routes to suffix/title, not first", 2),
         ("fix(#296) a credential-only comma string reads a name and its postnominal",
          "fix(comma-precomma-family) pre-comma run reads as family, not given", 2),
+        # 2026-10-01, #575: declared on the #575 rule; the routing
+        # rule's half of its contest is a pinned overlap, not this.
+        ("fix(#575) a particle surname before a comma is one name word",
+         "fix(comma-precomma-family) pre-comma run reads as family, not given", 3),
         ("fix(#296) a lone post-comma credential is a suffix",
          "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`", 2),
         ("fix(#400/#274) bound-given join and maiden consumption in one name",

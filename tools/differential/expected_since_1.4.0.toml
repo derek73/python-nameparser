@@ -767,6 +767,37 @@ name_regex = "(?i)^smith,\\s*jr\\.?,\\s*phd$"
 fields = ["title", "suffix"]
 
 [[change]]
+issue = "fix(#575) a particle surname before a comma is one name word"
+# rules.md#C1: "a particle and the name word it attaches to are one
+# word, as P2 joins them" -- so the part before the comma is one
+# surname and the word after it is the given name, as 'Royce, Ed'
+# reads. 1.4.0 counted tokens: 'De La Cruz, Ed' and 'de la Cruz, Ma'
+# read suffix 'Ed'/'Ma' with no given name, and 'Van Buren, Ed' read
+# given 'Van', family 'Buren', suffix 'Ed'.
+#
+# Ahead of the routing rule below on purpose: that rule's alternation
+# reaches the two 'De La Cruz' spellings, and it describes the
+# opposite move (a lone post-comma piece leaving `first`), so letting
+# it absorb a piece ARRIVING in `given` would explain the diff with a
+# rule that contradicts it.
+#
+# Literal; the probe 'John van Buren, Ed' (two name words: the
+# credential reading stays) is _MUST_NOT_MATCH.
+name_regex = "^(?:De La Cruz, Ed|Van Buren, Ed|de la Cruz, Ma)$"
+fields = ["given", "family", "suffix"]
+
+[[change.precedes_narrower]]
+issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
+why = """
+The later rule describes 1.4.0 handing a pre-comma word to `given`
+that 2.x reads as family, which is half of these moves ('Van' leaving
+`given` in 'Van Buren, Ed'). It says nothing about the word AFTER the
+comma arriving in `given`, the other half, nor why the particle
+surname is one name: that is rules.md#C1's count (#575), which this
+rule names.
+"""
+
+[[change]]
 issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
 # 'Smith, Dr.' / 'Andrews, M.D.': v1 put the lone strict-suffix-or-title
 # post-comma piece in `first`; 2.0 routes it to `suffix`/`title` instead

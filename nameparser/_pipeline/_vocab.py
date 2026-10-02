@@ -43,7 +43,7 @@ from __future__ import annotations
 import functools
 import re
 import unicodedata
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence, Set
 from typing import Literal
 
 from nameparser._lexicon import (
@@ -775,6 +775,134 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
     return False
 
 
+# mechanisms.md#UNIT-PARTITION: "A rule that counts name words counts
+# those units, and takes each whole or not at all." The walk is shared
+# by two readers that hold the facts in different forms: post_rules
+# reads classify's TAGS, and segment, which runs before classify has
+# tagged anything, builds the same tag names from the vocabulary
+# (`surname_unit_tags`). One walk over tag sets, so the two cannot
+# disagree about where a unit ends (mechanisms.md#ONE-PREDICATE-PER-
+# QUESTION) -- only, at worst, about a token's facts, which
+# test_vocab's agreement test pins.
+def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
+    """The END (one past the last index) of each unit of `tags`, in
+    order, partitioning `range(len(tags))`: one name word each, except
+    where another rule has already made several words one name -- a
+    particle and the words it chains (P2), a conjunction-joined run
+    (P3), and a bound given-name word with the word it completes (P5).
+    Each element is the tag set of one token, read for "particle",
+    "conjunction", "vocab:bound-given" and "vocab:suffix".
+
+    `chain` picks how far a particle reaches. True is P2's chain: the
+    particle run and every word after it up to the next stop ("van der
+    Berg Smith" is one unit). False is P1's fold reach: the particle
+    run and the ONE unit it attaches to, so "de Mesnil Jean" is two --
+    the count rules.md#C1 needs before a comma, where under a
+    family-first order that part is family 'de Mesnil', given 'Jean'
+    (#575).
+
+    RECURSIVE, and that is the whole point: what a conjunction or a
+    bound given-name word joins is the next UNIT, not the next word.
+    Absorbing a single index instead strands a particle at the end of
+    the unit, severed from the words it chains -- "de la Vega y la
+    Vega" cut between `la` and `Vega`, reporting family
+    "de la Vega y la", which is the same defect as a bare particle
+    opening the given name, mirrored."""
+    n = len(tags)
+
+    def end_of(i: int) -> int:
+        if "particle" in tags[i] and not chain:
+            j = i + 1
+            while j < n and "particle" in tags[j]:
+                j += 1
+            end = (end_of(j) if j < n and "conjunction" not in tags[j]
+                   and "vocab:suffix" not in tags[j] else j)
+        elif "particle" in tags[i]:
+            j = i
+            while j + 1 < n and "particle" in tags[j + 1]:
+                j += 1
+            # ... then the words it joins, stopping where the next
+            # particle starts a group of its own, at a suffix word (the
+            # stop _group's chain uses), or at a conjunction, which the
+            # shared loop below joins to the whole unit after it rather
+            # than to the one word after it.
+            while (j + 1 < n
+                   and "particle" not in tags[j + 1]
+                   and "conjunction" not in tags[j + 1]
+                   and "vocab:suffix" not in tags[j + 1]):
+                j += 1
+            end = j + 1
+        else:
+            end = i + 1
+            if "vocab:bound-given" in tags[i] and end < n:
+                end = end_of(end)
+        while end + 1 < n and "conjunction" in tags[end]:
+            end = end_of(end + 1)
+        return end
+
+    ends: list[int] = []
+    i = 0
+    while i < n:
+        i = end_of(i)
+        ends.append(i)
+    return ends
+
+
+#: The facts rules.md#C1's count before a comma reads (#575): a
+#: particle chain is one surname, and a suffix word stops it. Neither
+#: of the other two joins `unit_ends` knows is read there. A bound
+#: given-name pair builds a GIVEN name, and P5 gives up a family word
+#: where the name has no other ('abdul Salam' alone is given 'abdul',
+#: family 'Salam'), so before a comma it is not one surname. A
+#: connective join is P3's to decide, and P3 declines the commonest
+#: connective surname outright -- a single-letter connective in a
+#: three-word name stays a name word, so 'Ortega y Gasset' is three --
+#: on conditions (that exception, the case fork, generational
+#: connectives) segment could only rebuild by copying P3. Segment
+#: builds these from the vocabulary (`surname_unit_tags`); assign
+#: intersects classify's tags with this set, so the two counts read
+#: one set of facts.
+SURNAME_UNIT_TAGS = frozenset({"particle", "vocab:suffix"})
+_PARTICLE_ONLY = frozenset({"particle"})
+_SUFFIX_ONLY = frozenset({"vocab:suffix"})
+_NO_TAGS: frozenset[str] = frozenset()
+
+
+def surname_unit_tags(text: str, lexicon: Lexicon) -> frozenset[str]:
+    """`SURNAME_UNIT_TAGS` for one token from the vocabulary alone --
+    segment's view of classify's tags, built before classify runs, and
+    classify's own tests: particle membership, `suffix_as_written`, and
+    the period-joined derivation. Kept from drifting by
+    test_classify.test_surname_unit_tags_agree_with_classify."""
+    n = _normalize(text)
+    # classify's whole-token test, then its period-joined derivation
+    # for a token no whole-token title or suffix claimed ('JD.CPA'),
+    # asked only of a token with a period, which it needs
+    suffix = suffix_as_written(n, text, lexicon) or (
+        "." in text and n not in lexicon.titles
+        and period_joined_vocab(text, lexicon) == "suffix")
+    if n in lexicon.particles:
+        return SURNAME_UNIT_TAGS if suffix else _PARTICLE_ONLY
+    return _SUFFIX_ONLY if suffix else _NO_TAGS
+
+
+def surname_unit_count(texts: Sequence[str], lexicon: Lexicon) -> int:
+    """How many units (`unit_ends`) the part before a comma holds, a
+    particle chain (P2) and a connective join (P3) each counting once:
+    rules.md#C1's count before the comma, for the credential reading
+    of a part that is wholly suffix words (#575), with a particle
+    reaching as P1's fold does (`unit_ends`'s `chain=False`). 'van der
+    Berg' is one surname, so 'van der Berg, PhD' reads as 'Berg, PhD'
+    does."""
+    # With no particle, every token is a unit of its own, so the count
+    # is the token count: the suffix tests and the walk are skipped for
+    # the commonest comma names ('John Smith, PhD').
+    if not any(_normalize(t) in lexicon.particles for t in texts):
+        return len(texts)
+    return len(unit_ends([surname_unit_tags(t, lexicon) for t in texts],
+                         chain=False))
+
+
 def name_word_count(texts: Sequence[str], lexicon: Lexicon,
                     policy: Policy) -> int:
     """How many of these texts are NAME words -- not suffix
@@ -792,16 +920,38 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     leading peel reads it as a title, and that divergence is recorded
     once, at `is_title_shaped` itself
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+
+    It counts UNITS holding a name word, not tokens (#575,
+    mechanisms.md#UNIT-PARTITION): a particle chain (P2) builds one
+    family name, so 'De La Cruz' is one name word and 'De La Cruz, Ed'
+    reads as 'Royce, Ed' does. Why the other two joins are not read
+    here: `SURNAME_UNIT_TAGS`.
     """
     predicate = (is_suffix_lenient if policy.lenient_comma_suffixes
                  else is_suffix_strict)
-    n = 0
+
+    # One pass: each token's name-word verdict, and whether any token
+    # is a particle. With none, every token is a unit of its own and
+    # the count is a sum, so the commonest comma names never build the
+    # units -- and pay no frame the token loop did not already pay.
+    names: list[bool] = []
+    has_particle = False
     for text in texts:
-        if (predicate(text, lexicon) or _normalize(text) in lexicon.titles
-                or is_title_shaped(text)):
-            continue
-        n += 1
-    return n
+        n = _normalize(text)
+        if n in lexicon.particles:
+            has_particle = True
+        names.append(not (predicate(text, lexicon) or n in lexicon.titles
+                          or is_title_shaped(text)))
+    if not has_particle:
+        return sum(names)
+    count = 0
+    start = 0
+    for end in unit_ends([surname_unit_tags(t, lexicon) for t in texts],
+                         chain=False):
+        if any(names[start:end]):
+            count += 1
+        start = end
+    return count
 
 
 def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,

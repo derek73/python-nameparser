@@ -56,6 +56,7 @@ from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
     caps_shape_candidate, is_one_case, is_paired_initials,
     is_single_letter_numeral, is_wholly_suffix, name_word_count,
+    surname_unit_count,
     run_word_fold,
 )
 from nameparser._types import AmbiguityKind
@@ -391,9 +392,15 @@ def segment(state: ParseState) -> ParseState:
         case_class()
         pre_comma_names = name_word_count(texts(groups[0]), state.lexicon,
                                           state.policy)
+    # rules.md#C1's "more than one word precedes the comma" counts a
+    # particle chain and a connective join as one word (#575): v1's
+    # token count split 'van der Berg, PhD' into given 'van', family
+    # 'der Berg'. The token count stays first, so a one-token part
+    # never builds the units.
     structure = (
         Structure.SUFFIX_COMMA
-        if ((suffixy(groups[1]) and len(groups[0]) > 1)
+        if ((suffixy(groups[1]) and len(groups[0]) > 1
+             and surname_unit_count(texts(groups[0]), state.lexicon) > 1)
             or (pre_comma_names is not None and pre_comma_names >= 2))
         else Structure.FAMILY_COMMA)
     ambiguities = list(state.ambiguities)

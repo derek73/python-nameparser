@@ -14,7 +14,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import (
-    ambiguous_class_candidate, ambiguous_class_member, caps_shape_candidate,
+    SURNAME_UNIT_TAGS, ambiguous_class_candidate, ambiguous_class_member,
+    caps_shape_candidate, surname_unit_tags,
 )
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
@@ -731,3 +732,35 @@ def test_the_caps_shape_is_a_testable_predicate() -> None:
     assert (_tags_by_text("John Smith X.Y", policy=on)["X.Y"]
             == _tags_by_text("John Smith X.Y")["X.Y"])
 
+
+
+def _surname_unit_sweep() -> list[str]:
+    lex = Lexicon.default()
+    words: set[str] = {"Smith", "Ma", "M.D.", "Ph.D.", "JD.CPA", "Msc.Ed.",
+                       "Lt.Gov.", "X.Y.Z.", "V.", "I", "v", "Jr.", "de."}
+    for field in ("particles", "suffix_acronyms", "suffix_words",
+                  "conjunctions", "bound_given_names", "titles"):
+        for w in getattr(lex, field):
+            if " " not in w:
+                words |= {w, w.title(), w.upper()}
+    return sorted(words)
+
+
+def test_surname_unit_tags_agree_with_classify() -> None:
+    # #575: rules.md#C1's count before the comma reads two facts per
+    # token -- particle, suffix -- and `segment` must build them from
+    # the vocabulary (`_vocab.surname_unit_tags`), since it runs before
+    # classify has tagged anything; assign reads classify's own tags
+    # for the same count. Swept over every single-word entry of the
+    # vocabularies a token can be tagged from, in three casings, plus
+    # the period shapes classify derives a suffix from ('JD.CPA',
+    # 'Msc.Ed.' -- the two this sweep caught on the first draft).
+    lex = Lexicon.default()
+    disagree = []
+    for word in _surname_unit_sweep():
+        tags = _tags_by_text(f"Smith {word}, John", lexicon=lex).get(word)
+        if tags is None:  # tokenize split it; nothing to compare
+            continue
+        if surname_unit_tags(word, lex) != tags & SURNAME_UNIT_TAGS:
+            disagree.append(word)
+    assert disagree == []

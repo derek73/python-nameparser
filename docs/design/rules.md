@@ -1669,6 +1669,18 @@ C1. Rationale: a credential run after the comma means the name is in
     than one word precedes the comma; otherwise it reads as the
     listing form, the part before the comma being the family name.
     Only the part after the first comma decides.
+    Wherever this rule counts the words before the comma, a particle
+    and the name word it attaches to are one word, as P2 joins them:
+    the listing form puts a surname before the comma, and a particle
+    surname is one surname ('De La Cruz, Ed' reads as 'Royce, Ed'
+    does, 'van der Berg, PhD' as 'Berg, PhD'). That settles P1's fork
+    for a leading particle that could be a given name, the comma
+    being the evidence that the part is a surname. The particle
+    reaches the one word it attaches to and no further, so a word
+    after that one is a second word. A connective join and a bound
+    given name are not one word here: a single-letter connective in
+    a three-word name stays a name word (P3), and a bound given name
+    builds a given name rather than a surname (P5).
     For the ambiguous credential class — a bare acronym the
     vocabulary marks as also an ordinary name, and a word admitted
     to the class by shape, which S3 defines and bounds — the
@@ -1694,9 +1706,10 @@ C1. Rationale: a credential run after the comma means the name is in
     company has it, and where nothing but words of both the suffix
     and the title vocabulary stands in front of them, those are the
     titles of the given part the initials open, as S2 reads them
-    there. Paired initials that are not the only shape word in the
-    part are a credential however little else speaks for them, since
-    no one writes a person's initials as two dotted groups. The same count reads a part of two or
+    there. Behind two or more name words, paired initials that are
+    not the only shape word in the part are a credential however
+    little else speaks for them, since no one writes a person's
+    initials as two dotted groups. The same count reads a part of two or
     more words as the credential run when every word of it is a
     suffix word or a word of this class, at least one of them of this
     class, and none of them a single-letter roman numeral, in any
@@ -1833,7 +1846,16 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, A.B."          →  given="A.B."
       "John Smith, A.B."          →  ambiguities=("suffix-or-name",)
       "John Smith, X.Y. P.Q."     →  suffix="X.Y. P.Q."
-      "De La Cruz, M.J. K.L."     →  ambiguities=("suffix-or-name",)
+      "De La Cruz, M.J. K.L."     →  given="M.J."
+      "De La Cruz, M.J. K.L."     →  ambiguities=("suffix-or-name", "suffix-or-name")
+      "De La Cruz, Ed"            →  given="Ed"
+      "van der Berg, MA"          →  family="van der Berg"
+      "van der Berg, MA"          →  suffix="MA"
+      "Van Buren, Ed"             →  family="Van Buren"
+      "van der Berg, PhD"         →  family="van der Berg"
+      "John van Buren, Ed"        →  suffix="Ed"  · boundary
+      "Ortega y Gasset, Ed"       →  suffix="Ed"  · boundary
+      "abdul Salam, Ed"           →  suffix="Ed"  · boundary
       "John Smith, PhD X.Y."      →  suffix="PhD X.Y."
       "García Márquez, G.J"       →  given="G.J"
       "De La Cruz, M.J. PhD"      →  given="M.J."  · boundary
@@ -1880,7 +1902,7 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions.md#C1 · interacts: H2, P2, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1 · interacts: H2, P1, P2, P3, P5, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.
