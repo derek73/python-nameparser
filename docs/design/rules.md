@@ -1723,10 +1723,13 @@ C1. Rationale: a credential run after the comma means the name is in
     not the only shape word in the part are a credential however
     little else speaks for them, since no one writes a person's
     initials as two dotted groups. An unlisted word of two capitals
-    after the comma is that shape undotted and is read as paired
-    initials are: alone it is the given name ('García Márquez, MJ'),
-    and so it is with only a credential behind it, while a credential
-    in front of it or a second such word makes the run. The same count reads a part of two or
+    after the comma is that shape undotted and is read exactly as
+    paired initials are, by the sentences above ('García Márquez, MJ'
+    and 'García Márquez, MJ PhD' keep given 'MJ'). An unlisted
+    all-caps word joins the class in such a part only where the name
+    before the comma is written with a lowercase letter: the contrast
+    is the name's, so a record written wholly in capitals keeps its
+    given name beside a credential written in mixed case. The same count reads a part of two or
     more words as the credential run when every word of it is a
     suffix word or a word of this class, at least one of them of this
     class, and none of them a single-letter roman numeral, in any
@@ -2548,8 +2551,9 @@ R4. Rationale: case repair is a display concern, applied only on
     mark one, R5 defers to it. A credential acronym the exceptions map
     does not carry is an initialism, so a single-case word the parse
     put in the suffix role from the acronym vocabulary, or read as a
-    credential by its dotted shape alone (S3), repairs to its
-    all-caps spelling rather than a title-cased one, and that repair
+    credential by its dotted shape alone (S3) or by its capitals
+    (S2), repairs to its all-caps spelling rather than a title-cased
+    one, and that repair
     outranks the Mac/Mc convention where a word fits both (MCSE, not
     McSe). A roman numeral the parse put in the suffix role is
     written in capitals the way a generation is written, whether or

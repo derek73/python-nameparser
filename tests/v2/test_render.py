@@ -1520,3 +1520,21 @@ def test_initials_separator_is_honored_on_the_live_token_path() -> None:
         == "J. PD."
     assert HumanName("Ph. D., John", initials_separator="") \
         .initials_list() == ["J", "PD"]
+
+
+def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
+) -> None:
+    # A credential read by its capitals (S2) repairs to its all-caps
+    # spelling (R4 in rules.md). #564 made the comma reading a default
+    # decided in `segment` from the text, and classify's shape tag --
+    # what repair reads -- has to follow it there too, or the default
+    # title-cases a credential EVERYWHERE keeps: the first draft gave
+    # 'John Smith Xyz' at the default and 'John Smith XYZ' under
+    # EVERYWHERE. Forced, since R5 leaves a mixed-case name alone.
+    for setting in (CapsSuffixes.AFTER_COMMA, CapsSuffixes.EVERYWHERE):
+        parser = Parser(policy=Policy(unlisted_caps_suffixes=setting))
+        for text, rendered in (("John Smith, XYZ", "John Smith XYZ"),
+                               ("John Smith, LEED AP", "John Smith LEED AP"),
+                               ("John Smith, PhD XYZ", "John Smith PhD XYZ")):
+            name = parser.parse(text)
+            assert str(name.capitalized(force=True)) == rendered, (setting, text)

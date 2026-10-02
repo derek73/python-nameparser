@@ -220,10 +220,11 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         elif ((state.policy.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE
                or comma_run)
                 and token.role is None
-                # a listed member is no candidate (the predicate excludes
-                # every wordlist); asked first, in C, so 'John Smith, MA'
-                # pays no frame for the comma part's own credential
+                # what the predicate would decline anyway, asked first in
+                # C: a listed member ('John Smith, MA'), and a word that
+                # is not alphabetic capitals ('John Smith, Ph. D.')
                 and n not in lex.suffix_acronyms_ambiguous
+                and token.text.isalpha() and token.text.isupper()
                 and caps_shape_candidate(token.text, lex, state.policy,
                                          one_case)):
             # #516's all-caps half: an unlisted word written in capitals
@@ -234,10 +235,11 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             # same marks under either setting -- case repair keeps
             # 'XYZ' in 'John Smith, XYZ' (rules.md#R4) rather than
             # title-casing a credential the default admitted.
-            # The policy conjunct comes FIRST and stays a plain
-            # attribute read, so `caps_shape_candidate` is never CALLED
-            # at the default and sharing its body costs it nothing
-            # (that is why this half is a call where the dotted branch
+            # The setting and the position come FIRST, then C-level
+            # checks of what the predicate would decline, so outside
+            # a suffix comma's part the default never calls it and
+            # inside one it calls it only for an unlisted all-caps
+            # word (that is why this half is a call where the dotted branch
             # above stays inline: the dotted caller has no such cheap
             # first conjunct to hide behind). The predicate's own
             # docstring carries the whole-vocabulary roster and what

@@ -2917,6 +2917,26 @@ CASES: tuple[Case, ...] = (
                "written undotted, and two words before the comma may "
                "be one surname -- the case #563 decides for 'M.J.'. No "
                "report: the comma position declines it outright"),
+    Case("an_all_caps_record_keeps_its_given_name_beside_a_mixed_credential",
+         "LLOYD WEBBER, ANDREW PhD",
+         {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "PhD"},
+         notes="#564 boundary: an all-caps word joins C1's run only where "
+               "the NAME before the comma has a lowercase letter -- here "
+               "the only lowercase is the credential's own, and a record "
+               "written wholly in capitals keeps its given name. A "
+               "review-round draft let 'PhD' supply the contrast and "
+               "read suffix 'ANDREW PhD'"),
+    Case("a_capitalized_given_name_behind_a_two_word_surname_is_the_accepted_cost",
+         "García Márquez, JUAN Jr.",
+         {"given": "García", "family": "Márquez", "suffix": "JUAN Jr."},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="#564's accepted cost (Derek): a given name written in "
+               "capitals behind a two-word surname without particles, "
+               "in a mixed-case name, reads as the credential -- with a "
+               "generation behind it as alone ('García Márquez, "
+               "GABRIEL'). Reported, and CapsSuffixes.OFF keeps given "
+               "'JUAN'"),
     Case("the_caps_comma_count_needs_two_name_words",
          "John Smith, XYZ",
          {"given": "John", "family": "Smith", "suffix": "XYZ"},

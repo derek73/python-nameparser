@@ -266,7 +266,9 @@ def segment(state: ParseState) -> ParseState:
     if (not candidate
             and state.policy.unlisted_caps_suffixes is not CapsSuffixes.OFF
             and len(groups[0]) >= 2
-            and first.isupper()
+            and first.isalpha() and first.isupper()
+            and first.lower() not in state.lexicon.suffix_acronyms
+            and first.lower() not in state.lexicon.suffix_words
             and not (len(groups[1]) == 1 and len(first) < 3)
             and all(caps_shape_candidate(state.tokens[i].text,
                                          state.lexicon, state.policy,
@@ -340,7 +342,15 @@ def segment(state: ParseState) -> ParseState:
             # rather than more evidence for a credential producing a
             # name reading. `isupper()` first, in C; the predicate
             # declines every listed word, so it never re-admits one.
-            caps = (not is_member and caps_on and text.isupper()
+            # The C-level prechecks are exactly what the predicate
+            # would decline (it needs `isalpha()`/`isupper()` and
+            # excludes every wordlist; `lower()` is `_normalize` for an
+            # alphabetic word), so a listed credential ('MD', 'CPA')
+            # never pays for the call.
+            caps = (not is_member and caps_on and text.isalpha()
+                    and text.isupper()
+                    and text.lower() not in lexicon.suffix_acronyms
+                    and text.lower() not in lexicon.suffix_words
                     and caps_shape_candidate(text, lexicon, state.policy,
                                              one_case=False))
             if caps:
@@ -414,10 +424,15 @@ def segment(state: ParseState) -> ParseState:
                                   and all(ambiguous_lean(t, False)
                                           == "credential"
                                           for t in members))
-                         # the caps shape needs the contrast, as the
-                         # all-caps run above does: one-case input
-                         # leans nothing
-                         and not (caps_member and case_class() is not False))
+                         # the caps shape needs the contrast, and it has
+                         # to come from the NAME: beside a mixed-case
+                         # credential the credential's own lowercase
+                         # would supply it, and an all-caps record
+                         # ('LLOYD WEBBER, ANDREW PhD') would lose its
+                         # given name to it
+                         and not (caps_member and not any(
+                             ch.islower() for i in groups[0]
+                             for ch in state.tokens[i].text)))
             # a caps member reports its flip as the all-caps run does
             flip_reports = candidate and (any_listed or pair_only
                                           or caps_member)
