@@ -1877,8 +1877,13 @@ C1. Rationale: a credential run after the comma means the name is in
     counts once and the title is no name word, so the count reads the
     listing form, and the listing form keeps a title before the comma
     in the family, as it already did for any one-word surname ('Prof.
-    Cruz, Ed', 'Freiherr Berg, Ed'). The count had read 'von' as a
-    second name word and kept the title apart.
+    Cruz, Ed'). For a German rank that reading is the right one:
+    since 1919 a former noble title is part of the legal surname,
+    written between the given name and the particle, so 'Freiherr von
+    Berg' is the family name in 'Freiherr von Berg, Ed', as 2.0
+    through 2.3 read it. Before an unambiguous credential the same
+    words keep the title apart ('Freiherr von Berg, PhD'), that count
+    taking the title as a word; both are readings of one name.
       "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
     Accepted: three or more initials run together with periods behind
     a surname of two words read as a credential. Initials are

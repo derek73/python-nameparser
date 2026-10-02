@@ -2533,7 +2533,7 @@ issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
 # is one, and its capitals make 'MA' the credential, as 'Smith, MA'.
 # These baselines already read the particle surnames as one name;
 # what #575 fixed is this cycle's count, which had not.
-# 'Freiherr von Berg, Ed', #575's accepted consequence in rules.md#C1,
+# 'Freiherr von Berg, Ed', rules.md#C1's Accepted example for #575,
 # reads as these baselines read it and gains only the comma's report.
 name_regex = "^(?:Davis Royce, Ed|De La Cruz, Ed|Doe, Dr\\. MA|Doe, MA|Doe, MA PhD|Doe, Mr\\. MA PhD|Freiherr von Berg MA|Freiherr von Berg, Ed|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Prof\\. MA|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John de Ma|John van Buren, Ed|John van der Berg Ma|Ortega y Gasset, Ed|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|Van Buren, Ed|abdul Salam, Ed|abdul Smith Berg Ma|abdul Smith Ma|de la Cruz, Ma|john smith, ma|van der Berg, MA)$"
 fields = ["family", "given", "middle", "suffix", "_ambiguities"]

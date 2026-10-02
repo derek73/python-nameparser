@@ -783,11 +783,11 @@ issue = "fix(#575) a particle surname before a comma is one name word"
 #
 # Literal; the probe 'John van Buren, Ed' (two name words: the
 # credential reading stays) is _MUST_NOT_MATCH.
-# 'Freiherr von Berg, Ed' joins as rules.md#C1's accepted
-# consequence: the surname counts once and 'Freiherr' is no name word,
-# so the listing form reads it and keeps the title in the family, as
-# it does for 'Prof. Cruz, Ed'. 1.4.0 read title 'Freiherr', first
-# 'von Berg', suffix 'Ed'.
+# 'Freiherr von Berg, Ed' joins, rules.md#C1's Accepted example: the
+# surname counts once and 'Freiherr' is no name word, so the listing
+# form reads it and keeps the rank in the family -- since 1919 part of
+# the legal German surname. 1.4.0 read title 'Freiherr', first 'von
+# Berg', suffix 'Ed'.
 name_regex = "^(?:De La Cruz, Ed|Freiherr von Berg, Ed|Van Buren, Ed|de la Cruz, Ma)$"
 fields = ["title", "given", "family", "suffix"]
 
