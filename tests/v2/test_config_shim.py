@@ -923,7 +923,8 @@ def test_2x_pickle_roundtrip_keeps_a_readded_dead_entry() -> None:
 #
 # A v1 piece comes from a whitespace split, re-joined only with single
 # spaces, so nameparser 1.x never matched an entry that is empty or
-# holds edge whitespace, a whitespace run or a tab. Each row names a text
+# holds edge whitespace, a whitespace run or any whitespace character
+# other than a single space (a tab, NBSP, newline). Each row names a text
 # on which the entry WOULD act if the shim translated it, so a row that
 # reads like the entry-free parse proves the drop rather than an inert
 # word. (field, entry, text, mask value for capitalization_exceptions)
@@ -1040,12 +1041,26 @@ def test_the_unmatchable_entry_filter_has_a_recorded_control(
 def test_the_offered_remedy_runs_and_silences_the_warning() -> None:
     c = Constants()
     c.titles.add(" dean ")
+    c.bound_first_names.add("'t ")              # a quote the remedy must repr
     c.capitalization_exceptions[" zzc "] = "ZzC"
+    c.capitalization_exceptions["'q "] = "Q"
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         HumanName("x", constants=c)
+    assert len(caught) == 1                       # one warning for them all
     message = str(caught[0].message)
-    remedy = message[message.index("constants."):]
+    listing, remedy = message.split("remove these: ")
+    for label in ("titles: ' dean '", "bound_first_names: \"'t \"",
+                  "capitalization_exceptions: ' zzc '",
+                  "capitalization_exceptions: \"'q \""):
+        assert label in listing, label
+    # the offered spelling, pinned, and then run as written
+    # (in the shim's field order, entries sorted within a field)
+    assert remedy == (
+        "constants.bound_first_names.remove(\"'t \"); "
+        "constants.titles.remove(' dean '); "
+        "del constants.capitalization_exceptions[' zzc ']; "
+        "del constants.capitalization_exceptions[\"'q \"]")
     exec(remedy, {"constants": c})   # the code the message hands over
     c.titles.add("dean")              # the stripped word, if it was meant
     c.capitalization_exceptions["zzc"] = "ZzC"
@@ -1053,6 +1068,27 @@ def test_the_offered_remedy_runs_and_silences_the_warning() -> None:
     assert name.title == "dean"                      # as 1.4.0 reads "dean"
     name.capitalize(force=True)
     assert str(name) == "Dean John ZzC"
+
+
+def test_the_1_4_typo_roster_is_keyed_by_field() -> None:
+    # 'actor ' is silent only where 1.4.0 shipped it, in titles
+    c = Constants()
+    c.prefixes.add("actor ")
+    with pytest.warns(UserWarning, match="prefixes: 'actor '"):
+        HumanName("x", constants=c)
+
+
+def test_the_warning_fires_once_per_config_change() -> None:
+    c = Constants()
+    c.titles.add(" dean ")
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        HumanName("dean john smith", constants=c)
+        HumanName("dean john smith", constants=c)   # cached snapshot
+        assert len(caught) == 1
+        c.titles.add("x")                            # a new generation
+        HumanName("dean john smith", constants=c)
+    assert len(caught) == 2
 
 
 def test_a_clean_config_snapshots_without_a_warning() -> None:
