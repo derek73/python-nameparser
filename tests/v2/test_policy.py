@@ -3,6 +3,7 @@ from collections.abc import Iterator
 
 import pytest
 
+from nameparser._policy import CapsSuffixes
 from nameparser._policy import (
     DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST,
     GIVEN_FIRST, PatronymicRule, Policy, PolicyPatch, Script, UNSET,
@@ -817,17 +818,27 @@ def test_unlisted_dotted_suffixes_off_reads_name_material() -> None:
         assert p.parse("Doe, John Msc.Ed.").suffix == "Msc.Ed."
 
 
-def test_unlisted_caps_suffixes_is_a_validated_bool_defaulting_off() -> None:
-    # #516's all-caps half is OPT-IN, and the asymmetry with the
-    # dotted half is the whole decision: an all-caps surname is a real
-    # writing convention that shape cannot separate from a credential.
-    assert Policy().unlisted_caps_suffixes is False
-    assert Policy(unlisted_caps_suffixes=True).unlisted_caps_suffixes is True
-    with pytest.raises(TypeError, match="unlisted_caps_suffixes"):
-        Policy(unlisted_caps_suffixes="yes")  # type: ignore[arg-type]
+def test_unlisted_caps_suffixes_is_a_validated_enum_defaulting_after_comma(
+) -> None:
+    # #564: the all-caps half reads the comma position by default and
+    # the trailing one only on request -- an all-caps SURNAME is a real
+    # convention there, and never after a comma behind a full name.
+    assert Policy().unlisted_caps_suffixes is CapsSuffixes.AFTER_COMMA
+    # a plain string is coerced at runtime; the annotation names what
+    # the field stores, so the type checker wants the member
+    assert (Policy(unlisted_caps_suffixes="everywhere")  # type: ignore[arg-type]
+            .unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE)
     assert Policy().patched(
-        PolicyPatch(unlisted_caps_suffixes=True)
-    ).unlisted_caps_suffixes is True
+        PolicyPatch(unlisted_caps_suffixes=CapsSuffixes.OFF)
+    ).unlisted_caps_suffixes is CapsSuffixes.OFF
+    with pytest.raises(ValueError, match="after-comma, everywhere"):
+        Policy(unlisted_caps_suffixes="yes")  # type: ignore[arg-type]
+    # the old bool spelling: a TypeError naming both replacements, in
+    # a form that type-checks when pasted (AGENTS.md)
+    for old, new in ((True, "CapsSuffixes.EVERYWHERE"),
+                     (False, "CapsSuffixes.OFF")):
+        with pytest.raises(TypeError, match=new.replace(".", r"\.")):
+            Policy(unlisted_caps_suffixes=old)  # type: ignore[arg-type]
 
 
 def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
@@ -839,7 +850,7 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     # comma candidate pays for the fact it forces: re-measured
     # 2026-09-18 on this tree, same-interpreter harness (the resolved
     # `sys.executable` used on both sides, `Parser().parse` and
-    # `Parser(policy=Policy(unlisted_caps_suffixes=True)).parse`, mean
+    # `Parser(policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)).parse`, mean
     # of 50 after one warm-up parse) -- `"Smith, John"` is +7
     # (206 -> 213), `"Smith, XYZ"` (a real candidate) is +40
     # (205 -> 245). An earlier round's comment here read +6/+39
@@ -856,7 +867,7 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     # as a silent drift.
     from nameparser import Parser
 
-    on = Parser(policy=Policy(unlisted_caps_suffixes=True))
+    on = Parser(policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
     off = Parser()
     # what it buys
     assert on.parse("John Smith XYZ").suffix == "XYZ"

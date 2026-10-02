@@ -2152,7 +2152,10 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Jane van der Berg 旧姓 Jones": ("family", "maiden"),
         "Janey née Jones": ("family", "given", "maiden", "middle"),
         "John Smith Rev.": ("family", "middle", "title"),
-        "John Smith, RAI": ("family", "given", "suffix"),
+        # 'John Smith, RAI' left 2026-10-01 (#564): an unlisted all-caps
+        # word after a comma behind two name words is a credential by
+        # default, so the name reads suffix 'RAI' as 1.4.0 did -- parity,
+        # and a watched row with no diff to watch.
         "John V": ("family", "suffix"),
         "John of the Doe": ("_initials",),
         "Jong van der": ("_initials",),
@@ -2193,7 +2196,10 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
         "John Smith Rev.": ("family", "middle", "title"),
-        "John Smith, RAI": ("family", "given", "suffix"),
+        # 2026-10-01 (#564): the default now reads 'RAI' as the
+        # credential again by its capitals, as this baseline read it
+        # by vocabulary, so only the comma's report differs.
+        "John Smith, RAI": ("_ambiguities",),
         "John, Smith, Dr.": ("_ambiguities",),
         "Jong van der": ("_initials",),
         "Jong, van der": ("_initials",),
@@ -2239,7 +2245,10 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Janey née Jones": ("family", "given"),
         "Joe E. Smith": ("_initials",),
         "John Smith Rev.": ("family", "middle", "title"),
-        "John Smith, RAI": ("family", "given", "suffix"),
+        # 2026-10-01 (#564): the default now reads 'RAI' as the
+        # credential again by its capitals, as this baseline read it
+        # by vocabulary, so only the comma's report differs.
+        "John Smith, RAI": ("_ambiguities",),
         "John, Smith, Dr.": ("_ambiguities",),
         "Jong van der": ("_initials",),
         "Jong, van der": ("_initials",),
@@ -2269,7 +2278,9 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "E Anne D,Leonardo": ("_initials",),
         "Joe E. Smith": ("_initials",),
         "John Smith Rev.": ("family", "middle", "title"),
-        "John Smith, RAI": ("family", "given", "suffix"),
+        # 2026-10-01 (#564): reads suffix 'RAI' again by its capitals,
+        # as this baseline read it by vocabulary; the report differs.
+        "John Smith, RAI": ("_ambiguities",),
         "Jose E. Maria Santos": ("_initials",),
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "Smith, John E, III, Jr": ("_initials",),

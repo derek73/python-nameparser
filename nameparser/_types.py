@@ -155,8 +155,8 @@ UNCLASSIFIED_TAG = "vocab:unclassified"
 #: tag classify writes on a token it admits to the credential reading
 #: by its SHAPE rather than by listed vocabulary (`Policy.
 #: unlisted_dotted_suffixes` is the first emitter, `Policy.
-#: unlisted_caps_suffixes` the second, classify writing the tag from
-#: both branches). Defined here, at the bottom of the graph, because
+#: unlisted_caps_suffixes` at `CapsSuffixes.EVERYWHERE` the second,
+#: classify writing the tag from both branches). Defined here, at the bottom of the graph, because
 #: a render view reads it as well as the pipeline: case repair writes
 #: such a suffix in capitals as it does a listed acronym (#459), and
 #: _render may not import _pipeline. One constant, not a string

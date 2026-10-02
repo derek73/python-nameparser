@@ -51,6 +51,7 @@ from __future__ import annotations
 
 
 from nameparser._lexicon import _normalize
+from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
     WorkToken, copy_with,
@@ -216,14 +217,18 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add(SHAPE_ACRONYM_TAG)
             if state.policy.unlisted_dotted_suffixes:
                 tags.add(AMBIGUOUS_ACRONYM_TAG)
-        elif (state.policy.unlisted_caps_suffixes and token.role is None
+        elif (state.policy.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE
+                and token.role is None
                 and caps_shape_candidate(token.text, lex, state.policy,
                                          one_case)):
-            # #516's all-caps half, OPT-IN: an unlisted word written
-            # in capitals inside a mixed-case name. The policy conjunct
-            # comes FIRST and stays a plain attribute read -- False by
-            # default, so `caps_shape_candidate` is never CALLED at the
-            # default and sharing its body costs the default nothing
+            # #516's all-caps half, OPT-IN at this slot: an unlisted
+            # word written in capitals inside a mixed-case name. Only
+            # EVERYWHERE tags it -- the comma position the default
+            # reads is decided in `segment` from the text alone (#564),
+            # and the tag is what the comma-less trailing slot reads.
+            # The policy conjunct comes FIRST and stays a plain
+            # attribute read, so `caps_shape_candidate` is never CALLED
+            # at the default and sharing its body costs it nothing
             # (that is why this half is a call where the dotted branch
             # above stays inline: the dotted caller has no such cheap
             # first conjunct to hide behind). The predicate's own

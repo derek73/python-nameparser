@@ -4,6 +4,7 @@ import warnings
 
 import pytest
 
+from nameparser._policy import CapsSuffixes
 from nameparser import FAMILY_FIRST, HumanName, Parser, Policy, parse
 from nameparser._lexicon import Lexicon
 from nameparser.config import Constants
@@ -774,7 +775,7 @@ def test_a_credential_read_by_its_shape_repairs_to_capitals() -> None:
     assert str(off.capitalized(off.parse("john smith x.y.z."))) \
         == "John Smith X.y.z."
     # the opt-in all-caps half writes the same tag
-    caps = Parser(policy=Policy(unlisted_caps_suffixes=True))
+    caps = Parser(policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
     assert str(caps.capitalized(caps.parse("John Smith XYZ"),
                                 force=True)) == "John Smith XYZ"
     assert str(parse("John Smith XYZ").capitalized(force=True)) \

@@ -49,7 +49,7 @@ from typing import Literal
 from nameparser._lexicon import (
     FULL_STOPS, Lexicon, _VOCAB_FIELDS, _normalize,
 )
-from nameparser._policy import (Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
+from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
 from nameparser._pipeline._state import WorkToken, comma_bucket
 
@@ -653,11 +653,11 @@ def run_word_fold(
 # `_segment.py`'s multi-token run test, and this module's own unit
 # tests), where it had been spelled three times over (quality-review
 # finding). The usual objection to sharing -- a call costing every
-# default-policy parse a frame it cannot use -- does not apply: every
-# caller's own first conjunct is `policy.unlisted_caps_suffixes`,
-# False by default, so neither this call nor the loop inside it is
-# ever reached at the default (confirmed against the 412/449 frame
-# band and the default comma harness).
+# default-policy parse a frame it cannot use -- does not apply: the
+# trailing position is behind `CapsSuffixes.EVERYWHERE` (classify's
+# first conjunct), and since #564 the comma run test, which IS on by
+# default, asks a C-level `isupper()` of the part's first word before
+# calling, so a comma name with no all-caps word never reaches it.
 def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
                          one_case: bool | None) -> bool:
     """Whether TEXT is an UNLISTED all-caps credential candidate: two
@@ -695,7 +695,8 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     `_segment.py`'s run test relies on exactly that rather than
     calling both.
     """
-    if not (policy.unlisted_caps_suffixes and one_case is False
+    if not (policy.unlisted_caps_suffixes is not CapsSuffixes.OFF
+            and one_case is False
             and len(text) >= 2 and text.isalpha() and text.isupper()):
         return False
     n = _normalize(text)

@@ -2,6 +2,7 @@ import dataclasses
 
 import pytest
 
+from nameparser._policy import CapsSuffixes
 from nameparser import Parser
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
@@ -193,8 +194,12 @@ def test_mixed_case_keeps_todays_rule_verbatim() -> None:
 def test_a_trailing_uppercase_suffix_makes_the_name_mixed_case() -> None:
     # the gate reads the whole name's text, so 'john e jones, III' is
     # mixed case and keeps today's reading -- the boundary that keeps
-    # a v1 corpus name still.
-    out = _classified("john e jones, III")
+    # a v1 corpus name still. 'iii' is listed here as it is in the
+    # shipped vocabulary: unlisted, 'III' is an all-caps word after a
+    # comma behind two name words, which the default reads as a
+    # credential run since #564 and reports -- a different fork.
+    lex = dataclasses.replace(_LEX, suffix_words=_LEX.suffix_words | {"iii"})
+    out = _classified_with("john e jones, III", lex)
     assert "conjunction" in _tags(out, "e")
     assert out.ambiguities == ()
 
@@ -530,7 +535,7 @@ def test_no_listed_member_ever_carries_the_shape_tag() -> None:
                          "John Smith BA", "John Smith X.Y.Z.")),
                        (dotted,
                         ("Jack A.B.", "John Smith A.B.", "Smith, A.B."))):
-        for policy in (Policy(), Policy(unlisted_caps_suffixes=True),
+        for policy in (Policy(), Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
                        Policy(unlisted_dotted_suffixes=False)):
             for text in texts:
                 for word, tags in _tags_by_text(text, lexicon=lex,
@@ -573,26 +578,26 @@ def test_delimited_content_never_joins_the_shape_class() -> None:
     # -- the predicate classify calls, and since the review round the
     # only route into the caps half at all.
     ("XYZ", Policy(), None),
-    ("XYZ", Policy(unlisted_caps_suffixes=True), False),
-    ("MC", Policy(unlisted_caps_suffixes=True), False),
-    ("X", Policy(unlisted_caps_suffixes=True), False),
-    ("XY2", Policy(unlisted_caps_suffixes=True), False),
-    ("DUPONT", Policy(unlisted_caps_suffixes=True), False),
+    ("XYZ", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("MC", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("X", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("XY2", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("DUPONT", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
     # #516 review round, F1/F1b: LISTED members must keep the LEAN
     # (SHAPE_ACRONYM_TAG must NOT ride beside their membership tag),
     # and UNLISTED means in no wordlist at all -- a particle, an
     # ambiguous particle and a conjunction, capitalized, must not
     # join the class either.
-    ("MA", Policy(unlisted_caps_suffixes=True), False),
-    ("BA", Policy(unlisted_caps_suffixes=True), False),
-    ("DE", Policy(unlisted_caps_suffixes=True), False),
-    ("Y", Policy(unlisted_caps_suffixes=True), False),
-    ("VAN", Policy(unlisted_caps_suffixes=True), False),
+    ("MA", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("BA", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("DE", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("Y", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("VAN", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
     # 'Y' declines at the `len(text) >= 2` shape gate and never
     # actually reaches the conjunction-exclusion check at all;
     # 'AND' is the row that genuinely exercises it (quality-review
     # finding).
-    ("AND", Policy(unlisted_caps_suffixes=True), False),
+    ("AND", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
     # #516 review round (second finding): the four wordlists the
     # first fix round's exclusion left with no row of their own
     # (titles, given_name_titles, bound_given_names, suffix_words --
@@ -601,11 +606,11 @@ def test_delimited_content_never_joins_the_shape_class() -> None:
     # `vocab:title` guard and this elif's own check, and the row
     # still pins that it declines either way), and the maiden-marker
     # gap itself.
-    ("SIR", Policy(unlisted_caps_suffixes=True), False),
-    ("AUNT", Policy(unlisted_caps_suffixes=True), False),
-    ("ABDUL", Policy(unlisted_caps_suffixes=True), False),
-    ("JR", Policy(unlisted_caps_suffixes=True), False),
-    ("NEE", Policy(unlisted_caps_suffixes=True), False),
+    ("SIR", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("AUNT", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("ABDUL", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("JR", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
+    ("NEE", Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE), False),
 ])
 def test_ambiguous_class_candidate_agrees_with_the_tag(
         word: str, policy: Policy, one_case: bool | None) -> None:
@@ -665,7 +670,7 @@ def test_the_caps_branch_reads_the_name_level_case_not_the_own_span(
     Without the wrapper the reading below holds; with it, 'XYZ' joins
     the class and the family name is lost.
     """
-    on = Policy(unlisted_caps_suffixes=True)
+    on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     parser = Parser(policy=on)
     name = parser.parse("née JONES XYZ")
     assert (name.given, name.middle, name.family) == ("née", "JONES", "XYZ")
@@ -692,7 +697,7 @@ def test_the_caps_shape_is_silent_until_its_switch_is_on() -> None:
     # the dotted one: there is no fork to report while a caller has
     # not asked for the reading (#516).
     assert _tags_by_text("John Smith XYZ")["XYZ"] == frozenset()
-    on = Policy(unlisted_caps_suffixes=True)
+    on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     tags = _tags_by_text("John Smith XYZ", policy=on)["XYZ"]
     assert "shape:acronym" in tags and "vocab:suffix-ambiguous" in tags
 
@@ -703,7 +708,7 @@ def test_the_caps_shape_is_a_testable_predicate() -> None:
     # vocabulary only in the SHIPPED lexicon (this module's own _LEX
     # is deliberately minimal and does not carry it), so that one
     # assertion uses Lexicon.default() rather than the module fixture.
-    on = Policy(unlisted_caps_suffixes=True)
+    on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     # a digit anywhere disqualifies it
     assert "shape:acronym" not in _tags_by_text("John Smith XY2", policy=on)["XY2"]
     # a single capital stays what it is today, an initial

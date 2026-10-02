@@ -2,6 +2,7 @@ import unicodedata
 
 import pytest
 
+from nameparser._policy import CapsSuffixes
 from nameparser import Parser
 from nameparser._lexicon import (
     Lexicon, _VOCAB_FIELDS, _normalize, _title_key,
@@ -470,7 +471,7 @@ def test_a_callers_own_conjunction_marker_keeps_its_word_a_name() -> None:
     # 'ZZQ' with the switch on and the default vocabulary; one
     # wordlist entry is the whole difference (2026-09-18 review
     # round).
-    on = Policy(unlisted_caps_suffixes=True)
+    on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     plain = Parser(policy=on).parse("John Smith ZZQ")
     assert (plain.family, plain.suffix) == ("Smith", "ZZQ")
     listed = Parser(
@@ -494,7 +495,7 @@ def test_the_caps_exclusion_covers_every_vocabulary_field() -> None:
     # loop adds the same unlisted word to ONE field and checks the
     # predicate declines it. A field whose exclusion is dropped fails
     # here by name.
-    on = Policy(unlisted_caps_suffixes=True)
+    on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     base = Lexicon.default()
     assert caps_shape_candidate("ZZQX", base, on, False)
     for field in _VOCAB_FIELDS:

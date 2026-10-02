@@ -49,6 +49,7 @@ from __future__ import annotations
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._pieces import own_words
+from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, comma_bucket, copy_with,
 )
@@ -249,7 +250,20 @@ def segment(state: ParseState) -> ParseState:
     # left, and the verdict is `case_class() is False` directly rather
     # than a second walk that could only reach the same answer (a
     # quality-review finding: the walk was provably redundant).
-    if (not candidate and state.policy.unlisted_caps_suffixes and groups[1]
+    #
+    # #564: on by default (`CapsSuffixes.AFTER_COMMA`), so two cheap
+    # C-level conjuncts go before the call: the first word must be
+    # written in capitals at all, which every word of the run must
+    # be, and a LONE two-letter word is declined -- it is how a
+    # person's initials are written, and two words before the comma
+    # may be one surname ('García Márquez, MJ'), the case #563 decides
+    # for the dotted 'M.J.' (rules.md#C1). A run holding a longer word
+    # ('LEED AP') is not that shape.
+    first = state.tokens[groups[1][0]].text if groups[1] else ""
+    if (not candidate
+            and state.policy.unlisted_caps_suffixes is not CapsSuffixes.OFF
+            and first.isupper()
+            and not (len(groups[1]) == 1 and len(first) < 3)
             and all(caps_shape_candidate(state.tokens[i].text,
                                          state.lexicon, state.policy,
                                          one_case=False)

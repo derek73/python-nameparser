@@ -853,9 +853,11 @@ Two ``Policy`` switches extend the same class to words the vocabulary
 does not hold. ``unlisted_dotted_suffixes`` (on by default) reads a
 token of two or more period-separated chunks the same way —
 ``parse("John Smith X.Y.Z.").suffix`` is ``'X.Y.Z.'`` — and
-``unlisted_caps_suffixes`` (off by default) does the same for an
-unlisted all-caps word, which is opt-in because an all-caps surname is
-written that way too. See :doc:`customize` for both.
+``unlisted_caps_suffixes`` does the same for an unlisted all-caps word,
+by default only after a comma behind a full name, where an all-caps
+surname is never written — ``parse("John Smith, XYZ").suffix`` is
+``'XYZ'`` — and at the end of a name only on request, since an
+all-caps surname is written there. See :doc:`customize` for both.
 
 A reading the vocabulary settles on its own is not a guess and reports
 nothing — periods make ``M.A.`` unambiguously a credential:

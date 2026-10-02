@@ -1462,3 +1462,23 @@ issue = "fix(#575) a particle surname before a comma is one name word"
 name_regex = "^van der Berg, PhD$"
 fields = ["given", "family", "_ambiguities"]
 orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default"
+# rules.md#C1 and S2 (#564): Policy.unlisted_caps_suffixes defaults to
+# CapsSuffixes.AFTER_COMMA, so the part after a comma with two or more
+# name words before it reads an unlisted all-caps word of three or
+# more letters, or a run holding one, as the credential run and
+# reports the call. The all-caps SURNAME convention never writes the
+# capitals there. 'John Smith, XYZ' and 'John Smith, LEED AP' are the
+# C1 examples (the latter closing the #291 deviation the doc carried);
+# 'The Rt Hon Kenneth Clarke QC MP, HMG' is a radar corpus name. 'John Smith, RAI' and 'Ahmad Jayadi, CHA' move
+# from this baseline's family comma (given 'RAI'/'CHA', the words
+# removed from the vocabulary by #342) to the credential run.
+#
+# Literal; the probes 'Smith, XYZ' (one name word), 'García Márquez,
+# MJ' (a lone two-letter word) and 'John Smith XYZ' (no comma: the
+# trailing position stays opt-in) are _MUST_NOT_MATCH.
+name_regex = "^(?:Ahmad Jayadi, CHA|John Smith, LEED AP|John Smith, RAI|John Smith, XYZ|The Rt Hon Kenneth Clarke QC MP, HMG)$"
+fields = ["title", "given", "middle", "family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]

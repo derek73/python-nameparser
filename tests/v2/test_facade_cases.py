@@ -120,6 +120,9 @@ _CORE_ONLY_IDS = frozenset({
     "suffix_vocabulary_never_reaches_the_caps_switch",
     "the_caps_comma_count_reaches_a_multi_word_run",
     "the_caps_comma_multi_word_run_declines_at_one_word",
+    # #564: CapsSuffixes.OFF has no v1 spelling either; the facade
+    # reads the field's default, AFTER_COMMA, like the core.
+    "the_comma_caps_reading_can_be_switched_off",
     # #516 review round: the F1/F1b/F2/F5 regression-guard rows, all
     # under the same non-default policy.
     "caps_switch_does_not_silence_the_listed_lean",

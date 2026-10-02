@@ -100,6 +100,9 @@ Configuration
 .. autoclass:: nameparser.PatronymicRule
    :members:
 
+.. autoclass:: nameparser.CapsSuffixes
+   :members:
+
 .. autoclass:: nameparser.Script
    :members:
 

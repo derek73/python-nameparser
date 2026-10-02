@@ -1385,6 +1385,9 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # particle surname, keep the credential reading.
     "fix(#575) a particle surname before a comma is one name word":
         ("John van Buren, Ed", "John van der Berg, PhD"),
+    # #564: one name word, a lone two-letter word, and no comma.
+    "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
+        ("Smith, XYZ", "García Márquez, MJ", "John Smith XYZ"),
     # #516's dotted rule must never reach the shapes the vocabulary
     # SETTLES (a whole-token match, or a surviving chunk claim), the
     # leading dotted runs rules.md#S2 excludes by position, the single
@@ -3078,6 +3081,13 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"Doe, Jane nee Smith PhD MEng", "Jane Doe nee Smith PhD MA",
                "Jane Doe nee Smith PhD MEng"}),
     frozenset({r"jack\s+m\.a\.", r"wang\s+m\.eng\."}),
+    # 2026-10-01, #564: the comma caps rule, literal names that copy no
+    # set, at 1.4.0 and in the 2.x copy.
+    frozenset({"John Smith, LEED AP", "John Smith, XYZ",
+               "The Rt Hon Kenneth Clarke QC MP, HMG"}),
+    frozenset({"Ahmad Jayadi, CHA", "John Smith, LEED AP",
+               "John Smith, RAI", "John Smith, XYZ",
+               "The Rt Hon Kenneth Clarke QC MP, HMG"}),
     # 2026-10-01, #575: rules.md#C1's particle-surname examples at
     # 1.4.0, literal names that copy no set.
     frozenset({"De La Cruz, Ed", "Freiherr von Berg, Ed", "Van Buren, Ed",
@@ -3575,7 +3585,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # at this baseline 'Aishwarya Rai' reaches the rule and is
         # explained by parity instead, so the gate heading reads 4.
         "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word":
-            _Claim(5, ('family', 'given', 'middle', 'suffix'), "c3d76812da97", None),
+        # 2026-10-01, #564: `given` leaves the roles -- the comma pair
+        # reads suffix again by its capitals, so no name here moves it.
+            _Claim(5, ('family', 'middle', 'suffix'), "c3d76812da97", None),
         "fix(A2) content-free input names nobody, so every role empties":
             _Claim(5, ('given',), "1af8d718688b", None),
         "fix(#335) a marker-led clause leaves the one name word its bare reading":
@@ -3794,7 +3806,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # case-row names, every one a comma name. Reach, verified
         # name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-            _Claim(423, ('given', 'suffix', 'title'), "f5edb96b96cb", None),
+        # 2026-10-01, #564: 423 -> 426, 'John Smith, XYZ', 'Smith,
+        # XYZ' and 'García Márquez, MJ', #564's rules.md#C1 examples.
+        # Reach, verified name by name.
+            _Claim(426, ('given', 'suffix', 'title'), "684dd90b64f3", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3830,7 +3845,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # explained by neither: 1.4.0 already reads the given name
         # for both, so there is no diff here to explain.
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(23, ('family', 'given', 'suffix', 'title'), "54c1ae9911e1", None),
+        # 2026-10-01, #564: 23 -> 24, 'Smith, XYZ'. Reach.
+            _Claim(24, ('family', 'given', 'suffix', 'title'), "eae9a2bb02b0", None),
         # 2026-09-27, #544: 6 -> 7; gains 'Smith, PhD MEng'.
         # 2026-09-28, #544: 7 -> 8; gains 'Smith, PhD Ma'.
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
@@ -3897,11 +3913,18 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # case-row names, every one a comma name. Reach, verified
         # name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-            _Claim(423, ('family', 'given'), "f5edb96b96cb", None),
+        # 2026-10-01, #564: 423 -> 426, 'John Smith, XYZ', 'Smith,
+        # XYZ' and 'García Márquez, MJ', #564's rules.md#C1 examples.
+        # Reach, verified name by name.
+            _Claim(426, ('family', 'given'), "684dd90b64f3", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(4, ('family', 'given', 'suffix', 'title'), "30163564e03d", None),
+        # 2026-10-01, #564: new, 3; 'John Smith, LEED AP', 'John Smith,
+        # XYZ', 'The Rt Hon Kenneth Clarke QC MP, HMG'.
+        "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
+            _Claim(3, ('family', 'given', 'middle', 'suffix', 'title'), "1926a01dc71c", ('DEFAULT',)),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -4657,7 +4680,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # so a widening taking one shape alone would change the roles
         # here before it reached the gate.
         "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word":
-            _Claim(5, ('family', 'given', 'middle', 'suffix'), "c3d76812da97", None),
+        # 2026-10-01, #564: `given` leaves the roles -- the comma pair
+        # reads suffix again by its capitals, so no name here moves it.
+            _Claim(5, ('family', 'middle', 'suffix'), "c3d76812da97", None),
         # The compound rule, at the two baselines where 'abdul Smith
         # Jr V' already diffs {family, given} under fix(#401) and the
         # widened diff leaves that rule's `fields`. Three roles here
@@ -4820,7 +4845,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # explained by neither: at this baseline the diff moves
         # `given`, a field outside this rule's own ('suffix', 'title').
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(23, ('suffix', 'title'), "54c1ae9911e1", None),
+        # 2026-10-01, #564: 23 -> 24, 'Smith, XYZ'. Reach.
+            _Claim(24, ('suffix', 'title'), "eae9a2bb02b0", None),
         # 2026-09-27, #544: 6 -> 7; gains 'Smith, PhD MEng'.
         # 2026-09-28, #544: 7 -> 8; gains 'Smith, PhD Ma'.
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
@@ -4997,6 +5023,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
+        # 2026-10-01, #564: new, 5; 'Ahmad Jayadi, CHA', 'John Smith,
+        # LEED AP', 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon
+        # Kenneth Clarke QC MP, HMG'.
+        "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "b17ff67704b1", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -5387,7 +5418,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # so a widening taking one shape alone would change the roles
         # here before it reached the gate.
         "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word":
-            _Claim(5, ('family', 'given', 'middle', 'suffix'), "c3d76812da97", None),
+        # 2026-10-01, #564: `given` leaves the roles -- the comma pair
+        # reads suffix again by its capitals, so no name here moves it.
+            _Claim(5, ('family', 'middle', 'suffix'), "c3d76812da97", None),
         # The four one-name CJK rules, literal-anchored, at the two
         # baselines where the render is the whole of what moved. A
         # reach of 1 is one _CORPUS_CLAIMS cannot police on its own --
@@ -5499,6 +5532,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
+        # 2026-10-01, #564: new, 5; 'Ahmad Jayadi, CHA', 'John Smith,
+        # LEED AP', 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon
+        # Kenneth Clarke QC MP, HMG'.
+        "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "b17ff67704b1", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -5838,7 +5876,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # so a widening taking one shape alone would change the roles
         # here before it reached the gate.
         "fix(#342) rai and cha left the credential acronyms, so a trailing Rai or CHA is a name word":
-            _Claim(5, ('family', 'given', 'middle', 'suffix'), "c3d76812da97", None),
+        # 2026-10-01, #564: `given` leaves the roles -- the comma pair
+        # reads suffix again by its capitals, so no name here moves it.
+            _Claim(5, ('family', 'middle', 'suffix'), "c3d76812da97", None),
         # The four one-name CJK rules, literal-anchored, at the two
         # baselines where the render is the whole of what moved. A
         # reach of 1 is one _CORPUS_CLAIMS cannot police on its own --
@@ -5982,7 +6022,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # explained by neither: at this baseline the diff moves
         # `given`, a field outside this rule's own ('suffix', 'title').
         "fix(#296) a lone post-comma credential is a suffix":
-            _Claim(23, ('suffix', 'title'), "54c1ae9911e1", None),
+        # 2026-10-01, #564: 23 -> 24, 'Smith, XYZ'. Reach.
+            _Claim(24, ('suffix', 'title'), "eae9a2bb02b0", None),
         # 2026-09-27, #544: 6 -> 7; gains 'Smith, PhD MEng'.
         # 2026-09-28, #544: 7 -> 8; gains 'Smith, PhD Ma'.
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
@@ -6144,6 +6185,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
+        # 2026-10-01, #564: new, 5; 'Ahmad Jayadi, CHA', 'John Smith,
+        # LEED AP', 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon
+        # Kenneth Clarke QC MP, HMG'.
+        "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "b17ff67704b1", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -6512,6 +6558,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
+        # 2026-10-01, #564: new, 5; 'Ahmad Jayadi, CHA', 'John Smith,
+        # LEED AP', 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon
+        # Kenneth Clarke QC MP, HMG'.
+        "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "b17ff67704b1", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
