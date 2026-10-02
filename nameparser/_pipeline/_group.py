@@ -1720,18 +1720,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # van der Berg V' read family 'van der Berg V'). The chain
         # takes both forks, and asks again after its merges whether
         # the acronym still has the pieces the fork counted (below).
-        # Only where assign RUNS that peel: a NONE reader's segment is
-        # read by no trailing rule (segment 0 of a family comma takes
-        # strict suffix pieces one by one, a tail segment is suffixes
-        # whole), so a stop there split a run assign never took --
-        # 'SMITH VD MA, JOHN' stopped before VD, which the per-piece
-        # read then peeled from between two family words (#573).
-        if reader is TailReader.NONE:
-            tail = 0
-        else:
-            tail = len(pieces) - trailing_start(
-                leading_titles(pieces, ptags, tokens), pieces, ptags,
-                tokens, one_case=one_case)
+        name_start = leading_titles(pieces, ptags, tokens)
+        tail = len(pieces) - trailing_start(name_start, pieces, ptags,
+                                             tokens, one_case=one_case)
         def chain(tail: int) -> None:
             # `pieces[:titled]` are known to be leading titles. merge(k,
             # j) changes only indices from k on, and k only grows, so a

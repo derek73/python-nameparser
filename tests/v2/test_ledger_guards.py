@@ -3107,8 +3107,9 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "de la Cruz, Ma"}),
     # 2026-10-02, #573: rules.md#P6 and S2 examples, one name in two
     # casings each -- literal names that copy no set.
-    frozenset({"DOE, JANE PHD VD MA", "doe, jane phd vd ma"}),
-    frozenset({"SMITH, VD MA", "smith, de ma"}),
+    frozenset({"DOE, JANE MA VD PHD", "DOE, JANE PHD VD MA",
+               "doe, jane phd vd ma"}),
+    frozenset({"SMITH, VD DE LA MA", "SMITH, VD MA", "smith, de ma"}),
     # 2026-10-01, #554: the run rule gains rules.md#C1's particle-and-
     # suffix examples, a vocabulary word in front of a member, which
     # copies no set either.
@@ -3826,7 +3827,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: 414 -> 423, its nine rules.md#C1 and
         # case-row names, every one a comma name. Reach, verified
         # name by name.
-        # 2026-10-02, #573: 430 -> 437, its seven rules.md#P2,
+        # 2026-10-02, #573: 430 -> 439, its nine rules.md#P2,
         # P6 and S2 comma examples. Reach, verified name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
@@ -3834,7 +3835,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'García Márquez, MJ JK', 'John Smith, PhD XYZ' and 'MÜLLER
         # WEIß, HANS', #564's rules.md#C1 examples. Reach, verified
         # name by name.
-            _Claim(437, ('given', 'suffix', 'title'), "04854e3d38b2", None),
+            _Claim(439, ('given', 'suffix', 'title'), "5a1100d3a0ac", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3937,7 +3938,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: 414 -> 423, its nine rules.md#C1 and
         # case-row names, every one a comma name. Reach, verified
         # name by name.
-        # 2026-10-02, #573: 430 -> 437, its seven rules.md#P2,
+        # 2026-10-02, #573: 430 -> 439, its nine rules.md#P2,
         # P6 and S2 comma examples. Reach, verified name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
@@ -3945,7 +3946,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'García Márquez, MJ JK', 'John Smith, PhD XYZ' and 'MÜLLER
         # WEIß, HANS', #564's rules.md#C1 examples. Reach, verified
         # name by name.
-            _Claim(437, ('family', 'given'), "04854e3d38b2", None),
+            _Claim(439, ('family', 'given'), "5a1100d3a0ac", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4243,8 +4244,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # names ('De La Cruz, Ed', 'de la Cruz, Ma', 'van der Berg,
         # MA', 'Van Buren, Ed', 'van der Berg, PhD', 'John van Buren,
         # Ed', 'Freiherr von Berg, Ed'). Reach, verified name by name.
+        # 2026-10-02, #573: 124 -> 125, 'SMITH, VD DE LA MA' -- a
+        # particle chain, 'VD DE LA'. Reach, verified name by name.
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(124, ('_initials',), 'bf190fecb582', ('DEFAULT',)),
+            _Claim(125, ('_initials',), 'c1fe82860c6c', ('DEFAULT',)),
         # 2026-09-23, #459: 18 -> 19, 'john smith ph. d.', rules.md#R4's
         # two-token line. Reach, verified name by name.
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
@@ -4594,10 +4597,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #573: new, 1; 'SMITH VD MA, JOHN'.
         "fix(#573) a particle-suffix word before a family comma stays in the family":
             _Claim(1, ('family', 'suffix'), "638c43d95171", ('DEFAULT',)),
-        # 2026-10-02, #573: new, 2; 'SMITH, VD MA', 'smith, de
-        # ma'.
+        # 2026-10-02, #573: new, 3; 'SMITH, VD DE LA MA',
+        # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
-            _Claim(2, ('family', 'suffix'), "6e0f2ce2ebcb", ('DEFAULT',)),
+            _Claim(3, ('family', 'suffix'), "54ce0dda7114", ('DEFAULT',)),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5342,14 +5345,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-28, #544: new, 1; 'Smith, MD PhD Ma'.
         "fix(#296/#531) phd is not a prenominal, so behind a dual title it is the given name and the member ending the part reports":
             _Claim(1, ('_ambiguities', 'given', 'middle', 'title'), "8e9913f5df8b", ('DEFAULT',)),
-        # 2026-10-02, #573: new, 2; 'DOE, JANE PHD VD MA',
-        # 'doe, jane phd vd ma'.
+        # 2026-10-02, #573: new, 3; 'DOE, JANE MA VD PHD',
+        # 'DOE, JANE PHD VD MA', 'doe, jane phd vd ma'.
         "fix(#573) a particle-suffix word between credentials after a family comma stays in the run":
-            _Claim(2, ('_ambiguities', 'middle', 'suffix'), "73bad6898de0", ('DEFAULT',)),
-        # 2026-10-02, #573: new, 2; 'SMITH, VD MA', 'smith, de
-        # ma'.
+            _Claim(3, ('_ambiguities', 'middle', 'suffix'), "03e448f4776b", ('DEFAULT',)),
+        # 2026-10-02, #573: new, 3; 'SMITH, VD DE LA MA',
+        # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
-            _Claim(2, ('_ambiguities',), "6e0f2ce2ebcb", ('DEFAULT',)),
+            _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5816,14 +5819,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #573: new, 1; 'SMITH VD MA, JOHN'.
         "fix(#573) a particle-suffix word before a family comma stays in the family":
             _Claim(1, ('family', 'suffix'), "638c43d95171", ('DEFAULT',)),
-        # 2026-10-02, #573: new, 2; 'DOE, JANE PHD VD MA',
-        # 'doe, jane phd vd ma'.
+        # 2026-10-02, #573: new, 3; 'DOE, JANE MA VD PHD',
+        # 'DOE, JANE PHD VD MA', 'doe, jane phd vd ma'.
         "fix(#573) a particle-suffix word between credentials after a family comma stays in the run":
-            _Claim(2, ('_ambiguities', 'middle', 'suffix'), "73bad6898de0", ('DEFAULT',)),
-        # 2026-10-02, #573: new, 2; 'SMITH, VD MA', 'smith, de
-        # ma'.
+            _Claim(3, ('_ambiguities', 'family', 'middle', 'suffix'), "03e448f4776b", ('DEFAULT',)),
+        # 2026-10-02, #573: new, 3; 'SMITH, VD DE LA MA',
+        # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
-            _Claim(2, ('_ambiguities',), "6e0f2ce2ebcb", ('DEFAULT',)),
+            _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6535,14 +6538,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-28, #544: new, 1; 'Smith, MD PhD Ma'.
         "fix(#296/#531) phd is not a prenominal, so behind a dual title it is the given name and the member ending the part reports":
             _Claim(1, ('_ambiguities', 'given', 'middle', 'title'), "8e9913f5df8b", ('DEFAULT',)),
-        # 2026-10-02, #573: new, 2; 'DOE, JANE PHD VD MA',
-        # 'doe, jane phd vd ma'.
+        # 2026-10-02, #573: new, 3; 'DOE, JANE MA VD PHD',
+        # 'DOE, JANE PHD VD MA', 'doe, jane phd vd ma'.
         "fix(#573) a particle-suffix word between credentials after a family comma stays in the run":
-            _Claim(2, ('_ambiguities', 'middle', 'suffix'), "73bad6898de0", ('DEFAULT',)),
-        # 2026-10-02, #573: new, 2; 'SMITH, VD MA', 'smith, de
-        # ma'.
+            _Claim(3, ('_ambiguities', 'middle', 'suffix'), "03e448f4776b", ('DEFAULT',)),
+        # 2026-10-02, #573: new, 3; 'SMITH, VD DE LA MA',
+        # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
-            _Claim(2, ('_ambiguities',), "6e0f2ce2ebcb", ('DEFAULT',)),
+            _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6854,14 +6857,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #573: new, 1; 'SMITH VD MA, JOHN'.
         "fix(#573) a particle-suffix word before a family comma stays in the family":
             _Claim(1, ('family', 'suffix'), "638c43d95171", ('DEFAULT',)),
-        # 2026-10-02, #573: new, 2; 'DOE, JANE PHD VD MA',
-        # 'doe, jane phd vd ma'.
+        # 2026-10-02, #573: new, 3; 'DOE, JANE MA VD PHD',
+        # 'DOE, JANE PHD VD MA', 'doe, jane phd vd ma'.
         "fix(#573) a particle-suffix word between credentials after a family comma stays in the run":
-            _Claim(2, ('_ambiguities', 'middle', 'suffix'), "73bad6898de0", ('DEFAULT',)),
-        # 2026-10-02, #573: new, 2; 'SMITH, VD MA', 'smith, de
-        # ma'.
+            _Claim(3, ('_ambiguities', 'family', 'middle', 'suffix'), "03e448f4776b", ('DEFAULT',)),
+        # 2026-10-02, #573: new, 3; 'SMITH, VD DE LA MA',
+        # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
-            _Claim(2, ('_ambiguities',), "6e0f2ce2ebcb", ('DEFAULT',)),
+            _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
     },
 }
 

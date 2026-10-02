@@ -260,6 +260,18 @@ def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
     return "vocab:suffix" in tags and "initial" not in tags
 
 
+def is_lone_never_given_particle(piece: Sequence[int],
+                                 tokens: Sequence[WorkToken]) -> bool:
+    """A piece that is one never-given particle (rules.md#P1's fold
+    site). One predicate, asked by the fold in post_rules and by
+    assign's given slot, which predicts that the fold will take the
+    particle forward and so leave no given name in front of a member
+    (#573) -- two copies would drift silently, each site's own tests
+    still passing (mechanisms.md#ONE-PREDICATE-PER-QUESTION)."""
+    return (len(piece) == 1
+            and "particle" in tokens[piece[0]].tags
+            and "vocab:particle-ambiguous" not in tokens[piece[0]].tags)
+
 def _numeral_behind_the_initial_veto(piece: Sequence[int],
                                      tokens: Sequence[WorkToken]) -> bool:
     """Suffix vocabulary that is_suffix_piece refuses because it is

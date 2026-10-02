@@ -76,7 +76,8 @@ from nameparser._pipeline._vocab import (
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
-    is_suffix_piece, leading_titles, peel_walk,
+    is_lone_never_given_particle, is_suffix_piece, leading_titles,
+    listed_lean, peel_walk,
     segment_suffix_reading, tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
@@ -779,21 +780,27 @@ def assign(state: ParseState) -> ParseState:
                 """Is piece `m` the name word a never-given particle
                 opening the given part attaches to? post_rules' P1
                 fold takes such a particle forward into the family and
-                needs a name word for it to attach to, so the
-                given name the #531 slot below counts on is not there,
-                and the first word past the particle run is the
-                surname it heads rather than a word to spare ('SMITH,
-                VD MA' reads as 'Smith, vd Ma' does, #573). Asked only
-                of a class member the slot would otherwise take."""
-                lead = pieces[n]
-                if not (len(lead) == 1
-                        and "particle" in tokens[lead[0]].tags
-                        and "vocab:particle-ambiguous"
-                        not in tokens[lead[0]].tags):
+                needs a name word for it to attach to, so the given
+                name the #531 slot below counts on is not there, and
+                the first word past the particle run is the surname it
+                heads rather than a word to spare ('SMITH, VD MA'
+                reads as 'Smith, vd Ma' does, #573). Only where the
+                member's writing says nothing: capitals in a mixed-case
+                name still make it the credential ('Smith, de MA'
+                keeps suffix 'MA'), as they do with no words to spare
+                anywhere (rules.md#S2). Asked only of a class member
+                the slot would otherwise take."""
+                if not is_lone_never_given_particle(pieces[n], tokens):
                     return False
-                return all(k in titled or "particle" in ptags[k]
-                           or (len(pieces[k]) == 1
-                               and "particle" in tokens[pieces[k][0]].tags)
+                if listed_lean(tokens[pieces[m][0]],
+                               state.one_case) == "credential":
+                    return False
+                # every token, not the piece's tags: a chain of
+                # particles ('DE LA') is one piece whose tags say
+                # nothing of it ('SMITH, VD DE LA MA')
+                return all(k in titled
+                           or all("particle" in tokens[i].tags
+                                  for i in pieces[k])
                            for k in range(n + 1, m))
 
             def reads_as_a_suffix(m: int, titled: frozenset[int]) -> bool:
@@ -1131,8 +1138,23 @@ def assign(state: ParseState) -> ParseState:
         if positional:
             order = _assign_main(0, state, tokens, ambiguities)
         else:
+            # rules.md#P2: a particle "joins the words after it into one
+            # name part" -- so a particle that is suffix vocabulary too
+            # (vd, mc) with a name piece behind it in this part heads
+            # that name, and is not peeled from between two family words
+            # (#573: 'SMITH VD MA, JOHN', where the uniform case left the
+            # chain stopped before VD; 'SMITH VD JR, JOHN', a suffix word
+            # behind it, keeps suffix 'VD JR'). Group cannot make this
+            # call, not knowing which read this segment gets: a comma
+            # followed by no name word reads it positionally, trailing
+            # run and all ('Berg de MA, Prof.').
             for k, piece in enumerate(fam_pieces):
-                if k > 0 and is_suffix_piece(piece, fam_tags[k], tokens):
+                if (k > 0 and is_suffix_piece(piece, fam_tags[k], tokens)
+                        and not (k + 1 < len(fam_pieces)
+                                 and "particle" in tokens[piece[0]].tags
+                                 and not is_suffix_piece(
+                                     fam_pieces[k + 1], fam_tags[k + 1],
+                                     tokens))):
                     _set_roles(tokens, piece, Role.SUFFIX)
                 else:
                     _set_roles(tokens, piece, Role.FAMILY)
