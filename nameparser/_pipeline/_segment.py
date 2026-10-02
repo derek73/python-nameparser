@@ -140,10 +140,11 @@ def segment(state: ParseState) -> ParseState:
     # al-ASSAD', 'LLOYD WEBBER née Smith') and beside a mixed-case
     # credential ('LLOYD WEBBER, ANDREW PhD').
     # Asked only once a caps word is in hand: a part with no lowercase
-    # at all is settled in one C-level comparison; past that the walk
-    # costs a frame a word before the comma (the generator), plus a
-    # call, a fold and a wordlist test only where the C-level case
-    # test passes.
+    # at all is settled in one C-level comparison; past that it is
+    # linear in the words before the comma, about four frames a word
+    # (the generator, the case test's call, and the own-words walk's
+    # fold and marker test), plus a fold and a wordlist test where the
+    # case test passes -- and constant in a word's letters.
     def name_contrast() -> bool:
         before = "".join([state.tokens[i].text for i in groups[0]])
         if before == before.upper():

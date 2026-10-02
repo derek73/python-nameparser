@@ -3811,11 +3811,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # case-row names, every one a comma name. Reach, verified
         # name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-        # 2026-10-01, #564: 423 -> 429, 'John Smith, XYZ', 'Smith,
+        # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
-        # 'García Márquez, MJ JK' and 'John Smith, PhD XYZ', #564's
-        # rules.md#C1 examples. Reach, verified name by name.
-            _Claim(429, ('given', 'suffix', 'title'), "2c336f3d3ae0", None),
+        # 'García Márquez, MJ JK', 'John Smith, PhD XYZ' and 'MÜLLER
+        # WEIß, HANS', #564's rules.md#C1 examples. Reach, verified
+        # name by name.
+            _Claim(430, ('given', 'suffix', 'title'), "dcfb3a9638a9", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3919,11 +3920,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # case-row names, every one a comma name. Reach, verified
         # name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-        # 2026-10-01, #564: 423 -> 429, 'John Smith, XYZ', 'Smith,
+        # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
-        # 'García Márquez, MJ JK' and 'John Smith, PhD XYZ', #564's
-        # rules.md#C1 examples. Reach, verified name by name.
-            _Claim(429, ('family', 'given'), "2c336f3d3ae0", None),
+        # 'García Márquez, MJ JK', 'John Smith, PhD XYZ' and 'MÜLLER
+        # WEIß, HANS', #564's rules.md#C1 examples. Reach, verified
+        # name by name.
+            _Claim(430, ('family', 'given'), "dcfb3a9638a9", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":

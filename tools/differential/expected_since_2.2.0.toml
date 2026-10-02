@@ -2212,9 +2212,9 @@ orders = ["DEFAULT"]
 issue = "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default"
 # rules.md#C1 and S2 (#564): Policy.unlisted_caps_suffixes defaults to
 # CapsSuffixes.AFTER_COMMA, so the part after a comma with two or more
-# name words before it reads an unlisted all-caps word of three or
-# more letters, or a run holding one, as the credential run and
-# reports the call. The all-caps SURNAME convention never writes the
+# name words before it reads an unlisted all-caps word as the
+# credential, alone or in C1's run, where the name contrasts it, and
+# reports the call; a lone two-letter word is declined as initials. The all-caps SURNAME convention never writes the
 # capitals there. 'John Smith, XYZ' and 'John Smith, LEED AP' are the
 # C1 examples (the latter closing the #291 deviation the doc carried);
 # 'The Rt Hon Kenneth Clarke QC MP, HMG' is a radar corpus name.

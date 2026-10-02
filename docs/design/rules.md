@@ -1726,7 +1726,9 @@ C1. Rationale: a credential run after the comma means the name is in
     the class in such a part only where the name carries the
     contrast: one of its own words before the comma written the way a
     name is written in mixed case, holding a capital and ending in a
-    lowercase letter, with no period and not claimed by the vocabulary
+    lowercase letter (its last letter, past any trailing mark, and
+    setting aside a lowercase letter with no capital of its own, as ß
+    has none), with no period and not claimed by the vocabulary
     as a title, particle, connective, credential or generation. A
     surname written in capitals ends in a capital whatever is glued in
     front of it, and a word written wholly in lowercase holds none, so
@@ -1874,6 +1876,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, LEED AP"       →  suffix="LEED AP"
       "Smith, XYZ"                →  given="XYZ"  · boundary
       "García Márquez, MJ"        →  given="MJ"  · boundary
+      "MÜLLER WEIß, HANS"         →  given="HANS"  · boundary
       "García Márquez, MJ PhD"    →  given="MJ"  · boundary
       "García Márquez, MJ JK"     →  suffix="MJ JK"
       "John Smith, PhD XYZ"       →  suffix="PhD XYZ"

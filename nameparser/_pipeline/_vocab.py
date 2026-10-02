@@ -722,16 +722,36 @@ _NON_NAME_FIELDS = tuple(f for f in _VOCAB_FIELDS
 
 def written_as_a_name(text: str) -> bool:
     """Whether TEXT is written the way a name is written in mixed case:
-    it holds a capital (or titlecase letter) and its last letter is
+    it holds a capital (or titlecase letter) and its last LETTER is
     lowercase -- #564's test for the name's case contrast (Derek).
     'Smith', 'DiCaprio', 'IJzerman', 'al-Rashid', "d'Estaing",
     'McDonald', 'ǅokić' pass. A surname written in capitals fails
     whatever is glued in front of it ("d'ESTAING", 'al-ASSAD',
     'McDONALD', 'FitzGERALD', 'DeVITO', 'St-PIERRE'), and so do a lone
-    capital and a lowercase-only word. A trailing 'ß' is set aside,
-    having no single capital form: 'WEIß' is written in capitals and
-    'Weiß' is not. Two C-level checks, so a word costs no frame."""
-    return text != text.lower() and text.rstrip("ß")[-1:].islower()
+    capital and a lowercase-only word.
+
+    The last letter is found, not the last character: the word is
+    composed first (NFC), so a name typed with decomposed accents reads
+    as its composed spelling ('André' ends in 'é', not in the combining
+    accent), and trailing non-letters are passed over ("Jones'",
+    'Smith2', 'Smith)'). A lowercase letter with no single capital form
+    is passed over too, being no evidence of case: 'WEIß' and 'KAĸ' are
+    written in capitals, 'Weiß' is not. One call and no generator, so a
+    word costs one frame."""
+    if text == text.lower():
+        return False
+    word = unicodedata.normalize("NFC", text)
+    i = len(word)
+    while i:
+        i -= 1
+        ch = word[i]
+        if not ch.isalpha():
+            continue
+        upper = ch.upper()
+        if ch.islower() and (upper == ch or len(upper) != 1):
+            continue
+        return ch.islower()
+    return False
 
 
 def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:

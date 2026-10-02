@@ -896,7 +896,10 @@ def test_is_single_letter_numeral() -> None:
     ("Smith", True), ("DiCaprio", True), ("IJzerman", True),
     ("al-Rashid", True), ("d'Estaing", True), ("McDonald", True),
     ("MacLeod", True), ("Mack", True), ("O'Neil", True),
-    ("ǅokić", True), ("E\u0301lodie", True), ("Weiß", True),
+    ("ǅokić", True), ("E\u0301lodie", True), ("Andre\u0301", True),
+    ("Ha\u0300", True), ("Jones'", True), ("Smith2", True),
+    ("Smith)", True), ("Weiß", True), ("KAĸ", False),
+    ("ANDRE\u0301", False),
     ("SMITH", False), ("smith", False), ("C", False), ("ap", False),
     ("d'ESTAING", False), ("al-ASSAD", False), ("McDONALD", False),
     ("MacDONALD", False), ("FitzGERALD", False), ("DeVITO", False),
@@ -906,6 +909,8 @@ def test_is_single_letter_numeral() -> None:
 def test_written_as_a_name(text: str, expected: bool) -> None:
     # #564 (Derek): the name's case contrast is a word holding a
     # capital and ending in a lowercase letter -- a surname written in
-    # capitals ends in one whatever is glued in front of it, and a
-    # trailing ß, which has no single capital, is set aside.
+    # capitals ends in one whatever is glued in front of it. The last
+    # LETTER: composed first, so a decomposed accent at the end counts
+    # as its letter; trailing non-letters and a lowercase letter with
+    # no single capital (ß, ĸ) are passed over.
     assert written_as_a_name(text) is expected

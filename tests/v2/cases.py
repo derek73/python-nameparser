@@ -3022,6 +3022,16 @@ CASES: tuple[Case, ...] = (
                "lowercase is the contrast, so an interior capital counts "
                "('DiCaprio', 'IJzerman', 'al-Rashid'). "
                "The `istitle()` draft read given 'XYZ' here"),
+    Case("a_name_typed_with_decomposed_accents_carries_the_contrast",
+         "Jose\u0301 Andre\u0301, XYZ",
+         {"given": "Jose\u0301", "family": "Andre\u0301", "suffix": "XYZ"},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="#564: the contrast test reads a word's last LETTER after "
+               "composing it, so 'André' typed with a combining accent "
+               "ends in 'é' and reads as its composed spelling does. A "
+               "draft reading the last character took the accent and "
+               "kept given 'XYZ'"),
     Case("a_capitalized_given_name_behind_a_two_word_surname_is_the_accepted_cost",
          "García Márquez, JUAN Jr.",
          {"given": "García", "family": "Márquez", "suffix": "JUAN Jr."},
