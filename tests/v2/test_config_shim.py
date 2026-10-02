@@ -7,12 +7,14 @@ from pathlib import Path
 
 import pytest
 
+from nameparser import _config_shim
 from nameparser import GIVEN_FIRST, HumanName, Lexicon, PatronymicRule, Policy
 from nameparser._config_shim import (
     CONSTANTS, Constants, SetManager, TupleManager, _DelimiterManager,
     _RegexesProxy, _cached_parser,
 )
 from nameparser.config.regexes import EMPTY_REGEX, REGEXES
+from nameparser.util import lc
 
 _DATA_DIR = Path(__file__).parent / "data"
 
@@ -379,12 +381,13 @@ def test_an_unrelated_capitalization_exceptions_valueerror_has_no_v1_hint(
 ) -> None:
     """The v1-spelled hint is added ONLY for _MaskValueError -- a value
     that does not spell its key -- caught by TYPE in _build_snapshot's
-    try/except. A capitalization_exceptions key normalizing to empty
-    is a plain ValueError (_normpairs raises the base class for it,
-    not _MaskValueError), so it passes through the except clause
-    unchanged: no v1-spelled hint is appended to an error about a
+    try/except. A capitalization_exceptions key that Lexicon folds to
+    empty but v1's lc() does not (a lone ideographic full stop, so
+    v1-matchable and kept by the shim) is a plain ValueError
+    (_normpairs raises the base class for it, not _MaskValueError), so
+    it passes through the except clause unchanged: no v1-spelled hint is appended to an error about a
     shape the hint does not fit."""
-    c = Constants(capitalization_exceptions={'...': 'x'})
+    c = Constants(capitalization_exceptions={'\u3002': 'x'})
     with pytest.raises(ValueError, match="normalizes to empty") as caught:
         HumanName("john smith", constants=c)
     assert "on a v1 Constants" not in str(caught.value)
@@ -428,7 +431,8 @@ def test_snapshot_drops_first_name_titles_v1_could_not_match(entry: str) -> None
     c = Constants()
     c.titles.add("grand", "duke")
     c.first_name_titles.add(entry)
-    lexicon, _, _ = c._snapshot()               # must not raise
+    with pytest.warns(UserWarning, match="first_name_titles"):
+        lexicon, _, _ = c._snapshot()           # must not raise
     assert "" not in lexicon.given_name_titles
     name = HumanName("Grand Duke John", constants=c)
     assert (name.first, name.last) == ("", "John")
@@ -913,3 +917,162 @@ def test_2x_pickle_roundtrip_keeps_a_readded_dead_entry() -> None:
         HumanName("John Smith", constants=c)   # snapshot builds lazily here
     c2 = pickle.loads(pickle.dumps(c))
     assert "leed ap" in c2.suffix_acronyms
+
+
+# -- entries v1 could never match (#541) ---------------------------------
+#
+# A v1 piece comes from a whitespace split, re-joined only with single
+# spaces, so nameparser 1.x never matched an entry that is empty or
+# holds edge whitespace, a whitespace run or a tab. Each row names a text
+# on which the entry WOULD act if the shim translated it, so a row that
+# reads like the entry-free parse proves the drop rather than an inert
+# word. (field, entry, text, mask value for capitalization_exceptions)
+_V1_UNMATCHABLE_ROWS = [
+    ("titles", " dean ", "dean john smith", None),
+    ("titles", "dean\t", "dean john smith", None),
+    ("titles", "...", "dean john smith", None),
+    ("titles", "de  an", "de an john smith", None),
+    ("prefixes", " zz ", "john zz smith", None),
+    ("suffix_acronyms", " zzq ", "john smith zzq", None),
+    ("suffix_not_acronyms", " zzw", "john smith zzw", None),
+    ("suffix_not_acronyms", "ma ", "John Smith", None),
+    ("suffix_not_acronyms", "ba ", "John Smith", None),
+    ("suffix_acronyms_ambiguous", "phd ", "John Smith PhD", None),
+    ("conjunctions", " zand ", "john zand jane smith", None),
+    ("bound_first_names", " zzb ", "zzb ali smith", None),
+    ("bound_first_names", "'t ", "Gerard 't Hooft", None),
+    ("non_first_name_prefixes", " van ", "van johnson", None),
+    ("capitalization_exceptions", " zzc ", "john zzc", "ZzC"),
+    ("capitalization_exceptions", "...", "john zzc", "ZzC"),
+]
+
+# Recorded negative control: what each row did with the filter off
+# (measured 2026-10-02 on master 42515ebd, where only first_name_titles
+# was filtered). "raises" rows broke the shim's never-raise contract,
+# "activates" rows its never-silently-change one; "inert" rows were
+# harmless already and are swept so the warning covers the whole family.
+_UNFILTERED_OUTCOME = {
+    ("titles", " dean "): "activates",
+    ("titles", "dean\t"): "activates",
+    ("titles", "..."): "raises",
+    ("titles", "de  an"): "inert",
+    ("prefixes", " zz "): "activates",
+    ("suffix_acronyms", " zzq "): "activates",
+    ("suffix_not_acronyms", " zzw"): "activates",
+    ("suffix_not_acronyms", "ma "): "raises",
+    ("suffix_not_acronyms", "ba "): "raises",
+    ("suffix_acronyms_ambiguous", "phd "): "inert",
+    ("conjunctions", " zand "): "activates",
+    ("bound_first_names", " zzb "): "activates",
+    ("bound_first_names", "'t "): "raises",
+    ("non_first_name_prefixes", " van "): "inert",
+    ("capitalization_exceptions", " zzc "): "activates",
+    ("capitalization_exceptions", "..."): "raises",
+}
+
+
+def _with_entry(field: str, entry: str, value: str | None) -> Constants:
+    c = Constants()
+    if value is None:
+        getattr(c, field).add(entry)
+    else:
+        c.capitalization_exceptions[entry] = value
+    return c
+
+
+def _reading(c: Constants, text: str) -> tuple[dict[str, str], str]:
+    name = HumanName(text, constants=c)
+    fields = name.as_dict()
+    name.capitalize(force=True)
+    return fields, str(name)
+
+
+@pytest.mark.parametrize(("field", "entry", "text", "value"),
+                         _V1_UNMATCHABLE_ROWS)
+def test_an_entry_v1_could_not_match_is_dropped_with_one_warning(
+    field: str, entry: str, text: str, value: str | None,
+) -> None:
+    baseline = _reading(Constants(), text)
+    c = _with_entry(field, entry, value)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        got = _reading(c, text)
+    assert got == baseline
+    messages = [str(w.message) for w in caught]
+    assert len(messages) == 1, messages
+    assert caught[0].category is UserWarning
+    # a set field stores the lc()-folded entry, a mask key as written
+    shown = entry if value is not None else lc(entry)
+    assert f"{field}: {shown!r}" in messages[0]
+    # attributed to the caller's line, not to library code
+    assert caught[0].filename == __file__
+
+
+@pytest.mark.parametrize(("field", "entry", "text", "value"),
+                         _V1_UNMATCHABLE_ROWS)
+def test_the_unmatchable_entry_filter_has_a_recorded_control(
+    field: str, entry: str, text: str, value: str | None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(_config_shim, "_v1_matchable", lambda e: True)
+    baseline = _reading(Constants(), text)
+    c = _with_entry(field, entry, value)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")   # Lexicon's multi-word warning
+        try:
+            got = _reading(c, text)
+        except ValueError:
+            outcome = "raises"
+        else:
+            outcome = "activates" if got != baseline else "inert"
+    assert outcome == _UNFILTERED_OUTCOME[(field, entry)]
+
+
+def test_the_offered_remedy_runs_and_silences_the_warning() -> None:
+    c = Constants()
+    c.titles.add(" dean ")
+    c.capitalization_exceptions[" zzc "] = "ZzC"
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        HumanName("x", constants=c)
+    message = str(caught[0].message)
+    remedy = message[message.index("constants."):]
+    exec(remedy, {"constants": c})   # the code the message hands over
+    c.titles.add("dean")              # the stripped word, if it was meant
+    c.capitalization_exceptions["zzc"] = "ZzC"
+    name = HumanName("dean john zzc", constants=c)   # no warning: error filter
+    assert name.title == "dean"                      # as 1.4.0 reads "dean"
+    name.capitalize(force=True)
+    assert str(name) == "Dean John ZzC"
+
+
+def test_a_clean_config_snapshots_without_a_warning() -> None:
+    c = Constants()
+    c.titles.add("dean")
+    c.capitalization_exceptions["McDonald"] = "McDonald"  # case: accepted widening
+    lexicon, _, _ = c._snapshot()                # error filter: any warning fails
+    assert "dean" in lexicon.titles
+
+
+def test_the_1_4_shipped_typos_are_dropped_silently() -> None:
+    c = Constants()
+    c.titles.remove("actor")
+    c.titles.add("actor ")
+    name = HumanName("Actor John Smith", constants=c)   # error filter
+    assert (name.first, name.title) == ("Actor", "")
+
+
+def test_the_1_4_shipped_unmatchable_roster_is_exactly_the_pickles() -> None:
+    with open(_DATA_DIR / "constants_v14.pickle", "rb") as f:
+        c = pickle.load(f)
+    found = {
+        (field, entry)
+        for field in _config_shim._SET_FIELDS
+        for entry in getattr(c, field)
+        if not _config_shim._v1_matchable(entry)
+    } | {
+        ("capitalization_exceptions", key)
+        for key in c.capitalization_exceptions
+        if not _config_shim._v1_matchable(key)
+    }
+    assert found == _config_shim._V14_SHIPPED_UNMATCHABLE
