@@ -385,8 +385,8 @@ def test_an_unrelated_capitalization_exceptions_valueerror_has_no_v1_hint(
     empty but v1's lc() does not (a lone ideographic full stop, so
     v1-matchable and kept by the shim) is a plain ValueError
     (_normpairs raises the base class for it, not _MaskValueError), so
-    it passes through the except clause unchanged: no v1-spelled hint is appended to an error about a
-    shape the hint does not fit."""
+    it passes through the except clause unchanged: no v1-spelled hint
+    is appended to an error about a shape the hint does not fit."""
     c = Constants(capitalization_exceptions={'\u3002': 'x'})
     with pytest.raises(ValueError, match="normalizes to empty") as caught:
         HumanName("john smith", constants=c)
@@ -944,6 +944,7 @@ _V1_UNMATCHABLE_ROWS = [
     ("non_first_name_prefixes", " van ", "van johnson", None),
     ("capitalization_exceptions", " zzc ", "john zzc", "ZzC"),
     ("capitalization_exceptions", "...", "john zzc", "ZzC"),
+    ("first_name_titles", "grand  duke", "Grand Duke John", None),
 ]
 
 # Recorded negative control: what each row did with the filter off
@@ -968,11 +969,19 @@ _UNFILTERED_OUTCOME = {
     ("non_first_name_prefixes", " van "): "inert",
     ("capitalization_exceptions", " zzc "): "activates",
     ("capitalization_exceptions", "..."): "raises",
+    ("first_name_titles", "grand  duke"): "activates",
 }
 
 
-def _with_entry(field: str, entry: str, value: str | None) -> Constants:
+def _base(field: str) -> Constants:
     c = Constants()
+    if field == "first_name_titles":   # the entry only acts on known titles
+        c.titles.add("grand", "duke")
+    return c
+
+
+def _with_entry(field: str, entry: str, value: str | None) -> Constants:
+    c = _base(field)
     if value is None:
         getattr(c, field).add(entry)
     else:
@@ -992,7 +1001,7 @@ def _reading(c: Constants, text: str) -> tuple[dict[str, str], str]:
 def test_an_entry_v1_could_not_match_is_dropped_with_one_warning(
     field: str, entry: str, text: str, value: str | None,
 ) -> None:
-    baseline = _reading(Constants(), text)
+    baseline = _reading(_base(field), text)
     c = _with_entry(field, entry, value)
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
@@ -1015,7 +1024,7 @@ def test_the_unmatchable_entry_filter_has_a_recorded_control(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(_config_shim, "_v1_matchable", lambda e: True)
-    baseline = _reading(Constants(), text)
+    baseline = _reading(_base(field), text)
     c = _with_entry(field, entry, value)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")   # Lexicon's multi-word warning
@@ -1076,3 +1085,14 @@ def test_the_1_4_shipped_unmatchable_roster_is_exactly_the_pickles() -> None:
         if not _config_shim._v1_matchable(key)
     }
     assert found == _config_shim._V14_SHIPPED_UNMATCHABLE
+
+
+def test_a_first_name_title_lexicon_folds_to_nothing_is_dropped_quietly() -> None:
+    # '\u3002' survives v1's lc() (so the shim keeps it) but Lexicon's
+    # fold empties it; the guard on given_name_titles is what keeps that
+    # from raising. No warning expected: the error filter enforces it.
+    c = Constants()
+    c.first_name_titles.add("\u3002")
+    lexicon, _, _ = c._snapshot()
+    assert "" not in lexicon.given_name_titles
+    assert HumanName("john smith", constants=c).last == "smith"

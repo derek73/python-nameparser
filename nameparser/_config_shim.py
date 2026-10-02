@@ -641,7 +641,11 @@ def _v1_matchable(entry: str) -> bool:
 # space, so 1.4.0 never matched them ("Actor John Smith" -> first
 # "Actor"). A restored 1.4 pickle carries them and the user never wrote
 # them: they are dropped like any unmatchable entry but not named in the
-# warning. The 2.x data module spells them without the space.
+# warning. The 2.x data module spells them without the space. Not the
+# same roster as _LEGACY_DEAD_ENTRIES, on purpose: that one is subtracted
+# in __setstate__, only when the whole pre-2.0 set is present, so a user's
+# own re-added entry survives; this one is skipped at snapshot time from
+# any source, and nothing else about it depends on how the entry got here.
 _V14_SHIPPED_UNMATCHABLE = frozenset({
     ("titles", "actor "), ("titles", "television "),
 })
@@ -655,10 +659,11 @@ def _warn_unmatchable(dropped: list[tuple[str, str]]) -> None:
         else f"constants.{field}.remove({entry!r})"
         for field, entry in dropped)
     _warn_dead_entry(
-        f"ignoring Constants entries nameparser 1.x never matched, each "
-        f"empty or holding whitespace no name word carries -- {listed}. "
+        f"ignoring Constants entries nameparser 1.x never matched (each "
+        f"is empty or holds whitespace no name word can carry): {listed}. "
         f"Add the stripped word if one was meant, and remove these: "
         f"{remedy}")
+
 
 #: v1's Constants.__repr__ field order (#221) -- kept as its own tuple
 #: rather than reusing _SET_FIELDS, whose order differs (v1 lists
@@ -1117,9 +1122,10 @@ class Constants:
                 # honorific containing an abbreviation or a conjunction and
                 # silently swapped given and family.
                 # Entries v1 could never match were dropped above
-                # (_v1_matchable); one that folds away entirely here ('.'
-                # words) is dropped by `if t`, since _normset would reject
-                # it.
+                # (_v1_matchable); one that Lexicon folds away entirely
+                # that v1's lc() did not -- a lone non-ASCII full stop
+                # ('。') -- is dropped by `if t`, since _normset would
+                # reject it.
                 given_name_titles=frozenset(
                     t for t in (_title_key(e.split())
                                 for e in first_name_titles) if t),
