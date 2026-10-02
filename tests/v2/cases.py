@@ -1019,14 +1019,17 @@ CASES: tuple[Case, ...] = (
                "no family, so the part before it reads positionally, "
                "its trailing credential included. A first draft of "
                "#573 skipped the chain's trailing stop for the whole "
-               "family part and read family 'de MA' in silence"),
+               "family part and read family 'de MA'. The row pins the "
+               "suffix and its report; the all-particle family 'de' "
+               "is the positional read's, older than #573, and not "
+               "endorsed here"),
     Case("a_particle_suffix_word_between_credentials_stays_in_the_run",
          "DOE, JANE PHD VD MA",
          {"given": "JANE", "family": "DOE", "suffix": "PHD VD MA"},
          classification="fix(#573)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
-         notes="P6's company exception: 'VD' has a credential "
-               "in front of it and one behind, so it stands inside the "
+         notes="P6's third exception: 'VD' has a credential in "
+               "front of it and one behind, so it stands inside the "
                "run rather than ending the name, and P6's attachment "
                "stands down. Reports 'VD' (the attachment declined) "
                "and 'MA' (#531's slot). Master read family 'VD DOE', "

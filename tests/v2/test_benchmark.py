@@ -785,6 +785,16 @@ _REREAD_SHAPES: dict[str, tuple[Callable[[int], str], str,
         lambda n, k: (n.title.split() == ["Dr."] * k
                       and n.given == "Jan" and n.family == "van Berg"),
     ),
+    # #573: a never-given particle run opening the given part, then
+    # members -- the slot asks each member whether it is the run's
+    # word. A per-member rescan of the run was 7.53x here (counted in
+    # generator frames, which is where the rescan lived; 3.38x with
+    # the run's end kept once). Measured 2026-10-02, py3.11.
+    "lead": (
+        lambda k: "SMITH, VD " + "DE " * k + "MA " * k, "<genexpr>",
+        lambda n, k: (n.family == "SMITH VD " + "DE " * k + "MA"
+                      and n.suffix.split() == ["MA"] * (k - 1)),
+    ),
 }
 
 

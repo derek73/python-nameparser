@@ -272,6 +272,7 @@ def is_lone_never_given_particle(piece: Sequence[int],
             and "particle" in tokens[piece[0]].tags
             and "vocab:particle-ambiguous" not in tokens[piece[0]].tags)
 
+
 def _numeral_behind_the_initial_veto(piece: Sequence[int],
                                      tokens: Sequence[WorkToken]) -> bool:
     """Suffix vocabulary that is_suffix_piece refuses because it is

@@ -13,7 +13,7 @@ Reads: Policy.patronymic_rules, Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles.
 
-Implements rules H1, M4, P1, O1, O2, O3 and R1 of docs/design/rules.md;
+Implements rules H1, M4, P1, P6, O1, O2, O3 and R1 of docs/design/rules.md;
 each is cited at its code below, and H1/P1/O1/O2's history lives in
 docs/design/decisions.md. `suffix_entries` is the R1 entry pass as a
 state-in/state-out function, for Parser.revise to run over a
@@ -314,14 +314,19 @@ def _inside_a_credential_run(seg: tuple[tuple[int, ...], ...],
     reading -- 'DOE, JANE PHD VD MA' reads suffix 'PHD VD MA' where the
     attachment had pulled VD out of the middle of it (#573). Behind as
     well as in front: with nothing behind it the word ends the name,
-    and 'Doe, Jane PhD vd' keeps family 'vd Doe'. A title on either
-    side is transparent, as it is to every trailing reading (H5):
-    'DOE, JANE PHD PROF. VD MA' reads as 'DOE, JANE PHD VD MA' does.
+    and 'Doe, Jane PhD vd' keeps family 'vd Doe'. A title between it
+    and the post-nominal in front is transparent, as it is to every
+    trailing reading (H5): 'DOE, JANE PHD PROF. VD MA' reads as 'DOE,
+    JANE PHD VD MA' does. (Behind it no title is skipped: a title
+    there leaves the word a name in assign, so nothing reaches here.)
 
     The test is the ROLES assign gave, not S2's company query: the
     question is whether assign read the run whole, and a member in
     front that the writing or a count made the credential ('DOE, JANE
-    MA VD PHD') says so as plainly as a degree does. The run's own
+    MA VD PHD') says so as plainly as a degree does. So does a
+    generation, in front or behind ('Berg, Jan PhD vd Jr.'): the
+    tussenvoegsel P6 is about stands right behind the given name, and
+    a post-nominal between them says this word is not one. The run's own
     role is what keeps a plain particle out ('Doe, Jane PhD de PhD',
     whose 'de' is a name word, not a post-nominal), and the given
     name in front is what keeps 'Doe, Jane vd PhD' attaching.
@@ -341,11 +346,8 @@ def _inside_a_credential_run(seg: tuple[tuple[int, ...], ...],
     front = k - 1
     while front > given_at and is_title(front):
         front -= 1
-    behind = end
-    while behind < len(seg) and is_title(behind):
-        behind += 1
-    if (front <= given_at or behind == len(seg)
-            or not suffix_read(front) or not suffix_read(behind)):
+    if (front <= given_at or end == len(seg)
+            or not suffix_read(front) or not suffix_read(end)):
         return False
     run = seg[k]
     text = " ".join(tokens[i].text for i in run)
@@ -683,7 +685,9 @@ def post_rules(state: ParseState) -> ParseState:
     # "Beethoven, Ludwig van" is how "Ludwig van Beethoven" is filed.
     #
     # Keyed on the token's VOCABULARY, not its assigned role, which is
-    # what gives the attachment its stated precedence over S2. `vd`,
+    # what gives the attachment its stated precedence over S2 -- save
+    # the third exception (#573), which asks the ROLES whether assign
+    # read a credential run whole around the word. `vd`,
     # `mc` and `do` are the three words in both vocabularies; assign
     # reads a trailing `vd` or `mc` as a post-nominal, so those two
     # need the override. `do` is in the AMBIGUOUS acronym half, which

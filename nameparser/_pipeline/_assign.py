@@ -776,6 +776,10 @@ def assign(state: ParseState) -> ParseState:
                     floors[titled] = (low, final)
                 return low
 
+            #: where the particle run opening the given part ends,
+            #: per `titled` value -- `attaches_the_lead`'s one walk
+            lead_run_ends: dict[frozenset[int], int] = {}
+
             def attaches_the_lead(m: int, titled: frozenset[int]) -> bool:
                 """Is piece `m` the name word a never-given particle
                 opening the given part attaches to? post_rules' P1
@@ -795,13 +799,25 @@ def assign(state: ParseState) -> ParseState:
                 if listed_lean(tokens[pieces[m][0]],
                                state.one_case) == "credential":
                     return False
-                # every token, not the piece's tags: a chain of
-                # particles ('DE LA') is one piece whose tags say
-                # nothing of it ('SMITH, VD DE LA MA')
-                return all(k in titled
-                           or all("particle" in tokens[i].tags
-                                  for i in pieces[k])
-                           for k in range(n + 1, m))
+                # The member is the particle run's word when it is the
+                # first kept piece past that run. Where the run ends is
+                # one answer per `titled` value, walked once and kept,
+                # so a run of members costs one walk rather than one
+                # each (the second review measured the per-member scan
+                # quadratic on 'SMITH, VD ' + 'DE '*k + 'MA '*k). Every
+                # token, not the piece's tags: a chain of particles
+                # ('DE LA') is one piece whose tags say nothing of it
+                # ('SMITH, VD DE LA MA').
+                run_end = lead_run_ends.get(titled)
+                if run_end is None:
+                    run_end = n + 1
+                    while run_end < len(pieces) and (
+                            run_end in titled
+                            or all("particle" in tokens[i].tags
+                                   for i in pieces[run_end])):
+                        run_end += 1
+                    lead_run_ends[titled] = run_end
+                return m <= run_end
 
             def reads_as_a_suffix(m: int, titled: frozenset[int]) -> bool:
                 """Does this segment's walk read piece `m` as a suffix?

@@ -459,7 +459,9 @@ P2. Rationale: a particle is written as part of the surname it
     family, a particle that is also suffix vocabulary heads the name
     word behind it, whatever case the name is written in, and is not
     read as a suffix standing between two family words; with a suffix
-    word or nothing behind it, it reads as the suffix it is there.
+    word or nothing behind it, it reads as the suffix it is there. A
+    lone letter behind it is a name word here, not a numeral, as in
+    the same part without the particle ('SMITH V, JOHN').
       "John van der Berg"         →  family="van der Berg"
       "John van der Berg Smith"   →  family="van der Berg Smith"
       "Vincent van Gogh van Beethoven"  →  middle="van Gogh"
@@ -804,9 +806,12 @@ P6. Rationale: a particle ending the name has nothing to link
     credential in any spelling and any case, reported as S2's
     credential fork. The third is a lone word of both the particle and
     the UNAMBIGUOUS suffix vocabulary standing INSIDE a run read as
-    credentials — a credential in front of it and another behind,
-    whatever made each one, a trailing title on either side being
-    transparent (H5): it does not end the name, and keeps the
+    post-nominals — one in front of it and another behind, a
+    credential or a generation, whatever made each one, and a title
+    between it and the one in front transparent (H5): the
+    tussenvoegsel stands right behind the given name, so a
+    post-nominal between them says the word is not one. It does not
+    end the name, and keeps the
     post-nominal reading in any case, reported as S2's credential
     fork. With nothing behind it, it ends the name and attaches, and
     two such words side by side are one particle run, which this rule
