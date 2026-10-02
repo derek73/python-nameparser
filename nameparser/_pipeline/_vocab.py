@@ -740,8 +740,6 @@ def written_as_a_name(text: str) -> bool:
     ('ß' -> 'SS', 'ĸ' with none): 'WEIß' and 'KAĸ' are written in
     capitals, 'Weiß' is not. One call and no generator, so a word costs
     one frame."""
-    if text == text.lower():
-        return False
     word = unicodedata.normalize("NFC", text)
     i = len(word)
     while i:
@@ -752,7 +750,9 @@ def written_as_a_name(text: str) -> bool:
         upper = ch.upper()
         if ch.islower() and (upper == ch or len(upper) != 1):
             continue
-        return ch.islower()
+        # the capital is asked here, of the word that has a letter to
+        # read; one with none falls through below ('李', '2', 'ß')
+        return ch.islower() and text != text.lower()
     return False
 
 

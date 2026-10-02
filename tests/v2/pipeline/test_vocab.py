@@ -907,6 +907,8 @@ def test_is_single_letter_numeral() -> None:
     ("MacDONALD", False), ("FitzGERALD", False), ("DeVITO", False),
     ("LaFLEUR", False), ("St-PIERRE", False), ("SMITH-McDONALD", False),
     ("WEIß", False), ("O'NEIL", False),
+    # no letter carrying case evidence at all
+    ("李", False), ("2", False), ("ß", False), ("", False),
 ])
 def test_written_as_a_name(text: str, expected: bool) -> None:
     # #564 (Derek): the name's case contrast is a word holding a
