@@ -995,6 +995,21 @@ CASES: tuple[Case, ...] = (
                "family around a suffix 'vd'. 2.3.0 read family 'Smith "
                "Ma', suffix 'vd', and 1.4.0 last 'Smith', suffix 'vd, "
                "Ma'"),
+    # #578: the mixed-case given part a credential and a particle both
+    # end. Decided as it reads, silent: no code special-cases it.
+    Case("a_particle_after_a_credential_heads_a_title_case_name",
+         "Doe, Jane PhD vd Ma",
+         {"given": "Jane", "middle": "vd Ma", "family": "Doe",
+          "suffix": "PhD"},
+         classification="fix(#289)",
+         notes="S2: a particle in front of a member takes it out of "
+               "the given part's trailing slot, and where the word "
+               "behind reads as a name the two are one name, asked "
+               "nothing and reporting nothing -- 'vd' reads as 'van' "
+               "does ('Doe, Jane PhD van Ma'). The capitalization is "
+               "malformed either way; #578 declined both a suffix "
+               "reading and a report. 2.3.0 read middle 'Ma', suffix "
+               "'PhD vd'; 1.4.0 suffix 'PhD, vd, Ma'"),
     # #573: the three uniform-case shapes of the same word. Each split
     # came from one stage acting on a reading the next never took.
     Case("a_uniform_case_particle_before_a_comma_stays_in_the_family",
