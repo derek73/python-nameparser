@@ -1680,15 +1680,17 @@ C1. Rationale: a credential run after the comma means the name is in
     a given name, being the evidence that the part is a surname; a
     word after the one the particle attaches to is a second word, and
     a suffix word ends the particle's reach. A word that is also
-    title vocabulary or a bound given name is not a particle to this
-    count, reading in front of a name as the title (H1) or the
-    given-name join (P5) it also is. A connective join and a bound
-    given name are not one word here: whether P3 joins a connective
-    depends on the words of the whole name, which this count is part
-    of deciding, and a bound given name builds a given name rather
-    than a surname (P5). A title in front is a word to the count an
-    unambiguous credential takes, so 'Dr. van der Berg, PhD' reads as
-    its part does alone.
+    title vocabulary is not a particle to this count where it opens
+    the part, reading there as the title it also is (H1); inside a
+    surname it chains ('de St Pierre, Ed' reads given 'Ed'). A
+    connective join and a bound given-name pair are not one word
+    here: whether P3 joins a connective depends on the words of the
+    whole name, which this count is part of deciding, and a bound
+    given name builds a given name rather than a surname (P5) — a
+    word that is a particle as well counts as the particle ('Abu
+    Bakar, Ed' reads given 'Ed'). A title in front is a word to the
+    count an unambiguous credential takes, so 'Dr. van der Berg, PhD'
+    reads as its part does alone.
     For the ambiguous credential class — a bare acronym the
     vocabulary marks as also an ordinary name, and a word admitted
     to the class by shape, which S3 defines and bounds — the

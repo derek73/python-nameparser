@@ -754,7 +754,11 @@ def _surname_unit_disagreements() -> list[str]:
         tags = _tags_by_text(f"Smith {word}, John", lexicon=lex).get(word)
         if tags is None:  # tokenize split it; nothing to compare
             continue
-        if surname_unit_tags(word, lex) != surname_unit_facts(tags):
+        # both positions: the leading one is where a title-particle
+        # ('Freiherr', 'St') stops being a particle
+        if any(surname_unit_tags(word, lex, leading)
+               != surname_unit_facts(tags, leading)
+               for leading in (True, False)):
             disagree.append(word)
     return disagree
 
@@ -773,9 +777,9 @@ def test_surname_unit_tags_agree_with_classify() -> None:
     # classify has tagged anything, while assign derives them from
     # classify's tags (`_vocab.surname_unit_facts`). Swept over every
     # single-word entry of the vocabularies a token can be tagged
-    # from, in three casings, plus the period shapes classify derives
-    # a suffix from; a title-particle ('Freiherr') and a bound
-    # given-name particle ('Abu') are in the sweep through those lists.
+    # from, in three casings and both positions, plus the period shapes
+    # classify derives a suffix from; the title-particles ('Freiherr',
+    # 'St') are in the sweep through those lists.
     assert _surname_unit_disagreements() == []
 
 

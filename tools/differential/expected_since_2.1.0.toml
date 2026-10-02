@@ -3807,8 +3807,8 @@ orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#575) a particle surname before a comma is one name word"
-# rules.md#C1: "a particle and the name word it attaches to are one
-# word, as P2 joins them", so 'van der Berg, PhD' reads as 'Berg, PhD'
+# rules.md#C1: "a particle run and the one name word it attaches to
+# are one word", so 'van der Berg, PhD' reads as 'Berg, PhD'
 # does: family 'van der Berg', suffix 'PhD'. Every release counted
 # tokens and split the chain, given 'van', family 'der Berg', with a
 # particle-or-given report.

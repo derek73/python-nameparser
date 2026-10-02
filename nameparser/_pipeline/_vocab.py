@@ -851,11 +851,14 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
 
 #: The facts rules.md#C1's count before a comma reads (#575): a
 #: particle starts a surname unit, and a suffix word stops it. A word
-#: that is ALSO title vocabulary ('Freiherr', 'St') or a bound
-#: given-name head ('Abu') is not a particle here: in front of a name
-#: it reads as the title or the given-name join it also is (rules.md
-#: H1, P5), so 'Freiherr von Berg, PhD' keeps its title. Neither of
-#: the other two joins `unit_ends` knows is read either. A bound
+#: that is ALSO title vocabulary ('Freiherr', 'St') LEADING the part is
+#: not a particle here: in front of a name it reads as the title it
+#: also is (rules.md#H1), so 'Freiherr von Berg, PhD' keeps its title,
+#: while inside a surname it chains as P1 and P2 chain it ('de St
+#: Pierre' is one surname). A bound given-name head that is also a
+#: particle ('Abu') stays a particle: 'Abu Bakar, Ed' is a surname
+#: before the comma, as 2.0 through 2.3 read it. Neither of the other
+#: two joins `unit_ends` knows is read. A bound
 #: given-name pair builds a GIVEN name, and P5 gives up a family word
 #: where the name has no other ('abdul Salam' alone is given 'abdul',
 #: family 'Salam'), so before a comma it is not one surname. Whether
@@ -871,24 +874,23 @@ SURNAME_UNIT_TAGS = frozenset({"particle", "vocab:suffix"})
 _PARTICLE_ONLY = frozenset({"particle"})
 _SUFFIX_ONLY = frozenset({"vocab:suffix"})
 _NO_TAGS: frozenset[str] = frozenset()
-_NOT_A_SURNAME_PARTICLE = frozenset({"vocab:title", "vocab:bound-given"})
-
-
-def surname_unit_facts(tags: Set[str]) -> frozenset[str]:
+def surname_unit_facts(tags: Set[str], leading: bool) -> frozenset[str]:
     """`SURNAME_UNIT_TAGS` for one token, from classify's tags: the
-    reading assign's count before a comma takes."""
+    reading assign's count before a comma takes. `leading` is whether
+    the token opens the part."""
     particle = ("particle" in tags
-                and tags.isdisjoint(_NOT_A_SURNAME_PARTICLE))
+                and not (leading and "vocab:title" in tags))
     if "vocab:suffix" in tags:
         return SURNAME_UNIT_TAGS if particle else _SUFFIX_ONLY
     return _PARTICLE_ONLY if particle else _NO_TAGS
 
 
-def surname_unit_tags(text: str, lexicon: Lexicon) -> frozenset[str]:
+def surname_unit_tags(text: str, lexicon: Lexicon,
+                      leading: bool) -> frozenset[str]:
     """`surname_unit_facts` for one token from the vocabulary alone --
     segment's view of classify's tags, built before classify runs, with
-    classify's own tests: particle, title and bound given-name
-    membership, `suffix_as_written`, and the period-joined derivation.
+    classify's own tests: particle and title membership,
+    `suffix_as_written`, and the period-joined derivation.
     Kept from drifting by
     test_classify.test_surname_unit_tags_agree_with_classify."""
     n = _normalize(text)
@@ -898,8 +900,8 @@ def surname_unit_tags(text: str, lexicon: Lexicon) -> frozenset[str]:
     suffix = suffix_as_written(n, text, lexicon) or (
         "." in text and n not in lexicon.titles
         and period_joined_vocab(text, lexicon) == "suffix")
-    particle = (n in lexicon.particles and n not in lexicon.titles
-                and n not in lexicon.bound_given_names)
+    particle = n in lexicon.particles and not (
+        leading and n in lexicon.titles)
     if suffix:
         return SURNAME_UNIT_TAGS if particle else _SUFFIX_ONLY
     return _PARTICLE_ONLY if particle else _NO_TAGS
@@ -919,7 +921,8 @@ def surname_unit_count(texts: Sequence[str], lexicon: Lexicon) -> int:
     # a title-particle passes it -- so it only ever skips work.
     if not any(_normalize(t) in lexicon.particles for t in texts):
         return len(texts)
-    return len(unit_ends([surname_unit_tags(t, lexicon) for t in texts],
+    return len(unit_ends([surname_unit_tags(t, lexicon, i == 0)
+                          for i, t in enumerate(texts)],
                          chain=False))
 
 
@@ -966,7 +969,8 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
         return sum(names)
     count = 0
     start = 0
-    for end in unit_ends([surname_unit_tags(t, lexicon) for t in texts],
+    for end in unit_ends([surname_unit_tags(t, lexicon, i == 0)
+                          for i, t in enumerate(texts)],
                          chain=False):
         if any(names[start:end]):
             count += 1

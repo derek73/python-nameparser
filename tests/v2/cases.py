@@ -1080,14 +1080,26 @@ CASES: tuple[Case, ...] = (
                "comma, so it stays a title in front of the surname. The "
                "first draft of #575 counted 'Freiherr von Berg' as one "
                "surname and folded the title into the family"),
-    Case("a_bound_given_particle_before_a_comma_is_still_a_given_name",
+    Case("a_bound_given_particle_surname_before_a_comma_is_one_name_word",
          "Abu Bakar, Ed",
-         {"given": "Abu", "family": "Bakar", "suffix": "Ed"},
-         ambiguities=("suffix-or-name", "particle-or-given"),
-         notes="#575 boundary: 'abu' is a bound given-name head as well "
-               "as a particle, and in front of a name it reads as the "
-               "given-name join (P5), so it is not one surname with the "
-               "word after it"),
+         {"given": "Ed", "family": "Abu Bakar"},
+         classification="fix(#575)",
+         ambiguities=("suffix-or-name",),
+         notes="'abu' is a bound given-name head and a particle; before "
+               "a comma it is the particle, so 'Abu Bakar' is one "
+               "surname, as 2.0 through 2.3 read it. 1.4.0 and this "
+               "cycle's count read given 'Abu', family 'Bakar', suffix "
+               "'Ed'. Untagged: its 1.4.0 diff is the rule's own"),
+    Case("a_title_particle_inside_a_surname_chains",
+         "de St Pierre, Ed",
+         {"given": "Ed", "family": "de St Pierre"},
+         classification="fix(#575)",
+         ambiguities=("suffix-or-name",),
+         notes="#575: a title-particle stops being a particle only where "
+               "it LEADS the part; inside a surname it chains, so 'de St "
+               "Pierre' is one name word, as 2.3.0 read it. A draft that "
+               "excluded 'St' in every position read family 'de St "
+               "Pierre', suffix 'Ed', no given name"),
     Case("a_suffix_inside_the_part_stops_the_particle",
          "van Jr. Berg, Mr.",
          {"title": "Mr.", "given": "van", "middle": "Jr.",

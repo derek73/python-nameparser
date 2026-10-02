@@ -1099,8 +1099,9 @@ def assign(state: ParseState) -> ParseState:
                      for i in piece}
             names = 0
             start = 0
-            for end in unit_ends([surname_unit_facts(tokens[i].tags)
-                                  for i in idx], chain=False):
+            for end in unit_ends([surname_unit_facts(tokens[i].tags, k == 0)
+                                  for k, i in enumerate(idx)],
+                                 chain=False):
                 if not named.isdisjoint(idx[start:end]):
                     names += 1
                 start = end
