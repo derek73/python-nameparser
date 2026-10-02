@@ -128,21 +128,22 @@ def segment(state: ParseState) -> ParseState:
     # and the name carries it only if one of its own words before the
     # comma (no maiden clause, no delimited content, as `own_words`
     # defines them for `case_class` above) is written the way a name is
-    # written in mixed case -- a capital directly followed by a
-    # lowercase letter (`written_as_a_name`) -- and is not claimed as a
+    # written in mixed case -- a capital in it and its last letter
+    # lowercase (`written_as_a_name`) -- and is not claimed as a
     # title, particle, connective, credential or generation
     # (`claimed_as_non_name`); a word with a period is an abbreviation
-    # or an initial, not one. A lone capital ('de GAULLE C') or a
-    # lowercase-only word has no such pair, and nor has a lowercase
-    # prefix glued to a capitalized surname, so a record that writes
-    # its surname in capitals keeps its given name whatever else it
-    # writes ('LLOYD ap RHYS', 'HAFEZ al-ASSAD', "GISCARD d'ESTAING",
-    # 'LLOYD McDONALD', 'LLOYD WEBBER née Smith'), and so does a
-    # mixed-case credential ('LLOYD WEBBER, ANDREW PhD').
+    # or an initial, not one. A lone capital ('de GAULLE C'), a
+    # lowercase-only word and a surname written in capitals with
+    # anything glued in front ("d'ESTAING", 'FitzGERALD', 'McDONALD')
+    # all fail it, so such a record keeps its given name beside its
+    # lowercase particles, clauses and titles ('LLOYD ap RHYS', 'HAFEZ
+    # al-ASSAD', 'LLOYD WEBBER née Smith') and beside a mixed-case
+    # credential ('LLOYD WEBBER, ANDREW PhD').
     # Asked only once a caps word is in hand: a part with no lowercase
     # at all is settled in one C-level comparison; past that the walk
-    # costs a few frames a word before the comma, a fold and a
-    # wordlist test only where the case test passes.
+    # costs a frame a word before the comma (the generator), plus a
+    # call, a fold and a wordlist test only where the C-level case
+    # test passes.
     def name_contrast() -> bool:
         before = "".join([state.tokens[i].text for i in groups[0]])
         if before == before.upper():

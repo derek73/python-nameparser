@@ -709,9 +709,9 @@ class Policy:
     unlisted_dotted_suffixes: bool = True
     #: Where an UNLISTED all-caps word of two or more letters, with no
     #: period in it, reads as a credential (:class:`CapsSuffixes`). The
-    #: name must contrast it: a word of the name with a capital followed
-    #: by a lowercase letter ("Smith", "DiCaprio") that the vocabulary
-    #: does not claim as a title, particle
+    #: name must contrast it: a word of the name holding a capital and
+    #: ending in a lowercase letter ("Smith", "DiCaprio") that the
+    #: vocabulary does not claim as a title, particle
     #: or credential -- a record written wholly in capitals or wholly in
     #: lowercase keeps every word a name word. A listed member keeps its
     #: own case lean in every setting ("Jack MA" gives suffix ``MA``),

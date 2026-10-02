@@ -2922,7 +2922,7 @@ CASES: tuple[Case, ...] = (
          {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "PhD"},
          notes="#564 boundary: an all-caps word joins C1's run only where "
                "the NAME carries the contrast, a word of its own before "
-               "the comma with a capital followed by a lowercase letter "
+               "the comma holding a capital and ending in lowercase "
                "-- here the only "
                "lowercase is the credential's own, and a record written "
                "wholly in capitals keeps its given name. A review-round "
@@ -2950,7 +2950,7 @@ CASES: tuple[Case, ...] = (
          "LLOYD WEBBER Jr., ANDREW",
          {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "Jr."},
          notes="#564 boundary: only the name's own words written as a "
-               "name is (a capital followed by a lowercase letter), "
+               "name is (a capital, and a lowercase last letter), "
                "unclaimed by the vocabulary and unmarked by a period, "
                "supply the contrast; 'Jr.' is none of those, "
                "so the 'SURNAME Jr., GIVEN' record "
@@ -2973,9 +2973,9 @@ CASES: tuple[Case, ...] = (
          "GISCARD d'ESTAING, VALÉRY",
          {"given": "VALÉRY", "family": "GISCARD d'ESTAING"},
          notes="#564 (Derek): the name carries the contrast only through "
-               "a word with a capital followed by a lowercase letter that "
-               "no wordlist claims as non-name text. A lowercase particle "
-               "glued to a capitalized surname has no such pair -- the "
+               "a word holding a capital and ending in lowercase that no "
+               "wordlist claims as non-name text. A surname written in "
+               "capitals ends in a capital whatever is glued to it -- the "
                "French convention the trailing slot stays off for. A "
                "draft counting any lowercase letter read suffix "
                "'VALÉRY'"),
@@ -2988,8 +2988,8 @@ CASES: tuple[Case, ...] = (
     Case("an_all_lowercase_name_carries_no_contrast_for_the_caps_shape",
          "john smith, XYZ",
          {"given": "XYZ", "family": "john smith"},
-         notes="#564 (Derek): a lowercase-only name has no capital "
-               "followed by a lowercase letter, so the default keeps the "
+         notes="#564 (Derek): a lowercase-only name holds no capital, "
+               "so the default keeps the "
                "listing form; the cost of the criterion, accepted with "
                "it"),
     Case("a_lone_capital_supplies_no_contrast_for_the_caps_shape",
@@ -2999,21 +2999,28 @@ CASES: tuple[Case, ...] = (
                "with no lowercase letter behind it. A draft testing "
                "`istitle()`, which accepts 'C', read suffix 'CHARLES' "
                "with no given name"),
+    Case("a_glued_capitalized_prefix_supplies_no_contrast",
+         "LLOYD FitzGERALD, RONALD",
+         {"given": "RONALD", "family": "LLOYD FitzGERALD"},
+         notes="#564 (Derek): a surname written in capitals ends in a "
+               "capital whatever is glued in front of it ('FitzGERALD', "
+               "'McDONALD', 'DeVITO', 'St-PIERRE'), so the record keeps "
+               "its given name. The capital-then-lowercase draft took "
+               "'Fi' as the contrast and read suffix 'RONALD'"),
     Case("a_mc_prefix_on_a_capitalized_surname_supplies_no_contrast",
          "LLOYD McDONALD, RONALD",
          {"given": "RONALD", "family": "LLOYD McDONALD"},
-         notes="#564 (Derek): a leading 'Mc'/'Mac' is skipped where a "
-               "capital follows it, so a record writing 'McDONALD' keeps "
-               "its given name, while 'McDonald' still carries the "
-               "contrast through 'Do'"),
+         notes="#564: 'McDONALD' ends in a capital, so no Mc/Mac case is "
+               "needed; 'McDonald' ends lowercase and carries the "
+               "contrast"),
     Case("an_interior_capital_carries_the_contrast",
          "DiCaprio LaBeouf, XYZ",
          {"given": "DiCaprio", "family": "LaBeouf", "suffix": "XYZ"},
          classification="fix(#564)",
          ambiguities=("suffix-or-name",),
-         notes="#564 (Derek): a capital followed by a lowercase letter "
-               "anywhere in the word is the contrast, so an interior "
-               "capital counts ('DiCaprio', 'IJzerman', 'al-Rashid'). "
+         notes="#564 (Derek): a capital anywhere in a word ending "
+               "lowercase is the contrast, so an interior capital counts "
+               "('DiCaprio', 'IJzerman', 'al-Rashid'). "
                "The `istitle()` draft read given 'XYZ' here"),
     Case("a_capitalized_given_name_behind_a_two_word_surname_is_the_accepted_cost",
          "García Márquez, JUAN Jr.",

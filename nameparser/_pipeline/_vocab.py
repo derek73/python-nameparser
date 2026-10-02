@@ -722,18 +722,16 @@ _NON_NAME_FIELDS = tuple(f for f in _VOCAB_FIELDS
 
 def written_as_a_name(text: str) -> bool:
     """Whether TEXT is written the way a name is written in mixed case:
-    a capital directly followed by a lowercase letter ('Smith',
-    'DiCaprio', 'IJzerman', 'al-Rashid', "d'Estaing") -- #564's test
-    for the name's case contrast (Derek). A word written wholly in one
-    case has no such pair, and nor does a lowercase prefix glued to a
-    surname written in capitals ("d'ESTAING", 'al-ASSAD'). A leading
-    'Mc'/'Mac' is skipped where a capital follows it, so 'McDONALD'
-    has no pair while 'McDonald' keeps 'Do' and 'Mack' its own 'Ma'."""
-    if text.startswith("Mc") and text[2:3].isupper():
-        text = text[2:]
-    elif text.startswith("Mac") and text[3:4].isupper():
-        text = text[3:]
-    return any(a.isupper() and b.islower() for a, b in zip(text, text[1:]))
+    it holds a capital (or titlecase letter) and its last letter is
+    lowercase -- #564's test for the name's case contrast (Derek).
+    'Smith', 'DiCaprio', 'IJzerman', 'al-Rashid', "d'Estaing",
+    'McDonald', 'ǅokić' pass. A surname written in capitals fails
+    whatever is glued in front of it ("d'ESTAING", 'al-ASSAD',
+    'McDONALD', 'FitzGERALD', 'DeVITO', 'St-PIERRE'), and so do a lone
+    capital and a lowercase-only word. A trailing 'ß' is set aside,
+    having no single capital form: 'WEIß' is written in capitals and
+    'Weiß' is not. Two C-level checks, so a word costs no frame."""
+    return text != text.lower() and text.rstrip("ß")[-1:].islower()
 
 
 def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:

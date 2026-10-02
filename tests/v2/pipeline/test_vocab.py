@@ -895,14 +895,17 @@ def test_is_single_letter_numeral() -> None:
 @pytest.mark.parametrize("text, expected", [
     ("Smith", True), ("DiCaprio", True), ("IJzerman", True),
     ("al-Rashid", True), ("d'Estaing", True), ("McDonald", True),
-    ("MacLeod", True), ("Mack", True), ("Macy", True),
+    ("MacLeod", True), ("Mack", True), ("O'Neil", True),
+    ("ǅokić", True), ("E\u0301lodie", True), ("Weiß", True),
     ("SMITH", False), ("smith", False), ("C", False), ("ap", False),
     ("d'ESTAING", False), ("al-ASSAD", False), ("McDONALD", False),
-    ("MacDONALD", False),
+    ("MacDONALD", False), ("FitzGERALD", False), ("DeVITO", False),
+    ("LaFLEUR", False), ("St-PIERRE", False), ("SMITH-McDONALD", False),
+    ("WEIß", False), ("O'NEIL", False),
 ])
 def test_written_as_a_name(text: str, expected: bool) -> None:
-    # #564 (Derek): the name's case contrast is a capital directly
-    # followed by a lowercase letter, a leading Mc/Mac skipped where a
-    # capital follows it -- so a lowercase prefix glued to a surname
-    # written in capitals carries none, and an interior capital does.
+    # #564 (Derek): the name's case contrast is a word holding a
+    # capital and ending in a lowercase letter -- a surname written in
+    # capitals ends in one whatever is glued in front of it, and a
+    # trailing ß, which has no single capital, is set aside.
     assert written_as_a_name(text) is expected

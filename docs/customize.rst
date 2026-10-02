@@ -532,7 +532,7 @@ listed below.
      - ``CapsSuffixes``
      - Where an unlisted all-caps word of two or more letters, with no
        period in it, reads as a credential. The name must contrast it
-       with a word holding a capital followed by a lowercase letter
+       with a word holding a capital and ending in a lowercase letter
        (``Smith``, ``DiCaprio``) that the vocabulary
        does not claim as a title, particle or credential: a record
        written wholly in capitals, or wholly in lowercase, keeps every
