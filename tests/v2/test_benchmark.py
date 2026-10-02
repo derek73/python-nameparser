@@ -22,6 +22,7 @@ reach the code under it.
 _PREFIXED_SHAPES exists for a shape that needs a prefix before its
 repeated run, which _SHAPES cannot express (#553).
 """
+import gc
 import os
 import sys
 import time
@@ -335,13 +336,31 @@ def _best(text: str, parse_: Callable[[str], object],
           repeats: int = 7) -> float:
     """Minimum of several runs: on a shared runner the mean carries the
     noise of whatever else is running, while the minimum approaches the
-    true cost."""
+    true cost.
+
+    Timed with the cyclic collector OFF, after one collection. A full
+    collection walks every live object, so its cost is the HEAP's, set
+    by whatever ran before this test, not the parse's; landing inside
+    an allocation-heavy parse it read as superlinear growth. Measured
+    2026-10-02 (#573's CI): after the property grids and the case
+    table, 'PhD Ma ' x800 -> x3200 read 6.33x with the collector on
+    (one 34ms pass inside group's snapshot comprehension) and
+    4.00-4.06x with it off, on identical frame counts (96,100 ->
+    384,100). The parse's own work, Python or C level, is still
+    timed whole, so a planted quadratic is as visible as before."""
     parse_(text)                    # warm the parser cache
     best = float("inf")
-    for _ in range(repeats):
-        start = time.perf_counter()
-        parse_(text)
-        best = min(best, time.perf_counter() - start)
+    gc.collect()
+    enabled = gc.isenabled()
+    gc.disable()
+    try:
+        for _ in range(repeats):
+            start = time.perf_counter()
+            parse_(text)
+            best = min(best, time.perf_counter() - start)
+    finally:
+        if enabled:
+            gc.enable()
     return best
 
 
