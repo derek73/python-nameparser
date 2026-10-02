@@ -930,6 +930,9 @@ def _nfc_texts(name: ParsedName) -> list[str]:
     ((("éx", "éx"),), "john smith é.x."),
     # a letter after a mark still has the letter before it as neighbour
     ((("éex", "éeX"),), "john smith ée.x"),
+    # the hyphen clause's initial test, on the composed spelling: 'й'
+    # is a default conjunction, and 'й.' between hyphens an initial
+    ((), "ivan petrov-й.-sidorov"),
 ])
 def test_a_decomposed_word_repairs_as_its_composed_twin(
         pairs: tuple[tuple[str, str], ...], text: str) -> None:
@@ -938,7 +941,10 @@ def test_a_decomposed_word_repairs_as_its_composed_twin(
     composed one -- the word splitter, the Mac/Mc clause, and the mask's
     neighbour tests -- and the output keeps the decomposed form. These
     are the shapes the corpus walk in test_properties.py does not
-    reach; each disagreed before the fix."""
+    reach. The two mask rows guard _beside: 'é.x.' agreed before the
+    fix only because the old splitter cut the word at its mark before
+    the mask was consulted, and both rows disagree with _beside reading
+    raw neighbours."""
     composed = unicodedata.normalize("NFC", text)
     decomposed = unicodedata.normalize("NFD", text)
     assert decomposed != composed
@@ -947,6 +953,17 @@ def test_a_decomposed_word_repairs_as_its_composed_twin(
     assert _nfc_texts(got) == [t.text for t in want.tokens]
     assert all(unicodedata.is_normalized("NFD", t.text)
                for t in got.tokens)
+
+
+def test_a_spliced_decomposed_initial_reads_as_its_composed_twin() -> None:
+    """#542, the unclassified-text fallback (_reads_as_conjunction):
+    a middle spliced in as decomposed 'й.' is the initial its composed
+    spelling is, not the conjunction 'й'."""
+    for form in ("NFC", "NFD"):
+        name = parse("ivan petrov").replace(
+            middle=unicodedata.normalize(form, "й."))
+        assert unicodedata.normalize(
+            "NFC", name.capitalized(force=True).middle) == "Й."
 
 
 def test_a_letter_that_uppercases_to_a_combining_mark_is_a_fixpoint(

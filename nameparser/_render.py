@@ -129,8 +129,10 @@ def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
     NAME -- rules.md#P3's one-case fork is the live example -- which
     is why it is the fallback and the tags are the rule.
     """
+    # the shape on the composed spelling, as _normalize composes the
+    # lookup: a decomposed 'й.' is the initial its composed twin is (#542)
     return bool(_normalize(word) in lex.conjunctions
-                and not _INITIAL.fullmatch(word))
+                and not _INITIAL.fullmatch(unicodedata.normalize("NFC", word)))
 
 
 def _collapse(rendered: str) -> str:
@@ -540,7 +542,9 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     first, last = named[0], named[-1]
     return "-".join(
         part.lower()
-        if (first < at < last and not _DOTTED_INITIAL.fullmatch(part)
+        if (first < at < last
+                and not _DOTTED_INITIAL.fullmatch(
+                    unicodedata.normalize("NFC", part))
                 and _normalize(part) in lex.conjunctions)
         else _sub_words(cap, part)
         for at, part in enumerate(parts))
