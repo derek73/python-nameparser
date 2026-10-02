@@ -572,7 +572,8 @@ def test_delimited_content_never_joins_the_shape_class() -> None:
     ("Xyz.", Policy(), None),
     ("MA", Policy(), None),
     ("田.中.", Policy(), None),
-    # #516's caps half: OFF is silent (matches the tag either way,
+    # #516's caps half: the default is silent here, outside a suffix
+    # comma's part (#564), and so is OFF (matches the tag either way,
     # since the token never carries the fact); ON needs the REAL
     # `one_case` fact, which these rows hand to `caps_shape_candidate`
     # -- the predicate classify calls, and since the review round the
@@ -680,9 +681,10 @@ def test_the_caps_branch_reads_the_name_level_case_not_the_own_span(
 
     def reverted(token: WorkToken, n: str, state: ParseState,
                  marker_tag: str | None, one_case_own: bool,
-                 one_case: bool) -> frozenset[str]:
+                 one_case: bool, comma_run: bool = False) -> frozenset[str]:
         return real(token, n, state, marker_tag,
-                    one_case_own=one_case_own, one_case=one_case_own)
+                    one_case_own=one_case_own, one_case=one_case_own,
+                    comma_run=comma_run)
 
     monkeypatch.setattr(_classify_module, "_tags_for", reverted)
     broken = Parser(policy=on).parse("née JONES XYZ")
@@ -692,10 +694,11 @@ def test_the_caps_branch_reads_the_name_level_case_not_the_own_span(
 
 
 def test_the_caps_shape_is_silent_until_its_switch_is_on() -> None:
-    # OFF (the default) emits NOTHING -- not the membership tag and
-    # not the shape tag either, which is where this half differs from
-    # the dotted one: there is no fork to report while a caller has
-    # not asked for the reading (#516).
+    # The default emits NOTHING at the trailing slot -- not the
+    # membership tag and not the shape tag either, which is where this
+    # half differs from the dotted one: there is no fork to report
+    # while a caller has not asked for the reading there (#516; the
+    # default reads only a suffix comma's part since #564).
     assert _tags_by_text("John Smith XYZ")["XYZ"] == frozenset()
     on = Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE)
     tags = _tags_by_text("John Smith XYZ", policy=on)["XYZ"]

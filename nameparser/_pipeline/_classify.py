@@ -54,7 +54,7 @@ from nameparser._lexicon import _normalize
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
-    WorkToken, copy_with,
+    Structure, WorkToken, copy_with,
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
@@ -76,7 +76,7 @@ from nameparser._pipeline._pieces import own_words
 # spare"
 def _tags_for(token: WorkToken, n: str, state: ParseState,
               marker_tag: str | None, one_case_own: bool,
-              one_case: bool) -> frozenset[str]:
+              one_case: bool, comma_run: bool = False) -> frozenset[str]:
     """`n` is _normalize(token.text), folded once by the caller and
     shared with the marker pass; `marker_tag` is what that pass decided
     for this token, or None. The marker DECISION is entirely
@@ -217,15 +217,23 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add(SHAPE_ACRONYM_TAG)
             if state.policy.unlisted_dotted_suffixes:
                 tags.add(AMBIGUOUS_ACRONYM_TAG)
-        elif (state.policy.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE
+        elif ((state.policy.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE
+               or comma_run)
                 and token.role is None
+                # a listed member is no candidate (the predicate excludes
+                # every wordlist); asked first, in C, so 'John Smith, MA'
+                # pays no frame for the comma part's own credential
+                and n not in lex.suffix_acronyms_ambiguous
                 and caps_shape_candidate(token.text, lex, state.policy,
                                          one_case)):
-            # #516's all-caps half, OPT-IN at this slot: an unlisted
-            # word written in capitals inside a mixed-case name. Only
-            # EVERYWHERE tags it -- the comma position the default
-            # reads is decided in `segment` from the text alone (#564),
-            # and the tag is what the comma-less trailing slot reads.
+            # #516's all-caps half: an unlisted word written in capitals
+            # inside a mixed-case name. EVERYWHERE tags it in every
+            # slot; the default tags it only in the part a suffix comma
+            # opened (`comma_run`), the position `segment` reads from
+            # the text alone (#564), so the reading there carries the
+            # same marks under either setting -- case repair keeps
+            # 'XYZ' in 'John Smith, XYZ' (rules.md#R4) rather than
+            # title-casing a credential the default admitted.
             # The policy conjunct comes FIRST and stays a plain
             # attribute read, so `caps_shape_candidate` is never CALLED
             # at the default and sharing its body costs it nothing
@@ -268,11 +276,20 @@ def classify(state: ParseState) -> ParseState:
     # per token, and the fork and its emitter then agree with the case
     # class they consult. No extra frame -- it is one more boolean in a
     # comprehension that already walks every token.
+    # #564: the part a suffix comma opened, where the default admits
+    # the caps shape; empty for any other structure or setting.
+    comma_run: frozenset[int] = (
+        frozenset(state.segments[1])
+        if (state.structure is Structure.SUFFIX_COMMA
+            and len(state.segments) > 1
+            and state.policy.unlisted_caps_suffixes is CapsSuffixes.AFTER_COMMA)
+        else frozenset())
     tokens = tuple(
         copy_with(
             t, tags=_tags_for(t, folded[i], state, marker_tags.get(i),
                               one_case_own=one_case and i < clause_at
-                              and t.role is None, one_case=one_case))
+                              and t.role is None, one_case=one_case,
+                              comma_run=i in comma_run))
         for i, t in enumerate(state.tokens))
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->

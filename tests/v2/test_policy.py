@@ -865,18 +865,25 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     # they are reported here, dated, so a reader who turns the switch
     # on knows what it costs and a later re-measurement does not read
     # as a silent drift.
+    #
+    # 2026-10-01, #564: the default is now AFTER_COMMA, which reads the
+    # comma position, so `default` below is no longer "off" and these
+    # assertions are about the TRAILING slot EVERYWHERE adds. Default
+    # costs, same harness against master: 'Smith, John' 183 -> 183,
+    # 'Smith, XYZ' 182 -> 182 (the comma test needs two words before
+    # the comma), 'John Smith, XYZ' 251 -> 258 (decisions.md#S2).
     from nameparser import Parser
 
     on = Parser(policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
-    off = Parser()
+    default = Parser()
     # what it buys
     assert on.parse("John Smith XYZ").suffix == "XYZ"
     assert on.parse("John Smith, XYZ").suffix == "XYZ"
-    # what it costs, and why the default is off
+    # what it costs, and why the trailing slot is not the default
     assert on.parse("Jean Pierre DUPONT").suffix == "DUPONT"
-    assert off.parse("Jean Pierre DUPONT").family == "DUPONT"
-    # the default emits nothing at all
-    assert off.parse("John Smith XYZ").ambiguities == ()
+    assert default.parse("Jean Pierre DUPONT").family == "DUPONT"
+    # the default emits nothing at the trailing slot
+    assert default.parse("John Smith XYZ").ambiguities == ()
     # the boundaries: one case, one letter, a digit, and vocabulary.
     # 'John Smith X' is NOT the single-letter control -- 'X' is a bare
     # roman numeral (rules.md#S2's numeral fork) and reads as suffix
@@ -885,6 +892,6 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     # is the actual boundary (a single capital never satisfies the
     # `len(text) >= 2` half of the shape test, on or off).
     assert on.parse("JOHN SMITH XYZ").family == "XYZ"
-    assert on.parse("John Smith Z").family == off.parse("John Smith Z").family
+    assert on.parse("John Smith Z").family == default.parse("John Smith Z").family
     assert on.parse("John Smith XY2").family == "XY2"
     assert on.parse("John Smith MC").suffix == "MC"

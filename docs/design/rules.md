@@ -1722,11 +1722,11 @@ C1. Rationale: a credential run after the comma means the name is in
     there. Behind two or more name words, paired initials that are
     not the only shape word in the part are a credential however
     little else speaks for them, since no one writes a person's
-    initials as two dotted groups. A lone word of two capitals after
-    the comma is the same shape undotted ('García Márquez, MJ'): it
-    reads as the given name, and an unlisted all-caps word joins the
-    class there only at three letters or more, or in a run holding
-    such a word. The same count reads a part of two or
+    initials as two dotted groups. An unlisted word of two capitals
+    after the comma is that shape undotted and is read as paired
+    initials are: alone it is the given name ('García Márquez, MJ'),
+    and so it is with only a credential behind it, while a credential
+    in front of it or a second such word makes the run. The same count reads a part of two or
     more words as the credential run when every word of it is a
     suffix word or a word of this class, at least one of them of this
     class, and none of them a single-letter roman numeral, in any
@@ -1863,6 +1863,9 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, LEED AP"       →  suffix="LEED AP"
       "Smith, XYZ"                →  given="XYZ"  · boundary
       "García Márquez, MJ"        →  given="MJ"  · boundary
+      "García Márquez, MJ PhD"    →  given="MJ"  · boundary
+      "García Márquez, MJ JK"     →  suffix="MJ JK"
+      "John Smith, PhD XYZ"       →  suffix="PhD XYZ"
       "Smith, A.B."               →  given="A.B."  · boundary
       "García Márquez, G.J."      →  given="G.J."
       "García Márquez, G.J."      →  family="García Márquez"

@@ -1427,10 +1427,13 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
     # name word before the comma keeps the listing form, chain or not.
     "fix(#562) a comma credential run holding a particle chain reads by the name-word count":
         ("John Smith, PhD DO", "Smith, PhD DO DO", "John Smith, PhD MA"),
-    # Policy.unlisted_caps_suffixes is OFF by default, so its whole
-    # population is a probe here: the corpora run at the default, and
-    # a rule of this arc reaching one of these names would mean the
-    # DEFAULT changed. 'Mr XXX' is the boundary from the other side --
+    # The caps shape's trailing slots are behind CapsSuffixes.EVERYWHERE,
+    # not the default, so their population is a probe here: the corpora
+    # run at the default, and a rule of this arc reaching one of these
+    # names would mean the default reached a trailing slot. 'John Smith,
+    # LEED AP' moves at the default since #564, but at the comma and
+    # under fix(#564), which is why THIS rule must still not reach it.
+    # 'Mr XXX' is the boundary from the other side --
     # one piece behind a title never reaches the peel's two-piece
     # floor, switch or no switch.
     "fix(#289/#516) the ambiguous credential class reports at slots "
@@ -3083,9 +3086,11 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({r"jack\s+m\.a\.", r"wang\s+m\.eng\."}),
     # 2026-10-01, #564: the comma caps rule, literal names that copy no
     # set, at 1.4.0 and in the 2.x copy.
-    frozenset({"John Smith, LEED AP", "John Smith, XYZ",
+    frozenset({"García Márquez, MJ JK", "John Smith, LEED AP",
+               "John Smith, PhD XYZ", "John Smith, XYZ",
                "The Rt Hon Kenneth Clarke QC MP, HMG"}),
-    frozenset({"Ahmad Jayadi, CHA", "John Smith, LEED AP",
+    frozenset({"Ahmad Jayadi, CHA", "García Márquez, MJ JK",
+               "John Smith, LEED AP", "John Smith, PhD XYZ",
                "John Smith, RAI", "John Smith, XYZ",
                "The Rt Hon Kenneth Clarke QC MP, HMG"}),
     # 2026-10-01, #575: rules.md#C1's particle-surname examples at
@@ -3806,10 +3811,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # case-row names, every one a comma name. Reach, verified
         # name by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
-        # 2026-10-01, #564: 423 -> 426, 'John Smith, XYZ', 'Smith,
-        # XYZ' and 'García Márquez, MJ', #564's rules.md#C1 examples.
-        # Reach, verified name by name.
-            _Claim(426, ('given', 'suffix', 'title'), "684dd90b64f3", None),
+        # 2026-10-01, #564: 423 -> 429, 'John Smith, XYZ', 'Smith,
+        # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
+        # 'García Márquez, MJ JK' and 'John Smith, PhD XYZ', #564's
+        # rules.md#C1 examples. Reach, verified name by name.
+            _Claim(429, ('given', 'suffix', 'title'), "2c336f3d3ae0", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3913,18 +3919,20 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # case-row names, every one a comma name. Reach, verified
         # name by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
-        # 2026-10-01, #564: 423 -> 426, 'John Smith, XYZ', 'Smith,
-        # XYZ' and 'García Márquez, MJ', #564's rules.md#C1 examples.
-        # Reach, verified name by name.
-            _Claim(426, ('family', 'given'), "684dd90b64f3", None),
+        # 2026-10-01, #564: 423 -> 429, 'John Smith, XYZ', 'Smith,
+        # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
+        # 'García Márquez, MJ JK' and 'John Smith, PhD XYZ', #564's
+        # rules.md#C1 examples. Reach, verified name by name.
+            _Claim(429, ('family', 'given'), "2c336f3d3ae0", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(4, ('family', 'given', 'suffix', 'title'), "30163564e03d", None),
-        # 2026-10-01, #564: new, 3; 'John Smith, LEED AP', 'John Smith,
-        # XYZ', 'The Rt Hon Kenneth Clarke QC MP, HMG'.
+        # 2026-10-01, #564: new, 5; 'García Márquez, MJ JK', 'John
+        # Smith, LEED AP', 'John Smith, PhD XYZ', 'John Smith, XYZ',
+        # 'The Rt Hon Kenneth Clarke QC MP, HMG'.
         "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
-            _Claim(3, ('family', 'given', 'middle', 'suffix', 'title'), "1926a01dc71c", ('DEFAULT',)),
+            _Claim(5, ('family', 'given', 'middle', 'suffix', 'title'), "0de364bee3e3", ('DEFAULT',)),
         # 2026-09-20, #397: retitled in place, reach and digest
         # unchanged -- the rule keeps 'Carod i', which the landing
         # leaves byte-identical.
@@ -5023,11 +5031,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
-        # 2026-10-01, #564: new, 5; 'Ahmad Jayadi, CHA', 'John Smith,
-        # LEED AP', 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon
-        # Kenneth Clarke QC MP, HMG'.
+        # 2026-10-01, #564: new, 7; 'Ahmad Jayadi, CHA', 'García
+        # Márquez, MJ JK', 'John Smith, LEED AP', 'John Smith, PhD XYZ',
+        # 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon Kenneth
+        # Clarke QC MP, HMG'.
         "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "b17ff67704b1", ('DEFAULT',)),
+            _Claim(7, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "66be5f479c54", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -5532,11 +5541,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
-        # 2026-10-01, #564: new, 5; 'Ahmad Jayadi, CHA', 'John Smith,
-        # LEED AP', 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon
-        # Kenneth Clarke QC MP, HMG'.
+        # 2026-10-01, #564: new, 7; 'Ahmad Jayadi, CHA', 'García
+        # Márquez, MJ JK', 'John Smith, LEED AP', 'John Smith, PhD XYZ',
+        # 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon Kenneth
+        # Clarke QC MP, HMG'.
         "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "b17ff67704b1", ('DEFAULT',)),
+            _Claim(7, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "66be5f479c54", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -6185,11 +6195,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
-        # 2026-10-01, #564: new, 5; 'Ahmad Jayadi, CHA', 'John Smith,
-        # LEED AP', 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon
-        # Kenneth Clarke QC MP, HMG'.
+        # 2026-10-01, #564: new, 7; 'Ahmad Jayadi, CHA', 'García
+        # Márquez, MJ JK', 'John Smith, LEED AP', 'John Smith, PhD XYZ',
+        # 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon Kenneth
+        # Clarke QC MP, HMG'.
         "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "b17ff67704b1", ('DEFAULT',)),
+            _Claim(7, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "66be5f479c54", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the
@@ -6558,11 +6569,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-01, #575: new, 1; 'van der Berg, PhD'.
         "fix(#575) a particle surname before a comma is one name word":
             _Claim(1, ('_ambiguities', 'family', 'given'), "d449a9b43779", ('DEFAULT',)),
-        # 2026-10-01, #564: new, 5; 'Ahmad Jayadi, CHA', 'John Smith,
-        # LEED AP', 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon
-        # Kenneth Clarke QC MP, HMG'.
+        # 2026-10-01, #564: new, 7; 'Ahmad Jayadi, CHA', 'García
+        # Márquez, MJ JK', 'John Smith, LEED AP', 'John Smith, PhD XYZ',
+        # 'John Smith, RAI', 'John Smith, XYZ', 'The Rt Hon Kenneth
+        # Clarke QC MP, HMG'.
         "fix(#564) an unlisted all-caps word after a comma behind two name words is a credential by default":
-            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "b17ff67704b1", ('DEFAULT',)),
+            _Claim(7, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "66be5f479c54", ('DEFAULT',)),
         # #516's alternation. Literal-anchored to the by-shape movers,
         # `orders` DEFAULT. Same reasoning as the rule above: the
         # class is a shape the vocabulary does not spell, so the

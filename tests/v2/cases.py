@@ -2813,12 +2813,14 @@ CASES: tuple[Case, ...] = (
                "the same one the default policy raises. Folding "
                "`caps_shape_candidate` into the class run would make "
                "this row fail"),
-    # #516's all-caps half, and it is OPT-IN. The rows come in pairs:
-    # the same name under the DEFAULT policy, where nothing moves and
-    # nothing is reported, and under Policy(unlisted_caps_suffixes=
-    # True), where the shape reads. The French and Korean names are
-    # why the default is off (mechanisms.md#VOCABULARY-EXERCISES-FORKS
-    # -- each pair pins the switch, not the words). A row that sets
+    # #516's all-caps half. Its trailing slots are OPT-IN
+    # (CapsSuffixes.EVERYWHERE); since #564 the default reads the part
+    # after a comma behind two name words, which the all-caps surname
+    # convention never writes in. The rows come in pairs: the same name
+    # under the DEFAULT policy and under EVERYWHERE. The French and
+    # Korean names are why the trailing slots stay off
+    # (mechanisms.md#VOCABULARY-EXERCISES-FORKS -- each pair pins the
+    # setting, not the words). A row that sets
     # the non-default policy carries no `shape=` tag: the contract
     # corpus (build_shapes_corpus.py) keys only on (shape, text), with
     # no policy of its own, so admitting one of these texts under a
@@ -2955,14 +2957,10 @@ CASES: tuple[Case, ...] = (
          notes="the first time this class reaches the comma form as "
                "MORE than one token: 'LEED' and 'AP' are two separate "
                "all-caps words, and every token in the run must be a "
-               "candidate for the run itself to be one -- rules.md#C1's "
-               "`deviates: #291` line comes true ONLY under this "
-               "switch. At the DEFAULT this exact text still reads "
-               "given 'LEED', middle 'AP', family 'John Smith' -- the "
-               "deviation stands there unchanged -- so nothing in "
-               "this arc may remove rules.md#C1's `deviates: #291` "
-               "marker on this switch's account; the switch only "
-               "narrows what makes the deviation true"),
+               "candidate for the run itself to be one. Since #564 the "
+               "DEFAULT reads it the same way, the comma position being "
+               "on by default, and rules.md#C1's `deviates: #291` "
+               "marker came off with that change"),
     Case("the_caps_comma_multi_word_run_declines_at_one_word",
          "Smith, LEED AP",
          {"given": "LEED", "family": "Smith", "suffix": "AP"},
@@ -3137,25 +3135,31 @@ CASES: tuple[Case, ...] = (
                "the case fact ONCE, so a one-case name declines the "
                "whole run rather than per token"),
     Case("caps_run_needs_every_token_not_any",
-         "John Smith, LEED BA",
-         {"given": "LEED", "family": "John Smith", "suffix": "BA"},
+         "John Smith, LEED Jones",
+         {"given": "LEED", "middle": "Jones", "family": "John Smith"},
          policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
-         classification="fix(#531)",
-         ambiguities=("suffix-or-name", "suffix-or-name"),
-         notes="pins `all()` rather than `any()`: 'BA' is a LISTED "
-               "ambiguous acronym, so the caps shape test excludes it "
-               "and the run is no caps run -- the structure stays the "
-               "listing form. The first report is assign's post-comma "
-               "one, fired on 'LEED' alone, which carries the shape "
-               "tag from classify whatever segment made of the run. "
-               "#531 moves 'BA' itself: this is a family-comma name "
-               "whose given part now ends in a class member, and the "
-               "member is written in CAPITALS in a name written in "
-               "more than one case, so it leans credential (#289) and "
-               "reads suffix where it read middle -- its own second "
-               "report. What #516 pins here is untouched: the caps "
-               "run test still declines, and the structure is still "
-               "the listing form"),
+         classification="fix(#516)",
+         ambiguities=("suffix-or-name",),
+         notes="pins `all()` rather than `any()` in the all-caps run "
+               "test: a name word in the part leaves it no caps run, so "
+               "the structure stays the listing form, and no other "
+               "route reaches it (the #544 run test breaks on the name "
+               "word). The report is assign's post-comma one, fired on "
+               "'LEED', which carries the shape tag from classify. Until "
+               "#564 this row used 'John Smith, LEED BA', whose listed "
+               "'BA' the run test now reads beside a caps member as one "
+               "credential run (the row below)"),
+    Case("a_caps_word_and_a_listed_credential_make_one_run",
+         "John Smith, LEED BA",
+         {"given": "John", "family": "Smith", "suffix": "LEED BA"},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="#564: an unlisted all-caps word is a member of C1's run "
+               "by shape, so beside a listed credential it reads as the "
+               "run it is -- as 'John Smith, PhD XYZ' and 'John Smith, "
+               "XYZ Jr.' do. Until #564 the listing form read given "
+               "'LEED' with the switch on, and more evidence for a "
+               "credential produced a name reading"),
     Case("the_comma_count_counts_names_not_words_behind_a_title",
          "Mr Smith, Ma",
          {"given": "Ma", "family": "Mr Smith"},
