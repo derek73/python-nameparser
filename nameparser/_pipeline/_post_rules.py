@@ -4,10 +4,13 @@ Consumes: tokens (roles assigned), plus pieces and structure -- the
 particle fold reads the opening piece of segment 0, or of segment 1
 under a family comma (#359). structure was always read here, for the
 rotation gate. Also comma_offsets and dropped, which R1's entry pass
-below reads to find the separators the writer typed (#436/#437).
+below reads to find the separators the writer typed (#436/#437), and
+segment 1's piece_tags, which P6's company exception reads to ask
+whether a credential in front anchors the run (#573).
 Produces: tokens with roles adjusted by the post rules, the stable
 "joined" tag on a post-nominal continuing the entry before it, and the
-ambiguity P6's attachment reports for the fork it decides (#405).
+ambiguity P6's attachment reports for the fork it decides, whichever
+way it decides it (#405, #573).
 Reads: Policy.patronymic_rules, Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles.
@@ -24,6 +27,7 @@ import re
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._assign import _name_positions
+from nameparser._pipeline._pieces import given_slot_anchors
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
@@ -306,6 +310,42 @@ def _is_lone_never_given_particle(site: tuple[int, ...],
     return (len(site) == 1
             and "particle" in tokens[site[0]].tags
             and "vocab:particle-ambiguous" not in tokens[site[0]].tags)
+
+
+def _inside_a_credential_run(seg: tuple[tuple[int, ...], ...],
+                             ptags: tuple[frozenset[str], ...],
+                             tokens: list[WorkToken], given_at: int,
+                             k: int, end: int,
+                             ambiguities: list[PendingAmbiguity]) -> bool:
+    """rules.md#P6's company exception for the run `seg[k:end]`: one
+    piece that a credential in front anchors (S2's company, the
+    given slot's own query) and a suffix behind it stands INSIDE a
+    credential run rather than ending the name, so it keeps the
+    post-nominal reading assign gave it -- 'DOE, JANE PHD VD MA'
+    reads suffix 'PHD VD MA' where the attachment had pulled VD out
+    of the middle of it (#573). Behind as well as in front: with
+    nothing behind it the word ends the name, and 'Doe, Jane PhD vd'
+    keeps family 'vd Doe'. Reported as S2's credential fork, at the
+    site that declines the attachment."""
+    # The run itself read as a post-nominal: `vd` and `mc` only, a
+    # plain particle between credentials ('Doe, Jane PhD de PhD')
+    # being no credential however it is anchored, which is a question
+    # about the POSITION, not the word.
+    if end - k != 1 or end == len(seg) or not all(
+            tokens[i].role is Role.SUFFIX
+            for i in (*seg[k], *seg[end])):
+        return False
+    if not given_slot_anchors(seg, ptags, tokens, given_at)[k]:
+        return False
+    run = seg[k]
+    text = " ".join(tokens[i].text for i in run)
+    ambiguities.append(PendingAmbiguity(
+        AmbiguityKind.SUFFIX_OR_NAME,
+        f"{text!r} written without periods is both a post-nominal and a "
+        f"family-name particle; between credentials after a family "
+        f"comma it reads as a post-nominal",
+        tuple(run)))
+    return True
 
 
 def _addressing_run(titles: list[int], name_word: int) -> list[int]:
@@ -701,8 +741,13 @@ def post_rules(state: ParseState) -> ParseState:
         # a no-name segment holds no MIDDLE for the fold to leave
         # either. P6 runs only on that path, so the branch cannot be
         # reached from here.
-        if k and any(tokens[i].role is Role.GIVEN
-                     for piece in seg[:k] for i in piece):
+        given_at = next((q for q in range(k) if any(
+            tokens[i].role is Role.GIVEN for i in seg[q])), None)
+        if given_at is not None and _inside_a_credential_run(
+                seg, state.piece_tags[1], tokens, given_at, k, end,
+                ambiguities):
+            given_at = None
+        if given_at is not None:
             # A range, though only ever one piece today: grouping's
             # prefix chain makes a non-leading particle absorb what
             # follows, so a trailing run splits into several pieces

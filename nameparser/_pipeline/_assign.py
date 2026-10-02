@@ -775,6 +775,27 @@ def assign(state: ParseState) -> ParseState:
                     floors[titled] = (low, final)
                 return low
 
+            def attaches_the_lead(m: int, titled: frozenset[int]) -> bool:
+                """Is piece `m` the name word a never-given particle
+                opening the given part attaches to? post_rules' P1
+                fold takes such a particle forward into the family and
+                needs a name word for it to attach to, so the
+                given name the #531 slot below counts on is not there,
+                and the first word past the particle run is the
+                surname it heads rather than a word to spare ('SMITH,
+                VD MA' reads as 'Smith, vd Ma' does, #573). Asked only
+                of a class member the slot would otherwise take."""
+                lead = pieces[n]
+                if not (len(lead) == 1
+                        and "particle" in tokens[lead[0]].tags
+                        and "vocab:particle-ambiguous"
+                        not in tokens[lead[0]].tags):
+                    return False
+                return all(k in titled or "particle" in ptags[k]
+                           or (len(pieces[k]) == 1
+                               and "particle" in tokens[pieces[k][0]].tags)
+                           for k in range(n + 1, m))
+
             def reads_as_a_suffix(m: int, titled: frozenset[int]) -> bool:
                 """Does this segment's walk read piece `m` as a suffix?
 
@@ -843,7 +864,8 @@ def assign(state: ParseState) -> ParseState:
                         # A name word behind the member ends the
                         # reach, and the member is an ordinary middle
                         # name read in silence.
-                        if m >= trailing_floor(m, titled):
+                        if (m >= trailing_floor(m, titled)
+                                and not attaches_the_lead(m, titled)):
                             # A member that is ALSO particle
                             # vocabulary reads as the credential only
                             # on a POSITIVE credential lean: P6's
