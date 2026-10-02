@@ -214,7 +214,10 @@ PARTICLES = NON_GIVEN_NAME_PARTICLES | {
               # {do, freiherr, st} as load-bearing for the emitter
     'du',     # Du is a Chinese surname (Du Fu), leading under a
               # family-first reading
-    'freiherr',    # German noble title; also in TITLES, load-bearing
+    'freiherr',    # German rank; since 1919 a former noble title is part
+                   # of the legal surname, written before the particle
+                   # ("Karl-Theodor Freiherr von und zu Guttenberg"), so
+                   # it chains like one. Also in TITLES, load-bearing
     'freiherrin',  # as above
     'heer',
     'la',     # La Shawn, La Toya: a given-name element. The Romance

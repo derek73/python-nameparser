@@ -6,6 +6,7 @@ from nameparser import Parser
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
 from nameparser._pipeline import _classify as _classify_module
+from nameparser._pipeline import _vocab
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
@@ -14,7 +15,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import (
-    ambiguous_class_candidate, ambiguous_class_member, caps_shape_candidate,
+    ambiguous_class_candidate, ambiguous_class_member,
+    caps_shape_candidate, surname_unit_facts, surname_unit_tags,
 )
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, Role
@@ -731,3 +733,61 @@ def test_the_caps_shape_is_a_testable_predicate() -> None:
     assert (_tags_by_text("John Smith X.Y", policy=on)["X.Y"]
             == _tags_by_text("John Smith X.Y")["X.Y"])
 
+
+
+def _surname_unit_sweep() -> list[str]:
+    lex = Lexicon.default()
+    words: set[str] = {"Smith", "Ma", "M.D.", "Ph.D.", "JD.CPA", "Msc.Ed.",
+                       "Lt.Gov.", "X.Y.Z.", "V.", "I", "v", "Jr.", "de."}
+    for field in ("particles", "suffix_acronyms", "suffix_words",
+                  "conjunctions", "bound_given_names", "titles"):
+        for w in getattr(lex, field):
+            if " " not in w:
+                words |= {w, w.title(), w.upper()}
+    return sorted(words)
+
+
+def _surname_unit_disagreements() -> list[str]:
+    lex = Lexicon.default()
+    disagree = []
+    for word in _surname_unit_sweep():
+        tags = _tags_by_text(f"Smith {word}, John", lexicon=lex).get(word)
+        if tags is None:  # tokenize split it; nothing to compare
+            continue
+        # both positions: the leading one is where a title-particle
+        # ('Freiherr', 'St') stops being a particle
+        if any(surname_unit_tags(word, lex, leading)
+               != surname_unit_facts(tags, leading)
+               for leading in (True, False)):
+            disagree.append(word)
+    return disagree
+
+
+#: The agreement test's recorded negative control: what it reports
+#: with `surname_unit_tags`' period-joined mirror switched off -- the
+#: two words its first run caught, which classify tags as suffixes
+#: through that derivation alone.
+_SURNAME_UNIT_CONTROL = ["JD.CPA", "Msc.Ed."]
+
+
+def test_surname_unit_tags_agree_with_classify() -> None:
+    # #575: rules.md#C1's count before the comma reads two facts per
+    # token -- particle, suffix -- and `segment` must build them from
+    # the vocabulary (`_vocab.surname_unit_tags`), since it runs before
+    # classify has tagged anything, while assign derives them from
+    # classify's tags (`_vocab.surname_unit_facts`). Swept over every
+    # single-word entry of the vocabularies a token can be tagged
+    # from, in three casings and both positions, plus the period shapes
+    # classify derives a suffix from; the title-particles ('Freiherr',
+    # 'St') are in the sweep through those lists.
+    assert _surname_unit_disagreements() == []
+
+
+def test_the_surname_unit_agreement_test_can_fail(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # The guard above, with the mirror it exists to hold switched off:
+    # `_vocab.surname_unit_tags` reads `period_joined_vocab` from its
+    # own module, so patching it there leaves classify untouched.
+    monkeypatch.setattr(_vocab, "period_joined_vocab",
+                        lambda text, lexicon: None)
+    assert _surname_unit_disagreements() == _SURNAME_UNIT_CONTROL

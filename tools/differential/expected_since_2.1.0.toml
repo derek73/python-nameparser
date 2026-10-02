@@ -2411,7 +2411,18 @@ issue = "fix(#289) a written case contrast decides a bare ambiguous acronym"
 # 'Ma' -- is gone; what the name still diffs on here is claimed by the
 # rule that explains it, and a literal left in this one would stand
 # ready to explain that cost coming back.
-name_regex = "^(?:Davis Royce, Ed|Doe, Dr\\. MA|Doe, MA|Doe, MA PhD|Doe, Mr\\. MA PhD|Freiherr von Berg MA|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Prof\\. MA|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John de Ma|John van der Berg Ma|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|abdul Smith Berg Ma|abdul Smith Ma|john smith, ma)$"
+# 2026-10-01, #575: eight names join, the C1 examples of that change.
+# Against these baselines none of them is #575's doing: each moves
+# on this rule's own count and lean. 'John van Buren, Ed', 'Ortega y
+# Gasset, Ed' and 'abdul Salam, Ed' are two name words before the
+# comma and flip; 'De La Cruz, Ed', 'de la Cruz, Ma' and 'Van Buren,
+# Ed' are one and gain only the comma's report; 'van der Berg, MA'
+# is one, and its capitals make 'MA' the credential, as 'Smith, MA'.
+# These baselines already read the particle surnames as one name;
+# what #575 fixed is this cycle's count, which had not.
+# 'Freiherr von Berg, Ed', rules.md#C1's Accepted example for #575,
+# reads as these baselines read it and gains only the comma's report.
+name_regex = "^(?:Davis Royce, Ed|De La Cruz, Ed|Doe, Dr\\. MA|Doe, MA|Doe, MA PhD|Doe, Mr\\. MA PhD|Freiherr von Berg MA|Freiherr von Berg, Ed|JOHN SMITH, MA|Jack MA|Jack MA\\.|Jack Wei Ma|John Prof\\. MA|John Smith Ma|John Smith, Ed|John Smith, MA|John Smith, Ma|John de Ma|John van Buren, Ed|John van der Berg Ma|Ortega y Gasset, Ed|Smith Jr\\., MA|Smith Jr\\., Ma|Smith, MA|Van Buren, Ed|abdul Salam, Ed|abdul Smith Berg Ma|abdul Smith Ma|de la Cruz, Ma|john smith, ma|van der Berg, MA)$"
 fields = ["family", "given", "middle", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]
 
@@ -2497,8 +2508,12 @@ issue = "fix(#563) paired initials after a comma read as the given name unless a
 # G.J.', a title in front ("a suffix word in front of them that is
 # not also title vocabulary"), which moves nothing at any baseline.
 # The second period is optional ('García Márquez, G.J'). Two pairs
-# speaking only for each other make the run and report it ('De La
-# Cruz, M.J. K.L.'); a listed member in front speaks for nothing
+# speaking only for each other make the run and report it behind two
+# name words ('John Smith, X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz,
+# M.J. K.L.' is no longer that case -- 'De La Cruz' is one name word,
+# so the count no longer reaches it and it reads as 'Cruz, M.J. K.L.'
+# does, given 'M.J.', suffix 'K.L.', reporting both; a listed member
+# in front speaks for nothing
 # ('García Márquez, Ed G.J.' keeps the family comma, and the fix(#531)
 # rule claims what its given part's trailing slot then reads). Against a 2.x baseline the names
 # whose roles match the baseline's move only the report, which a
@@ -3788,4 +3803,18 @@ issue = "fix(#296/#531) phd is not a prenominal, so behind a dual title it is th
 # PhD Ma' are _MUST_NOT_MATCH.
 name_regex = "^Smith, MD PhD Ma$"
 fields = ["title", "given", "middle", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#575) a particle surname before a comma is one name word"
+# rules.md#C1: "a particle run and the one name word it attaches to
+# are one word", so 'van der Berg, PhD' reads as 'Berg, PhD'
+# does: family 'van der Berg', suffix 'PhD'. Every release counted
+# tokens and split the chain, given 'van', family 'der Berg', with a
+# particle-or-given report.
+#
+# Literal; the probe 'John van der Berg, PhD' (two name words) is
+# _MUST_NOT_MATCH.
+name_regex = "^van der Berg, PhD$"
+fields = ["given", "family", "_ambiguities"]
 orders = ["DEFAULT"]

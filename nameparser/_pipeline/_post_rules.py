@@ -28,7 +28,7 @@ from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
-from nameparser._pipeline._vocab import delimiter_cores
+from nameparser._pipeline._vocab import delimiter_cores, unit_ends
 from nameparser._policy import PatronymicRule
 from nameparser._types import (
     FOLDED_TAG, UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG, AmbiguityKind, Role,
@@ -256,40 +256,6 @@ def _retag(tokens: list[WorkToken], i: int, role: Role) -> None:
 # rule counts them"
 # rules.md#P5: "a recognized bound given-name word joins the word
 # after it into one given name"
-def _unit_end(tokens: list[WorkToken], idx: list[int], i: int) -> int:
-    """One past the end of the unit starting at `idx[i]`.
-
-    RECURSIVE, and that is the whole point: what a conjunction or a
-    bound given-name word joins is the next UNIT, not the next word.
-    Absorbing a single index instead strands a particle at the end of
-    the unit, severed from the words it chains -- "de la Vega y la
-    Vega" cut between `la` and `Vega`, reporting family
-    "de la Vega y la", which is the same defect as a bare particle
-    opening the given name, mirrored."""
-    if "particle" in tokens[idx[i]].tags:
-        j = i
-        while j + 1 < len(idx) and "particle" in tokens[idx[j + 1]].tags:
-            j += 1
-        # ... then the words it joins, stopping where the next
-        # particle starts a group of its own, at a suffix word (the
-        # stop _group's chain uses), or at a conjunction, which the
-        # shared loop below joins to the whole unit after it rather
-        # than to the one word after it.
-        while (j + 1 < len(idx)
-               and "particle" not in tokens[idx[j + 1]].tags
-               and "conjunction" not in tokens[idx[j + 1]].tags
-               and "vocab:suffix" not in tokens[idx[j + 1]].tags):
-            j += 1
-        end = j + 1
-    else:
-        end = i + 1
-        if "vocab:bound-given" in tokens[idx[i]].tags and end < len(idx):
-            end = _unit_end(tokens, idx, end)
-    while end + 1 < len(idx) and "conjunction" in tokens[idx[end]].tags:
-        end = _unit_end(tokens, idx, end + 1)
-    return end
-
-
 def _units(tokens: list[WorkToken], idx: list[int]) -> list[list[int]]:
     """`idx` split into the units other rules COUNT: one name word
     each, except where another rule has already made several words one
@@ -316,8 +282,7 @@ def _units(tokens: list[WorkToken], idx: list[int]) -> list[list[int]]:
     out separately."""
     units: list[list[int]] = []
     i = 0
-    while i < len(idx):
-        end = _unit_end(tokens, idx, i)
+    for end in unit_ends([tokens[k].tags for k in idx]):
         units.append(list(idx[i:end]))
         i = end
     return units

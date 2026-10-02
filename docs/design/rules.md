@@ -518,7 +518,8 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     have gone the other way, and is reported.
     The joined part is ONE name word wherever another rule counts
     them, so a rule taking "one name word" takes the whole join and
-    never half of it.
+    never half of it — except C1's count of the words before a comma,
+    which counts particle surnames alone and states why.
     A connective counts as a name word wherever this rule counts them,
     whatever else the vocabulary says the word is, where it is placed
     to join. A word can be a connective and a generation at once — the
@@ -1669,6 +1670,27 @@ C1. Rationale: a credential run after the comma means the name is in
     than one word precedes the comma; otherwise it reads as the
     listing form, the part before the comma being the family name.
     Only the part after the first comma decides.
+    Wherever this rule counts the words before the comma, a particle
+    run and the one name word it attaches to are one word, the reach
+    P1's fold counts rather than the whole of P2's chain: the listing
+    form puts a surname before the comma, and a particle surname is
+    one surname ('De La Cruz, Ed' reads as 'Royce, Ed' does, 'van der
+    Berg, PhD' as 'Berg, PhD'). Where that surname is the whole part,
+    the comma settles P1's fork for a leading particle that could be
+    a given name, being the evidence that the part is a surname; a
+    word after the one the particle attaches to is a second word, and
+    a suffix word ends the particle's reach. A word that is also
+    title vocabulary is not a particle to this count where it opens
+    the part, reading there as the title it also is (H1); inside a
+    surname it chains ('de St Pierre, Ed' reads given 'Ed'). A
+    connective join and a bound given-name pair are not one word
+    here: whether P3 joins a connective depends on the words of the
+    whole name, which this count is part of deciding, and a bound
+    given name builds a given name rather than a surname (P5) — a
+    word that is a particle as well counts as the particle ('Abu
+    Bakar, Ed' reads given 'Ed'). A title in front is a word to the
+    count an unambiguous credential takes, so 'Dr. van der Berg, PhD'
+    reads as its part does alone.
     For the ambiguous credential class — a bare acronym the
     vocabulary marks as also an ordinary name, and a word admitted
     to the class by shape, which S3 defines and bounds — the
@@ -1694,9 +1716,10 @@ C1. Rationale: a credential run after the comma means the name is in
     company has it, and where nothing but words of both the suffix
     and the title vocabulary stands in front of them, those are the
     titles of the given part the initials open, as S2 reads them
-    there. Paired initials that are not the only shape word in the
-    part are a credential however little else speaks for them, since
-    no one writes a person's initials as two dotted groups. The same count reads a part of two or
+    there. Behind two or more name words, paired initials that are
+    not the only shape word in the part are a credential however
+    little else speaks for them, since no one writes a person's
+    initials as two dotted groups. The same count reads a part of two or
     more words as the credential run when every word of it is a
     suffix word or a word of this class, at least one of them of this
     class, and none of them a single-letter roman numeral, in any
@@ -1833,13 +1856,35 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, A.B."          →  given="A.B."
       "John Smith, A.B."          →  ambiguities=("suffix-or-name",)
       "John Smith, X.Y. P.Q."     →  suffix="X.Y. P.Q."
-      "De La Cruz, M.J. K.L."     →  ambiguities=("suffix-or-name",)
+      "De La Cruz, M.J. K.L."     →  given="M.J."
+      "De La Cruz, M.J. K.L."     →  ambiguities=("suffix-or-name", "suffix-or-name")
+      "De La Cruz, Ed"            →  given="Ed"
+      "van der Berg, MA"          →  family="van der Berg"
+      "van der Berg, MA"          →  suffix="MA"
+      "Van Buren, Ed"             →  family="Van Buren"
+      "van der Berg, PhD"         →  family="van der Berg"
+      "John van Buren, Ed"        →  suffix="Ed"  · boundary
+      "Ortega y Gasset, Ed"       →  suffix="Ed"  · boundary
+      "abdul Salam, Ed"           →  suffix="Ed"  · boundary
       "John Smith, PhD X.Y."      →  suffix="PhD X.Y."
       "García Márquez, G.J"       →  given="G.J"
       "De La Cruz, M.J. PhD"      →  given="M.J."  · boundary
       "García Márquez, Ms G.J."   →  given="G.J."  · boundary
       "García Márquez, Ed G.J."   →  given="Ed"  · boundary
       "John Smith, A.B. Ph.D."    →  given="A.B."  · boundary
+    Accepted: a title in front of a particle surname, before the
+    credential class's word, is read into the family. The surname
+    counts once and the title is no name word, so the count reads the
+    listing form, and the listing form keeps a title before the comma
+    in the family, as it already did for any one-word surname ('Prof.
+    Cruz, Ed'). For a German rank that reading is the right one:
+    since 1919 a former noble title is part of the legal surname,
+    written between the given name and the particle, so 'Freiherr von
+    Berg' is the family name in 'Freiherr von Berg, Ed', as 2.0
+    through 2.3 read it. Before an unambiguous credential the same
+    words keep the title apart ('Freiherr von Berg, PhD'), that count
+    taking the title as a word; both are readings of one name.
+      "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
     Accepted: three or more initials run together with periods behind
     a surname of two words read as a credential. Initials are
     conventionally written apart ('J. R. R.'), and a token of three or
@@ -1880,7 +1925,7 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions.md#C1 · interacts: H2, P2, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1 · interacts: H1, H2, P1, P2, P3, P5, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.

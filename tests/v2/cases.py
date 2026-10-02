@@ -992,6 +992,150 @@ CASES: tuple[Case, ...] = (
                "family around a suffix 'vd'. 2.3.0 read family 'Smith "
                "Ma', suffix 'vd', and 1.4.0 last 'Smith', suffix 'vd, "
                "Ma'"),
+    # #575: rules.md#C1's count before the comma counts a particle
+    # chain (P2) as ONE name word -- it builds one family name -- so a
+    # particle surname reads as a one-word surname does ('Royce, Ed',
+    # 'Berg, MA', 'Berg, PhD').
+    Case("a_particle_surname_before_a_comma_is_one_name_word",
+         "De La Cruz, Ed",
+         {"given": "Ed", "family": "De La Cruz"},
+         classification="fix(#575)",
+         ambiguities=("suffix-or-name",),
+         notes="the count read 'De La Cruz' as three name words and "
+               "flipped to a credential comma, leaving no given name. "
+               "2.3.0 read given 'Ed' too; 1.4.0 read suffix 'Ed'",
+         shape=2),
+    Case("a_lowercase_particle_surname_before_a_comma_is_one_name_word",
+         "de la Cruz, Ma",
+         {"given": "Ma", "family": "de la Cruz"},
+         classification="fix(#575)",
+         ambiguities=("suffix-or-name",),
+         notes="as 'Cruz, Ma' reads. 2.3.0 read given 'Ma' too; 1.4.0 "
+               "read suffix 'Ma'",
+         shape=2),
+    Case("an_ambiguous_particle_chain_before_a_comma_stays_whole",
+         "van der Berg, MA",
+         {"family": "van der Berg", "suffix": "MA"},
+         classification="fix(#575)",
+         ambiguities=("suffix-or-name",),
+         notes="one name word before the comma, so C1 reads the case "
+               "and capitals in a mixed-case name make 'MA' the "
+               "credential, as 'Berg, MA' reads. The count had split "
+               "the chain: given 'van', family 'der Berg'. 2.3.0 read "
+               "given 'MA', family 'van der Berg'",
+         shape=2),
+    Case("a_leading_particle_that_could_be_a_given_name_is_settled_by_the_comma",
+         "Van Buren, Ed",
+         {"given": "Ed", "family": "Van Buren"},
+         classification="fix(#575)",
+         ambiguities=("suffix-or-name",),
+         notes="standing alone 'Van Buren' is P1's fork (given 'Van'); "
+               "the listing form puts a surname before the comma, so "
+               "the comma settles it. The count had read two name "
+               "words: given 'Van', family 'Buren', suffix 'Ed'. "
+               "2.3.0 read given 'Ed', family 'Van Buren'",
+         shape=2),
+    Case("a_connective_surname_is_not_one_name_word_before_a_comma",
+         "Ortega y Gasset, Ed",
+         {"given": "Ortega", "middle": "y", "family": "Gasset",
+          "suffix": "Ed"},
+         ambiguities=("suffix-or-name",),
+         notes="#575 boundary: only a particle chain counts as one name "
+               "word. P3 leaves a single-letter connective in a "
+               "three-word name a name word, so 'Ortega y Gasset' is "
+               "three even standing alone (given 'Ortega', middle 'y'), "
+               "and the count follows it. 2.3.0 read given 'Ed'",
+         shape=3),
+    Case("a_particle_surname_before_an_unambiguous_credential_stays_whole",
+         "van der Berg, PhD",
+         {"family": "van der Berg", "suffix": "PhD"},
+         classification="fix(#575)",
+         notes="as 'Berg, PhD' reads. Every release split the chain on "
+               "v1's token count: given 'van', family 'der Berg', "
+               "suffix 'PhD'",
+         shape=2),
+    Case("a_particle_surname_after_a_given_name_is_still_a_full_name",
+         "John van Buren, Ed",
+         {"given": "John", "family": "van Buren", "suffix": "Ed"},
+         ambiguities=("suffix-or-name",),
+         notes="#575 boundary: a given name and a particle surname are "
+               "two name words, so the part after the comma is still "
+               "the credential run",
+         shape=3),
+    Case("a_bound_given_pair_before_a_comma_counts_as_two_name_words",
+         "abdul Salam, Ed",
+         {"given": "abdul", "family": "Salam", "suffix": "Ed"},
+         ambiguities=("suffix-or-name",),
+         notes="#575 boundary: a bound pair (P5) builds a GIVEN name and "
+               "gives up a family word when the name has no other "
+               "('abdul Salam' alone is given 'abdul', family 'Salam'), "
+               "so it is not one surname before a comma",
+         shape=3),
+    Case("a_title_particle_before_a_comma_is_still_a_title",
+         "Freiherr von Berg, PhD",
+         {"title": "Freiherr", "family": "von Berg", "suffix": "PhD"},
+         ambiguities=("particle-or-given",),
+         notes="#575 boundary: a word of both the title and the particle "
+               "vocabulary is not a particle to the count before the "
+               "comma, so it stays a title in front of the surname. The "
+               "first draft of #575 counted 'Freiherr von Berg' as one "
+               "surname and folded the title into the family"),
+    Case("a_bound_given_particle_surname_before_a_comma_is_one_name_word",
+         "Abu Bakar, Ed",
+         {"given": "Ed", "family": "Abu Bakar"},
+         classification="fix(#575)",
+         ambiguities=("suffix-or-name",),
+         notes="'abu' is a bound given-name head and a particle; before "
+               "a comma it is the particle, so 'Abu Bakar' is one "
+               "surname, as 2.0 through 2.3 read it. 1.4.0 and this "
+               "cycle's count read given 'Abu', family 'Bakar', suffix "
+               "'Ed'. Untagged: its 1.4.0 diff is the rule's own"),
+    Case("a_title_particle_inside_a_surname_chains",
+         "de St Pierre, Ed",
+         {"given": "Ed", "family": "de St Pierre"},
+         classification="fix(#575)",
+         ambiguities=("suffix-or-name",),
+         notes="#575: a title-particle stops being a particle only where "
+               "it LEADS the part; inside a surname it chains, so 'de St "
+               "Pierre' is one name word, as 2.3.0 read it. A draft that "
+               "excluded 'St' in every position read family 'de St "
+               "Pierre', suffix 'Ed', no given name"),
+    Case("a_suffix_inside_the_part_stops_the_particle",
+         "van Jr. Berg, Mr.",
+         {"title": "Mr.", "given": "van", "middle": "Jr.",
+          "family": "Berg"},
+         ambiguities=("particle-or-given",),
+         notes="#575 boundary: the particle reaches no further than a "
+               "suffix word, so 'van' and 'Berg' are two name words and "
+               "the part keeps its positional read. A first draft "
+               "walked past the suffix and read family 'van Berg'"),
+    Case("a_title_in_front_keeps_the_particle_fork",
+         "Dr. van der Berg, PhD",
+         {"title": "Dr.", "given": "van", "family": "der Berg",
+          "suffix": "PhD"},
+         ambiguities=("particle-or-given",),
+         notes="#575 boundary: the count for an unambiguous credential "
+               "counts the title as a word, so the comma reads as a "
+               "credential comma and the part reads as it does alone, "
+               "P1's fork and all. Unchanged"),
+    # #575: assign's own count (the positional read after a comma
+    # followed by no name word) applies the title-particle exclusion
+    # by position too. These two pin that flag both ways -- a review
+    # mutant fixing it to False or True passed every other test.
+    Case("a_leading_title_particle_stays_a_title_before_a_title_only_comma",
+         "St John, Dr.",
+         {"title": "St Dr.", "family": "John"},
+         notes="#575 boundary: 'St' opens the part, so it is the title "
+               "it also is and 'John' alone is the name: two words do "
+               "not stand before the comma, the positional read holds. "
+               "2.3.0's reading"),
+    Case("an_inner_title_particle_chains_before_a_credential_only_comma",
+         "von St Johann, PhD",
+         {"family": "von St Johann", "suffix": "PhD"},
+         classification="fix(#575)",
+         notes="#575: 'St' inside the surname is a particle, so 'von St "
+               "Johann' is one name word and the family comma keeps it "
+               "whole. 2.3.0 read given 'von'"),
     Case("the_anchor_does_not_reach_across_a_maiden_clause",
          "Jane Doe Jr. nee Smith Ma",
          {"given": "Jane", "family": "Doe", "suffix": "Jr.",
@@ -2347,16 +2491,17 @@ CASES: tuple[Case, ...] = (
                "takes for a name. 1.4.0 read given 'X.Y.', middle "
                "'P.Q.'",
          shape=3),
-    Case("two_pairs_behind_a_two_word_surname_report_the_flip",
+    Case("two_pairs_behind_a_particle_surname_open_the_given_part",
          "De La Cruz, M.J. K.L.",
-         {"family": "De La Cruz", "suffix": "M.J. K.L."},
-         classification="fix(#563)",
-         ambiguities=("suffix-or-name",),
-         notes="#563 second review round: the cost of the two-pair "
-               "line is a surname with no given name, so the flip it "
-               "makes is reported rather than silent (rules.md#C1). "
-               "1.4.0 read given 'M.J.', middle 'K.L.'",
-         shape=3),
+         {"given": "M.J.", "family": "De La Cruz", "suffix": "K.L."},
+         classification="fix(#575)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="'De La Cruz' is one name word (#575), so the count no "
+               "longer reaches the part and it reads as 'Cruz, M.J. "
+               "K.L.' does (Derek, 2026-10-01). #563 had read it as a "
+               "flipped credential run with no given name. 1.4.0 read "
+               "given 'M.J.', middle 'K.L.'",
+         shape=2),
     Case("a_class_member_in_front_of_paired_initials_does_not_speak",
          "García Márquez, Ed G.J.",
          {"given": "Ed", "family": "García Márquez", "suffix": "G.J."},

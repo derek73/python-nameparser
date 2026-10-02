@@ -648,12 +648,26 @@ def test_non_title_post_comma_segment_is_untouched() -> None:
 def test_positional_segment_zero_reports_the_particle_fork() -> None:
     # The comma no longer fixed the family, so the leading ambiguous
     # particle IS a live fork again -- emitted at the site that decides
-    # it, per the ambiguity doctrine.
-    out = _assigned("Van Johnson, Dr.")
+    # it, per the ambiguity doctrine. Three words, since the read needs
+    # two name words counted as units (#575): the particle and the word
+    # it attaches to are one.
+    out = _assigned("Van Johnson Smith, Dr.")
     assert _by_role(out, Role.GIVEN) == "Van"
-    assert _by_role(out, Role.FAMILY) == "Johnson"
+    assert _by_role(out, Role.FAMILY) == "Smith"
     assert [a.kind for a in out.ambiguities] == \
         [AmbiguityKind.PARTICLE_OR_GIVEN]
+
+
+def test_a_lone_particle_surname_before_a_title_only_comma_is_the_family() -> None:
+    # #575: 'Van Johnson' is ONE name word before the comma -- a
+    # particle and the word it attaches to -- so there are not two to
+    # read positionally, and the listing form's surname reading
+    # settles P1's fork. This test pinned given 'Van', family
+    # 'Johnson' and a particle-or-given report until then.
+    out = _assigned("Van Johnson, Dr.")
+    assert _by_role(out, Role.FAMILY) == "Van Johnson"
+    assert _by_role(out, Role.GIVEN) == ""
+    assert out.ambiguities == ()
 
 
 def test_a_credential_run_after_a_family_comma_reads_as_suffixes() -> None:
