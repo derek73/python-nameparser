@@ -1068,54 +1068,60 @@ def test_the_unmatchable_entry_filter_has_a_recorded_control(
 # Each row: (id, plain entries as (field, word), the field and spelling
 # carrying the edge full stop, text).
 _EDGE_COLLISION_ROWS = [
-    ("ambiguous-vs-word", [], "suffix_not_acronyms", "ma。", "jack ma"),
+    # (case, the config's entries, text): each fold folds BOTH of its
+    # operands, so each computation gets a row with the full stop on
+    # either side of the pair
+    ("ambiguous-vs-word", [("suffix_not_acronyms", "ma\u3002")], "jack ma"),
+    ("word-vs-ambiguous",
+     [("suffix_acronyms", "zq\u3002"),
+      ("suffix_acronyms_ambiguous", "zq\u3002"),
+      ("suffix_not_acronyms", "zq")], "john smith zq"),
     ("bound-vs-particle",
-     [("prefixes", "zed"), ("non_first_name_prefixes", "zed")],
-     "bound_first_names", "zed。", "zed bakr smith"),
+     [("prefixes", "zed"), ("non_first_name_prefixes", "zed"),
+      ("bound_first_names", "zed\u3002")], "zed bakr smith"),
+    ("particle-vs-bound",
+     [("prefixes", "zed\u3002"), ("non_first_name_prefixes", "zed\u3002"),
+      ("bound_first_names", "zed")], "zed bakr smith"),
 ]
 
 # Recorded negative control: with the shim's fold switched to identity
-# these two raise ValueError at the first parse (measured 2026-10-02).
+# all four raise ValueError at the first parse (measured 2026-10-02).
 # It measures the raise only; the readings are pinned by the tests below.
 _UNFOLDED_OUTCOME = {
     "ambiguous-vs-word": "raises",
+    "word-vs-ambiguous": "raises",
     "bound-vs-particle": "raises",
+    "particle-vs-bound": "raises",
 }
 
 
-def _edge_config(plain: list[tuple[str, str]], field: str,
-                 entry: str) -> Constants:
+def _edge_config(entries: list[tuple[str, str]]) -> Constants:
     c = Constants()
-    for f, word in plain:
-        getattr(c, f).add(word)
-    getattr(c, field).add(entry)
+    for field, word in entries:
+        getattr(c, field).add(word)
     return c
 
 
-@pytest.mark.parametrize(("case", "plain", "field", "entry", "text"),
-                         _EDGE_COLLISION_ROWS,
+@pytest.mark.parametrize(("case", "entries", "text"), _EDGE_COLLISION_ROWS,
                          ids=[r[0] for r in _EDGE_COLLISION_ROWS])
 def test_an_edge_full_stop_collision_reads_as_its_folded_spelling(
-    case: str, plain: list[tuple[str, str]], field: str, entry: str,
-    text: str,
+    case: str, entries: list[tuple[str, str]], text: str,
 ) -> None:
-    folded = entry.strip("\u3002\uff0e\uff61")
-    want = _reading(_edge_config(plain, field, folded), text)
-    got = _reading(_edge_config(plain, field, entry), text)   # error filter
+    folded = [(f, w.strip("\u3002\uff0e\uff61")) for f, w in entries]
+    want = _reading(_edge_config(folded), text)
+    got = _reading(_edge_config(entries), text)   # error filter: no warning
     assert got == want
 
 
-@pytest.mark.parametrize(("case", "plain", "field", "entry", "text"),
-                         _EDGE_COLLISION_ROWS,
+@pytest.mark.parametrize(("case", "entries", "text"), _EDGE_COLLISION_ROWS,
                          ids=[r[0] for r in _EDGE_COLLISION_ROWS])
 def test_the_edge_full_stop_fold_has_a_recorded_control(
-    case: str, plain: list[tuple[str, str]], field: str, entry: str,
-    text: str, monkeypatch: pytest.MonkeyPatch,
+    case: str, entries: list[tuple[str, str]], text: str,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(_config_shim, "_normalize", lambda e: e)
-    c = _edge_config(plain, field, entry)
     try:
-        _reading(c, text)
+        _reading(_edge_config(entries), text)
     except ValueError:
         outcome = "raises"
     else:
@@ -1160,7 +1166,7 @@ def test_an_edge_full_stop_entry_outside_the_two_checks_reads_as_before(
     case: str, plain: list[tuple[str, str]], field: str, entry: str,
     text: str, want: tuple[dict[str, str], str],
 ) -> None:
-    assert _reading(_edge_config(plain, field, entry), text) == want
+    assert _reading(_edge_config([*plain, (field, entry)]), text) == want
 
 
 def test_the_offered_remedy_runs_and_silences_the_warning() -> None:
