@@ -1823,7 +1823,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "JOHN SMITH, VD MA"         →  suffix="VD MA"
       "JOHN SMITH, VD MA"         →  ambiguities=("suffix-or-name",)
       "John Smith, Jr vd"         →  ambiguities=()
-      "John Smith, Jr do"         →  ambiguities=("suffix-or-name",)  · boundary
+      "John Smith, Jr do"         →  ambiguities=("suffix-or-name",)
       "John Smith, X.Y.Z."        →  suffix="X.Y.Z."
       "John Smith, X.Y.Z."        →  ambiguities=()
       "John Smith, X.Y.Z."  unlisted_dotted_suffixes-off  →  given="X.Y.Z."

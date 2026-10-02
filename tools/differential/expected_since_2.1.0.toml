@@ -3683,10 +3683,10 @@ issue = "fix(#544) a run of ambiguous members after a suffix comma reads by the 
 # rules.md#C1's examples for a word of both the particle and the
 # unambiguous suffix vocabulary: "A word's particle reading does not
 # take it out of the run". This baseline read the whole name as the
-# family ('John Smith vd Ma'). 'John Smith, Jr do' joins as C1's
-# boundary for that clause: `do` is a word of the ambiguous class, so
-# the count flips the part and reports, where this baseline read
-# title 'Jr', given 'do'.
+# family ('John Smith vd Ma'). 'John Smith, Jr do' joins as the
+# contrast to the silent 'John Smith, Jr vd': `do` is a word of the
+# ambiguous class, so the count flips the part and reports, where this
+# baseline read title 'Jr', given 'do'.
 #
 # Literal; `fields` is the union the names move ('title' is the duals').
 # Probes: 'Smith, Ed Ma' (one name word before the comma keeps the
