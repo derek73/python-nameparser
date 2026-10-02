@@ -104,20 +104,51 @@ def segment(state: ParseState) -> ParseState:
     # field two sites would not otherwise share).
     one_case = state.one_case
 
+    # The own-words walk, once per parse: `case_class` reads the words
+    # and `name_contrast` (#564) the clause boundary.
+    # Inline in both rather than a third helper: a wrapper is a frame
+    # every case-forcing comma name ('John Smith, MA') would pay.
+    own_span: tuple[list[str], int] | None = None
+
     def case_class() -> bool:
-        nonlocal one_case
+        nonlocal one_case, own_span
         if one_case is None:
-            # `own, _` rather than `[0]`: the second element is the
-            # maiden clause's start index, which this stage has no use
-            # for, and saying so by name is what stops a reader having
-            # to go and look up what a bare subscript dropped.
-            own, _ = own_words(state.tokens, state.comma_offsets,
-                               state.lexicon.maiden_markers)
-            one_case = is_one_case(own)
+            if own_span is None:
+                own_span = own_words(state.tokens, state.comma_offsets,
+                                     state.lexicon.maiden_markers)
+            one_case = is_one_case(own_span[0])
         return one_case
 
     def texts(seg: tuple[int, ...]) -> list[str]:
         return [state.tokens[i].text for i in seg]
+
+    # #564: the contrast the caps shape needs is the NAME's -- its own
+    # words before the comma (no maiden clause, no delimited content,
+    # as `own_words` defines them for `case_class` above), less titles
+    # and particles, which a record writing its surname in capitals
+    # still writes in lowercase ('Mr LLOYD WEBBER', 'de GAULLE').
+    # Neither the credential's own lowercase nor a clause's may supply
+    # it, or an all-caps record loses its given name ('LLOYD WEBBER,
+    # ANDREW PhD', 'LLOYD WEBBER née Smith, ANDREW PhD'). Asked only
+    # once a caps word is in hand, and in one C-level comparison.
+    def name_contrast() -> bool:
+        # no lowercase before the comma at all: an all-caps record,
+        # settled in C before the walk
+        before = "".join([state.tokens[i].text for i in groups[0]])
+        if before == before.upper():
+            return False
+        nonlocal own_span
+        if own_span is None:
+            own_span = own_words(state.tokens, state.comma_offsets,
+                                 state.lexicon.maiden_markers)
+        clause_at = own_span[1]
+        lex = state.lexicon
+        words = "".join(
+            tok.text for i in groups[0]
+            if i < clause_at and (tok := state.tokens[i]).role is None
+            and (n := _normalize(tok.text)) not in lex.titles
+            and n not in lex.particles)
+        return words != words.upper()
 
     # Inlined rather than built on `texts` (measured, #289/#516's
     # eager-gate fix round): every comma parse calls `suffixy` at
@@ -270,11 +301,13 @@ def segment(state: ParseState) -> ParseState:
             and first.lower() not in state.lexicon.suffix_acronyms
             and first.lower() not in state.lexicon.suffix_words
             and not (len(groups[1]) == 1 and len(first) < 3)
-            and all(caps_shape_candidate(state.tokens[i].text,
-                                         state.lexicon, state.policy,
-                                         one_case=False)
+            and all((t := state.tokens[i].text).isalpha() and t.isupper()
+                    and t.lower() not in state.lexicon.suffix_acronyms
+                    and t.lower() not in state.lexicon.suffix_words
+                    and caps_shape_candidate(t, state.lexicon, state.policy,
+                                             one_case=False)
                     for i in groups[1])):
-        candidate = case_class() is False
+        candidate = name_contrast()
         flip_reports = candidate
     # rules.md#C1: "The same count reads a part of two or more words as
     # the credential run when every word of it is a suffix word or a
@@ -342,11 +375,11 @@ def segment(state: ParseState) -> ParseState:
             # rather than more evidence for a credential producing a
             # name reading. `isupper()` first, in C; the predicate
             # declines every listed word, so it never re-admits one.
-            # The C-level prechecks are exactly what the predicate
-            # would decline (it needs `isalpha()`/`isupper()` and
-            # excludes every wordlist; `lower()` is `_normalize` for an
-            # alphabetic word), so a listed credential ('MD', 'CPA')
-            # never pays for the call.
+            # The C-level prechecks decline only what the predicate
+            # would decline too (it needs `isalpha()`/`isupper()` and
+            # excludes every wordlist, and a word whose `lower()` is a
+            # listed entry is one of those), so a listed credential
+            # ('MD', 'CPA') never pays for the call.
             caps = (not is_member and caps_on and text.isalpha()
                     and text.isupper()
                     and text.lower() not in lexicon.suffix_acronyms
@@ -430,9 +463,7 @@ def segment(state: ParseState) -> ParseState:
                          # would supply it, and an all-caps record
                          # ('LLOYD WEBBER, ANDREW PhD') would lose its
                          # given name to it
-                         and not (caps_member and not any(
-                             ch.islower() for i in groups[0]
-                             for ch in state.tokens[i].text)))
+                         and not (caps_member and not name_contrast()))
             # a caps member reports its flip as the all-caps run does
             flip_reports = candidate and (any_listed or pair_only
                                           or caps_member)

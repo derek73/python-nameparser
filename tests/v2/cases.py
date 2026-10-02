@@ -2926,6 +2926,24 @@ CASES: tuple[Case, ...] = (
                "written wholly in capitals keeps its given name. A "
                "review-round draft let 'PhD' supply the contrast and "
                "read suffix 'ANDREW PhD'"),
+    Case("a_maiden_clause_supplies_no_contrast_for_the_caps_shape",
+         "LLOYD WEBBER née Smith, ANDREW PhD",
+         {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "PhD",
+          "maiden": "Smith"},
+         notes="#564 boundary: the contrast is the name's OWN words "
+               "(own_words): a maiden clause's lowercase is not the "
+               "name's, so the all-caps record keeps its given name. A "
+               "review-round draft counted every pre-comma token and "
+               "read suffix 'ANDREW PhD'"),
+    Case("a_title_supplies_no_contrast_for_the_caps_shape",
+         "Mr LLOYD WEBBER, ANDREW PhD",
+         {"given": "ANDREW", "family": "Mr LLOYD WEBBER", "suffix": "PhD"},
+         notes="#564 boundary: titles and particles are written in "
+               "lowercase in a record that capitalizes its surname, so "
+               "neither counts as the name's contrast and the given name "
+               "stays. The title in the family is the listing form's "
+               "long-standing reading of a title before the comma "
+               "('Prof. Cruz, Ed'), master's too"),
     Case("a_capitalized_given_name_behind_a_two_word_surname_is_the_accepted_cost",
          "García Márquez, JUAN Jr.",
          {"given": "García", "family": "Márquez", "suffix": "JUAN Jr."},
