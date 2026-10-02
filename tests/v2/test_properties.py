@@ -11,6 +11,7 @@ import functools
 import hashlib
 import itertools
 import re
+import unicodedata
 import warnings
 import pytest
 from hypothesis import given, settings
@@ -3103,6 +3104,92 @@ def test_the_case_only_walk_can_fail(
     failures = _case_only_violations()
     assert failures, "the case-only walk cannot see a substitution"
     assert any("'Ph.D.' -> 'PhD'" in line for line in failures), failures
+
+
+# --- #542: a decomposed name repairs as its composed twin does -------
+# The same texts as the walk above, those that decompose at all, each
+# parsed and repaired in both forms and compared once the decomposed
+# output is composed again. A text whose two forms PARSE differently
+# is set aside rather than compared: repair follows the parse, so the
+# comparison would report the parse, and the one class that does so is
+# unspaced hangul, which segmentation matches as written by decision
+# (docs/usage.rst, "Decomposed text"). The test below pins that filter.
+
+def _hangul(text: str) -> bool:
+    return any("가" <= c <= "힣"
+               for c in unicodedata.normalize("NFC", text))
+
+
+def _nfd_repair_findings() -> tuple[list[str], list[str], int]:
+    """(disagreements, texts set aside, texts compared)."""
+    def nfc(text: str) -> str:
+        return unicodedata.normalize("NFC", text)
+
+    parser = Parser()
+    out: list[str] = []
+    set_aside: list[str] = []
+    compared = 0
+    for text in _CASE_ONLY_TEXTS:
+        decomposed = unicodedata.normalize("NFD", text)
+        if decomposed == nfc(text):
+            continue
+        name, composed = parser.parse(decomposed), parser.parse(nfc(text))
+        if ([(t.role, nfc(t.text)) for t in name.tokens]
+                != [(t.role, t.text) for t in composed.tokens]):
+            set_aside.append(text)
+            continue
+        compared += 1
+        for force in (False, True):
+            got = [nfc(t.text) for t in
+                   parser.capitalized(name, force=force).tokens]
+            want = [t.text for t in
+                    parser.capitalized(composed, force=force).tokens]
+            if got != want:
+                out.append(f"[core, force={force}] {text!r}: "
+                           f"{got!r} != {want!r}")
+        human, twin = HumanName(decomposed), HumanName(nfc(text))
+        for force in (False, True):
+            human.capitalize(force=force)
+            twin.capitalize(force=force)
+            for attr in _FACADE_LISTS:
+                got = [nfc(s) for s in getattr(human, attr)]
+                if got != getattr(twin, attr):
+                    out.append(f"[facade, force={force}] {text!r} {attr}: "
+                               f"{got!r} != {getattr(twin, attr)!r}")
+    return out, set_aside, compared
+
+
+def test_a_decomposed_name_repairs_as_its_composed_twin() -> None:
+    """rules.md#R4 read as an invariant over encodings: a letter written
+    as a base letter and its combining accent repairs as the letter
+    written whole does (#542). Core and facade, plain and forced. The output is compared composed
+    because repair keeps the form it was given, which the case-only
+    walk above holds separately.
+
+    Recorded negative control, measured 2026-10-02 with 97af1f02's
+    _render.py, before a word ran on through its marks, over this
+    change's corpus (its own two R4 rows included): 144 disagreements
+    over the 137 texts compared, 47 more set aside, every one hangul
+    ('JOSÉ GARCÍA' repairing to 'José GarcíA'). The live control is the test below."""
+    failures, set_aside, compared = _nfd_repair_findings()
+    assert compared, "no decomposable text was compared"
+    assert all(_hangul(text) for text in set_aside), (
+        "a non-hangul text parses differently decomposed: "
+        f"{[t for t in set_aside if not _hangul(t)]}")
+    assert not failures, (
+        f"{len(failures)} decomposed repair(s) disagree:\n"
+        + "\n".join(failures[:10]))
+
+
+def test_the_decomposed_walk_can_fail(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stopping a word at its first combining mark again -- #542's
+    defect -- has to be seen by the walk above."""
+    import nameparser._render as render_module
+    monkeypatch.setattr(render_module, "_past_marks",
+                        lambda text, end: end)
+    failures, _, _ = _nfd_repair_findings()
+    assert any("'José', 'GarcíA'" in line for line in failures), failures
 
 
 def test_a_delimiter_core_reads_as_if_it_were_not_written() -> None:
