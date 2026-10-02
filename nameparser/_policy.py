@@ -710,7 +710,8 @@ class Policy:
     #: Where an UNLISTED all-caps word of two or more letters, with no
     #: period in it, reads as a credential (:class:`CapsSuffixes`). The
     #: name must contrast it: a word of the name written in Title case
-    #: ("Smith") -- a record written wholly in capitals or wholly in
+    #: ("Smith") that the vocabulary does not claim as a title, particle
+    #: or credential -- a record written wholly in capitals or wholly in
     #: lowercase keeps every word a name word. A listed member keeps its
     #: own case lean in every setting ("Jack MA" gives suffix ``MA``),
     #: and the roman-numeral fork claims a bare numeral first ("Jack

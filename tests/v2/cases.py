@@ -2921,11 +2921,12 @@ CASES: tuple[Case, ...] = (
          "LLOYD WEBBER, ANDREW PhD",
          {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "PhD"},
          notes="#564 boundary: an all-caps word joins C1's run only where "
-               "the NAME before the comma has a lowercase letter -- here "
-               "the only lowercase is the credential's own, and a record "
-               "written wholly in capitals keeps its given name. A "
-               "review-round draft let 'PhD' supply the contrast and "
-               "read suffix 'ANDREW PhD'"),
+               "the NAME carries the contrast, a word of its own before "
+               "the comma written in Title case -- here the only "
+               "lowercase is the credential's own, and a record written "
+               "wholly in capitals keeps its given name. A review-round "
+               "draft let 'PhD' supply the contrast and read suffix "
+               "'ANDREW PhD'"),
     Case("a_maiden_clause_supplies_no_contrast_for_the_caps_shape",
          "LLOYD WEBBER née Smith, ANDREW PhD",
          {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "PhD",
@@ -2947,9 +2948,10 @@ CASES: tuple[Case, ...] = (
     Case("a_generation_supplies_no_contrast_for_the_caps_shape",
          "LLOYD WEBBER Jr., ANDREW",
          {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "Jr."},
-         notes="#564 boundary: only the name's own words that no "
-               "wordlist claims and no period marks supply the contrast; "
-               "'Jr.' is neither, so the 'SURNAME Jr., GIVEN' record "
+         notes="#564 boundary: only the name's own words written in "
+               "Title case, unclaimed by the vocabulary and unmarked by "
+               "a period, supply the contrast; 'Jr.' is none of those, "
+               "so the 'SURNAME Jr., GIVEN' record "
                "keeps its given name. A review-round draft excluded "
                "titles and particles only and read suffix 'Jr., ANDREW'"),
     Case("a_connective_supplies_no_contrast_for_the_caps_shape",
@@ -2986,6 +2988,13 @@ CASES: tuple[Case, ...] = (
          notes="#564 (Derek): a lowercase-only name has no Title-case "
                "word, so the default keeps the listing form; the cost of "
                "the Title-case criterion, accepted with it"),
+    Case("a_lone_capital_supplies_no_contrast_for_the_caps_shape",
+         "de GAULLE C, CHARLES",
+         {"given": "CHARLES", "family": "de GAULLE C"},
+         notes="#564 boundary: an undotted initial is a single capital, "
+               "which `istitle()` accepts but Title case does not -- it "
+               "needs a lowercase letter behind the capital. A draft "
+               "missing that read suffix 'CHARLES' with no given name"),
     Case("a_capitalized_given_name_behind_a_two_word_surname_is_the_accepted_cost",
          "García Márquez, JUAN Jr.",
          {"given": "García", "family": "Márquez", "suffix": "JUAN Jr."},

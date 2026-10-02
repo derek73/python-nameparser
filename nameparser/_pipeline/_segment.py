@@ -130,14 +130,17 @@ def segment(state: ParseState) -> ParseState:
     # S2's "written the way a name is written" -- and is not claimed as
     # a title, particle, connective, credential or generation
     # (`claimed_as_non_name`); a word with a period is an abbreviation
-    # or an initial, not one. A lowercase-only word never counts, so a
+    # or an initial, not one, and nor is a lone capital ('de GAULLE C'),
+    # which `istitle()` alone accepts -- Title case needs a lowercase
+    # letter behind the capital. A lowercase-only word never counts, so a
     # record that writes its surname in capitals keeps its given name
     # whatever else it writes in lowercase ('LLOYD ap RHYS', 'HAFEZ
     # al-ASSAD', "GISCARD d'ESTAING", 'LLOYD WEBBER née Smith'), and
     # so does a mixed-case credential ('LLOYD WEBBER, ANDREW PhD').
     # Asked only once a caps word is in hand: a part with no lowercase
-    # at all is settled in one C-level comparison, and past that each
-    # word before the comma costs a fold and a wordlist test.
+    # at all is settled in one C-level comparison; past that the walk
+    # costs about three frames a word before the comma, a fold and a
+    # wordlist test only where the Title-case test in C passes.
     def name_contrast() -> bool:
         before = "".join([state.tokens[i].text for i in groups[0]])
         if before == before.upper():
@@ -150,7 +153,8 @@ def segment(state: ParseState) -> ParseState:
         lex = state.lexicon
         return any(
             i < clause_at and (tok := state.tokens[i]).role is None
-            and tok.text.istitle() and "." not in tok.text
+            and tok.text.istitle() and not tok.text.isupper()
+            and "." not in tok.text
             and not claimed_as_non_name(_normalize(tok.text), lex)
             for i in groups[0])
 
