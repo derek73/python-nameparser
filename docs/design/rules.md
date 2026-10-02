@@ -2574,7 +2574,11 @@ R4. Rationale: case repair is a display concern, applied only on
     lowercase there like any other connective — the third part of a
     comma form is the shape that puts one there.
     Repair changes case and nothing else: the repaired word is the
-    word as written, recased. A vocabulary entry records casing as a
+    word as written, recased. A word is read whole however its letters
+    are encoded: a letter written as a base letter followed by its
+    combining accent is repaired as the same letter written whole,
+    and the repaired word keeps the encoding the writer used. A
+    vocabulary entry records casing as a
     mask — its word's letters, each in the case it takes — and repair
     lays it over the word as the writer punctuated it, so the one
     entry for phd repairs phd to PhD and ph.d. to Ph.D.; the mask
@@ -2661,6 +2665,8 @@ R4. Rationale: case repair is a display concern, applied only on
       "Smith, John, and"          →  capitalized_forced="John Smith and"
       "Doe, Jane, and Jr."        →  capitalized_forced="Jane Doe and Jr."
       "juan de la vega"           →  capitalized="Juan de la Vega"  · boundary
+      "josé garcía"               →  capitalized="Jose\u0301 Garci\u0301a"
+      "JOSÉ GARCÍA"               →  capitalized="Jose\u0301 Garci\u0301a"
       "jose ortega-y-gasset"      →  capitalized="Jose Ortega-y-Gasset"
       "JOSE ORTEGA-Y-GASSET"      →  capitalized="Jose Ortega-y-Gasset"
       "maria silva-e-sousa"       →  capitalized="Maria Silva-e-Sousa"
