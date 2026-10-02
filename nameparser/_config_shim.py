@@ -29,7 +29,7 @@ from collections.abc import (
 from typing import NamedTuple, Self
 
 from nameparser._lexicon import (
-    Lexicon, _MaskValueError, _title_key, _warn_dead_entry,
+    Lexicon, _MaskValueError, _normalize, _title_key, _warn_dead_entry,
 )
 from nameparser._parser import Parser
 from nameparser._policy import PatronymicRule, Policy
@@ -632,9 +632,14 @@ def _v1_matchable(entry: str) -> bool:
     whitespace) or trips a Lexicon invariant the set algebra in
     ``_build_snapshot`` could not see (#541). ``lc`` first, for a
     ``capitalization_exceptions`` key, which TupleManager stores as
-    written; set entries are already ``lc()``-folded."""
+    written; set entries are already ``lc()``-folded. Nor one Lexicon
+    folds to empty, which since 2.3.0 includes a lone CJK full stop
+    (FULL_STOPS): v1 could match a token made of that full stop, but 2.x
+    folds both the entry and the token away, so translating it only
+    raises (#582)."""
     folded = lc(entry)
-    return bool(folded) and folded == " ".join(folded.split())
+    return (bool(folded) and folded == " ".join(folded.split())
+            and bool(_normalize(folded)))
 
 
 # Two entries of nameparser 1.4.0's own shipped TITLES carry a trailing
@@ -659,8 +664,9 @@ def _warn_unmatchable(dropped: list[tuple[str, str]]) -> None:
         else f"constants.{field}.remove({entry!r})"
         for field, entry in dropped)
     _warn_dead_entry(
-        f"ignoring Constants entries nameparser 1.x never matched (each "
-        f"is empty or holds whitespace no name word can carry): {listed}. "
+        f"ignoring Constants entries that match no name word (each is "
+        f"empty, only full stops, or holds whitespace no name word "
+        f"carries): {listed}. "
         f"Add the stripped word if one was meant, and remove these: "
         f"{remedy}")
 
@@ -1105,9 +1111,7 @@ class Constants:
         # both. They hold here because every entry v1 could not match --
         # the only ones whose two folds disagree on whitespace -- was
         # dropped by _v1_matchable before the arithmetic ran (#541).
-        # What else reaches it is an entry Lexicon folds to empty that
-        # v1's lc() did not, e.g. a lone non-ASCII full stop ('。',
-        # v1-matchable, kept), and a non-str value's TypeError -- a raise
+        # What else reaches it is a non-str value's TypeError -- a raise
         # v1 also had, later, at capitalize().
         try:
             lexicon = Lexicon(
@@ -1121,14 +1125,11 @@ class Constants:
                 # spelling; filtering instead dropped every multi-word
                 # honorific containing an abbreviation or a conjunction and
                 # silently swapped given and family.
-                # Entries v1 could never match were dropped above
-                # (_v1_matchable); one that Lexicon folds away entirely
-                # that v1's lc() did not -- a lone non-ASCII full stop
-                # ('。') -- is dropped by `if t`, since _normset would
-                # reject it.
+                # Entries that match no name word were dropped above
+                # (_v1_matchable); since that includes every entry
+                # Lexicon folds to empty, no key built here is empty.
                 given_name_titles=frozenset(
-                    t for t in (_title_key(e.split())
-                                for e in first_name_titles) if t),
+                    _title_key(e.split()) for e in first_name_titles),
                 suffix_acronyms=acronyms,
                 suffix_words=suffix_words,
                 # Intersect with acronyms: Lexicon enforces ambiguous <=
