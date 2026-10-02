@@ -730,14 +730,16 @@ def written_as_a_name(text: str) -> bool:
     'McDONALD', 'FitzGERALD', 'DeVITO', 'St-PIERRE'), and so do a lone
     capital and a lowercase-only word.
 
-    The last letter is found, not the last character: the word is
-    composed first (NFC), so a name typed with decomposed accents reads
-    as its composed spelling ('André' ends in 'é', not in the combining
-    accent), and trailing non-letters are passed over ("Jones'",
-    'Smith2', 'Smith)'). A lowercase letter with no single capital form
-    is passed over too, being no evidence of case: 'WEIß' and 'KAĸ' are
-    written in capitals, 'Weiß' is not. One call and no generator, so a
-    word costs one frame."""
+    The letter read is the last one that carries case evidence, not the
+    last character. The word is composed first (NFC), so a name typed
+    with decomposed accents reads as its composed spelling ('André'
+    ends in 'é', not in the combining accent). Passed over, as no
+    evidence of case: every non-letter ("Jones'", 'Smith2', 'Smith)'),
+    every caseless letter ("Jonesʼ" with U+02BC, 'Wafāʾ', 'Smith李'),
+    and a lowercase letter whose capital is not a single character
+    ('ß' -> 'SS', 'ĸ' with none): 'WEIß' and 'KAĸ' are written in
+    capitals, 'Weiß' is not. One call and no generator, so a word costs
+    one frame."""
     if text == text.lower():
         return False
     word = unicodedata.normalize("NFC", text)
@@ -745,8 +747,8 @@ def written_as_a_name(text: str) -> bool:
     while i:
         i -= 1
         ch = word[i]
-        if not ch.isalpha():
-            continue
+        if not (ch.isupper() or ch.islower() or ch.istitle()):
+            continue  # a non-letter or a caseless letter
         upper = ch.upper()
         if ch.islower() and (upper == ch or len(upper) != 1):
             continue

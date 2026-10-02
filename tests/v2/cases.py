@@ -3032,6 +3032,15 @@ CASES: tuple[Case, ...] = (
                "ends in 'é' and reads as its composed spelling does. A "
                "draft reading the last character took the accent and "
                "kept given 'XYZ'"),
+    Case("a_trailing_caseless_letter_is_no_evidence_against_the_contrast",
+         "Asmāʾ Wafāʾ, XYZ",
+         {"given": "Asmāʾ", "family": "Wafāʾ", "suffix": "XYZ"},
+         classification="fix(#564)",
+         ambiguities=("suffix-or-name",),
+         notes="#564: the contrast test reads the last letter that has "
+               "case, passing over the caseless transliteration letter "
+               "'ʾ' as it passes over an apostrophe. A draft stopping at "
+               "it kept given 'XYZ'"),
     Case("a_capitalized_given_name_behind_a_two_word_surname_is_the_accepted_cost",
          "García Márquez, JUAN Jr.",
          {"given": "García", "family": "Márquez", "suffix": "JUAN Jr."},

@@ -899,6 +899,8 @@ def test_is_single_letter_numeral() -> None:
     ("ǅokić", True), ("E\u0301lodie", True), ("Andre\u0301", True),
     ("Ha\u0300", True), ("Jones'", True), ("Smith2", True),
     ("Smith)", True), ("Weiß", True), ("KAĸ", False),
+    ("Jones\u02bc", True), ("Wafāʾ", True), ("Smith李", True),
+    ("SMITHʾ", False),
     ("ANDRE\u0301", False),
     ("SMITH", False), ("smith", False), ("C", False), ("ap", False),
     ("d'ESTAING", False), ("al-ASSAD", False), ("McDONALD", False),
