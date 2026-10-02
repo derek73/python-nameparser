@@ -3847,3 +3847,34 @@ issue = "fix(#564) an unlisted all-caps word after a comma behind two name words
 name_regex = "^(?:Ahmad Jayadi, CHA|García Márquez, MJ JK|John Smith, LEED AP|John Smith, PhD XYZ|John Smith, RAI|John Smith, XYZ|The Rt Hon Kenneth Clarke QC MP, HMG)$"
 fields = ["title", "given", "middle", "family", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#573) a particle-suffix word between credentials after a family comma stays in the run"
+# rules.md#P6's third exception: with a credential in front of it and
+# one behind, "it does not end the name, and keeps the post-nominal
+# reading in any case, reported as S2's credential fork". So 'DOE,
+# JANE PHD VD MA' reads suffix 'PHD VD MA' in both casings, reporting
+# 'VD' and 'MA'. This baseline read middle 'VD MA'/'vd ma', suffix
+# 'PHD'/'phd', and no report.
+#
+# Literal; the probe 'DOE, JANE PHD VD' (nothing behind, so the
+# attachment holds) is _MUST_NOT_MATCH.
+name_regex = "^(?:DOE, JANE PHD VD MA|doe, jane phd vd ma)$"
+fields = ["middle", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#573) a never-given particle opening the given part takes the member behind it"
+# rules.md#S2: a never-given particle first after a family comma is no
+# given name, and the member behind it "is the surname the particle
+# heads, not a word to spare". So 'SMITH, VD MA' and 'smith, de ma'
+# read family 'SMITH VD MA'/'smith de ma', P1's fold taking both
+# words. This baseline read the same family; the report is the
+# fork the slot now decides, which it did not consult then.
+#
+# Literal; the probe 'SMITH, VAN MA' (an ambiguous particle, which
+# can be a given name, keeps it, and the member reads as the
+# credential) is _MUST_NOT_MATCH.
+name_regex = "^(?:SMITH, VD MA|smith, de ma)$"
+fields = ["_ambiguities"]
+orders = ["DEFAULT"]

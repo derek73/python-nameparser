@@ -4876,3 +4876,36 @@ issue = "fix(#564) an unlisted all-caps word after a comma behind two name words
 name_regex = "^(?:García Márquez, MJ JK|John Smith, LEED AP|John Smith, PhD XYZ|John Smith, XYZ|The Rt Hon Kenneth Clarke QC MP, HMG)$"
 fields = ["title", "given", "middle", "family", "suffix"]
 orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#573) a particle-suffix word before a family comma stays in the family"
+# rules.md#P2: the chain's suffix stop applies only where a trailing
+# run is read, and "the part before a family comma is the family the
+# comma named, which no trailing reading takes from, so a suffix word
+# alone ends the chain there". So 'SMITH VD MA, JOHN' keeps 'VD MA'
+# one particle surname, as 'Smith vd Ma, John' always did, where
+# this baseline stopped the chain before 'VD' in the uniform case
+# and peeled it as a suffix from between two family words. This baseline read family 'SMITH',
+# suffix 'VD, MA'.
+#
+# Literal; the probe 'SMITH VD, JOHN' (nothing behind the particle,
+# so the suffix stands) is _MUST_NOT_MATCH.
+name_regex = "^SMITH VD MA, JOHN$"
+fields = ["family", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#573) a never-given particle opening the given part takes the member behind it"
+# rules.md#S2: a never-given particle first after a family comma is no
+# given name, and the member behind it "is the surname the particle
+# heads, not a word to spare". So 'SMITH, VD MA' and 'smith, de ma'
+# read family 'SMITH VD MA'/'smith de ma', P1's fold taking both
+# words. This baseline read family 'VD SMITH'/'de smith', suffix
+# 'MA'/'ma'.
+#
+# Literal; the probe 'SMITH, VAN MA' (an ambiguous particle, which
+# can be a given name, keeps it, and the member reads as the
+# credential) is _MUST_NOT_MATCH.
+name_regex = "^(?:SMITH, VD MA|smith, de ma)$"
+fields = ["family", "suffix"]
+orders = ["DEFAULT"]
