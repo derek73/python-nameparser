@@ -1118,6 +1118,24 @@ CASES: tuple[Case, ...] = (
                "counts the title as a word, so the comma reads as a "
                "credential comma and the part reads as it does alone, "
                "P1's fork and all. Unchanged"),
+    # #575: assign's own count (the positional read after a comma
+    # followed by no name word) applies the title-particle exclusion
+    # by position too. These two pin that flag both ways -- a review
+    # mutant fixing it to False or True passed every other test.
+    Case("a_leading_title_particle_stays_a_title_before_a_title_only_comma",
+         "St John, Dr.",
+         {"title": "St Dr.", "family": "John"},
+         notes="#575 boundary: 'St' opens the part, so it is the title "
+               "it also is and 'John' alone is the name: two words do "
+               "not stand before the comma, the positional read holds. "
+               "2.3.0's reading"),
+    Case("an_inner_title_particle_chains_before_a_credential_only_comma",
+         "von St Johann, PhD",
+         {"family": "von St Johann", "suffix": "PhD"},
+         classification="fix(#575)",
+         notes="#575: 'St' inside the surname is a particle, so 'von St "
+               "Johann' is one name word and the family comma keeps it "
+               "whole. 2.3.0 read given 'von'"),
     Case("the_anchor_does_not_reach_across_a_maiden_clause",
          "Jane Doe Jr. nee Smith Ma",
          {"given": "Jane", "family": "Doe", "suffix": "Jr.",
