@@ -1723,12 +1723,15 @@ C1. Rationale: a credential run after the comma means the name is in
     not the only shape word in the part are a credential however
     little else speaks for them, since no one writes a person's
     initials as two dotted groups. An unlisted all-caps word joins
-    the class in such a part only where the name carries the contrast:
-    a lowercase letter in one of its own words before the comma that
-    no wordlist claims and no period marks, so a record that writes
-    its surname in capitals keeps its given name beside a mixed-case
-    credential, or a title, particle, connective, generation or maiden
-    clause written in lowercase. Where the name carries it, an
+    the class in such a part only where the name carries the
+    contrast: one of its own words before the comma written in Title
+    case, the way a name is written (S2), with no period and not
+    claimed by the vocabulary as a title, particle, connective,
+    credential or generation. A word written wholly in lowercase never
+    carries it, so a record that writes its surname in capitals keeps
+    its given name whatever else it writes in lowercase or beside it
+    ("GISCARD d'ESTAING, VALÉRY"), and a name written wholly in
+    lowercase reads the listing form. Where the name carries it, an
     unlisted word of two capitals after the comma is the paired
     initials' shape undotted and is decided at this comma exactly as
     they are, by the sentences above ('García Márquez, MJ' and 'García

@@ -704,13 +704,30 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
 
 def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:
     """Whether the folded word `n` is in ANY of the lexicon's wordlists
-    (`_lexicon._VOCAB_FIELDS`, the whole roster). The caps shape's
-    "unlisted" (`caps_shape_candidate`), and the test of which words
-    before a comma are the NAME's own (#564's `name_contrast` in
-    `_segment.py`): a word some wordlist claims -- title, particle,
-    connective, suffix, bound given name -- is not one, so it neither
-    joins the caps class nor supplies the name's case contrast."""
+    (`_lexicon._VOCAB_FIELDS`, the whole roster): the caps shape's
+    "unlisted" (`caps_shape_candidate`), where a word a caller listed
+    even as a SURNAME must never become a credential."""
     for field in _VOCAB_FIELDS:
+        if n in getattr(lexicon, field):
+            return True
+    return False
+
+
+#: The wordlists that claim a word as something OTHER than name text.
+#: `surnames` and `bound_given_names` are left out: they say a word IS
+#: a name word ('Kim', 'Abdul'), the opposite claim.
+_NON_NAME_FIELDS = tuple(f for f in _VOCAB_FIELDS
+                         if f not in ("surnames", "bound_given_names"))
+
+
+def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:
+    """Whether a wordlist claims the folded word `n` as a title,
+    particle, connective, credential, generation, maiden marker or
+    honorific -- not name text. #564's `name_contrast` (`_segment.py`)
+    asks it: such a word does not supply the name's case contrast. A
+    different question from `in_any_wordlist`'s, which a surname list
+    must also answer yes to."""
+    for field in _NON_NAME_FIELDS:
         if n in getattr(lexicon, field):
             return True
     return False

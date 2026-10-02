@@ -2965,6 +2965,27 @@ CASES: tuple[Case, ...] = (
                "a generation in a third part is not the name's. The "
                "whole-name case test of an earlier draft read suffix "
                "'ANDREW, Jr.'; master keeps given 'ANDREW' too"),
+    Case("a_glued_particle_supplies_no_contrast_for_the_caps_shape",
+         "GISCARD d'ESTAING, VALÉRY",
+         {"given": "VALÉRY", "family": "GISCARD d'ESTAING"},
+         notes="#564 (Derek): the name carries the contrast only through "
+               "a word written in Title case that no wordlist claims as "
+               "non-name text. A lowercase particle glued to a capitalized "
+               "surname is not one -- the French convention the trailing "
+               "slot stays off for. A draft counting any lowercase letter "
+               "read suffix 'VALÉRY'"),
+    Case("an_unlisted_lowercase_word_supplies_no_contrast_for_the_caps_shape",
+         "LLOYD ap RHYS, DAFYDD",
+         {"given": "DAFYDD", "family": "LLOYD ap RHYS"},
+         notes="#564 boundary: 'ap' is in no wordlist, but a word written "
+               "wholly in lowercase never carries the contrast, so no "
+               "list has to know it"),
+    Case("an_all_lowercase_name_carries_no_contrast_for_the_caps_shape",
+         "john smith, XYZ",
+         {"given": "XYZ", "family": "john smith"},
+         notes="#564 (Derek): a lowercase-only name has no Title-case "
+               "word, so the default keeps the listing form; the cost of "
+               "the Title-case criterion, accepted with it"),
     Case("a_capitalized_given_name_behind_a_two_word_surname_is_the_accepted_cost",
          "García Márquez, JUAN Jr.",
          {"given": "García", "family": "Márquez", "suffix": "JUAN Jr."},

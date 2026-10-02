@@ -56,7 +56,7 @@ from nameparser._pipeline._state import (
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
     caps_shape_candidate, is_one_case, is_paired_initials,
-    in_any_wordlist, is_single_letter_numeral, is_wholly_suffix,
+    claimed_as_non_name, is_single_letter_numeral, is_wholly_suffix,
     name_word_count,
     surname_unit_count,
     run_word_fold,
@@ -123,21 +123,22 @@ def segment(state: ParseState) -> ParseState:
     def texts(seg: tuple[int, ...]) -> list[str]:
         return [state.tokens[i].text for i in seg]
 
-    # #564: the contrast the caps shape needs is the NAME's -- its own
-    # words before the comma (no maiden clause, no delimited content,
-    # as `own_words` defines them for `case_class` above), and of those
-    # only the words no wordlist claims and no period marks: a record
-    # writing its surname in capitals still writes its titles,
-    # particles, connectives and generations as it likes ('Mr LLOYD
-    # WEBBER', 'de GAULLE', 'GARCÍA y LÓPEZ', 'LLOYD WEBBER Jr.',
-    # 'Insp. LLOYD WEBBER'). Neither those nor the credential's own
-    # lowercase nor a clause's may supply it, or an all-caps record
-    # loses its given name. Asked only once a caps word is in hand:
-    # an all-caps part is settled in one C-level comparison, and past
-    # that each word before the comma costs a fold.
+    # #564 (Derek): the contrast the caps shape needs is the NAME's,
+    # and the name carries it only if one of its own words before the
+    # comma (no maiden clause, no delimited content, as `own_words`
+    # defines them for `case_class` above) is written in Title case --
+    # S2's "written the way a name is written" -- and is not claimed as
+    # a title, particle, connective, credential or generation
+    # (`claimed_as_non_name`); a word with a period is an abbreviation
+    # or an initial, not one. A lowercase-only word never counts, so a
+    # record that writes its surname in capitals keeps its given name
+    # whatever else it writes in lowercase ('LLOYD ap RHYS', 'HAFEZ
+    # al-ASSAD', "GISCARD d'ESTAING", 'LLOYD WEBBER née Smith'), and
+    # so does a mixed-case credential ('LLOYD WEBBER, ANDREW PhD').
+    # Asked only once a caps word is in hand: a part with no lowercase
+    # at all is settled in one C-level comparison, and past that each
+    # word before the comma costs a fold and a wordlist test.
     def name_contrast() -> bool:
-        # no lowercase before the comma at all: an all-caps record,
-        # settled in C before the walk
         before = "".join([state.tokens[i].text for i in groups[0]])
         if before == before.upper():
             return False
@@ -147,12 +148,11 @@ def segment(state: ParseState) -> ParseState:
                                  state.lexicon.maiden_markers)
         clause_at = own_span[1]
         lex = state.lexicon
-        words = "".join(
-            tok.text for i in groups[0]
-            if i < clause_at and (tok := state.tokens[i]).role is None
-            and "." not in tok.text
-            and not in_any_wordlist(_normalize(tok.text), lex))
-        return words != words.upper()
+        return any(
+            i < clause_at and (tok := state.tokens[i]).role is None
+            and tok.text.istitle() and "." not in tok.text
+            and not claimed_as_non_name(_normalize(tok.text), lex)
+            for i in groups[0])
 
     # Inlined rather than built on `texts` (measured, #289/#516's
     # eager-gate fix round): every comma parse calls `suffixy` at

@@ -708,8 +708,10 @@ class Policy:
     #: behind this switch, and still reports the fork.
     unlisted_dotted_suffixes: bool = True
     #: Where an UNLISTED all-caps word of two or more letters, with no
-    #: period in it, in a name written in more than one case, reads as
-    #: a credential (:class:`CapsSuffixes`). A listed member keeps its
+    #: period in it, reads as a credential (:class:`CapsSuffixes`). The
+    #: name must contrast it: a word of the name written in Title case
+    #: ("Smith") -- a record written wholly in capitals or wholly in
+    #: lowercase keeps every word a name word. A listed member keeps its
     #: own case lean in every setting ("Jack MA" gives suffix ``MA``),
     #: and the roman-numeral fork claims a bare numeral first ("Jack
     #: VI" is unaffected).
