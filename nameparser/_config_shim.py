@@ -623,7 +623,7 @@ _MANAGER_FIELDS = _SET_FIELDS + (
 
 
 def _v1_matchable(entry: str) -> bool:
-    """Could nameparser 1.x have matched this config entry? v1 compared
+    """Should the shim translate this config entry at all? v1 compared
     ``lc()`` of a parsed piece, and a piece comes from a whitespace
     split, re-joined only with single spaces, so it is never empty and
     never holds edge whitespace, a whitespace run or a non-space
