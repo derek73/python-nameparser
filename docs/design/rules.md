@@ -455,6 +455,15 @@ P2. Rationale: a particle is written as part of the surname it
     Where P1's fold has claimed the opening, the fold decides the
     family instead — and may take only PART of the final group,
     since it counts name words and the group is one part.
+    In the part before a family comma, which the comma named the
+    family, a particle that is also suffix vocabulary heads the name
+    word behind it, whatever case the name is written in, and is not
+    read as a suffix standing between two family words; with a suffix
+    word or nothing behind it, it reads as the suffix it is there. A
+    lone letter behind it reads as it does in the same part without
+    the particle: a capital is a name word ('SMITH VD V, JOHN' as
+    'SMITH V, JOHN'), a lowercase letter the numeral ('smith vd v,
+    john' as 'smith v, john').
       "John van der Berg"         →  family="van der Berg"
       "John van der Berg Smith"   →  family="van der Berg Smith"
       "Vincent van Gogh van Beethoven"  →  middle="van Gogh"
@@ -471,6 +480,8 @@ P2. Rationale: a particle is written as part of the surname it
       "Freiherr von Berg MA"      →  family="von Berg"
       "Freiherr von Berg MA"      →  suffix="MA"
       "Freiherr von Richthofen V" →  suffix="V"  · boundary
+      "SMITH VD MA, JOHN"         →  family="SMITH VD MA"
+      "SMITH VD, JOHN"            →  suffix="VD"  · boundary
       "John van der Berg née Jones"  →  family="van der Berg"
     Accepted: a particle of the unambiguous suffix vocabulary too
     (vd, mc) is a suffix piece to the peel, so where it opens the
@@ -496,7 +507,7 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2, C2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2, C2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
@@ -786,7 +797,7 @@ P6. Rationale: a particle ending the name has nothing to link
     the word is BOTH a particle and suffix vocabulary, this
     attachment outranks the suffix reading (S2): a trailing
     abbreviation after a family comma is the tussenvoegsel far more
-    often than the decoration it collides with. Two exceptions. The
+    often than the decoration it collides with. Three exceptions. The
     first is where the capitals speak: a word of the AMBIGUOUS
     credential class, written in capitals in a name written in more
     than one case, reads as the credential and this attachment stands
@@ -795,7 +806,18 @@ P6. Rationale: a particle ending the name has nothing to link
     The second is S2's company: such a word standing behind an
     unambiguous credential in one run of suffix words reads as the
     credential in any spelling and any case, reported as S2's
-    credential fork. Every other spelling of such a word attaches as
+    credential fork. The third is a lone word of both the particle and
+    the UNAMBIGUOUS suffix vocabulary standing INSIDE a run read as
+    post-nominals — one in front of it and another behind, a
+    credential or a generation, whatever made each one, and a title
+    between it and the one in front transparent (H5): the
+    tussenvoegsel stands right behind the given name, so a
+    post-nominal between them says the word is not one. It does not
+    end the name, and keeps the
+    post-nominal reading in any case, reported as S2's credential
+    fork. With nothing behind it, it ends the name and attaches, and
+    two such words side by side are one particle run, which this rule
+    takes whole. Every other spelling of such a word attaches as
     it did before, and the kind rule below gives it this rule's
     particle fork rather than S2's credential one. In a name written
     wholly in one case, with nothing in front of the word to speak
@@ -814,6 +836,10 @@ P6. Rationale: a particle ending the name has nothing to link
       "Doe, John Do"              →  family="Do Doe"
       "SMITH, JOHN DO"            →  family="DO SMITH"
       "Doe, John van DO"          →  family="van DO Doe"
+      "DOE, JANE PHD VD MA"       →  suffix="PHD VD MA"
+      "doe, jane phd vd ma"       →  suffix="phd vd ma"
+      "DOE, JANE PHD VD"          →  family="VD DOE"  · boundary
+      "DOE, JANE MA VD PHD"       →  suffix="MA VD PHD"
     Without a comma, a declared family-first order has named the
     family in the same way and the attachment fires there too — but
     only where the run ENDS the name and stands in a MIDDLE — the one
@@ -984,7 +1010,15 @@ S2. Rationale: generational suffixes and credentials are recognized
     and the count is not what decides it there. The comma has already
     named the family and the first name word after it is the given
     name, so the words to spare are there by construction and the
-    count says nothing: a word that ENDS that part reads as the
+    count says nothing — unless that first word is a never-given
+    particle, which is no given name and needs the next name word to
+    attach to (P1): that word is the surname the particle heads, not
+    a word to spare, so it reads as a name unless its capitals in a
+    mixed-case name say credential, as they do with no words to spare
+    anywhere: `SMITH, VD MA` reads as `Smith, vd Ma` does, `Smith, de
+    MA` keeps suffix `MA`, and `SMITH, VAN MA`, whose particle can be
+    a given name, keeps it and reads suffix `MA`. Otherwise a word
+    that ENDS that part reads as the
     credential unless its WRITING says otherwise, and a word that
     does not end it is never asked. "Ending the given part" reaches
     past the credentials behind it and past a trailing title, which
@@ -1124,6 +1158,9 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Doe, John MA Smith"        →  middle="MA Smith"  · boundary
       "Doe, John DO"              →  suffix="DO"
       "SMITH, JOHN DO"            →  family="DO SMITH"  · boundary
+      "SMITH, VD MA"              →  family="SMITH VD MA"
+      "smith, de ma"              →  family="smith de ma"
+      "SMITH, VD DE LA MA"        →  family="SMITH VD DE LA MA"
       "Doe, John MA JD"           →  ambiguities=("suffix-or-name", "suffix-or-name")
       "Doe, John MA Ma"           →  middle="MA Ma"  · boundary
       "Doe, John MA Ma"           →  ambiguities=("suffix-or-name",)  · boundary
@@ -1193,7 +1230,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P1, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the

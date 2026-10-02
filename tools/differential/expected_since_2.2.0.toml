@@ -2230,3 +2230,47 @@ issue = "fix(#564) an unlisted all-caps word after a comma behind two name words
 name_regex = "^(?:Ahmad Jayadi, CHA|García Márquez, MJ JK|John Smith, LEED AP|John Smith, PhD XYZ|John Smith, RAI|John Smith, XYZ|The Rt Hon Kenneth Clarke QC MP, HMG)$"
 fields = ["title", "given", "middle", "family", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#573) a particle-suffix word before a family comma stays in the family"
+# rules.md#P2: in the part before a family comma "a particle that is
+# also suffix vocabulary heads the name word behind it, whatever case
+# the name is written in". This baseline read family 'SMITH MA',
+# suffix 'VD', peeling the particle from between two family words.
+#
+# Literal; the probe 'SMITH VD, JOHN' (nothing behind the particle, so
+# the suffix stands) is _MUST_NOT_MATCH.
+name_regex = "^SMITH VD MA, JOHN$"
+fields = ["family", "suffix"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#573) a particle-suffix word between credentials after a family comma stays in the run"
+# rules.md#P6's third exception: a lone such word with a credential
+# read in front of it and another behind "does not end the name, and
+# keeps the post-nominal reading in any case, reported as S2's
+# credential fork" -- whatever made the credential in front, so 'DOE,
+# JANE MA VD PHD' stays whole as 'DOE, JANE PHD VD MA' does. This
+# baseline split both: 'MA' read as a middle name, and 'VD' as the
+# family's particle where 'MA' stood in front of it.
+#
+# Literal; the probe 'DOE, JANE PHD VD' (nothing behind, so the
+# attachment holds) is _MUST_NOT_MATCH.
+name_regex = "^(?:DOE, JANE MA VD PHD|DOE, JANE PHD VD MA|doe, jane phd vd ma)$"
+fields = ["middle", "family", "suffix", "_ambiguities"]
+orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#573) a never-given particle opening the given part takes the member behind it"
+# rules.md#S2: a never-given particle first after a family comma is no
+# given name, and the member behind it "is the surname the particle
+# heads, not a word to spare", a chained particle run included ('VD DE
+# LA'). This baseline read the same family; the report is the fork the
+# given slot now decides, which it did not consult then.
+#
+# Literal; the probe 'SMITH, VAN MA' (an ambiguous particle, which can
+# be a given name, keeps it, and the member reads as the credential)
+# is _MUST_NOT_MATCH.
+name_regex = "^(?:SMITH, VD DE LA MA|SMITH, VD MA|smith, de ma)$"
+fields = ["_ambiguities"]
+orders = ["DEFAULT"]

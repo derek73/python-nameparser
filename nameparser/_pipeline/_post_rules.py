@@ -7,12 +7,13 @@ rotation gate. Also comma_offsets and dropped, which R1's entry pass
 below reads to find the separators the writer typed (#436/#437).
 Produces: tokens with roles adjusted by the post rules, the stable
 "joined" tag on a post-nominal continuing the entry before it, and the
-ambiguity P6's attachment reports for the fork it decides (#405).
+ambiguity P6's attachment reports for the fork it decides, whichever
+way it decides it (#405, #573).
 Reads: Policy.patronymic_rules, Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles.
 
-Implements rules H1, M4, P1, O1, O2, O3 and R1 of docs/design/rules.md;
+Implements rules H1, M4, P1, P6, O1, O2, O3 and R1 of docs/design/rules.md;
 each is cited at its code below, and H1/P1/O1/O2's history lives in
 docs/design/decisions.md. `suffix_entries` is the R1 entry pass as a
 state-in/state-out function, for Parser.revise to run over a
@@ -24,6 +25,7 @@ import re
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._assign import _name_positions
+from nameparser._pipeline._pieces import is_lone_never_given_particle
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
@@ -301,11 +303,61 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
     return i + len(_units(tokens, name_idx[i:])[0])
 
 
-def _is_lone_never_given_particle(site: tuple[int, ...],
-                                  tokens: list[WorkToken]) -> bool:
-    return (len(site) == 1
-            and "particle" in tokens[site[0]].tags
-            and "vocab:particle-ambiguous" not in tokens[site[0]].tags)
+def _inside_a_credential_run(seg: tuple[tuple[int, ...], ...],
+                             tokens: list[WorkToken], given_at: int,
+                             k: int, end: int,
+                             ambiguities: list[PendingAmbiguity]) -> bool:
+    """rules.md#P6's third exception for the run `seg[k:end]`: a
+    run assign read as post-nominals, with a credential read in
+    front of it and another behind, stands INSIDE the credential run
+    assign read whole rather than ending the name, so it keeps that
+    reading -- 'DOE, JANE PHD VD MA' reads suffix 'PHD VD MA' where the
+    attachment had pulled VD out of the middle of it (#573). Behind as
+    well as in front: with nothing behind it the word ends the name,
+    and 'Doe, Jane PhD vd' keeps family 'vd Doe'. A title between it
+    and the post-nominal in front is transparent, as it is to every
+    trailing reading (H5): 'DOE, JANE PHD PROF. VD MA' reads as 'DOE,
+    JANE PHD VD MA' does. (Behind it no title is skipped: a title
+    there leaves the word a name in assign, so nothing reaches here.)
+
+    The test is the ROLES assign gave, not S2's company query: the
+    question is whether assign read the run whole, and a member in
+    front that the writing or a count made the credential ('DOE, JANE
+    MA VD PHD') says so as plainly as a degree does. So does a
+    generation, in front or behind ('Berg, Jan PhD vd Jr.'): the
+    tussenvoegsel P6 is about stands right behind the given name, and
+    a post-nominal between them says this word is not one. The run's own
+    role is what keeps a plain particle out ('Doe, Jane PhD de PhD',
+    whose 'de' is a name word, not a post-nominal), and the given
+    name in front is what keeps 'Doe, Jane vd PhD' attaching.
+    Reported as S2's credential fork, at the site that declines the
+    attachment."""
+    def suffix_read(q: int) -> bool:
+        return all(tokens[i].role is Role.SUFFIX for i in seg[q])
+
+    def is_title(q: int) -> bool:
+        return all(tokens[i].role is Role.TITLE for i in seg[q])
+
+    # an empty run is no run: the walk stops short of a member assign
+    # already read as the credential ('Doe, Jane PhD do MA'), and
+    # there is nothing to decline
+    if k == end or not all(suffix_read(q) for q in range(k, end)):
+        return False
+    front = k - 1
+    while front > given_at and is_title(front):
+        front -= 1
+    if (front <= given_at or end == len(seg)
+            or not suffix_read(front) or not suffix_read(end)):
+        return False
+    run = seg[k]
+    text = " ".join(tokens[i].text for i in run)
+    ambiguities.append(PendingAmbiguity(
+        AmbiguityKind.SUFFIX_OR_NAME,
+        f"{text!r} written without periods is both a post-nominal and a "
+        f"family-name particle; between credentials after a family "
+        f"comma it reads as a post-nominal",
+        tuple(run)))
+    return True
 
 
 def _addressing_run(titles: list[int], name_word: int) -> list[int]:
@@ -449,7 +501,7 @@ def post_rules(state: ParseState) -> ParseState:
     # above cannot be what produces the fold's family reading -- H1 is
     # gated on `not families`.
     lead = _leading_name_piece(state, tokens)
-    lead_fires = _is_lone_never_given_particle(lead, tokens)
+    lead_fires = is_lone_never_given_particle(lead, tokens)
     if len(givens) + len(middles) + len(families) > 1 and lead_fires:
         order = state.order
         if lead_fires and order is not None and order[0] is Role.FAMILY:
@@ -633,7 +685,9 @@ def post_rules(state: ParseState) -> ParseState:
     # "Beethoven, Ludwig van" is how "Ludwig van Beethoven" is filed.
     #
     # Keyed on the token's VOCABULARY, not its assigned role, which is
-    # what gives the attachment its stated precedence over S2. `vd`,
+    # what gives the attachment its stated precedence over S2 -- save
+    # the third exception (#573), which asks the ROLES whether assign
+    # read a credential run whole around the word. `vd`,
     # `mc` and `do` are the three words in both vocabularies; assign
     # reads a trailing `vd` or `mc` as a post-nominal, so those two
     # need the override. `do` is in the AMBIGUOUS acronym half, which
@@ -701,8 +755,13 @@ def post_rules(state: ParseState) -> ParseState:
         # a no-name segment holds no MIDDLE for the fold to leave
         # either. P6 runs only on that path, so the branch cannot be
         # reached from here.
-        if k and any(tokens[i].role is Role.GIVEN
-                     for piece in seg[:k] for i in piece):
+        given_at = next((q for q in range(k) if any(
+            tokens[i].role is Role.GIVEN for i in seg[q])), None)
+        if given_at is not None and _inside_a_credential_run(
+                seg, tokens, given_at, k, end,
+                ambiguities):
+            given_at = None
+        if given_at is not None:
             # A range, though only ever one piece today: grouping's
             # prefix chain makes a non-leading particle absorb what
             # follows, so a trailing run splits into several pieces

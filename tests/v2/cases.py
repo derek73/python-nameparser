@@ -995,6 +995,116 @@ CASES: tuple[Case, ...] = (
                "family around a suffix 'vd'. 2.3.0 read family 'Smith "
                "Ma', suffix 'vd', and 1.4.0 last 'Smith', suffix 'vd, "
                "Ma'"),
+    # #573: the three uniform-case shapes of the same word. Each split
+    # came from one stage acting on a reading the next never took.
+    Case("a_uniform_case_particle_before_a_comma_stays_in_the_family",
+         "SMITH VD MA, JOHN",
+         {"given": "JOHN", "family": "SMITH VD MA"},
+         classification="fix(#573)",
+         notes="P2: in the part before a family comma a particle "
+               "that is suffix vocabulary too heads the name word "
+               "behind it, so the per-piece read no longer peels 'VD' "
+               "from between two family words -- the uniform case had "
+               "left the chain stopped before it. Reads as the "
+               "mixed-case row above does. 2.2.0 and 2.3.0 read family "
+               "'SMITH MA', suffix 'VD'; 2.0.0 and 2.1.0 read as here; "
+               "1.4.0 last 'SMITH', suffix 'VD, MA'"),
+    Case("a_comma_before_no_name_word_keeps_the_positional_read",
+         "Berg de MA, Prof.",
+         {"title": "Prof.", "given": "Berg", "family": "de",
+          "suffix": "MA"},
+         classification="fix(comma-family)",
+         ambiguities=("suffix-or-name",),
+         notes="#573's boundary: a comma followed by no name word fixed "
+               "no family, so the part before it reads positionally, "
+               "its trailing credential included. A first draft of "
+               "#573 skipped the chain's trailing stop for the whole "
+               "family part and read family 'de MA'. The row pins the "
+               "suffix and its report; the all-particle family 'de' "
+               "is the positional read's, older than #573, and not "
+               "endorsed here"),
+    Case("a_particle_suffix_word_between_credentials_stays_in_the_run",
+         "DOE, JANE PHD VD MA",
+         {"given": "JANE", "family": "DOE", "suffix": "PHD VD MA"},
+         classification="fix(#573)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="P6's third exception: 'VD' has a credential in "
+               "front of it and one behind, so it stands inside the "
+               "run rather than ending the name, and P6's attachment "
+               "stands down. Reports 'VD' (the attachment declined) "
+               "and 'MA' (#531's slot). Master read family 'VD DOE', "
+               "suffix 'PHD, MA'; 2.3.0 middle 'MA', suffix 'PHD VD'; "
+               "1.4.0 suffix 'PHD, VD, MA'"),
+    Case("a_member_read_as_a_credential_in_front_keeps_the_run",
+         "DOE, JANE MA VD PHD",
+         {"given": "JANE", "family": "DOE", "suffix": "MA VD PHD"},
+         classification="fix(#573)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="P6's third exception asks whether the run was read "
+               "whole, and 'MA' read as a credential in front says so "
+               "as a degree does"),
+    Case("a_trailing_title_is_transparent_to_the_run",
+         "DOE, JANE PHD PROF. VD MA",
+         {"title": "PROF.", "given": "JANE", "family": "DOE",
+          "suffix": "PHD VD MA"},
+         classification="fix(#573)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="H5: a trailing title is transparent, so 'VD' stands "
+               "between credentials as it does without the title"),
+    Case("a_member_already_read_as_a_credential_leaves_no_run",
+         "Doe, Jane PhD do MA",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD do MA"},
+         classification="fix(#436/#437)",
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="#573's boundary: 'do' is a member assign already read "
+               "as the credential, so P6 finds no particle run to "
+               "attach and the third exception has nothing to "
+               "decline -- a draft that generalized it to a run of "
+               "pieces reported here on an empty run"),
+    Case("a_particle_suffix_word_ending_a_credential_run_still_attaches",
+         "DOE, JANE PHD VD",
+         {"given": "JANE", "family": "VD DOE", "suffix": "PHD"},
+         classification="fix(#380)",
+         ambiguities=("suffix-or-name",),
+         notes="#573's boundary: with nothing behind it 'VD' ends the "
+               "name, and P6's attachment holds as for 'Berg, Jan vd'. "
+               "2.2.0 and 2.3.0 read the same; 1.4.0 suffix 'PHD, VD'"),
+    Case("a_never_given_particle_after_a_comma_takes_the_member",
+         "SMITH, VD MA",
+         {"family": "SMITH VD MA"},
+         classification="fix(#573)",
+         ambiguities=("suffix-or-name",),
+         notes="P1: a never-given particle opening the given "
+               "part needs a name word to attach to, so the member "
+               "behind it is that word rather than a credential with "
+               "a given name to spare -- the fold then takes both, as "
+               "for 'Smith, vd Ma'. Master read family 'SMITH VD', "
+               "suffix 'MA'; 2.0.0 to 2.3.0 read as here; 1.4.0 last "
+               "'VD SMITH', suffix 'MA'"),
+    Case("a_particle_run_opening_the_given_part_takes_the_member",
+         "SMITH, VD DE LA MA",
+         {"family": "SMITH VD DE LA MA"},
+         classification="fix(#573)",
+         ambiguities=("suffix-or-name",),
+         notes="the run before the member is all particles, chained "
+               "('DE LA') or not, so 'MA' is still the word they "
+               "attach to"),
+    Case("capitals_still_make_the_member_a_credential",
+         "Smith, de MA",
+         {"family": "Smith de", "suffix": "MA"},
+         classification="fix(comma-precomma-family)",
+         ambiguities=("suffix-or-name",),
+         notes="S2: in a mixed-case name the capitals speak even with "
+               "no words to spare, so the never-given lead does not "
+               "take 'MA' -- 'Smith, de Ma' does take it"),
+    Case("an_ambiguous_particle_after_a_comma_keeps_the_given_name",
+         "SMITH, VAN MA",
+         {"given": "VAN", "family": "SMITH", "suffix": "MA"},
+         ambiguities=("suffix-or-name",),
+         notes="#573's boundary: 'VAN' can be a given name, so the "
+               "slot's given is there and the member behind it reads "
+               "as the credential, as for 'SMITH, JOHN MA'. 1.4.0 "
+               "reads the same"),
     # #575: rules.md#C1's count before the comma counts a particle
     # chain (P2) as ONE name word -- it builds one family name -- so a
     # particle surname reads as a one-word surname does ('Royce, Ed',
