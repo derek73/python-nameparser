@@ -13,6 +13,7 @@ get the enriched KeyError.
 from __future__ import annotations
 
 import re
+import unicodedata
 
 from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 from nameparser._types import (FOLDED_TAG, SHAPE_ACRONYM_TAG,
@@ -222,7 +223,7 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         tokens = (tuple(t for t in tokens if FOLDED_TAG in t.tags)
                   + tuple(t for t in tokens if FOLDED_TAG not in t.tags))
         values[key] = separator.join(
-            t.text[0] + delimiter for t in tokens)
+            unicodedata.normalize('NFC', t.text)[0] + delimiter for t in tokens)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 
 
