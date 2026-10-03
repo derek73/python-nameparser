@@ -114,6 +114,8 @@ is only ever read for a word that is a conjunction, so
 ``remove(conjunctions={"e"})`` simply works and the stale marker entry
 is never consulted.
 
+.. _title-detection-off:
+
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -259,6 +261,8 @@ is written:
 Either way, give it a ``suffix_acronyms`` entry, or a mask of its own,
 rather than relying on this fallback.
 
+.. _ambiguous-words:
+
 Words that are also ordinary names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -296,8 +300,9 @@ The full reading of a bare marked acronym, in order:
   the family name even WITH words to spare (``"John Smith Ma"``).
 - **No signal** — all lowercase in a mixed-case name, or any spelling
   in a name written wholly in one case — falls back to the count: a
-  suffix with two or more words before it (``"John Smith ma"``), the
-  family name otherwise (``"JACK MA"``).
+  suffix with two or more words before it, not counting a title or a
+  nickname (``"John Smith ma"``), the family name otherwise
+  (``"JACK MA"``).
 - **After a comma** the count of name words before the comma decides
   FIRST, and the case is read only where the count leaves the word a
   name. ``"John Smith, Ba"`` reads suffix ``Ba`` on the count alone, and
@@ -572,9 +577,10 @@ Family-first name order
 
 ``name_order`` is the one most likely to matter for data that is not
 in Western order. Positional input is assigned in the order you
-declare — with the two vocabulary exceptions noted at the end of this
-section — so a name written family-first — Hungarian, here — parses as
-written instead of needing to be rearranged afterwards:
+declare — with the two vocabulary exceptions noted under
+:ref:`order-vocabulary-first` — so a name written family-first —
+Hungarian, here — parses as written instead of needing to be
+rearranged afterwards:
 
 .. doctest::
 
@@ -712,6 +718,8 @@ family-first orders differ from each other:
     'Carlos'
     >>> given_last.parse("de la Cruz Juan Carlos").middle
     'Juan'
+
+.. _order-vocabulary-first:
 
 Where the vocabulary answers first
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
