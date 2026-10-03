@@ -757,13 +757,20 @@ rule applies there in exactly the same way:
     >>> parse("Morse, Det. Insp. Jane").title
     'Det. Insp.'
 
+Where the inference stops
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The rule is bounded in four ways, so it doesn't swallow ordinary
-names. Single initials are left alone, so are abbreviations with
-interior periods, it applies only to that leading run (the same
-word after the given name is a middle name), and a period-marked
-opening word carrying a Han, kana or hangul character is a name word
-rather than a title, since those scripts write no abbreviation with a
-period (``田中.`` is the family name):
+names:
+
+- **Single initials** are left alone (``J.``).
+- **Abbreviations with interior periods** are left alone (``E.T.``).
+- **Only the leading run** is read this way: the same word after the
+  given name is a middle name.
+- **A word in Han, kana or hangul** is a name word even with a period,
+  since those scripts write no abbreviation with one (``"田中. 太郎"``
+  has family ``田中.``).
+
 
 .. doctest::
 
@@ -775,7 +782,10 @@ period (``田中.`` is the family name):
     'Insp.'
 
 Because this is structural rather than vocabulary-driven, emptying
-``titles`` does not switch it off; see :doc:`customize`.
+``titles`` does not switch it off; see :ref:`title-detection-off`.
+
+At the end of a name
+~~~~~~~~~~~~~~~~~~~~
 
 Only the leading slot INFERS. At the back of a name a period-marked
 word is read by vocabulary alone: a word the parser already knows as a

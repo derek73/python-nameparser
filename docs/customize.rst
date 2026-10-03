@@ -114,6 +114,8 @@ is only ever read for a word that is a conjunction, so
 ``remove(conjunctions={"e"})`` simply works and the stale marker entry
 is never consulted.
 
+.. _title-detection-off:
+
 Turning title detection off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
