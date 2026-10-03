@@ -74,8 +74,10 @@ there to reinterpret.
 Forms the script carries
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Two more arrangements are native East Asian forms and need no
-``name_order`` at all — the script itself carries the reading:
+Two more arrangements are native East Asian forms. The first needs
+no ``name_order`` at all — the script itself carries the reading —
+and the second is read the way the default order reads it, its own
+written order:
 
 6. ``Family Given [Honorific]``
 7. ``Given[·Given]·Family / katakana transcription (source order)``
@@ -85,7 +87,10 @@ Hangul — spaced or unspaced, with the honorific spaced or glued and
 landing in ``suffix``. It has no title slot and no comma, because
 native CJK writing has neither convention. Form 7 is a transcription
 listing — Han divided by the 间隔号, or katakana joined by the
-nakaguro — kept in the order it was written and never segmented.
+nakaguro — never segmented, and kept in the order it was written as
+long as ``name_order`` is the default: the script settles no order for
+a transcription, so a declared ``FAMILY_FIRST`` reverses it as it
+reverses a Latin name.
 
 A comma or a Latin wrapper around a CJK name — a listing comma, a
 Latin honorific or credential set beside it — is tolerated input:
@@ -262,8 +267,8 @@ first. The dot itself is the marker, so nameparser reads U+00B7 as a
 token separator when it sits between classified-script characters
 (each side judged on its own — a hangul character beside a Han one
 qualifies), and a dot anywhere in the name reads the whole name as a
-transcription listing: it keeps the order it was written in and is
-never segmented — the role pure katakana plays for Japanese
+transcription listing: it keeps the declared order — the order it
+was written in, under the default — and is never segmented — the role pure katakana plays for Japanese
 transcriptions, played here by the divider instead of the script:
 
 .. doctest::
@@ -452,7 +457,7 @@ marker, and without it there is no signal. The same holds for a
 transcription typed with the Japanese middle dot (威廉・莎士比亚): each
 dot carries its own script's convention, the nakaguro's is Japanese
 roster formatting rather than transcription, so only the Chinese dot
-rescues the source order.
+stands the family-first reading down.
 
 Honorifics come off first
 ^^^^^^^^^^^^^^^^^^^^^^^^^

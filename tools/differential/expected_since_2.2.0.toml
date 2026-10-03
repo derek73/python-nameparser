@@ -104,7 +104,7 @@ issue = "fix(#436/#437) a space-separated post-nominal run renders with spaces, 
 name_regex = "^(?:JOHN DOE PHD MD|Jane Doe Jr\\. Ma|Jane Doe nee Puig i III|Jane Doe nee Smith PhD MA|John Doe MD PhD|John Smith MD PhD|John Smith Mc V|John Smith PhD Ed Ma|John Smith PhD Ma|Josep Lluis Carod i III|Josep Lluis Carod i V|Kenneth Clarke QC MP|Rovira, Josep Carod i Jr\\.|Smith, John PhD I\\.|The Rt Hon Kenneth Clarke QC MP, HMG|Washington Jr\\. MD, Franklin|abdul Smith Jr Ma|abdul Smith Jr V)$"
 fields = ["suffix"]
 
-# The six #449 rules go SECOND, not first: the rule above
+# The seven #449 rules go SECOND, not first: the rule above
 # declares its own first-in-file position with a measurement,
 # and `fields = ["suffix"]` and `fields = ["_ambiguities"]`
 # are disjoint, so nothing orders the two against each other.
@@ -194,6 +194,18 @@ issue = "feat(#449) a glued Korean honorific leaves a Latin name word the script
 # convention places the one name word left. Literal-anchored, one
 # corpus name, and `_ambiguities` alone for the reason given above.
 name_regex = "^Anderson선생님$"
+fields = ["_ambiguities"]
+
+[[change]]
+issue = "feat(#449) a hangul word holding a stray voicing mark has no script, so the convention decides it"
+# '김゙민준' (김 + U+3099), a tolerated case row #596 added (2026-10-03).
+# A kana
+# voicing mark after hangul voices no kana, so it keeps its hiragana
+# block and the token is mixed hangul and hiragana: no script, no
+# surname division, and O5's convention places the one name word left.
+# The roles are this baseline's; the report is the whole diff.
+# Literal-anchored, one corpus name, `_ambiguities` alone.
+name_regex = "^김\\u3099민준$"
 fields = ["_ambiguities"]
 
 # The two #491 rules sit beside #449's, same position rule: both
@@ -2338,3 +2350,29 @@ issue = "fix(#594) a period-marked halfwidth katakana word is not a title"
 # given-or-family as 'マイケル.' does, where the title reported nothing.
 name_regex = "^(?:ﾀﾅｶ\\. John|ﾏｲｹﾙ\\.)$"
 fields = ["title", "given", "_ambiguities"]
+
+# ---------------------------------------------------------------
+# #596: A VOICING MARK TAKES THE SCRIPT OF THE KANA BEFORE IT. The
+# four kana voicing marks U+3099-U+309C sit in the hiragana block, and
+# NFC composes one only where a precomposed voiced kana exists, so the
+# mark in 'ア゙イ' (ア + U+3099) or 'ア゛イ' (the spacing U+309B) stood in
+# a katakana word as hiragana and the word took the kana license
+# (rules.md#W4) -- family-first, where a wholly-katakana name keeps
+# the declared order. Classification now deletes each mark that
+# follows a kana, so the word reads as its base's script. The
+# same names on hiragana or beside kanji ('あ゙い たろう', '山田 ア゙イ')
+# are parity: their reading never depended on the mark.
+#
+# Literal-anchored to the names: no corpus line held an uncomposable
+# voicing mark before this change, so the movers ARE the three case
+# rows #596 added. LAST in the file: each diff reported unexplained
+# on the run before this rule existed (2026-10-03).
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#596) a voicing mark does not make a katakana word kana-licensed"
+# 'ア゙イ タロウ' and 'ア゛イ タロウ' read given ア゙イ where 2.1.0-2.3.0
+# read it family, and 'マイケル ア゙イ' reads given マイケル where the
+# licensed neighbour made it the family.
+name_regex = "^(?:ア\\u3099イ タロウ|ア\\u309Bイ タロウ|マイケル ア\\u3099イ)$"
+fields = ["given", "family"]

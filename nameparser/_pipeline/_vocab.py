@@ -99,6 +99,39 @@ _SCRIPT_MATCHERS: dict[Script, Callable[[str], bool]] = {
 # effective_script's kana license.
 _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 
+# The four kana voicing marks U+3099-U+309C (#596). None belongs to
+# either syllabary -- each voices the kana it follows -- but the script
+# table classifies by block and all four sit in the HIRAGANA one, so a
+# mark NFC cannot compose (ア + U+3099) made a katakana token read as
+# katakana plus hiragana and took the kana license.
+# _normalized_for_script drops every mark standing after a KANA, so the
+# mark takes its base's script. After anything else -- hangul, Han,
+# Latin, or nothing at all -- the mark is not voicing a kana and keeps
+# the table's answer: deleting it there would hand 김゙민준 a script the
+# surname site then divides on the RAW text, cutting the mark off its
+# base and leaving it to open the given name.
+_VOICING_MARKS = frozenset("\u3099\u309a\u309b\u309c")
+
+# Whole-text kana test for one character: the base a voicing mark may
+# be dropped after.
+_is_kana = _script_matcher(Script.HIRAGANA, Script.KATAKANA, whole=True)
+
+
+def _drop_kana_voicing_marks(text: str) -> str:
+    """`text` without the voicing marks that follow a kana (a run of
+    them included); every other mark kept. Called only on text holding
+    a mark, so names without one never pay for the walk."""
+    kept: list[str] = []
+    after_kana = False
+    for ch in text:
+        if ch in _VOICING_MARKS:
+            if after_kana:
+                continue
+        else:
+            after_kana = _is_kana(ch)
+        kept.append(ch)
+    return "".join(kept)
+
 # The repertoire half of is_initial (_policy._NO_INITIALS), kept apart
 # from _INITIAL's SHAPE half so the pattern itself stays v1-verbatim
 # and its three copies stay pinned by tests/v2/test_regex_sync.py.
@@ -1382,8 +1415,19 @@ def _normalized_for_script(text: str) -> str | None:
     also decomposes Hangul syllables onto bare jamo (U+1100-U+11FF),
     entirely outside the HANGUL range, so raw NFD Korean input misses
     the shipped family-first order rule rather than merely misfiring.
-    Normalizing first fixes both. Classification-only and read-only:
-    the returned copy is never what gets tokenized, so token text and
+    Normalizing first fixes both.
+
+    Voicing marks, last: NFC composes a mark only where a precomposed
+    kana exists (カ + U+3099 is ガ), so ア + U+3099, ン + U+3099 and
+    every spacing mark (U+309B/U+309C) survive it, and all four marks
+    sit in the HIRAGANA block. A mark voices the kana it follows and
+    belongs to neither syllabary, so each one standing after a kana is
+    deleted from the copy (_drop_kana_voicing_marks) and the token
+    takes its base's script: ア゙イ is katakana, not kana-licensed
+    Japanese (#596). A mark after anything else stays, and stays in
+    the hiragana block, as it always has. Classification-only and
+    read-only, like the rest: the
+    returned copy is never what gets tokenized, so token text and
     spans stay exactly what the caller wrote.
 
     Vocabulary MATCHING composes NFC too, since #322
@@ -1397,7 +1441,10 @@ def _normalized_for_script(text: str) -> str | None:
     text = text.rstrip(FULL_STOPS)
     if not text or text.isascii():
         return None
-    return unicodedata.normalize("NFC", text)
+    composed = unicodedata.normalize("NFC", text)
+    if _VOICING_MARKS.isdisjoint(composed):
+        return composed
+    return _drop_kana_voicing_marks(composed)
 
 
 def _classify(normalized: str) -> Script | None:
