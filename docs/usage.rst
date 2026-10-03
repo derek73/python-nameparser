@@ -31,7 +31,13 @@ they exist). A name with no fields set is falsy, which is how you tell
 Input shapes
 -------------
 
-Three arrangements are understood, and every piece of each is optional:
+Three arrangements are understood by default, two more when you
+declare a family-first order, and two more by script alone. Every piece
+of each is optional.
+
+Understood by default
+~~~~~~~~~~~~~~~~~~~~~
+
 
 1. ``Title Given "Nickname" Middle Middle Family Suffix``
 2. ``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix]``
@@ -51,8 +57,11 @@ given-then-family:
     >>> parse("John Doe, Jr.").family                    # form 3
     'Doe'
 
+Family-first forms you declare
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Two more arrangements apply only when ``name_order`` declares
-family-first input — common outside Europe; see :doc:`customize`:
+family-first input — common outside Europe; see :ref:`name-order`:
 
 4. ``Title Family Given Middle Middle [Particle] [, Suffix]``  (``FAMILY_FIRST``)
 5. ``Title Family Middle Middle Given [, Suffix]``  (``FAMILY_FIRST_GIVEN_LAST``)
@@ -61,6 +70,9 @@ A trailing particle earns a slot in form 4 alone because it is
 displaced from the family name it belongs to; form 5's trailing word
 is the given name by the caller's declaration, so there is nothing
 there to reinterpret.
+
+East Asian forms
+~~~~~~~~~~~~~~~~
 
 Two more arrangements are native East Asian forms and need no
 ``name_order`` at all — the script itself carries the reading:
