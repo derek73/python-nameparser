@@ -1077,7 +1077,10 @@ does not claim as a title, particle or credential. A record written
 wholly in capitals, or wholly in lowercase, keeps every word a name
 word.
 
-``CapsSuffixes.AFTER_COMMA``, the default, reads the word only in the
+``AFTER_COMMA`` (the default)
+"""""""""""""""""""""""""""""
+
+``CapsSuffixes.AFTER_COMMA`` reads the word only in the
 part right after a comma with two or more name words before it. The
 all-caps surname convention never writes capitals there:
 
@@ -1091,6 +1094,9 @@ all-caps surname convention never writes capitals there:
     'XYZ'
     >>> parse("JOHN SMITH, XYZ").given
     'XYZ'
+
+``EVERYWHERE``
+""""""""""""""
 
 ``CapsSuffixes.EVERYWHERE`` also reads the end of a name, the given
 part's last word after a family comma, and the word ending a maiden
@@ -1106,6 +1112,9 @@ which is why it is not the default:
     >>> cred = caps_everywhere.parse("Jean Pierre DUPONT")
     >>> cred.family, cred.suffix
     ('Pierre', 'DUPONT')
+
+``OFF``
+"""""""
 
 ``CapsSuffixes.OFF`` reads none of them and reports nothing, as 2.3
 did. It is the way to keep a given name written in capitals after a
