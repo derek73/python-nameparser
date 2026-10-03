@@ -976,6 +976,10 @@ def test_a_spliced_decomposed_initial_reads_as_its_composed_twin() -> None:
     ("কিরণ রায়", "ক. র."),
     # two marks composing into one letter
     ("ệ smith", "ệ. s."),
+    # a mark composing with nothing (U+0331) sits, in canonical order,
+    # between the letter and the acute that composes: the initial is
+    # 'ó' decomposed, as the composed spelling's initial is 'ó'
+    ("ó̱la smith", "ó. s."),
 ])
 def test_a_decomposed_initial_is_its_composed_twins(text: str,
                                                     want: str) -> None:

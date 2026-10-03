@@ -3977,8 +3977,10 @@ issue = "fix(#585) a decomposed initial keeps its whole first letter"
 # now the shortest start of the word that composes to the composed
 # word's first character, written in the form the writer used
 # (rules.md#R3), so both surfaces give the composed spelling's initial
-# kept decomposed. A composed name's initials do not move, which is
-# why the rules corpus's two NFD rows are the only names here.
+# kept decomposed. A composed name's initials do not move, and nor do
+# those of an NFD name whose first letters do not decompose (#542's
+# 'josé garcía' rows), which is why the rules corpus's two other NFD
+# rows are the only names here.
 #
 # Roles do not move; the derived view alone does, so `_initials` is
 # the one field. Literal names rather than a shape: what selects them

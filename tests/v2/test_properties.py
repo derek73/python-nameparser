@@ -3178,9 +3178,10 @@ def test_a_decomposed_name_renders_as_its_composed_twin() -> None:
     #542's corpus (its own two R4 rows included): 144 disagreements over
     the 137 texts compared, 47 more set aside, every one hangul
     ('JOSÉ GARCÍA' repairing to 'José GarcíA'). Initials, with
-    _first_letter taking text[0] again, over #585's corpus (its own R3
-    row included): 40 disagreements over the same 137 texts, katakana
-    as well as Latin ('マイケル ジャクソン' initialling 'マ. シ.', the
+    _first_letter taking text[0] again, over #585's corpus (its own two
+    R3 rows included, so 139 texts compared where #542's had 137): 44
+    disagreements, 22 texts each failing on both surfaces, katakana as
+    well as Latin ('マイケル ジャクソン' initialling 'マ. シ.', the
     dakuten of 'ジ' decomposing to a combining mark). The live
     controls are the two tests below."""
     failures, set_aside, compared = _nfd_twin_findings()

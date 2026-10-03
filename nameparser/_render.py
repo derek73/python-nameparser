@@ -181,19 +181,28 @@ def _first_letter(text: str) -> str:
     """The initial of `text`: its first character as its composed (NFC)
     spelling reads it, written in the form `text` was written (#585).
     That is the shortest start of `text` that composes to the composed
-    text's first character -- 'e' + U+0301 for a decomposed 'é', and the
-    two or three jamo of a decomposed hangul syllable, which are letters
-    rather than marks. A composed `text` gives text[0], as it always
-    did, so a mark that composes with nothing (a Bengali vowel sign)
-    stays out of the initial in either form. Raises IndexError on an
-    empty `text`, as text[0] does."""
+    text's first character -- 'e' + U+0301 for a decomposed 'é', and
+    the two or three jamo of a decomposed hangul syllable, which are
+    letters rather than marks -- or, where a mark composing with
+    nothing stands inside that start, the character decomposed. A
+    composed `text` gives text[0], as it always did, so a mark that
+    composes with nothing (a Bengali vowel sign) stays out of the
+    initial in either form. Raises IndexError on an empty `text`, as
+    text[0] does."""
     if text.isascii():
         return text[0]
     first = unicodedata.normalize("NFC", text)[0]
     end = 1
     while not unicodedata.normalize("NFC", text[:end]).startswith(first):
         end += 1
-    return text[:end]
+    if unicodedata.normalize("NFC", text[:end]) == first:
+        return text[:end]
+    # A mark that composes with nothing stands, in canonical order,
+    # between the letter and a mark that does ('o' + U+0331 + U+0301,
+    # where the composed spelling is 'ó' + U+0331), so no start of the
+    # text composes to `first` alone: write `first` decomposed, the
+    # form the writer used for it.
+    return unicodedata.normalize("NFD", first)
 
 
 def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
