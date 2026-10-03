@@ -70,12 +70,13 @@ title; particles join forward, so ``de la`` attaches to ``Vega``.
 Whatever the vocabulary layer has not claimed is left to a positional
 layer, which assigns purely by where a word sits: the first unclaimed
 word is the given name, the last is the family name, and anything
-between them is the middle name. ``name_order``, an explicit comma,
-and — for a name in an East Asian script that settles its own order:
-wholly Han or hangul, or Japanese written with kana other than
-katakana alone — ``script_orders``
-change what "first" and "last" mean here; the Chinese interpunct ``·``
-dividing such a name walks the last of those back, marking a
+between them is the middle name. ``name_order``, an explicit comma
+and ``script_orders`` change what "first" and "last" mean here.
+``script_orders`` covers the East Asian writing that settles its own
+order: a name wholly in Han or hangul, or a Japanese name mixing kanji
+with kana or the two kanas with each other — anything but katakana
+alone, which is how a foreign name is transcribed. The Chinese
+interpunct ``·`` dividing such a name walks that back, marking a
 transcription that keeps its source order. Two rules can still
 override the arrangement: a particle that can never be a given name,
 opening the name, opens the surname under every order rather than
@@ -85,14 +86,14 @@ whose patronymic marks its parts.
 
 A few words are read by how they are written, which is neither a list
 lookup nor position alone: the writing proposes a reading, and where
-the word stands decides whether it lands. An unlisted abbreviation of
-two or more letters ending in a period, at the front of the given-name
-part, is a title though no list holds it (``"Insp. Jane Morse"``; see
+the word stands decides whether it lands. An unlisted word of two or
+more letters with a single period at its end, at the front of the
+given-name part, is a title though no list holds it (``"Insp. Jane Morse"``; see
 :ref:`abbreviated-titles`). Since 2.4, an unlisted acronym written in
 periods (``X.Y.Z.``) is a credential behind a name that can spare it,
 and one written in capitals (``XYZ``) is, by default, right after a
-comma behind a full name that is not itself written in capitals
-(:ref:`unlisted-credentials`).
+comma behind a full name that writes a word of its own in mixed case,
+as ``Smith`` is (:ref:`unlisted-credentials`).
 
 That is the whole parser in outline, and it explains its
 character. A word nameparser has never seen still gets a sensible role,
@@ -108,8 +109,8 @@ wrong reproducibly, which is what makes it fixable by configuration.
 The split also tells you which container a setting belongs in, before
 you look anything up: if you are teaching the parser a *word*, it goes
 in the :class:`~nameparser.Lexicon`; if you are changing how unclaimed
-words are *arranged*, or switching the unlisted-credential readings on
-or off, it goes in the :class:`~nameparser.Policy`.
+words are *arranged*, or choosing where the unlisted-credential
+readings apply, it goes in the :class:`~nameparser.Policy`.
 
 Configuration lives in three containers
 ----------------------------------------
@@ -210,8 +211,9 @@ before it arises, too: ``"Ma, Jack"`` fixes the family name, so the
 credential reading never comes up, while ``"John Smith MA"`` has to
 call it and says so. Some decisions are conventions rather than
 readings — a name whose one name word nothing else decides (such as
-a title, a family comma, a nickname or maiden name beside it, the
-script, or the word's own vocabulary or shape) has nothing to compare,
+a title, a family comma, a nickname or maiden name beside it, a
+script that settles its own order, or the word's own vocabulary or
+shape) has nothing to compare,
 and an
 input the title peel eats down to one last title word reads that word
 as the name for want of anything else — and since 2.3 those are
