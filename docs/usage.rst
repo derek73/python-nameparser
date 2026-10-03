@@ -141,12 +141,15 @@ names together as easily as two surnames:
     >>> parse("Juan de la Vega y Rodriguez").family
     'de la Vega y Rodriguez'
 
+A particle at the start of a name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Position matters in exactly one place: a particle standing on its own
 at the start of a name. It has no surname to attach to yet, so what
 decides the reading is whether it is one that can double as a given
 name: the particle either becomes the given name or turns the whole
 name into a surname. Only the first of those is ``name_order``'s
-question — see :doc:`customize`, and read the given name below as the
+question — see :ref:`name-order`, and read the given name below as the
 default given-first order's — since a particle that can never be a
 given name is the surname whatever order you declare:
 
@@ -169,7 +172,8 @@ comma is the given name:
     'Juan'
 
 :doc:`customize` covers how to change which words are in each of these
-sets, including which particles may double as given names. One shipped
+sets, and :ref:`ambiguous-words` which particles may double as given
+names. One shipped
 vocabulary works the other way round and so is not in the table above:
 :mod:`surnames <nameparser.config.surnames>` *splits* a word instead of
 merging two, and is covered next.
