@@ -852,26 +852,43 @@ so cannot turn it off.
 Nicknames, maiden names, and brackets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A delimiter pair carries no meaning of its own, so what a clause reads
-as is settled in steps. Suffix-shaped content is taken first: the
-brackets are dropped and what was inside parses as if it had been
-written bare, which is not the same as the clause becoming the suffix
-(``"Jane Smith (née Jr.)"`` gives family ``née``, suffix ``Jr.``).
-Then the content is asked whether it announces itself: a clause
-opening with a recognized maiden marker and carrying a word after it
-is a maiden name inside any configured pair, and needs nothing
-configured. The marker is dropped from the value:
+How a bracketed clause is read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A delimiter pair carries no meaning of its own, so what a clause
+enclosed in one reads as is settled in steps, and the pair is asked
+last:
+
+1. **Suffix-shaped content** is taken first. The brackets are dropped
+   and what was inside parses as if it had been written bare, which is
+   not the same as the clause becoming the suffix.
+2. **A clause that announces itself**, opening with a recognized maiden
+   marker and carrying a word after it, is a maiden name inside any
+   configured pair, with nothing configured. The marker is dropped from
+   the value.
+3. **Everything else is decided by the pair**: content in a
+   ``nickname_delimiters`` pair is a nickname, and content in a
+   ``maiden_delimiters`` pair is a maiden name.
 
 .. doctest::
 
-    >>> parse("Jane Smith (née Jones)").maiden
+    >>> name_jr = parse("Jane Smith (née Jr.)")         # step 1
+    >>> name_jr.family, name_jr.suffix
+    ('née', 'Jr.')
+    >>> parse("Jane Smith (née Jones)").maiden          # step 2
+    'Jones'
+    >>> parse('Jane Smith "née Jones"').maiden          # step 2, any pair
+    'Jones'
+    >>> parse("Jane (Jones) Smith").nickname            # step 3
     'Jones'
 
-Only for what is left does the PAIR decide, and that is what
-``maiden_delimiters`` is for. What is left is two kinds of clause, not
-one: content with no marker word in it, such as a birth surname written
-bare in parentheses, and a lone marker word. Listing a pair in
-``maiden_delimiters`` drops it from the effective
+Routing a pair to maiden names
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Step 3 is what ``maiden_delimiters`` is for. It reaches two kinds of
+clause, not one: content with no marker word in it, such as a birth
+surname written bare in parentheses, and a lone marker word. Listing a
+pair in ``maiden_delimiters`` drops it from the effective
 ``nickname_delimiters`` set automatically, and the one-liner is the
 whole recipe:
 
@@ -896,6 +913,9 @@ token with it, so ``旧姓`` stays in the value too:
     >>> cjk = Parser(policy=Policy(maiden_delimiters=cjk_parens))
     >>> cjk.parse("山田花子（旧姓佐藤）").maiden
     '旧姓佐藤'
+
+Adding a delimiter pair
+^^^^^^^^^^^^^^^^^^^^^^^
 
 To *add* a delimiter pair rather than reroute one, build on the
 exported default — assigning a bare set replaces the built-in pairs
