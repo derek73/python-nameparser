@@ -259,6 +259,8 @@ is written:
 Either way, give it a ``suffix_acronyms`` entry, or a mask of its own,
 rather than relying on this fallback.
 
+.. _ambiguous-words:
+
 Words that are also ordinary names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

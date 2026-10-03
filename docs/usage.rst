@@ -637,6 +637,9 @@ family name:
 
 .. _maiden-roundtrip:
 
+Surviving a reparse
+~~~~~~~~~~~~~~~~~~~
+
 That default is built for display, and the two fields differ in what
 survives it. The quoted nickname reparses as a nickname; the
 parenthesized maiden name reparses as a *nickname* too, so a
@@ -662,10 +665,13 @@ instead of relying on the default:
     >>> parse(text).maiden
     'Jones'
 
+What bracketed content reads as
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Delimited content is not always a nickname. If it opens with a marker
-word and has a word after it, the clause is a maiden name, whatever
-pair encloses it and with nothing configured — the clause has said which
-convention it means, so you do not have to:
+word and has a word after it, the clause is a maiden name inside any
+configured delimiter pair, with nothing else configured — the clause
+has said which convention it means, so you do not have to:
 
 .. doctest::
 
@@ -710,8 +716,10 @@ delimiters, it keeps the nickname reading:
     >>> parse("JEFFREY (JD) BRICKEN").nickname
     'JD'
 
-``JD`` is in ``suffix_acronyms_ambiguous``; see :doc:`customize` for
-what that field marks and how to add to it.
+``JD`` is in ``suffix_acronyms_ambiguous``; see
+:ref:`ambiguous-words` for what that field marks and how to add to it.
+:ref:`brackets` covers the full order these readings are tried in, and
+how to configure the delimiter pairs.
 
 .. _abbreviated-titles:
 
