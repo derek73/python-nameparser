@@ -13,6 +13,8 @@ get the enriched KeyError.
 from __future__ import annotations
 
 import re
+import unicodedata
+from collections.abc import Callable
 
 from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
 from nameparser._types import (FOLDED_TAG, SHAPE_ACRONYM_TAG,
@@ -25,6 +27,7 @@ _SPACE_BEFORE_COMMA = re.compile(r"\s+,")
 _COMMA_CHAR = re.compile(r"[,،，]")  # ASCII, Arabic, fullwidth
 _MAC = re.compile(r"^(ma?c)(\w{2,})", re.IGNORECASE)
 _WORD = re.compile(r"(\w|\.)+")
+_NAME_RUN = re.compile(r"\w+")
 
 #: str.format keys render() accepts: the seven role fields in canonical
 #: order (derived from Role -- never restated) plus the derived views.
@@ -126,8 +129,10 @@ def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
     NAME -- rules.md#P3's one-case fork is the live example -- which
     is why it is the fallback and the tags are the rule.
     """
+    # the shape on the composed spelling, as _normalize composes the
+    # lookup: a decomposed 'й.' is the initial its composed twin is (#542)
     return bool(_normalize(word) in lex.conjunctions
-                and not _INITIAL.fullmatch(word))
+                and not _INITIAL.fullmatch(unicodedata.normalize("NFC", word)))
 
 
 def _collapse(rendered: str) -> str:
@@ -226,14 +231,27 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 
 
+def _beside(text: str, at: int, step: int) -> str | None:
+    """The character beside text[at], one `step` (-1 or 1) away past
+    any combining marks, or None at the edge of `text`. A mark belongs
+    to the letter before it, so a decomposed letter's neighbours are
+    its composed twin's (#542)."""
+    at += step
+    while 0 <= at < len(text) and unicodedata.category(text[at])[0] == "M":
+        at += step
+    return text[at] if 0 <= at < len(text) else None
+
+
 def _letter_run_ge2(text: str) -> list[bool]:
     """One flag per alphanumeric character of `text`, in order: True
-    where it is a LETTER with a letter immediately before or after
-    it. Any other character -- a full stop, a space, a digit -- ends
-    a run, and a digit's own flag is always False."""
-    last = len(text) - 1
-    return [c.isalpha() and ((i > 0 and text[i - 1].isalpha())
-                             or (i < last and text[i + 1].isalpha()))
+    where it is a LETTER with a letter immediately before or after it
+    (_beside). Any other character -- a full stop, a space, a digit --
+    ends a run, and a digit's own flag is always False."""
+    def letter(c: str | None) -> bool:
+        return c is not None and c.isalpha()
+
+    return [c.isalpha() and (letter(_beside(text, i, -1))
+                             or letter(_beside(text, i, 1)))
             for i, c in enumerate(text) if c.isalnum()]
 
 
@@ -250,9 +268,10 @@ def _apply_mask(word: str, mask: str) -> str | None:
 
     The override cited above: a letter standing alone beside a full
     stop (any of FULL_STOPS, though through capitalized() only the
-    ASCII period reaches here, _WORD splitting a token at any other)
-    is written upper wherever the mask writes it inside a run of two
-    or more letters (_letter_run_ge2).
+    ASCII period reaches here, _WORD splitting a token at any other;
+    beside as _beside reads it, past combining marks) is written upper
+    wherever the mask writes it inside a run of two or more letters
+    (_letter_run_ge2).
 
     Casing goes through the whole word (word.lower()/word.upper())
     when both keep its length, since per-character casing is
@@ -266,7 +285,6 @@ def _apply_mask(word: str, mask: str) -> str | None:
     word_run = _letter_run_ge2(word)
     lowered, uppered = word.lower(), word.upper()
     same_length = len(lowered) == len(uppered) == len(word)
-    last = len(word) - 1
     out: list[str] = []
     at = 0
     for i, c in enumerate(word):
@@ -275,8 +293,8 @@ def _apply_mask(word: str, mask: str) -> str | None:
             continue
         upper = not mask_chars[at].islower() or (
             mask_run[at] and c.isalpha() and not word_run[at]
-            and ((i > 0 and word[i - 1] in FULL_STOPS)
-                 or (i < last and word[i + 1] in FULL_STOPS)))
+            and any(c is not None and c in FULL_STOPS
+                    for c in (_beside(word, i, -1), _beside(word, i, 1))))
         at += 1
         if same_length:
             out.append(uppered[i] if upper else lowered[i])
@@ -439,11 +457,51 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # through ('Carod i' forced -> 'Carod I').
     if role is Role.SUFFIX and _ROMAN.match(normalized):
         return word.upper()
-    if _MAC.match(word):
-        return _MAC.sub(
-            lambda m: m.group(1).capitalize() + m.group(2).capitalize(),
-            word)
+    # Decided on the composed spelling, so a word typed decomposed
+    # (NFD) is read as its composed twin is: 'mac' + 'e' + U+0301 +
+    # 'e' fails the regex's \w{2,} at the mark (#542). The name run
+    # after the prefix is then capitalized on the word as written,
+    # running on through its marks the way _sub_words does.
+    mac = _MAC.match(unicodedata.normalize("NFC", word))
+    if mac:
+        cut = end = len(mac.group(1))
+        while run := _NAME_RUN.match(word, end):
+            end = _past_marks(word, run.end())
+        return (word[:cut].capitalize() + word[cut:end].capitalize()
+                + word[end:])
     return word.capitalize()
+
+
+def _past_marks(text: str, end: int) -> int:
+    """`end` moved past the combining marks (category M) at it."""
+    while end < len(text) and unicodedata.category(text[end])[0] == "M":
+        end += 1
+    return end
+
+
+def _sub_words(cap: Callable[[str], str], text: str) -> str:
+    """`text` with each word replaced by cap(word): what
+    _WORD.sub(cap, text) does, except that a word runs on through the
+    combining marks after it (#542). A combining mark is category M,
+    which \\w does not match, so a name typed decomposed (NFD) --
+    'garci' + U+0301 + 'a' -- would otherwise be two words, and the
+    'a' capitalized alone is 'A'. A mark heads no word of its own: one
+    with no word before it stays outside every word, since a word
+    starting with it would keep its letters lowercase under
+    str.capitalize()."""
+    spans: list[list[int]] = []
+    for match in _WORD.finditer(text):
+        start, end = match.start(), _past_marks(text, match.end())
+        if spans and spans[-1][1] == start:
+            spans[-1][1] = end
+        else:
+            spans.append([start, end])
+    out: list[str] = []
+    at = 0
+    for start, end in spans:
+        out += (text[at:start], cap(text[start:end]))
+        at = end
+    return "".join(out) + text[at:]
 
 
 def _cap_text(text: str, role: Role, tags: frozenset[str],
@@ -454,11 +512,11 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     # vocabulary asked per word: the parse would have made one token
     # per word of that text, so this is the granularity its answer
     # would have had.
-    def cap(match: re.Match[str]) -> str:
-        return _cap_word(match.group(0), role, tags, lex)
+    def cap(word: str) -> str:
+        return _cap_word(word, role, tags, lex)
 
     if "-" not in text:
-        return _WORD.sub(cap, text)
+        return _sub_words(cap, text)
     parts = text.split("-")
     # A "named" part needs an alphanumeric, not just a _WORD match:
     # _WORD also matches a run of bare periods (or underscores), so a
@@ -468,7 +526,7 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     named = [at for at, part in enumerate(parts)
              if any(c.isalnum() for c in part)]
     if len(named) < 3:
-        return _WORD.sub(cap, text)
+        return _sub_words(cap, text)
     # rules.md#R4: "Inside a hyphenated word, a part that is
     # connective vocabulary with a worded part on each side of it
     # keeps its lowercase" (#478). Decided here, not in _cap_word,
@@ -484,9 +542,11 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     first, last = named[0], named[-1]
     return "-".join(
         part.lower()
-        if (first < at < last and not _DOTTED_INITIAL.fullmatch(part)
+        if (first < at < last
+                and not _DOTTED_INITIAL.fullmatch(
+                    unicodedata.normalize("NFC", part))
                 and _normalize(part) in lex.conjunctions)
-        else _WORD.sub(cap, part)
+        else _sub_words(cap, part)
         for at, part in enumerate(parts))
 
 
@@ -532,7 +592,7 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     comes back unchanged whether or not the gate admits it again
     (a name whose non-suffix words are caseless, 'Kim Minjun' in
     hangul with a 'phd', is admitted every time) -- except where a
-    LETTER'S OWN CASE MAPPING changes its length or splits the word
+    LETTER'S OWN CASE MAPPING changes its length
     (decisions.md#R4's Unicode boundary; 'ß' recasing to 'SS' through
     a mask is one example, not the only one). Lengthening: a mask's
     own per-character casing fallback can turn one letter into a
@@ -545,12 +605,14 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     CASED characters 'ʼN', so str.capitalize() on 'ŉa' gives 'ʼNa'
     but on THAT output gives 'ʼna' -- the 'N' is no longer the
     word's first character, so the second pass lower-cases it.
-    Splitting: some letters upper-case to a base letter plus a
-    COMBINING MARK, which _WORD does not match -- 'ǰ' upper-cases to
-    'J' + a combining caron, so 'ǰo' capitalizes to 'J̌o', but
-    _cap_text reads THAT text as two separate words ('J', then 'o',
-    the combining mark between them matching neither), and 'o'
-    capitalized alone is 'O'."""
+    A letter that upper-cases to a base letter plus a COMBINING MARK
+    ('ǰ' to 'J' + a combining caron) is not such a case since #542:
+    a word runs on through its marks (_sub_words), so 'J̌o' is one
+    word on the second pass and comes back unchanged.
+    A name typed decomposed (NFD) repairs as its composed twin does
+    and keeps the form it was typed in: the splitter and the mask read
+    a mark as part of the letter before it, and the shape tests (Mac/Mc,
+    the initial tests) ask about the composed spelling."""
     if lexicon is not None and not isinstance(lexicon, Lexicon):
         # eager, before the gate: a garbage argument must not become a
         # silent no-op on mixed-case input or a deep AttributeError

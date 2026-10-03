@@ -334,7 +334,9 @@ decomposed name gets the same order rule as its composed twin.
 Vocabulary lookup does the same before matching a word against
 titles, honorifics and the rest, so a decomposed ``Señor`` or ``née``
 — macOS-origin data again — is recognized as readily as its composed
-spelling.
+spelling. Case repair reads a decomposed accent as part of its letter,
+so ``capitalized()`` gives a decomposed ``josé garcía`` the same
+``José García`` as the composed spelling, still decomposed.
 
 Splitting is the exception. An unspaced decomposed hangul name is
 ordered correctly but not split, because surname matching runs against

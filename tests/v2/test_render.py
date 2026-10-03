@@ -915,6 +915,76 @@ def test_a_decomposed_mask_value_reads_the_same_split_as_composed() -> None:
                                "john smith pé.x.").suffix == "Pé.X."
 
 
+def _nfc_texts(name: ParsedName) -> list[str]:
+    return [unicodedata.normalize("NFC", t.text) for t in name.tokens]
+
+
+@pytest.mark.parametrize(("pairs", "text"), [
+    # the plain word clause: 'a' after the mark is not a word of its own
+    ((), "josé garcía"),
+    # Mac/Mc, decided on the composed spelling: 'mac' + 'ée' passes
+    # _MAC's \w{2,} composed and fails it at the mark decomposed
+    ((), "macée smith"),
+    ((), "MACÉINRÍ SMITH"),
+    # the split-off-initial override reads the full stop past the mark
+    ((("éx", "éx"),), "john smith é.x."),
+    # a letter after a mark still has the letter before it as neighbour
+    ((("éex", "éeX"),), "john smith ée.x"),
+    # the hyphen clause's initial test, on the composed spelling: 'й'
+    # is a default conjunction, and 'й.' between hyphens an initial
+    ((), "ivan petrov-й.-sidorov"),
+])
+def test_a_decomposed_word_repairs_as_its_composed_twin(
+        pairs: tuple[tuple[str, str], ...], text: str) -> None:
+    """#542: a combining mark belongs to the letter before it, so every
+    clause of case repair reads a decomposed (NFD) word as it reads the
+    composed one -- the word splitter, the Mac/Mc clause, and the mask's
+    neighbour tests -- and the output keeps the decomposed form. These
+    are the shapes the corpus walk in test_properties.py does not
+    reach. The two mask rows guard _beside: 'é.x.' agreed before the
+    fix only because the old splitter cut the word at its mark before
+    the mask was consulted, and both rows disagree with _beside reading
+    raw neighbours."""
+    composed = unicodedata.normalize("NFC", text)
+    decomposed = unicodedata.normalize("NFD", text)
+    assert decomposed != composed
+    want = _repaired_under(pairs, composed)
+    got = _repaired_under(pairs, decomposed)
+    assert _nfc_texts(got) == [t.text for t in want.tokens]
+    assert all(unicodedata.is_normalized("NFD", t.text)
+               for t in got.tokens)
+
+
+def test_a_spliced_decomposed_initial_reads_as_its_composed_twin() -> None:
+    """#542, the unclassified-text fallback (_reads_as_conjunction):
+    a middle spliced in as decomposed 'й.' is the initial its composed
+    spelling is, not the conjunction 'й'."""
+    for form in ("NFC", "NFD"):
+        name = parse("ivan petrov").replace(
+            middle=unicodedata.normalize(form, "й."))
+        assert unicodedata.normalize(
+            "NFC", name.capitalized(force=True).middle) == "Й."
+
+
+def test_a_letter_that_uppercases_to_a_combining_mark_is_a_fixpoint(
+) -> None:
+    """'ǰ' upper-cases to 'J' + a combining caron. Before #542 the
+    second forced pass read 'J̌o' as two words and gave 'J̌O'; the mark
+    now stays with its letter, so repair is idempotent here."""
+    p = Parser()
+    once = p.capitalized(p.parse("ǰo smith"), force=True)
+    assert once.given == "J̌o"
+    assert p.capitalized(once, force=True).given == "J̌o"
+
+
+def test_a_mark_with_no_letter_before_it_heads_no_word() -> None:
+    """A leading combining mark stays outside the word after it:
+    str.capitalize() on a word starting with the mark would upper-case
+    the mark and leave the letter lowercase."""
+    assert parse("́abc smith").capitalized(force=True).given == (
+        "́Abc")
+
+
 def test_a_masks_upper_fallback_can_lengthen_a_word_through_ss() -> None:
     """decisions.md#R4 (2026-09-24 review): where the whole-word
     upper-casing does not keep the word's length, _apply_mask falls

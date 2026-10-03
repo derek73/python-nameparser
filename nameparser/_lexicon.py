@@ -482,9 +482,11 @@ def _normpairs(
                 f"nothing)"
             )
         # Stored NFC-composed, case kept (unicodedata, not _normalize):
-        # _apply_mask reads the mask one character at a time, and a
-        # decomposed letter would read as a base letter split off
-        # beside a non-alpha combining mark. The mask check below
+        # one stored spelling per value, whichever form the caller
+        # wrote. _apply_mask reads both forms alike since #542
+        # (_render._beside looks past combining marks); before it, a
+        # decomposed letter read as a base letter split off beside a
+        # non-alpha combining mark. The mask check below
         # passes either spelling, _normalize composing both of its
         # sides. `written` keeps the caller's own spelling -- composed
         # or not -- for the mismatch error below: a decomposed value

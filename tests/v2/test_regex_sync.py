@@ -156,6 +156,10 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_render", "_INITIAL"): None,      # config's pattern minus one "?"
     ("_vocab", "_INITIAL"): None,       # same
     ("_render", "_DOTTED_INITIAL"): None,  # _INITIAL's period alternative
+    # #542: the name run after a Mac/Mc prefix, read on the word as
+    # written once _MAC has matched its composed spelling; no config
+    # key to mirror
+    ("_render", "_NAME_RUN"): None,
     ("_tokenize", "_BIDI"): None,       # re_bidi, not a REGEXES key
     # Mirrors _pipeline._state.COMMA_CHARS, not nameparser.config
     ("_render", "_COMMA_CHAR"): None,
