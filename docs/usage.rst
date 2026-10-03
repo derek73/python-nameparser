@@ -428,7 +428,9 @@ when the comma is followed by a title or another name word, as in
 ``田中さん, Dr.`` (family ``田中さん``). Credentials after the comma are
 read the same best-effort way, landing in ``given`` or ``suffix`` by
 spelling: ``田中さん, V.`` and ``田中さん, Ph. D.`` give up さん exactly
-as ``田中さん, PhD`` does.
+as ``田中さん, PhD`` does. ``Policy(lenient_comma_suffixes=False)``
+reads ``V.`` as name text instead, and さん then stays glued (family
+``田中さん``, given ``V.``).
 
 Spacing, and where the name divides
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
