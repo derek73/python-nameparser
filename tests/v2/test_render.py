@@ -999,6 +999,9 @@ def test_a_composed_initial_is_the_first_character_as_before() -> None:
     rewrite to its unified twin and which is kept as written."""
     from nameparser._render import _first_letter
     assert _first_letter("\uf900x") == "\uf900"
+    # excluded from composition: NFC splits it into 'क' + nukta, and
+    # the code point is kept whole, nukta and all
+    assert _first_letter("\u0958x") == "\u0958"
     assert _first_letter("Émile") == "É"
     with pytest.raises(IndexError):
         _first_letter("")

@@ -184,10 +184,12 @@ def _first_letter(text: str) -> str:
     text's first character -- 'e' + U+0301 for a decomposed 'é', and
     the two or three jamo of a decomposed hangul syllable, which are
     letters rather than marks -- or, where a mark composing with
-    nothing stands inside that start, the character decomposed. A
-    composed `text` gives text[0], as it always did, so a mark that
-    composes with nothing (a Bengali vowel sign) stays out of the
-    initial in either form. Raises IndexError on an empty `text`, as
+    nothing stands inside that start, the character decomposed (even
+    where the writer composed part of it). A text whose first code
+    point holds a whole character gives text[0], as it always did --
+    a composed text, and one opening with a character Unicode excludes
+    from composition -- so a mark that composes with nothing (a
+    Bengali vowel sign) stays out of the initial in either form. Raises IndexError on an empty `text`, as
     text[0] does."""
     if text.isascii():
         return text[0]
@@ -195,7 +197,10 @@ def _first_letter(text: str) -> str:
     end = 1
     while not unicodedata.normalize("NFC", text[:end]).startswith(first):
         end += 1
-    if unicodedata.normalize("NFC", text[:end]) == first:
+    # end == 1: one code point already holds the first letter, kept
+    # as written even where NFC would split it (U+0958, excluded from
+    # composition, is 'क' + a nukta composed; it keeps its nukta here)
+    if end == 1 or unicodedata.normalize("NFC", text[:end]) == first:
         return text[:end]
     # A mark that composes with nothing stands, in canonical order,
     # between the letter and a mark that does ('o' + U+0331 + U+0301,
