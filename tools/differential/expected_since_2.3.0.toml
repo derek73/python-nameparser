@@ -1628,7 +1628,8 @@ fields = ["given", "family"]
 # ｢｣ (U+FF62/U+FF63) join DEFAULT_NICKNAME_DELIMITERS beside 「」, and
 # the v1 facade's nickname_delimiters gains halfwidth_corner_brackets,
 # so a clause they enclose is lifted out as the nickname (rules.md#N1)
-# where every release left it in the name as a middle. With the
+# where every release left it in the name -- a middle where spaced,
+# part of one given word where glued. With the
 # unclassified bracket gone, '山田 ｢ﾀﾛｰ｣ ﾀﾛｳ' is kanji plus katakana and
 # takes the kana license; the unspaced '山田｢ﾀﾛｰ｣太郎' divides at the
 # extracted clause; 'John ｢Jack｣ Smith' shows the pair is not
@@ -1642,8 +1643,9 @@ fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#597) halfwidth corner brackets enclose a nickname"
-# The clause leaves middle for nickname in all three; the two Japanese
-# names also take their script order, family 山田.
+# The clause moves to nickname in all three, out of middle in the two
+# spaced names and out of the one given word in '山田｢ﾀﾛｰ｣太郎'; the
+# two Japanese names also take their script order, family 山田.
 # `_ambiguities` moves on '山田｢ﾀﾛｰ｣太郎', which 2.3 read as one name
 # word and reported given-or-family (#449); extracted, the Han
 # script order decides the two pieces and nothing is reported.

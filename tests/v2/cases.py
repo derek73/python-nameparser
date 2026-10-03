@@ -5995,10 +5995,11 @@ CASES: tuple[Case, ...] = (
                "same punctuation as 「」 in JIS X 0201's narrower "
                "encoding, the data halfwidth katakana comes from (#594). "
                "2.3.0 and every earlier release left the clause in the "
-               "name as a middle ｢ﾀﾛｰ｣, and the unclassified bracket "
-               "kept the name from being wholly East Asian script, so "
-               "it read given 山田 too. Extracted, the rest is kanji "
-               "plus katakana and takes the kana license"),
+               "name as a middle ｢ﾀﾛｰ｣ and read given 山田, the "
+               "halfwidth kana being unclassified until #594. Since "
+               "#594 the bracket alone kept the name from being wholly "
+               "East Asian script; extracted, the rest is kanji plus "
+               "katakana and takes the kana license"),
     Case("cjk_halfwidth_corner_bracket_unspaced_nickname", '山田｢ﾀﾛｰ｣太郎',
          {"family": "山田", "given": "太郎", "nickname": "ﾀﾛｰ"},
          classification="fix(#597)",
