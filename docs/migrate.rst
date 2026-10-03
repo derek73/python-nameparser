@@ -11,8 +11,8 @@ compatibility layer (``HumanName`` and ``nameparser.config``) is
 removed in 3.0; that release is not scheduled.
 
 The full 1.x documentation remains the canonical reference for
-``HumanName`` and stays online at the readthedocs ``stable`` build,
-currently the 1.4.0 release: https://nameparser.readthedocs.io/en/stable/
+``HumanName`` and stays online as the 1.4.0 build on readthedocs:
+https://nameparser.readthedocs.io/en/v1.4.0/
 
 This page exists for the other direction: translating a v1
 customization or a v1-shaped comparison into the 2.0 API, one row per
@@ -23,9 +23,9 @@ Before you upgrade
 
 What 2.0 removes is the batch of deprecations 1.3 and 1.4 announced. If
 your test suite runs clean on 1.4 under ``python -W
-error::DeprecationWarning``, it will run on 2.0 — with four exceptions
-that 1.4 never warned about. The first three raise the first time you
-hit them; the fourth only warns, so read it carefully:
+error::DeprecationWarning``, it will run on 2.0.0 — with the exceptions
+below, which 1.4 never warned about. The first three raise the first
+time you hit them; the last only warns, so read it carefully:
 
 * ``CONSTANTS.regexes.<name> = ...`` raises ``TypeError``. This includes
   ``CONSTANTS.regexes.bidi = False``, the opt-out 1.3.1 recommended for
@@ -39,6 +39,22 @@ hit them; the fourth only warns, so read it carefully:
   ``parse_pieces``, ``is_title``, and the rest) gets a
   ``DeprecationWarning`` at construction naming the hooks it overrode,
   because 2.0 delegates parsing to the core parser and never calls them
+
+Later 2.x releases add breaks of their own, none of which 1.4 warned
+about either:
+
+* editing a default word list in place — ``TITLES.add("dean")`` —
+  raises ``AttributeError`` since 2.2, when the vocabulary sets became
+  ``frozenset`` (see `Config map`_)
+* reading a renamed config constant (``prefixes.PREFIXES`` and the
+  rest) emits a ``DeprecationWarning`` since 2.2, which fails a suite
+  run under ``-W error::DeprecationWarning``
+* a ``capitalization_exceptions`` value that is not a case mask of its
+  key — ``{"md": "Doc"}`` — raises ``ValueError`` at the first parse
+  since 2.4
+* a ``Constants`` vocabulary entry no word can match (empty, or holding
+  stray whitespace) is dropped with a ``UserWarning`` naming it, since
+  2.4
 
 One removal changes results without saying anything. ``HumanName`` no
 longer defines ``__eq__``, so ``name == "John Smith"`` is now ``False``
@@ -219,14 +235,14 @@ fields:
      -
    * - ``capitalization_exceptions``
      - ``capitalization_exceptions``
-     - Pair-valued; set it via ``dataclasses.replace(lexicon,
-       capitalization_exceptions={...})``, not ``add()``/``remove()``.
-       Since 2.4 a value is a case mask — the key's own letters and
-       digits recased (``{"phd": "PhD"}``) — laid over the word as
-       written, so ``{"md": "M.D."}`` repairs ``md`` to ``MD``, not
-       ``M.D.``; a value that spells anything else raises
-       ``ValueError`` on both APIs, at the first parse for a v1
-       ``Constants``
+     - Pair-valued, so not ``add()``/``remove()``; extend the defaults
+       with ``dataclasses.replace()`` as :ref:`case-exceptions` shows.
+       Since 2.4 a value is a case mask, so ``{"md": "M.D."}`` repairs
+       ``md`` to ``MD``
+
+Some ``Lexicon`` fields have no ``CONSTANTS`` attribute at all —
+``conjunctions_ambiguous``, ``maiden_markers``, ``surnames`` and
+``honorific_tails`` — so they are reached through the 2.0 API only.
 
 The vocabulary that feeds both columns lives in ``nameparser.config``,
 and in 2.2 its module and constant names moved to the vocabulary the
@@ -328,26 +344,33 @@ reaches a freshly built ``Constants``, and neither
 ``Lexicon.default()`` nor the shared ``CONSTANTS``. The advice below is
 the same advice — configure the object, with
 ``constants.capitalization_exceptions["dphil"] = "DPhil"`` on a private
-``Constants``, or ``dataclasses.replace(lexicon,
-capitalization_exceptions={...})`` for the 2.0 API.
+``Constants``, or for the 2.0 API a ``dataclasses.replace()`` that
+extends the default pairs rather than replacing them
+(:ref:`case-exceptions`).
 
 Configure the objects instead, which both APIs have always supported
 and neither the freeze nor the rename affects. For ``HumanName``, build
-a private ``Constants`` and pass it::
+a private ``Constants`` and pass it:
 
-    from nameparser import HumanName
-    from nameparser.config import Constants
+.. doctest::
 
-    constants = Constants()
-    constants.titles.add("dean")
-    name = HumanName("Dean Smith", constants=constants)
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import Constants
+    >>> HumanName("Dean Smith").first                # not a default title
+    'Dean'
+    >>> dean_constants = Constants()
+    >>> _ = dean_constants.titles.add("dean")    # returns the set
+    >>> HumanName("Dean Smith", constants=dean_constants).title
+    'Dean'
 
-For the 2.0 API, extend the default lexicon and hand it to a parser::
+For the 2.0 API, extend the default lexicon and hand it to a parser:
 
-    from nameparser import Lexicon, Parser
+.. doctest::
 
-    parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
-    name = parser.parse("Dean Smith")
+    >>> from nameparser import Lexicon, Parser
+    >>> dean_parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
+    >>> dean_parser.parse("Dean Smith").title
+    'Dean'
 
 Mutating the shared ``CONSTANTS`` singleton still works and still
 reaches every ``HumanName`` that reads it, but it warns: it is
@@ -457,8 +480,8 @@ Behavior changes
 -----------------
 
 Beyond the API surface mapped above, a handful of parse *outputs*
-differ between 1.4 and 2.0 for specific input shapes. The full list,
-with reasoning, is in the 2.0.0 section of :doc:`release_log`. These
+differ between 1.4 and 2.x for specific input shapes. The full list,
+with reasoning, is in each 2.x section of :doc:`release_log`. These
 are the shapes worth grepping your own fixtures for, because a
 recognized suffix or title now stays in its own field instead of
 landing in ``first``/``last``:
@@ -575,3 +598,51 @@ unconditional) are decided
 in tokenization rather than by policy, so a name written with either
 still divides at the dot, and still renders with a space, whatever
 those two fields are set to.
+
+Later releases moved more 1.4 readings, and these reach ``HumanName``
+as well. The release log's 2.2, 2.3 and 2.4 sections carry the
+reasoning; these are the shapes to grep your fixtures for, with what
+1.4 read:
+
+- ``"Jack MA"`` — a capitalized credential: 1.4 read last ``MA``.
+- ``"Her Majesty Queen Elizabeth"``, ``"Prince Harry"`` — a name after a
+  form of address is the given name: 1.4 read last ``Elizabeth`` and
+  ``Harry``.
+- ``"Dr King Jr"`` — 1.4 read title ``Dr King``, last ``Jr``.
+- ``"John Smith Prof."`` — a trailing period-marked title: 1.4 read last
+  ``Prof.``, middle ``Smith``.
+- ``"jose e maria santos"`` — a one-letter connective in a one-case name
+  is an initial: 1.4 read first ``jose e maria``.
+- ``"van der Berg, PhD"`` — 1.4 read first ``van``, last ``der Berg``.
+- ``"Josep Carod i Rovira"`` — ``i`` links two surnames: 1.4 read middle
+  ``Carod i``, last ``Rovira``.
+- ``"John Smith X.Y.Z."`` — an unlisted dotted credential: 1.4 read last
+  ``X.Y.Z.``, middle ``Smith``.
+- ``capitalize()`` on ``"john smith md"`` — 1.4 wrote ``M.D.``, since a
+  ``capitalization_exceptions`` value now only recases its key.
+
+.. doctest::
+
+    >>> HumanName("Jack MA").suffix
+    'MA'
+    >>> HumanName("Her Majesty Queen Elizabeth").first
+    'Elizabeth'
+    >>> HumanName("Prince Harry").first
+    'Harry'
+    >>> king = HumanName("Dr King Jr")
+    >>> king.title, king.last, king.suffix
+    ('Dr', 'King', 'Jr')
+    >>> HumanName("John Smith Prof.").title
+    'Prof.'
+    >>> HumanName("jose e maria santos").middle
+    'e maria'
+    >>> HumanName("van der Berg, PhD").last
+    'van der Berg'
+    >>> HumanName("Josep Carod i Rovira").last
+    'Carod i Rovira'
+    >>> HumanName("John Smith X.Y.Z.").suffix
+    'X.Y.Z.'
+    >>> md = HumanName("john smith md")
+    >>> md.capitalize(force=True)
+    >>> str(md)
+    'John Smith MD'

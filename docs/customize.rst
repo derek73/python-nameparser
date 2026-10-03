@@ -159,6 +159,8 @@ and combining them at parser construction:
     >>> sorted((house | per_source).titles)
     ['dean', 'provost']
 
+.. _case-exceptions:
+
 Fixing the case of a particular word
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
