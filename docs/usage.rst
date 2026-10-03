@@ -859,7 +859,8 @@ token of two or more period-separated chunks the same way —
 by default only after a comma behind a full name, where an all-caps
 surname is never written — ``parse("John Smith, XYZ").suffix`` is
 ``'XYZ'`` — and at the end of a name only on request, since an
-all-caps surname is written there. See :doc:`customize` for both.
+all-caps surname is written there. See :ref:`unlisted-credentials`
+for both.
 
 A reading the vocabulary settles on its own is not a guess and reports
 nothing — periods make ``M.A.`` unambiguously a credential:

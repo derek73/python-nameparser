@@ -492,67 +492,15 @@ listed below.
        (``rules.md#W3``) and this reading can change.
    * - ``unlisted_dotted_suffixes``
      - ``bool``
-     - Reads an unlisted token of two or more period-separated chunks
-       as a credential where the position allows it:
-       ``"John Smith X.Y.Z."`` gives suffix ``X.Y.Z.`` while
-       ``"Jack X.Y.Z."`` keeps family ``X.Y.Z.``, and either reading
-       is reported. The family-comma form is one of those positions
-       since 2.4: ``"Doe, John X.Y.Z."`` gives suffix ``X.Y.Z.``
-       while ``"Doe, X.Y.Z."`` keeps given ``X.Y.Z.``. So is the word
-       ending a maiden marker's clause, also since 2.4:
-       ``"Jane Doe nee Smith X.Y.Z."`` gives maiden ``Smith`` with
-       suffix ``X.Y.Z.``, where ``False`` keeps maiden
-       ``Smith X.Y.Z.``. Two single letters right after a comma are
-       the exception: they are how a person's initials are written,
-       and the words before the comma may be one surname of two
-       words, so ``"García Márquez, G.J."`` keeps given ``G.J.``
-       (reported) unless an unambiguous post-nominal in front of them
-       that is not also a title, or another unlisted dotted word beside
-       them, says otherwise (``"John Smith, PhD X.Y."`` gives suffix
-       ``PhD X.Y.``, while ``"García Márquez, Ms G.J."`` gives title
-       ``Ms``, given ``G.J.``).
-       Case is irrelevant — the periods are the signal.
-       Whole-token vocabulary still wins (``M.A.``, ``Ph.D.``), and a
-       single trailing period is not this shape
-       (``"John Smith Xyz."`` keeps family ``Xyz.``). Two further
-       gates keep it from over-reaching: every chunk must be
-       alphabetic, so a digit anywhere refuses it
-       (``"John Smith 1.4"`` keeps family ``1.4``, on or off), and a
-       script with no period abbreviations of its own refuses it too
-       (a CJK word glued into periods, ``"John Smith 田.中."``, keeps
-       family ``田.中.``). Defaults to ``True``; ``False`` reads such a
-       token as name material everywhere and still reports the fork —
-       it does NOT revive the pre-2.4 reading of a chunk that is a
-       single ASCII character — a roman numeral, or the digit ``2`` —
-       as a credential (``"Jack X.Y.I."`` still keeps family
-       ``X.Y.I.`` either way, and a dotted version string such as
-       ``"John Smith 1.4.2"`` keeps family ``1.4.2``; that retirement
-       is not behind this switch).
+     - Reads an unlisted dotted acronym such as ``X.Y.Z.`` as a
+       credential where the name's shape allows it. Defaults to
+       ``True``. See :ref:`unlisted-credentials`.
    * - ``unlisted_caps_suffixes``
-     - ``CapsSuffixes``
-     - Where an unlisted all-caps word of two or more letters, with no
-       period in it, reads as a credential. The name must contrast it
-       with a word holding a capital whose last letter is lowercase
-       (``Smith``, ``DiCaprio``) that the vocabulary
-       does not claim as a title, particle or credential: a record
-       written wholly in capitals, or wholly in lowercase, keeps every
-       word a name word. ``CapsSuffixes.AFTER_COMMA``, the default, reads
-       it only in the part right after a comma with two or more name
-       words before it: ``"John Smith, XYZ"`` gives suffix ``XYZ``,
-       while ``"Smith, XYZ"`` keeps given ``XYZ`` and a lone two-letter
-       word, how initials are written, stays the given name
-       (``"García Márquez, MJ"``). The all-caps SURNAME convention
-       (``"Jean DUPONT"``, ``"DUPONT, Jean"``) never writes the
-       capitals there. ``CapsSuffixes.EVERYWHERE`` also reads the end
-       of a name, the given part's last word after a family comma
-       (``"Doe, John XYZ"``) and the word ending a maiden marker's
-       clause (``"Jane Doe nee Smith XYZ"`` gives maiden ``Smith``
-       with suffix ``XYZ``), where that convention does write them:
-       ``"Jean Pierre DUPONT"`` then gives family ``Pierre``, suffix
-       ``DUPONT``. ``CapsSuffixes.OFF`` reads none of them and reports
-       nothing, 2.3's reading -- and the way to keep a given name
-       written in capitals after a two-word surname, which the default
-       reads as a credential (``"García Márquez, GABRIEL"``).
+     - :class:`~nameparser.CapsSuffixes`
+     - Where an unlisted all-caps word such as ``XYZ`` reads as a
+       credential: after a comma (``AFTER_COMMA``, the default), at the
+       end of a name as well (``EVERYWHERE``), or nowhere (``OFF``).
+       See :ref:`unlisted-credentials`.
    * - ``strip_emoji``
      - ``bool``
      - Excludes emoji from tokenization — they appear in no field or
@@ -873,6 +821,146 @@ is bad enough to be the reason you'd go looking:
     >>> name = Parser(policy=policy).parse("Jane Smith, RN - CRNA")
     >>> name.given, name.family, name.suffix
     ('Jane', 'Smith', 'RN, CRNA')
+
+.. _unlisted-credentials:
+
+Credentials the vocabulary doesn't list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+No suffix list holds every post-nominal, so two ``Policy`` fields read
+an unlisted word as a credential from how it is written: in periods
+(``X.Y.Z.``), or in capitals (``XYZ``). The writing cannot settle it
+alone, because a surname can be written either way, so both fields
+also decide by position: the word has to stand behind a name that can
+spare it.
+
+Both fields share one exception. Two letters right after a comma are
+how a person's initials are written, and the words before the comma
+may be one surname of two words, so ``"García Márquez, G.J."`` and
+``"García Márquez, MJ"`` keep given ``G.J.`` and ``MJ``.
+
+Dotted acronyms
+^^^^^^^^^^^^^^^
+
+``unlisted_dotted_suffixes`` is on by default. It reads a token of two
+or more period-separated chunks as a credential at the end of a name,
+at the end of the given part after a family comma, and at the end of
+a maiden marker's clause. Case is irrelevant; the periods are the
+signal. With nothing to spare in front of it, the word stays a name.
+Either way the parse reports the fork as a ``suffix-or-name``
+ambiguity, so a record that reads wrong can still be found:
+
+.. doctest::
+
+    >>> cred = parse("John Smith X.Y.Z.")
+    >>> cred.family, cred.suffix
+    ('Smith', 'X.Y.Z.')
+    >>> parse("Jack X.Y.Z.").family
+    'X.Y.Z.'
+    >>> cred = parse("Doe, John X.Y.Z.")
+    >>> cred.given, cred.suffix
+    ('John', 'X.Y.Z.')
+    >>> parse("Doe, X.Y.Z.").given
+    'X.Y.Z.'
+    >>> cred = parse("Jane Doe nee Smith X.Y.Z.")
+    >>> cred.maiden, cred.suffix
+    ('Smith', 'X.Y.Z.')
+
+The two-letter initials exception gives way to evidence that the
+letters are a credential: an unambiguous post-nominal in front of them
+that is not also a title, or another unlisted dotted word beside them.
+A title in front of them says the opposite:
+
+.. doctest::
+
+    >>> parse("John Smith, PhD X.Y.").suffix
+    'PhD X.Y.'
+    >>> cred = parse("García Márquez, Ms G.J.")
+    >>> cred.title, cred.given
+    ('Ms', 'G.J.')
+
+Four things are not this shape. A token the vocabulary already knows
+(``M.A.``, ``Ph.D.``) is read by the vocabulary. A single trailing
+period is how any word is abbreviated, so ``"John Smith Xyz."`` keeps
+family ``Xyz.``. Every chunk must be alphabetic, so a digit anywhere
+refuses it (``"John Smith 1.4"`` keeps family ``1.4``). And a script
+with no period abbreviations of its own refuses it too
+(``"John Smith 田.中."`` keeps family ``田.中.``).
+
+Setting the field to ``False`` reads such a token as name material
+everywhere, and still reports the fork. It does not bring back the
+pre-2.4 reading of a chunk that is one ASCII character, a roman numeral
+or the digit ``2``, as a credential. That reading was retired outright,
+not put behind this switch, so ``"Jack X.Y.I."`` and the version string
+``"John Smith 1.4.2"`` keep their last word as the family name either
+way:
+
+.. doctest::
+
+    >>> dotted_off = Parser(policy=Policy(unlisted_dotted_suffixes=False))
+    >>> dotted_off.parse("John Smith X.Y.Z.").family
+    'X.Y.Z.'
+    >>> dotted_off.parse("Jane Doe nee Smith X.Y.Z.").maiden
+    'Smith X.Y.Z.'
+
+All-caps words
+^^^^^^^^^^^^^^
+
+``unlisted_caps_suffixes`` reads an unlisted word of two or more
+capital letters, with no period in it. Its value is a
+:class:`~nameparser.CapsSuffixes`, because where capitals mean a
+credential depends on a second convention: many records write the
+SURNAME in capitals (``"Jean DUPONT"``, ``"DUPONT, Jean"``).
+
+The capitals only mean something against a name that does not use
+them. The name must hold a word of its own with a capital and a
+lowercase last letter (``Smith``, ``DiCaprio``) that the vocabulary
+does not claim as a title, particle or credential. A record written
+wholly in capitals, or wholly in lowercase, keeps every word a name
+word.
+
+``CapsSuffixes.AFTER_COMMA``, the default, reads the word only in the
+part right after a comma with two or more name words before it. The
+all-caps surname convention never writes capitals there:
+
+.. doctest::
+
+    >>> from nameparser import CapsSuffixes
+    >>> cred = parse("John Smith, XYZ")
+    >>> cred.family, cred.suffix
+    ('Smith', 'XYZ')
+    >>> parse("Smith, XYZ").given
+    'XYZ'
+    >>> parse("JOHN SMITH, XYZ").given
+    'XYZ'
+
+``CapsSuffixes.EVERYWHERE`` also reads the end of a name, the given
+part's last word after a family comma, and the word ending a maiden
+marker's clause. Those are the places an all-caps surname IS written,
+which is why it is not the default:
+
+.. doctest::
+
+    >>> caps_everywhere = Parser(
+    ...     policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
+    >>> caps_everywhere.parse("John Smith XYZ").suffix
+    'XYZ'
+    >>> cred = caps_everywhere.parse("Jean Pierre DUPONT")
+    >>> cred.family, cred.suffix
+    ('Pierre', 'DUPONT')
+
+``CapsSuffixes.OFF`` reads none of them and reports nothing, as 2.3
+did. It is the way to keep a given name written in capitals after a
+two-word surname, which the default reads as a credential:
+
+.. doctest::
+
+    >>> parse("García Márquez, GABRIEL").suffix
+    'GABRIEL'
+    >>> caps_off = Parser(
+    ...     policy=Policy(unlisted_caps_suffixes=CapsSuffixes.OFF))
+    >>> caps_off.parse("García Márquez, GABRIEL").given
+    'GABRIEL'
 
 Keeping emoji and control characters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
