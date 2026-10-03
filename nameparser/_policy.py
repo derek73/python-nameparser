@@ -132,17 +132,20 @@ class Script(StrEnum):
 # personal name uses them. Halfwidth kana (U+FF65-U+FF9F, #594) IS
 # katakana here: legacy bank, payroll and CSV data written for JIS X
 # 0201 systems spells names in it, and 山田 ﾀﾛｳ must read as 山田 タロウ
-# does. Classifying it is a range, not a fold -- T1 forbids rewriting
-# the text, and an NFKC fold at classification would reach far past
-# the kana (fullwidth Latin, ㈱), and a voicing mark with no
+# does. Classifying it is a range, not a fold. rules.md's T Background
+# says "nothing rewrites the text before parsing", which rules out a
+# fold at tokenize, and an NFKC fold at classification would reach far
+# past the kana (fullwidth Latin, ㈱), and a voicing mark with no
 # precomposed form to join (ｱﾞ) folds to the combining U+3099, which
 # is in the HIRAGANA block -- so the folded token would take the kana
 # license and a wholly-katakana name would turn family-first
 # (decisions.md#W4). The span takes in the
 # halfwidth nakaguro U+FF65, which tokenize turns into a separator,
 # on the same direct-call grounds as U+30FB below, and the voicing
-# marks U+FF9E/U+FF9F, which are spacing characters following their
-# base and so need the block to be classified at all. It stops short
+# marks U+FF9E/U+FF9F: they are spacing characters (category Lm) that
+# NFC never composes into their base, there being no precomposed
+# halfwidth voiced kana, so a span ending at U+FF9D would leave ﾀﾞ
+# unclassified. It stops short
 # of U+FF61-U+FF64, the halfwidth CJK punctuation, whose U+FF61 is a
 # full stop (_lexicon.FULL_STOPS).
 # This table classifies by Unicode BLOCK, not the UAX #24 Script
@@ -319,8 +322,8 @@ _PATRONYMIC_MIGRATION_HINT = (
 #: classified fix, #294's mechanism. KATAKANA is deliberately absent:
 #: a PURE-katakana token may be a transcribed foreign name kept in its
 #: source (usually given-first) order, or a Japanese reading written
-#: family-first -- legacy halfwidth data (#594) writes every name in
-#: katakana -- and the script cannot tell them apart, so nothing should
+#: family-first -- legacy halfwidth data (#594) spells Japanese names in
+#: katakana too -- and the script cannot tell them apart, so nothing should
 #: default on it. Canonical form: sorted (Script, order) pairs,
 #: matching the field's storage.
 DEFAULT_SCRIPT_ORDERS: tuple[

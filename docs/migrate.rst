@@ -600,8 +600,10 @@ token moves from ``first`` to ``last`` exactly as ``毛泽东`` does:
 ``first``. The spaced shapes change what the name renders as too:
 ``str(HumanName("高橋 みなみ"))`` was ``"高橋 みなみ"`` and is now
 ``"みなみ 高橋"``. A name written *wholly* in katakana is deliberately
-left alone — it is usually a transcribed foreign name already in
-given-first order — so ``HumanName("マイケル ジャクソン")`` reads
+left alone — it may be a transcribed foreign name already in
+given-first order or a Japanese name's reading written family-first,
+and the script cannot tell which (see :ref:`east-asian-names` to opt
+in) — so ``HumanName("マイケル ジャクソン")`` reads
 ``first="マイケル"``/``last="ジャクソン"`` on both versions.
 
 One more shape changes for a different reason: the katakana middle dot
