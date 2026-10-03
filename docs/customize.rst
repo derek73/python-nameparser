@@ -193,33 +193,70 @@ lost and those words fall back to the all-capitals acronym repair:
 ``john smith phd`` would give ``John Smith PHD`` rather than
 ``John Smith PhD``.
 
+How a key matches a word
+^^^^^^^^^^^^^^^^^^^^^^^^
+
 The key is matched against the token with punctuation normalized away,
-not against the raw text, so one ``"phd"`` entry covers ``"phd"``,
-``"Phd"``, and ``"Ph.D."`` alike — you don't need a separate key for
-each way a source might punctuate it, and each keeps its own
-punctuation: ``Ph.D.`` repairs to ``Ph.D.``, not ``PhD``. Punctuation
-in the *value* is never written into the word; it only marks which of
-the mask's letters are joined. That matters for one case: a single
-letter the writer split off beside a full stop is an initial, and is
-capitalized where the mask keeps that letter inside a longer run, so
-``p.h.d.`` repairs to ``P.H.D.`` under ``"PhD"``. An acronym already
-listed in ``suffix_acronyms`` — plain or dotted — and a roman numeral
-need no entry at all: case repair writes a suffix of either kind in
-capitals by itself. Most of the listed acronyms whose usual spelling
-is not all capitals already carry a shipped mask (``DSc``, ``PsyD``,
-``PharmD``, ``MDiv`` and others), so ``john smith psyd`` gives
-``John Smith PsyD``. The exception is an acronym that is also a name
-word, such as ``meng`` or ``edd``: a mask applies wherever its word
-stands, so it would re-spell a person called Meng or Edd, and these
-get none — ``john smith edd`` gives ``John Smith EDD`` (the reasoning
-is the Excluded block for ``CAPITALIZATION_EXCEPTIONS`` under ``R4``
-in ``docs/design/decisions.md``). A caller's own acronym, one ``suffix_acronyms``
-doesn't already list, depends on how it is written: plain (``dphil``)
-it parses as an ordinary name word and repairs as one (``Dphil``,
-above); dotted (``d.phil.``) it is a suffix by shape alone, with no
-vocabulary entry needed to read it as one, and repairs in all
-capitals the same as a listed acronym does (``D.PHIL.``). Either
-way, give it a ``suffix_acronyms`` entry (or a mask of its own)
+not against the raw text, so one ``"phd"`` entry covers ``phd``,
+``PHD`` and ``Ph.D.`` alike, and you don't need a separate key for each
+way a source might punctuate it. (A mixed-case ``Phd`` matches too, but
+mixed case is left as written unless you pass ``force=True``; see
+:ref:`rendering-arguments`.)
+
+Each word keeps its own punctuation: ``Ph.D.`` repairs to ``Ph.D.``,
+not ``PhD``. Punctuation in the *value* is never written into the word;
+it only marks which of the mask's letters are joined. That matters for
+one case: a single letter the writer split off beside a full stop is an
+initial, and is capitalized even where the mask keeps that letter
+inside a longer run:
+
+.. doctest::
+
+    >>> str(parse("john smith ph.d.").capitalized())
+    'John Smith Ph.D.'
+    >>> str(parse("john smith p.h.d.").capitalized())
+    'John Smith P.H.D.'
+
+Words that need no entry
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+An acronym already listed in ``suffix_acronyms``, plain or dotted, and
+a roman numeral are written in capitals by case repair on its own. Most
+listed acronyms whose usual spelling is not all capitals already carry
+a shipped mask (``DSc``, ``PsyD``, ``PharmD``, ``MDiv`` and others):
+
+.. doctest::
+
+    >>> str(parse("john smith md iv").capitalized())
+    'John Smith MD IV'
+    >>> str(parse("john smith psyd").capitalized())
+    'John Smith PsyD'
+
+The exception is an acronym that is also a name word, such as ``meng``
+or ``edd``. A mask applies wherever its word stands, so it would
+re-spell a person called Meng or Edd, and these get none: they repair
+in plain capitals. The reasoning is the Excluded block for
+``CAPITALIZATION_EXCEPTIONS`` under ``R4`` in
+``docs/design/decisions.md``.
+
+.. doctest::
+
+    >>> str(parse("john smith edd").capitalized())
+    'John Smith EDD'
+
+Acronyms the vocabulary doesn't list
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An acronym ``suffix_acronyms`` doesn't list repairs according to how it
+is written:
+
+- **Plain** (``dphil``), it parses as an ordinary name word and repairs
+  as one: ``Dphil``, as in the first example above.
+- **Dotted** (``d.phil.``), it is a suffix by shape alone (see
+  :ref:`unlisted-credentials`) and repairs in all capitals the same as
+  a listed acronym does: ``D.PHIL.``.
+
+Either way, give it a ``suffix_acronyms`` entry, or a mask of its own,
 rather than relying on this fallback.
 
 Words that are also ordinary names
