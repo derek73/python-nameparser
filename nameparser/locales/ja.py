@@ -21,7 +21,9 @@ Unlike zh, this pack ships NO vocabulary and NO order:
   Han names have read family-first since the 2026-07-27 amendment.
   Pure KATAKANA is deliberately outside both the order rule and the
   activation set above -- katakana is how Japanese writes FOREIGN names
-  (マイケル・ジャクソン), in their original given-first order.
+  (マイケル・ジャクソン), in their original given-first order, and a
+  Japanese name's katakana reading (ヤマダ タロウ, or the halfwidth ﾔﾏﾀﾞ
+  ﾀﾛｳ of legacy data, #594) cannot be told from one by its script.
 
 Data sources: none. The pack carries no vocabulary of its own, so
 there is no list here to cite, extend or keep current -- the data that

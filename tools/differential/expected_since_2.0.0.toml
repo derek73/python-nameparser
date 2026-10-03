@@ -377,7 +377,7 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # entry removed from SUFFIX_WORDS or GLUED_HONORIFICS, now
 # forces this file to narrow with it instead of leaving a wide twin
 # behind to classify a real regression as intended.
-name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
+name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF9F]"
 fields = ["given", "middle", "family", "_ambiguities"]
 
 [[change]]
@@ -603,7 +603,7 @@ issue = "fix(#298) 间隔号 division changes the comma reading, sending the cre
 # (U+30FB) and ･ (U+FF65) are three different separators with three
 # different rules in 2.1, and they are indistinguishable enough on
 # screen that a literal here would be unreviewable.
-name_regex = "(?s)(?=.*,)(?=.*\\u00B7)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+name_regex = "(?s)(?=.*,)(?=.*\\u00B7)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF9F])"
 fields = ["given", "family", "title", "suffix"]
 
 [[change]]
@@ -3989,3 +3989,38 @@ issue = "fix(#585) a decomposed initial keeps its whole first letter"
 # decomposition data.
 name_regex = "^(e\u0301mile zola|マイケル シ\u3099ャクソン)$"
 fields = ["_initials"]
+
+# ---------------------------------------------------------------
+# #594: HALFWIDTH KATAKANA IS KATAKANA. The script table classifies
+# the halfwidth kana block U+FF65-U+FF9F as Script.KATAKANA, so what
+# reaches full-width katakana reaches halfwidth now: the kana license
+# (rules.md#W4) reads 山田 ﾀﾛｳ family-first as it reads 山田 エミ, the
+# 间隔号 divides between two halfwidth kana (rules.md#T3), and H2's
+# opening-abbreviation shape declines a period-marked katakana word
+# because katakana has no initials (rules.md#H2's Accepted clause),
+# closing the limit decisions.md#cjk-full-stops recorded. A WHOLLY
+# halfwidth name keeps the declared order, as wholly full-width
+# katakana does, so 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity and in neither rule.
+#
+# Literal-anchored to the names: no corpus line held a halfwidth kana
+# before this change, so the movers ARE the six case rows #594 added,
+# less the parity one. A shape spelling -- any halfwidth kana -- would
+# be a hand copy of the span the canonical CJK rule already carries.
+# LAST in the file: each diff reported unexplained, or unclassified on
+# the radar, on the run before these rules existed (2026-10-03).
+# ---------------------------------------------------------------
+
+# The license and 间隔号 movers need no rule at this baseline: the
+# canonical fix(#271/#272/#298) rule above explains them through
+# its span class, which copies the halfwidth block since #594.
+
+[[change]]
+issue = "fix(#594) a period-marked halfwidth katakana word is not a title"
+# 'ﾀﾅｶ. John' and 'ﾏｲｹﾙ.' read title where their full-width twins read
+# a name word; both read given now. Tolerated input (an edge full stop
+# on a CJK word), so these are radar names and the rule classifies them
+# for the release note rather than for the exit code.
+# `_ambiguities` is the v2 surface's: the lone 'ﾏｲｹﾙ.' reports
+# given-or-family as 'マイケル.' does, where the title reported nothing.
+name_regex = "^(?:ﾀﾅｶ\\. John|ﾏｲｹﾙ\\.)$"
+fields = ["title", "given", "_ambiguities"]

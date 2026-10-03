@@ -73,10 +73,14 @@ class Script(StrEnum):
     #: kanji+kana token (高橋みなみ) is Japanese and resolves HERE --
     #: this member is the carrier key in script_orders/segment_scripts.
     HIRAGANA = "hiragana"
-    #: Japanese katakana. A PURE-katakana token is predominantly a
-    #: transcribed foreign name in its original order (マイケル), so
-    #: no default behavior keys on this member; it exists so the
-    #: classifier can name what it deliberately declines.
+    #: Japanese katakana, full-width and halfwidth (ﾀﾛｳ) alike. A
+    #: PURE-katakana token may be a transcribed foreign name in its
+    #: original order (マイケル) or a Japanese name's reading written
+    #: family-first (ヤマダ タロウ, and legacy halfwidth data), and the
+    #: script cannot say which, so no default behavior keys on this
+    #: member; it exists so the classifier can name what it
+    #: deliberately declines. A caller who knows their katakana is
+    #: Japanese maps it to FAMILY_FIRST in script_orders.
     KATAKANA = "katakana"
 
 
@@ -125,11 +129,19 @@ class Script(StrEnum):
 # supplementary Han, which real surnames genuinely need. The Katakana
 # Phonetic Extensions block (U+31F0-U+31FF, 16 small katakana for Ainu
 # transcription) is excluded for the same reason -- no modern Japanese
-# personal name uses them. Halfwidth kana (U+FF65-U+FF9F, including
-# the voiced/semi-voiced sound marks U+FF9E/U+FF9F) is likewise
-# deliberately excluded -- legacy bank/CSV data uses it, but it is a
-# separate normalization problem; #272 Task 2b's separator handling
-# only touches the halfwidth DOT (U+FF65), not the rest of that block.
+# personal name uses them. Halfwidth kana (U+FF65-U+FF9F, #594) IS
+# katakana here: legacy bank, payroll and CSV data written for JIS X
+# 0201 systems spells names in it, and 山田 ﾀﾛｳ must read as 山田 タロウ
+# does. Classifying it is a range, not a fold -- T1 forbids rewriting
+# the text, and an NFKC fold at classification would reach far past
+# the kana (fullwidth Latin, ㈱) while mapping a lone voicing mark
+# ﾞ to the HIRAGANA block's combining U+3099. The span takes in the
+# halfwidth nakaguro U+FF65, which tokenize turns into a separator,
+# on the same direct-call grounds as U+30FB below, and the voicing
+# marks U+FF9E/U+FF9F, which are spacing characters following their
+# base and so need the block to be classified at all. It stops short
+# of U+FF61-U+FF64, the halfwidth CJK punctuation, whose U+FF61 is a
+# full stop (_lexicon.FULL_STOPS).
 # This table classifies by Unicode BLOCK, not the UAX #24 Script
 # property: U+30A0, U+30FB (the middle dot), and U+30FC (the
 # prolonged sound mark) all carry Script=Common under UAX #24, and the
@@ -154,7 +166,7 @@ _SCRIPT_RANGES: dict[Script, tuple[tuple[int, int], ...]] = {
                  (0xF900, 0xFAFF), (0x20000, 0x323AF)),
     Script.HANGUL: ((0xAC00, 0xD7A3),),
     Script.HIRAGANA: ((0x3040, 0x309F),),
-    Script.KATAKANA: ((0x30A0, 0x30FF),),
+    Script.KATAKANA: ((0x30A0, 0x30FF), (0xFF65, 0xFF9F)),
 }
 
 #: The Japanese repertoire: the three scripts Japanese names draw on.
@@ -302,8 +314,10 @@ _PATRONYMIC_MIGRATION_HINT = (
 #: (transcriptions are katakana-only), so it is Japanese, written
 #: family-first -- another default change in a minor, release-log-
 #: classified fix, #294's mechanism. KATAKANA is deliberately absent:
-#: a PURE-katakana token is predominantly a transcribed foreign name
-#: kept in its source (usually given-first) order, so nothing should
+#: a PURE-katakana token may be a transcribed foreign name kept in its
+#: source (usually given-first) order, or a Japanese reading written
+#: family-first -- legacy halfwidth data (#594) writes every name in
+#: katakana -- and the script cannot tell them apart, so nothing should
 #: default on it. Canonical form: sorted (Script, order) pairs,
 #: matching the field's storage.
 DEFAULT_SCRIPT_ORDERS: tuple[
