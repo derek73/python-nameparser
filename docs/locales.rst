@@ -13,14 +13,14 @@ a name from a tradition it was not written for. The warning under
 What works without a pack
 --------------------------
 
-Most international names need no pack at all. The default vocabulary
-covers seven scripts — Latin, Cyrillic, Greek, Arabic, Hebrew,
-Devanagari and Bengali. Honorifics, conjunctions and name particles
-written in them are recognized out of the box, as far as each script's
-vocabulary reaches: all seven ship honorifics, while conjunctions and
-particles reach fewer — Cyrillic and Greek ship conjunctions and no
-particle, Hebrew particles and no conjunction, Devanagari and Bengali
-honorifics only.
+Most international names need no pack at all. Besides Latin, the
+default vocabulary covers Cyrillic, Greek, Arabic, Hebrew, Devanagari
+and Bengali, and the East Asian scripts described below. Honorifics,
+conjunctions and name particles written in them are recognized out of
+the box, as far as each script's vocabulary reaches: each of those
+scripts ships honorifics, while conjunctions and particles reach
+fewer — Cyrillic and Greek ship conjunctions and no particle, Hebrew
+particles and no conjunction, Devanagari and Bengali honorifics only.
 
 .. doctest::
 
@@ -57,7 +57,8 @@ rather than a separate vocabulary: ``titles`` makes the word a title at
 all, and listing it in ``given_name_titles`` says the honorific
 precedes the *given* name — as Arabic ones do — so the word after it
 isn't read as a family name. Listing it in ``given_name_titles`` alone
-raises ``ValueError`` rather than quietly doing nothing.
+does nothing, and says nothing: the word is never read as a title, so
+the entry is never consulted.
 
 Two East Asian behaviors are on by default for the same reason, except
 that what selects them is the *script* rather than the word. The
@@ -137,14 +138,17 @@ parsing, equivalent to ``parser_for(locales.get("ru"))``.
        no surname list, because no list divides a kanji name, and no
        order: a Japanese name already reads family-first by default.
    * - ``ru``
-     - East Slavic patronymic order — detects a formal
-       given/patronymic/family shape (Cyrillic and transliterated
-       ``-ovich``/``-ovna``-style endings) and assigns it accordingly.
+     - East Slavic patronymic order — detects the formal
+       family/given/patronymic shape (three name words, the last ending
+       like a patronymic — Cyrillic and transliterated
+       ``-ovich``/``-ovna``-style endings — and the middle not) and
+       assigns it accordingly.
    * - ``tr_az``
-     - Turkic patronymic markers — detects a standalone marker token
-       (``oglu``, ``qizi``, ``uulu``, and their Latin- and
-       Cyrillic-script variants) and reads the name around it as
-       given/middle/family.
+     - Turkic patronymic markers — detects a name of four words ending
+       in a standalone marker token (``oglu``, ``qizi``, ``uulu``, and
+       their Latin- and Cyrillic-script variants) and reads its first
+       word as the family name (``Aliyev Ilham Heydar oglu`` → family
+       ``Aliyev``).
    * - ``zh``
      - Chinese surname segmentation — splits an unspaced Han name into
        surname and given name (``毛泽东`` → family ``毛``, given
@@ -181,10 +185,10 @@ new naming rule belongs in.
    parsers rather than enabling a pack over all of it.
 
    A declared family-first ``name_order`` stands down the rotation
-   instead of competing with it: fold the pack onto a base parser
-   built with ``Policy(name_order=FAMILY_FIRST)`` and ``"Мицкевич
-   Адам Юзеф"`` reads family ``Мицкевич`` rather than the given-first
-   order the pack restores by default.
+   instead of competing with it. The two never disagree on a name the
+   rule matches: a family-first order already reads ``"Сидоров Иван
+   Петрович"`` as family ``Сидоров``, so folding the pack onto a base
+   built with ``Policy(name_order=FAMILY_FIRST)`` adds nothing.
 
 .. _segmenter-contract:
 
@@ -205,13 +209,15 @@ and returning a :class:`~nameparser.Segmentation` — the interior
 offsets to cut at, plus how confident you are — or ``None`` to decline,
 leaving the token whole. Declining is the load-bearing half of the
 contract, because ``segment_scripts`` unions across packs: your
-segmenter is offered every token of every activated script, not only
-the ones its own pack turned on. Recognize the text you can actually
-read and return ``None`` for the rest, rather than answering for a
-script you never meant to handle. Exceptions are the one thing that
-does not stay inside the parse — a segmenter is your code, so its
-errors propagate out of ``parse()`` instead of being absorbed as
-content errors.
+segmenter may be offered a token of any activated script, not only the
+ones its own pack turned on. It is asked only where the surname list
+could not divide an unspaced token, and not where the name is already
+divided — by a space, a family comma or a 间隔号. Recognize the text
+you can actually read and return ``None`` for the rest, rather than
+answering for a script you never meant to handle. A segmenter is your
+code, so its failures do not stay inside the parse: its own exceptions
+propagate out of ``parse()``, and an answer of the wrong type or a cut
+outside the token raises ``TypeError`` or ``ValueError``.
 
 The pack half of that arrangement carries no words at all, which makes
 it the shortest kind of pack there is:
@@ -224,8 +230,10 @@ it the shortest kind of pack there is:
     ...                   segment_scripts=frozenset({Script.HAN})))
 
 ``nameparser/locales/ja.py`` is the shipped example of exactly that
-shape: activation is the pack's entire contribution, and a pack
-applied without a segmenter simply divides nothing.
+shape: activation is the pack's entire contribution. Applied without a
+segmenter it divides nothing, and building the parser emits a
+``UserWarning`` naming the scripts that can never divide and the
+argument to pass.
 
 Creating your own Locale
 -------------------------
@@ -242,10 +250,11 @@ see :meth:`Policy.patched() <nameparser.Policy.patched>`.
 The ``policy`` half works that way, but the ``lexicon`` half does not.
 A pack's :class:`~nameparser.Lexicon` is a complete value in its own
 right and is validated on its own, before it is unioned onto the base
-— so a fragment that marks a word must also carry the word it marks.
-To make an existing base title precede the given name, restate the
-title in the fragment rather than listing it in ``given_name_titles``
-alone. ``zh`` is the shipped worked example: its
+— so a fragment that marks a word as a member of a narrower set must
+also carry the word it marks. A fragment holding
+``particles_ambiguous={"van"}`` without ``particles={"van"}`` raises
+``ValueError`` before any union happens; the same holds for
+``suffix_acronyms_ambiguous`` and ``honorific_tails``. ``zh`` is the shipped worked example: its
 ``Lexicon(surnames=...)`` has to satisfy every ``Lexicon`` rule
 standing alone, before anything unions it onto the base.
 
@@ -270,11 +279,11 @@ of the same string, which has no title and splits ``given='Kapitan'``,
 When ``parser_for`` folds one or more packs onto a base, lexicons
 union (a pack's words are added to the base's, never removed); policy
 fields declared as set-valued in :class:`~nameparser.PolicyPatch`
-(``patronymic_rules`` and the delimiter fields) union the same way;
-and every other, scalar field is later-wins — if two packs (or a pack
-and an explicit conflicting value) set the same scalar field, the last
-one applied wins and a ``UserWarning`` is raised so the conflict
-isn't silent.
+(``patronymic_rules``, ``segment_scripts`` and the delimiter fields)
+union the same way; and every other, scalar field is later-wins. If two
+packs set the same scalar field — even to the same value — the later
+one wins and a ``UserWarning`` is raised; a pack overrides the base
+parser's value silently.
 
 Contributing a pack to nameparser
 ----------------------------------
@@ -334,6 +343,6 @@ by ``tests/v2/test_locales.py``:
 policy-only pack, ``nameparser/locales/zh.py`` for one that carries
 vocabulary, and ``nameparser/locales/ja.py`` for one whose whole
 contribution is turning a stage on. Packs still in progress are
-tracked in issue `#146
-<https://github.com/derek73/python-nameparser/issues/146>`_
-(Vietnamese).
+tracked in issue `#345
+<https://github.com/derek73/python-nameparser/issues/345>`_ (``hi``
+and ``bn``).

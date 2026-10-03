@@ -621,8 +621,7 @@ right and then reverses the remaining two, so
 Nothing keys this order to a script the way the East Asian defaults
 below do — Vietnamese is written in the Latin alphabet, which carries
 no order of its own — so it applies only where you set it, and there
-is no ``vn`` locale pack yet (issue `#146
-<https://github.com/derek73/python-nameparser/issues/146>`_).
+is no ``vn`` locale pack.
 
 Declaring the order settles where a surname ends
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
