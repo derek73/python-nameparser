@@ -9141,6 +9141,23 @@ CASES: tuple[Case, ...] = (
                "only the block span classifies it; a range ending at "
                "U+FF9D would leave ﾀﾞｲｽｹ mixed-script and the name "
                "positional"),
+    Case("ja_halfwidth_semi_voiced_and_long_vowel_marks_are_katakana",
+         "山田 ﾍﾟｰﾀｰ",
+         {"family": "山田", "given": "ﾍﾟｰﾀｰ"},
+         classification="fix(#594)",
+         notes="the span's other two edges a name actually reaches: "
+               "the semi-voiced mark ﾟ (U+FF9F, the block's last "
+               "codepoint) and the prolonged sound mark ｰ (U+FF70). "
+               "Narrowing the range by either one leaves ﾍﾟｰﾀｰ "
+               "mixed-script and the name positional"),
+    Case("ja_halfwidth_unspaced_unsegmented_default", "山田ﾀﾛｳ",
+         {"family": "山田ﾀﾛｳ"},
+         classification="fix(#594)",
+         notes="the halfwidth twin of ja_unspaced_unsegmented_default: "
+               "one Han+halfwidth token takes the kana license on its "
+               "own and reads family. 2.3.0 read it given, reporting "
+               "given-or-family; the license decides it, so nothing is "
+               "reported now"),
     Case("ja_halfwidth_pure_katakana_positional", "ﾔﾏﾀﾞ ﾀﾛｳ",
          {"given": "ﾔﾏﾀﾞ", "family": "ﾀﾛｳ"},
          notes="parity row guarding the license's boundary in "

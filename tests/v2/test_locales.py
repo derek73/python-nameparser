@@ -292,6 +292,9 @@ def test_ja_adapter_guard_stack_against_a_stub(
     # contains JA chars but is not WHOLLY JA
     assert seg("Yamada太郎") is None
     assert seg("林") is None                # namedivider raises below 2
+    # halfwidth kana is katakana, so a Han+halfwidth token is wholly
+    # Japanese and reaches the divider (#594)
+    assert seg("山田ﾀﾛｳ") is not None
 
 
 def test_ja_adapter_declines_shime_tokens(

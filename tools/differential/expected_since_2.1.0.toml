@@ -3911,29 +3911,33 @@ fields = ["_initials"]
 # because katakana has no initials (rules.md#H2's Accepted clause),
 # closing the limit decisions.md#cjk-full-stops recorded. A WHOLLY
 # halfwidth name keeps the declared order, as wholly full-width
-# katakana does, so 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity and in neither rule.
+# katakana does, so 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity.
 #
 # Literal-anchored to the names: no corpus line held a halfwidth kana
-# before this change, so the movers ARE the six case rows #594 added,
-# less the parity one. A shape spelling -- any halfwidth kana -- would
-# be a hand copy of the span the canonical CJK rule already carries.
-# LAST in the file: each diff reported unexplained, or unclassified on
-# the radar, on the run before these rules existed (2026-10-03).
+# before this change, so the movers ARE the eight case rows #594 added,
+# less the parity one -- five here, two in the title rule. A shape
+# spelling -- any halfwidth kana -- would be a hand copy of the span
+# the canonical CJK rule already carries. LAST in the file: each diff
+# reported unexplained, or unclassified on the radar, on the run
+# before these rules existed (2026-10-03).
 # ---------------------------------------------------------------
 
 [[change]]
 issue = "fix(#594) halfwidth katakana takes the kana license and the 间隔号"
-# '山田 ﾀﾛｳ' and '山田 ﾀﾞｲｽｹ' read family 山田 where every release read
-# it given; 'ﾀﾛｳ·ﾔﾏﾀﾞ' divides where it was one given token.
-name_regex = "^(?:山田 ﾀﾛｳ|山田 ﾀﾞｲｽｹ|ﾀﾛｳ\\u00B7ﾔﾏﾀﾞ)$"
+# '山田 ﾀﾛｳ', '山田 ﾀﾞｲｽｹ' and '山田 ﾍﾟｰﾀｰ' read family 山田 where every
+# release read it given, the unspaced '山田ﾀﾛｳ' reads family where it
+# read given, and 'ﾀﾛｳ·ﾔﾏﾀﾞ' divides where it was one given token.
+name_regex = "^(?:山田 ﾀﾛｳ|山田 ﾀﾞｲｽｹ|山田 ﾍﾟｰﾀｰ|山田ﾀﾛｳ|ﾀﾛｳ\\u00B7ﾔﾏﾀﾞ)$"
 fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#594) a period-marked halfwidth katakana word is not a title"
-# 'ﾀﾅｶ. John' and 'ﾏｲｹﾙ.' read title where their full-width twins read
-# a name word; both read given now. Tolerated input (an edge full stop
-# on a CJK word), so these are radar names and the rule classifies them
-# for the release note rather than for the exit code.
+# 'ﾀﾅｶ. John' and 'ﾏｲｹﾙ.' read title at 2.1.0, as their full-width
+# twins did until #cjk-full-stops (2.3); both read given now, as the
+# twins do.
+# Tolerated input (an edge full stop on a CJK word), so these are
+# radar names and the rule classifies them for the release note rather
+# than for the exit code.
 # `_ambiguities` is the v2 surface's: the lone 'ﾏｲｹﾙ.' reports
 # given-or-family as 'マイケル.' does, where the title reported nothing.
 name_regex = "^(?:ﾀﾅｶ\\. John|ﾏｲｹﾙ\\.)$"

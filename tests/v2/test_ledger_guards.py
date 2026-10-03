@@ -63,8 +63,8 @@ from ._differential_fixtures import (
 # table does not classify it. Empty since #594. Its one member was the
 # halfwidth middle dot U+FF65, which separates tokens without having
 # been classified while halfwidth kana stayed out of the table; #594
-# classified the whole halfwidth kana block, U+FF65 with it, and the
-# membership guard below moved it into the table as it exists to.
+# classified the whole halfwidth kana block, U+FF65 with it, and it
+# moved into the table, as the membership guard below requires.
 # U+00B7 is deliberately NOT here -- its flank guard means every name
 # it can change matches through a classified flanking character
 # already. Single-sourced: read by the span sweep below, and by the
@@ -3641,15 +3641,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #585: 138 -> 139, one new corpus name and not a
         # wider rule: the decomposed katakana R3 row 'マイケル ジャクソン'
         # (NFD) lies in its script span, and fix(#585) explains it.
-        # 2026-10-03, #594: 139 -> 145, and this time the regex DID
+        # 2026-10-03, #594: 139 -> 147, and this time the regex DID
         # widen: its class copies the halfwidth kana block U+FF65-U+FF9F
         # whole, where it held U+FF65 alone. What it reaches beyond that
-        # is exactly the six halfwidth case rows #594 added -- no corpus
-        # line held halfwidth kana before them -- and it explains the
-        # three whose name parts move; 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as
-        # 'マイケル ジャクソン' already was inside the same class.
+        # is exactly the eight halfwidth case rows #594 added -- no
+        # corpus line held halfwidth kana before them. It explains the
+        # five that move only name fields; the two title movers also
+        # move `title`, outside its fields, and go to the #594 rule;
+        # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
+        # inside the same class.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(145, ('family', 'given', 'middle'), "cfd0d19b46d5", None),
+            _Claim(147, ('family', 'given', 'middle'), "b2dd5ac30ae4", None),
         # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
         # rather than with the rule -- this change added 35
         # maiden-clause names as rules.md example lines and
@@ -4797,15 +4799,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #585: 138 -> 139, one new corpus name and not a
         # wider rule: the decomposed katakana R3 row 'マイケル ジャクソン'
         # (NFD) lies in its script span, and fix(#585) explains it.
-        # 2026-10-03, #594: 139 -> 145, and this time the regex DID
+        # 2026-10-03, #594: 139 -> 147, and this time the regex DID
         # widen: its class copies the halfwidth kana block U+FF65-U+FF9F
         # whole, where it held U+FF65 alone. What it reaches beyond that
-        # is exactly the six halfwidth case rows #594 added -- no corpus
-        # line held halfwidth kana before them -- and it explains the
-        # three whose name parts move; 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as
-        # 'マイケル ジャクソン' already was inside the same class.
+        # is exactly the eight halfwidth case rows #594 added -- no
+        # corpus line held halfwidth kana before them. It explains the
+        # five that move only name fields; the two title movers also
+        # move `title`, outside its fields, and go to the #594 rule;
+        # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
+        # inside the same class.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(145, ('_ambiguities', 'family', 'given', 'middle'), "cfd0d19b46d5", None),
+            _Claim(147, ('_ambiguities', 'family', 'given', 'middle'), "b2dd5ac30ae4", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -5861,7 +5865,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#585) a decomposed initial keeps its whole first letter":
             _Claim(2, ('_initials',), "c4f045134f0f", None),
         "fix(#594) halfwidth katakana takes the kana license and the 间隔号":
-            _Claim(3, ('family', 'given'), "fdaa80515e52", None),
+            _Claim(5, ('family', 'given'), "86805db7d55e", None),
         "fix(#594) a period-marked halfwidth katakana word is not a title":
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
     },
@@ -6586,7 +6590,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#585) a decomposed initial keeps its whole first letter":
             _Claim(2, ('_initials',), "c4f045134f0f", None),
         "fix(#594) halfwidth katakana takes the kana license and the 间隔号":
-            _Claim(3, ('family', 'given'), "fdaa80515e52", None),
+            _Claim(5, ('family', 'given'), "86805db7d55e", None),
         "fix(#594) a period-marked halfwidth katakana word is not a title":
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
     },
@@ -6911,7 +6915,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#585) a decomposed initial keeps its whole first letter":
             _Claim(2, ('_initials',), "c4f045134f0f", None),
         "fix(#594) halfwidth katakana takes the kana license and the 间隔号":
-            _Claim(3, ('_ambiguities', 'family', 'given'), "fdaa80515e52", None),
+            _Claim(5, ('_ambiguities', 'family', 'given'), "86805db7d55e", None),
         "fix(#594) a period-marked halfwidth katakana word is not a title":
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
     },
