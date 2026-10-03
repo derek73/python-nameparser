@@ -34,13 +34,26 @@ rewrite the wrong occurrence (`issue #100
 <https://github.com/derek73/python-nameparser/issues/100>`_ and its
 relatives); a position cannot be confused with a look-alike.
 
+:class:`Tokens <nameparser.Token>` also carry tags — a second, independent label alongside their
+role, recording how a token was classified rather than what part of
+the name it belongs to — but only a handful of them are part of the
+stable API, collected in :data:`~nameparser.STABLE_TAGS`: ``particle``,
+``conjunction``, ``initial``, and ``joined``.
+Any tag written with a namespace prefix, like ``vocab:...``, is
+provenance information for debugging how a token got classified — it
+can change shape between releases and isn't something to match against
+in your own code. If you need to branch on how a token was
+classified, branch on role or on one of the stable tags above,
+not on a namespaced one.
+
 :class:`~nameparser.ParsedName` is frozen: there is no attribute
 assignment, ever. If a parse is almost right and you want to fix one
 field, you call ``.replace()``, which returns a new
 :class:`~nameparser.ParsedName` with that field changed and everything
 else — tokens, spans, the rest of the roles — carried over unchanged
-(``replace()`` tokens carry no vocabulary tags; :meth:`Parser.revise
-<nameparser.Parser.revise>` is the tag-preserving form).
+(``replace()`` tokens carry no vocabulary classification;
+:meth:`Parser.revise <nameparser.Parser.revise>` classifies the new
+value the way a parse would).
 ``str()`` renders the default view; nothing about calling it mutates
 the value you called it on.
 
@@ -57,13 +70,28 @@ Whatever the vocabulary layer has not claimed is left to a positional
 layer, which assigns purely by where a word sits: the first unclaimed
 word is the given name, the last is the family name, and anything
 between them is the middle name. ``name_order``, an explicit comma,
-and — for a name written wholly in one East Asian script —
-``script_orders`` change what "first" and "last" mean here; the
-Chinese interpunct ``·`` dividing such a name walks the last of those
-back, marking a transcription that keeps its source order; nothing
-else does.
+and — for a name in an East Asian script that settles its own order:
+wholly Han or hangul, or kanji mixed with kana — ``script_orders``
+change what "first" and "last" mean here; the Chinese interpunct ``·``
+dividing such a name walks the last of those back, marking a
+transcription that keeps its source order. Two rules can still
+override the arrangement: a particle that can never be a given name,
+opening the name, opens the surname under every order rather than
+becoming the given name (:ref:`order-vocabulary-first`), and the
+opt-in ``patronymic_rules``
+reorder a name whose patronymic marks its parts.
 
-This is the whole parser in two sentences, and it explains its
+A few words are read by how they are written, which is neither a list
+lookup nor position alone: the writing proposes a reading, and where
+the word stands decides whether it lands. A word ending in a period at
+the front of the given-name part is a title though no list holds it
+(``"Insp. Jane Morse"``; see :ref:`abbreviated-titles`). Since 2.4, an
+unlisted acronym written in periods (``X.Y.Z.``) is a credential behind
+a name that can spare it, and one written in capitals (``XYZ``) is,
+by default, right after a comma behind a full name
+(:ref:`unlisted-credentials`).
+
+That is the whole parser in outline, and it explains its
 character. A word nameparser has never seen still gets a sensible role,
 because the positional layer does not need to recognize anything. The
 same word can play different parts in different places — ``Lt.`` is a
@@ -177,7 +205,8 @@ readings — so nothing is recorded. A comma can settle the question
 before it arises, too: ``"Ma, Jack"`` fixes the family name, so the
 credential reading never comes up, while ``"John Smith MA"`` has to
 call it and says so. Some decisions are conventions rather than
-readings — a name of one name word has nothing to compare, and an
+readings — a name whose one name word nothing else decides (no
+title, family comma or vocabulary claim) has nothing to compare, and an
 input the title peel eats down to one last title word reads that word
 as the name for want of anything else — and since 2.3 those are
 reported too, so a field the library merely had to pick is a field you
@@ -195,15 +224,3 @@ much, but it leaves the rest of the name to be read as usual, so
 to call. Coverage grows over releases. Treat a non-empty
 ``ambiguities`` as a signal to act on; do not read an empty one as a
 guarantee.
-
-:class:`Tokens <nameparser.Token>` also carry tags — a second, independent label alongside their
-role, recording how a token was classified rather than what part of
-the name it belongs to — but only a handful of them are part of the
-stable API, collected in :data:`~nameparser.STABLE_TAGS`: ``particle``,
-``conjunction``, ``initial``, and ``joined``.
-Any tag written with a namespace prefix, like ``vocab:...``, is
-provenance information for debugging how a token got classified — it
-can change shape between releases and isn't something to match against
-in your own code. If you need to branch on how a token was
-classified, branch on role or on one of the four stable tags above,
-not on a namespaced one.
