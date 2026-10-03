@@ -852,6 +852,38 @@ so cannot turn it off.
 Nicknames, maiden names, and brackets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Maiden markers
+^^^^^^^^^^^^^^
+
+A maiden name is usually announced by a marker word, and then it needs
+no brackets and nothing configured:
+
+.. doctest::
+
+    >>> parse("Jane Smith née Jones").maiden
+    'Jones'
+
+:ref:`nicknames-and-maiden-names` in the usage guide covers how the
+marked forms read. The marker words themselves are the
+``maiden_markers`` vocabulary, a ``Lexicon`` field, shipped in several
+languages (see :mod:`nameparser.config.maiden_markers`). Add your
+own like any other word; a marker you add works bare and in brackets
+alike:
+
+.. doctest::
+
+    >>> parse("Jane Smith formerly Jones").maiden       # not a marker
+    ''
+    >>> marked = Parser(
+    ...     lexicon=Lexicon.default().add(maiden_markers={"formerly"}))
+    >>> marked.parse("Jane Smith formerly Jones").maiden
+    'Jones'
+    >>> marked.parse("Jane Smith (formerly Jones)").maiden
+    'Jones'
+
+A multi-word entry such as the shipped ``z domu`` is matched as a
+phrase, not word by word; see `Vocabulary: Lexicon`_ above.
+
 How a bracketed clause is read
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

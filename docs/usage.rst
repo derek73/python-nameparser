@@ -614,6 +614,8 @@ with a custom :class:`~nameparser.Parser`, call
 :meth:`Parser.capitalized() <nameparser.Parser.capitalized>` so the
 parser's own vocabulary decides the exceptions.
 
+.. _nicknames-and-maiden-names:
+
 Nicknames and maiden names
 ----------------------------
 
@@ -677,7 +679,7 @@ convention it means, so you do not have to:
 A marker with no name after it is just a word in brackets, and a clause
 with no marker at all stays a nickname — the parenthesized birth surname
 is a real convention, but nothing in the clause says so, and only you
-can declare that with ``maiden_delimiters`` (see :doc:`customize`):
+can declare that with ``maiden_delimiters`` (see :ref:`brackets`):
 
 .. doctest::
 
