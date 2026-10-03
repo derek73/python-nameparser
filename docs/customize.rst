@@ -486,6 +486,16 @@ listed below.
        John" puts the family name first); a comma that only sets off
        suffixes ("John Smith, Jr.") leaves it governing the name part.
        See :ref:`name-order`.
+   * - ``script_orders``
+     - pairs of ``Script`` and an order
+     - Assigns a name in one of these scripts in the paired order,
+       whatever ``name_order`` says. Defaults to family-first for a
+       name wholly in Han or Hangul, or mixing kanji with kana. See
+       :ref:`east-asian-defaults`.
+   * - ``segment_scripts``
+     - ``frozenset[Script]``
+     - Scripts whose unspaced names are split into surname and given
+       name. Defaults to Hangul. See :ref:`east-asian-defaults`.
    * - ``patronymic_rules``
      - ``frozenset[PatronymicRule]``
      - Reorders patronymic-shaped names via opt-in detectors — East
@@ -717,6 +727,8 @@ so leaves a real question to answer.
 
 `Words that are also ordinary names`_ covers dropping a word from a
 vocabulary, or moving one between those two sets.
+
+.. _east-asian-defaults:
 
 East Asian defaults, and turning them off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -984,7 +996,7 @@ is bad enough to be the reason you'd go looking:
     >>> name = parse("Jane Smith, RN - CRNA")
     >>> name.given, name.family, name.suffix
     ('RN', 'Jane Smith', 'CRNA')
-    >>> policy = Policy(extra_suffix_delimiters={" - "})
+    >>> policy = Policy(extra_suffix_delimiters=frozenset({" - "}))
     >>> name = Parser(policy=policy).parse("Jane Smith, RN - CRNA")
     >>> name.given, name.family, name.suffix
     ('Jane', 'Smith', 'RN, CRNA')
@@ -994,7 +1006,8 @@ is bad enough to be the reason you'd go looking:
 Credentials the vocabulary doesn't list
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-No suffix list holds every post-nominal, so two ``Policy`` fields read
+No suffix list holds every post-nominal, so two ``Policy`` fields, both
+new in 2.4, read
 an unlisted word as a credential from how it is written: in periods
 (``X.Y.Z.``), or in capitals (``XYZ``). The writing cannot settle it
 alone, because a surname can be written either way, so both fields
@@ -1005,12 +1018,13 @@ Both fields share one exception. Two letters alone right after a comma
 are how a person's initials are written, and the words before the comma
 may be one surname of two words, so ``"García Márquez, G.J."`` and
 ``"García Márquez, MJ"`` keep given ``G.J.`` and ``MJ``. The dotted
-spelling reports that reading as a fork; the capitals do not.
+spelling reports the bare reading as a fork; the capitals do not.
 
 The exception gives way to evidence that the letters are a credential:
 an unambiguous post-nominal in front of them that is not also a title,
-or another unlisted word of the same kind beside them. A title in front
-of them says the opposite:
+or another unlisted dotted or all-caps word beside them that its own
+field reads as a credential. A title in front of them says the
+opposite:
 
 .. doctest::
 
@@ -1029,9 +1043,9 @@ Dotted acronyms
 
 ``unlisted_dotted_suffixes`` is on by default. It reads a token of two
 or more period-separated chunks as a credential at the end of a name,
-right after a comma behind two or more name words, and — since 2.4 —
-at the end of the given part after a family comma and at the end of a
-maiden marker's clause. Case is irrelevant; the periods are the signal.
+right after a comma behind two or more name words, at the end of the
+given part after a family comma, and at the end of a maiden marker's
+clause. Case is irrelevant; the periods are the signal.
 With nothing to spare in front of it, the word stays a name. At the end
 of a name, given part or clause, either reading reports the fork as a
 ``suffix-or-name`` ambiguity, so a record that reads wrong can still be

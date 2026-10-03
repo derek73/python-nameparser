@@ -148,7 +148,7 @@ Attribute map
      - Same three knobs, now call-site arguments to
        :meth:`~nameparser.ParsedName.initials`
    * - ``suffix_delimiter``
-     - ``Policy(extra_suffix_delimiters={...})``
+     - ``Policy(extra_suffix_delimiters=frozenset({...}))``
      - Moves from a ``HumanName``/``Constants`` scalar to a ``Policy``
        set field, so more than one custom delimiter can be active at
        once. It is the *set* that moved, not just the name: passing the
@@ -366,8 +366,8 @@ rendering argument, where the 2.0 equivalent isn't config at all):
      - 2.0 equivalent
      - Note
    * - ``patronymic_name_order``
-     - ``Policy(patronymic_rules={PatronymicRule.EAST_SLAVIC,
-       PatronymicRule.TURKIC})``
+     - ``Policy(patronymic_rules=frozenset({PatronymicRule.EAST_SLAVIC,
+       PatronymicRule.TURKIC}))``
      - v1's single flag enabled both detectors at once; pick one rule
        (or a locale pack, see :doc:`locales`) if you only want one
        tradition

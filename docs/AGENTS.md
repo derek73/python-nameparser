@@ -6,7 +6,7 @@ The rules below were distilled from PR #588, which restructured `customize.rst` 
 
 ## Structure
 
-**A table is an index.** A row states what the field does and its default, in a sentence or two, and links to a section with `:ref:`. Detail, boundary cases and examples go in the section. A description cell past about five lines is the signal that the row has stopped being an index. Rows grow by accretion — each fix adds its boundary case where the field is already described — so when you have a new case to document, add it to the section, never to the row. `customize.rst`'s Policy table is the model: every row whose field has a section links to it, and a field that needs no more than its row (`middle_as_family`) has no section at all. A row that has a section and does not link to it is a dead end — #588's first pass found five.
+**A table is an index.** A row states what the field does and its default, in a sentence or two, and links to a section with `:ref:`. Detail, boundary cases and examples go in the section. A description cell past about five lines is the signal that the row has stopped being an index. Rows grow by accretion — each fix adds its boundary case where the field is already described — so when you have a new case to document, add it to the section, never to the row. `customize.rst`'s Policy table is the model: every row whose field has a section links to it, and a field that needs no more than its row (`middle_as_family`) has no section at all. A row that has a section and does not link to it is a dead end — #588's first pass left five.
 
 **One topic per paragraph; subheadings for a section with several.** A paragraph that answers more than one question gets split, and a section holding more than one task gets subheadings named for what the reader came to do ("Routing a pair to maiden names", "Teaching the splitter a surname"), not for the mechanism. Keep an existing section title when you add subheadings under it: other pages link to titles (`` `Words that are also ordinary names`_ ``), and renaming breaks them.
 
@@ -40,7 +40,7 @@ The rules below were distilled from PR #588, which restructured `customize.rst` 
 
 **Check a claim end to end, through the call the reader makes.** "One `phd` key covers `Phd`" was true of the key match and false of `capitalized()`'s output, which leaves mixed case alone unless `force=True`. Verify against what the reader would observe, not an intermediate step.
 
-**A claim about code needs the code.** "An empty `honorific_tails` stops the peel at its first guard" is checked by reading the guard, not by parsing a name. Find it through the stage headers: each `nameparser/_pipeline/*.py` module declares the `Policy`/`Lexicon` fields it reads on a `Reads:` line, so grepping those for the field names the stage to read.
+**A claim about code needs the code.** "An empty `honorific_tails` stops the peel at its first guard" is checked by reading the guard, not by parsing a name. Find it through the stage headers: each stage module (the eight in `nameparser/_pipeline/__init__.py`'s `STAGES`) declares the `Policy`/`Lexicon` fields it reads on a `Reads:` line. The shared helpers `_vocab.py` and `_pieces.py` have no such line and read the lexicon too, so grep them as well.
 
 ## Linking
 
