@@ -643,7 +643,7 @@ class HumanName:
             # #461: the conjunction filter reaches EVERY group; only
             # the particle filter is exempted for the given group.
             if not conjunction and (firstname or not self._is_particle(word)):
-                initials.append(word[0])
+                initials.append(_render._first_letter(word))
         if len(initials) > 0:
             return self.initials_separator.join(initials)
         # Return '' (never empty_attribute_default, which may be None)
@@ -711,7 +711,7 @@ class HumanName:
             # both surfaces for names whose roles agree. _split_last
             # already applies the same guard to the base, which is why
             # last_base was never empty here.
-            return [w[0] for w in words]
+            return [_render._first_letter(w) for w in words]
 
         def group_initials(groups: list[tuple[Token, ...]],
                            firstname: bool = False) -> list[str]:

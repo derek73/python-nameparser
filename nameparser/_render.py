@@ -177,6 +177,25 @@ def render(name: ParsedName, spec: str) -> str:
 # rules.md#R3: "initials take the first letter of each given, middle,
 # and base family word; titles, suffixes, particles and nicknames
 # contribute nothing"
+def _first_letter(text: str) -> str:
+    """The initial of `text`: its first character as its composed (NFC)
+    spelling reads it, written in the form `text` was written (#585).
+    That is the shortest start of `text` that composes to the composed
+    text's first character -- 'e' + U+0301 for a decomposed 'é', and the
+    two or three jamo of a decomposed hangul syllable, which are letters
+    rather than marks. A composed `text` gives text[0], as it always
+    did, so a mark that composes with nothing (a Bengali vowel sign)
+    stays out of the initial in either form. Raises IndexError on an
+    empty `text`, as text[0] does."""
+    if text.isascii():
+        return text[0]
+    first = unicodedata.normalize("NFC", text)[0]
+    end = 1
+    while not unicodedata.normalize("NFC", text[:end]).startswith(first):
+        end += 1
+    return text[:end]
+
+
 def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str:
     """First letter of each contributing token per group, v1 semantics:
     delimiter follows each initial, separator sits between initials
@@ -227,7 +246,7 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
         tokens = (tuple(t for t in tokens if FOLDED_TAG in t.tags)
                   + tuple(t for t in tokens if FOLDED_TAG not in t.tags))
         values[key] = separator.join(
-            t.text[0] + delimiter for t in tokens)
+            _first_letter(t.text) + delimiter for t in tokens)
     return _format_spec(spec, values, "initials", _INITIALS_KEYS)
 
 
