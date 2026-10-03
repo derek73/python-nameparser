@@ -843,16 +843,22 @@ so branching on a kind needs no import:
     >>> [t.text for t in name.ambiguities[0].tokens]
     ['Van']
 
+Credentials that are also surnames
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The post-nominals that double as ordinary surnames report the same way.
-Which reading a bare one gets depends on what the writing says. In a
-name written in more than one case the word's OWN spelling is read
-first, even where there is nothing to spare: capitals lean the
-credential, any other cased form that is not wholly lower leans the
-surname (which is why ``Jack Ma`` reads it as the surname), and the
-lean wins over the count either way. Only where the spelling gives no
-such signal does the words-to-spare count decide: an all-lower or
-wholly one-case spelling with words to spare reads the credential.
-Either way the choice is recorded:
+Which reading a bare one gets depends on what the writing says:
+
+- **Capitals** in a name written in more than one case lean to the
+  credential, even with no words to spare (``Jack MA``).
+- **Any other cased spelling** that is not wholly lowercase leans to
+  the surname, even with words to spare (``Jack Ma``, ``John Smith Ma``).
+- **No signal** — all lowercase, or a name written wholly in one
+  case — leaves it to the count: the credential with two or more words
+  before it, the surname otherwise.
+
+Either way the choice is recorded. :ref:`ambiguous-words` has the full
+rules, including how a comma changes them:
 
 .. doctest::
 
