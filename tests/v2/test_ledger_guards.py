@@ -3635,8 +3635,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # '田中 太郎 旧姓 佐藤 MA' -- the tolerated row this change
         # added, so radar corpus. Growth into new corpus again; no
         # role joined the list.
+        # 2026-10-02, #585: 138 -> 139, one new corpus name and not a
+        # wider rule: the decomposed katakana R3 row 'マイケル ジャクソン'
+        # (NFD) lies in its script span, and fix(#585) explains it.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(138, ('family', 'given', 'middle'), "397de8444acc", None),
+            _Claim(139, ('family', 'given', 'middle'), "0feb71190b77", None),
         # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
         # rather than with the rule -- this change added 35
         # maiden-clause names as rules.md example lines and
@@ -4601,6 +4604,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
             _Claim(3, ('family', 'suffix'), "54ce0dda7114", ('DEFAULT',)),
+        "fix(#585) a decomposed initial keeps its whole first letter":
+            _Claim(2, ('_initials',), "c4f045134f0f", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -4777,8 +4782,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # as the 1.4 twin.
         # 2026-09-19, #533: 137 -> 138, the same one new tolerated
         # corpus name as the 1.4.0 copy, '田中 太郎 旧姓 佐藤 MA'.
+        # 2026-10-02, #585: 138 -> 139, one new corpus name and not a
+        # wider rule: the decomposed katakana R3 row 'マイケル ジャクソン'
+        # (NFD) lies in its script span, and fix(#585) explains it.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(138, ('_ambiguities', 'family', 'given', 'middle'), "397de8444acc", None),
+            _Claim(139, ('_ambiguities', 'family', 'given', 'middle'), "0feb71190b77", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -5353,6 +5361,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
             _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
+        "fix(#585) a decomposed initial keeps its whole first letter":
+            _Claim(2, ('_initials',), "c4f045134f0f", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5827,6 +5837,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
             _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
+        "fix(#585) a decomposed initial keeps its whole first letter":
+            _Claim(2, ('_initials',), "c4f045134f0f", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6546,6 +6558,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
             _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
+        "fix(#585) a decomposed initial keeps its whole first letter":
+            _Claim(2, ('_initials',), "c4f045134f0f", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6865,6 +6879,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'SMITH, VD MA', 'smith, de ma'.
         "fix(#573) a never-given particle opening the given part takes the member behind it":
             _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
+        "fix(#585) a decomposed initial keeps its whole first letter":
+            _Claim(2, ('_initials',), "c4f045134f0f", None),
     },
 }
 

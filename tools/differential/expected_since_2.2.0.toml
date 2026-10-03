@@ -2274,3 +2274,23 @@ issue = "fix(#573) a never-given particle opening the given part takes the membe
 name_regex = "^(?:SMITH, VD DE LA MA|SMITH, VD MA|smith, de ma)$"
 fields = ["_ambiguities"]
 orders = ["DEFAULT"]
+
+[[change]]
+issue = "fix(#585) a decomposed initial keeps its whole first letter"
+# initials() took a token's first CODE POINT, which in a name typed
+# decomposed (NFD) is a base letter without the combining mark that
+# completes it: 'e' + U+0301 initialled 'e.', and the katakana 'ジ',
+# 'シ' + the combining dakuten U+3099, initialled 'シ.'. The initial is
+# now the shortest start of the word that composes to the composed
+# word's first character, written in the form the writer used
+# (rules.md#R3), so both surfaces give the composed spelling's initial
+# kept decomposed. A composed name's initials do not move, which is
+# why the rules corpus's two NFD rows are the only names here.
+#
+# Roles do not move; the derived view alone does, so `_initials` is
+# the one field. Literal names rather than a shape: what selects them
+# is "a name typed decomposed whose initial letter decomposes", and no
+# regex over the raw text says that without copying Unicode's
+# decomposition data.
+name_regex = "^(e\u0301mile zola|マイケル シ\u3099ャクソン)$"
+fields = ["_initials"]

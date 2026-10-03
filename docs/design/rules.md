@@ -2476,6 +2476,10 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     word of its own. A part holding nothing else is a part where it
     is joining nothing, and there it initials like any other name
     word, agreeing with the base.
+    The first letter is the one the word's composed spelling begins
+    with, written in the form the writer used: a letter written as a
+    base letter followed by its combining accent initials whole, and
+    so does a syllable written as its separate parts.
     The question is asked of the WHOLE PART, never of a word count. A
     part of two words where one is the connective is still a part
     where it joins — the base of "Jon Dough and" is "Dough and" and
@@ -2500,6 +2504,8 @@ R3. Rationale: initials abbreviate the person's name words; titles,
       "Nguyen, Van Le"            →  initials="V. L. N."
       "Hassan, Mohamad Ahmad Ali"  middle_as_family  →  initials="M. A. A. H."
       "Sean O'Connor"             →  initials="S. O."  · boundary
+      "émile zola"                →  initials="e\u0301. z."
+      "マイケル ジャクソン"            →  initials="マ. シ\u3099."
     A family that is ALL particles therefore contributes its words
     rather than nothing: they are the base (R2), so they initial.
       "Juan van der"              →  initials="J. v. d."
