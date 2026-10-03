@@ -9145,11 +9145,11 @@ CASES: tuple[Case, ...] = (
          "山田 ﾍﾟｰﾀｰ",
          {"family": "山田", "given": "ﾍﾟｰﾀｰ"},
          classification="fix(#594)",
-         notes="the span's other two edges a name actually reaches: "
-               "the semi-voiced mark ﾟ (U+FF9F, the block's last "
-               "codepoint) and the prolonged sound mark ｰ (U+FF70). "
-               "Narrowing the range by either one leaves ﾍﾟｰﾀｰ "
-               "mixed-script and the name positional"),
+         notes="the block's last codepoint, the semi-voiced mark ﾟ "
+               "(U+FF9F), and the prolonged sound mark ｰ (U+FF70, which "
+               "a range starting at the ordinary letters, U+FF71, "
+               "would drop). Narrowing the range past either leaves "
+               "ﾍﾟｰﾀｰ mixed-script and the name positional"),
     Case("ja_halfwidth_unspaced_unsegmented_default", "山田ﾀﾛｳ",
          {"family": "山田ﾀﾛｳ"},
          classification="fix(#594)",
