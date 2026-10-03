@@ -285,6 +285,9 @@ Jackson — and a transcription keeps the source language's order, given
 name first, its parts divided by the middle dot ・ (the nakaguro,
 U+30FB) rather than by a space.
 
+What happens automatically
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Two behaviors follow from that without any configuration. A name whose
 characters stay within kanji and kana and carry at least one kana is
 assigned family-first, like any other native-script East Asian name: it
@@ -308,6 +311,9 @@ katakana, keep the order they were written in:
     >>> michael = parse("マイケル・ジャクソン")
     >>> michael.given, michael.family
     ('マイケル', 'ジャクソン')
+
+Dividing an unspaced name: the segmenter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Dividing an *unspaced* Japanese name is a separate matter, and one no
 surname list can settle: family and given names draw on the same
@@ -442,19 +448,21 @@ Commas and Latin wrappers around a CJK name
 A comma or a Latin credential set wrapped around a CJK name is
 tolerated input rather than contract: no native CJK writing uses
 either convention, so nameparser reads it best-effort and the
-handling can change without notice. Today a comma still names the
-family and stops the split — ``남궁민수, 지훈`` reads family
-``남궁민수`` whole, where the bare ``남궁민수`` alone would split into
-family ``남궁`` and given ``민수`` — and a glued honorific still peels
-off before the comma when what follows it is nothing but suffix
-words, as in ``田中さん, PhD`` (suffix ``さん, PhD``), but stays glued
-when the comma is followed by a title or another name word, as in
-``田中さん, Dr.`` (family ``田中さん``). Credentials after the comma are
-read the same best-effort way, landing in ``given`` or ``suffix`` by
-spelling: ``田中さん, V.`` and ``田中さん, Ph. D.`` give up さん exactly
-as ``田中さん, PhD`` does. ``Policy(lenient_comma_suffixes=False)``
-reads ``V.`` as name text instead, and さん then stays glued (family
-``田中さん``, given ``V.``).
+handling can change without notice. Today:
+
+- **A comma names the family and stops the split.** ``남궁민수, 지훈``
+  reads family ``남궁민수`` whole, where the bare ``남궁민수`` alone
+  would split into family ``남궁`` and given ``민수``.
+- **A glued honorific peels off before the comma** when what follows
+  it is nothing but suffix words, as in ``田中さん, PhD`` (suffix
+  ``さん, PhD``).
+- **It stays glued** when the comma is followed by a title or another
+  name word, as in ``田中さん, Dr.`` (family ``田中さん``).
+- **Credentials after the comma** land in ``given`` or ``suffix`` by
+  spelling, and ``田中さん, V.`` and ``田中さん, Ph. D.`` give up さん
+  exactly as ``田中さん, PhD`` does. ``Policy(lenient_comma_suffixes=False)``
+  reads ``V.`` as name text instead, and さん then stays glued (family
+  ``田中さん``, given ``V.``).
 
 Spacing, and where the name divides
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
