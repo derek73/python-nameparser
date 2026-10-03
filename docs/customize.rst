@@ -722,8 +722,14 @@ anything you set: a name written wholly in Han or Hangul — or one
 mixing kanji with kana — is assigned family-first (``script_orders``),
 and an unspaced hangul name is split into surname and given name
 against the shipped Korean census list (``segment_scripts``).
-:ref:`east-asian-names` explains the naming conventions both rest on —
-this section is how to switch them off, which you can do separately:
+:ref:`east-asian-names` explains the naming conventions both rest on;
+this section is how to switch them off. Two further behaviors are not
+policy fields at all, and are covered last.
+
+Switching off order and splitting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The two defaults switch off separately:
 
 .. doctest::
 
@@ -743,45 +749,6 @@ default then assigns them given-first — the surname lands in
 ``given``. To restore nameparser 2.0's reading exactly, clear both
 fields.
 
-To teach the splitter a surname it doesn't ship with, add it to the
-``surnames`` vocabulary like any other word:
-
-.. doctest::
-
-    >>> lex = Lexicon.default().add(surnames={"김민"})
-    >>> Parser(lexicon=lex).parse("김민준").family
-    '김민'
-
-Chinese surnames are deliberately absent from that default set,
-because splitting Han text requires knowing Chinese from Japanese;
-:doc:`locales` covers the opt-in ``zh`` pack that supplies them.
-
-The Japanese behaviors ride these same two fields, so they need no
-switches of their own: ``script_orders=()`` clears the kana-licensed
-entry along with the Han and Hangul ones, and
-``segment_scripts=frozenset()``
-deactivates every script at once, which also stops a parser consulting
-whatever segmenter it was given. The segmenter has an off-switch as
-well — ``Parser(segmenter=None)``, which is the default; see
-:ref:`segmenter-contract` for what one is expected to do with text it
-does not handle. Two behaviors are not policy fields at all, and apply
-however these two fields are set. The katakana middle dot ・ separates
-tokens the way a space does, decided in tokenization. And a listed CJK
-honorific glued to the end of a name token is split off it — ``田中さん``
-reads family ``田中`` with ``さん`` in ``suffix`` — because the tail
-vocabulary carries its own license rather than borrowing a script's:
-every entry is a word that can never end a name, so there is no
-per-script trust question for ``segment_scripts`` to answer. That
-vocabulary is also the peel's off-switch —
-``Lexicon.default().remove(honorific_tails={"さん"})`` leaves
-``田中さん`` unsplit while the spaced ``田中 さん`` still reads ``さん``
-as a suffix. Dropping a word from a marker field alone orphans
-nothing, so that one needs no matching ``suffix_words`` edit. Emptying
-the field is also the way to opt out of what the peel *costs* a
-non-ASCII parse — an empty ``honorific_tails`` stops it at its first
-guard, whereas ``segment_scripts`` never gated it and so cannot turn it
-off.
-
 .. note::
 
    Every field here is annotated with its canonical *storage* type
@@ -799,6 +766,86 @@ off.
    mypy — ``()`` and ``frozenset(...)`` rather than ``{}`` and a bare
    set literal. The wider spellings parse identically; they just need
    a ``# type: ignore[arg-type]`` if you run a type checker.
+
+Teaching the splitter a surname
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To teach the splitter a surname it doesn't ship with, add it to the
+``surnames`` vocabulary like any other word:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().add(surnames={"김민"})
+    >>> Parser(lexicon=lex).parse("김민준").family
+    '김민'
+
+Chinese surnames are deliberately absent from that default set,
+because splitting Han text requires knowing Chinese from Japanese;
+:doc:`locales` covers the opt-in ``zh`` pack that supplies them.
+
+Japanese names
+^^^^^^^^^^^^^^
+
+The Japanese behaviors ride these same two fields, so they need no
+switches of their own. ``script_orders=()`` clears the kana-licensed
+entry along with the Han and Hangul ones, so a name mixing kanji with
+kana reads given-first again:
+
+.. doctest::
+
+    >>> parse("山田 エミ").family
+    '山田'
+    >>> positional.parse("山田 エミ").given
+    '山田'
+
+``segment_scripts=frozenset()`` deactivates every script at once, which
+also stops a parser consulting whatever segmenter it was given. The
+segmenter has an off-switch of its own as well:
+``Parser(segmenter=None)``, which is the default. See
+:ref:`segmenter-contract` for what a segmenter is expected to do with
+text it does not handle.
+
+Behaviors no policy field controls
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Two behaviors apply however both fields are set:
+
+- **The katakana middle dot** ``・`` separates tokens the way a space
+  does, decided in tokenization.
+- **A glued honorific**, a listed CJK honorific at the end of a name
+  token, is split off it. The honorific vocabulary carries its own
+  license rather than borrowing a script's: every entry is a word that
+  can never end a name, so there is no per-script question for
+  ``segment_scripts`` to answer.
+
+.. doctest::
+
+    >>> both_off = Parser(
+    ...     policy=Policy(script_orders=(), segment_scripts=frozenset()))
+    >>> both_off.parse("マイケル・ジャクソン").family
+    'ジャクソン'
+    >>> both_off.parse("田中さん").suffix
+    'さん'
+
+The honorific vocabulary is the peel's off-switch. Removing an entry
+from ``honorific_tails`` leaves that honorific glued, while the spaced
+form still reads it as a suffix:
+
+.. doctest::
+
+    >>> no_san = Parser(
+    ...     lexicon=Lexicon.default().remove(honorific_tails={"さん"}))
+    >>> no_san.parse("田中さん").family
+    '田中さん'
+    >>> no_san.parse("田中 さん").suffix
+    'さん'
+
+``honorific_tails`` marks a subset of ``suffix_words``, so dropping a
+word from it alone orphans nothing and needs no matching
+``suffix_words`` edit. Emptying it is also how to opt out of what the
+peel *costs* a non-ASCII parse: an empty ``honorific_tails`` stops the
+peel at its first check, whereas ``segment_scripts`` never gated it and
+so cannot turn it off.
 
 .. _brackets:
 
