@@ -634,6 +634,9 @@ order:
     >>> family_first.parse("Jong Anke de").family      # the order says so
     'de Jong'
 
+The comma and the order are one shape
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 That pair is not a coincidence but one shape written two ways: form 4
 (``Title Family Given Middle Middle [Particle] [, Suffix]``) is form 2
 (``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [,
@@ -647,33 +650,39 @@ families and three given names, 630 generated pairs in all — 603 of
 630 agree (2026-08-30); the executable form of this correspondence is
 ``tests/v2/test_order_correspondence.py``.
 
-Three limits keep that statement honest.
+Where the correspondence stops
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The correspondence covers one shape written two ways, not
-comma-deletion in general: a name whose shape changes when the comma
-is removed — a title or suffix crossing to a different position —
-parses as the shape it becomes, not as a disagreeing reading of form
-2. Where the trailing word is both particle and suffix vocabulary,
-the two writings read it differently, and it is that ASYMMETRY rather
-than a precedence that breaks the correspondence. The particle
-attachment outranks the suffix reading on the comma side alone —
-that is the scope the rule is stated in — so
-``parse("Ménil, Christophe vd")`` reads family ``vd Ménil``, while
-``family_first.parse("Ménil Christophe vd")`` reads family ``Ménil``
-and suffix ``vd``. A listing ending in one of those three words
-therefore does not correspond between the two writings — this is the
-whole of the 27 disagreeing pairs, not scatter. And ``FAMILY_FIRST`` is the only order the correspondence
-reaches at all, because it is the only one that puts a trailing piece
-in the *middle*, where a particle means nothing; ``FAMILY_FIRST_GIVEN_LAST``
-puts it in the given slot, where your own declaration already says
-it is the given name, and no comma format writes the given name
-last, so form 5 has no comma twin to correspond to in the first
-place:
+Three limits keep that statement honest:
+
+- **It covers one shape, not comma deletion in general.** A name whose
+  shape changes when the comma is removed — a title or suffix crossing
+  to a different position — parses as the shape it becomes, not as a
+  disagreeing reading of form 2.
+- **A word that is both particle and suffix reads differently in the two
+  writings.** The shipped words in both vocabularies are ``do``,
+  ``mc`` and ``vd`` (2026-10-02). The
+  particle attachment outranks the suffix reading on the comma side
+  alone — that is the scope the rule is stated in — so
+  ``parse("Ménil, Christophe vd")`` reads family ``vd Ménil``, while
+  ``family_first.parse("Ménil Christophe vd")`` reads family ``Ménil``
+  and suffix ``vd``. It is that asymmetry, not a precedence, that
+  breaks the correspondence, and a listing ending in one of those words
+  is the whole of the 27 disagreeing pairs measured above, not scatter.
+- **Only** ``FAMILY_FIRST`` **is reached.** It is the only order that
+  puts a trailing piece in the *middle*, where a particle means nothing.
+  ``FAMILY_FIRST_GIVEN_LAST`` puts it in the given slot, where your own
+  declaration already says it is the given name, and no comma format
+  writes the given name last, so form 5 has no comma twin to correspond
+  to in the first place:
 
 .. doctest::
 
     >>> given_last.parse("Nguyen Thi Van").given
     'Van'
+
+Where a leading particle run stops
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The declaration also bounds how far a *leading* particle run reaches.
 With no order declared, nothing marks where the surname ends and a
@@ -690,12 +699,12 @@ follows the family is not more surname, which settles it:
     >>> family_first.parse("de Mesnil Jean").given
     'Jean'
 
-In the default order, write the comma for that reading. The run stops
-after one name *word* rather than one token, so it cannot cut inside a
-conjunction-joined run or a bound given-name pair —
-``"de la Vega y Santos Juan"`` keeps family ``de la Vega y Santos``.
-Where two or more words are left over, the two family-first orders
-differ from each other:
+In the default order, write the comma for that reading. Under a
+family-first order the run stops after one name *word* rather than one
+token, so it cannot cut inside a conjunction-joined run or a bound
+given-name pair — ``"de la Vega y Santos Juan"`` keeps family
+``de la Vega y Santos``. Where two or more words are left over, the two
+family-first orders differ from each other:
 
 .. doctest::
 
@@ -704,26 +713,28 @@ differ from each other:
     >>> given_last.parse("de la Cruz Juan Carlos").middle
     'Juan'
 
-Two cautions, both places where the vocabulary layer answers before
-``name_order`` is consulted at all.
+Where the vocabulary answers first
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The first is why the example above is not the more obvious
-``"Nguyen Van Minh"``: a middle word that is also a shipped particle
-is claimed by the vocabulary layer. ``Van`` is the Dutch particle
-``van``, so that name reads family ``Nguyen`` with ``Van Minh`` given
-under *both* family-first orders, and the choice between them makes no
-difference.
+In two places the vocabulary layer answers before ``name_order`` is
+consulted at all:
 
-The second is at the *front* of a name, and there the vocabulary
-overrides the declared order outright: where a particle that can never
-be a given name stands alone as the opening piece, the whole name is
-the surname, in every ``name_order``. ``"de Mesnil"`` is family ``de
-Mesnil`` under both family-first orders exactly as it is by default,
-not family ``de`` with ``Mesnil`` given — a word that can never be a
-given name leaves the order nothing to decide. Only the never-given
-set does this: ``"van Gogh"`` reads family ``van``, given ``Gogh``
-under a family-first order, because ``van`` *can* be a given name and
-so leaves a real question to answer.
+- **A middle word that is also a shipped particle** is claimed by the
+  vocabulary. That is why the Vietnamese example above is not the more
+  obvious ``"Nguyen Van Minh"``: ``Van`` is the Dutch particle ``van``,
+  so that name reads family ``Nguyen`` with ``Van Minh`` given under
+  *both* family-first orders, and the choice between them makes no
+  difference.
+- **A never-given particle opening the name** overrides the declared
+  order outright: where a particle that can never be a given name
+  stands alone as the opening piece, the whole name is the surname, in
+  every ``name_order``. ``"de Mesnil"`` is family ``de Mesnil`` under
+  both family-first orders exactly as it is by default, not family
+  ``de`` with ``Mesnil`` given — a word that can never be a given name
+  leaves the order nothing to decide. Only the never-given set does
+  this: ``"van Gogh"`` reads family ``van``, given ``Gogh`` under a
+  family-first order, because ``van`` *can* be a given name and so
+  leaves a real question to answer.
 
 `Words that are also ordinary names`_ covers dropping a word from a
 vocabulary, or moving one between those two sets.
