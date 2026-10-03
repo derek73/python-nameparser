@@ -300,9 +300,9 @@ The full reading of a bare marked acronym, in order:
   the family name even WITH words to spare (``"John Smith Ma"``).
 - **No signal** — all lowercase in a mixed-case name, or any spelling
   in a name written wholly in one case — falls back to the count: a
-  suffix with two or more name words before it, a title not counting
-  (``"John Smith ma"``), the
-  family name otherwise (``"JACK MA"``).
+  suffix with two or more words before it, not counting a title or a
+  nickname (``"John Smith ma"``), the family name otherwise
+  (``"JACK MA"``).
 - **After a comma** the count of name words before the comma decides
   FIRST, and the case is read only where the count leaves the word a
   name. ``"John Smith, Ba"`` reads suffix ``Ba`` on the count alone, and
@@ -578,8 +578,9 @@ Family-first name order
 ``name_order`` is the one most likely to matter for data that is not
 in Western order. Positional input is assigned in the order you
 declare — with the two vocabulary exceptions noted under
-:ref:`order-vocabulary-first` — so a name written family-first — Hungarian, here — parses as
-written instead of needing to be rearranged afterwards:
+:ref:`order-vocabulary-first` — so a name written family-first —
+Hungarian, here — parses as written instead of needing to be
+rearranged afterwards:
 
 .. doctest::
 

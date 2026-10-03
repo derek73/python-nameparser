@@ -32,8 +32,7 @@ Input shapes
 -------------
 
 Three arrangements are understood by default, two more when you
-declare a family-first order, and two more by the script they are
-written in.
+declare a family-first order, and two more by how they are written.
 
 Understood by default
 ~~~~~~~~~~~~~~~~~~~~~
@@ -914,8 +913,8 @@ Which reading a bare one gets depends on what the writing says:
 - **Any other cased spelling** that is not wholly lowercase leans to
   the surname, even with words to spare (``Jack Ma``, ``John Smith Ma``).
 - **No signal** — all lowercase, or a name written wholly in one
-  case — leaves it to the count: the credential with two or more name
-  words before it (a title does not count), the surname otherwise.
+  case — leaves it to the count: the credential with two or more words
+  before it, not counting a title or a nickname, the surname otherwise.
 
 Either way the choice is recorded:
 
@@ -1034,11 +1033,11 @@ honor, so each view falls back on what it can answer without one:
   capitals wherever the field is the suffix, so ``replace(suffix="mba")``
   repairs to ``MBA`` and ``suffix="vi"`` to ``VI``. A credential
   recognised only by its dotted shape is the exception, since the shape
-  is something the parse records. So are particles: whether a particle
-  is acting as one is a fact about the whole part, and no word of a
-  spliced field carries a reading to derive it from, so a family set to
-  ``de la`` stays lowercase where the same words parsed are repaired to
-  ``De La``.
+  is something the parse records. Particles are a second exception:
+  whether a particle is acting as one is a fact about the whole part,
+  and no word of a spliced field carries a reading to derive it from,
+  so a family set to ``de la`` stays lowercase where the same words
+  parsed are repaired to ``De La``.
 - :meth:`~nameparser.ParsedName.initials` takes no vocabulary at all,
   so every word of a spliced field contributes an initial.
 - ``family_particles`` and ``family_base`` are properties on the
@@ -1048,9 +1047,9 @@ honor, so each view falls back on what it can answer without one:
 
 Of the parsed name's own views, ``capitalized()`` is the only one
 handed a vocabulary. (The v1 :class:`~nameparser.parser.HumanName`
-facade's ``initials()`` is handed one too, and likewise asks it whether
-a spliced word is a conjunction; it is not a method of the parsed
-name.)
+facade's ``initials()`` is handed one too, and asks it whether a
+spliced word is a conjunction or a particle, so a spliced ``de la`` gives
+no initials there; it is not a method of the parsed name.)
 
 .. doctest::
 
