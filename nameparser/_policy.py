@@ -135,11 +135,12 @@ class Script(StrEnum):
 # does. Classifying it is a range, not a fold. rules.md's T Background
 # says "nothing rewrites the text before parsing", which rules out a
 # fold at tokenize, and an NFKC fold at classification would reach far
-# past the kana (fullwidth Latin, ㈱), and a voicing mark with no
-# precomposed form to join (ｱﾞ) folds to the combining U+3099, which
-# is in the HIRAGANA block -- so the folded token would take the kana
-# license and a wholly-katakana name would turn family-first
-# (decisions.md#W4). The span takes in the
+# past the kana (fullwidth Latin, ㈱), and when #594 decided it a
+# voicing mark with no precomposed form to join (ｱﾞ) folded to the
+# combining U+3099, which is in the HIRAGANA block -- so the folded
+# token took the kana license and a wholly-katakana name turned
+# family-first (decisions.md#W4; #596 has since given every voicing
+# mark its base's script, see below). The span takes in the
 # halfwidth nakaguro U+FF65, which tokenize turns into a separator,
 # on the same direct-call grounds as U+30FB below, and the voicing
 # marks U+FF9E/U+FF9F: they are spacing characters (category Lm) that
@@ -155,7 +156,12 @@ class Script(StrEnum):
 # and U+309A are the COMBINING forms (Script=Inherited), U+309B and
 # U+309C the spacing ones (Script=Common) -- yet every one of them is
 # needed here, and block membership, not the Script property, is what
-# puts them in range. The katakana block's upper end (U+30FF) takes in
+# puts them in range. Those four are in range only for a mark with
+# nothing before it: a mark voices the kana it follows, in either
+# syllabary, so classification deletes every mark that follows a
+# character and the token takes its base's script (#596,
+# _vocab._normalized_for_script) -- ア゙イ is katakana, not katakana
+# plus hiragana. The katakana block's upper end (U+30FF) takes in
 # the middle dot U+30FB, kept rather than carved out for a smaller
 # reason than it looks: tokenize (#272 Task 2b) turns U+30FB into a
 # token separator, so no real parse shows the classifier a string

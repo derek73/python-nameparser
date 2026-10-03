@@ -750,6 +750,30 @@ def test_script_classification_ignores_edge_full_stops() -> None:
     assert single_script("Smith.") is None
 
 
+@pytest.mark.parametrize("mark", ["゙", "゚", "゛", "゜"])
+def test_a_voicing_mark_takes_the_script_of_the_kana_before_it(
+        mark: str) -> None:
+    # #596: all four marks sit in the hiragana BLOCK, but none belongs
+    # to either syllabary -- a mark voices whatever kana it follows.
+    # ア and ン have no precomposed voiced form, so NFC leaves the mark
+    # standing; before #596 these tokens read katakana plus hiragana
+    # and took the kana license.
+    assert effective_script("ア" + mark + "イ") is Script.KATAKANA
+    assert effective_script("ン" + mark) is Script.KATAKANA
+    # hiragana stays hiragana, and the license still fires where a
+    # real second script stands -- dropping the marks from the
+    # hiragana range instead would have left all three unclassified
+    assert effective_script("あ" + mark + "い") is Script.HIRAGANA
+    assert effective_script("山田ア" + mark + "イ") is Script.HIRAGANA
+    assert effective_script("山" + mark) is Script.HAN
+    # a mark with nothing before it has no base to take a script from
+    # and keeps the table's answer, hiragana -- so beside katakana the
+    # token is still licensed. Degenerate input, recorded rather than
+    # promised (rules.md#W4's Background)
+    assert effective_script(mark + "アイ") is Script.HIRAGANA
+    assert effective_script(mark) is Script.HIRAGANA
+
+
 def test_resolve_script_set_generalizes_the_license_across_pieces() -> None:
     # a single script passes through as-is, including a script with no
     # order-default entry (KATAKANA): the caller decides what to do

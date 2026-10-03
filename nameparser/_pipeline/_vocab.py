@@ -99,6 +99,17 @@ _SCRIPT_MATCHERS: dict[Script, Callable[[str], bool]] = {
 # effective_script's kana license.
 _wholly_ja = _script_matcher(*_JA_SCRIPTS, whole=True)
 
+# The four kana voicing marks U+3099-U+309C as a str.translate table
+# that deletes them (#596). None belongs to either syllabary -- each
+# voices whatever kana it follows -- but the script table classifies
+# by block and all four sit in the HIRAGANA one, so a mark NFC cannot
+# compose (ア + U+3099) made a katakana token read as katakana plus
+# hiragana and took the kana license. _normalized_for_script deletes
+# every mark that has a character before it, so a mark takes the
+# script of its base; a leading mark has no base and keeps the
+# table's answer.
+_VOICING_MARKS = dict.fromkeys(range(0x3099, 0x309D))
+
 # The repertoire half of is_initial (_policy._NO_INITIALS), kept apart
 # from _INITIAL's SHAPE half so the pattern itself stays v1-verbatim
 # and its three copies stay pinned by tests/v2/test_regex_sync.py.
@@ -1382,8 +1393,17 @@ def _normalized_for_script(text: str) -> str | None:
     also decomposes Hangul syllables onto bare jamo (U+1100-U+11FF),
     entirely outside the HANGUL range, so raw NFD Korean input misses
     the shipped family-first order rule rather than merely misfiring.
-    Normalizing first fixes both. Classification-only and read-only:
-    the returned copy is never what gets tokenized, so token text and
+    Normalizing first fixes both.
+
+    Voicing marks, last: NFC composes a mark only where a precomposed
+    kana exists (カ + U+3099 is ガ), so ア + U+3099, ン + U+3099 and
+    every spacing mark (U+309B/U+309C) survive it, and all four marks
+    sit in the HIRAGANA block. A mark voices the kana it follows and
+    belongs to neither syllabary, so each one with a character before
+    it is deleted from the copy (_VOICING_MARKS) and the token takes
+    its base's script: ア゙イ is katakana, not kana-licensed Japanese
+    (#596). Classification-only and read-only, like the rest: the
+    returned copy is never what gets tokenized, so token text and
     spans stay exactly what the caller wrote.
 
     Vocabulary MATCHING composes NFC too, since #322
@@ -1397,7 +1417,8 @@ def _normalized_for_script(text: str) -> str | None:
     text = text.rstrip(FULL_STOPS)
     if not text or text.isascii():
         return None
-    return unicodedata.normalize("NFC", text)
+    composed = unicodedata.normalize("NFC", text)
+    return composed[0] + composed[1:].translate(_VOICING_MARKS)
 
 
 def _classify(normalized: str) -> Script | None:

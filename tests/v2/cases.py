@@ -9174,6 +9174,49 @@ CASES: tuple[Case, ...] = (
                "so the dot divides here as it does in タロウ·ヤマダ "
                "and the parts keep source order. 2.3.0 kept the whole "
                "text one token"),
+    Case("ja_combining_voicing_mark_keeps_katakana_declared",
+         "ア゙イ タロウ",
+         {"given": "ア゙イ", "family": "タロウ"},
+         classification="fix(#596)",
+         notes="ア has no precomposed voiced form, so NFC leaves the "
+               "combining dakuten U+3099 standing, and the mark sits in "
+               "the HIRAGANA block. A voicing mark takes the script of "
+               "the kana before it, so the name is wholly katakana and "
+               "keeps the declared order (rules.md#W4). 2.1.0 through "
+               "2.3.0 read the mark as hiragana and the token as "
+               "kana-licensed Japanese: family ア゙イ"),
+    Case("ja_combining_voicing_mark_beside_plain_katakana",
+         "マイケル ア゙イ",
+         {"given": "マイケル", "family": "ア゙イ"},
+         classification="fix(#596)",
+         notes="the mark flipped its NEIGHBOUR's role too: the license "
+               "is read over the whole name's pieces, so one licensed "
+               "piece made 2.1.0-2.3.0 read マイケル as the family. "
+               "Positional now, as マイケル ジャクソン is"),
+    Case("ja_spacing_voicing_mark_keeps_katakana_declared",
+         "ア゛イ タロウ",
+         {"given": "ア゛イ", "family": "タロウ"},
+         classification="fix(#596)",
+         notes="the SPACING dakuten U+309B, which NFC never composes, "
+               "sits in the hiragana block beside the combining one and "
+               "takes its base's script the same way. The row that "
+               "fails if the fix narrows to the two combining marks"),
+    Case("ja_combining_voicing_mark_on_hiragana_stays_hiragana",
+         "あ゙い たろう",
+         {"family": "あ゙い", "given": "たろう"},
+         notes="parity row: on hiragana the mark's base is hiragana, so "
+               "the name is wholly hiragana and reads family-first as it "
+               "always has. Guards the alternative #596 declined -- "
+               "taking the marks out of the hiragana range would leave "
+               "あ゙い in no script and the name positional"),
+    Case("ja_combining_voicing_mark_kanji_katakana_licensed",
+         "山田 ア゙イ",
+         {"family": "山田", "given": "ア゙イ"},
+         notes="parity row: kanji plus katakana is the kana license "
+               "whatever the katakana's mark does, so the name stays "
+               "family-first. Under the declined alternative ア゙イ "
+               "would have no script, the license would not fire, and "
+               "the name would read family ア゙イ"),
     Case("ja_iteration_mark_is_han", "佐々木 太郎",
          {"family": "佐々木", "given": "太郎"},
          classification="fix(#272)",

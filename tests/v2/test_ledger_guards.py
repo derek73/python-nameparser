@@ -3651,7 +3651,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
         # inside the same class.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(147, ('family', 'given', 'middle'), "b2dd5ac30ae4", None),
+            _Claim(152, ('family', 'given', 'middle'), "29661ea040c7", None),
         # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
         # rather than with the rule -- this change added 35
         # maiden-clause names as rules.md example lines and
@@ -4809,7 +4809,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
         # inside the same class.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(147, ('_ambiguities', 'family', 'given', 'middle'), "b2dd5ac30ae4", None),
+            _Claim(152, ('_ambiguities', 'family', 'given', 'middle'), "29661ea040c7", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -5868,6 +5868,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('family', 'given'), "86805db7d55e", None),
         "fix(#594) a period-marked halfwidth katakana word is not a title":
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
+        "fix(#596) a voicing mark does not make a katakana word kana-licensed":
+            _Claim(3, ('family', 'given'), "d822332b50f9", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6593,6 +6595,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('family', 'given'), "86805db7d55e", None),
         "fix(#594) a period-marked halfwidth katakana word is not a title":
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
+        "fix(#596) a voicing mark does not make a katakana word kana-licensed":
+            _Claim(3, ('family', 'given'), "d822332b50f9", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6918,6 +6922,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('_ambiguities', 'family', 'given'), "86805db7d55e", None),
         "fix(#594) a period-marked halfwidth katakana word is not a title":
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
+        "fix(#596) a voicing mark does not make a katakana word kana-licensed":
+            _Claim(3, ('family', 'given'), "d822332b50f9", None),
     },
 }
 
