@@ -116,9 +116,8 @@ H2. Rationale: before a name, an abbreviation is almost always a
     Accepted: the shape reads a Latin convention, and a script with
     no initials has no period abbreviations either, so a period-
     marked opening word carrying a Han, kana or hangul character —
-    as the script table classifies them; halfwidth katakana sits
-    outside it and still reads by the Latin shape, the limit
-    decisions.md#cjk-full-stops records — is a name word and never a
+    as the script table classifies them, halfwidth katakana
+    included since #594 — is a name word and never a
     title by shape (#323; decisions.md#cjk-full-stops) — the same
     veto that keeps 씨. from reading as an initial. The Latin
     reading is unchanged, and W3's example block carries the CJK

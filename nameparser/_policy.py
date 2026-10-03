@@ -134,8 +134,11 @@ class Script(StrEnum):
 # 0201 systems spells names in it, and 山田 ﾀﾛｳ must read as 山田 タロウ
 # does. Classifying it is a range, not a fold -- T1 forbids rewriting
 # the text, and an NFKC fold at classification would reach far past
-# the kana (fullwidth Latin, ㈱) while mapping a lone voicing mark
-# ﾞ to the HIRAGANA block's combining U+3099. The span takes in the
+# the kana (fullwidth Latin, ㈱), and a voicing mark with no
+# precomposed form to join (ｱﾞ) folds to the combining U+3099, which
+# is in the HIRAGANA block -- so the folded token would take the kana
+# license and a wholly-katakana name would turn family-first
+# (decisions.md#W4). The span takes in the
 # halfwidth nakaguro U+FF65, which tokenize turns into a separator,
 # on the same direct-call grounds as U+30FB below, and the voicing
 # marks U+FF9E/U+FF9F, which are spacing characters following their
