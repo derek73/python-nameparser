@@ -161,13 +161,14 @@ Delimiter defaults
 ^^^^^^^^^^^^^^^^^^
 
 .. py:data:: nameparser.DEFAULT_NICKNAME_DELIMITERS
-   :value: frozenset({("'", "'"), ('"', '"'), ("(", ")"), ("“", "”"), ("„", "“"), ("”", "”"), ("«", "»"), ("»", "«"), ("「", "」"), ("『", "』"), ("（", "）")})
+   :value: frozenset({("'", "'"), ('"', '"'), ("(", ")"), ("“", "”"), ("„", "“"), ("”", "”"), ("«", "»"), ("»", "«"), ("「", "」"), ("『", "』"), ("｢", "｣"), ("（", "）")})
 
    The default :attr:`~nameparser.Policy.nickname_delimiters` set:
    straight quotes and parentheses plus the typographic conventions —
    smart quotes, German/Polish low-high quotes, Swedish right-right
    quotes, guillemets in both directions, CJK corner brackets, and
-   fullwidth parentheses (#273). Curly *single* quotes are deliberately
+   fullwidth parentheses (#273), plus the halfwidth corner brackets
+   ``｢｣`` that legacy JIS X 0201 data carries (#597). Curly *single* quotes are deliberately
    absent: U+2019 is the typographic apostrophe ("O’Connor"). Build on
    the constant for additive customizations, e.g.
    ``nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("｟", "｠")}``;

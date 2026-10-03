@@ -3659,8 +3659,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # here as every native-script name does; the three fix(#596)
         # movers are parity at this baseline, and the hangul row is
         # parity too (v1 reads it first, as the tree does).
+        # 2026-10-03, #597: 153 -> 155, two new corpus names and not a
+        # wider rule: '山田 ｢ﾀﾛｰ｣ ﾀﾛｳ' and '山田｢ﾀﾛｰ｣太郎' lie in its script
+        # span ('John ｢Jack｣ Smith' does not); fix(#597), which declares
+        # `nickname` beside the name fields, explains all three.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(153, ('family', 'given', 'middle'), "a94f0435fd18", None),
+            _Claim(155, ('family', 'given', 'middle'), "4b6ccd174ab1", None),
         # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
         # rather than with the rule -- this change added 35
         # maiden-clause names as rules.md example lines and
@@ -4629,6 +4633,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_initials',), "c4f045134f0f", None),
         "fix(#594) a period-marked halfwidth katakana word is not a title":
             _Claim(2, ('given', 'title'), "8cdafcf56c45", None),
+        "fix(#597) halfwidth corner brackets enclose a nickname":
+            _Claim(3, ('family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -4826,8 +4832,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # here as every native-script name does; the three fix(#596)
         # movers are parity at this baseline, and the hangul row is
         # claimed first by its own #449 rule, on its report.
+        # 2026-10-03, #597: 153 -> 155, two new corpus names and not a
+        # wider rule: '山田 ｢ﾀﾛｰ｣ ﾀﾛｳ' and '山田｢ﾀﾛｰ｣太郎' lie in its script
+        # span ('John ｢Jack｣ Smith' does not); fix(#597), which declares
+        # `nickname` beside the name fields, explains all three.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(153, ('_ambiguities', 'family', 'given', 'middle'), "a94f0435fd18", None),
+            _Claim(155, ('_ambiguities', 'family', 'given', 'middle'), "4b6ccd174ab1", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -5406,6 +5416,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_initials',), "c4f045134f0f", None),
         "fix(#594) a period-marked halfwidth katakana word is not a title":
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
+        "fix(#597) halfwidth corner brackets enclose a nickname":
+            _Claim(3, ('family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5890,6 +5902,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
         "fix(#596) a voicing mark does not make a katakana word kana-licensed":
             _Claim(3, ('family', 'given'), "d822332b50f9", None),
+        "fix(#597) halfwidth corner brackets enclose a nickname":
+            _Claim(3, ('family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6619,6 +6633,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
         "fix(#596) a voicing mark does not make a katakana word kana-licensed":
             _Claim(3, ('family', 'given'), "d822332b50f9", None),
+        "fix(#597) halfwidth corner brackets enclose a nickname":
+            _Claim(3, ('family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6946,6 +6962,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
         "fix(#596) a voicing mark does not make a katakana word kana-licensed":
             _Claim(3, ('family', 'given'), "d822332b50f9", None),
+        "fix(#597) halfwidth corner brackets enclose a nickname":
+            _Claim(3, ('_ambiguities', 'family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
     },
 }
 

@@ -2376,3 +2376,29 @@ issue = "fix(#596) a voicing mark does not make a katakana word kana-licensed"
 # licensed neighbour made it the family.
 name_regex = "^(?:ア\\u3099イ タロウ|ア\\u309Bイ タロウ|マイケル ア\\u3099イ)$"
 fields = ["given", "family"]
+
+# ---------------------------------------------------------------
+# #597: THE HALFWIDTH CORNER BRACKETS ARE A DEFAULT NICKNAME PAIR.
+# ｢｣ (U+FF62/U+FF63) join DEFAULT_NICKNAME_DELIMITERS beside 「」, and
+# the v1 facade's nickname_delimiters gains halfwidth_corner_brackets,
+# so a clause they enclose is lifted out as the nickname (rules.md#N1)
+# where every release left it in the name -- a middle where spaced,
+# part of one given word where glued. With the
+# unclassified bracket gone, '山田 ｢ﾀﾛｰ｣ ﾀﾛｳ' is kanji plus katakana and
+# takes the kana license; the unspaced '山田｢ﾀﾛｰ｣太郎' divides at the
+# extracted clause; 'John ｢Jack｣ Smith' shows the pair is not
+# script-gated.
+#
+# Literal-anchored to the names: no corpus line held a halfwidth
+# bracket before this change, so the movers ARE the three case rows
+# #597 added. LAST in the file: each diff reported unexplained on the
+# run before this rule existed (2026-10-03).
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#597) halfwidth corner brackets enclose a nickname"
+# The clause moves to nickname in all three, out of middle in the two
+# spaced names and out of the one given word in '山田｢ﾀﾛｰ｣太郎'; the
+# two Japanese names also take their script order, family 山田.
+name_regex = "^(?:山田 ｢ﾀﾛｰ｣ ﾀﾛｳ|山田｢ﾀﾛｰ｣太郎|John ｢Jack｣ Smith)$"
+fields = ["given", "middle", "family", "nickname"]

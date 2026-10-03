@@ -1306,7 +1306,8 @@ N1. Rationale: a quoted or bracketed clause beside a name is an
       "Andrew (Andy) Perkins"     →  nickname="Andy"
       "Jean 'JD' Smith"           →  nickname="JD"
       "Anna () Smith"             →  nickname=""  · boundary
-    implemented: nameparser/_pipeline/_extract.py
+      "John ｢Jack｣ Smith"         →  nickname="Jack"
+    history: decisions.md#N1 · implemented: nameparser/_pipeline/_extract.py
 
 N2. Rationale: only a mark standing at word boundaries is quoting;
     anywhere else it is part of the word.

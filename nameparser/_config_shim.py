@@ -435,8 +435,9 @@ class TupleManager(dict[str, object]):
 
 #: The named delimiter buckets, translated to the ``Policy``
 #: (open, close) pairs they stand for. The first three are
-#: v1's; the rest are the #273 typographic conventions, named so the
-#: v1 keyed idioms (pop/move/del) work on them like the originals.
+#: v1's; the rest are the #273 typographic conventions plus #597's
+#: halfwidth corner brackets, named so the v1 keyed idioms
+#: (pop/move/del) work on them like the originals.
 #: Keep in sync with DEFAULT_NICKNAME_DELIMITERS in _policy.py (pinned
 #: by the default-Constants equality test).
 _SENTINEL_PAIRS = {
@@ -450,6 +451,7 @@ _SENTINEL_PAIRS = {
     "reversed_guillemets": ("»", "«"),
     "corner_brackets": ("「", "」"),
     "white_corner_brackets": ("『", "』"),
+    "halfwidth_corner_brackets": ("｢", "｣"),
     "fullwidth_parenthesis": ("（", "）"),
 }
 
@@ -476,7 +478,7 @@ class RegexTupleManager(TupleManager):  # pickle-compat: do NOT delete
 class _DelimiterManager(TupleManager):
     """v1 ``nickname_delimiters``/``maiden_delimiters`` bucket. In 2.0
     only the named sentinels in ``_DELIMITER_SENTINELS`` exist (the v1
-    trio plus the #273 typographic pairs) -- assigning any
+    trio plus the typographic pairs, #273 and #597) -- assigning any
     other key raises so a caller reaches for a custom-delimiter Policy
     kwarg instead of a dict entry that silently does nothing. ``pop()``/
     ``__setitem__``/``__delitem__`` stay open (inherited) for the
