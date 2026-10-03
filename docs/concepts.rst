@@ -73,8 +73,8 @@ word is the given name, the last is the family name, and anything
 between them is the middle name. ``name_order``, an explicit comma
 and ``script_orders`` change what "first" and "last" mean here.
 ``script_orders`` covers the East Asian writing that settles its own
-order: a name wholly in Han or hangul, or a Japanese name mixing kanji
-with kana or the two kanas with each other — anything but katakana
+order: a name wholly in Han or hangul, or a Japanese name in kanji and
+kana — any of them, hiragana alone included — unless it is katakana
 alone, which is how a foreign name is transcribed. The Chinese
 interpunct ``·`` dividing such a name walks that back, marking a
 transcription that keeps its source order. Two rules can still
@@ -111,6 +111,8 @@ you look anything up: if you are teaching the parser a *word*, it goes
 in the :class:`~nameparser.Lexicon`; if you are changing how unclaimed
 words are *arranged*, or choosing where the unlisted-credential
 readings apply, it goes in the :class:`~nameparser.Policy`.
+
+.. _config-containers:
 
 Configuration lives in three containers
 ----------------------------------------

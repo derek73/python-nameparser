@@ -13,23 +13,27 @@ a name from a tradition it was not written for. The warning under
 What works without a pack
 --------------------------
 
-Most international names need no pack at all. The default vocabulary
-covers seven scripts — Latin, Cyrillic, Greek, Arabic, Hebrew,
-Devanagari and Bengali. Honorifics, conjunctions and name particles
-written in them are recognized out of the box, as far as each script's
-vocabulary reaches: all seven ship honorifics, while conjunctions and
-particles reach fewer — Cyrillic and Greek ship conjunctions and no
-particle, Hebrew particles and no conjunction, Devanagari and Bengali
-honorifics only.
+Most international names need no pack at all. Besides Latin, the
+default vocabulary covers Cyrillic, Greek, Arabic, Hebrew, Devanagari
+and Bengali, and the East Asian scripts described below. Honorifics,
+conjunctions and name particles written in them are recognized out of
+the box, as far as each script's vocabulary reaches: each of those
+scripts but katakana ships honorifics, while conjunctions and particles
+reach fewer — Cyrillic and Greek ship conjunctions and no particle,
+Hebrew particles and no conjunction, and Devanagari, Bengali, Han,
+Hangul and hiragana honorifics only.
 
 .. doctest::
 
     >>> from nameparser import parse
-    >>> name = parse("الشيخ محمد بن سلمان")
-    >>> name.title, name.given, name.family
+    >>> shaikh = parse("الشيخ محمد بن سلمان")
+    >>> shaikh.title, shaikh.given, shaikh.family
     ('الشيخ', 'محمد', 'بن سلمان')
     >>> parse("عبد الرحمن محمد").given
     'عبد الرحمن'
+
+Adding a word the defaults hold back
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Native-script entries are safe to enable by default precisely because
 they cannot collide with Latin-script names. That rules out the
@@ -46,10 +50,10 @@ reasoning behind the default doesn't apply to you — add the entry:
 .. doctest::
 
     >>> from nameparser import Lexicon, Parser
-    >>> lex = Lexicon.default().add(
+    >>> sayyid_lex = Lexicon.default().add(
     ...     titles={"سيد"}, given_name_titles={"سيد"})
-    >>> name = Parser(lexicon=lex).parse("سيد محمد")
-    >>> name.title, name.given
+    >>> sayyid = Parser(lexicon=sayyid_lex).parse("سيد محمد")
+    >>> sayyid.title, sayyid.given
     ('سيد', 'محمد')
 
 Both fields, because ``given_name_titles`` is a marker over ``titles``
@@ -57,16 +61,20 @@ rather than a separate vocabulary: ``titles`` makes the word a title at
 all, and listing it in ``given_name_titles`` says the honorific
 precedes the *given* name — as Arabic ones do — so the word after it
 isn't read as a family name. Listing it in ``given_name_titles`` alone
-raises ``ValueError`` rather than quietly doing nothing.
+does nothing, and says nothing: the word is never read as a title, so
+the entry is never consulted.
+
+East Asian names need no pack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Two East Asian behaviors are on by default for the same reason, except
-that what selects them is the *script* rather than the word. The
-background (covered fully under :ref:`east-asian-names` in
-:doc:`usage`): Chinese, Japanese, and Korean names put the family name
+that what selects them is the *script* rather than the word
+(:ref:`east-asian-defaults` covers turning them off). The background
+(covered fully under :ref:`east-asian-names`): Chinese, Japanese, and Korean names put the family name
 first in native script and are usually written with no space between
 the parts. Both defaults follow from facts the script alone
-establishes. A name written wholly in Han or Hangul — or one mixing
-kanji with kana, a combination only Japanese produces — is assigned
+establishes. A name written wholly in Han or Hangul — or in kanji and
+kana other than katakana alone, which only Japanese produces — is assigned
 family-first, because every language written in those scripts orders
 names that way; no language guess is involved. An unspaced hangul
 name is additionally split into surname and given name, because hangul
@@ -97,8 +105,10 @@ formal Russian document intends:
     >>> ru.parse("Сидоров Иван Петрович").given
     'Иван'
 
-Packs stack: pass more than one pack and their policies fold together
-in order.
+Stacking packs
+~~~~~~~~~~~~~~
+
+Pass more than one pack and they fold together in order:
 
 .. doctest::
 
@@ -106,10 +116,24 @@ in order.
     >>> sorted(rule.name for rule in both.policy.patronymic_rules)
     ['EAST_SLAVIC', 'TURKIC']
 
+How each part combines:
+
+- **Lexicons union**: a pack's words are added to the base's, never
+  removed.
+- **Set-valued policy fields union** the same way — the fields
+  declared set-valued in :class:`~nameparser.PolicyPatch`:
+  ``patronymic_rules``, ``segment_scripts`` and the delimiter fields.
+- **Every other, scalar field is later-wins.** If two packs with
+  different codes set the same scalar field — even to the same value —
+  the later one wins and a ``UserWarning`` is raised; a pack overrides
+  the base parser's value silently.
+
+Finding packs by code
+~~~~~~~~~~~~~~~~~~~~~
+
 Find what's shipped with :func:`~nameparser.locales.available`, and
 look one up dynamically by its lowercase code with
-:func:`~nameparser.locales.get` — the same code the ``--locale`` flag
-takes:
+:func:`~nameparser.locales.get`:
 
 .. doctest::
 
@@ -122,7 +146,10 @@ The command line accepts the same codes: ``python -m nameparser
 --locale ru --json "Сидоров Иван Петрович"`` applies the pack before
 parsing, equivalent to ``parser_for(locales.get("ru"))``.
 
-.. list-table:: Shipped packs
+Shipped packs
+~~~~~~~~~~~~~
+
+.. list-table::
    :header-rows: 1
    :widths: 15 85
 
@@ -137,14 +164,17 @@ parsing, equivalent to ``parser_for(locales.get("ru"))``.
        no surname list, because no list divides a kanji name, and no
        order: a Japanese name already reads family-first by default.
    * - ``ru``
-     - East Slavic patronymic order — detects a formal
-       given/patronymic/family shape (Cyrillic and transliterated
-       ``-ovich``/``-ovna``-style endings) and assigns it accordingly.
+     - East Slavic patronymic order — detects the formal
+       family/given/patronymic shape (three name words, the last ending
+       like a patronymic — Cyrillic and transliterated
+       ``-ovich``/``-ovna``-style endings — and the middle not) and
+       assigns it accordingly.
    * - ``tr_az``
-     - Turkic patronymic markers — detects a standalone marker token
-       (``oglu``, ``qizi``, ``uulu``, and their Latin- and
-       Cyrillic-script variants) and reads the name around it as
-       given/middle/family.
+     - Turkic patronymic markers — detects a name of four words ending
+       in a standalone marker token (``oglu``, ``qizi``, ``uulu``, and
+       their Latin- and Cyrillic-script variants) and reads its first
+       word as the family name (``Aliyev Ilham Heydar oglu`` → family
+       ``Aliyev``).
    * - ``zh``
      - Chinese surname segmentation — splits an unspaced Han name into
        surname and given name (``毛泽东`` → family ``毛``, given
@@ -155,7 +185,7 @@ parsing, equivalent to ``parser_for(locales.get("ru"))``.
 ``ja``, ``ru`` and ``tr_az`` are policy-only — they carry no vocabulary
 of their own. ``zh`` is both halves at once: a surname list, plus the
 one policy field that turns segmentation on for the script it covers. See
-:doc:`concepts` for how that split (language vocabulary vs. behavior)
+:ref:`config-containers` for how that split (language vocabulary vs. behavior)
 is drawn, and `Contributing a pack to nameparser`_ for which half a
 new naming rule belongs in.
 
@@ -180,11 +210,14 @@ new naming rule belongs in.
    mixes traditions, parse the subsets separately with different
    parsers rather than enabling a pack over all of it.
 
-   A declared family-first ``name_order`` stands down the rotation
-   instead of competing with it: fold the pack onto a base parser
-   built with ``Policy(name_order=FAMILY_FIRST)`` and ``"Мицкевич
-   Адам Юзеф"`` reads family ``Мицкевич`` rather than the given-first
-   order the pack restores by default.
+A declared family-first ``name_order`` stands down both patronymic
+rotations (``ru`` and ``tr_az``) instead of competing with them. Under
+``FAMILY_FIRST`` the two never disagree on a name the rule matches: that
+order already reads ``"Сидоров Иван Петрович"`` as family ``Сидоров``,
+so folding the pack onto a base built with it adds nothing. Under
+``FAMILY_FIRST_GIVEN_LAST`` the declared order wins, and the last
+word — the patronymic, or a separate ``oglu``/``qizi`` marker — reads
+as the given name.
 
 .. _segmenter-contract:
 
@@ -205,13 +238,18 @@ and returning a :class:`~nameparser.Segmentation` — the interior
 offsets to cut at, plus how confident you are — or ``None`` to decline,
 leaving the token whole. Declining is the load-bearing half of the
 contract, because ``segment_scripts`` unions across packs: your
-segmenter is offered every token of every activated script, not only
-the ones its own pack turned on. Recognize the text you can actually
-read and return ``None`` for the rest, rather than answering for a
-script you never meant to handle. Exceptions are the one thing that
-does not stay inside the parse — a segmenter is your code, so its
-errors propagate out of ``parse()`` instead of being absorbed as
-content errors.
+segmenter may be offered a token of any activated script, not only the
+ones its own pack turned on. It is asked only where the surname list
+could not divide an unspaced token, and not where the name is already
+divided — by a second word in an East Asian script (the nakaguro ・
+counts as a space), a family comma or a 间隔号. A word in any other
+script beside the token — Latin (``"Dr. 高橋一郎"``), Cyrillic, even
+halfwidth katakana — divides nothing, so the segmenter is still asked. Recognize the text
+you can actually read and return ``None`` for the rest, rather than
+answering for a script you never meant to handle. A segmenter is your
+code, so its failures do not stay inside the parse: its own exceptions
+propagate out of ``parse()``, and an answer of the wrong type or a cut
+outside the token raises ``TypeError`` or ``ValueError``.
 
 The pack half of that arrangement carries no words at all, which makes
 it the shortest kind of pack there is:
@@ -219,13 +257,15 @@ it the shortest kind of pack there is:
 .. doctest::
 
     >>> from nameparser import Lexicon, Locale, PolicyPatch, Script
-    >>> mine = Locale(code="myscript", lexicon=Lexicon.empty(),
+    >>> script_pack = Locale(code="myscript", lexicon=Lexicon.empty(),
     ...               policy=PolicyPatch(
     ...                   segment_scripts=frozenset({Script.HAN})))
 
 ``nameparser/locales/ja.py`` is the shipped example of exactly that
-shape: activation is the pack's entire contribution, and a pack
-applied without a segmenter simply divides nothing.
+shape: activation is the pack's entire contribution. Applied without a
+segmenter it divides nothing, and building the parser emits a
+``UserWarning`` naming the scripts that can never divide and the
+argument to pass.
 
 Creating your own Locale
 -------------------------
@@ -239,24 +279,14 @@ alone) instead of to a concrete value, so a pack only ever states what
 it changes. A patch can also be applied directly, without a pack —
 see :meth:`Policy.patched() <nameparser.Policy.patched>`.
 
-The ``policy`` half works that way, but the ``lexicon`` half does not.
-A pack's :class:`~nameparser.Lexicon` is a complete value in its own
-right and is validated on its own, before it is unioned onto the base
-— so a fragment that marks a word must also carry the word it marks.
-To make an existing base title precede the given name, restate the
-title in the fragment rather than listing it in ``given_name_titles``
-alone. ``zh`` is the shipped worked example: its
-``Lexicon(surnames=...)`` has to satisfy every ``Lexicon`` rule
-standing alone, before anything unions it onto the base.
-
 .. doctest::
 
     >>> from nameparser import Lexicon, Locale, PolicyPatch, parser_for
-    >>> lex = Lexicon.empty().add(titles={"kapitan"})
-    >>> mine = Locale(code="mycorp", lexicon=lex,
-    ...                policy=PolicyPatch(middle_as_family=True))
-    >>> name = parser_for(mine).parse("Kapitan Anna Maria Schmidt")
-    >>> name.title, name.given, name.family
+    >>> kapitan_lex = Lexicon.empty().add(titles={"kapitan"})
+    >>> corp_pack = Locale(code="mycorp", lexicon=kapitan_lex,
+    ...                     policy=PolicyPatch(middle_as_family=True))
+    >>> kapitan = parser_for(corp_pack).parse("Kapitan Anna Maria Schmidt")
+    >>> kapitan.title, kapitan.given, kapitan.family
     ('Kapitan', 'Anna', 'Maria Schmidt')
 
 That pack does two things at once: the :class:`~nameparser.Lexicon`
@@ -267,14 +297,22 @@ instead of ``middle`` — compare this to the default parser's reading
 of the same string, which has no title and splits ``given='Kapitan'``,
 ``middle='Anna Maria'``, ``family='Schmidt'``.
 
-When ``parser_for`` folds one or more packs onto a base, lexicons
-union (a pack's words are added to the base's, never removed); policy
-fields declared as set-valued in :class:`~nameparser.PolicyPatch`
-(``patronymic_rules`` and the delimiter fields) union the same way;
-and every other, scalar field is later-wins — if two packs (or a pack
-and an explicit conflicting value) set the same scalar field, the last
-one applied wins and a ``UserWarning`` is raised so the conflict
-isn't silent.
+The lexicon fragment is validated on its own
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``policy`` half is a patch, but the ``lexicon`` half is not. A
+pack's :class:`~nameparser.Lexicon` is a complete value in its own
+right and is validated on its own, before it is unioned onto the base
+— so a fragment listing a word in ``particles_ambiguous``,
+``suffix_acronyms_ambiguous`` or ``honorific_tails`` must also list it
+in the set that field marks (``particles``, ``suffix_acronyms``,
+``suffix_words``). A fragment holding ``particles_ambiguous={"van"}``
+without ``particles={"van"}`` raises ``ValueError`` before any union
+happens. ``given_name_titles`` and ``conjunctions_ambiguous`` are not
+checked this way, and can mark a word only the base holds. ``zh`` is the
+shipped worked example: its ``Lexicon(surnames=...)`` has to satisfy
+every ``Lexicon`` rule standing alone, before anything unions it onto
+the base.
 
 Contributing a pack to nameparser
 ----------------------------------
@@ -297,18 +335,21 @@ by ``tests/v2/test_locales.py``:
    docstring explains how the pack-contract test enforces this.
 #. Add a rotator list to ``tests/v2/test_locales.py``. Every pack needs
    one, but what it has to contain follows from how the pack declares
-   its scope. A pack declaring by *marker regex* (``ru``, ``tr_az``)
-   needs at least one name exercising every alternation branch of every
-   regex it defines — ``test_rotators_cover_every_marker_branch`` fails
-   until each branch is hit. A pack declaring by *codepoint range*
-   (``zh``, ``ja``) has no branches to sweep and drops out of that
-   test, so its rotators have to carry the same weight by hand: the
-   unspaced names the pack must split, one per shape of the vocabulary
-   it ships — single surname, compound surname, and any spelling
-   variant it means to cover. A pack that ships no vocabulary lists
-   the shapes its *segmenter* must divide instead, and marks the
-   rotator tests to skip when the optional dependency is absent, so
-   the contract tests still run everywhere.
+   its scope:
+
+   - **By marker regex** (``ru``, ``tr_az``): at least one name
+     exercising every alternation branch of every regex it defines —
+     ``test_rotators_cover_every_marker_branch`` fails until each
+     branch is hit.
+   - **By codepoint range** (``zh``, ``ja``): there are no branches to
+     sweep, so the pack drops out of that test and its rotators carry
+     the same weight by hand — the unspaced names the pack must split,
+     one per shape of the vocabulary it ships: single surname, compound
+     surname, and any spelling variant it means to cover.
+   - **With no vocabulary at all**: list the shapes its *segmenter* must
+     divide instead, and mark the rotator tests to skip when the
+     optional dependency is absent, so the contract tests still run
+     everywhere.
 #. Keep the non-interference gate green over the shared corpus plus
    your rotators: every name the packed parser parses differently from
    the default must be one your ``DEVIATES`` predicate flags — no
@@ -327,13 +368,13 @@ by ``tests/v2/test_locales.py``:
    empty :class:`~nameparser.Lexicon`; ``nameparser/locales/zh.py`` is
    the template for one that does.
 #. Curate vocabulary conservatively, the same rule as
-   :doc:`customize`: when you're unsure whether a word or a marker
-   belongs, leave it out.
+   :ref:`ambiguous-words`: when you're unsure whether a word or a
+   marker belongs, leave it out.
 
 ``nameparser/locales/ru.py`` is the reference implementation for a
 policy-only pack, ``nameparser/locales/zh.py`` for one that carries
 vocabulary, and ``nameparser/locales/ja.py`` for one whose whole
 contribution is turning a stage on. Packs still in progress are
-tracked in issue `#146
-<https://github.com/derek73/python-nameparser/issues/146>`_
-(Vietnamese).
+tracked in issue `#345
+<https://github.com/derek73/python-nameparser/issues/345>`_ (``hi``
+and ``bn``).

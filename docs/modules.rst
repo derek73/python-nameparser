@@ -140,7 +140,8 @@ because only these three orders have defined assignment semantics.
 
    The default :attr:`~nameparser.Policy.script_orders` table: a name
    written wholly in Han or Hangul reads family-first, and so does a
-   Japanese name mixing kanji with kana, which resolves to the
+   Japanese name in kanji and kana other than katakana alone, which
+   resolves to the
    ``HIRAGANA`` entry whichever of the two syllabaries it actually
    uses — that member is the license's carrier key, not a claim about
    the characters present. A name written wholly in katakana has no
