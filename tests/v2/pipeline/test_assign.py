@@ -556,7 +556,8 @@ def test_pure_katakana_piece_falls_back_to_name_order() -> None:
 
 def test_interpunct_divided_name_reads_positionally() -> None:
     # 威廉·莎士比亚 is William Shakespeare: a 间隔号-divided name is a
-    # transcription and keeps source order (rule W4's Accepted) -- the
+    # transcription and keeps the declared order (rule W4's
+    # Accepted), which under the default is its written order -- the
     # B7 is the marker, playing the role pure katakana plays in the
     # kana license
     out = _assigned("威廉·莎士比亚")

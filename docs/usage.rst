@@ -262,8 +262,8 @@ first. The dot itself is the marker, so nameparser reads U+00B7 as a
 token separator when it sits between classified-script characters
 (each side judged on its own — a hangul character beside a Han one
 qualifies), and a dot anywhere in the name reads the whole name as a
-transcription listing: it keeps the order it was written in and is
-never segmented — the role pure katakana plays for Japanese
+transcription listing: it keeps the declared order — the order it
+was written in, under the default — and is never segmented — the role pure katakana plays for Japanese
 transcriptions, played here by the divider instead of the script:
 
 .. doctest::
@@ -452,7 +452,7 @@ marker, and without it there is no signal. The same holds for a
 transcription typed with the Japanese middle dot (威廉・莎士比亚): each
 dot carries its own script's convention, the nakaguro's is Japanese
 roster formatting rather than transcription, so only the Chinese dot
-rescues the source order.
+stands the family-first reading down.
 
 Honorifics come off first
 ^^^^^^^^^^^^^^^^^^^^^^^^^

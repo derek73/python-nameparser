@@ -2311,11 +2311,15 @@ W4. Rationale: Chinese, Japanese and Korean all write the family
       "山田 ﾀﾛｳ"                  →  family="山田"
       "マイケル ジャクソン"        →  given="マイケル"  · boundary
       "ﾔﾏﾀﾞ ﾀﾛｳ"                  →  given="ﾔﾏﾀﾞ"  · boundary
-    Accepted: a name the interpunct divides keeps its source order —
-    the divider itself marks a transcription (T3) — so the override
-    stands down there; the katakana middle dot (T2) carries no such
-    signal, so a name it divides still reads by the script license.
+    Accepted: a name the interpunct divides keeps the declared order
+    — the divider itself marks a transcription (T3) — so the override
+    stands down there, and the name reads as a wholly-katakana one
+    does: in its written order by default, reversed by a declared
+    family-first order like any other name; the katakana middle dot
+    (T2) carries no such signal, so a name it divides still reads by
+    the script license.
       "毛·泽东"                   →  given="毛"
+      "威廉·莎士比亚"  family-first  →  family="威廉"
       "威廉・莎士比亚"            →  family="威廉"
     history: decisions.md#W4 · interacts: T3 · implemented: nameparser/_pipeline/_assign.py
 

@@ -77,7 +77,7 @@ order: a name wholly in Han or hangul, or a Japanese name in kanji and
 kana — any of them, hiragana alone included — unless it is katakana
 alone, which is how a foreign name is transcribed. The Chinese
 interpunct ``·`` dividing such a name walks that back, marking a
-transcription that keeps its source order. Two rules can still
+transcription that follows ``name_order`` like any other name. Two rules can still
 override the arrangement: a particle that can never be a given name,
 opening the name, opens the surname under every order rather than
 becoming the given name (:ref:`order-vocabulary-first`), and the
