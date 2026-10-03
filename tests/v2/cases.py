@@ -5988,6 +5988,29 @@ CASES: tuple[Case, ...] = (
     Case("cjk_white_corner_bracket_nickname", '田中『ハナ』花子',
          {"family": "田中", "given": "花子", "nickname": "ハナ"},
          classification="feat(#273) + fix(#271)"),
+    Case("cjk_halfwidth_corner_bracket_nickname", '山田 ｢ﾀﾛｰ｣ ﾀﾛｳ',
+         {"family": "山田", "given": "ﾀﾛｳ", "nickname": "ﾀﾛｰ"},
+         classification="fix(#597)",
+         notes="the halfwidth corner brackets U+FF62/U+FF63 are the "
+               "same punctuation as 「」 in JIS X 0201's narrower "
+               "encoding, the data halfwidth katakana comes from (#594). "
+               "2.3.0 and every earlier release left the clause in the "
+               "name as a middle ｢ﾀﾛｰ｣, and the unclassified bracket "
+               "kept the name from being wholly East Asian script, so "
+               "it read given 山田 too. Extracted, the rest is kanji "
+               "plus katakana and takes the kana license"),
+    Case("cjk_halfwidth_corner_bracket_unspaced_nickname", '山田｢ﾀﾛｰ｣太郎',
+         {"family": "山田", "given": "太郎", "nickname": "ﾀﾛｰ"},
+         classification="fix(#597)",
+         notes="the halfwidth twin of cjk_corner_bracket_nickname: the "
+               "extracted clause is a token boundary, so the unspaced "
+               "remainder divides there and both pieces are Han"),
+    Case("latin_halfwidth_corner_bracket_nickname", 'John ｢Jack｣ Smith',
+         {"given": "John", "family": "Smith", "nickname": "Jack"},
+         classification="fix(#597)",
+         notes="a delimiter pair is not script-gated: the halfwidth "
+               "brackets lift a Latin nickname exactly as 「」 does in "
+               "'John 「Jack」 Smith'. 2.3.0 read middle ｢Jack｣"),
     Case("fullwidth_paren_nickname", 'John （Jack） Kennedy',
          {"given": "John", "family": "Kennedy", "nickname": "Jack"},
          classification="feat(#273)"),

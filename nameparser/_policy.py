@@ -345,9 +345,10 @@ DEFAULT_SCRIPT_ORDERS: tuple[
 #: rebuilt literal the user had to go discover. The v1 trio (straight
 #: quotes + parentheses) plus the typographic conventions (#273):
 #: smart quotes, low-high and right-right quotes, guillemets both
-#: directions, CJK corner brackets, fullwidth parentheses. Curly
-#: SINGLE quotes are deliberately absent: U+2019 is the typographic
-#: apostrophe ("O’Connor").
+#: directions, CJK corner brackets (full-width and the halfwidth
+#: ｢｣ legacy JIS X 0201 data carries, #597), fullwidth parentheses.
+#: Curly SINGLE quotes are deliberately absent: U+2019 is the
+#: typographic apostrophe ("O’Connor").
 DEFAULT_NICKNAME_DELIMITERS = frozenset({
     ("'", "'"), ('"', '"'), ("(", ")"),      # v1 trio
     ("“", "”"),                              # smart quotes (en, zh)
@@ -356,6 +357,7 @@ DEFAULT_NICKNAME_DELIMITERS = frozenset({
     ("«", "»"),                              # guillemets (fr, ru, it, el)
     ("»", "«"),                              # reversed guillemets (de alt)
     ("「", "」"), ("『", "』"),                # CJK corner brackets (ja)
+    ("｢", "｣"),                              # halfwidth corner brackets
     ("（", "）"),                             # fullwidth parentheses (CJK)
 })
 

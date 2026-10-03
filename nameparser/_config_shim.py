@@ -450,6 +450,7 @@ _SENTINEL_PAIRS = {
     "reversed_guillemets": ("»", "«"),
     "corner_brackets": ("「", "」"),
     "white_corner_brackets": ("『", "』"),
+    "halfwidth_corner_brackets": ("｢", "｣"),
     "fullwidth_parenthesis": ("（", "）"),
 }
 
