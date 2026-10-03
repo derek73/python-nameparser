@@ -81,8 +81,9 @@ def _stray_ascii(text: str) -> str:
 #: _script_matcher(Script.KATAKANA, whole=True) -- rather than a
 #: hand-copied codepoint range, so the KATAKANA span lives in exactly
 #: one place (nameparser._policy._SCRIPT_RANGES). That table's choice,
-#: not this file's: halfwidth katakana (a different Unicode block,
-#: U+FF65-U+FF9F, per _policy.py's own comment) is out of scope.
+#: not this file's: since #594 it classifies halfwidth katakana
+#: (U+FF65-U+FF9F) as katakana too, so a wholly-halfwidth text is a
+#: shape-7 transcription here exactly as its full-width twin is.
 #: Applied to the text with whitespace stripped, so a spaced
 #: transcription still counts as wholly katakana; a whitespace-only
 #: string never reaches this predicate in practice, since the purity
@@ -9123,6 +9124,56 @@ CASES: tuple[Case, ...] = (
                "reading to O5's convention, which reports it (#449); "
                "a name whose script order decides it stays silent. "
                "Roles parity; the flag is #449's"),
+    Case("ja_halfwidth_kanji_katakana_pieces", "山田 ﾀﾛｳ",
+         {"family": "山田", "given": "ﾀﾛｳ"},
+         classification="fix(#594)",
+         notes="halfwidth katakana (U+FF65-U+FF9F) is katakana: the "
+               "kana license reads it exactly as it reads 山田 エミ. "
+               "Legacy JIS X 0201 data -- bank, payroll and CSV "
+               "exports -- writes kana this way. 2.3.0 and every "
+               "earlier release left the block unclassified and read "
+               "given 山田, family ﾀﾛｳ"),
+    Case("ja_halfwidth_voicing_marks_are_katakana", "山田 ﾀﾞｲｽｹ",
+         {"family": "山田", "given": "ﾀﾞｲｽｹ"},
+         classification="fix(#594)",
+         notes="the halfwidth voicing mark ﾞ (U+FF9E) is a SPACING "
+               "character after its base, not a combining one, so "
+               "only the block span classifies it; a range ending at "
+               "U+FF9D would leave ﾀﾞｲｽｹ mixed-script and the name "
+               "positional"),
+    Case("ja_halfwidth_semi_voiced_and_long_vowel_marks_are_katakana",
+         "山田 ﾍﾟｰﾀｰ",
+         {"family": "山田", "given": "ﾍﾟｰﾀｰ"},
+         classification="fix(#594)",
+         notes="the block's last codepoint, the semi-voiced mark ﾟ "
+               "(U+FF9F), and the prolonged sound mark ｰ (U+FF70, which "
+               "a range starting at the ordinary letters, U+FF71, "
+               "would drop). Narrowing the range past either leaves "
+               "ﾍﾟｰﾀｰ mixed-script and the name positional"),
+    Case("ja_halfwidth_unspaced_unsegmented_default", "山田ﾀﾛｳ",
+         {"family": "山田ﾀﾛｳ"},
+         classification="fix(#594)",
+         notes="the halfwidth twin of ja_unspaced_unsegmented_default: "
+               "one Han+halfwidth token takes the kana license on its "
+               "own and reads family. 2.3.0 read it given, reporting "
+               "given-or-family; the license decides it, so nothing is "
+               "reported now"),
+    Case("ja_halfwidth_pure_katakana_positional", "ﾔﾏﾀﾞ ﾀﾛｳ",
+         {"given": "ﾔﾏﾀﾞ", "family": "ﾀﾛｳ"},
+         notes="parity row guarding the license's boundary in "
+               "halfwidth: wholly-katakana keeps the declared order "
+               "(rules.md#W4). Legacy halfwidth data writes Japanese "
+               "names this way too, family-first, but the script "
+               "cannot tell a reading from a transcription, so the "
+               "caller opts in through script_orders (#594)"),
+    Case("ja_interpunct_b7_halfwidth_katakana", "ﾀﾛｳ·ﾔﾏﾀﾞ",
+         {"given": "ﾀﾛｳ", "family": "ﾔﾏﾀﾞ"},
+         classification="fix(#594)",
+         notes="the 间隔号 divides between two classified characters "
+               "(rules.md#T3), and halfwidth kana is classified now, "
+               "so the dot divides here as it does in タロウ·ヤマダ "
+               "and the parts keep source order. 2.3.0 kept the whole "
+               "text one token"),
     Case("ja_iteration_mark_is_han", "佐々木 太郎",
          {"family": "佐々木", "given": "太郎"},
          classification="fix(#272)",
@@ -9658,6 +9709,24 @@ CASES: tuple[Case, ...] = (
                "the declared order, so the lone word is the GIVEN name "
                "-- the veto decides title-or-name, the order rule "
                "decides which name. 2.2.0 read title マイケル.",
+         tolerated=True),
+    Case("ja_halfwidth_katakana_lone_name_with_a_period_is_not_a_title",
+         "ﾏｲｹﾙ.",
+         {"given": "ﾏｲｹﾙ."}, ambiguities=("given-or-family",),
+         classification="fix(#594)",
+         notes="the halfwidth twin of the row above: katakana has no "
+               "initials (_NO_INITIALS), and halfwidth kana is katakana "
+               "now, so H2's opening-abbreviation shape declines it. "
+               "2.3.0 read title ﾏｲｹﾙ., the halfwidth limit "
+               "decisions.md#cjk-full-stops recorded",
+         tolerated=True),
+    Case("ja_halfwidth_katakana_opener_with_a_period_is_a_name",
+         "ﾀﾅｶ. John",
+         {"given": "ﾀﾅｶ.", "family": "John"},
+         classification="fix(#594)",
+         notes="decisions.md#cjk-full-stops' recorded misroute: a "
+               "period-marked halfwidth opener read as a TITLE, where "
+               "タナカ. John reads given. Now both read given",
          tolerated=True),
     Case("latin_period_marked_opening_word_is_still_a_title",
          "Smith. John",

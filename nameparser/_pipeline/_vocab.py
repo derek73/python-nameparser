@@ -1431,8 +1431,10 @@ def effective_script(text: str) -> Script | None:
     katakana-only: マイケル has no kanji, but さくらエミ -- hiragana
     plus katakana -- is kana-only AND licensed) -- and resolves to the
     HIRAGANA carrier entry. Pure-katakana stays KATAKANA
-    (single_script's answer): a lone katakana token is predominantly a
-    transcribed foreign name, so nothing defaults on it."""
+    (single_script's answer): a lone katakana token may be a
+    transcribed foreign name or a Japanese reading, and the script
+    cannot say which, so nothing defaults on it. Halfwidth kana is
+    katakana by the table (#594), so 山田ﾀﾛｳ is licensed too."""
     # None for both shapes _wholly_ja could never match anyway (empty
     # text, or all-ASCII text): real work, not a leftover "if text"
     # guard, since the ASCII case is one a bare emptiness check would

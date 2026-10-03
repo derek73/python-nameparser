@@ -243,8 +243,9 @@ ones its own pack turned on. It is asked only where the surname list
 could not divide an unspaced token, and not where the name is already
 divided — by a second word in an East Asian script (the nakaguro ・
 counts as a space), a family comma or a 间隔号. A word in any other
-script beside the token — Latin (``"Dr. 高橋一郎"``), Cyrillic, even
-halfwidth katakana — divides nothing, so the segmenter is still asked. Recognize the text
+script beside the token — Latin (``"Dr. 高橋一郎"``), Cyrillic — divides
+nothing, so the segmenter is still asked. Halfwidth katakana counts as
+katakana, so ``"高橋一郎 ﾀﾛｳ"`` is already divided. Recognize the text
 you can actually read and return ``None`` for the rest, rather than
 answering for a script you never meant to handle. A segmenter is your
 code, so its failures do not stay inside the parse: its own exceptions

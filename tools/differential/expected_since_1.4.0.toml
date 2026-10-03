@@ -181,16 +181,19 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # supplementary-plane kana is hentaigana and other archaic forms no
 # modern name uses, so _SCRIPT_RANGES does not list it either.
 #
-# U+FF65 is the one span here that _SCRIPT_RANGES does NOT have, and
-# it is deliberate. The halfwidth middle dot separates tokens like
-# its fullwidth twin, so 'ﾏｲｹﾙ･ｼﾞｬｸｿﾝ' splits where 1.4 left one
-# token, but halfwidth kana is excluded from CLASSIFICATION on
-# purpose (a separate normalization problem). The rest of the
-# halfwidth block (U+FF66-U+FF9F) is left out for the usual tightness
-# reason, and it was measured rather than assumed: a dotless
-# halfwidth name such as 'ﾏｲｹﾙ ｼﾞｬｸｿﾝ' is byte-identical on both
-# sides, so covering the block would pre-excuse a future regression
-# on a shape that is parity today. U+00B7, the context-sensitive
+# The halfwidth kana span (U+FF65-U+FF9F) is the table's own since
+# #594. Until then U+FF65 alone stood here, a span _SCRIPT_RANGES did
+# not have: the halfwidth middle dot separated tokens like its
+# fullwidth twin, so 'ﾏｲｹﾙ･ｼﾞｬｸｿﾝ' split where 1.4 left one token,
+# while the rest of the halfwidth block was left out of the table as a
+# separate normalization problem, and out of this class because a
+# dotless halfwidth name was parity -- which it still is where it
+# is wholly katakana ('ﾔﾏﾀﾞ ﾀﾛｳ' keeps the declared order, as
+# 'マイケル ジャクソン' does). What #594 moved is the kana license and
+# the 间隔号's flank guard reaching halfwidth kana: '山田 ﾀﾛｳ' reads
+# family-first as '山田 エミ' does, and 'ﾀﾛｳ·ﾔﾏﾀﾞ' divides. Both are
+# this rule's diffs, so the class now copies the block whole like
+# every other span here. U+00B7, the context-sensitive
 # 间隔号 (#298), deliberately gets NO span even though it too changes
 # parses: its flank guard divides only between classified-script
 # characters, so every name it can change already matches this class
@@ -216,7 +219,7 @@ issue = "fix(#271/#272/#298) native-script CJK: family-first order, hangul segme
 # radar, so an unmatched diff on one of its names reports instead of
 # failing), and a rule fires on names it is given regardless of what
 # an unmatched diff would then cost.
-name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65]"
+name_regex = "[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF9F]"
 fields = ["given", "middle", "family"]
 
 [[change]]
@@ -1536,7 +1539,7 @@ issue = "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJ
 # strings, because a pin selected the canonical CJK rule by those
 # substrings and asserted uniqueness; that pin is gone (#333) and the
 # span sweep finds rules by their character class instead.
-name_regex = "(?s)(?=.*[「」『』・･])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+name_regex = "(?s)(?=.*[「」『』・･])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF9F])"
 fields = ["given", "family", "nickname"]
 
 [[change]]
@@ -1589,7 +1592,7 @@ issue = "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition com
 # appears again, this rule wakes and the harness says the dormant
 # reason has gone false.
 dormant = "its one name, '山田 花子（旧姓 佐藤）', diffs in `maiden` rather than `nickname` since rules.md#M3 and is claimed by fix(cjk-maiden-marker); no other corpus name pairs a fullwidth bracket with a CJK script"
-name_regex = "(?s)(?=.*[（）])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+name_regex = "(?s)(?=.*[（）])(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF9F])"
 fields = ["given", "middle", "family", "nickname"]
 
 [[change]]
@@ -1631,7 +1634,7 @@ issue = "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma gi
 # compound rule carries, hand-copied from _SCRIPT_RANGES and pinned by
 # the same sync test -- a comma alone matches every Latin 'Smith, Jr.'
 # in the corpus.
-name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF9F])"
 fields = ["given", "suffix"]
 
 [[change]]
@@ -1702,7 +1705,7 @@ issue = "fix(cjk-comma-compound) comma routing compounds with the CJK order flip
 # combination and was falsified by driving classify() over the reach --
 # the method decisions.md#differential-ledger names as the only one
 # that answers this question.
-name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF65])"
+name_regex = "(?s)(?=.*,)(?=.*[\\u3005-\\u3006\\u3040-\\u309F\\u30A0-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF\\uAC00-\\uD7A3\\uFF65-\\uFF9F])"
 fields = ["given", "family", "title", "suffix"]
 
 [[change.precedes_narrower]]
@@ -4926,3 +4929,36 @@ issue = "fix(#585) a decomposed initial keeps its whole first letter"
 # decomposition data.
 name_regex = "^(e\u0301mile zola|マイケル シ\u3099ャクソン)$"
 fields = ["_initials"]
+
+# ---------------------------------------------------------------
+# #594: HALFWIDTH KATAKANA IS KATAKANA. The script table classifies
+# the halfwidth kana block U+FF65-U+FF9F as Script.KATAKANA, so what
+# reaches full-width katakana reaches halfwidth now: the kana license
+# (rules.md#W4) reads 山田 ﾀﾛｳ family-first as it reads 山田 エミ, the
+# 间隔号 divides between two halfwidth kana (rules.md#T3), and H2's
+# opening-abbreviation shape declines a period-marked katakana word
+# because katakana has no initials (rules.md#H2's Accepted clause),
+# closing the limit decisions.md#cjk-full-stops recorded. A WHOLLY
+# halfwidth name keeps the declared order, as wholly full-width
+# katakana does, so 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity.
+#
+# At this baseline the five license and 间隔号 movers need no rule of
+# their own: the canonical fix(#271/#272/#298) rule above explains
+# them through its span class, which copies the halfwidth block since
+# #594 (its class reaches the parity name too, as it reaches
+# 'マイケル ジャクソン'). The two title movers move `title`, outside
+# that rule's fields, so the one rule below takes them. Literal-
+# anchored, and LAST in the file: both reported unclassified on the
+# radar on the run before it existed (2026-10-03).
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#594) a period-marked halfwidth katakana word is not a title"
+# 'ﾀﾅｶ. John' and 'ﾏｲｹﾙ.' read title at 1.4.0, as their full-width
+# twins did until #cjk-full-stops (2.3); both read given now, as the
+# twins do.
+# Tolerated input (an edge full stop on a CJK word), so these are
+# radar names and the rule classifies them for the release note rather
+# than for the exit code.
+name_regex = "^(?:ﾀﾅｶ\\. John|ﾏｲｹﾙ\\.)$"
+fields = ["title", "given"]

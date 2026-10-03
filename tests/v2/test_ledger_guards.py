@@ -58,16 +58,19 @@ from ._differential_fixtures import (
     _entry_name, _exclusions, _rules, _unclassified_names, load_tool)
 
 
-# The one sanctioned divergence between the differential rules'
-# character classes and _SCRIPT_RANGES: the halfwidth middle dot
-# separates tokens without being classified (halfwidth kana stays out
-# of the table on purpose). U+00B7 is deliberately NOT here -- its
-# flank guard means every name it can change matches through a
-# classified flanking character already. Single-sourced: read by the
-# span sweep below, and by the membership guard that keeps "sanctioned"
-# meaning something -- an extra that becomes classified belongs in the
-# table, not in this list.
-_SANCTIONED_EXTRAS = frozenset({(0xFF65, 0xFF65)})
+# Sanctioned divergences between the differential rules' character
+# classes and _SCRIPT_RANGES: a span a rule must cover although the
+# table does not classify it. Empty since #594. Its one member was the
+# halfwidth middle dot U+FF65, which separates tokens without having
+# been classified while halfwidth kana stayed out of the table; #594
+# classified the whole halfwidth kana block, U+FF65 with it, and it
+# moved into the table, as the membership guard below requires.
+# U+00B7 is deliberately NOT here -- its flank guard means every name
+# it can change matches through a classified flanking character
+# already. Single-sourced: read by the span sweep below, and by the
+# membership guard that keeps "sanctioned" meaning something -- an
+# extra that becomes classified belongs in the table, not in this list.
+_SANCTIONED_EXTRAS: frozenset[tuple[int, int]] = frozenset()
 
 
 @pytest.mark.parametrize("field", _PHRASE_FIELDS)
@@ -296,7 +299,7 @@ def test_script_ranges_membership_is_decided() -> None:
 
     The second assert is what makes _SANCTIONED_EXTRAS mean something.
     That set is the ledgers' licence to be WIDER than the table -- see
-    its definition above for why U+FF65 is in it and U+00B7 is not --
+    its definition above for why U+FF65 left it and U+00B7 was never in it --
     and a licence nobody audits is just a hole. An extra that becomes
     classified belongs in the table, not in the exception list, and
     fails here until it moves.
@@ -3638,8 +3641,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #585: 138 -> 139, one new corpus name and not a
         # wider rule: the decomposed katakana R3 row 'マイケル ジャクソン'
         # (NFD) lies in its script span, and fix(#585) explains it.
+        # 2026-10-03, #594: 139 -> 147, and this time the regex DID
+        # widen: its class copies the halfwidth kana block U+FF65-U+FF9F
+        # whole, where it held U+FF65 alone. What it reaches beyond that
+        # is exactly the eight halfwidth case rows #594 added -- no
+        # corpus line held halfwidth kana before them. It explains the
+        # five that move only name fields; the two title movers also
+        # move `title`, outside its fields, and go to the #594 rule;
+        # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
+        # inside the same class.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(139, ('family', 'given', 'middle'), "0feb71190b77", None),
+            _Claim(147, ('family', 'given', 'middle'), "b2dd5ac30ae4", None),
         # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
         # rather than with the rule -- this change added 35
         # maiden-clause names as rules.md example lines and
@@ -4606,6 +4618,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('family', 'suffix'), "54ce0dda7114", ('DEFAULT',)),
         "fix(#585) a decomposed initial keeps its whole first letter":
             _Claim(2, ('_initials',), "c4f045134f0f", None),
+        "fix(#594) a period-marked halfwidth katakana word is not a title":
+            _Claim(2, ('given', 'title'), "8cdafcf56c45", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -4785,8 +4799,17 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #585: 138 -> 139, one new corpus name and not a
         # wider rule: the decomposed katakana R3 row 'マイケル ジャクソン'
         # (NFD) lies in its script span, and fix(#585) explains it.
+        # 2026-10-03, #594: 139 -> 147, and this time the regex DID
+        # widen: its class copies the halfwidth kana block U+FF65-U+FF9F
+        # whole, where it held U+FF65 alone. What it reaches beyond that
+        # is exactly the eight halfwidth case rows #594 added -- no
+        # corpus line held halfwidth kana before them. It explains the
+        # five that move only name fields; the two title movers also
+        # move `title`, outside its fields, and go to the #594 rule;
+        # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
+        # inside the same class.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(139, ('_ambiguities', 'family', 'given', 'middle'), "0feb71190b77", None),
+            _Claim(147, ('_ambiguities', 'family', 'given', 'middle'), "b2dd5ac30ae4", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -5363,6 +5386,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
         "fix(#585) a decomposed initial keeps its whole first letter":
             _Claim(2, ('_initials',), "c4f045134f0f", None),
+        "fix(#594) a period-marked halfwidth katakana word is not a title":
+            _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5839,6 +5864,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
         "fix(#585) a decomposed initial keeps its whole first letter":
             _Claim(2, ('_initials',), "c4f045134f0f", None),
+        "fix(#594) halfwidth katakana takes the kana license and the 间隔号":
+            _Claim(5, ('family', 'given'), "86805db7d55e", None),
+        "fix(#594) a period-marked halfwidth katakana word is not a title":
+            _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6560,6 +6589,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
         "fix(#585) a decomposed initial keeps its whole first letter":
             _Claim(2, ('_initials',), "c4f045134f0f", None),
+        "fix(#594) halfwidth katakana takes the kana license and the 间隔号":
+            _Claim(5, ('family', 'given'), "86805db7d55e", None),
+        "fix(#594) a period-marked halfwidth katakana word is not a title":
+            _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6881,6 +6914,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('_ambiguities',), "54ce0dda7114", ('DEFAULT',)),
         "fix(#585) a decomposed initial keeps its whole first letter":
             _Claim(2, ('_initials',), "c4f045134f0f", None),
+        "fix(#594) halfwidth katakana takes the kana license and the 间隔号":
+            _Claim(5, ('_ambiguities', 'family', 'given'), "86805db7d55e", None),
+        "fix(#594) a period-marked halfwidth katakana word is not a title":
+            _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
     },
 }
 

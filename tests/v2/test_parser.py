@@ -1432,10 +1432,10 @@ def test_nakaguro_split_han_tokens_take_the_han_order() -> None:
 
 
 def test_halfwidth_nakaguro_splits_at_parse_level_too() -> None:
-    # decision, not accident: halfwidth kana classify as no script at
-    # all (_SCRIPT_RANGES only covers the fullwidth blocks), so this
-    # is order-agnostic positional fallback, not a script-order rule --
-    # the dot still divides the tokens regardless
+    # decision, not accident: halfwidth kana is katakana (#594), and a
+    # name written wholly in katakana keeps the declared order
+    # (rules.md#W4) as マイケル・ジャクソン does -- KATAKANA has no
+    # script_orders entry -- while the dot divides the tokens regardless
     text = "ﾏｲｹﾙ･ｼﾞｬｸｿﾝ"
     n = parse(text)
     assert (n.given, n.family) == (

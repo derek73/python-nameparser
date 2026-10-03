@@ -411,8 +411,9 @@ def test_a_neighbour_in_an_UNACTIVATED_script_still_blocks_the_consult() -> None
     # so the name is already divided and the segmenter must not be
     # asked. Narrowing the check to `in scripts` would make both of
     # these split 山 + 田太郎 while the writer's own boundary sat one
-    # token to the right.
-    for name in ("山田太郎 マイケル", "山田太郎 김민준"):
+    # token to the right. The halfwidth katakana neighbour is the
+    # same boundary in legacy data, and counts since #594 classified it.
+    for name in ("山田太郎 マイケル", "山田太郎 ﾏｲｹﾙ", "山田太郎 김민준"):
         out = _run(name, policy=_JA, segmenter=_fake((1,)))
         assert _texts(out) == name.split(), name
         assert out.ambiguities == (), name
