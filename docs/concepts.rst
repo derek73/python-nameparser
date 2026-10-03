@@ -112,6 +112,8 @@ in the :class:`~nameparser.Lexicon`; if you are changing how unclaimed
 words are *arranged*, or choosing where the unlisted-credential
 readings apply, it goes in the :class:`~nameparser.Policy`.
 
+.. _config-containers:
+
 Configuration lives in three containers
 ----------------------------------------
 
