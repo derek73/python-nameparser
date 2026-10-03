@@ -225,57 +225,22 @@ rather than relying on this fallback.
 Words that are also ordinary names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Three fields — ``suffix_acronyms_ambiguous``, ``particles_ambiguous``
-and ``conjunctions_ambiguous`` — mark entries from ``suffix_acronyms``,
-``particles`` and ``conjunctions`` that are also plausible as ordinary
-name words on their own (an acronym suffix that is also
-borne as a name, a particle that doubles as a given name, a connective
-letter that doubles as an initial). They don't add new vocabulary by themselves;
-they narrow how an existing
-entry is read when it appears alone. If you're not sure whether a word
-you're adding is one of these ambiguous cases, weigh how often it is a
-name against how often it is the credential. Marking it ambiguous is
-not free in either direction: written with its periods, an ambiguous
-acronym counts as a suffix unambiguously; bare, the reading now
-depends on the writing itself, so a bracketed ``John Smith (BA)``
-falls through to nickname parsing and either bare reading reports the
-fork. Written in ALL CAPITALS inside a mixed-case name it counts as
-a suffix even with no words to spare (the credential lean); written
-Title-case there it stays the surname even WITH words to spare (the
-surname lean); lacking either signal — an all-lower spelling in a
-mixed-case name, or any spelling in a name written wholly in one
-case — the reading falls back to whether the name has two or more
-words before it. At a comma the count of NAME words before it decides
-FIRST, and the case is read only where the count leaves the word a
-name: ``John Smith, Ba`` reads suffix ``Ba`` on the count alone (two
-name words before the comma), Title-case or not, while ``Smith, BA``
-reads suffix ``BA`` on the CAPITALS lean, one word before the comma
-being all the count needs to leave for the lean to promote. What
-still reads as the given name is ``Smith, Ba`` (one word, and
-Title-case carries no credential lean to promote it) and
-``smith, ba`` (one word, one case, no lean at all). A wrong
-unambiguous claim takes the credential reading
-silently and can lose a real person's surname. For ``particles_ambiguous`` the default
-runs the other way: a particle that is not borne as a given name
-belongs in the never-given half, which is where ``mc`` and ``ste``
-were moved (#360). The other
-direction is to leave the word out of ``suffix_acronyms`` altogether,
-which is the right answer when the name reading is the far more common
-one: an acronym whose credential is tenuous or specialized beside a
-common surname earns removal rather than a marking, and a caller who
-needs it adds it back
-with ``Lexicon.default().add(suffix_acronyms={"cha"})``. That is what
-the default vocabulary did with ``rai`` and ``cha`` in 2.3. (The same
-conservatism is why ``dean`` above isn't in the default vocabulary in
-the first place: "Dean" is also a common given name, and a default
-that swallowed it as a title would misparse "Dean Martin" for
-everyone.)
+Some vocabulary words are also ordinary name words: an acronym suffix
+that is also borne as a surname, a particle that doubles as a given
+name, a connective letter that doubles as an initial. Three fields mark
+them — ``suffix_acronyms_ambiguous``, ``particles_ambiguous`` and
+``conjunctions_ambiguous``, one each for ``suffix_acronyms``,
+``particles`` and ``conjunctions``. They add no vocabulary by
+themselves; they narrow how an existing entry is read when it appears
+alone, and the parse reports the fork as an ambiguity.
 
-``ma`` is a shipped example. It is both a credential and a common
-surname, so it is listed in ``suffix_acronyms_ambiguous``: written
-with periods it counts as a suffix unambiguously, and bare it takes
-the case reading above -- Title-case stays the surname, capitals lean
-the credential:
+Credentials that are also surnames
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ma`` is a shipped example of ``suffix_acronyms_ambiguous``. It is
+both a credential and a common surname, so it is listed there. Written
+with its periods it is a suffix outright; written bare, the
+capitalization decides:
 
 .. doctest::
 
@@ -285,6 +250,53 @@ the credential:
     'M.A.'
     >>> parse("Jack MA").suffix
     'MA'
+
+The full reading of a bare marked acronym, in order:
+
+- **ALL CAPITALS** in a mixed-case name leans to the credential: it is
+  a suffix even with no words to spare (``"Jack MA"``).
+- **Title-case** in a mixed-case name leans to the surname: it stays
+  the family name even WITH words to spare (``"John Smith Ma"``).
+- **No signal** — all lowercase in a mixed-case name, or any spelling
+  in a name written wholly in one case — falls back to the count: a
+  suffix with two or more words before it (``"John Smith ma"``), the
+  family name otherwise (``"JACK MA"``).
+- **After a comma** the count of name words before the comma decides
+  FIRST, and the case is read only where the count leaves the word a
+  name. ``"John Smith, Ba"`` reads suffix ``Ba`` on the count alone, and
+  ``"Smith, BA"`` reads suffix ``BA`` on the capitals lean. What still
+  reads as the given name is ``"Smith, Ba"`` (one word, and Title-case
+  has no credential lean) and ``"smith, ba"`` (one word, one case, no
+  lean at all).
+- **In brackets**, ``"John Smith (BA)"`` falls through to nickname
+  parsing.
+
+Mark a word, or leave it out
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When you add a word that is both a credential and a name, weigh how
+often it is one against the other. There are three choices, and none is
+free:
+
+- **Unambiguous** (``suffix_acronyms`` alone): the credential reading
+  is taken silently, and a wrong claim can lose a real person's surname.
+- **Marked ambiguous** (``suffix_acronyms_ambiguous`` too): the reading
+  depends on the writing as above, and every bare reading reports the
+  fork.
+- **Left out of** ``suffix_acronyms`` **altogether**: right when the name
+  reading is far more common, as for an acronym whose credential is
+  tenuous or specialized beside a common surname. That is what the
+  default vocabulary did with ``rai`` and ``cha`` in 2.3; a caller who
+  needs one adds it back with
+  ``Lexicon.default().add(suffix_acronyms={"cha"})``.
+
+The same conservatism is why ``dean`` above isn't in the default
+vocabulary in the first place: "Dean" is also a common given name, and
+a default that swallowed it as a title would misparse "Dean Martin" for
+everyone.
+
+Particles that are also given names
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``particles_ambiguous`` is the same idea for surname particles. A
 particle listed there may also be a given name, which is what makes a
@@ -327,6 +339,13 @@ ambiguity is recorded and it becomes part of the surname — under any
     >>> lex = Lexicon.default().remove(particles_ambiguous={"van"})
     >>> Parser(lexicon=lex).parse("van Gogh").family
     'van Gogh'
+
+For ``particles_ambiguous`` the default runs the other way from
+credentials: a particle that is not borne as a given name belongs
+outside the set, which is where ``mc`` and ``ste`` were moved (#360).
+
+One-letter connectives that are also initials
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``conjunctions_ambiguous`` is the same idea for one-letter connectives.
 A single letter written against the name's own case is an initial and
