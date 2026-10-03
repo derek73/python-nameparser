@@ -303,7 +303,11 @@ ambiguous: native given names use it, but katakana is also how
 Japanese text writes a *foreign* name — マイケル・ジャクソン is Michael
 Jackson — and a transcription keeps the source language's order, given
 name first, its parts divided by the middle dot ・ (the nakaguro,
-U+30FB) rather than by a space.
+U+30FB) rather than by a space. Katakana also has a halfwidth form
+(ﾀﾛｳ for タロウ), which older systems that could not store kanji used
+for every name, Japanese or foreign; bank, payroll and CSV exports
+still carry it. nameparser reads halfwidth katakana exactly as it reads
+the full-width form.
 
 What happens automatically
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -320,6 +324,8 @@ transcription, because a transcription is written in katakana alone.
     >>> minami.family, minami.given
     ('高橋', 'みなみ')
     >>> parse("山田 エミ").family
+    '山田'
+    >>> parse("山田 ﾀﾛｳ").family
     '山田'
 
 And the middle dot separates tokens the way a space does, so a
@@ -417,8 +423,27 @@ Romanized names ("Kim Min-jun", "Yamada Taro") are Latin script and
 follow the ordinary positional rules. Order genuinely varies in
 romanized data, so nothing script-based applies. A name written wholly
 in katakana stays positional for the reason given above, pack or no
-pack: it is predominantly a transcription, and a transcription is
-already in the order it should be read in.
+pack: it may be a transcription, already in the order it should be
+read in, or a Japanese name's reading written family-first — a
+furigana field, or legacy halfwidth data — and the script cannot tell
+the two apart. If you know your katakana names are Japanese, map
+katakana to family-first yourself:
+
+.. doctest::
+
+    >>> from nameparser import (DEFAULT_SCRIPT_ORDERS, FAMILY_FIRST, Parser,
+    ...                         Policy, Script)
+    >>> parse("ﾔﾏﾀﾞ ﾀﾛｳ").family
+    'ﾀﾛｳ'
+    >>> kana_family_first = Parser(policy=Policy(script_orders=(
+    ...     *DEFAULT_SCRIPT_ORDERS, (Script.KATAKANA, FAMILY_FIRST))))
+    >>> kana_family_first.parse("ﾔﾏﾀﾞ ﾀﾛｳ").family
+    'ﾔﾏﾀﾞ'
+
+This reaches full-width katakana too, transcriptions included
+(マイケル・ジャクソン would read family マイケル), which is why it is
+yours to choose rather than a default. ``name_order=FAMILY_FIRST``
+would also work, but it reverses every name, Latin ones included.
 
 A Han transcription written with a space instead of the 间隔号
 (威廉 莎士比亚) carries nothing to distinguish it from a native
