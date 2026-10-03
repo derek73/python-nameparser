@@ -1605,7 +1605,7 @@ fields = ["title", "given", "_ambiguities"]
 # a katakana word as hiragana and the word took the kana license
 # (rules.md#W4) -- family-first, where a wholly-katakana name keeps
 # the declared order. Classification now deletes each mark that
-# follows a character, so the word reads as its base's script. The
+# follows a kana, so the word reads as its base's script. The
 # same names on hiragana or beside kanji ('あ゙い たろう', '山田 ア゙イ')
 # are parity: their reading never depended on the mark.
 #

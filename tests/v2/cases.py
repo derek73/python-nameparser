@@ -9225,7 +9225,11 @@ CASES: tuple[Case, ...] = (
                "of #596 dropped every mark with a character before it; "
                "the token then classified as hangul, the surname site "
                "divided the RAW text after 김, and the stranded mark "
-               "opened the family: given 김, family \u3099민준"),
+               "opened the family: given 김, family \u3099민준. "
+               "Tolerated: rules.md's W Background leaves a mark after "
+               "a non-kana unpromised, so this reading is watched on "
+               "the radar rather than pinned as contract",
+         tolerated=True),
     Case("ja_iteration_mark_is_han", "佐々木 太郎",
          {"family": "佐々木", "given": "太郎"},
          classification="fix(#272)",

@@ -140,8 +140,8 @@ class Script(StrEnum):
 # combining U+3099, which is in the HIRAGANA block -- so the folded
 # token took the kana license and a wholly-katakana name turned
 # family-first (decisions.md#W4; #596 has since given every voicing
-# mark its base's script, see below). The span takes in the
-# halfwidth nakaguro U+FF65, which tokenize turns into a separator,
+# mark after a kana its base's script, see below). The span takes
+# in the halfwidth nakaguro U+FF65, which tokenize turns into a separator,
 # on the same direct-call grounds as U+30FB below, and the voicing
 # marks U+FF9E/U+FF9F: they are spacing characters (category Lm) that
 # NFC never composes into their base, there being no precomposed

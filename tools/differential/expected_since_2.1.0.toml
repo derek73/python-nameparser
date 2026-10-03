@@ -209,7 +209,8 @@ fields = ["_ambiguities"]
 
 [[change]]
 issue = "feat(#449) a hangul word holding a stray voicing mark has no script, so the convention decides it"
-# '김゙민준' (김 + U+3099), a case row #596 added (2026-10-03). A kana
+# '김゙민준' (김 + U+3099), a tolerated case row #596 added (2026-10-03).
+# A kana
 # voicing mark after hangul voices no kana, so it keeps its hiragana
 # block and the token is mixed hangul and hiragana: no script, no
 # surname division, and O5's convention places the one name word left.
@@ -3962,7 +3963,7 @@ fields = ["title", "given", "_ambiguities"]
 # a katakana word as hiragana and the word took the kana license
 # (rules.md#W4) -- family-first, where a wholly-katakana name keeps
 # the declared order. Classification now deletes each mark that
-# follows a character, so the word reads as its base's script. The
+# follows a kana, so the word reads as its base's script. The
 # same names on hiragana or beside kanji ('あ゙い たろう', '山田 ア゙イ')
 # are parity: their reading never depended on the mark.
 #

@@ -1151,6 +1151,8 @@ _MUST_NOT_MATCH: dict[str, tuple[str, ...]] = {
         ("Anderson Smithさん", "Dr. Andersonさん", "Anderson, さん"),
     "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
         ("Anderson Smith선생님", "Dr. Anderson선생님", "Anderson, 선생님"),
+    "feat(#449) a hangul word holding a stray voicing mark has no script, so the convention decides it":
+        ("김민준", "김\u3099민준 지훈", "Dr. 김\u3099민준"),
     # #491's two rules. Each boundary is a name the vocabulary reaches
     # and the SHAPE does not: a title with an ordinary surname behind
     # it, a credential with a name word beside it, and the lone title
@@ -3650,6 +3652,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # move `title`, outside its fields, and go to the #594 rule;
         # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
         # inside the same class.
+        # 2026-10-03, #596: 147 -> 153, six new corpus names and not a
+        # wider rule: the five kana voicing-mark case rows and the
+        # tolerated hangul one ('김\u3099민준') lie in its script span.
+        # It explains 'あ\u3099い たろう' and '山田 ア\u3099イ', which move
+        # here as every native-script name does; the three fix(#596)
+        # movers are parity at this baseline, and the hangul row is
+        # parity too (v1 reads it first, as the tree does).
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(153, ('family', 'given', 'middle'), "a94f0435fd18", None),
         # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
@@ -4699,6 +4708,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
             _Claim(1, ('_ambiguities', 'given', 'suffix'), "30ec95e25f05",
                    None),
+        "feat(#449) a hangul word holding a stray voicing mark has no script, so the convention decides it":
+            _Claim(1, ('_ambiguities',), "63f797a141db", None),
         # #491's two rules, beside #449's for the same reason: both
         # classify on `_ambiguities` alone, and no role moves anywhere
         # in this change, so a widening that took a role would change
@@ -4808,6 +4819,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # move `title`, outside its fields, and go to the #594 rule;
         # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
         # inside the same class.
+        # 2026-10-03, #596: 147 -> 153, six new corpus names and not a
+        # wider rule: the five kana voicing-mark case rows and the
+        # tolerated hangul one ('김\u3099민준') lie in its script span.
+        # It explains 'あ\u3099い たろう' and '山田 ア\u3099イ', which move
+        # here as every native-script name does; the three fix(#596)
+        # movers are parity at this baseline, and the hangul row is
+        # claimed first by its own #449 rule, on its report.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
             _Claim(153, ('_ambiguities', 'family', 'given', 'middle'), "a94f0435fd18", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
