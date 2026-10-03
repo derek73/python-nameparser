@@ -129,15 +129,15 @@ go together:
     >>> Parser(lexicon=lean).parse("Hon Solo").given
     'Hon'
 
-Emptying the vocabulary does not switch titles off entirely, though. A
-word ending in a period, standing at the front of the part that carries
-the given name, is read as a title structurally, without consulting
-``titles`` at all — that is what lets unfamiliar ranks and
+Emptying the title vocabulary does not switch titles off entirely,
+though. A word ending in a period, standing at the front of the part
+that carries the given name, is read as a title structurally, without
+consulting ``titles`` at all — that is what lets unfamiliar ranks and
 abbreviations work (see :ref:`abbreviated-titles`):
 
 .. doctest::
 
-    >>> bare = Parser(lexicon=Lexicon.empty())
+    >>> bare = Parser(lexicon=lean)
     >>> bare.parse("Professor John Smith").title      # vocabulary gone
     ''
     >>> bare.parse("Dr. John Smith").title            # structural, stays
@@ -193,89 +193,91 @@ lost and those words fall back to the all-capitals acronym repair:
 ``john smith phd`` would give ``John Smith PHD`` rather than
 ``John Smith PhD``.
 
+How a key matches a word
+^^^^^^^^^^^^^^^^^^^^^^^^
+
 The key is matched against the token with punctuation normalized away,
-not against the raw text, so one ``"phd"`` entry covers ``"phd"``,
-``"Phd"``, and ``"Ph.D."`` alike — you don't need a separate key for
-each way a source might punctuate it, and each keeps its own
-punctuation: ``Ph.D.`` repairs to ``Ph.D.``, not ``PhD``. Punctuation
-in the *value* is never written into the word; it only marks which of
-the mask's letters are joined. That matters for one case: a single
-letter the writer split off beside a full stop is an initial, and is
-capitalized where the mask keeps that letter inside a longer run, so
-``p.h.d.`` repairs to ``P.H.D.`` under ``"PhD"``. An acronym already
-listed in ``suffix_acronyms`` — plain or dotted — and a roman numeral
-need no entry at all: case repair writes a suffix of either kind in
-capitals by itself. Most of the listed acronyms whose usual spelling
-is not all capitals already carry a shipped mask (``DSc``, ``PsyD``,
-``PharmD``, ``MDiv`` and others), so ``john smith psyd`` gives
-``John Smith PsyD``. The exception is an acronym that is also a name
-word, such as ``meng`` or ``edd``: a mask applies wherever its word
-stands, so it would re-spell a person called Meng or Edd, and these
-get none — ``john smith edd`` gives ``John Smith EDD`` (the reasoning
-is the Excluded block for ``CAPITALIZATION_EXCEPTIONS`` under ``R4``
-in ``docs/design/decisions.md``). A caller's own acronym, one ``suffix_acronyms``
-doesn't already list, depends on how it is written: plain (``dphil``)
-it parses as an ordinary name word and repairs as one (``Dphil``,
-above); dotted (``d.phil.``) it is a suffix by shape alone, with no
-vocabulary entry needed to read it as one, and repairs in all
-capitals the same as a listed acronym does (``D.PHIL.``). Either
-way, give it a ``suffix_acronyms`` entry (or a mask of its own)
+not against the raw text, so one ``"phd"`` entry covers ``phd``,
+``PHD`` and ``Ph.D.`` alike, and you don't need a separate key for each
+way a source might punctuate it. (A mixed-case ``Phd`` matches too, but
+mixed case is left as written unless you pass ``force=True``; see
+:ref:`rendering-arguments`.)
+
+Each word keeps its own punctuation: ``Ph.D.`` repairs to ``Ph.D.``,
+not ``PhD``. Punctuation in the *value* is never written into the word;
+it only marks which of the mask's letters are joined. That matters for
+one case: a single letter the writer split off beside a full stop is an
+initial, and is capitalized even where the mask keeps that letter
+inside a longer run:
+
+.. doctest::
+
+    >>> str(parse("john smith ph.d.").capitalized())
+    'John Smith Ph.D.'
+    >>> str(parse("john smith p.h.d.").capitalized())
+    'John Smith P.H.D.'
+
+Words that need no entry
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+An acronym already listed in ``suffix_acronyms``, plain or dotted, and
+a roman numeral are written in capitals by case repair on its own. Most
+listed acronyms whose usual spelling is not all capitals already carry
+a shipped mask (``DSc``, ``PsyD``, ``PharmD``, ``MDiv`` and others):
+
+.. doctest::
+
+    >>> str(parse("john smith md iv").capitalized())
+    'John Smith MD IV'
+    >>> str(parse("john smith psyd").capitalized())
+    'John Smith PsyD'
+
+The exception is an acronym that is also a name word, such as ``meng``
+or ``edd``. A mask applies wherever its word stands, so it would
+re-spell a person called Meng or Edd, and these get none: they repair
+in plain capitals. The reasoning is the Excluded block for
+``CAPITALIZATION_EXCEPTIONS`` under ``R4`` in
+``docs/design/decisions.md``.
+
+.. doctest::
+
+    >>> str(parse("john smith edd").capitalized())
+    'John Smith EDD'
+
+Acronyms the vocabulary doesn't list
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An acronym ``suffix_acronyms`` doesn't list repairs according to how it
+is written:
+
+- **Plain** (``dphil``), it parses as an ordinary name word and repairs
+  as one: ``Dphil``, as in the first example above.
+- **Dotted** (``d.phil.``), it is a suffix by shape alone (see
+  :ref:`unlisted-credentials`) and repairs in all capitals the same as
+  a listed acronym does: ``D.PHIL.``.
+
+Either way, give it a ``suffix_acronyms`` entry, or a mask of its own,
 rather than relying on this fallback.
 
 Words that are also ordinary names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Three fields — ``suffix_acronyms_ambiguous``, ``particles_ambiguous``
-and ``conjunctions_ambiguous`` — mark entries from ``suffix_acronyms``,
-``particles`` and ``conjunctions`` that are also plausible as ordinary
-name words on their own (an acronym suffix that is also
-borne as a name, a particle that doubles as a given name, a connective
-letter that doubles as an initial). They don't add new vocabulary by themselves;
-they narrow how an existing
-entry is read when it appears alone. If you're not sure whether a word
-you're adding is one of these ambiguous cases, weigh how often it is a
-name against how often it is the credential. Marking it ambiguous is
-not free in either direction: written with its periods, an ambiguous
-acronym counts as a suffix unambiguously; bare, the reading now
-depends on the writing itself, so a bracketed ``John Smith (BA)``
-falls through to nickname parsing and either bare reading reports the
-fork. Written in ALL CAPITALS inside a mixed-case name it counts as
-a suffix even with no words to spare (the credential lean); written
-Title-case there it stays the surname even WITH words to spare (the
-surname lean); lacking either signal — an all-lower spelling in a
-mixed-case name, or any spelling in a name written wholly in one
-case — the reading falls back to whether the name has two or more
-words before it. At a comma the count of NAME words before it decides
-FIRST, and the case is read only where the count leaves the word a
-name: ``John Smith, Ba`` reads suffix ``Ba`` on the count alone (two
-name words before the comma), Title-case or not, while ``Smith, BA``
-reads suffix ``BA`` on the CAPITALS lean, one word before the comma
-being all the count needs to leave for the lean to promote. What
-still reads as the given name is ``Smith, Ba`` (one word, and
-Title-case carries no credential lean to promote it) and
-``smith, ba`` (one word, one case, no lean at all). A wrong
-unambiguous claim takes the credential reading
-silently and can lose a real person's surname. For ``particles_ambiguous`` the default
-runs the other way: a particle that is not borne as a given name
-belongs in the never-given half, which is where ``mc`` and ``ste``
-were moved (#360). The other
-direction is to leave the word out of ``suffix_acronyms`` altogether,
-which is the right answer when the name reading is the far more common
-one: an acronym whose credential is tenuous or specialized beside a
-common surname earns removal rather than a marking, and a caller who
-needs it adds it back
-with ``Lexicon.default().add(suffix_acronyms={"cha"})``. That is what
-the default vocabulary did with ``rai`` and ``cha`` in 2.3. (The same
-conservatism is why ``dean`` above isn't in the default vocabulary in
-the first place: "Dean" is also a common given name, and a default
-that swallowed it as a title would misparse "Dean Martin" for
-everyone.)
+Some vocabulary words are also ordinary name words: an acronym suffix
+that is also borne as a surname, a particle that doubles as a given
+name, a connective letter that doubles as an initial. Three fields mark
+them — ``suffix_acronyms_ambiguous``, ``particles_ambiguous`` and
+``conjunctions_ambiguous``, one each for ``suffix_acronyms``,
+``particles`` and ``conjunctions``. They add no vocabulary by
+themselves; they narrow how an existing entry is read when it appears
+alone, and the parse reports the fork as an ambiguity.
 
-``ma`` is a shipped example. It is both a credential and a common
-surname, so it is listed in ``suffix_acronyms_ambiguous``: written
-with periods it counts as a suffix unambiguously, and bare it takes
-the case reading above -- Title-case stays the surname, capitals lean
-the credential:
+Credentials that are also surnames
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``ma`` is a shipped example of ``suffix_acronyms_ambiguous``. It is
+both a credential and a common surname, so it is listed there. Written
+with its periods it is a suffix outright; written bare, the
+capitalization decides:
 
 .. doctest::
 
@@ -285,6 +287,53 @@ the credential:
     'M.A.'
     >>> parse("Jack MA").suffix
     'MA'
+
+The full reading of a bare marked acronym, in order:
+
+- **ALL CAPITALS** in a mixed-case name leans to the credential: it is
+  a suffix even with no words to spare (``"Jack MA"``).
+- **Title-case** in a mixed-case name leans to the surname: it stays
+  the family name even WITH words to spare (``"John Smith Ma"``).
+- **No signal** — all lowercase in a mixed-case name, or any spelling
+  in a name written wholly in one case — falls back to the count: a
+  suffix with two or more words before it (``"John Smith ma"``), the
+  family name otherwise (``"JACK MA"``).
+- **After a comma** the count of name words before the comma decides
+  FIRST, and the case is read only where the count leaves the word a
+  name. ``"John Smith, Ba"`` reads suffix ``Ba`` on the count alone, and
+  ``"Smith, BA"`` reads suffix ``BA`` on the capitals lean. What still
+  reads as the given name is ``"Smith, Ba"`` (one word, and Title-case
+  has no credential lean) and ``"smith, ba"`` (one word, one case, no
+  lean at all).
+- **In brackets**, ``"John Smith (BA)"`` falls through to nickname
+  parsing.
+
+Mark a word, or leave it out
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When you add a word that is both a credential and a name, weigh how
+often it is one against the other. There are three choices, and none is
+free:
+
+- **Unambiguous** (``suffix_acronyms`` alone): the credential reading
+  is taken silently, and a wrong claim can lose a real person's surname.
+- **Marked ambiguous** (``suffix_acronyms_ambiguous`` too): the reading
+  depends on the writing as above, and every bare reading reports the
+  fork.
+- **Left out of** ``suffix_acronyms`` **altogether**: right when the name
+  reading is far more common, as for an acronym whose credential is
+  tenuous or specialized beside a common surname. That is what the
+  default vocabulary did with ``rai`` and ``cha`` in 2.3; a caller who
+  needs one adds it back with
+  ``Lexicon.default().add(suffix_acronyms={"cha"})``.
+
+The same conservatism is why ``dean`` above isn't in the default
+vocabulary in the first place: "Dean" is also a common given name, and
+a default that swallowed it as a title would misparse "Dean Martin" for
+everyone.
+
+Particles that are also given names
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``particles_ambiguous`` is the same idea for surname particles. A
 particle listed there may also be a given name, which is what makes a
@@ -327,6 +376,13 @@ ambiguity is recorded and it becomes part of the surname — under any
     >>> lex = Lexicon.default().remove(particles_ambiguous={"van"})
     >>> Parser(lexicon=lex).parse("van Gogh").family
     'van Gogh'
+
+For ``particles_ambiguous`` the default runs the other way from
+credentials: a particle that is not borne as a given name belongs
+outside the set, which is where ``mc`` and ``ste`` were moved (#360).
+
+One-letter connectives that are also initials
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``conjunctions_ambiguous`` is the same idea for one-letter connectives.
 A single letter written against the name's own case is an initial and
@@ -429,6 +485,17 @@ listed below.
        Ignored when a comma separates family from given ("Thomas,
        John" puts the family name first); a comma that only sets off
        suffixes ("John Smith, Jr.") leaves it governing the name part.
+       See :ref:`name-order`.
+   * - ``script_orders``
+     - pairs of ``Script`` and an order
+     - Assigns a name in one of these scripts in the paired order,
+       whatever ``name_order`` says. Defaults to family-first for a
+       name wholly in Han or Hangul, or mixing kanji with kana. See
+       :ref:`east-asian-defaults`.
+   * - ``segment_scripts``
+     - ``frozenset[Script]``
+     - Scripts whose unspaced names are split into surname and given
+       name. Defaults to Hangul. See :ref:`east-asian-defaults`.
    * - ``patronymic_rules``
      - ``frozenset[PatronymicRule]``
      - Reorders patronymic-shaped names via opt-in detectors — East
@@ -447,121 +514,46 @@ listed below.
        ``nickname``. Defaults to
        :data:`~nameparser.DEFAULT_NICKNAME_DELIMITERS` — straight
        quotes and parentheses plus the typographic conventions (smart
-       quotes, guillemets, CJK brackets, ...).
+       quotes, guillemets, CJK brackets, ...). See :ref:`brackets`.
    * - ``maiden_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to ``maiden``
-       instead, and drops them from the effective nickname set. Set
-       this for a clause that says nothing about itself, which is two
-       kinds of clause and not one: content with no marker word in it
-       (``"Cherice J. (Johnson) Williams"``, the parenthesized birth
-       surname written bare) AND a lone marker word
-       (``"Jane Smith (Nee)"``, which reads nickname ``Nee`` by default
-       and maiden ``Nee`` only with the pair listed here). What needs
-       no configuration since 2.2 is a clause that opens with a marker
-       word AND has a word after it: ``"Jane Smith (née Jones)"`` reads
-       maiden ``Jones`` whatever pair encloses it, unless the content is
-       suffix-shaped, which is taken ahead of both: the brackets are
-       dropped and the content parses as if written bare, so
-       ``"Jane Smith (née Jr.)"`` gives family ``née``, suffix ``Jr.``
-       rather than a suffix of the whole clause. A marker word opening
-       the enclosed content is dropped from the value either way, but
-       only where that content holds more than one *token* — the same
-       reason a lone ``"(Nee)"`` listed here keeps ``Nee`` as the
-       maiden value rather than reading it as a marker. Tokens, not words: a marker written
-       against the name it marks is one token with them, so
-       ``"山田花子（旧姓佐藤）"`` keeps its ``旧姓``. Defaults to empty —
-       see the routing example below.
+       instead of ``nickname``. Needed only for a clause that does not
+       announce itself: ``"(née Jones)"`` is a maiden name without it.
+       Defaults to empty. See :ref:`brackets`.
    * - ``extra_suffix_delimiters``
      - ``frozenset[str]``
      - Adds separators that split suffix groups, e.g. ``" - "`` for
        ``"Jane Smith, RN - CRNA"``. Additions only — the comma always
-       splits suffix groups and cannot be replaced.
+       splits suffix groups and cannot be replaced. See
+       :ref:`suffix-delimiters`.
    * - ``lenient_comma_suffixes``
      - ``bool``
      - Reads an initial-shaped suffix word after a comma as a suffix:
        ``"John Smith, V"`` is John Smith the fifth when ``True``
        (default); ``False`` reads ``V`` as a given-name initial
        instead. Multi-letter suffixes (``III``, ``MD``) are
-       unaffected. The same test is also one of the two the
-       glued-honorific peel asks before crossing a family comma
-       (#319), so the setting reaches CJK names too: ``"田中さん,
-       V."`` gives family ``田中``, suffix ``さん`` when ``True``, and
-       family ``田中さん``, given ``V.`` when ``False`` — though a
-       comma around a CJK name is tolerated input
-       (``rules.md#W3``) and this reading can change.
+       unaffected.
    * - ``unlisted_dotted_suffixes``
      - ``bool``
-     - Reads an unlisted token of two or more period-separated chunks
-       as a credential where the position allows it:
-       ``"John Smith X.Y.Z."`` gives suffix ``X.Y.Z.`` while
-       ``"Jack X.Y.Z."`` keeps family ``X.Y.Z.``, and either reading
-       is reported. The family-comma form is one of those positions
-       since 2.4: ``"Doe, John X.Y.Z."`` gives suffix ``X.Y.Z.``
-       while ``"Doe, X.Y.Z."`` keeps given ``X.Y.Z.``. So is the word
-       ending a maiden marker's clause, also since 2.4:
-       ``"Jane Doe nee Smith X.Y.Z."`` gives maiden ``Smith`` with
-       suffix ``X.Y.Z.``, where ``False`` keeps maiden
-       ``Smith X.Y.Z.``. Two single letters right after a comma are
-       the exception: they are how a person's initials are written,
-       and the words before the comma may be one surname of two
-       words, so ``"García Márquez, G.J."`` keeps given ``G.J.``
-       (reported) unless an unambiguous post-nominal in front of them
-       that is not also a title, or another unlisted dotted word beside
-       them, says otherwise (``"John Smith, PhD X.Y."`` gives suffix
-       ``PhD X.Y.``, while ``"García Márquez, Ms G.J."`` gives title
-       ``Ms``, given ``G.J.``).
-       Case is irrelevant — the periods are the signal.
-       Whole-token vocabulary still wins (``M.A.``, ``Ph.D.``), and a
-       single trailing period is not this shape
-       (``"John Smith Xyz."`` keeps family ``Xyz.``). Two further
-       gates keep it from over-reaching: every chunk must be
-       alphabetic, so a digit anywhere refuses it
-       (``"John Smith 1.4"`` keeps family ``1.4``, on or off), and a
-       script with no period abbreviations of its own refuses it too
-       (a CJK word glued into periods, ``"John Smith 田.中."``, keeps
-       family ``田.中.``). Defaults to ``True``; ``False`` reads such a
-       token as name material everywhere and still reports the fork —
-       it does NOT revive the pre-2.4 reading of a chunk that is a
-       single ASCII character — a roman numeral, or the digit ``2`` —
-       as a credential (``"Jack X.Y.I."`` still keeps family
-       ``X.Y.I.`` either way, and a dotted version string such as
-       ``"John Smith 1.4.2"`` keeps family ``1.4.2``; that retirement
-       is not behind this switch).
+     - Reads an unlisted dotted acronym such as ``X.Y.Z.`` as a
+       credential where the name's shape allows it. Defaults to
+       ``True``. See :ref:`unlisted-credentials`.
    * - ``unlisted_caps_suffixes``
-     - ``CapsSuffixes``
-     - Where an unlisted all-caps word of two or more letters, with no
-       period in it, reads as a credential. The name must contrast it
-       with a word holding a capital whose last letter is lowercase
-       (``Smith``, ``DiCaprio``) that the vocabulary
-       does not claim as a title, particle or credential: a record
-       written wholly in capitals, or wholly in lowercase, keeps every
-       word a name word. ``CapsSuffixes.AFTER_COMMA``, the default, reads
-       it only in the part right after a comma with two or more name
-       words before it: ``"John Smith, XYZ"`` gives suffix ``XYZ``,
-       while ``"Smith, XYZ"`` keeps given ``XYZ`` and a lone two-letter
-       word, how initials are written, stays the given name
-       (``"García Márquez, MJ"``). The all-caps SURNAME convention
-       (``"Jean DUPONT"``, ``"DUPONT, Jean"``) never writes the
-       capitals there. ``CapsSuffixes.EVERYWHERE`` also reads the end
-       of a name, the given part's last word after a family comma
-       (``"Doe, John XYZ"``) and the word ending a maiden marker's
-       clause (``"Jane Doe nee Smith XYZ"`` gives maiden ``Smith``
-       with suffix ``XYZ``), where that convention does write them:
-       ``"Jean Pierre DUPONT"`` then gives family ``Pierre``, suffix
-       ``DUPONT``. ``CapsSuffixes.OFF`` reads none of them and reports
-       nothing, 2.3's reading -- and the way to keep a given name
-       written in capitals after a two-word surname, which the default
-       reads as a credential (``"García Márquez, GABRIEL"``).
+     - :class:`~nameparser.CapsSuffixes`
+     - Where an unlisted all-caps word such as ``XYZ`` reads as a
+       credential: after a comma (``AFTER_COMMA``, the default), at the
+       end of a name as well (``EVERYWHERE``), or nowhere (``OFF``).
+       See :ref:`unlisted-credentials`.
    * - ``strip_emoji``
      - ``bool``
      - Excludes emoji from tokenization — they appear in no field or
        rendered view, though ``original`` keeps them. Defaults to
-       ``True``.
+       ``True``. See :ref:`strip-flags`.
    * - ``strip_bidi``
      - ``bool``
      - Excludes bidirectional control characters the same way.
-       Defaults to ``True``.
+       Defaults to ``True``. See :ref:`strip-flags`.
 
 To apply a :class:`PolicyPatch <nameparser.PolicyPatch>` directly --
 without going through a locale pack -- call :meth:`Policy.patched()
@@ -572,6 +564,8 @@ without going through a locale pack -- call :meth:`Policy.patched()
     >>> from nameparser import Policy, PolicyPatch
     >>> Policy().patched(PolicyPatch(middle_as_family=True))
     Policy(middle_as_family=True)
+
+.. _name-order:
 
 Family-first name order
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -734,6 +728,8 @@ so leaves a real question to answer.
 `Words that are also ordinary names`_ covers dropping a word from a
 vocabulary, or moving one between those two sets.
 
+.. _east-asian-defaults:
+
 East Asian defaults, and turning them off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -742,8 +738,14 @@ anything you set: a name written wholly in Han or Hangul — or one
 mixing kanji with kana — is assigned family-first (``script_orders``),
 and an unspaced hangul name is split into surname and given name
 against the shipped Korean census list (``segment_scripts``).
-:ref:`east-asian-names` explains the naming conventions both rest on —
-this section is how to switch them off, which you can do separately:
+:ref:`east-asian-names` explains the naming conventions both rest on;
+this section is how to switch them off. Two further behaviors are not
+policy fields at all, and are covered last.
+
+Switching off order and splitting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The two defaults switch off separately:
 
 .. doctest::
 
@@ -763,45 +765,6 @@ default then assigns them given-first — the surname lands in
 ``given``. To restore nameparser 2.0's reading exactly, clear both
 fields.
 
-To teach the splitter a surname it doesn't ship with, add it to the
-``surnames`` vocabulary like any other word:
-
-.. doctest::
-
-    >>> lex = Lexicon.default().add(surnames={"김민"})
-    >>> Parser(lexicon=lex).parse("김민준").family
-    '김민'
-
-Chinese surnames are deliberately absent from that default set,
-because splitting Han text requires knowing Chinese from Japanese;
-:doc:`locales` covers the opt-in ``zh`` pack that supplies them.
-
-The Japanese behaviors ride these same two fields, so they need no
-switches of their own: ``script_orders=()`` clears the kana-licensed
-entry along with the Han and Hangul ones, and
-``segment_scripts=frozenset()``
-deactivates every script at once, which also stops a parser consulting
-whatever segmenter it was given. The segmenter has an off-switch as
-well — ``Parser(segmenter=None)``, which is the default; see
-:ref:`segmenter-contract` for what one is expected to do with text it
-does not handle. Two behaviors are not policy fields at all, and apply
-however these two fields are set. The katakana middle dot ・ separates
-tokens the way a space does, decided in tokenization. And a listed CJK
-honorific glued to the end of a name token is split off it — ``田中さん``
-reads family ``田中`` with ``さん`` in ``suffix`` — because the tail
-vocabulary carries its own license rather than borrowing a script's:
-every entry is a word that can never end a name, so there is no
-per-script trust question for ``segment_scripts`` to answer. That
-vocabulary is also the peel's off-switch —
-``Lexicon.default().remove(honorific_tails={"さん"})`` leaves
-``田中さん`` unsplit while the spaced ``田中 さん`` still reads ``さん``
-as a suffix. Dropping a word from a marker field alone orphans
-nothing, so that one needs no matching ``suffix_words`` edit. Emptying
-the field is also the way to opt out of what the peel *costs* a
-non-ASCII parse — an empty ``honorific_tails`` stops it at its first
-guard, whereas ``segment_scripts`` never gated it and so cannot turn it
-off.
-
 .. note::
 
    Every field here is annotated with its canonical *storage* type
@@ -820,20 +783,160 @@ off.
    set literal. The wider spellings parse identically; they just need
    a ``# type: ignore[arg-type]`` if you run a type checker.
 
+Teaching the splitter a surname
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To teach the splitter a surname it doesn't ship with, add it to the
+``surnames`` vocabulary like any other word:
+
+.. doctest::
+
+    >>> lex = Lexicon.default().add(surnames={"김민"})
+    >>> Parser(lexicon=lex).parse("김민준").family
+    '김민'
+
+Chinese surnames are deliberately absent from that default set,
+because splitting Han text requires knowing Chinese from Japanese;
+:doc:`locales` covers the opt-in ``zh`` pack that supplies them.
+
+Japanese names
+^^^^^^^^^^^^^^
+
+The Japanese behaviors ride these same two fields, so they need no
+switches of their own. ``script_orders=()`` clears the kana-licensed
+entry along with the Han and Hangul ones, so a name mixing kanji with
+kana reads given-first again:
+
+.. doctest::
+
+    >>> parse("山田 エミ").family
+    '山田'
+    >>> positional.parse("山田 エミ").given
+    '山田'
+
+``segment_scripts=frozenset()`` deactivates every script at once, which
+also stops a parser consulting whatever segmenter it was given. The
+segmenter has an off-switch of its own as well:
+``Parser(segmenter=None)``, which is the default. See
+:ref:`segmenter-contract` for what a segmenter is expected to do with
+text it does not handle.
+
+Behaviors no policy field controls
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Two behaviors apply however both fields are set:
+
+- **The katakana middle dot** ``・`` separates tokens the way a space
+  does, decided in tokenization.
+- **A glued honorific**, a listed CJK honorific at the end of a name
+  token, is split off it. The honorific vocabulary carries its own
+  license rather than borrowing a script's: every entry is a word that
+  can never end a name, so there is no per-script question for
+  ``segment_scripts`` to answer.
+
+.. doctest::
+
+    >>> both_off = Parser(
+    ...     policy=Policy(script_orders=(), segment_scripts=frozenset()))
+    >>> both_off.parse("マイケル・ジャクソン").family
+    'ジャクソン'
+    >>> both_off.parse("田中さん").suffix
+    'さん'
+
+The honorific vocabulary is the peel's off-switch. Removing an entry
+from ``honorific_tails`` leaves that honorific glued, while the spaced
+form still reads it as a suffix:
+
+.. doctest::
+
+    >>> no_san = Parser(
+    ...     lexicon=Lexicon.default().remove(honorific_tails={"さん"}))
+    >>> no_san.parse("田中さん").family
+    '田中さん'
+    >>> no_san.parse("田中 さん").suffix
+    'さん'
+
+``honorific_tails`` marks a subset of ``suffix_words``, so dropping a
+word from it alone orphans nothing and needs no matching
+``suffix_words`` edit. Emptying it is also how to opt out of what the
+peel *costs* a non-ASCII parse: an empty ``honorific_tails`` stops the
+peel at its first check, whereas ``segment_scripts`` never gated it and
+so cannot turn it off.
+
+.. _brackets:
+
 Nicknames, maiden names, and brackets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A delimiter pair carries no meaning of its own, so what a clause reads
-as is settled in steps. Suffix-shaped content is taken first: the
-brackets are dropped and what was inside parses as if it had been
-written bare, which is not the same as the clause becoming the suffix
-(``"Jane Smith (née Jr.)"`` gives family ``née``, suffix ``Jr.``).
-Then the content is asked whether it announces itself: a
-clause opening with a recognized maiden marker and carrying a word
-after it is a maiden name whatever encloses it, and needs nothing
-configured. Only for what is left — markerless content, and a lone
-marker word — does the PAIR decide, and that is what this knob is for.
-Listing a pair here drops it from the effective
+Maiden markers
+^^^^^^^^^^^^^^
+
+A maiden name is usually announced by a marker word, and then it needs
+no brackets and nothing configured:
+
+.. doctest::
+
+    >>> parse("Jane Smith née Jones").maiden
+    'Jones'
+
+:ref:`nicknames-and-maiden-names` in the usage guide covers how the
+marked forms read. The marker words themselves are the
+``maiden_markers`` vocabulary, a ``Lexicon`` field, shipped in several
+languages (see :mod:`nameparser.config.maiden_markers`). Add your
+own like any other word; a marker you add works bare and in brackets
+alike:
+
+.. doctest::
+
+    >>> parse("Jane Smith formerly Jones").maiden       # not a marker
+    ''
+    >>> marked = Parser(
+    ...     lexicon=Lexicon.default().add(maiden_markers={"formerly"}))
+    >>> marked.parse("Jane Smith formerly Jones").maiden
+    'Jones'
+    >>> marked.parse("Jane Smith (formerly Jones)").maiden
+    'Jones'
+
+A multi-word entry such as the shipped ``z domu`` is matched as a
+phrase, not word by word; see `Vocabulary: Lexicon`_ above.
+
+How a bracketed clause is read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A delimiter pair carries no meaning of its own, so what a clause
+enclosed in one reads as is settled in steps, and the pair is asked
+last:
+
+1. **Suffix-shaped content** is taken first. The brackets are dropped
+   and what was inside parses as if it had been written bare, which is
+   not the same as the clause becoming the suffix.
+2. **A clause that announces itself**, opening with a recognized maiden
+   marker and carrying a word after it, is a maiden name inside any
+   configured pair, with nothing configured (since 2.2). The marker is
+   dropped from the value.
+3. **Everything else is decided by the pair**: content in a
+   ``nickname_delimiters`` pair is a nickname, and content in a
+   ``maiden_delimiters`` pair is a maiden name.
+
+.. doctest::
+
+    >>> name_jr = parse("Jane Smith (née Jr.)")         # step 1
+    >>> name_jr.family, name_jr.suffix
+    ('née', 'Jr.')
+    >>> parse("Jane Smith (née Jones)").maiden          # step 2
+    'Jones'
+    >>> parse('Jane Smith "née Jones"').maiden          # step 2, any pair
+    'Jones'
+    >>> parse("Jane (Jones) Smith").nickname            # step 3
+    'Jones'
+
+Routing a pair to maiden names
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Step 3 is what ``maiden_delimiters`` is for. It reaches two kinds of
+clause, not one: content with no marker word in it, such as a birth
+surname written bare in parentheses, and a lone marker word. Listing a
+pair in ``maiden_delimiters`` drops it from the effective
 ``nickname_delimiters`` set automatically, and the one-liner is the
 whole recipe:
 
@@ -842,6 +945,28 @@ whole recipe:
     >>> policy = Policy(maiden_delimiters=frozenset({("(", ")")}))
     >>> Parser(policy=policy).parse("Jane (Jones) Smith").maiden
     'Jones'
+
+A marker is dropped from the value only where it stands as its own
+word with a name word after it. A lone marker is kept as the value —
+and so is a multi-word one filling the clause, such as ``z domu`` —
+and so is a marker written against the name it marks, which is one
+token with it, so ``旧姓`` stays in the value too:
+
+.. doctest::
+
+    >>> parse("Jane Smith (Nee)").nickname
+    'Nee'
+    >>> Parser(policy=policy).parse("Jane Smith (Nee)").maiden
+    'Nee'
+    >>> Parser(policy=policy).parse("Jane Smith (z domu)").maiden
+    'z domu'
+    >>> cjk_parens = frozenset({("（", "）")})       # full-width
+    >>> cjk = Parser(policy=Policy(maiden_delimiters=cjk_parens))
+    >>> cjk.parse("山田花子（旧姓佐藤）").maiden
+    '旧姓佐藤'
+
+Adding a delimiter pair
+^^^^^^^^^^^^^^^^^^^^^^^
 
 To *add* a delimiter pair rather than reroute one, build on the
 exported default — assigning a bare set replaces the built-in pairs
@@ -857,6 +982,8 @@ instead of extending them, the same trap as ``capitalization_exceptions``:
     >>> Parser(policy=policy).parse("Benjamin {Ben} Franklin").nickname
     'Ben'
 
+.. _suffix-delimiters:
+
 Suffixes not separated by commas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -869,10 +996,179 @@ is bad enough to be the reason you'd go looking:
     >>> name = parse("Jane Smith, RN - CRNA")
     >>> name.given, name.family, name.suffix
     ('RN', 'Jane Smith', 'CRNA')
-    >>> policy = Policy(extra_suffix_delimiters={" - "})
+    >>> policy = Policy(extra_suffix_delimiters=frozenset({" - "}))
     >>> name = Parser(policy=policy).parse("Jane Smith, RN - CRNA")
     >>> name.given, name.family, name.suffix
     ('Jane', 'Smith', 'RN, CRNA')
+
+.. _unlisted-credentials:
+
+Credentials the vocabulary doesn't list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+No suffix list holds every post-nominal, so two ``Policy`` fields, both
+new in 2.4, read
+an unlisted word as a credential from how it is written: in periods
+(``X.Y.Z.``), or in capitals (``XYZ``). The writing cannot settle it
+alone, because a surname can be written either way, so both fields
+also decide by position: the word has to stand behind a name that can
+spare it.
+
+Both fields share one exception. Two letters alone right after a comma
+are how a person's initials are written, and the words before the comma
+may be one surname of two words, so ``"García Márquez, G.J."`` and
+``"García Márquez, MJ"`` keep given ``G.J.`` and ``MJ``. The dotted
+spelling reports the bare reading as a fork; the capitals do not.
+
+The exception gives way to evidence that the letters are a credential:
+an unambiguous post-nominal in front of them that is not also a title,
+or another unlisted dotted or all-caps word beside them that its own
+field reads as a credential. A title in front of them says the
+opposite:
+
+.. doctest::
+
+    >>> parse("John Smith, PhD X.Y.").suffix
+    'PhD X.Y.'
+    >>> parse("John Smith, PhD MJ").suffix
+    'PhD MJ'
+    >>> parse("García Márquez, MJ XYZ").suffix
+    'MJ XYZ'
+    >>> cred = parse("García Márquez, Ms G.J.")
+    >>> cred.title, cred.given
+    ('Ms', 'G.J.')
+
+Dotted acronyms
+^^^^^^^^^^^^^^^
+
+``unlisted_dotted_suffixes`` is on by default. It reads a token of two
+or more period-separated chunks as a credential at the end of a name,
+right after a comma behind two or more name words, at the end of the
+given part after a family comma, and at the end of a maiden marker's
+clause. Case is irrelevant; the periods are the signal.
+With nothing to spare in front of it, the word stays a name. At the end
+of a name, given part or clause, either reading reports the fork as a
+``suffix-or-name`` ambiguity, so a record that reads wrong can still be
+found; right after a comma behind a full name, the credential reading
+is taken silently:
+
+.. doctest::
+
+    >>> cred = parse("John Smith X.Y.Z.")
+    >>> cred.family, cred.suffix
+    ('Smith', 'X.Y.Z.')
+    >>> parse("Jack X.Y.Z.").family
+    'X.Y.Z.'
+    >>> cred = parse("Doe, John X.Y.Z.")
+    >>> cred.given, cred.suffix
+    ('John', 'X.Y.Z.')
+    >>> parse("Doe, X.Y.Z.").given
+    'X.Y.Z.'
+    >>> cred = parse("Jane Doe nee Smith X.Y.Z.")
+    >>> cred.maiden, cred.suffix
+    ('Smith', 'X.Y.Z.')
+    >>> cred = parse("John Smith, X.Y.Z.")
+    >>> cred.suffix, cred.ambiguities
+    ('X.Y.Z.', ())
+
+Four things are not this shape. A token the vocabulary already knows
+(``M.A.``, ``Ph.D.``) is read by the vocabulary. A single trailing
+period is how any word is abbreviated, so ``"John Smith Xyz."`` keeps
+family ``Xyz.``. Every chunk must be alphabetic, so a digit anywhere
+refuses it (``"John Smith 1.4"`` keeps family ``1.4``). And a script
+with no period abbreviations of its own refuses it too
+(``"John Smith 田.中."`` keeps family ``田.中.``).
+
+Setting the field to ``False`` reads such a token as name material
+everywhere, and still reports the fork. It does not bring back the
+pre-2.4 reading of a chunk that is one ASCII character, a roman numeral
+or the digit ``2``, as a credential. That reading was retired outright,
+not put behind this switch, so ``"Jack X.Y.I."`` and the version string
+``"John Smith 1.4.2"`` keep their last word as the family name either
+way:
+
+.. doctest::
+
+    >>> dotted_off = Parser(policy=Policy(unlisted_dotted_suffixes=False))
+    >>> dotted_off.parse("John Smith X.Y.Z.").family
+    'X.Y.Z.'
+    >>> dotted_off.parse("Jane Doe nee Smith X.Y.Z.").maiden
+    'Smith X.Y.Z.'
+
+All-caps words
+^^^^^^^^^^^^^^
+
+``unlisted_caps_suffixes`` reads an unlisted word of two or more
+capital letters, with no period in it. Its value is a
+:class:`~nameparser.CapsSuffixes`, because where capitals mean a
+credential depends on a second convention: many records write the
+SURNAME in capitals (``"Jean DUPONT"``, ``"DUPONT, Jean"``).
+
+The capitals only mean something against a name that does not use
+them. The name must hold a word of its own with a capital and a
+lowercase last letter (``Smith``, ``DiCaprio``) that the vocabulary
+does not claim as a title, particle or credential. A record written
+wholly in capitals, or wholly in lowercase, keeps every word a name
+word.
+
+``AFTER_COMMA`` (the default)
+"""""""""""""""""""""""""""""
+
+``CapsSuffixes.AFTER_COMMA`` reads the word only in the
+part right after a comma with two or more name words before it. The
+all-caps surname convention never writes capitals there:
+
+.. doctest::
+
+    >>> from nameparser import CapsSuffixes
+    >>> cred = parse("John Smith, XYZ")
+    >>> cred.family, cred.suffix
+    ('Smith', 'XYZ')
+    >>> parse("Smith, XYZ").given
+    'XYZ'
+    >>> parse("JOHN SMITH, XYZ").given
+    'XYZ'
+
+``EVERYWHERE``
+""""""""""""""
+
+``CapsSuffixes.EVERYWHERE`` also reads the end of a name, the given
+part's last word after a family comma, and the word ending a maiden
+marker's clause. Those are the places an all-caps surname IS written,
+which is why it is not the default:
+
+.. doctest::
+
+    >>> caps_everywhere = Parser(
+    ...     policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
+    >>> caps_everywhere.parse("John Smith XYZ").suffix
+    'XYZ'
+    >>> caps_everywhere.parse("Doe, John XYZ").suffix
+    'XYZ'
+    >>> cred = caps_everywhere.parse("Jane Doe nee Smith XYZ")
+    >>> cred.maiden, cred.suffix
+    ('Smith', 'XYZ')
+    >>> cred = caps_everywhere.parse("Jean Pierre DUPONT")
+    >>> cred.family, cred.suffix
+    ('Pierre', 'DUPONT')
+
+``OFF``
+"""""""
+
+``CapsSuffixes.OFF`` reads none of them and reports nothing, as 2.3
+did. It is the way to keep a given name written in capitals after a
+two-word surname, which the default reads as a credential:
+
+.. doctest::
+
+    >>> parse("García Márquez, GABRIEL").suffix
+    'GABRIEL'
+    >>> caps_off = Parser(
+    ...     policy=Policy(unlisted_caps_suffixes=CapsSuffixes.OFF))
+    >>> caps_off.parse("García Márquez, GABRIEL").given
+    'GABRIEL'
+
+.. _strip-flags:
 
 Keeping emoji and control characters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

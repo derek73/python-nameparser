@@ -428,7 +428,9 @@ when the comma is followed by a title or another name word, as in
 ``田中さん, Dr.`` (family ``田中さん``). Credentials after the comma are
 read the same best-effort way, landing in ``given`` or ``suffix`` by
 spelling: ``田中さん, V.`` and ``田中さん, Ph. D.`` give up さん exactly
-as ``田中さん, PhD`` does.
+as ``田中さん, PhD`` does. ``Policy(lenient_comma_suffixes=False)``
+reads ``V.`` as name text instead, and さん then stays glued (family
+``田中さん``, given ``V.``).
 
 Spacing, and where the name divides
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -612,6 +614,8 @@ with a custom :class:`~nameparser.Parser`, call
 :meth:`Parser.capitalized() <nameparser.Parser.capitalized>` so the
 parser's own vocabulary decides the exceptions.
 
+.. _nicknames-and-maiden-names:
+
 Nicknames and maiden names
 ----------------------------
 
@@ -675,7 +679,7 @@ convention it means, so you do not have to:
 A marker with no name after it is just a word in brackets, and a clause
 with no marker at all stays a nickname — the parenthesized birth surname
 is a real convention, but nothing in the clause says so, and only you
-can declare that with ``maiden_delimiters`` (see :doc:`customize`):
+can declare that with ``maiden_delimiters`` (see :ref:`brackets`):
 
 .. doctest::
 
@@ -859,7 +863,8 @@ token of two or more period-separated chunks the same way —
 by default only after a comma behind a full name, where an all-caps
 surname is never written — ``parse("John Smith, XYZ").suffix`` is
 ``'XYZ'`` — and at the end of a name only on request, since an
-all-caps surname is written there. See :doc:`customize` for both.
+all-caps surname is written there. See :ref:`unlisted-credentials`
+for both.
 
 A reading the vocabulary settles on its own is not a guess and reports
 nothing — periods make ``M.A.`` unambiguously a credential:
