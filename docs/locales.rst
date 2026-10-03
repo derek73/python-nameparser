@@ -65,8 +65,8 @@ background (covered fully under :ref:`east-asian-names` in
 :doc:`usage`): Chinese, Japanese, and Korean names put the family name
 first in native script and are usually written with no space between
 the parts. Both defaults follow from facts the script alone
-establishes. A name written wholly in Han or Hangul — or one mixing
-kanji with kana, a combination only Japanese produces — is assigned
+establishes. A name written wholly in Han or Hangul — or in kanji and
+kana other than katakana alone, which only Japanese produces — is assigned
 family-first, because every language written in those scripts orders
 names that way; no language guess is involved. An unspaced hangul
 name is additionally split into surname and given name, because hangul
