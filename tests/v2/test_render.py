@@ -966,6 +966,47 @@ def test_a_spliced_decomposed_initial_reads_as_its_composed_twin() -> None:
             "NFC", name.capitalized(force=True).middle) == "Й."
 
 
+@pytest.mark.parametrize(("text", "want"), [
+    # decomposed hangul: jamo are letters, not marks, and the initial
+    # is the whole syllable they spell, as composed
+    ("김 민준", "민. 김."),
+    # a composed Bengali vowel sign is a mark that composes with
+    # nothing: it stays out of the initial in both forms (#585 does not
+    # decide the Indic syllable question)
+    ("কিরণ রায়", "ক. র."),
+    # two marks composing into one letter
+    ("ệ smith", "ệ. s."),
+    # a mark composing with nothing (U+0331) sits, in canonical order,
+    # between the letter and the acute that composes: the initial is
+    # 'ó' decomposed, as the composed spelling's initial is 'ó'
+    ("ó̱la smith", "ó. s."),
+])
+def test_a_decomposed_initial_is_its_composed_twins(text: str,
+                                                    want: str) -> None:
+    """#585: an initial is the shortest start of its word that composes
+    to the composed word's first character, kept in the form written --
+    on both surfaces."""
+    decomposed = unicodedata.normalize("NFD", text)
+    for got in (parse(decomposed).initials(),
+                HumanName(decomposed).initials()):
+        assert unicodedata.normalize("NFC", got) == want
+        assert unicodedata.is_normalized("NFD", got)
+
+
+def test_a_composed_initial_is_the_first_character_as_before() -> None:
+    """A word that is not decomposed initials text[0], unchanged by
+    #585 -- including a CJK compatibility ideograph, which NFC would
+    rewrite to its unified twin and which is kept as written."""
+    from nameparser._render import _first_letter
+    assert _first_letter("\uf900x") == "\uf900"
+    # excluded from composition: NFC splits it into 'क' + nukta, and
+    # the code point is kept whole, nukta and all
+    assert _first_letter("\u0958x") == "\u0958"
+    assert _first_letter("Émile") == "É"
+    with pytest.raises(IndexError):
+        _first_letter("")
+
+
 def test_a_letter_that_uppercases_to_a_combining_mark_is_a_fixpoint(
 ) -> None:
     """'ǰ' upper-cases to 'J' + a combining caron. Before #542 the

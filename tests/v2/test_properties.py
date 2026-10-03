@@ -3106,12 +3106,12 @@ def test_the_case_only_walk_can_fail(
     assert any("'Ph.D.' -> 'PhD'" in line for line in failures), failures
 
 
-# --- #542: a decomposed name repairs as its composed twin does -------
+# --- #542/#585: a decomposed name renders as its composed twin does -
 # The same texts as the walk above, those that decompose at all, each
-# parsed and repaired in both forms and compared once the decomposed
-# output is composed again. A text whose two forms PARSE differently
-# is set aside rather than compared: repair follows the parse, so the
-# comparison would report the parse, and the one class that does so is
+# parsed in both forms, repaired and initialled, and compared once the
+# decomposed output is composed again. A text whose two forms PARSE
+# differently is set aside rather than compared: both views follow the
+# parse, so the comparison would report the parse, and the one class that does so is
 # unspaced hangul, which segmentation matches as written by decision
 # (docs/usage.rst, "Decomposed text"). The test below pins that filter.
 
@@ -3120,7 +3120,7 @@ def _hangul(text: str) -> bool:
                for c in unicodedata.normalize("NFC", text))
 
 
-def _nfd_repair_findings() -> tuple[list[str], list[str], int]:
+def _nfd_twin_findings() -> tuple[list[str], list[str], int]:
     """(disagreements, texts set aside, texts compared)."""
     def nfc(text: str) -> str:
         return unicodedata.normalize("NFC", text)
@@ -3139,6 +3139,14 @@ def _nfd_repair_findings() -> tuple[list[str], list[str], int]:
             set_aside.append(text)
             continue
         compared += 1
+        human, twin = HumanName(decomposed), HumanName(nfc(text))
+        for surface, decomposed_initials, composed_initials in (
+                ("core", name.initials(), composed.initials()),
+                ("facade", human.initials(), twin.initials())):
+            if nfc(decomposed_initials) != composed_initials:
+                out.append(f"[initials, {surface}] {text!r}: "
+                           f"{nfc(decomposed_initials)!r} != "
+                           f"{composed_initials!r}")
         for force in (False, True):
             got = [nfc(t.text) for t in
                    parser.capitalized(name, force=force).tokens]
@@ -3147,7 +3155,6 @@ def _nfd_repair_findings() -> tuple[list[str], list[str], int]:
             if got != want:
                 out.append(f"[core, force={force}] {text!r}: "
                            f"{got!r} != {want!r}")
-        human, twin = HumanName(decomposed), HumanName(nfc(text))
         for force in (False, True):
             human.capitalize(force=force)
             twin.capitalize(force=force)
@@ -3159,25 +3166,31 @@ def _nfd_repair_findings() -> tuple[list[str], list[str], int]:
     return out, set_aside, compared
 
 
-def test_a_decomposed_name_repairs_as_its_composed_twin() -> None:
-    """rules.md#R4 read as an invariant over encodings: a letter written
-    as a base letter and its combining accent repairs as the letter
-    written whole does (#542). Core and facade, plain and forced. The output is compared composed
-    because repair keeps the form it was given, which the case-only
-    walk above holds separately.
+def test_a_decomposed_name_renders_as_its_composed_twin() -> None:
+    """rules.md#R3 and #R4 read as an invariant over encodings: a
+    letter written as a base letter and its combining accent initials
+    (#585) and repairs (#542) as the letter written whole does. Core
+    and facade; repair plain and forced. The output is compared
+    composed because both views keep the form they were given.
 
-    Recorded negative control, measured 2026-10-02 with 97af1f02's
-    _render.py, before a word ran on through its marks, over this
-    change's corpus (its own two R4 rows included): 144 disagreements
-    over the 137 texts compared, 47 more set aside, every one hangul
-    ('JOSÉ GARCÍA' repairing to 'José GarcíA'). The live control is the test below."""
-    failures, set_aside, compared = _nfd_repair_findings()
+    Recorded negative controls, measured 2026-10-02. Repair, with
+    97af1f02's _render.py, before a word ran on through its marks, over
+    #542's corpus (its own two R4 rows included): 144 disagreements over
+    the 137 texts compared, 47 more set aside, every one hangul
+    ('JOSÉ GARCÍA' repairing to 'José GarcíA'). Initials, with
+    _first_letter taking text[0] again, over #585's corpus (its own two
+    R3 rows included, so 139 texts compared where #542's had 137): 44
+    disagreements, 22 texts each failing on both surfaces, katakana as
+    well as Latin ('マイケル ジャクソン' initialling 'マ. シ.', the
+    dakuten of 'ジ' decomposing to a combining mark). The live
+    controls are the two tests below."""
+    failures, set_aside, compared = _nfd_twin_findings()
     assert compared, "no decomposable text was compared"
     assert all(_hangul(text) for text in set_aside), (
         "a non-hangul text parses differently decomposed: "
         f"{[t for t in set_aside if not _hangul(t)]}")
     assert not failures, (
-        f"{len(failures)} decomposed repair(s) disagree:\n"
+        f"{len(failures)} decomposed rendering(s) disagree:\n"
         + "\n".join(failures[:10]))
 
 
@@ -3188,8 +3201,21 @@ def test_the_decomposed_walk_can_fail(
     import nameparser._render as render_module
     monkeypatch.setattr(render_module, "_past_marks",
                         lambda text, end: end)
-    failures, _, _ = _nfd_repair_findings()
+    failures, _, _ = _nfd_twin_findings()
     assert any("'José', 'GarcíA'" in line for line in failures), failures
+
+
+def test_the_decomposed_initials_walk_can_fail(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Taking a token's first code point again -- #585's defect -- has
+    to be seen by the walk above, on both surfaces."""
+    import nameparser._render as render_module
+    monkeypatch.setattr(render_module, "_first_letter",
+                        lambda text: text[0])
+    failures, _, _ = _nfd_twin_findings()
+    for surface in ("core", "facade"):
+        assert any(line.startswith(f"[initials, {surface}]")
+                   for line in failures), failures
 
 
 def test_a_delimiter_core_reads_as_if_it_were_not_written() -> None:
