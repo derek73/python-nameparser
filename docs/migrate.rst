@@ -48,16 +48,17 @@ about either:
 
 * editing a default word list in place — ``TITLES.add("dean")`` —
   raises ``AttributeError`` since 2.2, when the vocabulary sets became
-  ``frozenset`` (see `Config map`_)
+  ``frozenset`` (see `Default word lists are frozen`_)
 * reading a renamed config constant (``prefixes.PREFIXES`` and the
   rest) emits a ``DeprecationWarning`` since 2.2, which fails a suite
   run under ``-W error::DeprecationWarning``
 * a ``capitalization_exceptions`` value that is not a case mask of its
   key — ``{"md": "Doc"}`` — raises ``ValueError`` at the first parse
   since 2.4
-* a ``Constants`` vocabulary entry no word can match (empty, or holding
-  stray whitespace) is dropped with a ``UserWarning`` naming it, since
-  2.4
+* a ``Constants`` entry no word can match — empty, only full stops, or
+  holding whitespace no word carries, in a vocabulary set or as a
+  ``capitalization_exceptions`` key — is dropped with a ``UserWarning``
+  naming it, since 2.4
 
 A silent change: comparing with ``==``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -271,7 +272,7 @@ Some ``Lexicon`` fields have no ``CONSTANTS`` attribute at all —
    ``non_first_name_prefixes`` lists particles that are *never* read as
    a given name; ``particles_ambiguous`` lists the particles that
    *may* be read as one. The same holds for the config constant behind
-   it: ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
+   it (renamed in 2.2; see `Renamed word lists (2.2)`_ below): ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
    ``prefixes.NON_FIRST_NAME_PREFIXES``) marks the never-given set, so
    it is the complement of ``particles_ambiguous`` too, however much
    the 2.2 names now suggest otherwise. Translating a customization
@@ -643,30 +644,36 @@ in tokenization rather than by policy, so a name written with either
 still divides at the dot, and still renders with a space, whatever
 those two fields are set to.
 
-Changed in 2.2–2.4
-~~~~~~~~~~~~~~~~~~
+Changed in 2.3 and 2.4
+~~~~~~~~~~~~~~~~~~~~~~
 
 Later releases moved more 1.4 readings, and these reach ``HumanName``
-as well. The release log's 2.2, 2.3 and 2.4 sections carry the
-reasoning; these are the shapes to grep your fixtures for, with what
-1.4 read:
+as well; 2.1 and 2.2 read every one of them as 1.4 did. The release
+log's 2.3 and 2.4 sections carry the reasoning; these are the shapes to
+grep your fixtures for, with what 1.4 read:
 
-- ``"Jack MA"`` — a capitalized credential: 1.4 read last ``MA``.
-- ``"Her Majesty Queen Elizabeth"``, ``"Prince Harry"`` — a name after a
-  form of address is the given name: 1.4 read last ``Elizabeth`` and
-  ``Harry``.
-- ``"Dr King Jr"`` — 1.4 read title ``Dr King``, last ``Jr``.
-- ``"John Smith Prof."`` — a trailing period-marked title: 1.4 read last
-  ``Prof.``, middle ``Smith``.
-- ``"jose e maria santos"`` — a one-letter connective in a one-case name
-  is an initial: 1.4 read first ``jose e maria``.
-- ``"van der Berg, PhD"`` — 1.4 read first ``van``, last ``der Berg``.
-- ``"Josep Carod i Rovira"`` — ``i`` links two surnames: 1.4 read middle
-  ``Carod i``, last ``Rovira``.
-- ``"John Smith X.Y.Z."`` — an unlisted dotted credential: 1.4 read last
-  ``X.Y.Z.``, middle ``Smith``.
-- ``capitalize()`` on ``"john smith md"`` — 1.4 wrote ``M.D.``, since a
-  ``capitalization_exceptions`` value now only recases its key.
+- ``"Her Majesty Queen Elizabeth"``, ``"Prince Harry"`` (2.3) — a lone
+  name after a given-name title (Queen, Prince, Princess) is the given
+  name: 1.4 read last ``Elizabeth`` and ``Harry``. Other titles still
+  leave it the family name (``"Dr Harry"``).
+- ``"Dr King Jr"`` (2.3) — 1.4 read title ``Dr King``, last ``Jr``.
+- ``"John Smith Prof."`` (2.3) — a trailing period-marked title: 1.4
+  read last ``Prof.``, middle ``Smith``.
+- ``"Jack MA"`` (2.4) — an ambiguous acronym in capitals in a mixed-case
+  name is a credential: 1.4 read last ``MA``. ``"Jack Ma"`` and
+  ``"JACK MA"`` are unchanged.
+- ``"jose e maria santos"`` (2.4) — ``e`` in a name written wholly in
+  one case is an initial (``y`` still joins): 1.4 read first ``jose e
+  maria``.
+- ``"van der Berg, PhD"`` (2.4) — 1.4 read first ``van``, last ``der
+  Berg``.
+- ``"Josep Carod i Rovira"`` (2.4) — ``i`` links two surnames in a
+  mixed-case name: 1.4 read middle ``Carod i``, last ``Rovira``.
+- ``"John Smith X.Y.Z."`` (2.4) — an unlisted dotted credential after a
+  full name: 1.4 read last ``X.Y.Z.``, middle ``Smith``. ``"Jack
+  X.Y.Z."`` is unchanged.
+- ``capitalize()`` on ``"john smith md"`` (2.4) — 1.4 wrote ``M.D.``;
+  ``md`` left the exceptions map and now repairs as an acronym.
 
 .. doctest::
 

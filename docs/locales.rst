@@ -18,9 +18,10 @@ default vocabulary covers Cyrillic, Greek, Arabic, Hebrew, Devanagari
 and Bengali, and the East Asian scripts described below. Honorifics,
 conjunctions and name particles written in them are recognized out of
 the box, as far as each script's vocabulary reaches: each of those
-scripts ships honorifics, while conjunctions and particles reach
-fewer — Cyrillic and Greek ship conjunctions and no particle, Hebrew
-particles and no conjunction, Devanagari and Bengali honorifics only.
+scripts but katakana ships honorifics, while conjunctions and particles
+reach fewer — Cyrillic and Greek ship conjunctions and no particle,
+Hebrew particles and no conjunction, and Devanagari, Bengali and the
+East Asian scripts honorifics only.
 
 .. doctest::
 
@@ -122,10 +123,10 @@ How each part combines:
 - **Set-valued policy fields union** the same way — the fields
   declared set-valued in :class:`~nameparser.PolicyPatch`:
   ``patronymic_rules``, ``segment_scripts`` and the delimiter fields.
-- **Every other, scalar field is later-wins.** If two packs set the
-  same scalar field — even to the same value — the later one wins and
-  a ``UserWarning`` is raised; a pack overrides the base parser's value
-  silently.
+- **Every other, scalar field is later-wins.** If two packs with
+  different codes set the same scalar field — even to the same value —
+  the later one wins and a ``UserWarning`` is raised; a pack overrides
+  the base parser's value silently.
 
 Finding packs by code
 ~~~~~~~~~~~~~~~~~~~~~
@@ -209,11 +210,13 @@ new naming rule belongs in.
    mixes traditions, parse the subsets separately with different
    parsers rather than enabling a pack over all of it.
 
-A declared family-first ``name_order`` stands down the rotation
-instead of competing with it. The two never disagree on a name the
-rule matches: a family-first order already reads ``"Сидоров Иван
-Петрович"`` as family ``Сидоров``, so folding the pack onto a base
-built with ``Policy(name_order=FAMILY_FIRST)`` adds nothing.
+A declared family-first ``name_order`` stands down both patronymic
+rotations (``ru`` and ``tr_az``) instead of competing with them. Under
+``FAMILY_FIRST`` the two never disagree on a name the rule matches: that
+order already reads ``"Сидоров Иван Петрович"`` as family ``Сидоров``,
+so folding the pack onto a base built with it adds nothing. Under
+``FAMILY_FIRST_GIVEN_LAST`` the declared order wins, and the
+patronymic, the last word, reads as the given name.
 
 .. _segmenter-contract:
 
@@ -237,7 +240,10 @@ contract, because ``segment_scripts`` unions across packs: your
 segmenter may be offered a token of any activated script, not only the
 ones its own pack turned on. It is asked only where the surname list
 could not divide an unspaced token, and not where the name is already
-divided — by a space, a family comma or a 间隔号. Recognize the text
+divided — by a second word in an East Asian script (the nakaguro ・
+counts as a space), a family comma or a 间隔号. A Latin word beside the
+token (``"Dr. 高橋一郎"``) divides nothing, so the segmenter is still
+asked. Recognize the text
 you can actually read and return ``None`` for the rest, rather than
 answering for a script you never meant to handle. A segmenter is your
 code, so its failures do not stay inside the parse: its own exceptions
@@ -296,11 +302,13 @@ The lexicon fragment is validated on its own
 The ``policy`` half is a patch, but the ``lexicon`` half is not. A
 pack's :class:`~nameparser.Lexicon` is a complete value in its own
 right and is validated on its own, before it is unioned onto the base
-— so a fragment that marks a word as a member of a narrower set must
-also carry the word it marks. A fragment holding
-``particles_ambiguous={"van"}`` without ``particles={"van"}`` raises
-``ValueError`` before any union happens; the same holds for
-``suffix_acronyms_ambiguous`` and ``honorific_tails``. ``zh`` is the
+— so a fragment listing a word in ``particles_ambiguous``,
+``suffix_acronyms_ambiguous`` or ``honorific_tails`` must also list it
+in the set that field marks (``particles``, ``suffix_acronyms``,
+``suffix_words``). A fragment holding ``particles_ambiguous={"van"}``
+without ``particles={"van"}`` raises ``ValueError`` before any union
+happens. ``given_name_titles`` and ``conjunctions_ambiguous`` are not
+checked this way, and can mark a word only the base holds. ``zh`` is the
 shipped worked example: its ``Lexicon(surnames=...)`` has to satisfy
 every ``Lexicon`` rule standing alone, before anything unions it onto
 the base.
