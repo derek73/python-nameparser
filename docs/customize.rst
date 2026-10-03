@@ -485,6 +485,7 @@ listed below.
        Ignored when a comma separates family from given ("Thomas,
        John" puts the family name first); a comma that only sets off
        suffixes ("John Smith, Jr.") leaves it governing the name part.
+       See :ref:`name-order`.
    * - ``patronymic_rules``
      - ``frozenset[PatronymicRule]``
      - Reorders patronymic-shaped names via opt-in detectors — East
@@ -503,7 +504,7 @@ listed below.
        ``nickname``. Defaults to
        :data:`~nameparser.DEFAULT_NICKNAME_DELIMITERS` — straight
        quotes and parentheses plus the typographic conventions (smart
-       quotes, guillemets, CJK brackets, ...).
+       quotes, guillemets, CJK brackets, ...). See :ref:`brackets`.
    * - ``maiden_delimiters``
      - ``frozenset[tuple[str, str]]``
      - Routes content enclosed by these delimiter pairs to ``maiden``
@@ -514,7 +515,8 @@ listed below.
      - ``frozenset[str]``
      - Adds separators that split suffix groups, e.g. ``" - "`` for
        ``"Jane Smith, RN - CRNA"``. Additions only — the comma always
-       splits suffix groups and cannot be replaced.
+       splits suffix groups and cannot be replaced. See
+       :ref:`suffix-delimiters`.
    * - ``lenient_comma_suffixes``
      - ``bool``
      - Reads an initial-shaped suffix word after a comma as a suffix:
@@ -537,11 +539,11 @@ listed below.
      - ``bool``
      - Excludes emoji from tokenization — they appear in no field or
        rendered view, though ``original`` keeps them. Defaults to
-       ``True``.
+       ``True``. See :ref:`strip-flags`.
    * - ``strip_bidi``
      - ``bool``
      - Excludes bidirectional control characters the same way.
-       Defaults to ``True``.
+       Defaults to ``True``. See :ref:`strip-flags`.
 
 To apply a :class:`PolicyPatch <nameparser.PolicyPatch>` directly --
 without going through a locale pack -- call :meth:`Policy.patched()
@@ -552,6 +554,8 @@ without going through a locale pack -- call :meth:`Policy.patched()
     >>> from nameparser import Policy, PolicyPatch
     >>> Policy().patched(PolicyPatch(middle_as_family=True))
     Policy(middle_as_family=True)
+
+.. _name-order:
 
 Family-first name order
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -896,8 +900,8 @@ last:
    not the same as the clause becoming the suffix.
 2. **A clause that announces itself**, opening with a recognized maiden
    marker and carrying a word after it, is a maiden name inside any
-   configured pair, with nothing configured. The marker is dropped from
-   the value.
+   configured pair, with nothing configured (since 2.2). The marker is
+   dropped from the value.
 3. **Everything else is decided by the pair**: content in a
    ``nickname_delimiters`` pair is a nickname, and content in a
    ``maiden_delimiters`` pair is a maiden name.
@@ -930,9 +934,10 @@ whole recipe:
     >>> Parser(policy=policy).parse("Jane (Jones) Smith").maiden
     'Jones'
 
-A lone marker word is kept as the value rather than dropped, because a
-marker is dropped only from content holding more than one *token*.
-Tokens, not words: a marker written against the name it marks is one
+A marker is dropped from the value only where it stands as its own
+word with a name word after it. A lone marker is kept as the value —
+and so is a multi-word one filling the clause, such as ``z domu`` —
+and so is a marker written against the name it marks, which is one
 token with it, so ``旧姓`` stays in the value too:
 
 .. doctest::
@@ -941,6 +946,8 @@ token with it, so ``旧姓`` stays in the value too:
     'Nee'
     >>> Parser(policy=policy).parse("Jane Smith (Nee)").maiden
     'Nee'
+    >>> Parser(policy=policy).parse("Jane Smith (z domu)").maiden
+    'z domu'
     >>> cjk_parens = frozenset({("（", "）")})       # full-width
     >>> cjk = Parser(policy=Policy(maiden_delimiters=cjk_parens))
     >>> cjk.parse("山田花子（旧姓佐藤）").maiden
@@ -962,6 +969,8 @@ instead of extending them, the same trap as ``capitalization_exceptions``:
     ...     nickname_delimiters=DEFAULT_NICKNAME_DELIMITERS | {("{", "}")})
     >>> Parser(policy=policy).parse("Benjamin {Ben} Franklin").nickname
     'Ben'
+
+.. _suffix-delimiters:
 
 Suffixes not separated by commas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -992,21 +1001,42 @@ alone, because a surname can be written either way, so both fields
 also decide by position: the word has to stand behind a name that can
 spare it.
 
-Both fields share one exception. Two letters right after a comma are
-how a person's initials are written, and the words before the comma
+Both fields share one exception. Two letters alone right after a comma
+are how a person's initials are written, and the words before the comma
 may be one surname of two words, so ``"García Márquez, G.J."`` and
-``"García Márquez, MJ"`` keep given ``G.J.`` and ``MJ``.
+``"García Márquez, MJ"`` keep given ``G.J.`` and ``MJ``. The dotted
+spelling reports that reading as a fork; the capitals do not.
+
+The exception gives way to evidence that the letters are a credential:
+an unambiguous post-nominal in front of them that is not also a title,
+or another unlisted word of the same kind beside them. A title in front
+of them says the opposite:
+
+.. doctest::
+
+    >>> parse("John Smith, PhD X.Y.").suffix
+    'PhD X.Y.'
+    >>> parse("John Smith, PhD MJ").suffix
+    'PhD MJ'
+    >>> parse("García Márquez, MJ XYZ").suffix
+    'MJ XYZ'
+    >>> cred = parse("García Márquez, Ms G.J.")
+    >>> cred.title, cred.given
+    ('Ms', 'G.J.')
 
 Dotted acronyms
 ^^^^^^^^^^^^^^^
 
 ``unlisted_dotted_suffixes`` is on by default. It reads a token of two
 or more period-separated chunks as a credential at the end of a name,
-at the end of the given part after a family comma, and at the end of
-a maiden marker's clause. Case is irrelevant; the periods are the
-signal. With nothing to spare in front of it, the word stays a name.
-Either way the parse reports the fork as a ``suffix-or-name``
-ambiguity, so a record that reads wrong can still be found:
+right after a comma behind two or more name words, and — since 2.4 —
+at the end of the given part after a family comma and at the end of a
+maiden marker's clause. Case is irrelevant; the periods are the signal.
+With nothing to spare in front of it, the word stays a name. At the end
+of a name, given part or clause, either reading reports the fork as a
+``suffix-or-name`` ambiguity, so a record that reads wrong can still be
+found; right after a comma behind a full name, the credential reading
+is taken silently:
 
 .. doctest::
 
@@ -1023,19 +1053,9 @@ ambiguity, so a record that reads wrong can still be found:
     >>> cred = parse("Jane Doe nee Smith X.Y.Z.")
     >>> cred.maiden, cred.suffix
     ('Smith', 'X.Y.Z.')
-
-The two-letter initials exception gives way to evidence that the
-letters are a credential: an unambiguous post-nominal in front of them
-that is not also a title, or another unlisted dotted word beside them.
-A title in front of them says the opposite:
-
-.. doctest::
-
-    >>> parse("John Smith, PhD X.Y.").suffix
-    'PhD X.Y.'
-    >>> cred = parse("García Márquez, Ms G.J.")
-    >>> cred.title, cred.given
-    ('Ms', 'G.J.')
+    >>> cred = parse("John Smith, X.Y.Z.")
+    >>> cred.suffix, cred.ambiguities
+    ('X.Y.Z.', ())
 
 Four things are not this shape. A token the vocabulary already knows
 (``M.A.``, ``Ph.D.``) is read by the vocabulary. A single trailing
@@ -1109,6 +1129,11 @@ which is why it is not the default:
     ...     policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
     >>> caps_everywhere.parse("John Smith XYZ").suffix
     'XYZ'
+    >>> caps_everywhere.parse("Doe, John XYZ").suffix
+    'XYZ'
+    >>> cred = caps_everywhere.parse("Jane Doe nee Smith XYZ")
+    >>> cred.maiden, cred.suffix
+    ('Smith', 'XYZ')
     >>> cred = caps_everywhere.parse("Jean Pierre DUPONT")
     >>> cred.family, cred.suffix
     ('Pierre', 'DUPONT')
@@ -1128,6 +1153,8 @@ two-word surname, which the default reads as a credential:
     ...     policy=Policy(unlisted_caps_suffixes=CapsSuffixes.OFF))
     >>> caps_off.parse("García Márquez, GABRIEL").given
     'GABRIEL'
+
+.. _strip-flags:
 
 Keeping emoji and control characters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
