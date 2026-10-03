@@ -911,11 +911,18 @@ Correcting a parse
 --------------------
 
 :class:`~nameparser.ParsedName` is immutable, so a correction is a new
-value: ``replace()`` returns a copy with the given fields changed.
-Untouched fields keep their tokens (and ``original`` is preserved),
-with one deliberate exception: an ambiguity that pointed into a
-replaced field is dropped — correcting the field that was flagged
-clears the flag, while correcting an unrelated field keeps it.
+value. There are two ways to make one: ``replace()`` splices the new
+text in as written, and :meth:`Parser.revise()
+<nameparser.Parser.revise>` reads it the way a parse would.
+
+Splicing a value in with ``replace()``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``replace()`` returns a copy with the given fields changed. Untouched
+fields keep their tokens (and ``original`` is preserved), with one
+deliberate exception: an ambiguity that pointed into a replaced field
+is dropped — correcting the field that was flagged clears the flag,
+while correcting an unrelated field keeps it.
 
 .. doctest::
 
@@ -931,37 +938,38 @@ clears the flag, while correcting an unrelated field keeps it.
     >>> [a.kind.value for a in flagged.replace(family="Harrison").ambiguities]
     ['particle-or-given']
 
+What a spliced value loses
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``replace()`` splits values on whitespace into plain, untagged
 tokens — the vocabulary knowledge a parse would have about the new
-text is not there. The views that read those tags degrade: the parser
-no longer knows ``de la`` are particles, so ``family_particles``
-empties and ``family_base`` takes the whole field.
+text is not there. A token the parse never saw carries no decision to
+honor, so each view falls back on what it can answer without one:
 
-A token the parse never saw carries no decision to honor, so a view
-that is *handed* a vocabulary can fall back to it — of the parsed
-name's own views, :meth:`~nameparser.ParsedName.capitalized` is the
-one that is. It asks the vocabulary whether a word is a conjunction
-or an initial, which a word answers on its own. Its other special
-cases never needed a reading in the first place: an exceptions-map
-mask applies wherever its word stands, and a credential acronym the
-vocabulary lists or a roman numeral is written in capitals wherever
-the field is the suffix, so a spliced word repairs as a parsed one
-does — ``replace(suffix="mba")`` repairs to ``MBA`` and
-``suffix="vi"`` to ``VI``. A credential recognised only by its dotted
-shape is the exception, since the shape is something the parse
-records.
+- :meth:`~nameparser.ParsedName.capitalized` is handed a vocabulary,
+  so it asks that whether a word is a conjunction or an initial, which
+  a word answers on its own. Its other special cases never needed a
+  reading: an exceptions-map mask applies wherever its word stands,
+  and a listed credential acronym or a roman numeral is written in
+  capitals wherever the field is the suffix, so ``replace(suffix="mba")``
+  repairs to ``MBA`` and ``suffix="vi"`` to ``VI``. A credential
+  recognised only by its dotted shape is the exception, since the shape
+  is something the parse records.
+- **Particles** are a fact about the whole part, and no word of a
+  spliced field carries a reading to derive them from, so a family set
+  to ``de la`` stays lowercase where the same words parsed are repaired
+  to ``De La``.
+- :meth:`~nameparser.ParsedName.initials` takes no vocabulary at all,
+  so every word of a spliced field contributes an initial.
+- ``family_particles`` and ``family_base`` are properties on the
+  parsed name, which holds no vocabulary of its own either:
+  ``family_particles`` empties and ``family_base`` takes the whole
+  field.
+
 (The v1 :class:`~nameparser.parser.HumanName` facade's ``initials()``
-is the other view that is handed one, and takes the same fallback for
-spliced text; it is not a method of the parsed name and is not what
-this section describes.) Whether a particle is
-acting as a particle is a fact about the whole part, and there is no
-reading on any word of a spliced field to derive it from, so a family
-set to ``de la`` stays lowercase where the same words parsed are
-repaired to ``De La``. :meth:`~nameparser.ParsedName.initials` takes
-no vocabulary at all, so it falls back on neither question and every
-word of a spliced field contributes an initial. ``family_particles``
-and ``family_base`` are properties on the parsed name, which holds no
-vocabulary of its own either.
+is also handed a vocabulary and takes the same fallback as
+``capitalized()`` for spliced text; it is not a method of the parsed
+name.)
 
 .. doctest::
 
@@ -976,6 +984,9 @@ vocabulary of its own either.
     'J. d. l. V. S.'
     >>> name.replace(family="de la").capitalized(force=True).family
     'de la'
+
+Reading a value with ``Parser.revise()``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :meth:`Parser.revise() <nameparser.Parser.revise>` is the same
 operation with each value classified by the parser's vocabulary, so
