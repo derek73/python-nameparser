@@ -129,15 +129,15 @@ go together:
     >>> Parser(lexicon=lean).parse("Hon Solo").given
     'Hon'
 
-Emptying the vocabulary does not switch titles off entirely, though. A
-word ending in a period, standing at the front of the part that carries
-the given name, is read as a title structurally, without consulting
-``titles`` at all — that is what lets unfamiliar ranks and
+Emptying the title vocabulary does not switch titles off entirely,
+though. A word ending in a period, standing at the front of the part
+that carries the given name, is read as a title structurally, without
+consulting ``titles`` at all — that is what lets unfamiliar ranks and
 abbreviations work (see :ref:`abbreviated-titles`):
 
 .. doctest::
 
-    >>> bare = Parser(lexicon=Lexicon.empty())
+    >>> bare = Parser(lexicon=lean)
     >>> bare.parse("Professor John Smith").title      # vocabulary gone
     ''
     >>> bare.parse("Dr. John Smith").title            # structural, stays
