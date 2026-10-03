@@ -159,6 +159,8 @@ and combining them at parser construction:
     >>> sorted((house | per_source).titles)
     ['dean', 'provost']
 
+.. _case-exceptions:
+
 Fixing the case of a particular word
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -495,7 +497,8 @@ listed below.
      - pairs of ``Script`` and an order
      - Assigns a name in one of these scripts in the paired order,
        whatever ``name_order`` says. Defaults to family-first for a
-       name wholly in Han or Hangul, or mixing kanji with kana. See
+       name wholly in Han or Hangul, or in kanji and kana other than
+       katakana alone. See
        :ref:`east-asian-defaults`.
    * - ``segment_scripts``
      - ``frozenset[Script]``
@@ -620,8 +623,7 @@ right and then reverses the remaining two, so
 Nothing keys this order to a script the way the East Asian defaults
 below do — Vietnamese is written in the Latin alphabet, which carries
 no order of its own — so it applies only where you set it, and there
-is no ``vn`` locale pack yet (issue `#146
-<https://github.com/derek73/python-nameparser/issues/146>`_).
+is no ``vn`` locale pack.
 
 Declaring the order settles where a surname ends
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -753,8 +755,9 @@ East Asian defaults, and turning them off
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Two defaults key on the *script* a name is written in rather than on
-anything you set: a name written wholly in Han or Hangul — or one
-mixing kanji with kana — is assigned family-first (``script_orders``),
+anything you set: a name written wholly in Han or Hangul — or in kanji
+and kana, unless it is katakana alone — is assigned family-first
+(``script_orders``),
 and an unspaced hangul name is split into surname and given name
 against the shipped Korean census list (``segment_scripts``).
 :ref:`east-asian-names` explains the naming conventions both rest on;
@@ -823,8 +826,8 @@ Japanese names
 
 The Japanese behaviors ride these same two fields, so they need no
 switches of their own. ``script_orders=()`` clears the kana-licensed
-entry along with the Han and Hangul ones, so a name mixing kanji with
-kana reads given-first again:
+entry along with the Han and Hangul ones, so a name in kanji and kana
+reads given-first again:
 
 .. doctest::
 

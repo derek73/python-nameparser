@@ -296,8 +296,9 @@ given names are kanji — the same characters Chinese uses — but a given
 name is often written in one of the two kana syllabaries instead:
 hiragana (高橋みなみ) or katakana (山田エミ). The two syllabaries carry
 different information about whose name it is. Hiragana never
-transcribes a foreign name, so a name that mixes kanji and kana is a
-Japanese person's name, written in Japanese order. Katakana is
+transcribes a foreign name, so a name that holds hiragana, alone or
+beside kanji or katakana, is a Japanese person's name, written in
+Japanese order. Katakana is
 ambiguous: native given names use it, but katakana is also how
 Japanese text writes a *foreign* name — マイケル・ジャクソン is Michael
 Jackson — and a transcription keeps the source language's order, given
@@ -308,10 +309,10 @@ What happens automatically
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Two behaviors follow from that without any configuration. A name whose
-characters stay within kanji and kana and carry at least one kana is
-assigned family-first, like any other native-script East Asian name: it
-cannot be Chinese, and it is not a transcription, because a
-transcription would have been kana alone.
+characters stay within kanji and kana, carry at least one kana, and are
+not katakana alone is assigned family-first, like any other
+native-script East Asian name: it cannot be Chinese, and it is not a
+transcription, because a transcription is written in katakana alone.
 
 .. doctest::
 

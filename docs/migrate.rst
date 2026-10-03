@@ -11,8 +11,8 @@ compatibility layer (``HumanName`` and ``nameparser.config``) is
 removed in 3.0; that release is not scheduled.
 
 The full 1.x documentation remains the canonical reference for
-``HumanName`` and stays online at the readthedocs ``stable`` build,
-currently the 1.4.0 release: https://nameparser.readthedocs.io/en/stable/
+``HumanName`` and stays online as the 1.4.0 build on readthedocs:
+https://nameparser.readthedocs.io/en/v1.4.0/
 
 This page exists for the other direction: translating a v1
 customization or a v1-shaped comparison into the 2.0 API, one row per
@@ -21,11 +21,14 @@ old name.
 Before you upgrade
 ------------------
 
+What breaks without a warning
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 What 2.0 removes is the batch of deprecations 1.3 and 1.4 announced. If
 your test suite runs clean on 1.4 under ``python -W
-error::DeprecationWarning``, it will run on 2.0 — with four exceptions
-that 1.4 never warned about. The first three raise the first time you
-hit them; the fourth only warns, so read it carefully:
+error::DeprecationWarning``, it will run on 2.0.0 — with the exceptions
+below, which 1.4 never warned about. The first three raise the first
+time you hit them; the last only warns, so read it carefully:
 
 * ``CONSTANTS.regexes.<name> = ...`` raises ``TypeError``. This includes
   ``CONSTANTS.regexes.bidi = False``, the opt-out 1.3.1 recommended for
@@ -40,17 +43,43 @@ hit them; the fourth only warns, so read it carefully:
   ``DeprecationWarning`` at construction naming the hooks it overrode,
   because 2.0 delegates parsing to the core parser and never calls them
 
+Later 2.x releases add breaks of their own, none of which 1.4 warned
+about either:
+
+* editing a default word list in place — ``TITLES.add("dean")`` —
+  raises ``AttributeError`` since 2.2, when the vocabulary sets became
+  ``frozenset`` (see `Default word lists are frozen`_)
+* reading a renamed config constant (``prefixes.PREFIXES`` and the
+  rest) emits a ``DeprecationWarning`` since 2.2, which fails a suite
+  run under ``-W error::DeprecationWarning``
+* a ``capitalization_exceptions`` value that is not a case mask of its
+  key — ``{"md": "Doc"}`` — raises ``ValueError`` at the first parse
+  since 2.4
+* a ``Constants`` entry no word can match — empty, only full stops, or
+  holding whitespace no word carries, in a vocabulary set or as a
+  ``capitalization_exceptions`` key — is dropped with a ``UserWarning``
+  naming it, since 2.4
+
+A silent change: comparing with ``==``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 One removal changes results without saying anything. ``HumanName`` no
 longer defines ``__eq__``, so ``name == "John Smith"`` is now ``False``
 where 1.x returned ``True``. That one *did* warn on 1.4, but nothing
 will tell you on 2.0. If you compare names anywhere, grep for ``==``
 before upgrading and move to ``matches()`` — see `Comparison`_.
 
+Re-pickle before you upgrade
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 One step has to happen *before* you upgrade, because the fix is only
 available on the version you're leaving: a ``Constants`` pickle written
 by nameparser 1.2.x or earlier must be re-pickled under 1.3 or 1.4.
 2.0 refuses to load one, and by then the code that could rewrite it is
 gone.
+
+Replacements for the warned removals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If your suite did *not* run clean, these are the replacements for the
 warned removals:
@@ -142,24 +171,29 @@ Attribute map
      - The particles ``family_base`` was split from (e.g. ``"de la"``)
    * - ``string_format``
      - ``render(spec)``
-     - A per-call argument now, not stored config — see :doc:`customize`
+     - A per-call argument now, not stored config — see
+       :ref:`rendering-arguments`
    * - ``initials_format``, ``initials_delimiter``, ``initials_separator``
      - ``initials(spec, delimiter, separator)``
      - Same three knobs, now call-site arguments to
-       :meth:`~nameparser.ParsedName.initials`
+       :meth:`~nameparser.ParsedName.initials` — see
+       :ref:`rendering-arguments`
    * - ``suffix_delimiter``
      - ``Policy(extra_suffix_delimiters=frozenset({...}))``
-     - Moves from a ``HumanName``/``Constants`` scalar to a ``Policy``
-       set field, so more than one custom delimiter can be active at
-       once. It is the *set* that moved, not just the name: passing the
-       old scalar through (``extra_suffix_delimiters=" - "``) raises,
-       rather than silently registering three one-character delimiters
+     - Now a ``Policy`` set field, so several delimiters can be
+       active; passing the old scalar through raises
+       (:ref:`suffix-delimiters`)
    * - ``capitalize(force=...)``
      - ``capitalized(force=...)``
      - :meth:`~nameparser.ParsedName.capitalized` returns a new value
        rather than mutating in place. Its optional first argument takes
        a :class:`~nameparser.Lexicon`, if you need custom
        capitalization exceptions
+
+``suffix_delimiter`` moved as a *set*, not just under a new name:
+passing the old scalar through (``extra_suffix_delimiters=" - "``)
+raises, rather than silently registering three one-character
+delimiters.
 
 Side by side:
 
@@ -179,6 +213,9 @@ Side by side:
 
 Config map
 ----------
+
+Vocabulary sets → Lexicon
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``CONSTANTS``' vocabulary sets map onto :class:`~nameparser.Lexicon`
 fields:
@@ -219,14 +256,36 @@ fields:
      -
    * - ``capitalization_exceptions``
      - ``capitalization_exceptions``
-     - Pair-valued; set it via ``dataclasses.replace(lexicon,
-       capitalization_exceptions={...})``, not ``add()``/``remove()``.
-       Since 2.4 a value is a case mask — the key's own letters and
-       digits recased (``{"phd": "PhD"}``) — laid over the word as
-       written, so ``{"md": "M.D."}`` repairs ``md`` to ``MD``, not
-       ``M.D.``; a value that spells anything else raises
-       ``ValueError`` on both APIs, at the first parse for a v1
-       ``Constants``
+     - Pair-valued, so not ``add()``/``remove()``; extend the defaults
+       with ``dataclasses.replace()`` as :ref:`case-exceptions` shows.
+       Since 2.4 a value is a case mask, so ``{"md": "M.D."}`` repairs
+       ``md`` to ``MD``
+
+Some ``Lexicon`` fields have no ``CONSTANTS`` attribute at all —
+``conjunctions_ambiguous``, ``maiden_markers``, ``surnames`` and
+``honorific_tails`` — so they are reached through the 2.0 API only.
+
+.. warning::
+
+   ``non_first_name_prefixes`` and ``particles_ambiguous`` mark
+   **complementary** sets, not the same set under a new name.
+   ``non_first_name_prefixes`` lists particles that are *never* read as
+   a given name; ``particles_ambiguous`` lists the particles that
+   *may* be read as one. The same holds for the config constant behind
+   it (renamed in 2.2; see `Renamed word lists (2.2)`_ below):
+   ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
+   ``prefixes.NON_FIRST_NAME_PREFIXES``) marks the never-given set, so
+   it is the complement of ``particles_ambiguous`` too, however much
+   the 2.2 names now suggest otherwise. Translating a customization
+   means flipping
+   the set: ``particles_ambiguous = lexicon.particles -
+   constants.non_first_name_prefixes``. Copying
+   ``non_first_name_prefixes`` straight into ``particles_ambiguous``
+   silently inverts which particles are allowed to double as a given
+   name.
+
+Renamed word lists (2.2)
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 The vocabulary that feeds both columns lives in ``nameparser.config``,
 and in 2.2 its module and constant names moved to the vocabulary the
@@ -265,7 +324,7 @@ same *never a given name* meaning. It is **not** the constant behind
 though the two now sound as though they belong together. Pairing this
 table's third row with the field-mapping table above and concluding
 that ``NON_GIVEN_NAME_PARTICLES`` is what ``particles_ambiguous``
-holds is exactly the inversion the flip warning below exists to
+holds is exactly the inversion the flip warning above exists to
 prevent.
 
 Every row still resolves, and the old names are removed in 3.0. The two
@@ -296,6 +355,9 @@ so ``constants.prefixes``,
 ``constants.non_first_name_prefixes``, ``constants.bound_first_names``,
 ``constants.first_name_titles`` and ``constants.suffix_not_acronyms``
 keep their 1.x spelling for as long as the facade exists.
+
+Default word lists are frozen
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Every vocabulary *set* in ``nameparser.config`` is also a ``frozenset``
 as of 2.2 — the renamed ones and the rest. Every set, that is; the one
@@ -328,32 +390,42 @@ reaches a freshly built ``Constants``, and neither
 ``Lexicon.default()`` nor the shared ``CONSTANTS``. The advice below is
 the same advice — configure the object, with
 ``constants.capitalization_exceptions["dphil"] = "DPhil"`` on a private
-``Constants``, or ``dataclasses.replace(lexicon,
-capitalization_exceptions={...})`` for the 2.0 API.
+``Constants``, or for the 2.0 API a ``dataclasses.replace()`` that
+extends the default pairs rather than replacing them
+(:ref:`case-exceptions`).
 
 Configure the objects instead, which both APIs have always supported
 and neither the freeze nor the rename affects. For ``HumanName``, build
-a private ``Constants`` and pass it::
+a private ``Constants`` and pass it:
 
-    from nameparser import HumanName
-    from nameparser.config import Constants
+.. doctest::
 
-    constants = Constants()
-    constants.titles.add("dean")
-    name = HumanName("Dean Smith", constants=constants)
+    >>> from nameparser import HumanName
+    >>> from nameparser.config import Constants
+    >>> HumanName("Dean Smith").first                # not a default title
+    'Dean'
+    >>> dean_constants = Constants()
+    >>> _ = dean_constants.titles.add("dean")    # returns the set
+    >>> HumanName("Dean Smith", constants=dean_constants).title
+    'Dean'
 
-For the 2.0 API, extend the default lexicon and hand it to a parser::
+For the 2.0 API, extend the default lexicon and hand it to a parser:
 
-    from nameparser import Lexicon, Parser
+.. doctest::
 
-    parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
-    name = parser.parse("Dean Smith")
+    >>> from nameparser import Lexicon, Parser
+    >>> dean_parser = Parser(lexicon=Lexicon.default().add(titles={"dean"}))
+    >>> dean_parser.parse("Dean Smith").title
+    'Dean'
 
 Mutating the shared ``CONSTANTS`` singleton still works and still
 reaches every ``HumanName`` that reads it, but it warns: it is
 deprecated along with the rest of the v1 facade and goes away in 3.0.
 Prefer a private ``Constants`` in new code. See :doc:`customize` for
 the full set of knobs on each.
+
+Behavior and render settings → Policy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Behavior and render scalars map onto :class:`~nameparser.Policy` (or a
 rendering argument, where the 2.0 equivalent isn't config at all):
@@ -379,18 +451,22 @@ rendering argument, where the 2.0 equivalent isn't config at all):
      - Was a dict of named sentinels; now a plain ``frozenset`` of
        ``(open, close)`` pairs. Both APIs gained the #273 typographic
        defaults (smart quotes, guillemets, CJK brackets, ...) in 2.0
+       (:ref:`brackets`)
    * - ``maiden_delimiters``
      - ``Policy.maiden_delimiters``
      - Same shape change as ``nickname_delimiters``. Precedence
        differs: in the 2.0 API a pair listed here wins over
        ``nickname_delimiters``; through the 1.x facade a pair in both
-       buckets keeps parsing as ``nickname`` (v1 behavior)
+       buckets keeps parsing as ``nickname`` (v1 behavior;
+       :ref:`brackets`)
    * - ``regexes.bidi``
      - ``Policy.strip_bidi``
      - ``regexes.bidi = False`` becomes ``Policy(strip_bidi=False)``
+       (:ref:`strip-flags`)
    * - ``regexes.emoji``
      - ``Policy.strip_emoji``
      - ``regexes.emoji = False`` becomes ``Policy(strip_emoji=False)``
+       (:ref:`strip-flags`)
    * - ``force_mixed_case_capitalization``
      - ``capitalized(force=True)``
      - The stored default is gone; pass ``force`` at the call site.
@@ -405,24 +481,6 @@ Every other ``regexes.*`` entry (``word``, ``spaces``, and the rest of
 the compiled-pattern proxy) has no 2.0 replacement — parsing behavior
 is configured entirely through named ``Policy`` fields now, not by
 handing the parser a regex.
-
-.. warning::
-
-   ``non_first_name_prefixes`` and ``particles_ambiguous`` mark
-   **complementary** sets, not the same set under a new name.
-   ``non_first_name_prefixes`` lists particles that are *never* read as
-   a given name; ``particles_ambiguous`` lists the particles that
-   *may* be read as one. The same holds for the config constant behind
-   it: ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
-   ``prefixes.NON_FIRST_NAME_PREFIXES``) marks the never-given set, so
-   it is the complement of ``particles_ambiguous`` too, however much
-   the 2.2 names now suggest otherwise. Translating a customization
-   means flipping
-   the set: ``particles_ambiguous = lexicon.particles -
-   constants.non_first_name_prefixes``. Copying
-   ``non_first_name_prefixes`` straight into ``particles_ambiguous``
-   silently inverts which particles are allowed to double as a given
-   name.
 
 Comparison
 ----------
@@ -457,9 +515,13 @@ Behavior changes
 -----------------
 
 Beyond the API surface mapped above, a handful of parse *outputs*
-differ between 1.4 and 2.0 for specific input shapes. The full list,
-with reasoning, is in the 2.0.0 section of :doc:`release_log`. These
-are the shapes worth grepping your own fixtures for, because a
+differ between 1.4 and 2.x for specific input shapes. The full list,
+with reasoning, is in each 2.x section of :doc:`release_log`.
+
+Changed in 2.0
+~~~~~~~~~~~~~~
+
+These are the shapes worth grepping your own fixtures for, because a
 recognized suffix or title now stays in its own field instead of
 landing in ``first``/``last``:
 
@@ -478,11 +540,14 @@ custom suffix delimiter configured, a no-space delimiter group renders
 whole (``"RN/CRNA"``) where 1.x split it (``"RN, CRNA"``) — the role
 assignment is identical, only the rendered string differs.
 
+East Asian names (2.1)
+~~~~~~~~~~~~~~~~~~~~~~
+
 2.1 adds three more, and unlike most of the 2.0 API these do reach
 ``HumanName``: a name written in East Asian script is read
 family-first, an unspaced Korean name is split into surname and given
 name, and the katakana middle dot separates tokens the way a space
-does.
+does (:ref:`east-asian-names` explains the conventions).
 
 .. doctest::
 
@@ -563,8 +628,12 @@ too — the nickname in ``"山田 太郎 (マイケル・ジャクソン)"`` was
 ``"マイケル・ジャクソン"`` under 1.4 and is ``"マイケル ジャクソン"``
 now.
 
+Turning the East Asian readings off
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``Constants`` has no switch for any of this — the v1 configuration
-surface is frozen for 2.x — so the way out is the 2.0 API:
+surface is frozen for 2.x — so the way out is the 2.0 API
+(:ref:`east-asian-defaults`):
 ``Parser(policy=Policy(script_orders=(), segment_scripts=frozenset()))``
 restores 1.4's reading of every shape above that turns on order or
 splitting. The middle dots are the exception: both the katakana dot
@@ -575,3 +644,63 @@ unconditional) are decided
 in tokenization rather than by policy, so a name written with either
 still divides at the dot, and still renders with a space, whatever
 those two fields are set to.
+
+Changed in 2.3 and 2.4
+~~~~~~~~~~~~~~~~~~~~~~
+
+Later releases moved more 1.4 readings, and these reach ``HumanName``
+as well; 2.1 and 2.2 read every one of them as 1.4 did. The release
+log's 2.3 and 2.4 sections carry the reasoning; these are the shapes to
+grep your fixtures for, with what 1.4 read:
+
+- ``"Her Majesty Queen Elizabeth"``, ``"Prince Harry"`` (2.3) — a lone
+  name after a title that addresses by given name is the given name:
+  1.4 read last ``Elizabeth`` and ``Harry``. 2.3 matched a run of titles
+  by its last one (``Her Majesty Queen``, ``Rev Sir``) and added titles
+  that address that way (``Prince``, ``Princess``, ``Swami``, ``Guru``
+  and others). Other titles still leave the name the family name
+  (``"Dr Harry"``).
+- ``"Dr King Jr"`` (2.3) — 1.4 read title ``Dr King``, last ``Jr``.
+- ``"John Smith Prof."`` (2.3) — a trailing period-marked title: 1.4
+  read last ``Prof.``, middle ``Smith``.
+- ``"Jack MA"`` (2.4) — an ambiguous acronym in capitals in a mixed-case
+  name is a credential: 1.4 read last ``MA``. ``"Jack Ma"`` and
+  ``"JACK MA"`` are unchanged.
+- ``"jose e maria santos"`` (2.4) — ``e`` in a name written wholly in
+  one case is an initial (``y`` still joins): 1.4 read first ``jose e
+  maria``.
+- ``"van der Berg, PhD"`` (2.4) — 1.4 read first ``van``, last ``der
+  Berg``.
+- ``"Josep Carod i Rovira"`` (2.4) — ``i`` links two surnames in a
+  mixed-case name: 1.4 read middle ``Carod i``, last ``Rovira``.
+- ``"John Smith X.Y.Z."`` (2.4) — an unlisted dotted credential after a
+  full name: 1.4 read last ``X.Y.Z.``, middle ``Smith``. ``"Jack
+  X.Y.Z."`` is unchanged.
+- ``capitalize()`` on ``"john smith md"`` (2.4) — 1.4 wrote ``M.D.``;
+  ``md`` left the exceptions map and now repairs as an acronym.
+
+.. doctest::
+
+    >>> HumanName("Jack MA").suffix
+    'MA'
+    >>> HumanName("Her Majesty Queen Elizabeth").first
+    'Elizabeth'
+    >>> HumanName("Prince Harry").first
+    'Harry'
+    >>> king = HumanName("Dr King Jr")
+    >>> king.title, king.last, king.suffix
+    ('Dr', 'King', 'Jr')
+    >>> HumanName("John Smith Prof.").title
+    'Prof.'
+    >>> HumanName("jose e maria santos").middle
+    'e maria'
+    >>> HumanName("van der Berg, PhD").last
+    'van der Berg'
+    >>> HumanName("Josep Carod i Rovira").last
+    'Carod i Rovira'
+    >>> HumanName("John Smith X.Y.Z.").suffix
+    'X.Y.Z.'
+    >>> md = HumanName("john smith md")
+    >>> md.capitalize(force=True)
+    >>> str(md)
+    'John Smith MD'
