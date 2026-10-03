@@ -81,8 +81,9 @@ def _stray_ascii(text: str) -> str:
 #: _script_matcher(Script.KATAKANA, whole=True) -- rather than a
 #: hand-copied codepoint range, so the KATAKANA span lives in exactly
 #: one place (nameparser._policy._SCRIPT_RANGES). That table's choice,
-#: not this file's: halfwidth katakana (a different Unicode block,
-#: U+FF65-U+FF9F, per _policy.py's own comment) is out of scope.
+#: not this file's: since #594 it classifies halfwidth katakana
+#: (U+FF65-U+FF9F) as katakana too, so a wholly-halfwidth text is a
+#: shape-7 transcription here exactly as its full-width twin is.
 #: Applied to the text with whitespace stripped, so a spaced
 #: transcription still counts as wholly katakana; a whitespace-only
 #: string never reaches this predicate in practice, since the purity
