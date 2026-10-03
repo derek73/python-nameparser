@@ -730,11 +730,13 @@ def script_segment(state: ParseState) -> ParseState:
         # rather than splitting -- a different mechanism, and no peel
         # site either way. A glued Latin POST-nominal is spelled the
         # same way, so it reaches that same mechanism rather than
-        # nothing: period_joined_vocab reads "Smith.Jr." as a title
-        # ('jr' is title vocabulary as well as suffix vocabulary), and
-        # where position allows, that wins -- "Smith.Jr. Anderson"
-        # gives title "Smith.Jr.", family "Anderson". Whatever it
-        # decides, this bail is what settles the question here: it
+        # nothing: period_joined_vocab reads "Smith.Jr." as a suffix
+        # ('jr' is suffix vocabulary only since #296 took it out of
+        # TITLES), and position decides whether that reading lands --
+        # "John Anderson Smith.Jr." gives suffix "Smith.Jr.", while
+        # "Smith.Jr. Anderson" gives given "Smith.Jr.", family
+        # "Anderson" (measured 2026-10-02). Whatever it decides, this
+        # bail is what settles the question here: it
         # returns above all of it, so no ASCII input reaches the peel.
         return state
     if not state.segments:
