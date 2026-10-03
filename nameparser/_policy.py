@@ -156,10 +156,10 @@ class Script(StrEnum):
 # and U+309A are the COMBINING forms (Script=Inherited), U+309B and
 # U+309C the spacing ones (Script=Common) -- yet every one of them is
 # needed here, and block membership, not the Script property, is what
-# puts them in range. Those four are in range only for a mark with
-# nothing before it: a mark voices the kana it follows, in either
+# puts them in range. Those four are in range only for a mark that
+# follows no kana: a mark voices the kana it follows, in either
 # syllabary, so classification deletes every mark that follows a
-# character and the token takes its base's script (#596,
+# kana and the token takes its base's script (#596,
 # _vocab._normalized_for_script) -- ア゙イ is katakana, not katakana
 # plus hiragana. The katakana block's upper end (U+30FF) takes in
 # the middle dot U+30FB, kept rather than carved out for a smaller

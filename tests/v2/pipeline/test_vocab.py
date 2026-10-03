@@ -765,11 +765,15 @@ def test_a_voicing_mark_takes_the_script_of_the_kana_before_it(
     # hiragana range instead would have left all three unclassified
     assert effective_script("あ" + mark + "い") is Script.HIRAGANA
     assert effective_script("山田ア" + mark + "イ") is Script.HIRAGANA
-    assert effective_script("山" + mark) is Script.HAN
-    # a mark with nothing before it has no base to take a script from
-    # and keeps the table's answer, hiragana -- so beside katakana the
-    # token is still licensed. Degenerate input, recorded rather than
-    # promised (rules.md#W4's Background)
+    # a mark after anything but kana is voicing nothing and keeps the
+    # table's answer, hiragana, as before #596: deleting it after hangul
+    # handed 김゙민준 a script the surname site then divided on the raw
+    # text, cutting the mark off its base. So hangul plus the mark is
+    # mixed (None), and Han plus the mark is the kana license's shape
+    assert effective_script("김" + mark + "민준") is None
+    assert effective_script("山" + mark) is Script.HIRAGANA
+    # a mark with nothing before it has no base either. Degenerate
+    # input, recorded rather than promised (rules.md's W Background)
     assert effective_script(mark + "アイ") is Script.HIRAGANA
     assert effective_script(mark) is Script.HIRAGANA
 

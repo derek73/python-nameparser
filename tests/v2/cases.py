@@ -9217,6 +9217,15 @@ CASES: tuple[Case, ...] = (
                "family-first. Under the declined alternative ア゙イ "
                "would have no script, the license would not fire, and "
                "the name would read family ア゙イ"),
+    Case("ko_voicing_mark_after_hangul_stays_undivided", "김\u3099민준",
+         {"given": "김\u3099민준"}, ambiguities=("given-or-family",),
+         notes="parity row: a voicing mark after HANGUL voices no kana, "
+               "so #596 leaves it alone and the token stays mixed-"
+               "script, undivided and reported, as before. A first cut "
+               "of #596 dropped every mark with a character before it; "
+               "the token then classified as hangul, the surname site "
+               "divided the RAW text after 김, and the stranded mark "
+               "opened the family: given 김, family \u3099민준"),
     Case("ja_iteration_mark_is_han", "佐々木 太郎",
          {"family": "佐々木", "given": "太郎"},
          classification="fix(#272)",

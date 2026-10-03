@@ -3651,7 +3651,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
         # inside the same class.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(152, ('family', 'given', 'middle'), "29661ea040c7", None),
+            _Claim(153, ('family', 'given', 'middle'), "a94f0435fd18", None),
         # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
         # rather than with the rule -- this change added 35
         # maiden-clause names as rules.md example lines and
@@ -4809,7 +4809,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'ﾔﾏﾀﾞ ﾀﾛｳ' is parity, as 'マイケル ジャクソン' already was
         # inside the same class.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(152, ('_ambiguities', 'family', 'given', 'middle'), "29661ea040c7", None),
+            _Claim(153, ('_ambiguities', 'family', 'given', 'middle'), "a94f0435fd18", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -5466,6 +5466,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities',), "528858346d14", None),
         "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
             _Claim(1, ('_ambiguities',), "30ec95e25f05", None),
+        "feat(#449) a hangul word holding a stray voicing mark has no script, so the convention decides it":
+            _Claim(1, ('_ambiguities',), "63f797a141db", None),
         # #491's two rules, beside #449's for the same reason: both
         # classify on `_ambiguities` alone, and no role moves anywhere
         # in this change, so a widening that took a role would change
@@ -5944,6 +5946,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities',), "528858346d14", None),
         "feat(#449) a glued Korean honorific leaves a Latin name word the script cannot order":
             _Claim(1, ('_ambiguities',), "30ec95e25f05", None),
+        "feat(#449) a hangul word holding a stray voicing mark has no script, so the convention decides it":
+            _Claim(1, ('_ambiguities',), "63f797a141db", None),
         # #491's two rules, beside #449's for the same reason: both
         # classify on `_ambiguities` alone, and no role moves anywhere
         # in this change, so a widening that took a role would change
