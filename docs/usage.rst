@@ -193,6 +193,9 @@ one unbroken run of characters. A parser therefore has two distinct
 jobs here: assign family and given to the right fields, and, when the
 name arrives as a single token, find the boundary inside it.
 
+Which name comes first
+~~~~~~~~~~~~~~~~~~~~~~
+
 Field assignment is automatic. A name written wholly in Han characters
 or hangul is assigned family-first, because every language written in
 those scripts orders names that way — Chinese and Japanese share
@@ -205,6 +208,9 @@ knowledge of which language the name is in:
     '毛'
     >>> parse("山田 太郎").family
     '山田'
+
+Splitting an unspaced name
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Splitting an unspaced name is also automatic, but only for Korean.
 Hangul is written by exactly one language, and Korean family names are
@@ -231,6 +237,9 @@ language is up to you. When you know the data is Chinese, apply the
     >>> parser_for(locales.ZH).parse("毛泽东").family
     '毛'
 
+Transcribed foreign names
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Chinese also has a transcription convention, and it is written in the
 punctuation: a foreign name transcribed into Han characters keeps its
 source order and divides its parts with the 间隔号, the interpunct
@@ -242,12 +251,23 @@ qualifies), and a dot anywhere in the name reads the whole name as a
 transcription listing: it keeps the order it was written in and is
 never segmented — the role pure katakana plays for Japanese
 transcriptions, played here by the divider instead of the script.
+
 Because only classified characters on both sides make it a divider,
 the same codepoint interior to a Latin-script name — the Catalan punt
 volat in ``Gal·la`` — is untouched, and a dot with a classified
 character on just one side (``王·Smith``) stays part of the word
-undivided. The Japanese middle dot ・ (covered next) is a different
-mark carrying a different convention, and keeps its own reading.
+undivided:
+
+.. doctest::
+
+    >>> shakespeare = parse("威廉·莎士比亚")
+    >>> shakespeare.given, shakespeare.family
+    ('威廉', '莎士比亚')
+    >>> parse("Gal·la Puig").given
+    'Gal·la'
+
+The Japanese middle dot ・ (covered next) is a different mark carrying
+a different convention, and keeps its own reading.
 
 Japanese
 ~~~~~~~~~
