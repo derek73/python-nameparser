@@ -21,6 +21,9 @@ old name.
 Before you upgrade
 ------------------
 
+What breaks without a warning
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 What 2.0 removes is the batch of deprecations 1.3 and 1.4 announced. If
 your test suite runs clean on 1.4 under ``python -W
 error::DeprecationWarning``, it will run on 2.0.0 — with the exceptions
@@ -56,17 +59,26 @@ about either:
   stray whitespace) is dropped with a ``UserWarning`` naming it, since
   2.4
 
+A silent change: comparing with ``==``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 One removal changes results without saying anything. ``HumanName`` no
 longer defines ``__eq__``, so ``name == "John Smith"`` is now ``False``
 where 1.x returned ``True``. That one *did* warn on 1.4, but nothing
 will tell you on 2.0. If you compare names anywhere, grep for ``==``
 before upgrading and move to ``matches()`` — see `Comparison`_.
 
+Re-pickle before you upgrade
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 One step has to happen *before* you upgrade, because the fix is only
 available on the version you're leaving: a ``Constants`` pickle written
 by nameparser 1.2.x or earlier must be re-pickled under 1.3 or 1.4.
 2.0 refuses to load one, and by then the code that could rewrite it is
 gone.
+
+Replacements for the warned removals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If your suite did *not* run clean, these are the replacements for the
 warned removals:
@@ -158,24 +170,29 @@ Attribute map
      - The particles ``family_base`` was split from (e.g. ``"de la"``)
    * - ``string_format``
      - ``render(spec)``
-     - A per-call argument now, not stored config — see :doc:`customize`
+     - A per-call argument now, not stored config — see
+       :ref:`rendering-arguments`
    * - ``initials_format``, ``initials_delimiter``, ``initials_separator``
      - ``initials(spec, delimiter, separator)``
      - Same three knobs, now call-site arguments to
-       :meth:`~nameparser.ParsedName.initials`
+       :meth:`~nameparser.ParsedName.initials` — see
+       :ref:`rendering-arguments`
    * - ``suffix_delimiter``
      - ``Policy(extra_suffix_delimiters=frozenset({...}))``
-     - Moves from a ``HumanName``/``Constants`` scalar to a ``Policy``
-       set field, so more than one custom delimiter can be active at
-       once. It is the *set* that moved, not just the name: passing the
-       old scalar through (``extra_suffix_delimiters=" - "``) raises,
-       rather than silently registering three one-character delimiters
+     - Now a ``Policy`` set field, so several delimiters can be
+       active; passing the old scalar through raises
+       (:ref:`suffix-delimiters`)
    * - ``capitalize(force=...)``
      - ``capitalized(force=...)``
      - :meth:`~nameparser.ParsedName.capitalized` returns a new value
        rather than mutating in place. Its optional first argument takes
        a :class:`~nameparser.Lexicon`, if you need custom
        capitalization exceptions
+
+``suffix_delimiter`` moved as a *set*, not just under a new name:
+passing the old scalar through (``extra_suffix_delimiters=" - "``)
+raises, rather than silently registering three one-character
+delimiters.
 
 Side by side:
 
@@ -195,6 +212,9 @@ Side by side:
 
 Config map
 ----------
+
+Vocabulary sets → Lexicon
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``CONSTANTS``' vocabulary sets map onto :class:`~nameparser.Lexicon`
 fields:
@@ -244,6 +264,27 @@ Some ``Lexicon`` fields have no ``CONSTANTS`` attribute at all —
 ``conjunctions_ambiguous``, ``maiden_markers``, ``surnames`` and
 ``honorific_tails`` — so they are reached through the 2.0 API only.
 
+.. warning::
+
+   ``non_first_name_prefixes`` and ``particles_ambiguous`` mark
+   **complementary** sets, not the same set under a new name.
+   ``non_first_name_prefixes`` lists particles that are *never* read as
+   a given name; ``particles_ambiguous`` lists the particles that
+   *may* be read as one. The same holds for the config constant behind
+   it: ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
+   ``prefixes.NON_FIRST_NAME_PREFIXES``) marks the never-given set, so
+   it is the complement of ``particles_ambiguous`` too, however much
+   the 2.2 names now suggest otherwise. Translating a customization
+   means flipping
+   the set: ``particles_ambiguous = lexicon.particles -
+   constants.non_first_name_prefixes``. Copying
+   ``non_first_name_prefixes`` straight into ``particles_ambiguous``
+   silently inverts which particles are allowed to double as a given
+   name.
+
+Renamed word lists (2.2)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 The vocabulary that feeds both columns lives in ``nameparser.config``,
 and in 2.2 its module and constant names moved to the vocabulary the
 ``Lexicon`` column speaks — particles, bound given names, given-name
@@ -281,7 +322,7 @@ same *never a given name* meaning. It is **not** the constant behind
 though the two now sound as though they belong together. Pairing this
 table's third row with the field-mapping table above and concluding
 that ``NON_GIVEN_NAME_PARTICLES`` is what ``particles_ambiguous``
-holds is exactly the inversion the flip warning below exists to
+holds is exactly the inversion the flip warning above exists to
 prevent.
 
 Every row still resolves, and the old names are removed in 3.0. The two
@@ -312,6 +353,9 @@ so ``constants.prefixes``,
 ``constants.non_first_name_prefixes``, ``constants.bound_first_names``,
 ``constants.first_name_titles`` and ``constants.suffix_not_acronyms``
 keep their 1.x spelling for as long as the facade exists.
+
+Default word lists are frozen
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Every vocabulary *set* in ``nameparser.config`` is also a ``frozenset``
 as of 2.2 — the renamed ones and the rest. Every set, that is; the one
@@ -378,6 +422,9 @@ deprecated along with the rest of the v1 facade and goes away in 3.0.
 Prefer a private ``Constants`` in new code. See :doc:`customize` for
 the full set of knobs on each.
 
+Behavior and render settings → Policy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Behavior and render scalars map onto :class:`~nameparser.Policy` (or a
 rendering argument, where the 2.0 equivalent isn't config at all):
 
@@ -402,18 +449,22 @@ rendering argument, where the 2.0 equivalent isn't config at all):
      - Was a dict of named sentinels; now a plain ``frozenset`` of
        ``(open, close)`` pairs. Both APIs gained the #273 typographic
        defaults (smart quotes, guillemets, CJK brackets, ...) in 2.0
+       (:ref:`brackets`)
    * - ``maiden_delimiters``
      - ``Policy.maiden_delimiters``
      - Same shape change as ``nickname_delimiters``. Precedence
        differs: in the 2.0 API a pair listed here wins over
        ``nickname_delimiters``; through the 1.x facade a pair in both
-       buckets keeps parsing as ``nickname`` (v1 behavior)
+       buckets keeps parsing as ``nickname`` (v1 behavior;
+       :ref:`brackets`)
    * - ``regexes.bidi``
      - ``Policy.strip_bidi``
      - ``regexes.bidi = False`` becomes ``Policy(strip_bidi=False)``
+       (:ref:`strip-flags`)
    * - ``regexes.emoji``
      - ``Policy.strip_emoji``
      - ``regexes.emoji = False`` becomes ``Policy(strip_emoji=False)``
+       (:ref:`strip-flags`)
    * - ``force_mixed_case_capitalization``
      - ``capitalized(force=True)``
      - The stored default is gone; pass ``force`` at the call site.
@@ -428,24 +479,6 @@ Every other ``regexes.*`` entry (``word``, ``spaces``, and the rest of
 the compiled-pattern proxy) has no 2.0 replacement — parsing behavior
 is configured entirely through named ``Policy`` fields now, not by
 handing the parser a regex.
-
-.. warning::
-
-   ``non_first_name_prefixes`` and ``particles_ambiguous`` mark
-   **complementary** sets, not the same set under a new name.
-   ``non_first_name_prefixes`` lists particles that are *never* read as
-   a given name; ``particles_ambiguous`` lists the particles that
-   *may* be read as one. The same holds for the config constant behind
-   it: ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
-   ``prefixes.NON_FIRST_NAME_PREFIXES``) marks the never-given set, so
-   it is the complement of ``particles_ambiguous`` too, however much
-   the 2.2 names now suggest otherwise. Translating a customization
-   means flipping
-   the set: ``particles_ambiguous = lexicon.particles -
-   constants.non_first_name_prefixes``. Copying
-   ``non_first_name_prefixes`` straight into ``particles_ambiguous``
-   silently inverts which particles are allowed to double as a given
-   name.
 
 Comparison
 ----------
@@ -481,8 +514,12 @@ Behavior changes
 
 Beyond the API surface mapped above, a handful of parse *outputs*
 differ between 1.4 and 2.x for specific input shapes. The full list,
-with reasoning, is in each 2.x section of :doc:`release_log`. These
-are the shapes worth grepping your own fixtures for, because a
+with reasoning, is in each 2.x section of :doc:`release_log`.
+
+Changed in 2.0
+~~~~~~~~~~~~~~
+
+These are the shapes worth grepping your own fixtures for, because a
 recognized suffix or title now stays in its own field instead of
 landing in ``first``/``last``:
 
@@ -501,11 +538,14 @@ custom suffix delimiter configured, a no-space delimiter group renders
 whole (``"RN/CRNA"``) where 1.x split it (``"RN, CRNA"``) — the role
 assignment is identical, only the rendered string differs.
 
+East Asian names (2.1)
+~~~~~~~~~~~~~~~~~~~~~~
+
 2.1 adds three more, and unlike most of the 2.0 API these do reach
 ``HumanName``: a name written in East Asian script is read
 family-first, an unspaced Korean name is split into surname and given
 name, and the katakana middle dot separates tokens the way a space
-does.
+does (:ref:`east-asian-names` explains the conventions).
 
 .. doctest::
 
@@ -586,8 +626,12 @@ too — the nickname in ``"山田 太郎 (マイケル・ジャクソン)"`` was
 ``"マイケル・ジャクソン"`` under 1.4 and is ``"マイケル ジャクソン"``
 now.
 
+Turning the East Asian readings off
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ``Constants`` has no switch for any of this — the v1 configuration
-surface is frozen for 2.x — so the way out is the 2.0 API:
+surface is frozen for 2.x — so the way out is the 2.0 API
+(:ref:`east-asian-defaults`):
 ``Parser(policy=Policy(script_orders=(), segment_scripts=frozenset()))``
 restores 1.4's reading of every shape above that turns on order or
 splitting. The middle dots are the exception: both the katakana dot
@@ -598,6 +642,9 @@ unconditional) are decided
 in tokenization rather than by policy, so a name written with either
 still divides at the dot, and still renders with a space, whatever
 those two fields are set to.
+
+Changed in 2.2–2.4
+~~~~~~~~~~~~~~~~~~
 
 Later releases moved more 1.4 readings, and these reach ``HumanName``
 as well. The release log's 2.2, 2.3 and 2.4 sections carry the
