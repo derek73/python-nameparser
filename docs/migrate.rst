@@ -272,7 +272,8 @@ Some ``Lexicon`` fields have no ``CONSTANTS`` attribute at all —
    ``non_first_name_prefixes`` lists particles that are *never* read as
    a given name; ``particles_ambiguous`` lists the particles that
    *may* be read as one. The same holds for the config constant behind
-   it (renamed in 2.2; see `Renamed word lists (2.2)`_ below): ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
+   it (renamed in 2.2; see `Renamed word lists (2.2)`_ below):
+   ``particles.NON_GIVEN_NAME_PARTICLES`` (1.x
    ``prefixes.NON_FIRST_NAME_PREFIXES``) marks the never-given set, so
    it is the complement of ``particles_ambiguous`` too, however much
    the 2.2 names now suggest otherwise. Translating a customization
@@ -653,9 +654,12 @@ log's 2.3 and 2.4 sections carry the reasoning; these are the shapes to
 grep your fixtures for, with what 1.4 read:
 
 - ``"Her Majesty Queen Elizabeth"``, ``"Prince Harry"`` (2.3) — a lone
-  name after a given-name title (Queen, Prince, Princess) is the given
-  name: 1.4 read last ``Elizabeth`` and ``Harry``. Other titles still
-  leave it the family name (``"Dr Harry"``).
+  name after a title that addresses by given name is the given name:
+  1.4 read last ``Elizabeth`` and ``Harry``. 2.3 matched a run of titles
+  by its last one (``Her Majesty Queen``, ``Rev Sir``) and added titles
+  that address that way (``Prince``, ``Princess``, ``Swami``, ``Guru``
+  and others). Other titles still leave the name the family name
+  (``"Dr Harry"``).
 - ``"Dr King Jr"`` (2.3) — 1.4 read title ``Dr King``, last ``Jr``.
 - ``"John Smith Prof."`` (2.3) — a trailing period-marked title: 1.4
   read last ``Prof.``, middle ``Smith``.

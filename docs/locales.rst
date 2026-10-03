@@ -20,8 +20,8 @@ conjunctions and name particles written in them are recognized out of
 the box, as far as each script's vocabulary reaches: each of those
 scripts but katakana ships honorifics, while conjunctions and particles
 reach fewer — Cyrillic and Greek ship conjunctions and no particle,
-Hebrew particles and no conjunction, and Devanagari, Bengali and the
-East Asian scripts honorifics only.
+Hebrew particles and no conjunction, and Devanagari, Bengali, Han,
+Hangul and hiragana honorifics only.
 
 .. doctest::
 
@@ -215,8 +215,9 @@ rotations (``ru`` and ``tr_az``) instead of competing with them. Under
 ``FAMILY_FIRST`` the two never disagree on a name the rule matches: that
 order already reads ``"Сидоров Иван Петрович"`` as family ``Сидоров``,
 so folding the pack onto a base built with it adds nothing. Under
-``FAMILY_FIRST_GIVEN_LAST`` the declared order wins, and the
-patronymic, the last word, reads as the given name.
+``FAMILY_FIRST_GIVEN_LAST`` the declared order wins, and the last
+word — the patronymic, or a separate ``oglu``/``qizi`` marker — reads
+as the given name.
 
 .. _segmenter-contract:
 
@@ -241,9 +242,9 @@ segmenter may be offered a token of any activated script, not only the
 ones its own pack turned on. It is asked only where the surname list
 could not divide an unspaced token, and not where the name is already
 divided — by a second word in an East Asian script (the nakaguro ・
-counts as a space), a family comma or a 间隔号. A Latin word beside the
-token (``"Dr. 高橋一郎"``) divides nothing, so the segmenter is still
-asked. Recognize the text
+counts as a space), a family comma or a 间隔号. A word in any other
+script beside the token — Latin (``"Dr. 高橋一郎"``), Cyrillic, even
+halfwidth katakana — divides nothing, so the segmenter is still asked. Recognize the text
 you can actually read and return ``None`` for the rest, rather than
 answering for a script you never meant to handle. A segmenter is your
 code, so its failures do not stay inside the parse: its own exceptions
