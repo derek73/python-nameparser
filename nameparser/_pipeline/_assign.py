@@ -76,10 +76,10 @@ from nameparser._pipeline._vocab import (
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
-    _NOT_A_RUN_START, is_lone_never_given_particle, is_suffix_piece,
-    is_title_piece, leading_titles, listed_lean, peel_walk,
-    segment_suffix_reading, starts_a_credential_run, tail_reading,
-    trailing_titles,
+    _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
+    is_suffix_piece, is_title_piece, is_wholly_particle, leading_titles,
+    listed_lean, peel_walk, segment_suffix_reading,
+    starts_a_credential_run, tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
@@ -92,6 +92,17 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
                role: Role) -> None:
     for i in piece:
         tokens[i] = copy_with(tokens[i], role=role)
+
+
+def _absorbed(piece: Sequence[int],
+              tokens: Sequence[WorkToken]) -> PendingAmbiguity:
+    """rules.md#S2's report for a name word #602's run absorbs, one
+    spelling for the no-comma and the given-part run."""
+    text = " ".join(tokens[i].text for i in piece)
+    return PendingAmbiguity(
+        AmbiguityKind.SUFFIX_OR_NAME,
+        f"{text!r} follows a credential, so it reads as part of the "
+        f"suffix run; it may be a name word", tuple(piece))
 
 
 #: Tags that say the word's own reading was claimed before position
@@ -318,12 +329,7 @@ def _assign_main(seg_idx: int, state: ParseState,
     for piece_idx in peeled.run_titles:
         _set_roles(tokens, pieces[piece_idx], Role.TITLE)
     for piece in peeled.absorbed:
-        text = " ".join(tokens[i].text for i in piece)
-        ambiguities.append(PendingAmbiguity(
-            AmbiguityKind.SUFFIX_OR_NAME,
-            f"{text!r} follows a credential, so it reads as part of the "
-            f"suffix run; it may be a name word",
-            piece))
+        ambiguities.append(_absorbed(piece, tokens))
     if peeled.numeral is not None:
         # a trailing single letter is a name part unless it happens
         # to be a roman numeral -- and V/X/I are ordinary middle
@@ -915,13 +921,8 @@ def assign(state: ParseState) -> ParseState:
                             # not merely a stray report
                             # (decisions.md#S2, 2026-09-18).
                             #
-                            # A FUNCTION since #533, not two conditions
-                            # written to match: the maiden walk's
-                            # release check asked this same question
-                            # until #601 retired it, and the drift
-                            # would have been silent -- each site's
-                            # own tests would have gone on passing
-                            # (mechanisms.md
+                            # A FUNCTION since #533 rather than a
+                            # condition written here (mechanisms.md
                             # #ONE-PREDICATE-PER-QUESTION). The call
                             # costs one frame PER MEMBER asked at this
                             # slot, not one per name: against
@@ -1092,34 +1093,37 @@ def assign(state: ParseState) -> ParseState:
             # of the ambiguous credential class (`do`): read as the
             # credential, it is the word P6's #531 exception keeps out
             # of the attachment, so the run and P6 agree on it.
-            p6_tail: set[int] = set()
+            # `pieces[p6_lo:p6_hi]` is that tail: back past the run
+            # words behind it, then over the particles, stopping at a
+            # class member
+            p6_lo = p6_hi = len(pieces)
             if sticky_from < len(pieces):
-                def _wholly_particle(q: int) -> bool:
-                    return all("particle" in tokens[i].tags
-                               for i in pieces[q])
-                q = len(pieces)
-                while q > sticky_from and not _wholly_particle(q - 1):
-                    q -= 1
-                while (q > sticky_from and _wholly_particle(q - 1)
-                       and not (len(pieces[q - 1]) == 1
-                                and not tokens[pieces[q - 1][0]].tags
+                while (p6_hi > sticky_from
+                       and not is_wholly_particle(pieces[p6_hi - 1],
+                                                  tokens)):
+                    p6_hi -= 1
+                p6_lo = p6_hi
+                while (p6_lo > sticky_from
+                       and is_wholly_particle(pieces[p6_lo - 1], tokens)
+                       and not (len(pieces[p6_lo - 1]) == 1
+                                and not tokens[pieces[p6_lo - 1][0]].tags
                                 .isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS))):
-                    q -= 1
-                    p6_tail.add(q)
+                    p6_lo -= 1
             for m in range(n + 1, len(pieces)):
                 if m in titled_idx:
                     continue
                 suffix_here = (reads_as_a_suffix(m, titled_idx)
                                if titled_idx else m not in walkable)
-                if m >= sticky_from and m not in p6_tail:
+                if m >= sticky_from and not p6_lo <= m < p6_hi:
                     # inside the run: a title word reads as a title,
                     # every other word as a suffix, and a word the walk
                     # would have kept as a name is reported, here where
                     # the run absorbs it
                     if (m > sticky_from
-                            and is_title_piece(pieces[m], ptags[m], tokens)
                             and not is_suffix_piece(pieces[m], ptags[m],
-                                                    tokens)):
+                                                    tokens)
+                            and is_title_piece(pieces[m], ptags[m],
+                                               tokens)):
                         _set_roles(tokens, pieces[m], Role.TITLE)
                         continue
                     piece = pieces[m]
@@ -1134,15 +1138,9 @@ def assign(state: ParseState) -> ParseState:
                             f"{tokens[piece[0]].text!r} ending the given "
                             f"part is also an ordinary name word; read "
                             f"as a credential", (piece[0],)))
-                    elif not suffix_here and any(
-                            ch.isalnum() for i in piece
-                            for ch in tokens[i].text):
-                        text = " ".join(tokens[i].text for i in piece)
-                        ambiguities.append(PendingAmbiguity(
-                            AmbiguityKind.SUFFIX_OR_NAME,
-                            f"{text!r} follows a credential, so it reads "
-                            f"as part of the suffix run; it may be a "
-                            f"name word", tuple(piece)))
+                    elif not suffix_here and has_name_content(piece,
+                                                              tokens):
+                        ambiguities.append(_absorbed(piece, tokens))
                     _set_roles(tokens, piece, Role.SUFFIX)
                     continue
                 _set_roles(tokens, pieces[m],

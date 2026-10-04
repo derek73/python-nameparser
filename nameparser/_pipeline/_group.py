@@ -70,17 +70,16 @@ from nameparser._types import AmbiguityKind, Role
 
 Piece = list[int]
 #: What the marker pass took out of a segment: the marker's TOKEN
-#: indices (more than one where the entry is a phrase, 'z domu'), the
-#: maiden-name pieces, themselves token indices, to take Role.MAIDEN,
-#: and the trailing run the take consumed with the role each piece of
-#: it takes (#601). `_group_segment` produces it.
-MaidenTake = tuple[Piece, list[Piece], list[tuple[Piece, Role]]]
+#: indices (more than one where the entry is a phrase, 'z domu'), and
+#: every other piece it took with the role that piece takes -- the
+#: maiden name's Role.MAIDEN, and the trailing run's SUFFIX or TITLE
+#: (#601). `_group_segment` produces it.
+MaidenTake = tuple[Piece, list[tuple[Piece, Role]]]
 #: What `_maiden_take` answers with, one index space further out: PIECE
-#: indices into its own `pieces` argument -- the marker's pieces, the
-#: maiden name's, and the consumed run's. `_group_segment` resolves
+#: indices into its own `pieces` argument. `_group_segment` resolves
 #: them to the token indices MaidenTake declares, which is the only
 #: reason the two are different types rather than one name used twice.
-MaidenIndices = tuple[list[int], list[int], list[tuple[int, Role]]]
+MaidenIndices = tuple[list[int], list[tuple[int, Role]]]
 
 
 class ClauseSite(IntEnum):
@@ -227,6 +226,10 @@ def _marker_run_pieces(pieces: Sequence[Sequence[int]],
         tokens[pieces[k][0]].tags for k in range(m + 1, len(pieces)))
 
 
+#: the tags `_clause_tail_word` admits a lone word on
+_CLAUSE_TAIL_TAGS = _AMBIGUOUS_CREDENTIAL_TAGS | {"vocab:suffix"}
+
+
 # rules.md#M2: "It takes them up to the trailing run of post-nominals
 # and titles that the end of the name reads as if the clause were not
 # written" (#601). A word that may belong to that run -- the view
@@ -245,8 +248,9 @@ def _clause_tail_word(piece: Sequence[int], ptags: Set[str],
     if ("suffix" in ptags or is_suffix_piece(piece, ptags, tokens)
             or is_trailing_title_word(piece, ptags, tokens)):
         return True
-    return (len(piece) == 1 and not tokens[piece[0]].tags.isdisjoint(
-        _AMBIGUOUS_CREDENTIAL_TAGS | {"vocab:suffix"}))
+    return (len(piece) == 1
+            and not tokens[piece[0]].tags.isdisjoint(_CLAUSE_TAIL_TAGS))
+
 
 
 def _maiden_take(pieces: Sequence[Sequence[int]],
@@ -258,8 +262,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                  ) -> MaidenIndices | None:
     """The PIECE indices the marker pass removes, split the way
     MaidenIndices declares them: the marker's pieces (one, or several
-    for a phrase entry like 'z domu'), the maiden name's, and the
-    trailing run's with the role each takes. None where the marker is
+    for a phrase entry like 'z domu'), then the maiden name's and the
+    trailing run's, each with the role it takes. None where the marker is
     an ordinary word. Piece indices into `pieces`, not the TOKEN
     indices `_group_segment` builds out of them.
 
@@ -284,8 +288,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
       at the first one and hands the rest back unbound.
     * THE RUN IS BOUND. Where a trailing rule reads the part, the take
       consumes the run and returns the role the reading gave each
-      piece, so no join below this pass can reach into it -- which is
-      what the release check and its join model existed to prevent.
+      piece, so no join below this pass can reach into it.
 
     Computed before any join (the Ph. D. merge aside), as the marker
     pass always has been (#420): the joins see a name without the
@@ -317,7 +320,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                     if "suffix" in ptags[j]
                     or is_suffix_piece(pieces[j], ptags[j], tokens)),
                    len(pieces))
-        return list(range(m, lo)), list(range(lo, end)), []
+        return list(range(m, lo)), [(j, Role.MAIDEN)
+                                    for j in range(lo, end)]
     if site is not ClauseSite.TRAILING:
         assert_never(site)
     # the last piece is a candidate on the numeral fork's own SHAPE test
@@ -331,35 +335,46 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                     tokens[pieces[c - 1][0]].text,
                     tokens[pieces[c - 2][0]].text))):
         c -= 1
+    # the tag test is the predicate's own necessary half, inline so a
+    # name word in the clause pays no frame
     c = next((j for j in range(lo + 1, c)
-              if starts_a_credential_run(pieces[j], ptags[j], tokens)), c)
-    left = list(range(m)) + list(range(c, len(pieces)))
-    view = [pieces[i] for i in left]
-    vtags = [ptags[i] for i in left]
-    vrest, vchained, vpeel = tail_reading(
-        peel_walk(leading_titles(view, vtags, tokens), vtags),
-        view, vtags, tokens, one_case)
-    titles = set(vchained) | set(vpeel.run_titles)
-    in_run = titles | set(vrest[vpeel.names:]) | {
-        q for q in range(m, len(view)) if "suffix" in vtags[q]}
-    e = len(view)
-    while e - 1 >= m and (e - 1) in in_run:
-        e -= 1
-    end = c + (e - m)
-    released = [(j, Role.TITLE if m + (j - c) in titles else Role.SUFFIX)
-                for j in range(end, len(pieces))]
-    # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at the site
-    # that takes the branch, not where an ambiguous tag sits" -- the
-    # take consumed the run, so the forks the reading called on it are
-    # reported here, where assign will never see them
-    consumed = {i for j in range(end, len(pieces)) for i in pieces[j]}
-    for piece in (*vpeel.picks, *vpeel.absorbed,
-                  *(() if vpeel.numeral is None else (vpeel.numeral,))):
-        if piece[0] in consumed:
-            ambiguities.append(PendingAmbiguity(
-                AmbiguityKind.SUFFIX_OR_NAME,
-                f"{tokens[piece[0]].text!r} after the maiden name reads "
-                f"as a suffix; it may be a name word", tuple(piece)))
+              if ("suffix" in ptags[j]
+                  or "vocab:suffix" in tokens[pieces[j][0]].tags)
+              and starts_a_credential_run(pieces[j], ptags[j], tokens)), c)
+    end = len(pieces)
+    released: list[tuple[int, Role]] = []
+    # nothing behind the clause that a trailing rule could take: the
+    # view would be the head alone, and the whole rest is the clause
+    if c < len(pieces):
+        left = list(range(m)) + list(range(c, len(pieces)))
+        view = [pieces[i] for i in left]
+        vtags = [ptags[i] for i in left]
+        vrest, vchained, vpeel = tail_reading(
+            peel_walk(leading_titles(view, vtags, tokens), vtags),
+            view, vtags, tokens, one_case)
+        titles = set(vchained) | set(vpeel.run_titles)
+        in_run = titles | set(vrest[vpeel.names:]) | {
+            q for q in range(m, len(view)) if "suffix" in vtags[q]}
+        e = len(view)
+        while e - 1 >= m and (e - 1) in in_run:
+            e -= 1
+        end = c + (e - m)
+        released = [(j, Role.TITLE if m + (j - c) in titles
+                     else Role.SUFFIX) for j in range(end, len(pieces))]
+        # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at the
+        # site that takes the branch, not where an ambiguous tag sits"
+        # -- the take consumed the run, so the forks the reading called
+        # on it are reported here, where assign will never see them
+        consumed = {i for j in range(end, len(pieces)) for i in pieces[j]}
+        for piece in (*vpeel.picks, *vpeel.absorbed,
+                      *(() if vpeel.numeral is None
+                        else (vpeel.numeral,))):
+            if piece[0] in consumed:
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.SUFFIX_OR_NAME,
+                    f"{tokens[piece[0]].text!r} after the maiden name "
+                    f"reads as a suffix; it may be a name word",
+                    tuple(piece)))
     # ...and the member the clause KEEPS as its last word: the reading
     # left it a name word, which is a fork too
     last = pieces[end - 1]
@@ -370,7 +385,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"{word.text!r} ending the maiden name is also a "
             f"post-nominal; the maiden marker's clause keeps it rather "
             f"than reading it as one", tuple(last)))
-    return list(range(m, lo)), list(range(lo, end)), released
+    return (list(range(m, lo)),
+            [(j, Role.MAIDEN) for j in range(lo, end)] + released)
 
 
 #: What `_between_name_words` reads instead of walking: two arrays over
@@ -430,8 +446,7 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
 
     Called only where a generational connective was found in the
     segment (the `frozen` loop), so no ordinary name pays for it at
-    all. A maiden clause's walk was a second caller until #601 retired
-    the clause's link exception.
+    all.
 
     Dropping either pass's `not` fails
     test_a_connective_piece_counts_toward_the_carve_outs_total
@@ -600,11 +615,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # list) suppresses reporting -- see group() for when that applies.
     if ambiguities is None:
         ambiguities = []
-    # The maiden take reports on this same channel. It had one of its
-    # own until #601, so that its reports survived the suppression
-    # group() applies after a family comma and in a tail segment; a
-    # marker counts in neither of those now, and the take reports only
-    # at the TRAILING site, which group() never suppresses.
+    # The maiden take reports on this same channel: it reports only at
+    # the TRAILING site, which group() never suppresses.
 
     def title(k: int) -> bool:
         return is_title_piece(pieces[k], ptags[k], tokens)
@@ -738,12 +750,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     take = _maiden_take(pieces, ptags, tokens, one_case,
                         site, ambiguities)
     if take is not None:
-        marker_ks, maiden_ks, released = take
+        marker_ks, removed = take
         taken = ([i for k in marker_ks for i in pieces[k]],
-                 [pieces[k] for k in maiden_ks],
-                 [(pieces[k], role) for k, role in released])
-        for k in reversed(marker_ks + maiden_ks
-                          + [k for k, _ in released]):
+                 [(pieces[k], role) for k, role in removed])
+        for k in reversed(marker_ks + [k for k, _ in removed]):
             del pieces[k]
             del ptags[k]
 
@@ -1386,15 +1396,12 @@ def group(state: ParseState) -> ParseState:
             # MAIDEN (#274); which pieces those are was settled in
             # _group_segment, before the joins
             if taken is not None:
-                marker_piece, maiden_pieces, released_pieces = taken
+                marker_piece, removed_pieces = taken
                 dropped.extend(marker_piece)
-                for piece in maiden_pieces:
-                    for i in piece:
-                        tokens[i] = copy_with(
-                            tokens[i], role=Role.MAIDEN)
-                # the trailing run the take consumed, with the roles
-                # the clause-free name's reading gave it (#601)
-                for piece, role in released_pieces:
+                # the maiden name, and the trailing run the take
+                # consumed with the roles the clause-free name's
+                # reading gave it (#601)
+                for piece, role in removed_pieces:
                     for i in piece:
                         tokens[i] = copy_with(tokens[i], role=role)
         # Group used to decide the suffix ENTRY, marking a continuation
