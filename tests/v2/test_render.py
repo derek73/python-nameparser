@@ -1352,9 +1352,8 @@ def test_a_caller_particle_mask_outranks_the_particle_lowercase() -> None:
     2026-10-04): 1.4.0 through 2.3.0 kept a particle lowercase whatever
     the map held. The control is the same name with no entry. Both
     surfaces."""
-    default = Lexicon.default()
-    lex = dataclasses.replace(default, capitalization_exceptions=tuple(
-        default.capitalization_exceptions) + (("van", "Van"),))
+    lex = Lexicon.default() | Lexicon(
+        capitalization_exceptions=(("van", "Van"),))
     assert str(parse("ludwig van beethoven").capitalized()) == \
         "Ludwig van Beethoven"
     assert str(parse("ludwig van beethoven").capitalized(lex)) == \

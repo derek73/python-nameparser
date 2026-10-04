@@ -3292,8 +3292,10 @@ def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
 # initials and case repair, and the v1 facade's initials and its
 # last-name split. The grid is the eight words below, two and three at
 # a time, every comma position, each name holding 'Ó.' and run as
-# written, upper-cased and lower-cased: 537 texts, about 0.7s
-# (measured 2026-10-04, py3.11).
+# written, upper-cased and lower-cased: 537 texts. One walk of both
+# sides is about 0.75s; the 'Q.' side is walked once per lexicon and
+# shared, so the invariant and its four-site control together cost
+# about 3s (measured 2026-10-04, py3.11).
 _P7_WORDS = ('Ó.', 'de', 'Pérez', 'Juan', 'MA', 'Ed', 'DO', 'Jr.')
 
 
@@ -3322,11 +3324,22 @@ def _p7_views(text: str, lexicon: Lexicon) -> str:
     return str(out)
 
 
+@functools.cache
+def _p7_reference(lexicon: Lexicon) -> dict[str, str]:
+    """The 'Q.' side of the comparison, mapped back to Ó: walked once
+    per lexicon and shared. No veto site can move it -- each asks the
+    helper only after a particle-membership hit, and no particle of the
+    grid is a one-letter word but 'ó' -- so the site control's patch
+    leaves it as it is."""
+    return {text: _p7_views(text.replace('Ó.', 'Q.'), lexicon)
+            .replace('Q', 'Ó').replace('q', 'ó') for text in _p7_texts()}
+
+
 def _p7_disagreements(lexicon: Lexicon | None = None) -> list[str]:
     lexicon = lexicon or Lexicon.default()
+    reference = _p7_reference(lexicon)
     return [text for text in _p7_texts()
-            if _p7_views(text.replace('Ó.', 'Q.'), lexicon)
-            .replace('Q', 'Ó').replace('q', 'ó') != _p7_views(text, lexicon)]
+            if _p7_views(text, lexicon) != reference[text]]
 
 
 def test_a_one_letter_particle_with_its_period_reads_as_any_initial() -> None:
@@ -3336,7 +3349,7 @@ def test_a_one_letter_particle_with_its_period_reads_as_any_initial() -> None:
 #: The recorded negative control: how many grid texts disagree with the
 #: veto removed from ONE site, measured 2026-10-04. Every site moves
 #: some, so none is decoration. _render's is measured without the
-#: Irish case masks, as for a caller's one-letter particle that has
+#: particle case masks, as for a caller's one-letter particle that has
 #: none: with the shipped 'ó' mask the repair takes the mask before
 #: the particle arm is asked (rules.md#R4), so the default vocabulary
 #: alone cannot see that veto. segment's credential-run walk also
@@ -3352,20 +3365,22 @@ _P7_SITE_EFFECT = {
 }
 
 
-def _without_irish_masks() -> Lexicon:
+def _without_particle_masks() -> Lexicon:
     default = Lexicon.default()
     return dataclasses.replace(default, capitalization_exceptions=tuple(
         (key, mask) for key, mask in default.capitalization_exceptions
-        if key not in {'ó', 'ní', 'ua'}))
+        if key not in default.particles))
 
 
 @pytest.mark.parametrize("module", sorted(_P7_SITE_EFFECT))
 def test_every_one_letter_particle_veto_is_load_bearing(
         module: str, monkeypatch: pytest.MonkeyPatch) -> None:
     import importlib
-    lexicon = (_without_irish_masks() if module == "nameparser._render"
-               else None)
-    assert _p7_disagreements(lexicon) == []
+    lexicon = None
+    if module == "nameparser._render":
+        # the invariant itself, on the lexicon only this case walks
+        lexicon = _without_particle_masks()
+        assert _p7_disagreements(lexicon) == []
     monkeypatch.setattr(importlib.import_module(module),
                         "_spells_an_initial", lambda n, text: False)
     assert len(_p7_disagreements(lexicon)) == _P7_SITE_EFFECT[module]

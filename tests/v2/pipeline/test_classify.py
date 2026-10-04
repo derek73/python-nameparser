@@ -752,6 +752,10 @@ def _surname_unit_sweep() -> list[str]:
         for w in getattr(lex, field):
             if " " not in w:
                 words |= {w, w.title(), w.upper()}
+    # rules.md#P7's spelling: a one-letter particle written with its
+    # period is an initial, and both copies must say so (#604)
+    words |= {w + "." for w in set(words)
+              if len(w) == 1 and w.lower() in lex.particles}
     return sorted(words)
 
 
@@ -799,3 +803,14 @@ def test_the_surname_unit_agreement_test_can_fail(
     monkeypatch.setattr(_vocab, "period_joined_vocab",
                         lambda text, lexicon: None)
     assert _surname_unit_disagreements() == _SURNAME_UNIT_CONTROL
+
+
+def test_the_surname_unit_agreement_test_sees_the_initial_veto(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # The same guard over the other half of the mirror: with
+    # `surname_unit_tags`' one-letter-initial veto switched off, the
+    # period-written particle reads as a particle there and not in
+    # classify (#604, rules.md#P7).
+    monkeypatch.setattr(_vocab, "_spells_an_initial",
+                        lambda n, text: False)
+    assert _surname_unit_disagreements() == ["Ó.", "ó."]
