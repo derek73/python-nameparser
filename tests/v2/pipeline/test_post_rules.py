@@ -1013,8 +1013,8 @@ def test_a_bare_marker_maiden_clause_does_not_part_the_run() -> None:
 
 def test_a_marker_the_policy_names_as_a_delimiter_parts_the_run() -> None:
     """Where the two sites' gates differ, and the one case that
-    reaches it. group drops a core only on a `tail` segment, through
-    `seg_cores`; this pass reads `delimiter_cores` whole and asks by
+    reaches it. group drops a core only on a `tail` segment, cutting
+    the segment there (#549); this pass reads `delimiter_cores` whole and asks by
     TEXT, so a dropped token the policy names as a delimiter parts the
     run whatever dropped it. A maiden marker the policy ALSO lists is
     the reachable case, and it parts by the policy's own declaration

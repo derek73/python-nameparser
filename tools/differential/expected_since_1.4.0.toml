@@ -4710,7 +4710,13 @@ issue = "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the su
 # the same shape as the neighbour's own reading with 'Mr.' dropped
 # from it; the tree's reading (suffix 'PhD', maiden 'Puig - i Soler')
 # is unchanged by the fix, and only the corpus name is new.
-name_regex = "^(?:Smith, John, PhD née Puig Mr\\. - i Soler|Smith, John, PhD née Puig - i Soler)$"
+# 'Smith, John, MD - née Jones Smith' joined with #549 (2026-10-03):
+# rules.md#C1's Accepted example of a marker beside a configured
+# delimiter, reaching the DEFAULT facade with the dash an ordinary
+# word again. Measured at this baseline: suffix 'MD - née Jones Smith'
+# -> 'MD -', maiden '' -> 'Jones Smith' -- the marker half of this
+# rule alone, there being no link in it.
+name_regex = "^(?:Smith, John, PhD née Puig Mr\\. - i Soler|Smith, John, PhD née Puig - i Soler|Smith, John, MD - née Jones Smith)$"
 fields = ["maiden", "suffix"]
 
 [[change]]

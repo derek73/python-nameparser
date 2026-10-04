@@ -9,8 +9,8 @@ tail tokens get role=MAIDEN; marker tokens land in dropped.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
-dropped (v1 suffix_delimiter parity, #549) -- no other Policy field. Policy.lenient_comma_suffixes left this list
-with #436: it reached here only through segment_suffix_reading, whose
+dropped (v1 suffix_delimiter parity, #549) -- no other Policy field.
+Policy.lenient_comma_suffixes left this list with #436: it reached here only through segment_suffix_reading, whose
 render consumer was this stage's one-entry join and now lives in
 post_rules. The v1 "derived titles/prefixes"
 registration becomes piece_tags entries -- per-parse state that
@@ -2034,16 +2034,29 @@ def group(state: ParseState) -> ParseState:
         # because none of them ever sees one. A segment that IS only
         # its core keeps it (v1 expand() splits within a part, never
         # erases a lone part).
+        # Accumulated in a list and frozen once per part: a tuple
+        # extended per token is quadratic in the part's length, C-level
+        # work no frame guard sees (#553's class; review of #549).
+        # Measured 2026-10-03, py3.11, 'Smith, John, ' + 'PhD ' * n +
+        # '- MD' under a ' - ' delimiter: 4.7x for n 4,000 -> 16,000 as
+        # written, the default policy's own 4.5x, where the tuple read
+        # 8.0x. No clock guard: _PREFIXED_SHAPES parses with the default
+        # policy and _POLICY_SHAPES repeats a unit with no prefix, and a
+        # tail needs both, so a row would mean a third table.
         parts: list[tuple[int, ...]] = [seg]
         if tail and cores and len(seg) > 1:
-            parts = [()]
+            parts = []
+            current: list[int] = []
             for i in seg:
                 if tokens[i].text in cores:
                     dropped.append(i)
-                    parts.append(())
+                    if current:
+                        parts.append(tuple(current))
+                    current = []
                 else:
-                    parts[-1] += (i,)
-            parts = [p for p in parts if p]
+                    current.append(i)
+            if current:
+                parts.append(tuple(current))
         pieces = []
         ptags = []
         for part in parts:

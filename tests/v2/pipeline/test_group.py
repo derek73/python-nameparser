@@ -1804,7 +1804,7 @@ def test_the_marker_is_not_the_name_word_on_the_links_left() -> None:
     assert _maiden_texts(plain) == ["i", "Soler"]
 
 
-def test_a_core_between_the_marker_and_the_first_word_is_below_lo(
+def test_a_core_straight_after_the_marker_leaves_it_nothing_to_take(
 ) -> None:
     # A delimiter core is TAIL-segment structure that group() cuts the
     # segment at before this pass (#549), so it is never a word of the
