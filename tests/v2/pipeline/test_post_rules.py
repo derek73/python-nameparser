@@ -1017,9 +1017,16 @@ def test_a_bare_marker_maiden_clause_does_not_part_the_run() -> None:
     this renders 'MD, PhD'. The bracketed twin above drops its marker
     too, so that mutant fails both; what separates the two tests is
     the role test, which sees 'Jones' in both and 'nee' in neither
-    (measured 2026-09-06)."""
-    assert _entry_tags("Smith, MD nee Jones PhD") == [
-        ("MD", False), ("PhD", True)]
+    (measured 2026-09-06).
+
+    Since #601 a bare marker counts only behind a name word, so the
+    clause stands between two post-nominals only inside #602's
+    credential run: 'Jr.' starts it and takes 'Smith' in, the marker
+    standing after that name word. The fixture was 'Smith, MD nee Jones
+    PhD' until then, a marker in the given part after a family comma,
+    which is an ordinary word now."""
+    assert _entry_tags("Jane Doe Jr. Smith nee Jones PhD") == [
+        ("Jr.", False), ("Smith", True), ("PhD", True)]
 
 
 def test_a_marker_the_policy_names_as_a_delimiter_parts_the_run() -> None:
@@ -1031,10 +1038,14 @@ def test_a_marker_the_policy_names_as_a_delimiter_parts_the_run() -> None:
     the reachable case, and it parts by the policy's own declaration
     (measured 2026-09-06)."""
     nee = Policy(extra_suffix_delimiters=frozenset({" nee "}))
-    assert _entry_tags("John Doe, MD nee Jones PhD", nee) == [
-        ("MD", False), ("PhD", False)]
-    assert _entry_tags("John Doe, MD nee Jones PhD") == [
-        ("MD", False), ("PhD", True)]
+    # the fixture puts the clause inside #602's credential run, the one
+    # place a bare clause stands between two post-nominals since #601
+    # (the bare test above says why); it was 'John Doe, MD nee Jones
+    # PhD' until then
+    assert _entry_tags("Jane Doe Jr. Smith nee Jones PhD", nee) == [
+        ("Jr.", False), ("Smith", True), ("PhD", False)]
+    assert _entry_tags("Jane Doe Jr. Smith nee Jones PhD") == [
+        ("Jr.", False), ("Smith", True), ("PhD", True)]
 
 
 def test_a_dropped_core_parts_two_entries() -> None:

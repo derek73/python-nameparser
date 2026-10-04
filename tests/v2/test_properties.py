@@ -291,14 +291,15 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: Re-recorded 2026-10-04 for #602: 1,134, every one of the 324 new
 #: members under the `nodot` policy -- a by-shape dotted member
 #: ('X.Y.Z.', 'R.A.I.' in each case) behind one of the three
-#: credential heads, 108 each. With the dotted switch off #544's
-#: anchor left it a name; the head's credential now starts a run to
-#: the end of the part (rules.md#S2), which takes it in, so the plain
-#: form reads a credential and the clause form, as before, a name. No
-#: member left the class.
-_MAIDEN_ANCHORED_HEAD_EXCEPTIONS = 1134
+#: credential heads, 108 each, which the head's credential run (#602)
+#: took in. Then EMPTIED the same day by #601, and kept at 0 rather
+#: than deleted, so a member arriving fails here: a marker behind a
+#: credential is an ordinary word now (rules.md#M2), the credential's
+#: run takes the whole clause in, and the clause form reads the member
+#: as a credential exactly as the plain form does.
+_MAIDEN_ANCHORED_HEAD_EXCEPTIONS = 0
 _MAIDEN_ANCHORED_HEAD_DIGEST = (
-    "910ba67067f265923c99112670ee66cd11fb160d2a2ba20a8935c93086493a64")
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 _MAIDEN_AGREEMENT_EXCEPTIONS = 1026
 _MAIDEN_AGREEMENT_DIGEST = (
     "4b70727a2633fea1a9c219173d48b223cc0866a5d340b69a9eb4f14fc386ae6a")
@@ -552,7 +553,13 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
     either one alone removed, 0; 0 here (measured 2026-09-28).
     """
     members = ("ba", "do", "ed", "jd", "ma", "x.y.z.", "r.a.i.")
-    heads = ("Jane Doe", "Doe, Jane", "John", "J.", "Dr.", "Jane",
+    # 'Dr.' left the heads with #601: a marker behind a lone title is
+    # an ordinary word, so its pairs compared a name holding one more
+    # word to spare against one without it (648 pairs disagreed, every
+    # one on that head, measured 2026-10-04). Every other head agrees
+    # -- the comma heads, whose marker is a word too, and the heads
+    # ending in a credential, whose run (#602) takes the clause in.
+    heads = ("Jane Doe", "Doe, Jane", "John", "J.", "Jane",
              "Jane van der Berg", "JANE DOE", "jane doe", "DOE, JANE",
              "doe, jane", "Jane Q. Doe", "Doe, Dr. Jane", "Doe, J.",
              "Smith, Jane", "Jane Doe Jr.", "Jane Doe PhD",
@@ -690,17 +697,19 @@ _TAILS = ("Ma JD", "MA JD", "MA Ma")
 def _maiden_clause_grid() -> list[tuple[str, Parser, str]]:
     """(name, parser, policy label) for the M2 release grid.
 
-    Rich enough to hold every shape the #533 review found: title-led
-    and post-nominal-led comma heads, particle heads, a bound-given
-    head, by-shape and caps-on members, two adjacent particle members,
-    mixed/ALL-CAPS/lower writing, comma and no-comma, four markers,
-    and the default policy beside each 2.4 switch.
+    Heads where a marker counts (rules.md#M2, #601): particle heads, a
+    bound-given head and pair, a title-led head, a lone name word and a
+    Vietnamese head whose surname is particle vocabulary, with by-shape
+    and caps-on members, two adjacent particle members, mixed/ALL-CAPS/
+    lower writing, a suffix-comma tail beside none, four markers, and
+    the default policy beside each 2.4 switch. Until #601 it also held
+    the #533 review's comma heads ('Doe, Prof.', 'Berg, abdul', ...),
+    where a marker is an ordinary word now; a grid of them could no
+    longer reach the take at all.
     """
-    heads = ("Jane Doe", "Doe, Jane", "Doe, Prof.", "Doe, Dr.",
-             "Jane Doe, Jr", "Jane Doe, PhD", "Doe, J.", "Doe, PhD",
-             "Berg, Jane van der", "Jane van der Berg", "Berg, abdul",
-             "abdul Berg", "J. Doe", "Doe", "Prof. Jane Doe",
-             "Doe, Jane van der", "Doe, Sir")
+    heads = ("Jane Doe", "Jane van der Berg", "abdul Berg", "J. Doe",
+             "Doe", "Prof. Jane Doe", "Jane Q. Doe", "abdul rahman",
+             "Mai Le")
     bodies = ("Smith", "Smith MA", "Smith Ma", "Smith ma", "Smith A.B.",
               "Smith X.Y.Z.", "Smith XYZ", "Smith ba", "Smith DO",
               "Smith Do", "Smith do", "Smith MA XYZ", "Smith DO DO",
@@ -771,9 +780,16 @@ def test_a_word_the_clause_gives_up_lands_in_suffix() -> None:
     other direction.
 
     The grid is the pin, and it is a grid rather than a name list so
-    that it could fail. At d97d3eb7 -- the commit this review round
-    started from -- it fails on 790 of its 8,466 parses, 290 distinct
-    names, covering every shape the review reported: 'Doe, Prof. nee
+    that it could fail. Since #601 the invariant holds by construction
+    -- the take hands the run to the suffix and title roles itself --
+    so the RECORDED NEGATIVE CONTROL is the design that construction
+    replaced: prototype variant 4 of #601 (the head rule, the run read
+    once over the name as written, and NOT bound) fails 350 of this
+    grid's 4,482 parses, 512 tokens across 122 distinct texts; this
+    tree fails none (measured 2026-10-04). The history, over the
+    pre-#601 grid of 17 heads and 8,466 parses: at d97d3eb7 -- the
+    commit the #533 review round started from -- it failed on 790 of
+    them, 290 distinct names, covering every shape the review reported: 'Doe, Prof. nee
     Smith A.B.' reading given 'A.B.' (32 parses, and 'X.Y.Z.' another
     32), 'DOE, PROF. NEE SMITH MA' reading given 'MA' (206, the
     largest class, with 'ba' at 96), 'Berg, Jane van der nee Smith
@@ -850,25 +866,22 @@ def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
 
 
 def test_a_title_the_clause_gives_up_lands_in_title() -> None:
-    """rules.md#M2's invariant for the title stop (#535): a
+    """rules.md#M2's invariant for a title in the run (#535, #601): a
     period-marked title word written after the marker ends the parse
     in the maiden name or in the title field, never in a name part.
 
-    Over heads reaching all three readers and the guards: no comma
-    (TRAILING), the given part after a family comma (GIVEN_SLOT), a
-    tail segment behind a suffix comma ('Jane Doe, PhD', NONE), a bare
-    title head (the view check), a particle head (the chain), a
-    bound-given head (P5). No head puts the clause before a family
-    comma, the other place NONE reads. It holds at e0f1a2fa too,
-    where the clause kept every title, so its control is a mutation:
-    RECORDED NEGATIVE CONTROL, re-measured 2026-09-26 after the link
-    and particle-title bodies joined: the title stop's release check
-    replaced by `if True:` fails 83 tokens across 78 of these 240
-    texts (54 across 49 of the first 160). 240 parses, about 0.03s on
-    CPython 3.11 (measured the same day).
+    Over heads where a marker counts (#601): a plain head, an initial,
+    a particle head (the chain a released title would join) and a
+    bound-given head (P5). The comma heads and the bare title head the
+    #535 version held put the marker where it is an ordinary word now,
+    so they asked nothing of a clause. RECORDED NEGATIVE CONTROL,
+    measured 2026-10-04: prototype variant 4 of #601 (the run read
+    once over the name as written, and not bound) fails 35 tokens
+    across 32 of these 120 texts; this tree none. The #535 figure,
+    over that version's 240 texts: the title stop's release check
+    replaced by `if True:` failed 83 tokens across 78 of them.
     """
-    heads = ("Jane Doe", "Doe, Jane", "Doe, Prof.", "Dr.", "J.",
-             "Jane van der Berg", "Berg, abdul", "Jane Doe, PhD")
+    heads = ("Jane Doe", "J.", "Jane van der Berg", "abdul Berg")
     bodies = ("Smith Prof.", "Smith MA Prof.", "Smith Prof. MA",
               "Smith V Prof.", "Smith Ma Prof.", "Smith Prof. Dr.",
               "Prof.", "Prof. Dr.", "Smith King.", "Smith MA do Prof.",
@@ -902,16 +915,17 @@ def test_a_title_first_word_counts_as_a_word() -> None:
     clauses cannot pass by agreeing about nothing.
 
     An invariant over two INPUTS (docs/design/AGENTS.md axis 11), so
-    it consults no rule statement. RECORDED NEGATIVE CONTROL, measured
-    2026-09-26 on a copy of this tree with the floor removed entirely
-    (`tail_reading` handed 1 in `_maiden_take`): every one of the 30
-    pairs fails, on the head check alone -- the chain takes 'King.',
-    the clause declines, and the suffixes still agree (0 of 30
-    disagree), which is why the head check is here. This replaces a
-    figure recorded for a clamp-based variant, which a later attempt
-    could not reproduce from its description.
+    it consults no rule statement. The second form puts a suffix comma
+    after the clause, where a trailing rule still reads it; until #601
+    it was a family-comma head, where the marker is an ordinary word
+    now. RECORDED NEGATIVE CONTROL, measured 2026-10-04: with the
+    first word after the marker let into the view `_maiden_take` reads
+    the run over (its two `lo + 1` bounds made `lo`), every one of the
+    30 pairs fails, on the head check alone -- the suffixes still
+    agree, which is why the head check is here. The same profile was
+    recorded on 2026-09-26 for the floor `tail_reading` then carried.
     """
-    forms = ("Jane Doe nee {} {}", "Doe, Jane nee {} {}")
+    forms = ("Jane Doe nee {} {}", "Jane Doe nee {} {}, MD")
     runs = ("ba", "MA", "V", "PhD", "MA JD")
     heads = ("King.", "Smith")
     failures = []
@@ -1128,17 +1142,34 @@ def test_no_two_ambiguities_name_the_same_token_span() -> None:
     assert not failures, (
         f"{len(failures)} parse(s) report one token twice:\n"
         + "\n".join(failures[:15]))
-    assert multi == 4320, (
+    # 4,239 since 2026-10-04 (#601/#602), from 4,320: over the member
+    # grid 2,052 multi-report parses left -- every one on the heads
+    # 'Doe, Jane van' and 'Doe, Jane van der', whose clause in the
+    # given part no longer takes, and with it the maiden report beside
+    # P6's -- and 1,965 arrived, 1,134 on 'Jane Doe Jr.', whose
+    # credential now starts a run that takes the clause in and reports
+    # what it absorbs, the rest on heads whose marker is an ordinary
+    # word now; the tails loop below adds 6.
+    assert multi == 4239, (
         f"{multi} of these parses carry more than one report, recorded "
-        f"as 4320 on 2026-09-19. A parse with one report cannot fail "
+        f"as 4239 on 2026-10-04. A parse with one report cannot fail "
         f"the check above, so this is what keeps the grid honest: move "
         f"the number deliberately, and never to 0")
-    assert both == 1944, (
+    # 2,052 since 2026-10-04 (#601/#602), from 1,944: 216 parses left,
+    # every one on a comma head whose clause in the given part no
+    # longer takes ('Doe, Jane', 'Doe, Jane van', ...), and 324
+    # arrived, on 'Dr.' and 'J.' -- where the marker is an ordinary word
+    # behind the title, or the clause's own run is read over the
+    # clause-free view -- and on 'Jane Doe Jr.', whose credential run
+    # reports what it absorbs. The run's reports moved from assign's
+    # peel to the take that consumes the run (#601), so the pair is
+    # the maiden take's member report against the run's.
+    assert both == 2052, (
         f"{both} parse(s) carry TWO suffix-or-name reports, recorded "
-        f"as 1944 on 2026-09-19. This is the pair the test is named "
-        f"for -- the maiden emitter against assign's trailing peel -- "
-        f"and it was 0 for the whole grid until the two-member tails "
-        f"were added. Never re-record it as 0")
+        f"as 2052 on 2026-10-04. This is the pair the test is named "
+        f"for -- the clause's kept member against the trailing run's "
+        f"reading -- and it was 0 for the whole grid until the "
+        f"two-member tails were added. Never re-record it as 0")
 
 
 @pytest.mark.parametrize("text", _FORK_CORPUS)

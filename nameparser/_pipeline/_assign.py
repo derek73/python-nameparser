@@ -917,11 +917,11 @@ def assign(state: ParseState) -> ParseState:
                             #
                             # A FUNCTION since #533, not two conditions
                             # written to match: the maiden walk's
-                            # second check asks this same question of
-                            # the name a take would leave, and the
-                            # drift would have been silent -- each
-                            # site's own tests would have gone on
-                            # passing (mechanisms.md
+                            # release check asked this same question
+                            # until #601 retired it, and the drift
+                            # would have been silent -- each site's
+                            # own tests would have gone on passing
+                            # (mechanisms.md
                             # #ONE-PREDICATE-PER-QUESTION). The call
                             # costs one frame PER MEMBER asked at this
                             # slot, not one per name: against
