@@ -30,7 +30,7 @@ import nameparser.config  # noqa: F401
 
 import nameparser._render as _render
 from nameparser._config_shim import CONSTANTS, Constants, _cached_parser
-from nameparser._lexicon import _normalize
+from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._parser import Parser
 from nameparser._types import (FOLDED_TAG, UNCLASSIFIED_TAG,
                                UNJOINED_CONJUNCTION_TAG, ParsedName,
@@ -485,7 +485,9 @@ class HumanName:
 
     def _is_particle(self, text: str) -> bool:
         self._resolve()
-        return _normalize(text) in self._lexicon.particles
+        n = _normalize(text)
+        return (n in self._lexicon.particles
+                and not _spells_an_initial(n, text))
 
     def _token_is_conjunction(self, tok: Token) -> bool:
         # #528: the PARSE's answer, not the vocabulary's. A token the

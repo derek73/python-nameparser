@@ -175,6 +175,31 @@ def _normalize(word: str) -> str:
         word = stripped
 
 
+# rules.md#P7: "A one-letter word written with its period is an
+# initial and not a particle"
+def _spells_an_initial(n: str, text: str) -> bool:
+    """Whether `text` is ONE letter written with its period ('Ó.',
+    'j.'), which makes it an initial whatever particle the letter also
+    spells (#604). `n` is `_normalize(text)`, folded once by the caller.
+
+    Every particle test asks this AFTER its membership hit, so a word
+    no particle set holds never pays the frame. It lives here rather
+    than in _pipeline._vocab because the two views that re-read the
+    particle vocabulary over a parsed name -- _render's case repair and
+    the facade's initials and last-name split -- must ask it too, and
+    neither may import the pipeline.
+
+    The ASCII period only, as `_vocab.is_initial` takes it: a CJK full
+    stop marks no initial ('Ó。' is the particle). The other half of
+    is_initial, the scripts that write no initials (#320), is NOT asked
+    -- its script table is _policy's, which this module may not import
+    -- so a caller's one-character particle in such a script, written
+    with a period, is vetoed where is_initial would call it no initial
+    (decisions.md#P7). No shipped particle is one character of those
+    scripts."""
+    return len(n) == 1 and text[-1] == "."
+
+
 def _fold_words(words: Iterable[str]) -> list[str]:
     """The words of a title run, folded for storage and lookup.
 

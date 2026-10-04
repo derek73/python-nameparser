@@ -3277,3 +3277,95 @@ def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
     failures, total = _comma_twin_findings(dash)
     assert total == 129
     assert not failures, "\n".join(failures)
+
+
+# A one-letter word written with its period is an initial and not a
+# particle (rules.md#P7), so a name holding 'Ó.' must read exactly as
+# the same name holding any other initial does. Two INPUTS,
+# not two views of one parse (docs/design/AGENTS.md axis 11): the rule
+# is not consulted, so the test can find the rule wrong as well as the
+# code. 'Q.' is the comparison initial because no word of the grid
+# holds a q, so mapping it back to Ó cannot touch another word.
+#
+# Every particle reader in the package is a site, and each is checked
+# by every view the comparison takes: the parse's own fields, reports,
+# initials and case repair, and the v1 facade's initials and its
+# last-name split. The grid is the eight words below, two and three at
+# a time, every comma position, each name holding 'Ó.' and run as
+# written, upper-cased and lower-cased: 537 texts, about 0.7s
+# (measured 2026-10-04, py3.11).
+_P7_WORDS = ('Ó.', 'de', 'Pérez', 'Juan', 'MA', 'Ed', 'DO', 'Jr.')
+
+
+def _p7_texts() -> list[str]:
+    texts = set()
+    for k in (2, 3):
+        for words in itertools.product(_P7_WORDS, repeat=k):
+            if 'Ó.' not in words:
+                continue
+            texts.add(' '.join(words))
+            for c in range(1, k):
+                texts.add(' '.join(words[:c]) + ', ' + ' '.join(words[c:]))
+    return sorted(texts)
+
+
+def _p7_views(text: str, lexicon: Lexicon) -> str:
+    parser = Parser(lexicon=lexicon)
+    out = []
+    for written in (text, text.upper(), text.lower()):
+        name = parser.parse(written)
+        legacy = HumanName(written)
+        out.append((name.as_dict(), [a.kind for a in name.ambiguities],
+                    name.initials(), str(name.capitalized(lexicon)),
+                    legacy.initials(), legacy.last_prefixes,
+                    legacy.last_base))
+    return str(out)
+
+
+def _p7_disagreements(lexicon: Lexicon | None = None) -> list[str]:
+    lexicon = lexicon or Lexicon.default()
+    return [text for text in _p7_texts()
+            if _p7_views(text.replace('Ó.', 'Q.'), lexicon)
+            .replace('Q', 'Ó').replace('q', 'ó') != _p7_views(text, lexicon)]
+
+
+def test_a_one_letter_particle_with_its_period_reads_as_any_initial() -> None:
+    assert _p7_disagreements() == []
+
+
+#: The recorded negative control: how many grid texts disagree with the
+#: veto removed from ONE site, measured 2026-10-04. Every site moves
+#: some, so none is decoration. _render's is measured without the
+#: Irish case masks, as for a caller's one-letter particle that has
+#: none: with the shipped 'ó' mask the repair takes the mask before
+#: the particle arm is asked (rules.md#R4), so the default vocabulary
+#: alone cannot see that veto. segment's credential-run walk also
+#: tests the particle vocabulary, and is NOT a site: an initial ends
+#: that walk before the particle test is asked, so a veto there
+#: changed nothing and was left out (decisions.md#P7 says how that was
+#: measured).
+_P7_SITE_EFFECT = {
+    "nameparser._pipeline._classify": 412,
+    "nameparser._pipeline._vocab": 21,
+    "nameparser._render": 338,
+    "nameparser._facade": 121,
+}
+
+
+def _without_irish_masks() -> Lexicon:
+    default = Lexicon.default()
+    return dataclasses.replace(default, capitalization_exceptions=tuple(
+        (key, mask) for key, mask in default.capitalization_exceptions
+        if key not in {'ó', 'ní', 'ua'}))
+
+
+@pytest.mark.parametrize("module", sorted(_P7_SITE_EFFECT))
+def test_every_one_letter_particle_veto_is_load_bearing(
+        module: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    import importlib
+    lexicon = (_without_irish_masks() if module == "nameparser._render"
+               else None)
+    assert _p7_disagreements(lexicon) == []
+    monkeypatch.setattr(importlib.import_module(module),
+                        "_spells_an_initial", lambda n, text: False)
+    assert len(_p7_disagreements(lexicon)) == _P7_SITE_EFFECT[module]

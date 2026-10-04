@@ -50,7 +50,7 @@ is what lets the fork be reported without being taken.
 from __future__ import annotations
 
 
-from nameparser._lexicon import _normalize
+from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
@@ -117,10 +117,13 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("vocab:suffix-word")
     if n in lex.suffix_acronyms_ambiguous:
         tags.add(AMBIGUOUS_ACRONYM_TAG)
-    if n in lex.particles:
+    # rules.md#P7: "A one-letter word written with its period is an
+    # initial and not a particle" -- both particle tags, so 'Ó.' is
+    # neither half of the vocabulary
+    if n in lex.particles and not _spells_an_initial(n, token.text):
         tags.add("particle")
-    if n in lex.particles_ambiguous:
-        tags.add("vocab:particle-ambiguous")
+        if n in lex.particles_ambiguous:
+            tags.add("vocab:particle-ambiguous")
     # rules.md#P3: "a single-letter connective reads as an initial
     # where the writing says so: written as a bare Latin capital in a
     # name that is not written wholly in one case, or — in a name

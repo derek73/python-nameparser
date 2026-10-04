@@ -1469,6 +1469,35 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "middle": "Q", "family": "Smith",
           "suffix": "MA"},
          ambiguities=("suffix-or-name",)),
+    # #604: the one-letter particle against the initial it spells
+    # (rules.md#P7). The period decides, in every position a particle
+    # reading could otherwise claim the letter.
+    Case("one_letter_particle_written_bare", "Juan Ó Pérez",
+         {"given": "Juan", "family": "Ó Pérez"},
+         classification="fix(#604)",
+         notes="the bare letter is the Irish particle and opens the "
+               "surname; 1.4.0 read it as a middle initial. The "
+               "contrast row for the two below"),
+    Case("one_letter_particle_with_period_is_an_initial",
+         "Juan Ó. Pérez",
+         {"given": "Juan", "middle": "Ó.", "family": "Pérez"},
+         notes="Ó. is Óscar's initial: 'ó' in the particle vocabulary "
+               "alone gave family 'Ó. Pérez', the particle match "
+               "folding the period away (#604)"),
+    Case("one_letter_particle_with_period_after_family_comma",
+         "Pérez, Juan Ó.",
+         {"given": "Juan", "middle": "Ó.", "family": "Pérez"},
+         notes="P6's site: without P7 the trailing 'particle' attached "
+               "to the family behind the comma, family 'Ó. Pérez' "
+               "(#604)"),
+    Case("ambiguous_particle_ua_leading", "Ua Buachalla",
+         {"given": "Ua", "family": "Buachalla"},
+         ambiguities=("particle-or-given",),
+         notes="ua joined the AMBIGUOUS half, not the never-given one "
+               "(#604, decisions.md#vocabulary-collisions): leading, "
+               "it keeps the given reading and reports the fork, "
+               "where never-given would have made the string "
+               "surname-only"),
     Case("titled_ambiguous_particle_does_not_chain", "Dr. Van Johnson",
          {"title": "Dr.", "given": "Van", "family": "Johnson"},
          classification="fix(#367)",

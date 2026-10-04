@@ -1307,8 +1307,13 @@ def test_a_shipped_mask_spells_its_suffix_in_either_single_case() -> None:
     them -- `john smith <key>` puts the key in the suffix role, and
     repair spells it as the mask whether it was written all lower or
     all upper, where the acronym clause alone would write it in
-    capitals. Both surfaces."""
-    pairs = tuple(Lexicon.default().capitalization_exceptions)
+    capitals. Both surfaces. The suffix keys only: since #604 the map
+    also carries particle masks, whose fork is the next test's."""
+    lexicon = Lexicon.default()
+    pairs = tuple((key, mask) for key, mask
+                  in lexicon.capitalization_exceptions
+                  if key in lexicon.suffix_acronyms
+                  or key in lexicon.suffix_words)
     assert pairs  # an empty map would make the loop vacuous
     for key, mask in pairs:
         for text in (f"john smith {key}", f"JOHN SMITH {key.upper()}"):
@@ -1318,6 +1323,47 @@ def test_a_shipped_mask_spells_its_suffix_in_either_single_case() -> None:
             hn = HumanName(text)
             hn.capitalize()
             assert hn.suffix == mask, text
+
+
+def test_a_shipped_particle_mask_outranks_the_particle_lowercase() -> None:
+    """rules.md#R4, #604: case repair writes a particle in lowercase
+    ('de la Vega') unless the vocabulary records a casing for it, as it
+    does for the Irish particles. The property every shipped particle
+    mask serves, derived from the pairs: `john <key> smith` puts the
+    key in particle position, and repair spells it as the mask from
+    either single case. The control is a particle with no mask, which
+    keeps its lowercase. Both surfaces."""
+    lexicon = Lexicon.default()
+    pairs = tuple((key, mask) for key, mask
+                  in lexicon.capitalization_exceptions
+                  if key in lexicon.particles)
+    assert pairs  # an empty selection would make the loop vacuous
+    for key, mask in pairs + (("de", "de"),):
+        for text in (f"john {key} smith", f"JOHN {key.upper()} SMITH"):
+            assert parse(text).family.lower() == f"{key} smith", text
+            assert parse(text).capitalized().family == f"{mask} Smith", text
+            hn = HumanName(text)
+            hn.capitalize()
+            assert hn.last == f"{mask} Smith", text
+
+
+def test_a_caller_particle_mask_outranks_the_particle_lowercase() -> None:
+    """rules.md#R4, #604, decided for CALLER maps too (decisions.md#R4,
+    2026-10-04): 1.4.0 through 2.3.0 kept a particle lowercase whatever
+    the map held. The control is the same name with no entry. Both
+    surfaces."""
+    default = Lexicon.default()
+    lex = dataclasses.replace(default, capitalization_exceptions=tuple(
+        default.capitalization_exceptions) + (("van", "Van"),))
+    assert str(parse("ludwig van beethoven").capitalized()) == \
+        "Ludwig van Beethoven"
+    assert str(parse("ludwig van beethoven").capitalized(lex)) == \
+        "Ludwig Van Beethoven"
+    constants = Constants()
+    constants.capitalization_exceptions["van"] = "Van"
+    hn = HumanName("ludwig van beethoven", constants=constants)
+    hn.capitalize(force=True)
+    assert str(hn) == "Ludwig Van Beethoven"
 
 
 def test_a_listed_acronym_that_is_a_name_word_gets_no_mask() -> None:
