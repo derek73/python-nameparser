@@ -5501,7 +5501,9 @@ CASES: tuple[Case, ...] = (
          classification="fix(#601)",
          ambiguities=("suffix-or-name",),
          notes="#601: a marker in the given part after a family comma is an "
-               "ordinary word (rules.md#M2). Before #601: given 'Jane', family "
+               "ordinary word (rules.md#M2). Degenerate input, pinned to "
+               "detect change rather than for a reading anyone wants "
+               "(decisions.md#M2). Before #601: given 'Jane', family "
                "'van der Berg', maiden 'Smith DO'. As pinned then: M2's "
                "invariant against P2 rather than P5. 'DO' is particle "
                "vocabulary standing behind a particle piece, so the chain "
