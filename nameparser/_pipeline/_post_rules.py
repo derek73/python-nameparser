@@ -25,9 +25,12 @@ import re
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._assign import _name_positions
-from nameparser._pipeline._pieces import is_lone_never_given_particle
+from nameparser._pipeline._pieces import (
+    is_lone_never_given_particle, particle_tail,
+)
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
+    NAME_ROLES,
+    ParseState, PendingAmbiguity, Structure,
     WorkToken, _NEVER_FLIPPED, comma_bucket, copy_with,
 )
 from nameparser._pipeline._vocab import delimiter_cores, unit_ends
@@ -50,8 +53,6 @@ _TURKIC = re.compile(
 _TURKIC_CYR = re.compile(
     r"^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$", re.I)
 
-
-_NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
 
 #: The roles that are transparent to a run of post-nominals (R1's
 #: entry pass below). These three roles render into fields other than
@@ -242,7 +243,7 @@ def _leading_name_piece(state: ParseState,
     if seg >= len(state.pieces):
         return ()
     for piece in state.pieces[seg]:
-        if any(tokens[i].role in _NAME_ROLES for i in piece):
+        if any(tokens[i].role in NAME_ROLES for i in piece):
             return piece
     return ()
 
@@ -706,40 +707,14 @@ def post_rules(state: ParseState) -> ParseState:
     # the family view reads the tag and renders these before the base.
     if state.structure is Structure.FAMILY_COMMA and len(state.pieces) > 1:
         seg = state.pieces[1]
-        # A post-nominal sits BEHIND the tussenvoegsel in this listing
-        # ("Berg, Jan van Jr."), so the run is found by walking past a
-        # trailing piece that holds no name -- but only one that is not
-        # itself particle vocabulary, since `vd` arrives suffix-roled
-        # and IS the run. Without this the same name parsed two ways on
-        # whether a comma preceded the credential.
-        end = len(seg)
-        while (end
-               and not any(tokens[i].role in _NAME_ROLES
-                           for i in seg[end - 1])
-               and not all("particle" in tokens[i].tags
-                           for i in seg[end - 1])):
-            end -= 1
-        k = end
-        # #531: a class member the given-part slot read as a
-        # credential is NOT part of the run. P6 keys on vocabulary
-        # rather than role by design, which is what gives its
-        # attachment precedence over S2 -- so assign's suffix role
-        # alone does not stand it down, verified by running #531's
-        # assign half with this condition absent ('Doe, John DO' read
-        # family 'DO Doe', the suffix role silently overridden).
-        # Narrowed to AMBIGUOUS_ACRONYM_TAG rather than to the
-        # suffix role: `vd` and `mc` are unambiguous suffix
-        # vocabulary, also particles, also suffix-roled, and the tag
-        # is what keeps them inside the run.
-        while k and all("particle" in tokens[i].tags
-                        for i in seg[k - 1]) \
-                and not (len(seg[k - 1]) == 1
-                         and tokens[seg[k - 1][0]].role is Role.SUFFIX
-                         and AMBIGUOUS_ACRONYM_TAG
-                         in tokens[seg[k - 1][0]].tags):
-            k -= 1
+        # `seg[k:end]` is the run, found by the walk assign's given-part
+        # credential run asks too (#610): past a trailing post-nominal,
+        # since one sits BEHIND the tussenvoegsel in this listing ("Berg,
+        # Jan van Jr."), and short of a class member read as the
+        # credential (#531). `particle_tail` carries both reasons.
+        k, end = particle_tail(seg, tokens)
         # GIVEN alone, which is what P6 says ("provided at least one
-        # given word remains"). Not `_NAME_ROLES`: P1's fold runs
+        # given word remains"). Not `NAME_ROLES`: P1's fold runs
         # earlier in this function and retags all of segment 1 to
         # FAMILY, so a test for "some name word remains" passes on
         # family text P1 just produced, and the rule then hoists the

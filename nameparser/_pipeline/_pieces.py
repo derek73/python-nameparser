@@ -57,7 +57,8 @@ from collections.abc import (
 from typing import NamedTuple
 
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, WorkToken,
+    AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD,
+    WorkToken,
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, Lean, ambiguous_lean, in_initialless_script,
@@ -941,13 +942,66 @@ def run_start(rest: Sequence[int], names: int,
     return names
 
 
-def is_wholly_particle(piece: Sequence[int],
-                       tokens: Sequence[WorkToken]) -> bool:
-    """Whether every token of a piece is particle vocabulary -- the
-    unit rules.md#P6 attaches after a family comma."""
-    if len(piece) == 1:
-        return "particle" in tokens[piece[0]].tags
-    return all("particle" in tokens[i].tags for i in piece)
+# rules.md#P6: "a particle ending the name attaches to that family
+# name" -- WHICH particles, asked by the attachment in post_rules and by
+# assign's given-part credential run (#602), which leaves them to it
+# (#610: the two had been two walks agreeing only by the run's roles)
+def particle_tail(seg: Sequence[Sequence[int]],
+                  tokens: Sequence[WorkToken],
+                  floor: int = 0) -> tuple[int, int]:
+    """`seg[lo:hi]`, the run of wholly-particle pieces P6 attaches: back
+    from the end past pieces that hold no name word and are not
+    themselves particles -- a post-nominal is written BEHIND the
+    particle in this listing -- then back over particle pieces,
+    stopping at a lone member of the ambiguous credential class read as
+    the credential (#531: the capitals or a degree made it one, so it
+    is not the tussenvoegsel). Neither walk passes `floor`.
+
+    The class-member stop keys on the VOCABULARY tag and not on the
+    suffix role alone, which is what gives P6's attachment precedence
+    over S2: `vd` and `mc` are unambiguous suffix vocabulary, also
+    particles, also suffix-roled, and the tag is what keeps them inside
+    the run, while the role alone would have stood the attachment down
+    for #531's member too ('Doe, John DO' read family 'DO Doe' with the
+    condition absent, verified when #531 landed). A trailing piece that
+    IS particle vocabulary ends the first walk rather than being looked
+    past, since `vd` arrives suffix-roled and is the run.
+
+    Read off ROLES, which is what lets both callers ask it: post_rules
+    after assign has placed every word, and assign before it places the
+    words of a credential run, whose roles are then still None -- no
+    name role, and a class member not yet read as anything, the run
+    being what will read it as the credential. `lo == hi` where there
+    is no such run.
+
+    The single-token tests are inline (the common piece is one token),
+    so the walk pays no frame per piece; it runs on every family-comma
+    parse."""
+    hi = len(seg)
+    while hi > floor:
+        piece = seg[hi - 1]
+        if (all("particle" in tokens[i].tags for i in piece)
+                if len(piece) > 1 else
+                "particle" in tokens[piece[0]].tags):
+            break
+        if (any(tokens[i].role in NAME_ROLES for i in piece)
+                if len(piece) > 1 else
+                tokens[piece[0]].role in NAME_ROLES):
+            break
+        hi -= 1
+    lo = hi
+    while lo > floor:
+        piece = seg[lo - 1]
+        if len(piece) == 1:
+            tok = tokens[piece[0]]
+            if "particle" not in tok.tags or (
+                    AMBIGUOUS_ACRONYM_TAG in tok.tags
+                    and tok.role in SUFFIX_OR_UNREAD):
+                break
+        elif not all("particle" in tokens[i].tags for i in piece):
+            break
+        lo -= 1
+    return lo, hi
 
 
 def has_name_content(piece: Sequence[int],
@@ -1069,6 +1123,70 @@ def is_trailing_title_word(piece: Sequence[int], ptags: Set[str],
     return (len(piece) == 1
             and _PERIOD_ABBREV.match(tokens[piece[0]].text) is not None
             and is_title_piece(piece, ptags, tokens))
+
+
+#: lone-word tags `trailing_candidates` admits on: the ambiguous class,
+#: listed or by shape, and any suffix word -- an initial-shaped one
+#: included, which `is_suffix_piece` vetoes and the numeral fork reads
+_TRAILING_WORD_TAGS = frozenset({AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG,
+                                 "vocab:suffix"})
+
+
+# rules.md#M2: "It takes them up to the trailing run of post-nominals
+# and titles that the end of the name reads as if the clause were not
+# written" -- which words of a clause might be in that run, written
+# beside the peel and the chain whose admissions it has to cover (#610)
+def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
+                        ptags: Sequence[Set[str]],
+                        tokens: Sequence[WorkToken]) -> int:
+    """The first of the pieces after `lo` that `tail_reading` might read
+    into the trailing run: `pieces[c:]`, a SUPERSET of what it takes,
+    for the maiden take to build its clause-free view over and let
+    `tail_reading` decide. `pieces[lo]` itself is never a candidate.
+
+    Back from the end over every piece the peel or the chain admits on
+    its own terms -- a suffix piece, a member of the ambiguous class,
+    an initial-shaped suffix word, a period-marked title word -- and
+    over a roman numeral by the numeral fork's SHAPE test (which asks
+    no vocabulary: 'VI' is in no list), where nothing stands behind it
+    but such title words and group-flagged suffix pieces: the chain
+    takes the titles first and the walk never holds the flagged pieces
+    ('Ph. D.'), so either way the numeral is the walk's last piece and
+    the fork reads it. Then back to the first
+    credential that starts #602's run, whose words the run takes
+    whatever they are. A BARE title word is no candidate: H5's chain
+    does not take one, and in the view it would only inflate the count
+    of words to spare.
+
+    The superset is pinned by tests/v2/pipeline/test_pieces.py over a
+    generated grid against `tail_reading` itself, so a new admission
+    in the peel or the chain fails there until this covers it."""
+    c = len(pieces)
+    titles_behind = True
+    while c - 1 > lo:
+        k = c - 1
+        piece = pieces[k]
+        title = is_trailing_title_word(piece, ptags[k], tokens)
+        if not (title or "suffix" in ptags[k]
+                or is_suffix_piece(piece, ptags[k], tokens)
+                or (len(piece) == 1 and (
+                    not tokens[piece[0]].tags.isdisjoint(_TRAILING_WORD_TAGS)
+                    or (titles_behind and is_trailing_numeral_suffix(
+                        tokens[piece[0]].text,
+                        tokens[pieces[k - 1][0]].text))))):
+            break
+        # a group-flagged suffix piece is outside the peel's walk
+        # altogether (`peel_walk` drops it), so it is behind the
+        # numeral the way a chained title is
+        titles_behind = titles_behind and (title or "suffix" in ptags[k])
+        c = k
+    # the tag test is the predicate's own necessary half, inline so a
+    # name word pays no frame
+    return next((j for j in range(lo + 1, c)
+                 if ("suffix" in ptags[j]
+                     or "vocab:suffix" in tokens[pieces[j][0]].tags)
+                 and starts_a_credential_run(pieces[j], ptags[j], tokens)),
+                c)
 
 
 # rules.md#H5: "the title is TRANSPARENT to the suffix reading: where

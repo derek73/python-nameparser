@@ -1038,6 +1038,27 @@ CASES: tuple[Case, ...] = (
                "read the suffix. #601's prototype tested vocabulary only "
                "and kept 'VI' in the maiden name; a unit test under a "
                "reduced lexicon caught it"),
+    Case("a_shape_numeral_behind_which_a_title_stands_ends_the_clause",
+         "Jane Doe nee Smith VI Prof.",
+         {"title": "Prof.", "given": "Jane", "family": "Doe",
+          "suffix": "VI", "maiden": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="#610: the chain takes 'Prof.' first and leaves 'VI' the "
+               "walk's last piece, so the numeral fork reads it, as in "
+               "'John Smith VI Prof.'. The candidate loop #601 shipped "
+               "admitted a shape numeral only as the clause's last word "
+               "and kept maiden 'Smith VI'; sharing the candidates with "
+               "the peel (`_pieces.trailing_candidates`) closed it"),
+    Case("a_shape_numeral_before_a_merged_credential_ends_the_clause",
+         "Jane Doe nee Smith VI Ph. D.",
+         {"given": "Jane", "family": "Doe", "suffix": "VI Ph. D.",
+          "maiden": "Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="#610: the merged 'Ph. D.' is group-flagged and outside the "
+               "peel's walk, so 'VI' is the walk's last piece, as in 'Jane "
+               "Doe VI Ph. D.'. A first draft of the #610 fix covered the "
+               "title half only; the sweep test over `trailing_candidates` "
+               "found this one"),
     Case("a_bound_given_word_is_no_run", "Mohamed Ali Abd Allah",
          {"given": "Mohamed", "middle": "Ali Abd", "family": "Allah"},
          notes="'abd' is in the credential list (ABD) and heads 'Abd "

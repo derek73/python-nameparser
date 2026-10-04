@@ -22,7 +22,7 @@ from nameparser._pipeline._pieces import (
     credential_anchors,
     credential_at_the_given_slot, is_leading_title, leading_titles,
     own_words, peel_trailing, peel_walk, segment_suffix_reading,
-    trailing_titles,
+    tail_reading, trailing_candidates, trailing_titles,
 )
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import (
@@ -886,3 +886,60 @@ def test_the_given_part_after_a_family_comma_reads_the_run_too() -> None:
 def test_a_title_inside_the_given_parts_run_is_a_title() -> None:
     name = parse("Holder, Eric Jr. Attorney General")
     assert (name.title, name.suffix) == ("Attorney General", "Jr.")
+
+
+# #610: `trailing_candidates` is the maiden take's choice of which
+# clause words to read the clause-free view over, and its contract is
+# a SUPERSET of what `tail_reading` takes. The grid reads plain names,
+# where the candidates' cut must fall at or before every piece the tail
+# reading takes (the first name piece aside: in a clause that is the
+# word after the marker, which the take always keeps).
+_CANDIDATE_HEADS = ("Jane Doe", "J.", "Jane van der Berg", "Mai Le",
+                    "abdul Berg", "John")
+_CANDIDATE_WORDS = ("Smith", "VI", "V", "III", "MA", "Ma", "PhD", "Jr.",
+                    "Prof.", "Dr.", "King.", "do", "DO", "de", "X.Y.Z.",
+                    "Ph. D.", "i", "Jones")
+
+
+def _candidate_misses() -> list[str]:
+    misses = []
+    for head in _CANDIDATE_HEADS:
+        for n in (1, 2, 3):
+            for tail in itertools.product(_CANDIDATE_WORDS, repeat=n):
+                text = f"{head} {' '.join(tail)}"
+                state = _through_group(text)
+                pieces, ptags = state.pieces[0], state.piece_tags[0]
+                tokens = state.tokens
+                lead = leading_titles(pieces, ptags, tokens)
+                rest = peel_walk(lead, ptags)
+                if not rest:
+                    continue
+                kept, chained, peel = tail_reading(
+                    rest, pieces, ptags, tokens, state.one_case)
+                taken = (set(kept[peel.names:]) | set(chained)) - {rest[0]}
+                c = trailing_candidates(rest[0], pieces, ptags, tokens)
+                if any(j < c for j in taken):
+                    misses.append(text)
+    return misses
+
+
+def test_the_trailing_candidates_cover_what_the_tail_reading_takes() -> None:
+    """M2's take ends the clause at the trailing run the clause-free
+    name reads, which it can only find if every word that run might
+    hold is in its view. 6 heads x 18 words to a
+    tail of three, 37,044 parses through `group`, about 2.4s on py3.11
+    (measured 2026-10-04).
+
+    RECORDED NEGATIVE CONTROL, measured 2026-10-04 on this grid: the
+    candidate loop as #601 shipped it (master 8a8459a8), which admitted
+    a roman numeral by its shape only as the clause's LAST word, misses
+    288 texts -- every one a numeral in no wordlist ('VI') with a
+    period-marked title or the merged 'Ph. D.' behind it. The chain
+    takes the title first, and the walk never holds the flagged
+    'Ph. D.', so either way the numeral is the walk's last piece and
+    the fork reads it: 'Jane Doe nee Smith VI Prof.' kept maiden 'Smith
+    VI' where 'John Smith VI Prof.' reads suffix 'VI'. A first draft of
+    the fix covered the title and still missed the 'Ph. D.' half, 111
+    texts, which this grid is what found.
+    """
+    assert _candidate_misses() == []

@@ -77,7 +77,7 @@ from nameparser._pipeline._vocab import (
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
-    is_suffix_piece, is_title_piece, is_wholly_particle, leading_titles,
+    is_suffix_piece, is_title_piece, leading_titles, particle_tail,
     listed_lean, peel_walk, segment_suffix_reading,
     starts_a_credential_run, tail_reading, trailing_titles,
 )
@@ -1080,35 +1080,21 @@ def assign(state: ParseState) -> ParseState:
                     break
             # The particle tail P6 will attach is not the run's to take
             # (rules.md#P6: "a particle ending the name attaches to that
-            # family name", looking past the post-nominals behind it):
-            # the wholly-particle pieces ending the part, behind any run
-            # words, found as P6 finds them. They are left to the walk
-            # below and reach P6 with the role they had before #602.
-            # Absorbing them reported a suffix reading P6 then overrode,
-            # and P6 reported the override as a declined post-nominal
-            # ('Smith, John PhD de', 'Smith, John PhD de Jr.'). A
-            # particle P6 will NOT attach -- one with a credential
-            # behind it and another particle past that, 'Smith, John
-            # PhD de PhD van' -- stays in the run, as does a lone member
-            # of the ambiguous credential class (`do`): read as the
-            # credential, it is the word P6's #531 exception keeps out
-            # of the attachment, so the run and P6 agree on it.
-            # `pieces[p6_lo:p6_hi]` is that tail: back past the run
-            # words behind it, then over the particles, stopping at a
-            # class member
+            # family name"): `pieces[p6_lo:p6_hi]`, found by the walk P6
+            # itself runs (#610), the run's words still holding no role
+            # here. They are left to the walk below and reach P6 with
+            # the role they had before #602. Absorbing them reported a
+            # suffix reading P6 then overrode, and P6 reported the
+            # override as a declined post-nominal ('Smith, John PhD de',
+            # 'Smith, John PhD de Jr.'). A particle P6 will NOT attach --
+            # one with a credential behind it and another particle past
+            # that, 'Smith, John PhD de PhD van' -- stays in the run, as
+            # does a lone member of the ambiguous credential class
+            # (`do`), which the run reads as the credential and P6's
+            # #531 stop keeps out of the attachment.
             p6_lo = p6_hi = len(pieces)
             if sticky_from < len(pieces):
-                while (p6_hi > sticky_from
-                       and not is_wholly_particle(pieces[p6_hi - 1],
-                                                  tokens)):
-                    p6_hi -= 1
-                p6_lo = p6_hi
-                while (p6_lo > sticky_from
-                       and is_wholly_particle(pieces[p6_lo - 1], tokens)
-                       and not (len(pieces[p6_lo - 1]) == 1
-                                and not tokens[pieces[p6_lo - 1][0]].tags
-                                .isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS))):
-                    p6_lo -= 1
+                p6_lo, p6_hi = particle_tail(pieces, tokens, sticky_from)
             for m in range(n + 1, len(pieces)):
                 if m in titled_idx:
                     continue

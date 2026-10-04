@@ -3877,6 +3877,9 @@ name_regex = "^(?:Dr\\. nee Smith PhD Prof\\.|Jane Doe Jr\\. nee Smith|Jane Doe 
 fields = ["_ambiguities", "family", "given", "maiden", "suffix", "title"]
 
 [[change]]
+# 'Jane Doe nee Smith VI Prof.': rules.md#M2's numeral example
+# behind a title, which the take reaches since #610 shared its
+# candidate words with the peel (2026-10-04).
 # rules.md#M2: "It takes them up to the trailing run of post-nominals and
 # titles that the end of the name reads as if the clause were not
 # written" (#601, 2026-10-04), and "The run so found ends the name: its
@@ -3884,7 +3887,7 @@ fields = ["_ambiguities", "family", "given", "maiden", "suffix", "title"]
 # reaches into it". The old walk's release check kept these words in the
 # clause where a join it modelled might take them; the run is bound now.
 issue = "fix(#601) the clause ends at the clause-free name's trailing run, which the take consumes"
-name_regex = "^(?:Jane Doe nee Smith DO DO|Jane van der Berg nee Prof\\. King\\. MA|Jane van der Berg nee Smith Prof\\.|John nee Prof\\. ba MA)$"
+name_regex = "^(?:Jane Doe nee Smith DO DO|Jane Doe nee Smith VI Prof\\.|Jane van der Berg nee Prof\\. King\\. MA|Jane van der Berg nee Smith Prof\\.|John nee Prof\\. ba MA)$"
 fields = ["_ambiguities", "family", "given", "maiden", "suffix", "title"]
 
 [[change]]
