@@ -1107,8 +1107,10 @@ S2. Rationale: generational suffixes and credentials are recognized
     the name or before a suffix comma, or after the given word in
     the part after a family comma, makes every later word of that
     part a suffix, except a title word, which reads as a title, and
-    in that given part a word wholly of particle vocabulary, which
-    P6 attaches to the family wherever it stands. A lone particle is
+    in that given part the particles ending it, behind any
+    post-nominals, which P6 attaches to the family — other than a
+    lone member of the ambiguous class, which reads as the
+    credential. A lone particle is
     not a name word for the count, 'de Mesnil' being one surname. A title word
     never starts the run, and neither does a member of the ambiguous
     class, a single letter, a connective, a word that is also

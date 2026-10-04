@@ -1077,29 +1077,41 @@ def assign(state: ParseState) -> ParseState:
                                                     tokens)):
                     sticky_from = m
                     break
-            # A wholly-particle piece is not the run's to take: P6
-            # attaches it to the family the comma named (rules.md#P6:
-            # "a particle ending the name attaches to that family
-            # name", looking past the post-nominals behind it), so it
-            # is left to the walk below and reaches P6 with the role it
-            # had before #602. Absorbing it here reported a suffix
-            # reading P6 then overrode, and P6 reported the override as
-            # a declined post-nominal ('Smith, John PhD de', 'Smith,
-            # John PhD de Jr.'). A lone member of the ambiguous
-            # credential class stays in the run (`do`): read as the
+            # The particle tail P6 will attach is not the run's to take
+            # (rules.md#P6: "a particle ending the name attaches to that
+            # family name", looking past the post-nominals behind it):
+            # the wholly-particle pieces ending the part, behind any run
+            # words, found as P6 finds them. They are left to the walk
+            # below and reach P6 with the role they had before #602.
+            # Absorbing them reported a suffix reading P6 then overrode,
+            # and P6 reported the override as a declined post-nominal
+            # ('Smith, John PhD de', 'Smith, John PhD de Jr.'). A
+            # particle P6 will NOT attach -- one with a credential
+            # behind it and another particle past that, 'Smith, John
+            # PhD de PhD van' -- stays in the run, as does a lone member
+            # of the ambiguous credential class (`do`): read as the
             # credential, it is the word P6's #531 exception keeps out
             # of the attachment, so the run and P6 agree on it.
+            p6_tail: set[int] = set()
+            if sticky_from < len(pieces):
+                def _wholly_particle(q: int) -> bool:
+                    return all("particle" in tokens[i].tags
+                               for i in pieces[q])
+                q = len(pieces)
+                while q > sticky_from and not _wholly_particle(q - 1):
+                    q -= 1
+                while (q > sticky_from and _wholly_particle(q - 1)
+                       and not (len(pieces[q - 1]) == 1
+                                and not tokens[pieces[q - 1][0]].tags
+                                .isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS))):
+                    q -= 1
+                    p6_tail.add(q)
             for m in range(n + 1, len(pieces)):
                 if m in titled_idx:
                     continue
                 suffix_here = (reads_as_a_suffix(m, titled_idx)
                                if titled_idx else m not in walkable)
-                if m >= sticky_from and not (
-                        all("particle" in tokens[i].tags
-                            for i in pieces[m])
-                        and not (len(pieces[m]) == 1
-                                 and not tokens[pieces[m][0]].tags
-                                 .isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS))):
+                if m >= sticky_from and m not in p6_tail:
                     # inside the run: a title word reads as a title,
                     # every other word as a suffix, and a word the walk
                     # would have kept as a name is reported, here where

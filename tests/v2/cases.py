@@ -1816,6 +1816,19 @@ CASES: tuple[Case, ...] = (
                "find is the same wholly-particle piece, so S2's run "
                "leaves it alone wherever it stands. 2.3.0 read this "
                "way; 1.4.0 middle 'de'"),
+    Case("a_particle_p6_does_not_attach_stays_in_the_run",
+         "Smith, John PhD de PhD van",
+         {"given": "John", "family": "van Smith",
+          "suffix": "PhD de PhD"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name", "particle-or-given"),
+         notes="P6 attaches only the particles ending the part, so the "
+               "run keeps 'de', a credential standing behind it and "
+               "another particle past that, and reports it as a word it "
+               "absorbed (fix-commit review of #601/#602, 2026-10-04). "
+               "2.3.0 read middle 'de', family 'van Smith', suffix "
+               "'PhD, PhD', the particle left a silent middle name "
+               "between two credentials"),
     Case("a_trailing_particle_chain_keeps_its_own_report",
          "Smith, John PhD Jr. de la",
          {"given": "John", "family": "de la Smith",

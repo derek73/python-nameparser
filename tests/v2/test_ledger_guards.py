@@ -3811,6 +3811,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #573: 430 -> 439, its nine rules.md#P2,
         # P6 and S2 comma examples. Reach, verified name by name.
         # 2026-10-04, #601/#602: 443 -> 438; the rules.md#M2 examples #601 retired left the corpus, and the names #601 moved left this rule's regex.
+        # 2026-10-04, #601/#602 review: 438 -> 439, rules.md#S2's new
+        # example 'Smith, John PhD de Jr.'. Reach, verified by name.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -3930,6 +3932,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #573: 430 -> 439, its nine rules.md#P2,
         # P6 and S2 comma examples. Reach, verified name by name.
         # 2026-10-04, #601/#602: 443 -> 438; the rules.md#M2 examples #601 retired left the corpus, and the names #601 moved left this rule's regex.
+        # 2026-10-04, #601/#602 review: 438 -> 439, rules.md#S2's new
+        # example 'Smith, John PhD de Jr.'. Reach, verified by name.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
