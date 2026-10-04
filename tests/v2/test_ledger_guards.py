@@ -3863,7 +3863,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'García Márquez, MJ JK', 'John Smith, PhD XYZ' and 'MÜLLER
         # WEIß, HANS', #564's rules.md#C1 examples. Reach, verified
         # name by name.
-            _Claim(439, ('given', 'suffix', 'title'), "5a1100d3a0ac", None),
+            _Claim(441, ('given', 'suffix', 'title'), "9f312397b07e", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3974,7 +3974,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'García Márquez, MJ JK', 'John Smith, PhD XYZ' and 'MÜLLER
         # WEIß, HANS', #564's rules.md#C1 examples. Reach, verified
         # name by name.
-            _Claim(439, ('family', 'given'), "5a1100d3a0ac", None),
+            _Claim(441, ('family', 'given'), "9f312397b07e", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4246,7 +4246,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # carries a shape tag. Reach again, verified name by name.
         # 2026-10-01, #575: 104 -> 105, 'Ortega y Gasset, Ed'. Reach.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(105, ('_initials',), "231bbda6768a", ('DEFAULT',)),
+            _Claim(106, ('_initials',), "8b55345f9ad4", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
         # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
         # nee Jones MA' -- the P5 pair this change added to record

@@ -122,7 +122,7 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # Policy.extra_suffix_delimiters, imported rather than repeated
     # (mechanisms.md#ONE-PREDICATE-PER-QUESTION). The two sites read
     # ONE derivation and differ only in a gate: group drops a core
-    # only on a `tail` segment, through `seg_cores`, while this arm
+    # only on a `tail` segment, cutting the segment there, while this arm
     # reads `delimiter_cores` whole and asks by TEXT alone. So a
     # dropped token whose text the policy names as a delimiter parts
     # the run whatever dropped it. The gate is not needed here: a core

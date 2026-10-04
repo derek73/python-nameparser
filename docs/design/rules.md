@@ -547,11 +547,8 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     nothing, and a word of that vocabulary ending a name, or standing
     before the credential a name ends with, is the generation it also
     spells.
-    A separator the caller declared is not a word of the name, and
-    the search reads past it as it reads past a connective: the word
-    on the connective's side is the first one beyond the separator,
-    so a connective of that vocabulary beside one joins exactly where
-    it would with the separator absent.
+    A separator the caller declared ends the search as a comma would,
+    a connective never joining across one (C1).
     Both questions this rule asks of a name — how many words it has,
     and whether it is written in one case — are asked of the name's
     OWN words: a maiden marker taken as one, and the words it takes
@@ -1521,7 +1518,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Doe nee Smith i DO Prof."  →  maiden="Smith i DO"
       "Doe, Jane nee Smith St."        →  maiden="Smith St."
       "Smith, John, PhD née Puig Mr. - i Soler" extra_suffix_delimiters-dash →  maiden="Puig Mr."
-      "Smith, John, PhD née Puig - i Soler" extra_suffix_delimiters-dash →  maiden="Puig i Soler"
+      "Smith, John, PhD née Puig - i Soler" extra_suffix_delimiters-dash →  maiden="Puig"
       "Jane Doe nee Smith Prof."       →  maiden="Smith"
       "Jane Doe nee Smith Prof."       →  title="Prof."
       "Jane Doe nee Smith MA Prof."    →  suffix="MA"
@@ -1858,6 +1855,13 @@ C1. Rationale: a credential run after the comma means the name is in
     further comma. Longer suffix words are not in question either
     way, and the strict knob above still vetoes the initial-shaped
     ones, so the run ends at them there.
+    A delimiter the policy declares parts a trailing suffix part as a
+    comma would: the words on each side of it read exactly as the
+    parts of the same text written with a comma in its place, so no
+    join, maiden clause or connective reaches across it, and the
+    delimiter itself is dropped. Only a trailing part is parted: in
+    the part before the first comma, or in the given part of the
+    listing form, the delimiter is a word (the Accepted entry below).
       "Smith, John"               →  family="Smith"
       "سلمان، محمد"               →  family="سلمان"
       "田中、太郎"                 →  family=""
@@ -1940,6 +1944,8 @@ C1. Rationale: a credential run after the comma means the name is in
       "García Márquez, Ms G.J."   →  given="G.J."  · boundary
       "García Márquez, Ed G.J."   →  given="Ed"  · boundary
       "John Smith, A.B. Ph.D."    →  given="A.B."  · boundary
+      "Smith, John, Puig - i Soler" extra_suffix_delimiters-dash →  suffix="Puig, i Soler"
+      "Smith, John, PhD - and MD" extra_suffix_delimiters-dash →  suffix="PhD, and MD"
     Accepted: a title in front of a particle surname, before the
     credential class's word, is read into the family. The surname
     counts once and the title is no name word, so the count reads the

@@ -8,8 +8,8 @@ tokens are NEVER joined into strings: the anti-#100 invariant); maiden
 tail tokens get role=MAIDEN; marker tokens land in dropped.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369) and Policy.extra_suffix_delimiters, whose
-delimiter-core tokens tail segments drop (v1 suffix_delimiter parity)
--- no other Policy field. Policy.lenient_comma_suffixes left this list
+delimiter-core tokens part a tail segment as a comma would and are
+dropped (v1 suffix_delimiter parity, #549) -- no other Policy field. Policy.lenient_comma_suffixes left this list
 with #436: it reached here only through segment_suffix_reading, whose
 render consumer was this stage's one-entry join and now lives in
 post_rules. The v1 "derived titles/prefixes"
@@ -197,23 +197,24 @@ def marker_run_length(following: Iterable[Set[str]]) -> int:
     return run
 
 
-def _marker_run_pieces(seen: Sequence[int], pieces: Sequence[Sequence[int]],
+def _marker_run_pieces(pieces: Sequence[Sequence[int]],
                        tokens: Sequence[WorkToken], m: int) -> int:
-    """How many of `seen`'s pieces the marker run at seen[m] spans: 1
+    """How many pieces the marker run at pieces[m] spans: 1
     for a single-word marker, more for a phrase entry ('z domu').
 
     classify already decided where the run ends and recorded it on the
     tokens -- "vocab:maiden-marker" on the head,
     "vocab:maiden-marker-cont" on the rest.
 
-    Each continuation is the NEXT piece and is always in `seen`, and
+    Each continuation is the NEXT piece, and
     that holds because classify REFUSES to tag a run whose tokens are
     not structurally contiguous. It is not a property of this walk, and
-    the reasons `seen` can skip a token are wider than they look. No
-    join has run yet, so a piece is one token. `seen` itself skips a
-    tail segment's delimiter cores, and a core between two marker words
-    would be a token between them, which classify would not have tagged
-    as a run. But `pieces` comes from a SEGMENT, and segment keeps only
+    the reasons a token can be missing are wider than they look. No
+    join has run yet, so a piece is one token. A tail segment's
+    delimiter cores are cut out before grouping (#549), and a core
+    between two marker words would be a token between them, which
+    classify would not have tagged as a run. And `pieces` comes from a
+    SEGMENT, and segment keeps only
     the tokens no stage has given a role, bucketed by the commas before
     them -- so a run half inside a bracketed clause, or split across a
     structure comma, is one no segment holds whole. Walking cont tags
@@ -229,7 +230,7 @@ def _marker_run_pieces(seen: Sequence[int], pieces: Sequence[Sequence[int]],
     segment at all -- see _vocab.tag_marker_runs, which states the limit.
     """
     return marker_run_length(
-        tokens[pieces[seen[k]][0]].tags for k in range(m + 1, len(seen)))
+        tokens[pieces[k][0]].tags for k in range(m + 1, len(pieces)))
 
 
 # rules.md#M2: "a word the clause gives up reads as a post-nominal or
@@ -511,8 +512,7 @@ def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
                                   pieces: Sequence[Sequence[int]],
                                   ptags: Sequence[Set[str]],
                                   tokens: Sequence[WorkToken],
-                                  beside: list[_Beside],
-                                  cores: Set[str]) -> bool:
+                                  beside: list[_Beside]) -> bool:
     """Whether the suffix piece at `k` is a connective PLACED TO JOIN
     between two name words of the clause `lo`..`hi`.
 
@@ -542,14 +542,13 @@ def _link_joins_inside_the_clause(k: int, lo: int, hi: int,
     if not _is_conj_piece(pieces[k], ptags[k], tokens):
         return False
     if not beside:
-        beside.append(_run_neighbours(pieces, ptags, tokens, cores))
+        beside.append(_run_neighbours(pieces, ptags, tokens))
     return _between_name_words(k, lo, hi, pieces, ptags, tokens, beside[0])
 
 
 def _maiden_take(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
-                 cores: Set[str],
                  one_case: bool | None,
                  reader: TailReader,
                  ambiguities: list[PendingAmbiguity],
@@ -606,28 +605,18 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     fork and the reader decide it, and 'Doe, J. nee V' keeps maiden
     'V' though 'Doe, J. V' reads suffix 'V'.
 
-    A tail segment's delimiter cores (`cores`, empty elsewhere) are
-    structure, not words, and group() drops them after the pass --
-    before the pass moved ahead of the joins it dropped them first.
-    So the walk steps over them: a core is neither a word the marker
-    can take ('PhD née - Jones' read maiden '- Jones') nor the name
-    word M2 needs ahead of the marker ('- née Jones' took 'Jones',
-    leaving the core alone, which the drop then kept as the segment's
-    only piece). They stay in place for the drop, which still sees
-    the segment as written, which is why this returns indices rather
-    than a slice.
+    A tail segment's delimiter cores never reach this walk: group()
+    cuts the segment at them first and hands each part over on its
+    own, as the comma twin's segments would be (#549). So a core is
+    neither a word the marker can take ('PhD née - Jones' reads as
+    'PhD née, Jones') nor the name word M2 needs ahead of the marker.
     """
-    # the lone-core test; also in _run_neighbours and group()'s #206
-    # drop, whose copy adds `len(pieces) > 1` -- keep in step
-    seen = [k for k in range(len(pieces))
-            if not (len(pieces[k]) == 1
-                    and tokens[pieces[k][0]].text in cores)]
-    m = next((v for v in range(1, len(seen))
-              if _is_maiden_marker_piece(pieces[seen[v]], tokens)), None)
+    m = next((v for v in range(1, len(pieces))
+              if _is_maiden_marker_piece(pieces[v], tokens)), None)
     if m is None:
         return None
     # the marker may be a phrase, in which case it is several pieces
-    run = _marker_run_pieces(seen, pieces, tokens, m)
+    run = _marker_run_pieces(pieces, tokens, m)
     # "up to any trailing suffix": a suffix WORD anywhere after the
     # marker ends the maiden name, and so does the trailing numeral as
     # assign will read it, which the suffix-piece test does not see
@@ -662,8 +651,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # pre-change 9,852 says so: dropping it moves 18 of them, on
     # 'John van der Berg Ma', 'John de Ma' and 'Freiherr von Berg MA'
     # under every one of the six policies.
-    skip = frozenset(range(len(pieces))) - frozenset(seen)
-    rest = peel_walk(seen[m], ptags, skip)
+    rest = peel_walk(m, ptags)
     # #535: where a trailing rule reads these words, the walk reads the
     # end of the name as that rule does -- the S2 peel and the H5 title
     # chain to their fixed point (`tail_reading`), so a title behind
@@ -694,7 +682,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # kept 'ba' in the clause where 'Jane Doe nee Smith ba' gives
         # it up (#535 review). A marker run with nothing after it has
         # no floor to set; the walk below declines it anyway.
-        first = seen[m + run] if m + run < len(seen) else None
+        first = m + run if m + run < len(pieces) else None
         floor = rest.index(first) + 1 if first in rest else 1
         rest, chained, peeled = tail_reading(rest, pieces, ptags, tokens,
                                              one_case, floor)
@@ -713,7 +701,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # 'Dr. née Jones Smith V' leaves the numeral as assign's whole
     # rest and no fork fires at all.
     if trailing < len(pieces):
-        left = [i for i in seen if i < seen[m] or i >= trailing]
+        left = [i for i in range(len(pieces)) if i < m or i >= trailing]
         view = [pieces[i] for i in left]
         view_tags = [ptags[i] for i in left]
         # The same peel pair as above, read over the view -- and, for
@@ -771,7 +759,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # per member, and no re-entrancy -- the predicate never calls the
     # walk that calls it.
     if (reads is not None and peeled.names < len(rest)
-            and m + run + 1 < len(seen)):
+            and m + run + 1 < len(pieces)):
         # THE FIRST-WORD FLOOR: the stop never takes the FIRST word
         # after the marker -- a class member standing alone there
         # stays the maiden name. A clamp rather than a veto: where the
@@ -781,7 +769,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # clamped piece may then be no member at all, and the test
         # below declines -- which changes nothing, the walk stopping
         # at that suffix word of its own accord.
-        stop = max(rest[peeled.names], seen[m + run + 1])
+        stop = max(rest[peeled.names], m + run + 1)
         head = pieces[stop]
         # `len(head) == 1` is DEFENSIVE and measured inert
         # (2026-09-19) rather than unreachable: it asks a LONE piece's
@@ -842,7 +830,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # class member.
         if (stop < trailing and len(head) == 1
                 and AMBIGUOUS_ACRONYM_TAG in tokens[head[0]].tags):
-            left = [i for i in seen if i < seen[m] or i >= stop]
+            left = [i for i in range(len(pieces)) if i < m or i >= stop]
             view = [pieces[i] for i in left]
             view_tags = [ptags[i] for i in left]
             # where the member stands in that view: everything before
@@ -909,7 +897,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     if chained and reads is not None:
         stop = min(chained)
         if stop < trailing:
-            left = [i for i in seen if i < seen[m] or i >= stop]
+            left = [i for i in range(len(pieces)) if i < m or i >= stop]
             view = [pieces[i] for i in left]
             view_tags = [ptags[i] for i in left]
             at = left.index(stop)
@@ -925,36 +913,16 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # bound it with, so the decline the `j <= m + run` test below
     # reaches is taken here instead -- `lo` would have no piece to name
     # ('Jane van der Berg née').
-    if m + run >= len(seen):
+    if m + run >= len(pieces):
         return None
     # rules.md#M2: "a link inside the birth name does not end it" --
     # the clause's OWN bounds for the link exception, which are not the
     # segment's. `lo` is the first piece after the marker run, so the
-    # marker is never the name word on a link's left, and a delimiter
-    # core between the marker and that first word is below `lo` by
-    # construction and cannot pass for one either. A core is the TAIL
-    # segment's alone (`extra_suffix_delimiters`, empty by default),
-    # and a dash standing where no tail segment can hold it is an
-    # ordinary word at EITHER policy: 'PhD née - i Jones' keeps maiden
-    # '- i Jones' configured and unconfigured alike, there being no
-    # comma to make a tail out of. It takes the tail a suffix comma
-    # builds for the dash to be a core at all, and then the two
-    # policies part company -- 'Smith, John, PhD née - i Jones' keeps
-    # maiden '- i Jones' by default and declines under a configured
-    # ' - ', which is the pair
-    # test_a_core_between_the_marker_and_the_first_word_is_below_lo
-    # holds (all four readings measured 2026-09-22).
-    # NOT theoretical, settled by measurement 2026-09-21 over corpus u
-    # cases.py u the property grids u a 50,925-name generated set with
-    # cores, under thirteen core-bearing policies: 25,536 of 596,392
-    # maiden takes had a core standing exactly there, so the bound is
-    # load-bearing. PAST `lo` the bound no longer reaches a core, and
-    # `_run_neighbours` steps over it as it steps over a connective
-    # (#538): a core is structure, so the word on a link's side is the
-    # one past it, and the clause reads as the same text written
-    # without the core ('Smith, John, PhD née Puig Mr. - i Soler' ends
-    # at the link after the title, as '... Puig Mr. i Soler' does --
-    # the title is the word on the link's left and refuses).
+    # marker is never the name word on a link's left. No delimiter
+    # core stands anywhere in the clause: a tail segment's cores are
+    # cut out before this walk (#549), and a dash where no tail
+    # segment holds it is an ordinary word at either policy ('PhD née
+    # - i Jones' keeps maiden '- i Jones' configured or not).
     # `peel_start` is where assign's trailing run begins -- over the
     # pieces as written for a NONE reader (`trailing_start`'s whole
     # answer, read off the peel pair above rather than re-running it),
@@ -975,19 +943,19 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # visits. A dated snapshot from before #535, measured 2026-09-20
     # with a probe here over the whole suite: 93,408 reaches of this
     # site, `peel_start > trailing` 0 of them.
-    lo = seen[m + run]
+    lo = m + run
     peel_start = (rest[peeled.names] if peeled.names < len(rest)
                   else len(pieces))
     j = m + run
     # The link exception's memo cell, filled inside the predicate on
     # the first connective it is asked about (see its docstring).
     beside: list[_Beside] = []
-    while j < len(seen) and seen[j] < trailing:
-        k = seen[j]
+    while j < len(pieces) and j < trailing:
+        k = j
         if (not is_suffix_piece(pieces[k], ptags[k], tokens)
                 or _link_joins_inside_the_clause(k, lo, peel_start,
                                                  pieces, ptags, tokens,
-                                                 beside, cores)):
+                                                 beside)):
             j += 1
             continue
         # rules.md#M2: "a word the clause gives up reads as a
@@ -1017,8 +985,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                              else len(pieces))
             if _link_joins_inside_the_clause(k, lo, written_start,
                                              pieces, ptags, tokens,
-                                             beside, cores):
-                left = [i for i in seen if i < seen[m] or i >= k]
+                                             beside):
+                left = [i for i in range(len(pieces)) if i < m or i >= k]
                 view = [pieces[i] for i in left]
                 view_tags = [ptags[i] for i in left]
                 at = left.index(k)
@@ -1064,7 +1032,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # 0 times over 1,760,904 parses, and deleting the test is
     # byte-identical (fields, ambiguities, token roles and tags) over
     # the 905,796-parse oracle at the same frame counts.
-    last = pieces[seen[j - 1]]
+    last = pieces[j - 1]
     word = tokens[last[0]]
     if (reads is not None
             and not word.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS)):
@@ -1074,7 +1042,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"a post-nominal; the maiden marker's clause keeps it "
             f"rather than reading it as one",
             tuple(last)))
-    return seen[m:m + run], seen[m + run:j]
+    return list(range(m, m + run)), list(range(m + run, j))
 
 
 #: What `_between_name_words` reads instead of walking: two arrays over
@@ -1088,17 +1056,9 @@ _Beside = tuple[list[int], list[int]]
 
 def _run_neighbours(pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]],
-                    tokens: Sequence[WorkToken],
-                    cores: Set[str]) -> _Beside:
-    """The nearest piece that is neither a connective nor a delimiter
-    core, on each side of every index.
-
-    A tail segment's delimiter CORE (`cores`, empty off a tail segment
-    and at the default policy) is stepped over exactly as a connective
-    is: it is structure the caller declared, the #206 drop takes a LONE
-    core out of the output, and a link read with it present must read as the
-    same text read without it (rules.md#M2, #538). Asked inline, beside
-    `_is_conj_piece`, so an empty set costs no frame.
+                    tokens: Sequence[WorkToken]) -> _Beside:
+    """The nearest piece that is not a connective, on each side of
+    every index.
 
     EVERY MEMBER OF ONE RUN HAS THE SAME ANSWER, which is the whole
     of the fix: `_between_name_words` used to walk the run itself, so a
@@ -1157,11 +1117,7 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     prev = -1
     for k in range(n):
         left[k] = prev
-        # the lone-core test; also in _maiden_take and group()'s #206
-        # drop, whose copy adds `len(pieces) > 1` -- keep in step
-        is_conj = (_is_conj_piece(pieces[k], ptags[k], tokens)
-                   or (len(pieces[k]) == 1
-                       and tokens[pieces[k][0]].text in cores))
+        is_conj = _is_conj_piece(pieces[k], ptags[k], tokens)
         conj[k] = is_conj
         if not is_conj:
             prev = k
@@ -1219,8 +1175,6 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
 # is the CALLER's half: `_group_segment`'s `frozen` set is where a
 # connective this refuses is placed as the generation, and
 # `_link_joins_inside_the_clause` is the maiden walk's.
-# rules.md#P3: "the search reads past it as it reads past a
-# connective" (#538) -- `cores` in `beside`, below.
 # `Sequence[Sequence[int]]` rather than `Sequence[Piece]`, widened
 # when the maiden walk became a second caller: this reads a piece and
 # never edits one, and `_maiden_take` holds its pieces at the wider
@@ -1259,8 +1213,7 @@ def _between_name_words(k: int, lo: int, hi: int,
     one ('Carod i y Rovira'), so the word this rule is about is the
     first one past the run -- and where the run runs out ('Juan i e')
     there is no name word on that side at all. `beside` is where that
-    stepping already happened, a lone delimiter core stepped over the
-    same way too (#538, rules.md#P3's separator sentence):
+    stepping already happened:
     `_run_neighbours` walked every run once for the whole segment, so
     this reads an index rather than walking to it. A SENTINEL OUT OF
     RANGE is how "the run ran out" arrives --
@@ -1308,7 +1261,6 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                    tokens: Sequence[WorkToken],
                    bound_join: BoundJoin = BoundJoin.STRICT,
                    ambiguities: list[PendingAmbiguity] | None = None,
-                   cores: Set[str] = frozenset(),
                    given_name_titles: Set[str] = frozenset(),
                    opens_the_name: bool = False,
                    *,
@@ -1472,7 +1424,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # The tokens are not touched here: this function reads them and
     # returns what it took, and group() records the drop and the roles.
     taken: MaidenTake | None = None
-    take = _maiden_take(pieces, ptags, tokens, cores, one_case,
+    take = _maiden_take(pieces, ptags, tokens, one_case,
                         reader, maiden_ambiguities,
                         tail_follows=tail_follows)
     if take is not None:
@@ -1573,11 +1525,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # of connectives has the same nearest name word on
                 # each side, and asking per member walked the run once
                 # per member -- quadratic in its length, 3.8x per
-                # doubling measured at `b9ed1429`. `cores` is passed
-                # deliberately here too: a link beside a declared
-                # delimiter reads as it would with the delimiter absent
-                # (#538).
-                beside = _run_neighbours(pieces, ptags, tokens, cores)
+                # doubling measured at `b9ed1429`.
+                beside = _run_neighbours(pieces, ptags, tokens)
             if not _between_name_words(k, lo, hi, pieces, ptags, tokens,
                                        beside):
                 frozen.add(piece[0])
@@ -2040,9 +1989,8 @@ def group(state: ParseState) -> ParseState:
     # parts; the SUFFIX_COMMA pre-comma segment gets 0.
     additional = 1 if state.structure is Structure.FAMILY_COMMA else 0
     # v1 expand_suffix_delimiter parity (#206): tail segments (wholly
-    # consumed as suffixes by assign) drop delimiter-core tokens, the
-    # same structural mechanism as the maiden marker (taken out in
-    # _group_segment, recorded in `dropped` just below)
+    # consumed as suffixes by assign) are cut at their delimiter-core
+    # tokens, which land in `dropped` as the maiden marker does
     cores = delimiter_cores(state.policy.extra_suffix_delimiters)
     tail_start = {Structure.SUFFIX_COMMA: 1,
                   Structure.FAMILY_COMMA: 2}.get(state.structure)
@@ -2065,7 +2013,6 @@ def group(state: ParseState) -> ParseState:
         # the parse consumes wholly as suffixes raises no report about
         # reading a word of it as a name"
         tail = tail_start is not None and seg_idx >= tail_start
-        seg_cores = cores if tail else frozenset()
         # #533: which rule reads what the maiden walk would leave, off
         # the three facts already in hand here. A tail segment is read
         # as credentials whole and segment 0 of a family comma is the
@@ -2077,45 +2024,52 @@ def group(state: ParseState) -> ParseState:
                       else TailReader.NONE)
         else:
             reader = TailReader.TRAILING
-        pieces, ptags, taken = _group_segment(
-            seg, additional, tokens, bound_join,
-            None if (family_comma or tail) else ambiguities,
-            seg_cores,
-            state.lexicon.given_name_titles,
-            opens_the_name=(seg_idx == 0 and not family_comma),
-            one_case=state.one_case,
-            reader=reader,
-            maiden_ambiguities=ambiguities,
-            tail_follows=(reader is TailReader.GIVEN_SLOT
-                          and len(state.segments) > 2))
-        # the marker is dropped and the maiden name's tokens become
-        # MAIDEN (#274); which pieces those are was settled in
-        # _group_segment, before the joins
-        if taken is not None:
-            marker_piece, maiden_pieces = taken
-            dropped.extend(marker_piece)
-            for piece in maiden_pieces:
-                for i in piece:
-                    tokens[i] = copy_with(
-                        tokens[i], role=Role.MAIDEN)
-        # rules.md#C1: "a part that is nothing but suffix words is the
-        # credential run and reads as suffixes, whole" -- WHOLE is this
-        # block's half of the rule, the routing being assign's.
-        #
-        # v1 expand_suffix_delimiter parity (#206): a delimiter core
-        # inside a segment separates suffix entries and is dropped, but
-        # a segment that IS only the core stays whole (v1 expand()
-        # splits within a part, never erases a lone part). Keyed on
-        # `tail` through `seg_cores`, which is empty off a tail
-        # segment, because the #206 parity is a TAIL rule.
-        #
-        # What this block decides is the #206 core DROP and nothing
-        # else: a delimiter core inside a tail segment leaves the
-        # pieces, and `dropped` is where that fact is recorded -- for
-        # the render, and for post_rules' entry pass, which reads it
-        # back as the one dropped token that separates two entries.
-        #
-        # It used to decide the ENTRY too, marking a continuation
+        # rules.md#C1: "a delimiter the policy declares parts a
+        # trailing suffix part as a comma would" (#549): the segment is
+        # grouped as the parts between its cores, each read exactly as
+        # the comma twin's own segment would be, and the cores are
+        # dropped (v1 expand_suffix_delimiter parity, #206), where
+        # post_rules' entry pass reads them back as entry boundaries.
+        # No join, maiden walk or link search reaches across a core,
+        # because none of them ever sees one. A segment that IS only
+        # its core keeps it (v1 expand() splits within a part, never
+        # erases a lone part).
+        parts: list[tuple[int, ...]] = [seg]
+        if tail and cores and len(seg) > 1:
+            parts = [()]
+            for i in seg:
+                if tokens[i].text in cores:
+                    dropped.append(i)
+                    parts.append(())
+                else:
+                    parts[-1] += (i,)
+            parts = [p for p in parts if p]
+        pieces = []
+        ptags = []
+        for part in parts:
+            part_pieces, part_ptags, taken = _group_segment(
+                part, additional, tokens, bound_join,
+                None if (family_comma or tail) else ambiguities,
+                state.lexicon.given_name_titles,
+                opens_the_name=(seg_idx == 0 and not family_comma),
+                one_case=state.one_case,
+                reader=reader,
+                maiden_ambiguities=ambiguities,
+                tail_follows=(reader is TailReader.GIVEN_SLOT
+                              and len(state.segments) > 2))
+            pieces.extend(part_pieces)
+            ptags.extend(part_ptags)
+            # the marker is dropped and the maiden name's tokens become
+            # MAIDEN (#274); which pieces those are was settled in
+            # _group_segment, before the joins
+            if taken is not None:
+                marker_piece, maiden_pieces = taken
+                dropped.extend(marker_piece)
+                for piece in maiden_pieces:
+                    for i in piece:
+                        tokens[i] = copy_with(
+                            tokens[i], role=Role.MAIDEN)
+        # Group used to decide the suffix ENTRY, marking a continuation
         # token "joined" between pieces off segment SHAPE -- `tail` by
         # index, ORed since #429 with segment_suffix_reading's
         # per-piece content verdict, gated per piece and sticky across
@@ -2127,23 +2081,6 @@ def group(state: ParseState) -> ParseState:
         # title between them renders elsewhere, so they join, while
         # 'Smith Jr., Mr. Jr.' has the writer's own comma and they do
         # not.
-        if seg_cores:
-            kept: list[int] = []
-            for k in range(len(pieces)):
-                # the lone-core test; also in _maiden_take and
-                # _run_neighbours -- keep in step. This copy alone adds
-                # `len(pieces) > 1`: a segment that is nothing but its
-                # core keeps it
-                is_core = (len(pieces[k]) == 1
-                           and tokens[pieces[k][0]].text in seg_cores
-                           and len(pieces) > 1)
-                if is_core:
-                    dropped.extend(pieces[k])
-                    continue
-                kept.append(k)
-            if len(kept) != len(pieces):
-                pieces = [pieces[k] for k in kept]
-                ptags = [ptags[k] for k in kept]
         # continuation tokens of a suffix-merged piece (the ph-d merge)
         # carry the stable "joined" tag: the suffix string view joins
         # SUFFIX tokens with ", ", and the tag lets it heal the split

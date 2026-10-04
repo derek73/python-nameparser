@@ -6170,6 +6170,17 @@ CASES: tuple[Case, ...] = (
                "The core is gone before the render sees it, so the "
                "boundary is read off the dropped indices rather than "
                "off a surviving token. Parity at every baseline"),
+    Case("suffix_delimiter_core_parts_a_connective_join",
+         "Doe, John, PhD - and MD",
+         {"given": "John", "family": "Doe", "suffix": "PhD, and MD"},
+         policy=_SD,
+         ambiguities=("comma-structure",),
+         notes="a declared core parts a tail as a comma would, so a "
+               "connective beside it joins nothing across it and the "
+               "core is dropped (rules.md C1, #549) -- 1.4.0's "
+               "expand_suffix_delimiter reading, where 2.0.0 through "
+               "2.3.0 merged the core into the joined piece and "
+               "rendered 'PhD - and MD'"),
     Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
          "Smith, MD - PhD - FACS",
          {"title": "MD", "given": "-", "middle": "-", "family": "Smith",
