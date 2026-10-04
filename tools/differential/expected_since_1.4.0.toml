@@ -4699,7 +4699,7 @@ issue = "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the su
 # about a FAMILY comma, where v1 left a middle name behind and the
 # field list says so. This tail leaves v1 a suffix and nothing else.
 #
-# Literal, two names, for the reason those rules give: the shape would
+# Literal names, for the reason those rules give: the shape would
 # be "a maiden marker and a bare letter", which reaches every clause
 # name in the corpora. 'Smith, John, PhD née Puig - i Soler' joined
 # this alternation with #538 (2026-09-26): it is rules.md#M2's second

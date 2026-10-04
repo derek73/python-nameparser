@@ -1985,9 +1985,9 @@ C1. Rationale: a credential run after the comma means the name is in
     name — which is why this clause carries no example of its own.
     Accepted: a maiden marker with a declared delimiter straight
     before or after it takes no clause, the same words written with
-    a comma there taking none either — a marker needs a name word
-    ahead of it in its own part, and something to take behind it
-    (M2). Releases 2.0 through 2.3 read past the delimiter and took
+    a comma there taking none either: a marker opening a trailing
+    part has nothing ahead of it to follow, and one ending a part has
+    nothing behind it to take (M2). Releases 2.0 through 2.3 read past the delimiter and took
     the clause; the comma reading is accepted as the cost of one
     rule for a declared separator.
       "Smith, John, MD - née Jones Smith" extra_suffix_delimiters-dash →  suffix="MD, née Jones Smith"
@@ -2008,7 +2008,7 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions.md#C1 · interacts: H1, H2, P1, P2, P3, P5, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1 · interacts: H1, H2, P1, P2, P3, P5, P6, W3, S2, S3, M2 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.
