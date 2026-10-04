@@ -624,24 +624,20 @@ class Peel(NamedTuple):
 # and does not. A BARE ambiguous acronym is consumed only when the name
 # has words to spare"
 # (v1's are_suffixes tail rule, with the roman-numeral special)
-def peel_walk(start: int, ptags: Sequence[Set[str]],
-               skip: Set[int] = frozenset()) -> list[int]:
+def peel_walk(start: int, ptags: Sequence[Set[str]]) -> list[int]:
     """The indices peel_trailing walks: `start` to the segment's end,
     minus the group-flagged credential pieces (the Ph. D. merge),
-    which assign reads as suffixes at any position, and minus `skip`
-    -- a tail segment's delimiter cores, which are structure rather
-    than words (the maiden walk's case, #424). Built here and nowhere
+    which assign reads as suffixes at any position. Built here and nowhere
     else, so the walk's input cannot drift between assign and the
     group sites that read it: the numeral fork is a last-piece
     test that reads the piece before as rest[k - 2], which holds only
     over this list."""
     return [j for j in range(start, len(ptags))
-            if j not in skip and "suffix" not in ptags[j]]
+            if "suffix" not in ptags[j]]
 
 
 def trailing_start(start: int, pieces: Sequence[Sequence[int]],
                     ptags: Sequence[Set[str]], tokens: Sequence[WorkToken],
-                    skip: Set[int] = frozenset(),
                     *, one_case: bool | None) -> int:
     """Where assign's trailing suffix run begins, read over the pieces
     as they stand from `start`: the index of the first piece the S2
@@ -664,7 +660,7 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     pair's peel and H5's title chain to a fixed point. So this
     function's answer is the whole answer only where no trailing
     title chain also reads the pieces."""
-    rest = peel_walk(start, ptags, skip)
+    rest = peel_walk(start, ptags)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
     return rest[peeled.names] if peeled.names < len(rest) else len(pieces)
 

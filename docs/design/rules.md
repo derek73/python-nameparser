@@ -547,11 +547,9 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     nothing, and a word of that vocabulary ending a name, or standing
     before the credential a name ends with, is the generation it also
     spells.
-    A separator the caller declared is not a word of the name, and
-    the search reads past it as it reads past a connective: the word
-    on the connective's side is the first one beyond the separator,
-    so a connective of that vocabulary beside one joins exactly where
-    it would with the separator absent.
+    A separator the caller declared, standing in a trailing suffix
+    part, ends the search there as a comma would, so a connective
+    never joins across it (C1); anywhere else it is a word.
     Both questions this rule asks of a name — how many words it has,
     and whether it is written in one case — are asked of the name's
     OWN words: a maiden marker taken as one, and the words it takes
@@ -653,7 +651,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions.md#P3 · interacts: H1, P1, M2, R1, R3, R4, S2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P3 · interacts: H1, P1, M2, R1, R3, R4, S2, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -1416,10 +1414,10 @@ M2. Rationale: a maiden marker announces that what follows it is the
     reads them as post-nominals or titles; otherwise the clause keeps
     the link and runs on. The link first after the marker is not
     asked: stopping there declines the clause.
-    A separator the caller declared is structure rather than a name
-    word, and the link exception reads past it: the word on a link's
-    side is the one beyond the separator, so the clause reads as the
-    same clause written without it.
+    A separator the caller declared, standing in a trailing suffix
+    part, ends the clause as a comma would (C1): the words beyond it
+    are the next part's, and a marker with one straight before or
+    after it reads as it would with a comma typed there.
     The trailing numeral, credential and title stops are each asked
     TWICE for one reason: the
     count of words to spare includes the very words the marker
@@ -1521,7 +1519,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Doe nee Smith i DO Prof."  →  maiden="Smith i DO"
       "Doe, Jane nee Smith St."        →  maiden="Smith St."
       "Smith, John, PhD née Puig Mr. - i Soler" extra_suffix_delimiters-dash →  maiden="Puig Mr."
-      "Smith, John, PhD née Puig - i Soler" extra_suffix_delimiters-dash →  maiden="Puig i Soler"
+      "Smith, John, PhD née Puig - i Soler" extra_suffix_delimiters-dash →  maiden="Puig"
       "Jane Doe nee Smith Prof."       →  maiden="Smith"
       "Jane Doe nee Smith Prof."       →  title="Prof."
       "Jane Doe nee Smith MA Prof."    →  suffix="MA"
@@ -1625,7 +1623,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     clause reads that member as the credential.
       "Jane Doe Jr. nee Smith Ma"      →  maiden="Smith Ma"
       "Jane Doe Jr. Ma"                →  suffix="Jr. Ma"  · boundary
-    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5, C1 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
     maiden, but a recognized marker word inside it does — the clause
@@ -1858,6 +1856,14 @@ C1. Rationale: a credential run after the comma means the name is in
     further comma. Longer suffix words are not in question either
     way, and the strict knob above still vetoes the initial-shaped
     ones, so the run ends at them there.
+    A delimiter the policy declares parts a trailing suffix part as a
+    comma would: the words on each side of it read exactly as the
+    parts of the same text written with a comma in its place, so no
+    join, maiden clause or connective reaches across it, and the
+    delimiter itself is dropped, unless it stands alone as the whole
+    of its part. Only a trailing part is parted: in the part before
+    the first comma, or in the given part of the listing form, the
+    delimiter is a word (the Accepted entry below).
       "Smith, John"               →  family="Smith"
       "سلمان، محمد"               →  family="سلمان"
       "田中、太郎"                 →  family=""
@@ -1940,6 +1946,8 @@ C1. Rationale: a credential run after the comma means the name is in
       "García Márquez, Ms G.J."   →  given="G.J."  · boundary
       "García Márquez, Ed G.J."   →  given="Ed"  · boundary
       "John Smith, A.B. Ph.D."    →  given="A.B."  · boundary
+      "Smith, John, Puig - i Soler" extra_suffix_delimiters-dash →  suffix="Puig, i Soler"
+      "Smith, John, PhD - and MD" extra_suffix_delimiters-dash →  suffix="PhD, and MD"
     Accepted: a title in front of a particle surname, before the
     credential class's word, is read into the family. The surname
     counts once and the title is no name word, so the count reads the
@@ -1975,6 +1983,14 @@ C1. Rationale: a credential run after the comma means the name is in
     here. It is also the one consequence of this question Latin
     script cannot witness, nothing there being glued to the end of a
     name — which is why this clause carries no example of its own.
+    Accepted: a maiden marker with a declared delimiter straight
+    before or after it takes no clause, the same words written with
+    a comma there taking none either: a marker opening a trailing
+    part has nothing ahead of it to follow, and one ending a part has
+    nothing behind it to take (M2). Releases 2.0 through 2.3 read
+    past the delimiter and took the clause; the comma reading is
+    accepted as the cost of one rule for a declared separator.
+      "Smith, John, MD - née Jones Smith" extra_suffix_delimiters-dash →  suffix="MD, née Jones Smith"
     Accepted: a delimiter core the policy names (T1) is a word here,
     not structure — v1 applied the delimiter to the suffix-comma
     form alone, and that limitation is kept as parity: "Smith, RN -
@@ -1992,7 +2008,7 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions.md#C1 · interacts: H1, H2, P1, P2, P3, P5, P6, W3, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1 · interacts: H1, H2, P1, P2, P3, P5, P6, W3, S2, S3, M2 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.

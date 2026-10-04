@@ -2319,13 +2319,16 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "Jane Doe nee MA PhD"}),
     frozenset({"Jane Doe \\(nee Smith MA\\)", "Jane Doe \\(nee Smith Ma\\)",
                "Jane Doe \\(nee Smith\\) MA"}),
-    # rules.md#M2's two live examples of the delimiter-core fix (#538),
+    # rules.md#M2's two delimiter examples (added with #538, read by
+    # the comma reading since #549),
+    # and rules.md#C1's Accepted example of a marker beside one (#549),
     # one alternative per corpus name. A list of names, not a copy of
     # any wordlist: what selects them is the doc's own choice of
     # examples for a policy this corpus does not configure, so there
     # is no vocabulary here for the alternation to drift from.
     frozenset({"Smith, John, PhD née Puig Mr\\. - i Soler",
-               "Smith, John, PhD née Puig - i Soler"}),
+               "Smith, John, PhD née Puig - i Soler",
+               "Smith, John, MD - née Jones Smith"}),
     # fix(#400)'s two openings: start-of-name or just after a family
     # comma. `abd` joins forward on the given side wherever that side
     # begins, and the alternation is over ANCHORS, not over words --
@@ -2997,7 +3000,7 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # vocabulary decides; a member spelled as the shape (a bare letter
     # after a maiden marker) would reach every clause name in the
     # corpora and pre-excuse the readings the walk must refuse. The
-    # last two are rules.md#M2's two live examples of the #538 fix,
+    # last two are rules.md#M2's two delimiter examples (added with #538),
     # which the corpus parses at the DEFAULT policy and so for this
     # rule's own sentence rather than for #538's.
     frozenset({"Doe, Jane nee Puig i Soler", "Jane Doe nee Puig i Soler",
@@ -3692,8 +3695,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-27, #544: 105 -> 108; gains 'Doe, Jane nee Smith PhD
         # MEng', 'Jane Doe Jr. nee Smith Ma', 'Jane Doe nee Smith PhD
         # MEng'.
+        # 2026-10-03, #549: 108 -> 109, 'Smith, John, MD - née Jones
+        # Smith', rules.md#C1's Accepted example. Reach -- it carries a
+        # marker.
         "fix(#274) maiden markers consumed":
-            _Claim(108, ('family', 'maiden', 'middle'), "19733e2db435", None),
+            _Claim(109, ('family', 'maiden', 'middle'), "87d3acaaea68", None),
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -3863,7 +3869,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'García Márquez, MJ JK', 'John Smith, PhD XYZ' and 'MÜLLER
         # WEIß, HANS', #564's rules.md#C1 examples. Reach, verified
         # name by name.
-            _Claim(439, ('given', 'suffix', 'title'), "5a1100d3a0ac", None),
+        # 2026-10-03, #549: 439 -> 442, 'Smith, John, Puig - i Soler',
+        # 'Smith, John, PhD - and MD' and 'Smith, John, MD - née Jones
+        # Smith', #549's rules.md#C1 examples. Reach -- each is a
+        # comma name.
+            _Claim(442, ('given', 'suffix', 'title'), "bb89aae9aa98", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3974,7 +3984,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'García Márquez, MJ JK', 'John Smith, PhD XYZ' and 'MÜLLER
         # WEIß, HANS', #564's rules.md#C1 examples. Reach, verified
         # name by name.
-            _Claim(439, ('family', 'given'), "5a1100d3a0ac", None),
+        # 2026-10-03, #549: 439 -> 442, the same three #549 examples.
+        # Reach.
+            _Claim(442, ('family', 'given'), "bb89aae9aa98", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4245,8 +4257,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # unrelated 'y', which is in the corpus because its row
         # carries a shape tag. Reach again, verified name by name.
         # 2026-10-01, #575: 104 -> 105, 'Ortega y Gasset, Ed'. Reach.
+        # 2026-10-03, #549: 105 -> 106, 'Smith, John, PhD - and MD'.
+        # Reach.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(105, ('_initials',), "231bbda6768a", ('DEFAULT',)),
+            _Claim(106, ('_initials',), "8b55345f9ad4", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
         # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
         # nee Jones MA' -- the P5 pair this change added to record
@@ -4516,8 +4530,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-26, #538: 1 -> 2, rules.md#M2's second live example,
         # 'Smith, John, PhD née Puig - i Soler', joining the same
         # alternation for the same reason.
+        # 2026-10-03, #549: 2 -> 3, rules.md#C1's Accepted example,
+        # 'Smith, John, MD - née Jones Smith', joining it too.
         "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the suffix field, link and all":
-            _Claim(2, ('maiden', 'suffix'), '168b8bdef5db', None),
+            _Claim(3, ('maiden', 'suffix'), 'c1572309c3f2', None),
         # New rule (#274): one corpus name, 'Dr. nee Jones Smith
         # Prof.' -- only a title precedes the marker, so no name word
         # is left standing ahead of it. Its diff from this baseline is

@@ -1142,15 +1142,15 @@ issue = "fix(#397) a link inside a maiden clause stays in the birth name"
 #
 # The THIRD name arrives from rules.md#M2 rather than from a report:
 # 'Smith, John, PhD née Puig Mr. - i Soler' is one of rules.md#M2's
-# live examples of the #538 fix (under a configured ' - ' it reads
-# maiden 'Puig Mr.'). This corpus does not configure that delimiter,
+# delimiter examples, added with #538 (under a configured ' - ' it
+# reads maiden 'Puig Mr.', by the comma reading since #549). This corpus does not configure that delimiter,
 # so the gate parses it with the DEFAULT facade, where the dash is an
 # ordinary name word: the link has one on each side and the clause
 # keeps 'i Soler' where this baseline left it in the suffix: suffix
 # 'PhD i Soler' -> 'PhD', maiden 'Puig Mr. -' -> 'Puig Mr. - i Soler'
 # (measured 2026-09-22 at all four 2.x baselines, identical at each).
-# That is this rule's own sentence and no part of #538, whose reading
-# needs the delimiter declared; {maiden, suffix} is a subset of the
+# That is this rule's own sentence and no part of #538 or #549, whose
+# readings need the delimiter declared; {maiden, suffix} is a subset of the
 # union above.
 #
 # Literal-anchored to the four. The shape is "a one-letter connective

@@ -6170,6 +6170,39 @@ CASES: tuple[Case, ...] = (
                "The core is gone before the render sees it, so the "
                "boundary is read off the dropped indices rather than "
                "off a surviving token. Parity at every baseline"),
+    Case("suffix_delimiter_core_parts_a_connective_join",
+         "Doe, John, PhD - and MD",
+         {"given": "John", "family": "Doe", "suffix": "PhD, and MD"},
+         policy=_SD,
+         ambiguities=("comma-structure",),
+         notes="a declared core parts a tail as a comma would, so a "
+               "connective beside it joins nothing across it and the "
+               "core is dropped (rules.md C1, #549) -- 1.4.0's "
+               "expand_suffix_delimiter reading, where 2.0.0 through "
+               "2.3.0 merged the core into the joined piece and "
+               "rendered 'PhD - and MD'"),
+    Case("suffix_delimiter_lone_core_part_is_kept",
+         "Smith, John, PhD, -",
+         {"given": "John", "family": "Smith", "suffix": "PhD, -"},
+         policy=_SD,
+         notes="a tail part that is nothing but its one core keeps it "
+               "(v1 expand() split within a part and never erased a "
+               "lone part, #206): the core is cut and dropped only "
+               "where the part holds something else. Pairs with "
+               "suffix_delimiter_core_parts_a_connective_join. "
+               "RECORDED NEGATIVE CONTROL: with the one-token guard "
+               "removed this reads suffix 'PhD' (review of #549, "
+               "which found no test pinned the guard before or after "
+               "the change)"),
+    Case("suffix_delimiter_core_after_a_marker_takes_no_clause",
+         "Smith, John, PhD née - Jones",
+         {"given": "John", "family": "Smith", "suffix": "PhD née, Jones"},
+         policy=_SD,
+         ambiguities=("comma-structure",),
+         notes="the marker ends its part with nothing behind it, as it "
+               "does before a typed comma, so it takes no clause "
+               "(rules.md C1's Accepted entry, #549). 2.0.0 through "
+               "2.3.0 read maiden 'Jones', stepping past the core"),
     Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
          "Smith, MD - PhD - FACS",
          {"title": "MD", "given": "-", "middle": "-", "family": "Smith",

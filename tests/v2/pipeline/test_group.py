@@ -485,23 +485,25 @@ _DASH = Policy(extra_suffix_delimiters=frozenset({" - "}))
 
 
 def test_a_delimiter_core_in_a_suffix_tail_is_not_maiden_text() -> None:
-    """A tail segment drops its delimiter cores (#206) and the marker
-    takes what is left, in that order -- the order group() had before
-    the marker pass moved ahead of the joins. A core is not a word the
-    marker can take: it is structure, like the marker itself."""
+    """A tail segment is cut at its delimiter cores before the marker
+    pass, and the cores are dropped (#206, #549). A core is not a word
+    the marker can take, and the marker cannot take across one: 'PhD
+    née - Jones' reads as 'PhD née, Jones' does, the marker ending its
+    part with nothing behind it, so there is no clause."""
     out = _grouped("Smith, John, PhD née - Jones", policy=_DASH)
     core = next(i for i, t in enumerate(out.tokens) if t.text == "-")
     assert core in out.dropped
-    assert out.tokens[core].role is not Role.MAIDEN
-    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == [
-        "Jones"]
+    assert not any(t.role is Role.MAIDEN for t in out.tokens)
+    twin = _grouped("Smith, John, PhD née, Jones")
+    assert not any(t.role is Role.MAIDEN for t in twin.tokens)
 
 
-def test_the_walk_peels_past_a_trailing_core() -> None:
-    # The walk's peel skips the cores a tail segment drops, so a core
-    # standing last does not make the numeral "not last": the V is the
-    # suffix and the marker takes 'Jones' alone (#424; the test
-    # review's surviving mutant).
+def test_a_trailing_core_is_cut_before_the_walk() -> None:
+    # A core standing last is cut off before the walk (#549), so it
+    # does not make the numeral "not last": the V is the suffix and the
+    # marker takes 'Jones' alone. (#424's test review found a surviving
+    # mutant in the walk's core skip; #549 deleted the skip, so the
+    # site that mutant lived in is gone.)
     out = _grouped("Smith, John, PhD née Jones V -", policy=_DASH)
     assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == [
         "Jones"]
@@ -510,8 +512,8 @@ def test_the_walk_peels_past_a_trailing_core() -> None:
 def test_a_core_is_screened_before_the_marker_looks_for_a_word_ahead() -> None:
     """M2 needs a name word BEFORE the marker. A core is not one, so a
     marker standing behind nothing but a core is a leading marker and
-    is not taken -- and the core, no longer the segment's only piece
-    once the tail is read as written, is dropped as usual."""
+    is not taken -- the core, which is not the segment's only token,
+    parts the segment there and is dropped (#549)."""
     out = _grouped("Smith, John, - née Jones", policy=_DASH)
     assert not any(t.role is Role.MAIDEN for t in out.tokens)
     core = next(i for i, t in enumerate(out.tokens) if t.text == "-")
@@ -1803,16 +1805,12 @@ def test_the_marker_is_not_the_name_word_on_the_links_left() -> None:
     assert _maiden_texts(plain) == ["i", "Soler"]
 
 
-def test_a_core_between_the_marker_and_the_first_word_is_below_lo(
+def test_a_core_straight_after_the_marker_leaves_it_nothing_to_take(
 ) -> None:
-    # A delimiter core is TAIL-segment structure that group() drops
-    # after this pass, so it is never a word of the clause -- and
-    # between the marker and the first word it is below `lo`, which
-    # the bound refuses without the piece tests ever being asked.
-    # Reachable, not theoretical: measured 2026-09-21 over corpus u
-    # cases.py u the property grids u a 50,925-name generated set with
-    # cores, under thirteen core-bearing policies, 25,536 of 596,392
-    # maiden takes had a core standing there.
+    # A delimiter core is TAIL-segment structure that group() cuts the
+    # segment at before this pass (#549), so it is never a word of the
+    # clause, and a marker with a core straight behind it ends its part
+    # with nothing to take, as 'PhD née, i Jones' does.
     out = _grouped("Smith, John, PhD née - i Jones", policy=_DASH,
                    lexicon=_LINK_LEX)
     assert _maiden_texts(out) == []
@@ -1823,62 +1821,56 @@ def test_a_core_between_the_marker_and_the_first_word_is_below_lo(
     assert _maiden_texts(plain) == ["-", "i", "Jones"]
 
 
-def test_a_core_beside_a_link_is_stepped_over_like_a_connective(
-) -> None:
-    """rules.md#M2 gives the link exception a name word on each side,
-    and a delimiter core is structure the caller declared rather than
-    a name word -- so the word on a link's side is the one past the
-    core, and the clause reads as the same text written without it
-    (#538).
+def test_a_core_ends_a_maiden_clause_as_a_comma_would() -> None:
+    """rules.md's C1: "a delimiter the policy declares parts a trailing
+    suffix part as a comma would" (#549), so a maiden clause ends at a
+    core exactly as it ends at the comma written in its place, and a
+    link beside the core has no name word on that side.
 
-    Past the clause's first word the core used to be an ordinary index
-    to the neighbour walk, which stepped over connectives and nothing
-    else, so it stood in for the name word on the link's left and the
-    clause ran on past the link it otherwise ends at. The population is
-    decisions.md's 2026-09-22 #397 follow-up entry: none of it
-    reachable at the default policy, `extra_suffix_delimiters` being
-    empty there.
+    This reverses #538, which read the clause as the text written
+    WITHOUT the core: 'Puig - i Soler' kept maiden 'Puig i Soler'
+    there. RECORDED NEGATIVE CONTROL: at 061f02da the third assertion
+    read ["Puig", "i", "Soler"].
     """
     out = _grouped("Smith, John, PhD née Puig Mr. - i Soler",
                    policy=_DASH, lexicon=_LINK_LEX)
     assert _maiden_texts(out) == ["Puig", "Mr."]
-    # the same clause with the core taken out of it: the title IS the
-    # word on the link's left and refuses, so the clause ends there.
-    without = _grouped("Smith, John, PhD née Puig Mr. i Soler",
-                       policy=_DASH, lexicon=_LINK_LEX)
-    assert _maiden_texts(without) == ["Puig", "Mr."]
-    # and between two NAME words the core is stepped over too, so the
-    # link joins exactly as it joins written without the core -- the
-    # skip reading, not a boundary one, which would have ended the
-    # clause at 'Puig' and pushed the link into the credentials.
+    twin = _grouped("Smith, John, PhD née Puig Mr., i Soler",
+                    lexicon=_LINK_LEX)
+    assert _maiden_texts(twin) == ["Puig", "Mr."]
+    # between two NAME words the core ends the clause too, as the
+    # comma does: the link and the word behind it are the next part's.
     between = _grouped("Smith, John, PhD née Puig - i Soler",
                        policy=_DASH, lexicon=_LINK_LEX)
-    assert _maiden_texts(between) == ["Puig", "i", "Soler"]
+    assert _maiden_texts(between) == ["Puig"]
+    twin = _grouped("Smith, John, PhD née Puig, i Soler",
+                    lexicon=_LINK_LEX)
+    assert _maiden_texts(twin) == ["Puig"]
 
 
-def test_a_core_beside_a_link_in_a_credential_tail_is_dropped() -> None:
-    """The same stepping applies outside a maiden clause, in the
-    `frozen` loop's own `_run_neighbours` call. In BOTH texts below,
-    what stands beyond the core is a credential or nothing -- never a
-    name word -- so the link's neighbour search, stepping past the
-    core, finds no name word there either and stays a lone suffix
-    word rather than joining. The core is then a lone piece with
-    nothing joined to it, which the #206 drop removes exactly as it
-    removes any lone core, and the entries it stood between separate
-    the way they already do in 'PhD - MD' -> 'PhD, MD' (#538). Where a
-    name word stands beyond the core instead, the link joins across it
-    and the core survives in the suffix text -- not this test's shape;
-    rules.md#P3's separator sentence states the join, decisions.md's
-    #538 entry the surviving core.
+def test_a_core_beside_a_connective_in_a_credential_tail_is_dropped(
+) -> None:
+    """No connective joins across a core, generational or ordinary, and
+    whatever stands beyond it: the core parts the tail as a comma would
+    and is dropped, so the entries it stood between separate the way
+    they do in 'PhD - MD' -> 'PhD, MD' (#206, #549).
 
-    RECORDED NEGATIVE CONTROL: at e0f1a2fa, before the frozen loop
-    stepped over a core, these read suffix 'PhD - i Soler' and
-    '- i Puig' -- the core kept inside the piece the link joined.
+    RECORDED NEGATIVE CONTROLS: at e0f1a2fa, before #538, the first two
+    read suffix 'PhD - i Soler' and '- i Puig'; at 061f02da, after #538
+    and before #549, the last three read 'Puig - i Soler', 'Puig i -
+    Soler' and 'PhD - and MD' -- the core kept inside the piece a
+    connective joined across it.
     """
     dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
     assert str(dash.parse("Smith, John, PhD - i Soler").suffix) == \
         "PhD, i Soler"
     assert str(dash.parse("Smith, John, - i Puig").suffix) == "i Puig"
+    assert str(dash.parse("Smith, John, Puig - i Soler").suffix) == \
+        "Puig, i Soler"
+    assert str(dash.parse("Smith, John, Puig i - Soler").suffix) == \
+        "Puig i, Soler"
+    assert str(dash.parse("Smith, John, PhD - and MD").suffix) == \
+        "PhD, and MD"
 
 
 def test_a_marker_with_nothing_after_it_declines_before_the_bound(

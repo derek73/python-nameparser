@@ -3218,44 +3218,62 @@ def test_the_decomposed_initials_walk_can_fail(
                    for line in failures), failures
 
 
-def test_a_delimiter_core_reads_as_if_it_were_not_written() -> None:
-    """#538: under a core-bearing policy, a maiden clause reads exactly
-    as the same text written without the core. The core is structure
-    the caller declared, the #206 drop takes a LONE core out of the
-    output, and
-    rules.md#M2's link exception asks for a NAME word on each side of
-    the link -- so the word on a link's side is the one past the core.
+_TWIN_HEADS = ("Smith, John,", "Smith, John, Jr.,", "Doe, Jane, PhD")
+_TWIN_BODIES = (
+    "PhD née Puig Mr. i Soler", "PhD née Puig i Soler",
+    "PhD née Puig Dr. i y Soler", "MD née Carod i Rovira Mr.",
+    "PhD née Jones Smith i Soler", "PhD née Puig y Soler",
+    "Puig i Soler", "Puig Dr. i y Soler", "PhD and MD", "PhD i MD",
+    "PhD MD FACS", "Puig y Soler")
 
-    Asked of the `maiden` field only, because that is the field #538
-    is about: a core that lands inside a connective run the join
-    merges ('Puig Dr. i - y Soler') stays in the SUFFIX text under this
-    policy and the default alike, which is a separate gap.
 
-    RECORDED NEGATIVE CONTROL: at e0f1a2fa, before the core was stepped
-    over, 6 of these 81 texts disagreed ('Puig Mr. - i Soler' read
-    maiden 'Puig Mr. i Soler' against 'Puig Mr.', and the same for
-    'Puig Dr. - i y Soler', under each of the three heads).
-    """
-    dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
-    heads = ("Smith, John, PhD née", "Smith, John, MD née",
-             "Doe, Jane, PhD nee")
-    bodies = ("Puig Mr. i Soler", "Puig i Soler", "Puig Dr. i y Soler",
-              "Puig i i Soler", "Carod i Rovira Mr.", "Puig Mr. i Dr. Soler",
-              "Jones Smith i Soler", "Puig y Soler", "Puig Jr. i Soler")
+def _twin_record(name: ParsedName) -> tuple[object, ...]:
+    """The role fields and the reported kinds, less `comma-structure`:
+    C2 reports it once per extra comma part, so the typed comma adds
+    one the core does not, by construction rather than by reading."""
+    kinds = sorted(a.kind for a in name.ambiguities
+                   if a.kind is not AmbiguityKind.COMMA_STRUCTURE)
+    return (name.as_dict(), kinds)
+
+
+def _comma_twin_findings(parser: Parser) -> tuple[list[str], int]:
+    """Each body with a ' - ' core in one interior gap, against the same
+    text with a typed comma there, all seven fields."""
     failures = []
     total = 0
-    for head in heads:
-        for body in bodies:
+    for head in _TWIN_HEADS:
+        for body in _TWIN_BODIES:
             parts = body.split()
-            # a core in every gap PAST the first word: one between the
-            # marker and that word is below the clause's bound already
-            # (test_a_core_between_the_marker_and_the_first_word_is_below_lo)
             for gap in range(1, len(parts)):
-                written = " ".join(parts[:gap] + ["-"] + parts[gap:])
+                left, right = " ".join(parts[:gap]), " ".join(parts[gap:])
                 total += 1
-                got = str(dash.parse(f"{head} {written}").maiden)
-                want = str(dash.parse(f"{head} {body}").maiden)
+                got = _twin_record(parser.parse(f"{head} {left} - {right}"))
+                want = _twin_record(parser.parse(f"{head} {left}, {right}"))
                 if got != want:
-                    failures.append(f"{head} {written!r}: {got!r} != {want!r}")
-    assert total == 81
+                    failures.append(f"{head} {left} - {right}: "
+                                    f"{got} != {want}")
+    return failures, total
+
+
+def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
+    """rules.md's C1: "a delimiter the policy declares parts a trailing
+    suffix part as a comma would" (#549). Every role field of a name
+    with a declared core standing in a part after the suffix comma, and
+    every kind it reports but `comma-structure` (`_twin_record`),
+    equals that of the same text written with a comma in the core's
+    place -- the maiden clause, the connective join and the entry
+    boundary alike. The heads put the core in a TRAILING part only: before the
+    first comma, or in the given part of the listing form, the core is
+    a word (C1's Accepted entry), and its comma twin a different
+    structure.
+
+    RECORDED NEGATIVE CONTROL: at 061f02da, where the join and the
+    maiden walk stepped over a core instead (#538), 102 of these 129
+    texts disagreed -- 'Puig - i Soler' read suffix 'Puig - i Soler'
+    against 'Puig, i Soler', and 'PhD née Puig - i Soler' maiden
+    'Puig i Soler' against 'Puig'.
+    """
+    dash = Parser(policy=Policy(extra_suffix_delimiters=frozenset({" - "})))
+    failures, total = _comma_twin_findings(dash)
+    assert total == 129
     assert not failures, "\n".join(failures)
