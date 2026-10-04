@@ -769,13 +769,14 @@ TITLES = GIVEN_NAME_TITLES | {
     # #606: salutations and offices for the languages the block above
     # had none for, so "Herra Väinö Johansson" stops reading given
     # 'Herra'. TITLES has no ambiguous subset, so a word ships only if
-    # the leading claim misreads nobody often enough to matter
-    # (decisions.md#vocabulary-collisions C-i). Those marked "borne"
-    # are names somewhere, but rarely the FIRST word of one -- mostly
-    # surnames written last. They ship on the 'graf' precedent above,
-    # paying the cost "Graf Steffi" already pays: a name that begins
-    # with one gives it to the title (rules.md#H1). That is a
-    # judgment on each word's counts, not a rule to sweep with. Counts
+    # it is borne as no name in the LEADING position
+    # (decisions.md#vocabulary-collisions C-i) -- with one recorded
+    # exception. Those marked "borne" are names somewhere, but rarely
+    # the FIRST word of one, mostly surnames written last, and ship
+    # anyway on the 'graf' precedent above, paying the cost "Graf
+    # Steffi" already pays: a name that begins with one gives it to
+    # the title (rules.md#H1). That is a judgment on each word's
+    # counts, scoped to these words, not a rule to sweep with. Counts
     # and sources are in
     # decisions.md#salutation-titles, and so are the words that failed:
     # among them Vietnamese ông/bà, Tamil thiru and pl/cs pan, all in
