@@ -2319,7 +2319,8 @@ _NOT_A_VOCABULARY_COPY = frozenset({
                "Jane Doe nee MA PhD"}),
     frozenset({"Jane Doe \\(nee Smith MA\\)", "Jane Doe \\(nee Smith Ma\\)",
                "Jane Doe \\(nee Smith\\) MA"}),
-    # rules.md#M2's two live examples of the delimiter-core fix (#538),
+    # rules.md#M2's two delimiter examples (added with #538, read by
+    # the comma reading since #549),
     # and rules.md#C1's Accepted example of a marker beside one (#549),
     # one alternative per corpus name. A list of names, not a copy of
     # any wordlist: what selects them is the doc's own choice of
@@ -2999,7 +3000,7 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # vocabulary decides; a member spelled as the shape (a bare letter
     # after a maiden marker) would reach every clause name in the
     # corpora and pre-excuse the readings the walk must refuse. The
-    # last two are rules.md#M2's two live examples of the #538 fix,
+    # last two are rules.md#M2's two delimiter examples (added with #538),
     # which the corpus parses at the DEFAULT policy and so for this
     # rule's own sentence rather than for #538's.
     frozenset({"Doe, Jane nee Puig i Soler", "Jane Doe nee Puig i Soler",

@@ -4682,8 +4682,8 @@ fields = ["family", "maiden", "middle", "suffix"]
 issue = "fix(#274/#397) a maiden clause inside a suffix-comma tail leaves the suffix field, link and all"
 # 'Smith, John, PhD née Puig Mr. - i Soler', which arrives from
 # rules.md#M2 rather than from a report: it is one of rules.md#M2's
-# live examples of the #538 fix (under a configured ' - ' it reads
-# maiden 'Puig Mr.'). This corpus does not configure that delimiter,
+# delimiter examples, added with #538 (under a configured ' - ' it
+# reads maiden 'Puig Mr.', by the comma reading since #549). This corpus does not configure that delimiter,
 # so what the gate sees is the DEFAULT facade reading, where the dash
 # is an ordinary name word like any other.
 #

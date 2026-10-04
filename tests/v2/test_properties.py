@@ -3227,6 +3227,15 @@ _TWIN_BODIES = (
     "PhD MD FACS", "Puig y Soler")
 
 
+def _twin_record(name: ParsedName) -> tuple[object, ...]:
+    """The role fields and the reported kinds, less `comma-structure`:
+    C2 reports it once per extra comma part, so the typed comma adds
+    one the core does not, by construction rather than by reading."""
+    kinds = sorted(a.kind for a in name.ambiguities
+                   if a.kind is not AmbiguityKind.COMMA_STRUCTURE)
+    return (name.as_dict(), kinds)
+
+
 def _comma_twin_findings(parser: Parser) -> tuple[list[str], int]:
     """Each body with a ' - ' core in one interior gap, against the same
     text with a typed comma there, all seven fields."""
@@ -3238,8 +3247,8 @@ def _comma_twin_findings(parser: Parser) -> tuple[list[str], int]:
             for gap in range(1, len(parts)):
                 left, right = " ".join(parts[:gap]), " ".join(parts[gap:])
                 total += 1
-                got = parser.parse(f"{head} {left} - {right}").as_dict()
-                want = parser.parse(f"{head} {left}, {right}").as_dict()
+                got = _twin_record(parser.parse(f"{head} {left} - {right}"))
+                want = _twin_record(parser.parse(f"{head} {left}, {right}"))
                 if got != want:
                     failures.append(f"{head} {left} - {right}: "
                                     f"{got} != {want}")
@@ -3248,11 +3257,12 @@ def _comma_twin_findings(parser: Parser) -> tuple[list[str], int]:
 
 def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
     """rules.md's C1: "a delimiter the policy declares parts a trailing
-    suffix part as a comma would" (#549). Every field of a name with a
-    declared core standing in a part after the suffix comma equals the
-    field of the same text written with a comma in the core's place --
-    the maiden clause, the connective join and the entry boundary
-    alike. The heads put the core in a TRAILING part only: before the
+    suffix part as a comma would" (#549). Every role field of a name
+    with a declared core standing in a part after the suffix comma, and
+    every kind it reports but `comma-structure` (`_twin_record`),
+    equals that of the same text written with a comma in the core's
+    place -- the maiden clause, the connective join and the entry
+    boundary alike. The heads put the core in a TRAILING part only: before the
     first comma, or in the given part of the listing form, the core is
     a word (C1's Accepted entry), and its comma twin a different
     structure.

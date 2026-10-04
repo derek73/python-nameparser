@@ -1860,10 +1860,10 @@ C1. Rationale: a credential run after the comma means the name is in
     comma would: the words on each side of it read exactly as the
     parts of the same text written with a comma in its place, so no
     join, maiden clause or connective reaches across it, and the
-    delimiter itself is dropped, unless it is the whole of its part.
-    Only a trailing part is parted: in
-    the part before the first comma, or in the given part of the
-    listing form, the delimiter is a word (the Accepted entry below).
+    delimiter itself is dropped, unless it stands alone as the whole
+    of its part. Only a trailing part is parted: in the part before
+    the first comma, or in the given part of the listing form, the
+    delimiter is a word (the Accepted entry below).
       "Smith, John"               →  family="Smith"
       "سلمان، محمد"               →  family="سلمان"
       "田中、太郎"                 →  family=""
@@ -1987,9 +1987,9 @@ C1. Rationale: a credential run after the comma means the name is in
     before or after it takes no clause, the same words written with
     a comma there taking none either: a marker opening a trailing
     part has nothing ahead of it to follow, and one ending a part has
-    nothing behind it to take (M2). Releases 2.0 through 2.3 read past the delimiter and took
-    the clause; the comma reading is accepted as the cost of one
-    rule for a declared separator.
+    nothing behind it to take (M2). Releases 2.0 through 2.3 read
+    past the delimiter and took the clause; the comma reading is
+    accepted as the cost of one rule for a declared separator.
       "Smith, John, MD - née Jones Smith" extra_suffix_delimiters-dash →  suffix="MD, née Jones Smith"
     Accepted: a delimiter core the policy names (T1) is a word here,
     not structure — v1 applied the delimiter to the suffix-comma

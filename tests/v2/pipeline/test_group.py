@@ -498,11 +498,12 @@ def test_a_delimiter_core_in_a_suffix_tail_is_not_maiden_text() -> None:
     assert not any(t.role is Role.MAIDEN for t in twin.tokens)
 
 
-def test_the_walk_peels_past_a_trailing_core() -> None:
+def test_a_trailing_core_is_cut_before_the_walk() -> None:
     # A core standing last is cut off before the walk (#549), so it
     # does not make the numeral "not last": the V is the suffix and the
-    # marker takes 'Jones' alone (#424; the test review's surviving
-    # mutant).
+    # marker takes 'Jones' alone. (#424's test review found a surviving
+    # mutant in the walk's core skip; #549 deleted the skip, so the
+    # site that mutant lived in is gone.)
     out = _grouped("Smith, John, PhD née Jones V -", policy=_DASH)
     assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == [
         "Jones"]
@@ -1821,10 +1822,10 @@ def test_a_core_straight_after_the_marker_leaves_it_nothing_to_take(
 
 
 def test_a_core_ends_a_maiden_clause_as_a_comma_would() -> None:
-    """rules.md's C1: a declared delimiter in a trailing part "parts it as
-    a comma would" (#549), so a maiden clause ends at a core exactly as
-    it ends at the comma written in its place, and a link beside the
-    core has no name word on that side.
+    """rules.md's C1: "a delimiter the policy declares parts a trailing
+    suffix part as a comma would" (#549), so a maiden clause ends at a
+    core exactly as it ends at the comma written in its place, and a
+    link beside the core has no name word on that side.
 
     This reverses #538, which read the clause as the text written
     WITHOUT the core: 'Puig - i Soler' kept maiden 'Puig i Soler'

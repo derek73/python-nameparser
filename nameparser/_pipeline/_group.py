@@ -10,11 +10,12 @@ Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
 dropped (v1 suffix_delimiter parity, #549) -- no other Policy field.
-Policy.lenient_comma_suffixes left this list with #436: it reached here only through segment_suffix_reading, whose
-render consumer was this stage's one-entry join and now lives in
-post_rules. The v1 "derived titles/prefixes"
-registration becomes piece_tags entries -- per-parse state that
-dissolves with the state (v1 kept per-parse sets for the same reason).
+Policy.lenient_comma_suffixes left this list with #436: it reached
+here only through segment_suffix_reading, whose render consumer was
+this stage's one-entry join and now lives in post_rules. The v1
+"derived titles/prefixes" registration becomes piece_tags entries --
+per-parse state that dissolves with the state (v1 kept per-parse sets
+for the same reason).
 
 Implements rules P2, P3, P4 and M2, and the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
@@ -209,14 +210,14 @@ def _marker_run_pieces(pieces: Sequence[Sequence[int]],
     Each continuation is the NEXT piece, and
     that holds because classify REFUSES to tag a run whose tokens are
     not structurally contiguous. It is not a property of this walk, and
-    the reasons a token can be missing are wider than they look. No
-    join has run yet, so a piece is one token. A tail segment's
-    delimiter cores are cut out before grouping (#549), and a core
-    between two marker words would be a token between them, which
-    classify would not have tagged as a run. And `pieces` comes from a
-    SEGMENT, and segment keeps only
-    the tokens no stage has given a role, bucketed by the commas before
-    them -- so a run half inside a bracketed clause, or split across a
+    the reasons a token can be absent between two pieces are wider
+    than they look. No join has run yet, so a piece is one token. A
+    tail segment is cut at its delimiter cores and grouped part by
+    part (#549), and a core between two marker words would be a token
+    between them, which classify would not have tagged as a run. And
+    `pieces` comes from a SEGMENT, or a part of one, and segment keeps
+    only the tokens no stage has given a role, bucketed by the commas
+    before them -- so a run half inside a bracketed clause, or split across a
     structure comma, is one no segment holds whole. Walking cont tags
     without classify's refusal read a proper PREFIX of the phrase as
     the whole marker, and 'Anna z (domu) Nowak' lost its given name to
@@ -921,8 +922,9 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     # marker is never the name word on a link's left. No delimiter
     # core stands anywhere in the clause: a tail segment's cores are
     # cut out before this walk (#549), and a dash where no tail
-    # segment holds it is an ordinary word at either policy ('PhD née
-    # - i Jones' keeps maiden '- i Jones' configured or not).
+    # segment holds it is an ordinary word at either policy ('John PhD
+    # née - i Jones' keeps maiden '- i Jones' configured or not, where
+    # 'Smith, John, PhD née - i Jones' configured takes no clause).
     # `peel_start` is where assign's trailing run begins -- over the
     # pieces as written for a NONE reader (`trailing_start`'s whole
     # answer, read off the peel pair above rather than re-running it),
@@ -946,14 +948,13 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     lo = m + run
     peel_start = (rest[peeled.names] if peeled.names < len(rest)
                   else len(pieces))
-    j = m + run
+    j = lo
     # The link exception's memo cell, filled inside the predicate on
     # the first connective it is asked about (see its docstring).
     beside: list[_Beside] = []
-    while j < len(pieces) and j < trailing:
-        k = j
-        if (not is_suffix_piece(pieces[k], ptags[k], tokens)
-                or _link_joins_inside_the_clause(k, lo, peel_start,
+    while j < trailing:
+        if (not is_suffix_piece(pieces[j], ptags[j], tokens)
+                or _link_joins_inside_the_clause(j, lo, peel_start,
                                                  pieces, ptags, tokens,
                                                  beside)):
             j += 1
@@ -977,19 +978,19 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # declines the clause outright, which gives nothing up. The
         # as-written peel is read only here, on a refused link.
         if (j > m + run and reads is not None
-                and _is_conj_piece(pieces[k], ptags[k], tokens)):
+                and _is_conj_piece(pieces[j], ptags[j], tokens)):
             as_written = peel_trailing(written, pieces, ptags, tokens,
                                        one_case)
             written_start = (written[as_written.names]
                              if as_written.names < len(written)
                              else len(pieces))
-            if _link_joins_inside_the_clause(k, lo, written_start,
+            if _link_joins_inside_the_clause(j, lo, written_start,
                                              pieces, ptags, tokens,
                                              beside):
-                left = [i for i in range(len(pieces)) if i < m or i >= k]
+                left = [i for i in range(len(pieces)) if i < m or i >= j]
                 view = [pieces[i] for i in left]
                 view_tags = [ptags[i] for i in left]
-                at = left.index(k)
+                at = left.index(j)
                 if not _release_reads_off(view, view_tags, tokens, at,
                                           len(view), at, reads, one_case,
                                           tail_follows=tail_follows):
@@ -2031,9 +2032,10 @@ def group(state: ParseState) -> ParseState:
         # dropped (v1 expand_suffix_delimiter parity, #206), where
         # post_rules' entry pass reads them back as entry boundaries.
         # No join, maiden walk or link search reaches across a core,
-        # because none of them ever sees one. A segment that IS only
-        # its core keeps it (v1 expand() splits within a part, never
-        # erases a lone part).
+        # because none of them ever sees one. A one-token segment that
+        # is its core keeps it (v1 expand() splits within a part, never
+        # erases a lone part); a segment of several cores and nothing
+        # else drops them all, as the #206 drop did.
         # Accumulated in a list and frozen once per part: a tuple
         # extended per token is quadratic in the part's length, C-level
         # work no frame guard sees (#553's class; review of #549).
@@ -2042,7 +2044,7 @@ def group(state: ParseState) -> ParseState:
         # written, the default policy's own 4.5x, where the tuple read
         # 8.0x. No clock guard: _PREFIXED_SHAPES parses with the default
         # policy and _POLICY_SHAPES repeats a unit with no prefix, and a
-        # tail needs both, so a row would mean a third table.
+        # tail needs both, so a row would mean a table of its own.
         parts: list[tuple[int, ...]] = [seg]
         if tail and cores and len(seg) > 1:
             parts = []
