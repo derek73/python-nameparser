@@ -3078,7 +3078,7 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({'Jane Doe nee Puig i Soler',
                'Smith, John, PhD née Puig - i Soler',
                'Smith, John, PhD née Puig Mr\\. - i Soler'}),
-    frozenset({'Jane Doe nee Smith DO DO',
+    frozenset({'Jane Doe nee Smith DO DO', 'Jane Doe nee Smith VI Prof\\.',
                'Jane van der Berg nee Prof\\. King\\. MA',
                'Jane van der Berg nee Smith Prof\\.', 'John nee Prof\\. ba MA'}),
     frozenset({'Jane Doe nee Smith MA JD', 'Jane Doe nee Smith MA PhD',
@@ -3648,8 +3648,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Smith', rules.md#C1's Accepted example. Reach -- it carries a
         # marker.
         # 2026-10-04, #601/#602: 109 -> 98; the rules.md#M2 examples #601 retired left the corpus, and the names #601 moved left this rule's regex.
+        # 2026-10-04, #610: +1, 'Jane Doe nee Smith VI Prof.', rules.md#M2's
+        # numeral example behind a title. Reach.
         "fix(#274) maiden markers consumed":
-            _Claim(98, ('family', 'maiden', 'middle'), "7b41ba0f0b38", None),
+            _Claim(99, ('family', 'maiden', 'middle'), "b9259620e118", None),
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
@@ -4559,8 +4561,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(6, ('family', 'middle', 'suffix', 'title'), "007582298dfc", None),
         "fix(#601/#602) a marker behind a title, a suffix word or a connective is an ordinary word":
             _Claim(4, ('family', 'middle', 'suffix', 'title'), "456e8a63ed75", None),
+        # 2026-10-04, #610: +1, 'Jane Doe nee Smith VI Prof.', rules.md#M2's
+        # numeral example behind a title. Reach.
         "fix(#274/#601) the clause ends at the clause-free name's trailing run, which the take consumes":
-            _Claim(4, ('family', 'given', 'maiden', 'middle', 'suffix', 'title'), "d15d58da6be1", None),
+            _Claim(5, ('family', 'given', 'maiden', 'middle', 'suffix', 'title'), "7d2d5efa8eb5", None),
         "fix(#274/#601) the first word after the marker is the maiden name":
             _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "aaf53040b071", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":
@@ -5300,8 +5304,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('maiden', 'suffix'), "59dfc0c40e36", None),
         "fix(#601/#602) a marker behind a title, a suffix word or a connective is an ordinary word":
             _Claim(5, ('_ambiguities', 'family', 'given', 'maiden', 'suffix', 'title'), "1c9432e08a21", None),
+        # 2026-10-04, #610: +1, 'Jane Doe nee Smith VI Prof.', rules.md#M2's
+        # numeral example behind a title. Reach.
         "fix(#601) the clause ends at the clause-free name's trailing run, which the take consumes":
-            _Claim(4, ('_ambiguities', 'family', 'given', 'maiden', 'suffix', 'title'), "d15d58da6be1", None),
+            _Claim(5, ('_ambiguities', 'family', 'given', 'maiden', 'suffix', 'title'), "7d2d5efa8eb5", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":
             _Claim(5, ('_ambiguities', 'family', 'middle', 'suffix', 'title'), "3129cd9609b9", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
@@ -5764,8 +5770,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('maiden', 'suffix'), "59dfc0c40e36", None),
         "fix(#601/#602) a marker behind a title, a suffix word or a connective is an ordinary word":
             _Claim(5, ('_ambiguities', 'family', 'given', 'maiden', 'suffix', 'title'), "1c9432e08a21", None),
+        # 2026-10-04, #610: +1, 'Jane Doe nee Smith VI Prof.', rules.md#M2's
+        # numeral example behind a title. Reach.
         "fix(#601) the clause ends at the clause-free name's trailing run, which the take consumes":
-            _Claim(4, ('_ambiguities', 'maiden', 'suffix', 'title'), "d15d58da6be1", None),
+            _Claim(5, ('_ambiguities', 'maiden', 'suffix', 'title'), "7d2d5efa8eb5", None),
         "fix(#601) the first word after the marker is the maiden name":
             _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":
@@ -6453,8 +6461,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('maiden', 'suffix'), "59dfc0c40e36", None),
         "fix(#601/#602) a marker behind a title, a suffix word or a connective is an ordinary word":
             _Claim(5, ('_ambiguities', 'family', 'given', 'maiden', 'suffix', 'title'), "1c9432e08a21", None),
+        # 2026-10-04, #610: +1, 'Jane Doe nee Smith VI Prof.', rules.md#M2's
+        # numeral example behind a title. Reach.
         "fix(#601) the clause ends at the clause-free name's trailing run, which the take consumes":
-            _Claim(4, ('_ambiguities', 'family', 'given', 'maiden', 'suffix', 'title'), "d15d58da6be1", None),
+            _Claim(5, ('_ambiguities', 'family', 'given', 'maiden', 'suffix', 'title'), "7d2d5efa8eb5", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":
             _Claim(5, ('_ambiguities', 'family', 'middle', 'suffix', 'title'), "3129cd9609b9", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
@@ -6770,8 +6780,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('maiden', 'suffix'), "59dfc0c40e36", None),
         "fix(#601/#602) a marker behind a title, a suffix word or a connective is an ordinary word":
             _Claim(5, ('_ambiguities', 'family', 'given', 'maiden', 'suffix'), "1c9432e08a21", None),
+        # 2026-10-04, #610: +1, 'Jane Doe nee Smith VI Prof.', rules.md#M2's
+        # numeral example behind a title. Reach.
         "fix(#601) the clause ends at the clause-free name's trailing run, which the take consumes":
-            _Claim(4, ('_ambiguities', 'maiden', 'suffix', 'title'), "d15d58da6be1", None),
+            _Claim(5, ('_ambiguities', 'maiden', 'suffix', 'title'), "7d2d5efa8eb5", None),
         "fix(#601) the first word after the marker is the maiden name":
             _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":

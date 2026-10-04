@@ -963,7 +963,7 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P7. Rationale: a one-letter particle is spelled with the same letter
     as an initial, and the period is what tells them apart. An
@@ -1533,6 +1533,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Doe nee Smith MA Prof."  →  suffix="MA"
       "Jane Doe nee Smith Prof. MA"  →  maiden="Smith"
       "Jane Doe nee Smith V Prof."  →  suffix="V"
+      "Jane Doe nee Smith VI Prof." →  suffix="VI"
       "Jane Doe nee King."          →  maiden="King."  · boundary
       "Jane Doe nee Prof. Dr."      →  maiden="Prof."  · boundary
       "Jane van der Berg nee Smith Prof."  →  title="Prof."
@@ -1582,7 +1583,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     Accepted: a marker behind a credential is an ordinary word, and
     the credential's run (S2) takes it in with everything after it.
       "Jane Doe Jr. nee Smith"      →  suffix="Jr. nee Smith"  · boundary
-    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5, C1 · implemented: nameparser/_pipeline/_group.py
+    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5, C1 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
 
 M3. Rationale: an enclosure says nothing about whether it means
     maiden, but a recognized marker word inside it does — the clause

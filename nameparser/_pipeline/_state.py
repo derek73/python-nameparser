@@ -96,6 +96,13 @@ AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
 _AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
     {AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
 
+#: The roles that make a piece a name word (rules.md#P6's walk), and
+#: the roles of a word not yet read as one: a suffix, or nothing yet
+#: -- what `_pieces.particle_tail` reads, asked by post_rules after
+#: assign and by assign before its credential run places its words.
+NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
+SUFFIX_OR_UNREAD = (Role.SUFFIX, None)
+
 
 class Structure(Enum):
     """segment's comma-structure decision."""

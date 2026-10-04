@@ -7,7 +7,7 @@ no parse can produce, and the stability its readers rest on.
 """
 import dataclasses
 import itertools
-from collections.abc import Sequence, Set
+from collections.abc import Callable, Sequence, Set
 
 import pytest
 
@@ -16,17 +16,18 @@ from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
 from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
+from nameparser._pipeline import _group
 from nameparser._pipeline._group import group
 from nameparser._pipeline._pieces import (
     _anchors, _numeral_behind_the_initial_veto, anchor_in_reach,
     credential_anchors,
     credential_at_the_given_slot, is_leading_title, leading_titles,
     own_words, peel_trailing, peel_walk, segment_suffix_reading,
-    trailing_titles,
+    tail_reading, trailing_candidates, trailing_titles,
 )
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, ParseState, WorkToken,
+    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, WorkToken,
 )
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import is_one_case, is_title_shaped, tag_marker_runs
@@ -886,3 +887,92 @@ def test_the_given_part_after_a_family_comma_reads_the_run_too() -> None:
 def test_a_title_inside_the_given_parts_run_is_a_title() -> None:
     name = parse("Holder, Eric Jr. Attorney General")
     assert (name.title, name.suffix) == ("Attorney General", "Jr.")
+
+
+# #610: `trailing_candidates` is the maiden take's choice of which
+# clause words to read the clause-free view over, and its contract is
+# a SUPERSET of what `tail_reading` takes from that view. Checked AT
+# THE TAKE, on the pieces the take is handed -- before any join, which
+# is where it runs -- by wrapping `_group._maiden_take` and the
+# candidates call inside it: the clause-free name is the head plus every
+# clause word after the first (which the take always keeps), and every
+# piece the tail reading takes from it must fall at or after the cut.
+_CANDIDATE_HEADS = ("Jane Doe", "J.", "Jane van der Berg", "Mai Le",
+                    "abdul Berg", "John")
+_CANDIDATE_WORDS = ("Smith", "VI", "V", "III", "MA", "Ma", "PhD", "Jr.",
+                    "Prof.", "Dr.", "King.", "do", "DO", "de", "X.Y.Z.",
+                    "Ph. D.", "i", "Jones")
+
+
+def _candidate_misses(monkeypatch: pytest.MonkeyPatch,
+                      candidates: Callable[..., int] = trailing_candidates,
+                      ) -> list[str]:
+    misses: list[str] = []
+    seen: list[tuple[int, int]] = []
+    real_take = _group._maiden_take
+
+    def cut(lo: int, pieces: Sequence[Sequence[int]],
+            ptags: Sequence[Set[str]],
+            tokens: Sequence[WorkToken]) -> int:
+        c = candidates(lo, pieces, ptags, tokens)
+        seen.append((lo, c))
+        return c
+
+    def take(pieces: Sequence[Sequence[int]], ptags: Sequence[Set[str]],
+             tokens: Sequence[WorkToken], one_case: bool | None,
+             site: _group.ClauseSite,
+             ambiguities: list[PendingAmbiguity],
+             ) -> _group.MaidenIndices | None:
+        seen.clear()
+        answer = real_take(pieces, ptags, tokens, one_case, site,
+                           ambiguities)
+        for lo, c in seen:
+            m = next(v for v in range(1, len(pieces))
+                     if _group._is_maiden_marker_piece(pieces[v], tokens))
+            left = list(range(m)) + list(range(lo + 1, len(pieces)))
+            view = [pieces[q] for q in left]
+            vtags = [ptags[q] for q in left]
+            rest = peel_walk(leading_titles(view, vtags, tokens), vtags)
+            kept, chained, peel = tail_reading(rest, view, vtags, tokens,
+                                               one_case)
+            taken = {left[q] for q in (*kept[peel.names:], *chained)
+                     if q >= m}
+            if any(j < c for j in taken):
+                misses.append(" ".join(tokens[i].text for p in pieces
+                                       for i in p))
+        return answer
+
+    monkeypatch.setattr(_group, "trailing_candidates", cut)
+    monkeypatch.setattr(_group, "_maiden_take", take)
+    for head in _CANDIDATE_HEADS:
+        for n in (1, 2, 3):
+            for tail in itertools.product(_CANDIDATE_WORDS, repeat=n):
+                _through_group(f"{head} nee Smith {' '.join(tail)}")
+    return misses
+
+
+def test_the_trailing_candidates_cover_what_the_tail_reading_takes(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """M2's take ends the clause at the trailing run the clause-free
+    name reads, which it can only find if every word that run might
+    hold is in its view. 6 heads x 18 words to a tail of three after
+    'nee Smith', 37,044 parses through `group`, about 2.6s on py3.11
+    (measured 2026-10-04).
+
+    RECORDED NEGATIVE CONTROL, measured 2026-10-04 on this grid: the
+    candidate loop as #601 shipped it (master 8a8459a8), which admitted
+    a roman numeral by its shape only as the clause's LAST word, misses
+    432 texts -- every one a numeral in no wordlist ('VI') with
+    a period-marked title or the merged 'Ph. D.' behind it. The chain
+    takes the title first, and the walk never holds the flagged
+    'Ph. D.', so either way the numeral is the walk's last piece and
+    the fork reads it: 'Jane Doe nee Smith VI Prof.' kept maiden 'Smith
+    VI' where 'John Smith VI Prof.' reads suffix 'VI'. A first draft of
+    the fix covered the title half and missed the 'Ph. D.' half.
+
+    A first version of this test read plain names through all of
+    `group`, so its pieces had the joins applied that the take runs
+    before ('de VI Prof.' arrived as one piece); review moved the
+    oracle to the take itself.
+    """
+    assert _candidate_misses(monkeypatch) == []

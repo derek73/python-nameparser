@@ -48,8 +48,7 @@ from typing import assert_never
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
     is_leading_title, is_suffix_piece, is_title_piece,
-    is_trailing_title_word, starts_a_credential_run,
-    leading_titles, peel_walk, tail_reading,
+    leading_titles, peel_walk, tail_reading, trailing_candidates,
     trailing_start, trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
@@ -58,7 +57,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import (
-    delimiter_cores, is_trailing_numeral_suffix,
+    delimiter_cores,
 )
 from nameparser._types import AmbiguityKind, Role
 
@@ -226,33 +225,6 @@ def _marker_run_pieces(pieces: Sequence[Sequence[int]],
         tokens[pieces[k][0]].tags for k in range(m + 1, len(pieces)))
 
 
-#: the tags `_clause_tail_word` admits a lone word on
-_CLAUSE_TAIL_TAGS = _AMBIGUOUS_CREDENTIAL_TAGS | {"vocab:suffix"}
-
-
-# rules.md#M2: "It takes them up to the trailing run of post-nominals
-# and titles that the end of the name reads as if the clause were not
-# written" (#601). A word that may belong to that run -- the view
-# decides which of them it actually takes.
-def _clause_tail_word(piece: Sequence[int], ptags: Set[str],
-                      tokens: Sequence[WorkToken]) -> bool:
-    """Suffix vocabulary, a title word H5's chain takes from the end
-    (period-marked: a BARE title word ending a name is a name word, and
-    pulled into the view it would only inflate the count of words to
-    spare), or a member of the ambiguous class: a word the end of the
-    clause-free name might read as a post-nominal or a title. Being one
-    is no answer -- `_maiden_take` reads the view to find out which of
-    them the trailing rule actually takes. A bare title inside #602's
-    credential run reaches the view another way, through the run's own
-    start."""
-    if ("suffix" in ptags or is_suffix_piece(piece, ptags, tokens)
-            or is_trailing_title_word(piece, ptags, tokens)):
-        return True
-    return (len(piece) == 1
-            and not tokens[piece[0]].tags.isdisjoint(_CLAUSE_TAIL_TAGS))
-
-
-
 def _maiden_take(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
@@ -324,23 +296,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                                     for j in range(lo, end)]
     if site is not ClauseSite.TRAILING:
         assert_never(site)
-    # the last piece is a candidate on the numeral fork's own SHAPE test
-    # too, which asks no vocabulary ('VI' is in no suffix list, and
-    # 'John Smith VI' reads it as the suffix all the same)
-    c = len(pieces)
-    while c - 1 > lo and (
-            _clause_tail_word(pieces[c - 1], ptags[c - 1], tokens)
-            or (c == len(pieces) and len(pieces[c - 1]) == 1
-                and is_trailing_numeral_suffix(
-                    tokens[pieces[c - 1][0]].text,
-                    tokens[pieces[c - 2][0]].text))):
-        c -= 1
-    # the tag test is the predicate's own necessary half, inline so a
-    # name word in the clause pays no frame
-    c = next((j for j in range(lo + 1, c)
-              if ("suffix" in ptags[j]
-                  or "vocab:suffix" in tokens[pieces[j][0]].tags)
-              and starts_a_credential_run(pieces[j], ptags[j], tokens)), c)
+    c = trailing_candidates(lo, pieces, ptags, tokens)
     end = len(pieces)
     released: list[tuple[int, Role]] = []
     # nothing behind the clause that a trailing rule could take: the
