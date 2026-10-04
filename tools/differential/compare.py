@@ -2134,7 +2134,12 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
 #: by necessity, not a pytest-speed roster check, and it is not here.
 _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     "expected_since_1.4.0.toml": {
-        "1 & 2, 3 4 5, Mr.": ("_initials",),
+        # 2026-10-04 (#603): the shape moved from `_initials` to
+        # {suffix, title}. A title word past the second comma is a title
+        # now (rules.md#C2), so 'Mr.' leaves the suffix; 1.4.0 read it
+        # as suffix 'Mr.' here, and the initials-only difference this
+        # row watched is now inside a role diff.
+        "1 & 2, 3 4 5, Mr.": ("suffix", "title"),
         "Anh do": ("_initials",),
         "Anna Müller (geb. Schmidt)": ("maiden", "nickname"),
         "Anna Müller geb. Schmidt": ("family", "maiden", "middle"),
@@ -2200,7 +2205,13 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         # credential again by its capitals, as this baseline read it
         # by vocabulary, so only the comma's report differs.
         "John Smith, RAI": ("_ambiguities",),
-        "John, Smith, Dr.": ("_ambiguities",),
+        # 2026-10-04 (#603): the shape moved from `_ambiguities` to
+        # {suffix, title}. A title word past the second comma is a
+        # title now (rules.md#C2), so 'Dr.' reads title and the part is
+        # recognized: the comma-structure report this row watched is
+        # gone, and the role diff is the one the baseline's suffix 'Dr.'
+        # gives.
+        "John, Smith, Dr.": ("suffix", "title"),
         "Jong van der": ("_initials",),
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),
@@ -2249,7 +2260,13 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         # credential again by its capitals, as this baseline read it
         # by vocabulary, so only the comma's report differs.
         "John Smith, RAI": ("_ambiguities",),
-        "John, Smith, Dr.": ("_ambiguities",),
+        # 2026-10-04 (#603): the shape moved from `_ambiguities` to
+        # {suffix, title}. A title word past the second comma is a
+        # title now (rules.md#C2), so 'Dr.' reads title and the part is
+        # recognized: the comma-structure report this row watched is
+        # gone, and the role diff is the one the baseline's suffix 'Dr.'
+        # gives.
+        "John, Smith, Dr.": ("suffix", "title"),
         "Jong van der": ("_initials",),
         "Jong, van der": ("_initials",),
         "Jose E. Maria Santos": ("_initials",),

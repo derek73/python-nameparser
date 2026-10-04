@@ -3386,7 +3386,10 @@ def test_a_one_letter_particle_with_its_period_reads_as_any_initial() -> None:
 
 
 #: The recorded negative control: how many grid texts disagree with the
-#: veto removed from ONE site, measured 2026-10-04. Every site moves
+#: veto removed from ONE site, measured 2026-10-04 (classify 412 and
+#: the facade 121 until #603 the same day, whose opened comma part
+#: reads nine 'DO Ó., ...'-shaped texts the same with the veto off or
+#: on, the credential opening the part either way). Every site moves
 #: some, so none is decoration. _render's is measured without the
 #: particle case masks, as for a caller's one-letter particle that has
 #: none: with the shipped 'ó' mask the repair takes the mask before
@@ -3397,10 +3400,10 @@ def test_a_one_letter_particle_with_its_period_reads_as_any_initial() -> None:
 #: changed nothing and was left out (decisions.md#P7 says how that was
 #: measured).
 _P7_SITE_EFFECT = {
-    "nameparser._pipeline._classify": 412,
+    "nameparser._pipeline._classify": 403,
     "nameparser._pipeline._vocab": 21,
     "nameparser._render": 338,
-    "nameparser._facade": 121,
+    "nameparser._facade": 120,
 }
 
 

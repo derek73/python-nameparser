@@ -724,10 +724,14 @@ issue = "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps 
 # sets the post-comma 'Dr.' is a title only, so the comma is followed
 # by nothing but titles and the pre-comma name keeps its split (the
 # no-name-word repair): suffix 'Dr.' -> title 'Dr.' for the two-part
-# spelling. The three-part spelling keeps suffix 'Dr.' (a third part
-# is suffix by position) and moves only by gaining the
+# spelling. The three-part spelling read suffix 'Dr.' (a third part
+# was suffix by position) and moved only by gaining the
 # COMMA_STRUCTURE report C2 gives a third part that is not suffix
-# words.
+# words, until #603 (2026-10-04) made a title word there a title:
+# rules.md#C2, "a word of the title vocabulary there that is not also
+# suffix vocabulary is a title". It now moves suffix 'Dr.' -> title
+# 'Dr.' and no report, the same {title, suffix} as the two-part
+# spelling, so `_ambiguities` left this rule's fields that day.
 #
 # The two-part spelling is ALSO compared under FAMILY_FIRST, as shape
 # 4 of corpus_shapes.jsonl: the declared order applies to the
@@ -741,7 +745,7 @@ issue = "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps 
 # this string under it, so a diff arriving there would be one nobody
 # has looked at.
 name_regex = "(?i)^john,?\\s+smith,\\s*dr\\.?$"
-fields = ["title", "suffix", "_ambiguities"]
+fields = ["title", "suffix"]
 orders = ["DEFAULT", "FAMILY_FIRST"]
 
 [[change]]
@@ -3917,3 +3921,26 @@ issue = "fix(#606) salutations and titles in other languages"
 # The given name becomes the title: 'Greve'.
 name_regex = "^Greve Anna$"
 fields = ["title", "given"]
+
+[[change]]
+# rules.md#C1: "A credential opening the part makes it the postnominal
+# part however it goes on" (#603, 2026-10-04): where the first suffix
+# word after the comma starts S2's run, every word behind it reads as
+# that run reads, so a full name before the comma keeps its positional
+# read ('John Smith, PhD Jones') and a one-word name is the family
+# ('Doe, PhD Jones'). The undeclared dash of the delimiter rows is one
+# more word of the run, and a title/suffix dual opens the part behind
+# two name words ('John Doe, MD - PhD - FACS').
+issue = "fix(#603) a credential opening the part after the comma makes it the postnominal part"
+name_regex = "^(?:Doe, PhD Jones|John Doe, MD - PhD - FACS|John Doe, MD - PhD, FACS|John Smith, MD Jones|John Smith, Ph\\. D\\. Jones|John Smith, PhD Jones|Smith, RN - CRNA|Steven Hardman, MD - DO - DDS|Steven Hardman, RN - CRNA)$"
+fields = ["_ambiguities", "family", "given", "middle", "suffix", "title"]
+
+[[change]]
+# rules.md#C2: "a word of the title vocabulary there that is not also
+# suffix vocabulary is a title" (#603, 2026-10-04): a part past the
+# second comma reads its title words as titles, and a part of title and
+# suffix words is recognized rather than flagged ('Eric H. Holder, Jr.,
+# Attorney General'). 1.4.0 read these titles as titles too.
+issue = "fix(#603) a title word in a part past the second comma is a title"
+name_regex = "^(?:1 & 2, 3 4 5, Mr\\.|Andrew Perkins, Jr\\., Col\\. \\x28Ret\\x29|Eric H\\. Holder, Jr\\., Attorney General|Eric H\\. Holder, Jr\\., Secretary of State|Smith, John, Prof\\.)$"
+fields = ["_ambiguities", "suffix", "title"]

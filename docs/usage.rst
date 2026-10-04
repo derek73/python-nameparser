@@ -40,8 +40,8 @@ Understood by default
 Every piece of each is optional:
 
 1. ``Title Given "Nickname" Middle Middle Family Suffix``
-2. ``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix]``
-3. ``Title Given Middle Family [Suffix], Suffix [, Suffix]``
+2. ``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix or Title]``
+3. ``Title Given Middle Family [Suffix], Suffix [, Suffix or Title]``
 
 The last two differ in what the comma is doing. In form 2 it separates
 the family name from the rest, so the family name comes first; in form
@@ -56,6 +56,14 @@ given-then-family:
     'Jr.'
     >>> parse("John Doe, Jr.").family                    # form 3
     'Doe'
+
+A part after a further comma holds more suffixes, and a word there that
+is a title rather than a suffix is read as the title (since 2.4):
+
+.. doctest::
+
+    >>> parse("Eric H. Holder, Jr., Attorney General").title
+    'Attorney General'
 
 Family-first forms you declare
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

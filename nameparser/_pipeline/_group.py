@@ -1282,9 +1282,10 @@ def group(state: ParseState) -> ParseState:
         # Suppressed after a family comma for the same reason _assign
         # suppresses it there: the family name is already fixed, so
         # there is no fork left to report. Suppressed in a tail segment
-        # as well, after either comma: assign reads that segment
-        # wholly as suffixes, a marker standing in it being an ordinary
-        # word (rules.md#M2, #601), so a
+        # as well, after either comma: assign reads that segment as
+        # suffixes and its title words as titles (#603), never as a
+        # name, a marker standing in it being an ordinary word
+        # (rules.md#M2, #601), so a
         # chain report there -- a particle
         # chained onto a name piece, or an acronym taken into the name
         # -- names a reading the parse never takes. rules.md#C2: "a part
