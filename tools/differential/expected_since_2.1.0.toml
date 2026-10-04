@@ -3895,3 +3895,22 @@ issue = "fix(#604) the Irish and Malay patronymic particles"
 # 'Ó MURCHÚ', 'binti navalamar'.
 name_regex = "^(?:Juan Ó Pérez|SEÁN Ó MURCHÚ|ina binti navalamar)$"
 fields = ["middle", "family"]
+
+# ---------------------------------------------------------------
+# #606: SALUTATIONS AND TITLES IN OTHER LANGUAGES.
+# TITLES gains salutations and offices for languages it had none
+# for, among them three that are also surnames written last
+# wherever they are borne (graaf, greve, knight), shipped on the
+# graf precedent (rules.md#H1). The one corpus mover is the
+# H1 Accepted example for that cost: the surname-first form
+# without a comma gives the surname-borne word to the title.
+#
+# Literal-anchored to the name: it was reported unexplained on the
+# run before this rule existed (2026-10-04).
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#606) salutations and titles in other languages"
+# The given name becomes the title: 'Greve'.
+name_regex = "^Greve Anna$"
+fields = ["title", "given"]

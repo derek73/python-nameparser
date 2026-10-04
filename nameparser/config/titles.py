@@ -766,6 +766,81 @@ TITLES = GIVEN_NAME_TITLES | {
     'writer',
     'zoologist',
 
+    # #606: salutations and offices for the languages the block above
+    # had none for, so "Herra Väinö Johansson" stops reading given
+    # 'Herra'. TITLES has no ambiguous subset, so a word ships only if
+    # it is borne as no name in the LEADING position
+    # (decisions.md#vocabulary-collisions C-i) -- with one recorded
+    # exception. Those marked "borne" are names somewhere, but rarely
+    # the FIRST word of one, mostly surnames written last, and ship
+    # anyway on the 'graf' precedent above, paying the cost "Graf
+    # Steffi" already pays: a name that begins with one gives it to
+    # the title (rules.md#H1). That is a judgment on each word's
+    # counts, scoped to these words, not a rule to sweep with. Counts
+    # and sources are in
+    # decisions.md#salutation-titles, and so are the words that failed:
+    # among them Vietnamese ông/bà, Tamil thiru and pl/cs pan, all in
+    # its Excluded (TITLES) block.
+    # English offices, completing runs like "Police Commissioner".
+    # 'marshal' and 'justice' stay out: both are given names.
+    'administrator',
+    'commissioner',
+    'counsel',      # borne
+    # Finnish: Mr, Mrs, Miss, Count.
+    'herra',        # borne
+    'rouva',
+    'neiti',
+    'kreivi',       # borne
+    # Estonian: Mr, Mrs, Miss, Count.
+    'härra',
+    'proua',
+    'preili',
+    'krahv',
+    # Romanian: Mr, Mrs (with and without the breve), Miss.
+    'domnul',
+    'doamna',
+    'doamnă',
+    'domnișoara',
+    # Croatian/Serbian/Bosnian, Latin script: Mr, Mrs, Miss.
+    'gospodin',
+    'gospođa',
+    'gospođica',
+    # Icelandic: Mrs, Miss, Count ('herra', Mr, is the Finnish entry).
+    'frú',
+    'ungfrú',
+    'greifi',
+    # Dutch: Mr, Miss, Count ('mevrouw' is above).
+    'meneer',
+    'juffrouw',
+    'graaf',        # borne
+    # Scandinavian Count ('fru' and 'herr' are above), Swedish Miss.
+    'greve',        # borne
+    'fröken',
+    # Czech: Mrs, Miss. Mr is 'pan', the Chinese surname Pan, so out;
+    # 'paní' keeps its accent, so the Indian name Pani is untouched.
+    'paní',
+    'slečna',
+    # Polish: Count.
+    'hrabia',       # borne
+    # Lithuanian: Mr, Mrs, Count.
+    'ponas',        # borne
+    'ponia',        # borne
+    'grafas',
+    # Malay: Mr. Mrs is 'puan', a given name (Puan Maharani), so out.
+    'encik',
+    # Filipino: Mr, Mrs, Miss.
+    'ginoo',        # borne
+    'ginang',       # borne
+    'binibini',     # borne
+    # Georgian, Latin script: Mr, Mrs, Count.
+    'batoni',       # borne
+    'kalbatoni',
+    'grafi',
+    # Danish/Norwegian/German "Familie Hansen", the family addressed.
+    'familie',
+    # English Knight, the rank the post-nominal 'knt' names.
+    'knight',       # borne
+
     # #269: Cyrillic (ru/uk) -- mr/mrs/dr/prof/academician/pan(i)
     # honorifics, same title-then-family convention as 'mr'/'dr'/'prof'
     # above (not GIVEN_NAME_TITLES: "г-н Петров" families the surname

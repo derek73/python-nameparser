@@ -17,6 +17,7 @@ CAPITALIZATION_EXCEPTIONS = {
     'dmin': 'DMin',
     'drph': 'DrPH',
     'dsc': 'DSc',
+    'knt': 'Knt',
     'kt': 'Kt',
     'mdiv': 'MDiv',
     'pharmd': 'PharmD',

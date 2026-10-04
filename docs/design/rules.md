@@ -85,6 +85,17 @@ H1. Rationale: a title normally addresses by surname, so a title
     title or surname for every peer and every wife (`Lord Byron`,
     `Lady Thatcher`), and the text does not say which the bearer is,
     which the list cannot express; `prince` and `princess` are in it.
+    Accepted: a title word that is also borne as a name, though
+    rarely as the first word of one (`graf`, `greve`, `herra`), is
+    the title in front of a name, so a name that BEGINS with it -- a
+    surname written first without a comma, or a given name -- gives
+    that word to the title, under a declared family-first order too.
+    Written last without a period, or before a family comma, it is
+    the name; a period behind it makes it the title by H5, as for
+    `Mary Jane King.` (#606).
+      "Greve Anna"                →  family="Anna"
+      "Anna Greve"                →  family="Greve"
+      "Greve, Anna"               →  family="Greve"
     history: decisions.md#H1 · interacts: H3, H5, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a

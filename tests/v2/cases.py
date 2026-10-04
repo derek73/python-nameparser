@@ -1623,6 +1623,55 @@ CASES: tuple[Case, ...] = (
                "1b folds the name into the family. 1.4.0 and 2.1 gave "
                "first 'de Mesnil' with no family, because the chain "
                "left 1b nothing standing alone to fire on"),
+    # #606: salutations in languages TITLES had none for, against a
+    # salutation left out because it leads a real name.
+    Case("salutation_in_a_new_language_is_a_title",
+         "Herra Väinö Johansson",
+         {"title": "Herra", "given": "Väinö", "family": "Johansson"},
+         classification="fix(#606)",
+         notes="Finnish Mr; every release read given 'Herra', middle "
+               "'Väinö'. The contrast row is the one below"),
+    Case("salutation_that_leads_a_surname_stays_a_name",
+         "Ông Văn Tùng",
+         {"given": "Tùng", "middle": "Văn", "family": "Ông"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         notes="Vietnamese ông (Mr) is excluded from TITLES: Ông is a "
+               "surname and Vietnamese names lead with the surname, "
+               "the position the title claim acts on "
+               "(decisions.md#salutation-titles)"),
+    Case("office_completes_a_title_run",
+         "Police Commissioner James Gordon",
+         {"title": "Police Commissioner", "given": "James",
+          "family": "Gordon"},
+         classification="fix(#606)",
+         notes="'police' was a title and 'commissioner' was not, so the "
+               "office read as the given name"),
+    Case("surname_borne_title_claims_the_front", "Greve Anna",
+         {"title": "Greve", "family": "Anna"},
+         classification="fix(#606)",
+         notes="greve is a Scandinavian count AND a surname; shipped on "
+               "the graf precedent, so the uncommaed family-first form "
+               "loses its surname as 'Graf Steffi' does "
+               "(rules.md#H1's Accepted clause). The two rows below are "
+               "the readings it keeps"),
+    Case("surname_borne_title_trailing_is_the_surname", "Anna Greve",
+         {"given": "Anna", "family": "Greve"},
+         notes="the title claim acts only in front (#606)"),
+    Case("surname_borne_title_before_a_comma_is_the_surname",
+         "Greve, Anna",
+         {"given": "Anna", "family": "Greve"},
+         notes="the family comma fixes the surname (#606)"),
+    Case("knt_is_a_post_nominal", "Sir John Smith Knt",
+         {"title": "Sir", "given": "John", "family": "Smith",
+          "suffix": "Knt"},
+         classification="fix(#606)",
+         notes="knt (Knight) joined the suffix acronyms beside kt; "
+               "every release read family 'Knt', middle 'Smith'"),
+    Case("knt_after_a_comma_is_a_suffix", "John Smith, Knt.",
+         {"given": "John", "family": "Smith", "suffix": "Knt."},
+         classification="fix(#606)",
+         notes="every release read title 'Knt.', the period shape "
+               "claiming an unlisted word in front of the given part"),
     Case("title_plus_one_word_with_maiden", "Dr. Smith née Jones",
          {"title": "Dr.", "family": "Smith", "maiden": "Jones"},
          classification="fix(#410)",

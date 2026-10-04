@@ -102,6 +102,9 @@ _CORE_ONLY_IDS = frozenset({
     # v1 spelling, so the row is core-only. The default-order twin
     # ("Lord Chancellor") is an ordinary row and runs here.
     "all_titles_input_family_first",
+    # #606: the excluded salutation under the order Vietnamese names
+    # use, which has no v1 spelling.
+    "salutation_that_leads_a_surname_stays_a_name",
     # #518 review round: the `by_script` scope's positive controls.
     # An emptied script table has no v1 spelling -- v1 has no script
     # orders to empty -- so both rows are core-only, though the roles
