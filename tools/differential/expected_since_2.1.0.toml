@@ -3874,3 +3874,24 @@ fields = ["_initials"]
 issue = "fix(#379) a tussenvoegsel behind a post-nominal after a family comma attaches"
 name_regex = "^Smith, John PhD de Jr\\.$"
 fields = ["middle", "family"]
+
+# ---------------------------------------------------------------
+# #604: THE IRISH AND MALAY PATRONYMIC PARTICLES.
+# 'ó' and 'ní' join the never-given particles, 'ua', 'binti' and
+# 'binte' the ambiguous half, so each opens the surname behind it
+# (rules.md#P1, P2) where every release read it as a middle name.
+# 'Ó.' written WITH its period stays the initial (rules.md#P7), so of
+# the five P7 examples only the bare boundary moves; the two R4 case
+# repair examples move for the vocabulary itself.
+#
+# Literal-anchored to the names: the movers are the P7 boundary and
+# the two R4 examples, each reported unexplained on the run before
+# this rule existed (2026-10-04).
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#604) the Irish and Malay patronymic particles"
+# The particle leaves the middle and opens the family: 'Ó Pérez',
+# 'Ó MURCHÚ', 'binti navalamar'.
+name_regex = "^(?:Juan Ó Pérez|SEÁN Ó MURCHÚ|ina binti navalamar)$"
+fields = ["middle", "family"]

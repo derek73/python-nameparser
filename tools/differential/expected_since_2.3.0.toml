@@ -1615,7 +1615,7 @@ fields = ["_ambiguities", "maiden", "suffix", "title"]
 # rules.md#M2's take "always takes the first word after it, the marker
 # having announced a name" (#601, 2026-10-04): a lone roman numeral is no
 # suffix word, so it is the maiden name, where the old walk read the
-# numeral fork from the marker and declined. Open on #601.
+# numeral fork from the marker and declined. Decided with #601 (decisions.md#M2).
 issue = "fix(#601) the first word after the marker is the maiden name"
 name_regex = "^Jane Smith née V$"
 fields = ["_ambiguities", "family", "maiden", "middle", "suffix"]
@@ -1640,3 +1640,24 @@ fields = ["_ambiguities", "family", "middle", "suffix", "title"]
 issue = "fix(#601/#602) a credential in the clause starts a run the take consumes"
 name_regex = "^Jane Doe nee Smith PhD Smith$"
 fields = ["_ambiguities", "family", "middle", "suffix"]
+
+# ---------------------------------------------------------------
+# #604: THE IRISH AND MALAY PATRONYMIC PARTICLES.
+# 'ó' and 'ní' join the never-given particles, 'ua', 'binti' and
+# 'binte' the ambiguous half, so each opens the surname behind it
+# (rules.md#P1, P2) where every release read it as a middle name.
+# 'Ó.' written WITH its period stays the initial (rules.md#P7), so of
+# the five P7 examples only the bare boundary moves; the two R4 case
+# repair examples move for the vocabulary itself.
+#
+# Literal-anchored to the names: the movers are the P7 boundary and
+# the two R4 examples, each reported unexplained on the run before
+# this rule existed (2026-10-04).
+# ---------------------------------------------------------------
+
+[[change]]
+issue = "fix(#604) the Irish and Malay patronymic particles"
+# The particle leaves the middle and opens the family: 'Ó Pérez',
+# 'Ó MURCHÚ', 'binti navalamar'.
+name_regex = "^(?:Juan Ó Pérez|SEÁN Ó MURCHÚ|ina binti navalamar)$"
+fields = ["middle", "family"]

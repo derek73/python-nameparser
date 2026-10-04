@@ -47,7 +47,7 @@ from collections.abc import Callable, Iterable, Sequence, Set
 from typing import Literal
 
 from nameparser._lexicon import (
-    FULL_STOPS, Lexicon, _VOCAB_FIELDS, _normalize,
+    FULL_STOPS, Lexicon, _VOCAB_FIELDS, _normalize, _spells_an_initial,
 )
 from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
@@ -998,7 +998,7 @@ def surname_unit_tags(text: str, lexicon: Lexicon,
         "." in text and n not in lexicon.titles
         and period_joined_vocab(text, lexicon) == "suffix")
     particle = n in lexicon.particles and not (
-        leading and n in lexicon.titles)
+        (leading and n in lexicon.titles) or _spells_an_initial(n, text))
     if suffix:
         return SURNAME_UNIT_TAGS if particle else _SUFFIX_ONLY
     return _PARTICLE_ONLY if particle else _NO_TAGS

@@ -954,6 +954,27 @@ P6. Rationale: a particle ending the name has nothing to link
     should expect that test, not this file, to say so first.
     history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_post_rules.py
 
+P7. Rationale: a one-letter particle is spelled with the same letter
+    as an initial, and the period is what tells them apart. An
+    initial is an abbreviation and is written with one; a particle is
+    a whole word and is not. The Irish Ó is never written with a
+    period, while Ó. is the initial of Óscar, Ólafur or Ólöf.
+    A one-letter word written with its period is an initial and not a
+    particle, whatever particle the same letter spells; written bare,
+    it is the particle. It is an initial in every position, so it
+    neither opens a surname, nor joins a chain, nor attaches to the
+    family behind a comma.
+      "Juan Ó. Pérez"             →  middle="Ó."
+      "J. Ó. Pérez"               →  middle="Ó."
+      "Ó. Pérez"                  →  given="Ó."
+      "Pérez, Juan Ó."            →  middle="Ó."
+      "Juan Ó Pérez"              →  family="Ó Pérez"  · boundary
+    Accepted: an accented initial written WITHOUT its period reads as
+    the particle. Such initials normally carry the period, and the
+    bare letter is exactly how the particle is written.
+      "Juan Ó Pérez"              →  middle=""
+    history: decisions.md#P7 · interacts: P1, P2, P3, P6, R3, R4 · implemented: nameparser/_lexicon.py, nameparser/_pipeline/_classify.py
+
 ## Suffixes: generational & credentials (S)
 
 Background: what follows a name is one of two different things — generational suffixes (Jr., III), which attach to the name itself, and credentials (PhD, MD, MBA), which are earned attachments. The suffix sets match one written word at a time: a multi-word entry there can never match anything and is warned about at configuration. Only two sets are exempt from that rule -- given_name_titles and, since #434, maiden_markers -- and neither is a suffix set, so within the suffix vocabulary the one-word rule is absolute. That limit is on STORAGE, not on the shape a name may have: adjacent suffix tokens are reassembled after matching (`_vocab.is_wholly_suffix`), so a multi-word credential is reachable as its component words -- `John Smith, MD PhD` has read suffix `MD PhD` since 1.4.0 -- and a caller reaches an unshipped one by adding the words it is made of rather than the phrase (#433). The eight multi-word entries that shipped dead for years span the suffix sets and the titles alike and are the Excluded story in decisions.md. CLDR personNames keeps them as separate fields (`generation`, `credentials`) and formats them differently; this library currently reports both in one `suffix` field, a merge #326 examines. The vocabulary is largely split already: a generational word list and a credential acronym list, plus a short list of acronyms that are also ordinary names (MA, BA) and so are AMBIGUOUS as bare words.
@@ -2512,7 +2533,10 @@ R4. Rationale: case repair is a display concern, applied only on
     Case repair returns a repaired copy and never mutates the parse.
     Where it acts at all — R5 decides where — the copy honors the
     casing a vocabulary entry records (PhD, BSc) and the Mac/Mc
-    convention (McDonald), not only ordinary word-by-word casing, and
+    convention (McDonald), not only ordinary word-by-word casing; a
+    particle is written in lowercase, but a particle the vocabulary
+    records a casing for takes that casing, the entry being how the
+    word is written wherever it stands; and
     a part whose every word is particle vocabulary is repaired as
     ordinary name words, since none of them is doing a particle's
     work there (R2). A CONNECTIVE the parse placed among the name
@@ -2588,6 +2612,8 @@ R4. Rationale: case repair is a display concern, applied only on
       "Juan McDonald"             →  capitalized_forced="Juan McDonald"
       "ANH DO"                    →  capitalized="Anh Do"
       "anh van do"                →  capitalized="Anh Van Do"
+      "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
+      "ina binti navalamar"       →  capitalized="Ina binti Navalamar"  · boundary
       "john smith phd"            →  capitalized="John Smith PhD"
       "john smith ph.d."          →  capitalized="John Smith Ph.D."
       "JOHN SMITH PH.D."          →  capitalized="John Smith Ph.D."

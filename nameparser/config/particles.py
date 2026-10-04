@@ -90,7 +90,19 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
                # Donald" gave given='Mc'. Also in SUFFIX_ACRONYMS as
                # Master of Ceremonies, but that is trailing position and
                # unaffected -- "John Smith MC" still reads suffix (#360).
+    'ní',      # Irish "daughter of" ("Sinéad Ní Mhurchú"), the female
+               # patronymic beside 'ó'; never a given name (#604). Its
+               # sibling 'nic' is EXCLUDED: an abbreviation of Nicolas and
+               # Nicole and a given name of its own (Nic Cage), so it
+               # belongs in an opt-in Irish pack, not the defaults.
     'op',      # Dutch "at/on" ("op den Berg")
+    'ó',       # Irish "descendant of" ("Liam Ó Murchú"); never a given
+               # name (#604). The one ONE-LETTER particle, so the letter
+               # written with its period is still the initial it
+               # spells -- 'Juan Ó. Pérez' is Óscar, not a surname
+               # (rules.md#P7). Unaccented 'o' is EXCLUDED: bare 'O' is
+               # a common periodless initial, and the anglicized form
+               # is glued ("O'Neil") anyway.
     'ste',     # Contraction of 'Sainte'; has a vowel, which is why the
                # criterion is "abbreviation of a word that is never
                # itself a name" rather than the vowel shape #360 first
@@ -196,6 +208,12 @@ PARTICLES = NON_GIVEN_NAME_PARTICLES | {
     'bin',    # Arabic "son of", but kept ambiguous deliberately: #269
               # judged the Latin transliteration separately from the
               # native-script بن, which IS never-given
+    'binte',  # Singapore spelling of 'binti', kept beside it (#604)
+    'binti',  # Malay "daughter of" ("Ina binti Navalamar"), the
+              # female partner of 'bin'. Binti is also a given name
+              # (Swahili, "daughter"), so ambiguous like 'bin' (#604).
+              # The abbreviations 'bt'/'bte' are left out: two- and
+              # three-letter words nobody has reviewed
     'bon',
     'da',
     'dal',
@@ -239,6 +257,13 @@ PARTICLES = NON_GIVEN_NAME_PARTICLES | {
               # is why attestation rather than etymology decides
     'tho',
     'thoe',
+    'ua',     # Irish "descendant of", the older spelling of 'ó'
+              # ("Seán Ua Buachalla"). No given-name use found, but
+              # searched less thoroughly than 'ó' and 'ní', and C-i
+              # defaults to AMBIGUOUS under uncertainty -- so the
+              # leading "Ua Buachalla" keeps the given reading and
+              # reports it, while mid-name the chain is the same
+              # either way (#604)
     'van',    # Vietnamese Văn, and Van Johnson -- the canonical
               # particle-or-given ambiguity this whole flag exists for
     'vande',

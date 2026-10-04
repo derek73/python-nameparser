@@ -2285,6 +2285,11 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # any wordlist: what selects them is the doc's own choice of
     # examples for a policy this corpus does not configure, so there
     # is no vocabulary here for the alternation to drift from.
+    # fix(#604)'s three movers: rules.md#P7's bare boundary and the two
+    # rules.md#R4 case-repair examples, one alternative per corpus
+    # name. Names the doc chose, not a copy of the particle wordlist,
+    # so there is nothing for the alternation to drift from.
+    frozenset({"Juan Ó Pérez", "SEÁN Ó MURCHÚ", "ina binti navalamar"}),
     # fix(#400)'s two openings: start-of-name or just after a family
     # comma. `abd` joins forward on the given side wherever that side
     # begins, and the alternation is over ANCHORS, not over words --
@@ -3826,7 +3831,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #602: 442 -> 443, 'Smith, John PhD Jones', the
         # rules.md#S2 example of the given part's credential run.
         # Reach -- a comma name.
-            _Claim(439, ('given', 'suffix', 'title'), "6194566a5ea4", None),
+        # 2026-10-04, #604: 442 -> 443, 'Pérez, Juan Ó.', #604's
+        # rules.md#P7 comma example. Reach.
+        # 2026-10-04, merging #604 into the #601/#602 branch: 440,
+        # recomputed over the merged corpus -- #604's P7 example and
+        # #602's two S2 examples in, the marker names #601 moved to
+        # its own rules out. Reach.
+            _Claim(440, ('given', 'suffix', 'title'), "72a50b3d8f77", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3943,7 +3954,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-03, #549: 439 -> 442, the same three #549 examples.
         # Reach.
         # 2026-10-04, #602: 442 -> 443, 'Smith, John PhD Jones'. Reach.
-            _Claim(439, ('family', 'given'), "6194566a5ea4", None),
+        # 2026-10-04, #604: 442 -> 443, 'Pérez, Juan Ó.'. Reach.
+        # 2026-10-04, merging #604 into the #601/#602 branch: 440,
+        # recomputed over the merged corpus -- #604's P7 example and
+        # #602's two S2 examples in, the marker names #601 moved to
+        # its own rules out. Reach.
+            _Claim(440, ('family', 'given'), "72a50b3d8f77", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4543,6 +4559,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('family', 'middle', 'suffix', 'title'), "3129cd9609b9", None),
         "fix(#274/#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "acdcc81cb17c", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5275,6 +5295,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         "fix(#601) a marker behind a connective joins the connective run, and the run's initials follow":
             _Claim(1, ('_initials',), "b3a89ea7087c", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5731,6 +5755,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('_ambiguities', 'family', 'middle', 'suffix', 'title'), "3129cd9609b9", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6411,6 +6439,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         "fix(#601) a marker behind a connective joins the connective run, and the run's initials follow":
             _Claim(1, ('_initials',), "b3a89ea7087c", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6720,6 +6752,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(4, ('_ambiguities', 'family', 'middle', 'suffix', 'title'), "e638a392a3a4", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
 }
 
