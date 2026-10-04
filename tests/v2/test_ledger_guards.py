@@ -2326,6 +2326,11 @@ _NOT_A_VOCABULARY_COPY = frozenset({
     # any wordlist: what selects them is the doc's own choice of
     # examples for a policy this corpus does not configure, so there
     # is no vocabulary here for the alternation to drift from.
+    # fix(#604)'s three movers: rules.md#P7's bare boundary and the two
+    # rules.md#R4 case-repair examples, one alternative per corpus
+    # name. Names the doc chose, not a copy of the particle wordlist,
+    # so there is nothing for the alternation to drift from.
+    frozenset({"Juan Ó Pérez", "SEÁN Ó MURCHÚ", "ina binti navalamar"}),
     frozenset({"Smith, John, PhD née Puig Mr\\. - i Soler",
                "Smith, John, PhD née Puig - i Soler",
                "Smith, John, MD - née Jones Smith"}),
@@ -3873,7 +3878,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 'Smith, John, PhD - and MD' and 'Smith, John, MD - née Jones
         # Smith', #549's rules.md#C1 examples. Reach -- each is a
         # comma name.
-            _Claim(442, ('given', 'suffix', 'title'), "bb89aae9aa98", None),
+        # 2026-10-04, #604: 442 -> 443, 'Pérez, Juan Ó.', #604's
+        # rules.md#P7 comma example. Reach.
+            _Claim(443, ('given', 'suffix', 'title'), "e00fc6c8266b", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3986,7 +3993,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # name by name.
         # 2026-10-03, #549: 439 -> 442, the same three #549 examples.
         # Reach.
-            _Claim(442, ('family', 'given'), "bb89aae9aa98", None),
+        # 2026-10-04, #604: 442 -> 443, 'Pérez, Juan Ó.'. Reach.
+            _Claim(443, ('family', 'given'), "e00fc6c8266b", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4651,6 +4659,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('given', 'title'), "8cdafcf56c45", None),
         "fix(#597) halfwidth corner brackets enclose a nickname":
             _Claim(3, ('family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5434,6 +5446,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_ambiguities', 'given', 'title'), "8cdafcf56c45", None),
         "fix(#597) halfwidth corner brackets enclose a nickname":
             _Claim(3, ('family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5920,6 +5936,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('family', 'given'), "d822332b50f9", None),
         "fix(#597) halfwidth corner brackets enclose a nickname":
             _Claim(3, ('family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6651,6 +6671,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('family', 'given'), "d822332b50f9", None),
         "fix(#597) halfwidth corner brackets enclose a nickname":
             _Claim(3, ('family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6980,6 +7004,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(3, ('family', 'given'), "d822332b50f9", None),
         "fix(#597) halfwidth corner brackets enclose a nickname":
             _Claim(3, ('_ambiguities', 'family', 'given', 'middle', 'nickname'), "d1b9b0addff3", None),
+        # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
+        # two rules.md#R4 case-repair examples.
+        "fix(#604) the Irish and Malay patronymic particles":
+            _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
     },
 }
 

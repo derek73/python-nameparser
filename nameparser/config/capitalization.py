@@ -25,6 +25,16 @@ CAPITALIZATION_EXCEPTIONS = {
     'rph': 'RPh',
     'thd': 'ThD',
     'thm': 'ThM',
+    # Irish patronymic particles (#604). Case repair writes a particle
+    # in lowercase ('de la Vega'), but Irish writes these capitalized
+    # ('Liam Ó Murchú', 'Sinéad Ní Mhurchú'), and a mask outranks the
+    # particle lowercase (rules.md#R4). Each mask is the word's own
+    # title case, so a bare word in any other role repairs as it would
+    # anyway; the dotted 'u.a.' and 'n.í.' now repair to 'U.A.' and
+    # 'N.Í.' (were 'U.a.' and 'N.í.').
+    'ní': 'Ní',
+    'ua': 'Ua',
+    'ó': 'Ó',
 }
 """
 Words whose case ``str.capitalize()`` gets wrong, each mapped to a

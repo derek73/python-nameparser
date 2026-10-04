@@ -197,6 +197,17 @@ lost and those words fall back to the all-capitals acronym repair:
 ``john smith phd`` would give ``John Smith PHD`` rather than
 ``John Smith PhD``.
 
+A mask also outranks the lowercase that case repair gives a surname
+particle (``de la Vega``). The shipped map uses that for the Irish
+particles, which are written capitalized:
+
+.. doctest::
+
+    >>> str(parse("SEÁN Ó MURCHÚ").capitalized())
+    'Seán Ó Murchú'
+    >>> str(parse("JUAN DE LA VEGA").capitalized())
+    'Juan de la Vega'
+
 How a key matches a word
 ^^^^^^^^^^^^^^^^^^^^^^^^
 

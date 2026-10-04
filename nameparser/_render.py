@@ -16,7 +16,8 @@ import re
 import unicodedata
 from collections.abc import Callable
 
-from nameparser._lexicon import FULL_STOPS, Lexicon, _normalize
+from nameparser._lexicon import (FULL_STOPS, Lexicon, _normalize,
+                                 _spells_an_initial)
 from nameparser._types import (FOLDED_TAG, SHAPE_ACRONYM_TAG,
                                UNCLASSIFIED_TAG, UNJOINED_CONJUNCTION_TAG,
                                UNJOINED_TAG, Ambiguity, ParsedName, Role,
@@ -441,8 +442,13 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     generation = role is Role.SUFFIX and "vocab:suffix" in tags
     if not generation and (
             (normalized in lex.particles
+             and not _spells_an_initial(normalized, word)
              and role in (Role.MIDDLE, Role.FAMILY)
-             and UNJOINED_TAG not in tags)
+             and UNJOINED_TAG not in tags
+             # rules.md#R4: "a particle the vocabulary records a
+             # casing for takes that casing" -- the mask below
+             # outranks the particle's lowercase (#604)
+             and normalized not in lex.capitalization_exceptions_map)
             or "conjunction" in tags
             or (UNCLASSIFIED_TAG in tags
                 and _reads_as_conjunction(word, lex))):
