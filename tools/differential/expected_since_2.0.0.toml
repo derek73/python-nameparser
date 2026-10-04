@@ -3984,10 +3984,9 @@ fields = ["title", "given"]
 # that run reads, so a full name before the comma keeps its positional
 # read ('John Smith, PhD Jones') and a one-word name is the family
 # ('Doe, PhD Jones'). The undeclared dash of the delimiter rows is one
-# more word of the run, and a title/suffix dual opens the part behind
-# two name words ('John Doe, MD - PhD - FACS').
+# more word of the run; a title/suffix dual opens nothing.
 issue = "fix(#603) a credential opening the part after the comma makes it the postnominal part"
-name_regex = "^(?:Doe, PhD Jones|John Doe, MD - PhD - FACS|John Doe, MD - PhD, FACS|John Smith, MD Jones|John Smith, Ph\\. D\\. Jones|John Smith, PhD Jones|Smith, RN - CRNA|Steven Hardman, MD - DO - DDS|Steven Hardman, RN - CRNA)$"
+name_regex = "^(?:Doe, PhD Jones|John Smith, Ph\\. D\\. Jones|John Smith, PhD Jones|Smith, RN - CRNA|Steven Hardman, RN - CRNA)$"
 fields = ["_ambiguities", "family", "given", "middle", "suffix", "title"]
 
 [[change]]
@@ -3997,5 +3996,5 @@ fields = ["_ambiguities", "family", "given", "middle", "suffix", "title"]
 # suffix words is recognized rather than flagged ('Eric H. Holder, Jr.,
 # Attorney General'). 1.4.0 read these titles as titles too.
 issue = "fix(#603) a title word in a part past the second comma is a title"
-name_regex = "^(?:1 & 2, 3 4 5, Mr\\.|Andrew Perkins, Jr\\., Col\\. \\x28Ret\\x29|Eric H\\. Holder, Jr\\., Attorney General|Eric H\\. Holder, Jr\\., Secretary of State|Smith, John, Prof\\.)$"
+name_regex = "^(?:1 & 2, 3 4 5, Mr\\.|Andrew Perkins, Jr\\., Col\\. \\x28Ret\\x29|Eric H\\. Holder, Jr\\., Attorney General|Eric H\\. Holder, Jr\\., Secretary of State|John Smith, Jr\\., Lt\\.Gov\\.|Smith, John, Prof\\.)$"
 fields = ["_ambiguities", "suffix", "title"]

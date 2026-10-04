@@ -20,7 +20,8 @@ strict token test; Policy.extra_suffix_delimiters gives v1
 suffix_delimiter parity, a delimiter-core token being transparent);
 Lexicon.maiden_markers DIRECTLY, for the own-words span the lazy case
 gate takes (_pieces.own_words); Lexicon.titles DIRECTLY too, for
-C2's test that a tail part is titles and suffixes (#603); Lexicon
+C2's test that a tail part is titles and suffixes (#603), with
+_vocab.period_joined_vocab for a period-joined title; Lexicon
 title and suffix vocabulary
 plus Policy.lenient_comma_suffixes again through _vocab.
 name_word_count, which counts NAME words for the class's own comma
@@ -58,6 +59,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
+    period_joined_vocab,
     caps_shape_candidate, is_one_case, is_paired_initials,
     claimed_as_non_name, is_single_letter_numeral, is_wholly_suffix,
     written_as_a_name,
@@ -222,9 +224,12 @@ def segment(state: ParseState) -> ParseState:
         # rules.md#C2: "a word of the title vocabulary there that is not
         # also suffix vocabulary is a title" -- at least one title
         # word, and every other word a suffix word
+        # period_joined_vocab for 'Lt.Gov.', whose chunks group tags a
+        # title and assign then reads as one
         titles = state.lexicon.titles
         rest = tuple(i for i in seg
-                     if _normalize(state.tokens[i].text) not in titles)
+                     if _normalize(t := state.tokens[i].text) not in titles
+                     and period_joined_vocab(t, state.lexicon) != "title")
         return len(rest) < len(seg) and (not rest or suffixy(rest))
 
     # rules.md#C1: "the name reads as trailing suffixes when the part

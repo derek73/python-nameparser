@@ -1666,8 +1666,9 @@ C1. Rationale: a credential run after the comma means the name is in
     With a comma present, the name reads as trailing suffixes when
     the part after the first comma is entirely suffix words and more
     than one word precedes the comma; otherwise it reads as the
-    listing form, the part before the comma being the family name.
-    Only the part after the first comma decides.
+    listing form, the part before the comma being the family name
+    unless the part after it fixes no family boundary (below). Only
+    the part after the first comma decides.
     Wherever this rule counts the words before the comma, a particle
     run and the one name word it attaches to are one word, the reach
     P1's fold counts rather than the whole of P2's chain: the listing
@@ -1802,18 +1803,18 @@ C1. Rationale: a credential run after the comma means the name is in
     credential opens the part. A credential opening the part makes it
     the postnominal part however it goes on: where the first suffix
     word of the part, with only titles in front of it, is one that
-    starts S2's run — an unambiguous suffix word of two or more
-    letters, the split 'Ph. D.' among them — every word after it
-    reads as that run reads, a title word as a title and any other
-    word as a suffix, under strict mode too, whose veto refuses a word
-    the suffix reading and not the run ('Smith, PSM I.'). The comma has then fixed nothing, so a part
+    starts S2's run, which S2 bounds (the split 'Ph. D.' among them),
+    every word after it reads as that run reads, a title word as a
+    title and any other word as a suffix, under strict mode too,
+    whose veto refuses a word the suffix reading and not the run
+    ('Smith, PSM I.'). The comma has then fixed nothing, so a part
     before it holding two or more name words keeps its positional
     read, and a part holding one is the family ('John Smith, PhD
     Jones', 'Doe, PhD Jones'). A word of both the title and the
-    suffix vocabulary opens the part only behind two or more name
-    words, and never in front of paired initials, dotted or written
-    as two capitals, whose title it is; behind one name word it is
-    the listing form's title ('Smith, Ms Jane').
+    suffix vocabulary opens nothing, and nor does a credential behind
+    one: in front of a given name it is the listing form's title
+    ('Smith, Ms Jane'), and no count of the words before the comma
+    tells a surname of two words from a given name and a family name.
     A one-character suffix word — the only kind a reader could take
     for an initial — is read by what stands before it. Behind
     another suffix it is describing that suffix and continues the
@@ -1830,7 +1831,8 @@ C1. Rationale: a credential run after the comma means the name is in
     credential run, and a letter in it continues that run up to the
     further comma. Longer suffix words are not in question either
     way, and the strict knob above still vetoes the initial-shaped
-    ones, so the run ends at them there.
+    ones, so the run ends at them there unless a credential opened
+    the part, above.
     A delimiter the policy declares parts a trailing suffix part as a
     comma would: the words on each side of it read exactly as the
     parts of the same text written with a comma in its place, so no
@@ -1865,8 +1867,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, PhD Jones"     →  ambiguities=("suffix-or-name",)
       "Doe, PhD Jones"            →  suffix="PhD Jones"
       "John Smith, Ph. D. Jones"  →  suffix="Ph. D. Jones"
-      "John Smith, MD Jones"      →  suffix="MD Jones"
-      "Smith, MD Jones"           →  given="Jones"  · boundary
+      "John Smith, MD Jones"      →  given="Jones"  · boundary
       "Smith, Ms Jane"            →  title="Ms"  · boundary
       "John Smith, Mr."           →  given="John"
       "John Smith, Mr."           →  family="Smith"
@@ -2001,15 +2002,18 @@ C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.
     Parts beyond the second are consumed as suffixes either way,
     except that a word of the title vocabulary there that is not also
-    suffix vocabulary is a title: the part stands behind a comma,
-    where H5 reads a title from the end of a name, and a piece holding
-    a suffix word, a title/suffix dual among them, stays the
-    postnominal the slot makes it (#603). A non-empty extra part that
+    suffix vocabulary is a title: a part past the second comma holds
+    no name word, so the surnames H5 keeps a bare trailing title word
+    from misreading are not there to protect, and a piece holding a
+    suffix word, a title/suffix dual among them, stays the postnominal
+    the slot makes it (#603). A non-empty extra part that
     is not entirely suffix words is flagged as a structural ambiguity
     rather than rejected — parsing never fails on content — unless
     its words are title words and suffix words, one title word at
-    least. That is asked word by word, so a part a connective joins
-    into one title ('Secretary of State') keeps the flag. An empty
+    least, a word whose period-joined chunks read as a title
+    ('Lt.Gov.') counting as one. That is asked word by word, so a part
+    a connective joins into one title ('Secretary of State') keeps
+    the flag. An empty
     part between doubled commas is consumed silently.
     A part the parse reads as a credential run by some route other
     than the suffix vocabulary is recognized and is not flagged: a
@@ -2037,6 +2041,7 @@ C2. Rationale: text beyond the recognized comma parts should be
       "Eric H. Holder, Jr., Attorney General"  →  ambiguities=()
       "Eric H. Holder, Jr., Secretary of State"  →  ambiguities=("comma-structure",)  · boundary
       "Smith, John, Prof."        →  title="Prof."
+      "John Smith, Jr., Lt.Gov."  →  ambiguities=()
       "John Smith, MD, Ms"        →  suffix="MD, Ms"  · boundary
       "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
       "John Smith, MD, R.A.I."    →  suffix="MD, R.A.I."

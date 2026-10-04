@@ -6145,16 +6145,16 @@ CASES: tuple[Case, ...] = (
                "the ambiguous credential class does not, so the part "
                "keeps the listing form's given name and the first "
                "post-comma piece reports the fork it read (#289)"),
-    Case("a_dual_opens_no_part_in_front_of_undotted_paired_initials",
-         "García Márquez, MS MJ",
-         {"title": "MS", "given": "MJ", "family": "García Márquez"},
-         notes="#603's carve-out for a title/suffix dual behind two name "
-               "words, in the spelling the dotted 'García Márquez, Ms "
-               "G.J.' (rules.md#C1) does not reach: two capitals are "
-               "paired initials undotted, which C1 decides exactly as "
-               "it decides the dotted pair, so the dual is their title "
-               "and opens nothing. The review of the first draft found "
-               "both spellings reading given 'García', suffix 'MS MJ'"),
+    Case("a_dual_opens_no_part_behind_a_two_word_surname",
+         "García Márquez, Ms Gabriela",
+         {"title": "Ms", "given": "Gabriela", "family": "García Márquez"},
+         notes="#603's boundary for a title/suffix dual (rules.md#C1): it "
+               "opens nothing, being the listing form's title in front "
+               "of a given name, and no count before the comma tells a "
+               "two-word surname from a given name and a family name. A "
+               "first draft opened the part behind two words and read "
+               "given 'García', suffix 'Ms Gabriela' here; Derek chose "
+               "that duals never open (2026-10-04)"),
     Case("the_split_credential_starts_the_given_part_run",
          "Smith, John Ph. D. Jones",
          {"given": "John", "family": "Smith", "suffix": "Ph. D. Jones"},

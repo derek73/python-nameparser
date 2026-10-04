@@ -581,44 +581,12 @@ def assign(state: ParseState) -> ParseState:
         # positional read peels a trailing suffix first: 'Smith Jr.,
         # Mr.' has two pieces and one name, and read positionally lost
         # its family (the code review).
-        #
-        # The two name words are counted as UNITS (#575,
-        # mechanisms.md#UNIT-PARTITION): group leaves an ambiguous
-        # leading particle a piece of its own (P1's fork), so 'van der
-        # Berg, PhD' holds two name pieces and one surname, and read
-        # positionally lost 'van' to the given name. The comma is the
-        # evidence that settles that fork: the listing form puts a
-        # surname before it. The same facts as segment's count
-        # (`_vocab.surname_unit_facts`), over EVERY token, so a suffix
-        # word still stops a particle ('van Jr. Berg, Mr.' is two name
-        # words); a unit counts when a non-suffix piece holds a token
-        # of it. One count for both of its readers: the positional
-        # read below, and the reading's question whether a title/suffix
-        # dual may open the part (#603).
-        def full_name() -> bool:
-            # one piece is one name word at most, settled in C
-            if len(fam_pieces) < 2:
-                return False
-            idx = [i for piece in fam_pieces for i in piece]
-            named = {i for k, piece in enumerate(fam_pieces)
-                     if not is_suffix_piece(piece, fam_tags[k], tokens)
-                     for i in piece}
-            names = 0
-            start = 0
-            for end in unit_ends([surname_unit_facts(tokens[i].tags, k == 0)
-                                  for k, i in enumerate(idx)],
-                                 chain=False):
-                if not named.isdisjoint(idx[start:end]):
-                    names += 1
-                start = end
-            return names > 1
-
         anchored_picks: list[int] = []
         absorbed: list[int] = []
         reading = segment_suffix_reading(
             state.pieces[1], state.piece_tags[1], tokens,
             state.policy.lenient_comma_suffixes, state.one_case,
-            anchored_picks, absorbed, full_name)
+            anchored_picks, absorbed)
         # rules.md#C1's exception, scoped to the ambiguous credential
         # class: this is the first report of the comma's OWN decision
         # (listing or credential run), where the writing left the
@@ -1255,8 +1223,34 @@ def assign(state: ParseState) -> ParseState:
                             f"read as "
                             f"{'a credential' if suffix_here else 'a name'}",
                             (i2,)))
-        # Counted by `full_name` above.
-        if reading is not None and full_name():
+        # The two name words are counted as UNITS (#575,
+        # mechanisms.md#UNIT-PARTITION): group leaves an ambiguous
+        # leading particle a piece of its own (P1's fork), so 'van der
+        # Berg, PhD' holds two name pieces and one surname, and read
+        # positionally lost 'van' to the given name. The comma is the
+        # evidence that settles that fork: the listing form puts a
+        # surname before it. The same facts as segment's count
+        # (`_vocab.surname_unit_facts`), over EVERY token, so a suffix
+        # word still stops a particle ('van Jr. Berg, Mr.' is two name
+        # words); a unit counts when a non-suffix piece holds a token
+        # of it. One piece is one name word at most, settled in C
+        # before any of that is built ('Smith, Jr.').
+        positional = False
+        if reading is not None and len(fam_pieces) > 1:
+            idx = [i for piece in fam_pieces for i in piece]
+            named = {i for k, piece in enumerate(fam_pieces)
+                     if not is_suffix_piece(piece, fam_tags[k], tokens)
+                     for i in piece}
+            names = 0
+            start = 0
+            for end in unit_ends([surname_unit_facts(tokens[i].tags, k == 0)
+                                  for k, i in enumerate(idx)],
+                                 chain=False):
+                if not named.isdisjoint(idx[start:end]):
+                    names += 1
+                start = end
+            positional = names > 1
+        if positional:
             order = _assign_main(0, state, tokens, ambiguities)
         else:
             # rules.md#P2: a particle "joins the words after it into one

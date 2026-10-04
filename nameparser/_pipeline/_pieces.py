@@ -62,8 +62,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, Lean, ambiguous_lean, in_initialless_script,
-    is_paired_initials, is_single_letter_numeral,
-    is_trailing_numeral_suffix, tag_marker_runs,
+    is_single_letter_numeral, is_trailing_numeral_suffix, tag_marker_runs,
 )
 
 
@@ -283,9 +282,12 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     the "suffix" piece tag) starts it as its one-token spelling 'PhD'
     does: a run that started for one spelling of a word and not the
     other is the vocabulary-against-shape split AGENTS.md's spelling
-    sweep names (#603 found it, 'John Smith Ph. D. Jones' keeping
-    family 'Jones' where 'John Smith PhD Jones' reads suffix
-    'PhD Jones').
+    sweep names (#603 found it, 'Smith, John Ph. D. Jones' keeping
+    middle 'Jones' where 'Smith, John PhD Jones' reads suffix
+    'PhD Jones'). The no-comma spelling is not reached: `run_start`
+    asks only of the pieces `peel_walk` keeps, and the walk drops the
+    merged piece, so 'John Smith Ph. D. Jones' still reads family
+    'Jones'.
     """
     if "suffix" in ptags:
         return True
@@ -501,7 +503,6 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            one_case: bool | None,
                            anchored: list[int] | None = None,
                            absorbed: list[int] | None = None,
-                           full_name: Callable[[], bool] | None = None,
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
@@ -563,13 +564,11 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     word is read as #602's run reads the given part -- a title word as
     a title, anything else as a suffix -- so 'John Smith, PhD Jones'
     and 'Smith, PhD Jones' read suffix 'PhD Jones'. A word of the
-    title vocabulary as well opens it only where `full_name` says the
-    part before the comma is a whole name, and not in front of paired
-    initials, which it is the title of as C1 reads it: with one word
-    there, 'Smith, Ms Jane' is the listing form's title and given
-    name, and 'García Márquez, Ms G.J.' keeps given 'G.J.'. Asked
-    only when a name word is met behind such a dual, so a part holding
-    none never pays for it. `absorbed`, when passed, receives the index
+    title vocabulary as well opens nothing (#603, Derek): in front of
+    a given name it is the listing form's title ('Smith, Ms Jane'),
+    and no count of the words before the comma can tell a two-word
+    surname from a given name and a family name, so none decides it.
+    `absorbed`, when passed, receives the index
     of every piece the opened part takes that would otherwise have
     made this None -- the caller reports them, as #602's run reports
     the name words it takes.
@@ -617,12 +616,11 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     leading = True
     dual_led = False
     # #603: the first suffix word of the leading run, which may open
-    # the part, and whether it is a dual; asked whether it does only
-    # once a piece reaches the title and name branches below, so a part
-    # of nothing but suffix words ('Smith, Jr.', 'Smith, MD PhD') never
-    # pays for the question
+    # the part unless a dual stood ahead of it; asked whether it does
+    # only once a piece reaches the title and name branches below, so a
+    # part of nothing but suffix words ('Smith, Jr.', 'Smith, PhD MA')
+    # never pays for the question
     opener: tuple[Sequence[int], Set[str]] | None = None
-    opener_dual = False
     asked = False
     opened = False
     for piece, tags in zip(pieces, ptags):
@@ -632,14 +630,12 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         # have diverged silently
         after_suffix = bool(out) and out[-1]
         if is_suffix_piece(piece, tags, tokens):
-            dual = (leading and len(piece) == 1
-                    and "vocab:title" in tokens[piece[0]].tags)
-            if leading and opener is None:
-                opener = (piece, tags)
-                opener_dual = dual
-            if dual:
+            if (leading and len(piece) == 1
+                    and "vocab:title" in tokens[piece[0]].tags):
                 dual_led = True
             else:
+                if leading and not dual_led:
+                    opener = (piece, tags)
                 leading = False
             out.append(True)
             continue
@@ -667,7 +663,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
             leading = False
             out.append(True)
             continue
-        if not asked and opener is not None and not opener_dual:
+        if not asked and opener is not None:
             asked = True
             opened = starts_a_credential_run(opener[0], opener[1], tokens)
         if opened:
@@ -681,20 +677,6 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                 out.append(True)
         elif is_leading_title(piece, tags, tokens):
             out.append(False)
-        elif (opener is not None and opener_dual and full_name is not None
-              # C1: "except as the titles of paired initials", dotted
-              # or as two capitals, the shape undotted
-              and not (len(piece) == 1
-                       and (is_paired_initials(t := tokens[piece[0]].text)
-                            or (len(t) == 2 and t.isalpha()
-                                and t.isupper())))
-              and full_name()
-              and starts_a_credential_run(opener[0], opener[1], tokens)):
-            # not a title (the branch above), so a suffix in the run
-            opened = True
-            if absorbed is not None:
-                absorbed.append(len(out))
-            out.append(True)
         else:
             return None
     return tuple(out)
@@ -1004,9 +986,8 @@ def run_start(rest: Sequence[int], names: int,
     for p in range(names):
         q = rest[p]
         tags = tokens[pieces[q][0]].tags
-        if (core >= 2 and ("suffix" in ptags[q]
-                           or ("vocab:suffix" in tags
-                               and tags.isdisjoint(_NOT_A_RUN_START)))
+        if (core >= 2 and "vocab:suffix" in tags
+                and tags.isdisjoint(_NOT_A_RUN_START)
                 and starts_a_credential_run(pieces[q], ptags[q], tokens)):
             return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname

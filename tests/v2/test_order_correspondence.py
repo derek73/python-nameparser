@@ -3,7 +3,7 @@
 
 Form 4 (Title Family Given Middle Middle [Particle] [, Suffix] under
 FAMILY_FIRST) is form 2 (Family [Suffix], Title Given (Nickname)
-Middle Middle[,] Suffix [, Suffix]) with the comma removed and the
+Middle Middle[,] Suffix [, Suffix or Title]) with the comma removed and the
 family inline -- the two notations quoted verbatim from
 tools/differential/shapes.py. The pairs are GENERATED and asserted
 equal, which consults no vocabulary and no rule -- so it catches a
