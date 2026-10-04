@@ -714,6 +714,7 @@ SUFFIX_ACRONYMS = frozenset({
     'kcvo',
     'kg',
     'khs/dhs',
+    'knt',  # #606: Knight, the older spelling of 'kt'
     'kp',
     'kt',
     'lac',

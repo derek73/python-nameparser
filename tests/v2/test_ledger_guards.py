@@ -3880,7 +3880,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # comma name.
         # 2026-10-04, #604: 442 -> 443, 'Pérez, Juan Ó.', #604's
         # rules.md#P7 comma example. Reach.
-            _Claim(443, ('given', 'suffix', 'title'), "e00fc6c8266b", None),
+        # 2026-10-04, #606: 443 -> 444, 'Greve, Anna', #606's
+        # rules.md#H1 comma example. Reach.
+            _Claim(444, ('given', 'suffix', 'title'), "f2ad75955602", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3917,7 +3919,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # for both, so there is no diff here to explain.
         "fix(#296) a lone post-comma credential is a suffix":
         # 2026-10-01, #564: 23 -> 24, 'Smith, XYZ'. Reach.
-            _Claim(24, ('family', 'given', 'suffix', 'title'), "eae9a2bb02b0", None),
+        # 2026-10-04, #606: 24 -> 25, 'Greve, Anna'. Reach.
+            _Claim(25, ('family', 'given', 'suffix', 'title'), "b2bc2b830168", None),
         # 2026-09-27, #544: 6 -> 7; gains 'Smith, PhD MEng'.
         # 2026-09-28, #544: 7 -> 8; gains 'Smith, PhD Ma'.
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
@@ -3994,7 +3997,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-03, #549: 439 -> 442, the same three #549 examples.
         # Reach.
         # 2026-10-04, #604: 442 -> 443, 'Pérez, Juan Ó.'. Reach.
-            _Claim(443, ('family', 'given'), "e00fc6c8266b", None),
+        # 2026-10-04, #606: 443 -> 444, 'Greve, Anna'. Reach.
+            _Claim(444, ('family', 'given'), "f2ad75955602", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4663,6 +4667,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # two rules.md#R4 case-repair examples.
         "fix(#604) the Irish and Malay patronymic particles":
             _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
+        # 2026-10-04, #606: new, 1; 'Greve Anna', rules.md#H1's
+        # Accepted example for a surname-borne title.
+        "fix(#606) salutations and titles in other languages":
+            _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -4977,7 +4985,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `given`, a field outside this rule's own ('suffix', 'title').
         "fix(#296) a lone post-comma credential is a suffix":
         # 2026-10-01, #564: 23 -> 24, 'Smith, XYZ'. Reach.
-            _Claim(24, ('suffix', 'title'), "eae9a2bb02b0", None),
+        # 2026-10-04, #606: 24 -> 25, 'Greve, Anna'. Reach.
+            _Claim(25, ('suffix', 'title'), "b2bc2b830168", None),
         # 2026-09-27, #544: 6 -> 7; gains 'Smith, PhD MEng'.
         # 2026-09-28, #544: 7 -> 8; gains 'Smith, PhD Ma'.
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
@@ -5450,6 +5459,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # two rules.md#R4 case-repair examples.
         "fix(#604) the Irish and Malay patronymic particles":
             _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
+        # 2026-10-04, #606: new, 1; 'Greve Anna', rules.md#H1's
+        # Accepted example for a surname-borne title.
+        "fix(#606) salutations and titles in other languages":
+            _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5940,6 +5953,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # two rules.md#R4 case-repair examples.
         "fix(#604) the Irish and Malay patronymic particles":
             _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
+        # 2026-10-04, #606: new, 1; 'Greve Anna', rules.md#H1's
+        # Accepted example for a surname-borne title.
+        "fix(#606) salutations and titles in other languages":
+            _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6207,7 +6224,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # `given`, a field outside this rule's own ('suffix', 'title').
         "fix(#296) a lone post-comma credential is a suffix":
         # 2026-10-01, #564: 23 -> 24, 'Smith, XYZ'. Reach.
-            _Claim(24, ('suffix', 'title'), "eae9a2bb02b0", None),
+        # 2026-10-04, #606: 24 -> 25, 'Greve, Anna'. Reach.
+            _Claim(25, ('suffix', 'title'), "b2bc2b830168", None),
         # 2026-09-27, #544: 6 -> 7; gains 'Smith, PhD MEng'.
         # 2026-09-28, #544: 7 -> 8; gains 'Smith, PhD Ma'.
         "fix(#325) a split credential followed by another suffix after a one-word family comma reads as suffixes":
@@ -6675,6 +6693,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # two rules.md#R4 case-repair examples.
         "fix(#604) the Irish and Malay patronymic particles":
             _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
+        # 2026-10-04, #606: new, 1; 'Greve Anna', rules.md#H1's
+        # Accepted example for a surname-borne title.
+        "fix(#606) salutations and titles in other languages":
+            _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -7008,6 +7030,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # two rules.md#R4 case-repair examples.
         "fix(#604) the Irish and Malay patronymic particles":
             _Claim(3, ('family', 'middle'), "cfcfd91f9d58", None),
+        # 2026-10-04, #606: new, 1; 'Greve Anna', rules.md#H1's
+        # Accepted example for a surname-borne title.
+        "fix(#606) salutations and titles in other languages":
+            _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
     },
 }
 
