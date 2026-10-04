@@ -570,10 +570,12 @@ def test_the_bound_given_join_leaves_a_suffix_where_it_stands() -> None:
     n = parse("abdul Ph. D. Smith Berg")
     assert (n.given, n.middle, n.family, n.suffix) == \
         ("abdul", "Smith", "Berg", "Ph. D.")
-    # after a family comma the decline holds under the LENIENT reserve
+    # after a family comma the decline holds under the LENIENT reserve,
+    # and since #602 the 'Jr' starts the given part's credential run,
+    # taking 'Smith' with it (rules.md#S2)
     n = parse("Berg, abdul Jr Smith")
     assert (n.given, n.middle, n.family, n.suffix) == \
-        ("abdul", "Smith", "Berg", "Jr")
+        ("abdul", "", "Berg", "Jr Smith")
 
 
 def test_the_reserve_declines_and_assign_reads_the_unjoined_pieces() -> None:

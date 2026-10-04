@@ -28,11 +28,16 @@ _LEX = Lexicon(
     given_name_titles=frozenset({"sir"}),
     particles=frozenset({"de", "der", "ibn", "la", "van", "vd"}),
     particles_ambiguous=frozenset({"la", "van"}),
-    suffix_words=frozenset({"jr"}),
+    # `씨` is a suffix word that starts no credential run (rules.md#S2,
+    # #602: an honorific word never does), the filler a test needs
+    # where a credential would now take the rest of the part
+    suffix_words=frozenset({"jr", "씨"}),
     # `vd` mirrors its shipped dual membership -- particle AND
     # UNAMBIGUOUS suffix acronym -- which is what puts a name on P6's
-    # suffix arm below.
-    suffix_acronyms=frozenset({"md", "vd"}),
+    # suffix arm below. `ma` mirrors the ambiguous class, which starts
+    # no run either.
+    suffix_acronyms=frozenset({"md", "vd", "ma"}),
+    suffix_acronyms_ambiguous=frozenset({"ma"}),
     conjunctions=frozenset({"y"}),
     bound_given_names=frozenset({"abdul"}),
 )
@@ -499,11 +504,15 @@ def test_no_leftover_is_re_laid_out() -> None:
     # out. The whole role map is asserted because that draft failed in
     # two directions: it lost a given name outright on "van Berg Jan de"
     # and promoted a post-nominal into the given slot here. A test on
-    # `GIVEN != "Jr."` alone passes on an EMPTY given, which is the
+    # `GIVEN != "Ma"` alone passes on an EMPTY given, which is the
     # first of those.
-    out = _parsed("Berg Jan Jr. de", Policy(name_order=FAMILY_FIRST))
+    #
+    # The post-nominal is the ambiguous `Ma`, which stays a middle
+    # name. It was `Jr.` until #602, which made a credential after the
+    # name core start a run to the end of the part, taking `de` in.
+    out = _parsed("Berg Jan Ma de", Policy(name_order=FAMILY_FIRST))
     assert _by_role(out, Role.GIVEN) == "Jan"
-    assert _by_role(out, Role.MIDDLE) == "Jr."
+    assert _by_role(out, Role.MIDDLE) == "Ma"
     assert _by_role(out, Role.FAMILY) == "Berg de"
     assert _folded(out) == "de"
 
@@ -810,8 +819,8 @@ def test_middle_as_family_folds_a_middle_the_old_reach_never_left() -> None:
 
 
 @pytest.mark.parametrize("policy,given,middle", [
-    (Policy(name_order=FAMILY_FIRST), "van Berg", "MD Juan"),
-    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "Juan", "van Berg MD"),
+    (Policy(name_order=FAMILY_FIRST), "van Berg", "씨 Juan"),
+    (Policy(name_order=FAMILY_FIRST_GIVEN_LAST), "Juan", "van Berg 씨"),
 ])
 def test_a_suffix_word_mid_run_ends_the_chain(
         policy: Policy, given: str, middle: str) -> None:
@@ -819,8 +828,10 @@ def test_a_suffix_word_mid_run_ends_the_chain(
     # stop _group's own chain uses (`not prefix(j) and not suffix(j)`).
     # Without it the whole leftover is ONE unit and lands in one field.
     # Three leftover units here, so this is also the only place the two
-    # orders are pinned apart at a count other than two.
-    out = _parsed("de Mesnil van Berg MD Juan", policy)
+    # orders are pinned apart at a count other than two. The suffix word
+    # is an honorific because a credential here would start #602's run
+    # and take `Juan` with it (rules.md#S2); it was `MD` until then.
+    out = _parsed("de Mesnil van Berg 씨 Juan", policy)
     assert _by_role(out, Role.FAMILY) == "de Mesnil"
     assert _by_role(out, Role.GIVEN) == given
     assert _by_role(out, Role.MIDDLE) == middle
@@ -1040,15 +1051,19 @@ def test_a_dropped_core_parts_two_entries() -> None:
 
 def test_a_surviving_name_word_parts_two_entries() -> None:
     """The `parted` conjunct, kept-core half -- the one a dropped-core
-    test alone cannot reach. After a FAMILY comma segment 1 is no
-    tail, so nothing drops the dashes and they stand as name words
-    between the post-nominals. Drop the conjunct and this renders
-    'PhD FACS' under EVERY policy, the bare one included, where the
-    dash is no delimiter at all."""
+    test alone cannot reach: a name word standing between two
+    post-nominals parts their entries. `abd` is suffix vocabulary that
+    starts no credential run (it is bound given-name vocabulary too,
+    rules.md#S2), so `Jones` behind it survives as a name word before
+    the credential. Drop the conjunct and this renders 'abd PhD'.
+
+    The fixture was 'Smith, MD - PhD - FACS' until #602, whose dashes
+    stood as name words between the post-nominals; a credential now
+    starts a run to the end of the part, taking them in."""
     for policy in (Policy(),
                    Policy(extra_suffix_delimiters=frozenset({" - "}))):
-        assert _entry_tags("Smith, MD - PhD - FACS", policy) == [
-            ("PhD", False), ("FACS", False)]
+        assert _entry_tags("Smith, Jane abd Jones PhD", policy) == [
+            ("abd", False), ("PhD", False)]
 
 
 def test_the_pass_runs_after_roles_are_settled() -> None:

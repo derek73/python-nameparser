@@ -76,9 +76,10 @@ from nameparser._pipeline._vocab import (
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
-    is_lone_never_given_particle, is_suffix_piece, leading_titles,
-    listed_lean, peel_walk,
-    segment_suffix_reading, tail_reading, trailing_titles,
+    _NOT_A_RUN_START, is_lone_never_given_particle, is_suffix_piece,
+    is_title_piece, leading_titles, listed_lean, peel_walk,
+    segment_suffix_reading, starts_a_credential_run, tail_reading,
+    trailing_titles,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
@@ -311,6 +312,18 @@ def _assign_main(seg_idx: int, state: ParseState,
                                              state.one_case)
     for piece_idx in titled_tail:
         _set_roles(tokens, pieces[piece_idx], Role.TITLE)
+    # rules.md#S2: "except a title word, which reads as a title" -- the
+    # credential run (#602) is placed here, so a name word it absorbed
+    # is reported here too
+    for piece_idx in peeled.run_titles:
+        _set_roles(tokens, pieces[piece_idx], Role.TITLE)
+    for piece in peeled.absorbed:
+        text = " ".join(tokens[i].text for i in piece)
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{text!r} follows a credential, so it reads as part of the "
+            f"suffix run; it may be a name word",
+            piece))
     if peeled.numeral is not None:
         # a trailing single letter is a name part unless it happens
         # to be a roman numeral -- and V/X/I are ordinary middle
@@ -322,6 +335,9 @@ def _assign_main(seg_idx: int, state: ParseState,
             f"letter there would be a middle initial",
             peeled.numeral))
     name_pieces, suffix_pieces = rest[:peeled.names], rest[peeled.names:]
+    if peeled.run_titles:
+        suffix_pieces = [q for q in suffix_pieces
+                         if q not in peeled.run_titles]
     if peeled.names == 0:
         # everything suffix-shaped after titles: first one is the name
         name_pieces, suffix_pieces = suffix_pieces[:1], suffix_pieces[1:]
@@ -1047,11 +1063,59 @@ def assign(state: ParseState) -> ParseState:
             # memo, not a second spelling of the question, and it
             # cannot have gone stale because nothing the chain does
             # moved the end of the name.
+            # rules.md#S2: "or after the given word in the part after a
+            # family comma" -- the given part's own credential run
+            # (#602), the comma having fixed the family. The tag tests are inline ahead of the
+            # predicate, as in `_pieces.credential_run`, so a name word
+            # pays no frame: this loop runs on every family-comma name.
+            sticky_from = len(pieces)
+            for m in range(n + 1, len(pieces)):
+                tags = tokens[pieces[m][0]].tags
+                if (m not in titled_idx and "vocab:suffix" in tags
+                        and tags.isdisjoint(_NOT_A_RUN_START)
+                        and starts_a_credential_run(pieces[m], ptags[m],
+                                                    tokens)):
+                    sticky_from = m
+                    break
             for m in range(n + 1, len(pieces)):
                 if m in titled_idx:
                     continue
                 suffix_here = (reads_as_a_suffix(m, titled_idx)
                                if titled_idx else m not in walkable)
+                if m >= sticky_from:
+                    # inside the run: a title word reads as a title,
+                    # every other word as a suffix, and a word the walk
+                    # would have kept as a name is reported, here where
+                    # the run absorbs it
+                    if (m > sticky_from
+                            and is_title_piece(pieces[m], ptags[m], tokens)
+                            and not is_suffix_piece(pieces[m], ptags[m],
+                                                    tokens)):
+                        _set_roles(tokens, pieces[m], Role.TITLE)
+                        continue
+                    piece = pieces[m]
+                    if (len(piece) == 1
+                            and not tokens[piece[0]].tags.isdisjoint(
+                                _AMBIGUOUS_CREDENTIAL_TAGS)):
+                        # a class member inside the run is still the
+                        # fork #531's report names, now read as the
+                        # credential, as #544's anchor reads one
+                        ambiguities.append(PendingAmbiguity(
+                            AmbiguityKind.SUFFIX_OR_NAME,
+                            f"{tokens[piece[0]].text!r} ending the given "
+                            f"part is also an ordinary name word; read "
+                            f"as a credential", (piece[0],)))
+                    elif not suffix_here and any(
+                            ch.isalnum() for i in piece
+                            for ch in tokens[i].text):
+                        text = " ".join(tokens[i].text for i in piece)
+                        ambiguities.append(PendingAmbiguity(
+                            AmbiguityKind.SUFFIX_OR_NAME,
+                            f"{text!r} follows a credential, so it reads "
+                            f"as part of the suffix run; it may be a "
+                            f"name word", tuple(piece)))
+                    _set_roles(tokens, piece, Role.SUFFIX)
+                    continue
                 _set_roles(tokens, pieces[m],
                            Role.SUFFIX if suffix_here else Role.MIDDLE)
                 # #531's report, and the FIFTH SUFFIX_OR_NAME site in

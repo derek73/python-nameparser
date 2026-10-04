@@ -946,15 +946,17 @@ CASES: tuple[Case, ...] = (
          shape=1),
     Case("a_title_between_degree_and_member_keeps_it_a_name",
          "John Smith PhD Prof. Ma",
-         {"given": "John", "middle": "Smith PhD Prof.", "family": "Ma"},
-         classification="fix(#289)",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "PhD Ma"},
+         classification="fix(#602)",
          ambiguities=("suffix-or-name",),
-         notes="rules.md#S2's Accepted limit: a title standing between "
-               "the credential and the member ends the run, so the "
-               "member's writing decides and the degree and title are "
-               "name text. Unchanged by #544; 2.3.0 read title 'Prof.', "
-               "suffix 'PhD Ma', and 1.4.0 middle 'Smith PhD', last "
-               "'Prof.', suffix 'Ma'"),
+         notes="rules.md#S2 (#602): the credential after two name words "
+               "starts a run to the end of the part, the title inside it "
+               "reads as a title, and the member is in the run. The id "
+               "names the reading #544 pinned (middle 'Smith PhD Prof.', "
+               "family 'Ma'), which #602 retires; 2.3.0 read this same "
+               "way, and 1.4.0 middle 'Smith PhD', last 'Prof.', suffix "
+               "'Ma'"),
     Case("a_split_degree_in_front_is_out_of_the_walk",
          "John Smith Ph. D. MEng",
          {"given": "John", "middle": "Smith", "family": "MEng",
@@ -970,12 +972,71 @@ CASES: tuple[Case, ...] = (
                "suffix 'Ph. D. MEng', and 1.4.0 'Ph. D., MEng'"),
     Case("a_member_the_particle_chain_took_is_out_of_reach",
          "John Smith PhD Do Do",
-         {"given": "John", "middle": "Smith PhD", "family": "Do Do"},
-         notes="rules.md#S2's Accepted limit: 'Do' is particle "
-               "vocabulary too, and P2's chain joins 'Do Do' into one "
-               "piece before the peel, so no lone member stands behind "
-               "the degree. Unchanged by #544; 1.4.0 and 2.3.0 read "
-               "the same"),
+         {"given": "John", "family": "Smith", "suffix": "PhD Do Do"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="rules.md#S2 (#602): the credential starts the run and "
+               "P2's chain stops where it starts, so the 'Do Do' the "
+               "chain joined is absorbed and reported. The id names "
+               "#544's Accepted limit, which #602 retires; 1.4.0 and "
+               "2.3.0 read middle 'Smith PhD', family 'Do Do'"),
+    # #602: a credential after the name core starts a run to the end of
+    # its part (rules.md#S2). The movers, then the exclusions that keep
+    # a run from starting -- each a negative control for the movers.
+    Case("a_credential_starts_a_run_to_the_end_of_the_part",
+         "John Smith PhD Jones",
+         {"given": "John", "family": "Smith", "suffix": "PhD Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="the credential is the writer's mark that the "
+               "post-nominals have begun; the name word behind it is "
+               "absorbed and reported. 2.3.0 read middle 'Smith PhD', "
+               "family 'Jones'"),
+    Case("a_generational_word_starts_the_run_too", "John Smith Jr. Jones",
+         {"given": "John", "family": "Smith", "suffix": "Jr. Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="generational words start the run as credentials do "
+               "(decided on #602). 2.3.0 read middle 'Smith Jr.'"),
+    Case("a_title_inside_the_run_is_a_title",
+         "Eric H. Holder Jr. Attorney General",
+         {"title": "Attorney General", "given": "Eric", "middle": "H.",
+          "family": "Holder", "suffix": "Jr."},
+         classification="fix(#602)",
+         notes="the credential starts the run and the title words "
+               "inside it read as titles, as the comma spelling 'Eric "
+               "H. Holder, Jr. Attorney General' always read. 2.3.0 "
+               "read middle 'H. Holder Jr. Attorney', family 'General'"),
+    Case("the_given_part_reads_the_run", "Smith, John PhD Jones",
+         {"given": "John", "family": "Smith", "suffix": "PhD Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="after a family comma one given word is the core. 2.3.0 "
+               "read middle 'Jones', suffix 'PhD'"),
+    Case("a_title_inside_the_given_parts_run_is_a_title",
+         "Holder, Eric Jr. Attorney General",
+         {"title": "Attorney General", "given": "Eric", "family": "Holder",
+          "suffix": "Jr."},
+         classification="fix(#602)"),
+    Case("a_title_word_does_not_start_the_run", "Mary Jane King Smith",
+         {"given": "Mary", "middle": "Jane King", "family": "Smith"},
+         notes="746 title words are in no suffix set, many of them "
+               "surnames (measured 2026-10-04), so a title word never "
+               "starts the run: a title is read from the end of a name "
+               "only behind a comma or with a period (H5)"),
+    Case("a_joined_connective_is_no_run", "Josep Carod i Rovira",
+         {"given": "Josep", "family": "Carod i Rovira"},
+         notes="'i' is a suffix word and a connective; a connective "
+               "never starts the run"),
+    Case("a_bound_given_word_is_no_run", "Mohamed Ali Abd Allah",
+         {"given": "Mohamed", "middle": "Ali Abd", "family": "Allah"},
+         notes="'abd' is in the credential list (ABD) and heads 'Abd "
+               "Allah'; a word another vocabulary claims as a name never "
+               "starts the run"),
+    Case("one_name_word_is_no_core", "John PhD Smith",
+         {"given": "John", "middle": "PhD", "family": "Smith"},
+         notes="with no comma two name words must stand in front of the "
+               "credential, the family having to exist first"),
     Case("a_particle_in_front_of_a_member_anchors_nothing",
          "Jan vd Ma",
          {"given": "Jan", "family": "vd Ma"},
@@ -1000,10 +1061,13 @@ CASES: tuple[Case, ...] = (
     # end. Decided as it reads, silent: no code special-cases it.
     Case("a_particle_after_a_credential_heads_a_title_case_name",
          "Doe, Jane PhD vd Ma",
-         {"given": "Jane", "middle": "vd Ma", "family": "Doe",
-          "suffix": "PhD"},
-         classification="fix(#289)",
-         notes="S2: a particle in front of a member takes it out of "
+         {"given": "Jane", "family": "Doe", "suffix": "PhD vd Ma"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="#602: the credential starts the given part's run, so "
+               "'vd' and 'Ma' are in it, the member reported. Before "
+               "#602, and the reading the id names: "
+               "S2: a particle in front of a member takes it out of "
                "the given part's trailing slot, and where the word "
                "behind reads as a name the two are one name, asked "
                "nothing and reporting nothing -- 'vd' reads as 'van' "
@@ -6133,12 +6197,16 @@ CASES: tuple[Case, ...] = (
                "is dropped from consumed tail segments (pinned live "
                "2026-07-16)"),
     Case("suffix_delimiter_detection", "Doe, John RN - CRNA",
-         {"given": "John", "middle": "-", "family": "Doe",
-          "suffix": "RN, CRNA"},
+         {"given": "John", "family": "Doe", "suffix": "RN - CRNA"},
          policy=_SD,
-         notes="the delimiter fires only at suffix sites; the stray "
-               "token keeps its per-piece walk role (v1 parity, pinned "
-               "live 2026-07-16)"),
+         classification="fix(#602)",
+         notes="the delimiter fires only at suffix sites, so in the "
+               "given part the dash stays a word -- and since #602 a "
+               "word after the credential is in the run: one entry "
+               "'RN - CRNA', the dash unreported, holding no letter or "
+               "digit (rules.md#A2). Before #602 the stray token kept "
+               "its per-piece walk role, middle '-', suffix 'RN, CRNA' "
+               "(v1 parity, pinned live 2026-07-16)"),
     Case("suffix_delimiter_suffix_comma", "John Smith, RN - CRNA",
          {"given": "John", "family": "Smith", "suffix": "RN, CRNA"},
          policy=_SD,
@@ -6205,11 +6273,17 @@ CASES: tuple[Case, ...] = (
                "2.3.0 read maiden 'Jones', stepping past the core"),
     Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
          "Smith, MD - PhD - FACS",
-         {"title": "MD", "given": "-", "middle": "-", "family": "Smith",
-          "suffix": "PhD, FACS"},
+         {"title": "MD", "given": "-", "family": "Smith",
+          "suffix": "PhD - FACS"},
          policy=_SD,
-         classification="fix(#436/#437)",
-         notes="the other half, and the one a dropped-core test alone "
+         classification="fix(#602)",
+         notes="#602 moved this row: the dash after 'PhD' is in the "
+               "credential run now, one entry 'PhD - FACS'. The parting "
+               "half it pinned is held by test_post_rules' "
+               "test_a_surviving_name_word_parts_two_entries on a name "
+               "word that survives ('Smith, Jane abd Jones PhD'). As "
+               "pinned under #436/#437: "
+               "the other half, and the one a dropped-core test alone "
                "would miss. After a FAMILY comma segment 1 is not a "
                "tail, so nothing drops the cores and the dashes stand "
                "as ordinary name words between the two post-nominals. "
@@ -6723,10 +6797,15 @@ CASES: tuple[Case, ...] = (
                "is the middle name, as for 'John Jr Smith Berg'"),
     Case("bound_given_join_takes_a_chain_carrying_a_declined_marker",
          "Abd van der Berg née Jr Jones",
-         {"given": "Abd van der Berg née", "middle": "Jr",
-          "family": "Jones"},
-         classification="fix(#417)",
-         notes="the field-level face of #417. The consumer declines "
+         {"given": "Abd", "family": "van der Berg née",
+          "suffix": "Jr Jones"},
+         classification="fix(#602)",
+         ambiguities=("suffix-or-name",),
+         notes="#602: 'Jr' after the name core starts the run, so P5's "
+               "reserve sees no name word to spare and the bound word "
+               "stands alone. Before #602 this pinned "
+               "the field-level face of #417 (given 'Abd van der Berg "
+               "née', middle 'Jr', family 'Jones'). The consumer declines "
                "(a suffix follows the marker), the particle chain "
                "takes the declined marker as the word M2 says it is, "
                "and P5 then joins the bound word to the chain -- a "

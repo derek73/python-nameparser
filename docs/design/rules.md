@@ -1101,6 +1101,19 @@ S2. Rationale: generational suffixes and credentials are recognized
     after a family comma that the company leaves holding no name
     word, which reads wholly as the credential run. A member its own
     capitals already made the credential reports nothing new.
+    A credential after the name core starts a run to the end of its
+    part (#602). An unambiguous Latin suffix word of two or more
+    letters, standing after two name words where no comma divides
+    the name, or after the given word in the part after a family
+    comma, makes every later word of that part a suffix, except a
+    title word, which reads as a title. A lone particle is not a name
+    word for that count, 'de Mesnil' being one surname. A title word
+    never starts the run, and neither does a member of the ambiguous
+    class, a single letter, a connective, a word that is also
+    particle or bound given-name vocabulary, or a non-Latin honorific
+    word: a credential is the writer's mark that the post-nominals
+    have begun, and those carry no such mark. A name word the run
+    absorbs is reported `suffix-or-name`.
     An unlisted word joins this same ambiguous class by SHAPE where
     the caller asks for it. Two or more period-separated chunks is
     one such shape, admitted by default (S3); an unlisted all-caps
@@ -1177,6 +1190,15 @@ S2. Rationale: generational suffixes and credentials are recognized
       "II Van Johnson"            →  given="II"  · boundary
       "Sir Ph. D. Van Johnson"    →  suffix="Ph. D."  · boundary
       "Ph. D., John"              →  family="Ph. D."  · boundary
+      "John Smith PhD Jones"      →  suffix="PhD Jones"
+      "John Smith PhD Jones"      →  ambiguities=("suffix-or-name",)
+      "Eric H. Holder Jr. Attorney General"  →  title="Attorney General"
+      "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"
+      "Smith, John PhD Jones"     →  suffix="PhD Jones"
+      "Mary Jane King Smith"      →  family="Smith"
+      "Josep Carod i Rovira"      →  family="Carod i Rovira"
+      "Mohamed Ali Abd Allah"     →  family="Allah"
+      "John PhD Smith"            →  family="Smith"  · boundary
     Accepted: a title before the credential keeps it a credential,
     and the name loses its surname exactly as it did before this
     clause — `Sir Ph. D. Van Johnson` reads given `Van Johnson` with
@@ -1192,18 +1214,19 @@ S2. Rationale: generational suffixes and credentials are recognized
     speak for it ends the name, words to spare or not, and whatever
     stands in front of it is name text. Where a credential does
     stand in front, the company above decides instead, except in
-    three shapes that keep it out of reach, each of which reads the
-    member as the name: a credential written split across two words
-    with no comma after the name, a title standing between the
-    credential and the member, and a member a particle chain (P2)
-    has already taken. Each reading of the three is older than the
-    company clause, so they are witnessed by tests/v2/cases.py's
-    a_split_degree_in_front_is_out_of_the_walk,
+    one shape that keeps it out of reach and reads the member as the
+    name: a credential written split across two words with no comma
+    after the name. That reading is older than the company clause,
+    so it is witnessed by tests/v2/cases.py's
+    a_split_degree_in_front_is_out_of_the_walk rather than by a line
+    here, which would bring the name into the corpus that enforces
+    it at released baselines for a reading this clause did not make.
+    A title standing between the credential and the member, and a
+    member a particle chain (P2) had taken, were two more such shapes
+    until the credential's run (#602) took both in: the rows
     a_title_between_degree_and_member_keeps_it_a_name and
-    a_member_the_particle_chain_took_is_out_of_reach rather than by
-    lines here, which would bring each name into the corpus that
-    enforces them at released baselines for a reading this clause
-    did not make.
+    a_member_the_particle_chain_took_is_out_of_reach keep their ids
+    and now pin the run.
       "Jack Wei Ma"               →  family="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "abdul Smith Jr Ma"         →  suffix="Jr Ma"
@@ -1227,7 +1250,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P1, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P1, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the

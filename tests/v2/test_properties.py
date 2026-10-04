@@ -288,9 +288,17 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: is the recorded negative control. The one-case class's 1,026 is
 #: unmoved by the three heads #544 added ('Jane Doe PhD', 'Doe, Jane
 #: PhD', 'PhD'), all three being mixed case.
-_MAIDEN_ANCHORED_HEAD_EXCEPTIONS = 810
+#: Re-recorded 2026-10-04 for #602: 1,134, every one of the 324 new
+#: members under the `nodot` policy -- a by-shape dotted member
+#: ('X.Y.Z.', 'R.A.I.' in each case) behind one of the three
+#: credential heads, 108 each. With the dotted switch off #544's
+#: anchor left it a name; the head's credential now starts a run to
+#: the end of the part (rules.md#S2), which takes it in, so the plain
+#: form reads a credential and the clause form, as before, a name. No
+#: member left the class.
+_MAIDEN_ANCHORED_HEAD_EXCEPTIONS = 1134
 _MAIDEN_ANCHORED_HEAD_DIGEST = (
-    "c5a8f5277e49fe583e0edc834346f623dd02459845ccd6ab9325ecfe7a167c7c")
+    "910ba67067f265923c99112670ee66cd11fb160d2a2ba20a8935c93086493a64")
 _MAIDEN_AGREEMENT_EXCEPTIONS = 1026
 _MAIDEN_AGREEMENT_DIGEST = (
     "4b70727a2633fea1a9c219173d48b223cc0866a5d340b69a9eb4f14fc386ae6a")
