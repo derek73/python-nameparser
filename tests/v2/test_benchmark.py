@@ -218,13 +218,13 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #                             first piece is a bound given-name word,
 #                             so the reserve's per-piece question is
 #                             asked over the whole run (#401)
-#   M2 clause VIEW            maiden_clause ONLY -- the one unit that
-#                             reaches the #533 acronym fork, which
-#                             needs a maiden marker AND a class member
-#                             ending the string. 'MA nee ' has both
-#                             words and reaches nothing: the peel
-#                             stops at the trailing marker, so the
-#                             ORDER inside the unit is the shape
+#   M2 clause VIEW            maiden_clause ONLY -- the one unit
+#                             holding a maiden marker, so the take's
+#                             clause-free view over a run of class
+#                             members (#601). Until #601 it reached
+#                             the #533 acronym fork, which only this
+#                             order did; since then 'MA nee ' reaches
+#                             the take too (measured 2026-10-04)
 #   connective RUN LENGTH     link_run ONLY -- P3's both-sides
 #                             condition walks the run of connectives
 #                             beside a link, and no other unit here
@@ -639,7 +639,8 @@ def test_a_trailing_credential_run_does_not_cost_exponentially() -> None:
 # same reason the one above needed a second: `_SHAPES` repeats a unit
 # and nothing else, so it cannot express "a name word, a marker, then
 # a long run" -- and a maiden clause needs exactly that prefix.
-# Measured: `"nee i Und " * n` never reaches the clause link exception
+# Measured: `"nee i Und " * n` never reached the clause link exception
+# (retired by #601; `_clause_run` says what the guard measures now)
 # at all (the take declines, and b9ed1429 and this tree measure the
 # identical 3.92/4.07/4.12 on it), which is the silent-no-op a
 # reachability probe exists to catch. So this guard builds its own
@@ -770,9 +771,10 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
 #   tail     #558: `tail_reading` re-peeled the whole walk once per
 #            title the H5 chain took, asking `listed_lean` of every
 #            member it had already peeled.
-#   clause   #558 again, through the maiden walk, which runs that fixed
-#            point three times (the clause's take, its release check,
-#            and `trailing_start_past_titles`).
+#   clause   #558 again, through the maiden take, which reads that
+#            fixed point over the clause-free view (until #601 three
+#            times: the take, its release check, and
+#            `trailing_start_past_titles`).
 #   chain    #559: the particle chain asked "is every piece ahead of
 #            this one a title?" afresh at every chain site, so leading
 #            titles x particle sites `is_leading_title` calls.

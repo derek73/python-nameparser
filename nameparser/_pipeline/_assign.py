@@ -1077,12 +1077,29 @@ def assign(state: ParseState) -> ParseState:
                                                     tokens)):
                     sticky_from = m
                     break
+            # A wholly-particle piece is not the run's to take: P6
+            # attaches it to the family the comma named (rules.md#P6:
+            # "a particle ending the name attaches to that family
+            # name", looking past the post-nominals behind it), so it
+            # is left to the walk below and reaches P6 with the role it
+            # had before #602. Absorbing it here reported a suffix
+            # reading P6 then overrode, and P6 reported the override as
+            # a declined post-nominal ('Smith, John PhD de', 'Smith,
+            # John PhD de Jr.'). A lone member of the ambiguous
+            # credential class stays in the run (`do`): read as the
+            # credential, it is the word P6's #531 exception keeps out
+            # of the attachment, so the run and P6 agree on it.
             for m in range(n + 1, len(pieces)):
                 if m in titled_idx:
                     continue
                 suffix_here = (reads_as_a_suffix(m, titled_idx)
                                if titled_idx else m not in walkable)
-                if m >= sticky_from:
+                if m >= sticky_from and not (
+                        all("particle" in tokens[i].tags
+                            for i in pieces[m])
+                        and not (len(pieces[m]) == 1
+                                 and not tokens[pieces[m][0]].tags
+                                 .isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS))):
                     # inside the run: a title word reads as a title,
                     # every other word as a suffix, and a word the walk
                     # would have kept as a name is reported, here where

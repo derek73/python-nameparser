@@ -3687,6 +3687,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # boundary, which attaches as this rule reads. Reach, verified.
         "fix(#379) a tussenvoegsel after a family comma attaches to the family":
             _Claim(32, ('family', 'middle'), "3e3ff4af0060", None),
+        "fix(#379) a tussenvoegsel behind a post-nominal after a family comma attaches":
+            _Claim(1, ('family', 'middle'), "f24e5eee3cc1", None),
         # 2026-10-01, #554: 2 -> 3, 'John Smith, Jr vd', #554's
         # rules.md#C1 example. Reach, verified by name.
         # 2026-10-02, #573: 3 -> 4, 'DOE, JANE PHD VD', P6's
@@ -3822,7 +3824,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #602: 442 -> 443, 'Smith, John PhD Jones', the
         # rules.md#S2 example of the given part's credential run.
         # Reach -- a comma name.
-            _Claim(438, ('given', 'suffix', 'title'), "23bac60cb496", None),
+            _Claim(439, ('given', 'suffix', 'title'), "6194566a5ea4", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3937,7 +3939,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-03, #549: 439 -> 442, the same three #549 examples.
         # Reach.
         # 2026-10-04, #602: 442 -> 443, 'Smith, John PhD Jones'. Reach.
-            _Claim(438, ('family', 'given'), "23bac60cb496", None),
+            _Claim(439, ('family', 'given'), "6194566a5ea4", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4707,6 +4709,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Smith, Jr do', #554's rules.md#C1 examples. Reach, verified
         # name by name.
             _Claim(32, ('_ambiguities', 'family', 'middle'), "3e3ff4af0060", None),
+        "fix(#379) a tussenvoegsel behind a post-nominal after a family comma attaches":
+            _Claim(1, ('family', 'middle'), "f24e5eee3cc1", None),
         # 2026-09-18: 126 -> 131. Five corpus names arrived with
         # #289/#516's own case rows -- 'J.씨', 'John Smith 田.中.',
         # '毛泽东, MA', '田中 太郎, MA', '마틴 킹, MA' -- all of them
@@ -5901,6 +5905,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Smith, Jr do', #554's rules.md#C1 examples. Reach, verified
         # name by name.
             _Claim(32, ('_ambiguities', 'family', 'middle'), "3e3ff4af0060", None),
+        "fix(#379) a tussenvoegsel behind a post-nominal after a family comma attaches":
+            _Claim(1, ('family', 'middle'), "f24e5eee3cc1", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
             _Claim(1, ('_ambiguities', 'family', 'given'), "ca7b37af6cf8", None),
         "fix(#367) a title no longer displaces a leading particle out of the leading position":

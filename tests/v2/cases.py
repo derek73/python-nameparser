@@ -1797,6 +1797,35 @@ CASES: tuple[Case, ...] = (
                "tag and stays inside P6's run -- byte-identical before "
                "and after #531. Narrowing that condition to the "
                "ambiguous tag is what buys it"),
+    Case("a_trailing_particle_is_not_the_credential_runs_to_take",
+         "Smith, John PhD de",
+         {"given": "John", "family": "de Smith", "suffix": "PhD"},
+         classification="fix(#379)",
+         notes="P6 over S2's given-part run (#602): a wholly-"
+               "particle piece is left to the walk and P6 attaches it, "
+               "so neither stage reports. The run had absorbed 'de' and "
+               "reported it, and P6 then reported the attachment as a "
+               "declined post-nominal -- two reports for a reading "
+               "neither stage kept (code review of #601/#602, "
+               "2026-10-04). 2.3.0 read this way; 1.4.0 middle 'de'"),
+    Case("a_particle_between_credentials_is_not_the_runs_to_take",
+         "Smith, John PhD de Jr.",
+         {"given": "John", "family": "de Smith", "suffix": "PhD, Jr."},
+         classification="fix(#379)",
+         notes="P6: the run it looks past the post-nominal to "
+               "find is the same wholly-particle piece, so S2's run "
+               "leaves it alone wherever it stands. 2.3.0 read this "
+               "way; 1.4.0 middle 'de'"),
+    Case("a_trailing_particle_chain_keeps_its_own_report",
+         "Smith, John PhD Jr. de la",
+         {"given": "John", "family": "de la Smith",
+          "suffix": "PhD Jr."},
+         classification="fix(#379)",
+         ambiguities=("particle-or-given",),
+         notes="P6: the attachment reports the ambiguous "
+               "particle it overrode, as it did before #602, rather than "
+               "a post-nominal the run had manufactured. 2.3.0 read this "
+               "way; 1.4.0 middle 'de la', suffix 'PhD, Jr.'"),
     Case("tussenvoegsel_behind_a_post_nominal", "Berg, Jan van Jr.",
          {"given": "Jan", "family": "van Berg", "suffix": "Jr."},
          classification="fix(#379)",

@@ -322,8 +322,8 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     taken the trailing word into the family name, and no title word
     is standing in the trailing slot at all. A maiden clause is not
     such a join: it ends where the run the end of the name reads
-    without it begins (M2), so a trailing title ends the clause and
-    is a title.
+    without it begins (M2), so where a trailing rule reads the part
+    a trailing title ends the clause and is a title.
       "John van der Berg Prof."   →  family="van der Berg Prof."
       "Mary Smith née Jones Prof." →  title="Prof."
     Accepted: what the chain leaves is also what counts as a name
@@ -952,7 +952,7 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_post_rules.py
 
 ## Suffixes: generational & credentials (S)
 
@@ -1104,10 +1104,12 @@ S2. Rationale: generational suffixes and credentials are recognized
     A credential after the name core starts a run to the end of its
     part (#602). An unambiguous Latin suffix word of two or more
     letters, standing after two name words where no comma divides
-    the name, or after the given word in the part after a family
-    comma, makes every later word of that part a suffix, except a
-    title word, which reads as a title. A lone particle is not a name
-    word for that count, 'de Mesnil' being one surname. A title word
+    the name or before a suffix comma, or after the given word in
+    the part after a family comma, makes every later word of that
+    part a suffix, except a title word, which reads as a title, and
+    in that given part a word wholly of particle vocabulary, which
+    P6 attaches to the family wherever it stands. A lone particle is
+    not a name word for the count, 'de Mesnil' being one surname. A title word
     never starts the run, and neither does a member of the ambiguous
     class, a single letter, a connective, a word that is also
     particle or bound given-name vocabulary, or a non-Latin honorific
@@ -1195,6 +1197,7 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Eric H. Holder Jr. Attorney General"  →  title="Attorney General"
       "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"
       "Smith, John PhD Jones"     →  suffix="PhD Jones"
+      "Smith, John PhD de Jr."    →  family="de Smith"  · boundary
       "Mary Jane King Smith"      →  family="Smith"
       "Josep Carod i Rovira"      →  family="Carod i Rovira"
       "Mohamed Ali Abd Allah"     →  family="Allah"
@@ -1408,7 +1411,8 @@ M2. Rationale: a maiden marker announces that what follows it is the
     former family name; the marker is an announcement, not a name.
     A recognized maiden marker counts only in the part of the name
     that holds the family name — the whole name where no comma
-    divides it, the part before a family comma — and only with a
+    divides it or before a suffix comma, the part before a family
+    comma — and only with a
     name word straight before it. A word of the leading title run is
     no name word there, a lone title included; neither is a word of
     the unambiguous suffix vocabulary, unless it opens the name (S2),
@@ -1431,10 +1435,12 @@ M2. Rationale: a maiden marker announces that what follows it is the
     into it. Before a family comma no trailing rule reads the part, so
     the clause ends at the first suffix word, and the words from it
     on read as that part reads them.
-    A member of the ambiguous class (S2) that ends the maiden name is
-    reported where the clause keeps it; one in the run is reported
-    where the run is read, so no word is reported twice and none goes
-    unreported.
+    Where a trailing rule reads the part, a member of the ambiguous
+    class (S2) that ends the maiden name is reported where the clause
+    keeps it, and one in the run is reported where the run is read,
+    so no word is reported twice and none goes unreported. Before a
+    family comma no rule reads it, and the member the clause keeps
+    there is reported nowhere.
     Delimiters outrank every reading inside them. Where a recognized
     marker stands inside a delimited clause, the whole span is the
     maiden name whatever its last word is, and whether or not the
@@ -1532,7 +1538,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     whatever it is unless it is a suffix word, and a lone roman
     numeral is not one — it is shaped like an initial — so it is the
     maiden name where the clause-free name would read it as the
-    suffix. Open on #601.
+    suffix. Decided with #601 (decisions.md#M2, 2026-10-04).
       "Jane Smith née V"            →  maiden="V"  · boundary
     Accepted: bracket content ending in a period is suffix-shaped
     (M3), so the brackets are dropped (S1) and the clause is read as

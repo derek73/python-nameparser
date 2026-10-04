@@ -5,7 +5,9 @@ Consumes: tokens (classified), segments, structure, one_case, extracted
 the only stage after tokenize that reads it).
 Produces: pieces + piece_tags per segment (runs of token indices --
 tokens are NEVER joined into strings: the anti-#100 invariant); maiden
-tail tokens get role=MAIDEN; marker tokens land in dropped.
+tail tokens get role=MAIDEN, and the trailing run a maiden take gives
+up gets its SUFFIX and TITLE roles here (#601), so no join can reach
+it; marker tokens land in dropped.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are

@@ -4783,3 +4783,13 @@ fields = ["family", "middle", "suffix", "title"]
 issue = "fix(#274/#601/#602) a credential in the clause starts a run the take consumes"
 name_regex = "^Jane Doe nee Smith PhD Smith$"
 fields = ["family", "maiden", "middle", "suffix"]
+
+[[change]]
+# rules.md#P6: "a particle ending the name attaches to that family name",
+# and a post-nominal written behind the particle does not end the name
+# for this purpose. rules.md#S2's example for the given-part run leaving
+# the particle to P6 (#601/#602 review, 2026-10-04); the attachment
+# itself landed in 2.2 (#379).
+issue = "fix(#379) a tussenvoegsel behind a post-nominal after a family comma attaches"
+name_regex = "^Smith, John PhD de Jr\\.$"
+fields = ["middle", "family"]
