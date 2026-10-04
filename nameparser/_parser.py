@@ -182,8 +182,12 @@ class Parser:
         ``revise(n, suffix="MD PhD")`` is one entry and a name's
         rendered suffix revises back to itself wherever the value's
         words read as the whole name read them -- the honorific peel
-        above is the one corpus exception of 368 suffix-bearing names,
-        2026-09-06 (#511). A delimiter the policy names through
+        above was the one corpus exception of 368 suffix-bearing names,
+        2026-09-06 (#511). A second came with #601/#602: a suffix
+        holding a maiden marker the whole name left a word, whose
+        value read on its own takes the clause and drops the marker
+        ('Jane Doe PhD nee Smith' renders 'PhD nee Smith', which
+        revises to 'PhD Smith'), three corpus names on 2026-10-04. A delimiter the policy names through
         ``extra_suffix_delimiters`` parts a value only where the
         value's own words, read as a name, give it a tail segment for
         the core to be dropped on; a run of post-nominals has none,

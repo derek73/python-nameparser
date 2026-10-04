@@ -140,7 +140,8 @@ class ParseState:
     pieces, still as sub-slices of the original, and every later index
     in the segment runs shifts by n); classify -> token tags AND
     one_case; group -> pieces/piece_tags/dropped AND maiden token
-    roles;
+    roles, plus the SUFFIX/TITLE roles of the run a maiden take gives
+    up (#601);
     assign -> the remaining token roles AND `order`, the effective
     order it read them under; post_rules -> roles again, and the
     ambiguity P6's attachment reports.

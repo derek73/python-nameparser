@@ -332,9 +332,9 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     puts the word out of reach. A particle chain (P2) has already
     taken the trailing word into the family name, and no title word
     is standing in the trailing slot at all. A maiden clause is not
-    such a join: the clause's walk reads the end of the name through
-    this chain (M2), so a trailing title ends the clause and is a
-    title, where the name the take leaves reads it as a title (M2).
+    such a join: it ends where the run the end of the name reads
+    without it begins (M2), so where a trailing rule reads the part
+    a trailing title ends the clause and is a title.
       "John van der Berg Prof."   →  family="van der Berg Prof."
       "Mary Smith née Jones Prof." →  title="Prof."
     Accepted: what the chain leaves is also what counts as a name
@@ -761,7 +761,7 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abd Berg née Jones"        →  family="Berg"
       "abd Allah Smith née Jones" →  given="abd Allah"
       "abd née Jones"             →  given="abd"
-      "Berg, abd née Jones"       →  suffix="abd"
+      "Berg, abd née Jones"       →  given="abd"  · boundary
     Accepted: after a family comma the join stands though, unjoined,
     assign would read the word it takes as the suffix — the family
     is fixed there and the pair is the given; and a bare ambiguous
@@ -963,7 +963,7 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_post_rules.py
 
 P7. Rationale: a one-letter particle is spelled with the same letter
     as an initial, and the period is what tells them apart. An
@@ -1133,6 +1133,23 @@ S2. Rationale: generational suffixes and credentials are recognized
     after a family comma that the company leaves holding no name
     word, which reads wholly as the credential run. A member its own
     capitals already made the credential reports nothing new.
+    A credential after the name core starts a run to the end of its
+    part (#602). An unambiguous Latin suffix word of two or more
+    letters, standing after two name words where no comma divides
+    the name or before a suffix comma, or after the given word in
+    the part after a family comma, makes every later word of that
+    part a suffix, except a title word, which reads as a title, and
+    in that given part the particles ending it, behind any
+    post-nominals, which P6 attaches to the family — other than a
+    lone member of the ambiguous class, which reads as the
+    credential. A lone particle is
+    not a name word for the count, 'de Mesnil' being one surname. A title word
+    never starts the run, and neither does a member of the ambiguous
+    class, a single letter, a connective, a word that is also
+    particle or bound given-name vocabulary, or a non-Latin honorific
+    word: a credential is the writer's mark that the post-nominals
+    have begun, and those carry no such mark. A name word the run
+    absorbs is reported `suffix-or-name`.
     An unlisted word joins this same ambiguous class by SHAPE where
     the caller asks for it. Two or more period-separated chunks is
     one such shape, admitted by default (S3); an unlisted all-caps
@@ -1209,6 +1226,16 @@ S2. Rationale: generational suffixes and credentials are recognized
       "II Van Johnson"            →  given="II"  · boundary
       "Sir Ph. D. Van Johnson"    →  suffix="Ph. D."  · boundary
       "Ph. D., John"              →  family="Ph. D."  · boundary
+      "John Smith PhD Jones"      →  suffix="PhD Jones"
+      "John Smith PhD Jones"      →  ambiguities=("suffix-or-name",)
+      "Eric H. Holder Jr. Attorney General"  →  title="Attorney General"
+      "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"
+      "Smith, John PhD Jones"     →  suffix="PhD Jones"
+      "Smith, John PhD de Jr."    →  family="de Smith"  · boundary
+      "Mary Jane King Smith"      →  family="Smith"
+      "Josep Carod i Rovira"      →  family="Carod i Rovira"
+      "Mohamed Ali Abd Allah"     →  family="Allah"
+      "John PhD Smith"            →  family="Smith"  · boundary
     Accepted: a title before the credential keeps it a credential,
     and the name loses its surname exactly as it did before this
     clause — `Sir Ph. D. Van Johnson` reads given `Van Johnson` with
@@ -1224,18 +1251,19 @@ S2. Rationale: generational suffixes and credentials are recognized
     speak for it ends the name, words to spare or not, and whatever
     stands in front of it is name text. Where a credential does
     stand in front, the company above decides instead, except in
-    three shapes that keep it out of reach, each of which reads the
-    member as the name: a credential written split across two words
-    with no comma after the name, a title standing between the
-    credential and the member, and a member a particle chain (P2)
-    has already taken. Each reading of the three is older than the
-    company clause, so they are witnessed by tests/v2/cases.py's
-    a_split_degree_in_front_is_out_of_the_walk,
+    one shape that keeps it out of reach and reads the member as the
+    name: a credential written split across two words with no comma
+    after the name. That reading is older than the company clause,
+    so it is witnessed by tests/v2/cases.py's
+    a_split_degree_in_front_is_out_of_the_walk rather than by a line
+    here, which would bring the name into the corpus that enforces
+    it at released baselines for a reading this clause did not make.
+    A title standing between the credential and the member, and a
+    member a particle chain (P2) had taken, were two more such shapes
+    until the credential's run (#602) took both in: the rows
     a_title_between_degree_and_member_keeps_it_a_name and
-    a_member_the_particle_chain_took_is_out_of_reach rather than by
-    lines here, which would bring each name into the corpus that
-    enforces them at released baselines for a reading this clause
-    did not make.
+    a_member_the_particle_chain_took_is_out_of_reach keep their ids
+    and now pin the run.
       "Jack Wei Ma"               →  family="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "abdul Smith Jr Ma"         →  suffix="Jr Ma"
@@ -1259,7 +1287,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P1, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P1, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
@@ -1415,92 +1443,38 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
 
 M2. Rationale: a maiden marker announces that what follows it is the
     former family name; the marker is an announcement, not a name.
-    A recognized maiden marker standing after at least one name
-    word takes the words after it — up to any suffix word, or the
-    trailing roman numeral assign reads as the suffix (S2), both as
-    written and as the take would leave the name, the word before
-    the numeral being then the word before the marker, or a
-    trailing word of the ambiguous credential class (S2), asked
-    that same double way and stopping the take only where the rule
-    reading the name left standing reads the word as the
-    credential, and never the first word after the marker — as the
-    maiden name, and
-    the marker itself is dropped. Where a trailing rule reads the
-    words, a trailing title ends it too: a period-marked word the
-    trailing title chain takes (H5), read together with the trailing
-    suffix run to where neither takes more, so a credential or a
-    numeral in front of the title stops the take exactly as it does
-    with the title absent. Neither the credential stop nor the title
-    stop takes the first word after the marker; the numeral stop is
-    not held to that, and a numeral there may decline the clause.
-    One suffix word does not stop it. Where such a word is also a
-    connective standing between two name words of the clause (P3),
-    a link inside the birth name does not end it, and the words on
-    both sides of the link are the maiden name. A link with the
-    marker on one side of it, or with the trailing run on the
-    other, is joining nothing there and ends the clause like any
-    other suffix word. Where a trailing rule reads the words, a link
-    that ends the clause only because a trailing title is read as
-    one — a link that, read over the words as written, would join —
-    gives up the words behind it only where the name left standing
-    reads them as post-nominals or titles; otherwise the clause keeps
-    the link and runs on. The link first after the marker is not
-    asked: stopping there declines the clause.
-    A separator the caller declared, standing in a trailing suffix
-    part, ends the clause as a comma would (C1): the words beyond it
-    are the next part's, and a marker with one straight before or
-    after it reads as it would with a comma typed there.
-    The trailing numeral, credential and title stops are each asked
-    TWICE for one reason: the
-    count of words to spare includes the very words the marker
-    removes, so a reading taken over the name as written can be
-    wrong about the name the take would leave. WHICH rule does the
-    reading depends on where the clause stands. Where the clause is
-    in the part a trailing rule reads — a name with no comma, and
-    the part before a SUFFIX comma, which that rule reads the same
-    way — that rule is the reader. After a family comma it is the
-    reading the end of the given part takes, where the comma has
-    already settled the count and the writing decides alone. A lone
-    numeral reads as a suffix there only where no comma part follows
-    the given one, exactly as it does outside a marker's clause; with
-    one behind it the numeral stays name text and the clause keeps
-    it. Before a family comma, and in a part after a second one, no
-    trailing rule reads those words at all: the clause keeps them and
-    says nothing about them.
-    That the credential stop spares the first word after the marker
-    is a deliberate divergence from what certain suffix vocabulary
-    gets in the same position, where the marker declines and stays
-    an ordinary word. The marker announces a name, and this class is
-    the one carrying no evidence of which it is: its members are
-    borne surnames as well as credentials, and nobody writes a
-    credential straight after the marker, so a lone member reads as
-    the name it was announced to be.
-    A member ENDING a clause that some rule reads is reported where
-    the clause KEEPS it (S2); one the clause gives up is reported
-    where the reading that took it reports, so no word is reported
-    twice and none goes unreported.
-    That holds because a word the clause gives up reads as a
-    post-nominal or the clause keeps it. The stop is right only
-    where the released word ends the parse in the SUFFIX, so a stop
-    that would put it in a name part is no stop and the clause keeps
-    the word. What the take LEAVES BEHIND decides that, not the
-    clause as written. Two shapes leave nothing that could read the
-    word as a credential. A part whose other words are all
-    post-nominals or titles has no name word left for a trailing
-    slot to be the end of, and a part of nothing but credentials is
-    read whole and asked nothing. And a join reached below the take
-    — a particle chain (P2), or a bound given-name join (P5) — can
-    absorb the released word into a name part before any trailing
-    rule sees it, which would carry a word of the BIRTH name into
-    the current one. In both the clause keeps the word, and reports
-    it as it reports every member it keeps.
-    Where a trailing rule reads the words, the trailing numeral, the
-    trailing credential and the trailing title each give up a run
-    only where the name the take leaves
-    reads the WHOLE run, not only the word the stop is made at, as
-    titles or post-nominals; otherwise the clause keeps it. After a
-    family comma a released title that is also a particle is kept,
-    since the particle attachment (P6) would carry it into the family.
+    A recognized maiden marker counts only in the part of the name
+    that holds the family name — the whole name where no comma
+    divides it or before a suffix comma, the part before a family
+    comma — and only with a
+    name word straight before it. A word of the leading title run is
+    no name word there, a lone title included; neither is a word of
+    the unambiguous suffix vocabulary, unless it opens the name (S2),
+    nor a connective. A particle
+    is one: with nothing after it to attach to, it is no particle
+    there. In the given part after a family comma, in a part after a
+    suffix comma, and behind a title, a suffix word or a connective,
+    the marker is an ordinary word; a name standing somewhere before
+    it is not enough.
+    A marker that counts takes the words after it as the maiden name,
+    and is itself dropped. It takes them up to the trailing run of
+    post-nominals and titles that the end of the name reads as if the
+    clause were not written — the trailing rules (S2, H5) asked over
+    the words before the marker and the post-nominal or title words
+    that end it, before any join — and always takes the first word
+    after it, the marker having announced a name. A suffix word
+    straight after the marker announces nothing, and the marker is
+    then a word. The run so found ends the name: its words are the
+    suffixes and titles that reading makes them, and no join reaches
+    into it. Before a family comma no trailing rule reads the part, so
+    the clause ends at the first suffix word, and the words from it
+    on read as that part reads them.
+    Where a trailing rule reads the part, a member of the ambiguous
+    class (S2) that ends the maiden name is reported where the clause
+    keeps it, and one in the run is reported where the run is read,
+    so no word is reported twice and none goes unreported. Before a
+    family comma no rule reads it, and the member the clause keeps
+    there is reported nowhere.
     Delimiters outrank every reading inside them. Where a recognized
     marker stands inside a delimited clause, the whole span is the
     maiden name whatever its last word is, and whether or not the
@@ -1527,134 +1501,87 @@ M2. Rationale: a maiden marker announces that what follows it is the
     instead of absorbing it; a marker left as a word bounds nothing.
     Where the bound leaves a family of nothing but particles, they
     are not in particle position and read as ordinary words (R2).
-      "Jane Smith née Jones"      →  maiden="Jones"
-      "Jane née Jones Smith"      →  maiden="Jones Smith"
-      "Jane Smith née Jones PhD"  →  suffix="PhD"
-      "John née Jones Smith V"    →  maiden="Jones Smith"
-      "John née Jones Smith V"    →  suffix="V"
-      "Jane Smith née V"          →  suffix="V"
-      "Dr. nee V"                 →  maiden="V"  · boundary
-      "J. née Jones Smith V"      →  maiden="Jones Smith V"  · boundary
-      "Jane née Jones J. V"       →  maiden="Jones J. V"  · boundary
-      "Jane Doe nee Smith MA"     →  maiden="Smith"
-      "Jane Doe nee Smith MA"     →  suffix="MA"
-      "Jane Doe nee Smith Ma"     →  maiden="Smith Ma"  · boundary
-      "Jane Doe nee MA"           →  maiden="MA"  · boundary
-      "Jane Doe nee MA Smith"     →  maiden="MA Smith"  · boundary
-      "John née Jones Smith MA"   →  maiden="Jones Smith"
-      "Doe, Dr. nee Smith MA"     →  maiden="Smith MA"  · boundary
-      "Berg, abdul nee Jones MA"  →  maiden="Jones MA"  · boundary
-      "Jane Doe nee Smith DO DO"  →  maiden="Smith DO DO"  · boundary
-      "Jane Doe nee Puig i Soler" →  maiden="Puig i Soler"
-      "Jane Doe nee Puig i"       →  maiden="Puig"  · boundary
-      "Jane Doe nee Puig i"       →  suffix="i"  · boundary
-      "Jane Doe nee Smith i DO Prof."  →  maiden="Smith i DO"
-      "Doe, Jane nee Smith St."        →  maiden="Smith St."
-      "Smith, John, PhD née Puig Mr. - i Soler" extra_suffix_delimiters-dash →  maiden="Puig Mr."
-      "Smith, John, PhD née Puig - i Soler" extra_suffix_delimiters-dash →  maiden="Puig"
-      "Jane Doe nee Smith Prof."       →  maiden="Smith"
-      "Jane Doe nee Smith Prof."       →  title="Prof."
-      "Jane Doe nee Smith MA Prof."    →  suffix="MA"
-      "Jane Doe nee Smith Prof. MA"    →  maiden="Smith"
-      "Jane Doe nee Smith V Prof."     →  suffix="V"
-      "Jane Doe nee King."             →  maiden="King."  · boundary
-      "Jane Doe nee Prof. Dr."         →  maiden="Prof."  · boundary
-      "Dr. nee Jones Smith Prof."      →  maiden="Jones Smith Prof."  · boundary
-      "Doe nee Smith Prof., Jane"      →  maiden="Smith Prof."  · boundary
-      "Jane van der Berg nee Smith Prof."  →  maiden="Smith Prof."  · boundary
-      "Berg, abdul nee Smith V"        →  maiden="Smith V"  · boundary
-      "Jane Doe nee King. ba"          →  suffix="ba"  · boundary
-      "Doe, Jane nee Smith V, PhD"     →  maiden="Smith V"
-      "Jane Doe (nee Smith MA)"   →  maiden="Smith MA"
-      "Jane Doe (nee Smith Ma)"   →  maiden="Smith Ma"
-      "Jane Doe (nee Smith) MA"   →  suffix="MA"
-      "Jones née"                 →  family="née"  · boundary
-      "née Jones"                 →  family="Jones"  · boundary
+      "Jane Smith née Jones"        →  maiden="Jones"
+      "Maria López née García Pérez"  →  maiden="García Pérez"
+      "Jane Smith née Jones PhD"    →  suffix="PhD"
+      "John née Jones Smith V"      →  maiden="Jones Smith"
+      "John née Jones Smith V"      →  suffix="V"
+      "Doe nee Smith, Jane"         →  maiden="Smith"
+      "Doe, Jane nee Smith"         →  maiden=""
+      "Doe, Jane nee Smith"         →  middle="nee Smith"
+      "Jane Smith, née Jones"       →  maiden=""
+      "Smith, John, PhD née Jones"  →  maiden=""
+      "Jane Doe PhD nee Smith"      →  maiden=""
+      "Jane and née Jones"          →  maiden=""
+      "Dr. nee Smith PhD Prof."     →  maiden=""  · boundary
+      "Dr. nee Smith PhD Prof."     →  family="Smith"  · boundary
+      "Mai Le née Nguyen"           →  maiden="Nguyen"
+      "abd née Jones"               →  maiden="Jones"
+      "Jane née Jr y Jones"         →  maiden=""
+      "Jane Doe nee Smith MA"       →  maiden="Smith"
+      "Jane Doe nee Smith MA"       →  suffix="MA"
+      "Jane Doe nee Smith Ma"       →  maiden="Smith Ma"  · boundary
+      "Jane Doe nee MA"             →  maiden="MA"  · boundary
+      "Jane Doe nee MA Smith"       →  maiden="MA Smith"  · boundary
+      "John née Jones Smith Ma"     →  maiden="Jones Smith Ma"
+      "John nee Prof. ba MA"        →  maiden="Prof. ba"  · boundary
+      "Jane Doe nee Puig i Soler"   →  maiden="Puig i Soler"
+      "Jane Doe nee Puig i"         →  maiden="Puig"  · boundary
+      "Jane Doe nee Puig i"         →  suffix="i"  · boundary
+      "Jane Doe nee Smith Prof."    →  maiden="Smith"
+      "Jane Doe nee Smith Prof."    →  title="Prof."
+      "Jane Doe nee Smith MA Prof."  →  suffix="MA"
+      "Jane Doe nee Smith Prof. MA"  →  maiden="Smith"
+      "Jane Doe nee Smith V Prof."  →  suffix="V"
+      "Jane Doe nee King."          →  maiden="King."  · boundary
+      "Jane Doe nee Prof. Dr."      →  maiden="Prof."  · boundary
+      "Jane van der Berg nee Smith Prof."  →  title="Prof."
+      "Jane van der Berg nee Prof. King. MA"  →  maiden="Prof."  · boundary
+      "Jane Doe nee Smith PhD Smith"  →  maiden="Smith"
+      "Jane Doe nee Smith PhD Smith"  →  suffix="PhD Smith"
+      "Doe nee Smith Jr. Prof., Jane"  →  family="Doe Prof."  · boundary
+      "Jane Doe (nee Smith MA)"     →  maiden="Smith MA"
+      "Jane Doe (nee Smith Ma)"     →  maiden="Smith Ma"
+      "Jane Doe (nee Smith) MA"     →  suffix="MA"
+      "Jones née"                   →  family="née"  · boundary
+      "née Jones"                   →  family="Jones"  · boundary
       "Jane van der Berg née Jones"  →  maiden="Jones"
-      "Jane de la née Jones"         →  family="de la"
-      "Jane van der Berg née"        →  family="van der Berg née"
-      "Jane van der Berg née PhD"    →  family="van der Berg née"
+      "Jane de la née Jones"        →  maiden="Jones"
+      "Jane de la née Jones"        →  family="de la"
+      "Jane van der Berg née"       →  family="van der Berg née"
+      "Jane van der Berg née PhD"   →  family="van der Berg née"
       "Jane van der Berg née y Jones"  →  maiden="y Jones"
-      "van der Berg, abdul née Jones"  →  maiden="Jones"
-      "Maria Kowalska z domu Nowak"     →  maiden="Nowak"
-      "Anna z Nowak"                    →  family="Nowak"  · boundary
-      "Anna z (domu) Nowak"             →  family="Nowak"  · boundary
+      "Maria Kowalska z domu Nowak"  →  maiden="Nowak"
+      "Anna z Nowak"                →  family="Nowak"  · boundary
+      "Anna z (domu) Nowak"         →  family="Nowak"  · boundary
     Accepted: the fullwidth-colon spelling arrives as one word, so
     the marker inside it goes unrecognized; #317 tracks whether it
     should peel.
-      "山田 花子 旧姓：佐藤"       →  maiden=""
-    Accepted: a marker straight after a comma is post-comma given
-    text, not a marker.
-      "Jane Smith, née Jones"          →  maiden=""
-    Accepted: the marker reads the words as written, so a suffix word
-    inside the maiden name ends it even where a connective beside it
-    would have bound the two into one name word (P3); the connective
-    then builds a family name out of what is left. A suffix word
-    that IS the connective is the exception stated above, and ends
-    the clause only where it joins nothing.
-      "Jane née Jr y Jones"            →  maiden=""
-    Accepted: a bare acronym the reading declines is maiden text all
-    the same — the writing decides this one (S2), and the count such
-    a reading needs is taken over the name the take would leave
-    rather than over the words as they stand.
-      "John née Jones Smith Ma"        →  maiden="Jones Smith Ma"
+      "山田 花子 旧姓：佐藤"                 →  maiden=""
+    Accepted: a given name with no current surname beside a maiden
+    name reads by M4's lone-word rule, the lone name word before the
+    marker being the family. A writer giving a given name with its
+    birth name writes the clause delimited.
+      "Jane née Jones Smith"        →  maiden="Jones Smith"  · boundary
+    Accepted: the run is what the trailing rules read, before any
+    join — not the whole reading of the clause-free name. Where a
+    particle chain would take the words of the run in that name, the
+    run keeps them suffixes and titles.
+      "Jane Doe nee Smith DO DO"    →  suffix="DO DO"  · boundary
+    Accepted: the first word after the marker is the maiden name
+    whatever it is unless it is a suffix word, and a lone roman
+    numeral is not one — it is shaped like an initial — so it is the
+    maiden name where the clause-free name would read it as the
+    suffix. Decided with #601 (decisions.md#M2, 2026-10-04).
+      "Jane Smith née V"            →  maiden="V"  · boundary
     Accepted: bracket content ending in a period is suffix-shaped
     (M3), so the brackets are dropped (S1) and the clause is read as
     if written bare — the delimiter precedence above does not reach
-    it, and a trailing title inside gives itself up as the bare
-    clause's does.
-      "Jane Doe (nee Smith Prof.)"     →  title="Prof."
-    Accepted: the title is transparent only where the clause gives
-    the credential up. A clause is one run of words, so where it
-    KEEPS the credential a title written behind it can still leave,
-    while one written in front of it cannot leave without the words
-    behind it, and the two spellings differ.
-      "Doe nee Smith ba Prof."         →  maiden="Smith ba"
-      "Doe nee Smith Prof. ba"         →  maiden="Smith Prof. ba"
-    Accepted: where the clause gives the credential up in both
-    spellings, the title still leaves only where nothing ahead stands
-    to take it. A particle chain ahead runs on over a trailing title
-    (H5), and a bound given-name join or a name left with no name
-    word would absorb it too, so a title in front of the credential
-    stays in the clause while one behind it, which the first suffix
-    word has already cut off, leaves — the split H5 already accepts
-    for the same name written without a marker.
-      "Jane van der Berg nee Smith PhD Prof."  →  title="Prof."
-      "Jane van der Berg nee Smith Prof. PhD"  →  maiden="Smith Prof."
-    Accepted: a released particle with a title behind it is withdrawn,
-    because the particle chain would run on over the title (P2, H5);
-    so the particle written in front of the title stays in the clause,
-    while written behind it, it leaves with the title. A particle
-    standing INSIDE the clause, ahead of the credential, does the
-    same from the other side: its chain would take the credential,
-    so the clause keeps the credential, and a title can leave only
-    from behind it.
-      "Jane Doe nee Smith DO Prof."    →  maiden="Smith DO"
-      "Jane Doe nee Smith Prof. DO"    →  suffix="DO"
-      "Jane Doe nee Smith do MA Prof."  →  maiden="Smith do MA"
-      "Jane Doe nee Smith do Prof. MA"  →  suffix="MA"
-    Accepted: H5's reach into the ordinary surnames the title
-    vocabulary holds reaches the end of a clause as it reaches the end
-    of a name: a period written behind one ends the clause as a title
-    and takes the word out of the birth name.
-      "Jane Doe nee Smith King."       →  title="King."
-    Accepted: the stop at the first suffix word asks no question of
-    what it gives up, so a clause that ends there can hand a word
-    behind it to a name part, where the invariant stated above says
-    the clause keeps it. Before a family comma, where the statement
-    above says no trailing rule reads the words and the clause keeps
-    them, the trailing numeral's stop is still made, asked of the
-    peel alone with no such question, and a lone numeral written
-    there goes to the family. Open: #548.
-      "Doe nee Smith Jr. Prof., Jane"  →  family="Doe Prof."
-      "Doe nee Smith V, Jane"          →  family="Doe V"
-    Accepted: a credential written in front of the marker speaks for
-    no word of the clause (S2's company), the clause's own words
-    standing between the two, so the clause keeps a member its
-    writing declines even where the same name written without the
-    clause reads that member as the credential.
-      "Jane Doe Jr. nee Smith Ma"      →  maiden="Smith Ma"
-      "Jane Doe Jr. Ma"                →  suffix="Jr. Ma"  · boundary
+    it.
+      "Jane Doe (nee Smith Prof.)"  →  title="Prof."
+    Accepted: a marker behind a credential is an ordinary word, and
+    the credential's run (S2) takes it in with everything after it.
+      "Jane Doe Jr. nee Smith"      →  suffix="Jr. nee Smith"  · boundary
     history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5, C1 · implemented: nameparser/_pipeline/_group.py
 
 M3. Rationale: an enclosure says nothing about whether it means
@@ -2015,13 +1942,12 @@ C1. Rationale: a credential run after the comma means the name is in
     here. It is also the one consequence of this question Latin
     script cannot witness, nothing there being glued to the end of a
     name — which is why this clause carries no example of its own.
-    Accepted: a maiden marker with a declared delimiter straight
-    before or after it takes no clause, the same words written with
-    a comma there taking none either: a marker opening a trailing
-    part has nothing ahead of it to follow, and one ending a part has
-    nothing behind it to take (M2). Releases 2.0 through 2.3 read
-    past the delimiter and took the clause; the comma reading is
-    accepted as the cost of one rule for a declared separator.
+    Accepted: a maiden marker in a part a declared delimiter
+    separates takes no clause, as no marker in a part after a suffix
+    comma does, the marker being an ordinary word there (M2).
+    Releases 2.0 through 2.3 read past the delimiter and took the
+    clause; the comma reading is accepted as the cost of one rule
+    for a declared separator.
       "Smith, John, MD - née Jones Smith" extra_suffix_delimiters-dash →  suffix="MD, née Jones Smith"
     Accepted: a delimiter core the policy names (T1) is a word here,
     not structure — v1 applied the delimiter to the suffix-comma
@@ -2065,8 +1991,8 @@ C2. Rationale: text beyond the recognized comma parts should be
     A part the parse consumes wholly as suffixes raises no report
     about reading a word of it as a name, whether it is the part
     after a suffix comma (C1) or a part beyond the second: nothing
-    in it is read as one outside a maiden clause standing in it
-    (M2), so a particle chain run over it (P2) reports neither a
+    in it is read as one, a maiden marker there being an ordinary
+    word (M2), so a particle chain run over it (P2) reports neither a
     particle chained onto a name word nor an acronym taken into the
     name. What such a part reports is its own — C1's flip and this
     rule's flag.

@@ -551,8 +551,12 @@ def test_a_multi_letter_numeral_anchors_like_any_suffix_word() -> None:
     # anchors exactly as 'Jr' does.
     n = parse("John Smith PhD III Ma")
     assert (n.family, n.suffix) == ("Smith", "PhD III Ma")
-    n = parse("John Smith PhD V Ma")
-    assert (n.middle, n.family, n.suffix) == ("Smith PhD V", "Ma", "")
+    # without the degree in front: the single letter is a middle
+    # initial and anchors nothing. With it, since #602, the degree
+    # starts a run to the end of the part and 'V Ma' are inside it
+    # ('John Smith PhD V Ma' reads suffix 'PhD V Ma').
+    n = parse("John Smith V Ma")
+    assert (n.middle, n.family, n.suffix) == ("Smith V", "Ma", "")
 
 
 def test_the_anchor_pass_starts_past_the_leading_title_run() -> None:
@@ -838,3 +842,47 @@ def test_a_title_the_fixed_point_splices_out_keeps_no_peel_pick() -> None:
     assert (name.title, name.given, name.family, name.suffix) == (
         "Ma.", "John", "Smith", "PhD Jr.")
     assert name.ambiguities == ()
+
+
+# rules.md#S2 (#602): a credential after the name core starts a run to
+# the end of its part. The exclusion tests pass before the change too:
+# they are the negative controls that make the first two meaningful.
+def test_a_credential_after_two_name_words_starts_the_run() -> None:
+    name = parse("John Smith PhD Jones")
+    assert (name.given, name.family, name.suffix, name.middle) == (
+        "John", "Smith", "PhD Jones", "")
+
+
+def test_a_title_word_inside_the_run_reads_as_a_title() -> None:
+    name = parse("Eric H. Holder Jr. Attorney General")
+    assert (name.title, name.suffix, name.family) == (
+        "Attorney General", "Jr.", "Holder")
+
+
+def test_a_title_word_never_starts_the_run() -> None:
+    # 746 title words are in no suffix set, many of them surnames
+    assert parse("Mary Jane King Smith").family == "Smith"
+
+
+def test_the_ambiguous_class_and_initials_do_not_start_the_run() -> None:
+    assert parse("John Smith MA Jones").family == "Jones"
+    assert parse("John Smith V Jones").family == "Jones"
+
+
+def test_a_joined_connective_does_not_start_the_run() -> None:
+    assert parse("Josep Carod i Rovira").suffix == ""
+
+
+def test_one_name_word_before_the_credential_is_no_core() -> None:
+    assert parse("John PhD Smith").family == "Smith"
+
+
+def test_the_given_part_after_a_family_comma_reads_the_run_too() -> None:
+    name = parse("Smith, John PhD Jones")
+    assert (name.given, name.family, name.suffix, name.middle) == (
+        "John", "Smith", "PhD Jones", "")
+
+
+def test_a_title_inside_the_given_parts_run_is_a_title() -> None:
+    name = parse("Holder, Eric Jr. Attorney General")
+    assert (name.title, name.suffix) == ("Attorney General", "Jr.")

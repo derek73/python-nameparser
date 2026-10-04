@@ -260,6 +260,39 @@ def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
     return "vocab:suffix" in tags and "initial" not in tags
 
 
+# rules.md#S2: "A title word never starts the run, and neither does a
+# member of the ambiguous class, a single letter, a connective" -- what
+# starts #602's credential run, one predicate for the trailing peel and
+# the given-part walk (mechanisms.md#ONE-PREDICATE-PER-QUESTION)
+def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
+                            tokens: Sequence[WorkToken]) -> bool:
+    """Whether one piece starts #602's run: an unambiguous LATIN
+    suffix word of two or more letters -- a credential acronym or a
+    generational word -- that no other vocabulary claims as a name.
+
+    `is_suffix_piece` already refuses the ambiguous class and an
+    initial-shaped letter. Refused here: any single letter (a lowercase
+    `i` or `v` mid-name is an initial or a connective far more often
+    than a numeral, and carries no `initial` tag), a connective, a
+    word that is also bound given-name or particle vocabulary (`abd`
+    heads `Abd Allah`; `vd`, `mc`), and the non-Latin honorific words.
+    """
+    if len(piece) != 1 or not is_suffix_piece(piece, ptags, tokens):
+        return False
+    tok = tokens[piece[0]]
+    if not tok.tags.isdisjoint(_NOT_A_RUN_START):
+        return False
+    # C-level, no generator frame per character
+    letters = "".join(filter(str.isalpha, tok.text.lower()))
+    return len(letters) >= 2 and letters.isascii()
+
+
+#: tags of suffix words another vocabulary claims as a name word or a
+#: joiner, which therefore never start #602's run
+_NOT_A_RUN_START = frozenset({"conjunction", "particle",
+                              "vocab:bound-given"})
+
+
 def is_lone_never_given_particle(piece: Sequence[int],
                                  tokens: Sequence[WorkToken]) -> bool:
     """A piece that is one never-given particle (rules.md#P1's fold
@@ -399,8 +432,7 @@ def given_slot_anchors(pieces: Sequence[Sequence[int]],
     skipped piece. `start` is where the leading title run ends, so a
     title/suffix dual standing in it anchors nothing ('Smith, MD MA
     Ma'), and the piece at `start` is the given name the reserve keeps.
-    The one home of that query for assign's given slot, group's
-    GIVEN_SLOT reader, and the maiden clause's take."""
+    The one home of that query for assign's given slot."""
     stop = len(pieces) if end is None else end
     order: Sequence[int] = range(start, stop)
     if skip:
@@ -614,6 +646,11 @@ class Peel(NamedTuple):
     numeral: tuple[int, ...] | None
     picks: tuple[tuple[int, ...], ...]
     anchors: list[bool] | None
+    #: #602 (`credential_run`): the pieces in rest[names:] that are
+    #: title words inside the credential run, and the name pieces the
+    #: run absorbed, which assign reports
+    run_titles: tuple[int, ...] = ()
+    absorbed: tuple[tuple[int, ...], ...] = ()
 
 
 # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
@@ -649,20 +686,18 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     or a bare acronym with words to spare, into the family or the
     maiden name.
 
-    Both forks, always. A caller that needs one of them alone -- the
-    maiden walk re-asking the numeral over the view its take would
-    leave, where the acronym fork's piece COUNT no longer describes
-    the name -- calls the `peel_walk` + `peel_trailing` pair this
-    wraps and reads the half it wants (#533). A `numeral_only` flag
-    lived here for that one caller and cost it a frame. The maiden
-    walk asks that pair only for the NONE reader; every other reader
-    reads the same pieces through `tail_reading`, which runs this
-    pair's peel and H5's title chain to a fixed point. So this
+    Both forks, always, and #602's credential run on top
+    (`credential_run`), so P2's chain stops where the run starts.
+    Readers that also need H5's title chain read the same pieces
+    through `tail_reading`, which runs this pair's peel and the chain
+    to a fixed point -- the maiden take among them (#601). So this
     function's answer is the whole answer only where no trailing
     title chain also reads the pieces."""
     rest = peel_walk(start, ptags)
-    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
-    return rest[peeled.names] if peeled.names < len(rest) else len(pieces)
+    names = run_start(rest, peel_trailing(rest, pieces, ptags, tokens,
+                                          one_case).names,
+                      pieces, ptags, tokens)
+    return rest[names] if names < len(rest) else len(pieces)
 
 
 # #289/#516: the "listed member, not by-shape" test both
@@ -678,18 +713,13 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
 # keeps a non-member piece ("Smith, John"'s "John") from ever making
 # the call at all.
 #
-# A THIRD caller since #533 -- credential_at_the_given_slot just
+# A further caller since #533 -- credential_at_the_given_slot just
 # below -- deliberately does NOT pre-check: it owns #531's reading
 # and leaves membership to its own callers (its docstring says so),
-# and the frame argument holds transitively because both of them ask
+# and the frame argument holds transitively because its caller asks
 # inline -- `AMBIGUOUS_ACRONYM_TAG in tok.tags` after a
-# `len(piece) == 1` at assign's given-part trailing slot, and the
-# same pair in `_group.py`'s `_release_reads_off` (its GIVEN_SLOT
-# branch) and in the acronym fork of `_maiden_take` (#535 review
-# folded the view check's own `all(...)` into the shared release
-# check, but the pre-check pair travelled with it rather than moving
-# into this function). So no non-member piece reaches this function
-# down that route either.
+# `len(piece) == 1` at assign's given-part trailing slot. So no
+# non-member piece reaches this function down that route either.
 def listed_lean(token: WorkToken, one_case: bool | None) -> Lean | None:
     """`ambiguous_lean` for a LISTED bare-ambiguous token, or None if
     the token is not tagged a listed member, is admitted by SHAPE
@@ -722,12 +752,8 @@ def credential_at_the_given_slot(
     asked last, so a member the writing already settles never pays
     for the walk.
 
-    Called from assign's walk over the given part, from
-    `_release_reads_off`'s GIVEN_SLOT branch (the shared release check
-    every maiden-walk stop asks, rules.md#M2), and from the acronym
-    fork of `_maiden_take`, asked there of the member itself rather
-    than the span around it. One function rather than a condition
-    written at each
+    Called from assign's walk over the given part, as one function
+    rather than a condition written at the site
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It is a text-and-tags
     question, which is what puts it in this module rather than beside
     any caller.
@@ -875,6 +901,94 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     return Peel(k, numeral, tuple(picks), anchors)
 
 
+# rules.md#S2: "A credential after the name core starts a run to the
+# end of its part" -- applied to a finished peel (#602), so every
+# reader of the trailing run (assign, P5's reserve, P2's chain stop,
+# the maiden take) sees one answer.
+def run_start(rest: Sequence[int], names: int,
+              pieces: Sequence[Sequence[int]],
+              ptags: Sequence[Set[str]],
+              tokens: Sequence[WorkToken]) -> int:
+    """Where #602's run starts in `rest[:names]`: the position of the
+    first credential that starts one (`starts_a_credential_run`) with
+    two name pieces in front of it, or `names` where none does -- with
+    no comma the family has to exist first. A lone particle does not
+    count toward the two, 'de Mesnil' being one surname. The position
+    alone, for readers that need only where the name ends
+    (`trailing_start`); `credential_run` builds the rest of the answer.
+
+    The tag tests are INLINE ahead of the predicate, so a name word --
+    every piece of an ordinary name -- and a connective or particle
+    never pay the predicate's frame: this runs on every parse, once
+    per piece, and a clause holding a run of links ('Puig i i i ...
+    Soler') otherwise paid two frames per link (decisions.md#parse-cost).
+    The predicate repeats the refusal; the inline copy is only the
+    cheap half of the same question. Under three names no run can
+    start, two core pieces having to stand in front of it."""
+    if names < 3:
+        return names
+    core = 0
+    for p in range(names):
+        q = rest[p]
+        tags = tokens[pieces[q][0]].tags
+        if (core >= 2 and "vocab:suffix" in tags
+                and tags.isdisjoint(_NOT_A_RUN_START)
+                and starts_a_credential_run(pieces[q], ptags[q], tokens)):
+            return p
+        # a lone particle is not yet a name: 'de Mesnil' is one surname
+        if not (len(pieces[q]) == 1 and "particle" in tags):
+            core += 1
+    return names
+
+
+def is_wholly_particle(piece: Sequence[int],
+                       tokens: Sequence[WorkToken]) -> bool:
+    """Whether every token of a piece is particle vocabulary -- the
+    unit rules.md#P6 attaches after a family comma."""
+    if len(piece) == 1:
+        return "particle" in tokens[piece[0]].tags
+    return all("particle" in tokens[i].tags for i in piece)
+
+
+def has_name_content(piece: Sequence[int],
+                     tokens: Sequence[WorkToken]) -> bool:
+    """Whether a piece holds a letter or digit: a piece with none is
+    no name word (rules.md#A2), so a run that takes it in absorbs no
+    name and reports nothing. C-level, no frame per character."""
+    return any(map(str.isalnum, "".join([tokens[i].text for i in piece])))
+
+
+def credential_run(rest: Sequence[int], peel: Peel, p: int,
+                   pieces: Sequence[Sequence[int]],
+                   ptags: Sequence[Set[str]],
+                   tokens: Sequence[WorkToken]) -> Peel:
+    """`peel` with its name count cut back to `p`, where #602's run
+    starts (`run_start`, which the caller asks first so that a name
+    with no run pays one frame, not two).
+
+    Every word from the credential on is then in the suffix run,
+    except a title word, which is recorded in `run_titles` for assign
+    to read as a title; a name word the run absorbs is recorded in
+    `absorbed` for assign to report -- not a word with no letter or
+    digit in it, and not a member the peel already reported as a pick.
+    One pass, the suffix test first: a credential, the common word in
+    a run, leaves both lists without the title test's frame."""
+    run_titles: list[int] = []
+    absorbed: list[tuple[int, ...]] = []
+    for r in range(p + 1, peel.names):
+        q = rest[r]
+        if is_suffix_piece(pieces[q], ptags[q], tokens):
+            continue
+        if is_title_piece(pieces[q], ptags[q], tokens):
+            run_titles.append(q)
+            continue
+        piece = tuple(pieces[q])
+        if piece not in peel.picks and has_name_content(piece, tokens):
+            absorbed.append(piece)
+    return Peel(p, peel.numeral, peel.picks, peel.anchors,
+                tuple(run_titles), tuple(absorbed))
+
+
 # rules.md#H5: "only a word the vocabulary knows as a title is one,
 # and a bare title word is a name word"
 # -- the trailing run's own predicate. NOT is_leading_title:
@@ -887,7 +1001,6 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                      ptags: Sequence[Set[str]],
                      tokens: Sequence[WorkToken],
-                     floor: int = 1,
                      end: int | None = None) -> int:
     """How many pieces of `rest` the trailing title chain LEAVES
     standing: `rest[:kept]` are the name pieces and `rest[kept:]` the
@@ -899,11 +1012,8 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     not claim, and in `tail_reading` the leftovers of whichever peel
     is current. `end`, where given, reads `rest[:end]` without the
     copy, for `tail_reading`'s passes.
-    Floor: `floor` leading positions of `rest` are never taken --
-    1 by default, so one name piece stands and a name is never all
-    title; the maiden walk passes the position just past the marker's
-    first word, so the chain never takes that word (rules.md#M2's
-    first-word floor, `tail_reading` passes it through). An empty
+    Floor: the first position of `rest` is never taken, so one name
+    piece stands and a name is never all title. An empty
     `rest` returns 0, which is what leaves assign's bare-suffix
     carve-out reached exactly as before.
 
@@ -927,7 +1037,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     stops (decisions.md#parse-cost).
     """
     k = len(rest) if end is None else end
-    while k > floor:
+    while k > 1:
         idx = rest[k - 1]
         piece = pieces[idx]
         # no #323 veto on the shape here, unlike is_leading_title's:
@@ -946,8 +1056,8 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 # rules.md#H5: "successive single words that wear the abbreviation
 # shape and are title vocabulary chain into the title from the end"
 # -- one word's half of that, for a caller asking it of a piece the
-# chain did not walk to: the maiden walk's release check, after a
-# family comma (#535). `trailing_titles` asks the same three tests
+# chain did not walk to: the maiden take, choosing the words the
+# clause-free view is read over (#601). `trailing_titles` asks the same three tests
 # INLINE, in the same order, for the frame budget its docstring
 # states; keep the two in step.
 def is_trailing_title_word(piece: Sequence[int], ptags: Set[str],
@@ -969,7 +1079,6 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   ptags: Sequence[Set[str]],
                   tokens: Sequence[WorkToken],
                   one_case: bool | None,
-                  floor: int = 1,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what
@@ -1001,8 +1110,8 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
 
     One function for assign's placement, group's bound-given reserve
     (P5), which must count the name words assign will leave, and the
-    maiden walk and its release check (rules.md#M2), which must end
-    the clause where assign's reading of the name will begin. Deriving that agreement twice is what left the two
+    maiden take (rules.md#M2), which must end the clause where the
+    reading of the name will begin. Deriving that agreement twice is what left the two
     disagreeing at S2's bare-ambiguous reserve: 'abdul rahman MA'
     declined the join and 'abdul rahman MA Prof.' took it
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
@@ -1012,14 +1121,11 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     walk it built. Every caller reads the one returned here instead,
     which is the one the final peel partitions.
 
-    `floor` is `trailing_titles`' own: how many leading positions of
-    `rest` the chain may never take. 1 everywhere but the maiden walk,
-    whose `rest` opens with the marker and whose FIRST word after it
-    stays the maiden name whatever it is (rules.md#M2) -- a chain that
-    took that word spliced it out of the count the re-peel reads, and
-    'Jane Doe nee King. ba' lost the suffix 'Jane Doe nee Smith ba'
-    keeps. The splice only ever removes positions at or
-    past the floor, so the floor names the same pieces every pass.
+    The chain's floor is `trailing_titles`' own, one name piece left
+    standing.
+
+    #602's credential run is applied to the final peel on the way out
+    (`credential_run`), so every reader sees the run where it starts.
 
     Linear in the walk (#558). Re-peeling the whole walk every pass
     re-read each suffix the passes before had already peeled, so a
@@ -1048,10 +1154,12 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     collected back to front and joined once.
     """
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
-    kept = trailing_titles(rest, pieces, ptags, tokens, floor,
-                           peeled.names)
+    kept = trailing_titles(rest, pieces, ptags, tokens,
+                           end=peeled.names)
     if kept == peeled.names:
-        return rest, (), peeled
+        p = run_start(rest, peeled.names, pieces, ptags, tokens)
+        return rest, (), (peeled if p == peeled.names else credential_run(
+            rest, peeled, p, pieces, ptags, tokens))
     # `rest[:hi]` stands as written; `behind` holds the peeled runs
     # the splices left after it, and `titled` the chained ones, each
     # back to front -- a pass's run goes in FRONT of what the pass
@@ -1083,12 +1191,15 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
             peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
             picks = list(peeled.picks)
             numeral = peeled.numeral
-        kept = trailing_titles(rest, pieces, ptags, tokens, floor,
-                               peeled.names)
+        kept = trailing_titles(rest, pieces, ptags, tokens,
+                               end=peeled.names)
     if behind:
         rest = rest[:hi] + [j for run in reversed(behind) for j in run]
+    final = Peel(peeled.names, numeral, tuple(picks), None)
+    p = run_start(rest, final.names, pieces, ptags, tokens)
     return (rest, tuple(j for run in reversed(titled) for j in run),
-            Peel(peeled.names, numeral, tuple(picks), None))
+            final if p == final.names else credential_run(
+                rest, final, p, pieces, ptags, tokens))
 
 
 # rules.md#H5: "the title is TRANSPARENT to the suffix reading: where

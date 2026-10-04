@@ -218,13 +218,13 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #                             first piece is a bound given-name word,
 #                             so the reserve's per-piece question is
 #                             asked over the whole run (#401)
-#   M2 clause VIEW            maiden_clause ONLY -- the one unit that
-#                             reaches the #533 acronym fork, which
-#                             needs a maiden marker AND a class member
-#                             ending the string. 'MA nee ' has both
-#                             words and reaches nothing: the peel
-#                             stops at the trailing marker, so the
-#                             ORDER inside the unit is the shape
+#   M2 clause VIEW            maiden_clause ONLY -- the one unit
+#                             holding a maiden marker, so the take's
+#                             clause-free view over a run of class
+#                             members (#601). Until #601 it reached
+#                             the #533 acronym fork, which only this
+#                             order did; since then 'MA nee ' reaches
+#                             the take too (measured 2026-10-04)
 #   connective RUN LENGTH     link_run ONLY -- P3's both-sides
 #                             condition walks the run of connectives
 #                             beside a link, and no other unit here
@@ -639,7 +639,8 @@ def test_a_trailing_credential_run_does_not_cost_exponentially() -> None:
 # same reason the one above needed a second: `_SHAPES` repeats a unit
 # and nothing else, so it cannot express "a name word, a marker, then
 # a long run" -- and a maiden clause needs exactly that prefix.
-# Measured: `"nee i Und " * n` never reaches the clause link exception
+# Measured: `"nee i Und " * n` never reached the clause link exception
+# (retired by #601; `_clause_run` says what the guard measures now)
 # at all (the take declines, and b9ed1429 and this tree measure the
 # identical 3.92/4.07/4.12 on it), which is the silent-no-op a
 # reachability probe exists to catch. So this guard builds its own
@@ -674,10 +675,19 @@ def _clause_run(members: int) -> str:
     """A maiden clause whose birth name is a RUN of links.
 
     Mixed case on purpose: written wholly in one case the letter reads
-    as an initial (rules.md#P3's marked subset) and the clause's link
-    exception is never asked, so the guard would measure nothing.
+    as an initial (rules.md#P3's marked subset). Since #601 the clause
+    keeps the run because nothing in it ends the clause, so this
+    measures the take's walk over a long clause; until then it measured
+    the clause's link exception, which #601 retired.
     """
     return "Jane Doe nee Puig " + "i " * members + "Soler"
+
+
+def _name_link_run(members: int) -> str:
+    """A NAME whose family is a run of links, the shape P3's frozen
+    loop asks `_group._between_name_words` about once per link. Mixed
+    case on purpose, for the reason `_clause_run` gives."""
+    return "Jane Puig " + "i " * members + "Soler"
 
 
 def test_a_clause_link_run_does_not_cost_quadratically() -> None:
@@ -686,11 +696,10 @@ def test_a_clause_link_run_does_not_cost_quadratically() -> None:
     small_text = _clause_run(_CLAUSE_RUN_SMALL)
     large_text = _clause_run(_CLAUSE_RUN_LARGE)
     # REACHABILITY, the probe every shape in this file carries: the
-    # walk under measurement runs only while the clause KEEPS the run,
-    # which is rules.md#M2's link exception. End the clause at the
-    # first link instead and the guard measures a walk that no longer
-    # happens, at a comfortable ratio, forever. Asked at both sizes,
-    # the run length being what this varies.
+    # take walks the clause only while the clause KEEPS the run. End
+    # the clause at the first link instead and the guard measures a
+    # walk that no longer happens, at a comfortable ratio, forever.
+    # Asked at both sizes, the run length being what this varies.
     for text, members in ((small_text, _CLAUSE_RUN_SMALL),
                           (large_text, _CLAUSE_RUN_LARGE)):
         assert parse(text).maiden == " ".join(
@@ -762,9 +771,10 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
 #   tail     #558: `tail_reading` re-peeled the whole walk once per
 #            title the H5 chain took, asking `listed_lean` of every
 #            member it had already peeled.
-#   clause   #558 again, through the maiden walk, which runs that fixed
-#            point three times (the clause's take, its release check,
-#            and `trailing_start_past_titles`).
+#   clause   #558 again, through the maiden take, which reads that
+#            fixed point over the clause-free view (until #601 three
+#            times: the take, its release check, and
+#            `trailing_start_past_titles`).
 #   chain    #559: the particle chain asked "is every piece ahead of
 #            this one a title?" afresh at every chain site, so leading
 #            titles x particle sites `is_leading_title` calls.
@@ -871,6 +881,16 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # `_CALL_BASELINE` uses, and a bespoke one here would need its own
 # argument every time the shape moved.
 #
+# RE-POINTED 2026-10-04 (#601), and why: the pin measured a link run
+# in a MAIDEN CLAUSE, whose link exception asked `_between_name_words`
+# once per link. #601 retired the exception -- the clause keeps its
+# links because nothing in it ends the clause -- and the clause's
+# links leave with it before P3's frozen loop runs, so that shape
+# reached the function 0 times (measured). The same run written in
+# the NAME reaches it 64 times, one per link, and a per-link
+# regression moves it as it moved the clause: +64 against a 2% band
+# of 53.6 at the 2,678 frames recorded below.
+#
 # ONE ROW, py3.11, and an unknown interpreter SKIPS rather than fails
 # -- which is where this parts company with `_check_budget`, whose
 # table carries every interpreter CI runs and so can afford to fail on
@@ -882,9 +902,10 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # interpreter and add the row.
 #
 # Lowered 2026-09-26 from 2587 with `_CALL_BASELINE` above, for the
-# same reason (decisions.md#parse-cost).
+# same reason (decisions.md#parse-cost). 2,678 from 2026-10-04, the
+# re-pointed name-level shape (above), measured on py3.11.
 _LINK_BASELINE = {
-    (3, 11): 2301,
+    (3, 11): 2678,
 }
 #: The same +-2% `_CALL_BASELINE` uses, and for the same reason: frame
 #: counts are deterministic for a given tree and interpreter, so the
@@ -906,21 +927,21 @@ def test_a_link_costs_what_it_is_pinned_at() -> None:
     if version not in _LINK_BASELINE:
         pytest.skip(
             f"no link baseline for Python {version[0]}.{version[1]}; "
-            f"measure `_clause_run({_CLAUSE_RUN_LARGE})` on this "
+            f"measure `_name_link_run({_CLAUSE_RUN_LARGE})` on this "
             f"interpreter and add the row to _LINK_BASELINE")
-    text = _clause_run(_CLAUSE_RUN_LARGE)
+    text = _name_link_run(_CLAUSE_RUN_LARGE)
     # REACHABILITY, the probe every shape in this file carries: the
-    # frames counted are the clause walk's, and they are only there
-    # while the clause KEEPS the run (rules.md#M2's link exception).
-    # End the clause at the first link and this measures a name that
-    # no longer holds 64 links, comfortably inside the band forever.
-    assert parse(text).maiden == " ".join(
+    # frames counted are P3's link test's, and they are only there
+    # while every link joins the family. A link that stopped joining
+    # would leave a name that no longer holds 64 links in one run,
+    # comfortably inside the band forever.
+    assert parse(text).family == " ".join(
         ["Puig"] + ["i"] * _CLAUSE_RUN_LARGE + ["Soler"])
     baseline = _LINK_BASELINE[version]
     actual = _frames_for(text)
     low, high = baseline * (1 - _LINK_BAND), baseline * (1 + _LINK_BAND)
     assert low <= actual <= high, (
-        f"a maiden clause holding {_CLAUSE_RUN_LARGE} links costs "
+        f"a name holding {_CLAUSE_RUN_LARGE} links costs "
         f"{actual} frames on Python {version[0]}.{version[1]}, band "
         f"{low:.0f}-{high:.0f} around a baseline of {baseline}. Growth "
         f"and shrinkage are both signals, and one frame per link is "

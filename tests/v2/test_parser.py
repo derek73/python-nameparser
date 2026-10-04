@@ -570,10 +570,12 @@ def test_the_bound_given_join_leaves_a_suffix_where_it_stands() -> None:
     n = parse("abdul Ph. D. Smith Berg")
     assert (n.given, n.middle, n.family, n.suffix) == \
         ("abdul", "Smith", "Berg", "Ph. D.")
-    # after a family comma the decline holds under the LENIENT reserve
+    # after a family comma the decline holds under the LENIENT reserve,
+    # and since #602 the 'Jr' starts the given part's credential run,
+    # taking 'Smith' with it (rules.md#S2)
     n = parse("Berg, abdul Jr Smith")
     assert (n.given, n.middle, n.family, n.suffix) == \
-        ("abdul", "Smith", "Berg", "Jr")
+        ("abdul", "", "Berg", "Jr Smith")
 
 
 def test_the_reserve_declines_and_assign_reads_the_unjoined_pieces() -> None:
@@ -725,62 +727,6 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
     assert (n.maiden, n.suffix) == ("Jones Ma", "V")
     n = parse("Jane Doe nee Smith V MA")
     assert (n.maiden, n.suffix) == ("Smith V", "MA")
-
-
-def test_a_post_nominal_head_leaves_the_clause_nobody_to_read_it(
-) -> None:
-    """#533 review: the clause KEEPS the member, and says so.
-
-    After a family comma the given-slot reader takes the member only
-    where the take leaves a given part for it to end. Where the part
-    before the marker is nothing but post-nominals, it does not: the
-    take would leave a segment of credentials, which is read whole
-    and asked nothing, and the released word would land in `given`
-    rather than in `suffix`. So the walk declines and the word stays
-    in the maiden name -- rules.md#M2's invariant, which replaced the
-    ACCEPTED silent mover an earlier round of this branch shipped
-    here (it read maiden 'Smith', suffix 'Jr MA').
-
-    The clause still REPORTS, and that is the measurement this test
-    exists for: the emitter is gated on there being a trailing rule
-    at all, not on the view check the rule then fails, so a fork
-    called the conservative way is still a fork the caller hears
-    about.
-    """
-    n = parse("Jane Doe, Jr nee Smith MA")
-    assert (n.given, n.family, n.maiden, n.suffix) == (
-        "Jane", "Doe", "Smith MA", "Jr")
-    assert [a.kind for a in n.ambiguities] == [
-        AmbiguityKind.SUFFIX_OR_NAME]
-    # 2f57ff21 read it this way too: the review round restored the
-    # parent reading rather than inventing a third one
-    assert n.maiden == "Smith MA"
-    # a post-nominal, not only a generational word, heads it the same
-    for head in ("III", "PhD"):
-        n = parse(f"Jane Doe, {head} nee Smith MA")
-        assert (n.maiden, n.suffix) == ("Smith MA", head)
-        assert [a.kind for a in n.ambiguities] == [
-            AmbiguityKind.SUFFIX_OR_NAME]
-    # and a TITLE heads it the same way, which is the spelling
-    # `AmbiguityKind.SUFFIX_OR_NAME`'s third position was written as
-    n = parse("Doe, Dr. nee Smith MA")
-    assert (n.title, n.family, n.maiden) == ("Dr.", "Doe", "Smith MA")
-    assert [a.kind for a in n.ambiguities] == [
-        AmbiguityKind.SUFFIX_OR_NAME]
-    # the clause-less control is what the member WOULD have read as,
-    # and the difference is the point: without the clause there is a
-    # given name in front of the member and the slot exists
-    control = parse("Doe, Dr. Smith MA")
-    assert (control.given, control.suffix) == ("Smith", "MA")
-    # the KEPT direction reported before this round too -- the
-    # clause's own emitter is what raises it, and it never needed the
-    # given slot
-    for text, maiden in (("Jane Doe, Jr nee Smith Ma", "Smith Ma"),
-                         ("Jane Doe, Jr nee MA", "MA")):
-        n = parse(text)
-        assert n.maiden == maiden
-        assert [a.kind for a in n.ambiguities] == [
-            AmbiguityKind.SUFFIX_OR_NAME]
 
 
 def test_the_numeral_fork_fires_on_the_last_piece_only() -> None:
@@ -1271,13 +1217,21 @@ def test_revise_reads_a_glued_honorific_on_its_own() -> None:
 #: join. Named here so the guard below fails on a NEW exception and
 #: not on the known one.
 _HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨"})
+#: The second known limit (2026-10-04, #601/#602): a suffix that holds
+#: a maiden marker the whole name left a word -- in a tail part, or
+#: taken into #602's credential run behind a credential -- and that
+#: the value's own sub-parse consumes mid-value, as revise() documents.
+_MARKER_IN_SUFFIX = frozenset({"Jane Doe PhD nee Smith",
+                               "Smith, John, MD - née Jones Smith",
+                               "Smith, John, PhD née Jones"})
 
 
 def _suffix_bearing_corpus_names() -> list[str]:
     from ._differential_fixtures import _CORPUS_NAMES
     p = Parser()
     return [n for n in _CORPUS_NAMES
-            if p.parse(n).suffix and n not in _HONORIFIC_PEEL]
+            if p.parse(n).suffix and n not in _HONORIFIC_PEEL
+            and n not in _MARKER_IN_SUFFIX]
 
 
 def test_the_known_round_trip_exceptions_are_one_limit() -> None:
@@ -1301,6 +1255,19 @@ def test_the_known_round_trip_exceptions_are_one_limit() -> None:
     assert all(ends_in_a_tail_without_being_one(n) for n in _HONORIFIC_PEEL)
     assert not [n for n in _suffix_bearing_corpus_names()
                 if ends_in_a_tail_without_being_one(n)]
+    # the marker limit, characterized the same way: the parsed suffix,
+    # read ON ITS OWN, takes a maiden clause -- its marker the whole
+    # name left a word, and the value's sub-parse consumes. Not every
+    # suffix holding a marker word: 'Jane Doe Jr. nee Smith' renders
+    # 'Jr. nee Smith', whose own parse reads 'Jr.' as a leading title
+    # (H2), so the marker stays a word there too and the value
+    # round-trips (measured 2026-10-04).
+    def takes_a_clause_on_its_own(name: str) -> bool:
+        return bool(p.parse(p.parse(name).suffix).maiden)
+
+    assert all(takes_a_clause_on_its_own(n) for n in _MARKER_IN_SUFFIX)
+    assert not [n for n in _suffix_bearing_corpus_names()
+                if takes_a_clause_on_its_own(n)]
 
 
 def test_the_suffix_bearing_corpus_is_not_empty() -> None:
@@ -1802,7 +1769,8 @@ def test_the_clause_free_corpus_is_not_empty() -> None:
 def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
     """The grouping rules count and join only the words that remain
     once the marker and the maiden name leave (rules.md#M2, #418), so
-    appending a clause adds a maiden name and moves no other field.
+    appending a clause adds a maiden name and moves no other field --
+    wherever the appended marker counts at all.
 
     Over the corpus rather than by example, because the defect was an
     appended-clause shape on names that are otherwise ordinary ('John
@@ -1811,47 +1779,59 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
     Before the marker pass moved ahead of the joins, seven of these
     names failed this.
 
-    One skip, and it is M2's own boundary: a corpus name that parses
-    to no name word ('', '(', '()') gives the appended marker nothing
-    to stand behind, so M2 leaves it a word. A name that is only a
-    NICKNAME is in that class too, which is why the test below asks
-    about five fields and not about `nickname`: '(Bud)' parses to a
-    nickname alone, and '(Bud) née Jones' reads given 'née', family
-    'Jones' and no maiden at all -- the marker stayed a word, so
-    there is no clause to assert. A title-only or suffix-only name is
-    NOT in that class -- 'Coach née Jones' reads maiden 'Jones' --
-    and is asserted like any other. #410's lone-residual shape used
-    to be skipped here too -- 'Dr. Jane' read family 'Jane' and 'Dr.
-    Jane née Smith' given 'Jane' -- and no longer moves, so the
-    assertion now covers every name that reaches the marker with
-    something to stand behind.
+    Whether the marker counts is M2's head rule (#601): the word
+    straight before it -- the base name's last word, a nickname aside
+    -- must be a name word, which a word of the leading title run, a
+    word of the unambiguous suffix vocabulary and a connective are
+    not. Where the clause is taken the assertion is the one above;
+    where it is not ('Smith Jr.', 'Coach', 'John Smith PhD') the word
+    before the marker must be one of those refusals, so neither half
+    of the split can pass vacuously. A corpus name that parses to no
+    name word ('', '(', '()') has nothing before the marker and is
+    skipped.
 
     One class of name moves ON PURPOSE, and is asserted MOVING rather
     than skipped: rules.md#M4 makes the clause decide a name that
     holds exactly one name word, because a marker announces a former
-    surname and only means anything beside a current one. Fourteen
-    of these names are in that class ('Smith', 'Smith Jr.', "'Smitty'
-    Jones Jr.", 'John V', 'de' ...), and the flip they assert is
+    surname and only means anything beside a current one. The flip is
     exactly given -> family with every other field standing still --
     which is the whole of what #445 changed, checked over the corpus
-    rather than at the six rows cases.py carries.
+    rather than at the rows cases.py carries.
 
     The `flips` predicate below is a second reading of M4's guard, and
     that is a maintenance cost taken deliberately rather than the
     silent-drift hazard it resembles: it fails LOUDLY in both
     directions -- narrow M4 and the flip assertion fails, widen it and
     the stands-still assertion does. What it buys is the carve-out
-    witness. Review offered the cheaper form, asserting only that
-    (given, family) is either unchanged or moved wholesale, with no
-    predicate at all; under that form a name whose word the vocabulary
-    claims would be free to flip, and dropping the `vocab:bound-given`
-    carve-out would stop failing here on 'abdul'. The corpus is the
-    only place that name is asked.
+    witness: dropping the `vocab:bound-given` carve-out would stop
+    failing here on 'abdul', and the corpus is the only place that
+    name is asked.
     """
     base = parse(name)
     if not (base.given or base.middle or base.family
             or base.title or base.suffix):
         pytest.skip("nothing before the marker at all: M2 leaves it a word")
+    with_clause = parse(name + " née Jones")
+    # The head rule, read both ways. Where the appended marker takes
+    # nothing, the word straight before it -- the base name's last
+    # word, a nickname aside -- must be one of the rule's refusals: a
+    # title, a word of the UNAMBIGUOUS suffix vocabulary (an ambiguous
+    # member or a numeral the peel happens to take is none) or the
+    # merged credential's continuation, or a connective. A decline for
+    # any other reason fails, and so does a taken clause that moves a
+    # field, below.
+    words = [t for t in base.tokens if t.role is not Role.NICKNAME]
+    last = words[-1] if words else None
+    if with_clause.maiden == "":
+        assert last is not None and (
+            last.role is Role.TITLE
+            or ("vocab:suffix" in last.tags and "initial" not in last.tags)
+            or (last.role is Role.SUFFIX and "joined" in last.tags)
+            or "conjunction" in last.tags), (
+            f"{name!r}: the appended marker took nothing, but the word "
+            f"before it, {last.text if last else None!r}, is none of "
+            f"rules.md#M2's refusals")
+        return
     # M4's guard, read off the base parse: one GIVEN token, no other
     # name word, no title (a titled name is H1's), and neither
     # carve-out tag. Tokens rather than fields because the rule counts
@@ -1861,7 +1841,6 @@ def test_a_maiden_clause_changes_nothing_else(name: str) -> None:
     flips = (len(givens) == 1 and not base.middle and not base.family
              and not base.title
              and not ({"initial", "vocab:bound-given"} & givens[0].tags))
-    with_clause = parse(name + " née Jones")
     assert with_clause.maiden == "Jones"
     moved = ("title", "middle", "suffix", "nickname") if flips else (
         "title", "given", "middle", "family", "suffix", "nickname")

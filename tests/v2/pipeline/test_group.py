@@ -11,13 +11,12 @@ from nameparser._pipeline import _group as _group_module
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited, _maiden_marked
 from nameparser._pipeline._group import (
-    TailReader, _group_segment, _release_reads_off, group,
-    marker_run_length,
+    ClauseSite, _group_segment, group, marker_run_length,
 )
 from nameparser._pipeline._script_segment import script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import (
-    ParseState, PendingAmbiguity, Structure, WorkToken,
+    ParseState, Structure, WorkToken,
 )
 from nameparser._pipeline._tokenize import tokenize
 from nameparser._pipeline._vocab import maiden_marker_run
@@ -206,10 +205,13 @@ def test_maiden_marker_consumes_tail() -> None:
 
 
 def test_maiden_marker_stops_at_suffix() -> None:
+    # the take consumes the trailing run it ends at, roled (#601): the
+    # PhD leaves the pieces with the clause, already a suffix
     out = _grouped("Jane Smith née Jones PhD")
     maiden = [t.text for t in out.tokens if t.role is Role.MAIDEN]
     assert maiden == ["Jones"]
-    assert _piece_texts(out)[0][-1] == "PhD"
+    assert [t.text for t in out.tokens if t.role is Role.SUFFIX] == ["PhD"]
+    assert _piece_texts(out) == [["Jane", "Smith"]]
 
 
 def test_leading_marker_is_not_consumed() -> None:
@@ -451,9 +453,12 @@ def test_where_the_marker_lands_when_the_consumer_declines() -> None:
         ["Jane", "van der Berg née", "Jr", "Jones"]]
     # ...and a chain carrying a declined marker is a name piece like
     # any other to the bound-given join (P5 declines a marker "standing
-    # as a word of its own", and this one is not)
+    # as a word of its own", and this one is not) -- but since #602 the
+    # 'Jr' behind it starts a credential run to the end of the part
+    # (rules.md#S2), so the reserve finds no name word to spare and the
+    # join declines for that reason instead
     assert _piece_texts(_grouped("abdul van der Berg née Jr Jones")) == [
-        ["abdul van der Berg née", "Jr", "Jones"]]
+        ["abdul", "van der Berg née", "Jr", "Jones"]]
     # consumer declines, no chain: the marker stands as its own piece
     assert _piece_texts(_grouped("Jane Smith née")) == [
         ["Jane", "Smith", "née"]]
@@ -473,12 +478,14 @@ def test_the_connective_carveout_counts_the_surviving_name() -> None:
     # words, so the connective joins
     assert _piece_texts(_grouped("juan y garcia née")) == [
         ["juan y garcia", "née"]]
-    # the three-piece gate ahead of the count has the same exposure:
-    # taken on the list as written, 'Jane and née Jones' is four
-    # pieces, the joins run, and 'and' takes 'Jane' -- the #418
-    # empty family one gate earlier. Two pieces remain, so no join.
+    # a marker straight after a connective is an ordinary word (#601's
+    # head rule), so 'Jane and née Jones' groups as 'Jane and Zee
+    # Jones' does. Until #601 the marker was taken there and the #418
+    # exposure was the three-piece gate counting it.
     assert _piece_texts(_grouped("Jane and née Jones")) == [
-        ["Jane", "and"]]
+        ["Jane and née", "Jones"]]
+    assert _piece_texts(_grouped("Jane and Zee Jones")) == [
+        ["Jane and Zee", "Jones"]]
 
 
 _DASH = Policy(extra_suffix_delimiters=frozenset({" - "}))
@@ -498,15 +505,13 @@ def test_a_delimiter_core_in_a_suffix_tail_is_not_maiden_text() -> None:
     assert not any(t.role is Role.MAIDEN for t in twin.tokens)
 
 
-def test_a_trailing_core_is_cut_before_the_walk() -> None:
-    # A core standing last is cut off before the walk (#549), so it
-    # does not make the numeral "not last": the V is the suffix and the
-    # marker takes 'Jones' alone. (#424's test review found a surviving
-    # mutant in the walk's core skip; #549 deleted the skip, so the
-    # site that mutant lived in is gone.)
+def test_a_marker_in_a_suffix_part_is_a_word() -> None:
+    # A marker counts only in the part holding the family name
+    # (rules.md#M2, #601), so in a tail part it takes nothing, core or
+    # no core. This was the #549 test that a trailing core is cut
+    # before the walk, and the walk no longer runs in a tail part.
     out = _grouped("Smith, John, PhD née Jones V -", policy=_DASH)
-    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == [
-        "Jones"]
+    assert not any(t.role is Role.MAIDEN for t in out.tokens)
 
 
 def test_a_core_is_screened_before_the_marker_looks_for_a_word_ahead() -> None:
@@ -530,11 +535,12 @@ def test_no_join_reaches_a_taken_marker() -> None:
     # connective after the marker, behind a chain (#412's headline)
     assert _piece_texts(_grouped("Jane van der Berg née y Jones")) == [
         ["Jane", "van der Berg"]]
-    # connective before the marker: 'Smith and' is what 'Jane Smith
-    # and' alone reads too, so the odd-looking family is consistency,
-    # not an artifact
+    # connective before the marker: the marker is an ordinary word
+    # there (#601), and groups as any word would -- 'Jane Smith and
+    # Zee Jones' reads the same. Until #601 the marker was taken and
+    # this read 'Jane', 'Smith and'.
     assert _piece_texts(_grouped("Jane Smith and née Jones")) == [
-        ["Jane", "Smith and"]]
+        ["Jane", "Smith and née", "Jones"]]
     # marker-headed: the connective is the first word the marker takes
     assert _piece_texts(_grouped("Jane née and Jones Smith")) == [
         ["Jane"]]
@@ -939,10 +945,14 @@ def test_the_maiden_walk_stops_before_the_numeral_too() -> None:
     # suffix", asked with the same test: 'John née Jones Smith V' took
     # the V into the maiden name. Read by the peel from the marker on,
     # the V is the suffix, and the walk stops before it.
+    # Since #601 the take consumes the numeral it ends at, already a
+    # suffix -- and finds it by the fork's SHAPE test, which asks no
+    # vocabulary: this module's lexicon lists no 'v' at all.
     out = _grouped("John née Jones Smith V")
     assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
         ["Jones", "Smith"]
-    assert _piece_texts(out) == [["John", "V"]]
+    assert [t.text for t in out.tokens if t.role is Role.SUFFIX] == ["V"]
+    assert _piece_texts(out) == [["John"]]
 
 
 def test_the_maiden_walk_keeps_the_acronym_its_writing_declines(
@@ -989,17 +999,12 @@ def test_the_clause_stops_before_a_credential_the_reader_takes(
 
 def test_the_clause_never_gives_up_the_first_word_after_the_marker(
 ) -> None:
-    """Option 1's floor, as a CLAMP. A member standing alone after the
-    marker stays the maiden name; where the peel consumed that word
-    AND words behind it, only the first stays -- a veto that cancelled
-    the stop outright handed the words behind it back to the clause
-    too."""
+    """The first word after the marker is the maiden name whatever it
+    is, the marker having announced one. Since #601 that word is never
+    in the view the trailing run is read over, so it cannot be taken
+    -- the CLAMP this test pinned, for a peel that consumed it and the
+    words behind it, has nothing left to clamp."""
     out = _grouped("Jane Doe née MA", lexicon=_AMBIGUOUS_LEX)
-    assert _maiden_texts(out) == ["MA"]
-    out = _grouped("Doe, J. née MA ba",
-                   lexicon=_AMBIGUOUS_LEX.add(
-                       suffix_acronyms={"ba"},
-                       suffix_acronyms_ambiguous={"ba"}))
     assert _maiden_texts(out) == ["MA"]
 
 
@@ -1037,12 +1042,13 @@ def test_the_reader_is_none_in_the_family_segment() -> None:
     assert _suffix_forks(out) == []
 
 
-def test_the_reader_is_none_in_a_third_comma_part() -> None:
-    """A segment past the second comma is read as credentials whole,
-    so no trailing rule is consulted there either."""
+def test_a_marker_in_a_third_comma_part_is_a_word() -> None:
+    """A segment past the second comma is a tail part, read as
+    credentials whole, and a marker there takes nothing (#601). Until
+    #601 the clause was taken whole there, maiden 'Jones MA'."""
     out = _grouped("Smith, John, Jr née Jones MA",
                    lexicon=_AMBIGUOUS_LEX.add(suffix_words={"jr"}))
-    assert _maiden_texts(out) == ["Jones", "MA"]
+    assert _maiden_texts(out) == []
     assert _suffix_forks(out) == []
 
 
@@ -1072,63 +1078,13 @@ def test_the_emitter_reports_a_by_shape_member_too() -> None:
     assert len(_suffix_forks(out)) == 1
 
 
-def test_the_maiden_report_survives_the_family_comma_suppression(
-) -> None:
-    """group() passes `None` for the chain emitter, deliberately --
-    the comma fixed the family. The maiden fork is not that fork, so
-    it travels on its own channel and reports after a comma too."""
-    out = _grouped("Doe, Jane née Smith Ma", lexicon=_AMBIGUOUS_LEX)
-    assert _maiden_texts(out) == ["Smith", "Ma"]
-    assert len(_suffix_forks(out)) == 1
-
-
-def test_the_two_ambiguity_channels_route_independently() -> None:
-    """Both channels are REQUIRED arguments, and they are two so that
-    silencing one never silences the other.
-
-    `reader` and `maiden_ambiguities` have no defaults: the one
-    production caller answers both off the segment's structure, and a
-    default would be this module guessing what that caller knows. The
-    routing is what the split buys -- the same list in both slots is
-    one channel, two lists are two, and #533's review found the
-    earlier spelling defaulting the maiden channel to whatever the
-    first was, so `ambiguities=None` silenced both.
-    """
-    state = classify(segment(tokenize(extract_delimited(ParseState(
-        original="Jane Doe née Smith Ma", lexicon=_AMBIGUOUS_LEX,
-        policy=Policy())))))
-    general: list[PendingAmbiguity] = []
-    maiden: list[PendingAmbiguity] = []
-    _group_segment(state.segments[0], 0, state.tokens,
-                   ambiguities=general, one_case=state.one_case,
-                   reader=TailReader.TRAILING,
-                   maiden_ambiguities=maiden)
-    assert [a.kind for a in maiden] == [AmbiguityKind.SUFFIX_OR_NAME]
-    assert general == []
-    # the general channel suppressed, the maiden one still speaks --
-    # which is exactly what group() does after a family comma
-    only_maiden: list[PendingAmbiguity] = []
-    _group_segment(state.segments[0], 0, state.tokens,
-                   ambiguities=None, one_case=state.one_case,
-                   reader=TailReader.TRAILING,
-                   maiden_ambiguities=only_maiden)
-    assert [a.kind for a in only_maiden] == [AmbiguityKind.SUFFIX_OR_NAME]
-    # and NONE is the reader that silences the maiden channel itself,
-    # because nothing was decided there
-    silent: list[PendingAmbiguity] = []
-    _group_segment(state.segments[0], 0, state.tokens,
-                   ambiguities=None, one_case=state.one_case,
-                   reader=TailReader.NONE, maiden_ambiguities=silent)
-    assert silent == []
-
-
-def test_an_unmapped_reader_is_a_loud_failure_rather_than_a_default(
+def test_an_unmapped_site_is_a_loud_failure_rather_than_a_default(
 ) -> None:
     """The exhaustive dispatch, exercised.
 
-    `_maiden_take` ends its reader branch with `assert_never`, which
-    makes a fourth `TailReader` member a mypy error at this site
-    rather than a silent fall-through to one of the three readings.
+    `_maiden_take` ends its site dispatch with `assert_never`, which
+    makes a fifth `ClauseSite` member a mypy error at this site
+    rather than a silent fall-through to one of the four readings.
     At RUNTIME that line is unreachable by construction, so it is
     reached here the only way it can be -- with a value outside the
     enum -- both to pin the loudness and to keep the line from being
@@ -1140,61 +1096,48 @@ def test_an_unmapped_reader_is_a_loud_failure_rather_than_a_default(
     with pytest.raises(AssertionError):
         _group_segment(state.segments[0], 0, state.tokens,
                        ambiguities=[], one_case=state.one_case,
-                       reader=cast(TailReader, 99),
-                       maiden_ambiguities=[])
+                       site=cast(ClauseSite, 99),
+                       )
 
 
-def test_the_release_check_fails_loudly_on_an_unmapped_reader(
-) -> None:
-    """`_release_reads_off` dispatches on the two readers that reach it
-    and ends with `assert_never`, as `_maiden_take`'s one dispatch
-    does. Unreachable at runtime by construction, so reached here with
-    a value outside the enum -- the loudness pinned, and the line kept
-    from being an uncovered statement."""
-    with pytest.raises(AssertionError):
-        _release_reads_off([[0]], [set()], [], 0, 1, 0,
-                           cast(TailReader, 99), None,  # type: ignore[arg-type]
-                           tail_follows=False)
-
-
-def test_the_reader_is_pinned_to_the_structure_it_is_read_from(
+def test_the_site_is_pinned_to_the_structure_it_is_read_from(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """`TailReader` is a closed set, and group() maps (structure,
+    """`ClauseSite` is a closed set, and group() maps (structure,
     segment index) onto it in one place. Pinned here by WATCHING that
     mapping rather than restating it -- a restatement passes when the
     code changes under it, which is the shape of vacuous guard
     AGENTS.md warns about. `_maiden_take` dispatches on the enum
-    exhaustively (`assert_never`), so a fourth member with no row
+    exhaustively (`assert_never`), so a fifth member with no row
     here is a type error rather than a silent default.
     """
-    assert len(TailReader) == 3
+    assert len(ClauseSite) == 4
     want = {
         # no comma: the whole name, read by the S2 peel
-        (Structure.NO_COMMA, 0): TailReader.TRAILING,
+        (Structure.NO_COMMA, 0): ClauseSite.TRAILING,
         # suffix comma: segment 0 is the name, the rest is the
-        # credential run and is read whole
-        (Structure.SUFFIX_COMMA, 0): TailReader.TRAILING,
-        (Structure.SUFFIX_COMMA, 1): TailReader.NONE,
-        (Structure.SUFFIX_COMMA, 2): TailReader.NONE,
-        # family comma: segment 0 is the family the comma named,
-        # segment 1 is the given part with its own trailing slot
-        # (#531), and a third part is a credential run again
-        (Structure.FAMILY_COMMA, 0): TailReader.NONE,
-        (Structure.FAMILY_COMMA, 1): TailReader.GIVEN_SLOT,
-        (Structure.FAMILY_COMMA, 2): TailReader.NONE,
+        # credential run, where a marker is an ordinary word
+        (Structure.SUFFIX_COMMA, 0): ClauseSite.TRAILING,
+        (Structure.SUFFIX_COMMA, 1): ClauseSite.TAIL,
+        (Structure.SUFFIX_COMMA, 2): ClauseSite.TAIL,
+        # family comma: segment 0 is the family the comma named, where
+        # a marker counts; segment 1 is the given part, where it does
+        # not (#601); and a third part is a credential run again
+        (Structure.FAMILY_COMMA, 0): ClauseSite.FAMILY_PART,
+        (Structure.FAMILY_COMMA, 1): ClauseSite.GIVEN_SLOT,
+        (Structure.FAMILY_COMMA, 2): ClauseSite.TAIL,
     }
     texts = ("Jane Doe née Smith MA",
              "Jane Doe née Smith, MD, PhD",
              "Doe, Jane née Smith MA, MD")
-    seen: dict[tuple[Structure, int], TailReader] = {}
+    seen: dict[tuple[Structure, int], ClauseSite] = {}
     real = _group_module._group_segment
 
     def spy(seg: tuple[int, ...], additional: int,
             tokens: Sequence[WorkToken], *args: object,
             **kwargs: object) -> object:
         seen[(state.structure, len(seen_order))] = cast(
-            TailReader, kwargs["reader"])
+            ClauseSite, kwargs["site"])
         seen_order.append(seg)
         return real(seg, additional, tokens, *args, **kwargs)  # type: ignore[arg-type]
 
@@ -1210,13 +1153,16 @@ def test_the_reader_is_pinned_to_the_structure_it_is_read_from(
 
 
 def test_a_marker_followed_only_by_the_numeral_is_just_a_word() -> None:
-    # The peel is read from the marker, so 'née V' is two pieces and
-    # the fork fires on the V: nothing follows the marker but a
-    # suffix, the pass declines, and the marker stays a word -- as
-    # for 'Jane Smith née PhD', and as 1.4.0 read it (suffix 'V').
+    # A word straight after the marker is the maiden name unless it
+    # is an unambiguous suffix piece, and a lone 'V' is not one -- it
+    # is initial-shaped -- so since #601 'Jane Smith née V' reads
+    # maiden 'V', where the old walk read the numeral fork from the
+    # marker and declined (suffix 'V', as 1.4.0 read it). An open
+    # question on #601; 'Jane Smith née PhD' still declines.
     out = _grouped("Jane Smith née V")
+    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == ["V"]
+    out = _grouped("Jane Smith née PhD")
     assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == []
-    assert _piece_texts(out) == [["Jane", "Smith", "née", "V"]]
 
 
 def test_the_walk_stops_only_where_the_numeral_survives_the_take() -> None:
@@ -1231,13 +1177,11 @@ def test_the_walk_stops_only_where_the_numeral_survives_the_take() -> None:
     out = _grouped("J. née Jones Smith V")
     assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
         ["Jones", "Smith", "V"]
-    # and it is the whole peel that is re-asked, not one condition of
-    # it: a title before the marker is peeled by assign first, leaving
-    # the numeral as the whole rest, where no fork fires (the code
-    # review found the first re-ask handing the V to the given name)
+    # A title straight before the marker leaves it an ordinary word
+    # since #601 ('Dr. Zee Jones Smith V' groups the same); until then
+    # the whole peel was re-asked over 'Dr. V' and the clause kept the V.
     out = _grouped("Dr. née Jones Smith V")
-    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
-        ["Jones", "Smith", "V"]
+    assert not any(t.role is Role.MAIDEN for t in out.tokens)
 
 
 def test_an_unlisted_abbreviation_is_as_transparent_as_a_title() -> None:
@@ -1726,15 +1670,6 @@ def test_the_clause_link_arm_is_what_moves_it_not_the_vocabulary(
     assert _maiden_texts(out) == ["Puig", "i", "Soler"]
 
 
-def test_the_clause_link_survives_a_family_comma() -> None:
-    # the same walk under the GIVEN_SLOT reader, which is a different
-    # branch of the take rather than a second member of one shape:
-    # before the exception the leak landed in the given part.
-    out = _grouped("Doe, Jane née Puig i Soler", lexicon=_LINK_LEX)
-    assert _maiden_texts(out) == ["Puig", "i", "Soler"]
-    assert _piece_texts(out) == [["Doe"], ["Jane"]]
-
-
 def test_a_clause_link_runs_twice_over() -> None:
     # every link of the clause is asked, not just the first: the walk
     # steps over each one it finds between two birth-name words.
@@ -1780,16 +1715,16 @@ def test_an_ambiguous_credential_on_the_right_is_refused_by_bound(
 
 def test_a_suffix_word_that_is_no_connective_still_ends_the_clause(
 ) -> None:
-    # the recorded negative control for the CLASS half of the
-    # exception, the shape 'Juan Garcia Lopez y' is for the join: 'jr'
-    # stands between two birth-name words and is not a connective at
-    # all, so the exception is never asked and the clause ends at it
-    # as it always did. Drop the connective conjunct and this row
-    # reads maiden 'Puig jr Soler' -- measured. Identical under both
-    # lexicons, the letter deciding nothing here.
+    # 'jr' stands between two birth-name words and is not a
+    # connective, so it ends the clause -- and since #601 and #602 it
+    # starts a credential run in the clause-free name ('Jane Doe jr
+    # Soler'), which the take consumes, 'Soler' included. Until then
+    # the clause ended at 'jr' and handed 'jr Soler' to the name.
     out = _grouped("Jane Doe née Puig jr Soler", lexicon=_LINK_LEX)
     assert _maiden_texts(out) == ["Puig"]
-    assert _piece_texts(out) == [["Jane", "Doe", "jr", "Soler"]]
+    assert [t.text for t in out.tokens if t.role is Role.SUFFIX] == [
+        "jr", "Soler"]
+    assert _piece_texts(out) == [["Jane", "Doe"]]
 
 
 def test_the_marker_is_not_the_name_word_on_the_links_left() -> None:
@@ -1803,49 +1738,6 @@ def test_the_marker_is_not_the_name_word_on_the_links_left() -> None:
     assert _piece_texts(out) == [["Jane", "Doe", "née i Soler"]]
     plain = _grouped("Jane Doe née i Soler", lexicon=_PLAIN_LEX)
     assert _maiden_texts(plain) == ["i", "Soler"]
-
-
-def test_a_core_straight_after_the_marker_leaves_it_nothing_to_take(
-) -> None:
-    # A delimiter core is TAIL-segment structure that group() cuts the
-    # segment at before this pass (#549), so it is never a word of the
-    # clause, and a marker with a core straight behind it ends its part
-    # with nothing to take, as 'PhD née, i Jones' does.
-    out = _grouped("Smith, John, PhD née - i Jones", policy=_DASH,
-                   lexicon=_LINK_LEX)
-    assert _maiden_texts(out) == []
-    # and the control that says the CORE is doing it: with no
-    # delimiter configured the dash is an ordinary word, so the link
-    # has a name word on its left and the clause keeps the run.
-    plain = _grouped("Smith, John, PhD née - i Jones", lexicon=_LINK_LEX)
-    assert _maiden_texts(plain) == ["-", "i", "Jones"]
-
-
-def test_a_core_ends_a_maiden_clause_as_a_comma_would() -> None:
-    """rules.md's C1: "a delimiter the policy declares parts a trailing
-    suffix part as a comma would" (#549), so a maiden clause ends at a
-    core exactly as it ends at the comma written in its place, and a
-    link beside the core has no name word on that side.
-
-    This reverses #538, which read the clause as the text written
-    WITHOUT the core: 'Puig - i Soler' kept maiden 'Puig i Soler'
-    there. RECORDED NEGATIVE CONTROL: at 061f02da the third assertion
-    read ["Puig", "i", "Soler"].
-    """
-    out = _grouped("Smith, John, PhD née Puig Mr. - i Soler",
-                   policy=_DASH, lexicon=_LINK_LEX)
-    assert _maiden_texts(out) == ["Puig", "Mr."]
-    twin = _grouped("Smith, John, PhD née Puig Mr., i Soler",
-                    lexicon=_LINK_LEX)
-    assert _maiden_texts(twin) == ["Puig", "Mr."]
-    # between two NAME words the core ends the clause too, as the
-    # comma does: the link and the word behind it are the next part's.
-    between = _grouped("Smith, John, PhD née Puig - i Soler",
-                       policy=_DASH, lexicon=_LINK_LEX)
-    assert _maiden_texts(between) == ["Puig"]
-    twin = _grouped("Smith, John, PhD née Puig, i Soler",
-                    lexicon=_LINK_LEX)
-    assert _maiden_texts(twin) == ["Puig"]
 
 
 def test_a_core_beside_a_connective_in_a_credential_tail_is_dropped(
@@ -1994,42 +1886,6 @@ def test_a_frozen_link_is_still_absorbed_by_a_neighbours_join() -> None:
     assert out.suffix == ""
 
 
-def test_the_title_stop_needs_a_name_word_left_standing() -> None:
-    """rules.md#M2 (#535): the title stop is asked over the name the
-    take would leave. 'Dr. nee Jones Smith Prof.' would leave 'Dr.
-    Prof.', where H5's chain has no name word to stand behind and the
-    title would read as the family name -- so the clause keeps it."""
-    out = _grouped("Dr. nee Jones Smith Prof.", lexicon=Lexicon.default())
-    assert _maiden_texts(out) == ["Jones", "Smith", "Prof."]
-    # the control: with a name word ahead of the marker the same clause
-    # gives the title up
-    ok = _grouped("Jane Doe nee Jones Smith Prof.", lexicon=Lexicon.default())
-    assert _maiden_texts(ok) == ["Jones", "Smith"]
-
-
-def test_a_released_title_behind_a_particle_is_withdrawn() -> None:
-    """P2's chain runs on over a trailing title (rules.md#H5 Accepted),
-    so a title the clause gives up with a particle ahead of it in the
-    remaining name would join the family; the release is withdrawn."""
-    out = _grouped("Jane van der Berg nee Smith Prof.", lexicon=Lexicon.default())
-    assert _maiden_texts(out) == ["Smith", "Prof."]
-    out = _grouped("Jane Doe nee Smith MA do Prof.", lexicon=Lexicon.default())
-    assert _maiden_texts(out) == ["Smith", "MA", "do"]
-
-
-def test_the_numeral_stop_asks_the_join_question() -> None:
-    """The numeral fork never asked whether a join below the take
-    would absorb the word it releases: after a family comma the
-    bound-given join took the V ('Berg, abdul nee Smith V' read given
-    'abdul V' at 2.2.0 and 2.3.0). It asks now, through the shared
-    check."""
-    out = _grouped("Berg, abdul nee Smith V", lexicon=Lexicon.default())
-    assert _maiden_texts(out) == ["Smith", "V"]
-    # the control: with no bound word the numeral is released as before
-    ok = _grouped("Berg, Jane nee Smith V", lexicon=Lexicon.default())
-    assert _maiden_texts(ok) == ["Smith"]
-
-
 def test_the_first_word_floor_holds_a_title_out_of_the_chain() -> None:
     """A title straight after the marker stays the maiden name: the
     floor is the title chain's own, so the chain never takes that word
@@ -2051,98 +1907,3 @@ def test_the_floor_keeps_the_first_word_in_the_chains_count() -> None:
     assert _maiden_texts(ok) == ["Smith"]
 
 
-def test_a_given_slot_numeral_with_a_credential_tail_stays() -> None:
-    """rules.md#M2/#144 (#535 review): after a family comma the given
-    slot reads a lone numeral as a suffix only where the given part is
-    the LAST comma part -- a third comma part behind it withdraws the
-    release, so 'Doe, Jane nee Smith V, PhD' keeps the V where
-    'Doe, Jane nee Smith V' (no tail) gives it up."""
-    out = _grouped("Doe, Jane nee Smith V, PhD", lexicon=Lexicon.default())
-    assert _maiden_texts(out) == ["Smith", "V"]
-    ok = _grouped("Doe, Jane nee Smith V", lexicon=Lexicon.default())
-    assert _maiden_texts(ok) == ["Smith"]
-
-
-def test_the_bound_given_half_of_the_join_model_is_the_given_slots_alone() -> None:
-    """rules.md#P5 (#535 review): the LENIENT bound-given join only
-    applies after a family comma; before one the STRICT reserve
-    declines a join that would change a suffix reading, so a numeral
-    the peel already reads as a suffix stays given up -- 'abdul nee
-    Smith V' (no comma) keeps the release where 'Berg, abdul nee
-    Smith V' (after a comma) withdraws it."""
-    out = _grouped("abdul nee Smith V", lexicon=Lexicon.default())
-    assert _maiden_texts(out) == ["Smith"]
-    ok = _grouped("Berg, abdul nee Smith V", lexicon=Lexicon.default())
-    assert _maiden_texts(ok) == ["Smith", "V"]
-
-
-def test_the_given_title_chain_stops_at_a_member_with_a_title_behind() -> None:
-    """rules.md#M2 after a family comma (#535): the given part's title
-    chain is read from the end over what its first suffix pass leaves,
-    and that pass takes a class member only where every piece behind
-    it is taken too -- so 'MA' with 'Prof.' behind it is a name word
-    there and the chain stops at it ('Doe, Jane Dr. MA Prof.' reads
-    middle 'Dr.'). A clause that released 'Rev.' as a title would put
-    it in the middle name; it keeps it instead, and only the title
-    behind the member and the member itself leave. And the lenient
-    trailing numeral (#144) counts as that pass's suffix once the
-    numeral stop has asked it, so 'Prof. V' leaves the clause whole,
-    as 'Doe, Jane Prof. V' reads."""
-    rev = _grouped("Doe, Jane nee Smith Rev. MA Prof.",
-                   lexicon=Lexicon.default())
-    assert _maiden_texts(rev) == ["Smith", "Rev."]
-    num = _grouped("Doe, Jane nee Smith Prof. V", lexicon=Lexicon.default())
-    assert _maiden_texts(num) == ["Smith"]
-
-
-def test_a_link_the_walk_stops_at_gives_up_only_a_run_that_reads_off(
-) -> None:
-    """rules.md#M2 (#535): with the title chained, the link exception
-    can refuse a link it used to join, and a stop at a link gives up
-    the words behind it. 'i DO Prof.' left standing behind 'Jane Doe'
-    does not read as post-nominals, so the clause keeps the link and
-    the DO ('Doe i' was the middle name without the check); 'i MA
-    Prof.' does, so there the link and the credential leave."""
-    kept = _grouped("Jane Doe nee Smith i DO Prof.",
-                    lexicon=Lexicon.default())
-    assert _maiden_texts(kept) == ["Smith", "i", "DO"]
-    given_up = _grouped("Jane Doe nee Smith i MA Prof.",
-                        lexicon=Lexicon.default())
-    assert _maiden_texts(given_up) == ["Smith"]
-
-
-def test_only_a_link_the_title_chain_refused_asks_the_release_question(
-) -> None:
-    """The link check is asked only where reading the title chain made
-    the link exception refuse a link it joined over the words as
-    written. A link refused either way stops as it always did: 'Doe,
-    Jane nee Smith i V' gives up 'i V' (a check that fired here kept a
-    dangling 'i' in the birth name). And the given part's lenient
-    numeral counts as a suffix where only chained titles stand behind
-    it, as bare 'Doe, Jane i V Prof.' reads suffix 'i V' -- but not
-    where another comma part follows, where it is a middle initial."""
-    plain = _grouped("Doe, Jane nee Smith i V", lexicon=Lexicon.default())
-    assert _maiden_texts(plain) == ["Smith"]
-    titled = _grouped("Doe, Jane nee Smith i V Prof.",
-                      lexicon=Lexicon.default())
-    assert _maiden_texts(titled) == ["Smith"]
-    tail = _grouped("Doe, Jane nee Smith i V Prof., PhD",
-                    lexicon=Lexicon.default())
-    assert _maiden_texts(tail) == ["Smith", "i", "V"]
-
-
-def test_a_released_particle_title_is_kept_after_a_family_comma() -> None:
-    """rules.md#M2 with P6 (#535): after a family comma a released
-    title that is also a particle would be attached to the family by
-    P6 ('Doe, Jane St.' reads family 'St. Doe'), so the clause keeps
-    it. A title that is no particle still leaves, and so does the
-    credential DO, which the given slot's own lean reads (#533); with
-    no comma P6 does not run and 'St.' leaves as a title."""
-    kept = _grouped("Doe, Jane nee Smith St.", lexicon=Lexicon.default())
-    assert _maiden_texts(kept) == ["Smith", "St."]
-    title = _grouped("Doe, Jane nee Smith Prof.", lexicon=Lexicon.default())
-    assert _maiden_texts(title) == ["Smith"]
-    credential = _grouped("Doe, Jane nee Smith DO", lexicon=Lexicon.default())
-    assert _maiden_texts(credential) == ["Smith"]
-    no_comma = _grouped("Jane Doe nee Smith St.", lexicon=Lexicon.default())
-    assert _maiden_texts(no_comma) == ["Smith"]
