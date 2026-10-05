@@ -290,7 +290,10 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     'Jones'.
     """
     if "suffix" in ptags:
-        return True
+        # the Ph./D. pair alone: a connective join keeps the tag on the
+        # wider piece ('Ph. D. and Mary'), which starts nothing, as
+        # 'PhD and Mary' does not
+        return len(piece) == 2
     if len(piece) != 1 or not is_suffix_piece(piece, ptags, tokens):
         return False
     tok = tokens[piece[0]]
@@ -560,7 +563,9 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     A part OPENED by a credential is the postnominal part however it
     goes on (#603, rules.md#C1): where an unambiguous suffix word that
     starts #602's run (`starts_a_credential_run`) is the first suffix
-    word of the part, with only titles in front of it, every later
+    word of the part, with only titles in front of it (a title/suffix
+    dual among them ends the chance: a credential behind one opens
+    nothing), every later
     word is read as #602's run reads the given part -- a title word as
     a title, anything else as a suffix -- so 'John Smith, PhD Jones'
     and 'Smith, PhD Jones' read suffix 'PhD Jones'. A word of the

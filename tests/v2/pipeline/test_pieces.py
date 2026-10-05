@@ -130,8 +130,7 @@ def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
     Lenient continues the credential run through a one-character
     suffix word; strict vetoes initial-shaped words, so the run is no
     run at all and the segment falls to the walk. Asked behind a
-    title/suffix dual, which opens no part when nothing says the name
-    before the comma is whole (#603). Behind a credential that does
+    title/suffix dual, which opens no part (#603). Behind a credential that does
     open it ('PSM'), strict refuses the numeral the suffix reading but
     the opened part takes it in all the same, and hands it to the
     caller to report.

@@ -1701,7 +1701,8 @@ fields = ["_ambiguities", "family", "given", "middle", "suffix"]
 # suffix vocabulary is a title" (#603, 2026-10-04): a part past the
 # second comma reads its title words as titles, and a part of title and
 # suffix words is recognized rather than flagged ('Eric H. Holder, Jr.,
-# Attorney General'). 1.4.0 read these titles as titles too.
+# Attorney General'). 1.4.0, like 2.0 through 2.3, read them as
+# suffixes.
 issue = "fix(#603) a title word in a part past the second comma is a title"
 name_regex = "^(?:1 & 2, 3 4 5, Mr\\.|Andrew Perkins, Jr\\., Col\\. \\x28Ret\\x29|Eric H\\. Holder, Jr\\., Attorney General|Eric H\\. Holder, Jr\\., Secretary of State|John Smith, Jr\\., Lt\\.Gov\\.|John, Smith, Dr\\.|Smith, John, Prof\\.)$"
 fields = ["_ambiguities", "suffix", "title"]

@@ -224,8 +224,9 @@ def segment(state: ParseState) -> ParseState:
         # rules.md#C2: "a word of the title vocabulary there that is not
         # also suffix vocabulary is a title" -- at least one title
         # word, and every other word a suffix word
-        # period_joined_vocab for 'Lt.Gov.', whose chunks group tags a
-        # title and assign then reads as one
+        # period_joined_vocab for 'Lt.Gov.', one token that classify
+        # (not yet run) tags a title by this same call, and that assign
+        # then reads as one
         titles = state.lexicon.titles
         rest = tuple(i for i in seg
                      if _normalize(t := state.tokens[i].text) not in titles
@@ -567,8 +568,9 @@ def segment(state: ParseState) -> ParseState:
     # rules.md#C2: "a non-empty extra part that is not entirely suffix
     # words is flagged as a structural ambiguity rather than rejected"
     # -- parts[2:] are consumed as suffixes either way, their title
-    # words as titles (#603), so a tail segment that is neither gets
-    # the COMMA_STRUCTURE flag, not a structure veto. The lean reaches this reading too:
+    # words as titles (#603), so a tail segment that is neither all
+    # suffix words nor title words beside suffix words gets the
+    # COMMA_STRUCTURE flag, not a structure veto. The lean reaches this reading too:
     # a tail of leaning credentials is a credential run, which is the
     # one place this design quiets a report rather than adding one.
     for seg in groups[2:]:

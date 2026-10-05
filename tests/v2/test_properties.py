@@ -3388,8 +3388,9 @@ def test_a_one_letter_particle_with_its_period_reads_as_any_initial() -> None:
 #: The recorded negative control: how many grid texts disagree with the
 #: veto removed from ONE site, measured 2026-10-04 (classify 412 and
 #: the facade 121 until #603 the same day, whose opened comma part
-#: reads nine 'DO Ó., ...'-shaped texts the same with the veto off or
-#: on, the credential opening the part either way). Every site moves
+#: reads some texts the same with the veto off or on, the credential
+#: opening the part either way: nine of classify's, 'DO Ó., ...'
+#: shapes, and one of the facade's). Every site moves
 #: some, so none is decoration. _render's is measured without the
 #: particle case masks, as for a caller's one-letter particle that has
 #: none: with the shipped 'ó' mask the repair takes the mask before

@@ -6167,6 +6167,47 @@ CASES: tuple[Case, ...] = (
                "and this read middle 'Jones', suffix 'Ph. D.' (2.3.0 "
                "too). Found by #603, whose opened part asks the same "
                "predicate (AGENTS.md's spelling sweep)"),
+    Case("a_split_credential_joined_to_a_name_opens_nothing",
+         "John Smith, Ph. D. and Mary Jones",
+         {"given": "Ph. D. and Mary", "middle": "Jones",
+          "family": "John Smith"},
+         notes="the two spellings agree (rules.md#C1, #603): group's "
+               "connective join keeps the merged credential's 'suffix' "
+               "piece tag on the wider piece, and starts_a_credential_run "
+               "accepted any piece so tagged, so this read suffix "
+               "'Ph. D. and Mary Jones' with 'Mary' taken in silently "
+               "while 'John Smith, PhD and Mary Jones' reads as here; the "
+               "PR review found it, and only the bare Ph./D. pair starts "
+               "a run now"),
+    Case("a_one_piece_name_before_an_opened_part_is_the_family",
+         "Vega y Lopez, PhD Jones",
+         {"family": "Vega y Lopez", "suffix": "PhD Jones"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#603)",
+         notes="one piece before the comma is one name word, even where "
+               "a connective joined three units into it; without "
+               "assign's len(fam_pieces) > 1 exit the unit count reads "
+               "it positionally, given 'Vega y Lopez' and no family. "
+               "2.3.0 read given 'PhD', middle 'Jones'"),
+    Case("only_the_first_suffix_word_can_open_the_comma_part",
+         "Smith, MA PhD Jones",
+         {"given": "MA", "family": "Smith", "suffix": "PhD Jones"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="#603's opener is the part's FIRST suffix word with only "
+               "titles in front of it (rules.md#C1): 'MA', a member of "
+               "the ambiguous class, opens nothing and ends the leading "
+               "run, so the 'PhD' behind it opens nothing either and the "
+               "part is the walk's. Letting a later credential open it "
+               "reads suffix 'MA PhD Jones'"),
+    Case("a_misplaced_generation_opens_the_comma_part", "Smith, Jr. John",
+         {"family": "Smith", "suffix": "Jr. John"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#603)",
+         notes="decisions.md#C1's accepted cost: a generational word "
+               "starts S2's run, so it opens the part and 'John' is "
+               "absorbed, one word before the comma reading the whole "
+               "part as suffixes (Derek). 2.3.0 read title 'Jr.', given "
+               "'John'"),
     Case("a_part_of_titles_behind_a_credential_was_already_postnominal",
          "Eric H. Holder, Jr. Attorney General",
          {"title": "Attorney General", "given": "Eric", "middle": "H.",
@@ -8767,8 +8808,8 @@ CASES: tuple[Case, ...] = (
                "credential 'PSM' OPENS, which reads as #602's run reads "
                "whatever stands behind it (rules.md#C1) -- title 'Dr.', "
                "suffix 'PSM I' -- so the reset no longer decides it. A "
-               "dual behind one name word opens nothing, and the reset "
-               "is what is left deciding this spelling. 1.4.0 read the "
+               "dual opens nothing, and the reset is what is left "
+               "deciding this spelling. 1.4.0 read the "
                "old spelling suffix 'Dr., I'"),
     Case("family_comma_run_numeral_after_a_split_credential",
          "Smith, Ph. D. I",

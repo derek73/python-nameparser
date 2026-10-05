@@ -1062,8 +1062,9 @@ def assign(state: ParseState) -> ParseState:
                     _set_roles(tokens, pieces[k], Role.TITLE)
             # v1 walk order: the first non-title piece is ALWAYS the
             # given, before any suffix check -- 'Smith, V. Jones' keeps
-            # first='V.'. Two 2.x deviations are the no-name read above
-            # now, so the walk here never meets either: a last piece
+            # first='V.'. Two 2.x deviations are the segment reading
+            # above now (`reading is not None`), so the walk here never
+            # meets either: a last piece
             # that is unambiguously suffix-shaped is a suffix, where v1
             # made it the given ('Andrews, M.D.', 'Smith, Dr. Jr.';
             # classified fix(comma-family)), a segment whose only
@@ -1233,8 +1234,12 @@ def assign(state: ParseState) -> ParseState:
         # (`_vocab.surname_unit_facts`), over EVERY token, so a suffix
         # word still stops a particle ('van Jr. Berg, Mr.' is two name
         # words); a unit counts when a non-suffix piece holds a token
-        # of it. One piece is one name word at most, settled in C
-        # before any of that is built ('Smith, Jr.').
+        # of it. One piece is one name word at most, and that is a
+        # DECISION, not only a saving: a connective join makes one piece
+        # of several units ('Vega y Lopez'), which the unit count alone
+        # would read positionally, losing the family to the given name
+        # behind a part a credential opens ('Vega y Lopez, PhD Jones').
+        # Settled in C before any of that is built ('Smith, Jr.').
         positional = False
         if reading is not None and len(fam_pieces) > 1:
             idx = [i for piece in fam_pieces for i in piece]
@@ -1276,9 +1281,10 @@ def assign(state: ParseState) -> ParseState:
         tail = 2
     # rules.md#C2: segments past the structure's name segments are
     # consumed as suffixes, except "a word of the title vocabulary there
-    # that is not also suffix vocabulary is a title" (#603) -- the slot
-    # is behind a comma, which is where H5 lets a title be read from
-    # the end of a name ('Eric H. Holder, Jr., Attorney General'). A
+    # that is not also suffix vocabulary is a title" (#603) -- a part
+    # past the second comma holds no name word, so the surnames H5
+    # keeps a bare trailing title word from misreading are not there to
+    # protect ('Eric H. Holder, Jr., Attorney General'). A
     # piece holding a suffix word stays the postnominal the slot makes
     # it, a dual alone as after a family comma (C1) and a dual group's
     # connective join took into a title ('PhD - and MD') alike.

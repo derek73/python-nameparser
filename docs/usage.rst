@@ -41,11 +41,16 @@ Every piece of each is optional:
 
 1. ``Title Given "Nickname" Middle Middle Family Suffix``
 2. ``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix or Title]``
-3. ``Title Given Middle Family [Suffix], Suffix [, Suffix or Title]``
+3. ``Title Given Middle Family [Suffix], Suffix or Title [, Suffix or Title]``
+
+A title written with a period (``Prof.``) is also read at the end of a
+name in forms 1 and 3 and at the end of the given name in form 2;
+written bare there (``Prof``), it is a name word, because many title
+words are also surnames.
 
 The last two differ in what the comma is doing. In form 2 it separates
 the family name from the rest, so the family name comes first; in form
-3 it only sets off suffixes, and the name before it is still
+3 it only sets off suffixes and titles, and the name before it is still
 given-then-family:
 
 .. doctest::
@@ -57,11 +62,15 @@ given-then-family:
     >>> parse("John Doe, Jr.").family                    # form 3
     'Doe'
 
-A part after a further comma holds more suffixes, and a word there that
-is a title rather than a suffix is read as the title (since 2.4):
+A part after the comma in form 3, or after a further comma in either
+form, holds suffixes and titles, a word there that is a title rather
+than a suffix being read as the title (after a further comma, since
+2.4):
 
 .. doctest::
 
+    >>> parse("Eric H. Holder, Attorney General").title
+    'Attorney General'
     >>> parse("Eric H. Holder, Jr., Attorney General").title
     'Attorney General'
 
