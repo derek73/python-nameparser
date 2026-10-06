@@ -73,7 +73,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     ambiguous_class_member, effective_script, is_one_case,
-    is_suffix_lenient, is_suffix_strict, is_wholly_suffix,
+    is_single_letter_numeral, is_suffix_strict, is_wholly_suffix,
     name_word_count, surname_unit_count,
 )
 from nameparser._pipeline._pieces import own_words
@@ -359,11 +359,19 @@ def _postnominal_behind_a_whole_name(state: ParseState) -> bool:
     박, MA` as a credential run behind a two-word name while this
     stage had already declined to split the name as one, and the
     comma's report said two name words stood where the parse kept one
-    (#613's review). What is still not asked is decide's capitals
-    test for an unlisted all-caps word (`Smith 김민준씨, XYZ`): copying
-    it here would be the model of a later stage this move removed, and
-    a CJK name before a comma with a Latin credential after it is
-    tolerated input (rules.md#W3)."""
+    (#613's review), with decide's two further conditions -- the
+    policy's own suffix test for the other words, and no single-letter
+    numeral -- which a second review found missing ('김민준 박, MA V'
+    divided behind a family comma). Not asked, and so left whole where
+    decide reads a suffix comma: the capitals lean behind a title and
+    one name word ('Dr 김민준, MA', which H1 reads as the family
+    anyway), an unlisted all-caps or dotted word ('XYZ', 'X.Y.Z.'), the
+    split 'Ph. D.' and a title in the part. Leaving a name whole is the
+    harmless direction; dividing one decide reads as a family comma is
+    the one `test_the_division_never_outruns_the_comma_decision`
+    forbids. Copying the rest of decide here would be the model of a
+    later stage this move removed, and a CJK name before a comma with a
+    Latin credential after it is tolerated input (rules.md#W3)."""
     if len(state.segments) < 2:
         return False
     own = [state.tokens[j].text for j in state.segments[0]
@@ -374,11 +382,19 @@ def _postnominal_behind_a_whole_name(state: ParseState) -> bool:
     if is_wholly_suffix(after, state.lexicon, state.policy):
         return surname_unit_count(own, state.lexicon) > 1
     # the ambiguous class, by C1's own count: two NAME words before
-    # the comma make a part of credentials and listed members the
-    # credential run, as `_comma.decide` licenses it (#613 review)
-    return (all(is_suffix_lenient(t, state.lexicon)
-                or ambiguous_class_member(t, state.lexicon)
-                for t in after)
+    # the comma make a part of listed members and suffix words the
+    # credential run, as `_comma.decide` licenses it (#613 review) --
+    # the words not of the class asked by the policy's own suffix test,
+    # and no single-letter numeral in the part, decide's two further
+    # conditions (a second review found the arm dividing '김민준 박, MA
+    # V' while decide read the family comma, which laid the divided
+    # pieces out as the family '김 민준 박')
+    others = [t for t in after
+              if not ambiguous_class_member(t, state.lexicon)]
+    return (len(others) < len(after)
+            and (not others or is_wholly_suffix(others, state.lexicon,
+                                                state.policy))
+            and not any(is_single_letter_numeral(t) for t in after)
             and name_word_count(own, state.lexicon, state.policy) > 1)
 
 

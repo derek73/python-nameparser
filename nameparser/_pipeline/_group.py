@@ -1291,16 +1291,22 @@ def group(state: ParseState) -> ParseState:
     tail_start = {Structure.SUFFIX_COMMA: 1,
                   Structure.FAMILY_COMMA: 2}.get(state.structure)
     family_comma = state.structure is Structure.FAMILY_COMMA
+    bound = frozenset(dropped)
     for seg_idx, seg in enumerate(state.segments):
-        # the part decide bound is no piece of any join -- filtered
-        # only where it bound one, and by a comprehension: a generator
-        # here is a frame per token on 3.11. The cores decide drops need
-        # no filter: it drops them only behind a whole name, where the
-        # part is a suffix comma's tail and the core cut below drops
-        # them again (a mutation removing that half moved nothing,
-        # #613's review)
+        # the part decide bound, and the cores it dropped, are no
+        # piece of any join -- filtered only where it bound one, and by
+        # a comprehension: a generator here is a frame per token on
+        # 3.11. The cores need the filter of their own: decide binds
+        # every word around a core, so the core is all that is left of
+        # the segment, the core cut below never cuts a lone token, and
+        # without the filter the dropped core became a piece and assign
+        # gave it a suffix role ('John Smith, PhD - MD' under ' - ';
+        # no output moved, every reader asking `dropped`, which is why
+        # a first review took the filter for dead and a second found
+        # the token's role)
         if bound_any:
-            seg = tuple([i for i in seg if tokens[i].role is None])
+            seg = tuple([i for i in seg
+                         if tokens[i].role is None and i not in bound])
         if family_comma:
             bound_join = (BoundJoin.LENIENT if seg_idx == 1
                           else BoundJoin.DISABLED)

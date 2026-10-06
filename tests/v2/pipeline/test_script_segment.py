@@ -200,41 +200,56 @@ def test_a_listed_ambiguous_credential_behind_two_name_words_divides() -> None:
     assert parse("김민준, MA").family == "김민준"
 
 
-# The name before the comma divides exactly where `_comma.decide`
-# makes the comma a suffix comma: script_segment runs first and asks
-# its own stand-in for that answer (`_postnominal_behind_a_whole_name`),
-# and a stand-in is a second implementation that can drift. Recorded
-# negative control (#613 review, 2026-10-06): with the vocabulary-only
-# stand-in at 47fb2b21, 21 of these 40 texts disagreed, every one an
-# ambiguous credential decide licenses by its count ('김민준 박, MA'
-# read as a credential run with the name left whole). The residue is
-# the one shape where decide licenses by the capitals lean rather than
-# the count -- a title and ONE name word, which H1 reads as the family
-# with or without the division, as master read it ('Dr 김민준, MA'
-# reads as 'Dr. Smith, MA' does).
-_AGREEMENT_RESIDUE = {("Dr 김민준", "MA"), ("Dr 김민준", "MA PhD"),
-                      ("Dr 김민준", "Jr. MA")}
+# script_segment runs before group and asks its own stand-in for the
+# comma decision (`_postnominal_behind_a_whole_name`), and a stand-in
+# is a second implementation that can drift. The two directions of a
+# disagreement are not alike. Dividing a name that `_comma.decide`
+# then reads as a FAMILY comma lays the divided pieces out as the
+# family ('김 민준 박') -- that is never allowed. Leaving a name whole
+# where decide reads a suffix comma keeps the written word, the
+# tolerated cost of a CJK name before a comma with a Latin credential
+# after it (rules.md#W3): decide's capitals lean, its by-shape class,
+# its Ph./D. merge and its title reading are not copied here, a copy
+# being the model of a later stage #613 removed.
+#
+# Recorded negative controls (#613 reviews, 2026-10-06): at 47fb2b21,
+# where the stand-in asked the vocabulary alone, 21 of the default
+# policy's first 40 texts here were left whole -- every listed
+# ambiguous credential decide licenses by its count; at bac1b510, whose
+# count arm skipped decide's numeral refusal and its policy-selected
+# suffix test, 24 of these 168 parses divided behind a family comma
+# ('MA V', 'MA I', 'V MA', 'MA V.', and 'V.' under strict).
+_AGREEMENT_HEADS = ("김민준 박", "마틴 킹", "Smith 김민준씨", "Dr 김민준")
+_AGREEMENT_TAILS = (
+    "MA", "Ma", "MA PhD", "PhD", "Jr.", "Jr. MA", "MD Ma", "Ed", "Jones",
+    "G.J.", "MA V", "V MA", "MA I", "V.", "MA V.", "X.Y.Z.", "MA X.Y.Z.",
+    "MA Ph. D.", "Dr MA", "MA Dr", "XYZ")
+#: the count arm's own reach: a listed member behind two name words
+_DIVIDES = {(head, tail) for head in ("김민준 박", "마틴 킹")
+            for tail in ("MA", "Ma", "MA PhD", "Jr. MA", "MD Ma", "Ed")}
 
 
-def test_the_division_agrees_with_the_comma_decision() -> None:
-    heads = ("김민준 박", "마틴 킹", "Smith 김민준씨", "Dr 김민준")
-    tails = ("MA", "Ma", "MA PhD", "PhD", "Jr.", "Jr. MA", "MD Ma", "Ed",
-             "Jones", "G.J.")
-    disagree = set()
-    for head in heads:
-        for tail in tails:
-            state = ParseState(original=f"{head}, {tail}",
-                               lexicon=Lexicon.default(), policy=Policy())
-            for stage in STAGES:
-                state = stage(state)
-                if stage.__name__ == "group":
-                    break
-            own = [i for i in state.segments[0]
-                   if _PEELED_TAG not in state.tokens[i].tags]
-            divided = len(own) > len(head.split())
-            if divided != (state.structure is Structure.SUFFIX_COMMA):
-                disagree.add((head, tail))
-    assert disagree == _AGREEMENT_RESIDUE
+def test_the_division_never_outruns_the_comma_decision() -> None:
+    outran, divided_where_expected = set(), set()
+    for policy in (Policy(), Policy(lenient_comma_suffixes=False)):
+        for head in _AGREEMENT_HEADS:
+            for tail in _AGREEMENT_TAILS:
+                state = ParseState(original=f"{head}, {tail}",
+                                   lexicon=Lexicon.default(), policy=policy)
+                for stage in STAGES:
+                    state = stage(state)
+                    if stage.__name__ == "group":
+                        break
+                own = [i for i in state.segments[0]
+                       if _PEELED_TAG not in state.tokens[i].tags]
+                divided = len(own) > len(head.split())
+                suffix_comma = state.structure is Structure.SUFFIX_COMMA
+                if divided and not suffix_comma:
+                    outran.add((head, tail, policy.lenient_comma_suffixes))
+                if divided and (head, tail) in _DIVIDES:
+                    divided_where_expected.add((head, tail))
+    assert outran == set()
+    assert divided_where_expected == _DIVIDES
 
 
 def test_suffix_comma_name_part_still_splits() -> None:
