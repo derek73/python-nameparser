@@ -1093,8 +1093,9 @@ S2. Rationale: generational suffixes and credentials are recognized
     FIRST slot after it: the count of name words before the comma
     decides there first (C1), and the case is read only where that
     count leaves the word a name. C1 states the one exception: a part
-    of two or more words whose every word of this class is listed and
-    written in capitals in a mixed-case name is read on its capitals
+    of two or more suffix words and words of this class, every word of
+    the class listed and written in capitals in a mixed-case name, is
+    read on its capitals
     before the count is asked, as the credential run behind one name
     word as behind two ('Smith, MA MA' reads suffix 'MA MA'),
     and only a word of the class opening the part reports, as the
@@ -1759,8 +1760,9 @@ C1. Rationale: a credential run after the comma means the name is in
     credential (S2), and the part reads as the credential run on that
     evidence rather than on the count; a word of the class by shape
     alone carries no such lean, so a part holding one is read by the
-    count. A part read as postnominal — the credential run, or titles
-    beside suffixes — is read as its words stand, before any join, and
+    count. A part read as postnominal — the credential run, titles
+    beside suffixes, or titles alone — is read as its words stand,
+    before any join, and
     that reading is final: the one join made inside it is a
     connective binding title words into one title (P3: 'Mr. and
     Mrs.'), and no particle run, connective join or bound given name
@@ -2280,9 +2282,13 @@ W3. Rationale: a family name declared by a comma is the writer's
     nobody's writing system produces. Behind a part C1 reads as
     postnominal there is no family comma, and the name before it
     divides as it would with no comma ('마틴 킹, MA' as '마틴 킹');
-    the division is decided before C1 runs, by C1's own counts, all
-    but its capitals test for an unlisted all-caps word, so
-    'Smith 김민준씨, XYZ' stays undivided. Which side the split-off takes
+    the division, and with it the split-off below, is decided before
+    C1 runs, by C1's counts for suffix words and listed words of the
+    ambiguous class, so a part C1 reads as postnominal by anything
+    else — an unlisted all-caps or dotted word, a split credential, a
+    title, or the capitals of a listed word behind a title and one
+    name word — leaves the name whole and its glued honorific in
+    place ('Smith 김민준씨, XYZ'). Which side the split-off takes
     it from is decided by the SHAPE of the part after the comma, not
     by which of C1's two readings that part selects — a one-word
     family reads the listing form either way. A part that is nothing
