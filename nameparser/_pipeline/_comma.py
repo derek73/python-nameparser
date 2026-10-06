@@ -17,8 +17,10 @@ positional read with a second count; reading once and binding is
 mechanisms.md#READ-WITHOUT-THEN-BIND.
 
 Reads: Lexicon suffix, title, particle and ambiguous-class vocabulary
-through the tags classify wrote and through _vocab.name_word_count,
-_vocab.is_wholly_suffix and _vocab.caps_shape_candidate; Lexicon
+through the tags classify wrote and through _vocab.name_word_count and
+_vocab.is_wholly_suffix; every Lexicon wordlist through
+_vocab.caps_shape_candidate (to know an all-caps word is unlisted) and
+_vocab.claimed_as_non_name (the name's contrast); Lexicon
 .maiden_markers through _pieces.own_words, for the name's contrast;
 Policy.lenient_comma_suffixes, Policy.extra_suffix_delimiters and
 Policy.unlisted_caps_suffixes.
@@ -75,27 +77,50 @@ def _title_chains(pieces: list[tuple[int, ...]], ptags: list[frozenset[str]],
     neighbour is group's: the one on the left, or on the right where the
     connective opens the part. A single-letter connective is left as it
     stands, P3 reading it as a name word or an initial in short names;
-    any other join leaves a name word in the part, which makes it the
-    given part however it is joined."""
+    any other join is not made here: where no credential opens the
+    part, a name word in it makes it the given part; where one does,
+    the run #603 opens takes the connective as a word and reports it
+    ('John Smith, PhD and Dr.')."""
+    # One pass that extends the run in place: rebuilding the growing
+    # piece from a slice at every join was quadratic in the part's
+    # length ("'Mr. and '*k + 'Mr.'", #613's PR review)
+    out: list[list[int]] = []
+    out_tags: list[frozenset[str]] = []
+    n = len(pieces)
     k = 0
-    while k < len(pieces):
+    while k < n:
         piece = pieces[k]
         text = tokens[piece[0]].text
-        if (len(piece) != 1 or "conjunction" not in tokens[piece[0]].tags
-                or (len(text) == 1 and text.isalpha())):
-            k += 1
-            continue
-        start = max(0, k - 1)
-        end = min(len(pieces), k + 2)
-        neighbor = start if start < k else end - 1
-        if neighbor == k or not ("title" in ptags[neighbor] or (
-                len(pieces[neighbor]) == 1
-                and "vocab:title" in tokens[pieces[neighbor][0]].tags)):
-            k += 1
-            continue
-        pieces[start:end] = [tuple(i for p in pieces[start:end] for i in p)]
-        ptags[start:end] = [frozenset().union(*ptags[start:end]) | {"title"}]
-        k = start + 1
+        if (len(piece) == 1 and "conjunction" in tokens[piece[0]].tags
+                and not (len(text) == 1 and text.isalpha())):
+            # the neighbour it takes its kind from: the one on the left,
+            # or on the right where the connective opens the part
+            if out:
+                kind, kind_tags = out[-1], out_tags[-1]
+            elif k + 1 < n:
+                kind, kind_tags = list(pieces[k + 1]), ptags[k + 1]
+            else:
+                kind, kind_tags = [], frozenset()
+            if kind and ("title" in kind_tags or (
+                    len(kind) == 1
+                    and "vocab:title" in tokens[kind[0]].tags)):
+                taken = range(k, min(n, k + 2))
+                tags = frozenset().union(*(ptags[j] for j in taken))
+                if out:
+                    for j in taken:
+                        out[-1].extend(pieces[j])
+                    out_tags[-1] = out_tags[-1] | tags | {"title"}
+                else:
+                    out.append([i for j in taken for i in pieces[j]])
+                    out_tags.append(tags | {"title"})
+                k += len(taken)
+                continue
+        out.append(list(piece))
+        out_tags.append(ptags[k])
+        k += 1
+    if len(out) != n:
+        pieces[:] = [tuple(p) for p in out]
+        ptags[:] = out_tags
 
 
 def _name_contrast(state: ParseState, seg0: Sequence[int]) -> bool:
@@ -161,7 +186,13 @@ def decide(state: ParseState) -> ParseState:
             or len(state.segments) < 2):
         return state
     seg0, seg1 = state.segments[0], state.segments[1]
-    if not seg0 or not seg1:
+    # An EMPTY part before the comma is no whole name, but the part
+    # after it is still read: ', PhD' is a credential with no name in
+    # front of it, as 2.3.0 read it, and declining here left the part
+    # to the listing form's walk, which made 'PhD' the given name and
+    # ', Jr.' a title (#613's PR review; empty surname fields in CSV
+    # data write exactly this)
+    if not seg1:
         return state
     tokens = list(state.tokens)
     lex, pol = state.lexicon, state.policy
@@ -177,7 +208,10 @@ def decide(state: ParseState) -> ParseState:
         whole = _whole_name(seg0, tokens)
         if whole:
             core_idx = [i for i in seg1 if tokens[i].text in cores]
-    part = [i for i in seg1 if i not in core_idx] if core_idx else list(seg1)
+    # a set for the membership test: a list scanned per token was
+    # quadratic in the part (#613's PR review, 'MD / '*k under '/')
+    core_set = frozenset(core_idx)
+    part = [i for i in seg1 if i not in core_set] if core_idx else list(seg1)
     if not part:
         return state
     p1, pt1 = _pieces(part, tokens)
@@ -233,7 +267,7 @@ def decide(state: ParseState) -> ParseState:
                     caps.add(i)
         # rules.md#C1: "The same count reads a part of two or more words
         # as the credential run when every word of it is a suffix word
-        # or a word of this class", none of them a single-letter numeral
+        # or a word of this class", none of them a single-letter numeral.
         # the words not of the class are asked as C1's suffix test asks
         # them, the lenient word test by default ('Ma B.')
         others = [tokens[i].text for p in p1
@@ -281,7 +315,10 @@ def decide(state: ParseState) -> ParseState:
                                   and "vocab:title"
                                   in tokens[p1[j][0]].tags)),
                         len(p1))
-                if not (speaker < k or shape - {i}):
+                # another shape word than this one: no set built per
+                # pair (a copy of `shape` each time was quadratic in C)
+                if not (speaker < k or len(shape) > 1
+                        or (shape and i not in shape)):
                     licensed.discard(i)
                     caps.discard(i)
         else:
@@ -330,13 +367,14 @@ def decide(state: ParseState) -> ParseState:
                and len(listed) == len(members)
                and all(listed_lean(tokens[i], state.one_case) == "credential"
                        for i in listed))
-    pairs = [k for k, p in enumerate(p1) if p[0] in members
+    member_set = frozenset(members)
+    pairs = [k for k, p in enumerate(p1) if p[0] in member_set
              and (is_paired_initials(tokens[p[0]].text)
                   or (p[0] in caps and len(tokens[p[0]].text) == 2))]
     # spoken for by each other only: every class word a pair, and only
     # titles among the other words in front of the first
     pair_only = (len(pairs) >= 2 and len(pairs) == len(members)
-                 and all(p[0] in members or (len(p) == 1 and "vocab:title"
+                 and all(p[0] in member_set or (len(p) == 1 and "vocab:title"
                                              in tokens[p[0]].tags)
                          for p in p1[:pairs[0]]))
     if whole and run and ((listed and not settled) or caps or pair_only):

@@ -6278,6 +6278,33 @@ CASES: tuple[Case, ...] = (
          notes="contrast for the row above: a suffix word that is no "
                "initial completes the run, and two name words before "
                "the comma read it as the credential run"),
+    Case("a_comma_with_nothing_before_it_reads_its_credentials",
+         ", MD PhD",
+         {"suffix": "MD PhD"},
+         ambiguities=(),
+         classification="fix(#613)",
+         notes="an empty part before the comma names no family, but the "
+               "part after it is read all the same, as 2.3.0 read it. "
+               "The first #613 tree returned early there and left "
+               "'MD PhD' to the listing walk: title 'MD', family 'PhD' "
+               "(PR review; empty surname fields in CSV data write "
+               "this)"),
+    Case("a_comma_with_nothing_before_it_reads_a_lone_generation",
+         ", Jr.",
+         {"suffix": "Jr."},
+         ambiguities=(),
+         classification="fix(#613)",
+         notes="the same exit read ', Jr.' title 'Jr.' (PR review)"),
+    Case("no_family_named_lets_the_title_rule_decide_before_p6",
+         ", Mr. Jones vd",
+         {"title": "Mr.", "family": "Jones", "suffix": "vd"},
+         ambiguities=(),
+         classification="fix(#613)",
+         notes="a comma with nothing before it names no family, so H1 "
+               "reads a title and one name word first and P6 attaches "
+               "after it, in post_rules; assign attaching ahead of H1 "
+               "read given 'Jones', family 'vd' (PR review, 177 texts "
+               "of that shape on the empty-head grid)"),
     Case("a_suffix_beside_a_connective_surname_is_no_name_word",
          "Vega y Lopez Jr., PhD Jones",
          {"given": "Vega", "middle": "y", "family": "Lopez",
@@ -10668,11 +10695,13 @@ CASES: tuple[Case, ...] = (
          classification="fix(#319)",
          notes="under a family comma the peel scanned both runs on "
                "the premise that segments[1] is name text, and here it "
-               "is not: segment picks FAMILY_COMMA when the pre-comma "
-               "part is a single word, even where the post-comma part "
-               "is entirely suffix-shaped, so the scan reached 'V.' -- "
-               "which is_suffix_strict rejects as an initial where "
-               "segment admitted the run on is_suffix_lenient. 'V.' "
+               "is not: the structure never said so (a one-word part "
+               "before the comma read as FAMILY_COMMA even where the "
+               "part after it was entirely suffix-shaped, and since "
+               "#613 segment hands every comma form over as "
+               "FAMILY_COMMA), so the scan reached 'V.' -- which "
+               "is_suffix_strict rejects as an initial though the "
+               "lenient test admits it to the run. 'V.' "
                "was therefore the site, ended in no tail, and the peel "
                "was abandoned with さん still in the family name. #319 "
                "asks C1's run predicate (_vocab.is_wholly_suffix) "

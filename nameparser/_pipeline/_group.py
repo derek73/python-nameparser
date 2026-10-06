@@ -9,7 +9,8 @@ Produces: structure -- its head decides a comma form once the words
 are tagged (rules.md#C1, #613, `_comma.decide`), binding the SUFFIX and
 TITLE roles of a postnominal part after the comma and dropping that
 part's delimiter cores before any join, plus the SUFFIX_OR_NAME
-ambiguities that decision reports; pieces + piece_tags per segment
+ambiguities that decision reports and the caps shape's acronym tags on
+a bound all-caps word (#564); pieces + piece_tags per segment
 (runs of token indices -- tokens are NEVER joined into strings: the
 anti-#100 invariant); maiden tail tokens get role=MAIDEN, and the
 trailing run a maiden take gives up gets its SUFFIX and TITLE roles
@@ -1270,7 +1271,7 @@ def group(state: ParseState) -> ParseState:
     # rules.md#C1's decision, read once now that classify has tagged
     # the words and before any join below can reach the part after the
     # comma (#613); a postnominal part comes back bound, in a new state
-    # (a comma-less name, every name with no comma, asks nothing)
+    # (a name with no comma asks nothing)
     bound_any = False
     if state.structure is Structure.FAMILY_COMMA:
         decided = _comma.decide(state)

@@ -365,8 +365,9 @@ def _postnominal_behind_a_whole_name(state: ParseState) -> bool:
     divided behind a family comma). Not asked, and so left whole where
     decide reads a suffix comma: the capitals lean behind a title and
     one name word ('Dr 김민준, MA', which H1 reads as the family
-    anyway), an unlisted all-caps or dotted word ('XYZ', 'X.Y.Z.'), the
-    split 'Ph. D.' and a title in the part. Leaving a name whole is the
+    anyway), an unlisted all-caps or dotted word ('XYZ', 'X.Y.Z.'), a
+    title in the part, and a credential opening a part that also holds
+    a name word (#603: '김민준 박, PhD Jones'). Leaving a name whole is the
     harmless direction; dividing one decide reads as a family comma is
     the one `test_the_division_never_outruns_the_comma_decision`
     forbids. Copying the rest of decide here would be the model of a
@@ -380,7 +381,14 @@ def _postnominal_behind_a_whole_name(state: ParseState) -> bool:
         return False
     after = [state.tokens[j].text for j in state.segments[1]]
     if is_wholly_suffix(after, state.lexicon, state.policy):
-        return surname_unit_count(own, state.lexicon) > 1
+        # `_comma._whole_name`'s count: units holding a word that is
+        # not a suffix word, so a suffix before the comma counts for
+        # nothing ('김민준 Jr., PhD' is the listing form, as 'Smith Jr.,
+        # PhD' is -- the count over every word had divided it, and the
+        # division then made decide agree, #613's PR review)
+        named = [t for t in own if not is_suffix_strict(t, state.lexicon)]
+        return len(named) > 1 and surname_unit_count(named,
+                                                     state.lexicon) > 1
     # the ambiguous class, by C1's own count: two NAME words before
     # the comma make a part of listed members and suffix words the
     # credential run, as `_comma.decide` licenses it (#613 review) --

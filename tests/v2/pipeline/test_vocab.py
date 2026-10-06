@@ -282,8 +282,10 @@ def test_is_wholly_suffix_never_reads_the_by_shape_class() -> None:
 
 
 def test_is_wholly_suffix_reads_the_credential_lean() -> None:
-    # The third reading site (#289): `_comma.decide` and segment's C2
-    # flag on tail segments ask this, and 'Steven Hardman, MD, DO, DDS'
+    # The third reading site (#289): segment's C2 flag on tail
+    # segments and script_segment's peel pass the lean here
+    # (`_comma.decide` reads it through `segment_suffix_reading`
+    # instead), and 'Steven Hardman, MD, DO, DDS'
     # loses its comma-structure flag because 'DO' leans credential
     # here. A caller with nothing to say passes nothing and gets the
     # answer every release before this one gave.

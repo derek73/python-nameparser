@@ -431,36 +431,76 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 # these rows instead of skipping them: whatever the build matrix's
 # coverage setup becomes, one job cannot retire this guard in silence.
 _PREFIXED_BASE = 1600
-_PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
+#
+# #613's PR review added four rows, every one a C-level or growing-
+# slice cost in `_comma.decide`'s reading of the part after the comma
+# that no frame guard could see. Measured 2026-10-06 on py3.11 at this
+# base, three runs of best-of-three each, on 9dd271b2 (broken) against
+# the fixed tree: title_chain 11.78-11.88 against 4.19-4.23, pair_run
+# 9.99-10.07 against 4.02-4.16, caps_pairs 9.86-10.03 against
+# 4.09-4.20, delimiter_cores 10.06-10.22 against 4.16-4.34.
+_PREFIXED_SHAPES: dict[
+        str, tuple[str, str, Parser, Callable[[str], bool]]] = {
     # every word of the run is a middle name, so the walk asks the
     # untitled membership test once per piece
     "given_part_run": (
-        "Doe, Jane ", "Smith ",
-        lambda text: parse(text).middle.split() == text.split()[2:],
+        "Doe, Jane ", "Smith ", Parser(),
+        lambda text: (parse(text).middle.split() == text.split()[2:]
+                      and parse(text).family == "Doe"),
     ),
     # every trailing title joins the H5 chain, so the walk asks the
     # titled membership test once per piece, and the name word in
     # front of the chain asks it again at every step of walking down
     # through it (`previous_kept`)
     "given_part_titles": (
-        "Doe, Jane Smith ", "Prof. ",
-        lambda text: parse(text).title.split() == text.split()[3:],
+        "Doe, Jane Smith ", "Prof. ", Parser(),
+        lambda text: (parse(text).title.split() == text.split()[3:]
+                      and (parse(text).given, parse(text).family)
+                      == ("Jane", "Doe")),
+    ),
+    # every 'and' joins the title chain `_comma._title_chains` builds,
+    # which rebuilt the growing piece from a slice at each join
+    "title_chain": (
+        "John Smith, ", "Mr. and ", Parser(),
+        lambda text: (parse(text).given == "John"
+                      and parse(text).title.startswith("Mr. and Mr.")),
+    ),
+    # every pair is paired initials behind a dual, so the speaker test
+    # runs per pair; a copy of the shape set per pair was quadratic
+    "pair_run": (
+        "John Smith, MD ", "G.J. ", Parser(),
+        lambda text: parse(text).given == "John",
+    ),
+    # every two-capital word is a caps-shape pair, through the same
+    # per-pair test and the members list scanned per piece
+    "caps_pairs": (
+        "John Smith, ", "XY ", Parser(),
+        lambda text: parse(text).given == "John",
+    ),
+    # every core is dropped behind the whole name, and the part was
+    # filtered against a list of the cores
+    "delimiter_cores": (
+        "John Smith, ", "MD / ",
+        Parser(policy=Policy(extra_suffix_delimiters=frozenset({"/"}))),
+        lambda text: Parser(policy=Policy(
+            extra_suffix_delimiters=frozenset({"/"}))).parse(text).given
+        == "John",
     ),
 }
 
 
-@pytest.mark.parametrize("prefix,unit,reaches", _PREFIXED_SHAPES.values(),
+@pytest.mark.parametrize("prefix,unit,parser,reaches",
+                         _PREFIXED_SHAPES.values(),
                          ids=list(_PREFIXED_SHAPES))
 def test_prefixed_cost_grows_no_worse_than_linearly(
-        prefix: str, unit: str, reaches: Callable[[str], bool]) -> None:
-    # at the measured size, and with the comma's own reading asserted:
-    # without it the titles row reads the same title on the comma-less
-    # path, and would go on timing that instead of the walk
+        prefix: str, unit: str, parser: Parser,
+        reaches: Callable[[str], bool]) -> None:
+    # at the measured size, with each row's own reading asserted: a
+    # shape that stopped reaching the code it guards would go on timing
+    # something else (the titles row reads the same title on the
+    # comma-less path, which is why its probe holds the family comma)
     text = prefix + unit * _PREFIXED_BASE
-    assert reaches(text), "shape no longer reaches the walk"
-    name = parse(text)
-    assert (name.given, name.family) == ("Jane", "Doe"), (
-        "shape no longer takes the family-comma path")
+    assert reaches(text), "shape no longer reaches the code it guards"
     if sys.gettrace() is not None:
         reason = ("a line tracer dilutes a C-level cost below the bound "
                   "(#553)")
@@ -468,7 +508,8 @@ def test_prefixed_cost_grows_no_worse_than_linearly(
             pytest.fail(f"{reason}, and this run is the one that must "
                         f"measure it: drop the tracer from this job")
         pytest.skip(reason)
-    _assert_grows_linearly(unit, parse, prefix=prefix, base=_PREFIXED_BASE)
+    _assert_grows_linearly(unit, parser.parse, prefix=prefix,
+                           base=_PREFIXED_BASE)
 
 
 # Shapes that need a NON-DEFAULT POLICY to reach the code they guard.

@@ -38,9 +38,9 @@ tail_reading is that one question, running them against each other to
 their fixed point for the two stages that must not disagree about the
 answer.
 
-Layering: imports _state and _vocab only; the stages import it, and
-so does _comma (segment and script_segment for the #289/#516
-own-words span alone) -- and neither of the two it imports imports it
+Layering: imports _state and _vocab only; segment, script_segment,
+classify, group, assign, post_rules and _comma import it (segment,
+script_segment and classify for the #289/#516 own-words span alone) -- and neither of the two it imports imports it
 back.
 
 Naming follows _vocab's: inside an already-private module the leading
@@ -1045,7 +1045,8 @@ def particle_tail(seg: Sequence[Sequence[int]],
     past, since `vd` arrives suffix-roled and is the run.
 
     Read off ROLES, asked at the moment assign's walk reaches #602's
-    run: every word in front of the run holds the role the walk gave
+    run (or, with no run, once the walk has placed every piece; and by
+    post_rules' attachment behind an empty family part): every word in front of the run holds the role the walk gave
     it, and the run's words hold none yet -- no name role, and a class
     member not yet read as anything, the run being what will read it
     as the credential. That is why the answer equals the one this

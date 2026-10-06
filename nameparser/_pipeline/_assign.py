@@ -51,7 +51,9 @@ and segments 2+ are read as after a family comma.
 Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
 particles_ambiguous token with more pieces following ("Van Johnson",
 and since #367 "Dr. Van Johnson" too, a title no longer displacing the
-particle out of that position) -- whatever role name_order assigns.
+particle out of that position) -- whatever role name_order assigns --
+and, since #613, at P6's attachment after a family comma where the run
+holds an ambiguous particle ("Beethoven, Ludwig van").
 Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
@@ -568,10 +570,8 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
     def is_title(q: int) -> bool:
         return all(tokens[i].role is Role.TITLE for i in seg[q])
 
-    # an empty run is no run: the walk stops short of a member assign
-    # already read as the credential ('Doe, Jane PhD do MA'), and
-    # there is nothing to decline
-    if k == end or not all(suffix_read(q) for q in range(k, end)):
+    # the callers guarantee a non-empty run (`k < end`)
+    if not all(suffix_read(q) for q in range(k, end)):
         return False
     front = k - 1
     while front > given_at and is_title(front):
@@ -1203,7 +1203,8 @@ def assign(state: ParseState) -> ParseState:
             # given part, rather than predicted for post_rules to take
             # a stage later (#613). The tail is `pieces[k6:end6]`, found
             # by `particle_tail` ONCE, at the moment the walk reaches
-            # #602's run: the pieces in front of the run hold the roles
+            # #602's run (or, with no run, once the walk has placed
+            # every piece): the pieces in front of the run hold the roles
             # this walk gave them and the run's own words hold none
             # yet, which is the state in which the walk's answer equals
             # the one it would give over the finished roles -- the run
@@ -1330,8 +1331,11 @@ def assign(state: ParseState) -> ParseState:
                             (i2,)))
             if sticky_from == len(pieces):
                 k6, end6 = particle_tail(pieces, tokens)
-            # GIVEN ahead of the tail, which is what P6 says ("provided
-            # at least one given word remains"): the given is piece
+            # Only where the comma named a family: with nothing before
+            # it, H1 and M4 decide first and post_rules attaches after
+            # them. GIVEN ahead of the tail, which is what P6 says
+            # ("provided at least one given word remains"): the given is
+            # piece
             # `n`, so a tail starting there leaves none ('Nguyen, Van').
             # And not where P1's fold will take the part: a never-given
             # particle opening it folds every given and middle word
@@ -1339,7 +1343,7 @@ def assign(state: ParseState) -> ParseState:
             # for this one either ('Smith, de Mesnil van' keeps
             # 'van' where the fold puts it, not hoisted in front of
             # 'Smith', the 2026-08-18 defect).
-            if (n < k6 < end6
+            if (n < k6 < end6 and fam_pieces
                     and not is_lone_never_given_particle(pieces[n],
                                                          tokens)):
                 _attach_particle_tail(pieces, tokens, n, k6, end6,

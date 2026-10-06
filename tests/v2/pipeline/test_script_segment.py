@@ -212,39 +212,57 @@ def test_a_listed_ambiguous_credential_behind_two_name_words_divides() -> None:
 # its Ph./D. merge and its title reading are not copied here, a copy
 # being the model of a later stage #613 removed.
 #
-# Recorded negative controls (#613 reviews, 2026-10-06): at 47fb2b21,
-# where the stand-in asked the vocabulary alone, 21 of the default
-# policy's first 40 texts here were left whole -- every listed
-# ambiguous credential decide licenses by its count; at bac1b510, whose
-# count arm skipped decide's numeral refusal and its policy-selected
-# suffix test, 24 of these 168 parses divided behind a family comma
-# ('MA V', 'MA I', 'V MA', 'MA V.', and 'V.' under strict).
-_AGREEMENT_HEADS = ("김민준 박", "마틴 킹", "Smith 김민준씨", "Dr 김민준")
+# Recorded negative controls (#613 reviews, 2026-10-06), each on the
+# grid as it stood then: at 47fb2b21, where the stand-in asked the
+# vocabulary alone, all 12 `_DIVIDES` pairs were left whole; at
+# bac1b510, whose count arm skipped decide's numeral refusal and its
+# policy-selected suffix test, 24 of the then 168 parses (four heads,
+# 21 tails, two policies) divided behind a family comma ('MA V', 'MA
+# I', 'V MA', 'MA V.', and 'V.' under strict).
+_AGREEMENT_HEADS = ("김민준 박", "마틴 킹", "Smith 김민준씨", "Dr 김민준",
+                    "김민준 Jr.", "김민준 III")
 _AGREEMENT_TAILS = (
     "MA", "Ma", "MA PhD", "PhD", "Jr.", "Jr. MA", "MD Ma", "Ed", "Jones",
     "G.J.", "MA V", "V MA", "MA I", "V.", "MA V.", "X.Y.Z.", "MA X.Y.Z.",
-    "MA Ph. D.", "Dr MA", "MA Dr", "XYZ")
+    "MA Ph. D.", "Dr MA", "MA Dr", "XYZ", "Esq.")
 #: the count arm's own reach: a listed member behind two name words
 _DIVIDES = {(head, tail) for head in ("김민준 박", "마틴 킹")
             for tail in ("MA", "Ma", "MA PhD", "Jr. MA", "MD Ma", "Ed")}
 
 
+def _through_group(text: str, policy: Policy) -> ParseState:
+    state = ParseState(original=text, lexicon=Lexicon.default(),
+                       policy=policy)
+    for stage in STAGES:
+        state = stage(state)
+        if stage.__name__ == "group":
+            break
+    return state
+
+
 def test_the_division_never_outruns_the_comma_decision() -> None:
+    # decide's answer is taken on the UNDIVIDED name (`segment_scripts`
+    # off), not after the division: a division can make the very whole
+    # name it guessed at, and decide then agrees with it -- the PR
+    # review's '김민준 Jr., PhD', divided by a stand-in that counted the
+    # suffix as a unit, read as a suffix comma only because '김 민준'
+    # had become two name words (control, measured on 9dd271b2: 14 of
+    # this grid's 264 parses outran, every one a head with a suffix in
+    # it, '김민준 Jr.' or '김민준 III' before a part of suffix words)
     outran, divided_where_expected = set(), set()
     for policy in (Policy(), Policy(lenient_comma_suffixes=False)):
+        undivided_policy = dataclasses.replace(
+            policy, segment_scripts=frozenset())
         for head in _AGREEMENT_HEADS:
             for tail in _AGREEMENT_TAILS:
-                state = ParseState(original=f"{head}, {tail}",
-                                   lexicon=Lexicon.default(), policy=policy)
-                for stage in STAGES:
-                    state = stage(state)
-                    if stage.__name__ == "group":
-                        break
+                text = f"{head}, {tail}"
+                state = _through_group(text, policy)
                 own = [i for i in state.segments[0]
                        if _PEELED_TAG not in state.tokens[i].tags]
                 divided = len(own) > len(head.split())
-                suffix_comma = state.structure is Structure.SUFFIX_COMMA
-                if divided and not suffix_comma:
+                undivided = _through_group(text, undivided_policy)
+                if (divided and undivided.structure
+                        is not Structure.SUFFIX_COMMA):
                     outran.add((head, tail, policy.lenient_comma_suffixes))
                 if divided and (head, tail) in _DIVIDES:
                     divided_where_expected.add((head, tail))

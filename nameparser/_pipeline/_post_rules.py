@@ -8,14 +8,15 @@ below reads to find the separators the writer typed (#436/#437).
 Produces: tokens with roles adjusted by the post rules, the stable
 "joined" tag on a post-nominal continuing the entry before it, and the
 ambiguity P6's attachment reports at the end of a name read
-family-first (#467) -- after a family comma that attachment is
-assign's since #613.
+family-first (#467) and after a comma with nothing before it -- after a
+family comma that names a family, that attachment is assign's since
+#613.
 Reads: Policy.patronymic_rules, Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles.
 
-Implements rules H1, M4, P1, P6 (its no-comma site), O1, O2, O3 and R1
-of docs/design/rules.md;
+Implements rules H1, M4, P1, P6 (its no-comma site, and after a comma
+naming no family), O1, O2, O3 and R1 of docs/design/rules.md;
 each is cited at its code below, and H1/P1/O1/O2's history lives in
 docs/design/decisions.md. `suffix_entries` is the R1 entry pass as a
 state-in/state-out function, for Parser.revise to run over a
@@ -26,8 +27,12 @@ from __future__ import annotations
 import re
 
 from nameparser._lexicon import _run_addresses_by_given
-from nameparser._pipeline._assign import _name_positions
-from nameparser._pipeline._pieces import is_lone_never_given_particle
+from nameparser._pipeline._assign import (
+    _attach_particle_tail, _name_positions,
+)
+from nameparser._pipeline._pieces import (
+    is_lone_never_given_particle, particle_tail,
+)
 from nameparser._pipeline._state import (
     NAME_ROLES,
     ParseState, PendingAmbiguity, Structure,
@@ -620,6 +625,26 @@ def post_rules(state: ParseState) -> ParseState:
             givens = _idx(tokens, Role.GIVEN)
             middles = _idx(tokens, Role.MIDDLE)
             families = _idx(tokens, Role.FAMILY)
+
+    # rules.md#P6: "a particle ending the name attaches to that family
+    # name" -- after a family comma with NOTHING before it. assign takes
+    # the attachment wherever the comma names a family (#613); where it
+    # names none, H1 and M4 above may make the given word the family
+    # first, being gated on there being no family, and the attachment
+    # has to read the name they left -- ', Mr. Jones vd' keeps family
+    # 'Jones', suffix 'vd', as it read before #613 moved the site
+    # (caught in PR review: assign's attachment ran ahead of H1 and read
+    # given 'Jones', family 'vd'). The same helper, at the stage order
+    # the old site had, so the reading is the old one exactly.
+    if (state.structure is Structure.FAMILY_COMMA
+            and len(state.pieces) > 1 and not state.pieces[0]):
+        seg = state.pieces[1]
+        k, end = particle_tail(seg, tokens)
+        given_at = next((q for q in range(k) if any(
+            tokens[i].role is Role.GIVEN for i in seg[q])), None)
+        if given_at is not None:
+            _attach_particle_tail(seg, tokens, given_at, k, end,
+                                  ambiguities)
 
     # rules.md#O3: "every middle word joins the family name and is
     # rendered before it" (v1 handle_middle_name_as_last). v1

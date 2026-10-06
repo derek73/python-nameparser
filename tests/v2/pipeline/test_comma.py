@@ -53,15 +53,17 @@ def test_suffix_comma_lenient_accepts_initial_shaped_suffix_word() -> None:
 def test_the_credential_pair_merges_anywhere_in_the_run() -> None:
     # v1's fix_phd healed a split 'Ph. D.' wherever it fell, and the
     # suffix-comma test inherits that: the pair counts as ONE unit at
-    # any position, not just at the head of the run. Nothing else
-    # reaches past position 0 -- 'John Smith, Ph. D.' puts the pair
-    # first. Without the merge 'D.' alone is suffix vocabulary in no
-    # lexicon, so the run would stop being wholly suffix and this
-    # would read as a FAMILY comma instead.
-    out = _decided("John Smith, Jr. Ph. D.")
+    # any position, not just at the head of the run. Behind a class
+    # member, which opens nothing (#603's opener being an unambiguous
+    # credential), the pair is what makes the part a run: without the
+    # merge 'Ph.' and 'D.' are suffix vocabulary in no lexicon and this
+    # reads as the FAMILY comma (measured with `_pieces` patched to
+    # merge nothing, #613's PR review). Behind 'Jr.' the opener alone
+    # would decide it, so that input pinned nothing.
+    out = _decided("John Smith, MA Ph. D.")
     assert out.structure is Structure.SUFFIX_COMMA
     assert [_texts(out, s) for s in out.segments] == [
-        ["John", "Smith"], ["Jr.", "Ph.", "D."]]
+        ["John", "Smith"], ["MA", "Ph.", "D."]]
 
 
 def test_structure_flips_for_the_ambiguous_class_on_a_name_word_count() -> None:
@@ -306,9 +308,10 @@ def test_a_listed_surname_still_carries_the_name_contrast() -> None:
 
 def test_decide_hands_back_a_state_with_no_family_comma_unchanged() -> None:
     # group calls decide only on a family comma, but decide's contract
-    # covers any state: a comma-less name and one whose comma parts a
-    # part from nothing are returned as they came
-    for text in ("John Smith", "Smith,, Jr.", ", Jr."):
+    # covers any state: a comma-less name, and a comma with nothing
+    # after it, are returned as they came. Nothing BEFORE the comma is
+    # not this exit -- ', Jr.' is read and bound, as the row below pins
+    for text in ("John Smith", "Smith,, Jr."):
         state = classify(segment(tokenize(extract_delimited(ParseState(
             original=text, lexicon=_LEX, policy=Policy())))))
         assert _comma.decide(state) is state, text
@@ -324,3 +327,15 @@ def test_a_part_of_delimiter_cores_alone_decides_nothing() -> None:
     decided = _comma.decide(state)
     assert decided is state
     assert decided.structure is Structure.FAMILY_COMMA
+
+
+def test_an_empty_part_before_the_comma_still_reads_the_part_after_it() -> None:
+    # #613 PR review: decide had returned early on an empty part before
+    # the comma, leaving the credentials to the listing walk (', PhD'
+    # read given 'PhD', ', Jr.' title 'Jr.', where 2.3.0 read suffix)
+    for text, bound in ((", PhD", ["PhD"]), (", Jr.", ["Jr."]),
+                        (", MD PhD", ["MD", "PhD"])):
+        decided = _decided(text)
+        assert decided.structure is Structure.FAMILY_COMMA, text
+        assert [decided.tokens[i].text for i in decided.segments[1]
+                if decided.tokens[i].role is Role.SUFFIX] == bound, text

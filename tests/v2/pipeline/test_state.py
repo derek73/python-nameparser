@@ -308,7 +308,8 @@ def test_stage_field_ownership() -> None:
     # spans are fixed at tokenize (the anti-#100 invariant -- tokens
     # are never re-created), classify touches only tags, and the
     # role-assigning stages touch only roles (group also tags, for the
-    # ph-d "joined" marker, assign for P6's folded-middle mark after a
+    # ph-d "joined" marker and the caps shape's acronym marks
+    # `_comma.decide` writes on a bound part (#564, #613), assign for P6's folded-middle mark after a
     # comma, and post_rules for the entry "joined" marker beside its
     # own folded-middle marks).
     token_ownership = {
@@ -318,11 +319,13 @@ def test_stage_field_ownership() -> None:
         # comma marks the particles it joins to the family
         # vocab:folded-middle, for the family view's prepend order
         "assign": {"role", "tags"},
-        # post_rules also tags, three times: P6's no-comma attachment
-        # and the middle_as_family fold mark folded tokens
-        # vocab:folded-middle for the family view's prepend order, and
-        # R1's entry pass marks a post-nominal
-        # "joined" when the writer wrote no comma before it (#436)
+        # post_rules also tags: P6's attachments it still makes (the
+        # no-comma site, and after a comma with nothing before it) and
+        # the middle_as_family fold mark folded tokens
+        # vocab:folded-middle for the family view's prepend order, R2
+        # and R3 write their unjoined marks, and R1's entry pass marks
+        # a post-nominal "joined" when the writer wrote no comma
+        # before it (#436)
         "post_rules": {"role", "tags"},
     }
     for case in CASES:
