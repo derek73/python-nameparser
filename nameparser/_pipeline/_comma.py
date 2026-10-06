@@ -104,15 +104,15 @@ def _title_chains(pieces: list[tuple[int, ...]], ptags: list[frozenset[str]],
             if kind and ("title" in kind_tags or (
                     len(kind) == 1
                     and "vocab:title" in tokens[kind[0]].tags)):
+                # a connective opening the part joins into an empty piece
+                if not out:
+                    out.append([])
+                    out_tags.append(frozenset())
                 taken = range(k, min(n, k + 2))
-                tags = frozenset().union(*(ptags[j] for j in taken))
-                if out:
-                    for j in taken:
-                        out[-1].extend(pieces[j])
-                    out_tags[-1] = out_tags[-1] | tags | {"title"}
-                else:
-                    out.append([i for j in taken for i in pieces[j]])
-                    out_tags.append(tags | {"title"})
+                for j in taken:
+                    out[-1].extend(pieces[j])
+                    out_tags[-1] = out_tags[-1] | ptags[j]
+                out_tags[-1] = out_tags[-1] | {"title"}
                 k += len(taken)
                 continue
         out.append(list(piece))
@@ -270,20 +270,24 @@ def decide(state: ParseState) -> ParseState:
         # or a word of this class", none of them a single-letter numeral.
         # the words not of the class are asked as C1's suffix test asks
         # them, the lenient word test by default ('Ma B.')
-        others = [tokens[i].text for p in p1
-                  if not (len(p) == 1
-                          and (AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
-                               or p[0] in caps))
-                  for i in p]
-        run = (len(others) < len(part)
+        others: list[str] = []
+        for p in p1:
+            if len(p) == 1 and (AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
+                                or p[0] in caps):
+                licensed.add(p[0])
+            else:
+                # a loop, not a comprehension: a listcomp is a frame
+                # per piece on 3.11
+                for i in p:
+                    others.append(tokens[i].text)
+        run = (bool(licensed)
                and (not others or is_wholly_suffix(others, lex, pol))
                and not any(len(p) == 1
                            and is_single_letter_numeral(tokens[p[0]].text)
                            for p in p1))
-        if run:
-            licensed = {p[0] for p in p1 if len(p) == 1
-                        and (AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
-                             or p[0] in caps)}
+        if not run:
+            licensed.clear()
+        else:
             # rules.md#C1: "Paired initials are the exception to the
             # count" -- "Only an unambiguous suffix word in front of
             # them that is not also title vocabulary, or another word
@@ -333,7 +337,7 @@ def decide(state: ParseState) -> ParseState:
     # written like an initial" -- behind a whole name ('John Smith, V.')
     if reading is None and whole and is_wholly_suffix(
             [tokens[i].text for i in part], lex, pol, one_case=None):
-        reading = tuple(True for _ in p1)
+        reading = (True,) * len(p1)
     if reading is None:
         return state
     # The part is the postnominal part, bound here whatever stands

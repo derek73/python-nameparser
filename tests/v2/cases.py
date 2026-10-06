@@ -6395,6 +6395,17 @@ CASES: tuple[Case, ...] = (
          classification="fix(#613)",
          tolerated=True,
          notes="H1's reading, as master read it and as 'Dr. Smith, MA' reads: decide licenses 'MA' by the capitals lean, which the stand-in does not ask"),
+    Case("an_empty_family_part_declines_no_empty_particle_run",
+         ", Jane PhD do MA",
+         {"given": "Jane", "suffix": "PhD do MA"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         classification="fix(#613)",
+         notes="post_rules' P6 site behind an empty family part can find "
+               "an EMPTY particle run (the walk stops short of 'do', read "
+               "as the credential), and the third exception must decline "
+               "nothing there; without its empty-run guard it reported a "
+               "third fork on 'MA' (#613's PR simplification pass). Two "
+               "reports, as b547c247 gave"),
     Case("a_suffix_beside_a_connective_surname_is_no_name_word",
          "Vega y Lopez Jr., PhD Jones",
          {"given": "Vega", "middle": "y", "family": "Lopez",

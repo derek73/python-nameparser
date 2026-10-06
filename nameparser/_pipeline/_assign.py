@@ -570,8 +570,12 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
     def is_title(q: int) -> bool:
         return all(tokens[i].role is Role.TITLE for i in seg[q])
 
-    # the callers guarantee a non-empty run (`k < end`)
-    if not all(suffix_read(q) for q in range(k, end)):
+    # an empty run is no run: the walk stops short of a member already
+    # read as the credential ('Doe, Jane PhD do MA'), and there is
+    # nothing to decline. assign's caller never passes one, but
+    # post_rules' site behind an empty family part can (', Jane PhD do
+    # MA' reported a bogus third fork without this, #613's PR review)
+    if k == end or not all(suffix_read(q) for q in range(k, end)):
         return False
     front = k - 1
     while front > given_at and is_title(front):
