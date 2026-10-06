@@ -115,8 +115,8 @@ def segment(state: ParseState) -> ParseState:
         # BY SHAPE -- a candidate that is not a LISTED member, which is
         # the one half `is_wholly_suffix` cannot see (its own docstring
         # says so, and the blindness is what keeps a by-shape token out
-        # of C1's legacy token-count disjunct). A tail segment is
-        # consumed as suffix either way, so what this decides is only
+        # of C1's whole-name suffix fallback in `_comma.decide`). A tail
+        # segment is consumed as suffix either way, so what this decides is only
         # whether the parse says it did not RECOGNIZE the segment -- and
         # a run the parse itself reads as a credential run by shape is
         # recognized. Without it, the narrow roman retirement

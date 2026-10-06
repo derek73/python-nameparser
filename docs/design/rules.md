@@ -1094,9 +1094,9 @@ S2. Rationale: generational suffixes and credentials are recognized
     decides there first (C1), and the case is read only where that
     count leaves the word a name. C1 states the one exception: a part
     of two or more words whose every word of this class is listed and
-    written in capitals in a mixed-case name, no two particles side
-    by side, is read on its capitals before the count is asked, so
-    the comma keeps its family reading,
+    written in capitals in a mixed-case name is read on its capitals
+    before the count is asked, as the credential run behind one name
+    word as behind two ('Smith, MA MA' reads suffix 'MA MA'),
     and only a word of the class opening the part reports, as the
     first word after the comma ('John Smith, MA MA' reports on the
     first 'MA' alone, where a counted flip reports over the whole
@@ -1759,10 +1759,13 @@ C1. Rationale: a credential run after the comma means the name is in
     credential (S2), and the part reads as the credential run on that
     evidence rather than on the count; a word of the class by shape
     alone carries no such lean, so a part holding one is read by the
-    count. The part is read as its words stand, before any join, and
-    its reading is final: the one join made inside it is a connective
-    binding title words into one title (P3: 'Mr. and Mrs.'), and no
-    particle run, connective join or bound given name reaches into it.
+    count. A part read as postnominal — the credential run, or titles
+    beside suffixes — is read as its words stand, before any join, and
+    that reading is final: the one join made inside it is a
+    connective binding title words into one title (P3: 'Mr. and
+    Mrs.'), and no particle run, connective join or bound given name
+    reaches into it. The listing form's given part keeps every join
+    (P2, P3, P5, P6).
     A decision either way at this comma
     is reported; for a run of words the decision is the flip to the
     credential run, reported once over the whole part. A flip in which
@@ -1892,6 +1895,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, PhD DO DO"     →  suffix="PhD DO DO"
       "John Smith, PhD DO DO"     →  ambiguities=()
       "John Smith, Mr. and Mrs."  →  given="John"
+      "John Smith, Mr. and Mrs."  →  title="Mr. and Mrs."
       "Ortega y Gasset, Dr."      →  given="Ortega"
       "John Smith, PhD vd DO"     →  suffix="PhD vd DO"
       "John Smith, vd Ma"         →  suffix="vd Ma"
@@ -2273,7 +2277,12 @@ W3. Rationale: a family name declared by a comma is the writer's
     crosses the comma, an honorific being no part of the name on
     either side — the crossing is stated here rather than in W2
     because it is a claim about the comma, and the comma is the part
-    nobody's writing system produces. Which side the split-off takes
+    nobody's writing system produces. Behind a part C1 reads as
+    postnominal there is no family comma, and the name before it
+    divides as it would with no comma ('마틴 킹, MA' as '마틴 킹');
+    the division is decided before C1 runs, by C1's own counts, all
+    but its capitals test for an unlisted all-caps word, so
+    'Smith 김민준씨, XYZ' stays undivided. Which side the split-off takes
     it from is decided by the SHAPE of the part after the comma, not
     by which of C1's two readings that part selects — a one-word
     family reads the listing form either way. A part that is nothing

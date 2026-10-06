@@ -38,10 +38,10 @@ tail_reading is that one question, running them against each other to
 their fixed point for the two stages that must not disagree about the
 answer.
 
-Layering: imports _state and _vocab only; FOUR stages import it --
-_segment, _classify, _group and _assign, segment being the one the
-#289/#516 own-words span added -- and neither of the two it imports
-imports it back.
+Layering: imports _state and _vocab only; the stages import it, and
+so does _comma (segment and script_segment for the #289/#516
+own-words span alone) -- and neither of the two it imports imports it
+back.
 
 Naming follows _vocab's: inside an already-private module the leading
 underscore marks module-PRIVATE, so the names other stages call are
@@ -313,10 +313,12 @@ _NOT_A_RUN_START = frozenset({"conjunction", "particle",
 def is_lone_never_given_particle(piece: Sequence[int],
                                  tokens: Sequence[WorkToken]) -> bool:
     """A piece that is one never-given particle (rules.md#P1's fold
-    site). One predicate, asked by the fold in post_rules and by
-    assign's given slot, which predicts that the fold will take the
-    particle forward and so leave no given name in front of a member
-    (#573) -- two copies would drift silently, each site's own tests
+    site). One predicate, asked by the fold in post_rules and by two
+    sites in assign that predict the fold will take the particle
+    forward: the given slot, which then leaves no given name in front
+    of a member (#573), and P6's attachment after a family comma,
+    which then leaves no given word for the tail to stand behind
+    (#613) -- copies would drift silently, each site's own tests
     still passing (mechanisms.md#ONE-PREDICATE-PER-QUESTION)."""
     return (len(piece) == 1
             and "particle" in tokens[piece[0]].tags
@@ -516,9 +518,10 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     the ambiguous set inside a mixed-case name is a credential in this
     slot even with one word before the comma, because the writing is
     evidence the count does not have ('Smith, MA' -> family 'Smith',
-    suffix 'MA'). Only the LEAN reaches here: a token admitted to the
-    class by SHAPE takes the count instead, which is decided at the
-    comma and not in this walk ('Smith, A.B.' -> given 'A.B.').
+    suffix 'MA'). Only the LEAN reaches here on its own: a token
+    admitted to the class by SHAPE takes the count instead, which
+    `_comma.decide` takes and hands in as `licensed`, below ('Smith,
+    A.B.' -> given 'A.B.', one name word being no count).
 
     A listed member ANCHORED by an unambiguous credential in front of
     it in the same run reads as a credential too, whatever its writing
@@ -601,7 +604,8 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     on the writer having said where the family name ends. A comma
     followed by no name word said no such thing -- 'John Smith, Dr.' is
     'Dr. John Smith' with the honorific moved -- so the pre-comma name
-    keeps its positional read instead of being merged. Uses the same
+    keeps its positional read instead of being merged (through
+    `_comma.decide`'s suffix comma, behind a whole name). Uses the same
     is_leading_title predicate the peel does, period-abbreviation
     inference included, so the two cannot disagree about what a title
     is; a mixed run like 'Smith, Dr. Jr.' is a title and a postnominal,

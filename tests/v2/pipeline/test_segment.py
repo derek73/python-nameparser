@@ -3,7 +3,6 @@ from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState, Structure
 from nameparser._pipeline._tokenize import tokenize
-import dataclasses
 
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind
@@ -43,12 +42,6 @@ def test_family_comma_with_trailing_suffix_segment() -> None:
     assert [_texts(out, s) for s in out.segments] == [["Smith"], ["John"], ["Jr."]]
 
 
-def test_single_pre_comma_word_never_suffix_comma() -> None:
-    # v1: suffix-comma requires >1 word before the comma
-    out = _segmented("Johnson, Jr.")
-    assert out.structure is Structure.FAMILY_COMMA
-
-
 def test_excess_non_suffix_segment_flags_comma_structure() -> None:
     out = _segmented("Smith, John, Extra, Jr.")
     assert out.structure is Structure.FAMILY_COMMA
@@ -85,17 +78,6 @@ def test_leading_comma_yields_empty_first_segment() -> None:
     assert [_texts(out, s) for s in out.segments] == [[], ["John", "Smith"]]
 
 
-def test_strict_comma_suffixes_veto_lenient_only_members() -> None:
-    # lenient_comma_suffixes=False: the post-comma test drops back to
-    # the strict predicate, so initial-shaped suffix words no longer
-    # qualify and the structure reads FAMILY_COMMA
-    state = ParseState(
-        original="John Ingram, V", lexicon=_LEX,
-        policy=dataclasses.replace(Policy(), lenient_comma_suffixes=False))
-    out = segment(tokenize(extract_delimited(state)))
-    assert out.structure is Structure.FAMILY_COMMA
-
-
 def test_a_tail_segment_of_leaning_credentials_is_not_flagged() -> None:
     # The third reading site, and the one place this design QUIETS a
     # report: 'DO' leans credential in a mixed-case name, so the third
@@ -107,36 +89,6 @@ def test_a_tail_segment_of_leaning_credentials_is_not_flagged() -> None:
     state = _segmented("STEVEN HARDMAN, MD, DO, DDS")
     assert [a for a in state.ambiguities
             if a.kind is AmbiguityKind.COMMA_STRUCTURE]
-
-
-def _flip_reports(state: ParseState) -> list[list[str]]:
-    return [_texts(state, a.indices) for a in state.ambiguities
-            if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
-
-
-def test_the_run_test_declines_a_name_word_and_a_numeral() -> None:
-    # a name word anywhere in the part, or a word that is neither
-    # vocabulary nor a member, keeps the listing form -- and so does a
-    # single-letter roman numeral, in any case, for its one-letter
-    # shape (a multi-letter one runs: 'John Smith, III Ma')
-    for text in ("John Smith, Jones Ma", "John Smith, PhD Jones Ma",
-                 "John Smith, V Ma", "John Smith, PhD v Ma",
-                 "John Smith, PhD Ma.", "John Smith, J. Ma"):
-        out = _segmented(text)
-        assert out.structure is Structure.FAMILY_COMMA, text
-        assert not _flip_reports(out), text
-
-
-def test_a_listed_surname_still_carries_the_name_contrast() -> None:
-    # #564: a word a caller lists as a SURNAME is name text, so it
-    # carries the contrast the comma caps reading needs
-    # (`_vocab.claimed_as_non_name` leaves the surname and bound-given
-    # lists out); `in_any_wordlist`, the caps shape's own "unlisted",
-    # is a different question. A draft shared one predicate for both
-    # and this read given 'XYZ'.
-    from nameparser import Lexicon, Parser
-    parser = Parser(lexicon=Lexicon.default().add(surnames={"smith", "jones"}))
-    assert parser.parse("Smith Jones, XYZ").suffix == "XYZ"
 
 
 def test_segment_records_the_case_fact_only_where_c2_asks() -> None:

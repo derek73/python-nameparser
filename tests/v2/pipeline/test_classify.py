@@ -634,11 +634,11 @@ def test_ambiguous_class_candidate_agrees_with_the_tag(
     # if and only if the class was joined BY SHAPE, never for a
     # listed member.
     #
-    # `candidate` is spelled as the DISJUNCTION the two stages make
-    # between them, because that is what `segment` asks in two calls:
-    # `ambiguous_class_candidate` for the listed and dotted halves at
-    # its single-token test, and `caps_shape_candidate` for the caps
-    # half at its multi-token run test. The caps half used to hang off
+    # `candidate` is spelled as the DISJUNCTION of the two predicates
+    # that answer the class's membership before tags exist:
+    # `ambiguous_class_candidate` for the listed and dotted halves
+    # (segment's C2 flag asks it), and `caps_shape_candidate` for the
+    # caps half (`_comma.decide` asks it). The caps half used to hang off
     # `ambiguous_class_candidate` behind an optional `one_case` no
     # production caller passed, so it answered False for every name
     # the library parsed and only this test reached it; the parameter

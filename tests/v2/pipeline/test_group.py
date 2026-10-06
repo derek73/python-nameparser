@@ -1301,7 +1301,7 @@ def test_every_marker_site_ends_the_run_in_the_same_place(
 # Placements, not spellings: the axis the test above does not vary. A
 # marker run is tagged over the whole span-sorted token stream and
 # consumed over one SEGMENT, and the two populations differ -- extract
-# gives a delimited clause's tokens a role and _segment.py:31 keeps
+# gives a delimited clause's tokens a role and segment's role-None filter keeps
 # only role-None tokens, then buckets those by the commas before them.
 # So a run written across a clause edge or a structure comma is one the
 # piece walk cannot see whole. Every row here writes 'z domu' at a

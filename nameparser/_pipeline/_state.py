@@ -205,8 +205,9 @@ class ParseState:
     #: about any word in them (rules.md#P3's own-words span,
     #: _pieces.own_words). None means NOT ASKED YET: the fact is
     #: computed by whichever of segment and classify needs it first,
-    #: segment only when a comma form could turn on it, so a reader
-    #: between the two stages sees None and must not guess.
+    #: segment only when C2's flag on a part past the second comma asks
+    #: for it, so a reader between the two stages sees None and must
+    #: not guess -- script_segment asks for itself there (#613).
     #: Recorded rather than recomputed, the way `order` above is: the
     #: trailing suffix slot, the post-comma slot, the tail-segment
     #: reading, the prefix chain's own tail measure (_group) and the
@@ -222,8 +223,9 @@ class ParseState:
     #: only moves a space into a string whose upper/lower comparison
     #: ignores spaces entirely -- '김민준씨' and '김민준 씨' fold alike.
     #: So the field is carried through rather than invalidated, and
-    #: script_segment reads it (its suffix-run predicate takes the
-    #: lean) rather than asking again.
+    #: script_segment reads it where segment recorded it (its suffix-run
+    #: predicate takes the lean), asking for itself only where segment
+    #: did not, without recording the answer (`_one_case`).
     one_case: bool | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()
 

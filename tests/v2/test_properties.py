@@ -3304,11 +3304,7 @@ def test_a_one_letter_particle_with_its_period_reads_as_any_initial() -> None:
 #: particle case masks, as for a caller's one-letter particle that has
 #: none: with the shipped 'ó' mask the repair takes the mask before
 #: the particle arm is asked (rules.md#R4), so the default vocabulary
-#: alone cannot see that veto. segment's credential-run walk also
-#: tests the particle vocabulary, and is NOT a site: an initial ends
-#: that walk before the particle test is asked, so a veto there
-#: changed nothing and was left out (decisions.md#P7 says how that was
-#: measured).
+#: alone cannot see that veto.
 _P7_SITE_EFFECT = {
     "nameparser._pipeline._classify": 404,
     "nameparser._pipeline._vocab": 21,

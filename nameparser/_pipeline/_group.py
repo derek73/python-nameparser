@@ -2,11 +2,14 @@
 
 Consumes: tokens (classified), segments, structure, one_case, extracted
 (the role + inner span per delimited region, for the #329 pass below --
-the only stage after tokenize that reads it).
+the only stage after tokenize that reads it); and, through
+`_comma.decide`, comma_offsets (the own-words span of the name's case
+contrast) and dropped, which decide extends.
 Produces: structure -- its head decides a comma form once the words
 are tagged (rules.md#C1, #613, `_comma.decide`), binding the SUFFIX and
 TITLE roles of a postnominal part after the comma and dropping that
-part's delimiter cores before any join; pieces + piece_tags per segment
+part's delimiter cores before any join, plus the SUFFIX_OR_NAME
+ambiguities that decision reports; pieces + piece_tags per segment
 (runs of token indices -- tokens are NEVER joined into strings: the
 anti-#100 invariant); maiden tail tokens get role=MAIDEN, and the
 trailing run a maiden take gives up gets its SUFFIX and TITLE roles
@@ -67,10 +70,11 @@ from nameparser._pipeline._vocab import (
 from nameparser._types import AmbiguityKind, Role
 
 # the credential-pair regexes live in _vocab, whose own
-# is_wholly_suffix merges the same pair -- and since #319 that
-# predicate has TWO callers to stay in sync with, segment's
-# suffix-comma structure test and script_segment's decline of a
-# wholly-suffix post-comma run, both of which see the merged reading
+# is_wholly_suffix merges the same pair, as `_comma._pieces` does --
+# and that predicate's callers stay in sync with it: `_comma.decide`'s
+# reading of the part after the comma, segment's C2 flag on a tail
+# part, and script_segment's decline of a wholly-suffix post-comma
+# run, all of which see the merged reading
 
 Piece = list[int]
 #: What the marker pass took out of a segment: the marker's TOKEN
@@ -1287,14 +1291,16 @@ def group(state: ParseState) -> ParseState:
     tail_start = {Structure.SUFFIX_COMMA: 1,
                   Structure.FAMILY_COMMA: 2}.get(state.structure)
     family_comma = state.structure is Structure.FAMILY_COMMA
-    bound = frozenset(dropped)
     for seg_idx, seg in enumerate(state.segments):
-        # the part decide bound, and the cores it dropped, are no
-        # piece of any join -- filtered only where it bound one, and by
-        # a comprehension: a generator here is a frame per token on 3.11
+        # the part decide bound is no piece of any join -- filtered
+        # only where it bound one, and by a comprehension: a generator
+        # here is a frame per token on 3.11. The cores decide drops need
+        # no filter: it drops them only behind a whole name, where the
+        # part is a suffix comma's tail and the core cut below drops
+        # them again (a mutation removing that half moved nothing,
+        # #613's review)
         if bound_any:
-            seg = tuple([i for i in seg
-                         if tokens[i].role is None and i not in bound])
+            seg = tuple([i for i in seg if tokens[i].role is None])
         if family_comma:
             bound_join = (BoundJoin.LENIENT if seg_idx == 1
                           else BoundJoin.DISABLED)

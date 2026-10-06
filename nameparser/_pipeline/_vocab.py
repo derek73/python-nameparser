@@ -292,9 +292,10 @@ def is_one_case(texts: Sequence[str]) -> bool:
     profiler frame per parse rather than one per token (#475).
 
     A CASELESS script answers True, harmlessly: `'محمد و علي'.upper()`
-    is the string itself, so the comparison holds. There are two
-    callers, classify and -- where a comma form asks -- segment, and
-    both record the answer as `ParseState.one_case`; the decisions
+    is the string itself, so the comparison holds. Its callers are
+    classify, segment (only where C2's flag on a tail part asks) and
+    script_segment's `_one_case`; the first two record the answer as
+    `ParseState.one_case`, and script_segment does not; the decisions
     that read it each also require the token they judge to be CASED:
     classify's connective-or-initial fork asks for a token whose own
     `upper()` and `lower()` differ, `ambiguous_lean` -- which the
@@ -623,9 +624,9 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     UNLISTED means in NO wordlist at all, not merely "no whole-token
     suffix vocabulary", and the roster is `_lexicon._VOCAB_FIELDS`
     itself rather than a list written out here -- checked directly
-    against the lexicon rather than through a caller's tags (this
-    function's own callers have none to read, `segment` running before
-    `classify`). A hand-written roster is a second place to remember,
+    against the lexicon rather than through a caller's tags (classify
+    is deciding the very tag a caller would read, and `_comma.decide`
+    asks of words classify left untagged). A hand-written roster is a second place to remember,
     and it had already gone wrong: it named eleven of the thirteen
     fields, leaving `surnames` and `honorific_tails` out, so
     `Lexicon.default().add(surnames={"dupont"})` still read
@@ -644,9 +645,11 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     `suffix_acronyms_ambiguous` is in the roster, which also makes
     this predicate stand in for `ambiguous_class_member` wherever a
     caller needs "and not already a LISTED member" (undotted text's
-    only path into that function is the identical membership test) --
-    `_segment.py`'s run test relies on exactly that rather than
-    calling both.
+    only path into that function is the identical membership test);
+    its callers still test the listed set first, in C (classify's
+    `n not in suffix_acronyms_ambiguous`, `_comma.decide`'s
+    AMBIGUOUS_ACRONYM_TAG test), so a listed member never pays for
+    the call.
     """
     if not (policy.unlisted_caps_suffixes is not CapsSuffixes.OFF
             and one_case is False
@@ -712,7 +715,7 @@ def written_as_a_name(text: str) -> bool:
 def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:
     """Whether a wordlist claims the folded word `n` as a title,
     particle, connective, credential, generation, maiden marker or
-    honorific -- not name text. #564's `name_contrast` (`_segment.py`)
+    honorific -- not name text. #564's `_comma._name_contrast`
     asks it: such a word does not supply the name's case contrast. A
     different question from `in_any_wordlist`'s, which a surname list
     must also answer yes to."""
@@ -722,22 +725,25 @@ def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:
     return False
 
 
-# The comma form's own candidate test (rules.md#C1, decisions.md#S2).
+# The candidate test for a comma part read before classify
+# (rules.md#C1, decisions.md#S2): segment's C2 flag on a tail part.
 def ambiguous_class_candidate(text: str, lexicon: Lexicon,
                               policy: Policy) -> bool:
     """Whether TEXT is a CANDIDATE for the ambiguous credential class
-    at the comma form's own structure decision (`_segment.py`): the
-    LISTED half (`ambiguous_class_member`, case-free) OR, where Policy
+    as segment's C2 flag asks it of a part past the second comma,
+    before classify has tagged anything (`_segment.py`'s `class_run`;
+    the comma's own decision, `_comma.decide`, reads classify's tags
+    instead, #613): the LISTED half (`ambiguous_class_member`, case-free) OR, where Policy
     admits it, the SHAPE an unlisted dotted token wears
     (`period_joined_vocab`'s third verdict, #516).
 
     Case-free throughout, and the CAPS half of the class is
-    deliberately not here: its real site is `_segment.py`'s
-    multi-token run test, which calls `caps_shape_candidate` directly
-    because the run is a property of that shape alone. A second route
-    through here existed briefly, behind an optional `one_case`
-    parameter no production caller ever passed -- `segment` has
-    nothing to hand in at its single-token test -- so the branch
+    deliberately not here: its real site is `_comma.decide`, which
+    calls `caps_shape_candidate` directly because the caps shape needs
+    the name's contrast. A second route through here existed briefly,
+    behind an optional `one_case` parameter no production caller ever
+    passed -- segment had nothing to hand in at the single-token
+    test it then made -- so the branch
     answered False for every name the library parsed and only the
     unit tests reached it (review-round finding, #289/#516). A dead
     second route is a place for the two to disagree, not a
@@ -770,8 +776,8 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
 
     This function and classify's tag emission (`_tags_for`'s
     `derived == "shape"` branch) still ask the SAME question twice, of
-    necessity: `segment` runs before `classify` and has no tags to
-    read yet, so the two stages cannot share the call. Kept from
+    necessity: segment's C2 flag runs before `classify` and has no
+    tags to read yet, so the two stages cannot share the call. Kept from
     drifting by
     `test_classify.test_ambiguous_class_candidate_agrees_with_the_tag`,
     which asks both of the same texts, rather than by a sentence
@@ -795,9 +801,10 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
 # mechanisms.md#UNIT-PARTITION: "A rule that counts name words counts
 # those units, and takes each whole or not at all" -- C1's count before
 # a comma being the stated exception (`SURNAME_UNIT_TAGS`). The walk is shared
-# by two readers that hold the facts in different forms: post_rules
-# reads classify's TAGS, and segment, which runs before classify has
-# tagged anything, builds the same tag names from the vocabulary
+# by readers that hold the facts in different forms: post_rules and
+# `_comma._whole_name` read classify's TAGS, while `surname_unit_count`
+# (script_segment, before classify has tagged anything) and
+# `name_word_count` build the same tag names from the vocabulary
 # (`surname_unit_tags`). One walk over tag sets, so the two cannot
 # disagree about where a unit ends (mechanisms.md#ONE-PREDICATE-PER-
 # QUESTION) -- only, at worst, about a token's facts, which
@@ -882,18 +889,20 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
 #: P3 joins a single-letter connective depends on the words of the
 #: whole name -- 'Carod i Rovira, Josep' joins as four words where
 #: 'Ortega y Gasset' alone, three words, does not -- and the count is
-#: part of deciding what the whole name is, so segment could reach
-#: P3's answer only by copying P3. Segment builds these facts from the
-#: vocabulary (`surname_unit_tags`); assign derives them from
-#: classify's tags (`surname_unit_facts`), so the two counts read one
-#: set of facts.
+#: part of deciding what the whole name is, so a count taken before
+#: group could reach P3's answer only by copying P3. script_segment
+#: and `name_word_count` build these facts from the vocabulary
+#: (`surname_unit_tags`); `_comma._whole_name` derives them from
+#: classify's tags (`surname_unit_facts`), so the counts read one set
+#: of facts.
 SURNAME_UNIT_TAGS = frozenset({"particle", "vocab:suffix"})
 _PARTICLE_ONLY = frozenset({"particle"})
 _SUFFIX_ONLY = frozenset({"vocab:suffix"})
 _NO_TAGS: frozenset[str] = frozenset()
 def surname_unit_facts(tags: Set[str], leading: bool) -> frozenset[str]:
     """`SURNAME_UNIT_TAGS` for one token, from classify's tags: the
-    reading assign's count before a comma takes. `leading` is whether
+    reading `_comma._whole_name`'s count before a comma takes.
+    `leading` is whether
     the token opens the part."""
     particle = ("particle" in tags
                 and not (leading and "vocab:title" in tags))
@@ -905,7 +914,9 @@ def surname_unit_facts(tags: Set[str], leading: bool) -> frozenset[str]:
 def surname_unit_tags(text: str, lexicon: Lexicon,
                       leading: bool) -> frozenset[str]:
     """`surname_unit_facts` for one token from the vocabulary alone --
-    segment's view of classify's tags, built before classify runs, with
+    the vocabulary's view of classify's tags, for a count taken before
+    classify runs (script_segment's) or without its tags
+    (`name_word_count`), with
     classify's own tests: particle and title membership,
     `suffix_as_written`, and the period-joined derivation.
     Kept from drifting by
@@ -927,8 +938,10 @@ def surname_unit_tags(text: str, lexicon: Lexicon,
 def surname_unit_count(texts: Sequence[str], lexicon: Lexicon) -> int:
     """How many units (`unit_ends`) the part before a comma holds, a
     particle chain (P2) and a connective join (P3) each counting once:
-    rules.md#C1's count before the comma, for the credential reading
-    of a part that is wholly suffix words (#575), with a particle
+    rules.md#C1's count before the comma as script_segment asks it,
+    before classify, for the credential reading of a part that is
+    wholly suffix words (#575; `_comma._whole_name` takes the same
+    count off classify's tags at group's head), with a particle
     reaching as P1's fold does (`unit_ends`'s `chain=False`). 'van der
     Berg' is one surname, so 'van der Berg, PhD' reads as 'Berg, PhD'
     does. A connective join is not one unit here: `SURNAME_UNIT_TAGS`."""
@@ -997,9 +1010,9 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
 
 def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
                      policy: Policy, one_case: bool | None = None) -> bool:
-    """Every token in a RUN counts as a suffix -- segment's
-    suffix-comma test, lifted out of it so the peel can ask the same
-    question (#319).
+    """Every token in a RUN counts as a suffix -- C1's suffix test of
+    a run, shared by `_comma.decide`, segment's C2 flag on a tail part
+    and the peel (#319).
 
     NOT the plural of _script_segment._is_post_nominal, which asks
     is_suffix_strict per token. This asks the POLICY-selected predicate
@@ -1017,7 +1030,7 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
 
     An adjacent Ph./D. pair counts as ONE unit (v1's fix_phd extracted
     the credential pre-parse, so 'Smith, Ph. D.' read as suffix-comma);
-    keep in sync with group's _PH/_D merge.
+    keep in sync with group's _PH/_D merge and `_comma._pieces`.
 
     `one_case` is ParseState.one_case, and it admits the LEAN: a bare
     ambiguous acronym written in capitals inside a mixed-case name is
@@ -1032,19 +1045,17 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     by-shape member here unconditionally (an earlier version of this
     docstring described exactly that, for the dotted half alone)
     bypassed both the lean AND the NAME-word count, and combined with
-    C1's own legacy TOKEN-count disjunct in `_segment.py`
-    (`suffixy(groups[1]) and len(groups[0]) > 1`) it flipped
+    C1's then TOKEN-count disjunct in segment (deleted in #613, when
+    the decision moved to `_comma.decide`) it flipped
     'Smith Jr., A.B.' to given 'Smith', suffix 'Jr., A.B.' with a
     self-contradicting report ("holds 1 name words, so it is read as
     a credential run") -- proved by mutation testing to be otherwise
     unreached: nothing but this predicate's own two unit tests
-    depended on it, and 'John Smith, X.Y.Z.' still flips correctly
-    through `pre_comma_names >= 2` alone (#516 review round). Neither
-    by-shape class, dotted or caps, reaches the comma form through
-    this predicate at all -- only through `_vocab.
-    ambiguous_class_candidate`, which segment's structure decision and
-    report both already consult (the caps half as a RUN test over it,
-    #516's second review round).
+    depended on it, and 'John Smith, X.Y.Z.' flipped correctly through
+    the NAME-word count alone (#516 review round). Neither by-shape
+    class, dotted or caps, reaches the comma form through this
+    predicate at all -- only through classify's shape tags and
+    `_comma.decide`'s caps test (#613).
     """
     if not texts:
         return False

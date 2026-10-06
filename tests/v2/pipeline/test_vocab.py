@@ -264,12 +264,12 @@ def test_is_wholly_suffix_never_reads_the_by_shape_class() -> None:
     # #516 review round: an EARLIER version of this predicate admitted
     # a by-shape member unconditionally, bypassing both the lean and
     # the NAME-word count -- combined with C1's own legacy TOKEN-count
-    # disjunct in _segment.py, that flipped 'Smith Jr., A.B.' to a
-    # one-word given with a self-contradicting report. Proved by
-    # mutation to be otherwise unreached, and dropped: the by-shape
-    # class reaches the comma form only through
-    # `ambiguous_class_candidate`, never through this predicate, on
-    # or off.
+    # disjunct in segment (deleted in #613), that flipped 'Smith Jr.,
+    # A.B.' to a one-word given with a self-contradicting report.
+    # Proved by mutation to be otherwise unreached, and dropped: the
+    # by-shape class reaches the comma form only through classify's
+    # shape tags and `_comma.decide`'s caps test, never through this
+    # predicate, on or off.
     lex, pol = Lexicon.default(), Policy()
     assert not is_wholly_suffix(["A.B."], lex, pol)
     assert not is_wholly_suffix(
@@ -282,8 +282,8 @@ def test_is_wholly_suffix_never_reads_the_by_shape_class() -> None:
 
 
 def test_is_wholly_suffix_reads_the_credential_lean() -> None:
-    # The third reading site (#289): segment's structure decision and
-    # its tail segments ask this, and 'Steven Hardman, MD, DO, DDS'
+    # The third reading site (#289): `_comma.decide` and segment's C2
+    # flag on tail segments ask this, and 'Steven Hardman, MD, DO, DDS'
     # loses its comma-structure flag because 'DO' leans credential
     # here. A caller with nothing to say passes nothing and gets the
     # answer every release before this one gave.

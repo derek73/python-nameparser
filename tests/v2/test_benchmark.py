@@ -716,19 +716,25 @@ def test_a_clause_link_run_does_not_cost_quadratically() -> None:
         f"again (#397)")
 
 
-# #563 simplify round: segment's paired-initials speaker test scanned
-# every word in front of EACH pair for a non-title speaker, so a comma
-# run of title/suffix duals followed by pairs ('MD MD ... G.J. G.J.
-# ...') cost duals x pairs `_normalize` calls. Only the first pair's
-# scan can change the answer, and the fix asks it once. A `_SHAPES` row
-# cannot express it -- the run needs the 'John Smith, ' prefix -- and
-# the cost is Python-level, so it is counted in `_normalize` frames,
-# which isolates the scan from the rest of the parse. Measured
-# 2026-09-30 on py3.11 through `_frames_for(..., only="_normalize")`,
-# k duals and k pairs: 107 at k=8 and 395 at k=32 on this tree (3.7x),
-# against 163 and 1,387 at c125f69b (8.5x), where every pair rescanned.
-# 6.0 sits between them; counts are deterministic, so the margins are
-# for future shape changes, not noise.
+# #563 simplify round: the paired-initials speaker test scanned every
+# word in front of EACH pair for a non-title speaker, so a comma run of
+# title/suffix duals followed by pairs ('MD MD ... G.J. G.J. ...') cost
+# duals x pairs. Only the first speaker's position can change the
+# answer, and the fix finds it once. A `_SHAPES` row cannot express it
+# -- the run needs the 'John Smith, ' prefix -- and the cost is
+# Python-level, so it is counted in frames of the function the scan
+# calls, which isolates it from the rest of the parse.
+#
+# The function counted MOVED with the code, and that is this guard's
+# recorded failure: #563 counted `_normalize`, which segment's scan
+# reached, and when #613 moved the scan into `_comma.decide` it called
+# `is_suffix_piece` there instead, so the quadratic came back while
+# this guard read 3.6x and passed (caught in review, 2026-10-06).
+# Measured 2026-10-06 on py3.11 through `_frames_for(...,
+# only="is_suffix_piece")`, k duals and k pairs: 44 at k=8 and 164 at
+# k=32 on this tree (3.7x), against 120 and 1,620 at 47fb2b21 (13.5x),
+# where every pair rescanned. A change to what the scan calls must
+# move `only=` with it, and re-take that negative control.
 _PAIR_SCAN_SMALL = 8
 _PAIR_SCAN_LARGE = 32
 _PAIR_SCAN_MAX_RATIO = 6.0
@@ -750,15 +756,40 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
         name = parse(text)
         assert len(name.suffix.split()) == 2 * k, text
         assert [a.kind.value for a in name.ambiguities] == ["suffix-or-name"]
-    small = _frames_for(small_text, only="_normalize")
-    large = _frames_for(large_text, only="_normalize")
+    small = _frames_for(small_text, only="is_suffix_piece")
+    large = _frames_for(large_text, only="is_suffix_piece")
     ratio = large / small
     assert ratio < _PAIR_SCAN_MAX_RATIO, (
-        f"{_PAIR_SCAN_SMALL} duals and pairs cost {small} _normalize calls "
-        f"and {_PAIR_SCAN_LARGE} cost {large} -- {ratio:.1f}x for 4x the "
-        f"input, where this tree measures 3.7x and the per-pair rescan at "
-        f"c125f69b measured 8.5x. _segment.py's paired-initials title scan "
-        f"is running once per pair again (#563)")
+        f"{_PAIR_SCAN_SMALL} duals and pairs cost {small} is_suffix_piece "
+        f"calls and {_PAIR_SCAN_LARGE} cost {large} -- {ratio:.1f}x for 4x "
+        f"the input, where this tree measures 3.7x and the per-pair rescan "
+        f"at 47fb2b21 measured 13.5x. _comma.py's paired-initials speaker "
+        f"scan is running once per pair again (#563, #613)")
+
+
+def test_a_listing_comma_with_nothing_to_decide_skips_the_counts() -> None:
+    """`_comma.decide` runs on every family-comma parse, so its early
+    return is a cost gate on the commonest comma shape: a part after
+    the comma that holds a name word, no ambiguous member and no core
+    returns before C1's counts are taken. Recorded negative control,
+    a review mutation of #613 (2026-10-06, py3.11): with the early
+    return removed no output moves, `_whole_name` is entered once on
+    'Doe Smith, Jane Q.', and that parse costs 22 more frames -- a
+    regression no output test and no ±2% band could see, since the
+    reference parse has no comma. The ambiguous-class count is asked
+    only where a member stands in the part, which is the second gate."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("Doe Smith, Jane Q.", "Smith, John"):
+        # REACHABILITY: decide is asked, so a zero below means it
+        # returned early rather than that it never ran
+        assert _frames_for(text, only="decide") == 1, text
+        assert _frames_for(text, only="_whole_name") == 0, text
+        assert _frames_for(text, only="name_word_count") == 0, text
+    # a part of unambiguous credentials takes the whole-name count and
+    # not the class count; a member in it takes both
+    assert _frames_for("John Smith, PhD", only="name_word_count") == 0
+    assert _frames_for("John Smith, MA", only="name_word_count") == 1
 
 
 # Fixed points and scans that re-read what they had already read, each

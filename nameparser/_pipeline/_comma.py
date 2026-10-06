@@ -127,8 +127,10 @@ def _name_contrast(state: ParseState, seg0: Sequence[int]) -> bool:
 
 
 def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
-    """rules.md#C1's count before the comma, the one count there is,
-    read off classify's tags: two or more units (a particle run and
+    """rules.md#C1's count before the comma for an unambiguous
+    credential, read off classify's tags (the ambiguous class's count
+    of NAME words, which leaves titles out, is
+    `_vocab.name_word_count`'s, asked in `decide`): two or more units (a particle run and
     the name word it attaches to one unit, a connective join not, #575)
     holding a word that is not a suffix word -- a title counts, being a
     word to the count an unambiguous credential takes."""
@@ -224,8 +226,10 @@ def decide(state: ParseState) -> ParseState:
                     and caps_shape_candidate(text, lex, pol, one_case=False)):
                 if contrast is None:
                     contrast = _name_contrast(state, seg0)
-                # a lone two-capital word is how initials are written
-                if contrast and not (len(p1) == 1 and len(text) < 3):
+                # a two-capital word is how initials are written: the
+                # paired-initials rule below discards one nothing speaks
+                # for, a lone one included ('John Smith, XY')
+                if contrast:
                     caps.add(i)
         # rules.md#C1: "The same count reads a part of two or more words
         # as the credential run when every word of it is a suffix word
@@ -253,6 +257,14 @@ def decide(state: ParseState) -> ParseState:
             # part, makes them the credential run"
             shape = {i for i in licensed
                      if i in caps or SHAPE_ACRONYM_TAG in tokens[i].tags}
+            # Where the first such suffix word stands, found once and
+            # only when a pair asks: a pair is spoken for exactly when
+            # it stands behind that word, so one scan answers every
+            # pair. Asked per pair, the scan re-walked every word in
+            # front of each one, quadratic in the part ('John Smith, ' +
+            # 'MD '*k + 'G.J. '*k, the duals never ending it; #563's
+            # shape, back in #613 and caught in review)
+            speaker = -1
             for k, p in enumerate(p1):
                 i = p[0]
                 if len(p) != 1 or i not in licensed:
@@ -261,11 +273,15 @@ def decide(state: ParseState) -> ParseState:
                 if not (is_paired_initials(text)
                         or (i in caps and len(text) == 2)):
                     continue
-                if not (any(is_suffix_piece(p1[j], pt1[j], tokens)
-                            and not (len(p1[j]) == 1
-                                     and "vocab:title"
-                                     in tokens[p1[j][0]].tags)
-                            for j in range(k)) or shape - {i}):
+                if speaker < 0:
+                    speaker = next(
+                        (j for j in range(len(p1))
+                         if is_suffix_piece(p1[j], pt1[j], tokens)
+                         and not (len(p1[j]) == 1
+                                  and "vocab:title"
+                                  in tokens[p1[j][0]].tags)),
+                        len(p1))
+                if not (speaker < k or shape - {i}):
                     licensed.discard(i)
                     caps.discard(i)
         else:

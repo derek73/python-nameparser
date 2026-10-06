@@ -12,7 +12,7 @@ from nameparser._pipeline._tokenize import tokenize
 import dataclasses
 
 from nameparser._policy import Policy
-from nameparser._types import AmbiguityKind
+from nameparser._types import AmbiguityKind, Role
 
 # synthetic vocabulary: behavior given a lexicon, never default() contents
 _LEX = Lexicon(
@@ -54,10 +54,10 @@ def test_the_credential_pair_merges_anywhere_in_the_run() -> None:
     # v1's fix_phd healed a split 'Ph. D.' wherever it fell, and the
     # suffix-comma test inherits that: the pair counts as ONE unit at
     # any position, not just at the head of the run. Nothing else
-    # reaches past position 0 -- 'John Smith, Ph. D.' above puts the
-    # pair first -- and the flip is silent, because 'D.' alone is
-    # suffix vocabulary in no lexicon, so the run stops being wholly
-    # suffix and this reads as a FAMILY comma instead.
+    # reaches past position 0 -- 'John Smith, Ph. D.' puts the pair
+    # first. Without the merge 'D.' alone is suffix vocabulary in no
+    # lexicon, so the run would stop being wholly suffix and this
+    # would read as a FAMILY comma instead.
     out = _decided("John Smith, Jr. Ph. D.")
     assert out.structure is Structure.SUFFIX_COMMA
     assert [_texts(out, s) for s in out.segments] == [
@@ -83,13 +83,15 @@ def test_structure_flips_for_the_ambiguous_class_on_a_name_word_count() -> None:
 
 
 def test_structure_flips_for_a_by_shape_member_too() -> None:
-    # #516: an unlisted dotted token joins the class the same way, via
-    # `_vocab.ambiguous_class_candidate` -- 'X.Y.Z.' is three unclaimed
-    # single-letter chunks, not vocabulary at all, so this is the
-    # by-shape twin of the test above. 'Smith Jr., X.Y.Z.' does not
+    # #516: an unlisted dotted token joins the class the same way,
+    # through the shape tags classify writes -- 'X.Y.Z.' is three
+    # unclaimed single-letter chunks, not vocabulary at all, so this is
+    # the by-shape twin of the test above. 'Smith Jr., X.Y.Z.' does not
     # flip for the SAME reason 'Smith Jr., MA' does not (#516 review
-    # round: is_wholly_suffix must never admit the shape class here, or
-    # C1's legacy TOKEN-count disjunct flips it wrongly on 'Jr.').
+    # round: is_wholly_suffix must never admit the shape class, or
+    # decide's whole-name suffix fallback would read it without the
+    # NAME-word count, as segment's token-count disjunct once did on
+    # 'Jr.').
     assert _decided("John Smith, X.Y.Z.").structure \
         is Structure.SUFFIX_COMMA
     assert _decided("Smith, X.Y.Z.").structure is Structure.FAMILY_COMMA
@@ -225,7 +227,7 @@ def test_the_run_test_reads_lenient_comma_suffixes() -> None:
     # selected predicate (#544): an
     # initial-shaped suffix WORD ('B.') that is not a single-letter
     # roman numeral is a member of neither the ambiguous class nor
-    # `is_single_letter_numeral`'s carve-out, so it reaches `rest` and
+    # `is_single_letter_numeral`'s carve-out, so it reaches `others` and
     # is read by `is_wholly_suffix` alone -- lenient by default (v1's
     # is_suffix_lenient bypasses the initial veto), strict under
     # Policy(lenient_comma_suffixes=False) (v1's is_suffix, which the
@@ -242,3 +244,61 @@ def test_the_run_test_reads_lenient_comma_suffixes() -> None:
     assert out.structure is Structure.FAMILY_COMMA
 
 
+def test_one_word_before_the_comma_never_makes_a_suffix_comma() -> None:
+    # v1: suffix-comma requires >1 word before the comma. The part
+    # after it is still bound as the postnominal part, but the comma
+    # stays the family comma naming the one word; a second word makes
+    # it the suffix comma.
+    out = _decided("Johnson, Jr.")
+    assert out.structure is Structure.FAMILY_COMMA
+    assert out.tokens[1].role is Role.SUFFIX
+    assert _decided("John Johnson, Jr.").structure is Structure.SUFFIX_COMMA
+
+
+def test_strict_comma_suffixes_veto_lenient_only_members() -> None:
+    # lenient_comma_suffixes=False: the post-comma test drops back to
+    # the strict predicate, so an initial-shaped suffix word no longer
+    # qualifies, the part is not bound, and the comma stays the family
+    # comma -- where the default reads 'John Ingram, V' as a suffix
+    # comma (test_suffix_comma_lenient_accepts_initial_shaped_suffix_word)
+    out = _decided("John Ingram, V", policy=dataclasses.replace(
+        Policy(), lenient_comma_suffixes=False))
+    assert out.structure is Structure.FAMILY_COMMA
+    assert out.tokens[2].role is None
+
+
+def test_the_run_test_declines_a_name_word_and_a_numeral() -> None:
+    # a name word anywhere in the part, or a word that is neither
+    # vocabulary nor a member, keeps the listing form -- and so does a
+    # single-letter roman numeral, in any case, for its one-letter
+    # shape (a multi-letter one runs: 'John Smith, III Ma')
+    for text in ("John Smith, Jones Ma", "John Smith, V Ma",
+                 "John Smith, J. Ma"):
+        out = _decided(text)
+        assert out.structure is Structure.FAMILY_COMMA, text
+        assert not _flip_reports(out), text
+    # a credential opening the part makes it the postnominal part
+    # however it goes on (#603), but the run test still declines it:
+    # no report spans the whole part as the count's flip does
+    for text in ("John Smith, PhD Jones Ma", "John Smith, PhD v Ma"):
+        out = _decided(text)
+        assert out.structure is Structure.SUFFIX_COMMA, text
+        assert _texts(out, out.segments[1]) not in _flip_reports(out), text
+    out = _decided("John Smith, III Ma")
+    assert _flip_reports(out) == [_texts(out, out.segments[1])]
+
+
+def test_a_listed_surname_still_carries_the_name_contrast() -> None:
+    # #564: a word a caller lists as a SURNAME is name text, so it
+    # carries the contrast the comma caps reading needs
+    # (`_vocab.claimed_as_non_name` leaves the surname and bound-given
+    # lists out); `in_any_wordlist`, the caps shape's own "unlisted",
+    # is a different question. A draft shared one predicate for both
+    # and this read given 'XYZ'. The all-caps spelling is the control:
+    # no word before the comma is written as a name, so no contrast.
+    lex = Lexicon.default().add(surnames={"smith", "jones"})
+    out = _decided("Smith Jones, XYZ", lexicon=lex)
+    assert out.structure is Structure.SUFFIX_COMMA
+    assert out.tokens[2].role is Role.SUFFIX
+    assert _decided("SMITH JONES, XYZ", lexicon=lex).structure \
+        is Structure.FAMILY_COMMA

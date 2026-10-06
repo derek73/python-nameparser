@@ -1343,8 +1343,9 @@ CASES: tuple[Case, ...] = (
                "counts the title as a word, so the comma reads as a "
                "credential comma and the part reads as it does alone, "
                "P1's fork and all. Unchanged"),
-    # #575: assign's own count (the positional read after a comma
-    # followed by no name word) applies the title-particle exclusion
+    # #575: C1's count before the comma (`_comma._whole_name`, which
+    # decides the positional read after a comma followed by no name
+    # word) applies the title-particle exclusion
     # by position too. These two pin that flag both ways -- a review
     # mutant fixing it to False or True passed every other test.
     Case("a_leading_title_particle_stays_a_title_before_a_title_only_comma",
@@ -1410,11 +1411,11 @@ CASES: tuple[Case, ...] = (
          classification="fix(#544)",
          ambiguities=("suffix-or-name",),
          notes="the trailing title keeps C1's run test from flipping "
-               "the comma, so the family-comma path reads the part "
-               "wholly as credentials plus the title (H5), 'John "
-               "Smith' keeping its positional read, and the member "
-               "the anchor decided reports on that path: one report "
-               "for 'Ma', where the twin 'John Smith, PhD Ma' reports "
+               "the comma, so `_comma.decide` reads the part wholly "
+               "as credentials plus the title (H5) and makes it a "
+               "suffix comma, 'John Smith' keeping its positional "
+               "read, and the member the anchor decided reports "
+               "there: one report for 'Ma', where the twin 'John Smith, PhD Ma' reports "
                "C1's flip once over the whole part. 2.3.0 read title "
                "'Prof.', given 'PhD', middle 'Ma', family 'John "
                "Smith', and 2.2.0 middle 'Ma Prof.'; 1.4.0 through "
@@ -2495,12 +2496,12 @@ CASES: tuple[Case, ...] = (
                "its report-only siblings above. Also the control that "
                "pins the review-round fix: an EARLIER version of "
                "`is_wholly_suffix` admitted a by-shape member "
-               "unconditionally, and combined with C1's own legacy "
-               "TOKEN-count disjunct in `_segment.py` that flipped "
-               "this to given 'Smith' with a self-contradicting "
-               "'holds 1 name words' report. `ambiguous_class_candidate` "
-               "is the only reader the by-shape class has at the "
-               "comma form, and it declines here exactly as the "
+               "unconditionally, and combined with C1's then "
+               "TOKEN-count disjunct in segment (deleted in #613) that "
+               "flipped this to given 'Smith' with a self-contradicting "
+               "'holds 1 name words' report. The by-shape class reaches "
+               "the comma form only through classify's shape tags, and "
+               "`_comma.decide` declines it here exactly as the "
                "listed class does above -- one name word, so `A.B.` "
                "stays the given and `Jr.` its own suffix",
          shape=2),
@@ -2634,28 +2635,30 @@ CASES: tuple[Case, ...] = (
     # 5's name-word count -- uniform across the whole ambiguous class,
     # case silent or not -- sees two name words before the comma and
     # flips the structure exactly as 'JOHN SMITH, MA' does. The comma
-    # form then reads segment 0 the way a NO_COMMA name would (the
-    # (a-lazy) mechanism's own tradeoff: the flip is decided before
-    # script_segment, so the Hangul surname split runs over '마틴 킹'
-    # positionally rather than over the untouched pre-comma text) --
+    # form then reads segment 0 the way a NO_COMMA name would -- the
+    # Hangul surname split running over '마틴 킹' positionally, since
+    # script_segment asks the same name-word count before it (#613's
+    # review: asking only the vocabulary there split nothing and read
+    # family '마틴', given '킹' while the comma was still decided as a
+    # credential run) --
     # the same shape 'Smith 김민준씨, MA' shows in the spec's decision
     # table. Not a caseless-script exemption: item 5 answers "where "
     # case is silent" by the SAME count the rest of item 5 uses, and a
     # two-word Hangul name is silent about case but not about how many
     # name words it has.
     Case("a_caseless_script_wrote_no_contrast_hangul", "마틴 킹, MA",
-         {"given": "킹", "family": "마틴", "suffix": "MA"},
+         {"given": "틴", "middle": "킹", "family": "마", "suffix": "MA"},
          classification="fix(#289)",
          ambiguities=("suffix-or-name",),
-         notes="two name words before the comma flip the structure here "
-               "exactly as they do for 'JOHN SMITH, MA', and the part "
-               "before it reads as a hangul name in its script's order. "
-               "Until #613 the flip was decided before script_segment, "
-               "whose Hangul surname split then ran over '마틴 킹' and "
-               "read given '틴', middle '킹', family '마'; script_segment "
-               "now asks the comma's question for itself the way C1 asks "
-               "it of a part of suffix words, which this one is not "
-               "(rules.md#W3 tolerates a CJK name before a comma)",
+         notes="MEASURED 2026-09-17, not the spec's older prediction "
+               "(given MA, family '마틴 킹', unchanged): dated before "
+               "item 5's name-word-count extension was decided "
+               "(2026-09-15) reached the listed set in ANY case. Two "
+               "name words before the comma flip the structure here "
+               "exactly as they do for 'JOHN SMITH, MA', and the flip "
+               "precedes script_segment's Hangul surname split, which "
+               "then runs over '마틴 킹' as if no comma had stood "
+               "there at all",
          tolerated=True),
     # F2 review finding, 2026-09-17: the SAME mechanism reaches Japanese
     # too, by the same two-token count -- '田中 太郎' is two whitespace
@@ -2672,9 +2675,10 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="MEASURED 2026-09-17: two name words before the comma "
                "flip the structure exactly as '마틴 킹, MA' and "
-               "'JOHN SMITH, MA' do, and the flip again precedes "
-               "script_segment, so the family-first Han split runs "
-               "over '田中 太郎' positionally. Docs/design's older "
+               "'JOHN SMITH, MA' do, and script_segment asks that "
+               "count for itself (`_postnominal_behind_a_whole_name`, "
+               "#613), so the family-first Han split runs over '田中 "
+               "太郎' positionally. Docs/design's older "
                "'a caseless script is inert by construction' bullet "
                "is true of the LEAN alone; item 5's name-word count "
                "is orthogonal to case and reaches this row too",
@@ -3615,9 +3619,9 @@ CASES: tuple[Case, ...] = (
          "JOHN SMITH, LEED AP",
          {"given": "LEED", "middle": "AP", "family": "JOHN SMITH"},
          policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
-         notes="the multi-token twin: segment's run test asks "
-               "`caps_shape_candidate` of every token and then reads "
-               "the case fact ONCE, so a one-case name declines the "
+         notes="the multi-token twin: `_comma.decide` asks "
+               "`caps_shape_candidate` of each word and the name's "
+               "case contrast ONCE, so a one-case name declines the "
                "whole run rather than per token"),
     Case("caps_run_needs_every_token_not_any",
          "John Smith, LEED Jones",
@@ -5797,10 +5801,11 @@ CASES: tuple[Case, ...] = (
          {"title": "Mr.", "family": "Doe", "suffix": "MA PhD"},
          classification="fix(#289)",
          notes="'Doe, Dr. MA' with a credential run behind the "
-               "member, which is what the row adds: the no-name gate "
-               "reads the segment whole, so the member joins the run "
-               "rather than taking the given slot, and neither "
-               "emitter is in that path. 1.4.0, 2.0.0 and 2.3.0 all "
+               "member, which is what the row adds: `_comma.decide` "
+               "(group's head, #613) reads the segment whole, so the "
+               "member joins the run rather than taking the given "
+               "slot, and neither of assign's emitters is in that "
+               "path. 1.4.0, 2.0.0 and 2.3.0 all "
                "read first 'MA', suffix 'PhD' -- the case lean moved "
                "it, which is 'Doe, Dr. MA's classification "
                "(measured 2026-09-19)",
@@ -5827,11 +5832,11 @@ CASES: tuple[Case, ...] = (
                "credential (measured on both wheels 2026-09-18). "
                "UNCHANGED by #531, and structurally unreachable by the new "
                "emitter rather than luckily missed: segment 1 holds "
-               "no name word, `segment_suffix_reading` returns "
-               "non-None, and assign sets every role from that "
-               "reading without entering the placement loop at all. "
-               "So the slot the old emitter owns and the slot the new "
-               "one owns cannot both fire -- which is why no token is "
+               "no name word, so `_comma.decide` binds every role at "
+               "group's head (#613) and reports the member there, and "
+               "assign's placement loop is handed no piece of it. So "
+               "the slot the first-piece report owns and the slot the "
+               "new one owns cannot both fire -- which is why no token is "
                "ever reported twice",
          shape=2),
     Case("the_no_name_gate_path_with_a_run_still_reports_once",
@@ -5853,9 +5858,9 @@ CASES: tuple[Case, ...] = (
                "boundary rather than an omission: a title took the "
                "slot the given name would have had, so there is no "
                "given part for the member to end. The segment holds "
-               "no name word, the credential-run gate reads it whole, "
-               "and #531's emitter is in the placement loop the gate "
-               "path never enters. The post-comma emitter cannot "
+               "no name word, `_comma.decide` reads it whole at group's "
+               "head, and #531's emitter is in the placement loop "
+               "that path never enters. The first-piece report cannot "
                "reach it either -- that one reads the FIRST piece "
                "after the comma, which is 'Dr.'. So the reading moves "
                "and nothing reports. MEASURED on the wheels: 1.4.0, "
@@ -6195,6 +6200,84 @@ CASES: tuple[Case, ...] = (
                "answer of assign's second count over group's joined "
                "pieces, which #613 deleted. 2.3.0 read given 'PhD', "
                "middle 'Jones'"),
+    Case("a_connective_surname_before_a_title_comma_counts_its_words",
+         "Ortega y Gasset, Dr.",
+         {"title": "Dr.", "given": "Ortega", "middle": "y",
+          "family": "Gasset"},
+         ambiguities=(),
+         classification="fix(#613)",
+         notes="decision (1) of #613, whole: the connective surname is "
+               "three words to C1's count (#575), so a comma followed by "
+               "a title alone is the suffix comma and the part before it "
+               "reads as the comma-less 'Ortega y Gasset' does. 1.4.0 "
+               "read first 'Ortega', middle 'y', last 'Gasset' too; "
+               "b547c247 read family 'Ortega y Gasset'"),
+    Case("a_suffixed_family_before_a_comma_suffix_reads_positionally",
+         "Smith Jr., Esq.",
+         {"family": "Smith", "suffix": "Jr., Esq."},
+         ambiguities=(),
+         classification="fix(#613)",
+         notes="decision (4) of #613: the part after the comma is a "
+               "suffix behind 'Smith Jr.', whose one name word reads "
+               "positionally as 'Smith Jr.' alone does, with nothing to "
+               "report. b547c247 read given 'Smith' and reported "
+               "given-or-family, assign's second count having made the "
+               "comma's positional read of one word"),
+    Case("a_title_chain_after_the_comma_stays_one_title",
+         "John Smith, Mr. and Mrs.",
+         {"title": "Mr. and Mrs.", "given": "John", "family": "Smith"},
+         ambiguities=(),
+         classification="fix(#613)",
+         notes="the one join made inside a part read as postnominal "
+               "(rules.md#C1, P3): a connective between titles binds "
+               "them into one title. #613's first draft bound each word "
+               "on its own and lost it (`_comma._title_chains`)"),
+    Case("a_title_chain_after_the_comma_runs_through_every_link",
+         "John Smith, Mr. and Mrs. and Dr.",
+         {"title": "Mr. and Mrs. and Dr.", "given": "John",
+          "family": "Smith"},
+         ambiguities=(),
+         classification="fix(#613)",
+         notes="the chain takes its kind from the title before each "
+               "connective, so the second 'and' joins as the first does; "
+               "asking the vocabulary of the connective alone read "
+               "family 'John Smith' (mutation measured in review)"),
+    Case("a_connective_opening_the_part_takes_the_title_after_it",
+         "John Smith, and Dr.",
+         {"title": "and Dr.", "given": "John", "family": "Smith"},
+         ambiguities=(),
+         classification="fix(#613)",
+         notes="garbage in, read as b547c247 read it: a connective with "
+               "nothing before it takes its kind from the word after "
+               "it, so it joins the title rather than standing as a "
+               "name word; reading the left neighbour only made it "
+               "family 'John Smith' (mutation measured in review)"),
+    Case("a_connective_between_a_credential_and_a_title_joins_nothing",
+         "John Smith, PhD and Dr.",
+         {"title": "Dr.", "given": "John", "family": "Smith",
+          "suffix": "PhD and"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#613)",
+         notes="garbage in, and accepted as decision (3)'s cost: no join "
+               "reaches into a part read as postnominal except a title "
+               "chain, and 'and' takes its kind from the credential in "
+               "front, so it joins nothing and the run #603 opened takes "
+               "it as a word, reporting it. b547c247 read given 'PhD "
+               "and Dr.', family 'John Smith'"),
+    Case("a_numeral_behind_a_class_member_keeps_the_listing_form",
+         "John Smith, Ma I",
+         {"given": "Ma", "family": "John Smith", "suffix": "I"},
+         ambiguities=("suffix-or-name",),
+         notes="contrast for the row below: C1's run test admits no "
+               "single-letter numeral, which could be an initial, so "
+               "'Ma' is the given name, as b547c247 read it"),
+    Case("a_generation_behind_a_class_member_makes_the_run",
+         "John Smith, Ma Jr",
+         {"given": "John", "family": "Smith", "suffix": "Ma Jr"},
+         ambiguities=("suffix-or-name",),
+         notes="contrast for the row above: a suffix word that is no "
+               "initial completes the run, and two name words before "
+               "the comma read it as the credential run"),
     Case("a_suffix_beside_a_connective_surname_is_no_name_word",
          "Vega y Lopez Jr., PhD Jones",
          {"given": "Vega", "middle": "y", "family": "Lopez",
@@ -8851,9 +8934,9 @@ CASES: tuple[Case, ...] = (
                "pin on the same readers as the PSM rows, so an edit to "
                "those cannot quietly unpin this. #430 counted three of "
                "them; since #436 the render join is a rule over the "
-               "written commas in post_rules, and the two that still "
-               "share segment_suffix_reading are assign's gate and "
-               "assign's router"),
+               "written commas in post_rules, and since #613 "
+               "segment_suffix_reading has one reader, `_comma.decide`, "
+               "where assign's gate and router had shared it"),
     Case("family_comma_numeral_behind_a_suffix_is_not_an_initial",
          "Smith, John PhD I.",
          {"given": "John", "family": "Smith", "suffix": "PhD I."},
@@ -9165,12 +9248,13 @@ CASES: tuple[Case, ...] = (
          {"title": "Prof.", "given": "John", "family": "Smith"},
          classification="fix(#316)",
          notes="the comma path's walk gets the same rule: a name word "
-               "in segment 1 keeps the gate from reading the segment "
-               "as a credential run, so the trailing title had no "
+               "in segment 1 keeps `_comma.decide` from reading the "
+               "segment as the postnominal part, so the trailing title had no "
                "route to 'title' there either. Contrast the no-name "
                "segment ('Smith, Dr.', pinned above as "
                "family_comma_lone_title): that shape routes through "
-               "the no-name gate, a different mechanism, untouched"),
+               "`_comma.decide` at group's head, a different "
+               "mechanism, untouched"),
     Case("title_word_trailing_after_a_family_comma_run",
          "Smith, John Prof. Dr.",
          {"title": "Prof. Dr.", "given": "John", "family": "Smith"},
@@ -10010,8 +10094,8 @@ CASES: tuple[Case, ...] = (
                "ja_honorific_glued_family_comma_credential_pair_strict_"
                "knob is the third, showing where the knob changes "
                "nothing). "
-               "lenient_comma_suffixes=False drops segment's post-comma "
-               "test to the strict one, so a 'Family, Suffix' input "
+               "lenient_comma_suffixes=False drops the post-comma test "
+               "(`_comma.decide`'s since #613) to the strict one, so a 'Family, Suffix' input "
                "whose suffix is INITIAL-SHAPED reads as a given-name "
                "initial instead ('John Smith, V' -> given 'V'). '씨.' "
                "is a single character plus a period, so it was in that "
@@ -10591,7 +10675,7 @@ CASES: tuple[Case, ...] = (
                "segment admitted the run on is_suffix_lenient. 'V.' "
                "was therefore the site, ended in no tail, and the peel "
                "was abandoned with さん still in the family name. #319 "
-               "asks segment's own predicate (_vocab.is_wholly_suffix) "
+               "asks C1's run predicate (_vocab.is_wholly_suffix) "
                "instead of inferring name text from the structure: the "
                "run is declined, the scan stays inside segments[0], "
                "and さん peels off 田中さん as it always did without a "

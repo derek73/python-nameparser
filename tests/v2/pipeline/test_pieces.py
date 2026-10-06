@@ -109,8 +109,9 @@ def test_the_numeral_veto_refuses_a_multi_token_piece() -> None:
 def test_the_reading_is_positional_and_total() -> None:
     """One verdict per piece, in order -- the invariant its readers
     index by, and the only thing that makes reading[k] mean pieces[k].
-    Three read it until #436 took the render join out of group;
-    assign's gate and its router are what remain."""
+    Three read it until #436 took the render join out of group, then
+    assign's gate and its router; since #613 `_comma.decide` is the
+    one reader."""
     pieces, ptags, tokens, one_case = _comma_part("Smith, MD PSM I")
     reading = segment_suffix_reading(pieces, ptags, tokens, True, one_case)
     assert reading is not None

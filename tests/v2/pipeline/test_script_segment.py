@@ -4,9 +4,10 @@ import dataclasses
 
 import pytest
 
-from nameparser import Parser
+from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon
-from nameparser._pipeline._script_segment import script_segment
+from nameparser._pipeline import STAGES
+from nameparser._pipeline._script_segment import _PEELED_TAG, script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure,
@@ -175,12 +176,65 @@ def test_family_comma_given_side_untouched() -> None:
 
 
 def test_one_word_before_the_comma_is_never_suffix_comma() -> None:
-    # an unspaced CJK name is ONE word, and segment's suffix-comma
-    # rule needs >1 word before the comma -- so this reads as
-    # FAMILY_COMMA and the opt-out above covers it too
+    # an unspaced CJK name is ONE word, and C1's suffix-comma rule
+    # needs >1 word before the comma -- so this stage's own reading of
+    # it (`_postnominal_behind_a_whole_name`) keeps the family comma's
+    # opt-out above, and the name is not split
     out = _run("김민준, Jr.", policy=_HANGUL)
-    assert out.structure is Structure.FAMILY_COMMA
     assert _texts(out) == ["김민준", "Jr."]
+
+
+def test_a_listed_ambiguous_credential_behind_two_name_words_divides() -> None:
+    # #613 review: the second arm of `_postnominal_behind_a_whole_name`
+    # asks C1's name-word count for a part holding a listed member of
+    # the ambiguous class, as `_comma.decide` does, so the name before
+    # the comma divides as it does before 'PhD' -- through the whole
+    # pipeline, since the count is decide's and the division this
+    # stage's. A name word after the comma and one word before it are
+    # the contrasts: neither divides.
+    divided = {"family": "김", "given": "민준", "middle": "박"}
+    for text in ("김민준 박, MA", "김민준 박, PhD"):
+        fields = {k: v for k, v in parse(text).as_dict().items() if v}
+        assert {k: fields[k] for k in divided} == divided, text
+    assert parse("김민준 박, Jones").family == "김민준 박"
+    assert parse("김민준, MA").family == "김민준"
+
+
+# The name before the comma divides exactly where `_comma.decide`
+# makes the comma a suffix comma: script_segment runs first and asks
+# its own stand-in for that answer (`_postnominal_behind_a_whole_name`),
+# and a stand-in is a second implementation that can drift. Recorded
+# negative control (#613 review, 2026-10-06): with the vocabulary-only
+# stand-in at 47fb2b21, 21 of these 40 texts disagreed, every one an
+# ambiguous credential decide licenses by its count ('김민준 박, MA'
+# read as a credential run with the name left whole). The residue is
+# the one shape where decide licenses by the capitals lean rather than
+# the count -- a title and ONE name word, which H1 reads as the family
+# with or without the division, as master read it ('Dr 김민준, MA'
+# reads as 'Dr. Smith, MA' does).
+_AGREEMENT_RESIDUE = {("Dr 김민준", "MA"), ("Dr 김민준", "MA PhD"),
+                      ("Dr 김민준", "Jr. MA")}
+
+
+def test_the_division_agrees_with_the_comma_decision() -> None:
+    heads = ("김민준 박", "마틴 킹", "Smith 김민준씨", "Dr 김민준")
+    tails = ("MA", "Ma", "MA PhD", "PhD", "Jr.", "Jr. MA", "MD Ma", "Ed",
+             "Jones", "G.J.")
+    disagree = set()
+    for head in heads:
+        for tail in tails:
+            state = ParseState(original=f"{head}, {tail}",
+                               lexicon=Lexicon.default(), policy=Policy())
+            for stage in STAGES:
+                state = stage(state)
+                if stage.__name__ == "group":
+                    break
+            own = [i for i in state.segments[0]
+                   if _PEELED_TAG not in state.tokens[i].tags]
+            divided = len(own) > len(head.split())
+            if divided != (state.structure is Structure.SUFFIX_COMMA):
+                disagree.add((head, tail))
+    assert disagree == _AGREEMENT_RESIDUE
 
 
 def test_suffix_comma_name_part_still_splits() -> None:
@@ -704,7 +758,7 @@ def test_the_peel_scans_the_name_runs_and_no_further() -> None:
     # Crossing a FAMILY comma is not crossing every comma: past the
     # name's own runs lie post-nominals, and taking one as the site
     # abandons the peel. Two shapes, both silently broken by a scan
-    # over ALL segments. segment admits a post-comma run on
+    # over ALL segments. The run predicate admits a post-comma run on
     # is_suffix_lenient while the site scan asks is_suffix_strict, so
     # an initial-shaped suffix word is a site rather than a token to
     # step over -- "V." ends in no tail, and 씨 would stay glued. And
@@ -757,14 +811,15 @@ def test_the_peel_crosses_a_family_comma_and_stops_there() -> None:
 def test_a_wholly_suffix_run_after_a_family_comma_is_declined() -> None:
     # The two tests above pin HOW FAR the crossing reaches; this pins
     # WHETHER it happens, which the structure alone does not decide.
-    # segment answers FAMILY_COMMA whenever a single word precedes the
-    # comma, even where the part after it is entirely suffix-shaped, so
-    # "the second run is name text" is an inference and a wrong one
-    # here. Scanning it lands the site on "V." -- admitted to the run by
-    # segment's is_suffix_lenient, rejected as an initial by the scan's
-    # is_suffix_strict -- which ends in no listed tail, so the peel is
-    # abandoned and さん stays glued to 田中 (#319). The peel asks
-    # is_wholly_suffix, segment's own predicate, and declines the run.
+    # The structure here is FAMILY_COMMA whenever a single word precedes
+    # the comma (and, since #613, for every comma form), even where the
+    # part after it is entirely suffix-shaped, so "the second run is
+    # name text" is an inference and a wrong one here. Scanning it lands
+    # the site on "V." -- admitted to the run by is_suffix_lenient,
+    # rejected as an initial by the scan's is_suffix_strict -- which
+    # ends in no listed tail, so the peel is abandoned and さん stays
+    # glued to 田中 (#319). The peel asks is_wholly_suffix, C1's run
+    # predicate, and declines the run.
     lex = _LEX_TAILS.add(suffix_words={"v"})
     assert _texts(_run("田中さん, V.", policy=_HANGUL,
                        lexicon=lex)) == ["田中", "さん", "V."]

@@ -156,8 +156,8 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # in post_rules writes either: every retag in post_rules targets a
     # NAME role and nothing else -- `_retag` is called with
     # Role.FAMILY, Role.GIVEN, Role.MIDDLE, and with
-    # `_name_positions`' return, which is those same three; the three
-    # `role=Role.FAMILY` replaces (P6's attachment on both arms, O3's
+    # `_name_positions`' return, which is those same three; the
+    # `role=Role.FAMILY` replaces (P6's no-comma attachment, O3's
     # fold) are FAMILY as well. So no rule here
     # moves a token into or out of SUFFIX, or into or out of
     # {TITLE, NICKNAME, MAIDEN}, and this predicate reads the same

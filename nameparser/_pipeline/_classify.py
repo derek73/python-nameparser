@@ -272,7 +272,7 @@ def classify(state: ParseState) -> ParseState:
     own, clause_at = own_words(state.tokens, state.comma_offsets,
                                state.lexicon.maiden_markers, marker_tags)
     # ONE fact per parse, and it is recorded now (ParseState.one_case):
-    # segment writes it first where a comma form could turn on it, and
+    # segment writes it first where C2's flag on a tail part asks, and
     # a fact two stages decide apart is what recording it prevents
     # (decisions.md#S2).
     one_case = state.one_case

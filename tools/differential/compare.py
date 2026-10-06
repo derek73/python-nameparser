@@ -1755,9 +1755,6 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     "expected_since_2.3.0.toml": {},
     "expected_since_1.4.0.toml": {
         "Andrews, M.D.": ("given", "suffix"),
-        # 2026-10-06 (#613): radar, rules.md#W3's tolerated CJK comma;
-        # the two CJK rules both admit its {family, given}
-        "마틴 킹, MA": ("family", "given"),
         "田中, 太郎さん": ("given", "suffix"),
         "김, 민준씨": ("given", "suffix"),
         "김, 민준씨 (Jimmy)": ("given", "suffix"),

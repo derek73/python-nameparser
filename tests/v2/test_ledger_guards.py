@@ -3847,7 +3847,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #601/#602 review: 438 -> 439, rules.md#S2's new
         # example 'Smith, John PhD de Jr.'. Reach, verified by name.
         # 2026-10-04, #603: 441 -> 452; the rules.md#C1 and #C2 examples #603 added entered the corpus.
-        # 2026-10-06, #613: 452 -> 454; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 452 -> 454; its reach absorbed both C1 examples #613 added to the corpus, 'John Smith, Mr. and Mrs.' and 'Ortega y Gasset, Dr.'.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -3890,7 +3890,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # records the handover.
         # 2026-09-26, #535: 13 -> 14, 'Jane Doe nee Prof. Dr.' joined
         # the corpus and ends in " Dr." like the rest this rule reaches.
-        # 2026-10-06, #613: 14 -> 15; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 14 -> 15; its reach absorbed 'Ortega y Gasset, Dr.', the C1 example #613 added, which ends in 'Dr.'.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
             _Claim(15, ('family', 'suffix'), "0c6062c4dbd7", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
@@ -3982,7 +3982,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #601/#602 review: 438 -> 439, rules.md#S2's new
         # example 'Smith, John PhD de Jr.'. Reach, verified by name.
         # 2026-10-04, #603: 441 -> 452; the rules.md#C1 and #C2 examples #603 added entered the corpus.
-        # 2026-10-06, #613: 452 -> 454; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 452 -> 454; its reach absorbed both C1 examples #613 added to the corpus, 'John Smith, Mr. and Mrs.' and 'Ortega y Gasset, Dr.'.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -4275,7 +4275,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Reach.
         # 2026-10-04, #601/#602: 106 -> 107; 'Jane and née Jones', a new rules.md#M2 example, is in reach -- a marker behind a connective is a word in the run since #601.
         # 2026-10-04, #603: 107 -> 108; the rules.md#C1 and #C2 examples #603 added entered the corpus.
-        # 2026-10-06, #613: 108 -> 110; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 108 -> 110; its reach absorbed both C1 examples #613 added, each holding a connective ('and', 'y').
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
             _Claim(110, ('_initials',), "3544f65e2021", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
@@ -4912,7 +4912,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
-        # 2026-10-06, #613: 2 -> 3; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 2 -> 3; absorbed 'John Smith, Mr. and Mrs.', the C1 example #613 added; the regex was widened to take it.
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
             _Claim(3, ('family', 'given'), "e87f5944b870", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
@@ -4922,7 +4922,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # both, and says the same at the other two baselines.
         # 2026-09-26, #535: 13 -> 14, 'Jane Doe nee Prof. Dr.' joined
         # the corpus and ends in " Dr." like the rest this rule reaches.
-        # 2026-10-06, #613: 14 -> 15; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 14 -> 15; its reach absorbed 'Ortega y Gasset, Dr.', the C1 example #613 added, which ends in 'Dr.'.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
             _Claim(15, ('family', 'suffix'), "0c6062c4dbd7", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
@@ -4955,7 +4955,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #603: roles lost `_ambiguities`; a title word past
         # the second comma is a title now, so 'John, Smith, Dr.' raises
         # no comma-structure report and the rule's fields narrowed.
-        # 2026-10-06, #613: 2 -> 3; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 2 -> 3; absorbed 'Ortega y Gasset, Dr.', the C1 example #613 added; the regex was widened to take it.
         "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
             _Claim(3, ('suffix', 'title'), "714ad68cf4cc", ('DEFAULT', 'FAMILY_FIRST')),
         # 2026-09-18: 1 -> 2. One new corpus name, 'Jack MA.', the
@@ -6098,7 +6098,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'suffix'), "5b3a743f9e35", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
-        # 2026-10-06, #613: 2 -> 3; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 2 -> 3; absorbed 'John Smith, Mr. and Mrs.', the C1 example #613 added; the regex was widened to take it.
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
             _Claim(3, ('family', 'given'), "e87f5944b870", None),
         "fix(#296) a dropped prenominal takes the name position it occupies":
@@ -6108,7 +6108,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # both, and says the same at the other two baselines.
         # 2026-09-26, #535: 13 -> 14, 'Jane Doe nee Prof. Dr.' joined
         # the corpus and ends in " Dr." like the rest this rule reaches.
-        # 2026-10-06, #613: 14 -> 15; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 14 -> 15; its reach absorbed 'Ortega y Gasset, Dr.', the C1 example #613 added, which ends in 'Dr.'.
         "fix(#296) dr is not postnominal vocabulary, so a trailing Dr. is a name word":
             _Claim(15, ('family', 'suffix'), "0c6062c4dbd7", None),
         "fix(#296) a credential-only comma string reads a name and its postnominal":
@@ -6141,7 +6141,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #603: roles lost `_ambiguities`; a title word past
         # the second comma is a title now, so 'John, Smith, Dr.' raises
         # no comma-structure report and the rule's fields narrowed.
-        # 2026-10-06, #613: 2 -> 3; the rules.md#C1 examples #613 added entered the corpus, or the names #613 moved left the rule.
+        # 2026-10-06, #613: 2 -> 3; absorbed 'Ortega y Gasset, Dr.', the C1 example #613 added; the regex was widened to take it.
         "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
             _Claim(3, ('suffix', 'title'), "714ad68cf4cc", ('DEFAULT', 'FAMILY_FIRST')),
         # 2026-09-18: 1 -> 2. One new corpus name, 'Jack MA.', the
@@ -7004,10 +7004,6 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         "Andrews, M.D.":
             "fix(comma-family) lone post-comma piece routes to "
             "suffix/title, not first",
-        # #613 (2026-10-06): read in the hangul name's own order, family
-        # '마틴', given '킹' -- the native-script order the #271 rule
-        # describes, and no compounding with the comma's routing
-        "마틴 킹, MA": "fix(#271/#272/#298)",
         "田中, 太郎さん": "fix(cjk-comma-honorific-peel)",
         "김, 민준씨": "fix(cjk-comma-honorific-peel)",
         "김, 민준씨 (Jimmy)": "fix(cjk-comma-honorific-peel)",
