@@ -1007,3 +1007,12 @@ def test_the_segmenter_is_handed_the_gated_token_only() -> None:
     out = _run("Dr 山田太郎", policy=_JA, segmenter=seg)
     assert asked == ["山田太郎"]
     assert _texts(out) == ["Dr", "山田", "太郎"]
+
+
+def test_the_stand_in_answers_no_where_there_is_no_part_after_a_comma() -> None:
+    from nameparser._pipeline._script_segment import (
+        _postnominal_behind_a_whole_name,
+    )
+    state = segment(tokenize(ParseState(
+        original="김민준 박", lexicon=Lexicon.default(), policy=Policy())))
+    assert _postnominal_behind_a_whole_name(state) is False

@@ -302,3 +302,25 @@ def test_a_listed_surname_still_carries_the_name_contrast() -> None:
     assert out.tokens[2].role is Role.SUFFIX
     assert _decided("SMITH JONES, XYZ", lexicon=lex).structure \
         is Structure.FAMILY_COMMA
+
+
+def test_decide_hands_back_a_state_with_no_family_comma_unchanged() -> None:
+    # group calls decide only on a family comma, but decide's contract
+    # covers any state: a comma-less name and one whose comma parts a
+    # part from nothing are returned as they came
+    for text in ("John Smith", "Smith,, Jr.", ", Jr."):
+        state = classify(segment(tokenize(extract_delimited(ParseState(
+            original=text, lexicon=_LEX, policy=Policy())))))
+        assert _comma.decide(state) is state, text
+
+
+def test_a_part_of_delimiter_cores_alone_decides_nothing() -> None:
+    # behind a whole name a declared core is no word of the reading, so
+    # a part holding nothing else has no reading to bind and keeps the
+    # listing form (garbage in; pinned so the empty-part exit is held)
+    policy = Policy(extra_suffix_delimiters=frozenset({" - "}))
+    state = classify(segment(tokenize(extract_delimited(ParseState(
+        original="John Smith, - -", lexicon=_LEX, policy=policy)))))
+    decided = _comma.decide(state)
+    assert decided is state
+    assert decided.structure is Structure.FAMILY_COMMA
