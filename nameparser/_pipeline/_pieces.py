@@ -1017,19 +1017,18 @@ def run_start(rest: Sequence[int], names: int,
 
 
 # rules.md#P6: "a particle ending the name attaches to that family
-# name" -- WHICH particles, asked by the attachment in post_rules and by
-# assign's given-part credential run (#602), which leaves them to it
-# (#610: the two had been two walks agreeing only by the run's roles)
+# name" -- WHICH particles, asked once, by assign's given-part walk,
+# which both leaves them out of #602's run and attaches them (#613;
+# #610 had first made the run and post_rules' attachment one walk)
 def particle_tail(seg: Sequence[Sequence[int]],
-                  tokens: Sequence[WorkToken],
-                  floor: int = 0) -> tuple[int, int]:
+                  tokens: Sequence[WorkToken]) -> tuple[int, int]:
     """`seg[lo:hi]`, the run of wholly-particle pieces P6 attaches: back
     from the end past pieces that hold no name word and are not
     themselves particles -- a post-nominal is written BEHIND the
     particle in this listing -- then back over particle pieces,
     stopping at a lone member of the ambiguous credential class read as
     the credential (#531: the capitals or a degree made it one, so it
-    is not the tussenvoegsel). Neither walk passes `floor`.
+    is not the tussenvoegsel).
 
     The class-member stop keys on the VOCABULARY tag and not on the
     suffix role alone, which is what gives P6's attachment precedence
@@ -1041,18 +1040,19 @@ def particle_tail(seg: Sequence[Sequence[int]],
     IS particle vocabulary ends the first walk rather than being looked
     past, since `vd` arrives suffix-roled and is the run.
 
-    Read off ROLES, which is what lets both callers ask it: post_rules
-    after assign has placed every word, and assign before it places the
-    words of a credential run, whose roles are then still None -- no
-    name role, and a class member not yet read as anything, the run
-    being what will read it as the credential. `lo == hi` where there
-    is no such run.
+    Read off ROLES, asked at the moment assign's walk reaches #602's
+    run: every word in front of the run holds the role the walk gave
+    it, and the run's words hold none yet -- no name role, and a class
+    member not yet read as anything, the run being what will read it
+    as the credential. That is why the answer equals the one this
+    would give over the finished roles, which is what the attachment
+    needs. `lo == hi` where there is no such run.
 
     The single-token tests are inline (the common piece is one token),
     so the walk pays no frame per piece; it runs on every family-comma
     parse."""
     hi = len(seg)
-    while hi > floor:
+    while hi > 0:
         piece = seg[hi - 1]
         if (all("particle" in tokens[i].tags for i in piece)
                 if len(piece) > 1 else
@@ -1064,7 +1064,7 @@ def particle_tail(seg: Sequence[Sequence[int]],
             break
         hi -= 1
     lo = hi
-    while lo > floor:
+    while lo > 0:
         piece = seg[lo - 1]
         if len(piece) == 1:
             tok = tokens[piece[0]]

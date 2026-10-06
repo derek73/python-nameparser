@@ -98,8 +98,8 @@ _AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
 
 #: The roles that make a piece a name word (rules.md#P6's walk), and
 #: the roles of a word not yet read as one: a suffix, or nothing yet
-#: -- what `_pieces.particle_tail` reads, asked by post_rules after
-#: assign and by assign before its credential run places its words.
+#: -- what `_pieces.particle_tail` reads, asked by assign's given-part
+#: walk when it reaches the credential run, whose words are unread.
 NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
 SUFFIX_OR_UNREAD = (Role.SUFFIX, None)
 
@@ -153,8 +153,10 @@ class ParseState:
     then pieces/piece_tags/dropped AND maiden token roles, plus the
     SUFFIX/TITLE roles of the run a maiden take gives up (#601);
     assign -> the remaining token roles AND `order`, the effective
-    order it read them under; post_rules -> roles again, and the
-    ambiguity P6's attachment reports.
+    order it read them under, AND the folded-middle tag on the
+    particles P6's attachment joins after a family comma (#613);
+    post_rules -> roles again, and the ambiguity P6's no-comma
+    attachment reports (#467).
     Ambiguities are recorded by every stage that DECIDES one --
     extract (resolved to a token index by tokenize), segment,
     script_segment, classify, group, assign, and post_rules -- since a

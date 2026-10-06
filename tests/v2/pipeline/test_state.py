@@ -297,10 +297,10 @@ def test_stage_field_ownership() -> None:
         # assign also records `order`: the effective order it read the
         # name under, which post_rules needs and must not re-derive
         "assign": {"tokens", "ambiguities", "order"},
-        # post_rules also emits PARTICLE_OR_GIVEN and SUFFIX_OR_NAME:
-        # P6's attachment takes the family branch of a fork whose other
-        # branches assign and group take, so each stage reports the
-        # side it decides
+        # post_rules also emits PARTICLE_OR_GIVEN: P6's no-comma
+        # attachment (#467) takes the family branch of a fork whose
+        # other branches assign and group take, so each stage reports
+        # the side it decides; the comma site is assign's since #613
         "post_rules": {"tokens", "ambiguities"},
     }
     assert {s.__name__ for s in STAGES} == set(ownership)
@@ -308,15 +308,20 @@ def test_stage_field_ownership() -> None:
     # spans are fixed at tokenize (the anti-#100 invariant -- tokens
     # are never re-created), classify touches only tags, and the
     # role-assigning stages touch only roles (group also tags, for the
-    # ph-d "joined" marker, and post_rules for the entry "joined"
-    # marker beside its folded-middle mark).
+    # ph-d "joined" marker, assign for P6's folded-middle mark after a
+    # comma, and post_rules for the entry "joined" marker beside its
+    # own folded-middle marks).
     token_ownership = {
         "classify": {"tags"},
         "group": {"tags", "role"},
-        "assign": {"role"},
-        # post_rules also tags, twice: the middle_as_family fold marks
-        # folded tokens vocab:folded-middle for the family view's
-        # prepend order, and R1's entry pass marks a post-nominal
+        # assign also tags since #613: P6's attachment after a family
+        # comma marks the particles it joins to the family
+        # vocab:folded-middle, for the family view's prepend order
+        "assign": {"role", "tags"},
+        # post_rules also tags, three times: P6's no-comma attachment
+        # and the middle_as_family fold mark folded tokens
+        # vocab:folded-middle for the family view's prepend order, and
+        # R1's entry pass marks a post-nominal
         # "joined" when the writer wrote no comma before it (#436)
         "post_rules": {"role", "tags"},
     }
