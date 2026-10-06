@@ -184,8 +184,10 @@ def test_one_word_before_the_comma_is_never_suffix_comma() -> None:
 
 
 def test_suffix_comma_name_part_still_splits() -> None:
+    # the structure stays the family comma here: group decides it once
+    # the words are tagged (#613), and this stage asks the question
+    # for itself (_postnominal_behind_a_whole_name)
     out = _run("Dr 김민준, Jr.", policy=_HANGUL)
-    assert out.structure is Structure.SUFFIX_COMMA
     assert _texts(out) == ["Dr", "김", "민준", "Jr."]
 
 

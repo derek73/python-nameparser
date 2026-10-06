@@ -842,34 +842,35 @@ CASES: tuple[Case, ...] = (
     Case("comma_run_with_a_particle_chain_takes_the_count",
          "John Smith, PhD DO DO",
          {"given": "John", "family": "Smith", "suffix": "PhD DO DO"},
-         ambiguities=("suffix-or-name",),
-         notes="#562: the two 'DO's stand side by side, so S2 joins "
-               "them into one particle run rather than leaving either "
-               "to its capitals, and the row above's stand-down does "
-               "not apply: the run is the count's, flipped and "
-               "reported. 1.4.0 read the same; 2.0.0 read title "
-               "'PhD', given 'DO DO', and 2.3.0 given 'PhD', family "
-               "'DO DO John Smith'",
+         notes="#562 read the two 'DO's as the particle run group would "
+               "chain, which no word's capitals settle, and flipped and "
+               "reported the part. Since #613 the part is read and bound "
+               "before any join, so no chain reaches it: each 'DO' leans "
+               "credential by its capitals and the run reads whole in "
+               "silence behind another credential (rules.md#C1). 1.4.0 "
+               "read the same fields; 2.0.0 read title 'PhD', given 'DO "
+               "DO', and 2.3.0 given 'PhD', family 'DO DO John Smith'",
          shape=3),
     Case("comma_run_chained_behind_a_suffix_particle_takes_the_count",
          "John Smith, PhD vd DO",
          {"given": "John", "family": "Smith", "suffix": "PhD vd DO"},
-         ambiguities=("suffix-or-name",),
-         notes="#562: the particles need not be members of the class "
-               "-- 'vd' is particle and unambiguous suffix vocabulary, "
-               "and 'DO' beside it is chained all the same. 1.4.0 read the same; 2.3.0 read given 'PhD', "
-               "family 'vd DO John Smith'",
+         notes="#562's other row: 'vd' is particle and unambiguous suffix "
+               "vocabulary, 'DO' a member leaning credential by its "
+               "capitals. Read before any join since #613, the part is "
+               "settled and silent, where #562 flipped and reported it "
+               "for the chain group would make. 1.4.0 read the same; "
+               "2.3.0 read given 'PhD', family 'vd DO John Smith'",
          shape=3),
     Case("comma_run_a_particle_pair_opens_is_flipped_and_reported",
          "John Smith, vd DO",
          {"given": "John", "family": "Smith", "suffix": "vd DO"},
-         ambiguities=("suffix-or-name",),
-         notes="#562's accepted cost: the family-comma path already "
-               "read this part whole, but the pair is a particle run "
-               "the capitals do not settle, so the count flips it to "
-               "the same fields and reports the call, as every flip "
-               "at this comma does. 2.3.0 read family 'John Smith vd "
-               "DO'"),
+         notes="the row id is #562's, which flipped and reported this "
+               "pair as a particle run the capitals could not settle. "
+               "Since #613 nothing chains the part before it is read: "
+               "'DO' leans credential, the run is settled and silent, "
+               "and 'vd', the first word after the comma, is no member "
+               "of the class to report. 2.3.0 read family 'John Smith "
+               "vd DO'"),
     Case("comma_run_with_a_lone_trailing_particle_member_stays_settled",
          "John Smith, PhD DO",
          {"given": "John", "family": "Smith", "suffix": "PhD DO"},
@@ -2643,18 +2644,18 @@ CASES: tuple[Case, ...] = (
     # two-word Hangul name is silent about case but not about how many
     # name words it has.
     Case("a_caseless_script_wrote_no_contrast_hangul", "마틴 킹, MA",
-         {"given": "틴", "middle": "킹", "family": "마", "suffix": "MA"},
+         {"given": "킹", "family": "마틴", "suffix": "MA"},
          classification="fix(#289)",
          ambiguities=("suffix-or-name",),
-         notes="MEASURED 2026-09-17, not the spec's older prediction "
-               "(given MA, family '마틴 킹', unchanged): dated before "
-               "item 5's name-word-count extension was decided "
-               "(2026-09-15) reached the listed set in ANY case. Two "
-               "name words before the comma flip the structure here "
-               "exactly as they do for 'JOHN SMITH, MA', and the flip "
-               "precedes script_segment's Hangul surname split, which "
-               "then runs over '마틴 킹' as if no comma had stood "
-               "there at all",
+         notes="two name words before the comma flip the structure here "
+               "exactly as they do for 'JOHN SMITH, MA', and the part "
+               "before it reads as a hangul name in its script's order. "
+               "Until #613 the flip was decided before script_segment, "
+               "whose Hangul surname split then ran over '마틴 킹' and "
+               "read given '틴', middle '킹', family '마'; script_segment "
+               "now asks the comma's question for itself the way C1 asks "
+               "it of a part of suffix words, which this one is not "
+               "(rules.md#W3 tolerates a CJK name before a comma)",
          tolerated=True),
     # F2 review finding, 2026-09-17: the SAME mechanism reaches Japanese
     # too, by the same two-token count -- '田中 太郎' is two whitespace
@@ -6167,39 +6168,43 @@ CASES: tuple[Case, ...] = (
                "and this read middle 'Jones', suffix 'Ph. D.' (2.3.0 "
                "too). Found by #603, whose opened part asks the same "
                "predicate (AGENTS.md's spelling sweep)"),
-    Case("a_split_credential_joined_to_a_name_opens_nothing",
+    Case("a_split_credential_opens_the_part_as_the_joined_one_does",
          "John Smith, Ph. D. and Mary Jones",
-         {"given": "Ph. D. and Mary", "middle": "Jones",
-          "family": "John Smith"},
-         notes="the two spellings agree (rules.md#C1, #603): group's "
-               "connective join keeps the merged credential's 'suffix' "
-               "piece tag on the wider piece, and starts_a_credential_run "
-               "accepted any piece so tagged, so this read suffix "
-               "'Ph. D. and Mary Jones' with 'Mary' taken in silently "
-               "while 'John Smith, PhD and Mary Jones' reads as here; the "
-               "PR review found it, and only the bare Ph./D. pair starts "
-               "a run now"),
-    Case("a_one_piece_name_before_an_opened_part_is_the_family",
+         {"given": "John", "family": "Smith",
+          "suffix": "Ph. D. and Mary Jones"},
+         ambiguities=("suffix-or-name", "suffix-or-name", "suffix-or-name"),
+         classification="fix(#603)",
+         notes="the two spellings agree (rules.md#C1): since #613 the "
+               "part after the comma is read before group's connective "
+               "join, so 'Ph. D.' opens it as 'PhD' does ('John Smith, "
+               "PhD and Mary Jones' reads the same) and the words it takes "
+               "are reported. Before, the join made 'Ph. D. and Mary' one "
+               "piece and both spellings read given 'Ph. D. and Mary', "
+               "family 'John Smith', which #615's row pinned"),
+    Case("a_connective_surname_before_the_comma_counts_its_words",
          "Vega y Lopez, PhD Jones",
-         {"family": "Vega y Lopez", "suffix": "PhD Jones"},
+         {"given": "Vega", "middle": "y", "family": "Lopez",
+          "suffix": "PhD Jones"},
          ambiguities=("suffix-or-name",),
          classification="fix(#603)",
-         notes="one piece before the comma is one name word, even where "
-               "a connective joined three units into it; without "
-               "assign's len(fam_pieces) > 1 exit the unit count reads "
-               "it positionally, given 'Vega y Lopez' and no family. "
-               "2.3.0 read given 'PhD', middle 'Jones'"),
-    Case("a_suffix_beside_a_one_piece_name_keeps_it_the_family",
+         notes="C1's one count before the comma, read off classify's "
+               "tags (#613): a connective join is not one word there "
+               "(#575, Derek on #613), so the part before the comma is a "
+               "whole name and reads positionally, as 'Vega y Lopez, PhD' "
+               "already did. #615 pinned family 'Vega y Lopez' here, the "
+               "answer of assign's second count over group's joined "
+               "pieces, which #613 deleted. 2.3.0 read given 'PhD', "
+               "middle 'Jones'"),
+    Case("a_suffix_beside_a_connective_surname_is_no_name_word",
          "Vega y Lopez Jr., PhD Jones",
-         {"family": "Vega y Lopez", "suffix": "Jr., PhD Jones"},
+         {"given": "Vega", "middle": "y", "family": "Lopez",
+          "suffix": "Jr., PhD Jones"},
          ambiguities=("suffix-or-name",),
          classification="fix(#603)",
-         notes="the positional read places PIECES, so it needs two name "
-               "pieces as well as two units: counting pieces of any kind "
-               "let the suffix piece 'Jr.' stand in for the second, and "
-               "the connective-joined 'Vega y Lopez' became the given "
-               "name with no family (the /simplify altitude review found "
-               "it). 2.3.0 read given 'PhD', middle 'Jones', suffix 'Jr.'"),
+         notes="the count holds units with a word that is not a suffix "
+               "word, so 'Jr.' adds nothing to the three of 'Vega y "
+               "Lopez' (#575's count, #613). 2.3.0 read given 'PhD', "
+               "middle 'Jones', suffix 'Jr.'"),
     Case("only_the_first_suffix_word_can_open_the_comma_part",
          "Smith, MA PhD Jones",
          {"given": "MA", "family": "Smith", "suffix": "PhD Jones"},

@@ -351,13 +351,11 @@ orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#562) a comma credential run holding a particle chain reads by the name-word count"
-# rules.md#C1: a part whose every member is a listed word in capitals
-# in a mixed-case name reads as the credential run on that writing
-# rather than on the count, "and so is a part holding two particles
-# side by side, which P2 joins into one particle run that S2 leaves
-# to no word's capitals" -- read by the count, that is,
-# which two name words before the comma flip to the credential run,
-# reported. The family-comma path had read the part as name text:
+# rules.md#C1: "The part is read as its words stand, before any join"
+# (#613, 2026-10-06): no particle chain reaches it, so each member's
+# capitals settle it and the run reads whole as the credential run --
+# silently since #613, where #562 (2026-10-01) had read the pair by the
+# count and reported the flip. The family-comma path had read the part as name text:
 # this baseline read given 'PhD', family 'DO DO John Smith', P6
 # attaching the chain. 'John Smith, PhD vd DO' is the same chain
 # with a particle that is not a member ('vd', particle and
@@ -1706,3 +1704,16 @@ fields = ["_ambiguities", "family", "given", "middle", "suffix"]
 issue = "fix(#603) a title word in a part past the second comma is a title"
 name_regex = "^(?:1 & 2, 3 4 5, Mr\\.|Andrew Perkins, Jr\\., Col\\. \\x28Ret\\x29|Eric H\\. Holder, Jr\\., Attorney General|Eric H\\. Holder, Jr\\., Secretary of State|John Smith, Jr\\., Lt\\.Gov\\.|John, Smith, Dr\\.|Smith, John, Prof\\.)$"
 fields = ["_ambiguities", "suffix", "title"]
+
+[[change]]
+# rules.md#C1: "Wherever this rule counts the words before the comma, a
+# particle run and the one name word it attaches to are one word", and
+# "A connective join and a bound given-name pair are not one word here"
+# (#575): C1's one count before the comma, read off classify's tags
+# since #613 (2026-10-06), so a connective surname is a whole name and
+# the comma followed by a title reads it positionally. This baseline
+# read it through assign's second count over group's joined pieces,
+# one piece and so the family.
+issue = "fix(#613) a connective surname before the comma counts its words"
+name_regex = "^Ortega y Gasset, Dr\\.$"
+fields = ["family", "given", "middle"]

@@ -14,10 +14,10 @@ import pytest
 from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
-from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline import _group
 from nameparser._pipeline._group import group
+from nameparser._pipeline import _comma
 from nameparser._pipeline._pieces import (
     _anchors, _numeral_behind_the_initial_veto, anchor_in_reach,
     credential_anchors,
@@ -42,6 +42,22 @@ def _through_group(text: str, policy: Policy = Policy()) -> ParseState:
     for stage in (tokenize, segment, classify, group):
         state = stage(state)
     return state
+
+
+def _comma_part(text: str) -> tuple[list[tuple[int, ...]],
+                                     list[frozenset[str]], list, bool | None]:
+    """The part after the first comma as `_comma.decide` reads it: the
+    tokens classify tagged, one piece each but the Ph./D. pair and a
+    title chain (#613) -- the reading's own input, before group binds
+    the part."""
+    state = ParseState(original=text, lexicon=Lexicon.default(),
+                       policy=Policy())
+    for stage in (tokenize, segment, classify):
+        state = stage(state)
+    tokens = list(state.tokens)
+    pieces, ptags = _comma._pieces(state.segments[1], tokens)
+    _comma._title_chains(pieces, ptags, tokens)
+    return pieces, ptags, tokens, state.one_case
 
 
 def _state_through(stage_name: str, text: str) -> ParseState:
@@ -95,33 +111,11 @@ def test_the_reading_is_positional_and_total() -> None:
     index by, and the only thing that makes reading[k] mean pieces[k].
     Three read it until #436 took the render join out of group;
     assign's gate and its router are what remain."""
-    state = _through_group("Smith, MD PSM I")
-    reading = segment_suffix_reading(
-        state.pieces[1], state.piece_tags[1], list(state.tokens), True,
-        state.one_case)
+    pieces, ptags, tokens, one_case = _comma_part("Smith, MD PSM I")
+    reading = segment_suffix_reading(pieces, ptags, tokens, True, one_case)
     assert reading is not None
-    assert len(reading) == len(state.pieces[1])
+    assert len(reading) == len(pieces)
     assert all(isinstance(v, bool) for v in reading)
-
-
-def test_the_reading_does_not_move_when_roles_are_assigned() -> None:
-    """The stability the shared-predicate design rests on.
-
-    group reads the reading before assign runs and assign reads it
-    again afterwards; that is only safe because the predicates read
-    token TAGS and text, which assign never rewrites -- it writes
-    roles. If a stage ever tagged during assignment the two readers
-    would silently disagree, which is the drift #429 and #430 are.
-    """
-    state = _through_group("Smith, PSM I")
-    before = segment_suffix_reading(
-        state.pieces[1], state.piece_tags[1], list(state.tokens), True,
-        state.one_case)
-    after_state = assign(state)
-    after = segment_suffix_reading(
-        after_state.pieces[1], after_state.piece_tags[1],
-        list(after_state.tokens), True, after_state.one_case)
-    assert before == after == (True, True)
 
 
 def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
@@ -135,26 +129,25 @@ def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
     the opened part takes it in all the same, and hands it to the
     caller to report.
     """
-    state = _through_group("Smith, MD I")
-    args = (state.pieces[1], state.piece_tags[1], list(state.tokens))
-    assert segment_suffix_reading(*args, True, state.one_case) == (True, True)
-    assert segment_suffix_reading(*args, False, state.one_case) is None
-    state = _through_group("Smith, PSM I")
-    args = (state.pieces[1], state.piece_tags[1], list(state.tokens))
+    pieces, ptags, tokens, one_case = _comma_part("Smith, MD I")
+    args = (pieces, ptags, tokens)
+    assert segment_suffix_reading(*args, True, one_case) == (True, True)
+    assert segment_suffix_reading(*args, False, one_case) is None
+    pieces, ptags, tokens, one_case = _comma_part("Smith, PSM I")
+    args = (pieces, ptags, tokens)
     for lenient, taken in ((True, []), (False, [1])):
         absorbed: list[int] = []
-        assert segment_suffix_reading(*args, lenient, state.one_case,
+        assert segment_suffix_reading(*args, lenient, one_case,
                                       None, absorbed) == (True, True)
         assert absorbed == taken
 
 
 def _comma_part_reading(text: str) -> tuple[tuple[bool, ...] | None,
                                             list[int]]:
-    state = _through_group(text)
+    pieces, ptags, tokens, one_case = _comma_part(text)
     picks: list[int] = []
-    reading = segment_suffix_reading(
-        state.pieces[1], state.piece_tags[1], list(state.tokens), True,
-        state.one_case, picks)
+    reading = segment_suffix_reading(pieces, ptags, tokens, True, one_case,
+                                     picks)
     return reading, picks
 
 

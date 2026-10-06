@@ -267,11 +267,9 @@ def test_stage_field_ownership() -> None:
         # a character offset that tokenize resolves to a token index
         "tokenize": {"tokens", "comma_offsets", "interpunct_offsets",
                      "ambiguities"},
-        # segment records `one_case` too, lazily, only where a comma
-        # form could turn it on -- a single-token part after the first
-        # comma, the shape the ambiguous class comes in (#289/#516).
-        # A comma-less name, or one whose post-comma part is not a
-        # single token, never asks and pays nothing.
+        # segment records `one_case` too, lazily, only where C2's flag
+        # on a part past the second comma asks for it (#289/#516, #613);
+        # a name that never asks pays nothing.
         "segment": {"segments", "structure", "ambiguities", "one_case"},
         # script_segment splits one unspaced CJK token into n+1 pieces
         # (n = 1 from the vocabulary, any n from a segmenter), so it
@@ -280,8 +278,8 @@ def test_stage_field_ownership() -> None:
         # deliberately absent from token_ownership below, whose
         # token-count assert is the one contract this stage is exempt
         # from. structure and segmenter it only READS (the
-        # FAMILY_COMMA opt-out, and the hook it consults on a
-        # vocabulary decline).
+        # FAMILY_COMMA opt-out, asked again for itself since #613, and
+        # the hook it consults on a vocabulary decline).
         "script_segment": {"tokens", "segments", "ambiguities"},
         # classify also emits SUFFIX_OR_NICKNAME: the delimiter escape
         # that decides it lives in extract_delimited, which has no token
@@ -290,8 +288,12 @@ def test_stage_field_ownership() -> None:
         # group also emits PARTICLE_OR_GIVEN: the prefix chain takes
         # the particle branch of a fork whose given branch _assign
         # takes, so each stage reports the side it decides
+        # and since #613 group writes `structure`: segment hands every
+        # comma form over as the family comma, and group's head decides
+        # it once classify has tagged the words (_comma.decide),
+        # binding a postnominal part's roles and dropping its cores
         "group": {"tokens", "pieces", "piece_tags", "dropped",
-                  "ambiguities"},
+                  "ambiguities", "structure"},
         # assign also records `order`: the effective order it read the
         # name under, which post_rules needs and must not re-derive
         "assign": {"tokens", "ambiguities", "order"},

@@ -105,7 +105,9 @@ SUFFIX_OR_UNREAD = (Role.SUFFIX, None)
 
 
 class Structure(Enum):
-    """segment's comma-structure decision."""
+    """The comma structure: segment writes NO_COMMA or FAMILY_COMMA,
+    and group's head decides a comma form once classify has tagged the
+    words, which may make it SUFFIX_COMMA (#613, `_comma.decide`)."""
 
     NO_COMMA = auto()
     FAMILY_COMMA = auto()   # "Family, Given ..." (v1 lastname-comma)
@@ -141,14 +143,15 @@ class ParseState:
     sorted)/comma_offsets/interpunct_offsets (the 间隔号 offsets the
     order and segmentation decisions consult, #298; the nakaguro
     separators record NOTHING); segment -> segments/structure/one_case
-    (lazily, only where a comma form could turn it on -- #289/#516);
+    (lazily, only where C2's flag asks for it -- #289/#516, #613);
     script_segment -> tokens and segments again (the one stage that
     changes the token COUNT: an unspaced CJK token splits into n+1
     pieces, still as sub-slices of the original, and every later index
     in the segment runs shifts by n); classify -> token tags AND
-    one_case; group -> pieces/piece_tags/dropped AND maiden token
-    roles, plus the SUFFIX/TITLE roles of the run a maiden take gives
-    up (#601);
+    one_case; group -> structure (its head decides a comma form, #613)
+    AND the SUFFIX/TITLE roles of a postnominal part after the comma,
+    then pieces/piece_tags/dropped AND maiden token roles, plus the
+    SUFFIX/TITLE roles of the run a maiden take gives up (#601);
     assign -> the remaining token roles AND `order`, the effective
     order it read them under; post_rules -> roles again, and the
     ambiguity P6's attachment reports.

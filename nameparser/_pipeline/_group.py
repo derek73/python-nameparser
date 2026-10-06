@@ -3,23 +3,27 @@
 Consumes: tokens (classified), segments, structure, one_case, extracted
 (the role + inner span per delimited region, for the #329 pass below --
 the only stage after tokenize that reads it).
-Produces: pieces + piece_tags per segment (runs of token indices --
-tokens are NEVER joined into strings: the anti-#100 invariant); maiden
-tail tokens get role=MAIDEN, and the trailing run a maiden take gives
-up gets its SUFFIX and TITLE roles here (#601), so no join can reach
-it; marker tokens land in dropped.
+Produces: structure -- its head decides a comma form once the words
+are tagged (rules.md#C1, #613, `_comma.decide`), binding the SUFFIX and
+TITLE roles of a postnominal part after the comma and dropping that
+part's delimiter cores before any join; pieces + piece_tags per segment
+(runs of token indices -- tokens are NEVER joined into strings: the
+anti-#100 invariant); maiden tail tokens get role=MAIDEN, and the
+trailing run a maiden take gives up gets its SUFFIX and TITLE roles
+here (#601), so no join can reach it; marker tokens land in dropped.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
-dropped (v1 suffix_delimiter parity, #549) -- no other Policy field.
-Policy.lenient_comma_suffixes left this list with #436: it reached
-here only through segment_suffix_reading, whose render consumer was
-this stage's one-entry join and now lives in post_rules. The v1
+dropped (v1 suffix_delimiter parity, #549); and, through
+`_comma.decide`, what that module's own header lists
+(Policy.lenient_comma_suffixes and Policy.unlisted_caps_suffixes among
+them). The v1
 "derived titles/prefixes" registration becomes piece_tags entries --
 per-parse state that dissolves with the state (v1 kept per-parse sets
 for the same reason).
 
-Implements rules P2, P3, P4 and M2, and the
+Implements rules P2, P3, P4 and M2, C1's decision through _comma, and
+the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
 content, which M2's pieces walk cannot reach because extract's
 content never enters pieces); each is cited at its code below. Also
@@ -55,6 +59,7 @@ from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
 )
+import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import (
     delimiter_cores,
@@ -1258,6 +1263,15 @@ def _group_segment(seg: tuple[int, ...], additional: int,
 
 
 def group(state: ParseState) -> ParseState:
+    # rules.md#C1's decision, read once now that classify has tagged
+    # the words and before any join below can reach the part after the
+    # comma (#613); a postnominal part comes back bound, in a new state
+    # (a comma-less name, every name with no comma, asks nothing)
+    bound_any = False
+    if state.structure is Structure.FAMILY_COMMA:
+        decided = _comma.decide(state)
+        bound_any = decided is not state
+        state = decided
     tokens = list(state.tokens)
     dropped = list(state.dropped)
     ambiguities = list(state.ambiguities)
@@ -1273,7 +1287,14 @@ def group(state: ParseState) -> ParseState:
     tail_start = {Structure.SUFFIX_COMMA: 1,
                   Structure.FAMILY_COMMA: 2}.get(state.structure)
     family_comma = state.structure is Structure.FAMILY_COMMA
+    bound = frozenset(dropped)
     for seg_idx, seg in enumerate(state.segments):
+        # the part decide bound, and the cores it dropped, are no
+        # piece of any join -- filtered only where it bound one, and by
+        # a comprehension: a generator here is a frame per token on 3.11
+        if bound_any:
+            seg = tuple([i for i in seg
+                         if tokens[i].role is None and i not in bound])
         if family_comma:
             bound_join = (BoundJoin.LENIENT if seg_idx == 1
                           else BoundJoin.DISABLED)

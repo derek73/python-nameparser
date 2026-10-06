@@ -3,8 +3,9 @@
 Consumes: tokens, comma_offsets (with token roles, the two halves of
 the structural-boundary test the marker pass applies -- see
 _vocab.tag_marker_runs), and one_case where an earlier stage recorded
-it -- segment writes it lazily where a comma form can turn it on
-(#289/#516), so this read is the fallback for every other name.
+it -- segment writes it lazily where C2's flag on a part past the
+second comma asks for it (#289/#516, #613), so this read is the
+fallback for every other name.
 Produces: tokens with vocabulary tags added (text/span/role unchanged),
 plus ambiguities (SUFFIX_OR_NICKNAME, CONJUNCTION_OR_INITIAL) and
 one_case -- whether the name's own words are written in one case,
@@ -14,7 +15,9 @@ Reads: every Lexicon vocabulary field except surnames and
 honorific_tails, which script_segment consumes upstream; and, since
 2.4, Policy.unlisted_dotted_suffixes and Policy.unlisted_caps_suffixes,
 which decide whether an UNLISTED dotted or all-caps token joins the
-ambiguous credential class by SHAPE (#516). is_initial also consults
+ambiguous credential class by SHAPE (#516) -- the all-caps half here
+only under CapsSuffixes.EVERYWHERE, the default's part after a comma
+being tagged by `_comma.decide` when group binds it (#613). is_initial also consults
 the _policy module's _NO_INITIALS constant. It is named apart from the
 fields above because it is not CONFIGURATION -- no Lexicon or Policy
 carries it and no caller can change it -- and not because it decides
@@ -54,7 +57,7 @@ from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
-    Structure, WorkToken, copy_with,
+    WorkToken, copy_with,
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
@@ -76,7 +79,7 @@ from nameparser._pipeline._pieces import own_words
 # spare"
 def _tags_for(token: WorkToken, n: str, state: ParseState,
               marker_tag: str | None, one_case_own: bool,
-              one_case: bool, comma_run: bool = False) -> frozenset[str]:
+              one_case: bool) -> frozenset[str]:
     """`n` is _normalize(token.text), folded once by the caller and
     shared with the marker pass; `marker_tag` is what that pass decided
     for this token, or None. The marker DECISION is entirely
@@ -220,8 +223,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             tags.add(SHAPE_ACRONYM_TAG)
             if state.policy.unlisted_dotted_suffixes:
                 tags.add(AMBIGUOUS_ACRONYM_TAG)
-        elif ((state.policy.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE
-               or comma_run)
+        elif (state.policy.unlisted_caps_suffixes is CapsSuffixes.EVERYWHERE
                 and token.role is None
                 # what the predicate would decline anyway, asked first in
                 # C: a listed member ('John Smith, MA'), and a word that
@@ -232,16 +234,16 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
                                          one_case)):
             # #516's all-caps half: an unlisted word written in capitals
             # inside a mixed-case name. EVERYWHERE tags it in every
-            # slot; the default tags it only in the part a suffix comma
-            # opened (`comma_run`), the position `segment` reads from
-            # the text alone (#564), so the reading there carries the
-            # same marks under either setting -- case repair keeps
-            # 'XYZ' in 'John Smith, XYZ' (rules.md#R4) rather than
-            # title-casing a credential the default admitted.
-            # The setting and the position come FIRST, then C-level
-            # checks of what the predicate would decline, so outside
-            # a suffix comma's part the default never calls it and
-            # inside one it calls it only for an unlisted all-caps
+            # slot; the default admits it only in the part after a
+            # comma, which `_comma.decide` reads after this stage and
+            # tags there when it binds the part (#564, #613), so the
+            # reading carries the same marks under either setting --
+            # case repair keeps 'XYZ' in 'John Smith, XYZ'
+            # (rules.md#R4) rather than title-casing a credential the
+            # default admitted.
+            # The setting comes FIRST, then C-level checks of what the
+            # predicate would decline, so the default never calls it
+            # and EVERYWHERE calls it only for an unlisted all-caps
             # word (that is why this half is a call where the dotted branch
             # above stays inline: the dotted caller has no such cheap
             # first conjunct to hide behind). The predicate's own
@@ -281,20 +283,11 @@ def classify(state: ParseState) -> ParseState:
     # per token, and the fork and its emitter then agree with the case
     # class they consult. No extra frame -- it is one more boolean in a
     # comprehension that already walks every token.
-    # #564: the part a suffix comma opened, where the default admits
-    # the caps shape; empty for any other structure or setting.
-    comma_run: frozenset[int] = (
-        frozenset(state.segments[1])
-        if (state.structure is Structure.SUFFIX_COMMA
-            and len(state.segments) > 1
-            and state.policy.unlisted_caps_suffixes is CapsSuffixes.AFTER_COMMA)
-        else frozenset())
     tokens = tuple(
         copy_with(
             t, tags=_tags_for(t, folded[i], state, marker_tags.get(i),
                               one_case_own=one_case and i < clause_at
-                              and t.role is None, one_case=one_case,
-                              comma_run=i in comma_run))
+                              and t.role is None, one_case=one_case))
         for i, t in enumerate(state.tokens))
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->

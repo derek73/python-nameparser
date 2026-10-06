@@ -506,6 +506,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            one_case: bool | None,
                            anchored: list[int] | None = None,
                            absorbed: list[int] | None = None,
+                           licensed: Container[int] = (),
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
@@ -544,13 +545,19 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     the answer is not None: a segment the walk abandons part-way may
     have appended to it first.
 
-    ONE answer for two readers, both in _assign.py -- the no-name gate
-    and the router -- because they must agree piece for piece. #429
-    shipped the inverse of its own fix by deriving that agreement twice
-    (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It answered for a third
-    until #436: group's one-entry join asked it too, and the render's
-    entry boundary is a rule over the written commas in post_rules now
-    (rules.md#R1), which asks this nothing.
+    ONE reader since #613: `_comma.decide`, which reads the part once
+    at group's head and binds the roles this returns, so the decision
+    that the part holds no name word and the roles its words get
+    cannot disagree. Until then it answered for two readers in
+    _assign.py, the no-name gate and the router, and #429 shipped the
+    inverse of its own fix by deriving that agreement twice
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION); it answered for a
+    third until #436, group's one-entry join.
+
+    `licensed` holds the pieces rules.md#C1's count has licensed as
+    credentials -- ambiguous-class words in a credential run behind
+    two name words -- and each reads as a suffix whatever its writing
+    or company.
 
     rules.md#S2's initial veto keeps a roman numeral out of a suffix
     reading, which is right after a NAME word: 'Smith, John V.' is a
@@ -647,6 +654,14 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                   and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags)
         if member and listed_lean(tokens[piece[0]], one_case) \
                 == "credential":
+            leading = False
+            out.append(True)
+            continue
+        # A word rules.md#C1's count licenses as a credential: the
+        # caller (`_comma.decide`) counted two name words before the
+        # comma and found the part a credential run, which settles the
+        # ambiguous word here before S2's anchors are asked (#613)
+        if len(piece) == 1 and piece[0] in licensed:
             leading = False
             out.append(True)
             continue

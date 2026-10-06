@@ -25,7 +25,7 @@ import pytest
 
 from nameparser.config import regexes as _config
 from nameparser._pipeline import (
-    _assemble, _assign, _classify, _extract, _group, _pieces,
+    _assemble, _assign, _classify, _comma, _extract, _group, _pieces,
     _post_rules, _script_segment, _segment, _state, _tokenize, _vocab,
 )
 import nameparser._pipeline
@@ -197,7 +197,7 @@ def test_every_pipeline_module_is_scanned_for_hand_copies() -> None:
 
 
 _MODULES = {"_assemble": _assemble, "_assign": _assign,
-            "_classify": _classify, "_extract": _extract,
+            "_classify": _classify, "_comma": _comma, "_extract": _extract,
             "_group": _group, "_pieces": _pieces,
             "_post_rules": _post_rules, "_render": _render,
             "_script_segment": _script_segment, "_segment": _segment,

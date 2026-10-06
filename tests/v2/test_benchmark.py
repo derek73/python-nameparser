@@ -951,22 +951,6 @@ def test_a_link_costs_what_it_is_pinned_at() -> None:
         f"baseline deliberately (#397)")
 
 
-def test_a_name_word_ends_the_comma_run_before_the_numeral_test() -> None:
-    """rules.md#C1's run test (#544) asks `run_word_fold`'s "reject"
-    before `is_single_letter_numeral`, so an ordinary comma name whose
-    part holds a name word pays no frame for the numeral test. The
-    fold is asked (the reachability probe: the name enters the run
-    loop at all, two words standing before the comma) and the numeral
-    test never is. RECORDED NEGATIVE CONTROL: with the two tests in
-    the other order, `is_single_letter_numeral` is entered once for
-    'Doe Smith, Jane Q.' (measured 2026-09-28)."""
-    if sys.getprofile() is not None:
-        pytest.skip("a profile hook is already installed; this test owns it")
-    text = "Doe Smith, Jane Q."
-    assert _frames_for(text, only="run_word_fold") >= 1
-    assert _frames_for(text, only="is_single_letter_numeral") == 0
-
-
 def test_a_member_opening_a_comma_part_asks_no_anchor_pass() -> None:
     """rules.md#S2's company clause speaks only for a member with a
     credential in FRONT of it, so a member opening the part after a

@@ -681,10 +681,9 @@ def test_the_caps_branch_reads_the_name_level_case_not_the_own_span(
 
     def reverted(token: WorkToken, n: str, state: ParseState,
                  marker_tag: str | None, one_case_own: bool,
-                 one_case: bool, comma_run: bool = False) -> frozenset[str]:
+                 one_case: bool) -> frozenset[str]:
         return real(token, n, state, marker_tag,
-                    one_case_own=one_case_own, one_case=one_case_own,
-                    comma_run=comma_run)
+                    one_case_own=one_case_own, one_case=one_case_own)
 
     monkeypatch.setattr(_classify_module, "_tags_for", reverted)
     broken = Parser(policy=on).parse("née JONES XYZ")

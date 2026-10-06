@@ -1755,6 +1755,9 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     "expected_since_2.3.0.toml": {},
     "expected_since_1.4.0.toml": {
         "Andrews, M.D.": ("given", "suffix"),
+        # 2026-10-06 (#613): radar, rules.md#W3's tolerated CJK comma;
+        # the two CJK rules both admit its {family, given}
+        "마틴 킹, MA": ("family", "given"),
         "田中, 太郎さん": ("given", "suffix"),
         "김, 민준씨": ("given", "suffix"),
         "김, 민준씨 (Jimmy)": ("given", "suffix"),
@@ -2168,7 +2171,11 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         "Lala Lajpat Rai": ("family", "middle", "suffix"),
         "Mesnil Garcia van": ("_initials",),
         "Mohamad X": ("family", "suffix"),
-        "Ph. D., Jr.": ("family", "given"),
+        # 2026-10-06 (#613): {family, given} -> {family, given, title}.
+        # The comma is decided once after classify, and 'Jr.' after it
+        # is the postnominal part bound before group's Ph./D. merge can
+        # make the name before it a title; junk input either way.
+        "Ph. D., Jr.": ("family", "given", "title"),
         "QC MP": ("family", "suffix"),
         "Sander van": ("_initials",),
         "Smith Jones, Ph. D. Jr.": ("suffix",),
@@ -2223,7 +2230,11 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         # commit that moved it, per this dict's own rule.
         "MD, DO, DDS": ("_ambiguities", "given", "title"),
         "Mesnil Garcia van": ("_initials",),
-        "Ph. D., Jr.": ("family", "suffix", "title"),
+        # 2026-10-06 (#613): {family, suffix, title} -> {family,
+        # suffix}: the comma decided once after classify reads 'Ph.
+        # D.' whole as the family where the merge had made 'Ph.' a
+        # title; junk input either way.
+        "Ph. D., Jr.": ("family", "suffix"),
         "Sander van": ("_initials",),
         "Smith Dr": ("family", "suffix"),
         "Smith, John E, III, Jr": ("_initials",),
@@ -2278,7 +2289,11 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
         # commit that moved it, per this dict's own rule.
         "MD, DO, DDS": ("_ambiguities", "given", "title"),
         "Mesnil Garcia van": ("_initials",),
-        "Ph. D., Jr.": ("family", "suffix", "title"),
+        # 2026-10-06 (#613): {family, suffix, title} -> {family,
+        # suffix}: the comma decided once after classify reads 'Ph.
+        # D.' whole as the family where the merge had made 'Ph.' a
+        # title; junk input either way.
+        "Ph. D., Jr.": ("family", "suffix"),
         "Sander van": ("_initials",),
         "Smith Dr": ("family", "suffix"),
         "Smith, John E, III, Jr": ("_initials",),
