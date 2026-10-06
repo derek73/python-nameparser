@@ -5,7 +5,8 @@ Consumes: tokens (role-None main stream), comma_offsets, one_case
 Produces: segments (runs of main-token indices; interior segments may
 be EMPTY -- doubled commas keep their structural position), structure,
 one_case where the comma form asked for it, COMMA_STRUCTURE
-ambiguities for unrecognized extra segments, and SUFFIX_OR_NAME where
+ambiguities for unrecognized extra segments (a part of title and
+suffix words is recognized, #603), and SUFFIX_OR_NAME where
 the comma FLIPPED the structure for a member of the ambiguous
 credential class, or for a run of suffix words holding one (#544).
 The flip and nothing else: where the structure did
@@ -18,7 +19,10 @@ owns the rest (Policy.lenient_comma_suffixes picks the lenient or
 strict token test; Policy.extra_suffix_delimiters gives v1
 suffix_delimiter parity, a delimiter-core token being transparent);
 Lexicon.maiden_markers DIRECTLY, for the own-words span the lazy case
-gate takes (_pieces.own_words); Lexicon title and suffix vocabulary
+gate takes (_pieces.own_words); Lexicon.titles DIRECTLY too, for
+C2's test that a tail part is titles and suffixes (#603), with
+_vocab.period_joined_vocab for a period-joined title; Lexicon
+title and suffix vocabulary
 plus Policy.lenient_comma_suffixes again through _vocab.
 name_word_count, which counts NAME words for the class's own comma
 rule; and, since 2.4, Policy.unlisted_dotted_suffixes through
@@ -55,6 +59,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
+    period_joined_vocab,
     caps_shape_candidate, is_one_case, is_paired_initials,
     claimed_as_non_name, is_single_letter_numeral, is_wholly_suffix,
     written_as_a_name,
@@ -214,6 +219,21 @@ def segment(state: ParseState) -> ParseState:
                    and not ambiguous_class_member(state.tokens[i].text,
                                                   state.lexicon)
                    for i in seg)
+
+    def titles_and_suffixes(seg: tuple[int, ...]) -> bool:
+        # rules.md#C2: "a word of the title vocabulary there that is not
+        # also suffix vocabulary is a title" -- at least one title
+        # word, and every other word a suffix word
+        # period_joined_vocab for 'Lt.Gov.', one token that classify
+        # (not yet run) tags a title by this same call, and that assign
+        # then reads as one; a word without a period cannot be one
+        titles = state.lexicon.titles
+        rest = tuple([i for i in seg
+                      if _normalize(t := state.tokens[i].text) not in titles
+                      and ("." not in t
+                           or period_joined_vocab(t, state.lexicon)
+                           != "title")])
+        return len(rest) < len(seg) and (not rest or suffixy(rest))
 
     # rules.md#C1: "the name reads as trailing suffixes when the part
     # after the first comma is entirely suffix words and more than one
@@ -549,9 +569,10 @@ def segment(state: ParseState) -> ParseState:
             groups[1]))
     # rules.md#C2: "a non-empty extra part that is not entirely suffix
     # words is flagged as a structural ambiguity rather than rejected"
-    # -- parts[2:] are consumed as suffixes unconditionally either
-    # way, so a non-suffix tail segment gets the COMMA_STRUCTURE
-    # flag, not a structure veto. The lean reaches this reading too:
+    # -- parts[2:] are consumed as suffixes either way, their title
+    # words as titles (#603), so a tail segment that is neither all
+    # suffix words nor title words beside suffix words gets the
+    # COMMA_STRUCTURE flag, not a structure veto. The lean reaches this reading too:
     # a tail of leaning credentials is a credential run, which is the
     # one place this design quiets a report rather than adding one.
     for seg in groups[2:]:
@@ -569,8 +590,15 @@ def segment(state: ParseState) -> ParseState:
         # further out: it is the only one of the three that walks the
         # by-shape class, and it is asked only of a run BOTH suffix
         # readings have already declined.
+        # #603: a part assign reads as titles and suffixes is
+        # recognized too -- word by word, off the title vocabulary
+        # (classify has not run yet), so a part holding a connective ('Secretary of State') keeps the
+        # flag: knowing that group's title chain takes it would be a
+        # model of group, the shape mechanisms.md's
+        # READ-WITHOUT-THEN-BIND exists to remove. Last, as the
+        # rarest reading.
         if (seg and not suffixy(seg) and not suffixy(seg, case_class())
-                and not class_run(seg)):
+                and not class_run(seg) and not titles_and_suffixes(seg)):
             texts_joined = " ".join(texts(seg))
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.COMMA_STRUCTURE,

@@ -129,12 +129,23 @@ def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
 
     Lenient continues the credential run through a one-character
     suffix word; strict vetoes initial-shaped words, so the run is no
-    run at all and the segment falls to the walk.
+    run at all and the segment falls to the walk. Asked behind a
+    title/suffix dual, which opens no part (#603). Behind a credential that does
+    open it ('PSM'), strict refuses the numeral the suffix reading but
+    the opened part takes it in all the same, and hands it to the
+    caller to report.
     """
-    state = _through_group("Smith, PSM I")
+    state = _through_group("Smith, MD I")
     args = (state.pieces[1], state.piece_tags[1], list(state.tokens))
     assert segment_suffix_reading(*args, True, state.one_case) == (True, True)
     assert segment_suffix_reading(*args, False, state.one_case) is None
+    state = _through_group("Smith, PSM I")
+    args = (state.pieces[1], state.piece_tags[1], list(state.tokens))
+    for lenient, taken in ((True, []), (False, [1])):
+        absorbed: list[int] = []
+        assert segment_suffix_reading(*args, lenient, state.one_case,
+                                      None, absorbed) == (True, True)
+        assert absorbed == taken
 
 
 def _comma_part_reading(text: str) -> tuple[tuple[bool, ...] | None,

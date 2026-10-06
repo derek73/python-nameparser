@@ -786,6 +786,55 @@ rule names.
 """
 
 [[change]]
+# #603's two rules stand ahead of the comma-family catch-all below
+# on purpose: each names its corpus names one by one, the narrower
+# claim, so the classified summary credits #603 rather than that
+# broad rule, which admits the same diffs on any Latin comma name.
+# rules.md#C1: "A credential opening the part makes it the postnominal
+# part however it goes on" (#603, 2026-10-04): where the first suffix
+# word after the comma starts S2's run, every word behind it reads as
+# that run reads, so a full name before the comma keeps its positional
+# read ('John Smith, PhD Jones') and a one-word name is the family
+# ('Doe, PhD Jones'). The undeclared dash of the delimiter rows is one
+# more word of the run; a title/suffix dual opens nothing.
+issue = "fix(#603) a credential opening the part after the comma makes it the postnominal part"
+name_regex = "^(?:Doe, PhD Jones|John Smith, Ph\\. D\\. Jones|John Smith, PhD Jones|Smith, RN - CRNA|Steven Hardman, RN - CRNA)$"
+fields = ["family", "given", "middle", "suffix", "title"]
+
+[[change.precedes_narrower]]
+issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
+why = """
+That rule describes ONE post-comma piece leaving `first` for `suffix`
+or `title`. These names move a whole part: a credential opening it
+takes every word behind it into the suffix (rules.md#C1, #603), name
+words included, and a full name before the comma keeps its positional
+read, so `family` and `middle` move with it. One-word names whose diff
+fits that rule's fields ('Doe, PhD Jones', 'Smith, RN - CRNA') are
+still this rule's: the cause is the opened part, not the lone piece.
+"""
+
+[[change.precedes_narrower]]
+issue = "fix(comma-precomma-family) pre-comma run reads as family, not given"
+why = """
+That rule describes the pre-comma run reading as the family. Here the
+pre-comma run does the opposite where it holds two name words -- the
+comma has fixed nothing, so it keeps its positional read ('John Smith,
+PhD Jones' gives given 'John', family 'Smith') -- and the move is the
+opened part's (rules.md#C1, #603), not that rule's.
+"""
+
+[[change]]
+# rules.md#C2: "a word of the title vocabulary there that is not also
+# suffix vocabulary is a title" (#603, 2026-10-04): a part past the
+# second comma reads its title words as titles, and a part of title and
+# suffix words is recognized rather than flagged ('Eric H. Holder, Jr.,
+# Attorney General'). 1.4.0, like 2.0 through 2.3, read them as
+# suffixes.
+issue = "fix(#603) a title word in a part past the second comma is a title"
+name_regex = "^(?:1 & 2, 3 4 5, Mr\\.|Andrew Perkins, Jr\\., Col\\. \\x28Ret\\x29|Eric H\\. Holder, Jr\\., Attorney General|Eric H\\. Holder, Jr\\., Secretary of State|John Smith, Jr\\., Lt\\.Gov\\.|John, Smith, Dr\\.|Smith, John, Prof\\.)$"
+fields = ["suffix", "title"]
+
+[[change]]
 issue = "fix(comma-family) lone post-comma piece routes to suffix/title, not first"
 # 'Smith, Dr.' / 'Andrews, M.D.': v1 put the lone strict-suffix-or-title
 # post-comma piece in `first`; 2.0 routes it to `suffix`/`title` instead

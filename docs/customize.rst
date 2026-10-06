@@ -1021,18 +1021,25 @@ Suffixes not separated by commas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``extra_suffix_delimiters`` handles sources that separate post-nominals
-with something other than a comma. The default reading of such a name
-is bad enough to be the reason you'd go looking:
+with something other than a comma. Undeclared, the separator is a word.
+Since 2.4 such a name still parses when a credential opens the part
+after the comma, because that makes the whole part the suffix, but the
+separator stays in the suffix as written. Declared, it splits the
+suffix into groups the way a comma does:
 
 .. doctest::
 
     >>> name = parse("Jane Smith, RN - CRNA")
     >>> name.given, name.family, name.suffix
-    ('RN', 'Jane Smith', 'CRNA')
+    ('Jane', 'Smith', 'RN - CRNA')
     >>> policy = Policy(extra_suffix_delimiters=frozenset({" - "}))
     >>> name = Parser(policy=policy).parse("Jane Smith, RN - CRNA")
     >>> name.given, name.family, name.suffix
     ('Jane', 'Smith', 'RN, CRNA')
+
+Through 2.3 the undeclared reading was given ``RN``, family ``Jane
+Smith`` and suffix ``CRNA``, so the delimiter was the only way to get
+the name right.
 
 .. _unlisted-credentials:
 

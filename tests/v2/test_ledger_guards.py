@@ -2270,6 +2270,26 @@ _LATIN_ALTERNATION_SOURCES: dict[str, _LatinCopy] = {
 #: question someone answers in writing, not something to skip past.
 _NOT_A_VOCABULARY_COPY = frozenset({
     frozenset({"^", " "}),      # the honorific rule's leading anchor
+    # #603's two rules (2026-10-04), one alternative per corpus name:
+    # what selects them is the SHAPE -- a credential opening the part
+    # after the comma, a title word past the second -- and no wordlist.
+    frozenset({"Doe, PhD Jones", "John Smith, PhD Jones",
+               "John Smith, Ph\\. D\\. Jones", "Smith, RN - CRNA",
+               "Steven Hardman, RN - CRNA"}),
+    # ... and the title rule, without 'John, Smith, Dr.' where the
+    # 2.0.0 and 2.1.0 ledgers' #296 rule already claims that name
+    frozenset({"1 & 2, 3 4 5, Mr\\.",
+               "Andrew Perkins, Jr\\., Col\\. \\x28Ret\\x29",
+               "Eric H\\. Holder, Jr\\., Attorney General",
+               "Eric H\\. Holder, Jr\\., Secretary of State",
+               "John Smith, Jr\\., Lt\\.Gov\\.",
+               "Smith, John, Prof\\."}),
+    frozenset({"1 & 2, 3 4 5, Mr\\.",
+               "Andrew Perkins, Jr\\., Col\\. \\x28Ret\\x29",
+               "Eric H\\. Holder, Jr\\., Attorney General",
+               "Eric H\\. Holder, Jr\\., Secretary of State",
+               "John Smith, Jr\\., Lt\\.Gov\\.",
+               "John, Smith, Dr\\.", "Smith, John, Prof\\."}),
     # The #533 review's two literal-anchored rules, one alternative
     # per corpus name. Lists of names, not copies of any wordlist:
     # what selects them is the SHAPE the clause's decline turns on --
@@ -3820,6 +3840,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #601/#602: 443 -> 438; the rules.md#M2 examples #601 retired left the corpus, and the names #601 moved left this rule's regex.
         # 2026-10-04, #601/#602 review: 438 -> 439, rules.md#S2's new
         # example 'Smith, John PhD de Jr.'. Reach, verified by name.
+        # 2026-10-04, #603: 441 -> 452; the rules.md#C1 and #C2 examples #603 added entered the corpus.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -3843,7 +3864,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rules.md#H1 comma example. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(441, ('given', 'suffix', 'title'), "a3028e60b1e7", None),
+            _Claim(452, ('given', 'suffix', 'title'), "256da88fcab5", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3952,6 +3973,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #601/#602: 443 -> 438; the rules.md#M2 examples #601 retired left the corpus, and the names #601 moved left this rule's regex.
         # 2026-10-04, #601/#602 review: 438 -> 439, rules.md#S2's new
         # example 'Smith, John PhD de Jr.'. Reach, verified by name.
+        # 2026-10-04, #603: 441 -> 452; the rules.md#C1 and #C2 examples #603 added entered the corpus.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -3969,7 +3991,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #606: 443 -> 444, 'Greve, Anna'. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(441, ('family', 'given'), "a3028e60b1e7", None),
+            _Claim(452, ('family', 'given'), "256da88fcab5", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4243,8 +4265,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-03, #549: 105 -> 106, 'Smith, John, PhD - and MD'.
         # Reach.
         # 2026-10-04, #601/#602: 106 -> 107; 'Jane and née Jones', a new rules.md#M2 example, is in reach -- a marker behind a connective is a word in the run since #601.
+        # 2026-10-04, #603: 107 -> 108; the rules.md#C1 and #C2 examples #603 added entered the corpus.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(107, ('_initials',), "9a8658d181fb", ('DEFAULT',)),
+            _Claim(108, ('_initials',), "b398136feeef", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
         # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
         # nee Jones MA' -- the P5 pair this change added to record
@@ -4278,8 +4301,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(123, ('_initials',), "d69d11083dba", ('DEFAULT',)),
         # 2026-09-23, #459: 18 -> 19, 'john smith ph. d.', rules.md#R4's
         # two-token line. Reach, verified name by name.
+        # 2026-10-04, #603: 19 -> 20; the rules.md#C1 and #C2 examples #603 added entered the corpus.
         "fix(initials-per-word) the Ph. D. merge initials each word (facade, since 2.0.0)":
-            _Claim(19, ('_initials',), "adfdec5a9e13", ('DEFAULT',)),
+            _Claim(20, ('_initials',), "d89231d36185", ('DEFAULT',)),
         # The 2.3 title-run bundle's five rules, last in every
         # ledger. All five are anchored on NAMES, so the reach IS the
         # mover list: 2 names for the run keying, 1 for the esq drop,
@@ -4579,6 +4603,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Accepted example for a surname-borne title.
         "fix(#606) salutations and titles in other languages":
             _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
+        # 2026-10-04, #603: new, 5; rules.md#C1's opened-part examples and the delimiter rows it moves.
+        "fix(#603) a credential opening the part after the comma makes it the postnominal part":
+            _Claim(5, ('family', 'given', 'middle', 'suffix', 'title'), "a4ebde5b8cd7", None),
+        # 2026-10-04, #603: new, 7; rules.md#C2's tail-title examples and the radar names it moves.
+        "fix(#603) a title word in a part past the second comma is a title":
+            _Claim(7, ('suffix', 'title'), "8cbad6f13c6b", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -4910,8 +4940,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'suffix', 'title'), "01bf2bd3f895", None),
         "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
             _Claim(1, ('family', 'given'), "faa2c70fc49e", None),
+        # 2026-10-04, #603: roles lost `_ambiguities`; a title word past
+        # the second comma is a title now, so 'John, Smith, Dr.' raises
+        # no comma-structure report and the rule's fields narrowed.
         "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
-            _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65", ('DEFAULT', 'FAMILY_FIRST')),
+            _Claim(2, ('suffix', 'title'), "34d3d96adb65", ('DEFAULT', 'FAMILY_FIRST')),
         # 2026-09-18: 1 -> 2. One new corpus name, 'Jack MA.', the
         # all-caps spelling #289's case contrast now reads as a
         # credential; the rule's own 'Jack Ma.' is untouched.
@@ -5322,6 +5355,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Accepted example for a surname-borne title.
         "fix(#606) salutations and titles in other languages":
             _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
+        # 2026-10-04, #603: new, 5; rules.md#C1's opened-part examples and the delimiter rows it moves.
+        "fix(#603) a credential opening the part after the comma makes it the postnominal part":
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "a4ebde5b8cd7", None),
+        # 2026-10-04, #603: new, 6; rules.md#C2's tail-title examples and the radar names it moves.
+        "fix(#603) a title word in a part past the second comma is a title":
+            _Claim(6, ('_ambiguities', 'suffix', 'title'), "eeb11557d7f0", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5788,6 +5827,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Accepted example for a surname-borne title.
         "fix(#606) salutations and titles in other languages":
             _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
+        # 2026-10-04, #603: new, 5; rules.md#C1's opened-part examples and the delimiter rows it moves.
+        "fix(#603) a credential opening the part after the comma makes it the postnominal part":
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "a4ebde5b8cd7", None),
+        # 2026-10-04, #603: new, 7; rules.md#C2's tail-title examples and the radar names it moves.
+        "fix(#603) a title word in a part past the second comma is a title":
+            _Claim(7, ('_ambiguities', 'suffix', 'title'), "8cbad6f13c6b", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6072,8 +6117,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('suffix', 'title'), "01bf2bd3f895", None),
         "fix(#296) do is a name, so it no longer stops the leading-particle scan as a title":
             _Claim(1, ('family', 'given'), "faa2c70fc49e", None),
+        # 2026-10-04, #603: roles lost `_ambiguities`; a title word past
+        # the second comma is a title now, so 'John, Smith, Dr.' raises
+        # no comma-structure report and the rule's fields narrowed.
         "fix(#296) dr is not postnominal vocabulary, so 'John Smith, Dr.' keeps its split and its title":
-            _Claim(2, ('_ambiguities', 'suffix', 'title'), "34d3d96adb65", ('DEFAULT', 'FAMILY_FIRST')),
+            _Claim(2, ('suffix', 'title'), "34d3d96adb65", ('DEFAULT', 'FAMILY_FIRST')),
         # 2026-09-18: 1 -> 2. One new corpus name, 'Jack MA.', the
         # all-caps spelling #289's case contrast now reads as a
         # credential; the rule's own 'Jack Ma.' is untouched.
@@ -6479,6 +6527,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Accepted example for a surname-borne title.
         "fix(#606) salutations and titles in other languages":
             _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
+        # 2026-10-04, #603: new, 5; rules.md#C1's opened-part examples and the delimiter rows it moves.
+        "fix(#603) a credential opening the part after the comma makes it the postnominal part":
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix', 'title'), "a4ebde5b8cd7", None),
+        # 2026-10-04, #603: new, 6; rules.md#C2's tail-title examples and the radar names it moves.
+        "fix(#603) a title word in a part past the second comma is a title":
+            _Claim(6, ('_ambiguities', 'suffix', 'title'), "eeb11557d7f0", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6798,6 +6852,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # Accepted example for a surname-borne title.
         "fix(#606) salutations and titles in other languages":
             _Claim(1, ('given', 'title'), "0c78dbac8a6b", None),
+        # 2026-10-04, #603: new, 5; rules.md#C1's opened-part examples and the delimiter rows it moves.
+        "fix(#603) a credential opening the part after the comma makes it the postnominal part":
+            _Claim(5, ('_ambiguities', 'family', 'given', 'middle', 'suffix'), "a4ebde5b8cd7", None),
+        # 2026-10-04, #603: new, 7; rules.md#C2's tail-title examples and the radar names it moves.
+        "fix(#603) a title word in a part past the second comma is a title":
+            _Claim(7, ('_ambiguities', 'suffix', 'title'), "8cbad6f13c6b", None),
     },
 }
 
@@ -8558,6 +8618,13 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
          "fix(comma-family) lone post-comma piece routes to suffix/title, not first", 4),
         ("fix(#575) a particle surname before a comma is one name word",
          "fix(comma-precomma-family) pre-comma run reads as family, not given", 4),
+        # 2026-10-04, #603: both declared on the #603 opened-part rule,
+        # over its five names, ahead of the two comma rules for #575's
+        # reason -- the move is a whole part's, not one piece's.
+        ("fix(#603) a credential opening the part after the comma makes it the postnominal part",
+         "fix(comma-family) lone post-comma piece routes to suffix/title, not first", 5),
+        ("fix(#603) a credential opening the part after the comma makes it the postnominal part",
+         "fix(comma-precomma-family) pre-comma run reads as family, not given", 5),
         ("fix(#296) a lone post-comma credential is a suffix",
          "fix(suffix-routing) a two-token name ending in the suffix word jr keeps it in `suffix`", 2),
         ("fix(#400/#274) bound-given join and maiden consumption in one name",

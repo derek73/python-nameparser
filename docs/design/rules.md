@@ -1666,8 +1666,9 @@ C1. Rationale: a credential run after the comma means the name is in
     With a comma present, the name reads as trailing suffixes when
     the part after the first comma is entirely suffix words and more
     than one word precedes the comma; otherwise it reads as the
-    listing form, the part before the comma being the family name.
-    Only the part after the first comma decides.
+    listing form, the part before the comma being the family name
+    unless the part after it fixes no family boundary (below). Only
+    the part after the first comma decides.
     Wherever this rule counts the words before the comma, a particle
     run and the one name word it attaches to are one word, the reach
     P1's fold counts rather than the whole of P2's chain: the listing
@@ -1798,7 +1799,22 @@ C1. Rationale: a credential run after the comma means the name is in
     only, fixes no family boundary, so a part before the comma with
     more than one name word keeps its positional read, order and
     all. A name word in the part after the comma makes it the
-    given name, with titles before it and suffixes after.
+    given name, with titles before it and suffixes after, unless a
+    credential opens the part. A credential opening the part makes it
+    the postnominal part however it goes on: where the first suffix
+    word of the part, with only titles in front of it, is one that
+    starts S2's run, which S2 bounds (the split 'Ph. D.' among them),
+    every word after it reads as that run reads, a title word as a
+    title and any other word as a suffix, under strict mode too,
+    whose veto refuses a word the suffix reading and not the run
+    ('Smith, PSM I.'). The comma has then fixed nothing, so a part
+    before it holding two or more name words keeps its positional
+    read, and a part holding one is the family ('John Smith, PhD
+    Jones', 'Doe, PhD Jones'). A word of both the title and the
+    suffix vocabulary opens nothing, and nor does a credential behind
+    one: in front of a given name it is the listing form's title
+    ('Smith, Ms Jane'), and no count of the words before the comma
+    tells a surname of two words from a given name and a family name.
     A one-character suffix word — the only kind a reader could take
     for an initial — is read by what stands before it. Behind
     another suffix it is describing that suffix and continues the
@@ -1815,7 +1831,8 @@ C1. Rationale: a credential run after the comma means the name is in
     credential run, and a letter in it continues that run up to the
     further comma. Longer suffix words are not in question either
     way, and the strict knob above still vetoes the initial-shaped
-    ones, so the run ends at them there.
+    ones, so the run ends at them there unless a credential opened
+    the part, above.
     A delimiter the policy declares parts a trailing suffix part as a
     comma would: the words on each side of it read exactly as the
     parts of the same text written with a comma in its place, so no
@@ -1836,7 +1853,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "Smith, Sr."                →  suffix="Sr."
       "Smith, PSM I"              →  suffix="PSM I"
       "Smith, PSM I."             →  suffix="PSM I."
-      "Smith, PSM I."  strict-comma-suffixes  →  suffix="I."
+      "Smith, PSM I."  strict-comma-suffixes  →  suffix="PSM I."
       "Smith, John V."            →  middle="V."
       "Smith, John PhD I."        →  suffix="PhD I."
       "Smith, John V"             →  suffix="V"  · boundary
@@ -1845,6 +1862,13 @@ C1. Rationale: a credential run after the comma means the name is in
       "Doe, MA PhD"               →  ambiguities=("suffix-or-name",)
       "Smith, Dr."                →  title="Dr."
       "Smith, Dr. Jr."            →  suffix="Jr."
+      "John Smith, PhD Jones"     →  given="John"
+      "John Smith, PhD Jones"     →  suffix="PhD Jones"
+      "John Smith, PhD Jones"     →  ambiguities=("suffix-or-name",)
+      "Doe, PhD Jones"            →  suffix="PhD Jones"
+      "John Smith, Ph. D. Jones"  →  suffix="Ph. D. Jones"
+      "John Smith, MD Jones"      →  given="Jones"  · boundary
+      "Smith, Ms Jane"            →  title="Ms"  · boundary
       "John Smith, Mr."           →  given="John"
       "John Smith, Mr."           →  family="Smith"
       "John Smith, Mr. Jr."       →  given="John"
@@ -1952,8 +1976,13 @@ C1. Rationale: a credential run after the comma means the name is in
       "Smith, John, MD - née Jones Smith" extra_suffix_delimiters-dash →  suffix="MD, née Jones Smith"
     Accepted: a delimiter core the policy names (T1) is a word here,
     not structure — v1 applied the delimiter to the suffix-comma
-    form alone, and that limitation is kept as parity: "Smith, RN -
-    CRNA" reads given "RN" under the policy as without it.
+    form alone, and that limitation is kept as parity: the core in
+    'Smith, RN - CRNA' is a word under the policy as without it.
+    Since #603 it is a word of the run the credential opens, so the
+    part reads suffix "RN - CRNA" where 2.0 through 2.3, like v1,
+    read given "RN".
+      "Smith, RN - CRNA"          →  suffix="RN - CRNA"
+      "Steven Hardman, RN - CRNA" →  given="Steven"
     Accepted: the further-comma qualifier carries no example line of
     its own. It discriminates PAIRS and spans both branches, so
     exemplifying it means a with-comma partner for each — every one
@@ -1971,11 +2000,21 @@ C1. Rationale: a credential run after the comma means the name is in
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.
-    Parts beyond the second are consumed as suffixes either way; a
-    non-empty extra part that is not entirely suffix words is
-    flagged as a structural ambiguity rather than rejected — parsing
-    never fails on content. An empty part between doubled commas is
-    consumed silently.
+    Parts beyond the second are consumed as suffixes either way,
+    except that a word of the title vocabulary there that is not also
+    suffix vocabulary is a title: a part past the second comma holds
+    no name word, so the surnames H5 keeps a bare trailing title word
+    from misreading are not there to protect, and a piece holding a
+    suffix word, a title/suffix dual among them, stays the postnominal
+    the slot makes it (#603). A non-empty extra part that
+    is not entirely suffix words is flagged as a structural ambiguity
+    rather than rejected — parsing never fails on content — unless
+    its words are title words and suffix words, one title word at
+    least, a word whose period-joined chunks read as a title
+    ('Lt.Gov.') counting as one. That is asked word by word, so a part
+    a connective joins into one title ('Secretary of State') keeps
+    the flag. An empty
+    part between doubled commas is consumed silently.
     A part the parse reads as a credential run by some route other
     than the suffix vocabulary is recognized and is not flagged: a
     run of ambiguous acronyms whose written case leans credential
@@ -1998,6 +2037,12 @@ C2. Rationale: text beyond the recognized comma parts should be
     name. What such a part reports is its own — C1's flip and this
     rule's flag.
       "John Smith, MD, Bart"      →  suffix="MD, Bart"
+      "Eric H. Holder, Jr., Attorney General"  →  title="Attorney General"
+      "Eric H. Holder, Jr., Attorney General"  →  ambiguities=()
+      "Eric H. Holder, Jr., Secretary of State"  →  ambiguities=("comma-structure",)  · boundary
+      "Smith, John, Prof."        →  title="Prof."
+      "John Smith, Jr., Lt.Gov."  →  ambiguities=()
+      "John Smith, MD, Ms"        →  suffix="MD, Ms"  · boundary
       "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
       "John Smith, MD, R.A.I."    →  suffix="MD, R.A.I."
       "John Smith, MD, R.A.I."    →  ambiguities=()
@@ -2016,7 +2061,7 @@ C2. Rationale: text beyond the recognized comma parts should be
     reports on outside a tail:
     the_chain_reports_the_acronym_it_takes and
     titled_particle_chain_survives_a_title_that_is_also_a_particle.
-    history: decisions.md#C1, decisions.md#S2 · interacts: C1, P2, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1, decisions.md#S2 · interacts: C1, H5, P2, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 ## Name order (O)
 

@@ -2102,16 +2102,19 @@ CASES: tuple[Case, ...] = (
                "untitled 'St John Smith' into one given name"),
     Case("a_part_past_the_second_reports_no_particle_fork",
          "John Smith, Jr., Freiherr von Richthofen",
-         {"given": "John", "family": "Smith",
-          "suffix": "Jr., Freiherr von Richthofen"},
+         {"given": "John", "family": "Smith", "title": "Freiherr",
+          "suffix": "Jr., von Richthofen"},
          ambiguities=("comma-structure",),
          notes="the row above as a part past the second comma, which "
-               "is consumed wholly as suffixes (C2): 'von' still "
-               "chains in group, but it ends a suffix, so the "
-               "particle-or-given report that 'von' was chained onto "
-               "a name piece named a reading the parse never makes. "
-               "Every 2.x release through 2.3.0 carried it; the "
-               "comma-structure flag is the part's own report"),
+               "is consumed as suffixes but for its title words (C2): "
+               "'von' still chains in group, but it ends a suffix, so "
+               "the particle-or-given report that 'von' was chained "
+               "onto a name piece named a reading the parse never "
+               "makes. Every 2.x release through 2.3.0 carried it; the "
+               "comma-structure flag is the part's own report. Since "
+               "#603 'Freiherr', a title word, reads as the title it "
+               "is there; until then the part read wholly as suffix "
+               "'Jr., Freiherr von Richthofen'"),
     Case("titled_ambiguous_particle_no_op_chain", "St Van Jr.",
          {"title": "St", "family": "Van", "suffix": "Jr."},
          notes="the piece after the particle is a suffix, so the chain "
@@ -6122,11 +6125,125 @@ CASES: tuple[Case, ...] = (
          notes="v1 #144: the trailing piece of a two-part comma name "
                "takes the lenient suffix test"),
     Case("family_comma_first_piece_is_given", "Steven Hardman, RN - CRNA",
-         {"given": "RN", "middle": "-", "family": "Steven Hardman",
-          "suffix": "CRNA"},
-         notes="v1 walk order: the first post-comma piece is the given "
-               "before any suffix check (the delimiter is UNSET here "
-               "-- v1's documented limitation, kept)"),
+         {"given": "Steven", "family": "Hardman", "suffix": "RN - CRNA"},
+         classification="fix(#603)",
+         notes="a credential opening the part after the comma makes it "
+               "the postnominal part (rules.md#C1, #603), so the "
+               "pre-comma name keeps its positional read and the "
+               "undeclared delimiter is one more word of the run. v1 and "
+               "2.0 through 2.3 read v1's walk order here, the first "
+               "post-comma piece the given before any suffix check -- "
+               "given 'RN', middle '-', family 'Steven Hardman', the "
+               "documented limitation of an UNSET delimiter -- which the "
+               "row id still names"),
+    Case("a_credential_opening_the_comma_part_needs_an_unambiguous_one",
+         "John Smith, Ma Jones",
+         {"given": "Ma", "middle": "Jones", "family": "John Smith"},
+         ambiguities=("suffix-or-name",),
+         notes="the boundary of #603's opened part (rules.md#C1): only "
+               "a word that starts S2's run opens it, and a member of "
+               "the ambiguous credential class does not, so the part "
+               "keeps the listing form's given name and the first "
+               "post-comma piece reports the fork it read (#289)"),
+    Case("a_dual_opens_no_part_behind_a_two_word_surname",
+         "García Márquez, Ms Gabriela",
+         {"title": "Ms", "given": "Gabriela", "family": "García Márquez"},
+         notes="#603's boundary for a title/suffix dual (rules.md#C1): it "
+               "opens nothing, being the listing form's title in front "
+               "of a given name, and no count before the comma tells a "
+               "two-word surname from a given name and a family name. A "
+               "first draft opened the part behind two words and read "
+               "given 'García', suffix 'Ms Gabriela' here; Derek chose "
+               "that duals never open (2026-10-04)"),
+    Case("the_split_credential_starts_the_given_part_run",
+         "Smith, John Ph. D. Jones",
+         {"given": "John", "family": "Smith", "suffix": "Ph. D. Jones"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#603)",
+         notes="#602's run in the given part after a family comma, "
+               "started by the split credential group merges: "
+               "starts_a_credential_run refused any piece longer than "
+               "one token, so 'Ph. D.' started no run where 'PhD' did, "
+               "and this read middle 'Jones', suffix 'Ph. D.' (2.3.0 "
+               "too). Found by #603, whose opened part asks the same "
+               "predicate (AGENTS.md's spelling sweep)"),
+    Case("a_split_credential_joined_to_a_name_opens_nothing",
+         "John Smith, Ph. D. and Mary Jones",
+         {"given": "Ph. D. and Mary", "middle": "Jones",
+          "family": "John Smith"},
+         notes="the two spellings agree (rules.md#C1, #603): group's "
+               "connective join keeps the merged credential's 'suffix' "
+               "piece tag on the wider piece, and starts_a_credential_run "
+               "accepted any piece so tagged, so this read suffix "
+               "'Ph. D. and Mary Jones' with 'Mary' taken in silently "
+               "while 'John Smith, PhD and Mary Jones' reads as here; the "
+               "PR review found it, and only the bare Ph./D. pair starts "
+               "a run now"),
+    Case("a_one_piece_name_before_an_opened_part_is_the_family",
+         "Vega y Lopez, PhD Jones",
+         {"family": "Vega y Lopez", "suffix": "PhD Jones"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#603)",
+         notes="one piece before the comma is one name word, even where "
+               "a connective joined three units into it; without "
+               "assign's len(fam_pieces) > 1 exit the unit count reads "
+               "it positionally, given 'Vega y Lopez' and no family. "
+               "2.3.0 read given 'PhD', middle 'Jones'"),
+    Case("a_suffix_beside_a_one_piece_name_keeps_it_the_family",
+         "Vega y Lopez Jr., PhD Jones",
+         {"family": "Vega y Lopez", "suffix": "Jr., PhD Jones"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#603)",
+         notes="the positional read places PIECES, so it needs two name "
+               "pieces as well as two units: counting pieces of any kind "
+               "let the suffix piece 'Jr.' stand in for the second, and "
+               "the connective-joined 'Vega y Lopez' became the given "
+               "name with no family (the /simplify altitude review found "
+               "it). 2.3.0 read given 'PhD', middle 'Jones', suffix 'Jr.'"),
+    Case("only_the_first_suffix_word_can_open_the_comma_part",
+         "Smith, MA PhD Jones",
+         {"given": "MA", "family": "Smith", "suffix": "PhD Jones"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         notes="#603's opener is the part's FIRST suffix word with only "
+               "titles in front of it (rules.md#C1): 'MA', a member of "
+               "the ambiguous class, opens nothing and ends the leading "
+               "run, so the 'PhD' behind it opens nothing either and the "
+               "part is the walk's. Letting a later credential open it "
+               "reads suffix 'MA PhD Jones'"),
+    Case("a_misplaced_generation_opens_the_comma_part", "Smith, Jr. John",
+         {"family": "Smith", "suffix": "Jr. John"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#603)",
+         notes="decisions.md#C1's accepted cost: a generational word "
+               "starts S2's run, so it opens the part and 'John' is "
+               "absorbed, one word before the comma reading the whole "
+               "part as suffixes (Derek). 2.3.0 read title 'Jr.', given "
+               "'John'"),
+    Case("a_connective_led_title_past_the_second_comma_is_a_title",
+         "John Smith, Jr., and Secretary of State",
+         {"title": "and Secretary of State", "given": "John",
+          "family": "Smith", "suffix": "Jr."},
+         ambiguities=("comma-structure",),
+         classification="fix(#603)",
+         notes="C2's tail title read off the piece group's connective join "
+               "built (rules.md#C2): the join tags the piece a title "
+               "though its first token, 'and', is no title word, so the "
+               "test is is_title_piece's whole and not a first-token "
+               "check (the /simplify review found a first-token check "
+               "read suffix 'Jr., and Secretary of State' and no test "
+               "saw it). The flag stays: segment asks word by word"),
+    Case("a_part_of_titles_behind_a_credential_was_already_postnominal",
+         "Eric H. Holder, Jr. Attorney General",
+         {"title": "Attorney General", "given": "Eric", "middle": "H.",
+          "family": "Holder", "suffix": "Jr."},
+         notes="the shape #603 generalizes: a part after the comma "
+               "holding no name word fixed no family boundary, so the "
+               "name before it keeps its positional read and the part "
+               "reads as its titles and suffixes. Unmoved by #603, which "
+               "extends that reading to a part a credential opens "
+               "whatever stands behind it ('Eric H. Holder, Jr. Chief "
+               "Justice', 'justice' being no title word, reads suffix "
+               "'Jr. Justice', title 'Chief')"),
     Case("family_comma_lone_suffix_piece", "Andrews, M.D.",
          {"family": "Andrews", "suffix": "M.D."},
          classification="fix(comma-family)",
@@ -8701,31 +8818,23 @@ CASES: tuple[Case, ...] = (
                "there is no abbreviation, so the numeral is the "
                "generation it looks like. This row is what makes "
                "#432's fix a period test rather than a numeral test"),
-    Case("family_comma_title_resets_the_credential_run", "Smith, PSM Dr. I",
-         {"title": "Dr.", "given": "PSM", "family": "Smith",
-          "suffix": "I"},
-         classification="fix(#316)",
+    Case("family_comma_title_resets_the_credential_run", "Smith, MD Dr. I",
+         {"title": "MD Dr.", "given": "I", "family": "Smith"},
          notes="THE RESET. A title ends the run: what follows a bare "
                "title is not continuing a credential, so the numeral "
                "behind it does not join and the segment is no run at "
-               "all. Removing that one line leaves the whole suite "
-               "green while this becomes title 'Dr.' + suffix 'PSM "
-               "I' -- the reset fires across the suite and until this "
-               "row no input observed it, which is the "
-               "inert-measurement shape. Since #316 the word it "
-               "resets ON is a title here rather than a middle name: "
-               "'I' is what this segment reads as its suffix, so "
-               "'Dr.' is the trailing piece and the walk takes it. "
-               "Transparency does NOT reach this row, and that is the "
-               "reset itself: 'Smith, PSM I' reads suffix 'PSM I' "
-               "with no given name at all (measured 2026-09-09), "
-               "because with no title between them the numeral "
-               "CONTINUES the credential run. Removing the title "
-               "removes the reset, so the shorter spelling is a "
-               "different reading and not this one minus a word. "
-               "1.4.0 read suffix 'Dr., I' -- 'dr' was still "
-               "postnominal vocabulary before #296's audit, so the "
-               "row's old parity claim had outlived it"),
+               "all, leaving the walk to read the dual and the title as "
+               "the given part's titles and 'I' as its given name. "
+               "Without the reset the numeral continues the 'MD' in "
+               "front of the title and the part reads title 'Dr.', "
+               "suffix 'MD I'. Spelled with the dual 'MD' since #603: "
+               "'Smith, PSM Dr. I', this row until then, is a part the "
+               "credential 'PSM' OPENS, which reads as #602's run reads "
+               "whatever stands behind it (rules.md#C1) -- title 'Dr.', "
+               "suffix 'PSM I' -- so the reset no longer decides it. A "
+               "dual opens nothing, and the reset is what is left "
+               "deciding this spelling. 1.4.0 read the "
+               "old spelling suffix 'Dr., I'"),
     Case("family_comma_run_numeral_after_a_split_credential",
          "Smith, Ph. D. I",
          {"family": "Smith", "suffix": "Ph. D. I"},
@@ -8754,13 +8863,23 @@ CASES: tuple[Case, ...] = (
                "about, and no longer decides the separator"),
     Case("family_comma_strict_keeps_the_initial_veto",
          "Smith, PSM I.",
-         {"given": "PSM", "family": "Smith", "suffix": "I."},
+         {"family": "Smith", "suffix": "PSM I."},
+         ambiguities=("suffix-or-name",),
          policy=Policy(lenient_comma_suffixes=False),
-         notes="C1's strict knob still vetoes initial-shaped words, so "
-               "the run ends at the numeral where lenient continues "
-               "through it. #430's first draft read no policy at all "
-               "and silently overrode the one knob a caller sets to "
-               "prevent exactly this; nothing in the suite saw it"),
+         classification="fix(#603)",
+         notes="C1's strict knob still vetoes initial-shaped words as "
+               "SUFFIX words, so the numeral does not continue the run "
+               "as a suffix word (#430's first draft read no policy at "
+               "all and silently overrode the knob; "
+               "test_strict_ends_the_run_at_the_initial_shaped_numeral "
+               "pins that reading in test_pieces.py). Since #603 the "
+               "credential 'PSM' opens the part, and the run it opens "
+               "takes 'I.' in as a word, as #602's run takes it in the "
+               "given part under strict ('Smith, John PhD V.'), and "
+               "reports it, a word strict would otherwise read as a "
+               "name, as the no-comma run reports 'John Smith PhD V.'. "
+               "Until then this row read given 'PSM', family 'Smith', "
+               "suffix 'I.'"),
     Case("family_comma_run_with_a_name_is_not_a_run", "Smith, John Jr.",
          {"given": "John", "family": "Smith", "suffix": "Jr."},
          notes="the non-flip: a name word in the run makes it the "
@@ -9250,17 +9369,16 @@ CASES: tuple[Case, ...] = (
                "measured 2026-09-09 in test_pieces.py)"),
     Case("family_comma_then_a_lone_suffix_word_segment",
          "Smith, John, Prof.",
-         {"given": "John", "family": "Smith", "suffix": "Prof."},
-         ambiguities=("comma-structure",),
-         classification="parity",
+         {"given": "John", "family": "Smith", "title": "Prof."},
+         classification="fix(#603)",
          notes="the trailing slot is a segment away: a second comma "
                "makes the last part its own segment, which the tail "
-               "consumes as a suffix before any trailing walk reads a "
-               "piece -- so 'prof' leaving the suffix vocabulary "
-               "(#296) does not reach this shape and 'Smith, John, "
-               "Prof.' still reads suffix 'Prof.' where 'Smith, John "
-               "Prof.' reads title. Unmoved by this bundle and by "
-               "1.4.0 alike (measured 2026-09-09)"),
+               "reads before any trailing walk reads a piece. Since "
+               "#603 a title word there is a title (rules.md#C2), so "
+               "'Smith, John, Prof.' reads title 'Prof.' as 'Smith, "
+               "John Prof.' does, and the part is recognized rather "
+               "than flagged. Until then, and in 1.4.0, it read suffix "
+               "'Prof.' with a comma-structure flag"),
 
     # -- #271: script-scoped order + segmentation (amendment 2026-07-27)
     Case("ko_unspaced_default", "김민준",

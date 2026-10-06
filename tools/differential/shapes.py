@@ -77,10 +77,11 @@ SHAPES: dict[int, Shape] = {
              "1.4.0"),
     2: Shape(None,
              "Family [Suffix], Title Given (Nickname) Middle Middle[,] "
-             "Suffix [, Suffix]",
+             "Suffix [, Suffix or Title]",
              "1.4.0"),
     3: Shape(None,
-             "Title Given Middle Family [Suffix], Suffix [, Suffix]",
+             "Title Given Middle Family [Suffix], Suffix or Title "
+             "[, Suffix or Title]",
              "1.4.0"),
     4: Shape("FAMILY_FIRST",
              "Title Family Given Middle Middle [Particle] [, Suffix]",

@@ -277,7 +277,23 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     than a numeral, and carries no `initial` tag), a connective, a
     word that is also bound given-name or particle vocabulary (`abd`
     heads `Abd Allah`; `vd`, `mc`), and the non-Latin honorific words.
+
+    The split credential group merges ('Ph. D.', the one piece carrying
+    the "suffix" piece tag) starts it as its one-token spelling 'PhD'
+    does: a run that started for one spelling of a word and not the
+    other is the vocabulary-against-shape split AGENTS.md's spelling
+    sweep names (#603 found it, 'Smith, John Ph. D. Jones' keeping
+    middle 'Jones' where 'Smith, John PhD Jones' reads suffix
+    'PhD Jones'). The no-comma spelling is not reached: `run_start`
+    asks only of the pieces `peel_walk` keeps, and the walk drops the
+    merged piece, so 'John Smith Ph. D. Jones' still reads family
+    'Jones'.
     """
+    if "suffix" in ptags:
+        # the Ph./D. pair alone: a connective join keeps the tag on the
+        # wider piece ('Ph. D. and Mary'), which starts nothing, as
+        # 'PhD and Mary' does not
+        return len(piece) == 2
     if len(piece) != 1 or not is_suffix_piece(piece, ptags, tokens):
         return False
     tok = tokens[piece[0]]
@@ -489,6 +505,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            lenient: bool,
                            one_case: bool | None,
                            anchored: list[int] | None = None,
+                           absorbed: list[int] | None = None,
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
@@ -543,8 +560,27 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     initial there being no shape anyone writes (#430). A title resets
     that: what follows a bare title is not continuing a credential.
 
+    A part OPENED by a credential is the postnominal part however it
+    goes on (#603, rules.md#C1): where an unambiguous suffix word that
+    starts #602's run (`starts_a_credential_run`) is the first suffix
+    word of the part, with only titles in front of it (a title/suffix
+    dual among them ends the chance: a credential behind one opens
+    nothing), every later
+    word is read as #602's run reads the given part -- a title word as
+    a title, anything else as a suffix -- so 'John Smith, PhD Jones'
+    and 'Smith, PhD Jones' read suffix 'PhD Jones'. A word of the
+    title vocabulary as well opens nothing (#603, Derek): in front of
+    a given name it is the listing form's title ('Smith, Ms Jane'),
+    and no count of the words before the comma can tell a two-word
+    surname from a given name and a family name, so none decides it.
+    `absorbed`, when passed, receives the index
+    of every piece the opened part takes that would otherwise have
+    made this None -- the caller reports them, as #602's run reports
+    the name words it takes.
+
     None covers both ways a segment can fail to be a run: a name word
-    anywhere in it, and no pieces at all ('Doe,, Jr.', which holds no
+    anywhere in it (in a part no credential opened), and no pieces at
+    all ('Doe,, Jr.', which holds no
     title to read by).
 
     `lenient` is Policy.lenient_comma_suffixes, and only the numeral
@@ -584,6 +620,13 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     # MD Ma' keeps its anchored 'Ma' only by this walk's reading).
     leading = True
     dual_led = False
+    # #603: the first suffix word of the leading run, which may open
+    # the part unless a dual stood ahead of it; asked whether it does
+    # only once a piece reaches the title and name branches below, so a
+    # part of nothing but suffix words ('Smith, Jr.', 'Smith, PhD MA')
+    # never pays for the question
+    opener: tuple[Sequence[int], Set[str]] | None = None
+    opened = False
     for piece, tags in zip(pieces, ptags):
         # the verdict just recorded IS "stands behind a suffix" -- keeping
         # a separate flag meant maintaining that equality by hand at three
@@ -595,6 +638,8 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                     and "vocab:title" in tokens[piece[0]].tags):
                 dual_led = True
             else:
+                if leading and not dual_led:
+                    opener = (piece, tags)
                 leading = False
             out.append(True)
             continue
@@ -621,6 +666,20 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                 and _numeral_behind_the_initial_veto(piece, tokens)):
             leading = False
             out.append(True)
+            continue
+        if opener is not None:
+            # asked once: cleared, as it is set at most once
+            opened = starts_a_credential_run(opener[0], opener[1], tokens)
+            opener = None
+        if opened:
+            # #602's run: a title word reads as a title, anything else
+            # as a suffix -- vocabulary only, as in the given part
+            if is_title_piece(piece, tags, tokens):
+                out.append(False)
+            else:
+                if absorbed is not None:
+                    absorbed.append(len(out))
+                out.append(True)
         elif is_leading_title(piece, tags, tokens):
             out.append(False)
         else:
