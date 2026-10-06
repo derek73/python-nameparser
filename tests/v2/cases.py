@@ -6189,6 +6189,17 @@ CASES: tuple[Case, ...] = (
                "assign's len(fam_pieces) > 1 exit the unit count reads "
                "it positionally, given 'Vega y Lopez' and no family. "
                "2.3.0 read given 'PhD', middle 'Jones'"),
+    Case("a_suffix_beside_a_one_piece_name_keeps_it_the_family",
+         "Vega y Lopez Jr., PhD Jones",
+         {"family": "Vega y Lopez", "suffix": "Jr., PhD Jones"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#603)",
+         notes="the positional read places PIECES, so it needs two name "
+               "pieces as well as two units: counting pieces of any kind "
+               "let the suffix piece 'Jr.' stand in for the second, and "
+               "the connective-joined 'Vega y Lopez' became the given "
+               "name with no family (the /simplify altitude review found "
+               "it). 2.3.0 read given 'PhD', middle 'Jones', suffix 'Jr.'"),
     Case("only_the_first_suffix_word_can_open_the_comma_part",
          "Smith, MA PhD Jones",
          {"given": "MA", "family": "Smith", "suffix": "PhD Jones"},
@@ -6208,6 +6219,19 @@ CASES: tuple[Case, ...] = (
                "absorbed, one word before the comma reading the whole "
                "part as suffixes (Derek). 2.3.0 read title 'Jr.', given "
                "'John'"),
+    Case("a_connective_led_title_past_the_second_comma_is_a_title",
+         "John Smith, Jr., and Secretary of State",
+         {"title": "and Secretary of State", "given": "John",
+          "family": "Smith", "suffix": "Jr."},
+         ambiguities=("comma-structure",),
+         classification="fix(#603)",
+         notes="C2's tail title read off the piece group's connective join "
+               "built (rules.md#C2): the join tags the piece a title "
+               "though its first token, 'and', is no title word, so the "
+               "test is is_title_piece's whole and not a first-token "
+               "check (the /simplify review found a first-token check "
+               "read suffix 'Jr., and Secretary of State' and no test "
+               "saw it). The flag stays: segment asks word by word"),
     Case("a_part_of_titles_behind_a_credential_was_already_postnominal",
          "Eric H. Holder, Jr. Attorney General",
          {"title": "Attorney General", "given": "Eric", "middle": "H.",

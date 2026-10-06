@@ -226,11 +226,13 @@ def segment(state: ParseState) -> ParseState:
         # word, and every other word a suffix word
         # period_joined_vocab for 'Lt.Gov.', one token that classify
         # (not yet run) tags a title by this same call, and that assign
-        # then reads as one
+        # then reads as one; a word without a period cannot be one
         titles = state.lexicon.titles
-        rest = tuple(i for i in seg
-                     if _normalize(t := state.tokens[i].text) not in titles
-                     and period_joined_vocab(t, state.lexicon) != "title")
+        rest = tuple([i for i in seg
+                      if _normalize(t := state.tokens[i].text) not in titles
+                      and ("." not in t
+                           or period_joined_vocab(t, state.lexicon)
+                           != "title")])
         return len(rest) < len(seg) and (not rest or suffixy(rest))
 
     # rules.md#C1: "the name reads as trailing suffixes when the part

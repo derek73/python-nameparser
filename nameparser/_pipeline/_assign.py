@@ -1234,28 +1234,34 @@ def assign(state: ParseState) -> ParseState:
         # (`_vocab.surname_unit_facts`), over EVERY token, so a suffix
         # word still stops a particle ('van Jr. Berg, Mr.' is two name
         # words); a unit counts when a non-suffix piece holds a token
-        # of it. One piece is one name word at most, and that is a
-        # DECISION, not only a saving: a connective join makes one piece
-        # of several units ('Vega y Lopez'), which the unit count alone
-        # would read positionally, losing the family to the given name
-        # behind a part a credential opens ('Vega y Lopez, PhD Jones').
-        # Settled in C before any of that is built ('Smith, Jr.').
-        positional = False
+        # of it. The positional read places PIECES, so it also needs two
+        # name pieces, and that is a DECISION, not only a saving: a
+        # connective join makes one piece of several units ('Vega y
+        # Lopez'), which the unit count alone would read positionally,
+        # losing the family to the given name behind a part a credential
+        # opens ('Vega y Lopez, PhD Jones', and with a suffix piece beside
+        # it, 'Vega y Lopez Jr., PhD Jones'). One piece settles it in C
+        # before anything is built ('Smith, Jr.').
+        names = 0
         if reading is not None and len(fam_pieces) > 1:
-            idx = [i for piece in fam_pieces for i in piece]
-            named = {i for k, piece in enumerate(fam_pieces)
-                     if not is_suffix_piece(piece, fam_tags[k], tokens)
-                     for i in piece}
-            names = 0
-            start = 0
-            for end in unit_ends([surname_unit_facts(tokens[i].tags, k == 0)
-                                  for k, i in enumerate(idx)],
-                                 chain=False):
-                if not named.isdisjoint(idx[start:end]):
-                    names += 1
-                start = end
-            positional = names > 1
-        if positional:
+            # a loop, not a comprehension: no frame of its own on 3.11
+            named: set[int] = set()
+            named_pieces = 0
+            for k, piece in enumerate(fam_pieces):
+                if not is_suffix_piece(piece, fam_tags[k], tokens):
+                    named.update(piece)
+                    named_pieces += 1
+            if named_pieces > 1:
+                idx = [i for piece in fam_pieces for i in piece]
+                start = 0
+                for end in unit_ends([surname_unit_facts(tokens[i].tags,
+                                                         k == 0)
+                                      for k, i in enumerate(idx)],
+                                     chain=False):
+                    if not named.isdisjoint(idx[start:end]):
+                        names += 1
+                    start = end
+        if names > 1:
             order = _assign_main(0, state, tokens, ambiguities)
         else:
             # rules.md#P2: a particle "joins the words after it into one
@@ -1291,8 +1297,11 @@ def assign(state: ParseState) -> ParseState:
     for seg_idx in range(tail, len(state.segments)):
         for piece, ptags_ in zip(state.pieces[seg_idx],
                                  state.piece_tags[seg_idx]):
-            # the tag tests inline ahead of the predicate, so a tail of
-            # suffix words pays no frame for the question
+            # the tag tests inline ahead of the predicate: every suffix
+            # comma's tail runs this ('John Smith, Jr.'), and the call
+            # would be its frame. Both arms are needed -- a connective
+            # join tags a piece a title though its first token is none
+            # ('and Secretary of State')
             _set_roles(tokens, piece,
                        Role.TITLE
                        if (("title" in ptags_

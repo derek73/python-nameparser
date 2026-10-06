@@ -626,7 +626,6 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     # part of nothing but suffix words ('Smith, Jr.', 'Smith, PhD MA')
     # never pays for the question
     opener: tuple[Sequence[int], Set[str]] | None = None
-    asked = False
     opened = False
     for piece, tags in zip(pieces, ptags):
         # the verdict just recorded IS "stands behind a suffix" -- keeping
@@ -668,9 +667,10 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
             leading = False
             out.append(True)
             continue
-        if not asked and opener is not None:
-            asked = True
+        if opener is not None:
+            # asked once: cleared, as it is set at most once
             opened = starts_a_credential_run(opener[0], opener[1], tokens)
+            opener = None
         if opened:
             # #602's run: a title word reads as a title, anything else
             # as a suffix -- vocabulary only, as in the given part
