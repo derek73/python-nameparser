@@ -2,6 +2,7 @@
 tagged the words (#613): `_comma.decide`. These tests were segment's
 until the decision moved; they run the stages up to classify and then
 the decision, as group does."""
+from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import _comma
 from nameparser._pipeline._classify import classify
@@ -339,3 +340,27 @@ def test_an_empty_part_before_the_comma_still_reads_the_part_after_it() -> None:
         assert decided.structure is Structure.FAMILY_COMMA, text
         assert [decided.tokens[i].text for i in decided.segments[1]
                 if decided.tokens[i].role is Role.SUFFIX] == bound, text
+
+
+def test_a_bound_caps_word_keeps_its_capitals_in_case_repair() -> None:
+    # decide writes the caps shape's marks on a word it binds (#564,
+    # rules.md#R4), so case repair keeps the capitals -- also where the
+    # run test declined and #603's opener bound the part anyway; the
+    # marks had been cleared there, and 'XYZ' repaired to 'Xyz'
+    # (#613's PR review). A name in one case carries no contrast.
+    def repaired(text: str) -> str:
+        return str(parse(text).capitalized(force=True))
+    assert repaired("John Smith, XYZ") == "John Smith XYZ"
+    assert repaired("John Smith, PhD Jones XYZ") == \
+        "John Smith PhD Jones XYZ"
+    assert repaired("JOHN SMITH, PhD JONES XYZ") == \
+        "John Smith PhD Jones Xyz"
+
+
+def test_a_lone_core_after_the_comma_is_a_word_of_the_part() -> None:
+    # the cores guard needs two tokens: a core alone is no delimiter
+    # between suffixes, so it stays in the part (garbage in, pinned
+    # because the guard reads so)
+    policy = Policy(extra_suffix_delimiters=frozenset({" - "}))
+    name = Parser(policy=policy).parse("John Smith, -")
+    assert (name.given, name.family, name.suffix) == ("John", "Smith", "-")

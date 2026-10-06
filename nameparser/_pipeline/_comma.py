@@ -321,8 +321,6 @@ def decide(state: ParseState) -> ParseState:
                         or (shape and i not in shape)):
                     licensed.discard(i)
                     caps.discard(i)
-        else:
-            caps.clear()
         if licensed:
             anchored = []
             absorbed = []

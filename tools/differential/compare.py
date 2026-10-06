@@ -1755,6 +1755,10 @@ _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     "expected_since_2.3.0.toml": {},
     "expected_since_1.4.0.toml": {
         "Andrews, M.D.": ("given", "suffix"),
+        # #613's PR review (2026-10-06): a tolerated CJK case row, H1's
+        # title-and-one-word reading behind a comma; both CJK rules
+        # admit its {family, given}
+        "Dr 김민준, MA": ("family", "given"),
         "田中, 太郎さん": ("given", "suffix"),
         "김, 민준씨": ("given", "suffix"),
         "김, 민준씨 (Jimmy)": ("given", "suffix"),

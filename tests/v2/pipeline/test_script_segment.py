@@ -224,7 +224,8 @@ _AGREEMENT_HEADS = ("김민준 박", "마틴 킹", "Smith 김민준씨", "Dr 김
 _AGREEMENT_TAILS = (
     "MA", "Ma", "MA PhD", "PhD", "Jr.", "Jr. MA", "MD Ma", "Ed", "Jones",
     "G.J.", "MA V", "V MA", "MA I", "V.", "MA V.", "X.Y.Z.", "MA X.Y.Z.",
-    "MA Ph. D.", "Dr MA", "MA Dr", "XYZ", "Esq.")
+    "MA Ph. D.", "Dr MA", "MA Dr", "XYZ", "Esq.", "MA Jones", "Ma Jones",
+    "Jones MA")
 #: the count arm's own reach: a listed member behind two name words
 _DIVIDES = {(head, tail) for head in ("김민준 박", "마틴 킹")
             for tail in ("MA", "Ma", "MA PhD", "Jr. MA", "MD Ma", "Ed")}
@@ -265,9 +266,13 @@ def test_the_division_never_outruns_the_comma_decision() -> None:
                         is not Structure.SUFFIX_COMMA):
                     outran.add((head, tail, policy.lenient_comma_suffixes))
                 if divided and (head, tail) in _DIVIDES:
-                    divided_where_expected.add((head, tail))
+                    divided_where_expected.add(
+                        (head, tail, policy.lenient_comma_suffixes))
     assert outran == set()
-    assert divided_where_expected == _DIVIDES
+    # per policy: a division lost under one policy alone must fail
+    assert divided_where_expected == {
+        (head, tail, lenient) for head, tail in _DIVIDES
+        for lenient in (True, False)}
 
 
 def test_suffix_comma_name_part_still_splits() -> None:

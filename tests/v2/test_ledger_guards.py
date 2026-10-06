@@ -3641,8 +3641,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # wider rule: '山田 ｢ﾀﾛｰ｣ ﾀﾛｳ' and '山田｢ﾀﾛｰ｣太郎' lie in its script
         # span ('John ｢Jack｣ Smith' does not); fix(#597), which declares
         # `nickname` beside the name fields, explains all three.
+        # 2026-10-06, #613's PR review: 155 -> 161; its reach absorbed the tolerated CJK case rows the review added.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(155, ('family', 'given', 'middle'), "4b6ccd174ab1", None),
+            _Claim(161, ('family', 'given', 'middle'), "adf03d76bdf9", None),
         # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
         # rather than with the rule -- this change added 35
         # maiden-clause names as rules.md example lines and
@@ -4034,12 +4035,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # round added ('田中, 太郎 MA' and '김, 민준 MA'). Both
         # regexes here ask only for a comma beside a CJK codepoint,
         # so every CJK comma name in the corpora reaches them.
+        # 2026-10-06, #613's PR review: 34 -> 40; its reach absorbed the tolerated CJK case rows the review added.
         "fix(cjk-comma-honorific-peel) glued honorific peels off a post-comma given name":
-            _Claim(34, ('given', 'suffix'), "ec7e1119a738", None),
+            _Claim(40, ('given', 'suffix'), "2a0adafe21a2", None),
         # 2026-09-18: 26 -> 29, the same three new CJK comma forms.
         # 2026-09-18, #531: 32 -> 34, the same two as the rule above.
+        # 2026-10-06, #613's PR review: 34 -> 40; its reach absorbed the tolerated CJK case rows the review added.
         "fix(cjk-comma-compound) comma routing compounds with the CJK order flip":
-            _Claim(34, ('family', 'given', 'suffix', 'title'), "ec7e1119a738", None),
+            _Claim(40, ('family', 'given', 'suffix', 'title'), "2a0adafe21a2", None),
         # 37 -> 35 with the 2026-09-05 narrowing, which is a rule
         # NARROWING and not corpus movement: the three negative
         # lookbehinds stop the regex matching a listed honorific
@@ -4060,8 +4063,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # instead, and the three comma rows produce no diff at this
         # baseline at all. `radar unclassified` stays 0.
         # 2026-09-18: 40 -> 41. One new corpus name, 'J.씨'.
+        # 2026-10-06, #613's PR review: 44 -> 47; its reach absorbed the tolerated CJK case rows the review added.
         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix":
-            _Claim(44, ('family', 'given', 'suffix'), "1587ce883dab", None),
+            _Claim(47, ('family', 'given', 'suffix'), "aab23ad7559c", None),
         "fix(cjk-honorific-suffix) postnominal honorifics recognized, compounding with the CJK order flip":
             _Claim(19, ('family', 'given', 'middle', 'suffix'), "aa475ddd4745", None),
         # 4 -> 6 on 2026-09-13: 'ХОСЕ И МАРИЯ САНТОС' and 'хосе и
@@ -4823,8 +4827,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # wider rule: '山田 ｢ﾀﾛｰ｣ ﾀﾛｳ' and '山田｢ﾀﾛｰ｣太郎' lie in its script
         # span ('John ｢Jack｣ Smith' does not); fix(#597), which declares
         # `nickname` beside the name fields, explains all three.
+        # 2026-10-06, #613 PR review: 155 -> 161; its reach absorbed the tolerated CJK case rows the review added.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(155, ('_ambiguities', 'family', 'given', 'middle'), "4b6ccd174ab1", None),
+            _Claim(161, ('_ambiguities', 'family', 'given', 'middle'), "adf03d76bdf9", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -4832,8 +4837,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 35 -> 40 since #323 by the same five names, the 1.4 twin's
         # entry carrying the arithmetic.
         # 2026-09-18: 40 -> 41. One new corpus name, 'J.씨'.
+        # 2026-10-06, #613 PR review: 44 -> 47; its reach absorbed the tolerated CJK case rows the review added.
         "fix(#308/#312/#319/#320) glued CJK honorific peeled off the name into suffix":
-            _Claim(44, ('family', 'given', 'suffix'), "1587ce883dab", None),
+            _Claim(47, ('family', 'given', 'suffix'), "aab23ad7559c", None),
         "fix(#307/#308/#320) spaced CJK postnominal honorific routed to suffix":
             _Claim(16, ('family', 'given', 'middle', 'suffix'), "6d390e518bd2", None),
         # 2026-09-19, #533: 5 -> 6, the same one new tolerated
@@ -7004,6 +7010,9 @@ _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
         "Andrews, M.D.":
             "fix(comma-family) lone post-comma piece routes to "
             "suffix/title, not first",
+        # #613's PR review: the hangul rule is the one that reads the
+        # native-script name; the comma routing adds nothing there
+        "Dr 김민준, MA": "fix(#271/#272/#298)",
         "田中, 太郎さん": "fix(cjk-comma-honorific-peel)",
         "김, 민준씨": "fix(cjk-comma-honorific-peel)",
         "김, 민준씨 (Jimmy)": "fix(cjk-comma-honorific-peel)",
@@ -8670,8 +8679,11 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
         # regexes. The pair is unchanged and no rule was widened --
         # this counter is the shared corpus REACH, so it moves with
         # every corpus addition that lands in the overlap.
+        # 2026-10-06, #613's PR review: 23 -> 26, the tolerated CJK
+        # rows it added ('김민준씨, MA PhD', 'Smith 김민준씨, XYZ',
+        # 'John 田中さん, XYZ') landing in both regexes
         ("fix(cjk-comma-compound) comma routing compounds with the CJK order flip",
-         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 23),
+         "fix(cjk-glued-honorific-peel) glued honorific peels into suffix", 26),
         ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",
          "fix(suffix-routing) a two-token name ending in a roman numeral keeps it in `suffix`", 1),
         ("fix(cjk-glued-honorific-peel) glued honorific peels into suffix",

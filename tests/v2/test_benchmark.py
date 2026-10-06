@@ -814,7 +814,7 @@ def test_a_listing_comma_with_nothing_to_decide_skips_the_counts() -> None:
     the comma that holds a name word, no ambiguous member and no core
     returns before C1's counts are taken. Recorded negative control,
     a review mutation of #613 (2026-10-06, py3.11): with the early
-    return removed no output moves, `_whole_name` is entered once on
+    return's whole `if` deleted no output moves, `_whole_name` is entered once on
     'Doe Smith, Jane Q.', and that parse costs 22 more frames -- a
     regression no output test and no ±2% band could see, since the
     reference parse has no comma. The ambiguous-class count is asked
