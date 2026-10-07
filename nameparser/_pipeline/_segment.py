@@ -79,27 +79,20 @@ def segment(state: ParseState) -> ParseState:
     # share).
     one_case = state.one_case
 
-    # The own-words walk, once per parse, for `case_class`.
-    own_span: tuple[list[str], int] | None = None
-
     def case_class() -> bool:
-        nonlocal one_case, own_span
+        nonlocal one_case
         if one_case is None:
-            if own_span is None:
-                own_span = own_words(state.tokens, state.comma_offsets,
-                                     state.lexicon.maiden_markers)
-            one_case = is_one_case(own_span[0])
+            one_case = is_one_case(own_words(
+                state.tokens, state.comma_offsets,
+                state.lexicon.maiden_markers)[0])
         return one_case
 
-    def texts(seg: tuple[int, ...]) -> list[str]:
-        return [state.tokens[i].text for i in seg]
-
-    # Inlined rather than built on `texts` (measured, #289/#516's
-    # eager-gate fix round): on 3.11 a list comprehension IS a frame
+    # The texts are built inline rather than through a helper
+    # (measured, #289/#516's eager-gate fix round): on 3.11 a list
+    # comprehension IS a frame
     # (PEP 709 inlines it only from 3.12 on; see
     # tools/perf/call_count.py's docstring), so wrapping it in another
-    # call doubles the cost of every tail segment asked. `texts` serves
-    # the flagged tail segment's joined display.
+    # call doubles the cost of every tail segment asked.
     #
     # `case` is ParseState.one_case: None is the case-FREE reading,
     # which is what every caller on this path wants, and the tail
@@ -168,7 +161,6 @@ def segment(state: ParseState) -> ParseState:
     # pair) and assign's reading of a run the capitals settle, with a
     # second count in assign besides. What stays here is the
     # segmentation and C2's flag on a part past the second comma.
-    structure = Structure.FAMILY_COMMA
     ambiguities = list(state.ambiguities)
     # rules.md#C2: "a non-empty extra part that is not entirely suffix
     # words is flagged as a structural ambiguity rather than rejected"
@@ -202,13 +194,13 @@ def segment(state: ParseState) -> ParseState:
         # rarest reading.
         if (seg and not suffixy(seg) and not suffixy(seg, case_class())
                 and not class_run(seg) and not titles_and_suffixes(seg)):
-            texts_joined = " ".join(texts(seg))
+            texts_joined = " ".join([state.tokens[i].text for i in seg])
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.COMMA_STRUCTURE,
                 f"segment {texts_joined!r} beyond the recognized comma "
                 f"structures; consumed as suffix best-effort",
                 tuple(seg)))
     return copy_with(state, segments=tuple(groups),
-                     structure=structure,
+                     structure=Structure.FAMILY_COMMA,
                      ambiguities=tuple(ambiguities),
                      one_case=one_case)

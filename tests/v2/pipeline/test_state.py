@@ -292,8 +292,10 @@ def test_stage_field_ownership() -> None:
         # comma form over as the family comma, and group's head decides
         # it once classify has tagged the words (_comma.decide),
         # binding a postnominal part's roles and dropping its cores
+        # and empties the segment of a part it bound, so no join can
+        # reach it (#613's /simplify)
         "group": {"tokens", "pieces", "piece_tags", "dropped",
-                  "ambiguities", "structure"},
+                  "ambiguities", "structure", "segments"},
         # assign also records `order`: the effective order it read the
         # name under, which post_rules needs and must not re-derive
         "assign": {"tokens", "ambiguities", "order"},

@@ -7,8 +7,8 @@ the only stage after tokenize that reads it); and, through
 contrast) and dropped, which decide extends.
 Produces: structure -- its head decides a comma form once the words
 are tagged (rules.md#C1, #613, `_comma.decide`), binding the SUFFIX and
-TITLE roles of a postnominal part after the comma and dropping that
-part's delimiter cores before any join, plus the SUFFIX_OR_NAME
+TITLE roles of a postnominal part after the comma, emptying its
+segment and dropping its delimiter cores before any join, plus the SUFFIX_OR_NAME
 ambiguities that decision reports and the caps shape's acronym tags on
 a bound all-caps word (#564); pieces + piece_tags per segment
 (runs of token indices -- tokens are NEVER joined into strings: the
@@ -1270,13 +1270,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
 def group(state: ParseState) -> ParseState:
     # rules.md#C1's decision, read once now that classify has tagged
     # the words and before any join below can reach the part after the
-    # comma (#613); a postnominal part comes back bound, in a new state
-    # (a name with no comma asks nothing)
-    bound_any = False
+    # comma (#613); a postnominal part comes back bound, its segment
+    # emptied (a name with no comma asks nothing)
     if state.structure is Structure.FAMILY_COMMA:
-        decided = _comma.decide(state)
-        bound_any = decided is not state
-        state = decided
+        state = _comma.decide(state)
     tokens = list(state.tokens)
     dropped = list(state.dropped)
     ambiguities = list(state.ambiguities)
@@ -1292,22 +1289,7 @@ def group(state: ParseState) -> ParseState:
     tail_start = {Structure.SUFFIX_COMMA: 1,
                   Structure.FAMILY_COMMA: 2}.get(state.structure)
     family_comma = state.structure is Structure.FAMILY_COMMA
-    bound = frozenset(dropped)
     for seg_idx, seg in enumerate(state.segments):
-        # the part decide bound, and the cores it dropped, are no
-        # piece of any join -- filtered only where it bound one, and by
-        # a comprehension: a generator here is a frame per token on
-        # 3.11. The cores need the filter of their own: decide binds
-        # every word around a core, so the core is all that is left of
-        # the segment, the core cut below never cuts a lone token, and
-        # without the filter the dropped core became a piece and assign
-        # gave it a suffix role ('John Smith, PhD - MD' under ' - ';
-        # no output moved, every reader asking `dropped`, which is why
-        # a first review took the filter for dead and a second found
-        # the token's role)
-        if bound_any:
-            seg = tuple([i for i in seg
-                         if tokens[i].role is None and i not in bound])
         if family_comma:
             bound_join = (BoundJoin.LENIENT if seg_idx == 1
                           else BoundJoin.DISABLED)

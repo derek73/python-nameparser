@@ -406,7 +406,8 @@ def _postnominal_behind_a_whole_name(state: ParseState) -> bool:
             and name_word_count(own, state.lexicon, state.policy) > 1)
 
 
-def _peel_honorific_tail(state: ParseState) -> ParseState:
+def _peel_honorific_tail(state: ParseState,
+                         postnominal: bool) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
     the existing machinery do the rest. Suffix classification claims
@@ -568,8 +569,7 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
     # both runs offer a site, so the decline stands and the person's own
     # 씨 is peeled rather than the junk one behind the comma.
     runs = state.segments[:1]
-    if (state.structure is Structure.FAMILY_COMMA
-            and not _postnominal_behind_a_whole_name(state)):
+    if state.structure is Structure.FAMILY_COMMA and not postnominal:
         second = [state.tokens[j].text for j in state.segments[1]]
         # `one_case` is passed for the reason the field exists: the
         # credential lean is part of what "wholly suffix" MEANS since
@@ -583,9 +583,12 @@ def _peel_honorific_tail(state: ParseState) -> ParseState:
         # two spellings parsed two ways (review round, #289/#516).
         # `segment` records the fact only where C2's flag asks for it,
         # so `_one_case` asks it here for every other name (#613).
-        if not (is_wholly_suffix(second, state.lexicon, state.policy,
-                                 one_case=_one_case(state))
-                and _peel_site(state, state.segments[0], tails)):
+        # the site test first: it is the cheaper half, and false for
+        # every name whose part before the comma holds no glued
+        # honorific, which spares those the case fact (#613's /simplify)
+        if not (_peel_site(state, state.segments[0], tails)
+                and is_wholly_suffix(second, state.lexicon, state.policy,
+                                     one_case=_one_case(state))):
             runs = state.segments[:2]
     site = _peel_site(state, [j for seg in runs for j in seg], tails)
     if site is None:
@@ -829,9 +832,17 @@ def script_segment(state: ParseState) -> ParseState:
     # string does not change the answer. Placing it above the block
     # also keeps a future segmentation gate from silently capturing
     # it: a new gate lands with its siblings, below.
-    state = _peel_honorific_tail(state)
-    if (state.structure is Structure.FAMILY_COMMA
-            and not _postnominal_behind_a_whole_name(state)):
+    # The stand-in's answer, asked once: the peel reads it, and the gate
+    # below re-asks only when the peel changed the state (its tail token
+    # leaves the count). Asked twice on the same state it had been ~12%
+    # of an accented Latin comma name's parse (#613's /simplify).
+    postnominal = (state.structure is Structure.FAMILY_COMMA
+                   and _postnominal_behind_a_whole_name(state))
+    peeled = _peel_honorific_tail(state, postnominal)
+    if peeled is not state and state.structure is Structure.FAMILY_COMMA:
+        postnominal = _postnominal_behind_a_whole_name(peeled)
+    state = peeled
+    if state.structure is Structure.FAMILY_COMMA and not postnominal:
         return state    # the comma already drew the SURNAME boundary
     if state.interpunct_offsets:
         # #298: a 间隔号-divided name is a transcription -- its pieces

@@ -31,7 +31,7 @@ from collections.abc import Sequence
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._pieces import (
-    has_name_content, is_suffix_piece, listed_lean, own_words,
+    has_name_content, is_suffix_piece, is_title_piece, listed_lean, own_words,
     segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
@@ -95,15 +95,14 @@ def _title_chains(pieces: list[tuple[int, ...]], ptags: list[frozenset[str]],
                 and not (len(text) == 1 and text.isalpha())):
             # the neighbour it takes its kind from: the one on the left,
             # or on the right where the connective opens the part
+            kind: Sequence[int]
             if out:
                 kind, kind_tags = out[-1], out_tags[-1]
             elif k + 1 < n:
-                kind, kind_tags = list(pieces[k + 1]), ptags[k + 1]
+                kind, kind_tags = pieces[k + 1], ptags[k + 1]
             else:
-                kind, kind_tags = [], frozenset()
-            if kind and ("title" in kind_tags or (
-                    len(kind) == 1
-                    and "vocab:title" in tokens[kind[0]].tags)):
+                kind, kind_tags = (), frozenset()
+            if kind and is_title_piece(kind, kind_tags, tokens):
                 # a connective opening the part joins into an empty piece
                 if not out:
                     out.append([])
@@ -186,12 +185,12 @@ def decide(state: ParseState) -> ParseState:
             or len(state.segments) < 2):
         return state
     seg0, seg1 = state.segments[0], state.segments[1]
-    # An EMPTY part before the comma is no whole name, but the part
-    # after it is still read: ', PhD' is a credential with no name in
-    # front of it, as 2.3.0 read it, and declining here left the part
-    # to the listing form's walk, which made 'PhD' the given name and
-    # ', Jr.' a title (#613's PR review; empty surname fields in CSV
-    # data write exactly this)
+    # Nothing after the comma: nothing to read. An EMPTY part BEFORE it
+    # is read on, being no whole name (`_whole_name` answers no), so
+    # ', PhD' binds its credential under the family comma as 2.3.0 read
+    # it; returning here on an empty head left the part to the listing
+    # walk, which made 'PhD' the given name and ', Jr.' a title (#613's
+    # PR review; empty surname fields in CSV data write exactly this)
     if not seg1:
         return state
     tokens = list(state.tokens)
@@ -218,9 +217,6 @@ def decide(state: ParseState) -> ParseState:
     _title_chains(p1, pt1, tokens)
     anchored: list[int] = []
     absorbed: list[int] = []
-    reading = segment_suffix_reading(
-        p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
-        anchored, absorbed)
     # The words of the class in the part, and the unlisted all-caps
     # words the caps shape could admit: only a part holding one asks
     # the count, so 'Smith, John' and 'John Smith, PhD' never build it.
@@ -229,14 +225,22 @@ def decide(state: ParseState) -> ParseState:
                   or ("vocab:suffix" not in tags
                       and tokens[p[0]].text.isalpha()
                       and tokens[p[0]].text.isupper()))]
-    # A part holding a word no vocabulary claims as a suffix, and none
-    # of the class, is the given part: the listing form stands.
-    # (a declared delimiter's core may sit inside a word, 'RN/CRNA',
-    # which only the lenient fallback below reads)
-    if reading is None and not maybe and not cores and not all(
-            "suffix" in t or "vocab:suffix" in tokens[p[0]].tags
-            for p, t in zip(p1, pt1)):
-        return state
+    # The part is read ONCE: here where it holds no word of the class,
+    # after the count below where it does, with the words the count
+    # licensed (a read here and a second after licensing threw the first
+    # away, #613's /simplify). A part holding a word no vocabulary
+    # claims as a suffix, and none of the class, is the given part: the
+    # listing form stands. (a declared delimiter's core may sit inside a
+    # word, 'RN/CRNA', which only the lenient fallback below reads)
+    reading: tuple[bool, ...] | None = None
+    if not maybe:
+        reading = segment_suffix_reading(
+            p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
+            anchored, absorbed)
+        if reading is None and not cores and not all(
+                "suffix" in t or "vocab:suffix" in tokens[p[0]].tags
+                for p, t in zip(p1, pt1)):
+            return state
     names = 0
     caps: set[int] = set()
     licensed: set[int] = set()
@@ -325,12 +329,10 @@ def decide(state: ParseState) -> ParseState:
                         or (shape and i not in shape)):
                     licensed.discard(i)
                     caps.discard(i)
-        if licensed:
-            anchored = []
-            absorbed = []
-            reading = segment_suffix_reading(
-                p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
-                anchored, absorbed, licensed)
+    if maybe:
+        reading = segment_suffix_reading(
+            p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
+            anchored, absorbed, licensed)
     if whole is None:
         whole = _whole_name(seg0, tokens)
     # rules.md#C1: "By default a recognized suffix word counts even
@@ -360,25 +362,33 @@ def decide(state: ParseState) -> ParseState:
     # silence" -- "unless what said so is nothing but other paired
     # initials". A run whose every class word is listed and settled by
     # its capitals is read on that evidence, not flipped by the count.
-    members = [p[0] for p in p1 if len(p) == 1
-               and (AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags
-                    or p[0] in caps)]
-    listed = [i for i in members
-              if i not in caps and SHAPE_ACRONYM_TAG not in tokens[i].tags]
-    settled = (len(p1) > 1 and bool(members)
-               and len(listed) == len(members)
-               and all(listed_lean(tokens[i], state.one_case) == "credential"
-                       for i in listed))
-    member_set = frozenset(members)
-    pairs = [k for k, p in enumerate(p1) if p[0] in member_set
-             and (is_paired_initials(tokens[p[0]].text)
-                  or (p[0] in caps and len(tokens[p[0]].text) == 2))]
-    # spoken for by each other only: every class word a pair, and only
-    # titles among the other words in front of the first
-    pair_only = (len(pairs) >= 2 and len(pairs) == len(members)
-                 and all(p[0] in member_set or (len(p) == 1 and "vocab:title"
-                                             in tokens[p[0]].tags)
-                         for p in p1[:pairs[0]]))
+    # A caps word bound above carries the class tags now, so membership
+    # is the tag alone; a part with no word of the class has none, and
+    # skips the bookkeeping (three list comprehensions, a frame each on
+    # 3.11, on every bound part)
+    members: list[int] = []
+    listed: list[int] = []
+    settled = pair_only = False
+    if maybe:
+        members = [p[0] for p in p1 if len(p) == 1
+                   and AMBIGUOUS_ACRONYM_TAG in tokens[p[0]].tags]
+        listed = [i for i in members
+                  if SHAPE_ACRONYM_TAG not in tokens[i].tags]
+        settled = (len(p1) > 1 and bool(members)
+                   and len(listed) == len(members)
+                   and all(listed_lean(tokens[i], state.one_case)
+                           == "credential" for i in listed))
+        member_set = frozenset(members)
+        pairs = [k for k, p in enumerate(p1) if p[0] in member_set
+                 and (is_paired_initials(tokens[p[0]].text)
+                      or (p[0] in caps and len(tokens[p[0]].text) == 2))]
+        # spoken for by each other only: every class word a pair, and
+        # only titles among the other words in front of the first
+        pair_only = (len(pairs) >= 2 and len(pairs) == len(members)
+                     and all(p[0] in member_set
+                             or (len(p) == 1
+                                 and "vocab:title" in tokens[p[0]].tags)
+                             for p in p1[:pairs[0]]))
     if whole and run and ((listed and not settled) or caps or pair_only):
         if len(part) == 1:
             what = (f"{tokens[part[0]].text!r} after the comma is also an "
@@ -415,7 +425,13 @@ def decide(state: ParseState) -> ParseState:
                 AmbiguityKind.SUFFIX_OR_NAME,
                 f"{text!r} follows a credential, so it reads as part of the "
                 f"suffix run; it may be a name word", tuple(p1[k])))
+    # Every word of the part is bound above or dropped as a core, so the
+    # segment hands group nothing to join -- emptied here, where the
+    # binding is, as #601's take removes what it binds, rather than
+    # filtered out again in group (#613's /simplify)
     return copy_with(state, tokens=tuple(tokens),
+                     segments=state.segments[:1] + ((),)
+                     + state.segments[2:],
                      structure=(Structure.SUFFIX_COMMA if whole
                                 else Structure.FAMILY_COMMA),
                      ambiguities=tuple(ambiguities),

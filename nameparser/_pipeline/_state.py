@@ -150,6 +150,7 @@ class ParseState:
     in the segment runs shifts by n); classify -> token tags AND
     one_case; group -> structure (its head decides a comma form, #613)
     AND the SUFFIX/TITLE roles of a postnominal part after the comma,
+    whose segment it empties so no join reaches it,
     then pieces/piece_tags/dropped AND maiden token roles, plus the
     SUFFIX/TITLE roles of the run a maiden take gives up (#601);
     assign -> the remaining token roles AND `order`, the effective

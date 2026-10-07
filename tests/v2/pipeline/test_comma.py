@@ -33,6 +33,16 @@ def _texts(state: ParseState, seg: tuple[int, ...]) -> list[str]:
     return [state.tokens[i].text for i in seg]
 
 
+def _part(state: ParseState) -> list[str]:
+    """The part after the comma: decide empties its segment when it
+    binds the part (#613's /simplify), so a bound part is read off the
+    roles decide wrote, and a declined one off its segment."""
+    if state.segments[1]:
+        return _texts(state, state.segments[1])
+    return [t.text for t in state.tokens
+            if t.role in (Role.SUFFIX, Role.TITLE)]
+
+
 def _flip_reports(state: ParseState) -> list[list[str]]:
     return [_texts(state, a.indices) for a in state.ambiguities
             if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
@@ -41,7 +51,8 @@ def _flip_reports(state: ParseState) -> list[list[str]]:
 def test_suffix_comma_when_all_rest_groups_are_suffixes() -> None:
     out = _decided("John Smith, PhD")
     assert out.structure is Structure.SUFFIX_COMMA
-    assert [_texts(out, s) for s in out.segments] == [["John", "Smith"], ["PhD"]]
+    assert (_texts(out, out.segments[0]), _part(out)) == (
+        ["John", "Smith"], ["PhD"])
 
 
 def test_suffix_comma_lenient_accepts_initial_shaped_suffix_word() -> None:
@@ -63,8 +74,8 @@ def test_the_credential_pair_merges_anywhere_in_the_run() -> None:
     # would decide it, so that input pinned nothing.
     out = _decided("John Smith, MA Ph. D.")
     assert out.structure is Structure.SUFFIX_COMMA
-    assert [_texts(out, s) for s in out.segments] == [
-        ["John", "Smith"], ["MA", "Ph.", "D."]]
+    assert (_texts(out, out.segments[0]), _part(out)) == (
+        ["John", "Smith"], ["MA", "Ph.", "D."])
 
 
 def test_structure_flips_for_the_ambiguous_class_on_a_name_word_count() -> None:
@@ -142,7 +153,7 @@ def test_a_flip_no_listed_member_takes_part_in_is_silent() -> None:
                  "John Smith, X.Y. P.Q."):
         out = _decided(text)
         assert out.structure is Structure.SUFFIX_COMMA, text
-        assert _flip_reports(out) == [_texts(out, out.segments[1])], text
+        assert _flip_reports(out) == [_part(out)], text
 
 
 def test_the_structure_flip_reports_a_verbatim_detail() -> None:
@@ -183,7 +194,7 @@ def test_the_name_word_count_reads_a_run_as_it_reads_one_word() -> None:
                  "John Smith, X.Y.Z. MA", "John Smith, Ph. D. Ma"):
         out = _decided(text)
         assert out.structure is Structure.SUFFIX_COMMA, text
-        assert _flip_reports(out) == [_texts(out, out.segments[1])], text
+        assert _flip_reports(out) == [_part(out)], text
     # one name word before the comma: the count leaves the family comma
     out = _decided("Smith, PhD Ma")
     assert out.structure is Structure.FAMILY_COMMA
@@ -286,9 +297,9 @@ def test_the_run_test_declines_a_name_word_and_a_numeral() -> None:
     for text in ("John Smith, PhD Jones Ma", "John Smith, PhD v Ma"):
         out = _decided(text)
         assert out.structure is Structure.SUFFIX_COMMA, text
-        assert _texts(out, out.segments[1]) not in _flip_reports(out), text
+        assert _part(out) not in _flip_reports(out), text
     out = _decided("John Smith, III Ma")
-    assert _flip_reports(out) == [_texts(out, out.segments[1])]
+    assert _flip_reports(out) == [_part(out)]
 
 
 def test_a_listed_surname_still_carries_the_name_contrast() -> None:
@@ -338,8 +349,7 @@ def test_an_empty_part_before_the_comma_still_reads_the_part_after_it() -> None:
                         (", MD PhD", ["MD", "PhD"])):
         decided = _decided(text)
         assert decided.structure is Structure.FAMILY_COMMA, text
-        assert [decided.tokens[i].text for i in decided.segments[1]
-                if decided.tokens[i].role is Role.SUFFIX] == bound, text
+        assert _part(decided) == bound, text
 
 
 def test_a_bound_caps_word_keeps_its_capitals_in_case_repair() -> None:
