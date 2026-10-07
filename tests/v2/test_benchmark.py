@@ -78,12 +78,17 @@ from nameparser._policy import Policy
 #: row, in #617's /simplify, when group stopped running the rootname
 #: count and the shared loop over segments with no connective left
 #: free to join (decisions.md#parse-cost).
+#:
+#: Lowered 2026-10-07 by 8 on every row when `_group_segment`'s last
+#: three predicate closures (`prefix`, `suffix`, `marker`) were
+#: inlined: the reference name asked `prefix` 7 times and `suffix`
+#: once, each a frame of its own (decisions.md#parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 325, "facade": 362},
-    (3, 12): {"parse": 304, "facade": 341},
-    (3, 13): {"parse": 304, "facade": 341},
-    (3, 14): {"parse": 304, "facade": 341},
-    (3, 15): {"parse": 304, "facade": 341},
+    (3, 11): {"parse": 317, "facade": 354},
+    (3, 12): {"parse": 296, "facade": 333},
+    (3, 13): {"parse": 296, "facade": 333},
+    (3, 14): {"parse": 296, "facade": 333},
+    (3, 15): {"parse": 296, "facade": 333},
 }
 _BAND = 0.02
 
@@ -1020,15 +1025,15 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # regression moves it as it moved the clause: +64 against a 2% band
 # of 53.6 at the 2,678 frames recorded below.
 #
-# ONE ROW, py3.11, and an unknown interpreter SKIPS rather than fails
-# -- which is where this parts company with `_check_budget`, whose
-# table carries every interpreter CI runs and so can afford to fail on
-# a missing row. Only py3.11 is measurable in this working tree, and a
-# figure nobody here ran is not a pin. The #537 reviewer reports 3.12
-# at 835/2,563 and 3.13/3.14 at 882/2,706 for the 16/64 pair; those
-# are NOT recorded below, because recording them would put a number
-# under a band without a run behind it. Reproduce one on its own
-# interpreter and add the row.
+# An unknown interpreter SKIPS rather than fails -- which is where
+# this parts company with `_check_budget`, whose table carries every
+# interpreter CI runs and so can afford to fail on a missing row. A
+# figure nobody ran is not a pin: until 2026-10-07 only py3.11 was
+# measurable in this working tree, and the #537 reviewer's 3.12-3.14
+# figures were deliberately left unrecorded for want of a run behind
+# them. The 3.12-3.15 rows were added 2026-10-07, each measured on its
+# own interpreter (2,459 on all four, one below py3.11's 2,478). A new
+# interpreter gets a row the same way: run it there, then add it.
 #
 # Lowered 2026-09-26 from 2587 with `_CALL_BASELINE` above, for the
 # same reason (decisions.md#parse-cost). 2,678 from 2026-10-04, the
@@ -1040,8 +1045,14 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # and `prefix`), and the single-letter test no longer joins the
 # piece's text through a generator (65 frames, one per connective,
 # more than this pin's whole band); `join_connectives` adds one.
+# 2,478 from 2026-10-07, one below: the name asks group's chain
+# `is_prefix_piece` once, which had gone through a closure.
 _LINK_BASELINE = {
-    (3, 11): 2479,
+    (3, 11): 2478,
+    (3, 12): 2459,
+    (3, 13): 2459,
+    (3, 14): 2459,
+    (3, 15): 2459,
 }
 #: The same +-2% `_CALL_BASELINE` uses, and for the same reason: frame
 #: counts are deterministic for a given tree and interpreter, so the
