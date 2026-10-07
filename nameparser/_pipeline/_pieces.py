@@ -38,10 +38,10 @@ tail_reading is that one question, running them against each other to
 their fixed point for the two stages that must not disagree about the
 answer.
 
-Layering: imports _state and _vocab only; FOUR stages import it --
-_segment, _classify, _group and _assign, segment being the one the
-#289/#516 own-words span added -- and neither of the two it imports
-imports it back.
+Layering: imports _state and _vocab only; segment, script_segment,
+classify, group, assign, post_rules and _comma import it (segment,
+script_segment and classify for the #289/#516 own-words span alone) -- and neither of the two it imports imports it
+back.
 
 Naming follows _vocab's: inside an already-private module the leading
 underscore marks module-PRIVATE, so the names other stages call are
@@ -313,10 +313,12 @@ _NOT_A_RUN_START = frozenset({"conjunction", "particle",
 def is_lone_never_given_particle(piece: Sequence[int],
                                  tokens: Sequence[WorkToken]) -> bool:
     """A piece that is one never-given particle (rules.md#P1's fold
-    site). One predicate, asked by the fold in post_rules and by
-    assign's given slot, which predicts that the fold will take the
-    particle forward and so leave no given name in front of a member
-    (#573) -- two copies would drift silently, each site's own tests
+    site). One predicate, asked by the fold in post_rules and by two
+    sites in assign that predict the fold will take the particle
+    forward: the given slot, which then leaves no given name in front
+    of a member (#573), and P6's attachment after a family comma,
+    which then leaves no given word for the tail to stand behind
+    (#613) -- copies would drift silently, each site's own tests
     still passing (mechanisms.md#ONE-PREDICATE-PER-QUESTION)."""
     return (len(piece) == 1
             and "particle" in tokens[piece[0]].tags
@@ -506,6 +508,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                            one_case: bool | None,
                            anchored: list[int] | None = None,
                            absorbed: list[int] | None = None,
+                           licensed: Container[int] = (),
                            ) -> tuple[bool, ...] | None:
     """How each piece of a no-name segment reads: True a suffix, False
     a title. None when the segment holds a name word and so is not a
@@ -515,9 +518,10 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     the ambiguous set inside a mixed-case name is a credential in this
     slot even with one word before the comma, because the writing is
     evidence the count does not have ('Smith, MA' -> family 'Smith',
-    suffix 'MA'). Only the LEAN reaches here: a token admitted to the
-    class by SHAPE takes the count instead, which is decided at the
-    comma and not in this walk ('Smith, A.B.' -> given 'A.B.').
+    suffix 'MA'). Only the LEAN reaches here on its own: a token
+    admitted to the class by SHAPE takes the count instead, which
+    `_comma.decide` takes and hands in as `licensed`, below ('Smith,
+    A.B.' -> given 'A.B.', one name word being no count).
 
     A listed member ANCHORED by an unambiguous credential in front of
     it in the same run reads as a credential too, whatever its writing
@@ -544,13 +548,19 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     the answer is not None: a segment the walk abandons part-way may
     have appended to it first.
 
-    ONE answer for two readers, both in _assign.py -- the no-name gate
-    and the router -- because they must agree piece for piece. #429
-    shipped the inverse of its own fix by deriving that agreement twice
-    (mechanisms.md#ONE-PREDICATE-PER-QUESTION). It answered for a third
-    until #436: group's one-entry join asked it too, and the render's
-    entry boundary is a rule over the written commas in post_rules now
-    (rules.md#R1), which asks this nothing.
+    ONE reader since #613: `_comma.decide`, which reads the part once
+    at group's head and binds the roles this returns, so the decision
+    that the part holds no name word and the roles its words get
+    cannot disagree. Until then it answered for two readers in
+    _assign.py, the no-name gate and the router, and #429 shipped the
+    inverse of its own fix by deriving that agreement twice
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION); it answered for a
+    third until #436, group's one-entry join.
+
+    `licensed` holds the pieces rules.md#C1's count has licensed as
+    credentials -- ambiguous-class words in a credential run behind
+    two name words -- and each reads as a suffix whatever its writing
+    or company.
 
     rules.md#S2's initial veto keeps a roman numeral out of a suffix
     reading, which is right after a NAME word: 'Smith, John V.' is a
@@ -594,7 +604,8 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     on the writer having said where the family name ends. A comma
     followed by no name word said no such thing -- 'John Smith, Dr.' is
     'Dr. John Smith' with the honorific moved -- so the pre-comma name
-    keeps its positional read instead of being merged. Uses the same
+    keeps its positional read instead of being merged (through
+    `_comma.decide`'s suffix comma, behind a whole name). Uses the same
     is_leading_title predicate the peel does, period-abbreviation
     inference included, so the two cannot disagree about what a title
     is; a mixed run like 'Smith, Dr. Jr.' is a title and a postnominal,
@@ -647,6 +658,14 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
                   and AMBIGUOUS_ACRONYM_TAG in tokens[piece[0]].tags)
         if member and listed_lean(tokens[piece[0]], one_case) \
                 == "credential":
+            leading = False
+            out.append(True)
+            continue
+        # A word rules.md#C1's count licenses as a credential: the
+        # caller (`_comma.decide`) counted two name words before the
+        # comma and found the part a credential run, which settles the
+        # ambiguous word here before S2's anchors are asked (#613)
+        if len(piece) == 1 and piece[0] in licensed:
             leading = False
             out.append(True)
             continue
@@ -1002,19 +1021,18 @@ def run_start(rest: Sequence[int], names: int,
 
 
 # rules.md#P6: "a particle ending the name attaches to that family
-# name" -- WHICH particles, asked by the attachment in post_rules and by
-# assign's given-part credential run (#602), which leaves them to it
-# (#610: the two had been two walks agreeing only by the run's roles)
+# name" -- WHICH particles, asked once, by assign's given-part walk,
+# which both leaves them out of #602's run and attaches them (#613;
+# #610 had first made the run and post_rules' attachment one walk)
 def particle_tail(seg: Sequence[Sequence[int]],
-                  tokens: Sequence[WorkToken],
-                  floor: int = 0) -> tuple[int, int]:
+                  tokens: Sequence[WorkToken]) -> tuple[int, int]:
     """`seg[lo:hi]`, the run of wholly-particle pieces P6 attaches: back
     from the end past pieces that hold no name word and are not
     themselves particles -- a post-nominal is written BEHIND the
     particle in this listing -- then back over particle pieces,
     stopping at a lone member of the ambiguous credential class read as
     the credential (#531: the capitals or a degree made it one, so it
-    is not the tussenvoegsel). Neither walk passes `floor`.
+    is not the tussenvoegsel).
 
     The class-member stop keys on the VOCABULARY tag and not on the
     suffix role alone, which is what gives P6's attachment precedence
@@ -1026,18 +1044,20 @@ def particle_tail(seg: Sequence[Sequence[int]],
     IS particle vocabulary ends the first walk rather than being looked
     past, since `vd` arrives suffix-roled and is the run.
 
-    Read off ROLES, which is what lets both callers ask it: post_rules
-    after assign has placed every word, and assign before it places the
-    words of a credential run, whose roles are then still None -- no
-    name role, and a class member not yet read as anything, the run
-    being what will read it as the credential. `lo == hi` where there
-    is no such run.
+    Read off ROLES, asked at the moment assign's walk reaches #602's
+    run (or, with no run, once the walk has placed every piece; and by
+    post_rules' attachment behind an empty family part): every word in front of the run holds the role the walk gave
+    it, and the run's words hold none yet -- no name role, and a class
+    member not yet read as anything, the run being what will read it
+    as the credential. That is why the answer equals the one this
+    would give over the finished roles, which is what the attachment
+    needs. `lo == hi` where there is no such run.
 
     The single-token tests are inline (the common piece is one token),
     so the walk pays no frame per piece; it runs on every family-comma
     parse."""
     hi = len(seg)
-    while hi > floor:
+    while hi > 0:
         piece = seg[hi - 1]
         if (all("particle" in tokens[i].tags for i in piece)
                 if len(piece) > 1 else
@@ -1049,7 +1069,7 @@ def particle_tail(seg: Sequence[Sequence[int]],
             break
         hi -= 1
     lo = hi
-    while lo > floor:
+    while lo > 0:
         piece = seg[lo - 1]
         if len(piece) == 1:
             tok = tokens[piece[0]]

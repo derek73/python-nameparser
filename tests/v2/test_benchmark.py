@@ -431,36 +431,76 @@ def test_parse_cost_grows_no_worse_than_linearly(unit: str) -> None:
 # these rows instead of skipping them: whatever the build matrix's
 # coverage setup becomes, one job cannot retire this guard in silence.
 _PREFIXED_BASE = 1600
-_PREFIXED_SHAPES: dict[str, tuple[str, str, Callable[[str], bool]]] = {
+#
+# #613's PR review added four rows, every one a C-level or growing-
+# slice cost in `_comma.decide`'s reading of the part after the comma
+# that no frame guard could see. Measured 2026-10-06 on py3.11 at this
+# base, three runs of best-of-three each, on 9dd271b2 (broken) against
+# the fixed tree: title_chain 11.78-11.88 against 4.19-4.23, pair_run
+# 9.99-10.07 against 4.02-4.16, caps_pairs 9.86-10.03 against
+# 4.09-4.20, delimiter_cores 10.06-10.22 against 4.16-4.34.
+_PREFIXED_SHAPES: dict[
+        str, tuple[str, str, Parser, Callable[[str], bool]]] = {
     # every word of the run is a middle name, so the walk asks the
     # untitled membership test once per piece
     "given_part_run": (
-        "Doe, Jane ", "Smith ",
-        lambda text: parse(text).middle.split() == text.split()[2:],
+        "Doe, Jane ", "Smith ", Parser(),
+        lambda text: (parse(text).middle.split() == text.split()[2:]
+                      and parse(text).family == "Doe"),
     ),
     # every trailing title joins the H5 chain, so the walk asks the
     # titled membership test once per piece, and the name word in
     # front of the chain asks it again at every step of walking down
     # through it (`previous_kept`)
     "given_part_titles": (
-        "Doe, Jane Smith ", "Prof. ",
-        lambda text: parse(text).title.split() == text.split()[3:],
+        "Doe, Jane Smith ", "Prof. ", Parser(),
+        lambda text: (parse(text).title.split() == text.split()[3:]
+                      and (parse(text).given, parse(text).family)
+                      == ("Jane", "Doe")),
+    ),
+    # every 'and' joins the title chain `_comma._title_chains` builds,
+    # which rebuilt the growing piece from a slice at each join
+    "title_chain": (
+        "John Smith, ", "Mr. and ", Parser(),
+        lambda text: (parse(text).given == "John"
+                      and parse(text).title.startswith("Mr. and Mr.")),
+    ),
+    # every pair is paired initials behind a dual, so the speaker test
+    # runs per pair; a copy of the shape set per pair was quadratic
+    "pair_run": (
+        "John Smith, MD ", "G.J. ", Parser(),
+        lambda text: parse(text).given == "John",
+    ),
+    # every two-capital word is a caps-shape pair, through the same
+    # per-pair test and the members list scanned per piece
+    "caps_pairs": (
+        "John Smith, ", "XY ", Parser(),
+        lambda text: parse(text).given == "John",
+    ),
+    # every core is dropped behind the whole name, and the part was
+    # filtered against a list of the cores
+    "delimiter_cores": (
+        "John Smith, ", "MD / ",
+        Parser(policy=Policy(extra_suffix_delimiters=frozenset({"/"}))),
+        lambda text: Parser(policy=Policy(
+            extra_suffix_delimiters=frozenset({"/"}))).parse(text).given
+        == "John",
     ),
 }
 
 
-@pytest.mark.parametrize("prefix,unit,reaches", _PREFIXED_SHAPES.values(),
+@pytest.mark.parametrize("prefix,unit,parser,reaches",
+                         _PREFIXED_SHAPES.values(),
                          ids=list(_PREFIXED_SHAPES))
 def test_prefixed_cost_grows_no_worse_than_linearly(
-        prefix: str, unit: str, reaches: Callable[[str], bool]) -> None:
-    # at the measured size, and with the comma's own reading asserted:
-    # without it the titles row reads the same title on the comma-less
-    # path, and would go on timing that instead of the walk
+        prefix: str, unit: str, parser: Parser,
+        reaches: Callable[[str], bool]) -> None:
+    # at the measured size, with each row's own reading asserted: a
+    # shape that stopped reaching the code it guards would go on timing
+    # something else (the titles row reads the same title on the
+    # comma-less path, which is why its probe holds the family comma)
     text = prefix + unit * _PREFIXED_BASE
-    assert reaches(text), "shape no longer reaches the walk"
-    name = parse(text)
-    assert (name.given, name.family) == ("Jane", "Doe"), (
-        "shape no longer takes the family-comma path")
+    assert reaches(text), "shape no longer reaches the code it guards"
     if sys.gettrace() is not None:
         reason = ("a line tracer dilutes a C-level cost below the bound "
                   "(#553)")
@@ -468,7 +508,8 @@ def test_prefixed_cost_grows_no_worse_than_linearly(
             pytest.fail(f"{reason}, and this run is the one that must "
                         f"measure it: drop the tracer from this job")
         pytest.skip(reason)
-    _assert_grows_linearly(unit, parse, prefix=prefix, base=_PREFIXED_BASE)
+    _assert_grows_linearly(unit, parser.parse, prefix=prefix,
+                           base=_PREFIXED_BASE)
 
 
 # Shapes that need a NON-DEFAULT POLICY to reach the code they guard.
@@ -716,19 +757,25 @@ def test_a_clause_link_run_does_not_cost_quadratically() -> None:
         f"again (#397)")
 
 
-# #563 simplify round: segment's paired-initials speaker test scanned
-# every word in front of EACH pair for a non-title speaker, so a comma
-# run of title/suffix duals followed by pairs ('MD MD ... G.J. G.J.
-# ...') cost duals x pairs `_normalize` calls. Only the first pair's
-# scan can change the answer, and the fix asks it once. A `_SHAPES` row
-# cannot express it -- the run needs the 'John Smith, ' prefix -- and
-# the cost is Python-level, so it is counted in `_normalize` frames,
-# which isolates the scan from the rest of the parse. Measured
-# 2026-09-30 on py3.11 through `_frames_for(..., only="_normalize")`,
-# k duals and k pairs: 107 at k=8 and 395 at k=32 on this tree (3.7x),
-# against 163 and 1,387 at c125f69b (8.5x), where every pair rescanned.
-# 6.0 sits between them; counts are deterministic, so the margins are
-# for future shape changes, not noise.
+# #563 simplify round: the paired-initials speaker test scanned every
+# word in front of EACH pair for a non-title speaker, so a comma run of
+# title/suffix duals followed by pairs ('MD MD ... G.J. G.J. ...') cost
+# duals x pairs. Only the first speaker's position can change the
+# answer, and the fix finds it once. A `_SHAPES` row cannot express it
+# -- the run needs the 'John Smith, ' prefix -- and the cost is
+# Python-level, so it is counted in frames of the function the scan
+# calls, which isolates it from the rest of the parse.
+#
+# The function counted MOVED with the code, and that is this guard's
+# recorded failure: #563 counted `_normalize`, which segment's scan
+# reached, and when #613 moved the scan into `_comma.decide` it called
+# `is_suffix_piece` there instead, so the quadratic came back while
+# this guard read 3.6x and passed (caught in review, 2026-10-06).
+# Measured 2026-10-06 on py3.11 through `_frames_for(...,
+# only="is_suffix_piece")`, k duals and k pairs: 44 at k=8 and 164 at
+# k=32 on this tree (3.7x), against 120 and 1,620 at 47fb2b21 (13.5x),
+# where every pair rescanned. A change to what the scan calls must
+# move `only=` with it, and re-take that negative control.
 _PAIR_SCAN_SMALL = 8
 _PAIR_SCAN_LARGE = 32
 _PAIR_SCAN_MAX_RATIO = 6.0
@@ -750,15 +797,40 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
         name = parse(text)
         assert len(name.suffix.split()) == 2 * k, text
         assert [a.kind.value for a in name.ambiguities] == ["suffix-or-name"]
-    small = _frames_for(small_text, only="_normalize")
-    large = _frames_for(large_text, only="_normalize")
+    small = _frames_for(small_text, only="is_suffix_piece")
+    large = _frames_for(large_text, only="is_suffix_piece")
     ratio = large / small
     assert ratio < _PAIR_SCAN_MAX_RATIO, (
-        f"{_PAIR_SCAN_SMALL} duals and pairs cost {small} _normalize calls "
-        f"and {_PAIR_SCAN_LARGE} cost {large} -- {ratio:.1f}x for 4x the "
-        f"input, where this tree measures 3.7x and the per-pair rescan at "
-        f"c125f69b measured 8.5x. _segment.py's paired-initials title scan "
-        f"is running once per pair again (#563)")
+        f"{_PAIR_SCAN_SMALL} duals and pairs cost {small} is_suffix_piece "
+        f"calls and {_PAIR_SCAN_LARGE} cost {large} -- {ratio:.1f}x for 4x "
+        f"the input, where this tree measures 3.7x and the per-pair rescan "
+        f"at 47fb2b21 measured 13.5x. _comma.py's paired-initials speaker "
+        f"scan is running once per pair again (#563, #613)")
+
+
+def test_a_listing_comma_with_nothing_to_decide_skips_the_counts() -> None:
+    """`_comma.decide` runs on every family-comma parse, so its early
+    return is a cost gate on the commonest comma shape: a part after
+    the comma that holds a name word, no ambiguous member and no core
+    returns before C1's counts are taken. Recorded negative control,
+    a review mutation of #613 (2026-10-06, py3.11): with the early
+    return's whole `if` deleted no output moves, `_whole_name` is entered once on
+    'Doe Smith, Jane Q.', and that parse costs 22 more frames -- a
+    regression no output test and no ±2% band could see, since the
+    reference parse has no comma. The ambiguous-class count is asked
+    only where a member stands in the part, which is the second gate."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("Doe Smith, Jane Q.", "Smith, John"):
+        # REACHABILITY: decide is asked, so a zero below means it
+        # returned early rather than that it never ran
+        assert _frames_for(text, only="decide") == 1, text
+        assert _frames_for(text, only="_whole_name") == 0, text
+        assert _frames_for(text, only="name_word_count") == 0, text
+    # a part of unambiguous credentials takes the whole-name count and
+    # not the class count; a member in it takes both
+    assert _frames_for("John Smith, PhD", only="name_word_count") == 0
+    assert _frames_for("John Smith, MA", only="name_word_count") == 1
 
 
 # Fixed points and scans that re-read what they had already read, each
@@ -949,22 +1021,6 @@ def test_a_link_costs_what_it_is_pinned_at() -> None:
         f"see it: check whether `_group._between_name_words` still "
         f"answers both sides of a link in one call, then move the "
         f"baseline deliberately (#397)")
-
-
-def test_a_name_word_ends_the_comma_run_before_the_numeral_test() -> None:
-    """rules.md#C1's run test (#544) asks `run_word_fold`'s "reject"
-    before `is_single_letter_numeral`, so an ordinary comma name whose
-    part holds a name word pays no frame for the numeral test. The
-    fold is asked (the reachability probe: the name enters the run
-    loop at all, two words standing before the comma) and the numeral
-    test never is. RECORDED NEGATIVE CONTROL: with the two tests in
-    the other order, `is_single_letter_numeral` is entered once for
-    'Doe Smith, Jane Q.' (measured 2026-09-28)."""
-    if sys.getprofile() is not None:
-        pytest.skip("a profile hook is already installed; this test owns it")
-    text = "Doe Smith, Jane Q."
-    assert _frames_for(text, only="run_word_fold") >= 1
-    assert _frames_for(text, only="is_single_letter_numeral") == 0
 
 
 def test_a_member_opening_a_comma_part_asks_no_anchor_pass() -> None:

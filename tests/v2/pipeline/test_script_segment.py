@@ -4,9 +4,10 @@ import dataclasses
 
 import pytest
 
-from nameparser import Parser
+from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon
-from nameparser._pipeline._script_segment import script_segment
+from nameparser._pipeline import STAGES
+from nameparser._pipeline._script_segment import _PEELED_TAG, script_segment
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure,
@@ -175,17 +176,114 @@ def test_family_comma_given_side_untouched() -> None:
 
 
 def test_one_word_before_the_comma_is_never_suffix_comma() -> None:
-    # an unspaced CJK name is ONE word, and segment's suffix-comma
-    # rule needs >1 word before the comma -- so this reads as
-    # FAMILY_COMMA and the opt-out above covers it too
+    # an unspaced CJK name is ONE word, and C1's suffix-comma rule
+    # needs >1 word before the comma -- so this stage's own reading of
+    # it (`_postnominal_behind_a_whole_name`) keeps the family comma's
+    # opt-out above, and the name is not split
     out = _run("김민준, Jr.", policy=_HANGUL)
-    assert out.structure is Structure.FAMILY_COMMA
     assert _texts(out) == ["김민준", "Jr."]
 
 
+def test_a_listed_ambiguous_credential_behind_two_name_words_divides() -> None:
+    # #613 review: `_postnominal_behind_a_whole_name` asks the comma's
+    # decision, which licenses a listed member of the ambiguous class
+    # by C1's name-word count, so the name before the comma divides as
+    # it does before 'PhD'. A name word after the comma and one word
+    # before it are the contrasts: neither divides.
+    divided = {"family": "김", "given": "민준", "middle": "박"}
+    for text in ("김민준 박, MA", "김민준 박, PhD"):
+        fields = {k: v for k, v in parse(text).as_dict().items() if v}
+        assert {k: fields[k] for k in divided} == divided, text
+    assert parse("김민준 박, Jones").family == "김민준 박"
+    assert parse("김민준, MA").family == "김민준"
+
+
+# script_segment runs before group, and divides the name before a
+# comma exactly where the comma's own decision, taken on the name as
+# written, reads a suffix comma (`_postnominal_behind_a_whole_name`
+# asks `_comma.decide` itself since #613's /simplify). The hand copy it
+# replaced drifted in both directions: dividing a name decide then read
+# as a FAMILY comma laid the divided pieces out as the family ('김 민준
+# 박'), and leaving whole one decide read as a suffix comma lost the
+# division and the honorific's peel ('Smith 김민준씨, XYZ').
+#
+# Recorded negative controls (#613 reviews, 2026-10-06), each on the
+# grid as it stood then: at 47fb2b21, where the stand-in asked the
+# vocabulary alone, all 12 `_DIVIDES` pairs were left whole; at
+# bac1b510, whose count arm skipped decide's numeral refusal and its
+# policy-selected suffix test, 24 of the then 168 parses (four heads,
+# 21 tails, two policies) divided behind a family comma ('MA V', 'MA
+# I', 'V MA', 'MA V.', and 'V.' under strict).
+_AGREEMENT_HEADS = ("김민준 박", "마틴 킹", "Smith 김민준씨", "Dr 김민준",
+                    "김민준 Jr.", "김민준 III")
+_AGREEMENT_TAILS = (
+    "MA", "Ma", "MA PhD", "PhD", "Jr.", "Jr. MA", "MD Ma", "Ed", "Jones",
+    "G.J.", "MA V", "V MA", "MA I", "V.", "MA V.", "X.Y.Z.", "MA X.Y.Z.",
+    "MA Ph. D.", "Dr MA", "MA Dr", "XYZ", "Esq.", "MA Jones", "Ma Jones",
+    "Jones MA")
+#: a listed member behind two name words, which the count licenses
+_DIVIDES = {(head, tail) for head in ("김민준 박", "마틴 킹")
+            for tail in ("MA", "Ma", "MA PhD", "Jr. MA", "MD Ma", "Ed")}
+
+
+def _through_group(text: str, policy: Policy) -> ParseState:
+    state = ParseState(original=text, lexicon=Lexicon.default(),
+                       policy=policy)
+    for stage in STAGES:
+        state = stage(state)
+        if stage.__name__ == "group":
+            break
+    return state
+
+
+def test_the_division_never_outruns_the_comma_decision() -> None:
+    # decide's answer is taken on the UNDIVIDED name (`segment_scripts`
+    # off), not after the division: a division can make the very whole
+    # name it guessed at, and decide then agrees with it -- the PR
+    # review's '김민준 Jr., PhD', divided by a stand-in that counted the
+    # suffix as a unit, read as a suffix comma only because '김 민준'
+    # had become two name words (control, measured on 9dd271b2: 14 of
+    # the then 264 parses outran, every one a head with a suffix in it,
+    # '김민준 Jr.' or '김민준 III' before a part of suffix words). Both
+    # directions are asserted since the stage asks decide itself; on
+    # 3320d700, the last tree with the hand copy, 0 of these 300 parses
+    # outran and 44 lagged -- left whole where decide read a suffix
+    # comma, 'Dr 김민준, MA' and the caps and dotted shapes among them
+    outran, lagged, divided_where_expected = set(), set(), set()
+    for policy in (Policy(), Policy(lenient_comma_suffixes=False)):
+        undivided_policy = dataclasses.replace(
+            policy, segment_scripts=frozenset())
+        for head in _AGREEMENT_HEADS:
+            for tail in _AGREEMENT_TAILS:
+                text = f"{head}, {tail}"
+                state = _through_group(text, policy)
+                own = [i for i in state.segments[0]
+                       if _PEELED_TAG not in state.tokens[i].tags]
+                divided = len(own) > len(head.split())
+                undivided = _through_group(text, undivided_policy)
+                suffix_comma = (undivided.structure
+                                is Structure.SUFFIX_COMMA)
+                key = (head, tail, policy.lenient_comma_suffixes)
+                if divided and not suffix_comma:
+                    outran.add(key)
+                if suffix_comma and not divided:
+                    lagged.add(key)
+                if divided and (head, tail) in _DIVIDES:
+                    divided_where_expected.add(
+                        (head, tail, policy.lenient_comma_suffixes))
+    assert outran == set()
+    assert lagged == set()
+    # per policy: a division lost under one policy alone must fail
+    assert divided_where_expected == {
+        (head, tail, lenient) for head, tail in _DIVIDES
+        for lenient in (True, False)}
+
+
 def test_suffix_comma_name_part_still_splits() -> None:
+    # the structure stays the family comma here: group decides it once
+    # the words are tagged (#613), and this stage asks the question
+    # for itself (_postnominal_behind_a_whole_name)
     out = _run("Dr 김민준, Jr.", policy=_HANGUL)
-    assert out.structure is Structure.SUFFIX_COMMA
     assert _texts(out) == ["Dr", "김", "민준", "Jr."]
 
 
@@ -702,7 +800,7 @@ def test_the_peel_scans_the_name_runs_and_no_further() -> None:
     # Crossing a FAMILY comma is not crossing every comma: past the
     # name's own runs lie post-nominals, and taking one as the site
     # abandons the peel. Two shapes, both silently broken by a scan
-    # over ALL segments. segment admits a post-comma run on
+    # over ALL segments. The run predicate admits a post-comma run on
     # is_suffix_lenient while the site scan asks is_suffix_strict, so
     # an initial-shaped suffix word is a site rather than a token to
     # step over -- "V." ends in no tail, and 씨 would stay glued. And
@@ -755,14 +853,15 @@ def test_the_peel_crosses_a_family_comma_and_stops_there() -> None:
 def test_a_wholly_suffix_run_after_a_family_comma_is_declined() -> None:
     # The two tests above pin HOW FAR the crossing reaches; this pins
     # WHETHER it happens, which the structure alone does not decide.
-    # segment answers FAMILY_COMMA whenever a single word precedes the
-    # comma, even where the part after it is entirely suffix-shaped, so
-    # "the second run is name text" is an inference and a wrong one
-    # here. Scanning it lands the site on "V." -- admitted to the run by
-    # segment's is_suffix_lenient, rejected as an initial by the scan's
-    # is_suffix_strict -- which ends in no listed tail, so the peel is
-    # abandoned and さん stays glued to 田中 (#319). The peel asks
-    # is_wholly_suffix, segment's own predicate, and declines the run.
+    # The structure here is FAMILY_COMMA whenever a single word precedes
+    # the comma (and, since #613, for every comma form), even where the
+    # part after it is entirely suffix-shaped, so "the second run is
+    # name text" is an inference and a wrong one here. Scanning it lands
+    # the site on "V." -- admitted to the run by is_suffix_lenient,
+    # rejected as an initial by the scan's is_suffix_strict -- which
+    # ends in no listed tail, so the peel is abandoned and さん stays
+    # glued to 田中 (#319). The peel asks is_wholly_suffix, C1's run
+    # predicate, and declines the run.
     lex = _LEX_TAILS.add(suffix_words={"v"})
     assert _texts(_run("田中さん, V.", policy=_HANGUL,
                        lexicon=lex)) == ["田中", "さん", "V."]
@@ -935,3 +1034,12 @@ def test_the_segmenter_is_handed_the_gated_token_only() -> None:
     out = _run("Dr 山田太郎", policy=_JA, segmenter=seg)
     assert asked == ["山田太郎"]
     assert _texts(out) == ["Dr", "山田", "太郎"]
+
+
+def test_the_stand_in_answers_no_where_there_is_no_part_after_a_comma() -> None:
+    from nameparser._pipeline._script_segment import (
+        _postnominal_behind_a_whole_name,
+    )
+    state = segment(tokenize(ParseState(
+        original="김민준 박", lexicon=Lexicon.default(), policy=Policy())))
+    assert _postnominal_behind_a_whole_name(state) is False

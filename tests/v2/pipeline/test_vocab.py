@@ -14,7 +14,7 @@ from nameparser._pipeline._vocab import (
     is_single_letter_numeral,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
     maiden_marker_run, name_word_count, period_joined_vocab, written_as_a_name,
-    resolve_script_set, run_word_fold, single_script,
+    resolve_script_set, single_script,
 )
 from nameparser._policy import (Policy, Script, _NO_INITIALS,
                                 _SCRIPT_RANGES)
@@ -264,12 +264,12 @@ def test_is_wholly_suffix_never_reads_the_by_shape_class() -> None:
     # #516 review round: an EARLIER version of this predicate admitted
     # a by-shape member unconditionally, bypassing both the lean and
     # the NAME-word count -- combined with C1's own legacy TOKEN-count
-    # disjunct in _segment.py, that flipped 'Smith Jr., A.B.' to a
-    # one-word given with a self-contradicting report. Proved by
-    # mutation to be otherwise unreached, and dropped: the by-shape
-    # class reaches the comma form only through
-    # `ambiguous_class_candidate`, never through this predicate, on
-    # or off.
+    # disjunct in segment (deleted in #613), that flipped 'Smith Jr.,
+    # A.B.' to a one-word given with a self-contradicting report.
+    # Proved by mutation to be otherwise unreached, and dropped: the
+    # by-shape class reaches the comma form only through classify's
+    # shape tags and `_comma.decide`'s caps test, never through this
+    # predicate, on or off.
     lex, pol = Lexicon.default(), Policy()
     assert not is_wholly_suffix(["A.B."], lex, pol)
     assert not is_wholly_suffix(
@@ -282,8 +282,10 @@ def test_is_wholly_suffix_never_reads_the_by_shape_class() -> None:
 
 
 def test_is_wholly_suffix_reads_the_credential_lean() -> None:
-    # The third reading site (#289): segment's structure decision and
-    # its tail segments ask this, and 'Steven Hardman, MD, DO, DDS'
+    # The third reading site (#289): segment's C2 flag on tail
+    # segments and script_segment's peel pass the lean here
+    # (`_comma.decide` reads it through `segment_suffix_reading`
+    # instead), and 'Steven Hardman, MD, DO, DDS'
     # loses its comma-structure flag because 'DO' leans credential
     # here. A caller with nothing to say passes nothing and gets the
     # answer every release before this one gave.
@@ -386,81 +388,6 @@ def test_a_listed_dotted_entry_is_not_read_by_shape() -> None:
     # the shipped vocabulary carries no dotted ambiguous entry, so
     # nothing default moves
     assert ambiguous_class_candidate("A.B.", Lexicon.default(), Policy())
-
-
-def test_run_word_fold_agrees_with_the_real_predicates() -> None:
-    """#544: the comma
-    run test's inline gate is a named, testable function precisely so
-    this sweep can hold it to the real predicates it stands in for,
-    rather than trusting a hand-copied condition at the call site
-    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
-
-    Every token this sweep builds -- the whole shipped suffix
-    vocabulary plus a few name-word controls, in lower/Title/UPPER
-    case, bare and with one trailing period, under both
-    `Policy.lenient_comma_suffixes` settings and one delimiter-core
-    policy (11,880 built cases, measured 2026-09-28) -- is asked,
-    with NO skip of its own:
-    whichever verdict `run_word_fold` returns is checked against the
-    real predicates, or, for "ask", left unchecked here and pinned
-    instead by the fixed non-simple list below. "member" must agree
-    with `ambiguous_class_candidate`; "defer" must NOT be a member by
-    that predicate either (it differs from "reject" only in being
-    left to `is_wholly_suffix` rather than a shortcut break); and
-    "reject" must mean `is_wholly_suffix` rejects the bare token too,
-    at every policy this sweep tries -- the two predicates the run
-    test would otherwise call directly. A vocabulary entry that is
-    itself non-simple (non-ASCII, or carrying an interior period --
-    576 of the 11,880 built cases, every Hebrew/Devanagari/Bengali/
-    CJK honorific in the shipped vocabulary among them, times three
-    policies) settles to "ask" here like any other non-simple token,
-    checked by nothing but its own verdict: 11,304 of the 11,880
-    cases are asserted against the real predicates, and the rest are
-    "ask" and pinned only by the fixed list below. Nothing is skipped
-    before `run_word_fold` is called, so a drift in the SIMPLE-token
-    gate cannot hide behind a filter.
-
-    A fixed list of non-simple tokens pins "ask" directly, since the
-    built sweep above never asserts it: an interior-period acronym
-    ('A.B.', 'Ph.D.'), one with no trailing period ('M.D'), and two
-    non-ASCII scripts ('씨', a bare CJK honorific; 'María', a Latin
-    name carrying a diacritic).
-
-    Negative control, from a COLLECTING variant of this test (every
-    built case checked, not just the first failure) run by hand: drop
-    the `suffix_words` disjunct from `run_word_fold`'s reject test, so
-    a bare suffix WORD with no acronym or ambiguous listing (e.g.
-    'Jr') folds to "reject" instead of "defer". 179 of the 11,880
-    built cases fail (every case built from a shipped suffix_words
-    entry that is in no other suffix set, across every case/period/
-    policy combination) -- the sweep is not vacuously green.
-    """
-    lex = Lexicon.default()
-    vocab = sorted(lex.suffix_acronyms | lex.suffix_words
-                   | lex.suffix_acronyms_ambiguous)
-    controls = ["Smith", "Jane", "van", "de"]
-    policies = [Policy(),
-               Policy(lenient_comma_suffixes=False),
-               Policy(extra_suffix_delimiters=frozenset({" - "}))]
-    for word in vocab + controls:
-        for case in (str.lower, str.title, str.upper):
-            for trailing in ("", "."):
-                text = case(word) + trailing
-                for policy in policies:
-                    fold = run_word_fold(text, lex, policy)
-                    if fold == "ask":
-                        continue
-                    real_member = ambiguous_class_candidate(text, lex, policy)
-                    if fold == "member":
-                        assert real_member, (text, policy)
-                    else:
-                        assert not real_member, (text, policy)
-                    if fold == "reject":
-                        assert not is_wholly_suffix([text], lex, policy), \
-                            (text, policy)
-    for text in ("A.B.", "Ph.D.", "M.D", "씨", "María"):
-        for policy in policies:
-            assert run_word_fold(text, lex, policy) == "ask", (text, policy)
 
 
 def test_a_callers_own_conjunction_marker_keeps_its_word_a_name() -> None:

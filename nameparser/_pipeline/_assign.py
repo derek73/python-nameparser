@@ -2,7 +2,9 @@
 
 Consumes: pieces + piece_tags (grouped), segments, structure, tokens,
 one_case.
-Produces: tokens with roles set on every main-stream token.
+Produces: tokens with roles set on every main-stream token, and the
+folded-middle tag on the particles P6's attachment joins to the family
+after a family comma (#613).
 Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
@@ -10,7 +12,8 @@ in the Han/Hiragana/Katakana repertoire the #272 kana license shares
 across pieces); token/piece tags; Lexicon only through tags already
 applied by classify (plus the leading-title period rule).
 
-Implements rules H2, H4, H5, N3, O4, O5 and W4 of docs/design/rules.md,
+Implements rules H2, H4, H5, N3, O4, O5, W4, and P6 after a family comma,
+of docs/design/rules.md,
 each cited at its code below. Ports v1's assignment loops.
 NO_COMMA (per name_order):
 leading title pieces chain while no given-position name has been seen
@@ -29,43 +32,44 @@ only one and its answer stands.
 The v1 single-name+nickname rule lives here (decisions.md#N3): a
 nonempty nickname beside exactly one piece in total puts that piece
 in FAMILY.
-FAMILY_COMMA: segment 0 wholly FAMILY (v1 parity) UNLESS segment 1
-holds no name word (titles and suffixes only) or a credential opens
-it (#603), either of which fixed no family boundary -- there segment 0
-takes the NO_COMMA positional read instead, order and all ('John
-Smith, Dr.', 'John Smith, Mr. Jr.', 'John Smith, PhD Jones'), given
-two name words to read; segment 1 is wholly SUFFIX when it is nothing
-but suffix pieces ('Smith, Jr.', 'Smith, Ph. D. Jr.' -- the credential
-run C1 describes, in the listing form), titles and suffixes as #602's
-run reads them when a credential opens it ('Smith, PhD Jones'), else
-gets leading titles, then the same trailing title run
-over the pieces this segment does not read as suffixes ('Smith, John
-Prof.'), then given, then middles with those suffix-reading pieces to
-suffix -- one predicate for both; segments 2+ are suffixes but for
-their title words (#603), lenient -- segment already flagged the ones
-that are neither COMMA_STRUCTURE.
-SUFFIX_COMMA: segment 0 as NO_COMMA; segment 1 wholly SUFFIX, and
-segments 2+ as after a family comma.
+FAMILY_COMMA: segment 0 wholly FAMILY (v1 parity). A part after the
+comma that holds no name word, or that a credential opens (#603), is
+not read here: group's head binds its SUFFIX and TITLE roles before
+any join (`_comma.decide`, #613), making the comma a suffix comma
+behind a whole name ('John Smith, Dr.', 'John Smith, PhD Jones') and
+leaving the family comma behind one name word ('Smith, Jr.', 'Smith,
+PhD Jones'), where segment 1 then reaches this stage with no pieces.
+A segment 1 that does reach it gets leading titles, then the same
+trailing title run over the pieces this segment does not read as
+suffixes ('Smith, John Prof.'), then given, then middles with those
+suffix-reading pieces to suffix -- one predicate for both -- and
+#602's run after the given word ('Smith, John PhD Jones'); segments 2+
+are suffixes but for their title words (#603), lenient -- segment
+already flagged the ones that are neither COMMA_STRUCTURE.
+SUFFIX_COMMA: segment 0 as NO_COMMA; segment 1 arrives bound by group,
+and segments 2+ are read as after a family comma.
 Emits PARTICLE_OR_GIVEN when the leading name piece is a lone
 particles_ambiguous token with more pieces following ("Van Johnson",
 and since #367 "Dr. Van Johnson" too, a title no longer displacing the
-particle out of that position) -- whatever role name_order assigns.
+particle out of that position) -- whatever role name_order assigns --
+and, since #613, at P6's attachment after a family comma where the run
+holds an ambiguous particle ("Beethoven, Ludwig van").
 Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491),
 -- since #289 -- the FAMILY-COMMA path's own read of the first
-post-comma piece, -- since #531 -- the class member ENDING that
-path's given part, which the first-piece emitter could never reach,
--- since #544 -- each member of a post-comma part read wholly as
-credentials that was read as one only because a credential in front
-of it anchors it, -- since #602 -- each name word the credential run
+post-comma piece as the given name, -- since #531 -- the class member
+ENDING that path's given part, which the first-piece emitter could
+never reach, -- since #602 -- each name word the credential run
 absorbs, in the no-comma name and in the given part after a family
-comma, and -- since #603 -- each name word in a post-comma part a
-credential opens.
-Further emitters of the same kind live in
-`_segment.py`, `_group.py` and `_post_rules.py`; they are not
-assign's and are not counted here. And
+comma, and -- since #613 -- P6's attachment after a family comma,
+where it declines a post-nominal reading or stands down inside a
+credential run.
+Further emitters of the same kind live in `_comma.py` (called at
+group's head: the comma's own decision, #544's anchored members and
+#603's absorbed words) and `_group.py`; they are not assign's and are
+not counted here. And
 at the one site that places a LONE name word, GIVEN_OR_FAMILY for the
 field the convention picked (O5, #449) and TITLE_OR_NAME for the two
 shapes where the doubt is whether a word is a title instead (H4,
@@ -80,21 +84,19 @@ from typing import NamedTuple
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
     effective_script, is_suffix_lenient, resolve_script_set,
-    surname_unit_facts, unit_ends,
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
     is_suffix_piece, is_title_piece, leading_titles, particle_tail,
-    listed_lean, peel_walk, segment_suffix_reading,
-    starts_a_credential_run, tail_reading, trailing_titles,
+    listed_lean, peel_walk, starts_a_credential_run, tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
 from nameparser._policy import Policy, Script
-from nameparser._types import SHAPE_ACRONYM_TAG, AmbiguityKind, Role
+from nameparser._types import FOLDED_TAG, SHAPE_ACRONYM_TAG, AmbiguityKind, Role
 
 def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
                role: Role) -> None:
@@ -533,6 +535,171 @@ def _reads_as_a_trailing_suffix(piece: Sequence[int],
     return is_suffix_lenient(text, lexicon)
 
 
+def _inside_a_credential_run(seg: Sequence[Sequence[int]],
+                             tokens: list[WorkToken], given_at: int,
+                             k: int, end: int,
+                             ambiguities: list[PendingAmbiguity]) -> bool:
+    """rules.md#P6's third exception for the run `seg[k:end]`: a
+    run assign read as post-nominals, with a credential read in
+    front of it and another behind, stands INSIDE the credential run
+    assign read whole rather than ending the name, so it keeps that
+    reading -- 'DOE, JANE PHD VD MA' reads suffix 'PHD VD MA' where the
+    attachment had pulled VD out of the middle of it (#573). Behind as
+    well as in front: with nothing behind it the word ends the name,
+    and 'Doe, Jane PhD vd' keeps family 'vd Doe'. A title between it
+    and the post-nominal in front is transparent, as it is to every
+    trailing reading (H5): 'DOE, JANE PHD PROF. VD MA' reads as 'DOE,
+    JANE PHD VD MA' does. (Behind it no title is skipped: a title
+    there leaves the word a name in assign, so nothing reaches here.)
+
+    The test is the ROLES assign gave, not S2's company query: the
+    question is whether assign read the run whole, and a member in
+    front that the writing or a count made the credential ('DOE, JANE
+    MA VD PHD') says so as plainly as a degree does. So does a
+    generation, in front or behind ('Berg, Jan PhD vd Jr.'): the
+    tussenvoegsel P6 is about stands right behind the given name, and
+    a post-nominal between them says this word is not one. The run's own
+    role is what keeps a plain particle out ('Doe, Jane PhD de PhD',
+    whose 'de' is a name word, not a post-nominal), and the given
+    name in front is what keeps 'Doe, Jane vd PhD' attaching.
+    Reported as S2's credential fork, at the site that declines the
+    attachment."""
+    def suffix_read(q: int) -> bool:
+        return all(tokens[i].role is Role.SUFFIX for i in seg[q])
+
+    def is_title(q: int) -> bool:
+        return all(tokens[i].role is Role.TITLE for i in seg[q])
+
+    # an empty run is no run: the walk stops short of a member already
+    # read as the credential ('Doe, Jane PhD do MA'), and there is
+    # nothing to decline. assign's caller never passes one, but
+    # post_rules' site behind an empty family part can (', Jane PhD do
+    # MA' reported a bogus third fork without this, #613's PR review)
+    if k == end or not all(suffix_read(q) for q in range(k, end)):
+        return False
+    front = k - 1
+    while front > given_at and is_title(front):
+        front -= 1
+    if (front <= given_at or end == len(seg)
+            or not suffix_read(front) or not suffix_read(end)):
+        return False
+    run = seg[k]
+    text = " ".join(tokens[i].text for i in run)
+    ambiguities.append(PendingAmbiguity(
+        AmbiguityKind.SUFFIX_OR_NAME,
+        f"{text!r} written without periods is both a post-nominal and a "
+        f"family-name particle; between credentials after a family "
+        f"comma it reads as a post-nominal",
+        tuple(run)))
+    return True
+
+
+def _attach_particle_tail(pieces: Sequence[Sequence[int]],
+                          tokens: list[WorkToken], given_at: int,
+                          k: int, end: int,
+                          ambiguities: list[PendingAmbiguity]) -> None:
+    """rules.md#P6's attachment after a family comma: the particle run
+    `pieces[k:end]` ending the given part joins the family the comma
+    named and is written before it -- the Dutch alphabetized listing,
+    "Beethoven, Ludwig van" being how "Ludwig van Beethoven" is filed.
+    The caller has found the run (`particle_tail`) and checked that a
+    given word stands ahead of it and that P1's fold will not take the
+    part; this declines only where the run stands inside a credential
+    run the walk read whole (`_inside_a_credential_run`, the third
+    exception).
+
+    Keyed on the tokens' VOCABULARY, not their roles, which is what
+    gives the attachment its stated precedence over S2: `vd`, `mc` and
+    `do` are the three words in both vocabularies; the walk reads a
+    trailing `vd` or `mc` as a post-nominal, so those two need the
+    override, and `do` is in the AMBIGUOUS acronym half, which already
+    leaves it a name word, so it attaches by the plain rule. After a
+    family comma the tussenvoegsel is the commoner reading.
+
+    The words-to-spare guard is a piece test, not a count: every
+    trailing piece that is wholly particles attaches, and the run must
+    leave a GIVEN word ahead of it, so "Nguyen, Van" keeps its only
+    given word. Only the DEGENERATE Vietnamese listing is protected by
+    that -- "Nguyen, Thi Van" has a given word to spare, so `Van`
+    attaches and the given name is lost. rules.md#P6 records why that
+    is accepted.
+
+    mechanisms.md#FOLDED_TAG does the rest: tokens never move, so the
+    family view reads the tag and renders these before the base.
+
+    Decided in assign since #613, in the pass that read the given
+    part; until then post_rules took it a stage later, and assign held
+    the tail back from #602's run by predicting it."""
+    if _inside_a_credential_run(pieces, tokens, given_at, k, end,
+                                ambiguities):
+        return
+    run = [i for piece in pieces[k:end] for i in piece]
+    # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at
+    # the site that takes the branch, not where an ambiguous
+    # tag sits" -- this attachment is where the fork is
+    # decided, so the report is raised here, at the attachment,
+    # rather than by the given-part walk's own emitters, which
+    # read the run before the attachment decides it (#405).
+    #
+    # Two arms, keyed on what the attachment OVERRODE rather
+    # than on what the words are, so each names a branch the
+    # parse actually weighed. `declined_suffix` reads the role
+    # the walk gave the run, which is why both lists are built
+    # BEFORE the re-roling loop below overwrites it.
+    #
+    # ORDERED, not asserted disjoint. The two cannot both hold
+    # under the shipped vocabulary -- `vd` and `mc` are the
+    # only words in both the particle and the unambiguous
+    # suffix vocabularies, and neither is ambiguous particle
+    # vocabulary -- but a caller's Lexicon may put one word in
+    # both, and rules.md#A1 says parsing never fails on any
+    # input, so this decides instead of raising. (Measured: an
+    # assert here DID fire on `Berg, Jan zz` under a Lexicon
+    # adding `zz` to particles_ambiguous and suffix_acronyms.)
+    # The suffix arm wins because it names the reading the
+    # parse actually took: assign had read the word as a
+    # post-nominal, so the name-word reading was never on the
+    # table for the attachment to decline.
+    #
+    # Both details name the ATTACHMENT and stop there. What
+    # P6 decides is that the run joins the family the comma
+    # named instead of standing on its own; how the joined
+    # words then READ is R2's call, taken by the UNJOINED_TAG
+    # loop at the end of post_rules. The two can disagree:
+    # `de la, Jan van` attaches `van` and leaves an
+    # all-particle family, which R2 marks, so every other view
+    # -- `family_base`, the initials, case repair -- reads
+    # those words as ordinary name words ('Jan Van De La'
+    # forced). A detail promising "read as the family's
+    # particle" would contradict all three.
+    ambiguous = [i for i in run
+                 if "vocab:particle-ambiguous" in tokens[i].tags]
+    declined_suffix = [i for i in run
+                       if tokens[i].role is Role.SUFFIX]
+    text = " ".join(tokens[i].text for i in run)
+    if declined_suffix:
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{text!r} written without periods is both a "
+            f"post-nominal and a family-name particle; after a "
+            f"family comma it joins the family the comma named "
+            f"rather than standing as a post-nominal",
+            tuple(run)))
+    elif ambiguous:
+        word = tokens[ambiguous[0]].text
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.PARTICLE_OR_GIVEN,
+            f"{word!r} is both a family-name particle and an "
+            f"ordinary given name; after a family comma "
+            f"{text!r} joins the family the comma named "
+            f"rather than standing as a name word of its own",
+            tuple(run)))
+    for i in run:
+        tokens[i] = copy_with(
+            tokens[i], role=Role.FAMILY,
+            tags=tokens[i].tags | {FOLDED_TAG})
+
+
 def assign(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
     ambiguities = list(state.ambiguities)
@@ -552,49 +719,34 @@ def assign(state: ParseState) -> ParseState:
         # ambiguous, and script_orders is not consulted for the parallel
         # reason. Scoped, not silent: the comma fixed WHICH PIECE is the
         # family and said nothing about a particle trailing the given
-        # name, so P6's attachment in post_rules decides that fork and
-        # reports it there, at the site that takes the branch (#405).
-        # The positional read below (a comma followed by no
-        # name word) emits and consults both, being the no-comma read
-        # of segment 0; group's chain emitter still does not, since
-        # group runs before assign decides which read applies (recorded
-        # at decisions.md#C1).
+        # name, so P6's attachment after the given-part walk below
+        # decides that fork and reports it there, at the site that
+        # takes the branch (#405). Behind a whole name, a comma followed
+        # by no name word is not this path since #613: `_comma.decide`
+        # makes it the suffix comma, read positionally by the branch
+        # above, which emits and consults both as the comma-less name
+        # does -- and group's chain emitter with them, the comma being
+        # decided before the chain runs. Behind one name word it is
+        # this path, with segment 1 already bound ('Smith, Jr.').
         # v1: "lastname part may have suffixes in it" -- the first
         # piece is always the family even if suffix-shaped; any later
         # strict-suffix piece goes to SUFFIX per piece ('Smith Jr.,
         # John' -> family=Smith, suffix=Jr.)
         fam_pieces = state.pieces[0]
         fam_tags = state.piece_tags[0]
-        # A comma followed by no name word fixed nothing, so segment 0
-        # keeps its positional read -- including script_orders, the
-        # particle fork, and the ORDER, which post_rules' family-first
-        # fold (P1) and its leading-piece scan key on: "assign records
-        # no order after a family comma" is the invariant those rules
-        # rest on, and this is the path that gives one, so they read
-        # segment 0 as the name it is ('de Mesnil Jean, Dr.' under a
-        # family-first order keeps family 'de Mesnil'; the test review
-        # found the fold missing it). The wholly-family branch below
-        # suppresses all three precisely because the comma HAD fixed
-        # the family. Needs two NAME pieces: with one, the positional
-        # read would make it a lone GIVEN, which is worse than what it
-        # replaces -- and the count is of name pieces, since the
-        # positional read peels a trailing suffix first: 'Smith Jr.,
-        # Mr.' has two pieces and one name, and read positionally lost
-        # its family (the code review).
-        anchored_picks: list[int] = []
-        absorbed: list[int] = []
-        reading = segment_suffix_reading(
-            state.pieces[1], state.piece_tags[1], tokens,
-            state.policy.lenient_comma_suffixes, state.one_case,
-            anchored_picks, absorbed)
+        # The part after the comma reaches here as the given part, or
+        # bound and with no pieces left: group's `_comma.decide` binds a
+        # postnominal one before any join (#613, rules.md#C1), so this
+        # path is the listing form's, and the positional read #296 gave
+        # a comma followed by no name word behind two name words is
+        # decide's suffix comma now, read by the NO_COMMA branch above.
         # rules.md#C1's exception, scoped to the ambiguous credential
-        # class: this is the first report of the comma's OWN decision
-        # (listing or credential run), where the writing left the
-        # fork open and the comma stayed quiet by design until now.
-        # P6's attachment fork already reports on a family-comma path
-        # from post_rules, since 2.3 ("Berg, Jan vd") -- a different
-        # fork. Emitted on the family-comma path only -- the structure
-        # decision reports itself in `segment`, where that branch is
+        # class: this is the given-name half of the comma's OWN
+        # decision (listing or credential run), where the writing left
+        # the fork open. `_comma.decide` reports the credential half,
+        # where it binds the part, and P6's attachment fork reports
+        # from `_attach_particle_tail` above ("Berg, Jan vd") -- a
+        # different fork. Each half is reported where its branch is
         # taken, so this DECISION is never reported twice; a second ambiguous
         # token elsewhere in the name is a second fork and reports on
         # its own (#289, mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE).
@@ -620,10 +772,10 @@ def assign(state: ParseState) -> ParseState:
         # admits it", which is true of the CLASS and false of this
         # report.
         #
-        # Read off the FIRST post-comma piece only --
-        # `segment_suffix_reading` decides piece by piece, and this is
-        # the one piece the lean can reach at one word before the
-        # comma. So `"Smith, MA PhD"` reports ONCE, for 'MA' alone:
+        # Read off the FIRST post-comma piece only -- on this path it
+        # is the given name, `_comma.decide` having read the part and
+        # found a name word in it, and it is the one piece the lean
+        # can reach at one word before the comma. So `"Smith, MA PhD"` reports ONCE, for 'MA' alone:
         # 'PhD' is settled vocabulary and carries neither tag, and
         # even a second CLASS member there would not be read here
         # (test_assign.py asserts the count).
@@ -640,27 +792,20 @@ def assign(state: ParseState) -> ParseState:
         if state.pieces[1] and len(state.pieces[1][0]) == 1:
             i = state.pieces[1][0][0]
             if not tokens[i].tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
-                chose = ("a credential" if reading and reading[0]
-                         else "the given name")
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.SUFFIX_OR_NAME,
                     f"{tokens[i].text!r} after the comma is also an "
-                    f"ordinary name word; read as {chose}",
+                    f"ordinary name word; read as the given name",
                     (i,)))
-        # Segment 1 is read FIRST, ahead of either branch below. It
-        # consumes `reading`, piece tags and text only -- nothing
-        # segment 0's read writes -- and running it first is what puts
-        # a TITLE role on the title standing after the comma ('John V,
-        # Dr.') before _assign_main scans for one, so the positional
-        # read below sees that title the way it sees its own peeled
-        # ones (#449 review round; it replaced a `titled` keyword).
+        # Segment 1 is read before segment 0's wholly-family pass. It
+        # consumes piece tags and text only -- nothing segment 0's
+        # read writes. (A title standing after the comma behind a whole
+        # name, 'John V, Dr.', is bound at group's head since #613 and
+        # never reaches this path.)
         if len(state.segments) > 1:
             pieces = state.pieces[1]
             ptags = state.piece_tags[1]
-            # Both are the walk's, and both are empty on the gate's
-            # path below, which reads the whole segment as a
-            # credential run and leaves no piece for the walk to
-            # place.
+            # Both are the walk's, filled once the title run is found.
             titled_idx: frozenset[int] = frozenset()
             walkable: frozenset[int] = frozenset()
             #: Where the trailing suffix run starts, for the #531
@@ -964,107 +1109,64 @@ def assign(state: ParseState) -> ParseState:
                             pieces[m], pieces[prev], ptags[prev],
                             tokens, state.lexicon))
 
-            # rules.md#C1: "a credential run after the comma means the
-            # name is in natural order with suffixes appended" -- and
-            # with one word before the comma the listing form holds,
-            # the family is that word, and the run is still the
-            # credential run. A no-name segment is read piece by
-            # piece, the suffix vocabulary's verdict BEFORE the title
-            # reading of the same word: the slot after a family comma
-            # is postnominal position, so a segment of nothing but
-            # suffix pieces is the credential run, whole (#296:
-            # 'Smith, Jr.' read title 'Jr.' through the period-
-            # abbreviation inference; #325: 'Smith, Ph. D. Jr.' put
-            # the split credential in the given name, the lone-piece
-            # route not applying), and a mixed run is a title and a
-            # postnominal, each where it stands ('Smith, Mr. Jr.').
-            # Vocabulary decides which words qualify -- 'Smith, Dr.'
-            # reads the title, 'dr' not being suffix vocabulary since
-            # the audit -- and position breaks the tie for the genuine
-            # duals ('Smith, Sr.' is Senior, 'Sr. Garcia' Señor). A
-            # name word in the segment makes it v1's walk ('Smith,
+            # rules.md#C1: "anything else after the comma means the
+            # listing form" -- and this walk reads it. A segment of no
+            # name word never reaches here: it is `_comma.decide`'s, read piece by piece and bound at
+            # group's head (#613, rules.md#C1), the suffix verdict
+            # before the title reading of the same word (#296, #325).
+            # A name word in the segment makes it v1's walk ('Smith,
             # John Jr.').
-            if reading is not None:
-                # the gate's own reading (#430)
-                for k, piece in enumerate(pieces):
-                    _set_roles(tokens, piece,
-                               Role.SUFFIX if reading[k] else Role.TITLE)
-                n = len(pieces)
-                # rules.md#S2's company, reported where it decided: a
-                # member the anchor read as a credential after its own
-                # writing declined is a pick, as the peel's are (#544).
-                # Never piece 0, which nothing stands in front of, so
-                # never the first-piece report's word above; a member
-                # whose capitals lean credential is not among them
-                # ('Smith, PhD MA' stays silent).
-                for k in anchored_picks:
-                    i2 = pieces[k][0]
-                    ambiguities.append(PendingAmbiguity(
-                        AmbiguityKind.SUFFIX_OR_NAME,
-                        f"{tokens[i2].text!r} behind a credential after "
-                        f"the comma is also an ordinary name word; read "
-                        f"as a credential",
-                        (i2,)))
-                # rules.md#C1: "A credential opening the part makes it
-                # the postnominal part however it goes on" (#603), and a
-                # word in it that would have made it the given part is
-                # reported, as #602's run reports the name words it
-                # takes
-                for k in absorbed:
-                    if has_name_content(pieces[k], tokens):
-                        ambiguities.append(_absorbed(pieces[k], tokens))
-            else:
-                n = _peel_leading_titles(pieces, ptags, tokens)
-                # rules.md#H5: "the title is TRANSPARENT to the suffix
-                # reading: where two or more name words stand, what
-                # stands once the chain is taken reads exactly as it
-                # would read written without the title, plus the title"
-                # -- the trailing title run, on this walk
-                # too. A name word in segment 1 is what keeps the gate
-                # above from reading the segment as a credential run,
-                # so 'Smith, John Prof.' had no route to title at all
-                # and read middle 'Prof.' at every baseline; the
-                # 'Smith, Dr.' family of rows that already route are
-                # the gate's doing, a different mechanism.
-                #
-                # The candidates are the pieces this walk would NOT
-                # read as a suffix, which is this path's answer to the
-                # peel the no-comma path runs first -- 'Smith, John
-                # Prof. Jr.' must reach `Prof.` past the postnominal
-                # behind it, and 'Smith, John Prof. V' past the
-                # numeral the lenient tail test claims (#144), which
-                # is why the filter is the walk's own predicate and
-                # not the strict suffix test alone. Piece `n` is
-                # always the given below, whatever that predicate
-                # would say of it, so it is always a candidate. That
-                # `k == n` is LOAD-BEARING, not defensive: it is what
-                # the walk's floor stands on when the given piece
-                # itself reads as a suffix, and dropping it leaves
-                # 'Smith, II Mr. V' a middle 'Mr.' where the title is
-                # (24 inputs of that shape move, of 191,146 generated,
-                # measured 2026-09-09).
-                #
-                # `candidates` is the ORDER, which `trailing_titles` and
-                # its slice read; everything after asks MEMBERSHIP,
-                # once per piece, and a list or tuple answers that by
-                # scanning, so the walk was quadratic in the part's
-                # length (#553). Hence the two sets. A tuple keying
-                # `floors` or `anchor_memo` above would also re-hash
-                # its whole length at every lookup, where a frozenset
-                # caches its hash.
-                candidates = [k for k in range(n, len(pieces))
-                              if k == n
-                              or not reads_as_a_suffix(k, frozenset())]
-                kept = trailing_titles(candidates, pieces, ptags, tokens)
-                walkable = frozenset(candidates)
-                titled_idx = frozenset(candidates[kept:])
-                for k in titled_idx:
-                    _set_roles(tokens, pieces[k], Role.TITLE)
+            n = _peel_leading_titles(pieces, ptags, tokens)
+            # rules.md#H5: "the title is TRANSPARENT to the suffix
+            # reading: where two or more name words stand, what
+            # stands once the chain is taken reads exactly as it
+            # would read written without the title, plus the title"
+            # -- the trailing title run, on this walk
+            # too. A name word in segment 1 is what keeps
+            # `_comma.decide` from reading the segment as the
+            # postnominal part, so 'Smith, John Prof.' had no route
+            # to title at all and read middle 'Prof.' at every
+            # baseline; the 'Smith, Dr.' family of rows are decide's
+            # doing, a different mechanism.
+            #
+            # The candidates are the pieces this walk would NOT
+            # read as a suffix, which is this path's answer to the
+            # peel the no-comma path runs first -- 'Smith, John
+            # Prof. Jr.' must reach `Prof.` past the postnominal
+            # behind it, and 'Smith, John Prof. V' past the
+            # numeral the lenient tail test claims (#144), which
+            # is why the filter is the walk's own predicate and
+            # not the strict suffix test alone. Piece `n` is
+            # always the given below, whatever that predicate
+            # would say of it, so it is always a candidate. That
+            # `k == n` is LOAD-BEARING, not defensive: it is what
+            # the walk's floor stands on when the given piece
+            # itself reads as a suffix, and dropping it leaves
+            # 'Smith, II Mr. V' a middle 'Mr.' where the title is
+            # (24 inputs of that shape move, of 191,146 generated,
+            # measured 2026-09-09).
+            #
+            # `candidates` is the ORDER, which `trailing_titles` and
+            # its slice read; everything after asks MEMBERSHIP,
+            # once per piece, and a list or tuple answers that by
+            # scanning, so the walk was quadratic in the part's
+            # length (#553). Hence the two sets. A tuple keying
+            # `floors` or `anchor_memo` above would also re-hash
+            # its whole length at every lookup, where a frozenset
+            # caches its hash.
+            candidates = [k for k in range(n, len(pieces))
+                          if k == n
+                          or not reads_as_a_suffix(k, frozenset())]
+            kept = trailing_titles(candidates, pieces, ptags, tokens)
+            walkable = frozenset(candidates)
+            titled_idx = frozenset(candidates[kept:])
+            for k in titled_idx:
+                _set_roles(tokens, pieces[k], Role.TITLE)
             # v1 walk order: the first non-title piece is ALWAYS the
             # given, before any suffix check -- 'Smith, V. Jones' keeps
-            # first='V.'. Two 2.x deviations are the segment reading
-            # above now (`reading is not None`), so the walk here never
-            # meets either: a last piece
+            # first='V.'. Two 2.x deviations are `_comma.decide`'s
+            # reading now (#613), so the walk here never meets
+            # either: a last piece
             # that is unambiguously suffix-shaped is a suffix, where v1
             # made it the given ('Andrews, M.D.', 'Smith, Dr. Jr.';
             # classified fix(comma-family)), a segment whose only
@@ -1100,29 +1202,36 @@ def assign(state: ParseState) -> ParseState:
                                                     tokens)):
                     sticky_from = m
                     break
-            # The particle tail P6 will attach is not the run's to take
-            # (rules.md#P6: "a particle ending the name attaches to that
-            # family name"): `pieces[p6_lo:p6_hi]`, found by the walk P6
-            # itself runs (#610), the run's words still holding no role
-            # here. They are left to the walk below and reach P6 with
-            # the role they had before #602. Absorbing them reported a
-            # suffix reading P6 then overrode, and P6 reported the
-            # override as a declined post-nominal ('Smith, John PhD de',
-            # 'Smith, John PhD de Jr.'). A particle P6 will NOT attach --
-            # one with a credential behind it and another particle past
-            # that, 'Smith, John PhD de PhD van' -- stays in the run, as
-            # does a lone member of the ambiguous credential class
-            # (`do`), which the run reads as the credential and P6's
-            # #531 stop keeps out of the attachment.
-            p6_lo = p6_hi = len(pieces)
-            if sticky_from < len(pieces):
-                p6_lo, p6_hi = particle_tail(pieces, tokens, sticky_from)
+            # rules.md#P6: "a particle ending the name attaches to that
+            # family name" -- decided here, in the pass that reads the
+            # given part, rather than predicted for post_rules to take
+            # a stage later (#613). The tail is `pieces[k6:end6]`, found
+            # by `particle_tail` ONCE, at the moment the walk reaches
+            # #602's run (or, with no run, once the walk has placed
+            # every piece): the pieces in front of the run hold the roles
+            # this walk gave them and the run's own words hold none
+            # yet, which is the state in which the walk's answer equals
+            # the one it would give over the finished roles -- the run
+            # reads every word it keeps as a suffix or a title, neither
+            # a name role, and a class member in it as the credential,
+            # where the walk's #531 stop wants it. The tail's words are
+            # left to the walk, not the run: absorbing them reported a
+            # suffix reading the attachment then overrode ('Smith, John
+            # PhD de', 'Smith, John PhD de Jr.'). A particle the walk
+            # does not end on -- one with a credential behind it and
+            # another particle past that, 'Smith, John PhD de PhD van'
+            # -- stays in the run, as does a lone member of the
+            # ambiguous credential class (`do`), which the run reads as
+            # the credential.
+            k6 = end6 = len(pieces)
             for m in range(n + 1, len(pieces)):
+                if m == sticky_from:
+                    k6, end6 = particle_tail(pieces, tokens)
                 if m in titled_idx:
                     continue
                 suffix_here = (reads_as_a_suffix(m, titled_idx)
                                if titled_idx else m not in walkable)
-                if m >= sticky_from and not p6_lo <= m < p6_hi:
+                if m >= sticky_from and not k6 <= m < end6:
                     # inside the run: a title word reads as a title,
                     # every other word as a suffix, and a word the walk
                     # would have kept as a name is reported, here where
@@ -1153,8 +1262,8 @@ def assign(state: ParseState) -> ParseState:
                     continue
                 _set_roles(tokens, pieces[m],
                            Role.SUFFIX if suffix_here else Role.MIDDLE)
-                # #531's report, and the FIFTH SUFFIX_OR_NAME site in
-                # this module. The gate reads EITHER tag, as the
+                # #531's report, one of this module's SUFFIX_OR_NAME
+                # sites (the header lists them). The gate reads EITHER tag, as the
                 # first-post-comma emitter's does: classify writes the
                 # shape tag whether or not the dotted switch admits
                 # the token, which is what lets a declined fork be
@@ -1224,66 +1333,46 @@ def assign(state: ParseState) -> ParseState:
                             f"read as "
                             f"{'a credential' if suffix_here else 'a name'}",
                             (i2,)))
-        # The two name words are counted as UNITS (#575,
-        # mechanisms.md#UNIT-PARTITION): group leaves an ambiguous
-        # leading particle a piece of its own (P1's fork), so 'van der
-        # Berg, PhD' holds two name pieces and one surname, and read
-        # positionally lost 'van' to the given name. The comma is the
-        # evidence that settles that fork: the listing form puts a
-        # surname before it. The same facts as segment's count
-        # (`_vocab.surname_unit_facts`), over EVERY token, so a suffix
-        # word still stops a particle ('van Jr. Berg, Mr.' is two name
-        # words); a unit counts when a non-suffix piece holds a token
-        # of it. The positional read places PIECES, so it also needs two
-        # name pieces, and that is a DECISION, not only a saving: a
-        # connective join makes one piece of several units ('Vega y
-        # Lopez'), which the unit count alone would read positionally,
-        # losing the family to the given name behind a part a credential
-        # opens ('Vega y Lopez, PhD Jones', and with a suffix piece beside
-        # it, 'Vega y Lopez Jr., PhD Jones'). One piece settles it in C
-        # before anything is built ('Smith, Jr.').
-        names = 0
-        if reading is not None and len(fam_pieces) > 1:
-            # a loop, not a comprehension: no frame of its own on 3.11
-            named: set[int] = set()
-            named_pieces = 0
-            for k, piece in enumerate(fam_pieces):
-                if not is_suffix_piece(piece, fam_tags[k], tokens):
-                    named.update(piece)
-                    named_pieces += 1
-            if named_pieces > 1:
-                idx = [i for piece in fam_pieces for i in piece]
-                start = 0
-                for end in unit_ends([surname_unit_facts(tokens[i].tags,
-                                                         k == 0)
-                                      for k, i in enumerate(idx)],
-                                     chain=False):
-                    if not named.isdisjoint(idx[start:end]):
-                        names += 1
-                    start = end
-        if names > 1:
-            order = _assign_main(0, state, tokens, ambiguities)
-        else:
-            # rules.md#P2: a particle "joins the words after it into one
-            # name part" -- so a particle that is suffix vocabulary too
-            # (vd, mc) with a name piece behind it in this part heads
-            # that name, and is not peeled from between two family words
-            # (#573: 'SMITH VD MA, JOHN', where the uniform case left the
-            # chain stopped before VD; 'SMITH VD JR, JOHN', a suffix word
-            # behind it, keeps suffix 'VD JR'). Group cannot make this
-            # call, not knowing which read this segment gets: a comma
-            # followed by no name word reads it positionally, trailing
-            # run and all ('Berg de MA, Prof.').
-            for k, piece in enumerate(fam_pieces):
-                if (k > 0 and is_suffix_piece(piece, fam_tags[k], tokens)
-                        and not (k + 1 < len(fam_pieces)
-                                 and "particle" in tokens[piece[0]].tags
-                                 and not is_suffix_piece(
-                                     fam_pieces[k + 1], fam_tags[k + 1],
-                                     tokens))):
-                    _set_roles(tokens, piece, Role.SUFFIX)
-                else:
-                    _set_roles(tokens, piece, Role.FAMILY)
+            if sticky_from == len(pieces):
+                k6, end6 = particle_tail(pieces, tokens)
+            # Only where the comma named a family: with nothing before
+            # it, H1 and M4 decide first and post_rules attaches after
+            # them. GIVEN ahead of the tail, which is what P6 says
+            # ("provided at least one given word remains"): the given is
+            # piece
+            # `n`, so a tail starting there leaves none ('Nguyen, Van').
+            # And not where P1's fold will take the part: a never-given
+            # particle opening it folds every given and middle word
+            # into the family in post_rules, so no given word remains
+            # for this one either ('Smith, de Mesnil van' keeps
+            # 'van' where the fold puts it, not hoisted in front of
+            # 'Smith', the 2026-08-18 defect).
+            if (n < k6 < end6 and fam_pieces
+                    and not is_lone_never_given_particle(pieces[n],
+                                                         tokens)):
+                _attach_particle_tail(pieces, tokens, n, k6, end6,
+                                      ambiguities)
+        # rules.md#P2: a particle "joins the words after it into one
+        # name part" -- so a particle that is suffix vocabulary too
+        # (vd, mc) with a name piece behind it in this part heads
+        # that name, and is not peeled from between two family words
+        # (#573: 'SMITH VD MA, JOHN', where the uniform case left the
+        # chain stopped before VD; 'SMITH VD JR, JOHN', a suffix word
+        # behind it, keeps suffix 'VD JR'). Read here because only
+        # this wholly-family pass needs it: a comma followed by no name
+        # word behind a whole name is group's suffix comma since #613,
+        # and the NO_COMMA read takes segment 0, trailing run and all
+        # ('Berg de MA, Prof.').
+        for k, piece in enumerate(fam_pieces):
+            if (k > 0 and is_suffix_piece(piece, fam_tags[k], tokens)
+                    and not (k + 1 < len(fam_pieces)
+                             and "particle" in tokens[piece[0]].tags
+                             and not is_suffix_piece(
+                                 fam_pieces[k + 1], fam_tags[k + 1],
+                                 tokens))):
+                _set_roles(tokens, piece, Role.SUFFIX)
+            else:
+                _set_roles(tokens, piece, Role.FAMILY)
         tail = 2
     # rules.md#C2: segments past the structure's name segments are
     # consumed as suffixes, except "a word of the title vocabulary there
@@ -1297,8 +1386,9 @@ def assign(state: ParseState) -> ParseState:
     for seg_idx in range(tail, len(state.segments)):
         for piece, ptags_ in zip(state.pieces[seg_idx],
                                  state.piece_tags[seg_idx]):
-            # the tag tests inline ahead of the predicate: every suffix
-            # comma's tail runs this ('John Smith, Jr.'), and the call
+            # the tag tests inline ahead of the predicate: every tail
+            # past the name segments runs this ('John Smith, Jr., PhD'),
+            # the part after a suffix comma being bound by group, and the call
             # would be its frame. Both arms are needed -- a connective
             # join tags a piece a title though its first token is none
             # ('and Secretary of State')

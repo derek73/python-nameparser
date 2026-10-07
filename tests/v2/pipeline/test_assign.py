@@ -122,9 +122,11 @@ def test_the_comma_path_reports_its_ambiguous_reading_once() -> None:
 
 
 def test_the_family_comma_report_detail_is_verbatim() -> None:
-    # The family-comma path's own emitter (assign's half of the FIRST
-    # comma-path report; segment's structure-flip half is pinned in
-    # test_segment.py). Pinned verbatim for the same reason.
+    # The credential half of the FIRST comma-path report, which
+    # `_comma.decide` emits where it binds the part at group's head
+    # (#613; assign's family-comma emitter keeps the given-name half,
+    # and the structure flip's report is pinned in test_comma.py).
+    # Pinned verbatim for the same reason.
     out = _assigned("Smith, MA", lexicon=Lexicon.default())
     (amb,) = [a for a in out.ambiguities
              if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
@@ -318,8 +320,9 @@ def test_suffix_comma_and_extra_segments() -> None:
 
 
 def test_suffix_comma_structure() -> None:
-    # Structure.SUFFIX_COMMA (segment.py): >1 word before the first
-    # comma AND every post-first segment is entirely lenient-suffix.
+    # Structure.SUFFIX_COMMA (`_comma.decide`, at group's head since
+    # #613): a whole name before the first comma AND the part after it
+    # read as the postnominal part.
     # ('Smith, John, Jr.' above only has ONE word before its first
     # comma, so it is FAMILY_COMMA with a trailing suffix segment, not
     # this branch.) Previously this assign() branch (tail=1) was only
@@ -436,8 +439,8 @@ def test_the_family_comma_walk_reads_past_its_own_suffix_tail() -> None:
 def test_trailing_title_run_after_a_family_comma() -> None:
     """The same rule on segment 1's own walk.
 
-    A name word after the comma keeps the no-name gate from reading
-    the segment as a credential run, so this shape had no route to
+    A name word after the comma keeps `_comma.decide` from binding
+    the segment as the postnominal part, so this shape had no route to
     TITLE at all and read the word as a middle name.
     """
     out = _assigned("Smith, John Mr.")
@@ -623,7 +626,8 @@ def test_a_title_and_a_suffix_after_the_comma_fix_no_family_either() -> None:
 def test_the_positional_segment_zero_records_its_order() -> None:
     # post_rules' family-first fold and its leading-piece scan key on
     # "assign records no order after a family comma"; the positional
-    # read is the path that gives one (the test review found the fold
+    # read -- the suffix comma `_comma.decide` makes behind a whole
+    # name since #613 -- is the path that gives one (the test review found the fold
     # missing 'de Mesnil Jean, Dr.' under a family-first order)
     out = _assigned("John Smith, Dr.")
     assert out.order is not None
@@ -869,9 +873,10 @@ def test_two_members_in_the_trailing_run_report_once_each() -> None:
 def test_the_no_name_gate_path_still_reports_exactly_once() -> None:
     """The sibling of the existing count assertion. Where the first
     post-comma piece IS the trailing run, segment 1 holds no name
-    word, segment_suffix_reading returns non-None, and assign never
-    enters the placement loop -- so the new emitter is unreachable on
-    exactly the path the old one owns."""
+    word, so `_comma.decide` binds it at group's head and reports the
+    member there (#613), and assign's placement loop is handed no
+    piece of it -- so the new emitter is unreachable on exactly the
+    path the first-piece report owns."""
     for text in ("Doe, MA", "Doe, MA PhD", "Doe, MA JD"):
         out = _assigned(text, lexicon=Lexicon.default())
         assert len([a for a in out.ambiguities

@@ -2,24 +2,32 @@
 
 Consumes: tokens (classified), segments, structure, one_case, extracted
 (the role + inner span per delimited region, for the #329 pass below --
-the only stage after tokenize that reads it).
-Produces: pieces + piece_tags per segment (runs of token indices --
-tokens are NEVER joined into strings: the anti-#100 invariant); maiden
-tail tokens get role=MAIDEN, and the trailing run a maiden take gives
-up gets its SUFFIX and TITLE roles here (#601), so no join can reach
-it; marker tokens land in dropped.
+the only stage after tokenize that reads it); and, through
+`_comma.decide`, comma_offsets (the own-words span of the name's case
+contrast) and dropped, which decide extends.
+Produces: structure -- its head decides a comma form once the words
+are tagged (rules.md#C1, #613, `_comma.decide`), binding the SUFFIX and
+TITLE roles of a postnominal part after the comma, emptying its
+segment and dropping its delimiter cores before any join, plus the SUFFIX_OR_NAME
+ambiguities that decision reports and the caps shape's acronym tags on
+a bound all-caps word (#564); pieces + piece_tags per segment
+(runs of token indices -- tokens are NEVER joined into strings: the
+anti-#100 invariant); maiden tail tokens get role=MAIDEN, and the
+trailing run a maiden take gives up gets its SUFFIX and TITLE roles
+here (#601), so no join can reach it; marker tokens land in dropped.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
-dropped (v1 suffix_delimiter parity, #549) -- no other Policy field.
-Policy.lenient_comma_suffixes left this list with #436: it reached
-here only through segment_suffix_reading, whose render consumer was
-this stage's one-entry join and now lives in post_rules. The v1
+dropped (v1 suffix_delimiter parity, #549); and, through
+`_comma.decide`, what that module's own header lists
+(Policy.lenient_comma_suffixes and Policy.unlisted_caps_suffixes among
+them). The v1
 "derived titles/prefixes" registration becomes piece_tags entries --
 per-parse state that dissolves with the state (v1 kept per-parse sets
 for the same reason).
 
-Implements rules P2, P3, P4 and M2, and the
+Implements rules P2, P3, P4 and M2, C1's decision through _comma, and
+the
 group half of M1 (#329: the marker dropped inside EXTRACTED maiden
 content, which M2's pieces walk cannot reach because extract's
 content never enters pieces); each is cited at its code below. Also
@@ -55,6 +63,7 @@ from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, copy_with,
 )
+import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import (
     delimiter_cores,
@@ -62,10 +71,11 @@ from nameparser._pipeline._vocab import (
 from nameparser._types import AmbiguityKind, Role
 
 # the credential-pair regexes live in _vocab, whose own
-# is_wholly_suffix merges the same pair -- and since #319 that
-# predicate has TWO callers to stay in sync with, segment's
-# suffix-comma structure test and script_segment's decline of a
-# wholly-suffix post-comma run, both of which see the merged reading
+# is_wholly_suffix merges the same pair, as `_comma._pieces` does --
+# and that predicate's callers stay in sync with it: `_comma.decide`'s
+# reading of the part after the comma, segment's C2 flag on a tail
+# part, and script_segment's decline of a wholly-suffix post-comma
+# run, all of which see the merged reading
 
 Piece = list[int]
 #: What the marker pass took out of a segment: the marker's TOKEN
@@ -1258,6 +1268,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
 
 
 def group(state: ParseState) -> ParseState:
+    # rules.md#C1's decision, read once now that classify has tagged
+    # the words and before any join below can reach the part after the
+    # comma (#613); a postnominal part comes back bound, its segment
+    # emptied (a name with no comma asks nothing)
+    if state.structure is Structure.FAMILY_COMMA:
+        state = _comma.decide(state)
     tokens = list(state.tokens)
     dropped = list(state.dropped)
     ambiguities = list(state.ambiguities)

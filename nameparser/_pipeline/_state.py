@@ -98,14 +98,16 @@ _AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
 
 #: The roles that make a piece a name word (rules.md#P6's walk), and
 #: the roles of a word not yet read as one: a suffix, or nothing yet
-#: -- what `_pieces.particle_tail` reads, asked by post_rules after
-#: assign and by assign before its credential run places its words.
+#: -- what `_pieces.particle_tail` reads, asked by assign's given-part
+#: walk when it reaches the credential run, whose words are unread.
 NAME_ROLES = (Role.GIVEN, Role.MIDDLE, Role.FAMILY)
 SUFFIX_OR_UNREAD = (Role.SUFFIX, None)
 
 
 class Structure(Enum):
-    """segment's comma-structure decision."""
+    """The comma structure: segment writes NO_COMMA or FAMILY_COMMA,
+    and group's head decides a comma form once classify has tagged the
+    words, which may make it SUFFIX_COMMA (#613, `_comma.decide`)."""
 
     NO_COMMA = auto()
     FAMILY_COMMA = auto()   # "Family, Given ..." (v1 lastname-comma)
@@ -141,17 +143,21 @@ class ParseState:
     sorted)/comma_offsets/interpunct_offsets (the 间隔号 offsets the
     order and segmentation decisions consult, #298; the nakaguro
     separators record NOTHING); segment -> segments/structure/one_case
-    (lazily, only where a comma form could turn it on -- #289/#516);
+    (lazily, only where C2's flag asks for it -- #289/#516, #613);
     script_segment -> tokens and segments again (the one stage that
     changes the token COUNT: an unspaced CJK token splits into n+1
     pieces, still as sub-slices of the original, and every later index
     in the segment runs shifts by n); classify -> token tags AND
-    one_case; group -> pieces/piece_tags/dropped AND maiden token
-    roles, plus the SUFFIX/TITLE roles of the run a maiden take gives
-    up (#601);
+    one_case; group -> structure (its head decides a comma form, #613)
+    AND the SUFFIX/TITLE roles of a postnominal part after the comma,
+    whose segment it empties so no join reaches it,
+    then pieces/piece_tags/dropped AND maiden token roles, plus the
+    SUFFIX/TITLE roles of the run a maiden take gives up (#601);
     assign -> the remaining token roles AND `order`, the effective
-    order it read them under; post_rules -> roles again, and the
-    ambiguity P6's attachment reports.
+    order it read them under, AND the folded-middle tag on the
+    particles P6's attachment joins after a family comma (#613);
+    post_rules -> roles again, and the ambiguity P6's no-comma
+    attachment reports (#467).
     Ambiguities are recorded by every stage that DECIDES one --
     extract (resolved to a token index by tokenize), segment,
     script_segment, classify, group, assign, and post_rules -- since a
@@ -200,8 +206,9 @@ class ParseState:
     #: about any word in them (rules.md#P3's own-words span,
     #: _pieces.own_words). None means NOT ASKED YET: the fact is
     #: computed by whichever of segment and classify needs it first,
-    #: segment only when a comma form could turn on it, so a reader
-    #: between the two stages sees None and must not guess.
+    #: segment only when C2's flag on a part past the second comma asks
+    #: for it, so a reader between the two stages sees None and must
+    #: not guess -- script_segment asks for itself there (#613).
     #: Recorded rather than recomputed, the way `order` above is: the
     #: trailing suffix slot, the post-comma slot, the tail-segment
     #: reading, the prefix chain's own tail measure (_group) and the
@@ -217,8 +224,9 @@ class ParseState:
     #: only moves a space into a string whose upper/lower comparison
     #: ignores spaces entirely -- '김민준씨' and '김민준 씨' fold alike.
     #: So the field is carried through rather than invalidated, and
-    #: script_segment reads it (its suffix-run predicate takes the
-    #: lean) rather than asking again.
+    #: script_segment reads it where segment recorded it (its suffix-run
+    #: predicate takes the lean), asking for itself only where segment
+    #: did not, without recording the answer (`_one_case`).
     one_case: bool | None = None
     ambiguities: tuple[PendingAmbiguity, ...] = ()
 

@@ -5,7 +5,7 @@ from typing import cast
 
 import pytest
 
-from nameparser import Parser
+from nameparser import Parser, parse
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import _group as _group_module
 from nameparser._pipeline._classify import classify
@@ -153,8 +153,10 @@ def test_the_phd_merge_declines_at_the_head_of_a_name() -> None:
     # legitimately opens its segment, which C1 reads as a listing.
     assert _piece_texts(_grouped("Ph. D. Van Johnson")) == \
         [["Ph.", "D.", "Van Johnson"]]
-    assert _piece_texts(_grouped("Smith, Ph. D. Jr.")) == \
-        [["Smith"], ["Ph. D.", "Jr."]]
+    # the part after the comma is bound by group's head (#613), which
+    # builds the same merge for its reading, so no piece is left there
+    assert _piece_texts(_grouped("Smith, Ph. D. Jr.")) == [["Smith"], []]
+    assert parse("Smith, Ph. D. Jr.").suffix == "Ph. D. Jr."
     # segment 0 BEFORE a family comma is the family the comma named,
     # and v1 merges there too ("Ph. D., John" reads last 'Ph. D.'), so
     # the `not family_comma` half of the flag has its own witness --
@@ -347,7 +349,8 @@ def test_suffix_comma_name_segment_gets_no_additional_count() -> None:
     # v1 parity: additional_parts_count applies to FAMILY_COMMA parts only;
     # ', PhD' must not tip the single-letter-conjunction carve-out
     out = _grouped("John y Smith, PhD")
-    assert _piece_texts(out) == [["John", "y", "Smith"], ["PhD"]]
+    # the credential part is bound at group's head (#613)
+    assert _piece_texts(out) == [["John", "y", "Smith"], []]
 
 
 _DUAL_LEX = dataclasses.replace(
@@ -1132,21 +1135,34 @@ def test_the_site_is_pinned_to_the_structure_it_is_read_from(
              "Doe, Jane née Smith MA, MD")
     seen: dict[tuple[Structure, int], ClauseSite] = {}
     real = _group_module._group_segment
+    real_decide = _group_module._comma.decide
+    # the structure group reads its sites off is the one it decided at
+    # its head (#613), not the family comma segment handed over
+    decided: list[Structure] = []
 
     def spy(seg: tuple[int, ...], additional: int,
             tokens: Sequence[WorkToken], *args: object,
             **kwargs: object) -> object:
-        seen[(state.structure, len(seen_order))] = cast(
+        seen[(decided[-1], len(seen_order))] = cast(
             ClauseSite, kwargs["site"])
         seen_order.append(seg)
         return real(seg, additional, tokens, *args, **kwargs)  # type: ignore[arg-type]
 
+    def decide_spy(st: ParseState) -> ParseState:
+        out = real_decide(st)
+        decided[-1] = out.structure
+        return out
+
     monkeypatch.setattr(_group_module, "_group_segment", spy)
+    monkeypatch.setattr(_group_module._comma, "decide", decide_spy)
     for text in texts:
         seen_order: list[tuple[int, ...]] = []
         state = classify(segment(tokenize(extract_delimited(ParseState(
             original=text, lexicon=Lexicon.default(),
             policy=Policy())))))
+        # group asks decide only of a comma form; the structure it
+        # hands over stands where it does not ask
+        decided.append(state.structure)
         group(state)
     assert seen == want, (
         f"group() maps the structures to {seen}, pinned as {want}")
@@ -1285,7 +1301,7 @@ def test_every_marker_site_ends_the_run_in_the_same_place(
 # Placements, not spellings: the axis the test above does not vary. A
 # marker run is tagged over the whole span-sorted token stream and
 # consumed over one SEGMENT, and the two populations differ -- extract
-# gives a delimited clause's tokens a role and _segment.py:31 keeps
+# gives a delimited clause's tokens a role and segment's role-None filter keeps
 # only role-None tokens, then buckets those by the commas before them.
 # So a run written across a clause edge or a structure comma is one the
 # piece walk cannot see whole. Every row here writes 'z domu' at a

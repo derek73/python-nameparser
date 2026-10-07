@@ -267,11 +267,9 @@ def test_stage_field_ownership() -> None:
         # a character offset that tokenize resolves to a token index
         "tokenize": {"tokens", "comma_offsets", "interpunct_offsets",
                      "ambiguities"},
-        # segment records `one_case` too, lazily, only where a comma
-        # form could turn it on -- a single-token part after the first
-        # comma, the shape the ambiguous class comes in (#289/#516).
-        # A comma-less name, or one whose post-comma part is not a
-        # single token, never asks and pays nothing.
+        # segment records `one_case` too, lazily, only where C2's flag
+        # on a part past the second comma asks for it (#289/#516, #613);
+        # a name that never asks pays nothing.
         "segment": {"segments", "structure", "ambiguities", "one_case"},
         # script_segment splits one unspaced CJK token into n+1 pieces
         # (n = 1 from the vocabulary, any n from a segmenter), so it
@@ -280,8 +278,8 @@ def test_stage_field_ownership() -> None:
         # deliberately absent from token_ownership below, whose
         # token-count assert is the one contract this stage is exempt
         # from. structure and segmenter it only READS (the
-        # FAMILY_COMMA opt-out, and the hook it consults on a
-        # vocabulary decline).
+        # FAMILY_COMMA opt-out, asked again for itself since #613, and
+        # the hook it consults on a vocabulary decline).
         "script_segment": {"tokens", "segments", "ambiguities"},
         # classify also emits SUFFIX_OR_NICKNAME: the delimiter escape
         # that decides it lives in extract_delimited, which has no token
@@ -290,15 +288,21 @@ def test_stage_field_ownership() -> None:
         # group also emits PARTICLE_OR_GIVEN: the prefix chain takes
         # the particle branch of a fork whose given branch _assign
         # takes, so each stage reports the side it decides
+        # and since #613 group writes `structure`: segment hands every
+        # comma form over as the family comma, and group's head decides
+        # it once classify has tagged the words (_comma.decide),
+        # binding a postnominal part's roles and dropping its cores
+        # and empties the segment of a part it bound, so no join can
+        # reach it (#613's /simplify)
         "group": {"tokens", "pieces", "piece_tags", "dropped",
-                  "ambiguities"},
+                  "ambiguities", "structure", "segments"},
         # assign also records `order`: the effective order it read the
         # name under, which post_rules needs and must not re-derive
         "assign": {"tokens", "ambiguities", "order"},
-        # post_rules also emits PARTICLE_OR_GIVEN and SUFFIX_OR_NAME:
-        # P6's attachment takes the family branch of a fork whose other
-        # branches assign and group take, so each stage reports the
-        # side it decides
+        # post_rules also emits PARTICLE_OR_GIVEN: P6's no-comma
+        # attachment (#467) takes the family branch of a fork whose
+        # other branches assign and group take, so each stage reports
+        # the side it decides; the comma site is assign's since #613
         "post_rules": {"tokens", "ambiguities"},
     }
     assert {s.__name__ for s in STAGES} == set(ownership)
@@ -306,16 +310,24 @@ def test_stage_field_ownership() -> None:
     # spans are fixed at tokenize (the anti-#100 invariant -- tokens
     # are never re-created), classify touches only tags, and the
     # role-assigning stages touch only roles (group also tags, for the
-    # ph-d "joined" marker, and post_rules for the entry "joined"
-    # marker beside its folded-middle mark).
+    # ph-d "joined" marker and the caps shape's acronym marks
+    # `_comma.decide` writes on a bound part (#564, #613), assign for P6's folded-middle mark after a
+    # comma, and post_rules for the entry "joined" marker beside its
+    # own folded-middle marks).
     token_ownership = {
         "classify": {"tags"},
         "group": {"tags", "role"},
-        "assign": {"role"},
-        # post_rules also tags, twice: the middle_as_family fold marks
-        # folded tokens vocab:folded-middle for the family view's
-        # prepend order, and R1's entry pass marks a post-nominal
-        # "joined" when the writer wrote no comma before it (#436)
+        # assign also tags since #613: P6's attachment after a family
+        # comma marks the particles it joins to the family
+        # vocab:folded-middle, for the family view's prepend order
+        "assign": {"role", "tags"},
+        # post_rules also tags: P6's attachments it still makes (the
+        # no-comma site, and after a comma with nothing before it) and
+        # the middle_as_family fold mark folded tokens
+        # vocab:folded-middle for the family view's prepend order, R2
+        # and R3 write their unjoined marks, and R1's entry pass marks
+        # a post-nominal "joined" when the writer wrote no comma
+        # before it (#436)
         "post_rules": {"role", "tags"},
     }
     for case in CASES:

@@ -7,13 +7,16 @@ rotation gate. Also comma_offsets and dropped, which R1's entry pass
 below reads to find the separators the writer typed (#436/#437).
 Produces: tokens with roles adjusted by the post rules, the stable
 "joined" tag on a post-nominal continuing the entry before it, and the
-ambiguity P6's attachment reports for the fork it decides, whichever
-way it decides it (#405, #573).
+ambiguity P6's attachment reports at the end of a name read
+family-first (#467) and after a comma with nothing before it -- after a
+family comma that names a family, that attachment is assign's since
+#613.
 Reads: Policy.patronymic_rules, Policy.middle_as_family,
 Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles.
 
-Implements rules H1, M4, P1, P6, O1, O2, O3 and R1 of docs/design/rules.md;
+Implements rules H1, M4, P1, P6 (its no-comma site, and after a comma
+naming no family), O1, O2, O3 and R1 of docs/design/rules.md;
 each is cited at its code below, and H1/P1/O1/O2's history lives in
 docs/design/decisions.md. `suffix_entries` is the R1 entry pass as a
 state-in/state-out function, for Parser.revise to run over a
@@ -24,7 +27,9 @@ from __future__ import annotations
 import re
 
 from nameparser._lexicon import _run_addresses_by_given
-from nameparser._pipeline._assign import _name_positions
+from nameparser._pipeline._assign import (
+    _attach_particle_tail, _name_positions,
+)
 from nameparser._pipeline._pieces import (
     is_lone_never_given_particle, particle_tail,
 )
@@ -156,8 +161,8 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # in post_rules writes either: every retag in post_rules targets a
     # NAME role and nothing else -- `_retag` is called with
     # Role.FAMILY, Role.GIVEN, Role.MIDDLE, and with
-    # `_name_positions`' return, which is those same three; the three
-    # `role=Role.FAMILY` replaces (P6's attachment on both arms, O3's
+    # `_name_positions`' return, which is those same three; the
+    # `role=Role.FAMILY` replaces (P6's no-comma attachment, O3's
     # fold) are FAMILY as well. So no rule here
     # moves a token into or out of SUFFIX, or into or out of
     # {TITLE, NICKNAME, MAIDEN}, and this predicate reads the same
@@ -302,63 +307,6 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
     if i == len(name_idx):
         return i
     return i + len(_units(tokens, name_idx[i:])[0])
-
-
-def _inside_a_credential_run(seg: tuple[tuple[int, ...], ...],
-                             tokens: list[WorkToken], given_at: int,
-                             k: int, end: int,
-                             ambiguities: list[PendingAmbiguity]) -> bool:
-    """rules.md#P6's third exception for the run `seg[k:end]`: a
-    run assign read as post-nominals, with a credential read in
-    front of it and another behind, stands INSIDE the credential run
-    assign read whole rather than ending the name, so it keeps that
-    reading -- 'DOE, JANE PHD VD MA' reads suffix 'PHD VD MA' where the
-    attachment had pulled VD out of the middle of it (#573). Behind as
-    well as in front: with nothing behind it the word ends the name,
-    and 'Doe, Jane PhD vd' keeps family 'vd Doe'. A title between it
-    and the post-nominal in front is transparent, as it is to every
-    trailing reading (H5): 'DOE, JANE PHD PROF. VD MA' reads as 'DOE,
-    JANE PHD VD MA' does. (Behind it no title is skipped: a title
-    there leaves the word a name in assign, so nothing reaches here.)
-
-    The test is the ROLES assign gave, not S2's company query: the
-    question is whether assign read the run whole, and a member in
-    front that the writing or a count made the credential ('DOE, JANE
-    MA VD PHD') says so as plainly as a degree does. So does a
-    generation, in front or behind ('Berg, Jan PhD vd Jr.'): the
-    tussenvoegsel P6 is about stands right behind the given name, and
-    a post-nominal between them says this word is not one. The run's own
-    role is what keeps a plain particle out ('Doe, Jane PhD de PhD',
-    whose 'de' is a name word, not a post-nominal), and the given
-    name in front is what keeps 'Doe, Jane vd PhD' attaching.
-    Reported as S2's credential fork, at the site that declines the
-    attachment."""
-    def suffix_read(q: int) -> bool:
-        return all(tokens[i].role is Role.SUFFIX for i in seg[q])
-
-    def is_title(q: int) -> bool:
-        return all(tokens[i].role is Role.TITLE for i in seg[q])
-
-    # an empty run is no run: the walk stops short of a member assign
-    # already read as the credential ('Doe, Jane PhD do MA'), and
-    # there is nothing to decline
-    if k == end or not all(suffix_read(q) for q in range(k, end)):
-        return False
-    front = k - 1
-    while front > given_at and is_title(front):
-        front -= 1
-    if (front <= given_at or end == len(seg)
-            or not suffix_read(front) or not suffix_read(end)):
-        return False
-    run = seg[k]
-    text = " ".join(tokens[i].text for i in run)
-    ambiguities.append(PendingAmbiguity(
-        AmbiguityKind.SUFFIX_OR_NAME,
-        f"{text!r} written without periods is both a post-nominal and a "
-        f"family-name particle; between credentials after a family "
-        f"comma it reads as a post-nominal",
-        tuple(run)))
-    return True
 
 
 def _addressing_run(titles: list[int], name_word: int) -> list[int]:
@@ -679,139 +627,24 @@ def post_rules(state: ParseState) -> ParseState:
             families = _idx(tokens, Role.FAMILY)
 
     # rules.md#P6: "a particle ending the name attaches to that family
-    # name and is written before it" -- where a family comma has
-    # already named the family, and provided at least one given word
-    # remains (history: decisions.md#P6). The Dutch alphabetized
-    # listing:
-    # "Beethoven, Ludwig van" is how "Ludwig van Beethoven" is filed.
-    #
-    # Keyed on the token's VOCABULARY, not its assigned role, which is
-    # what gives the attachment its stated precedence over S2 -- save
-    # the third exception (#573), which asks the ROLES whether assign
-    # read a credential run whole around the word. `vd`,
-    # `mc` and `do` are the three words in both vocabularies; assign
-    # reads a trailing `vd` or `mc` as a post-nominal, so those two
-    # need the override. `do` is in the AMBIGUOUS acronym half, which
-    # already leaves it a name word, so it attaches by the plain rule.
-    # After a family comma the tussenvoegsel is the commoner reading.
-    #
-    # The words-to-spare guard is a piece test, not a count: every
-    # trailing piece that is wholly particles attaches, and the run
-    # must leave a GIVEN word ahead of it, so "Nguyen, Van" keeps its
-    # only given word rather than being left with none. Only the
-    # DEGENERATE Vietnamese listing is protected by that -- "Nguyen,
-    # Thi Van" has a given word to spare, so `Van` attaches and the
-    # given name is lost. rules.md#P6 records why that is accepted.
-    #
-    # mechanisms.md#FOLDED_TAG does the rest: tokens never move, so
-    # the family view reads the tag and renders these before the base.
-    if state.structure is Structure.FAMILY_COMMA and len(state.pieces) > 1:
+    # name" -- after a family comma with NOTHING before it. assign takes
+    # the attachment wherever the comma names a family (#613); where it
+    # names none, H1 and M4 above may make the given word the family
+    # first, being gated on there being no family, and the attachment
+    # has to read the name they left -- ', Mr. Jones vd' keeps family
+    # 'Jones', suffix 'vd', as it read before #613 moved the site
+    # (caught in PR review: assign's attachment ran ahead of H1 and read
+    # given 'Jones', family 'vd'). The same helper, at the stage order
+    # the old site had, so the reading is the old one exactly.
+    if (state.structure is Structure.FAMILY_COMMA
+            and len(state.pieces) > 1 and not state.pieces[0]):
         seg = state.pieces[1]
-        # `seg[k:end]` is the run, found by the walk assign's given-part
-        # credential run asks too (#610): past a trailing post-nominal,
-        # since one sits BEHIND the tussenvoegsel in this listing ("Berg,
-        # Jan van Jr."), and short of a class member read as the
-        # credential (#531). `particle_tail` carries both reasons.
         k, end = particle_tail(seg, tokens)
-        # GIVEN alone, which is what P6 says ("provided at least one
-        # given word remains"). Not `NAME_ROLES`: P1's fold runs
-        # earlier in this function and retags all of segment 1 to
-        # FAMILY, so a test for "some name word remains" passes on
-        # family text P1 just produced, and the rule then hoists the
-        # particle in front of a base it never preceded ("Smith, de
-        # Mesnil van" -> 'van Smith de Mesnil'). MIDDLE was in this
-        # test until review found no input where it decides anything
-        # -- 0 hits over 740,552 instrumented guard sites. The reason
-        # is structural: the only rule that can leave a MIDDLE with no
-        # GIVEN ahead of it in segment 1 is P1's family-first
-        # redistribution, which is gated on `state.order`. On the
-        # FAMILY_COMMA path assign records an order only where
-        # segment 1 holds no name word (#296's positional read), and
-        # a no-name segment holds no MIDDLE for the fold to leave
-        # either. P6 runs only on that path, so the branch cannot be
-        # reached from here.
         given_at = next((q for q in range(k) if any(
             tokens[i].role is Role.GIVEN for i in seg[q])), None)
-        if given_at is not None and _inside_a_credential_run(
-                seg, tokens, given_at, k, end,
-                ambiguities):
-            given_at = None
         if given_at is not None:
-            # A range, though only ever one piece today: grouping's
-            # prefix chain makes a non-leading particle absorb what
-            # follows, so a trailing run splits into several pieces
-            # only where nothing ahead of it holds a given role --
-            # the run opening the segment ("Berg, de van"), or only
-            # titles ahead of it ("Berg, Sir de la", 8% of them). The
-            # guard then declines either way. Measured over 95,180
-            # generated multi-piece runs: `end - k` is never above 1
-            # where the guard passes. Written as a range because the
-            # guard, not this loop, is what bounds it.
-            run = [i for piece in seg[k:end] for i in piece]
-            # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at
-            # the site that takes the branch, not where an ambiguous
-            # tag sits" -- this attachment is where the fork is
-            # decided, so the report is raised here rather than in
-            # assign, whose own emitter is scoped to the no-comma
-            # shapes (#405).
-            #
-            # Two arms, keyed on what the attachment OVERRODE rather
-            # than on what the words are, so each names a branch the
-            # parse actually weighed. `declined_suffix` reads the role
-            # assign gave the run, which is why both lists are built
-            # BEFORE the re-roling loop below overwrites it.
-            #
-            # ORDERED, not asserted disjoint. The two cannot both hold
-            # under the shipped vocabulary -- `vd` and `mc` are the
-            # only words in both the particle and the unambiguous
-            # suffix vocabularies, and neither is ambiguous particle
-            # vocabulary -- but a caller's Lexicon may put one word in
-            # both, and rules.md#A1 says parsing never fails on any
-            # input, so this decides instead of raising. (Measured: an
-            # assert here DID fire on `Berg, Jan zz` under a Lexicon
-            # adding `zz` to particles_ambiguous and suffix_acronyms.)
-            # The suffix arm wins because it names the reading the
-            # parse actually took: assign had read the word as a
-            # post-nominal, so the name-word reading was never on the
-            # table for the attachment to decline.
-            #
-            # Both details name the ATTACHMENT and stop there. What
-            # P6 decides is that the run joins the family the comma
-            # named instead of standing on its own; how the joined
-            # words then READ is R2's call, taken by the UNJOINED_TAG
-            # loop at the end of this stage. The two can disagree:
-            # `de la, Jan van` attaches `van` and leaves an
-            # all-particle family, which R2 marks, so every other view
-            # -- `family_base`, the initials, case repair -- reads
-            # those words as ordinary name words ('Jan Van De La'
-            # forced). A detail promising "read as the family's
-            # particle" would contradict all three.
-            ambiguous = [i for i in run
-                         if "vocab:particle-ambiguous" in tokens[i].tags]
-            declined_suffix = [i for i in run
-                               if tokens[i].role is Role.SUFFIX]
-            text = " ".join(tokens[i].text for i in run)
-            if declined_suffix:
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.SUFFIX_OR_NAME,
-                    f"{text!r} written without periods is both a "
-                    f"post-nominal and a family-name particle; after a "
-                    f"family comma it joins the family the comma named "
-                    f"rather than standing as a post-nominal",
-                    tuple(run)))
-            elif ambiguous:
-                word = tokens[ambiguous[0]].text
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.PARTICLE_OR_GIVEN,
-                    f"{word!r} is both a family-name particle and an "
-                    f"ordinary given name; after a family comma "
-                    f"{text!r} joins the family the comma named "
-                    f"rather than standing as a name word of its own",
-                    tuple(run)))
-            for i in run:
-                tokens[i] = copy_with(
-                    tokens[i], role=Role.FAMILY,
-                    tags=tokens[i].tags | {FOLDED_TAG})
+            _attach_particle_tail(seg, tokens, given_at, k, end,
+                                  ambiguities)
 
     # rules.md#O3: "every middle word joins the family name and is
     # rendered before it" (v1 handle_middle_name_as_last). v1

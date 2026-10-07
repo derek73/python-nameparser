@@ -634,11 +634,11 @@ def test_ambiguous_class_candidate_agrees_with_the_tag(
     # if and only if the class was joined BY SHAPE, never for a
     # listed member.
     #
-    # `candidate` is spelled as the DISJUNCTION the two stages make
-    # between them, because that is what `segment` asks in two calls:
-    # `ambiguous_class_candidate` for the listed and dotted halves at
-    # its single-token test, and `caps_shape_candidate` for the caps
-    # half at its multi-token run test. The caps half used to hang off
+    # `candidate` is spelled as the DISJUNCTION of the two predicates
+    # that answer the class's membership before tags exist:
+    # `ambiguous_class_candidate` for the listed and dotted halves
+    # (segment's C2 flag asks it), and `caps_shape_candidate` for the
+    # caps half (`_comma.decide` asks it). The caps half used to hang off
     # `ambiguous_class_candidate` behind an optional `one_case` no
     # production caller passed, so it answered False for every name
     # the library parsed and only this test reached it; the parameter
@@ -681,10 +681,9 @@ def test_the_caps_branch_reads_the_name_level_case_not_the_own_span(
 
     def reverted(token: WorkToken, n: str, state: ParseState,
                  marker_tag: str | None, one_case_own: bool,
-                 one_case: bool, comma_run: bool = False) -> frozenset[str]:
+                 one_case: bool) -> frozenset[str]:
         return real(token, n, state, marker_tag,
-                    one_case_own=one_case_own, one_case=one_case_own,
-                    comma_run=comma_run)
+                    one_case_own=one_case_own, one_case=one_case_own)
 
     monkeypatch.setattr(_classify_module, "_tags_for", reverted)
     broken = Parser(policy=on).parse("née JONES XYZ")
