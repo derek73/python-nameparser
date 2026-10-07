@@ -173,8 +173,12 @@ def test_the_phd_merge_declines_at_the_head_of_a_name() -> None:
 
 def test_von_und_zu_bridges() -> None:
     # conjunction "und" joins two prefixes; the joined piece is a derived
-    # prefix and still chains onto the following name (v1 PR #191)
-    out = _grouped("Otto von und zu Habsburg")
+    # prefix and still chains onto the following name (v1 PR #191).
+    # `und` is a CONNECTIVE here and no particle: _LEX lists it among
+    # the particles, which walks the particle chain instead and passed
+    # with P3's prefix derivation deleted (#617's test review)
+    lexicon = _LEX.remove(particles={"und"}).add(conjunctions={"und"})
+    out = _grouped("Otto von und zu Habsburg", lexicon=lexicon)
     assert _piece_texts(out) == [["Otto", "von und zu Habsburg"]]
 
 
@@ -762,7 +766,7 @@ def test_the_join_never_absorbs_a_suffix_piece() -> None:
 
 
 def test_the_join_never_absorbs_a_split_credential() -> None:
-    # The worse half of #421, a 2.0 regression: merge() unions piece
+    # The worse half of #421, a 2.0 regression: merge_pieces unions piece
     # tags, so joining onto the 'Ph. D.' piece made the joined piece a
     # SUFFIX piece and assign routed the bound word to the suffix
     # field -- 'abdul Ph. D. Smith Berg' read suffix 'abdul Ph. D.'.
@@ -839,7 +843,7 @@ def test_the_join_never_turns_a_name_into_a_suffix_either() -> None:
 def test_the_joined_pair_is_a_given_name_whatever_tag_the_word_carried() -> None:
     # A title word standing in the name is a name word (H3) and the
     # join takes it as v1 did -- but the conjunction merge derives a
-    # `title` piece tag for "mr and mrs", and merge()'s tag union
+    # `title` piece tag for "mr and mrs", and merge_pieces' tag union
     # would hand that tag to the joined pair, which assign then peels
     # as a leading title: 'abdul Sheikh and Ahmad Bakar Smith' read
     # title 'abdul Sheikh and Ahmad' on 2.0 and 2.1, and the shorter

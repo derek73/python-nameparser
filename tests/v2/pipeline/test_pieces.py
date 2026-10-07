@@ -21,7 +21,8 @@ from nameparser._pipeline import _comma
 from nameparser._pipeline._pieces import (
     _anchors, _numeral_behind_the_initial_veto, anchor_in_reach,
     credential_anchors,
-    credential_at_the_given_slot, is_leading_title, leading_titles,
+    credential_at_the_given_slot, is_leading_title, join_connectives,
+    leading_titles,
     own_words, peel_trailing, peel_walk, segment_suffix_reading,
     tail_reading, trailing_candidates, trailing_titles,
 )
@@ -44,19 +45,18 @@ def _through_group(text: str, policy: Policy = Policy()) -> ParseState:
     return state
 
 
-def _comma_part(text: str) -> tuple[list[tuple[int, ...]],
-                                     list[frozenset[str]], list, bool | None]:
+def _comma_part(text: str) -> tuple[list[list[int]], list[set[str]],
+                                     list, bool | None]:
     """The part after the first comma as `_comma.decide` reads it: the
     tokens classify tagged, one piece each but the Ph./D. pair and a
-    title chain (#613) -- the reading's own input, before group binds
-    the part."""
+    title chain (#613, made by the connective joins group shares since
+    #617) -- the reading's own input, before group binds the part."""
     state = ParseState(original=text, lexicon=Lexicon.default(),
                        policy=Policy())
     for stage in (tokenize, segment, classify):
         state = stage(state)
     tokens = list(state.tokens)
-    pieces, ptags = _comma._pieces(state.segments[1], tokens)
-    _comma._title_chains(pieces, ptags, tokens)
+    pieces, ptags = _comma._reading_pieces(state.segments[1], tokens)
     return pieces, ptags, tokens, state.one_case
 
 
@@ -981,3 +981,87 @@ def test_the_trailing_candidates_cover_what_the_tail_reading_takes(
     oracle to the take itself.
     """
     assert _candidate_misses(monkeypatch) == []
+
+
+def _joined(text: str, *, letter_stays: bool, titles_only: bool,
+            frozen_words: Set[str] = frozenset(),
+            ) -> tuple[list[str], list[set[str]]]:
+    """`join_connectives` over a whole name's words as classify tagged
+    them, one fresh piece each -- what it takes from either caller --
+    with the words in `frozen_words` frozen by token. Returns each
+    piece's text and its tags."""
+    state = _state_through("classify", text)
+    tokens = list(state.tokens)
+    pieces = [[i] for i in state.segments[0]]
+    ptags: list[set[str]] = [set() for _ in pieces]
+    frozen = {i for i, t in enumerate(tokens) if t.text in frozen_words}
+    join_connectives(pieces, ptags, tokens, letter_stays=letter_stays,
+                     titles_only=titles_only, frozen=frozen)
+    return [" ".join(tokens[i].text for i in p) for p in pieces], ptags
+
+
+def test_a_connective_run_merges_before_it_joins_in_both_modes() -> None:
+    """rules.md#P3's "connective runs included", for both callers: the
+    run joins as one link, so a title before it takes the word after it
+    too. The comma decision's copy of the loop merged no run and joined
+    'Minister of the' alone (#617)."""
+    for titles_only in (True, False):
+        words, ptags = _joined("Minister of the Interior Smith",
+                               letter_stays=True, titles_only=titles_only)
+        assert words == ["Minister of the Interior", "Smith"], titles_only
+        assert "title" in ptags[0], titles_only
+
+
+def test_titles_only_leaves_a_join_with_no_title_unmade() -> None:
+    """The comma part's mode: a connective whose neighbour is no title
+    stays a word for the reading to place; group's mode joins it
+    anyway, taking no title kind."""
+    words, _ = _joined("Jones and Smith", letter_stays=True,
+                       titles_only=True)
+    assert words == ["Jones", "and", "Smith"]
+    words, ptags = _joined("Jones and Smith", letter_stays=True,
+                           titles_only=False)
+    assert words == ["Jones and Smith"]
+    assert "title" not in ptags[0]
+
+
+def test_the_single_letter_carve_out_is_the_callers_answer() -> None:
+    """`letter_stays` is P3's carve-out as the caller reads it: group
+    from the rootname count, the comma part always."""
+    assert _joined("Mr. y Mrs.", letter_stays=True,
+                   titles_only=True)[0] == ["Mr.", "y", "Mrs."]
+    assert _joined("Mr. y Mrs.", letter_stays=False,
+                   titles_only=True)[0] == ["Mr. y Mrs."]
+
+
+def test_a_frozen_connective_neither_joins_nor_merges_into_a_run() -> None:
+    """`frozen` names connectives by TOKEN index; one there is the
+    subject of no join and no run merge (a neighbour's join may still
+    take it in, group's documented reach)."""
+    assert _joined("Mr. and of Mrs.", letter_stays=True, titles_only=True,
+                   frozen_words={"of"})[0] == ["Mr. and of", "Mrs."]
+    assert _joined("Mr. and of Mrs.", letter_stays=True,
+                   titles_only=True)[0] == ["Mr. and of Mrs."]
+    # the join half: a frozen connective is no join's subject, whatever
+    # its neighbours are (the run above never reaches it as one, the
+    # 'and' join taking it in first -- #617's test review)
+    assert _joined("Mr. and Mrs.", letter_stays=True, titles_only=True,
+                   frozen_words={"and"})[0] == ["Mr.", "and", "Mrs."]
+
+
+def test_only_groups_joins_derive_a_prefix() -> None:
+    """Group's mode takes the neighbour's prefix kind, which is what
+    lets a joined 'von und zu' chain on as a particle (v1 PR #191);
+    the comma part's titles-only mode takes none, nothing there being
+    a particle chain. `und` is a connective in the default vocabulary
+    and no particle, so the derivation and not the particle chain is
+    what is read."""
+    words, ptags = _joined("Otto von und zu Habsburg", letter_stays=False,
+                           titles_only=False)
+    assert words == ["Otto", "von und zu", "Habsburg"]
+    assert "prefix" in ptags[1] and "title" not in ptags[1]
+    # 'freiherr' is a title AND a particle: titles-only takes the title
+    words, ptags = _joined("Freiherr and Dr.", letter_stays=True,
+                           titles_only=True)
+    assert words == ["Freiherr and Dr."]
+    assert "title" in ptags[0] and "prefix" not in ptags[0]

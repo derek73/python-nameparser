@@ -31,8 +31,8 @@ from collections.abc import Sequence
 
 from nameparser._lexicon import _normalize
 from nameparser._pipeline._pieces import (
-    has_name_content, is_suffix_piece, is_title_piece, listed_lean, own_words,
-    segment_suffix_reading,
+    has_name_content, is_suffix_piece, join_connectives, listed_lean,
+    own_words, segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
@@ -48,78 +48,73 @@ from nameparser._types import AmbiguityKind, Role
 
 
 def _pieces(seg: Sequence[int], tokens: Sequence[WorkToken],
-            ) -> tuple[list[tuple[int, ...]], list[frozenset[str]]]:
+            ) -> tuple[list[list[int]], list[set[str]]]:
     """One piece per token but the Ph./D. pair, which group's first
-    merge builds -- the part as it stands before any join."""
-    pieces: list[tuple[int, ...]] = []
-    ptags: list[frozenset[str]] = []
+    merge builds -- the part as it stands before any join. Every piece
+    a fresh list, as `merge_pieces` requires."""
+    pieces: list[list[int]] = []
+    ptags: list[set[str]] = []
     k = 0
     while k < len(seg):
         a = seg[k]
         if (k + 1 < len(seg) and PH.fullmatch(tokens[a].text)
                 and D.fullmatch(tokens[seg[k + 1]].text)):
-            pieces.append((a, seg[k + 1]))
-            ptags.append(frozenset({"suffix"}))
+            pieces.append([a, seg[k + 1]])
+            ptags.append({"suffix"})
             k += 2
         else:
-            pieces.append((a,))
-            ptags.append(frozenset())
+            pieces.append([a])
+            ptags.append(set())
             k += 1
     return pieces, ptags
 
 
-def _title_chains(pieces: list[tuple[int, ...]], ptags: list[frozenset[str]],
-                  tokens: Sequence[WorkToken]) -> None:
-    """The one join a postnominal part can hold, made here so the reading
-    sees it: rules.md#P3's connective joining its neighbours where the
-    neighbour it takes its kind from is a title, which makes the joined
-    part a title ('Mr. and Mrs.', 'Secretary of State', 'Dr. and'). The
-    neighbour is group's: the one on the left, or on the right where the
-    connective opens the part. A single-letter connective is left as it
-    stands, P3 reading it as a name word or an initial in short names;
-    any other join is not made here: where no credential opens the
-    part, a name word in it makes it the given part; where one does,
-    the run #603 opens takes the connective as a word and reports it
-    ('John Smith, PhD and Dr.')."""
-    # One pass that extends the run in place: rebuilding the growing
-    # piece from a slice at every join was quadratic in the part's
-    # length ("'Mr. and '*k + 'Mr.'", #613's PR review)
-    out: list[list[int]] = []
-    out_tags: list[frozenset[str]] = []
-    n = len(pieces)
-    k = 0
-    while k < n:
-        piece = pieces[k]
-        text = tokens[piece[0]].text
-        if (len(piece) == 1 and "conjunction" in tokens[piece[0]].tags
-                and not (len(text) == 1 and text.isalpha())):
-            # the neighbour it takes its kind from: the one on the left,
-            # or on the right where the connective opens the part
-            kind: Sequence[int]
-            if out:
-                kind, kind_tags = out[-1], out_tags[-1]
-            elif k + 1 < n:
-                kind, kind_tags = pieces[k + 1], ptags[k + 1]
+def _reading_pieces(part: Sequence[int], tokens: Sequence[WorkToken],
+                    ) -> tuple[list[list[int]], list[set[str]]]:
+    """The part as the reading takes it: `_pieces`, then the one join it
+    can hold."""
+    pieces, ptags = _pieces(part, tokens)
+    # The one join a postnominal part can hold, made here so the reading
+    # sees it: rules.md#P3's connective joining its neighbours where the
+    # neighbour it takes its kind from is a title, which makes the
+    # joined part a title ('Mr. and Mrs.', 'Secretary of State', 'Dr.
+    # and'), a run of connectives merging first as it does in the name
+    # ('Minister of the Interior'). A LONE single-letter connective is
+    # left as it stands, P3 reading it as a name word or an initial in
+    # short names; one beside another connective is a member of their
+    # run and joins with it ('Mr. y and Mrs.'). Any other join is not
+    # made here: where no credential opens the part, a name word in it
+    # makes it the given part; where one does, the run #603 opens takes
+    # the connective as a word and reports it ('John Smith, PhD and
+    # Dr.'). Group's own joins, the one loop since #617: its copy here
+    # merged no run and joined 'Minister of the' alone.
+    #
+    # rules.md#P3: "A connective that is also generational vocabulary
+    # joins only where a name word stands on each side of it" -- and in
+    # a part read for credentials none does, so every such connective
+    # is frozen here, where group freezes only the ones it finds without
+    # a name word beside them ('Rovira, Dr. i i' keeps suffix 'i i'
+    # rather than run-merging the pair into the title, #617); a
+    # neighbour's join may still take one in ('Smith, Dr. and i' reads
+    # title 'Dr. and i'), as `join_connectives` says.
+    #
+    # The same walk says whether there is anything to join, and a part
+    # with no connective left free -- nearly every part -- skips the
+    # shared loop, whose predicate calls cost two frames per word
+    # ('Smith, John' paid two; #617's review).
+    frozen: set[int] = set()
+    free = False
+    for i in part:
+        tags = tokens[i].tags
+        if "conjunction" in tags:
+            if "vocab:suffix" in tags:
+                frozen.add(i)
             else:
-                kind, kind_tags = (), frozenset()
-            if kind and is_title_piece(kind, kind_tags, tokens):
-                # a connective opening the part joins into an empty piece
-                if not out:
-                    out.append([])
-                    out_tags.append(frozenset())
-                taken = range(k, min(n, k + 2))
-                for j in taken:
-                    out[-1].extend(pieces[j])
-                    out_tags[-1] = out_tags[-1] | ptags[j]
-                out_tags[-1] = out_tags[-1] | {"title"}
-                k += len(taken)
-                continue
-        out.append(list(piece))
-        out_tags.append(ptags[k])
-        k += 1
-    if len(out) != n:
-        pieces[:] = [tuple(p) for p in out]
-        ptags[:] = out_tags
+                free = True
+    if free:
+        join_connectives(pieces, ptags, tokens, letter_stays=True,
+                         titles_only=True, frozen=frozen)
+    return pieces, ptags
 
 
 def _name_contrast(state: ParseState, seg0: Sequence[int]) -> bool:
@@ -213,8 +208,7 @@ def decide(state: ParseState) -> ParseState:
     part = [i for i in seg1 if i not in core_set] if core_idx else list(seg1)
     if not part:
         return state
-    p1, pt1 = _pieces(part, tokens)
-    _title_chains(p1, pt1, tokens)
+    p1, pt1 = _reading_pieces(part, tokens)
     anchored: list[int] = []
     absorbed: list[int] = []
     # The words of the class in the part, and the unlisted all-caps

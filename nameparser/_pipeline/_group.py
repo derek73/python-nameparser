@@ -43,8 +43,11 @@ by import direction rather than by topic (assign imported group and
 could not be imported back), which is the accumulation
 mechanisms.md#ONE-PREDICATE-PER-QUESTION describes; group imports them
 back like any other caller, and still does the work H3 and S2 describe
-with them. What remains defined here is group's own: _is_prefix_piece,
-_is_conj_piece, _is_rootname and _is_maiden_marker_piece.
+with them. is_prefix_piece and is_conj_piece followed in #617, with
+the merge and rules.md#P3's connective joins (join_connectives), when
+the comma decision's own copy of those joins was folded into them.
+What remains defined here is group's own: _is_rootname and
+_is_maiden_marker_piece.
 """
 from __future__ import annotations
 
@@ -55,8 +58,9 @@ from typing import assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
-    is_leading_title, is_suffix_piece, is_title_piece,
-    leading_titles, peel_walk, tail_reading, trailing_candidates,
+    is_conj_piece, is_leading_title, is_prefix_piece, is_suffix_piece,
+    is_title_piece, join_connectives, joined_tags, leading_titles,
+    merge_pieces, peel_walk, tail_reading, trailing_candidates,
     trailing_start, trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
@@ -128,26 +132,6 @@ class BoundJoin(IntEnum):
     DISABLED = 0   # the FAMILY_COMMA family segment (v1 never joined it)
     LENIENT = 1    # FAMILY_COMMA's post-comma segment (reserve_last=False)
     STRICT = 2     # main segments (reserve_last=True: keep a family piece)
-
-
-# rules.md#S2: "a trailing word of the suffix vocabulary reads as a
-# suffix" -- group does not decide that; it stops before whatever
-# trailing_start says the run is, so the chain ends where assign's
-# peel begins (#424). The maiden take reads the title-aware
-# `tail_reading` over the clause-free view instead (#601), so the
-# clause ends where assign's peel and title chain together begin.
-# rules.md#P2: "a particle joins the words after it into one name
-# part, the join running until the next particle starts a group of
-# its own, a trailing suffix begins" -- and on to the maiden marker
-# (M2) or the name's end; the final group reads as the family name,
-# earlier groups by position. (history: decisions.md#P2)
-# rules.md#P4: "a particle in the name's leading position chains
-# nothing: the words stay separate" (history: decisions.md#P2)
-def _is_prefix_piece(piece: Sequence[int], ptags: Set[str],
-                     tokens: Sequence[WorkToken]) -> bool:
-    if "prefix" in ptags:
-        return True
-    return len(piece) == 1 and "particle" in tokens[piece[0]].tags
 
 
 # rules.md#M2: "A marker that counts takes the words after it as the
@@ -292,7 +276,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     if (before < lead
             or (before > lead
                 and is_suffix_piece(pieces[before], ptags[before], tokens))
-            or _is_conj_piece(pieces[before], ptags[before], tokens)):
+            or is_conj_piece(pieces[before], ptags[before], tokens)):
         return None
     # a suffix word straight after the marker: nothing was announced
     if is_suffix_piece(pieces[lo], ptags[lo], tokens):
@@ -379,7 +363,7 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     passes answer the same question once for the whole segment.
     `tests/v2/test_benchmark.py`'s `link_run` shape is the guard.
 
-    `_is_conj_piece` is asked ONCE per piece, into a list the second
+    `is_conj_piece` is asked ONCE per piece, into a list the second
     pass then reads: asking it in both passes would double the calls,
     and it is the only per-piece call this builder makes. Recorded in
     the FIRST pass rather than by a comprehension of its own -- which
@@ -388,11 +372,11 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
 
     WHAT IT COSTS A SHORT NAME, because answering for the whole
     segment is not free where the walk would have stopped at once:
-    this call, plus `_is_conj_piece` for the pieces the walk never
+    this call, plus `is_conj_piece` for the pieces the walk never
     reached. Re-measured 2026-09-21 on py3.11 against b9ed1429, the
     whole pair through `tests/v2/test_benchmark.py`'s own
     `_frames_for` shape -- `Josep Carod i Rovira` 311 -> 313 frames
-    (one call and two more `_is_conj_piece` over its four pieces,
+    (one call and two more `is_conj_piece` over its four pieces,
     less the frame the fold below saved) and `Jane Doe nee Puig i
     Soler` 315 -> 319. An O(1) rise per link-bearing name against an
     unbounded saving: the same name with a run of 64 links goes
@@ -426,7 +410,7 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     prev = -1
     for k in range(n):
         left[k] = prev
-        is_conj = _is_conj_piece(pieces[k], ptags[k], tokens)
+        is_conj = is_conj_piece(pieces[k], ptags[k], tokens)
         conj[k] = is_conj
         if not is_conj:
             prev = k
@@ -436,18 +420,6 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
         if not conj[k]:
             nxt = k
     return left, right
-
-
-# rules.md#P3: "a recognized connective joins its neighbors into one
-# name part, connective runs included — except a single-letter
-# connective in a three-word name, which stays a name word, and a
-# single-letter connective that reads as an initial instead, which
-# never joins" (history: decisions.md#P3)
-def _is_conj_piece(piece: Sequence[int], ptags: Set[str],
-                   tokens: Sequence[WorkToken]) -> bool:
-    if "conjunction" in ptags:
-        return True
-    return len(piece) == 1 and "conjunction" in tokens[piece[0]].tags
 
 
 def _is_rootname(piece: Sequence[int], ptags: Set[str],
@@ -463,13 +435,13 @@ def _is_rootname(piece: Sequence[int], ptags: Set[str],
     # tag whichever test runs first -- measured, hoisting this arm
     # above the refusal moves no field, report or initial on any
     # corpus name under three name orders, and no test. INLINE rather
-    # than a call to _is_conj_piece: this runs once per piece of every
+    # than a call to is_conj_piece: this runs once per piece of every
     # name (frame budget).
     if ("conjunction" in ptags
             or (len(piece) == 1 and "conjunction" in tokens[piece[0]].tags)):
         return True
     return not (is_title_piece(piece, ptags, tokens)
-                or _is_prefix_piece(piece, ptags, tokens)
+                or is_prefix_piece(piece, ptags, tokens)
                 or is_suffix_piece(piece, ptags, tokens))
 
 
@@ -584,63 +556,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # The maiden take reports on this same channel: it reports only at
     # the TRAILING site, which group() never suppresses.
 
-    def title(k: int) -> bool:
-        return is_title_piece(pieces[k], ptags[k], tokens)
-
     def prefix(k: int) -> bool:
-        return _is_prefix_piece(pieces[k], ptags[k], tokens)
+        return is_prefix_piece(pieces[k], ptags[k], tokens)
 
     def suffix(k: int) -> bool:
         return is_suffix_piece(pieces[k], ptags[k], tokens)
 
-    def conj(k: int) -> bool:
-        return _is_conj_piece(pieces[k], ptags[k], tokens)
-
     def marker(k: int) -> bool:
         return _is_maiden_marker_piece(pieces[k], tokens)
-
-    def joined_tags(lo: int, hi: int, add: Set[str] = frozenset(),
-                    drop: Set[str] = frozenset()) -> set[str]:
-        # the ONE definition of a merged piece's tags: merge() applies
-        # it, and P5's reserve reads it to model the join it is
-        # weighing (#425) -- so the view cannot drift from the merge.
-        # A merged piece inherits every part's tags, so a site whose
-        # product is not what its parts were drops what no longer
-        # applies: the particle chain drops `prefix`, the bound join
-        # `title` (a derived title tag on the pair would have assign
-        # peel the given name as a leading title).
-        return (set().union(*ptags[lo:hi]) | add) - drop
-
-    def merge(lo: int, hi: int, add: Set[str] = frozenset(),
-              drop: Set[str] = frozenset()) -> None:
-        # pieces/ptags are parallel arrays; every merge must update
-        # both in lockstep.
-        #
-        # Extend the first piece IN PLACE rather than rebuilding the
-        # merged list. The obvious spelling --
-        #     pieces[lo:hi] = [[i for p in pieces[lo:hi] for i in p]]
-        # -- re-flattens everything accumulated so far on every call, so
-        # a chain that merges into the same piece n times copies
-        # 1+2+...+n and the stage goes quadratic in the length of the
-        # chain. A conjunction run ("and " * n) does exactly that: it
-        # measured 2.4x-2.9x per doubling against the 2.0x every other
-        # shape holds. No piece list is aliased outside this function
-        # (each starts as a fresh [i], and the callers only read
-        # pieces[k] before a merge), so mutating is safe; verified
-        # identical token/role/tag/span/ambiguity output over 54,877
-        # names. tests/v2/test_benchmark.py's "and " shape is the guard.
-        #
-        # Every call site passes lo < hi, and this REQUIRES it: with
-        # lo >= hi the slice assignment would insert rather than
-        # replace, putting a second reference to pieces[lo] into the
-        # array, and the next merge to touch either index would extend
-        # the same list twice. The old rebuild-a-fresh-list spelling
-        # was harmless there. Keep the bound if you add a caller.
-        combined = pieces[lo]
-        for piece in pieces[lo + 1:hi]:
-            combined.extend(piece)
-        pieces[lo:hi] = [combined]
-        ptags[lo:hi] = [joined_tags(lo, hi, add, drop)]
 
     # ph-d merge first: "Ph." "D." adjacent -> one suffix piece
     # (decisions.md#phd-merge; v1 fix_phd did this by regex on the
@@ -690,7 +613,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 and len(a) == 1 and len(b) == 1
                 and PH.fullmatch(tokens[a[0]].text)
                 and D.fullmatch(tokens[b[0]].text)):
-            merge(k, k + 2, add={"suffix"})
+            merge_pieces(pieces, ptags, k, k + 2, add={"suffix"})
         else:
             k += 1
 
@@ -733,13 +656,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # a run, and it counts toward the carve-out total the way the
         # generation counted -- not at all, a suffix piece being no
         # rootname. A TOKEN index for the same reason the chain's
-        # trailing run is a length from the end: the merges below move
+        # trailing run is a length from the end: the joins below move
         # piece indices and cannot move this one.
         #
         # "No join of its own" is the whole claim, and a NEIGHBOUR's
-        # join can still absorb it: the two loops below skip a frozen
-        # piece as the join's SUBJECT and nothing keeps it out of the
-        # span another connective's join takes. 'Josep Carod Rovira
+        # join can still absorb it: the two loops of `join_connectives`,
+        # called below, skip a frozen piece as the join's SUBJECT, and
+        # nothing keeps it out of the span another connective's join
+        # takes. 'Josep Carod Rovira
         # Puig y i' freezes the trailing 'i' -- nothing stands on its
         # right -- and the 'y' beside it joins across it all the same,
         # for family 'Puig y i', which is what the parent read there
@@ -783,13 +707,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # THAT is what its own sentence says ("a single-letter
         # connective in a three-word name").
         frozen: set[int] = set()
+        # whether any connective is left free to join: a segment with
+        # none skips the rootname count and the shared loop, both of
+        # which then do nothing (0 of 3,153 such calls changed a piece
+        # over the corpora and case table, #617's /simplify), as
+        # `_comma._reading_pieces` skips it for the part after a comma
+        free = False
         lo = hi = -1
         beside: _Beside = ([], [])
         for k, piece in enumerate(pieces):
             tok = tokens[piece[0]]
-            if (len(piece) != 1
-                    or "conjunction" not in tok.tags
-                    or "vocab:suffix" not in tok.tags):
+            if len(piece) != 1 or "conjunction" not in tok.tags:
+                continue
+            if "vocab:suffix" not in tok.tags:
+                free = True
                 continue
             # The bounds and the run memo, computed once per segment
             # and only where such a connective was found, so the cost
@@ -815,64 +746,39 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # per member -- quadratic in its length, 3.8x per
                 # doubling measured at `b9ed1429`.
                 beside = _run_neighbours(pieces, ptags, tokens)
-            if not _between_name_words(k, lo, hi, pieces, ptags, tokens,
-                                       beside):
-                frozen.add(piece[0])
-        total = sum(_is_rootname(p, t, tokens)
-                    for p, t in zip(pieces, ptags)
-                    if p[0] not in frozen) + additional
-        # contiguous conjunction runs merge first (v1: "of the")
-        #
-        # `pieces[k][0] in frozen` and not `frozen.isdisjoint(...)`:
-        # the piece this loop extends GROWS with every merge, so a
-        # test over its tokens costs 1+2+...+n and the stage goes
-        # quadratic in the length of a connective run -- measured,
-        # 'and ' x3200 took 41.8ms against 21.7ms, 6.2x per 4x input
-        # where the shape reads 4.1x, and tests/v2/test_benchmark.py's
-        # "and " shape is the guard that caught it. Reading the first
-        # token alone is exact rather than an approximation: a frozen
-        # piece is one token, nothing merges it (this branch declines,
-        # and the join below skips it), so a piece holding a frozen
-        # token IS that token.
-        k = 0
-        while k < len(pieces) - 1:
-            if (conj(k) and conj(k + 1)
-                    and pieces[k][0] not in frozen
-                    and pieces[k + 1][0] not in frozen):
-                merge(k, k + 2, add={"conjunction"})
+            if _between_name_words(k, lo, hi, pieces, ptags, tokens,
+                                   beside):
+                free = True
             else:
-                k += 1
-        # each conjunction joins its neighbors, rules.md#P3: "except a
-        # single-letter connective in a three-word name, which stays a
-        # name word" (v1's Google Code issue 11 carve-out, the
-        # "john e smith" bug). The threshold reads the ROOTNAME count,
-        # and since #397 a connective counts ITSELF toward that count
-        # WHERE IT IS JOINING, so a connective that is also suffix
-        # vocabulary no longer raises the bar for its own join and no
-        # longer lowers it for an unrelated one ("Carod y Rovira i"
-        # counted the trailing generation and let the `y` join).
-        k = 0
-        while k < len(pieces):
-            # first token again, and here it is exact for the second
-            # reason as well: the piece a join produces is left BEHIND
-            # `k`, so no merged piece is ever tested twice.
-            if not conj(k) or pieces[k][0] in frozen:
-                k += 1
-                continue
-            text = " ".join(tokens[i].text for i in pieces[k])
-            if len(text) == 1 and text.isalpha() and total < 4:
-                k += 1
-                continue
-            start = max(0, k - 1)
-            end = min(len(pieces), k + 2)
-            neighbor = start if start < k else end - 1
-            derived = set()
-            if title(neighbor):
-                derived.add("title")
-            if prefix(neighbor):
-                derived.add("prefix")
-            merge(start, end, add=derived)
-            k = start + 1
+                frozen.add(piece[0])
+        if free:
+            total = sum(_is_rootname(p, t, tokens)
+                        for p, t in zip(pieces, ptags)
+                        if p[0] not in frozen) + additional
+            # The threshold of P3's carve-out ("except a single-letter
+            # connective in a three-word name, which stays a name word")
+            # reads the ROOTNAME count, and since #397 a connective counts
+            # ITSELF toward that count WHERE IT IS JOINING, so a connective
+            # that is also suffix vocabulary no longer raises the bar for
+            # its own join and no longer lowers it for an unrelated one
+            # ("Carod y Rovira i" counted the trailing generation and let
+            # the `y` join).
+            join_connectives(pieces, ptags, tokens, letter_stays=total < 4,
+                             titles_only=False, frozen=frozen)
+        # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
+        # suffix" -- group does not decide that; it stops before whatever
+        # trailing_start says the run is, so the chain ends where assign's
+        # peel begins (#424). The maiden take reads the title-aware
+        # `tail_reading` over the clause-free view instead (#601), so the
+        # clause ends where assign's peel and title chain together begin.
+        # rules.md#P2: "a particle joins the words after it into one name
+        # part, the join running until the next particle starts a group of
+        # its own, a trailing suffix begins" -- and on to the maiden marker
+        # (M2) or the name's end; the final group reads as the family name,
+        # earlier groups by position. (history: decisions.md#P2)
+        # rules.md#P4: "a particle in the name's leading position chains
+        # nothing: the words stay separate" (history: decisions.md#P2)
+        #
         # prefix chains: a non-leading prefix run absorbs everything to
         # the next prefix or suffix (v1's leading_first_name rule keeps
         # the first piece a name: "Van Johnson")
@@ -933,7 +839,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # default worth testing: it is reached only when every piece is
         # a title and none is a prefix, and the loop below merges
         # nothing unless some piece is a prefix.
-        # `title(k)` alone missed H2's unlisted abbreviations, which
+        # `is_title_piece` alone missed H2's unlisted abbreviations, which
         # assign peels as titles all the same, so 'Xyz. van Johnson'
         # chained where 'Dr. van Johnson' did not (#424 found it
         # through the acronym fork: the chain had swallowed the given
@@ -961,9 +867,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         tail = len(pieces) - trailing_start(name_start, pieces, ptags,
                                              tokens, one_case=one_case)
         def chain(tail: int) -> None:
-            # `pieces[:titled]` are known to be leading titles. merge(k,
-            # j) changes only indices from k on, and k only grows, so a
-            # piece behind k is final and its answer can be kept: the
+            # `pieces[:titled]` are known to be leading titles. A merge
+            # from k to j changes only indices from k on, and k only
+            # grows, so a piece behind k is final and its answer can
+            # be kept: the
             # cursor makes the all-titles-ahead test below one walk per
             # chain rather than one per chain site (#559).
             titled = 0
@@ -1019,12 +926,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 #
                 # j > k + 1 is what makes this a DECISION rather than a
                 # shape: when the next piece is a suffix the inner scan
-                # never advances, merge(k, k+1) folds a piece into itself,
-                # and the particle stays a lone leading piece -- nothing
+                # never advances, the merge from k to k+1 folds a piece
+                # into itself, and the particle stays a lone leading
+                # piece -- nothing
                 # was chained, and _assign reports that case instead.
                 # Without this the two emitters both fire on the same token.
-                # (Tag test first: it is a set lookup and almost no name has
-                # an ambiguous particle, while title() is a call per piece.)
+                # (Tag test first: it is a set lookup and almost no name
+                # has an ambiguous particle, while is_leading_title is a
+                # call per piece.)
                 if (j > k + 1
                         and "vocab:particle-ambiguous"
                         in tokens[pieces[k][0]].tags):
@@ -1089,7 +998,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # fork, not this one -- 'anh van do' has read family
                 # 'van do' silently since 1.4.0 and its case row says
                 # so. It is tested LAST, and measured: `prefix` is a
-                # closure over `_is_prefix_piece`, so asking it is TWO
+                # closure over `is_prefix_piece`, so asking it is TWO
                 # frames, and asking it ahead of the tag test moved the
                 # reference name from 412 to 414 -- every chained name
                 # in the library paying for a question only an
@@ -1108,7 +1017,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         f"it into the name rather than reading it as a "
                         f"post-nominal",
                         tuple(last)))
-                merge(k, j, drop={"prefix"})
+                merge_pieces(pieces, ptags, k, j, drop={"prefix"})
                 k += 1
 
         # The peel was read over the pieces as they stand, and the
@@ -1165,7 +1074,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # exactly that row. Nor is a suffix piece (#421) --
             # rules.md#P5: "nor a word of the unambiguous suffix
             # vocabulary (S2), wherever position will then place it"
-            # -- and declining it is also what keeps merge()'s tag
+            # -- and declining it is also what keeps merge_pieces' tag
             # union from making the joined piece a suffix piece.
             if marker(fk + 1) or suffix(fk + 1):
                 pass
@@ -1173,7 +1082,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # post-comma the family is fixed and the pair is the
                 # given whatever follows, so no peel is read
                 # (decisions.md#P5, #423)
-                merge(fk, fk + 2, drop={"title"})
+                merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
             else:
                 # rules.md#P5: "the join is tried on the pieces as it
                 # would leave them, and the same reading assign runs
@@ -1183,7 +1092,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # view, the name words it leaves being the words to
                 # spare"
                 # (history: decisions.md#P5). The view is what
-                # merge() builds -- the same slice assignment, the same
+                # merge_pieces builds -- the same slice assignment, the same
                 # joined_tags -- and the reading is assign's own, the
                 # ONE function that runs the peel and the H5 chain to
                 # their fixed point (_pieces.tail_reading), so the
@@ -1203,7 +1112,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     peel_walk(fk, ptags), pieces, ptags, tokens, one_case)
                 view, view_tags = list(pieces), list(ptags)
                 view[fk:fk + 2] = [pieces[fk] + pieces[fk + 1]]
-                view_tags[fk:fk + 2] = [joined_tags(fk, fk + 2,
+                view_tags[fk:fk + 2] = [joined_tags(ptags, fk, fk + 2,
                                                     drop={"title"})]
                 view_rest, _, after = tail_reading(
                     peel_walk(fk, view_tags), view, view_tags, tokens,
@@ -1263,7 +1172,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     # the pair is a given name whatever tag the word
                     # carried (rules.md#P5); joined_tags says why the
                     # title tag is dropped. Pinned in test_group.py.
-                    merge(fk, fk + 2, drop={"title"})
+                    merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
     return pieces, ptags, taken
 
 

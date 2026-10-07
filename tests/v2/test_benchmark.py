@@ -69,12 +69,21 @@ from nameparser._policy import Policy
 #: Lowered 2026-09-26 when the stages stopped copying state through
 #: dataclasses.replace (decisions.md#parse-cost). All five rows were
 #: re-measured with that harness, each on its own interpreter.
+#:
+#: Lowered 2026-10-06 (#617) when P3's connective joins left group's
+#: closures for `_pieces.join_connectives`, which calls the piece
+#: predicates directly: each interpreter measured 10 below 83f4e914's
+#: own count (374/411 on 3.11, 353/390 on 3.12-3.15, which had sat
+#: +4/+5 inside the old 370/407 and 348/385). Then 39 more on every
+#: row, in #617's /simplify, when group stopped running the rootname
+#: count and the shared loop over segments with no connective left
+#: free to join (decisions.md#parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 370, "facade": 407},
-    (3, 12): {"parse": 348, "facade": 385},
-    (3, 13): {"parse": 348, "facade": 385},
-    (3, 14): {"parse": 348, "facade": 385},
-    (3, 15): {"parse": 348, "facade": 385},
+    (3, 11): {"parse": 325, "facade": 362},
+    (3, 12): {"parse": 304, "facade": 341},
+    (3, 13): {"parse": 304, "facade": 341},
+    (3, 14): {"parse": 304, "facade": 341},
+    (3, 15): {"parse": 304, "facade": 341},
 }
 _BAND = 0.02
 
@@ -203,7 +212,7 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #   SEGMENT count             commas ONLY -- deleting it leaves every
 #                             segment-keyed regression unguarded
 #   intra-piece accumulation  particles (one 799-token piece),
-#                             conjunctions (800) -- the merge() quadratic
+#                             conjunctions (800) -- the merge_pieces quadratic
 #   masked-span count         delimiter_pairs, quote_pairs (0 pieces:
 #                             everything is consumed as a delimited run)
 #   NON-ASCII input           honorifics ONLY -- every other unit here is
@@ -259,7 +268,7 @@ _SHAPES = {
     "commas": "a, ",                # segment: many comma segments
     "titles": "Dr. ",               # group: one long title chain
     "particles": "van ",            # group: the prefix-chain inner loop
-    "conjunctions": "and ",         # group: merge() accumulating one piece
+    "conjunctions": "and ",         # group: merge_pieces accumulating one piece
     "honorifics": "씨 ",             # script_segment: the peel's site scan
     "bound_given": "abdul ",        # group: the P5 reserve over every piece
     "maiden_clause": "nee MA ",     # group: M2's view over the segment
@@ -458,8 +467,13 @@ _PREFIXED_SHAPES: dict[
                       and (parse(text).given, parse(text).family)
                       == ("Jane", "Doe")),
     ),
-    # every 'and' joins the title chain `_comma._title_chains` builds,
-    # which rebuilt the growing piece from a slice at each join
+    # every 'and' joins the title chain the comma decision builds:
+    # #613's first copy of the loop rebuilt the growing piece from a
+    # slice at each join (the control above, on 9dd271b2); since #617
+    # the chain is `_pieces.join_connectives`, group's loop, which
+    # extends in place. Re-taken on the moved code 2026-10-06, py3.11,
+    # this base, three runs of best-of-five: 4.47-4.49 against
+    # 9.95-10.00 with the slice rebuild planted in `merge_pieces`
     "title_chain": (
         "John Smith, ", "Mr. and ", Parser(),
         lambda text: (parse(text).given == "John"
@@ -833,6 +847,49 @@ def test_a_listing_comma_with_nothing_to_decide_skips_the_counts() -> None:
     assert _frames_for("John Smith, MA", only="name_word_count") == 1
 
 
+def test_a_comma_part_with_no_free_connective_skips_the_join() -> None:
+    """`_comma._reading_pieces` enters the shared connective loop only
+    where the part holds a connective left free: the loop asks
+    `is_conj_piece` of every piece twice, which the comma decision's
+    own copy had asked inline before #617 folded it, and every
+    family-comma parse paid two frames a word of the part. Recorded
+    negative control, #617's second review (2026-10-07, py3.11): with
+    the gate removed no output moves (66,924 parses compared),
+    `join_connectives` is entered once on both names below, and
+    'Smith, John' costs 163 frames against 161. Group asks nothing of
+    parts this short, so every call counted is the comma decision's."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("Smith, John", "John Smith, PhD MD"):
+        # REACHABILITY: decide reads the part, so a zero below means the
+        # gate declined rather than that nothing ran
+        assert _frames_for(text, only="_reading_pieces") == 1, text
+        assert _frames_for(text, only="join_connectives") == 0, text
+    # a part holding a connective takes the loop
+    assert _frames_for("John Smith, Mr. and Mrs.",
+                       only="join_connectives") == 1
+
+
+def test_a_segment_with_no_free_connective_skips_the_join() -> None:
+    """Group's side of the same gate: a segment with no connective left
+    free to join runs neither P3's rootname count, whose only reader is
+    the carve-out, nor the shared loop, both of which do nothing there.
+    Recorded negative control, #617's /simplify (2026-10-07, py3.11):
+    with the gate removed no output moves (both #617 grids, the
+    fingerprint and the connective grid), the reference-shaped
+    'Dr. Juan Q. Xavier de la Vega III' enters `join_connectives` once and `_is_rootname` 8 times and costs
+    436 frames against 386, and 'John Quincy Smith' 229 against 207 --
+    39 frames on `_CALL_BASELINE`'s reference row, outside its band."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("Dr. Juan Q. Xavier de la Vega III", "John Quincy Smith"):
+        assert _frames_for(text, only="join_connectives") == 0, text
+        assert _frames_for(text, only="_is_rootname") == 0, text
+    # REACHABILITY: a segment whose connective joins takes both
+    assert _frames_for("Josep Carod i Rovira", only="join_connectives") == 1
+    assert _frames_for("Josep Carod i Rovira", only="_is_rootname") == 4
+
+
 # Fixed points and scans that re-read what they had already read, each
 # found by the `_pipeline/` sweep for #553. A `_SHAPES` row cannot
 # express any of them: the tail ones need a name in front of the run,
@@ -975,9 +1032,16 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 #
 # Lowered 2026-09-26 from 2587 with `_CALL_BASELINE` above, for the
 # same reason (decisions.md#parse-cost). 2,678 from 2026-10-04, the
-# re-pointed name-level shape (above), measured on py3.11.
+# re-pointed name-level shape (above), measured on py3.11. 2,479
+# from 2026-10-06 (#617), 199 below 83f4e914's 2,678, for two
+# reasons, counted per function: P3's joins call the piece
+# predicates directly rather than through `_group_segment`'s
+# closures (the `conj` closure's 133 frames, two more from `title`
+# and `prefix`), and the single-letter test no longer joins the
+# piece's text through a generator (65 frames, one per connective,
+# more than this pin's whole band); `join_connectives` adds one.
 _LINK_BASELINE = {
-    (3, 11): 2678,
+    (3, 11): 2479,
 }
 #: The same +-2% `_CALL_BASELINE` uses, and for the same reason: frame
 #: counts are deterministic for a given tree and interpreter, so the
