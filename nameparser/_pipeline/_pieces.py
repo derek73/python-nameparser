@@ -251,8 +251,7 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
     # piece is one token and this branch never merges it, and this
     # loop finishes before the join below can take one into a
     # neighbour's piece, so a piece holding a frozen token here IS
-    # that token. (Below, the join skips a frozen piece as its
-    # subject, and the piece a join produces is left behind `k`.)
+    # that token.
     k = 0
     while k < len(pieces) - 1:
         if (is_conj_piece(pieces[k], ptags[k], tokens)

@@ -983,22 +983,21 @@ def test_the_trailing_candidates_cover_what_the_tail_reading_takes(
     assert _candidate_misses(monkeypatch) == []
 
 
-def _unjoined(text: str, lexicon: Lexicon | None = None,
-              ) -> tuple[list[list[int]], list[set[str]], list]:
-    """A whole name's words as classify tagged them, one fresh piece
-    each -- what `join_connectives` takes from either caller."""
-    state = ParseState(original=text,
-                       lexicon=lexicon or Lexicon.default(),
-                       policy=Policy())
-    for stage in (tokenize, segment, classify):
-        state = stage(state)
+def _joined(text: str, *, letter_stays: bool, titles_only: bool,
+            frozen_words: Set[str] = frozenset(),
+            ) -> tuple[list[str], list[set[str]]]:
+    """`join_connectives` over a whole name's words as classify tagged
+    them, one fresh piece each -- what it takes from either caller --
+    with the words in `frozen_words` frozen by token. Returns each
+    piece's text and its tags."""
+    state = _state_through("classify", text)
     tokens = list(state.tokens)
-    return ([[i] for i in state.segments[0]],
-            [set() for _ in state.segments[0]], tokens)
-
-
-def _words(pieces: list[list[int]], tokens: list) -> list[str]:
-    return [" ".join(tokens[i].text for i in p) for p in pieces]
+    pieces = [[i] for i in state.segments[0]]
+    ptags: list[set[str]] = [set() for _ in pieces]
+    frozen = {i for i, t in enumerate(tokens) if t.text in frozen_words}
+    join_connectives(pieces, ptags, tokens, letter_stays=letter_stays,
+                     titles_only=titles_only, frozen=frozen)
+    return [" ".join(tokens[i].text for i in p) for p in pieces], ptags
 
 
 def test_a_connective_run_merges_before_it_joins_in_both_modes() -> None:
@@ -1007,11 +1006,9 @@ def test_a_connective_run_merges_before_it_joins_in_both_modes() -> None:
     too. The comma decision's copy of the loop merged no run and joined
     'Minister of the' alone (#617)."""
     for titles_only in (True, False):
-        pieces, ptags, tokens = _unjoined("Minister of the Interior Smith")
-        join_connectives(pieces, ptags, tokens, letter_stays=True,
-                         titles_only=titles_only)
-        assert _words(pieces, tokens) == ["Minister of the Interior",
-                                          "Smith"], titles_only
+        words, ptags = _joined("Minister of the Interior Smith",
+                               letter_stays=True, titles_only=titles_only)
+        assert words == ["Minister of the Interior", "Smith"], titles_only
         assert "title" in ptags[0], titles_only
 
 
@@ -1019,51 +1016,37 @@ def test_titles_only_leaves_a_join_with_no_title_unmade() -> None:
     """The comma part's mode: a connective whose neighbour is no title
     stays a word for the reading to place; group's mode joins it
     anyway, taking no title kind."""
-    pieces, ptags, tokens = _unjoined("Jones and Smith")
-    join_connectives(pieces, ptags, tokens, letter_stays=True,
-                     titles_only=True)
-    assert _words(pieces, tokens) == ["Jones", "and", "Smith"]
-    pieces, ptags, tokens = _unjoined("Jones and Smith")
-    join_connectives(pieces, ptags, tokens, letter_stays=True,
-                     titles_only=False)
-    assert _words(pieces, tokens) == ["Jones and Smith"]
+    words, _ = _joined("Jones and Smith", letter_stays=True,
+                       titles_only=True)
+    assert words == ["Jones", "and", "Smith"]
+    words, ptags = _joined("Jones and Smith", letter_stays=True,
+                           titles_only=False)
+    assert words == ["Jones and Smith"]
     assert "title" not in ptags[0]
 
 
 def test_the_single_letter_carve_out_is_the_callers_answer() -> None:
     """`letter_stays` is P3's carve-out as the caller reads it: group
     from the rootname count, the comma part always."""
-    pieces, ptags, tokens = _unjoined("Mr. y Mrs.")
-    join_connectives(pieces, ptags, tokens, letter_stays=True,
-                     titles_only=True)
-    assert _words(pieces, tokens) == ["Mr.", "y", "Mrs."]
-    pieces, ptags, tokens = _unjoined("Mr. y Mrs.")
-    join_connectives(pieces, ptags, tokens, letter_stays=False,
-                     titles_only=True)
-    assert _words(pieces, tokens) == ["Mr. y Mrs."]
+    assert _joined("Mr. y Mrs.", letter_stays=True,
+                   titles_only=True)[0] == ["Mr.", "y", "Mrs."]
+    assert _joined("Mr. y Mrs.", letter_stays=False,
+                   titles_only=True)[0] == ["Mr. y Mrs."]
 
 
 def test_a_frozen_connective_neither_joins_nor_merges_into_a_run() -> None:
     """`frozen` names connectives by TOKEN index; one there is the
     subject of no join and no run merge (a neighbour's join may still
     take it in, group's documented reach)."""
-    pieces, ptags, tokens = _unjoined("Mr. and of Mrs.")
-    of = next(i for i, t in enumerate(tokens) if t.text == "of")
-    join_connectives(pieces, ptags, tokens, letter_stays=True,
-                     titles_only=True, frozen={of})
-    assert _words(pieces, tokens) == ["Mr. and of", "Mrs."]
-    pieces, ptags, tokens = _unjoined("Mr. and of Mrs.")
-    join_connectives(pieces, ptags, tokens, letter_stays=True,
-                     titles_only=True)
-    assert _words(pieces, tokens) == ["Mr. and of Mrs."]
+    assert _joined("Mr. and of Mrs.", letter_stays=True, titles_only=True,
+                   frozen_words={"of"})[0] == ["Mr. and of", "Mrs."]
+    assert _joined("Mr. and of Mrs.", letter_stays=True,
+                   titles_only=True)[0] == ["Mr. and of Mrs."]
     # the join half: a frozen connective is no join's subject, whatever
     # its neighbours are (the run above never reaches it as one, the
     # 'and' join taking it in first -- #617's test review)
-    pieces, ptags, tokens = _unjoined("Mr. and Mrs.")
-    and_ = next(i for i, t in enumerate(tokens) if t.text == "and")
-    join_connectives(pieces, ptags, tokens, letter_stays=True,
-                     titles_only=True, frozen={and_})
-    assert _words(pieces, tokens) == ["Mr.", "and", "Mrs."]
+    assert _joined("Mr. and Mrs.", letter_stays=True, titles_only=True,
+                   frozen_words={"and"})[0] == ["Mr.", "and", "Mrs."]
 
 
 def test_only_groups_joins_derive_a_prefix() -> None:
@@ -1073,14 +1056,12 @@ def test_only_groups_joins_derive_a_prefix() -> None:
     a particle chain. `und` is a connective in the default vocabulary
     and no particle, so the derivation and not the particle chain is
     what is read."""
-    pieces, ptags, tokens = _unjoined("Otto von und zu Habsburg")
-    join_connectives(pieces, ptags, tokens, letter_stays=False,
-                     titles_only=False)
-    assert _words(pieces, tokens) == ["Otto", "von und zu", "Habsburg"]
+    words, ptags = _joined("Otto von und zu Habsburg", letter_stays=False,
+                           titles_only=False)
+    assert words == ["Otto", "von und zu", "Habsburg"]
     assert "prefix" in ptags[1] and "title" not in ptags[1]
     # 'freiherr' is a title AND a particle: titles-only takes the title
-    pieces, ptags, tokens = _unjoined("Freiherr and Dr.")
-    join_connectives(pieces, ptags, tokens, letter_stays=True,
-                     titles_only=True)
-    assert _words(pieces, tokens) == ["Freiherr and Dr."]
+    words, ptags = _joined("Freiherr and Dr.", letter_stays=True,
+                           titles_only=True)
+    assert words == ["Freiherr and Dr."]
     assert "title" in ptags[0] and "prefix" not in ptags[0]

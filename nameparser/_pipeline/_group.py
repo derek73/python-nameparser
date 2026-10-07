@@ -656,13 +656,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # a run, and it counts toward the carve-out total the way the
         # generation counted -- not at all, a suffix piece being no
         # rootname. A TOKEN index for the same reason the chain's
-        # trailing run is a length from the end: the merges the joins below
-        # make move piece indices and cannot move this one.
+        # trailing run is a length from the end: the joins below move
+        # piece indices and cannot move this one.
         #
         # "No join of its own" is the whole claim, and a NEIGHBOUR's
         # join can still absorb it: the two loops of `join_connectives`,
-        # called below, skip a frozen piece as the join's SUBJECT and nothing keeps it out of the
-        # span another connective's join takes. 'Josep Carod Rovira
+        # called below, skip a frozen piece as the join's SUBJECT, and
+        # nothing keeps it out of the span another connective's join
+        # takes. 'Josep Carod Rovira
         # Puig y i' freezes the trailing 'i' -- nothing stands on its
         # right -- and the 'y' beside it joins across it all the same,
         # for family 'Puig y i', which is what the parent read there
@@ -706,13 +707,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # THAT is what its own sentence says ("a single-letter
         # connective in a three-word name").
         frozen: set[int] = set()
+        # whether any connective is left free to join: a segment with
+        # none skips the rootname count and the shared loop, both of
+        # which then do nothing (0 of 3,153 such calls changed a piece
+        # over the corpora and case table, #617's /simplify), as
+        # `_comma._reading_pieces` skips it for the part after a comma
+        free = False
         lo = hi = -1
         beside: _Beside = ([], [])
         for k, piece in enumerate(pieces):
             tok = tokens[piece[0]]
-            if (len(piece) != 1
-                    or "conjunction" not in tok.tags
-                    or "vocab:suffix" not in tok.tags):
+            if len(piece) != 1 or "conjunction" not in tok.tags:
+                continue
+            if "vocab:suffix" not in tok.tags:
+                free = True
                 continue
             # The bounds and the run memo, computed once per segment
             # and only where such a connective was found, so the cost
@@ -738,22 +746,25 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # per member -- quadratic in its length, 3.8x per
                 # doubling measured at `b9ed1429`.
                 beside = _run_neighbours(pieces, ptags, tokens)
-            if not _between_name_words(k, lo, hi, pieces, ptags, tokens,
-                                       beside):
+            if _between_name_words(k, lo, hi, pieces, ptags, tokens,
+                                   beside):
+                free = True
+            else:
                 frozen.add(piece[0])
-        total = sum(_is_rootname(p, t, tokens)
-                    for p, t in zip(pieces, ptags)
-                    if p[0] not in frozen) + additional
-        # The threshold of P3's carve-out ("except a single-letter
-        # connective in a three-word name, which stays a name word")
-        # reads the ROOTNAME count, and since #397 a connective counts
-        # ITSELF toward that count WHERE IT IS JOINING, so a connective
-        # that is also suffix vocabulary no longer raises the bar for
-        # its own join and no longer lowers it for an unrelated one
-        # ("Carod y Rovira i" counted the trailing generation and let
-        # the `y` join).
-        join_connectives(pieces, ptags, tokens, letter_stays=total < 4,
-                         titles_only=False, frozen=frozen)
+        if free:
+            total = sum(_is_rootname(p, t, tokens)
+                        for p, t in zip(pieces, ptags)
+                        if p[0] not in frozen) + additional
+            # The threshold of P3's carve-out ("except a single-letter
+            # connective in a three-word name, which stays a name word")
+            # reads the ROOTNAME count, and since #397 a connective counts
+            # ITSELF toward that count WHERE IT IS JOINING, so a connective
+            # that is also suffix vocabulary no longer raises the bar for
+            # its own join and no longer lowers it for an unrelated one
+            # ("Carod y Rovira i" counted the trailing generation and let
+            # the `y` join).
+            join_connectives(pieces, ptags, tokens, letter_stays=total < 4,
+                             titles_only=False, frozen=frozen)
         # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
         # suffix" -- group does not decide that; it stops before whatever
         # trailing_start says the run is, so the chain ends where assign's
@@ -856,9 +867,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         tail = len(pieces) - trailing_start(name_start, pieces, ptags,
                                              tokens, one_case=one_case)
         def chain(tail: int) -> None:
-            # `pieces[:titled]` are known to be leading titles.
-            # merge_pieces(.., k, j) changes only indices from k on, and k only grows, so a
-            # piece behind k is final and its answer can be kept: the
+            # `pieces[:titled]` are known to be leading titles. A merge
+            # from k to j changes only indices from k on, and k only
+            # grows, so a piece behind k is final and its answer can
+            # be kept: the
             # cursor makes the all-titles-ahead test below one walk per
             # chain rather than one per chain site (#559).
             titled = 0
@@ -914,12 +926,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 #
                 # j > k + 1 is what makes this a DECISION rather than a
                 # shape: when the next piece is a suffix the inner scan
-                # never advances, merge_pieces(.., k, k+1) folds a piece into itself,
-                # and the particle stays a lone leading piece -- nothing
+                # never advances, the merge from k to k+1 folds a piece
+                # into itself, and the particle stays a lone leading
+                # piece -- nothing
                 # was chained, and _assign reports that case instead.
                 # Without this the two emitters both fire on the same token.
-                # (Tag test first: it is a set lookup and almost no name has
-                # an ambiguous particle, while is_leading_title is a call per piece.)
+                # (Tag test first: it is a set lookup and almost no name
+                # has an ambiguous particle, while is_leading_title is a
+                # call per piece.)
                 if (j > k + 1
                         and "vocab:particle-ambiguous"
                         in tokens[pieces[k][0]].tags):

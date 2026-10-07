@@ -94,9 +94,9 @@ def _reading_pieces(part: Sequence[int], tokens: Sequence[WorkToken],
     # a part read for credentials none does, so every such connective
     # is frozen here, where group freezes only the ones it finds without
     # a name word beside them ('Rovira, Dr. i i' keeps suffix 'i i'
-    # rather than run-merging the pair into the title, #617). Frozen
-    # means no join or run of its OWN: a neighbour's join may still take
-    # it in, as in group ('Smith, Dr. and i' reads title 'Dr. and i').
+    # rather than run-merging the pair into the title, #617); a
+    # neighbour's join may still take one in ('Smith, Dr. and i' reads
+    # title 'Dr. and i'), as `join_connectives` says.
     #
     # The same walk says whether there is anything to join, and a part
     # with no connective left free -- nearly every part -- skips the

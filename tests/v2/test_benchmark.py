@@ -74,14 +74,16 @@ from nameparser._policy import Policy
 #: closures for `_pieces.join_connectives`, which calls the piece
 #: predicates directly: each interpreter measured 10 below 83f4e914's
 #: own count (374/411 on 3.11, 353/390 on 3.12-3.15, which had sat
-#: +4/+5 inside the old 370/407 and 348/385), so the rows below move
-#: 6 and 5 from what they held (decisions.md#parse-cost).
+#: +4/+5 inside the old 370/407 and 348/385). Then 39 more on every
+#: row, in #617's /simplify, when group stopped running the rootname
+#: count and the shared loop over segments with no connective left
+#: free to join (decisions.md#parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 364, "facade": 401},
-    (3, 12): {"parse": 343, "facade": 380},
-    (3, 13): {"parse": 343, "facade": 380},
-    (3, 14): {"parse": 343, "facade": 380},
-    (3, 15): {"parse": 343, "facade": 380},
+    (3, 11): {"parse": 325, "facade": 362},
+    (3, 12): {"parse": 304, "facade": 341},
+    (3, 13): {"parse": 304, "facade": 341},
+    (3, 14): {"parse": 304, "facade": 341},
+    (3, 15): {"parse": 304, "facade": 341},
 }
 _BAND = 0.02
 
@@ -866,6 +868,26 @@ def test_a_comma_part_with_no_free_connective_skips_the_join() -> None:
     # a part holding a connective takes the loop
     assert _frames_for("John Smith, Mr. and Mrs.",
                        only="join_connectives") == 1
+
+
+def test_a_segment_with_no_free_connective_skips_the_join() -> None:
+    """Group's side of the same gate: a segment with no connective left
+    free to join runs neither P3's rootname count, whose only reader is
+    the carve-out, nor the shared loop, both of which do nothing there.
+    Recorded negative control, #617's /simplify (2026-10-07, py3.11):
+    with the gate removed no output moves (both #617 grids, the
+    fingerprint and the connective grid), the reference-shaped
+    'Dr. Juan Q. Xavier de la Vega III' enters `join_connectives` once and `_is_rootname` 8 times and costs
+    436 frames against 386, and 'John Quincy Smith' 229 against 207 --
+    39 frames on `_CALL_BASELINE`'s reference row, outside its band."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("Dr. Juan Q. Xavier de la Vega III", "John Quincy Smith"):
+        assert _frames_for(text, only="join_connectives") == 0, text
+        assert _frames_for(text, only="_is_rootname") == 0, text
+    # REACHABILITY: a segment whose connective joins takes both
+    assert _frames_for("Josep Carod i Rovira", only="join_connectives") == 1
+    assert _frames_for("Josep Carod i Rovira", only="_is_rootname") == 4
 
 
 # Fixed points and scans that re-read what they had already read, each
