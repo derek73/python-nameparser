@@ -16,10 +16,9 @@ scored under the confidence floor).
 Reads: Policy.segment_scripts, Lexicon.surnames,
 Lexicon.honorific_tails, ParseState.segmenter, Lexicon.maiden_markers
 DIRECTLY (the own-words span `_one_case` takes, _pieces.own_words),
-the vocabulary C1's counts before a comma read (particle, title and
-suffix vocabulary, through _vocab.surname_unit_count and
-_vocab.name_word_count, with is_suffix_lenient and
-ambiguous_class_member, in `_postnominal_behind_a_whole_name`), and Lexicon suffix
+everything classify and `_comma.decide` read, through
+`_postnominal_behind_a_whole_name` (the comma's own decision, asked of
+a classified copy of the state, #613), and Lexicon suffix
 vocabulary through TWO predicates, which are NOT one another's
 singular and plural. _vocab.is_suffix_strict asks whether a single
 token is a post-nominal, initial veto included (the peel's scan-back
@@ -65,16 +64,17 @@ the bail's own comment, and honorific_tails' field note).
 from __future__ import annotations
 
 import functools
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 from nameparser._lexicon import FULL_STOPS
+import nameparser._pipeline._comma as _comma
+from nameparser._pipeline._classify import classify
 from nameparser._pipeline._state import (
     ParseState, PendingAmbiguity, Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    ambiguous_class_member, effective_script, is_one_case,
-    is_single_letter_numeral, is_suffix_strict, is_wholly_suffix,
-    name_word_count, surname_unit_count,
+    effective_script, is_one_case,
+    is_suffix_strict, is_wholly_suffix,
 )
 from nameparser._pipeline._pieces import own_words
 from nameparser._types import AmbiguityKind, Segmentation, Span
@@ -347,67 +347,27 @@ def _one_case(state: ParseState) -> bool:
 
 def _postnominal_behind_a_whole_name(state: ParseState) -> bool:
     """Whether the part after the comma is the postnominal part of a
-    whole name, so the part before it is a name and not a surname.
+    whole name, so the part before it is a name and not a surname --
     rules.md#C1's question, which group decides once the words are
-    tagged (#613); this stage runs first and asks it the way C1 asks it
-    of a part of suffix words -- more than one word before the comma,
-    the glued tail this stage peeled not among them, and every word
-    after it a suffix word -- and, for a part holding a LISTED member
-    of the ambiguous class, by the count C1 takes for that class, two
-    NAME words before the comma (`name_word_count`, the count
-    `_comma.decide` asks). Without that second arm group read `김민준
-    박, MA` as a credential run behind a two-word name while this
-    stage had already declined to split the name as one, and the
-    comma's report said two name words stood where the parse kept one
-    (#613's review), with decide's two further conditions -- the
-    policy's own suffix test for the other words, and no single-letter
-    numeral -- which a second review found missing ('김민준 박, MA V'
-    divided behind a family comma). Not asked, and so left whole where
-    decide reads a suffix comma: the capitals lean behind a title and
-    one name word ('Dr 김민준, MA', which H1 reads as the family
-    anyway), an unlisted all-caps or dotted word ('XYZ', 'X.Y.Z.'), a
-    title in the part, and a credential opening a part that also holds
-    a name word (#603: '김민준 박, PhD Jones'). Leaving a name whole is the
-    harmless direction; dividing one decide reads as a family comma is
-    the one `test_the_division_never_outruns_the_comma_decision`
-    forbids. Copying the rest of decide here would be the model of a
-    later stage this move removed, and a CJK name before a comma with a
-    Latin credential after it is tolerated input (rules.md#W3)."""
-    if len(state.segments) < 2:
-        return False
-    own = [state.tokens[j].text for j in state.segments[0]
-           if _PEELED_TAG not in state.tokens[j].tags]
-    if len(own) < 2:
-        return False
-    after = [state.tokens[j].text for j in state.segments[1]]
-    if is_wholly_suffix(after, state.lexicon, state.policy):
-        # `_comma._whole_name`'s count: units holding a word that is
-        # not a suffix word, so a suffix before the comma counts for
-        # nothing ('김민준 Jr., PhD' is the listing form, as 'Smith Jr.,
-        # PhD' is -- the count over every word had divided it, and the
-        # division then made decide agree, #613's PR review)
-        named = [t for t in own if not is_suffix_strict(t, state.lexicon)]
-        return len(named) > 1 and surname_unit_count(named,
-                                                     state.lexicon) > 1
-    # the ambiguous class, by C1's own count: two NAME words before
-    # the comma make a part of listed members and suffix words the
-    # credential run, as `_comma.decide` licenses it (#613 review) --
-    # the words not of the class asked by the policy's own suffix test,
-    # and no single-letter numeral in the part, decide's two further
-    # conditions (a second review found the arm dividing '김민준 박, MA
-    # V' while decide read the family comma, which laid the divided
-    # pieces out as the family '김 민준 박')
-    others = [t for t in after
-              if not ambiguous_class_member(t, state.lexicon)]
-    return (len(others) < len(after)
-            and (not others or is_wholly_suffix(others, state.lexicon,
-                                                state.policy))
-            and not any(is_single_letter_numeral(t) for t in after)
-            and name_word_count(own, state.lexicon, state.policy) > 1)
+    tagged (#613). This stage runs first, so it asks THAT decision, on
+    the name as written: `_comma.decide` over a classified copy of the
+    state, which is the one implementation of the question. A hand copy
+    asked the vocabulary here until #613's /simplify pass, and was
+    patched four times in review for drifting from decide (the ambiguous
+    class's count, the numeral refusal, a suffix before the comma, the
+    split 'Ph. D.'), each drift dividing a name decide then read as a
+    family comma, or leaving whole one it read as a suffix comma.
+
+    The copy costs a classify pass and a decision, so the callers ask
+    only where the answer can change something: the peel once it has
+    found a site, the division once there is a token it could divide
+    (Latin and accented-Latin comma names never pay it)."""
+    return (_comma.decide(classify(state)).structure
+            is Structure.SUFFIX_COMMA)
 
 
 def _peel_honorific_tail(state: ParseState,
-                         postnominal: bool) -> ParseState:
+                         postnominal: Callable[[], bool]) -> ParseState:
     """#308: split a listed honorific off the END of the name's last
     NON-POST-NOMINAL token -- 田中さん -> 田中 + さん -- and let
     the existing machinery do the rest. Suffix classification claims
@@ -568,29 +528,36 @@ def _peel_honorific_tail(state: ParseState,
     # "김민준씨, J.씨" is where the choice is visible and deliberate:
     # both runs offer a site, so the decline stands and the person's own
     # 씨 is peeled rather than the junk one behind the comma.
-    runs = state.segments[:1]
-    if state.structure is Structure.FAMILY_COMMA and not postnominal:
-        second = [state.tokens[j].text for j in state.segments[1]]
-        # `one_case` is passed for the reason the field exists: the
-        # credential lean is part of what "wholly suffix" MEANS since
-        # #289, and a stage that asks the question without it gets a
-        # different answer from `_comma.decide`, which reads the same
-        # run with the fact in hand at group's head. Left out, 'Kim김민준씨, MA' read
-        # 'MA' as name material, declined nothing, and scanned the
-        # second run -- where the site is 'MA' itself, which carries no
-        # listed tail -- so the person's own 씨 went unpeeled (family
-        # 'Kim김민준씨') while 'Kim김민준씨, PhD' peeled it, one name in
-        # two spellings parsed two ways (review round, #289/#516).
-        # `segment` records the fact only where C2's flag asks for it,
-        # so `_one_case` asks it here for every other name (#613).
-        # the site test first: it is the cheaper half, and false for
-        # every name whose part before the comma holds no glued
-        # honorific, which spares those the case fact (#613's /simplify)
-        if not (_peel_site(state, state.segments[0], tails)
-                and is_wholly_suffix(second, state.lexicon, state.policy,
-                                     one_case=_one_case(state))):
-            runs = state.segments[:2]
-    site = _peel_site(state, [j for seg in runs for j in seg], tails)
+    site = _peel_site(state, state.segments[0], tails)
+    if state.structure is Structure.FAMILY_COMMA:
+        # Under a family comma both runs may be scanned. The comma's
+        # decision is asked only where it can matter -- where scanning
+        # one run and scanning both find different sites (#613's
+        # /simplify: it is a classify pass and a decision)
+        both = _peel_site(state, [j for seg in state.segments[:2]
+                                  for j in seg], tails)
+        if both != site and not postnominal():
+            second = [state.tokens[j].text for j in state.segments[1]]
+            # `one_case` is passed for the reason the field exists: the
+            # credential lean is part of what "wholly suffix" MEANS since
+            # #289, and a stage that asks the question without it gets a
+            # different answer from `_comma.decide`, which reads the same
+            # run with the fact in hand at group's head. Left out, 'Kim김민준씨, MA' read
+            # 'MA' as name material, declined nothing, and scanned the
+            # second run -- where the site is 'MA' itself, which carries no
+            # listed tail -- so the person's own 씨 went unpeeled (family
+            # 'Kim김민준씨') while 'Kim김민준씨, PhD' peeled it, one name in
+            # two spellings parsed two ways (review round, #289/#516).
+            # `segment` records the fact only where C2's flag asks for it,
+            # so `_one_case` asks it here for every other name (#613).
+            # the site test first: it is the cheaper half, and false
+            # for every name whose part before the comma holds no glued
+            # honorific, which spares those the case fact
+            if not (site is not None
+                    and is_wholly_suffix(second, state.lexicon,
+                                         state.policy,
+                                         one_case=_one_case(state))):
+                site = both
     if site is None:
         return state
     i, offset = site
@@ -602,24 +569,15 @@ def _peel_honorific_tail(state: ParseState,
     return _split(state, i, (offset,), None, tail_tag=_PEELED_TAG)
 
 
-def _split_surname_site(state: ParseState) -> ParseState:
-    """The stage's other split: the first activated-script token of the
-    name part is matched longest-first against Lexicon.surnames, and a
-    hit splits it in two; where the vocabulary declines, an optional
-    Parser(segmenter=...) is consulted instead.
-
-    A sibling of _peel_honorific_tail rather than a continuation of it.
-    The two answer different questions -- this one asks where a name
-    divides into surname and given, the peel asks whether a token ends
-    in a word that can never end a name -- which is why they carry
-    different gates: the FAMILY comma and the 间隔号 gate this half
-    alone (#312), and segment_scripts below gates it alone too. That
-    is also why the stage entry below interleaves gates with its two
-    calls rather than running one cascade."""
+def _split_candidate(state: ParseState) -> int | None:
+    """The token `_split_surname_site` would try to divide, or None:
+    asked on its own so a caller can learn cheaply that there is
+    nothing to divide before asking anything costlier (#613's
+    /simplify)."""
     scripts = state.policy.segment_scripts
     # an empty VOCABULARY deliberately does not bail here -- see below
     if not scripts:
-        return state
+        return None
     # segments[0] is the NAME part under both remaining structures
     # (everything, under NO_COMMA); later segments are suffixes. Its
     # members are main-stream token indices by construction, so
@@ -641,6 +599,34 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # covers the token the peel above manufactures, which is the first
     # and only script-written one in "Anderson선생님".
     if i is None or _is_post_nominal(state, i):
+        return None
+    # A token that IS a surname never splits: a bare "남궁" must not
+    # become 남 + 궁 just because the single-syllable surname also
+    # matches -- there is nothing to split off, and a lone token's
+    # role is the order resolution's call, stop or no stop. Asked here,
+    # with the core the split reads (#323), so the comma gate in front
+    # learns it before asking the comma's decision (#613's /simplify)
+    if state.tokens[i].text.rstrip(FULL_STOPS) in state.lexicon.surnames:
+        return None
+    return i
+
+
+def _split_surname_site(state: ParseState) -> ParseState:
+    """The stage's other split: the first activated-script token of the
+    name part is matched longest-first against Lexicon.surnames, and a
+    hit splits it in two; where the vocabulary declines, an optional
+    Parser(segmenter=...) is consulted instead.
+
+    A sibling of _peel_honorific_tail rather than a continuation of it.
+    The two answer different questions -- this one asks where a name
+    divides into surname and given, the peel asks whether a token ends
+    in a word that can never end a name -- which is why they carry
+    different gates: the FAMILY comma and the 间隔号 gate this half
+    alone (#312), and segment_scripts below gates it alone too. That
+    is also why the stage entry below interleaves gates with its two
+    calls rather than running one cascade."""
+    i = _split_candidate(state)
+    if i is None:
         return state
     token = state.tokens[i]
     text = token.text
@@ -654,12 +640,6 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # arrives -- while the peel above has no such gate in front of it
     # and its own rstrip is what does the work there.
     core = text.rstrip(FULL_STOPS)
-    # A token that IS a surname never splits: a bare "남궁" must not
-    # become 남 + 궁 just because the single-syllable surname also
-    # matches -- there is nothing to split off, and a lone token's
-    # role is the order resolution's call, stop or no stop.
-    if core in surnames:
-        return state
     # Longest-first (compound-before-single falls out of it), capped
     # so the remainder is never empty. Direct membership, no
     # _normalize: the script gate admits only CJK text, and a CJK
@@ -832,17 +812,14 @@ def script_segment(state: ParseState) -> ParseState:
     # string does not change the answer. Placing it above the block
     # also keeps a future segmentation gate from silently capturing
     # it: a new gate lands with its siblings, below.
-    # The stand-in's answer, asked once: the peel reads it, and the gate
-    # below re-asks only when the peel changed the state (its tail token
-    # leaves the count). Asked twice on the same state it had been ~12%
-    # of an accented Latin comma name's parse (#613's /simplify).
-    postnominal = (state.structure is Structure.FAMILY_COMMA
-                   and _postnominal_behind_a_whole_name(state))
-    peeled = _peel_honorific_tail(state, postnominal)
-    if peeled is not state and state.structure is Structure.FAMILY_COMMA:
-        postnominal = _postnominal_behind_a_whole_name(peeled)
-    state = peeled
-    if state.structure is Structure.FAMILY_COMMA and not postnominal:
+    # The comma's decision, asked lazily: the peel asks it only once it
+    # has a site, the division below only once there is a token to
+    # divide (#613's /simplify), each on the state it acts on.
+    state = _peel_honorific_tail(
+        state, lambda: _postnominal_behind_a_whole_name(state))
+    if (state.structure is Structure.FAMILY_COMMA
+            and (_split_candidate(state) is None
+                 or not _postnominal_behind_a_whole_name(state))):
         return state    # the comma already drew the SURNAME boundary
     if state.interpunct_offsets:
         # #298: a 间隔号-divided name is a transcription -- its pieces

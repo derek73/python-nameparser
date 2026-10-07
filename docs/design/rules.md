@@ -2282,13 +2282,10 @@ W3. Rationale: a family name declared by a comma is the writer's
     nobody's writing system produces. Behind a part C1 reads as
     postnominal there is no family comma, and the name before it
     divides as it would with no comma ('마틴 킹, MA' as '마틴 킹');
-    the division, and with it the split-off below, is decided before
-    C1 runs, by C1's counts for suffix words and listed words of the
-    ambiguous class, so a part C1 reads as postnominal by anything
-    else — an unlisted all-caps or dotted word, a split credential, a
-    title, or the capitals of a listed word behind a title and one
-    name word — leaves the name whole and its glued honorific in
-    place ('Smith 김민준씨, XYZ'). Which side the split-off takes
+    the division, and with it the split-off below, follows C1's own
+    reading of the comma, taken on the name as written before the
+    division ('Dr 김민준, MA' divides as 'Dr 김민준' does). Which side
+    the split-off takes
     it from is decided by the SHAPE of the part after the comma, not
     by which of C1's two readings that part selects — a one-word
     family reads the listing form either way. A part that is nothing

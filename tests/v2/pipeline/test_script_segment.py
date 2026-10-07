@@ -185,13 +185,11 @@ def test_one_word_before_the_comma_is_never_suffix_comma() -> None:
 
 
 def test_a_listed_ambiguous_credential_behind_two_name_words_divides() -> None:
-    # #613 review: the second arm of `_postnominal_behind_a_whole_name`
-    # asks C1's name-word count for a part holding a listed member of
-    # the ambiguous class, as `_comma.decide` does, so the name before
-    # the comma divides as it does before 'PhD' -- through the whole
-    # pipeline, since the count is decide's and the division this
-    # stage's. A name word after the comma and one word before it are
-    # the contrasts: neither divides.
+    # #613 review: `_postnominal_behind_a_whole_name` asks the comma's
+    # decision, which licenses a listed member of the ambiguous class
+    # by C1's name-word count, so the name before the comma divides as
+    # it does before 'PhD'. A name word after the comma and one word
+    # before it are the contrasts: neither divides.
     divided = {"family": "김", "given": "민준", "middle": "박"}
     for text in ("김민준 박, MA", "김민준 박, PhD"):
         fields = {k: v for k, v in parse(text).as_dict().items() if v}
@@ -200,17 +198,14 @@ def test_a_listed_ambiguous_credential_behind_two_name_words_divides() -> None:
     assert parse("김민준, MA").family == "김민준"
 
 
-# script_segment runs before group and asks its own stand-in for the
-# comma decision (`_postnominal_behind_a_whole_name`), and a stand-in
-# is a second implementation that can drift. The two directions of a
-# disagreement are not alike. Dividing a name that `_comma.decide`
-# then reads as a FAMILY comma lays the divided pieces out as the
-# family ('김 민준 박') -- that is never allowed. Leaving a name whole
-# where decide reads a suffix comma keeps the written word, the
-# tolerated cost of a CJK name before a comma with a Latin credential
-# after it (rules.md#W3): decide's capitals lean, its by-shape class,
-# its Ph./D. merge and its title reading are not copied here, a copy
-# being the model of a later stage #613 removed.
+# script_segment runs before group, and divides the name before a
+# comma exactly where the comma's own decision, taken on the name as
+# written, reads a suffix comma (`_postnominal_behind_a_whole_name`
+# asks `_comma.decide` itself since #613's /simplify). The hand copy it
+# replaced drifted in both directions: dividing a name decide then read
+# as a FAMILY comma laid the divided pieces out as the family ('김 민준
+# 박'), and leaving whole one decide read as a suffix comma lost the
+# division and the honorific's peel ('Smith 김민준씨, XYZ').
 #
 # Recorded negative controls (#613 reviews, 2026-10-06), each on the
 # grid as it stood then: at 47fb2b21, where the stand-in asked the
@@ -226,7 +221,7 @@ _AGREEMENT_TAILS = (
     "G.J.", "MA V", "V MA", "MA I", "V.", "MA V.", "X.Y.Z.", "MA X.Y.Z.",
     "MA Ph. D.", "Dr MA", "MA Dr", "XYZ", "Esq.", "MA Jones", "Ma Jones",
     "Jones MA")
-#: the count arm's own reach: a listed member behind two name words
+#: a listed member behind two name words, which the count licenses
 _DIVIDES = {(head, tail) for head in ("김민준 박", "마틴 킹")
             for tail in ("MA", "Ma", "MA PhD", "Jr. MA", "MD Ma", "Ed")}
 
@@ -248,9 +243,13 @@ def test_the_division_never_outruns_the_comma_decision() -> None:
     # review's '김민준 Jr., PhD', divided by a stand-in that counted the
     # suffix as a unit, read as a suffix comma only because '김 민준'
     # had become two name words (control, measured on 9dd271b2: 14 of
-    # this grid's 264 parses outran, every one a head with a suffix in
-    # it, '김민준 Jr.' or '김민준 III' before a part of suffix words)
-    outran, divided_where_expected = set(), set()
+    # the then 264 parses outran, every one a head with a suffix in it,
+    # '김민준 Jr.' or '김민준 III' before a part of suffix words). Both
+    # directions are asserted since the stage asks decide itself; on
+    # 3320d700, the last tree with the hand copy, 0 of these 300 parses
+    # outran and 44 lagged -- left whole where decide read a suffix
+    # comma, 'Dr 김민준, MA' and the caps and dotted shapes among them
+    outran, lagged, divided_where_expected = set(), set(), set()
     for policy in (Policy(), Policy(lenient_comma_suffixes=False)):
         undivided_policy = dataclasses.replace(
             policy, segment_scripts=frozenset())
@@ -262,13 +261,18 @@ def test_the_division_never_outruns_the_comma_decision() -> None:
                        if _PEELED_TAG not in state.tokens[i].tags]
                 divided = len(own) > len(head.split())
                 undivided = _through_group(text, undivided_policy)
-                if (divided and undivided.structure
-                        is not Structure.SUFFIX_COMMA):
-                    outran.add((head, tail, policy.lenient_comma_suffixes))
+                suffix_comma = (undivided.structure
+                                is Structure.SUFFIX_COMMA)
+                key = (head, tail, policy.lenient_comma_suffixes)
+                if divided and not suffix_comma:
+                    outran.add(key)
+                if suffix_comma and not divided:
+                    lagged.add(key)
                 if divided and (head, tail) in _DIVIDES:
                     divided_where_expected.add(
                         (head, tail, policy.lenient_comma_suffixes))
     assert outran == set()
+    assert lagged == set()
     # per policy: a division lost under one policy alone must fail
     assert divided_where_expected == {
         (head, tail, lenient) for head, tail in _DIVIDES

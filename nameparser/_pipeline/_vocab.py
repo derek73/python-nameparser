@@ -802,9 +802,8 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
 # those units, and takes each whole or not at all" -- C1's count before
 # a comma being the stated exception (`SURNAME_UNIT_TAGS`). The walk is shared
 # by readers that hold the facts in different forms: post_rules and
-# `_comma._whole_name` read classify's TAGS, while `surname_unit_count`
-# (script_segment, before classify has tagged anything) and
-# `name_word_count` build the same tag names from the vocabulary
+# `_comma._whole_name` read classify's TAGS, while `name_word_count`
+# builds the same tag names from the vocabulary
 # (`surname_unit_tags`). One walk over tag sets, so the two cannot
 # disagree about where a unit ends (mechanisms.md#ONE-PREDICATE-PER-
 # QUESTION) -- only, at worst, about a token's facts, which
@@ -933,27 +932,6 @@ def surname_unit_tags(text: str, lexicon: Lexicon,
     if suffix:
         return SURNAME_UNIT_TAGS if particle else _SUFFIX_ONLY
     return _PARTICLE_ONLY if particle else _NO_TAGS
-
-
-def surname_unit_count(texts: Sequence[str], lexicon: Lexicon) -> int:
-    """How many units (`unit_ends`) the part before a comma holds, a
-    particle chain (P2) and a connective join (P3) each counting once:
-    rules.md#C1's count before the comma as script_segment asks it,
-    before classify, for the credential reading of a part that is
-    wholly suffix words (#575; `_comma._whole_name` takes the same
-    count off classify's tags at group's head), with a particle
-    reaching as P1's fold does (`unit_ends`'s `chain=False`). 'van der
-    Berg' is one surname, so 'van der Berg, PhD' reads as 'Berg, PhD'
-    does. A connective join is not one unit here: `SURNAME_UNIT_TAGS`."""
-    # With no particle, every token is a unit of its own, so the count
-    # is the token count: the suffix tests and the walk are skipped for
-    # the commonest comma names ('John Smith, PhD'). A superset test --
-    # a title-particle passes it -- so it only ever skips work.
-    if not any(_normalize(t) in lexicon.particles for t in texts):
-        return len(texts)
-    return len(unit_ends([surname_unit_tags(t, lexicon, i == 0)
-                          for i, t in enumerate(texts)],
-                         chain=False))
 
 
 def name_word_count(texts: Sequence[str], lexicon: Lexicon,

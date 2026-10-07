@@ -3103,10 +3103,15 @@ CASES: tuple[Case, ...] = (
          tolerated=True),
     Case("the_glued_honorific_peel_behind_a_title_and_a_lean",
          "Dr. 김민준씨, MA",
-         {"title": "Dr.", "family": "김민준", "suffix": "씨, MA"},
+         {"title": "Dr.", "given": "민준", "family": "김",
+          "suffix": "씨, MA"},
          classification="fix(#289)",
          ambiguities=("suffix-or-name",),
-         notes="the title is what makes this name MIXED-case at all "
+         notes="since #613's /simplify the comma's own decision divides "
+               "the name too, reading a suffix comma behind the title "
+               "and the name word (b547c247: family '김민준', the "
+               "division declined). "
+               "The title is what makes this name MIXED-case at all "
                "-- Hangul is caseless, so '김민준씨, MA' on its own is "
                "one case, leans nothing and keeps today's reading "
                "(given 'MA', family '김민준씨', unpeeled). Two rows, "
@@ -6359,7 +6364,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          classification="fix(#613)",
          tolerated=True,
-         notes="script_segment's stand-in needs every other word a suffix word, so a name word after the comma keeps the listing form and the name whole; without that test the name divided behind the family comma, family '김 민준 박' (mutation measured in #613's PR review)"),
+         notes="a name word after the comma keeps the listing form, so the comma's decision leaves the name whole; a mutation of the hand copy script_segment then asked divided it behind the family comma, family '김 민준 박' (#613's PR review; the stage asks decide itself since its /simplify)"),
     Case("a_cjk_honorific_behind_a_one_word_comma_peels_before_credentials",
          "김민준씨, MA PhD",
          {"family": "김민준", "suffix": "씨, MA PhD"},
@@ -6367,34 +6372,50 @@ CASES: tuple[Case, ...] = (
          classification="fix(#613)",
          tolerated=True,
          notes="rules.md#W3 tolerated: peels as '김민준씨, PhD' does; b547c247 kept family '김민준씨'"),
-    Case("an_unlisted_caps_credential_leaves_a_cjk_name_whole",
+    Case("an_unlisted_caps_credential_divides_a_cjk_name_as_decide_reads_it",
          "Smith 김민준씨, XYZ",
-         {"given": "Smith", "family": "김민준씨", "suffix": "XYZ"},
+         {"given": "Smith", "middle": "김", "family": "민준",
+          "suffix": "씨, XYZ"},
          ambiguities=("suffix-or-name",),
          classification="fix(#613)",
          tolerated=True,
-         notes="rules.md#W3 tolerated: decide's capitals test is not copied into script_segment's stand-in, so the name stays whole and the honorific glued; b547c247 divided it"),
-    Case("an_unlisted_caps_credential_leaves_a_glued_honorific",
+         notes="rules.md#W3 tolerated: script_segment asks the comma's "
+               "decision itself (#613's /simplify), which reads 'XYZ' "
+               "as a credential behind a whole name, so the name "
+               "divides and the honorific peels, as b547c247 read it; "
+               "the hand copy it replaced had left it whole"),
+    Case("an_unlisted_caps_credential_peels_a_glued_honorific",
          "John 田中さん, XYZ",
-         {"given": "John", "family": "田中さん", "suffix": "XYZ"},
+         {"given": "John", "family": "田中", "suffix": "さん, XYZ"},
          ambiguities=("suffix-or-name",),
          classification="fix(#613)",
          tolerated=True,
-         notes="rules.md#W3 tolerated, as 2.3.0 read it: the split-off follows the stand-in's answer; b547c247 peeled 'さん'"),
-    Case("an_unlisted_dotted_credential_leaves_a_cjk_name_whole",
+         notes="rules.md#W3 tolerated: the split-off follows the comma's "
+               "own decision, a credential behind a whole name, as "
+               "b547c247 read it; the hand copy #613's /simplify "
+               "replaced had kept 'さん' glued"),
+    Case("an_unlisted_dotted_credential_divides_a_cjk_name",
          "김민준 박, X.Y.Z.",
-         {"given": "박", "family": "김민준", "suffix": "X.Y.Z."},
+         {"given": "민준", "middle": "박", "family": "김",
+          "suffix": "X.Y.Z."},
          ambiguities=(),
          classification="fix(#613)",
          tolerated=True,
-         notes="rules.md#W3 tolerated: the stand-in does not ask the by-shape class; b547c247 divided the name"),
+         notes="rules.md#W3 tolerated: decide reads the dotted shape as "
+               "a credential behind two name words, and the division "
+               "follows it, as b547c247 read it"),
     Case("a_title_and_one_cjk_name_word_before_a_credential",
          "Dr 김민준, MA",
-         {"title": "Dr", "family": "김민준", "suffix": "MA"},
+         {"title": "Dr", "given": "민준", "family": "김", "suffix": "MA"},
          ambiguities=("suffix-or-name",),
          classification="fix(#613)",
          tolerated=True,
-         notes="H1's reading, as master read it and as 'Dr. Smith, MA' reads: decide licenses 'MA' by the capitals lean, which the stand-in does not ask"),
+         notes="rules.md#W3 tolerated, decided with Derek (#613's "
+               "/simplify): script_segment asks the comma's decision, "
+               "which licenses 'MA' by the capitals lean behind a title "
+               "and a name word and reads a suffix comma, so the name "
+               "divides as it would with no comma. b547c247 kept "
+               "'김민준' whole, H1 then making it the family"),
     Case("an_empty_family_part_declines_no_empty_particle_run",
          ", Jane PhD do MA",
          {"given": "Jane", "suffix": "PhD do MA"},
@@ -6406,6 +6427,19 @@ CASES: tuple[Case, ...] = (
                "nothing there; without its empty-run guard it reported a "
                "third fork on 'MA' (#613's PR simplification pass). Two "
                "reports, as b547c247 gave"),
+    Case("a_glued_honorific_in_a_postnominal_part_stays_glued",
+         "John Smith, Dr. J.씨",
+         {"title": "Dr.", "given": "John", "family": "Smith",
+          "suffix": "J.씨"},
+         ambiguities=(),
+         classification="fix(#613)",
+         tolerated=True,
+         notes="rules.md#W3 tolerated: the comma's decision reads 'Dr. "
+               "J.씨' as a title and a credential behind a whole name, "
+               "so the peel stays in the part before the comma and the "
+               "part reads as 'John Smith, J.씨' does; b547c247's hand "
+               "copy peeled the 씨 and read given 'J.', family 'John "
+               "Smith'"),
     Case("a_suffix_beside_a_connective_surname_is_no_name_word",
          "Vega y Lopez Jr., PhD Jones",
          {"given": "Vega", "middle": "y", "family": "Lopez",

@@ -1216,7 +1216,12 @@ def test_revise_reads_a_glued_honorific_on_its_own() -> None:
 #: rides on 씨 and reaches neither the sub-parse's peel nor the entry
 #: join. Named here so the guard below fails on a NEW exception and
 #: not on the known one.
-_HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨"})
+#: 'John Smith, Dr. J.씨' joined 2026-10-06 (#613's /simplify): the
+#: comma's own decision now reads its part as postnominal, so the whole
+#: name leaves 'J.씨' glued where the hand copy had peeled it -- the
+#: same limit, characterized by the test below.
+_HONORIFIC_PEEL = frozenset({"김민준씨, J.씨", "김민준씨., J.씨",
+                             "John Smith, Dr. J.씨"})
 #: The second known limit (2026-10-04, #601/#602): a suffix that holds
 #: a maiden marker the whole name left a word -- in a tail part, or
 #: taken into #602's credential run behind a credential -- and that
@@ -1242,8 +1247,9 @@ def test_the_known_round_trip_exceptions_are_one_limit() -> None:
     # the whole-name parse leaves glued. A genuinely different
     # round-trip failure added to the frozenset by the same gesture
     # fails here rather than riding in on the exemption. The
-    # characterization selects the two members and nothing else in the
-    # suffix-bearing corpus, measured 2026-09-10.
+    # characterization selects the members and nothing else in the
+    # suffix-bearing corpus (two, measured 2026-09-10; three since
+    # 2026-10-06).
     p = Parser()
     tails = Lexicon.default().honorific_tails
 
