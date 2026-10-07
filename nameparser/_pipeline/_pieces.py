@@ -141,7 +141,9 @@ def is_title_piece(piece: Sequence[int], ptags: Set[str],
 
 
 # A particle, or a piece a join made one: what group's prefix chain
-# (at its loop in _group_segment) chains and stops at.
+# (at its loop in _group_segment) chains and stops at, what P3's join
+# derives a prefix from, and what group's rootname count and leading
+# scan step past.
 def is_prefix_piece(piece: Sequence[int], ptags: Set[str],
                     tokens: Sequence[WorkToken]) -> bool:
     if "prefix" in ptags:
@@ -222,16 +224,20 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
     one on its right where it opens the part.
 
     `letter_stays` is the single-letter carve-out's answer for this
-    part: group reads it from the name's rootname count, and the comma
+    part, and it reaches a LONE single-letter connective only: one
+    beside another connective merges into their run first and joins
+    with it. Group reads it from the name's rootname count; the comma
     part, which a title joins and a name word never does, always keeps
-    the letter. `titles_only` is the comma part's: a join is made only
-    where the neighbour is a title, and makes the joined piece one
-    ('Mr. and Mrs.'); any other connective there is left a word, the
-    reading deciding what it is. Otherwise every join is made and
+    the lone letter. `titles_only` is the comma part's: a join is made
+    only where the neighbour is a title, and makes the joined piece
+    one ('Mr. and Mrs.') with no prefix kind, nothing in that part
+    being a particle chain; any other connective there is left a word,
+    the reading deciding what it is. Otherwise every join is made and
     takes the neighbour's title and prefix kinds. `frozen` holds the
-    TOKEN index of each connective that is generational vocabulary
-    with no name word on one side -- group's, see its call -- which
-    neither joins nor merges into a run."""
+    TOKEN index of each connective that is to make no join or run of
+    its own -- group's, the generational ones with no name word on one
+    side; the comma part's, every generational one -- though a
+    neighbour's join may still take one in."""
     # contiguous conjunction runs merge first
     #
     # `pieces[k][0] in frozen` and not `frozen.isdisjoint(...)`:
@@ -242,9 +248,11 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
     # where the shape reads 4.1x, and tests/v2/test_benchmark.py's
     # "and " shape is the guard that caught it. Reading the first
     # token alone is exact rather than an approximation: a frozen
-    # piece is one token, nothing merges it (this branch declines,
-    # and the join below skips it), so a piece holding a frozen
-    # token IS that token.
+    # piece is one token and this branch never merges it, and this
+    # loop finishes before the join below can take one into a
+    # neighbour's piece, so a piece holding a frozen token here IS
+    # that token. (Below, the join skips a frozen piece as its
+    # subject, and the piece a join produces is left behind `k`.)
     k = 0
     while k < len(pieces) - 1:
         if (is_conj_piece(pieces[k], ptags[k], tokens)

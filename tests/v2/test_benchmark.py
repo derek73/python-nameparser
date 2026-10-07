@@ -72,8 +72,10 @@ from nameparser._policy import Policy
 #:
 #: Lowered 2026-10-06 (#617) when P3's connective joins left group's
 #: closures for `_pieces.join_connectives`, which calls the piece
-#: predicates directly: -10 on every row, re-measured with that
-#: harness on each interpreter (decisions.md#parse-cost).
+#: predicates directly: each interpreter measured 10 below 83f4e914's
+#: own count (374/411 on 3.11, 353/390 on 3.12-3.15, which had sat
+#: +4/+5 inside the old 370/407 and 348/385), so the rows below move
+#: 6 and 5 from what they held (decisions.md#parse-cost).
 _CALL_BASELINE = {
     (3, 11): {"parse": 364, "facade": 401},
     (3, 12): {"parse": 343, "facade": 380},
@@ -208,7 +210,7 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #   SEGMENT count             commas ONLY -- deleting it leaves every
 #                             segment-keyed regression unguarded
 #   intra-piece accumulation  particles (one 799-token piece),
-#                             conjunctions (800) -- the merge() quadratic
+#                             conjunctions (800) -- the merge_pieces quadratic
 #   masked-span count         delimiter_pairs, quote_pairs (0 pieces:
 #                             everything is consumed as a delimited run)
 #   NON-ASCII input           honorifics ONLY -- every other unit here is
@@ -264,7 +266,7 @@ _SHAPES = {
     "commas": "a, ",                # segment: many comma segments
     "titles": "Dr. ",               # group: one long title chain
     "particles": "van ",            # group: the prefix-chain inner loop
-    "conjunctions": "and ",         # group: merge() accumulating one piece
+    "conjunctions": "and ",         # group: merge_pieces accumulating one piece
     "honorifics": "씨 ",             # script_segment: the peel's site scan
     "bound_given": "abdul ",        # group: the P5 reserve over every piece
     "maiden_clause": "nee MA ",     # group: M2's view over the segment
@@ -463,9 +465,13 @@ _PREFIXED_SHAPES: dict[
                       and (parse(text).given, parse(text).family)
                       == ("Jane", "Doe")),
     ),
-    # every 'and' joins the title chain the comma decision builds
-    # (`_pieces.join_connectives` since #617), whose own copy of the
-    # loop rebuilt the growing piece from a slice at each join
+    # every 'and' joins the title chain the comma decision builds:
+    # #613's first copy of the loop rebuilt the growing piece from a
+    # slice at each join (the control above, on 9dd271b2); since #617
+    # the chain is `_pieces.join_connectives`, group's loop, which
+    # extends in place. Re-taken on the moved code 2026-10-06, py3.11,
+    # this base, three runs of best-of-five: 4.47-4.49 against
+    # 9.95-10.00 with the slice rebuild planted in `merge_pieces`
     "title_chain": (
         "John Smith, ", "Mr. and ", Parser(),
         lambda text: (parse(text).given == "John"
@@ -982,10 +988,13 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # Lowered 2026-09-26 from 2587 with `_CALL_BASELINE` above, for the
 # same reason (decisions.md#parse-cost). 2,678 from 2026-10-04, the
 # re-pointed name-level shape (above), measured on py3.11. 2,479
-# from 2026-10-06 (#617): P3's joins call the piece predicates
-# directly rather than through `_group_segment`'s closures, so each
-# connective's tests cost one frame where they cost two (2,678 on
-# 83f4e914, py3.11).
+# from 2026-10-06 (#617), 199 below 83f4e914's 2,678, for two
+# reasons, counted per function: P3's joins call the piece
+# predicates directly rather than through `_group_segment`'s
+# closures (the `conj` closure's 133 frames, two more from `title`
+# and `prefix`), and the single-letter test no longer joins the
+# piece's text through a generator (65 frames, one per connective,
+# more than this pin's whole band); `join_connectives` adds one.
 _LINK_BASELINE = {
     (3, 11): 2479,
 }

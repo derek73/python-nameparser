@@ -656,12 +656,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # a run, and it counts toward the carve-out total the way the
         # generation counted -- not at all, a suffix piece being no
         # rootname. A TOKEN index for the same reason the chain's
-        # trailing run is a length from the end: the merges below move
-        # piece indices and cannot move this one.
+        # trailing run is a length from the end: the merges the joins below
+        # make move piece indices and cannot move this one.
         #
         # "No join of its own" is the whole claim, and a NEIGHBOUR's
-        # join can still absorb it: the two loops below skip a frozen
-        # piece as the join's SUBJECT and nothing keeps it out of the
+        # join can still absorb it: the two loops of `join_connectives`,
+        # called below, skip a frozen piece as the join's SUBJECT and nothing keeps it out of the
         # span another connective's join takes. 'Josep Carod Rovira
         # Puig y i' freezes the trailing 'i' -- nothing stands on its
         # right -- and the 'y' beside it joins across it all the same,
@@ -828,7 +828,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # default worth testing: it is reached only when every piece is
         # a title and none is a prefix, and the loop below merges
         # nothing unless some piece is a prefix.
-        # `title(k)` alone missed H2's unlisted abbreviations, which
+        # `is_title_piece` alone missed H2's unlisted abbreviations, which
         # assign peels as titles all the same, so 'Xyz. van Johnson'
         # chained where 'Dr. van Johnson' did not (#424 found it
         # through the acronym fork: the chain had swallowed the given
@@ -856,8 +856,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         tail = len(pieces) - trailing_start(name_start, pieces, ptags,
                                              tokens, one_case=one_case)
         def chain(tail: int) -> None:
-            # `pieces[:titled]` are known to be leading titles. merge(k,
-            # j) changes only indices from k on, and k only grows, so a
+            # `pieces[:titled]` are known to be leading titles.
+            # merge_pieces(.., k, j) changes only indices from k on, and k only grows, so a
             # piece behind k is final and its answer can be kept: the
             # cursor makes the all-titles-ahead test below one walk per
             # chain rather than one per chain site (#559).
@@ -914,12 +914,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 #
                 # j > k + 1 is what makes this a DECISION rather than a
                 # shape: when the next piece is a suffix the inner scan
-                # never advances, merge(k, k+1) folds a piece into itself,
+                # never advances, merge_pieces(.., k, k+1) folds a piece into itself,
                 # and the particle stays a lone leading piece -- nothing
                 # was chained, and _assign reports that case instead.
                 # Without this the two emitters both fire on the same token.
                 # (Tag test first: it is a set lookup and almost no name has
-                # an ambiguous particle, while title() is a call per piece.)
+                # an ambiguous particle, while is_leading_title is a call per piece.)
                 if (j > k + 1
                         and "vocab:particle-ambiguous"
                         in tokens[pieces[k][0]].tags):

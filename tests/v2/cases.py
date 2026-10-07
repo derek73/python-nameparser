@@ -6281,6 +6281,61 @@ CASES: tuple[Case, ...] = (
                "the title after it, as group reads a run. 2.3.0 and "
                "b547c247 read the same; 83f4e914 read title 'and and Dr.', family "
                "'Prof. Smith', its copy of the loop merging no run"),
+    Case("a_single_letter_inside_a_connective_run_joins_with_the_run",
+         "John Smith, Mr. y and Mrs.",
+         {"title": "Mr. y and Mrs.", "given": "John", "family": "Smith"},
+         ambiguities=(),
+         classification="fix(#617)",
+         notes="rules.md#P3's carve-out keeps a LONE single-letter "
+               "connective a word; one beside another connective is a "
+               "member of their run, which joins whole. 2.3.0 read the "
+               "same; 83f4e914 kept the 'y' out of the copy's chain and "
+               "read family 'John Smith'"),
+    Case("a_lone_single_letter_connective_after_the_comma_joins_no_title",
+         "Juan Garcia Lopez, Sr. y Sra.",
+         {"title": "Sr. Sra.", "given": "y", "family": "Juan Garcia Lopez"},
+         ambiguities=(),
+         classification="parity",
+         notes="the comma part always keeps a lone single-letter "
+               "connective a word (rules.md#C1), where the comma-less "
+               "'Sr. y Sra. Juan Garcia Lopez' joins it by P3's rootname "
+               "count; read so by 2.3.0 and 83f4e914 alike, and pinned "
+               "in #617's review so the difference is a decision"),
+    Case("a_comma_part_of_one_connective_is_the_given_name",
+         "Smith, and",
+         {"given": "and", "family": "Smith"},
+         ambiguities=(),
+         classification="parity",
+         notes="garbage in: a connective with no title beside it joins "
+               "nothing in the comma part, so it is the listing form's "
+               "given name (2.3.0, 83f4e914 and #617 alike)"),
+    Case("a_title_chain_ending_in_a_connective_keeps_it",
+         "John Smith, Mr. and",
+         {"title": "Mr. and", "given": "John", "family": "Smith"},
+         ambiguities=(),
+         classification="parity",
+         notes="garbage in: the trailing connective takes its kind from "
+               "the title on its left and joins with nothing on its "
+               "right (2.3.0, 83f4e914 and #617 alike)"),
+    Case("connectives_between_given_names_after_the_comma_join_them",
+         "Smith, Jones and Brown",
+         {"given": "Jones and Brown", "family": "Smith"},
+         ambiguities=(),
+         classification="parity",
+         notes="no title beside the connective, so the comma decision "
+               "joins nothing and the part is the given part, where "
+               "group's own join makes one given name of it; pins the "
+               "comma caller's titles-only mode, which only two rows "
+               "had held (#617's test review)"),
+    Case("a_connective_between_particles_chains_on_as_one",
+         "Otto von und zu Habsburg",
+         {"given": "Otto", "family": "von und zu Habsburg"},
+         ambiguities=(),
+         classification="parity",
+         notes="rules.md#P3's join takes the particle's prefix kind, so "
+               "'von und zu' chains onto the name as one particle (v1 PR "
+               "#191); the derivation had only v1 tests behind it "
+               "(#617's test review)"),
     Case("a_connective_opening_the_part_takes_the_title_after_it",
          "John Smith, and Dr.",
          {"title": "and Dr.", "given": "John", "family": "Smith"},

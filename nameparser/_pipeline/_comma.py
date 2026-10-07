@@ -79,27 +79,41 @@ def _reading_pieces(part: Sequence[int], tokens: Sequence[WorkToken],
     # neighbour it takes its kind from is a title, which makes the
     # joined part a title ('Mr. and Mrs.', 'Secretary of State', 'Dr.
     # and'), a run of connectives merging first as it does in the name
-    # ('Minister of the Interior'). A single-letter connective is left as it stands, P3
-    # reading it as a name word or an initial in short names; any other
-    # join is not made here: where no credential opens the part, a name
-    # word in it makes it the given part; where one does, the run #603
-    # opens takes the connective as a word and reports it ('John Smith,
-    # PhD and Dr.'). Group's own joins, the one loop since #617: its
-    # copy here merged no run and joined 'Minister of the' alone.
+    # ('Minister of the Interior'). A LONE single-letter connective is
+    # left as it stands, P3 reading it as a name word or an initial in
+    # short names; one beside another connective is a member of their
+    # run and joins with it ('Mr. y and Mrs.'). Any other join is not
+    # made here: where no credential opens the part, a name word in it
+    # makes it the given part; where one does, the run #603 opens takes
+    # the connective as a word and reports it ('John Smith, PhD and
+    # Dr.'). Group's own joins, the one loop since #617: its copy here
+    # merged no run and joined 'Minister of the' alone.
     #
     # rules.md#P3: "A connective that is also generational vocabulary
     # joins only where a name word stands on each side of it" -- and in
     # a part read for credentials none does, so every such connective
-    # is frozen here, as group freezes the ones it finds without a name
-    # word beside them ('Rovira, Dr. i i' keeps suffix 'i i' rather
-    # than run-merging the pair into the title, #617).
+    # is frozen here, where group freezes only the ones it finds without
+    # a name word beside them ('Rovira, Dr. i i' keeps suffix 'i i'
+    # rather than run-merging the pair into the title, #617). Frozen
+    # means no join or run of its OWN: a neighbour's join may still take
+    # it in, as in group ('Smith, Dr. and i' reads title 'Dr. and i').
+    #
+    # The same walk says whether there is anything to join, and a part
+    # with no connective left free -- nearly every part -- skips the
+    # shared loop, whose predicate calls cost a frame per word ('Smith,
+    # John' paid two; #617's review).
     frozen: set[int] = set()
+    free = False
     for i in part:
-        if ("conjunction" in tokens[i].tags
-                and "vocab:suffix" in tokens[i].tags):
-            frozen.add(i)
-    join_connectives(pieces, ptags, tokens, letter_stays=True,
-                     titles_only=True, frozen=frozen)
+        tags = tokens[i].tags
+        if "conjunction" in tags:
+            if "vocab:suffix" in tags:
+                frozen.add(i)
+            else:
+                free = True
+    if free:
+        join_connectives(pieces, ptags, tokens, letter_stays=True,
+                         titles_only=True, frozen=frozen)
     return pieces, ptags
 
 

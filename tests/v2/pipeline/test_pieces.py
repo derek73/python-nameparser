@@ -1056,3 +1056,31 @@ def test_a_frozen_connective_neither_joins_nor_merges_into_a_run() -> None:
     join_connectives(pieces, ptags, tokens, letter_stays=True,
                      titles_only=True)
     assert _words(pieces, tokens) == ["Mr. and of Mrs."]
+    # the join half: a frozen connective is no join's subject, whatever
+    # its neighbours are (the run above never reaches it as one, the
+    # 'and' join taking it in first -- #617's test review)
+    pieces, ptags, tokens = _unjoined("Mr. and Mrs.")
+    and_ = next(i for i, t in enumerate(tokens) if t.text == "and")
+    join_connectives(pieces, ptags, tokens, letter_stays=True,
+                     titles_only=True, frozen={and_})
+    assert _words(pieces, tokens) == ["Mr.", "and", "Mrs."]
+
+
+def test_only_groups_joins_derive_a_prefix() -> None:
+    """Group's mode takes the neighbour's prefix kind, which is what
+    lets a joined 'von und zu' chain on as a particle (v1 PR #191);
+    the comma part's titles-only mode takes none, nothing there being
+    a particle chain. `und` is a connective in the default vocabulary
+    and no particle, so the derivation and not the particle chain is
+    what is read."""
+    pieces, ptags, tokens = _unjoined("Otto von und zu Habsburg")
+    join_connectives(pieces, ptags, tokens, letter_stays=False,
+                     titles_only=False)
+    assert _words(pieces, tokens) == ["Otto", "von und zu", "Habsburg"]
+    assert "prefix" in ptags[1] and "title" not in ptags[1]
+    # 'freiherr' is a title AND a particle: titles-only takes the title
+    pieces, ptags, tokens = _unjoined("Freiherr and Dr.")
+    join_connectives(pieces, ptags, tokens, letter_stays=True,
+                     titles_only=True)
+    assert _words(pieces, tokens) == ["Freiherr and Dr."]
+    assert "title" in ptags[0] and "prefix" not in ptags[0]

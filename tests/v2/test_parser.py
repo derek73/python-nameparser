@@ -794,7 +794,7 @@ def test_the_p5_licence_and_h1_read_a_title_run_the_same_way(
 
 
 # The first three reach the chain loop and decline inside it: the piece
-# after the particle is a suffix, so the scan never advances and merge()
+# after the particle is a suffix, so the scan never advances and merge_pieces
 # is a no-op -- nothing was chained, no fork taken. They are spelled with
 # a title that is ALSO a particle ('Do', 'St'), because that is what
 # still puts an ambiguous particle off the name's leading position since

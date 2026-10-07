@@ -379,12 +379,14 @@ def test_a_lone_core_after_the_comma_is_a_word_of_the_part() -> None:
 def test_a_generational_connective_joins_no_title_after_the_comma() -> None:
     # P3's generational clause: a connective that is also
     # generational vocabulary joins only between two name words, and a
-    # part read for
-    # credentials holds none, so the comma decision freezes it as group
-    # freezes one with no name word beside it (#617). Only caller
-    # vocabulary reaches it -- the default class is 'i', one letter and
-    # so never joined there anyway. The control is the same word as a
-    # plain connective, which joins the titles.
+    # part read for credentials holds none, so the comma decision
+    # freezes it as group freezes one with no name word beside it
+    # (#617). The default class, 'i', is one letter, so the freeze
+    # reaches it only in a run ('Rovira, Dr. i i', pinned by the
+    # property grid's off-switch walk); a word of more letters shows
+    # it in a plain join, which only caller vocabulary can spell. The
+    # control is the same word as a plain connective, which joins the
+    # titles.
     generational = Lexicon.default().add(conjunctions={"og"},
                                          suffix_words={"og"})
     plain = Lexicon.default().add(conjunctions={"og"})
