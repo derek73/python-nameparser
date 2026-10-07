@@ -845,6 +845,29 @@ def test_a_listing_comma_with_nothing_to_decide_skips_the_counts() -> None:
     assert _frames_for("John Smith, MA", only="name_word_count") == 1
 
 
+def test_a_comma_part_with_no_free_connective_skips_the_join() -> None:
+    """`_comma._reading_pieces` enters the shared connective loop only
+    where the part holds a connective left free: the loop asks
+    `is_conj_piece` of every piece twice, which the comma decision's
+    own copy had asked inline before #617 folded it, and every
+    family-comma parse paid two frames a word of the part. Recorded
+    negative control, #617's second review (2026-10-07, py3.11): with
+    the gate removed no output moves (66,924 parses compared),
+    `join_connectives` is entered once on both names below, and
+    'Smith, John' costs 163 frames against 161. Group asks nothing of
+    parts this short, so every call counted is the comma decision's."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("Smith, John", "John Smith, PhD MD"):
+        # REACHABILITY: decide reads the part, so a zero below means the
+        # gate declined rather than that nothing ran
+        assert _frames_for(text, only="_reading_pieces") == 1, text
+        assert _frames_for(text, only="join_connectives") == 0, text
+    # a part holding a connective takes the loop
+    assert _frames_for("John Smith, Mr. and Mrs.",
+                       only="join_connectives") == 1
+
+
 # Fixed points and scans that re-read what they had already read, each
 # found by the `_pipeline/` sweep for #553. A `_SHAPES` row cannot
 # express any of them: the tail ones need a name in front of the run,

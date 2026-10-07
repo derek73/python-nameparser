@@ -1766,8 +1766,6 @@ C1. Rationale: a credential run after the comma means the name is in
     that reading is final: the one join made inside it is a
     connective binding title words into one title (P3: 'Mr. and
     Mrs.', a connective run included: 'Minister of the Interior'),
-    though a lone single-letter connective there joins nothing and
-    stays a word, whatever the name's length ('Sr. y Sra.'),
     and no particle run, connective join or bound given name
     reaches into it. The listing form's given part keeps every join
     (P2, P3, P5, P6).

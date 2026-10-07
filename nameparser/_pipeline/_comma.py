@@ -100,8 +100,8 @@ def _reading_pieces(part: Sequence[int], tokens: Sequence[WorkToken],
     #
     # The same walk says whether there is anything to join, and a part
     # with no connective left free -- nearly every part -- skips the
-    # shared loop, whose predicate calls cost a frame per word ('Smith,
-    # John' paid two; #617's review).
+    # shared loop, whose predicate calls cost two frames per word
+    # ('Smith, John' paid two; #617's review).
     frozen: set[int] = set()
     free = False
     for i in part:

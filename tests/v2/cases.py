@@ -6296,11 +6296,13 @@ CASES: tuple[Case, ...] = (
          {"title": "Sr. Sra.", "given": "y", "family": "Juan Garcia Lopez"},
          ambiguities=(),
          classification="parity",
-         notes="the comma part always keeps a lone single-letter "
-               "connective a word (rules.md#C1), where the comma-less "
-               "'Sr. y Sra. Juan Garcia Lopez' joins it by P3's rootname "
-               "count; read so by 2.3.0 and 83f4e914 alike, and pinned "
-               "in #617's review so the difference is a decision"),
+         notes="the comma decision joins no title across a lone "
+               "single-letter connective, so the part is no titles-alone "
+               "part and the listing form reads it, P3's count keeping "
+               "the 'y' a word in a part this short ('Smith, Sr. y Sra. "
+               "Juan Maria' joins it); the comma-less 'Sr. y Sra. Juan "
+               "Garcia Lopez' joins it too. Read so by 2.3.0 and "
+               "83f4e914 alike (decisions.md#P3, #617)"),
     Case("a_comma_part_of_one_connective_is_the_given_name",
          "Smith, and",
          {"given": "and", "family": "Smith"},
@@ -6324,9 +6326,10 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="no title beside the connective, so the comma decision "
                "joins nothing and the part is the given part, where "
-               "group's own join makes one given name of it; pins the "
-               "comma caller's titles-only mode, which only two rows "
-               "had held (#617's test review)"),
+               "group's own join makes one given name of it -- the "
+               "same reading if the comma decision had joined it, so "
+               "this guards the listing reading, not the titles-only "
+               "mode (2.3.0, 83f4e914 and #617 alike)"),
     Case("a_connective_between_particles_chains_on_as_one",
          "Otto von und zu Habsburg",
          {"given": "Otto", "family": "von und zu Habsburg"},
