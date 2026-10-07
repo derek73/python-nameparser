@@ -140,6 +140,155 @@ def is_title_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "vocab:title" in tokens[piece[0]].tags
 
 
+# A particle, or a piece a join made one: what group's prefix chain
+# (at its loop in _group_segment) chains and stops at.
+def is_prefix_piece(piece: Sequence[int], ptags: Set[str],
+                    tokens: Sequence[WorkToken]) -> bool:
+    if "prefix" in ptags:
+        return True
+    return len(piece) == 1 and "particle" in tokens[piece[0]].tags
+
+
+# rules.md#P3: "a recognized connective joins its neighbors into one
+# name part, connective runs included — except a single-letter
+# connective in a three-word name, which stays a name word, and a
+# single-letter connective that reads as an initial instead, which
+# never joins" (history: decisions.md#P3)
+def is_conj_piece(piece: Sequence[int], ptags: Set[str],
+                  tokens: Sequence[WorkToken]) -> bool:
+    if "conjunction" in ptags:
+        return True
+    return len(piece) == 1 and "conjunction" in tokens[piece[0]].tags
+
+
+def joined_tags(ptags: Sequence[Set[str]], lo: int, hi: int,
+                add: Set[str] = frozenset(),
+                drop: Set[str] = frozenset()) -> set[str]:
+    # the ONE definition of a merged piece's tags: merge_pieces applies
+    # it, and P5's reserve reads it to model the join it is
+    # weighing (#425) -- so the view cannot drift from the merge.
+    # A merged piece inherits every part's tags, so a site whose
+    # product is not what its parts were drops what no longer
+    # applies: the particle chain drops `prefix`, the bound join
+    # `title` (a derived title tag on the pair would have assign
+    # peel the given name as a leading title).
+    return (set().union(*ptags[lo:hi]) | add) - drop
+
+
+def merge_pieces(pieces: list[list[int]], ptags: list[set[str]],
+                 lo: int, hi: int, add: Set[str] = frozenset(),
+                 drop: Set[str] = frozenset()) -> None:
+    # pieces/ptags are parallel arrays; every merge must update
+    # both in lockstep.
+    #
+    # Extend the first piece IN PLACE rather than rebuilding the
+    # merged list. The obvious spelling --
+    #     pieces[lo:hi] = [[i for p in pieces[lo:hi] for i in p]]
+    # -- re-flattens everything accumulated so far on every call, so
+    # a chain that merges into the same piece n times copies
+    # 1+2+...+n and the stage goes quadratic in the length of the
+    # chain. A conjunction run ("and " * n) does exactly that: it
+    # measured 2.4x-2.9x per doubling against the 2.0x every other
+    # shape holds. No piece list is aliased outside this function
+    # (each caller builds every piece as a fresh list -- group's
+    # [i], _comma's _pieces -- and reads pieces[k] only before a
+    # merge), so mutating is safe; verified
+    # identical token/role/tag/span/ambiguity output over 54,877
+    # names. tests/v2/test_benchmark.py's "and " shape is the guard.
+    #
+    # Every call site passes lo < hi, and this REQUIRES it: with
+    # lo >= hi the slice assignment would insert rather than
+    # replace, putting a second reference to pieces[lo] into the
+    # array, and the next merge to touch either index would extend
+    # the same list twice. The old rebuild-a-fresh-list spelling
+    # was harmless there. Keep the bound if you add a caller.
+    combined = pieces[lo]
+    for piece in pieces[lo + 1:hi]:
+        combined.extend(piece)
+    pieces[lo:hi] = [combined]
+    ptags[lo:hi] = [joined_tags(ptags, lo, hi, add, drop)]
+
+
+def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
+                     tokens: Sequence[WorkToken], *,
+                     letter_stays: bool, titles_only: bool,
+                     frozen: Set[int] = frozenset()) -> None:
+    """rules.md#P3's connective joins, for both parts that make them:
+    group's name segments, and the part after a comma, which
+    `_comma.decide` reads before group joins anything (#617, where the
+    two had been copies that differed). Contiguous connectives merge
+    into one first (v1: "of the"); then each connective joins its
+    neighbours, taking its kind from the one on its left, or from the
+    one on its right where it opens the part.
+
+    `letter_stays` is the single-letter carve-out's answer for this
+    part: group reads it from the name's rootname count, and the comma
+    part, which a title joins and a name word never does, always keeps
+    the letter. `titles_only` is the comma part's: a join is made only
+    where the neighbour is a title, and makes the joined piece one
+    ('Mr. and Mrs.'); any other connective there is left a word, the
+    reading deciding what it is. Otherwise every join is made and
+    takes the neighbour's title and prefix kinds. `frozen` holds the
+    TOKEN index of each connective that is generational vocabulary
+    with no name word on one side -- group's, see its call -- which
+    neither joins nor merges into a run."""
+    # contiguous conjunction runs merge first
+    #
+    # `pieces[k][0] in frozen` and not `frozen.isdisjoint(...)`:
+    # the piece this loop extends GROWS with every merge, so a
+    # test over its tokens costs 1+2+...+n and the stage goes
+    # quadratic in the length of a connective run -- measured,
+    # 'and ' x3200 took 41.8ms against 21.7ms, 6.2x per 4x input
+    # where the shape reads 4.1x, and tests/v2/test_benchmark.py's
+    # "and " shape is the guard that caught it. Reading the first
+    # token alone is exact rather than an approximation: a frozen
+    # piece is one token, nothing merges it (this branch declines,
+    # and the join below skips it), so a piece holding a frozen
+    # token IS that token.
+    k = 0
+    while k < len(pieces) - 1:
+        if (is_conj_piece(pieces[k], ptags[k], tokens)
+                and is_conj_piece(pieces[k + 1], ptags[k + 1], tokens)
+                and pieces[k][0] not in frozen
+                and pieces[k + 1][0] not in frozen):
+            merge_pieces(pieces, ptags, k, k + 2, add={"conjunction"})
+        else:
+            k += 1
+    # each conjunction joins its neighbors, rules.md#P3: "except a
+    # single-letter connective in a three-word name, which stays a
+    # name word" (v1's Google Code issue 11 carve-out, the
+    # "john e smith" bug).
+    k = 0
+    while k < len(pieces):
+        # first token again, and here it is exact for the second
+        # reason as well: the piece a join produces is left BEHIND
+        # `k`, so no merged piece is ever tested twice.
+        if (not is_conj_piece(pieces[k], ptags[k], tokens)
+                or pieces[k][0] in frozen):
+            k += 1
+            continue
+        if letter_stays and len(pieces[k]) == 1:
+            text = tokens[pieces[k][0]].text
+            if len(text) == 1 and text.isalpha():
+                k += 1
+                continue
+        start = max(0, k - 1)
+        end = min(len(pieces), k + 2)
+        neighbor = start if start < k else end - 1
+        derived = set()
+        if is_title_piece(pieces[neighbor], ptags[neighbor], tokens):
+            derived.add("title")
+        elif titles_only:
+            k += 1
+            continue
+        if (not titles_only
+                and is_prefix_piece(pieces[neighbor], ptags[neighbor],
+                                    tokens)):
+            derived.add("prefix")
+        merge_pieces(pieces, ptags, start, end, add=derived)
+        k = start + 1
+
+
 # _PERIOD_ABBREV: imported from _vocab, not redefined here (#289/#516,
 # quality-review finding) -- _vocab.name_word_count needed the SAME
 # shape test is_leading_title asks (_vocab.is_title_shaped), and

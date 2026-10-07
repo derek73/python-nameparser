@@ -3850,6 +3850,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # example 'Smith, John PhD de Jr.'. Reach, verified by name.
         # 2026-10-04, #603: 441 -> 452; the rules.md#C1 and #C2 examples #603 added entered the corpus.
         # 2026-10-06, #613: 452 -> 454; its reach absorbed both C1 examples #613 added to the corpus, 'John Smith, Mr. and Mrs.' and 'Ortega y Gasset, Dr.'.
+        # 2026-10-06, #617: 454 -> 455; its reach absorbed the C1 example 'Smith, Chancellor of the Exchequer MP' #617 added to rules.md.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -3873,7 +3874,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rules.md#H1 comma example. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(454, ('given', 'suffix', 'title'), "4814aedc63df", None),
+            _Claim(455, ('given', 'suffix', 'title'), "ca1550511d89", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3985,6 +3986,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # example 'Smith, John PhD de Jr.'. Reach, verified by name.
         # 2026-10-04, #603: 441 -> 452; the rules.md#C1 and #C2 examples #603 added entered the corpus.
         # 2026-10-06, #613: 452 -> 454; its reach absorbed both C1 examples #613 added to the corpus, 'John Smith, Mr. and Mrs.' and 'Ortega y Gasset, Dr.'.
+        # 2026-10-06, #617: 454 -> 455; its reach absorbed the C1 example 'Smith, Chancellor of the Exchequer MP' #617 added to rules.md.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -4002,7 +4004,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #606: 443 -> 444, 'Greve, Anna'. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(454, ('family', 'given'), "4814aedc63df", None),
+            _Claim(455, ('family', 'given'), "ca1550511d89", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4284,8 +4286,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #601/#602: 106 -> 107; 'Jane and née Jones', a new rules.md#M2 example, is in reach -- a marker behind a connective is a word in the run since #601.
         # 2026-10-04, #603: 107 -> 108; the rules.md#C1 and #C2 examples #603 added entered the corpus.
         # 2026-10-06, #613: 108 -> 110; its reach absorbed both C1 examples #613 added, each holding a connective ('and', 'y').
+        # 2026-10-06, #617: 110 -> 111; its reach absorbed the C1 example 'Smith, Chancellor of the Exchequer MP' #617 added to rules.md.
         "fix(initials-per-word) a connective run initials each word (facade, since 2.0.0)":
-            _Claim(110, ('_initials',), "3544f65e2021", ('DEFAULT',)),
+            _Claim(111, ('_initials',), "42cf3ec43544", ('DEFAULT',)),
         # 2026-09-19, #533: 41 -> 43. Two new corpus names opening
         # with a bound-given word, 'Berg, abdul MA' and 'Berg, abdul
         # nee Jones MA' -- the P5 pair this change added to record

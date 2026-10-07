@@ -69,12 +69,17 @@ from nameparser._policy import Policy
 #: Lowered 2026-09-26 when the stages stopped copying state through
 #: dataclasses.replace (decisions.md#parse-cost). All five rows were
 #: re-measured with that harness, each on its own interpreter.
+#:
+#: Lowered 2026-10-06 (#617) when P3's connective joins left group's
+#: closures for `_pieces.join_connectives`, which calls the piece
+#: predicates directly: -10 on every row, re-measured with that
+#: harness on each interpreter (decisions.md#parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 370, "facade": 407},
-    (3, 12): {"parse": 348, "facade": 385},
-    (3, 13): {"parse": 348, "facade": 385},
-    (3, 14): {"parse": 348, "facade": 385},
-    (3, 15): {"parse": 348, "facade": 385},
+    (3, 11): {"parse": 364, "facade": 401},
+    (3, 12): {"parse": 343, "facade": 380},
+    (3, 13): {"parse": 343, "facade": 380},
+    (3, 14): {"parse": 343, "facade": 380},
+    (3, 15): {"parse": 343, "facade": 380},
 }
 _BAND = 0.02
 
@@ -458,8 +463,9 @@ _PREFIXED_SHAPES: dict[
                       and (parse(text).given, parse(text).family)
                       == ("Jane", "Doe")),
     ),
-    # every 'and' joins the title chain `_comma._title_chains` builds,
-    # which rebuilt the growing piece from a slice at each join
+    # every 'and' joins the title chain the comma decision builds
+    # (`_pieces.join_connectives` since #617), whose own copy of the
+    # loop rebuilt the growing piece from a slice at each join
     "title_chain": (
         "John Smith, ", "Mr. and ", Parser(),
         lambda text: (parse(text).given == "John"
@@ -975,9 +981,13 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 #
 # Lowered 2026-09-26 from 2587 with `_CALL_BASELINE` above, for the
 # same reason (decisions.md#parse-cost). 2,678 from 2026-10-04, the
-# re-pointed name-level shape (above), measured on py3.11.
+# re-pointed name-level shape (above), measured on py3.11. 2,479
+# from 2026-10-06 (#617): P3's joins call the piece predicates
+# directly rather than through `_group_segment`'s closures, so each
+# connective's tests cost one frame where they cost two (2,678 on
+# 83f4e914, py3.11).
 _LINK_BASELINE = {
-    (3, 11): 2678,
+    (3, 11): 2479,
 }
 #: The same +-2% `_CALL_BASELINE` uses, and for the same reason: frame
 #: counts are deterministic for a given tree and interpreter, so the

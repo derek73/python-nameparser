@@ -6236,7 +6236,8 @@ CASES: tuple[Case, ...] = (
          notes="the one join made inside a part read as postnominal "
                "(rules.md#C1, P3): a connective between titles binds "
                "them into one title. #613's first draft bound each word "
-               "on its own and lost it (`_comma._title_chains`)"),
+               "on its own and lost it (`_comma._title_chains` then, "
+               "group's `_pieces.join_connectives` since #617)"),
     Case("a_title_chain_after_the_comma_runs_through_every_link",
          "John Smith, Mr. and Mrs. and Dr.",
          {"title": "Mr. and Mrs. and Dr.", "given": "John",
@@ -6247,6 +6248,39 @@ CASES: tuple[Case, ...] = (
                "connective, so the second 'and' joins as the first does; "
                "asking the vocabulary of the connective alone read "
                "family 'John Smith' (mutation measured in review)"),
+    Case("a_connective_run_after_the_comma_joins_the_title_whole",
+         "John Smith, Minister of the Interior and Mrs.",
+         {"title": "Minister of the Interior and Mrs.", "given": "John",
+          "family": "Smith"},
+         ambiguities=(),
+         classification="fix(#617)",
+         notes="rules.md#P3's connective runs ('of the') merge before "
+               "they join, in the part after the comma as in the name: "
+               "the comma decision joins with group's own loop since "
+               "#617. Its copy joined 'Minister of the' alone, left "
+               "'Interior' a name word and kept the listing form, "
+               "family 'John Smith' (83f4e914; 2.3.0 read as here)"),
+    Case("a_connective_run_title_leaves_the_credential_behind_it",
+         "Smith, Chancellor of the Exchequer MP",
+         {"title": "Chancellor of the Exchequer", "family": "Smith",
+          "suffix": "MP"},
+         ambiguities=(),
+         classification="fix(#617)",
+         notes="the run joins 'Exchequer' into the title, so nothing in "
+               "the part is a name word and 'MP' is the credential; "
+               "83f4e914 read given 'MP', 'Exchequer' standing alone "
+               "having made the part the given part (2.3.0 read as "
+               "here)"),
+    Case("a_doubled_connective_after_the_comma_joins_as_one_run",
+         "Prof. Smith, and and Dr.",
+         {"title": "Prof. and and Dr.", "family": "Smith"},
+         ambiguities=(),
+         classification="fix(#617)",
+         notes="garbage in, decided explicitly in #617: the doubled "
+               "connective is one run, and the run takes its kind from "
+               "the title after it, as group reads a run. 2.3.0 and "
+               "b547c247 read the same; 83f4e914 read title 'and and Dr.', family "
+               "'Prof. Smith', its copy of the loop merging no run"),
     Case("a_connective_opening_the_part_takes_the_title_after_it",
          "John Smith, and Dr.",
          {"title": "and Dr.", "given": "John", "family": "Smith"},
@@ -6351,7 +6385,7 @@ CASES: tuple[Case, ...] = (
          {"title": "Mr.", "given": "y", "family": "John Smith"},
          ambiguities=(),
          classification="fix(#613)",
-         notes="rules.md#P3's single-letter connective is left as it stands by _comma._title_chains, so it is a name word and the part the listing form's (mutation measured in #613's PR review)"),
+         notes="rules.md#P3's single-letter connective is left as it stands by the comma decision's title join (`_comma._title_chains` in #613, `_pieces.join_connectives` since #617), so it is a name word and the part the listing form's (mutation measured in #613's PR review)"),
     Case("a_periodless_name_word_carries_the_contrast_a_period_does_not",
          "Chas. SMITH JONES, XYZ",
          {"given": "XYZ", "family": "Chas. SMITH JONES"},

@@ -21,7 +21,8 @@ from nameparser._pipeline import _comma
 from nameparser._pipeline._pieces import (
     _anchors, _numeral_behind_the_initial_veto, anchor_in_reach,
     credential_anchors,
-    credential_at_the_given_slot, is_leading_title, leading_titles,
+    credential_at_the_given_slot, is_leading_title, join_connectives,
+    leading_titles,
     own_words, peel_trailing, peel_walk, segment_suffix_reading,
     tail_reading, trailing_candidates, trailing_titles,
 )
@@ -44,19 +45,18 @@ def _through_group(text: str, policy: Policy = Policy()) -> ParseState:
     return state
 
 
-def _comma_part(text: str) -> tuple[list[tuple[int, ...]],
-                                     list[frozenset[str]], list, bool | None]:
+def _comma_part(text: str) -> tuple[list[list[int]], list[set[str]],
+                                     list, bool | None]:
     """The part after the first comma as `_comma.decide` reads it: the
     tokens classify tagged, one piece each but the Ph./D. pair and a
-    title chain (#613) -- the reading's own input, before group binds
-    the part."""
+    title chain (#613, made by the connective joins group shares since
+    #617) -- the reading's own input, before group binds the part."""
     state = ParseState(original=text, lexicon=Lexicon.default(),
                        policy=Policy())
     for stage in (tokenize, segment, classify):
         state = stage(state)
     tokens = list(state.tokens)
-    pieces, ptags = _comma._pieces(state.segments[1], tokens)
-    _comma._title_chains(pieces, ptags, tokens)
+    pieces, ptags = _comma._reading_pieces(state.segments[1], tokens)
     return pieces, ptags, tokens, state.one_case
 
 
@@ -981,3 +981,78 @@ def test_the_trailing_candidates_cover_what_the_tail_reading_takes(
     oracle to the take itself.
     """
     assert _candidate_misses(monkeypatch) == []
+
+
+def _unjoined(text: str, lexicon: Lexicon | None = None,
+              ) -> tuple[list[list[int]], list[set[str]], list]:
+    """A whole name's words as classify tagged them, one fresh piece
+    each -- what `join_connectives` takes from either caller."""
+    state = ParseState(original=text,
+                       lexicon=lexicon or Lexicon.default(),
+                       policy=Policy())
+    for stage in (tokenize, segment, classify):
+        state = stage(state)
+    tokens = list(state.tokens)
+    return ([[i] for i in state.segments[0]],
+            [set() for _ in state.segments[0]], tokens)
+
+
+def _words(pieces: list[list[int]], tokens: list) -> list[str]:
+    return [" ".join(tokens[i].text for i in p) for p in pieces]
+
+
+def test_a_connective_run_merges_before_it_joins_in_both_modes() -> None:
+    """rules.md#P3's "connective runs included", for both callers: the
+    run joins as one link, so a title before it takes the word after it
+    too. The comma decision's copy of the loop merged no run and joined
+    'Minister of the' alone (#617)."""
+    for titles_only in (True, False):
+        pieces, ptags, tokens = _unjoined("Minister of the Interior Smith")
+        join_connectives(pieces, ptags, tokens, letter_stays=True,
+                         titles_only=titles_only)
+        assert _words(pieces, tokens) == ["Minister of the Interior",
+                                          "Smith"], titles_only
+        assert "title" in ptags[0], titles_only
+
+
+def test_titles_only_leaves_a_join_with_no_title_unmade() -> None:
+    """The comma part's mode: a connective whose neighbour is no title
+    stays a word for the reading to place; group's mode joins it
+    anyway, taking no title kind."""
+    pieces, ptags, tokens = _unjoined("Jones and Smith")
+    join_connectives(pieces, ptags, tokens, letter_stays=True,
+                     titles_only=True)
+    assert _words(pieces, tokens) == ["Jones", "and", "Smith"]
+    pieces, ptags, tokens = _unjoined("Jones and Smith")
+    join_connectives(pieces, ptags, tokens, letter_stays=True,
+                     titles_only=False)
+    assert _words(pieces, tokens) == ["Jones and Smith"]
+    assert "title" not in ptags[0]
+
+
+def test_the_single_letter_carve_out_is_the_callers_answer() -> None:
+    """`letter_stays` is P3's carve-out as the caller reads it: group
+    from the rootname count, the comma part always."""
+    pieces, ptags, tokens = _unjoined("Mr. y Mrs.")
+    join_connectives(pieces, ptags, tokens, letter_stays=True,
+                     titles_only=True)
+    assert _words(pieces, tokens) == ["Mr.", "y", "Mrs."]
+    pieces, ptags, tokens = _unjoined("Mr. y Mrs.")
+    join_connectives(pieces, ptags, tokens, letter_stays=False,
+                     titles_only=True)
+    assert _words(pieces, tokens) == ["Mr. y Mrs."]
+
+
+def test_a_frozen_connective_neither_joins_nor_merges_into_a_run() -> None:
+    """`frozen` names connectives by TOKEN index; one there is the
+    subject of no join and no run merge (a neighbour's join may still
+    take it in, group's documented reach)."""
+    pieces, ptags, tokens = _unjoined("Mr. and of Mrs.")
+    of = next(i for i, t in enumerate(tokens) if t.text == "of")
+    join_connectives(pieces, ptags, tokens, letter_stays=True,
+                     titles_only=True, frozen={of})
+    assert _words(pieces, tokens) == ["Mr. and of", "Mrs."]
+    pieces, ptags, tokens = _unjoined("Mr. and of Mrs.")
+    join_connectives(pieces, ptags, tokens, letter_stays=True,
+                     titles_only=True)
+    assert _words(pieces, tokens) == ["Mr. and of Mrs."]

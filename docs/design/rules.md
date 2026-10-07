@@ -662,7 +662,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions.md#P3 · interacts: H1, P1, M2, R1, R3, R4, S2, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P3 · interacts: H1, P1, M2, R1, R3, R4, S2, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P4. Rationale: a particle links forward from inside a name; at the
     very front there is no name yet to be inside.
@@ -1765,7 +1765,8 @@ C1. Rationale: a credential run after the comma means the name is in
     before any join, and
     that reading is final: the one join made inside it is a
     connective binding title words into one title (P3: 'Mr. and
-    Mrs.'), and no particle run, connective join or bound given name
+    Mrs.', a connective run included: 'Minister of the Interior'),
+    and no particle run, connective join or bound given name
     reaches into it. The listing form's given part keeps every join
     (P2, P3, P5, P6).
     A decision either way at this comma
@@ -1898,6 +1899,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, PhD DO DO"     →  ambiguities=()
       "John Smith, Mr. and Mrs."  →  given="John"
       "John Smith, Mr. and Mrs."  →  title="Mr. and Mrs."
+      "Smith, Chancellor of the Exchequer MP"  →  suffix="MP"
       "Ortega y Gasset, Dr."      →  given="Ortega"
       "John Smith, PhD vd DO"     →  suffix="PhD vd DO"
       "John Smith, vd Ma"         →  suffix="vd Ma"

@@ -374,3 +374,21 @@ def test_a_lone_core_after_the_comma_is_a_word_of_the_part() -> None:
     policy = Policy(extra_suffix_delimiters=frozenset({" - "}))
     name = Parser(policy=policy).parse("John Smith, -")
     assert (name.given, name.family, name.suffix) == ("John", "Smith", "-")
+
+
+def test_a_generational_connective_joins_no_title_after_the_comma() -> None:
+    # P3's generational clause: a connective that is also
+    # generational vocabulary joins only between two name words, and a
+    # part read for
+    # credentials holds none, so the comma decision freezes it as group
+    # freezes one with no name word beside it (#617). Only caller
+    # vocabulary reaches it -- the default class is 'i', one letter and
+    # so never joined there anyway. The control is the same word as a
+    # plain connective, which joins the titles.
+    generational = Lexicon.default().add(conjunctions={"og"},
+                                         suffix_words={"og"})
+    plain = Lexicon.default().add(conjunctions={"og"})
+    name = Parser(lexicon=generational).parse("Smith, Mr. og Mrs.")
+    assert (name.title, name.suffix) == ("Mr. Mrs.", "og")
+    name = Parser(lexicon=plain).parse("Smith, Mr. og Mrs.")
+    assert (name.title, name.suffix) == ("Mr. og Mrs.", "")
