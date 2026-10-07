@@ -9698,18 +9698,32 @@ CASES: tuple[Case, ...] = (
                "'Mary' / middle 'Jones Prof. née' / last 'Smith' "
                "(measured 2026-09-09)"),
     Case("title_word_trailing_in_a_conjunction_unit",
-         "John Smith Prof. and Dr.",
-         {"given": "John", "middle": "Smith",
-          "family": "Prof. and Dr."},
+         "Smith, John Prof. and Dr.",
+         {"given": "John", "middle": "Prof. and Dr.", "family": "Smith"},
          classification="parity",
          notes="negative control for the ONE-WORD-per-piece gate: the "
                "conjunction merge made 'Prof. and Dr.' one piece, and "
                "the tokens of a joined unit are not each a title "
                "word. The row that PINS that gate -- with it deleted "
-               "the walk takes the unit, because the shape test then "
-               "runs on the piece's first token and 'Prof.' wears the "
-               "period ('John de la Prof.' reads 0 either way; both "
-               "measured 2026-09-09 in test_pieces.py)"),
+               "the walk takes the unit as title 'Prof. and Dr.', "
+               "because the shape test then runs on the piece's first "
+               "token and 'Prof.' wears the period (measured 2026-10-07 "
+               "by mutation). Written behind a family comma since #614: "
+               "the given part is the one place the chain still reads "
+               "pieces a join has made, the main segment's run being "
+               "read before any join (the row below)"),
+    Case("a_trailing_title_is_read_before_a_connective_joins",
+         "John Smith Prof. and Dr.",
+         {"title": "Dr.", "given": "John", "middle": "Smith",
+          "family": "Prof. and"},
+         ambiguities=(),
+         classification="fix(#614)",
+         notes="garbage in, read under #614's order: S2's run and H5's "
+               "chain are read before any join, so the chain takes the "
+               "trailing 'Dr.' and the connective then joins only the "
+               "word on its left. Until #614 the join came first and "
+               "made 'Prof. and Dr.' one name piece, family 'Prof. and "
+               "Dr.' (decisions.md#S2, 2026-10-07)"),
     Case("family_comma_then_a_lone_suffix_word_segment",
          "Smith, John, Prof.",
          {"given": "John", "family": "Smith", "title": "Prof."},

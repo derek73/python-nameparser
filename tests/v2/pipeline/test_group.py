@@ -725,8 +725,14 @@ def test_the_reserve_reads_the_numeral_as_the_join_would_leave_it() -> None:
     # family ''. The reserve now declines, and assign, seeing the
     # unjoined pieces, reads the V as the family -- exactly as it
     # reads 'John J. V' (pinned at the field level in test_parser).
+    #
+    # Since #614 the reserve reads no view: S2's run is read once
+    # before the join, and here it takes nothing -- the initial-shaped
+    # 'J.' suppresses the fork -- so three name words stand and the
+    # join leaves two, which the reserve allows (decisions.md#P5,
+    # 2026-10-07). The join no longer re-reads the fork it would move.
     out = _grouped("abdul J. V")
-    assert _piece_texts(out) == [["abdul", "J.", "V"]]
+    assert _piece_texts(out) == [["abdul J.", "V"]]
 
 
 def test_the_numeral_is_last_among_the_pieces_assign_keeps() -> None:
@@ -876,8 +882,12 @@ def test_the_licence_does_not_lift_the_equality() -> None:
     # takes nothing unjoined and the V joined. Declines, as 'Sir John
     # J. V' reads. A looser comparison passed every other test; found
     # by the test review.
+    #
+    # Since #614 there is no joined view to compare: the run, read once
+    # before the join, takes nothing, and the join stands (the row
+    # above, decisions.md#P5 2026-10-07).
     out = _grouped("sir abdul J. V", lexicon=_GIVEN_NAME_TITLE_LEX)
-    assert _piece_texts(out) == [["sir", "abdul", "J.", "V"]]
+    assert _piece_texts(out) == [["sir", "abdul J.", "V"]]
 
 
 # -- #424: the chain and the maiden walk stop where assign's peel begins
@@ -1427,8 +1437,11 @@ def test_a_connective_with_nothing_to_its_right_does_not_join() -> None:
 def test_a_suffix_word_on_the_right_is_no_name_word() -> None:
     out = _grouped("Josep Lluis Carod i Jr.", lexicon=_LINK_LEX)
     assert _piece_texts(out) == [["Josep", "Lluis", "Carod", "i", "Jr."]]
+    # Since #614 S2's trailing run is read and split off before any
+    # join, so the plain lexicon's link no longer reaches into it:
+    # it joins the word on its left alone.
     plain = _grouped("Josep Lluis Carod i Jr.", lexicon=_PLAIN_LEX)
-    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i Jr."]]
+    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i", "Jr."]]
 
 
 def test_the_right_hand_test_reads_the_peel_not_the_suffix_piece(
@@ -1441,16 +1454,23 @@ def test_the_right_hand_test_reads_the_peel_not_the_suffix_piece(
     lex = _LINK_LEX.add(suffix_words={"v"})
     out = _grouped("Josep Lluis Carod i V", lexicon=lex)
     assert _piece_texts(out) == [["Josep", "Lluis", "Carod", "i", "V"]]
+    # Since #614 S2's trailing run is read and split off before any
+    # join, so the plain lexicon's link no longer reaches into it:
+    # the V is the run's.
     plain = _grouped("Josep Lluis Carod i V",
                      lexicon=_PLAIN_LEX.add(suffix_words={"v"}))
-    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i V"]]
+    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i", "V"]]
 
 
 def test_a_title_on_the_right_is_no_name_word() -> None:
     out = _grouped("Josep Lluis Carod i Mr.", lexicon=_LINK_LEX)
     assert _piece_texts(out) == [["Josep", "Lluis", "Carod", "i", "Mr."]]
+    # Since #614 S2's trailing run is read and split off before any
+    # join, so the plain lexicon's link no longer reaches into it:
+    # the run reads the letter as a roman numeral and the H5 chain
+    # takes the title, so both are bound and nothing joins.
     plain = _grouped("Josep Lluis Carod i Mr.", lexicon=_PLAIN_LEX)
-    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod i Mr."]]
+    assert _piece_texts(plain) == [["Josep", "Lluis", "Carod", "i", "Mr."]]
 
 
 def test_a_leading_title_on_the_left_is_no_name_word() -> None:
@@ -1488,9 +1508,11 @@ def test_a_credential_or_honorific_mid_name_is_no_name_word_either(
     title = _grouped("Josep Lluis Mr. i Rovira", lexicon=_LINK_LEX)
     assert _piece_texts(title) == [
         ["Josep", "Lluis", "Mr.", "i", "Rovira"]]
+    # #614: 'Jr.' behind two name words opens #602's run, read before
+    # the joins, so the plain link joins nothing in it either
     assert _piece_texts(_grouped("Josep Lluis Jr. i Rovira",
                                   lexicon=_PLAIN_LEX)) == [
-        ["Josep", "Lluis", "Jr. i Rovira"]]
+        ["Josep", "Lluis", "Jr.", "i", "Rovira"]]
     assert _piece_texts(_grouped("Josep Lluis Mr. i Rovira",
                                   lexicon=_PLAIN_LEX)) == [
         ["Josep", "Lluis", "Mr. i Rovira"]]
@@ -1513,9 +1535,11 @@ def test_a_credential_or_honorific_mid_name_on_the_right_too() -> None:
     title = _grouped("Josep Lluis i Mr. Rovira", lexicon=_LINK_LEX)
     assert _piece_texts(title) == [
         ["Josep", "Lluis", "i", "Mr.", "Rovira"]]
+    # #614: the run 'Jr.' opens is read before the joins, so the plain
+    # link has no word on its right to take
     assert _piece_texts(_grouped("Josep Lluis i Jr. Rovira",
                                   lexicon=_PLAIN_LEX)) == [
-        ["Josep", "Lluis i Jr.", "Rovira"]]
+        ["Josep", "Lluis", "i", "Jr.", "Rovira"]]
     assert _piece_texts(_grouped("Josep Lluis i Mr. Rovira",
                                   lexicon=_PLAIN_LEX)) == [
         ["Josep", "Lluis i Mr.", "Rovira"]]
@@ -1539,9 +1563,11 @@ def test_where_the_run_runs_out_there_is_no_name_word() -> None:
     doubled = _grouped("Josep Lluis Carod i i", lexicon=_LINK_LEX)
     assert _piece_texts(doubled) == [
         ["Josep", "Lluis", "Carod", "i", "i"]]
+    # #614: the trailing letter is the run's roman numeral, read before
+    # the joins, so the plain link joins only the word on its left
     assert _piece_texts(_grouped("Josep Lluis Carod i i",
                                   lexicon=_PLAIN_LEX)) == [
-        ["Josep", "Lluis", "Carod i i"]]
+        ["Josep", "Lluis", "Carod i", "i"]]
 
 
 def test_a_link_that_joins_nothing_does_not_count_for_another_join(
@@ -1553,8 +1579,11 @@ def test_a_link_that_joins_nothing_does_not_count_for_another_join(
     # gave the total four and joined the 'y'.
     out = _grouped("Carod y Rovira i", lexicon=_LINK_LEX)
     assert _piece_texts(out) == [["Carod", "y", "Rovira", "i"]]
+    # #614: under the plain lexicon the trailing letter is the run's
+    # roman numeral, read and split off before the joins, which leaves
+    # 'Carod y Rovira' -- three words, so the 'y' keeps the carve-out
     plain = _grouped("Carod y Rovira i", lexicon=_PLAIN_LEX)
-    assert _piece_texts(plain) == [["Carod y Rovira i"]]
+    assert _piece_texts(plain) == [["Carod", "y", "Rovira", "i"]]
 
 
 def test_a_connective_with_nothing_to_its_left_does_not_join() -> None:
@@ -1568,13 +1597,18 @@ def test_a_connective_with_nothing_to_its_left_does_not_join() -> None:
 def test_the_both_sides_condition_reads_the_class_not_the_letter(
 ) -> None:
     # the recorded negative control for the class test the freeze
-    # walk opens with, and the one the property invariants CANNOT
-    # give: with the same letter outside the generational vocabulary
-    # the condition declines to ask and the trailing connective
-    # joins, exactly as a trailing 'y' does today. Measured -- remove
-    # the "vocab:suffix" arm and this test is the one that dies.
-    out = _grouped("John Quincy Smith i", lexicon=_PLAIN_LEX)
-    assert _piece_texts(out) == [["John", "Quincy", "Smith i"]]
+    # walk opens with: with the same letter outside the generational
+    # vocabulary the condition declines to ask, so a link with no name
+    # word on its right still joins, as a 'y' there does. Measured
+    # 2026-10-07 by mutation -- remove the "vocab:suffix" arm and
+    # 'Juan i y' splits into three pieces; the trailing shape this test
+    # pinned until #614 ('John Quincy Smith i' joined 'Smith i') is S2's
+    # roman numeral now, read and split off before any join, so it
+    # cannot see the arm at all (the second row).
+    out = _grouped("Juan i y", lexicon=_PLAIN_LEX)
+    assert _piece_texts(out) == [["Juan i y"]]
+    trailing = _grouped("John Quincy Smith i", lexicon=_PLAIN_LEX)
+    assert _piece_texts(trailing) == [["John", "Quincy", "Smith", "i"]]
 
 
 def test_a_trailing_shipped_connective_is_untouched_by_the_condition(
@@ -1624,10 +1658,12 @@ def test_a_callers_non_generational_letter_is_outside_the_condition(
 ) -> None:
     # the recorded negative control, at the reading level: 'x' is a
     # roman numeral letter that is NOT suffix vocabulary, so the
-    # both-sides condition declines to ask and BOTH positions join,
-    # which is what they did before this change too.
+    # both-sides condition declines to ask. Mid-name it joins, which
+    # is what it did before #397 too; at the END of the name, since
+    # #614, S2 reads it as a roman numeral before any join, so it is
+    # the suffix rather than joining the family.
     p = Parser(lexicon=Lexicon.default().add(conjunctions={"x"}))
-    assert p.parse("John Quincy Smith x").family == "Smith x"
+    assert p.parse("John Quincy Smith x").suffix == "x"
     assert p.parse("Josep Carod x Rovira").family == "Carod x Rovira"
 
 
@@ -1900,10 +1936,14 @@ def test_a_frozen_link_is_still_absorbed_by_a_neighbours_join() -> None:
     # commit 46651750 gives the same name, the letter being no
     # connective there at all, so the row is a CONTROL for the
     # comment beside `frozen` rather than a behavior claim of its own.
+    #
+    # Since #614 the trailing 'i' is S2's roman numeral, read and split
+    # off before any join, so no join reaches it: the neighbour's reach
+    # is pinned mid-name instead, where nothing reads the link first.
     out = Parser().parse("Josep Carod Rovira Puig y i")
-    assert out.family == "Puig y i"
+    assert out.family == "Puig y"
     assert out.middle == "Carod Rovira"
-    assert out.suffix == ""
+    assert out.suffix == "i"
 
 
 def test_the_first_word_floor_holds_a_title_out_of_the_chain() -> None:

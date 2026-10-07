@@ -893,8 +893,8 @@ class Peel(NamedTuple):
 # ambiguous acronym written with its periods, one after each letter or
 # one after each of two or more letter chunks, counts unambiguously; a
 # single trailing period is the abbreviation shape any word can wear
-# and does not. A BARE ambiguous acronym is consumed only when the name
-# has words to spare"
+# and does not" -- and: "a BARE ambiguous acronym is consumed only when
+# the name has words to spare"
 # (v1's are_suffixes tail rule, with the roman-numeral special)
 def peel_walk(start: int, ptags: Sequence[Set[str]]) -> list[int]:
     """The indices peel_trailing walks: `start` to the segment's end,
@@ -1553,6 +1553,67 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     return (rest, tuple(j for run in reversed(titled) for j in run),
             final if p == final.names else credential_run(
                 rest, final, p, pieces, ptags, tokens))
+
+
+class TailRead(NamedTuple):
+    """S2's trailing run as group reads it ONCE, at its head and before
+    any join (#614), handed to assign so neither group's joins nor a
+    second reading can move it. Token indices rather than piece
+    indices, since group's joins renumber the pieces in front of the
+    run: `tail` holds every token the run took, `titles` those the H5
+    chain took and `run_titles` the title words inside #602's run (both
+    inside `tail`), and `peel` the final peel, whose numeral fork, bare
+    ambiguous picks and absorbed name words are what assign reports;
+    its `names` counts the name pieces as the read left them."""
+
+    tail: frozenset[int]
+    titles: frozenset[int]
+    run_titles: frozenset[int]
+    peel: Peel
+
+
+def read_trailing_run(pieces: Sequence[Sequence[int]],
+                      ptags: Sequence[Set[str]],
+                      tokens: Sequence[WorkToken],
+                      one_case: bool | None,
+                      n: int,
+                      ) -> tuple[TailRead, int] | None:
+    """`tail_reading` over the pieces as they stand -- group's, before
+    its joins -- from `n`, the end of the leading title run, as a
+    `TailRead` and the index of the first piece of the run, which then
+    runs to the end of `pieces`. None where there is nothing to read
+    (no name piece past the leading titles), and where the run is not
+    one block at the end: a title the H5 chain takes standing in front
+    of a name word the peel declined ('John Dr. G.J.'), the one shape
+    whose run has a name piece inside it -- there group joins as it did
+    before #614 and assign reads for itself. A segment the read takes
+    nothing from reads as a run of no pieces, at the end. Plain loops
+    rather than comprehensions: every main segment pays this, and on
+    3.11 a comprehension is a frame and a generator a frame per item
+    (decisions.md#parse-cost)."""
+    if n == len(pieces):
+        return None
+    rest = peel_walk(n, ptags)
+    if not rest:
+        return None
+    rest, titled, peel = tail_reading(rest, pieces, ptags, tokens, one_case)
+    taken = set(rest[peel.names:])
+    taken.update(titled)
+    start = min(taken) if taken else len(pieces)
+    tail: set[int] = set()
+    for k in range(start, len(pieces)):
+        if k in taken:
+            tail.update(pieces[k])
+        elif "suffix" not in ptags[k]:
+            return None
+    titles: set[int] = set()
+    for k in titled:
+        titles.update(pieces[k])
+    run_titles: set[int] = set()
+    for k in peel.run_titles:
+        run_titles.update(pieces[k])
+    return TailRead(frozenset(tail), frozenset(titles),
+                    frozenset(run_titles), peel), start
 
 
 # rules.md#H5: "the title is TRANSPARENT to the suffix reading: where

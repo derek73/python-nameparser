@@ -4630,6 +4630,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #603: new, 7; rules.md#C2's tail-title examples and the radar names it moves.
         "fix(#603) a title word in a part past the second comma is a title":
             _Claim(7, ('suffix', 'title'), "8cbad6f13c6b", None),
+        # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
+        "fix(#614) a trailing title is read before the particle chain":
+            _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        # 2026-10-07, #614: new, 1; the corpus's 'Jane née Jr y Jones', which M2's case rows carry.
+        "fix(#614) a connective no longer joins into the trailing run":
+            _Claim(1, ('family', 'middle', 'suffix'), "bedc18423d2a", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5392,6 +5398,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #603: new, 6; rules.md#C2's tail-title examples and the radar names it moves.
         "fix(#603) a title word in a part past the second comma is a title":
             _Claim(6, ('_ambiguities', 'suffix', 'title'), "eeb11557d7f0", None),
+        # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
+        "fix(#614) a trailing title is read before the particle chain":
+            _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        # 2026-10-07, #614: new, 1; the corpus's 'Jane née Jr y Jones', which M2's case rows carry.
+        "fix(#614) a connective no longer joins into the trailing run":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'suffix'), "bedc18423d2a", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5867,6 +5879,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-06, #613: new, 1; rules.md#C1's 'Ortega y Gasset, Dr.' example.
         "fix(#613) a connective surname before the comma counts its words":
             _Claim(1, ('family', 'given', 'middle'), "a7a939e6843d", None),
+        # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
+        "fix(#614) a trailing title is read before the particle chain":
+            _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        # 2026-10-07, #614: new, 1; the corpus's 'Jane née Jr y Jones', which M2's case rows carry.
+        "fix(#614) a connective no longer joins into the trailing run":
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "bedc18423d2a", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6573,6 +6591,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #603: new, 6; rules.md#C2's tail-title examples and the radar names it moves.
         "fix(#603) a title word in a part past the second comma is a title":
             _Claim(6, ('_ambiguities', 'suffix', 'title'), "eeb11557d7f0", None),
+        # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
+        "fix(#614) a trailing title is read before the particle chain":
+            _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        # 2026-10-07, #614: new, 1; the corpus's 'Jane née Jr y Jones', which M2's case rows carry.
+        "fix(#614) a connective no longer joins into the trailing run":
+            _Claim(1, ('_ambiguities', 'family', 'maiden', 'suffix'), "bedc18423d2a", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6901,6 +6925,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-06, #613: new, 1; rules.md#C1's 'Ortega y Gasset, Dr.' example.
         "fix(#613) a connective surname before the comma counts its words":
             _Claim(1, ('family', 'given', 'middle'), "a7a939e6843d", None),
+        # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
+        "fix(#614) a trailing title is read before the particle chain":
+            _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        # 2026-10-07, #614: new, 1; the corpus's 'Jane née Jr y Jones', which M2's case rows carry.
+        "fix(#614) a connective no longer joins into the trailing run":
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "bedc18423d2a", None),
     },
 }
 

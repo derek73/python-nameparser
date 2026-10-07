@@ -77,13 +77,16 @@ from nameparser._policy import Policy
 #: +4/+5 inside the old 370/407 and 348/385). Then 39 more on every
 #: row, in #617's /simplify, when group stopped running the rootname
 #: count and the shared loop over segments with no connective left
-#: free to join (decisions.md#parse-cost).
+#: free to join (decisions.md#parse-cost). And 13 on 3.11, 10 on
+#: 3.12-3.15, in #614, when S2's trailing run came to be read once at
+#: group's head rather than re-asked by each of group's joins and read
+#: again by assign (decisions.md#parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 325, "facade": 362},
-    (3, 12): {"parse": 304, "facade": 341},
-    (3, 13): {"parse": 304, "facade": 341},
-    (3, 14): {"parse": 304, "facade": 341},
-    (3, 15): {"parse": 304, "facade": 341},
+    (3, 11): {"parse": 312, "facade": 349},
+    (3, 12): {"parse": 294, "facade": 331},
+    (3, 13): {"parse": 294, "facade": 331},
+    (3, 14): {"parse": 294, "facade": 331},
+    (3, 15): {"parse": 294, "facade": 331},
 }
 _BAND = 0.02
 
