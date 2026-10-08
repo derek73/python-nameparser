@@ -153,7 +153,7 @@ class BoundJoin(IntEnum):
 #
 # With the pass ahead of the joins no default-vocabulary input reaches
 # the lone-piece half through the one caller left that sees joined
-# pieces (P5's marker decline, marker(fk + 1)): a marker-headed wider
+# pieces (P5's marker decline, on `fk + 1`): a marker-headed wider
 # piece needs a connective right after a declined marker, and a
 # connective after a marker is a word the consumer takes. Measured at
 # #420's review --
@@ -594,15 +594,6 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     # The maiden take reports on this same channel: it reports only at
     # the TRAILING site, which group() never suppresses.
 
-    def prefix(k: int) -> bool:
-        return is_prefix_piece(pieces[k], ptags[k], tokens)
-
-    def suffix(k: int) -> bool:
-        return is_suffix_piece(pieces[k], ptags[k], tokens)
-
-    def marker(k: int) -> bool:
-        return _is_maiden_marker_piece(pieces[k], tokens)
-
     # ph-d merge first: "Ph." "D." adjacent -> one suffix piece
     # (decisions.md#phd-merge; v1 fix_phd did this by regex on the
     # raw string)
@@ -921,7 +912,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         leading = next((k for k in range(len(pieces))
                         if not is_leading_title(pieces[k], ptags[k],
                                                  tokens)
-                        or prefix(k)), 0)
+                        or is_prefix_piece(pieces[k], ptags[k], tokens)),
+                       0)
         # rules.md#P2: "a trailing suffix begins" -- where it begins
         # is read by assign's peel over the pieces as they stand
         # (#424), once per segment and kept as a length from the end,
@@ -952,14 +944,17 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             titled = 0
             k = 0
             while k < len(pieces):
-                if k == leading or not prefix(k):
+                if k == leading or not is_prefix_piece(pieces[k],
+                                                       ptags[k], tokens):
                     k += 1
                     continue
                 j = k + 1
-                while j < len(pieces) and prefix(j):
+                while j < len(pieces) and is_prefix_piece(pieces[j],
+                                                          ptags[j], tokens):
                     j += 1
-                while (j < len(pieces) - tail and not prefix(j)
-                       and not suffix(j)):
+                while (j < len(pieces) - tail
+                       and not is_prefix_piece(pieces[j], ptags[j], tokens)
+                       and not is_suffix_piece(pieces[j], ptags[j], tokens)):
                     j += 1
                 # The other half of PARTICLE_OR_GIVEN. _assign reports the
                 # fork when an ambiguous particle stays a lone leading piece
@@ -1064,28 +1059,29 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # so the ordinary chained name ('de la Vega') pays no
                 # frame for it.
                 #
-                # `not prefix(j - 1)` is the other floor, and it names
-                # WHICH of the two scans above claimed the piece. The
-                # first extends the PARTICLE run and the second takes
-                # name words up to the trailing suffix; only the second
-                # is taking a word the peel had looked at. A word in
-                # both vocabularies ('do', 'mc', 'vd') ends a particle
-                # run as a particle, which is P4's reading and P6's
-                # fork, not this one -- 'anh van do' has read family
-                # 'van do' silently since 1.4.0 and its case row says
-                # so. It is tested LAST, and measured: `prefix` is a
-                # closure over `is_prefix_piece`, so asking it is TWO
-                # frames, and asking it ahead of the tag test moved the
-                # reference name from 412 to 414 -- every chained name
-                # in the library paying for a question only an
-                # ambiguous acronym can make interesting. Behind the
-                # `isdisjoint` (a C call, no frame) almost nothing
-                # reaches it.
+                # `not is_prefix_piece(last, ...)` is the other floor,
+                # and it names WHICH of the two scans above claimed the
+                # piece. The first extends the PARTICLE run and the
+                # second takes name words up to the trailing suffix;
+                # only the second is taking a word the peel had looked
+                # at. A word in both vocabularies ('do', 'mc', 'vd')
+                # ends a particle run as a particle, which is P4's
+                # reading and P6's fork, not this one -- 'anh van do'
+                # has read family 'van do' silently since 1.4.0 and its
+                # case row says so. It is tested LAST, and measured: it
+                # costs a frame (two until the predicate closures here
+                # were inlined), and asking it ahead of the tag test,
+                # through the closure, moved the reference name from
+                # 412 to 414 -- every chained name in the library
+                # paying for a question only an ambiguous acronym can
+                # make interesting. Behind the `isdisjoint` (a C call,
+                # no frame) almost nothing reaches it.
                 last = pieces[j - 1]
                 if (read is None and j > k + 1 and len(last) == 1
                         and not tokens[last[0]].tags.isdisjoint(
                             _AMBIGUOUS_CREDENTIAL_TAGS)
-                        and not prefix(j - 1)):
+                        and not is_prefix_piece(last, ptags[j - 1],
+                                                tokens)):
                     ambiguities.append(PendingAmbiguity(
                         AmbiguityKind.SUFFIX_OR_NAME,
                         f"{tokens[last[0]].text!r} is both a post-nominal "
@@ -1158,7 +1154,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # vocabulary (S2), wherever position will then place it"
             # -- and declining it is also what keeps merge_pieces' tag
             # union from making the joined piece a suffix piece.
-            if marker(fk + 1) or suffix(fk + 1):
+            if (_is_maiden_marker_piece(pieces[fk + 1], tokens)
+                    or is_suffix_piece(pieces[fk + 1], ptags[fk + 1],
+                                       tokens)):
                 pass
             elif bound_join is BoundJoin.LENIENT:
                 # post-comma the family is fixed and the pair is the
