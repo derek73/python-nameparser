@@ -9842,13 +9842,16 @@ CASES: tuple[Case, ...] = (
                "(#614's second review, mutation)"),
     Case("a_connective_join_counts_as_its_words_before_a_numeral",
          "John van B and Smith X",
-         {"given": "John", "family": "van B and Smith", "suffix": "X"},
-         ambiguities=("suffix-or-name",),
-         classification="fix(#614)",
-         notes="P3's join 'B and Smith' is one name word in the "
-               "particle unit, so two name words stand before the "
-               "numeral and the fork reads it (0c54662b: family 'van B "
-               "and Smith X'; #614's second review, mutation)"),
+         {"given": "John", "family": "van B and Smith X"},
+         ambiguities=(),
+         classification="parity",
+         notes="the numeral fork reads the piece in front of the "
+               "numeral as written, and P3's join 'B and Smith' opens "
+               "with an initial, so X stays a name word and the chain "
+               "takes it, as 0c54662b read it. #614's merged copy read "
+               "the unit's first word 'van' instead and took suffix "
+               "'X'; #620's count reads the pieces (the row kept its id "
+               "from #614's second review)"),
     Case("a_listed_title_word_is_a_plain_word_in_a_unit",
          "Freiherr von Bishop X.Y.Z.",
          {"title": "Freiherr", "family": "von Bishop X.Y.Z."},

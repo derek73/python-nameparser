@@ -61,7 +61,7 @@ from nameparser._pipeline._state import (
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
+    _PERIOD_ABBREV, Lean, ambiguous_lean, in_initialless_script,
     is_single_letter_numeral, is_trailing_numeral_suffix, tag_marker_runs,
 )
 
@@ -1017,12 +1017,29 @@ def credential_at_the_given_slot(
     return anchored is not None and anchored()
 
 
+#: `_chain_units`' marks: a piece opening a name unit, a name word the
+#: chain joins to the run in front of it, a particle inside that run
+OPENS, JOINED, BOUND = 1, 0, -1
+
+
+def second_unit(rest: Sequence[int], units: Sequence[int]) -> int:
+    """The position in `rest` of the piece opening its second name
+    unit, `len(rest)` where there is none: `rest[:m]` holds two units
+    exactly when this is below `m`. The first piece always counts as
+    a unit's, being where the name the walk reads starts."""
+    for i in range(1, len(rest)):
+        if units[rest[i]] == OPENS:
+            return i
+    return len(rest)
+
+
 def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
                    tokens: Sequence[WorkToken],
                    one_case: bool | None,
                    start: int | None = None,
-                   anchors: list[bool] | None = None) -> Peel:
+                   anchors: list[bool] | None = None,
+                   units: Sequence[int] | None = None) -> Peel:
     """The S2 trailing peel over `rest`, a peel_walk list. In the
     piece layer rather than in assign because group's bound-given
     reserve asks the same question of the view the join would leave
@@ -1042,12 +1059,25 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     docstring states when that answers what a fresh walk would. The
     returned picks are the resumed walk's own; the numeral is never
     read, `start` standing short of the walk's last piece.
+
+    `units`, where given, marks each piece by the unit the chain will
+    put it in (`_chain_units`, #620): the words to spare are counted in
+    units, so a particle chain counts as the one name word P2 makes of
+    it, and a particle inside a chain run is a name word the walk
+    stops at. The numeral fork still reads the piece in front of the
+    numeral as written: an initial there keeps it a name word whatever
+    unit the initial is in ('John van der J. V', rules.md#P2).
     """
     picks: list[tuple[int, ...]] = []
     numeral: tuple[int, ...] | None = None
+    # where the second name unit opens in `rest`, found once a member
+    # asks; positions are units where `units` is None
+    second = 1 if units is None else -1
     k = len(rest) if start is None else start
     while k > 0:
         piece = pieces[rest[k - 1]]
+        if units is not None and units[rest[k - 1]] == BOUND:
+            break
         if is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
             k -= 1
             continue
@@ -1107,7 +1137,9 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             lean = listed_lean(tokens[piece[0]], one_case)
             # peeling still leaves given + family, or the writing says
             # to peel anyway
-            if lean == "credential" or (lean is None and k >= 3):
+            if units is not None and second < 0:
+                second = second_unit(rest, units)
+            if lean == "credential" or (lean is None and k - 2 >= second):
                 k -= 1
                 continue
             # #544: or an unambiguous credential stands IN FRONT of it
@@ -1145,7 +1177,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 def run_start(rest: Sequence[int], names: int,
               pieces: Sequence[Sequence[int]],
               ptags: Sequence[Set[str]],
-              tokens: Sequence[WorkToken]) -> int:
+              tokens: Sequence[WorkToken],
+              units: Sequence[int] | None = None) -> int:
     """Where #602's run starts in `rest[:names]`: the position of the
     first credential that starts one (`starts_a_credential_run`) with
     two name pieces in front of it, or `names` where none does -- with
@@ -1161,7 +1194,12 @@ def run_start(rest: Sequence[int], names: int,
     Soler') otherwise paid two frames per link (decisions.md#parse-cost).
     The predicate repeats the refusal; the inline copy is only the
     cheap half of the same question. Under three names no run can
-    start, two core pieces having to stand in front of it."""
+    start, two core pieces having to stand in front of it.
+
+    `units` (`_chain_units`, #620) counts over pieces the chain has not
+    joined yet: a word the chain will join to the run in front of it
+    is no name word of its own, and a particle opening such a run is
+    the one the run makes ('der la', one surname)."""
     if names < 3:
         return names
     core = 0
@@ -1173,7 +1211,12 @@ def run_start(rest: Sequence[int], names: int,
                 and starts_a_credential_run(pieces[q], ptags[q], tokens)):
             return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
-        if not (len(pieces[q]) == 1 and "particle" in tags):
+        if units is None:
+            if not (len(pieces[q]) == 1 and "particle" in tags):
+                core += 1
+        elif units[q] == OPENS and not (
+                len(pieces[q]) == 1 and "particle" in tags
+                and (q + 1 == len(units) or units[q + 1] == OPENS)):
             core += 1
     return names
 
@@ -1266,16 +1309,30 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
     a run, leaves both lists without the title test's frame."""
     run_titles: list[int] = []
     absorbed: list[tuple[int, ...]] = []
+    # a particle run reports as the one piece the chain makes of it
+    # wherever it stands, the run being the chain's to merge; S2's read
+    # sees it unmerged (#620)
+    run = False
     for r in range(p + 1, peel.names):
         q = rest[r]
         if is_suffix_piece(pieces[q], ptags[q], tokens):
+            run = False
             continue
         if is_title_piece(pieces[q], ptags[q], tokens):
             run_titles.append(q)
+            run = False
             continue
         piece = tuple(pieces[q])
         if piece not in peel.picks and has_name_content(piece, tokens):
-            absorbed.append(piece)
+            particle = ("prefix" in ptags[q] or len(piece) == 1
+                        and "particle" in tokens[piece[0]].tags)
+            if run and particle:
+                absorbed[-1] += piece
+            else:
+                absorbed.append(piece)
+            run = particle
+        else:
+            run = False
     return Peel(p, peel.numeral, peel.picks, peel.anchors,
                 tuple(run_titles), tuple(absorbed))
 
@@ -1434,6 +1491,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   ptags: Sequence[Set[str]],
                   tokens: Sequence[WorkToken],
                   one_case: bool | None,
+                  units: Sequence[int] | None = None,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what
@@ -1511,11 +1569,12 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     The splice itself is never materialized in between: the runs are
     collected back to front and joined once.
     """
-    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
+    peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
+                           units=units)
     kept = trailing_titles(rest, pieces, ptags, tokens,
                            end=peeled.names)
     if kept == peeled.names:
-        p = run_start(rest, peeled.names, pieces, ptags, tokens)
+        p = run_start(rest, peeled.names, pieces, ptags, tokens, units)
         return rest, (), (peeled if p == peeled.names else credential_run(
             rest, peeled, p, pieces, ptags, tokens))
     # `rest[:hi]` stands as written; `behind` holds the peeled runs
@@ -1538,15 +1597,19 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
         if picks and picks[-1] == tuple(pieces[rest[names - 1]]):
             picks.pop()
         hi = kept
-        if kept >= 2 and behind_count >= 2:
+        # two UNITS in front of the splice, where units are counted
+        if (behind_count >= 2 and kept >= 2
+                and (units is None or second_unit(rest, units) < kept)):
             peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
-                                   start=hi, anchors=peeled.anchors)
+                                   start=hi, anchors=peeled.anchors,
+                                   units=units)
             picks.extend(peeled.picks)
         else:
             rest = rest[:hi] + [j for run in reversed(behind) for j in run]
             hi = len(rest)
             behind, behind_count = [], 0
-            peeled = peel_trailing(rest, pieces, ptags, tokens, one_case)
+            peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
+                                   units=units)
             picks = list(peeled.picks)
             numeral = peeled.numeral
         kept = trailing_titles(rest, pieces, ptags, tokens,
@@ -1554,7 +1617,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     if behind:
         rest = rest[:hi] + [j for run in reversed(behind) for j in run]
     final = Peel(peeled.names, numeral, tuple(picks), None)
-    p = run_start(rest, final.names, pieces, ptags, tokens)
+    p = run_start(rest, final.names, pieces, ptags, tokens, units)
     return (rest, tuple(j for run in reversed(titled) for j in run),
             final if p == final.names else credential_run(
                 rest, final, p, pieces, ptags, tokens))
@@ -1580,122 +1643,86 @@ class TailRead(NamedTuple):
     peel: Peel
 
 
-def _counted_as_one(piece: Sequence[int], ptags: Set[str],
-                    tokens: Sequence[WorkToken]) -> bool:
-    """A piece the particle chain takes into the run in front of it and
-    that S2's read has nothing to decide about: no particle (a particle
-    starts a run of its own), and nothing the trailing reading weighs
-    -- suffix vocabulary of either kind, the ambiguous class, a word in
-    it by shape, a roman numeral by shape ('VI' is in no wordlist and
-    the fork reads it all the same: the class #610 found), an initial
-    (the fork reads the word before a letter), or a title the H5 chain
-    could take. A connective join is
-    one name word, P3's own count."""
-    if "suffix" in ptags or "prefix" in ptags:
-        return False
-    if len(piece) > 1:
-        return True
-    # the roman test inline: one call per name word behind a particle
-    # run (AGENTS.md's frame budget, question 1); the title helper
-    # behind its tag, which almost no word carries
-    tags = tokens[piece[0]].tags
-    return (tags.isdisjoint(_NOT_COUNTED_AS_ONE)
-            and _ROMAN.match(tokens[piece[0]].text) is None
-            and not ("vocab:title" in tags
-                     and is_trailing_title_word(piece, ptags, tokens)))
+# rules.md#P2: "A particle joins the words after it into one name part,
+# the join running until the next particle starts a group of its own"
+# -- how far, asked by the chain and by S2's read alike (#620), so the
+# units the read counts are the ones the chain then builds
+def chain_run_end(k: int, pieces: Sequence[Sequence[int]],
+                  ptags: Sequence[Set[str]],
+                  tokens: Sequence[WorkToken], end: int) -> int:
+    """Where the chain run opened by the particle `pieces[k]` ends: past
+    the particles straight behind it, then past the name words up to
+    `end`, a suffix piece, or the next particle. `pieces[k:j]` is the
+    one name unit P2 makes of them; `j == k + 1` where it makes none.
+
+    The particle test is `is_prefix_piece`'s definition written inline:
+    the walk runs per piece of every chained name (AGENTS.md's frame
+    budget, question 1)."""
+    count = len(pieces)
+    j = k + 1
+    while j < count and ("prefix" in ptags[j]
+                         or len(pieces[j]) == 1
+                         and "particle" in tokens[pieces[j][0]].tags):
+        j += 1
+    while (j < end and "prefix" not in ptags[j]
+           and not (len(pieces[j]) == 1
+                    and "particle" in tokens[pieces[j][0]].tags)
+           and not is_suffix_piece(pieces[j], ptags[j], tokens)):
+        j += 1
+    return j
 
 
-#: what the trailing read weighs (`trailing_candidates`' admissions),
-#: plus the words that end a unit's plain run
-_NOT_COUNTED_AS_ONE = _TRAILING_WORD_TAGS | {"particle", "initial"}
+def _chain_units(pieces: Sequence[Sequence[int]],
+                 ptags: Sequence[Set[str]],
+                 tokens: Sequence[WorkToken],
+                 n: int) -> tuple[list[int] | None, int]:
+    """The name units P2's chain will make of `pieces`, as a mark per
+    piece -- OPENS where a piece opens a unit, JOINED where the chain
+    will join a name word to the run in front of it, and BOUND for a
+    particle inside the run, a word the run took and so a name word
+    whatever else it is ('van mc', 'von vd': rules.md#S2, the words
+    both particles and suffix vocabulary standing straight behind a
+    particle) -- and where the name starts.
+    `n` is the end of the leading title run; the chain's leading
+    position is the first title that is also a particle ('Freiherr
+    von vd', 'St van Mc'), else `n`, and the chain opens no unit there.
+    A unit the chain opens INSIDE the titles makes a name of them
+    ('Freiherr St van Berg MA', 'Freiherr Freiherr Prof do'), so the
+    first unit at or before `n` is where the name starts.
 
-
-def _counting_view(pieces: Sequence[Sequence[int]],
-                   ptags: Sequence[Set[str]],
-                   tokens: Sequence[WorkToken],
-                   n: int,
-                   ) -> tuple[Sequence[Sequence[int]], Sequence[Set[str]],
-                              int]:
-    """The pieces as S2's read counts them: a particle run past the
-    name's leading position, with the plain name words after it, as the
-    one unit P2's chain will make of them, as the unit-partition entry
-    in mechanisms.md has every rule that counts name words count them.
-    The particles of the run include the words that are also suffix
-    vocabulary ('van Mc', 'van do'), as the chain's run always took
-    them. `n` is the end of the leading title run; the leading position
-    is the chain's own -- the first piece past the titles, or a title
-    that is also a particle ('Freiherr von vd', 'St van Mc'), which the
-    chain's scan stops at. A copy, never the pieces themselves: the
-    read only counts with it, and the chain makes the join afterwards,
-    over the name the read leaves. The third value is where the name
-    starts in the view's own indices: a title that is also a
-    particle can open a unit INSIDE the leading titles ('Freiherr St van
-    Berg MA', the unit 'St van Berg' beginning at the second title), and
-    the real index then lands past the name. A unit opened inside the
-    titles makes a name of them even where it ends short of piece `n`
-    ('Freiherr Freiherr Prof do', the unit 'Freiherr Prof'), so the
-    first unit at or before `n` is where the read starts.
-
-    Past a word that starts #602's credential run a unit is the
-    particle run alone, as the chain's own merge leaves it there: the
-    count is of the name words in front of the run, and inside it every
-    other word reads on its own -- a title word as a title ('John Smith
-    MD van Secretary Jones'), an absorbed name word reported as
-    written.
-
-    The particle test is `is_prefix_piece`'s own definition written
-    inline, for a loop over every piece of every main segment
-    (AGENTS.md's frame budget, question 1); most names hold no particle
-    past their first piece, and then the view is the pieces
-    themselves."""
+    Nothing is merged: the read counts with the flags and reads every
+    piece as written, so no word it weighs is hidden inside a unit
+    (#620; the merged copy #614 read through hid a title inside a
+    credential run and a shape-only numeral, and its indices drifted
+    from the pieces'). None where no particle stands past the first
+    piece, every piece then its own unit."""
     count = len(pieces)
     prefix = [("prefix" in ptags[k]
                or len(pieces[k]) == 1
                and "particle" in tokens[pieces[k][0]].tags)
               for k in range(count)]
     if not any(prefix[1:]):
-        return pieces, ptags, n
+        return None, n
     leading = n
     for k in range(n):
         if prefix[k]:
             leading = k
             break
-    view: list[list[int]] = []
-    view_tags: list[set[str]] = []
+    units = [OPENS] * count
     at = n
-    ran = False
-    # a run starter behind the last particle can change no unit
-    last = count - 1
-    while not prefix[last]:
-        last -= 1
-    k = 0
+    k = leading + 1
     while k < count:
-        if k > leading and prefix[k]:
-            j = k + 1
-            while j < count and prefix[j]:
-                j += 1
-            while (not ran and j < count and not prefix[j]
-                   and _counted_as_one(pieces[j], ptags[j], tokens)):
-                j += 1
+        if prefix[k]:
+            j = chain_run_end(k, pieces, ptags, tokens, count)
             if j > k + 1:
-                # before the first unit a view index is a piece index
                 if k < at:
                     at = k
-                unit: list[int] = []
-                for p in pieces[k:j]:
-                    unit.extend(p)
-                view.append(unit)
-                view_tags.append({"prefix"})
+                for q in range(k + 1, j):
+                    units[q] = BOUND if prefix[q] else JOINED
                 k = j
                 continue
-        if (not ran and leading < k < last
-                and ("suffix" in ptags[k]
-                     or "vocab:suffix" in tokens[pieces[k][0]].tags)):
-            ran = starts_a_credential_run(pieces[k], ptags[k], tokens)
-        view.append(list(pieces[k]))
-        view_tags.append(set(ptags[k]))
         k += 1
-    return view, view_tags, at
+    return units, at
 
 
 def read_trailing_run(pieces: Sequence[Sequence[int]],
@@ -1705,33 +1732,32 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
                       ) -> tuple[TailRead, int] | None:
     """`tail_reading` read once over a segment's pieces as group holds
     them after rules.md#P3's connective joins and before the particle
-    chain (#614), counting a particle run and the plain words after it
-    as the one unit the chain will make (`_counting_view`): a `TailRead`,
-    and the index in `pieces` of the first piece of the run, which runs
-    to the end. None where there is nothing to read (no name piece past
-    the leading titles), and where the run is not one block at the end
-    of `pieces`: a title the H5 chain takes standing in front of a name
-    word the peel declined ('John Dr. G.J.'), the one shape whose run
-    holds a name piece -- there group joins as before #614 and assign
-    reads for itself. A segment the read takes nothing from reads as a
-    run of no pieces, at the end."""
+    chain (#614), counting name words by the units the chain will make
+    (`_chain_units`, #620): a `TailRead`, and the index in `pieces` of
+    the first piece of the run, which runs to the end. None where there
+    is nothing to read (no name piece past the leading titles), and
+    where the run is not one block at the end of `pieces`: a title the
+    H5 chain takes standing in front of a name word the peel declined
+    ('John Dr. G.J.'), the one shape whose run holds a name piece --
+    there group joins as before #614 and assign reads for itself. A
+    segment the read takes nothing from reads as a run of no pieces, at
+    the end."""
     n = leading_titles(pieces, ptags, tokens)
     if n == len(pieces):
         return None
-    view, view_tags, at = _counting_view(pieces, ptags, tokens, n)
-    rest = peel_walk(at, view_tags)
-    rest, titled, peel = tail_reading(rest, view, view_tags, tokens,
-                                      one_case)
+    units, at = _chain_units(pieces, ptags, tokens, n)
+    rest, titled, peel = tail_reading(peel_walk(at, ptags), pieces, ptags,
+                                      tokens, one_case, units)
     tail: set[int] = set()
     for k in rest[peel.names:]:
-        tail.update(view[k])
+        tail.update(pieces[k])
     titles: set[int] = set()
     for k in titled:
-        titles.update(view[k])
+        titles.update(pieces[k])
     tail |= titles
     run_titles: set[int] = set()
     for k in peel.run_titles:
-        run_titles.update(view[k])
+        run_titles.update(pieces[k])
     start = len(pieces)
     for k, piece in enumerate(pieces):
         if piece[0] in tail:
