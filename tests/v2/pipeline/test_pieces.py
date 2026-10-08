@@ -16,6 +16,7 @@ from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline import STAGES
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline import _group
+from nameparser._pipeline import _pieces
 from nameparser._pipeline._group import group
 from nameparser._pipeline import _comma
 from nameparser._pipeline._pieces import (
@@ -1151,3 +1152,68 @@ def test_a_unit_opened_inside_the_titles_starts_the_name() -> None:
     marks, at = _units("Freiherr St MA")
     assert [u for _, u in marks] == [OPENS, OPENS, OPENS]
     assert at == 2
+
+
+_WEIGHED_GRID_HEADS = ("John van", "Freiherr von", "anh van", "Jan de la",
+                       "John van Berg", "Freiherr von Berg")
+_WEIGHED_GRID_WORDS = ("MA", "Ma", "ma", "DO", "do", "vd", "mc", "V", "VI",
+                       "III", "X.Y.Z.", "G.J.", "XYZ", "PhD", "Jr", "Jr.",
+                       "J.", "Prof.", "Dr.", "Prof", "Jones", "and")
+
+
+def _weighed_grid_violations() -> list[str]:
+    """The names over the grid whose trailing read puts a piece
+    `_chain_units` marks JOINED into the run."""
+    bad = []
+    for head in _WEIGHED_GRID_HEADS:
+        for n in (1, 2):
+            for tail in itertools.product(_WEIGHED_GRID_WORDS, repeat=n):
+                text = " ".join((head,) + tail)
+                state, found = _read(text)
+                if found is None:
+                    continue
+                pieces = [[i] for i in state.segments[0]]
+                ptags: list[set[str]] = [set() for _ in pieces]
+                tokens = list(state.tokens)
+                units, _ = _chain_units(pieces, ptags, tokens,
+                                        leading_titles(pieces, ptags, tokens))
+                if units is None:
+                    continue
+                read, _start = found
+                if any(units[k] == JOINED and p[0] in read.tail
+                       for k, p in enumerate(pieces)):
+                    bad.append(text)
+    return bad
+
+
+def test_a_word_the_read_takes_is_never_one_the_count_joined() -> None:
+    """`_weighed` is a hand statement of what the trailing reading
+    weighs, and this is what pins it to the reading: over the grid, no
+    piece the count folded into a particle run as a plain word ends up
+    in the run the read takes (#620's /simplify, after
+    `trailing_candidates`' pin against `tail_reading`). An `initial` is
+    weighed for the numeral fork's count rather than for being taken,
+    so this cannot see it; its case row holds it. Recorded negative
+    control (2026-10-08): with `_weighed` answering False, 320 of the
+    grid's names fail ('John van Prof.', 'John van MA Prof.')."""
+    assert _weighed_grid_violations() == []
+
+
+def test_the_second_unit_is_found_once_per_read(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The second name unit is looked up once for the read and handed
+    to every pass, not rescanned from the front by each pass, which
+    cost the square of a credential run behind a long joined surname
+    -- C-level work no frame guard sees (#620's /simplify, measured
+    5.77x for 4x the input against master's 4.08x). Recorded negative
+    control: one lookup per pass, 32 at the size below."""
+    calls = [0]
+    real = _pieces.second_unit
+
+    def counting(rest: Sequence[int], units: Sequence[int]) -> int:
+        calls[0] += 1
+        return real(rest, units)
+
+    monkeypatch.setattr(_pieces, "second_unit", counting)
+    parse("Freiherr von " + "Berg " * 32 + "MA Dr. " * 32)
+    assert calls[0] == 1

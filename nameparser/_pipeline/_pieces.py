@@ -1039,7 +1039,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    one_case: bool | None,
                    start: int | None = None,
                    anchors: list[bool] | None = None,
-                   units: Sequence[int] | None = None) -> Peel:
+                   units: Sequence[int] | None = None,
+                   second: int = 1) -> Peel:
     """The S2 trailing peel over `rest`, a peel_walk list. In the
     piece layer rather than in assign because group's bound-given
     reserve asks the same question of the view the join would leave
@@ -1060,11 +1061,16 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     returned picks are the resumed walk's own; the numeral is never
     read, `start` standing short of the walk's last piece.
 
+    `second` is where the second name unit opens in `rest`
+    (`second_unit`), the caller's to find once; positions are units
+    where `units` is None, and it is 1.
+
     `units`, where given, marks each piece by the unit the chain will
     put it in (`_chain_units`, #620): the words to spare are counted in
     units, so a particle chain counts as the one name word P2 makes of
-    it, and a particle inside a chain run is a name word the walk
-    stops at. The numeral fork still reads the piece in front of the
+    it, and a piece the chain joins into a run -- a particle inside
+    it, or a word the reading does not weigh -- is a name word the
+    walk stops at. The numeral fork still reads the piece in front of the
     numeral as written: an initial there keeps it a name word whatever
     unit the initial is in ('John van der J. V', rules.md#P2).
     """
@@ -1072,11 +1078,12 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     numeral: tuple[int, ...] | None = None
     # where the second name unit opens in `rest`, found once a member
     # asks; positions are units where `units` is None
-    second = 1 if units is None else -1
     k = len(rest) if start is None else start
     while k > 0:
         piece = pieces[rest[k - 1]]
-        if units is not None and units[rest[k - 1]] == BOUND:
+        # a piece the chain joins into a run is a name word: a particle
+        # inside the run, or a word the reading does not weigh
+        if units is not None and units[rest[k - 1]] != OPENS:
             break
         if is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
             k -= 1
@@ -1137,8 +1144,6 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             lean = listed_lean(tokens[piece[0]], one_case)
             # peeling still leaves given + family, or the writing says
             # to peel anyway
-            if units is not None and second < 0:
-                second = second_unit(rest, units)
             if lean == "credential" or (lean is None and k - 2 >= second):
                 k -= 1
                 continue
@@ -1212,12 +1217,12 @@ def run_start(rest: Sequence[int], names: int,
                 and starts_a_credential_run(pieces[q], ptags[q], tokens)):
             return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
-        if units is None:
-            if not (len(pieces[q]) == 1 and "particle" in tags):
-                core += 1
-        elif units[q] == OPENS and not (
+        # -- unless it opens a chain run, which is then the surname
+        # (with no `units` every piece opens its own)
+        if (units is None or units[q] == OPENS) and not (
                 len(pieces[q]) == 1 and "particle" in tags
-                and (q + 1 == len(units) or units[q + 1] == OPENS)):
+                and (units is None or q + 1 == len(units)
+                     or units[q + 1] == OPENS)):
             core += 1
     return names
 
@@ -1297,7 +1302,7 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
                    pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
                    tokens: Sequence[WorkToken],
-                   unjoined: bool = False) -> Peel:
+                   units: Sequence[int] | None = None) -> Peel:
     """`peel` with its name count cut back to `p`, where #602's run
     starts (`run_start`, which the caller asks first so that a name
     with no run pays one frame, not two).
@@ -1317,16 +1322,14 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
         # Two or more particles in a row are the one piece P2's chain
         # makes of them wherever they stand, a dual among them ('van
         # mc', 'Mc Mc') no post-nominal of its own: where the chain has
-        # run that piece is here already, and S2's read (`unjoined`,
-        # #620) sees the pieces before it runs, so it gathers them the
-        # same way. M2's clause-free view reads words before any join
-        # and reports them word by word, as it always has.
-        # The particle test inline, as `_chain_units` has it.
-        e = r
-        while unjoined and e < peel.names and (
-                e == r or rest[e] == rest[e - 1] + 1) and (
-                "prefix" in ptags[rest[e]] or len(pieces[rest[e]]) == 1
-                and "particle" in tokens[pieces[rest[e]][0]].tags):
+        # run that piece is here already, and S2's read (#620) sees the
+        # pieces before it runs, so it gathers the particles its
+        # `units` mark BOUND behind the one that opens them. M2's
+        # clause-free view reads words before any join and reports them
+        # word by word, as it always has.
+        e = r + 1
+        while (units is not None and e < peel.names
+               and units[rest[e]] == BOUND):
             e += 1
         if e > r + 1:
             run: list[int] = []
@@ -1581,14 +1584,20 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     The splice itself is never materialized in between: the runs are
     collected back to front and joined once.
     """
+    # where the second name unit opens, found once for the read: a
+    # pass keeps `rest[:hi]`, so it holds while it stands in front of
+    # the splice, and each pass rescanning for it from the front cost
+    # the square of a run behind a long joined surname (#620's
+    # /simplify, 'Freiherr von Berg Berg ... MA Dr. MA Dr. ...')
+    second = 1 if units is None else second_unit(rest, units)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
-                           units=units)
+                           units=units, second=second)
     kept = trailing_titles(rest, pieces, ptags, tokens,
                            end=peeled.names)
     if kept == peeled.names:
         p = run_start(rest, peeled.names, pieces, ptags, tokens, units)
         return rest, (), (peeled if p == peeled.names else credential_run(
-            rest, peeled, p, pieces, ptags, tokens, units is not None))
+            rest, peeled, p, pieces, ptags, tokens, units))
     # `rest[:hi]` stands as written; `behind` holds the peeled runs
     # the splices left after it, and `titled` the chained ones, each
     # back to front -- a pass's run goes in FRONT of what the pass
@@ -1619,14 +1628,16 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
         if kept >= 2 and behind_count >= 2:
             peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
                                    start=hi, anchors=peeled.anchors,
-                                   units=units)
+                                   units=units, second=second)
             picks.extend(peeled.picks)
         else:
             rest = rest[:hi] + [j for run in reversed(behind) for j in run]
+            if units is not None and second >= hi:
+                second = second_unit(rest, units)
             hi = len(rest)
             behind, behind_count = [], 0
             peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
-                                   units=units)
+                                   units=units, second=second)
             picks = list(peeled.picks)
             numeral = peeled.numeral
         kept = trailing_titles(rest, pieces, ptags, tokens,
@@ -1637,7 +1648,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     p = run_start(rest, final.names, pieces, ptags, tokens, units)
     return (rest, tuple(j for run in reversed(titled) for j in run),
             final if p == final.names else credential_run(
-                rest, final, p, pieces, ptags, tokens, units is not None))
+                rest, final, p, pieces, ptags, tokens, units))
 
 
 class TailRead(NamedTuple):
