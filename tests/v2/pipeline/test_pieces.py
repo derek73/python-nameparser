@@ -21,7 +21,8 @@ from nameparser._pipeline import _comma
 from nameparser._pipeline._pieces import (
     _anchors, _numeral_behind_the_initial_veto, anchor_in_reach,
     credential_anchors,
-    TailRead, credential_at_the_given_slot, is_leading_title,
+    BOUND, JOINED, OPENS, TailRead, _chain_units,
+    credential_at_the_given_slot, is_leading_title,
     join_connectives, leading_titles, read_trailing_run,
     own_words, peel_trailing, peel_walk, segment_suffix_reading,
     tail_reading, trailing_candidates, trailing_titles,
@@ -1112,3 +1113,35 @@ def test_the_trailing_read_declines_where_there_is_nothing_to_split() -> None:
     the peel declined), which is read as before #614."""
     assert _read("Dr.")[1] is None
     assert _read("John Dr. G.J.")[1] is None
+
+
+def _units(text: str) -> tuple[list[tuple[str, int]], int]:
+    """`_chain_units` over a whole name's words, one piece each, as
+    (word, mark) pairs, and where the name starts."""
+    state = _state_through("classify", text)
+    pieces = [[i] for i in state.segments[0]]
+    ptags: list[set[str]] = [set() for _ in pieces]
+    tokens = list(state.tokens)
+    units, at = _chain_units(pieces, ptags, tokens,
+                             leading_titles(pieces, ptags, tokens))
+    assert units is not None
+    return [(tokens[p[0]].text, u) for p, u in zip(pieces, units)], at
+
+
+def test_the_read_marks_the_units_the_chain_will_make() -> None:
+    """#620: a particle opens a unit, a name word the chain joins to it
+    is JOINED, and a particle inside the run is BOUND -- a word the run
+    took, which the peel does not weigh ('van mc'); a suffix piece ends
+    the run and opens nothing."""
+    marks, at = _units("John van mc Berg PhD")
+    assert marks == [("John", OPENS), ("van", OPENS), ("mc", BOUND),
+                     ("Berg", JOINED), ("PhD", OPENS)]
+    assert at == 0
+
+
+def test_a_unit_opened_inside_the_titles_starts_the_name() -> None:
+    """A title that is also a particle opens the chain's unit inside the
+    leading titles, and the name starts there, not past the titles."""
+    marks, at = _units("Freiherr St van Berg MA")
+    assert [u for _, u in marks] == [OPENS, OPENS, BOUND, JOINED, JOINED]
+    assert at == 1

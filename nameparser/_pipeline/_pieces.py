@@ -1295,7 +1295,8 @@ def has_name_content(piece: Sequence[int],
 def credential_run(rest: Sequence[int], peel: Peel, p: int,
                    pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
-                   tokens: Sequence[WorkToken]) -> Peel:
+                   tokens: Sequence[WorkToken],
+                   unjoined: bool = False) -> Peel:
     """`peel` with its name count cut back to `p`, where #602's run
     starts (`run_start`, which the caller asks first so that a name
     with no run pays one frame, not two).
@@ -1309,30 +1310,40 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
     a run, leaves both lists without the title test's frame."""
     run_titles: list[int] = []
     absorbed: list[tuple[int, ...]] = []
-    # a particle run reports as the one piece the chain makes of it
-    # wherever it stands, the run being the chain's to merge; S2's read
-    # sees it unmerged (#620)
-    run = False
-    for r in range(p + 1, peel.names):
+    r = p + 1
+    while r < peel.names:
         q = rest[r]
+        # Two or more particles in a row are the one piece P2's chain
+        # makes of them wherever they stand, a dual among them ('van
+        # mc', 'Mc Mc') no post-nominal of its own: where the chain has
+        # run that piece is here already, and S2's read (`unjoined`,
+        # #620) sees the pieces before it runs, so it gathers them the
+        # same way. M2's clause-free view reads words before any join
+        # and reports them word by word, as it always has.
+        # The particle test inline, as `_chain_units` has it.
+        e = r
+        while unjoined and e < peel.names and (
+                e == r or rest[e] == rest[e - 1] + 1) and (
+                "prefix" in ptags[rest[e]] or len(pieces[rest[e]]) == 1
+                and "particle" in tokens[pieces[rest[e]][0]].tags):
+            e += 1
+        if e > r + 1:
+            run: list[int] = []
+            for x in rest[r:e]:
+                run.extend(pieces[x])
+            if has_name_content(run, tokens):
+                absorbed.append(tuple(run))
+            r = e
+            continue
+        r += 1
         if is_suffix_piece(pieces[q], ptags[q], tokens):
-            run = False
             continue
         if is_title_piece(pieces[q], ptags[q], tokens):
             run_titles.append(q)
-            run = False
             continue
         piece = tuple(pieces[q])
         if piece not in peel.picks and has_name_content(piece, tokens):
-            particle = ("prefix" in ptags[q] or len(piece) == 1
-                        and "particle" in tokens[piece[0]].tags)
-            if run and particle:
-                absorbed[-1] += piece
-            else:
-                absorbed.append(piece)
-            run = particle
-        else:
-            run = False
+            absorbed.append(piece)
     return Peel(p, peel.numeral, peel.picks, peel.anchors,
                 tuple(run_titles), tuple(absorbed))
 
@@ -1576,7 +1587,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     if kept == peeled.names:
         p = run_start(rest, peeled.names, pieces, ptags, tokens, units)
         return rest, (), (peeled if p == peeled.names else credential_run(
-            rest, peeled, p, pieces, ptags, tokens))
+            rest, peeled, p, pieces, ptags, tokens, units is not None))
     # `rest[:hi]` stands as written; `behind` holds the peeled runs
     # the splices left after it, and `titled` the chained ones, each
     # back to front -- a pass's run goes in FRONT of what the pass
@@ -1597,9 +1608,14 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
         if picks and picks[-1] == tuple(pieces[rest[names - 1]]):
             picks.pop()
         hi = kept
-        # two UNITS in front of the splice, where units are counted
-        if (behind_count >= 2 and kept >= 2
-                and (units is None or second_unit(rest, units) < kept)):
+        # Counted in units (#620) the position test still answers: a
+        # splice lowers a count only by taking out titles that open
+        # units of their own, and with fewer than two units in front of
+        # it every piece there is in the first piece's chain run, which
+        # the titles behind it join -- they count nothing, so nothing
+        # the walk peeled loses a word to spare (fuzzed over 372,330
+        # names against a units test here: no difference)
+        if kept >= 2 and behind_count >= 2:
             peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
                                    start=hi, anchors=peeled.anchors,
                                    units=units)
@@ -1620,7 +1636,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     p = run_start(rest, final.names, pieces, ptags, tokens, units)
     return (rest, tuple(j for run in reversed(titled) for j in run),
             final if p == final.names else credential_run(
-                rest, final, p, pieces, ptags, tokens))
+                rest, final, p, pieces, ptags, tokens, units is not None))
 
 
 class TailRead(NamedTuple):
