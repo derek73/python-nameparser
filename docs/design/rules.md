@@ -1031,8 +1031,10 @@ S2. Rationale: generational suffixes and credentials are recognized
     (P5) are made, counting a particle run and the name words the
     chain will take with it as the one name word it will make of them
     — the words both particles and suffix vocabulary standing straight
-    behind a particle among them; inside a credential run a word
-    stands on its own, a title word there still a title — and neither
+    behind a particle among them, while a word the reading weighs
+    counts as a word of its own wherever it stands; inside a
+    credential run a word stands on its own, a title word there
+    still a title — and neither
     join reaches a word the run took. A
     BARE ambiguous acronym is consumed only when the name has words
     to spare — as the second of two words it stays the family

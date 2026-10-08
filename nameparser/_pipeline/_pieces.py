@@ -61,7 +61,7 @@ from nameparser._pipeline._state import (
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, Lean, ambiguous_lean, in_initialless_script,
+    _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
     is_single_letter_numeral, is_trailing_numeral_suffix, tag_marker_runs,
 )
 
@@ -1153,10 +1153,11 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
             # `rest[k - 2:0:-1]` is what stands in front of the member
             # down to, not including, `rest[0]`, the name the reserve
             # keeps, which never anchors (`credential_anchors`). So a
-            # member at k == 2 finds nothing in reach -- and that is
-            # every by-shape member that gets here, a lean of None
-            # with k >= 3 having been consumed above, so the by-shape
-            # half takes the count with no test of its own.
+            # member at k == 2 finds nothing in reach. A by-shape member
+            # (a lean of None) gets here at k == 2, or, counted in the
+            # chain's units (#620), behind a run the chain joins into
+            # one word ('Freiherr von Berg G.J.', at k == 3), where
+            # what it finds in reach is that run's words.
             # The pass, once built, answers first: asked of every
             # member, the reach test would walk back through the run
             # each time, one look-behind per member.
@@ -1694,7 +1695,9 @@ def _chain_units(pieces: Sequence[Sequence[int]],
                  n: int) -> tuple[list[int] | None, int]:
     """The name units P2's chain will make of `pieces`, as a mark per
     piece -- OPENS where a piece opens a unit, JOINED where the chain
-    will join a name word to the run in front of it, and BOUND for a
+    will join a name word to the run in front of it and the reading
+    does not weigh the word (`_weighed`, which keeps a word of its own
+    what a position always counted as one), and BOUND for a
     particle inside the run, a word the run took and so a name word
     whatever else it is ('van mc', 'von vd': rules.md#S2, the words
     both particles and suffix vocabulary standing straight behind a
@@ -1730,15 +1733,45 @@ def _chain_units(pieces: Sequence[Sequence[int]],
     while k < count:
         if prefix[k]:
             j = chain_run_end(k, pieces, ptags, tokens, count)
-            if j > k + 1:
-                if k < at:
-                    at = k
-                for q in range(k + 1, j):
-                    units[q] = BOUND if prefix[q] else JOINED
-                k = j
-                continue
+            q = k + 1
+            while q < j and prefix[q]:
+                units[q] = BOUND
+                q += 1
+            while q < j and not _weighed(pieces[q], tokens):
+                units[q] = JOINED
+                q += 1
+            # a unit with nothing past its opener is no unit the count
+            # sees, and makes no name of the titles it opens inside
+            if q > k + 1 and k < at:
+                at = k
+            k = j
+            continue
         k += 1
     return units, at
+
+
+def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
+    """Whether a word the chain will join is one the trailing reading
+    WEIGHS, and so counts as a word of its own, as a position always
+    counted it: a suffix word of either kind, the ambiguous class, a
+    word in it by shape, an initial, a roman numeral by shape, or a
+    period-marked title word. A word the chain joins and the reading
+    weighs is a word the reading may yet take ('Freiherr von Berg MA
+    X.Y.Z.' keeps suffix 'MA X.Y.Z.'), and one that opens a unit inside
+    the titles may leave the titles a title ('St St VI'), so it ends the
+    plain run the count folds into the particle (#620's review). A
+    connective join is one name word, P3's own count. The tests inline:
+    this asks once per word behind a particle run."""
+    if len(piece) > 1:
+        return False
+    tok = tokens[piece[0]]
+    return (not tok.tags.isdisjoint(_WEIGHED_TAGS)
+            or _ROMAN.match(tok.text) is not None
+            or "vocab:title" in tok.tags
+            and _PERIOD_ABBREV.match(tok.text) is not None)
+
+
+_WEIGHED_TAGS = _TRAILING_WORD_TAGS | {"initial"}
 
 
 def read_trailing_run(pieces: Sequence[Sequence[int]],

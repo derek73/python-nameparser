@@ -1132,7 +1132,7 @@ def test_the_read_marks_the_units_the_chain_will_make() -> None:
     """#620: a particle opens a unit, a name word the chain joins to it
     is JOINED, and a particle inside the run is BOUND -- a word the run
     took, which the peel does not weigh ('van mc'); a suffix piece ends
-    the run and opens nothing."""
+    the run and stays a unit of its own."""
     marks, at = _units("John van mc Berg PhD")
     assert marks == [("John", OPENS), ("van", OPENS), ("mc", BOUND),
                      ("Berg", JOINED), ("PhD", OPENS)]
@@ -1141,7 +1141,13 @@ def test_the_read_marks_the_units_the_chain_will_make() -> None:
 
 def test_a_unit_opened_inside_the_titles_starts_the_name() -> None:
     """A title that is also a particle opens the chain's unit inside the
-    leading titles, and the name starts there, not past the titles."""
+    leading titles, and the name starts there, not past the titles. A
+    word the reading weighs ('MA') is a word of its own though the
+    chain may join it -- and a unit that is nothing else past its opener
+    leaves the titles a title ('Freiherr St MA'), #620's review."""
     marks, at = _units("Freiherr St van Berg MA")
-    assert [u for _, u in marks] == [OPENS, OPENS, BOUND, JOINED, JOINED]
+    assert [u for _, u in marks] == [OPENS, OPENS, BOUND, JOINED, OPENS]
     assert at == 1
+    marks, at = _units("Freiherr St MA")
+    assert [u for _, u in marks] == [OPENS, OPENS, OPENS]
+    assert at == 2

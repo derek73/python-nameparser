@@ -1994,3 +1994,8 @@ def test_an_absorbed_particle_run_reports_as_the_one_word_the_chain_makes(
     assert reported("Dr. John Smith Esq. RN Mc Mc") == [["Mc", "Mc"]]
     assert reported("Mary Ann Smith Dr. MD vd Ph. D. van") == [["van"]]
     assert reported("Jane Doe nee van der Berg Jr mc van") == [["van"]]
+    # a P3-joined phrase is a particle too, and the gathering runs on
+    # every pass of the read, after the H5 chain's splice as before it
+    assert reported("John Smith Jr. von und zu Mc") == [
+        ["von", "und", "zu", "Mc"]]
+    assert reported("John Smith PhD van mc Dr.") == [["van", "mc"]]
