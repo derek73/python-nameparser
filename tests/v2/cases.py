@@ -9698,32 +9698,121 @@ CASES: tuple[Case, ...] = (
                "'Mary' / middle 'Jones Prof. née' / last 'Smith' "
                "(measured 2026-09-09)"),
     Case("title_word_trailing_in_a_conjunction_unit",
-         "Smith, John Prof. and Dr.",
-         {"given": "John", "middle": "Prof. and Dr.", "family": "Smith"},
+         "John Smith Prof. and Dr.",
+         {"given": "John", "middle": "Smith",
+          "family": "Prof. and Dr."},
          classification="parity",
          notes="negative control for the ONE-WORD-per-piece gate: the "
                "conjunction merge made 'Prof. and Dr.' one piece, and "
                "the tokens of a joined unit are not each a title "
                "word. The row that PINS that gate -- with it deleted "
-               "the walk takes the unit as title 'Prof. and Dr.', "
-               "because the shape test then runs on the piece's first "
-               "token and 'Prof.' wears the period (measured 2026-10-07 "
-               "by mutation). Written behind a family comma since #614: "
-               "the given part is the one place the chain still reads "
-               "pieces a join has made, the main segment's run being "
-               "read before any join (the row below)"),
-    Case("a_trailing_title_is_read_before_a_connective_joins",
-         "John Smith Prof. and Dr.",
-         {"title": "Dr.", "given": "John", "middle": "Smith",
-          "family": "Prof. and"},
+               "the walk takes the unit, because the shape test then "
+               "runs on the piece's first token and 'Prof.' wears the "
+               "period ('John de la Prof.' reads 0 either way; both "
+               "measured 2026-09-09 in test_pieces.py)"),
+    Case("a_salutation_alone_keeps_its_connective",
+         "Mr. and Mrs.",
+         {"title": "Mr. and Mrs."},
          ambiguities=(),
+         classification="parity",
+         notes="#614: S2's run is read after P3's connective joins, so "
+               "the join makes one title of the salutation before the H5 "
+               "chain reads it. Read before the joins (#614's first "
+               "design), the chain took 'Mrs.' and left 'and' standing "
+               "as the family name (#614's review)"),
+    Case("a_salutation_alone_keeps_its_ampersand",
+         "Mr. & Mrs.",
+         {"title": "Mr. & Mrs."},
+         ambiguities=(),
+         classification="parity",
+         notes="the ampersand twin of the row above"),
+    Case("a_joined_salutation_is_one_leading_title",
+         "Mr. and Mrs. Do",
+         {"title": "Mr. and Mrs.", "family": "Do"},
+         ambiguities=(),
+         classification="parity",
+         notes="#614: the joined salutation is one leading title before "
+               "S2 counts, so 'Do' stands alone and reports nothing; "
+               "counted as three words it was weighed as a credential "
+               "and reported (#614's review)"),
+    Case("a_particle_chain_is_one_word_to_s2",
+         "Freiherr von Berg X.Y.Z.",
+         {"title": "Freiherr", "family": "von Berg X.Y.Z."},
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         classification="parity",
+         notes="rules.md#S2 counts the particle run and the word the "
+               "chain takes with it as one name word (#614), so the "
+               "dotted acronym has no word to spare, as every release "
+               "read it; counted word by word it was the credential, "
+               "where 'Freiherr Berg X.Y.Z.' kept it the family (#614's "
+               "review)"),
+    Case("a_connective_join_is_one_word_to_s2",
+         "Juan y Garcia X.Y.Z.",
+         {"given": "Juan y Garcia", "family": "X.Y.Z."},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="P3's join is made before S2 counts (#614), so the joined "
+               "pair is one name word and the dotted acronym has none to "
+               "spare, as every release read it (#614's review)"),
+    Case("a_shape_only_numeral_behind_a_particle_chain",
+         "Juan de la Vega VI",
+         {"given": "Juan", "family": "de la Vega", "suffix": "VI"},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="'VI' is in no wordlist and the numeral fork reads it by "
+               "shape, so S2's count keeps it out of the particle "
+               "chain's unit; folded in with the plain words it was "
+               "family 'de la Vega VI' (#614's review, the #610 class "
+               "AGENTS.md's spelling sweep records)"),
+    Case("a_particle_takes_the_dual_behind_it_at_the_head",
+         "Freiherr von vd",
+         {"title": "Freiherr", "family": "von vd"},
+         ambiguities=("particle-or-given",),
+         classification="parity",
+         notes="the chain's leading position stops at a word that is a "
+               "title and a particle, so 'von' is not the leading piece "
+               "and its run takes the dual behind it; counting from the "
+               "end of the title run instead read suffix 'vd' (#614's "
+               "review)"),
+    Case("a_particle_run_keeps_joining_after_its_dual",
+         "John van Mc Smith",
+         {"given": "John", "family": "van Mc Smith"},
+         ambiguities=(),
+         classification="parity",
+         notes="the dual is a word of the particle run, and the run "
+               "joins on to the name word after it as it does without "
+               "the dual"),
+    Case("a_run_with_a_name_inside_reads_as_before",
+         "John van V Dr. V",
+         {"given": "John", "family": "van V Dr.", "suffix": "V"},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="the trailing read takes the title and the numeral with a "
+               "name word between them, so its run is not one block at "
+               "the end and the segment is joined and read as before "
+               "#614; split anyway, the read took 'Dr.' for a title "
+               "and left family 'V' (#614's review)"),
+    Case("a_name_the_joins_leave_wordless_is_read_again",
+         "Prince of Wales Dr.",
+         {"title": "Prince of Wales", "family": "Dr."},
+         ambiguities=("title-or-name",),
+         classification="parity",
+         notes="a parity guard for the title joins in front of the run: "
+               "the joined 'Prince of Wales' is one leading title, and "
+               "the trailing 'Dr.' stays the name word it was. The row "
+               "that pins assign's reading the name again is the "
+               "Freiherr row below (measured 2026-10-07 by mutation)"),
+    Case("a_title_read_before_the_chain_can_strand_the_name",
+         "Freiherr von Berg Dr. and Ed. Prof.",
+         {"title": "Freiherr von Berg Dr. and Ed.", "family": "Prof."},
+         ambiguities=("particle-or-given", "title-or-name"),
          classification="fix(#614)",
-         notes="garbage in, read under #614's order: S2's run and H5's "
-               "chain are read before any join, so the chain takes the "
-               "trailing 'Dr.' and the connective then joins only the "
-               "word on its left. Until #614 the join came first and "
-               "made 'Prof. and Dr.' one name piece, family 'Prof. and "
-               "Dr.' (decisions.md#S2, 2026-10-07)"),
+         notes="garbage in: the trailing 'Prof.' is read before the "
+               "chain (rules.md#H5), the chain then joins a piece "
+               "carrying the joined 'Dr. and Ed.' title, which reads as "
+               "a leading title, and assign reads the name again and "
+               "keeps 'Prof.' as its word; 0c54662b chained the whole "
+               "into family 'von Berg Dr. and Ed. Prof.'"),
     Case("family_comma_then_a_lone_suffix_word_segment",
          "Smith, John, Prof.",
          {"given": "John", "family": "Smith", "title": "Prof."},

@@ -583,7 +583,7 @@ def test_the_bound_given_join_leaves_a_suffix_where_it_stands() -> None:
         ("abdul", "", "Berg", "Jr Smith")
 
 
-def test_the_reserve_declines_and_assign_reads_the_unjoined_pieces() -> None:
+def test_the_reserve_counts_what_the_trailing_read_left() -> None:
     # 'abdul J. V': until #614 the reserve read the V as the suffix it
     # would be behind the joined pair and declined, so the name read as
     # 'John J. V' does. S2's run is read once now, before the join: it
@@ -665,7 +665,7 @@ def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
     assert (n.given, n.family) == ("abdul Sir", "Berg")
 
 
-def test_the_licence_does_not_lift_the_equality() -> None:
+def test_the_licence_joins_where_the_read_took_nothing() -> None:
     # Behind a given-name title the reserve needs one name piece, so
     # "changes no suffix reading" was the only thing between 'Sir abdul
     # J. V' and a join that turned the V from a name word into the

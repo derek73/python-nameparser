@@ -329,13 +329,13 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     real it is the word left STANDING that carries it, which is H4's
     report and not this rule's.
     Accepted: the chain is read together with the trailing suffix
-    run (S2), over the words as written and before any of them is
-    joined, so no join reaches a word it took: a particle chain (P2)
-    stops in front of a trailing title rather than taking it into
-    the family name. After a family comma the given part is read
-    once its words are joined, and a title word a connective joined
-    into a longer unit there is no single word for the chain to
-    take. A maiden clause ends where the run the end of the name
+    run (S2), once the connectives have joined (P3) and before the
+    particle chain is made, so a particle chain (P2) stops in front
+    of a trailing title rather than taking it into the family name.
+    A title word a connective joined into a longer unit is no single
+    word for the chain to take. After a family comma the given part
+    is read once all its words are joined, so there a particle chain
+    takes a trailing title as before. A maiden clause ends where the run the end of the name
     reads without it begins (M2), so where a trailing rule reads the
     part a trailing title ends the clause and is a title.
       "John van der Berg Prof."   →  title="Prof."
@@ -451,9 +451,10 @@ P2. Rationale: a particle is written as part of the surname it
     precedes, and a title stands outside the name entirely.
     A particle joins the words after it into one name part, the
     join running until the next particle starts a group of its own,
-    a trailing suffix begins — the trailing run S2 reads, once, over
-    the words as written before any of them is joined, so the chain
-    cannot change what it counts: a trailing roman numeral, or a
+    a trailing suffix begins — the trailing run S2 reads, once,
+    before the chain is made and counting the chain's own run as the
+    one name word it will be, so the chain cannot change what it
+    counts: a trailing roman numeral, or a
     bare acronym with words to spare, ends the chain as a suffix word
     does, and so does a bare ambiguous acronym written in capitals in
     a mixed-case name, which needs no words to spare; the same
@@ -723,9 +724,8 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     there is to spare is what the name's trailing reading leaves:
     the trailing suffix run (S2) and the trailing title run (H5),
     each read over what the other leaves until neither takes
-    anything more, are read once, over the words as written and
-    before the join is tried, and the name words they leave are the
-    words to spare. A trailing
+    anything more, are read once, before the join is tried, and the
+    name words they leave are the words to spare. A trailing
     roman numeral, or a bare acronym the run takes, or a trailing
     title word the run takes, is no
     word to spare. The join joins two name words into one and, read
@@ -1026,12 +1026,13 @@ S2. Rationale: generational suffixes and credentials are recognized
     letter or one after each of two or more letter chunks, counts
     unambiguously; a single trailing period is the abbreviation
     shape any word can wear and does not. The run at a name's
-    trailing slot is read ONCE, over the words as written, before any
-    of them is joined into a longer part — a particle first taking
-    the words straight behind it that are both particles and suffix
-    vocabulary, which are its run's (P2) — and no join reaches a word
-    it took: a connective, a particle chain or a bound given name
-    joins only the words in front of it (P3, P2, P5). A
+    trailing slot is read ONCE, once the connectives have joined (P3)
+    and before the particle chain (P2) and the bound given-name join
+    (P5) are made, counting a particle run and the name words the
+    chain will take with it as the one name word it will make of them
+    — the words both particles and suffix vocabulary standing straight
+    behind a particle among them — and neither join reaches a word
+    the run took. A
     BARE ambiguous acronym is consumed only when the name has words
     to spare — as the second of two words it stays the family
     name — and at the slots that report, either reading carries the

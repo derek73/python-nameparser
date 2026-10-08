@@ -16,8 +16,9 @@ anti-#100 invariant); maiden tail tokens get role=MAIDEN, and the
 trailing run a maiden take gives up gets its SUFFIX and TITLE roles
 here (#601), so no join can reach it; marker tokens land in dropped;
 and tail_reads, rules.md#S2's trailing run of each main segment read
-ONCE before any join and split off so none reaches it (#614), which
-assign places and reports rather than peeling again.
+ONCE, after P3's connective joins and before the particle chain and
+the bound-given join, and split off so neither reaches it (#614),
+which assign places and reports rather than peeling again.
 Reads: token tags (from classify), Lexicon.given_name_titles (the
 P5 licence, #369) and Policy.extra_suffix_delimiters, whose
 delimiter-core tokens part a tail segment as a comma would and are
@@ -427,38 +428,6 @@ def _run_neighbours(pieces: Sequence[Sequence[int]],
     return left, right
 
 
-def _take_trailing_duals(pieces: list[Piece], ptags: list[set[str]],
-                         tokens: Sequence[WorkToken], first: int) -> None:
-    """A particle run takes the words of both the particle and the
-    suffix vocabulary standing straight behind it ('van Mc', 'van do')
-    before S2's run is read (#614): read after it, the run took them as
-    credentials, where the particle chain had always made them part of
-    the family name it heads -- 'anh van do' has read family 'van do'
-    since 1.4.0, and do is a common Vietnamese surname. The merged
-    piece stays a particle run, so the chain joins it onward as it
-    joined the particle ('John van Mc Smith'). Not the leading name
-    piece: a particle there chains nothing (rules.md#P4). `first` is
-    the first particle past the leading name piece, which the caller
-    found."""
-    k = first
-    while k < len(pieces) - 1:
-        piece = pieces[k]
-        if len(piece) == 1 and "particle" in tokens[piece[0]].tags:
-            j = k + 1
-            while j < len(pieces):
-                nxt = pieces[j]
-                tags = tokens[nxt[0]].tags
-                if (len(nxt) == 1 and "particle" in tags
-                        and ("vocab:suffix" in tags
-                             or "vocab:suffix-ambiguous" in tags)):
-                    j += 1
-                else:
-                    break
-            if j > k + 1:
-                merge_pieces(pieces, ptags, k, j, add={"prefix"})
-        k += 1
-
-
 def _is_rootname(piece: Sequence[int], ptags: Set[str],
                  tokens: Sequence[WorkToken]) -> bool:
     if len(piece) == 1 and "initial" in tokens[piece[0]].tags:
@@ -675,38 +644,11 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             del pieces[k]
             del ptags[k]
 
-    # rules.md#S2's trailing run is read ONCE, here, before any join,
-    # and bound (#614): the run is split off, every join below groups
-    # the name in front of it, and assign reads its roles off this
-    # reading rather than peeling again. Group had asked the peel up
-    # to four more times -- the chain's stop and its re-ask after its
-    # own merges, the bound-given reserve's two views, the frozen
-    # link's right bound -- because its joins change the pieces the
-    # count reads; reading before them leaves nothing to re-ask, and
-    # a join can no longer take a word the run took ('John van der
-    # Berg Prof.' keeps its title; 'John Smith Esq. and' its suffix).
-    # The main segments only: a family comma's given part is read by
-    # assign's own slot, and a part past the second comma is C2's.
+    # S2's trailing run, read once below once the connectives have
+    # joined (#614)
     read: TailRead | None = None
     tail_pieces: list[Piece] = []
     tail_ptags: list[set[str]] = []
-    if site is ClauseSite.TRAILING and pieces:
-        name_at = leading_titles(pieces, ptags, tokens)
-        # the call only where a particle stands past the name's first
-        # word, tested inline: almost no name has one
-        for k in range(name_at + 1, len(pieces) - 1):
-            if "particle" in tokens[pieces[k][0]].tags:
-                _take_trailing_duals(pieces, ptags, tokens, k)
-                break
-        found = read_trailing_run(pieces, ptags, tokens, one_case, name_at)
-        if found is not None:
-            read, start = found
-            tail_pieces, tail_ptags = pieces[start:], ptags[start:]
-            del pieces[start:]
-            del ptags[start:]
-    if reads is not None:
-        reads.append(read)
-
     if len(pieces) + additional >= 3:
         # rules.md#P3: "A connective that is also generational
         # vocabulary joins only where a name word stands on each side
@@ -788,9 +730,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # is the link's own and no ordinary name pays any of it.
             if hi < 0:
                 lo = leading_titles(pieces, ptags, tokens)
-                # Where the head read was taken (#614) the run is split
-                # off already and the name ends where the pieces do.
-                # Otherwise H5's reading and not the peel over the pieces as
+                # H5's reading and not the peel over the pieces as
                 # WRITTEN: a title standing behind the suffix run
                 # hides it from `trailing_start`, which then answers
                 # `len(pieces)` and hands this loop a credential as
@@ -800,10 +740,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # the same name, one title shorter -- reads family
                 # 'Adams', suffix 'i MA' and reports the acronym
                 # (#397 second review).
-                hi = (len(pieces) if read is not None
-                      else trailing_start_past_titles(lo, pieces, ptags,
-                                                      tokens,
-                                                      one_case=one_case))
+                hi = trailing_start_past_titles(lo, pieces, ptags,
+                                                tokens,
+                                                one_case=one_case)
                 # ONE ANSWER PER RUN: every member of a contiguous run
                 # of connectives has the same nearest name word on
                 # each side, and asking per member walked the run once
@@ -829,8 +768,34 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # the `y` join).
             join_connectives(pieces, ptags, tokens, letter_stays=total < 4,
                              titles_only=False, frozen=frozen)
+        # rules.md#S2's trailing run is read ONCE, here -- after P3's
+        # connective joins, which do not depend on it and make the
+        # units it counts, and before the particle chain and the
+        # bound-given join, which do -- and bound (#614): the run is
+        # split off, the chain and the join group the name in front of
+        # it, and assign places the run off this reading. Group had
+        # asked the peel before and after those joins -- the chain's
+        # stop and its re-ask after its own merges, the reserve's two
+        # views -- because they change the pieces the count reads; the
+        # read counts the units the chain will build instead
+        # (_pieces.read_trailing_run), so there is nothing to re-ask,
+        # and no join takes a word the run took ('John van der Berg
+        # Prof.' keeps its title). The main segments only (no comma,
+        # or the part before a suffix comma); a family comma's parts, a
+        # part past a comma and a segment of fewer than three pieces --
+        # which no join reaches anyway -- read as before, and so does a
+        # run holding a name piece (_pieces.read_trailing_run).
+        if site is ClauseSite.TRAILING:
+            found = read_trailing_run(pieces, ptags, tokens, one_case)
+            if found is not None:
+                read, start = found
+                tail_pieces, tail_ptags = pieces[start:], ptags[start:]
+                del pieces[start:]
+                del ptags[start:]
         # rules.md#S2: "a trailing word of the suffix vocabulary reads as a
-        # suffix" -- group does not decide that; it stops before whatever
+        # suffix" -- on a main segment the run read above decides that
+        # and is split off already; elsewhere group does not decide
+        # it, and stops before whatever
         # trailing_start says the run is, so the chain ends where assign's
         # peel begins (#424). The maiden take reads the title-aware
         # `tail_reading` over the clause-free view instead (#601), so the
@@ -1076,12 +1041,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # paying for a question only an ambiguous acronym can
                 # make interesting. Behind the `isdisjoint` (a C call,
                 # no frame) almost nothing reaches it.
+                #
+                # Where S2's run was read at the head (#614), the read
+                # reports the members it weighed itself, its picks, and
+                # this emitter reports only a member the read did not
+                # weigh: one the chain took short of the run, its scan
+                # ending at the next particle ('Smith Do MA DO VD').
                 last = pieces[j - 1]
-                if (read is None and j > k + 1 and len(last) == 1
+                if (j > k + 1 and len(last) == 1
                         and not tokens[last[0]].tags.isdisjoint(
                             _AMBIGUOUS_CREDENTIAL_TAGS)
                         and not is_prefix_piece(last, ptags[j - 1],
-                                                tokens)):
+                                                tokens)
+                        and (read is None
+                             or tuple(last) not in read.peel.picks)):
                     ambiguities.append(PendingAmbiguity(
                         AmbiguityKind.SUFFIX_OR_NAME,
                         f"{tokens[last[0]].text!r} is both a post-nominal "
@@ -1092,9 +1065,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 merge_pieces(pieces, ptags, k, j, drop={"prefix"})
                 k += 1
 
-        # Where the head read was taken (#614) the run is split off and
+        # Where the run was read above (#614) it is split off and
         # `tail` is 0, so none of what follows runs; it is the path for
-        # the segments that read no run at the head -- a family comma's
+        # the segments that read no run above -- a family comma's
         # parts, a part past the second comma, a run with a name piece
         # inside it.
         #
@@ -1167,18 +1140,18 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # rules.md#P5: "the trailing suffix run (S2) and the
                 # trailing title run (H5), each read over what the other
                 # leaves until neither takes anything more, are read
-                # once, over the words as written and before the join is
-                # tried, and the name words they leave are the words to
-                # spare" (history: decisions.md#P5). That reading is the
-                # one at the head of this function (#614): the run is
+                # once, before the join is tried, and the name words they
+                # leave are the words to spare" (history: decisions.md#P5).
+                # That reading is the one above, after P3's joins and
+                # before the chain (#614): the run is
                 # split off, every piece left is a name piece, and the
                 # join leaves one fewer. Nor can the join move a suffix
                 # -- rules.md#P5: "a word the run left as a name word
                 # stays one, whatever the join makes of the word in
-                # front of it" -- since nothing reads the run again
-                # after it.
+                # front of it" -- since nothing in group reads the run
+                # again after it.
                 #
-                # Where the head read was not taken (a run with a name
+                # Where the run was not read above (a run with a name
                 # piece inside it, _pieces.read_trailing_run), the
                 # reserve still reads both views, as it did everywhere
                 # before #614: the join tried on the pieces as it would
@@ -1259,6 +1232,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                     # carried (rules.md#P5); joined_tags says why the
                     # title tag is dropped. Pinned in test_group.py.
                     merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
+    if reads is not None:
+        reads.append(read)
     pieces.extend(tail_pieces)
     ptags.extend(tail_ptags)
     return pieces, ptags, taken

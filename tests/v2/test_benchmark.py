@@ -82,16 +82,17 @@ from nameparser._policy import Policy
 #: Lowered 2026-10-07 by 8 on every row when `_group_segment`'s last
 #: three predicate closures (`prefix`, `suffix`, `marker`) were
 #: inlined: the reference name asked `prefix` 7 times and `suffix`
-#: once, each a frame of its own (decisions.md#parse-cost). And 12 on
-#: 3.11, 9 on 3.12-3.15, in #614, when S2's trailing run came to be
-#: read once at group's head rather than re-asked by group's joins and
-#: read again by assign (decisions.md#parse-cost).
+#: once, each a frame of its own (decisions.md#parse-cost). And 8 on
+#: 3.11, 6 on 3.12-3.15, in #614, when S2's trailing run came to be
+#: read once, between P3's joins and the particle chain, rather than
+#: re-asked by the chain and the reserve and read again by assign
+#: (decisions.md#parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 305, "facade": 342},
-    (3, 12): {"parse": 287, "facade": 324},
-    (3, 13): {"parse": 287, "facade": 324},
-    (3, 14): {"parse": 287, "facade": 324},
-    (3, 15): {"parse": 287, "facade": 324},
+    (3, 11): {"parse": 309, "facade": 346},
+    (3, 12): {"parse": 290, "facade": 327},
+    (3, 13): {"parse": 290, "facade": 327},
+    (3, 14): {"parse": 290, "facade": 327},
+    (3, 15): {"parse": 290, "facade": 327},
 }
 _BAND = 0.02
 

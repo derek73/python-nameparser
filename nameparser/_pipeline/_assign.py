@@ -2,8 +2,9 @@
 
 Consumes: pieces + piece_tags (grouped), segments, structure, tokens,
 one_case, and tail_reads -- rules.md#S2's trailing run as group read it
-once before its joins (#614), which the main segment's placement takes
-rather than peeling again.
+once, after P3's joins and before the particle chain (#614), which the
+main segment's placement takes rather than peeling again, save where
+group's joins left no name word in front of it.
 Produces: tokens with roles set on every main-stream token, and the
 folded-middle tag on the particles P6's attachment joins to the family
 after a family comma (#613).
@@ -371,7 +372,11 @@ def _assign_main(seg_idx: int, state: ParseState,
     # group's joins then left none past the leading titles -- a join
     # that made the name a title ('Freiherr von Berg Dr. and Ed.
     # Prof.') -- the reading is taken here over what stands, as it was
-    # everywhere before #614, so the name keeps a word.
+    # taken everywhere before #614, so the name keeps a word. The same
+    # procedure and not always the same answer: the run group read
+    # split off was kept out of group's joins, so what stands differs
+    # from what stood before #614 (that name read family 'von Berg Dr.
+    # and Ed. Prof.' then).
     read = (state.tail_reads[seg_idx]
             if seg_idx < len(state.tail_reads) else None)
     if read is not None:

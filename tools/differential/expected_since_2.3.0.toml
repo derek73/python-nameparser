@@ -1719,24 +1719,12 @@ name_regex = "^Ortega y Gasset, Dr\\.$"
 fields = ["family", "given", "middle"]
 
 [[change]]
-# rules.md#S2: "The run at a name's trailing slot is read ONCE, over
-# the words as written, before any of them is joined into a longer
-# part" (#614, 2026-10-07), and rules.md#H5: "no join reaches a word
-# it took" -- the trailing title is read with the run before the
-# particle chain is made, so the chain stops in front of it. This
-# baseline made the chain first and the title was a word of the
-# family name.
+# rules.md#S2: "The run at a name's trailing slot is read ONCE, once
+# the connectives have joined (P3) and before the particle chain (P2)
+# and the bound given-name join (P5) are made" (#614, 2026-10-07), and
+# rules.md#H5: "a particle chain (P2) stops in front of a trailing
+# title rather than taking it into the family name". This baseline
+# made the chain first and the title was a word of the family name.
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]
-
-[[change]]
-# rules.md#S2: "The run at a name's trailing slot is read ONCE, over
-# the words as written, before any of them is joined into a longer
-# part" (#614, 2026-10-07): the run "Jr." opens behind the marker is
-# read before the connective joins, so the connective no longer takes
-# it into the name. Garbage in -- a marker with nothing a maiden clause
-# can take reads as a word -- recorded rather than defended.
-issue = "fix(#614) a connective no longer joins into the trailing run"
-name_regex = "^Jane née Jr y Jones$"
-fields = ["_ambiguities", "family", "middle", "suffix"]

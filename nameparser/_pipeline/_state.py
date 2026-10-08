@@ -192,11 +192,14 @@ class ParseState:
     pieces: tuple[tuple[tuple[int, ...], ...], ...] = ()
     piece_tags: tuple[tuple[frozenset[str], ...], ...] = ()
     dropped: tuple[int, ...] = ()   # structural tokens (maiden markers)
-    #: rules.md#S2's trailing run per segment, as group read it ONCE at
-    #: its head before any join (#614), for assign to place and report
-    #: rather than peel again; None where group read none (a family
-    #: comma's given part, a part past the second comma, a run with a
-    #: name piece inside it). Aligned with `pieces`.
+    #: rules.md#S2's trailing run per segment, as group read it ONCE
+    #: after P3's joins and before the particle chain (#614), for
+    #: assign to place and report
+    #: rather than peel again; None where group read none -- a family
+    #: comma's parts, a part past a comma, a segment of fewer than
+    #: three pieces, a run with a name piece inside it -- and assign
+    #: reads those for itself, as it does a name group's joins left
+    #: without a name word. Aligned with `pieces`.
     tail_reads: tuple[TailRead | None, ...] = ()
     #: The order `assign` actually READ the name under -- name_order,
     #: or the script_orders entry that overrode it. None wherever no
