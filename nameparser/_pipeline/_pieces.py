@@ -1592,7 +1592,7 @@ def _counted_as_one(piece: Sequence[int], ptags: Set[str],
     (the fork reads the word before a letter), or a title the H5 chain
     could take. A connective join is
     one name word, P3's own count."""
-    if "suffix" in ptags or "title" in ptags or "prefix" in ptags:
+    if "suffix" in ptags or "prefix" in ptags:
         return False
     if len(piece) > 1:
         return True
@@ -1604,15 +1604,16 @@ def _counted_as_one(piece: Sequence[int], ptags: Set[str],
 
 
 _NOT_COUNTED_AS_ONE = frozenset({
-    "particle", "vocab:suffix", "vocab:suffix-ambiguous",
-    AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, "initial"})
+    "particle", "vocab:suffix", AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG,
+    "initial"})
 
 
 def _counting_view(pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
                    tokens: Sequence[WorkToken],
                    n: int,
-                   ) -> tuple[Sequence[Sequence[int]], Sequence[Set[str]]]:
+                   ) -> tuple[Sequence[Sequence[int]], Sequence[Set[str]],
+                              int]:
     """The pieces as S2's read counts them: a particle run past the
     name's leading position, with the plain name words after it, as the
     one unit P2's chain will make of them, as the unit-partition entry
@@ -1624,7 +1625,21 @@ def _counting_view(pieces: Sequence[Sequence[int]],
     that is also a particle ('Freiherr von vd', 'St van Mc'), which the
     chain's scan stops at. A copy, never the pieces themselves: the
     read only counts with it, and the chain makes the join afterwards,
-    over the name the read leaves.
+    over the name the read leaves. The third value is where the name
+    starts in the view's own indices: a title that is also a
+    particle can open a unit INSIDE the leading titles ('Freiherr St van
+    Berg MA', the unit 'St van Berg' beginning at the second title), and
+    the real index then lands past the name. A unit opened inside the
+    titles makes a name of them even where it ends short of piece `n`
+    ('Freiherr Freiherr Prof do', the unit 'Freiherr Prof'), so the
+    first unit at or before `n` is where the read starts.
+
+    Past a word that starts #602's credential run a unit is the
+    particle run alone, as the chain's own merge leaves it there: the
+    count is of the name words in front of the run, and inside it every
+    other word reads on its own -- a title word as a title ('John Smith
+    MD van Secretary Jones'), an absorbed name word reported as
+    written.
 
     The particle test is `is_prefix_piece`'s own definition written
     inline, for a loop over every piece of every main segment
@@ -1637,7 +1652,7 @@ def _counting_view(pieces: Sequence[Sequence[int]],
                and "particle" in tokens[pieces[k][0]].tags)
               for k in range(count)]
     if not any(prefix[1:]):
-        return pieces, ptags
+        return pieces, ptags, n
     leading = n if n < count else 0
     for k in range(min(n, count)):
         if prefix[k]:
@@ -1645,15 +1660,24 @@ def _counting_view(pieces: Sequence[Sequence[int]],
             break
     view: list[list[int]] = []
     view_tags: list[set[str]] = []
+    at = -1
+    ran = False
+    # a run starter behind the last particle can change no unit
+    last = count - 1
+    while not prefix[last]:
+        last -= 1
     k = 0
     while k < count:
         if k > leading and prefix[k]:
             j = k + 1
             while j < count and prefix[j]:
                 j += 1
-            while j < count and _counted_as_one(pieces[j], ptags[j], tokens):
+            while (not ran and j < count
+                   and _counted_as_one(pieces[j], ptags[j], tokens)):
                 j += 1
             if j > k + 1:
+                if at < 0 and k <= n:
+                    at = len(view)
                 unit: list[int] = []
                 for p in pieces[k:j]:
                     unit.extend(p)
@@ -1661,10 +1685,16 @@ def _counting_view(pieces: Sequence[Sequence[int]],
                 view_tags.append({"prefix"})
                 k = j
                 continue
+        if at < 0 and k == n:
+            at = len(view)
+        if (not ran and leading < k < last
+                and ("suffix" in ptags[k]
+                     or "vocab:suffix" in tokens[pieces[k][0]].tags)):
+            ran = starts_a_credential_run(pieces[k], ptags[k], tokens)
         view.append(list(pieces[k]))
         view_tags.append(set(ptags[k]))
         k += 1
-    return view, view_tags
+    return view, view_tags, at if at >= 0 else len(view)
 
 
 def read_trailing_run(pieces: Sequence[Sequence[int]],
@@ -1687,8 +1717,8 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
     n = leading_titles(pieces, ptags, tokens)
     if n == len(pieces):
         return None
-    view, view_tags = _counting_view(pieces, ptags, tokens, n)
-    rest = peel_walk(n, view_tags)
+    view, view_tags, at = _counting_view(pieces, ptags, tokens, n)
+    rest = peel_walk(at, view_tags)
     if not rest:
         return None
     rest, titled, peel = tail_reading(rest, view, view_tags, tokens,

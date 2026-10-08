@@ -891,11 +891,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # run -- the numeral, or the bare acronym with words to spare
         # -- stops it where the suffix-piece test alone did not ('John
         # van der Berg V' read family 'van der Berg V'). The chain
-        # takes both forks, and asks again after its merges whether
-        # the acronym still has the pieces the fork counted (below).
+        # takes both forks, and where no run was read ahead of it it
+        # asks again after its merges whether the acronym still has
+        # the pieces the fork counted (below).
         name_start = leading_titles(pieces, ptags, tokens)
-        # the run read at the head is already split off (#614), so the
-        # chain stops at the end of what is left
+        # the run read above is already split off (#614), so the chain
+        # stops at the end of what is left
         tail = (0 if read is not None
                 else len(pieces) - trailing_start(name_start, pieces, ptags,
                                                   tokens, one_case=one_case))
@@ -1042,19 +1043,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # make interesting. Behind the `isdisjoint` (a C call,
                 # no frame) almost nothing reaches it.
                 #
-                # Where S2's run was read at the head (#614), the read
-                # reports the members it weighed itself, its picks, and
-                # this emitter reports only a member the read did not
-                # weigh: one the chain took short of the run, its scan
-                # ending at the next particle ('Smith Do MA DO VD').
+                # Where S2's run was read ahead of the chain (#614), a
+                # member the read picked is reported HERE, as before,
+                # and assign skips the pick it already finds reported:
+                # this is the site that knows the chain took the word,
+                # while assign words a pick by the role it holds before
+                # post_rules, which under a leading title-particle is
+                # the given role the fold then moves ('Freiherr von
+                # Berg Ma' was told 'given name').
                 last = pieces[j - 1]
                 if (j > k + 1 and len(last) == 1
                         and not tokens[last[0]].tags.isdisjoint(
                             _AMBIGUOUS_CREDENTIAL_TAGS)
                         and not is_prefix_piece(last, ptags[j - 1],
-                                                tokens)
-                        and (read is None
-                             or tuple(last) not in read.peel.picks)):
+                                                tokens)):
                     ambiguities.append(PendingAmbiguity(
                         AmbiguityKind.SUFFIX_OR_NAME,
                         f"{tokens[last[0]].text!r} is both a post-nominal "

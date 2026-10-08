@@ -240,14 +240,6 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
             and not is_initial_shaped(preceding))
 
 
-# #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,
-# is excluded for its SHAPE -- one letter is how a middle initial is
-# written, and rules.md#S3 retires single-character matches for the
-# same reason -- not for being a generation: a multi-letter suffix
-# word ('III', 'Jr') anchors and runs like any other. So it neither
-# anchors an ambiguous member behind it nor counts toward C1's
-# multi-word credential run. It still peels exactly as before; this
-# answers only those two questions.
 def is_roman_shaped(text: str) -> bool:
     """A word written as a roman numeral, by shape alone -- the test
     the trailing numeral fork reads, of any length and in any case
@@ -256,6 +248,14 @@ def is_roman_shaped(text: str) -> bool:
     return bool(text) and _ROMAN.match(text) is not None
 
 
+# #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,
+# is excluded for its SHAPE -- one letter is how a middle initial is
+# written, and rules.md#S3 retires single-character matches for the
+# same reason -- not for being a generation: a multi-letter suffix
+# word ('III', 'Jr') anchors and runs like any other. So it neither
+# anchors an ambiguous member behind it nor counts toward C1's
+# multi-word credential run. It still peels exactly as before; this
+# answers only those two questions.
 def is_single_letter_numeral(text: str) -> bool:
     """One letter, optionally followed by periods, that is a roman
     numeral ('V', 'v', 'I.', 'X')."""

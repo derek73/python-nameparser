@@ -608,8 +608,10 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
     # #425: with a suffix word between the pair and a bare ambiguous
     # acronym, assign peels the acronym (three pieces, words to spare)
     # and then the suffix, and the family the join left was never
-    # there. The reserve now runs assign's peel over the joined view
-    # and declines, so these read as their ordinary-given twins.
+    # there. The reserve declines, so these read as their
+    # ordinary-given twins -- since #614 by counting the names S2's
+    # run left before the join, read once, rather than re-reading the
+    # peel over the joined view.
     for bound, plain in (("abdul Smith Jr Ma", "John Smith Jr Ma"),
                          ("abdul Rahman PhD MA", "John Rahman PhD MA")):
         n, m = parse(bound), parse(plain)
@@ -689,9 +691,10 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
             ("John van der Berg X", "van der Berg", "X"),
             ("abdul van der Berg V", "van der Berg", "V"),
             # MOVED by #289, not deleted: 'Ma' is Title-case in a
-            # mixed-case name, so it now leans SURNAME and the chain's
-            # re-ask absorbs it into the particle run instead of
-            # leaving it for assign to peel (decisions.md#S2).
+            # mixed-case name, so it now leans SURNAME, the
+            # run's read leaves it a name word (S2's read ahead of the
+            # chain since #614, its re-ask before that), so the chain
+            # takes it into the particle run (decisions.md#S2).
             ("John van der Berg Ma", "van der Berg Ma", "")):
         n = parse(text)
         assert (n.family, n.suffix) == (family, suffix), text

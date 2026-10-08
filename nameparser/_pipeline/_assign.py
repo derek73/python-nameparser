@@ -367,8 +367,10 @@ def _assign_main(seg_idx: int, state: ParseState,
     # depends on name_order. (The roman-numeral fork needs no such
     # deferral and is reported here.)
     #
-    # Read once, at group's head, wherever group could (#614): the run
-    # is placed off that reading. Where the read left name pieces and
+    # Read once in group, after P3's connective joins and ahead of the
+    # particle chain, on a main segment of three or more pieces whose
+    # run is one block at its end (#614): the run is placed off that
+    # reading. Where the read left name pieces and
     # group's joins then left none past the leading titles -- a join
     # that made the name a title ('Freiherr von Berg Dr. and Ed.
     # Prof.') -- the reading is taken here over what stands, as it was
@@ -516,7 +518,16 @@ def _assign_main(seg_idx: int, state: ParseState,
                     f"decides it; read as a {token.role.value} name by "
                     f"convention, which follows the read order",
                     tuple(head)))
+    # a pick group's particle chain took into the name is reported
+    # there, in the chain's words (#614): the role it holds here can
+    # still move in post_rules. A set, built once: picks and reports
+    # both grow with a credential run
+    chained = ({a.indices for a in ambiguities
+                if a.kind is AmbiguityKind.SUFFIX_OR_NAME}
+               if peeled.picks else ())
     for piece in peeled.picks:
+        if piece in chained:
+            continue
         # every pick is in rest, so the loops above just gave it a role
         token = tokens[piece[0]]
         assert token.role is not None
