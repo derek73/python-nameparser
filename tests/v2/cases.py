@@ -9866,6 +9866,29 @@ CASES: tuple[Case, ...] = (
          notes="the period-marked exclusion is for title VOCABULARY; an "
                "unlisted abbreviation is a name word (#614's second "
                "review, mutation)"),
+    Case("a_split_credential_is_part_of_the_trailing_block",
+         "Freiherr von Berg Prof. Ph. D.",
+         {"title": "Freiherr Prof.", "family": "von Berg",
+          "suffix": "Ph. D."},
+         ambiguities=("particle-or-given",),
+         classification="fix(#614)",
+         notes="the merged 'Ph. D.' is a piece the read's walk never "
+               "holds, so it stands outside the run's token set; the "
+               "contiguity check passes over it, or the run is not one "
+               "block, the read is declined, and the chain takes "
+               "'Prof.' into the family as 0c54662b did (family 'von "
+               "Berg Prof.'; #614's /simplify, mutation)"),
+    Case("a_run_with_a_name_inside_keeps_the_bound_join_two_views",
+         "abdul Dr. G.J.",
+         {"title": "Dr.", "given": "abdul", "family": "G.J."},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="the read is declined (the H5 title stands in front of "
+               "a name word the peel declined), so P5's reserve reads "
+               "both views as before #614: the chain takes 'Dr.', and "
+               "a piece the chain takes is no word to join (#614's "
+               "/simplify: the one main-segment row reaching that "
+               "branch)"),
     Case("a_particle_run_keeps_joining_after_its_dual",
          "John van Mc Smith",
          {"given": "John", "family": "van Mc Smith"},

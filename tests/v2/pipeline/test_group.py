@@ -1961,13 +1961,14 @@ def test_the_chain_reports_a_member_the_read_did_not_weigh() -> None:
 
 def test_a_pick_the_chain_took_is_reported_in_the_chains_words() -> None:
     """A pick the particle chain took into the name is reported by the
-    chain, once, and assign leaves it: assign words a pick by the role
+    chain, once, and the read gives the pick up, so assign does not
+    report it again: assign words a pick by the role
     it holds before post_rules, and under a leading title-particle that
     is the given role the fold then moves into the family. Recorded
     negative controls, #614's second review (2026-10-07): with the
     chain's emitter skipping the read's picks the report said 'read as
-    a given name' of a word in the family; with assign's skip removed
-    the word was reported twice."""
+    a given name' of a word in the family; with the read keeping the
+    pick the word was reported twice."""
     out = parse("Freiherr von Berg Ma")
     assert out.family == "von Berg Ma"
     details = [a.detail for a in out.ambiguities

@@ -296,8 +296,9 @@ def _placed(read: TailRead, rest: list[int],
     peel = read.peel
     count = len(names)
     names.extend(suffixes)
+    # built, not `_replace`d: that is two frames on every read
     return names, tuple(titled), Peel(
-        count, peel.numeral, peel.picks, None, tuple(run_titles),
+        count, peel.numeral, peel.picks, peel.anchors, tuple(run_titles),
         peel.absorbed)
 
 
@@ -382,10 +383,11 @@ def _assign_main(seg_idx: int, state: ParseState,
     read = (state.tail_reads[seg_idx]
             if seg_idx < len(state.tail_reads) else None)
     if read is not None:
-        rest, titled_tail, peeled = _placed(read, rest, pieces)
-        if read.peel.names and not peeled.names:
+        placed = _placed(read, rest, pieces)
+        if read.peel.names and not placed[2].names:
             read = None
-            rest = peel_walk(n, ptags)
+        else:
+            rest, titled_tail, peeled = placed
     if read is None:
         rest, titled_tail, peeled = tail_reading(rest, pieces, ptags, tokens,
                                                  state.one_case)
@@ -518,16 +520,7 @@ def _assign_main(seg_idx: int, state: ParseState,
                     f"decides it; read as a {token.role.value} name by "
                     f"convention, which follows the read order",
                     tuple(head)))
-    # a pick group's particle chain took into the name is reported
-    # there, in the chain's words (#614): the role it holds here can
-    # still move in post_rules. A set, built once: picks and reports
-    # both grow with a credential run
-    chained = ({a.indices for a in ambiguities
-                if a.kind is AmbiguityKind.SUFFIX_OR_NAME}
-               if peeled.picks else ())
     for piece in peeled.picks:
-        if piece in chained:
-            continue
         # every pick is in rest, so the loops above just gave it a role
         token = tokens[piece[0]]
         assert token.role is not None

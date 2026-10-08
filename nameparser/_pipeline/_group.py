@@ -63,7 +63,7 @@ from typing import assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
-    TailRead, is_conj_piece, is_leading_title, is_prefix_piece,
+    Peel, TailRead, is_conj_piece, is_leading_title, is_prefix_piece,
     is_suffix_piece, is_title_piece, join_connectives, joined_tags,
     leading_titles, merge_pieces, peel_walk, read_trailing_run,
     tail_reading, trailing_candidates, trailing_start,
@@ -900,6 +900,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         tail = (0 if read is not None
                 else len(pieces) - trailing_start(name_start, pieces, ptags,
                                                   tokens, one_case=one_case))
+        # the members the chain reports below, which the read's picks
+        # then give up (#614)
+        took: set[tuple[int, ...]] = set()
+
         def chain(tail: int) -> None:
             # `pieces[:titled]` are known to be leading titles. A merge
             # from k to j changes only indices from k on, and k only
@@ -1045,7 +1049,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 #
                 # Where S2's run was read ahead of the chain (#614), a
                 # member the read picked is reported HERE, as before,
-                # and assign skips the pick it already finds reported:
+                # and leaves the read's picks (below the chain's call):
                 # this is the site that knows the chain took the word,
                 # while assign words a pick by the role it holds before
                 # post_rules, which under a leading title-particle is
@@ -1064,6 +1068,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         f"it into the name rather than reading it as a "
                         f"post-nominal",
                         tuple(last)))
+                    took.add(tuple(last))
                 merge_pieces(pieces, ptags, k, j, drop={"prefix"})
                 k += 1
 
@@ -1102,6 +1107,13 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 chain(left)
         else:
             chain(0)
+            if read is not None and took:
+                # built, not `_replace`d: two frames a call
+                peel = read.peel
+                read = TailRead(read.tail, read.titles, read.run_titles, Peel(
+                    peel.names, peel.numeral,
+                    tuple([p for p in peel.picks if p not in took]),
+                    peel.anchors, peel.run_titles, peel.absorbed))
         # rules.md#P5: "a recognized bound given-name word joins the
         # word after it into one given name" (history: decisions.md#P5)
         # -- bound given names: the first non-title piece joins the next

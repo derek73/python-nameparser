@@ -240,14 +240,6 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
             and not is_initial_shaped(preceding))
 
 
-def is_roman_shaped(text: str) -> bool:
-    """A word written as a roman numeral, by shape alone -- the test
-    the trailing numeral fork reads, of any length and in any case
-    ('VI' and 'vii' are in no wordlist, rules.md#S2's numeral fork reads
-    them all the same)."""
-    return bool(text) and _ROMAN.match(text) is not None
-
-
 # #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,
 # is excluded for its SHAPE -- one letter is how a middle initial is
 # written, and rules.md#S3 retires single-character matches for the

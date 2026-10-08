@@ -61,8 +61,7 @@ from nameparser._pipeline._state import (
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, Lean, ambiguous_lean, in_initialless_script,
-    is_roman_shaped,
+    _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
     is_single_letter_numeral, is_trailing_numeral_suffix, tag_marker_runs,
 )
 
@@ -1596,16 +1595,19 @@ def _counted_as_one(piece: Sequence[int], ptags: Set[str],
         return False
     if len(piece) > 1:
         return True
+    # the roman test inline: one call per name word behind a particle
+    # run (AGENTS.md's frame budget, question 1); the title helper
+    # behind its tag, which almost no word carries
     tags = tokens[piece[0]].tags
-    text = tokens[piece[0]].text
     return (tags.isdisjoint(_NOT_COUNTED_AS_ONE)
-            and not is_roman_shaped(text)
-            and not ("vocab:title" in tags and _PERIOD_ABBREV.match(text)))
+            and _ROMAN.match(tokens[piece[0]].text) is None
+            and not ("vocab:title" in tags
+                     and is_trailing_title_word(piece, ptags, tokens)))
 
 
-_NOT_COUNTED_AS_ONE = frozenset({
-    "particle", "vocab:suffix", AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG,
-    "initial"})
+#: what the trailing read weighs (`trailing_candidates`' admissions),
+#: plus the words that end a unit's plain run
+_NOT_COUNTED_AS_ONE = _TRAILING_WORD_TAGS | {"particle", "initial"}
 
 
 def _counting_view(pieces: Sequence[Sequence[int]],
@@ -1653,14 +1655,14 @@ def _counting_view(pieces: Sequence[Sequence[int]],
               for k in range(count)]
     if not any(prefix[1:]):
         return pieces, ptags, n
-    leading = n if n < count else 0
-    for k in range(min(n, count)):
+    leading = n
+    for k in range(n):
         if prefix[k]:
             leading = k
             break
     view: list[list[int]] = []
     view_tags: list[set[str]] = []
-    at = -1
+    at = n
     ran = False
     # a run starter behind the last particle can change no unit
     last = count - 1
@@ -1672,12 +1674,13 @@ def _counting_view(pieces: Sequence[Sequence[int]],
             j = k + 1
             while j < count and prefix[j]:
                 j += 1
-            while (not ran and j < count
+            while (not ran and j < count and not prefix[j]
                    and _counted_as_one(pieces[j], ptags[j], tokens)):
                 j += 1
             if j > k + 1:
-                if at < 0 and k <= n:
-                    at = len(view)
+                # before the first unit a view index is a piece index
+                if k < at:
+                    at = k
                 unit: list[int] = []
                 for p in pieces[k:j]:
                     unit.extend(p)
@@ -1685,8 +1688,6 @@ def _counting_view(pieces: Sequence[Sequence[int]],
                 view_tags.append({"prefix"})
                 k = j
                 continue
-        if at < 0 and k == n:
-            at = len(view)
         if (not ran and leading < k < last
                 and ("suffix" in ptags[k]
                      or "vocab:suffix" in tokens[pieces[k][0]].tags)):
@@ -1694,7 +1695,7 @@ def _counting_view(pieces: Sequence[Sequence[int]],
         view.append(list(pieces[k]))
         view_tags.append(set(ptags[k]))
         k += 1
-    return view, view_tags, at if at >= 0 else len(view)
+    return view, view_tags, at
 
 
 def read_trailing_run(pieces: Sequence[Sequence[int]],
@@ -1719,8 +1720,6 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
         return None
     view, view_tags, at = _counting_view(pieces, ptags, tokens, n)
     rest = peel_walk(at, view_tags)
-    if not rest:
-        return None
     rest, titled, peel = tail_reading(rest, view, view_tags, tokens,
                                       one_case)
     tail: set[int] = set()
