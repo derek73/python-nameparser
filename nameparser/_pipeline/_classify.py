@@ -74,7 +74,7 @@ from nameparser._pipeline._pieces import own_words
 # ambiguous acronym written with its periods, one after each
 # letter or one after each of two or more letter chunks, counts
 # unambiguously; a single trailing period is the abbreviation shape
-# any word can wear and does not. A
+# any word can wear and does not" -- and: "a
 # bare ambiguous acronym is consumed only when the name has words to
 # spare"
 def _tags_for(token: WorkToken, n: str, state: ParseState,

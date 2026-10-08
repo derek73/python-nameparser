@@ -1,7 +1,10 @@
 """Stage: assign.
 
 Consumes: pieces + piece_tags (grouped), segments, structure, tokens,
-one_case.
+one_case, and tail_reads -- rules.md#S2's trailing run as group read it
+once, after P3's joins and before the particle chain (#614), which the
+main segment's placement takes rather than peeling again, save where
+group's joins left no name word in front of it.
 Produces: tokens with roles set on every main-stream token, and the
 folded-middle tag on the particles P6's attachment joins to the family
 after a family comma (#613).
@@ -88,8 +91,9 @@ from nameparser._pipeline._vocab import (
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
-    is_suffix_piece, is_title_piece, leading_titles, particle_tail,
-    listed_lean, peel_walk, starts_a_credential_run, tail_reading, trailing_titles,
+    Peel, TailRead, is_suffix_piece, is_title_piece, leading_titles,
+    particle_tail, listed_lean, peel_walk, starts_a_credential_run,
+    tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
@@ -264,6 +268,40 @@ def _name_positions(order: tuple[Role, Role, Role],
             + [Role.GIVEN])
 
 
+def _placed(read: TailRead, rest: list[int],
+            pieces: tuple[tuple[int, ...], ...],
+            ) -> tuple[list[int], tuple[int, ...], Peel]:
+    """`tail_reading`'s three answers, taken off the run group read at
+    its head (#614) rather than read again over the joined pieces: the
+    walk with the name pieces first and the run's suffixes after them,
+    the pieces the H5 chain took, and the read's peel with `names` and
+    `run_titles` renumbered onto these pieces. Group split the run off
+    before its joins and put it back after them unchanged, so each of
+    its pieces is whole here and a membership test on its first token
+    places it."""
+    names: list[int] = []
+    suffixes: list[int] = []
+    titled: list[int] = []
+    run_titles: list[int] = []
+    for k in rest:
+        first = pieces[k][0]
+        if first not in read.tail:
+            names.append(k)
+        elif first in read.titles:
+            titled.append(k)
+        else:
+            suffixes.append(k)
+            if first in read.run_titles:
+                run_titles.append(k)
+    peel = read.peel
+    count = len(names)
+    names.extend(suffixes)
+    # built, not `_replace`d: that is two frames on every read
+    return names, tuple(titled), Peel(
+        count, peel.numeral, peel.picks, peel.anchors, tuple(run_titles),
+        peel.absorbed)
+
+
 def _assign_main(seg_idx: int, state: ParseState,
                  tokens: list[WorkToken],
                  ambiguities: list[PendingAmbiguity],
@@ -329,8 +367,30 @@ def _assign_main(seg_idx: int, state: ParseState,
     # wording reads the role back, and which role "not peeled" means
     # depends on name_order. (The roman-numeral fork needs no such
     # deferral and is reported here.)
-    rest, titled_tail, peeled = tail_reading(rest, pieces, ptags, tokens,
-                                             state.one_case)
+    #
+    # Read once in group, after P3's connective joins and ahead of the
+    # particle chain, on a main segment of three or more pieces whose
+    # run is one block at its end (#614): the run is placed off that
+    # reading. Where the read left name pieces and
+    # group's joins then left none past the leading titles -- a join
+    # that made the name a title ('Freiherr von Berg Dr. and Ed.
+    # Prof.') -- the reading is taken here over what stands, as it was
+    # taken everywhere before #614, so the name keeps a word. The same
+    # procedure and not always the same answer: the run group read
+    # split off was kept out of group's joins, so what stands differs
+    # from what stood before #614 (that name read family 'von Berg Dr.
+    # and Ed. Prof.' then).
+    read = (state.tail_reads[seg_idx]
+            if seg_idx < len(state.tail_reads) else None)
+    if read is not None:
+        placed = _placed(read, rest, pieces)
+        if read.peel.names and not placed[2].names:
+            read = None
+        else:
+            rest, titled_tail, peeled = placed
+    if read is None:
+        rest, titled_tail, peeled = tail_reading(rest, pieces, ptags, tokens,
+                                                 state.one_case)
     for piece_idx in titled_tail:
         _set_roles(tokens, pieces[piece_idx], Role.TITLE)
     # rules.md#S2: "except a title word, which reads as a title" -- the

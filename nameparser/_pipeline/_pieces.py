@@ -61,7 +61,7 @@ from nameparser._pipeline._state import (
     WorkToken,
 )
 from nameparser._pipeline._vocab import (
-    _PERIOD_ABBREV, Lean, ambiguous_lean, in_initialless_script,
+    _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
     is_single_letter_numeral, is_trailing_numeral_suffix, tag_marker_runs,
 )
 
@@ -893,8 +893,8 @@ class Peel(NamedTuple):
 # ambiguous acronym written with its periods, one after each letter or
 # one after each of two or more letter chunks, counts unambiguously; a
 # single trailing period is the abbreviation shape any word can wear
-# and does not. A BARE ambiguous acronym is consumed only when the name
-# has words to spare"
+# and does not" -- and: "a BARE ambiguous acronym is consumed only when
+# the name has words to spare"
 # (v1's are_suffixes tail rule, with the roman-numeral special)
 def peel_walk(start: int, ptags: Sequence[Set[str]]) -> list[int]:
     """The indices peel_trailing walks: `start` to the segment's end,
@@ -914,8 +914,10 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     """Where assign's trailing suffix run begins, read over the pieces
     as they stand from `start`: the index of the first piece the S2
     peel takes, or len(pieces) when it takes none (#424). What P2's
-    chain stops before, and what M2's walk stops before where no
-    trailing rule reads the clause -- each had asked "is this a
+    chain stops before where S2's run was not read once ahead of it
+    (#614: a family comma's parts, a run holding a name piece), and
+    what M2's walk stops before where no trailing rule reads the
+    clause -- each had asked "is this a
     suffix?" with the suffix-piece test, which vetoes a bare 'V' as
     an initial (the #401 question), and so took a trailing numeral,
     or a bare acronym with words to spare, into the family or the
@@ -1464,7 +1466,10 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     One function for assign's placement, group's bound-given reserve
     (P5), which must count the name words assign will leave, and the
     maiden take (rules.md#M2), which must end the clause where the
-    reading of the name will begin. Deriving that agreement twice is what left the two
+    reading of the name will begin -- and since #614, for a main
+    segment, the one read group takes between P3's joins and the
+    particle chain (`read_trailing_run`), which assign and the reserve
+    take their answer from instead. Deriving that agreement twice is what left the two
     disagreeing at S2's bare-ambiguous reserve: 'abdul rahman MA'
     declined the join and 'abdul rahman MA Prof.' took it
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
@@ -1553,6 +1558,190 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     return (rest, tuple(j for run in reversed(titled) for j in run),
             final if p == final.names else credential_run(
                 rest, final, p, pieces, ptags, tokens))
+
+
+class TailRead(NamedTuple):
+    """S2's trailing run as group reads it ONCE, after P3's connective
+    joins and before the particle chain and the bound-given join
+    (#614), handed to assign so neither join can move it and assign
+    reads no second time -- save where group's joins left no name word
+    in front of the run, and assign reads the name again so it keeps
+    one ('Prince of Wales Jr'). Token indices rather than piece
+    indices, since group's joins renumber the pieces in front of the
+    run: `tail` holds every token the run took, `titles` those the H5
+    chain took and `run_titles` the title words inside #602's run (both
+    inside `tail`), and `peel` the final peel, whose numeral fork, bare
+    ambiguous picks and absorbed name words are what assign reports;
+    its `names` counts the name pieces as the read left them."""
+
+    tail: frozenset[int]
+    titles: frozenset[int]
+    run_titles: frozenset[int]
+    peel: Peel
+
+
+def _counted_as_one(piece: Sequence[int], ptags: Set[str],
+                    tokens: Sequence[WorkToken]) -> bool:
+    """A piece the particle chain takes into the run in front of it and
+    that S2's read has nothing to decide about: no particle (a particle
+    starts a run of its own), and nothing the trailing reading weighs
+    -- suffix vocabulary of either kind, the ambiguous class, a word in
+    it by shape, a roman numeral by shape ('VI' is in no wordlist and
+    the fork reads it all the same: the class #610 found), an initial
+    (the fork reads the word before a letter), or a title the H5 chain
+    could take. A connective join is
+    one name word, P3's own count."""
+    if "suffix" in ptags or "prefix" in ptags:
+        return False
+    if len(piece) > 1:
+        return True
+    # the roman test inline: one call per name word behind a particle
+    # run (AGENTS.md's frame budget, question 1); the title helper
+    # behind its tag, which almost no word carries
+    tags = tokens[piece[0]].tags
+    return (tags.isdisjoint(_NOT_COUNTED_AS_ONE)
+            and _ROMAN.match(tokens[piece[0]].text) is None
+            and not ("vocab:title" in tags
+                     and is_trailing_title_word(piece, ptags, tokens)))
+
+
+#: what the trailing read weighs (`trailing_candidates`' admissions),
+#: plus the words that end a unit's plain run
+_NOT_COUNTED_AS_ONE = _TRAILING_WORD_TAGS | {"particle", "initial"}
+
+
+def _counting_view(pieces: Sequence[Sequence[int]],
+                   ptags: Sequence[Set[str]],
+                   tokens: Sequence[WorkToken],
+                   n: int,
+                   ) -> tuple[Sequence[Sequence[int]], Sequence[Set[str]],
+                              int]:
+    """The pieces as S2's read counts them: a particle run past the
+    name's leading position, with the plain name words after it, as the
+    one unit P2's chain will make of them, as the unit-partition entry
+    in mechanisms.md has every rule that counts name words count them.
+    The particles of the run include the words that are also suffix
+    vocabulary ('van Mc', 'van do'), as the chain's run always took
+    them. `n` is the end of the leading title run; the leading position
+    is the chain's own -- the first piece past the titles, or a title
+    that is also a particle ('Freiherr von vd', 'St van Mc'), which the
+    chain's scan stops at. A copy, never the pieces themselves: the
+    read only counts with it, and the chain makes the join afterwards,
+    over the name the read leaves. The third value is where the name
+    starts in the view's own indices: a title that is also a
+    particle can open a unit INSIDE the leading titles ('Freiherr St van
+    Berg MA', the unit 'St van Berg' beginning at the second title), and
+    the real index then lands past the name. A unit opened inside the
+    titles makes a name of them even where it ends short of piece `n`
+    ('Freiherr Freiherr Prof do', the unit 'Freiherr Prof'), so the
+    first unit at or before `n` is where the read starts.
+
+    Past a word that starts #602's credential run a unit is the
+    particle run alone, as the chain's own merge leaves it there: the
+    count is of the name words in front of the run, and inside it every
+    other word reads on its own -- a title word as a title ('John Smith
+    MD van Secretary Jones'), an absorbed name word reported as
+    written.
+
+    The particle test is `is_prefix_piece`'s own definition written
+    inline, for a loop over every piece of every main segment
+    (AGENTS.md's frame budget, question 1); most names hold no particle
+    past their first piece, and then the view is the pieces
+    themselves."""
+    count = len(pieces)
+    prefix = [("prefix" in ptags[k]
+               or len(pieces[k]) == 1
+               and "particle" in tokens[pieces[k][0]].tags)
+              for k in range(count)]
+    if not any(prefix[1:]):
+        return pieces, ptags, n
+    leading = n
+    for k in range(n):
+        if prefix[k]:
+            leading = k
+            break
+    view: list[list[int]] = []
+    view_tags: list[set[str]] = []
+    at = n
+    ran = False
+    # a run starter behind the last particle can change no unit
+    last = count - 1
+    while not prefix[last]:
+        last -= 1
+    k = 0
+    while k < count:
+        if k > leading and prefix[k]:
+            j = k + 1
+            while j < count and prefix[j]:
+                j += 1
+            while (not ran and j < count and not prefix[j]
+                   and _counted_as_one(pieces[j], ptags[j], tokens)):
+                j += 1
+            if j > k + 1:
+                # before the first unit a view index is a piece index
+                if k < at:
+                    at = k
+                unit: list[int] = []
+                for p in pieces[k:j]:
+                    unit.extend(p)
+                view.append(unit)
+                view_tags.append({"prefix"})
+                k = j
+                continue
+        if (not ran and leading < k < last
+                and ("suffix" in ptags[k]
+                     or "vocab:suffix" in tokens[pieces[k][0]].tags)):
+            ran = starts_a_credential_run(pieces[k], ptags[k], tokens)
+        view.append(list(pieces[k]))
+        view_tags.append(set(ptags[k]))
+        k += 1
+    return view, view_tags, at
+
+
+def read_trailing_run(pieces: Sequence[Sequence[int]],
+                      ptags: Sequence[Set[str]],
+                      tokens: Sequence[WorkToken],
+                      one_case: bool | None,
+                      ) -> tuple[TailRead, int] | None:
+    """`tail_reading` read once over a segment's pieces as group holds
+    them after rules.md#P3's connective joins and before the particle
+    chain (#614), counting a particle run and the plain words after it
+    as the one unit the chain will make (`_counting_view`): a `TailRead`,
+    and the index in `pieces` of the first piece of the run, which runs
+    to the end. None where there is nothing to read (no name piece past
+    the leading titles), and where the run is not one block at the end
+    of `pieces`: a title the H5 chain takes standing in front of a name
+    word the peel declined ('John Dr. G.J.'), the one shape whose run
+    holds a name piece -- there group joins as before #614 and assign
+    reads for itself. A segment the read takes nothing from reads as a
+    run of no pieces, at the end."""
+    n = leading_titles(pieces, ptags, tokens)
+    if n == len(pieces):
+        return None
+    view, view_tags, at = _counting_view(pieces, ptags, tokens, n)
+    rest = peel_walk(at, view_tags)
+    rest, titled, peel = tail_reading(rest, view, view_tags, tokens,
+                                      one_case)
+    tail: set[int] = set()
+    for k in rest[peel.names:]:
+        tail.update(view[k])
+    titles: set[int] = set()
+    for k in titled:
+        titles.update(view[k])
+    tail |= titles
+    run_titles: set[int] = set()
+    for k in peel.run_titles:
+        run_titles.update(view[k])
+    start = len(pieces)
+    for k, piece in enumerate(pieces):
+        if piece[0] in tail:
+            start = k
+            break
+    for k in range(start, len(pieces)):
+        if pieces[k][0] not in tail and "suffix" not in ptags[k]:
+            return None
+    return TailRead(frozenset(tail), frozenset(titles),
+                    frozenset(run_titles), peel), start
 
 
 # rules.md#H5: "the title is TRANSPARENT to the suffix reading: where

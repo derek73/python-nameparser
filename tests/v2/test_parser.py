@@ -538,12 +538,17 @@ def test_a_given_name_title_licenses_the_bound_given_join() -> None:
     plain = parse("Dr. abdul salam")
     assert (plain.title, plain.given, plain.family) == \
         ("Dr.", "abdul", "salam")
-    # and the pair's report: a bound word read as the bound word is
-    # not a fork, so the pick 'Sheik John Ma' reports is not reported
-    # for 'Sheik abdul Ma' (decisions.md#P5, the #369 precedent)
-    assert parse("Sheik abdul Ma").ambiguities == ()
-    assert [a.kind for a in parse("Sheik John Ma").ambiguities] == \
-        [AmbiguityKind.SUFFIX_OR_NAME]
+    # and the pair's report. Until #614 a bound word read as the bound
+    # word was no fork, so 'Sheik abdul Ma' reported nothing where
+    # 'Sheik John Ma' reports its pick (the #369 precedent). S2's run is
+    # read once now, before the join, and the read weighs 'Ma' as a
+    # credential and declines it before the join makes it part of the
+    # given pair -- so the pick reports in both (decisions.md#P5,
+    # 2026-10-07)
+    for text in ("Sheik abdul Ma", "Sheik John Ma"):
+        assert [a.kind for a in parse(text).ambiguities] == \
+            [AmbiguityKind.SUFFIX_OR_NAME], text
+    assert parse("Sheik abdul Ma").given == "abdul Ma"
 
 
 def test_the_bound_given_reserve_spares_the_family_assign_will_keep() -> None:
@@ -578,14 +583,18 @@ def test_the_bound_given_join_leaves_a_suffix_where_it_stands() -> None:
         ("abdul", "", "Berg", "Jr Smith")
 
 
-def test_the_reserve_declines_and_assign_reads_the_unjoined_pieces() -> None:
-    # 'abdul J. V': the reserve reads the V as the suffix it would be
-    # behind the joined pair, declines, and assign then sees the
-    # unjoined pieces and reads the V as the family -- exactly as it
-    # reads 'John J. V'. Decided, not accidental (decisions.md#P5).
-    for text in ("abdul J. V", "John J. V"):
-        n = parse(text)
-        assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
+def test_the_reserve_counts_what_the_trailing_read_left() -> None:
+    # 'abdul J. V': until #614 the reserve read the V as the suffix it
+    # would be behind the joined pair and declined, so the name read as
+    # 'John J. V' does. S2's run is read once now, before the join: it
+    # takes nothing (the initial-shaped 'J.' suppresses the fork), three
+    # name words stand, and the join leaves two, so it stands -- given
+    # 'abdul J.', family 'V'. The join no longer re-reads the fork it
+    # would move (decisions.md#P5, 2026-10-07).
+    n = parse("abdul J. V")
+    assert (n.given, n.middle, n.family, n.suffix) == ("abdul J.", "", "V", "")
+    n = parse("John J. V")
+    assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
     # and behind a merged credential, which assign drops from its walk
     # so the V is last in it, the family survives
     n = parse("abdul Smith V Ph. D.")
@@ -599,8 +608,10 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
     # #425: with a suffix word between the pair and a bare ambiguous
     # acronym, assign peels the acronym (three pieces, words to spare)
     # and then the suffix, and the family the join left was never
-    # there. The reserve now runs assign's peel over the joined view
-    # and declines, so these read as their ordinary-given twins.
+    # there. The reserve declines, so these read as their
+    # ordinary-given twins -- since #614 by counting the names S2's
+    # run left before the join, read once, rather than re-reading the
+    # peel over the joined view.
     for bound, plain in (("abdul Smith Jr Ma", "John Smith Jr Ma"),
                          ("abdul Rahman PhD MA", "John Rahman PhD MA")):
         n, m = parse(bound), parse(plain)
@@ -656,15 +667,19 @@ def test_a_joined_pair_is_never_peeled_as_a_title() -> None:
     assert (n.given, n.family) == ("abdul Sir", "Berg")
 
 
-def test_the_licence_does_not_lift_the_equality() -> None:
+def test_the_licence_joins_where_the_read_took_nothing() -> None:
     # Behind a given-name title the reserve needs one name piece, so
-    # "changes no suffix reading" is the only thing between 'Sir abdul
-    # J. V' and a join that turns the V from a name word into the
-    # suffix (#369 had joined it). It reads exactly as 'Sir John J. V'
-    # does.
-    for text in ("Sir abdul J. V", "Sir John J. V"):
-        n = parse(text)
-        assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
+    # "changes no suffix reading" was the only thing between 'Sir abdul
+    # J. V' and a join that turned the V from a name word into the
+    # suffix (#369 had joined it). Since #614 nothing re-reads the
+    # suffix after the join: the run, read once before it, takes
+    # nothing, and the pair joins with the V still the family -- the
+    # suffix reading the equality guarded against no longer arises
+    # (decisions.md#P5, 2026-10-07).
+    n = parse("Sir abdul J. V")
+    assert (n.given, n.family, n.suffix) == ("abdul J.", "V", "")
+    n = parse("Sir John J. V")
+    assert (n.middle, n.family, n.suffix) == ("J.", "V", "")
 
 
 def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
@@ -676,9 +691,10 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
             ("John van der Berg X", "van der Berg", "X"),
             ("abdul van der Berg V", "van der Berg", "V"),
             # MOVED by #289, not deleted: 'Ma' is Title-case in a
-            # mixed-case name, so it now leans SURNAME and the chain's
-            # re-ask absorbs it into the particle run instead of
-            # leaving it for assign to peel (decisions.md#S2).
+            # mixed-case name, so it now leans SURNAME, the
+            # run's read leaves it a name word (S2's read ahead of the
+            # chain since #614, its re-ask before that), so the chain
+            # takes it into the particle run (decisions.md#S2).
             ("John van der Berg Ma", "van der Berg Ma", "")):
         n = parse(text)
         assert (n.family, n.suffix) == (family, suffix), text

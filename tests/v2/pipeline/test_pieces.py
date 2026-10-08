@@ -21,8 +21,8 @@ from nameparser._pipeline import _comma
 from nameparser._pipeline._pieces import (
     _anchors, _numeral_behind_the_initial_veto, anchor_in_reach,
     credential_anchors,
-    credential_at_the_given_slot, is_leading_title, join_connectives,
-    leading_titles,
+    TailRead, credential_at_the_given_slot, is_leading_title,
+    join_connectives, leading_titles, read_trailing_run,
     own_words, peel_trailing, peel_walk, segment_suffix_reading,
     tail_reading, trailing_candidates, trailing_titles,
 )
@@ -1065,3 +1065,50 @@ def test_only_groups_joins_derive_a_prefix() -> None:
                            titles_only=True)
     assert words == ["Freiherr and Dr."]
     assert "title" in ptags[0] and "prefix" not in ptags[0]
+
+
+def _read(text: str) -> tuple[ParseState, tuple[TailRead, int] | None]:
+    """S2's trailing read (#614) over a whole name's words as classify
+    tagged them, one piece each."""
+    state = _state_through("classify", text)
+    pieces = [[i] for i in state.segments[0]]
+    ptags: list[set[str]] = [set() for _ in pieces]
+    return state, read_trailing_run(pieces, ptags, list(state.tokens),
+                                    state.one_case)
+
+
+def _texts(state: ParseState, indices: Set[int]) -> list[str]:
+    return sorted(state.tokens[i].text for i in indices)
+
+
+def test_the_trailing_read_hands_over_the_run_whole() -> None:
+    """Every answer assign takes off the read: where the run starts,
+    its tokens, the H5 chain's titles, the title words inside #602's run
+    and the name word that run absorbed."""
+    state, found = _read("John Smith PhD Prof Jones Dr.")
+    assert found is not None
+    read, start = found
+    assert start == 2
+    assert _texts(state, read.tail) == ["Dr.", "Jones", "PhD", "Prof"]
+    assert _texts(state, read.titles) == ["Dr."]
+    assert _texts(state, read.run_titles) == ["Prof"]
+    assert [[state.tokens[i].text for i in p] for p in read.peel.absorbed] \
+        == [["Jones"]]
+
+
+def test_the_trailing_read_counts_a_particle_chain_as_one_word() -> None:
+    """The chain's run and the word it takes are one name word, so a
+    dotted acronym behind them has no word to spare and the read takes
+    nothing: a run of no pieces, at the end."""
+    state, found = _read("Freiherr von Berg X.Y.Z.")
+    assert found is not None
+    read, start = found
+    assert read.tail == frozenset() and start == len(state.segments[0])
+
+
+def test_the_trailing_read_declines_where_there_is_nothing_to_split() -> None:
+    """None where no name piece stands past the leading titles, and
+    where the run holds a name piece (a title in front of a name word
+    the peel declined), which is read as before #614."""
+    assert _read("Dr.")[1] is None
+    assert _read("John Dr. G.J.")[1] is None

@@ -9710,6 +9710,224 @@ CASES: tuple[Case, ...] = (
                "runs on the piece's first token and 'Prof.' wears the "
                "period ('John de la Prof.' reads 0 either way; both "
                "measured 2026-09-09 in test_pieces.py)"),
+    Case("a_salutation_alone_keeps_its_connective",
+         "Mr. and Mrs.",
+         {"title": "Mr. and Mrs."},
+         ambiguities=(),
+         classification="parity",
+         notes="#614: S2's run is read after P3's connective joins, so "
+               "the join makes one title of the salutation before the H5 "
+               "chain reads it. Read before the joins (#614's first "
+               "design), the chain took 'Mrs.' and left 'and' standing "
+               "as the family name (#614's review)"),
+    Case("a_salutation_alone_keeps_its_ampersand",
+         "Mr. & Mrs.",
+         {"title": "Mr. & Mrs."},
+         ambiguities=(),
+         classification="parity",
+         notes="the ampersand twin of the row above"),
+    Case("a_joined_salutation_is_one_leading_title",
+         "Mr. and Mrs. Do",
+         {"title": "Mr. and Mrs.", "family": "Do"},
+         ambiguities=(),
+         classification="parity",
+         notes="#614: the joined salutation is one leading title before "
+               "S2 counts, so 'Do' stands alone and reports nothing; "
+               "counted as three words it was weighed as a credential "
+               "and reported (#614's review)"),
+    Case("a_particle_chain_is_one_word_to_s2",
+         "Freiherr von Berg X.Y.Z.",
+         {"title": "Freiherr", "family": "von Berg X.Y.Z."},
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         classification="parity",
+         notes="rules.md#S2 counts the particle run and the word the "
+               "chain takes with it as one name word (#614), so the "
+               "dotted acronym has no word to spare, as every release "
+               "read it; counted word by word it was the credential, "
+               "where 'Freiherr Berg X.Y.Z.' kept it the family (#614's "
+               "review)"),
+    Case("a_connective_join_is_one_word_to_s2",
+         "Juan y Garcia X.Y.Z.",
+         {"given": "Juan y Garcia", "family": "X.Y.Z."},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="P3's join is made before S2 counts (#614), so the joined "
+               "pair is one name word and the dotted acronym has none to "
+               "spare, as every release read it (#614's review)"),
+    Case("a_shape_only_numeral_behind_a_particle_chain",
+         "Juan de la Vega VI",
+         {"given": "Juan", "family": "de la Vega", "suffix": "VI"},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="'VI' is in no wordlist and the numeral fork reads it by "
+               "shape, so S2's count keeps it out of the particle "
+               "chain's unit; folded in with the plain words it was "
+               "family 'de la Vega VI' (#614's review, the #610 class "
+               "AGENTS.md's spelling sweep records)"),
+    Case("a_particle_takes_the_dual_behind_it_at_the_head",
+         "Freiherr von vd",
+         {"title": "Freiherr", "family": "von vd"},
+         ambiguities=("particle-or-given",),
+         classification="parity",
+         notes="the chain's leading position stops at a word that is a "
+               "title and a particle, so 'von' is not the leading piece "
+               "and its run takes the dual behind it; counting from the "
+               "end of the title run instead read suffix 'vd' (#614's "
+               "review)"),
+    Case("a_second_title_particle_opens_the_name_inside_the_titles",
+         "Freiherr St van Berg MA",
+         {"title": "Freiherr", "family": "St van Berg", "suffix": "MA"},
+         ambiguities=("particle-or-given", "title-or-name",
+                      "suffix-or-name"),
+         classification="parity",
+         notes="'St' is a title and a particle, so it is both inside "
+               "the leading titles and the start of the chain's unit "
+               "'St van Berg'; the read must start where that unit "
+               "stands in the counting view, not at the title run's end "
+               "counted in pieces, which put it past the name and kept "
+               "'MA' a name word (#614's second review)"),
+    Case("a_unit_opened_inside_the_titles_makes_them_a_name",
+         "Freiherr Freiherr Prof do",
+         {"title": "Freiherr", "given": "Freiherr Prof", "family": "do"},
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         classification="parity",
+         notes="the second 'Freiherr' opens the chain's unit 'Freiherr "
+               "Prof' inside the leading titles, which makes a name of "
+               "them though it ends short of the titles' end; the read "
+               "starts at that unit, so 'do' has a name word in front "
+               "of it and its pick is reported (#614's second review)"),
+    Case("a_title_word_inside_a_credential_run_stays_a_title",
+         "John Smith MD van Secretary Jones",
+         {"given": "John", "family": "Smith", "title": "Secretary",
+          "suffix": "MD van Jones"},
+         ambiguities=("suffix-or-name", "suffix-or-name"),
+         classification="parity",
+         notes="rules.md#S2 (#602): inside the run a title word reads as "
+               "a title. The counting view forms no unit past the run's "
+               "start beyond a bare particle run, or 'van Secretary' was "
+               "one unit and the title went into the suffix (#614's "
+               "second review)"),
+    Case("a_second_particle_run_is_a_unit_of_its_own",
+         "Jan van Berg de Mc",
+         {"given": "Jan", "middle": "van Berg", "family": "de Mc"},
+         ambiguities=(),
+         classification="parity",
+         notes="a particle ends the plain words a unit takes, so 'de Mc' "
+               "is a second unit and the dual is its particle, not a "
+               "trailing post-nominal (#614's second review, mutation)"),
+    Case("a_joined_particle_phrase_opens_a_unit",
+         "Jan von und zu Mc",
+         {"given": "Jan", "family": "von und zu Mc"},
+         ambiguities=(),
+         classification="parity",
+         notes="P3 joins 'von und zu' into one piece tagged prefix; the "
+               "counting view reads that tag as a particle, so the dual "
+               "behind it is in the unit (#614's second review, "
+               "mutation)"),
+    Case("a_joined_salutation_inside_a_credential_run_is_a_title",
+         "John Smith Jr. van Mr. and Mrs.",
+         {"given": "John", "family": "Smith", "title": "Mr. and Mrs.",
+          "suffix": "Jr. van"},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="past the run's start no unit takes the joined title "
+               "(#614's second review, mutation)"),
+    Case("a_joined_particle_phrase_is_a_unit_of_its_own",
+         "Jan van Berg von und zu Mc",
+         {"given": "Jan", "middle": "van Berg", "family": "von und zu Mc"},
+         ambiguities=(),
+         classification="parity",
+         notes="P3's joined 'von und zu' is a particle, so it ends the "
+               "plain words of the 'van Berg' unit and opens its own "
+               "(#614's second review, mutation)"),
+    Case("a_connective_join_counts_as_its_words_before_a_numeral",
+         "John van B and Smith X",
+         {"given": "John", "family": "van B and Smith", "suffix": "X"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#614)",
+         notes="P3's join 'B and Smith' is one name word in the "
+               "particle unit, so two name words stand before the "
+               "numeral and the fork reads it (0c54662b: family 'van B "
+               "and Smith X'; #614's second review, mutation)"),
+    Case("a_listed_title_word_is_a_plain_word_in_a_unit",
+         "Freiherr von Bishop X.Y.Z.",
+         {"title": "Freiherr", "family": "von Bishop X.Y.Z."},
+         ambiguities=("particle-or-given", "suffix-or-name",
+                      "title-or-name"),
+         classification="parity",
+         notes="only a PERIOD-marked title word stays out of a unit; "
+               "bare 'Bishop' is a surname the chain joins (#614's "
+               "second review, mutation)"),
+    Case("an_unlisted_abbreviation_is_a_plain_word_in_a_unit",
+         "Freiherr von Berg. X.Y.Z.",
+         {"title": "Freiherr", "family": "von Berg. X.Y.Z."},
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         classification="parity",
+         notes="the period-marked exclusion is for title VOCABULARY; an "
+               "unlisted abbreviation is a name word (#614's second "
+               "review, mutation)"),
+    Case("a_split_credential_is_part_of_the_trailing_block",
+         "Freiherr von Berg Prof. Ph. D.",
+         {"title": "Freiherr Prof.", "family": "von Berg",
+          "suffix": "Ph. D."},
+         ambiguities=("particle-or-given",),
+         classification="fix(#614)",
+         notes="the merged 'Ph. D.' is a piece the read's walk never "
+               "holds, so it stands outside the run's token set; the "
+               "contiguity check passes over it, or the run is not one "
+               "block, the read is declined, and the chain takes "
+               "'Prof.' into the family as 0c54662b did (family 'von "
+               "Berg Prof.'; #614's /simplify, mutation)"),
+    Case("a_run_with_a_name_inside_keeps_the_bound_join_two_views",
+         "abdul Dr. G.J.",
+         {"title": "Dr.", "given": "abdul", "family": "G.J."},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="the read is declined (the H5 title stands in front of "
+               "a name word the peel declined), so P5's reserve reads "
+               "both views as before #614: the chain takes 'Dr.', and "
+               "a piece the chain takes is no word to join (#614's "
+               "/simplify: the one main-segment row reaching that "
+               "branch)"),
+    Case("a_particle_run_keeps_joining_after_its_dual",
+         "John van Mc Smith",
+         {"given": "John", "family": "van Mc Smith"},
+         ambiguities=(),
+         classification="parity",
+         notes="the dual is a word of the particle run, and the run "
+               "joins on to the name word after it as it does without "
+               "the dual"),
+    Case("a_run_with_a_name_inside_reads_as_before",
+         "John van V Dr. V",
+         {"given": "John", "family": "van V Dr.", "suffix": "V"},
+         ambiguities=("suffix-or-name",),
+         classification="parity",
+         notes="the trailing read takes the title and the numeral with a "
+               "name word between them, so its run is not one block at "
+               "the end and the segment is joined and read as before "
+               "#614; split anyway, the read took 'Dr.' for a title "
+               "and left family 'V' (#614's review)"),
+    Case("a_joined_leading_title_keeps_the_trailing_title_a_name",
+         "Prince of Wales Dr.",
+         {"title": "Prince of Wales", "family": "Dr."},
+         ambiguities=("title-or-name",),
+         classification="parity",
+         notes="a parity guard for the title joins in front of the run: "
+               "the joined 'Prince of Wales' is one leading title, and "
+               "the trailing 'Dr.' stays the name word it was. The row "
+               "that pins assign's reading the name again is the "
+               "Freiherr row below (measured 2026-10-07 by mutation)"),
+    Case("a_title_read_before_the_chain_can_strand_the_name",
+         "Freiherr von Berg Dr. and Ed. Prof.",
+         {"title": "Freiherr von Berg Dr. and Ed.", "family": "Prof."},
+         ambiguities=("particle-or-given", "title-or-name"),
+         classification="fix(#614)",
+         notes="garbage in: the trailing 'Prof.' is read before the "
+               "chain (rules.md#H5), the chain then joins a piece "
+               "carrying the joined 'Dr. and Ed.' title, which reads as "
+               "a leading title, and assign reads the name again and "
+               "keeps 'Prof.' as its word; 0c54662b chained the whole "
+               "into family 'von Berg Dr. and Ed. Prof.'"),
     Case("family_comma_then_a_lone_suffix_word_segment",
          "Smith, John, Prof.",
          {"given": "John", "family": "Smith", "title": "Prof."},

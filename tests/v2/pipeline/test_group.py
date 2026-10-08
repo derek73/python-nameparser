@@ -717,16 +717,18 @@ def test_the_numeral_is_read_after_a_suffix_word_that_is_also_a_title() -> None:
     assert _piece_texts(out) == [["abdul", "Smith", "jr", "V"]]
 
 
-def test_the_reserve_reads_the_numeral_as_the_join_would_leave_it() -> None:
-    # assign tests the piece before the numeral AFTER the join, whose
-    # first token is the bound word; the reserve must look at the
-    # same layout, or an initial-shaped second word suppresses the
-    # fork for the reserve alone: 'abdul J. V' read given 'abdul J.',
-    # family ''. The reserve now declines, and assign, seeing the
-    # unjoined pieces, reads the V as the family -- exactly as it
-    # reads 'John J. V' (pinned at the field level in test_parser).
+def test_the_reserve_counts_the_names_the_read_left_before_a_numeral() -> None:
+    # History: the reserve once re-read the fork over the joined view,
+    # where the initial-shaped 'J.' no longer stood before the
+    # numeral, and declined; 2.2 and 2.3 read middle 'J.'.
+    #
+    # Since #614 the reserve reads no view: S2's run is read once
+    # before the join, and here it takes nothing -- the initial-shaped
+    # 'J.' suppresses the fork -- so three name words stand and the
+    # join leaves two, which the reserve allows (decisions.md#P5,
+    # 2026-10-07). The join no longer re-reads the fork it would move.
     out = _grouped("abdul J. V")
-    assert _piece_texts(out) == [["abdul", "J.", "V"]]
+    assert _piece_texts(out) == [["abdul J.", "V"]]
 
 
 def test_the_numeral_is_last_among_the_pieces_assign_keeps() -> None:
@@ -868,16 +870,17 @@ def test_a_title_word_in_the_name_is_a_name_word_to_the_join() -> None:
     assert _piece_texts(out) == [["Berg"], ["abdul mr"]]
 
 
-def test_the_licence_does_not_lift_the_equality() -> None:
-    # The one shape where the join would move the numeral fork AND
-    # the licence's threshold of one would let it through: 'sir abdul
-    # J. V' -- unjoined the V is a name word (the fork is suppressed
-    # by the initial-shaped 'J.'), joined it is the suffix: the peel
-    # takes nothing unjoined and the V joined. Declines, as 'Sir John
-    # J. V' reads. A looser comparison passed every other test; found
-    # by the test review.
+def test_the_licence_joins_where_the_read_took_nothing() -> None:
+    # 'sir abdul J. V' under a given-name title: the licence's
+    # threshold of one. Before #614 the join was declined here,
+    # because over the joined view the numeral fork moved (unjoined
+    # the V was a name word, joined it was the suffix). Since #614
+    # there is no joined view to compare: the run, read once before
+    # the join, takes nothing, and the join stands, as for 'abdul J.
+    # V' (test_the_reserve_counts_the_names_the_read_left_before_a_
+    # numeral, decisions.md#P5 2026-10-07).
     out = _grouped("sir abdul J. V", lexicon=_GIVEN_NAME_TITLE_LEX)
-    assert _piece_texts(out) == [["sir", "abdul", "J.", "V"]]
+    assert _piece_texts(out) == [["sir", "abdul J.", "V"]]
 
 
 # -- #424: the chain and the maiden walk stop where assign's peel begins
@@ -1927,3 +1930,48 @@ def test_the_floor_keeps_the_first_word_in_the_chains_count() -> None:
     assert _maiden_texts(ok) == ["Smith"]
 
 
+
+
+def test_group_hands_assign_the_trailing_read() -> None:
+    """`tail_reads` carries S2's run per segment, read once between P3's
+    joins and the particle chain (#614), and None where the segment
+    was not read there: a run holding a name piece, and a segment of
+    fewer than three pieces."""
+    lex = Lexicon.default()
+    out = _grouped("John van der Berg Prof.", lexicon=lex)
+    (read,) = out.tail_reads
+    assert read is not None
+    assert sorted(out.tokens[i].text for i in read.titles) == ["Prof."]
+    assert _grouped("John Dr. G.J.", lexicon=lex).tail_reads == (None,)
+    assert _grouped("John Smith", lexicon=lex).tail_reads == (None,)
+
+
+def test_the_chain_reports_a_member_the_read_did_not_weigh() -> None:
+    """The chain reports a member it took short of the run, its scan
+    ending at the next particle, which the read never reached ('Ed'
+    here, 'Do' being the read's own pick, reported by assign).
+    Recorded negative control, #614's review (2026-10-07): with the
+    emitter switched off wherever a read was taken, 'Ed' went
+    unreported."""
+    out = parse("Freiherr von Berg Ed Do")
+    reported = [[t.text for t in a.tokens] for a in out.ambiguities
+                if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+    assert reported == [["Ed"], ["Do"]]
+
+
+def test_a_pick_the_chain_took_is_reported_in_the_chains_words() -> None:
+    """A pick the particle chain took into the name is reported by the
+    chain, once, and the read gives the pick up, so assign does not
+    report it again: assign words a pick by the role
+    it holds before post_rules, and under a leading title-particle that
+    is the given role the fold then moves into the family. Recorded
+    negative controls, #614's second review (2026-10-07): with the
+    chain's emitter skipping the read's picks the report said 'read as
+    a given name' of a word in the family; with the read keeping the
+    pick the word was reported twice."""
+    out = parse("Freiherr von Berg Ma")
+    assert out.family == "von Berg Ma"
+    details = [a.detail for a in out.ambiguities
+               if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+    assert len(details) == 1
+    assert "particle chain took it into the name" in details[0]

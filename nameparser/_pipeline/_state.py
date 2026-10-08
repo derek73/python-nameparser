@@ -23,6 +23,9 @@ from nameparser._policy import Policy
 from nameparser._types import (SHAPE_ACRONYM_TAG, AmbiguityKind,
                                Role, Segmenter, Span)
 
+if TYPE_CHECKING:
+    from nameparser._pipeline._pieces import TailRead
+
 
 # The comma characters (ASCII/Arabic/fullwidth, #265). Shared here so
 # tokenize (separators/segmentation) and extract (close-quote
@@ -152,7 +155,8 @@ class ParseState:
     AND the SUFFIX/TITLE roles of a postnominal part after the comma,
     whose segment it empties so no join reaches it,
     then pieces/piece_tags/dropped AND maiden token roles, plus the
-    SUFFIX/TITLE roles of the run a maiden take gives up (#601);
+    SUFFIX/TITLE roles of the run a maiden take gives up (#601), AND
+    tail_reads, S2's trailing run read once before its joins (#614);
     assign -> the remaining token roles AND `order`, the effective
     order it read them under, AND the folded-middle tag on the
     particles P6's attachment joins after a family comma (#613);
@@ -188,6 +192,15 @@ class ParseState:
     pieces: tuple[tuple[tuple[int, ...], ...], ...] = ()
     piece_tags: tuple[tuple[frozenset[str], ...], ...] = ()
     dropped: tuple[int, ...] = ()   # structural tokens (maiden markers)
+    #: rules.md#S2's trailing run per segment, as group read it ONCE
+    #: after P3's joins and before the particle chain (#614), for
+    #: assign to place and report
+    #: rather than peel again; None where group read none -- a family
+    #: comma's parts, a part past a comma, a segment of fewer than
+    #: three pieces, a run with a name piece inside it -- and assign
+    #: reads those for itself, as it does a name group's joins left
+    #: without a name word. Aligned with `pieces`.
+    tail_reads: tuple[TailRead | None, ...] = ()
     #: The order `assign` actually READ the name under -- name_order,
     #: or the script_orders entry that overrode it. None wherever no
     #: positional read happened: after a family comma (which fixes the

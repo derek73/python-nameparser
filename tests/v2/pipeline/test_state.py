@@ -294,8 +294,10 @@ def test_stage_field_ownership() -> None:
         # binding a postnominal part's roles and dropping its cores
         # and empties the segment of a part it bound, so no join can
         # reach it (#613's /simplify)
+        # and since #614 the trailing run it reads once at its head,
+        # handed to assign (`tail_reads`)
         "group": {"tokens", "pieces", "piece_tags", "dropped",
-                  "ambiguities", "structure", "segments"},
+                  "ambiguities", "structure", "segments", "tail_reads"},
         # assign also records `order`: the effective order it read the
         # name under, which post_rules needs and must not re-derive
         "assign": {"tokens", "ambiguities", "order"},

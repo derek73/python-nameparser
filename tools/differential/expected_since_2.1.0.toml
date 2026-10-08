@@ -3942,3 +3942,14 @@ fields = ["_ambiguities", "family", "given", "middle", "suffix", "title"]
 issue = "fix(#603) a title word in a part past the second comma is a title"
 name_regex = "^(?:1 & 2, 3 4 5, Mr\\.|Andrew Perkins, Jr\\., Col\\. \\x28Ret\\x29|Eric H\\. Holder, Jr\\., Attorney General|Eric H\\. Holder, Jr\\., Secretary of State|John Smith, Jr\\., Lt\\.Gov\\.|Smith, John, Prof\\.)$"
 fields = ["_ambiguities", "suffix", "title"]
+
+[[change]]
+# rules.md#S2: "The run at a name's trailing slot is read ONCE, once
+# the connectives have joined (P3) and before the particle chain (P2)
+# and the bound given-name join (P5) are made" (#614, 2026-10-07), and
+# rules.md#H5: "a particle chain (P2) stops in front of a trailing
+# title rather than taking it into the family name". This baseline
+# made the chain first and the title was a word of the family name.
+issue = "fix(#614) a trailing title is read before the particle chain"
+name_regex = "^John van der Berg Prof\\.$"
+fields = ["family", "title"]
