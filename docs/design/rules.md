@@ -2441,7 +2441,7 @@ A1. Rationale: a caller can only act on doubt that is reported.
     segmenter's own error, which propagates — a user-code error is
     not a content error. (Needs the optional extra to demonstrate,
     so no example line.)
-    history: decisions.md#A1 · interacts: H1, P3, P6, S2 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_state.py
+    history: decisions.md#A1 · interacts: H1, O1, O2, O3, P1, P3, P6, S2 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_state.py
 
 A2. Rationale: an input with no name content names nobody, and
     saying so beats inventing fields from punctuation.
