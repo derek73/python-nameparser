@@ -86,13 +86,15 @@ from nameparser._policy import Policy
 #: 3.11, 6 on 3.12-3.15, in #614, when S2's trailing run came to be
 #: read once, between P3's joins and the particle chain, rather than
 #: re-asked by the chain and the reserve and read again by assign
+#: (decisions.md#parse-cost). The 3.12-3.15 rows read 289/326 from
+#: #614's /simplify on and were corrected in #620, which moved no row
 #: (decisions.md#parse-cost).
 _CALL_BASELINE = {
     (3, 11): {"parse": 308, "facade": 345},
-    (3, 12): {"parse": 290, "facade": 327},
-    (3, 13): {"parse": 290, "facade": 327},
-    (3, 14): {"parse": 290, "facade": 327},
-    (3, 15): {"parse": 290, "facade": 327},
+    (3, 12): {"parse": 289, "facade": 326},
+    (3, 13): {"parse": 289, "facade": 326},
+    (3, 14): {"parse": 289, "facade": 326},
+    (3, 15): {"parse": 289, "facade": 326},
 }
 _BAND = 0.02
 

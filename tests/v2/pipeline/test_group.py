@@ -1975,3 +1975,27 @@ def test_a_pick_the_chain_took_is_reported_in_the_chains_words() -> None:
                if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
     assert len(details) == 1
     assert "particle chain took it into the name" in details[0]
+
+
+def test_an_absorbed_particle_run_reports_as_the_one_word_the_chain_makes(
+) -> None:
+    """A run of particles a credential run absorbs is reported as the one
+    piece P2's chain makes of it, a dual among them included, as it was
+    before #614 split the run off ahead of the chain (#620). Only
+    particles that stand together: the merged 'Ph. D.' between two
+    is outside the walk and still parts them. M2's clause-free view
+    reads its words before any join and reports them one by one.
+    Recorded negative controls, #620 (2026-10-08): with the gathering
+    off 'Mc Mc' went unreported; with it on in M2's view the clause
+    reported 'mc van'; without the adjacency test 'vd van'."""
+    def reported(text: str) -> list[list[str]]:
+        return [[t.text for t in a.tokens] for a in parse(text).ambiguities
+                if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
+    assert reported("Dr. John Smith Esq. RN Mc Mc") == [["Mc", "Mc"]]
+    assert reported("Mary Ann Smith Dr. MD vd Ph. D. van") == [["van"]]
+    assert reported("Jane Doe nee van der Berg Jr mc van") == [["van"]]
+    # a P3-joined phrase is a particle too, and the gathering runs on
+    # every pass of the read, after the H5 chain's splice as before it
+    assert reported("John Smith Jr. von und zu Mc") == [
+        ["von", "und", "zu", "Mc"]]
+    assert reported("John Smith PhD van mc Dr.") == [["van", "mc"]]

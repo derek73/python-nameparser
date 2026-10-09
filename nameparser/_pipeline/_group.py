@@ -63,7 +63,7 @@ from typing import assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
-    Peel, TailRead, is_conj_piece, is_leading_title, is_prefix_piece,
+    Peel, TailRead, chain_run_end, is_conj_piece, is_leading_title, is_prefix_piece,
     is_suffix_piece, is_title_piece, join_connectives, joined_tags,
     leading_titles, merge_pieces, peel_walk, read_trailing_run,
     tail_reading, trailing_candidates, trailing_start,
@@ -918,14 +918,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                                                        ptags[k], tokens):
                     k += 1
                     continue
-                j = k + 1
-                while j < len(pieces) and is_prefix_piece(pieces[j],
-                                                          ptags[j], tokens):
-                    j += 1
-                while (j < len(pieces) - tail
-                       and not is_prefix_piece(pieces[j], ptags[j], tokens)
-                       and not is_suffix_piece(pieces[j], ptags[j], tokens)):
-                    j += 1
+                j = chain_run_end(k, pieces, ptags, tokens,
+                                  len(pieces) - tail)
                 # The other half of PARTICLE_OR_GIVEN. _assign reports the
                 # fork when an ambiguous particle stays a lone leading piece
                 # ("Van Johnson" -> given under the default order, family

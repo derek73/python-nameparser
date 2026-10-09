@@ -523,7 +523,7 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2, C2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P2 · interacts: P1, P4, H5, M2, S2, C2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P3. Rationale: connective words ("y", "of the") bind name words into
     one name part; but a single letter in a short name is more
@@ -1031,8 +1031,10 @@ S2. Rationale: generational suffixes and credentials are recognized
     (P5) are made, counting a particle run and the name words the
     chain will take with it as the one name word it will make of them
     — the words both particles and suffix vocabulary standing straight
-    behind a particle among them; inside a credential run a word
-    stands on its own, a title word there still a title — and neither
+    behind a particle among them, while a word the reading weighs
+    counts as a word of its own wherever it stands; inside a
+    credential run a word stands on its own, a title word there
+    still a title — and neither
     join reaches a word the run took. A
     BARE ambiguous acronym is consumed only when the name has words
     to spare — as the second of two words it stays the family
@@ -1157,7 +1159,10 @@ S2. Rationale: generational suffixes and credentials are recognized
     post-nominals, which P6 attaches to the family — other than a
     lone member of the ambiguous class, which reads as the
     credential. A lone particle is
-    not a name word for the count, 'de Mesnil' being one surname. A title word
+    not a name word for the count, 'de Mesnil' being one surname,
+    and a particle run with the words the chain joins to it is one
+    name word, 'der la' and 'la Smith Secretary' each counting once
+    (P2). A title word
     never starts the run, and neither does a member of the ambiguous
     class, a single letter, a connective, a word that is also
     particle or bound given-name vocabulary, or a non-Latin honorific

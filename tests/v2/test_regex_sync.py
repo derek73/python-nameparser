@@ -139,8 +139,8 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_vocab", "_PAIRED_INITIALS"): None,
     ("_group", "_PH"): None,
     ("_vocab", "_ROMAN"): "roman_numeral",
-    # SAME object, imported for _counted_as_one's inline numeral test
-    # (#614's /simplify), as _PERIOD_ABBREV is above
+    # SAME object, imported for the trailing read's weighed-word test
+    # (#620), as _PERIOD_ABBREV is above
     ("_pieces", "_ROMAN"): "roman_numeral",
     ("_post_rules", "_EAST_SLAVIC"): "east_slavic_patronymic",
     ("_post_rules", "_EAST_SLAVIC_CYR"): "east_slavic_patronymic_cyrillic",
