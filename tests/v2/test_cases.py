@@ -89,15 +89,39 @@ def test_the_family_partitions_into_particles_and_base(
         f"particles={pn.family_particles!r} + base={pn.family_base!r}")
 
 
+_NAME_FIELDS = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
+
 #: Every way a report's detail names the field its word was read into,
-#: mapped to that field: assemble's FIELD_READING, plus the two
-#: phrasings worded at a site whose field is fixed (a comma's
-#: credential reading, P6's attachment).
-_FIELD_CLAIMS = {**{reading: role for role, reading in FIELD_READING.items()},
-                 "a credential": Role.SUFFIX, "the given name": Role.GIVEN}
+#: mapped to the fields that make it true: assemble's FIELD_READING,
+#: which words every report a later rule could move (#626), plus the
+#: phrasings worded where the field is settled -- a comma's credential
+#: reading, the suffix run's and the numeral fork's ("reads as part of
+#: the suffix run", "a generational suffix"), H4's "the name", P6's
+#: "joins the family". A report that names a READING rather than a
+#: field ("read as an initial") is out of scope, as is any phrasing
+#: not listed here: the count below is what notices the list going
+#: stale.
+_FIELD_CLAIMS: dict[str, frozenset[Role]] = {
+    **{reading: frozenset({role}) for role, reading in FIELD_READING.items()},
+    **dict.fromkeys(("a credential", "a generational suffix",
+                     "part of the suffix run", "a post-nominal"),
+                    frozenset({Role.SUFFIX})),
+    "a name": _NAME_FIELDS, "the name": _NAME_FIELDS,
+    "the family": frozenset({Role.FAMILY}),
+}
 _FIELD_CLAIM = re.compile(
-    "read as (" + "|".join(map(re.escape, _FIELD_CLAIMS)) + ")"
-    "|(joins the family)")
+    r"\b(?:reads? as|joins) ("
+    + "|".join(map(re.escape, sorted(_FIELD_CLAIMS, key=len, reverse=True)))
+    + r")\b")
+
+
+def _swept_rows() -> list[tuple[Case, tuple[Role, Role, Role] | None]]:
+    """The (row, order) pairs the sweep checks: every row under each
+    order, a row with its own policy only as declared, and no locale
+    row (a pack's parser is not one of the three orders)."""
+    return [(case, order) for case in CASES for order in _INVARIANT_ORDERS
+            if case.locale is None
+            and not (order is not None and case.policy)]
 
 
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS,
@@ -106,23 +130,29 @@ _FIELD_CLAIM = re.compile(
 def test_a_report_names_the_field_its_word_lands_in(
         case: Case, order: tuple[Role, Role, Role] | None) -> None:
     """#626: a report's detail that names the field its word was read
-    into names the field the word holds in the RESULT. A later rule can
-    move a word after the report is made -- P6's attachment under a
-    family-first order, H1's swap behind a title -- and five of
+    into names the field the word holds in the RESULT. Rules in
+    post_rules move a word after assign reports it -- H1's move behind
+    a title, P1's family-first fold, P6's attachment -- and six of
     assign's reports were worded from the role at assign, so
     'Kim Min Do' under FAMILY_FIRST was told 'Do' was a middle name
     when it landed in the family. Assemble words them now.
 
+    Checked over `_swept_rows`: locale rows are not checked, and a row
+    carrying its own policy only under that policy.
+
     Negative control, measured 2026-10-08: this test over master's
-    parser (26cdb891) fails 10 parses, every one a report worded at
+    parser (26cdb891) fails 11 parses, every one a report worded at
     assign -- nine title-or-name join reports saying 'given' of a unit
     H1 moved to the family behind a title (`Attorney General of
     Minnesota`, `John of Prince Prof.`, `St St née`, `Freiherr von
-    Bishop X.Y.Z.` and five more rows, as declared), and `Kim Min Do`
-    under FAMILY_FIRST ('middle', family). Over a generated grid of
-    51,835 names under all three orders it was 2,689 of 66,208 field
-    claims, in the same two emitters: title-or-name's join branch
-    (1,575) and the trailing peel's picks (1,114).
+    Bishop X.Y.Z.` and five more rows, as declared), `Kim Min Do`
+    under FAMILY_FIRST ('middle', family, P6) and `de Kim Ma` under
+    FAMILY_FIRST ('middle', given, P1). The sixth emitter, the comma
+    report on a word after an empty head, is NOT in that count: master
+    worded it 'the given name', a phrasing the tree no longer emits
+    and so not one `_FIELD_CLAIMS` lists, and `, Ma Dr.` (H1 moving it
+    to the family) is pinned instead by test_assign.py's verbatim
+    detail. No row reached that shape until #626's review.
     """
     if case.locale is not None or (order is not None and case.policy):
         pytest.skip("row carries its own policy or locale")
@@ -131,12 +161,25 @@ def test_a_report_names_the_field_its_word_lands_in(
         m = _FIELD_CLAIM.search(a.detail)
         if m is None:
             continue
-        want = _FIELD_CLAIMS[m[1]] if m[1] else Role.FAMILY
         landed = {t.role for t in a.tokens}
-        assert landed == {want}, (
+        assert landed <= _FIELD_CLAIMS[m[1]], (
             f"{case.text!r}: {a.kind.value} says {m[0]!r} but its "
             f"tokens landed in {sorted(r.value for r in landed)}: "
             f"{a.detail!r}")
+
+
+def test_the_field_sweep_sees_the_claims_it_checks() -> None:
+    """The sweep above passes vacuously if no detail matches
+    `_FIELD_CLAIM` -- an emitter reworded out of the list, or rows
+    dropped -- so the count of claims it checks is recorded here.
+    Move it deliberately when a row or a phrasing moves, never to 0."""
+    claims = sum(
+        _FIELD_CLAIM.search(a.detail) is not None
+        for case, order in _swept_rows()
+        for a in _swept(case.id, order).ambiguities)
+    assert claims == 1151, (
+        f"the field sweep checks {claims} claims, recorded as 1151 on "
+        f"2026-10-08")
 
 
 #: Case.__post_init__'s shape checks, each probed for the message that

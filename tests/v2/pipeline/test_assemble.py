@@ -1,7 +1,7 @@
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
-from nameparser._pipeline._state import ParseState, WorkToken
+from nameparser._pipeline._state import ParseState, PendingAmbiguity, WorkToken
 from nameparser._policy import Policy
 from nameparser._types import AmbiguityKind, ParsedName, Role, Span
 
@@ -197,3 +197,43 @@ def test_the_withdrawal_reads_the_role_and_not_the_word() -> None:
                              "read as an initial", (dr,)),))
     assert AK.CONJUNCTION_OR_INITIAL not in [
         a.kind for a in assemble(poisoned).ambiguities]
+
+
+def _with_reports(original: str, tokens: tuple[WorkToken, ...],
+                  *reports: PendingAmbiguity) -> ParsedName:
+    return assemble(ParseState(
+        original=original, lexicon=Lexicon.default(), policy=Policy(),
+        tokens=tokens, ambiguities=reports))
+
+
+def test_a_field_tail_report_is_worded_from_the_final_role() -> None:
+    # #626: the emitter writes the sentence up to the field and the
+    # rest as field_tail; assemble names the field of the FIRST
+    # referent's final role, whatever the emitter saw. An empty tail is
+    # a real tail (the field ends the sentence), not an absent one.
+    tokens = (WorkToken("Kim", Span(0, 3), role=Role.FAMILY),
+              WorkToken("Do", Span(4, 6), role=Role.FAMILY))
+    pn = _with_reports(
+        "Kim Do", tokens,
+        PendingAmbiguity(AmbiguityKind.SUFFIX_OR_NAME, "'Do' read as ",
+                         (1,), field_tail=" rather than a post-nominal"),
+        PendingAmbiguity(AmbiguityKind.PARTICLE_OR_GIVEN,
+                         "leading 'Kim' read as ", (0,), field_tail=""),
+        PendingAmbiguity(AmbiguityKind.ORDER, "a whole sentence", (0,)))
+    assert [a.detail for a in pn.ambiguities] == [
+        "'Do' read as a family name rather than a post-nominal",
+        "leading 'Kim' read as a family name",
+        "a whole sentence"]
+
+
+def test_a_field_tail_report_in_an_emptied_name_is_withdrawn() -> None:
+    # A name emptied for want of content keeps its reports, but one
+    # naming a field has no field left to name: it goes rather than
+    # ship the sentence's first half. No emitter reaches this today.
+    pn = _with_reports(
+        "-", (WorkToken("-", Span(0, 1), role=Role.GIVEN),),
+        PendingAmbiguity(AmbiguityKind.GIVEN_OR_FAMILY, "'-' read as ",
+                         (0,), field_tail=" by convention"),
+        PendingAmbiguity(AmbiguityKind.UNBALANCED_DELIMITER, "kept", (0,)))
+    assert not pn
+    assert [a.detail for a in pn.ambiguities] == ["kept"]

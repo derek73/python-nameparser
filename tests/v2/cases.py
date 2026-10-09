@@ -8233,11 +8233,29 @@ CASES: tuple[Case, ...] = (
          "Kim Min Do",
          {"given": "Kim", "middle": "Min", "family": "Do"},
          ambiguities=("suffix-or-name",), classification="fix(#289)",
-         notes="#626: under both family-first orders the order sweep "
-               "reads P6 attaching the Title-case 'Do' to the family "
-               "after assign read it as a name word ('Do Kim' under "
-               "FAMILY_FIRST); the report was worded at assign and "
-               "said 'middle'. 1.4.0 read suffix 'Do'"),
+         notes="#626: under FAMILY_FIRST the order sweep reads P6 "
+               "attaching the Title-case 'Do' to the family ('Do Kim') "
+               "after assign read it as a middle name; the report was "
+               "worded at assign and said 'middle'. Under "
+               "FAMILY_FIRST_GIVEN_LAST nothing moves it: given 'Do'. "
+               "1.4.0 read suffix 'Do'"),
+    Case("a_pick_the_family_first_fold_moves_is_reported_where_it_lands",
+         "de Kim Ma", {"family": "de Kim", "given": "Ma"},
+         ambiguities=("suffix-or-name",), classification="fix(#289)",
+         policy=Policy(name_order=FAMILY_FIRST),
+         notes="#626's review: P1's family-first fold takes the particle "
+               "run and one name unit, and lays the rest out by the "
+               "order, so 'Ma', which assign read as a middle name, "
+               "lands in the given name -- a third rule moving a "
+               "reported word after assign. 2.3.0 read suffix 'Ma'"),
+    Case("a_comma_report_h1_moves_is_reported_in_the_family",
+         ", Ma Dr.", {"title": "Dr.", "family": "Ma"},
+         ambiguities=("suffix-or-name",), classification="fix(#316)",
+         notes="#626's review: with nothing before the comma, the comma "
+               "report on 'Ma' was worded 'the given name' at assign, "
+               "and H1 then moved it to the family behind the trailing "
+               "title. The empty-head comma shape AGENTS.md's sweep "
+               "paragraph asks for; 1.4.0 read first 'Ma', suffix 'Dr.'"),
     Case("lone_joined_unit_carrying_collision_set_title_vocabulary",
          "Smith and King", {"given": "Smith and King"},
          ambiguities=("title-or-name",),

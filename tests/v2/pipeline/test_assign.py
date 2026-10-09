@@ -231,7 +231,7 @@ def test_leading_ambiguous_particle_reads_as_given_with_ambiguity() -> None:
 
 
 @pytest.mark.parametrize("policy,role", _ORDERS)
-def test_leading_particle_detail_names_the_role_it_took(
+def test_leading_particle_detail_names_the_field_the_word_lands_in(
         policy: Policy | None, role: str) -> None:
     # The fork is the same under every order -- particle or name --
     # but which role the head piece actually took is the assignment's
@@ -260,7 +260,7 @@ def test_leading_particle_detail_names_the_role_it_took(
      "'John of Prince' is the only name unit and joins title "
      "vocabulary to a name word; read as a {role} name by convention"),
 ])
-def test_convention_details_name_the_role_the_assignment_took(
+def test_convention_details_name_the_field_the_word_lands_in(
         text: str, kind: AmbiguityKind, detail: str,
         policy: Policy | None, role: str) -> None:
     # The three conventions this site reports all place a lone name
@@ -756,19 +756,25 @@ def test_the_comma_report_says_which_way_it_read_the_word() -> None:
     fork the parser considered and declined -- is the second one.
     """
     detail = {
-        text: [a.detail for a in _assigned(
-            text, policy, lexicon=Lexicon.default()).ambiguities
+        text: [a.detail for a in _reported(
+            text, policy, lexicon=Lexicon.default())
             if a.kind.value == "suffix-or-name"]
-        for text, policy in (("Smith, Ma", None),
+        for text, policy in (("Smith, Ma", None), (", Ma Dr.", None),
                              ("Smith, A.B.",
                               Policy(unlisted_dotted_suffixes=False)))
     }
     assert detail["Smith, Ma"] == [
         "'Ma' after the comma is also an ordinary name word; read as "
-        "the given name"]
+        "a given name"]
     assert detail["Smith, A.B."] == [
         "'A.B.' after the comma is also an ordinary name word; read as "
-        "the given name"]
+        "a given name"]
+    # #626's review: with nothing before the comma, H1 moves the word
+    # to the family behind the title after this report is made, so the
+    # field is worded from where it lands
+    assert detail[", Ma Dr."] == [
+        "'Ma' after the comma is also an ordinary name word; read as "
+        "a family name"]
 
 
 def test_the_trailing_given_slot_takes_a_bare_class_member() -> None:

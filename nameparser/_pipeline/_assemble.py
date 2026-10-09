@@ -1,7 +1,8 @@
 """Not a stage: converts the final ParseState into a public ParsedName.
 
 Consumes: tokens (all roles set), dropped, ambiguities (by index;
-a report naming a field is worded from its word's final role, #626).
+one carrying ``field_tail`` is worded from its word's final role,
+#626).
 Produces: a validated ParsedName -- the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
@@ -114,7 +115,13 @@ def assemble(state: ParseState) -> ParsedName:
                         for t in materialized)):
             continue
         detail = pending.detail
-        if pending.field_tail is not None and materialized:
+        if pending.field_tail is not None:
+            # A report naming a field, in a name emptied above (no
+            # emitter of one reaches that today: every referent is a
+            # name word): no field is left to name, so it goes rather
+            # than ship the sentence's first half.
+            if not materialized:
+                continue
             detail = (f"{detail}{FIELD_READING[materialized[0].role]}"
                       f"{pending.field_tail}")
         ambiguities.append(Ambiguity(pending.kind, detail, materialized))

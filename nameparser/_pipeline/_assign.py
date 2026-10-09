@@ -363,9 +363,10 @@ def _assign_main(seg_idx: int, state: ParseState,
     #
     # Every bare ambiguous acronym the FINAL peel had to resolve is one
     # coin-flip each, in either direction, so the report collects
-    # rather than overwrites. Deferred to after assignment because the
-    # wording reads the role back, and which role "not peeled" means
-    # depends on name_order. (The roman-numeral fork needs no such
+    # rather than overwrites. Deferred to after assignment because what
+    # a pick is declined as depends on the role it took, and which role
+    # "not peeled" means depends on name_order; the field itself is
+    # worded by assemble (#626). (The roman-numeral fork needs no such
     # deferral and is reported here.)
     #
     # Read once in group, after P3's connective joins and ahead of the
@@ -456,8 +457,9 @@ def _assign_main(seg_idx: int, state: ParseState,
         # `suffix-or-name`" (history: decisions.md#H4) -- only the
         # word made into a name reports, and no name piece survived
         # the peel, so the carve-out above made the first post-nominal
-        # the name. Its field is worded by assemble, as every report
-        # naming one is: see the particle emitter below.
+        # the name. Its field is worded by assemble, as every assign
+        # report naming a field a later rule could change is: see the
+        # particle emitter below.
         if peeled.names == 0 and field_undecided:
             text = " ".join(tokens[i].text for i in head)
             ambiguities.append(PendingAmbiguity(
@@ -551,8 +553,9 @@ def _assign_main(seg_idx: int, state: ParseState,
             # the loops above read `order`, which is _effective_order's
             # answer and not necessarily name_order's (a script_orders
             # entry overrides it), and a later rule may still move the
-            # word -- P6's attachment, H1's swap -- as it did to every
-            # report worded here before #626 ('Kim Min Do' under
+            # word -- H1's move behind a title, P1's family-first fold,
+            # P6's attachment -- as it did to three of the reports
+            # worded at assign before #626 ('Kim Min Do' under
             # FAMILY_FIRST was told 'Do' was a middle name).
             token = tokens[head[0]]
             ambiguities.append(PendingAmbiguity(
@@ -853,11 +856,13 @@ def assign(state: ParseState) -> ParseState:
         if state.pieces[1] and len(state.pieces[1][0]) == 1:
             i = state.pieces[1][0][0]
             if not tokens[i].tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
+                # the field is assemble's to word: with nothing before
+                # the comma and a title after the word, H1 moves it to
+                # the family (', Ma Dr.', #626's review)
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.SUFFIX_OR_NAME,
                     f"{tokens[i].text!r} after the comma is also an "
-                    f"ordinary name word; read as the given name",
-                    (i,)))
+                    f"ordinary name word; read as ", (i,), field_tail=""))
         # Segment 1 is read before segment 0's wholly-family pass. It
         # consumes piece tags and text only -- nothing segment 0's
         # read writes. (A title standing after the comma behind a whole
