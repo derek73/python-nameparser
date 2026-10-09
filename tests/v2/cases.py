@@ -8221,6 +8221,23 @@ CASES: tuple[Case, ...] = (
                "whether `Prince` is a title rather than which field "
                "the unit takes -- one of the inputs measured to reach "
                "that branch, `prince` being in TITLES"),
+    Case("a_joined_unit_h1_moves_is_reported_in_the_field_it_lands_in",
+         "Attorney General of Minnesota",
+         {"title": "Attorney", "family": "General of Minnesota"},
+         ambiguities=("title-or-name",), classification="parity",
+         notes="#626: assign places the lone unit as the given name and "
+               "H1 moves it to the family behind the title; the report "
+               "was worded at assign and said 'given'. The order sweep "
+               "in test_cases.py checks the field it names"),
+    Case("a_pick_the_attachment_moves_is_reported_in_its_family",
+         "Kim Min Do",
+         {"given": "Kim", "middle": "Min", "family": "Do"},
+         ambiguities=("suffix-or-name",), classification="fix(#289)",
+         notes="#626: under both family-first orders the order sweep "
+               "reads P6 attaching the Title-case 'Do' to the family "
+               "after assign read it as a name word ('Do Kim' under "
+               "FAMILY_FIRST); the report was worded at assign and "
+               "said 'middle'. 1.4.0 read suffix 'Do'"),
     Case("lone_joined_unit_carrying_collision_set_title_vocabulary",
          "Smith and King", {"given": "Smith and King"},
          ambiguities=("title-or-name",),

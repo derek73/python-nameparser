@@ -1,10 +1,13 @@
 """Core runner over the shared case table. The facade
 runner (migration plan) consumes the same CASES."""
+import functools
+import re
 from typing import Any
 
 import pytest
 
-from nameparser import Parser, Policy, Role, locales, parser_for
+from nameparser import ParsedName, Parser, Policy, Role, locales, parser_for
+from nameparser._pipeline._state import FIELD_READING
 from nameparser._policy import FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST
 
 from .cases import CASES, Case
@@ -39,6 +42,20 @@ def test_case(case: Case) -> None:
 #: that declare one.
 _INVARIANT_ORDERS = (None, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
 
+_CASES_BY_ID = {c.id: c for c in CASES}
+
+
+@functools.cache
+def _swept(case_id: str,
+           order: tuple[Role, Role, Role] | None) -> ParsedName:
+    """One parse per row and order, shared by every invariant the
+    sweep checks (AGENTS.md: a new invariant over an existing grid
+    joins that grid's walk)."""
+    case = _CASES_BY_ID[case_id]
+    parser = (_parser_for_case(case) if order is None
+              else Parser(policy=Policy(name_order=order)))
+    return parser.parse(case.text)
+
 
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS,
                          ids=lambda o: _ORDER_NAMES.get(o, "as-declared"))
@@ -60,9 +77,7 @@ def test_the_family_partitions_into_particles_and_base(
     """
     if case.locale is not None or (order is not None and case.policy):
         pytest.skip("row carries its own policy or locale")
-    parser = (_parser_for_case(case) if order is None
-              else Parser(policy=Policy(name_order=order)))
-    pn = parser.parse(case.text)
+    pn = _swept(case.id, order)
     if not pn.family:
         return
     assert pn.family_base, (
@@ -72,6 +87,56 @@ def test_the_family_partitions_into_particles_and_base(
         (pn.family_particles + " " + pn.family_base).split()), (
         f"{case.text!r}: family={pn.family!r} is not partitioned by "
         f"particles={pn.family_particles!r} + base={pn.family_base!r}")
+
+
+#: Every way a report's detail names the field its word was read into,
+#: mapped to that field: assemble's FIELD_READING, plus the two
+#: phrasings worded at a site whose field is fixed (a comma's
+#: credential reading, P6's attachment).
+_FIELD_CLAIMS = {**{reading: role for role, reading in FIELD_READING.items()},
+                 "a credential": Role.SUFFIX, "the given name": Role.GIVEN}
+_FIELD_CLAIM = re.compile(
+    "read as (" + "|".join(map(re.escape, _FIELD_CLAIMS)) + ")"
+    "|(joins the family)")
+
+
+@pytest.mark.parametrize("order", _INVARIANT_ORDERS,
+                         ids=lambda o: _ORDER_NAMES.get(o, "as-declared"))
+@pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+def test_a_report_names_the_field_its_word_lands_in(
+        case: Case, order: tuple[Role, Role, Role] | None) -> None:
+    """#626: a report's detail that names the field its word was read
+    into names the field the word holds in the RESULT. A later rule can
+    move a word after the report is made -- P6's attachment under a
+    family-first order, H1's swap behind a title -- and five of
+    assign's reports were worded from the role at assign, so
+    'Kim Min Do' under FAMILY_FIRST was told 'Do' was a middle name
+    when it landed in the family. Assemble words them now.
+
+    Negative control, measured 2026-10-08: this test over master's
+    parser (26cdb891) fails 10 parses, every one a report worded at
+    assign -- nine title-or-name join reports saying 'given' of a unit
+    H1 moved to the family behind a title (`Attorney General of
+    Minnesota`, `John of Prince Prof.`, `St St née`, `Freiherr von
+    Bishop X.Y.Z.` and five more rows, as declared), and `Kim Min Do`
+    under FAMILY_FIRST ('middle', family). Over a generated grid of
+    51,835 names under all three orders it was 2,689 of 66,208 field
+    claims, in the same two emitters: title-or-name's join branch
+    (1,575) and the trailing peel's picks (1,114).
+    """
+    if case.locale is not None or (order is not None and case.policy):
+        pytest.skip("row carries its own policy or locale")
+    pn = _swept(case.id, order)
+    for a in pn.ambiguities:
+        m = _FIELD_CLAIM.search(a.detail)
+        if m is None:
+            continue
+        want = _FIELD_CLAIMS[m[1]] if m[1] else Role.FAMILY
+        landed = {t.role for t in a.tokens}
+        assert landed == {want}, (
+            f"{case.text!r}: {a.kind.value} says {m[0]!r} but its "
+            f"tokens landed in {sorted(r.value for r in landed)}: "
+            f"{a.detail!r}")
 
 
 #: Case.__post_init__'s shape checks, each probed for the message that

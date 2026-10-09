@@ -130,12 +130,28 @@ class PendingAmbiguity:
     extract_delimited knows only a character offset, so it records that
     and tokenize resolves it to the containing token's index. Stages
     after tokenize set ``indices`` directly and leave ``origin`` None.
+
+    ``field_tail`` is for a report that names the field its word was
+    read into. A later stage may still move the word (P6's attachment,
+    H1's swap), so the emitter writes ``detail`` up to the field and
+    the rest of its sentence here, and assemble joins them around the
+    FIELD_READING of the first referent's final role -- the one place
+    that knows it (#626).
     """
 
     kind: AmbiguityKind
     detail: str
     indices: tuple[int, ...] = ()
     origin: int | None = None
+    field_tail: str | None = None
+
+
+#: How a report names the field a word was read into, by final role.
+FIELD_READING: Mapping[Role, str] = MappingProxyType({
+    Role.TITLE: "a title", Role.GIVEN: "a given name",
+    Role.MIDDLE: "a middle name", Role.FAMILY: "a family name",
+    Role.SUFFIX: "a suffix", Role.NICKNAME: "a nickname",
+    Role.MAIDEN: "a maiden name"})
 
 
 @dataclass(frozen=True, slots=True)
