@@ -2,13 +2,13 @@
 import pytest
 
 from nameparser._lexicon import Lexicon
+from nameparser._pipeline import run
 from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._group import group
 from nameparser._pipeline._pieces import credential_at_the_given_slot
-from nameparser._pipeline._post_rules import post_rules
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState
 from nameparser._pipeline._tokenize import tokenize
@@ -53,7 +53,9 @@ def _reported(text: str, policy: Policy | None = None,
     is worded by assemble from the word's FINAL role (#626), so its
     detail is complete only there, past the rules that still move a
     word after assign."""
-    return assemble(post_rules(_assigned(text, policy, lexicon))).ambiguities
+    return assemble(run(ParseState(
+        original=text, lexicon=lexicon or _LEX,
+        policy=policy or Policy()))).ambiguities
 
 
 def _by_role(state: ParseState, role: Role) -> str:

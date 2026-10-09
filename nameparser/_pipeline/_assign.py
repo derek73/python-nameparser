@@ -457,9 +457,8 @@ def _assign_main(seg_idx: int, state: ParseState,
         # `suffix-or-name`" (history: decisions.md#H4) -- only the
         # word made into a name reports, and no name piece survived
         # the peel, so the carve-out above made the first post-nominal
-        # the name. Its field is worded by assemble, as every assign
-        # report naming a field a later rule could change is: see the
-        # particle emitter below.
+        # the name. Its field is worded by assemble from the final role
+        # (`PendingAmbiguity.field_tail`, #626).
         if peeled.names == 0 and field_undecided:
             text = " ".join(tokens[i].text for i in head)
             ambiguities.append(PendingAmbiguity(
@@ -489,19 +488,17 @@ def _assign_main(seg_idx: int, state: ParseState,
             # Wales'): the leading-title peel took the whole name.
             if any("vocab:title" in tokens[i].tags for i in head):
                 text = " ".join(tokens[i].text for i in head)
-                ambiguities.append(
-                    PendingAmbiguity(
-                        AmbiguityKind.TITLE_OR_NAME,
-                        f"{text!r} is title vocabulary and the only name "
-                        f"word the title peel left standing; read as the "
-                        f"name by convention rather than as more title",
-                        tuple(head))
-                    if len(head) == 1 else
-                    PendingAmbiguity(
-                        AmbiguityKind.TITLE_OR_NAME,
-                        f"{text!r} is the only name unit and joins title "
-                        f"vocabulary to a name word; read as ",
-                        tuple(head), field_tail=" by convention"))
+                lone = len(head) == 1
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.TITLE_OR_NAME,
+                    f"{text!r} is title vocabulary and the only name word "
+                    f"the title peel left standing; read as the name by "
+                    f"convention rather than as more title"
+                    if lone else
+                    f"{text!r} is the only name unit and joins title "
+                    f"vocabulary to a name word; read as ",
+                    tuple(head),
+                    field_tail=None if lone else " by convention"))
             # rules.md#O5: "a name of one name word that nothing else has
             # decided reads that word as the given name under the default
             # given-first order, and as the family name under a declared
@@ -548,22 +545,15 @@ def _assign_main(seg_idx: int, state: ParseState,
         head = pieces[name_pieces[0]]
         if (len(head) == 1 and len(name_pieces) > 1
                 and "vocab:particle-ambiguous" in tokens[head[0]].tags):
-            # the field is left for assemble to word from the final
-            # role (`field_tail`), never assumed given or re-derived:
-            # the loops above read `order`, which is _effective_order's
-            # answer and not necessarily name_order's (a script_orders
-            # entry overrides it), and a later rule may still move the
-            # word -- H1's move behind a title, P1's family-first fold,
-            # P6's attachment, and under opt-in policies the patronymic
-            # rotations and `middle_as_family`'s fold -- as it did to
-            # four of the reports worded at assign before #626, this one
-            # among them: 'Van Ivan Petrovich' under the East Slavic
-            # rule was told 'Van' was a given name, rotated into the
-            # family.
-            token = tokens[head[0]]
+            # the field is assemble's to word from the final role
+            # (`PendingAmbiguity.field_tail`, #626), never assumed given:
+            # `order` above is _effective_order's answer, not
+            # necessarily name_order's, and a later rule may still move
+            # the word ('Van Ivan Petrovich' under the East Slavic rule
+            # rotates 'Van' into the family)
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.PARTICLE_OR_GIVEN,
-                f"leading {token.text!r} may be a family-name "
+                f"leading {tokens[head[0]].text!r} may be a family-name "
                 f"particle; read as ", tuple(head), field_tail=""))
     return order
 

@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 
 from nameparser import ParsedName, Parser, Policy, Role, locales, parser_for
-from nameparser._pipeline._state import FIELD_READING
+from nameparser._pipeline._state import FIELD_READING, NAME_ROLES
 from nameparser._policy import FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST
 
 from .cases import CASES, Case
@@ -44,6 +44,17 @@ _INVARIANT_ORDERS = (None, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST)
 
 _CASES_BY_ID = {c.id: c for c in CASES}
 
+#: The (row, order) pairs the order sweep checks: every row under each
+#: order, a row with its own policy only as declared, and no locale row
+#: (a pack's parser is not one of the three orders). Both invariants
+#: below walk this one list.
+_SWEPT_ROWS = [(case, order) for case in CASES for order in _INVARIANT_ORDERS
+               if case.locale is None
+               and not (order is not None and case.policy)]
+_SWEPT_IDS = [f"{case.id}-"
+              f"{'as-declared' if order is None else _ORDER_NAMES[order]}"
+              for case, order in _SWEPT_ROWS]
+
 
 @functools.cache
 def _swept(case_id: str,
@@ -57,9 +68,7 @@ def _swept(case_id: str,
     return parser.parse(case.text)
 
 
-@pytest.mark.parametrize("order", _INVARIANT_ORDERS,
-                         ids=lambda o: _ORDER_NAMES.get(o, "as-declared"))
-@pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+@pytest.mark.parametrize("case,order", _SWEPT_ROWS, ids=_SWEPT_IDS)
 def test_the_family_partitions_into_particles_and_base(
         case: Case, order: tuple[Role, Role, Role] | None) -> None:
     """rules.md#R2's invariant: a particle needs a base to attach to,
@@ -75,8 +84,6 @@ def test_the_family_partitions_into_particles_and_base(
     views render particles first ("Vega, de la" is family 'Vega de la',
     particles 'de la', base 'Vega').
     """
-    if case.locale is not None or (order is not None and case.policy):
-        pytest.skip("row carries its own policy or locale")
     pn = _swept(case.id, order)
     if not pn.family:
         return
@@ -89,7 +96,7 @@ def test_the_family_partitions_into_particles_and_base(
         f"particles={pn.family_particles!r} + base={pn.family_base!r}")
 
 
-_NAME_FIELDS = frozenset({Role.GIVEN, Role.MIDDLE, Role.FAMILY})
+_NAME_FIELDS = frozenset(NAME_ROLES)
 
 #: Every way a report's detail names the field its word was read into,
 #: mapped to the fields that make it true: assemble's FIELD_READING,
@@ -115,21 +122,7 @@ _FIELD_CLAIM = re.compile(
     + r")\b")
 
 
-def _swept_rows() -> list[tuple[Case, tuple[Role, Role, Role] | None]]:
-    """The (row, order) pairs the sweep checks: every row under each
-    order, a row with its own policy only as declared, and no locale
-    row (a pack's parser is not one of the three orders)."""
-    return [(case, order) for case in CASES for order in _INVARIANT_ORDERS
-            if case.locale is None
-            and not (order is not None and case.policy)]
-
-
-_SWEPT = frozenset((case.id, order) for case, order in _swept_rows())
-
-
-@pytest.mark.parametrize("order", _INVARIANT_ORDERS,
-                         ids=lambda o: _ORDER_NAMES.get(o, "as-declared"))
-@pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
+@pytest.mark.parametrize("case,order", _SWEPT_ROWS, ids=_SWEPT_IDS)
 def test_a_report_names_the_field_its_word_lands_in(
         case: Case, order: tuple[Role, Role, Role] | None) -> None:
     """#626: a report's detail that names the field its word was read
@@ -142,9 +135,7 @@ def test_a_report_names_the_field_its_word_lands_in(
     'Kim Min Do' under FAMILY_FIRST was told 'Do' was a middle name
     when it landed in the family. Assemble words them now.
 
-    Checked over `_swept_rows`, the population the count test below
-    records: locale rows are not checked, and a row carrying its own
-    policy only under that policy.
+    Checked over `_SWEPT_ROWS`, which the count test below walks too.
 
     Negative control, measured 2026-10-08: this test over master's
     parser (26cdb891) fails 14 parses, every one a report worded at
@@ -155,15 +146,14 @@ def test_a_report_names_the_field_its_word_lands_in(
     under FAMILY_FIRST ('middle', family, P6), `de Kim Ma` under
     FAMILY_FIRST ('middle', given, P1), and the opt-in movers' rows as
     declared: `Van Ivan Petrovich` and `Van Ali Veli oglu` ('given',
-    family, O1 and O2) and `Do Bishop Do` ('middle', family, O3). The sixth emitter, the comma
-    report on a word after an empty head, is NOT in that count: master
+    family, O1 and O2) and `Do Bishop Do` ('middle', family, O3). The
+    sixth emitter, the comma report on a word after an empty head, is
+    NOT in that count: master
     worded it 'the given name', a phrasing the tree no longer emits
     and so not one `_FIELD_CLAIMS` lists, and `, Ma Dr.` (H1 moving it
     to the family) is pinned instead by test_assign.py's verbatim
     detail. No row reached that shape until #626's review.
     """
-    if (case.id, order) not in _SWEPT:
-        pytest.skip("row carries its own policy or locale")
     pn = _swept(case.id, order)
     for a in pn.ambiguities:
         m = _FIELD_CLAIM.search(a.detail)
@@ -183,7 +173,7 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     Move it deliberately when a row or a phrasing moves, never to 0."""
     claims = sum(
         _FIELD_CLAIM.search(a.detail) is not None
-        for case, order in _swept_rows()
+        for case, order in _SWEPT_ROWS
         for a in _swept(case.id, order).ambiguities)
     assert claims == 1155, (
         f"the field sweep checks {claims} claims, recorded as 1155 on "
