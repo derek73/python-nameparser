@@ -237,3 +237,16 @@ def test_a_field_tail_report_in_an_emptied_name_is_withdrawn() -> None:
         PendingAmbiguity(AmbiguityKind.UNBALANCED_DELIMITER, "kept", (0,)))
     assert not pn
     assert [a.detail for a in pn.ambiguities] == ["kept"]
+
+
+def test_a_field_tail_report_names_its_first_referent_s_field() -> None:
+    # The field comes from the FIRST referent: every emitter's referents
+    # share one role today, so this pins the documented choice rather
+    # than a case the pipeline produces.
+    tokens = (WorkToken("General", Span(0, 7), role=Role.FAMILY),
+              WorkToken("Smith", Span(8, 13), role=Role.GIVEN))
+    pn = _with_reports(
+        "General Smith", tokens,
+        PendingAmbiguity(AmbiguityKind.TITLE_OR_NAME, "read as ", (0, 1),
+                         field_tail=""))
+    assert [a.detail for a in pn.ambiguities] == ["read as a family name"]

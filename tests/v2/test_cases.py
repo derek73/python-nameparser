@@ -124,6 +124,9 @@ def _swept_rows() -> list[tuple[Case, tuple[Role, Role, Role] | None]]:
             and not (order is not None and case.policy)]
 
 
+_SWEPT = frozenset((case.id, order) for case, order in _swept_rows())
+
+
 @pytest.mark.parametrize("order", _INVARIANT_ORDERS,
                          ids=lambda o: _ORDER_NAMES.get(o, "as-declared"))
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.id)
@@ -132,29 +135,34 @@ def test_a_report_names_the_field_its_word_lands_in(
     """#626: a report's detail that names the field its word was read
     into names the field the word holds in the RESULT. Rules in
     post_rules move a word after assign reports it -- H1's move behind
-    a title, P1's family-first fold, P6's attachment -- and six of
+    a title, P1's family-first fold, P6's attachment, and under opt-in
+    policies the patronymic rotations and `middle_as_family`'s fold,
+    which rows carrying those policies reach as declared -- and six of
     assign's reports were worded from the role at assign, so
     'Kim Min Do' under FAMILY_FIRST was told 'Do' was a middle name
     when it landed in the family. Assemble words them now.
 
-    Checked over `_swept_rows`: locale rows are not checked, and a row
-    carrying its own policy only under that policy.
+    Checked over `_swept_rows`, the population the count test below
+    records: locale rows are not checked, and a row carrying its own
+    policy only under that policy.
 
     Negative control, measured 2026-10-08: this test over master's
-    parser (26cdb891) fails 11 parses, every one a report worded at
+    parser (26cdb891) fails 14 parses, every one a report worded at
     assign -- nine title-or-name join reports saying 'given' of a unit
     H1 moved to the family behind a title (`Attorney General of
     Minnesota`, `John of Prince Prof.`, `St St née`, `Freiherr von
     Bishop X.Y.Z.` and five more rows, as declared), `Kim Min Do`
-    under FAMILY_FIRST ('middle', family, P6) and `de Kim Ma` under
-    FAMILY_FIRST ('middle', given, P1). The sixth emitter, the comma
+    under FAMILY_FIRST ('middle', family, P6), `de Kim Ma` under
+    FAMILY_FIRST ('middle', given, P1), and the opt-in movers' rows as
+    declared: `Van Ivan Petrovich` and `Van Ali Veli oglu` ('given',
+    family, O1 and O2) and `Do Bishop Do` ('middle', family, O3). The sixth emitter, the comma
     report on a word after an empty head, is NOT in that count: master
     worded it 'the given name', a phrasing the tree no longer emits
     and so not one `_FIELD_CLAIMS` lists, and `, Ma Dr.` (H1 moving it
     to the family) is pinned instead by test_assign.py's verbatim
     detail. No row reached that shape until #626's review.
     """
-    if case.locale is not None or (order is not None and case.policy):
+    if (case.id, order) not in _SWEPT:
         pytest.skip("row carries its own policy or locale")
     pn = _swept(case.id, order)
     for a in pn.ambiguities:
@@ -177,8 +185,8 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
         _FIELD_CLAIM.search(a.detail) is not None
         for case, order in _swept_rows()
         for a in _swept(case.id, order).ambiguities)
-    assert claims == 1151, (
-        f"the field sweep checks {claims} claims, recorded as 1151 on "
+    assert claims == 1155, (
+        f"the field sweep checks {claims} claims, recorded as 1155 on "
         f"2026-10-08")
 
 

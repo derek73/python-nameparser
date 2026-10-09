@@ -554,9 +554,12 @@ def _assign_main(seg_idx: int, state: ParseState,
             # answer and not necessarily name_order's (a script_orders
             # entry overrides it), and a later rule may still move the
             # word -- H1's move behind a title, P1's family-first fold,
-            # P6's attachment -- as it did to three of the reports
-            # worded at assign before #626 ('Kim Min Do' under
-            # FAMILY_FIRST was told 'Do' was a middle name).
+            # P6's attachment, and under opt-in policies the patronymic
+            # rotations and `middle_as_family`'s fold -- as it did to
+            # four of the reports worded at assign before #626, this one
+            # among them: 'Van Ivan Petrovich' under the East Slavic
+            # rule was told 'Van' was a given name, rotated into the
+            # family.
             token = tokens[head[0]]
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.PARTICLE_OR_GIVEN,
