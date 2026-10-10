@@ -1161,7 +1161,8 @@ S2. Rationale: generational suffixes and credentials are recognized
     credential. A lone particle is
     not a name word for the count, 'de Mesnil' being one surname,
     unless the credential stands right behind it, leaving it nothing
-    to join: then it is the surname ('John von PhD Jones'). A
+    to join: then it counts as a name word of its own ('John von PhD
+    Jones'). A
     particle run with the words the chain joins to it is one name
     word, 'der la' and 'la Smith Secretary' each counting once (P2).
     A title word

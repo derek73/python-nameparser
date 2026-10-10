@@ -1222,8 +1222,8 @@ def run_start(rest: Sequence[int], names: int,
         # -- unless it opens a chain run, which is then the surname
         # (with no `units` every piece opens its own), or the run
         # starts right behind it, leaving it nothing to join: then it
-        # is the surname alone, as 'van der' and 'von und zu' are
-        # (#627, 'John von PhD Jones')
+        # counts as a name word of its own, as 'van der' and 'von und
+        # zu' do (#627, 'John von PhD Jones')
         if units is None or units[q] == OPENS:
             lone = (len(pieces[q]) == 1 and "particle" in tags
                     and (units is None or q + 1 == len(units)

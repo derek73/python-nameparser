@@ -10009,6 +10009,18 @@ CASES: tuple[Case, ...] = (
                "'van der' and 'von und zu' already did; the row above "
                "is the contrast, a lone particle with a name word "
                "behind it (1.4.0 and 2.3.0 middle 'von PhD')"),
+    Case("a_particle_run_before_the_run_stays_one_name_word",
+         "Freiherr von vd PhD Jones",
+         {"title": "Freiherr", "given": "von vd", "middle": "PhD",
+          "family": "Jones"},
+         ambiguities=("particle-or-given",),
+         classification="parity",
+         notes="the row above with a particle run: 'von vd' is one "
+               "name word, 'vd' a particle the run took, so only one "
+               "name word stands before 'PhD' and #602's run does not "
+               "start -- the lone-particle count is asked only of a "
+               "piece that opens a unit, not of 'vd' standing right "
+               "before the credential (#627's review)"),
     Case("a_dual_in_the_chain_stays_a_name_word_behind_a_title",
          "John van mc Prof.",
          {"title": "Prof.", "given": "John", "family": "van mc"},
