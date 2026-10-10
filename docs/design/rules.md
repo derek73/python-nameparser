@@ -679,12 +679,18 @@ P4. Rationale: a particle links forward from inside a name; at the
     nothing (the title is not a name word), and why "Van Johnson"
     is a given-name reading at all. An unlisted abbreviation before
     the particle is as transparent as a listed title, since assign
-    reads it as one (H2).
+    reads it as one (H2). A word that is both a title and a particle
+    puts the name's leading position on itself, so the particle behind
+    it is inside a name ('Freiherr von Berg'); of two such words in
+    the leading titles the second does, both reading as titles, so no
+    particle chains inside the titles (#624).
       "Van Johnson"               →  given="Van"
       "Sir de Mesnil"             →  pieces=[["Sir"], ["de"], ["Mesnil"]]
       "Xyz. van Johnson"          →  given="van"
       "John van der Berg"         →  pieces=[["John"], ["van", "der", "Berg"]]  · boundary
-    history: decisions.md#P2 · interacts: P1, P5, H2 · implemented: nameparser/_pipeline/_group.py
+      "Freiherr St John Smith"    →  title="Freiherr St"
+      "Freiherr St John Smith"    →  given="John"
+    history: decisions.md#P2 · interacts: P1, P5, H2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
 
 P5. Rationale: some given-name words are incomplete alone — "abdul"
     is a bound form that the next word completes.

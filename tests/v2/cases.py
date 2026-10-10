@@ -7357,25 +7357,23 @@ CASES: tuple[Case, ...] = (
                "in the family name. Ungated, #399 moved 'van der' out "
                "to the middle and left family 'Nee'"),
     Case("maiden_marker_trailing_keeps_the_fork_report",
-         "St St née",
-         {"title": "St", "family": "St née"},
-         ambiguities=("particle-or-given", "title-or-name"),
+         "St van née",
+         {"title": "St", "family": "van née"},
+         ambiguities=("particle-or-given",),
          notes="'st' is both a title and an ambiguous particle (#367), "
-               "so this shape reaches group's PARTICLE_OR_GIVEN "
-               "emitter, which is guarded on the chain having merged "
-               "something. An ungated marker stop made the chain merge "
-               "nothing for a DIFFERENT reason than the guard assumes, "
-               "silencing the report while still deciding the fork -- "
-               "the shape A1 forbids and #405 closed at P6. Pinned because "
-               "removing a report a caller already sees is worse than "
-               "never emitting one. The second flag is H4's join "
-               "clause, gained in the #518 review round: the one name "
-               "unit is a particle CHAIN rather than a P3 join, and "
-               "carries `st` -- title vocabulary -- beside the word it "
-               "places, which is the same fork. The `particle` tag on "
-               "that word is what used to silence it, and a claimed "
-               "word decides the FIELD and not whether the word is a "
-               "title"),
+               "so it leads the chain and the ambiguous 'van' behind it "
+               "reaches group's PARTICLE_OR_GIVEN emitter, which is "
+               "guarded on the chain having merged something. An "
+               "ungated marker stop made the chain merge nothing for a "
+               "DIFFERENT reason than the guard assumes, silencing the "
+               "report while still deciding the fork -- the shape A1 "
+               "forbids and #405 closed at P6. Pinned because removing "
+               "a report a caller already sees is worse than never "
+               "emitting one. Until #624 the row was 'St St née', the "
+               "second 'St' chained; of two title-particles the second "
+               "now leads and is a title (title 'St St', family 'née', "
+               "no report), so the row moved to a chained particle "
+               "that is not a title"),
     Case("maiden_marker_particles_on_both_sides",
          "Anna von der Müller geb. von der Berg",
          {"given": "Anna", "family": "von der Müller",
@@ -9836,32 +9834,29 @@ CASES: tuple[Case, ...] = (
                "review) (1.4.0 given 'Freiherr von vd', its all-particles "
                "guard reading the family as a given name; read so since the "
                "2.0 pipeline)"),
-    Case("a_second_title_particle_opens_the_name_inside_the_titles",
+    Case("a_second_title_particle_leads_the_chain",
          "Freiherr St van Berg MA",
-         {"title": "Freiherr", "family": "St van Berg", "suffix": "MA"},
-         ambiguities=("particle-or-given", "title-or-name",
-                      "suffix-or-name"),
-         classification="fix(#289)",
-         notes="'St' is a title and a particle, so it is both inside "
-               "the leading titles and the start of the chain's unit "
-               "'St van Berg'; the read must start where that unit "
-               "opens, not at the title run's end, which put it past "
-               "the name and kept 'MA' a name word (#614's second "
-               "review; since #620 the start is read off the pieces "
-               "themselves) (1.4.0 given 'St van Berg', family 'MA'; 2.0-2.3 "
-               "family 'St van Berg MA'; bisected to #289's case contrast)"),
-    Case("a_unit_opened_inside_the_titles_makes_them_a_name",
-         "Freiherr Freiherr Prof do",
-         {"title": "Freiherr", "given": "Freiherr Prof", "family": "do"},
+         {"title": "Freiherr St", "family": "van Berg", "suffix": "MA"},
          ambiguities=("particle-or-given", "suffix-or-name"),
-         classification="fix(P2)",
-         notes="the second 'Freiherr' opens the chain's unit 'Freiherr "
-               "Prof' inside the leading titles, which makes a name of "
-               "them though it ends short of the titles' end; the read "
-               "starts at that unit, so 'do' has a name word in front "
-               "of it and its pick is reported (#614's second review) (1.4.0 "
-               "given 'Freiherr Freiherr Prof', its particle chain taking the"
-               " leading title; read so since the 2.0 pipeline)"),
+         classification="fix(#624)",
+         notes="of two title-particles at the head the second leads the "
+               "chain (rules.md#P4), so both are titles and 'van Berg' "
+               "is the family, as 'Dr. St van Johnson' reads; the chain "
+               "and the read's count take that one answer (1.4.0 given "
+               "'St van Berg', family 'MA'; 2.0-2.3 family 'St van Berg "
+               "MA'; until #624 title 'Freiherr', family 'St van Berg', "
+               "the chain starting at the first)"),
+    Case("the_chain_opens_no_unit_inside_the_titles",
+         "Freiherr Freiherr Prof do",
+         {"title": "Freiherr Freiherr Prof", "family": "do"},
+         ambiguities=(),
+         classification="fix(#624)",
+         notes="the second 'Freiherr' leads the chain, so no unit opens "
+               "inside the titles and the name is 'do' alone (1.4.0 "
+               "given 'Freiherr Freiherr Prof', its particle chain "
+               "taking the leading title; until #624 the second "
+               "'Freiherr' opened the unit 'Freiherr Prof' inside the "
+               "titles, given 'Freiherr Prof', family 'do')"),
     Case("a_title_word_inside_a_credential_run_stays_a_title",
          "John Smith MD van Secretary Jones",
          {"given": "John", "family": "Smith", "title": "Secretary",
@@ -10060,24 +10055,23 @@ CASES: tuple[Case, ...] = (
                "Jones', family 'Smith')"),
     Case("a_numeral_alone_behind_two_title_particles_stays_a_name",
          "St St VI",
-         {"title": "St", "family": "St VI"},
-         ambiguities=("particle-or-given", "title-or-name"),
-         classification="parity",
-         notes="the second 'St' opens no unit the count sees: the numeral "
-               "is a word the reading weighs, so the name starts past the "
-               "titles, one piece, and the fork has nothing in front of "
-               "it (#620's review: its first count read title 'St St', "
-               "family 'VI')"),
+         {"title": "St St", "family": "VI"},
+         ambiguities=(),
+         classification="fix(#624)",
+         notes="the second 'St' leads the chain and is a title, so the "
+               "numeral is the one name word and the fork has nothing in "
+               "front of it (1.4.0 title 'St', family 'St VI'; #620's "
+               "first count read title 'St St', family 'VI' while the "
+               "chain took 'St VI', and its review pinned the chain's "
+               "answer; #624 gives both the count's)"),
     Case("an_acronym_alone_behind_two_title_particles_stays_a_name",
          "Freiherr St MA",
-         {"title": "Freiherr", "family": "St MA"},
-         ambiguities=("particle-or-given", "suffix-or-name",
-                      "title-or-name"),
-         classification="fix(P2)",
-         notes="as the row above, for the acronym (#620's review: its "
-               "first count read title 'Freiherr St', family 'MA', and "
-               "reported nothing; 1.4.0 given 'Freiherr St', family 'MA', "
-               "read so since the 2.0 pipeline)"),
+         {"title": "Freiherr St", "family": "MA"},
+         ambiguities=(),
+         classification="fix(#624)",
+         notes="as the row above, for the acronym (1.4.0 given "
+               "'Freiherr St', family 'MA'; until #624 title 'Freiherr', "
+               "family 'St MA')"),
     Case("a_weighed_word_behind_a_particle_counts_as_a_word",
          "Freiherr von Berg MA X.Y.Z.",
          {"title": "Freiherr", "family": "von Berg", "suffix": "MA X.Y.Z."},
@@ -10101,14 +10095,24 @@ CASES: tuple[Case, ...] = (
                "adf6da88 family 'von J. ma')"),
     Case("a_period_title_alone_behind_two_title_particles_stays_a_name",
          "Freiherr St Prof.",
-         {"title": "Freiherr", "family": "St Prof."},
-         ambiguities=("particle-or-given", "title-or-name"),
-         classification="fix(P2)",
-         notes="a period-marked title word is one the H5 chain weighs, so "
-               "'St' opens no unit and the titles stay titles; the chain "
-               "takes no title out of a name of one word (#620's review, "
-               "mutation; 1.4.0 given 'Freiherr St Prof.', read so since "
-               "the 2.0 pipeline)"),
+         {"title": "Freiherr St", "family": "Prof."},
+         ambiguities=("title-or-name",),
+         classification="fix(#624)",
+         notes="as the rows above, for a period-marked title word: the "
+               "H5 chain takes no title out of a name of one word, so "
+               "'Prof.' is the name (1.4.0 given 'Freiherr St Prof.'; "
+               "until #624 title 'Freiherr', family 'St Prof.')"),
+    Case("a_second_title_particle_is_a_title",
+         "Freiherr St John Smith MA",
+         {"title": "Freiherr St", "given": "John", "family": "Smith",
+          "suffix": "MA"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#624)",
+         notes="#624's example: as 'Dr. St John Smith' and 'Sir St John "
+               "Smith' read, the second title-particle is a title and "
+               "the name starts behind it (1.4.0 title 'Freiherr', given "
+               "'St John Smith', family 'MA'; until #624 family 'St John "
+               "Smith', with a title-or-name report naming it)"),
     Case("a_connective_join_behind_a_particle_is_one_word",
          "Freiherr von B and Smith ma",
          {"title": "Freiherr", "family": "von B and Smith ma"},

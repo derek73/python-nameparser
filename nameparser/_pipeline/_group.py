@@ -63,7 +63,7 @@ from typing import assert_never
 
 from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
-    Peel, TailRead, chain_run_end, is_conj_piece, is_leading_title, is_prefix_piece,
+    Peel, TailRead, chain_lead, chain_run_end, is_conj_piece, is_leading_title, is_prefix_piece,
     is_suffix_piece, is_title_piece, join_connectives, joined_tags,
     leading_titles, merge_pieces, peel_walk, read_trailing_run,
     tail_reading, trailing_candidates, trailing_start,
@@ -864,21 +864,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # take it" had to restate the consumer's condition and got it
         # wrong one suffix later (#417).
         #
-        # The `, 0` fallback is inert by construction rather than a
-        # default worth testing: it is reached only when every piece is
-        # a title and none is a prefix, and the loop below merges
-        # nothing unless some piece is a prefix.
-        # `is_title_piece` alone missed H2's unlisted abbreviations, which
-        # assign peels as titles all the same, so 'Xyz. van Johnson'
-        # chained where 'Dr. van Johnson' did not (#424 found it
-        # through the acronym fork: the chain had swallowed the given
-        # word and left assign two pieces where the fork counted
-        # three). The scan asks assign's own test.
-        leading = next((k for k in range(len(pieces))
-                        if not is_leading_title(pieces[k], ptags[k],
-                                                 tokens)
-                        or is_prefix_piece(pieces[k], ptags[k], tokens)),
-                       0)
+        # The leading position is asked of assign's own title run
+        # (`leading_titles`): `is_title_piece` alone missed H2's
+        # unlisted abbreviations, which assign peels as titles all the
+        # same, so 'Xyz. van Johnson' chained where 'Dr. van Johnson'
+        # did not (#424 found it through the acronym fork: the chain
+        # had swallowed the given word and left assign two pieces where
+        # the fork counted three). And `chain_lead` is the one answer
+        # the trailing read's count takes too: of two titles that are
+        # also particles the second leads (#624), where a scan of this
+        # loop's own had stopped at the first and chained the second,
+        # so 'Freiherr St John Smith' read family 'St John Smith' while
+        # assign read both words as titles.
+        name_start = leading_titles(pieces, ptags, tokens)
+        leading = chain_lead(pieces, ptags, tokens, name_start)
         # rules.md#P2: "a trailing suffix begins" -- where it begins
         # is read by assign's peel over the pieces as they stand
         # (#424), once per segment and kept as a length from the end,
@@ -894,7 +893,6 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # takes both forks, and where no run was read ahead of it it
         # asks again after its merges whether the acronym still has
         # the pieces the fork counted (below).
-        name_start = leading_titles(pieces, ptags, tokens)
         # the run read above is already split off (#614), so the chain
         # stops at the end of what is left
         tail = (0 if read is not None
@@ -914,7 +912,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             titled = 0
             k = 0
             while k < len(pieces):
-                if k == leading or not is_prefix_piece(pieces[k],
+                if k <= leading or not is_prefix_piece(pieces[k],
                                                        ptags[k], tokens):
                     k += 1
                     continue

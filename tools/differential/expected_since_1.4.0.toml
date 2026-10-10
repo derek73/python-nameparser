@@ -4836,6 +4836,14 @@ name_regex = "^John von PhD Jones$"
 fields = ["family", "middle", "suffix"]
 
 [[change]]
+# rules.md#P4: "of two such words in the leading titles the second
+# does, both reading as titles" (#624, 2026-10-10): the second
+# title-particle is a title and the name starts behind it.
+issue = "fix(#624) of two title-particles at the head the second leads the chain"
+name_regex = "^Freiherr St John Smith$"
+fields = ["family", "given", "title"]
+
+[[change]]
 # rules.md#M2 reads the clause-free name, whose credential starts #602's
 # run -- rules.md#S2: "A credential after the name core starts a run to
 # the end of its part" -- and the take consumes that run: maiden 'Smith',
