@@ -49,6 +49,18 @@ def test_excess_non_suffix_segment_flags_comma_structure() -> None:
     assert AmbiguityKind.COMMA_STRUCTURE in kinds
 
 
+def test_the_comma_structure_report_names_no_field() -> None:
+    # #629: a title word past the second comma reads as a title
+    # (rules.md#C2, #603), so the part can land in two fields; the
+    # report says the part was not recognized and leaves where each
+    # word went to the fields. 2.3.0 said 'consumed as suffix'.
+    out = _segmented("John Smith, Jr., Dr. Bart")
+    assert [a.detail for a in out.ambiguities
+            if a.kind is AmbiguityKind.COMMA_STRUCTURE] == [
+        "segment 'Dr. Bart' beyond the recognized comma structures; "
+        "read best-effort"]
+
+
 def test_empty_input_yields_no_segments() -> None:
     assert _segmented("").segments == ()
 
