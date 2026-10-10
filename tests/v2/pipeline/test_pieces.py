@@ -426,7 +426,7 @@ def test_the_walks_own_leading_piece_never_anchors_what_follows_it(
 
 def test_a_reserve_kept_leading_piece_beside_a_genuine_family_loss(
 ) -> None:
-    # decisions.md#S2's Accepted boundary ("an unambiguous suffix is
+    # rules.md#S2's Accepted clause ("an unambiguous suffix is
     # consumed even when that leaves no family name at all", 'Smith
     # Jr.' -> family='') applies just the same when the LEADING piece
     # is itself listed suffix vocabulary rather than an ordinary name:

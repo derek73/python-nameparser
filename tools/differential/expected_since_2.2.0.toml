@@ -162,7 +162,8 @@ issue = "feat(#449) an interpunct transcription declines the script order, so th
 # East Asian script, or in the kana-licensed Japanese repertoire, reads
 # family-first whatever order the caller declared" -- a word mixing Han
 # and Latin is neither, so no script order applies, name_order governs
-# and the one name word is O5's. Literal-anchored, one corpus name.
+# and the one name word is O5's. The issue names the interpunct, which
+# is incidental to this name. Literal-anchored, one corpus name.
 name_regex = "^王·Smith$"
 fields = ["_ambiguities"]
 
@@ -1275,8 +1276,8 @@ issue = "fix(#531) a member the writing declines keeps its name reading and repo
 # text whole.
 #
 # Reporting a DECLINED fork is #530's stated rule -- the report tracks
-# the fork consulted, not the lean -- and rules.md#A1's "a kind is
-# worth adding only if a reader would hesitate too" is the standing
+# the fork consulted, not the lean -- and AGENTS.md's "A kind is worth
+# adding only if a reader would hesitate too" is the standing
 # objection it answers. It is also the only part of #531 that adds a
 # report without moving a field, which is why it is a rule of its own
 # rather than a widening of the one above: `fields` is
@@ -1308,12 +1309,13 @@ issue = "fix(#531) capitals take the do collision from the family-comma particle
 # 'Doe, John DO', alone, because the word is alone in the class: `do`
 # is the one ambiguous credential that is also particle vocabulary, so
 # this slot and P6's attachment (rules.md#P6) want the same word.
-# Derek's decision, recorded at decisions.md#S2: CAPITALS DECIDE, AND
-# THE PARTICLE RULE KEEPS EVERY OTHER SPELLING. An all-caps member in
-# a name written in more than one case carries a positive credential
-# lean, so the credential reading wins and P6 stands down; every other
-# spelling attaches exactly as it did, with P6's own
-# `particle-or-given` and no second report.
+# Derek's decision, recorded at decisions.md#S2: "CAPITALS DECIDE FOR
+# `do`, AND THE PARTICLE RULE KEEPS EVERY OTHER SPELLING". An all-caps
+# member in a name written in more than one case carries a positive
+# credential lean, so the credential reading wins and P6 stands down
+# (and since #544 so does an unambiguous credential in front of it,
+# 'doe, jane v phd do'); every other spelling attaches exactly as it
+# did, with P6's own `particle-or-given` and no second report.
 #
 # THE PAIRING IS THE ARGUMENT and the accepted cost is half of it. In
 # ONE CASE the rule cannot tell 'NASCIMENTO, EDSON ARANTES DO' from
@@ -2462,12 +2464,10 @@ fields = ["family", "given", "middle"]
 # rules.md#S2: "The run at a name's trailing slot is read ONCE, once
 # the connectives have joined (P3) and before the particle chain (P2)
 # and the bound given-name join (P5) are made" and "neither join
-# reaches a word the run took" (#614, 2026-10-07), and rules.md#H5:
-# "successive single words that wear the abbreviation shape and are
-# title vocabulary chain into the title from the end" -- so the chain
-# stops in front of 'Prof.' rather than taking it into the family name.
-# This baseline made the chain first and the title was a word of the
-# family name.
+# reaches a word the run took" (#614, 2026-10-07), and rules.md#H5: "a
+# particle chain (P2) stops in front of a trailing title rather than
+# taking it into the family name". This baseline made the chain first
+# and the title was a word of the family name.
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]

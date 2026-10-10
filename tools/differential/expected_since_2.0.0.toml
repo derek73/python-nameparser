@@ -149,7 +149,8 @@ issue = "feat(#449) an interpunct transcription declines the script order, so th
 # East Asian script, or in the kana-licensed Japanese repertoire, reads
 # family-first whatever order the caller declared" -- a word mixing Han
 # and Latin is neither, so no script order applies, name_order governs
-# and the one name word is O5's. Literal-anchored, one corpus name.
+# and the one name word is O5's. The issue names the interpunct, which
+# is incidental to this name. Literal-anchored, one corpus name.
 name_regex = "^王·Smith$"
 fields = ["_ambiguities"]
 
@@ -773,10 +774,10 @@ fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix"
-# 'abdul Smith V', 'abdul Smith Jr V': rules.md#P5 -- "a trailing
-# roman numeral that assign reads as the suffix (S2) is no word to
-# spare, and is not joined". given 'abdul Smith', family '' -> given
-# 'abdul', family 'Smith'; the suffix was already read at this
+# 'abdul Smith V', 'abdul Smith Jr V': rules.md#P5 -- "A trailing roman
+# numeral, or a bare acronym the run takes, or a trailing title word the
+# run takes, is no word to spare". given 'abdul Smith', family '' ->
+# given 'abdul', family 'Smith'; the suffix was already read at this
 # baseline, which is why the 1.4.0 rule lists three fields and this
 # one two. Both are rules.md examples; no differential corpus name
 # has the shape, and the 'abdul Smith V Ph. D.' spelling stays out of
@@ -825,17 +826,19 @@ fields = ["given", "middle", "suffix"]
 
 [[change]]
 issue = "fix(#425/#436/#437) the bound-given reserve runs assign's peel over the joined view"
-# 'abdul Smith Jr Ma', 'abdul Smith Ma': rules.md#P5 -- "the join is
-# tried on the pieces as it would leave them, assign's trailing peel
-# (S2) is read over that, and the name words it leaves are the words
-# to spare" and "a word the peel reads as a suffix unjoined must read
-# so joined, or the join declines". given 'abdul Smith', family '' ->
-# given 'abdul', family 'Smith' (the acronym and the suffix peel as
-# they do for 'John Smith Jr Ma'); given 'abdul Smith', family 'Ma'
-# -> given 'abdul', family 'Smith', suffix 'Ma' (the join would have
-# turned a credential into the family). Both 1.4.0 parity, so the
-# 1.4.0 ledger has no twin. Rules.md examples; no differential corpus
-# name has either shape.
+# 'abdul Smith Jr Ma', 'abdul Smith Ma': rules.md#P5 -- "the trailing
+# suffix run (S2) and the trailing title run (H5), each read over what
+# the other leaves until neither takes anything more, are read once,
+# before the join is tried, and the name words they leave are the words
+# to spare" and "The join joins two name words into one and, read after
+# the trailing run, changes no suffix reading" -- since #614 the run is
+# read ahead of the join rather than over the joined view this rule's
+# issue names. given 'abdul Smith', family '' -> given 'abdul', family
+# 'Smith' (the acronym and the suffix peel as they do for 'John Smith Jr
+# Ma'); given 'abdul Smith', family 'Ma' -> given 'abdul', family
+# 'Smith', suffix 'Ma' (the join would have turned a credential into the
+# family). Both 1.4.0 parity, so the 1.4.0 ledger has no twin. Rules.md
+# examples; no differential corpus name has either shape.
 #
 # 2026-09-18 (#289): the sentence above -- "Both 1.4.0 parity, so the
 # 1.4.0 ledger has no twin" -- stops being true, and this rule's own
@@ -1131,14 +1134,14 @@ fields = ["family", "suffix", "_ambiguities"]
 
 [[change]]
 issue = "fix(#424) the particle chain stops before the trailing numeral"
-# 'John van der Berg V': rules.md#P2 -- "a trailing suffix begins --
-# read as assign will read it (S2): a trailing roman numeral, or a
-# bare acronym with words to spare, ends the chain as a suffix word
-# does". last 'van der Berg V' -> family 'van der Berg', suffix 'V',
-# as 'John Smith V' reads. Shipped since 1.x: the chain's stop asked
-# with the suffix-piece test, whose initial veto does not see a bare
-# V. A rules.md example; no differential corpus name has the shape.
-# The fork's report arrives with the reading.
+# 'John van der Berg V': rules.md#P2 -- "a trailing suffix begins -- the
+# trailing run S2 reads, once, before the chain is made [...] a trailing
+# roman numeral, or a bare acronym with words to spare, ends the chain
+# as a suffix word does". last 'van der Berg V' -> family 'van der
+# Berg', suffix 'V', as 'John Smith V' reads. Shipped since 1.x: the
+# chain's stop asked with the suffix-piece test, whose initial veto does
+# not see a bare V. A rules.md example; no differential corpus name has
+# the shape. The fork's report arrives with the reading.
 name_regex = "(?i)^john\\s+van\\s+der\\s+berg\\s+v$"
 fields = ["family", "suffix", "_ambiguities"]
 
@@ -1167,13 +1170,14 @@ fields = ["family", "suffix", "_ambiguities"]
 
 [[change]]
 issue = "fix(#424/#445) the maiden walk stops before the trailing numeral, and the lone name word is the family"
-# 'John née Jones Smith V': rules.md#M2 -- "takes the words after it
-# -- up to any suffix word, or the trailing roman numeral assign
-# reads as the suffix (S2) -- as the maiden name". maiden 'Jones
-# Smith V' -> maiden 'Jones Smith', suffix 'V'. The walk's stop asked
-# with the suffix-piece test too. No 1.4.0 twin: v1 had no maiden
-# support, and the fix(#274) rule carries the name there. A rules.md
-# example; no differential corpus name has the shape.
+# 'John née Jones Smith V': rules.md#M2 -- "It takes them up to the
+# trailing run of post-nominals and titles that the end of the name
+# reads as if the clause were not written", and 'John V' reads the V as
+# the suffix. maiden 'Jones Smith V' -> maiden 'Jones Smith', suffix
+# 'V'. The walk's stop asked with the suffix-piece test too. No 1.4.0
+# twin: v1 had no maiden support, and the fix(#274) rule carries the
+# name there. A rules.md example; no differential corpus name has the
+# shape.
 #
 # Renamed for #445 (2026-08-27) rather than widened in place, because
 # the diff has two causes now and one rule has to explain the whole
@@ -1745,7 +1749,7 @@ fields = ["given", "middle", "family", "maiden"]
 [[change]]
 issue = "fix(#371) a suffix never begins a name: the Ph./D. merge declines at the head"
 # 'Ph. D. Van Johnson', 'Ph. D. John Smith', 'Ph. D.', 'Ph. D., Jr.':
-# rules.md#S2 -- "A suffix never BEGINS a name: position outranks the
+# rules.md#S2 -- "A suffix never OPENS THE STRING: position outranks the
 # vocabulary match". The v1 fix_phd merge joined the pair wherever it
 # stood, which is what made a leading credential possible at all, and
 # it emptied the family doing it: 'Ph. D. Van Johnson' read given
@@ -2800,8 +2804,8 @@ issue = "fix(#531) a member the writing declines keeps its name reading and repo
 # text whole.
 #
 # Reporting a DECLINED fork is #530's stated rule -- the report tracks
-# the fork consulted, not the lean -- and rules.md#A1's "a kind is
-# worth adding only if a reader would hesitate too" is the standing
+# the fork consulted, not the lean -- and AGENTS.md's "A kind is worth
+# adding only if a reader would hesitate too" is the standing
 # objection it answers. It is also the only part of #531 that adds a
 # report without moving a field, which is why it is a rule of its own
 # rather than a widening of the one above: `fields` is
@@ -2824,12 +2828,13 @@ issue = "fix(#531) capitals take the do collision from the family-comma particle
 # 'Doe, John DO', alone, because the word is alone in the class: `do`
 # is the one ambiguous credential that is also particle vocabulary, so
 # this slot and P6's attachment (rules.md#P6) want the same word.
-# Derek's decision, recorded at decisions.md#S2: CAPITALS DECIDE, AND
-# THE PARTICLE RULE KEEPS EVERY OTHER SPELLING. An all-caps member in
-# a name written in more than one case carries a positive credential
-# lean, so the credential reading wins and P6 stands down; every other
-# spelling attaches exactly as it did, with P6's own
-# `particle-or-given` and no second report.
+# Derek's decision, recorded at decisions.md#S2: "CAPITALS DECIDE FOR
+# `do`, AND THE PARTICLE RULE KEEPS EVERY OTHER SPELLING". An all-caps
+# member in a name written in more than one case carries a positive
+# credential lean, so the credential reading wins and P6 stands down
+# (and since #544 so does an unambiguous credential in front of it,
+# 'doe, jane v phd do'); every other spelling attaches exactly as it
+# did, with P6's own `particle-or-given` and no second report.
 #
 # THE PAIRING IS THE ARGUMENT and the accepted cost is half of it. In
 # ONE CASE the rule cannot tell 'NASCIMENTO, EDSON ARANTES DO' from
@@ -4026,12 +4031,10 @@ fields = ["_ambiguities", "suffix", "title"]
 # rules.md#S2: "The run at a name's trailing slot is read ONCE, once
 # the connectives have joined (P3) and before the particle chain (P2)
 # and the bound given-name join (P5) are made" and "neither join
-# reaches a word the run took" (#614, 2026-10-07), and rules.md#H5:
-# "successive single words that wear the abbreviation shape and are
-# title vocabulary chain into the title from the end" -- so the chain
-# stops in front of 'Prof.' rather than taking it into the family name.
-# This baseline made the chain first and the title was a word of the
-# family name.
+# reaches a word the run took" (#614, 2026-10-07), and rules.md#H5: "a
+# particle chain (P2) stops in front of a trailing title rather than
+# taking it into the family name". This baseline made the chain first
+# and the title was a word of the family name.
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]
