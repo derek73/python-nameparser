@@ -130,12 +130,35 @@ class PendingAmbiguity:
     extract_delimited knows only a character offset, so it records that
     and tokenize resolves it to the containing token's index. Stages
     after tokenize set ``indices`` directly and leave ``origin`` None.
+
+    ``field_tail`` is for a report that names the field its word was
+    read into. post_rules may still move the word (H1's move behind a
+    title, P1's family-first fold, P6's attachment, and under opt-in
+    policies the patronymic rotations and `middle_as_family`'s fold),
+    so the emitter
+    writes ``detail`` up to the field and the rest of its sentence
+    here -- ``""`` where the field ends the sentence, which is why
+    assemble tests ``is not None`` -- and assemble joins them around
+    the FIELD_READING of the first referent's final role, the one
+    place that knows it (#626). Until then ``detail`` is a fragment.
     """
 
     kind: AmbiguityKind
     detail: str
     indices: tuple[int, ...] = ()
     origin: int | None = None
+    field_tail: str | None = None
+
+
+#: How a report names the field a word was read into, by final role.
+FIELD_READING: Mapping[Role, str] = MappingProxyType({
+    Role.TITLE: "a title", Role.GIVEN: "a given name",
+    Role.MIDDLE: "a middle name", Role.FAMILY: "a family name",
+    Role.SUFFIX: "a suffix", Role.NICKNAME: "a nickname",
+    Role.MAIDEN: "a maiden name"})
+# every role a referent can hold, or a new one is a KeyError at the
+# first parse whose report lands in it
+assert FIELD_READING.keys() == set(Role)
 
 
 @dataclass(frozen=True, slots=True)

@@ -363,9 +363,10 @@ def _assign_main(seg_idx: int, state: ParseState,
     #
     # Every bare ambiguous acronym the FINAL peel had to resolve is one
     # coin-flip each, in either direction, so the report collects
-    # rather than overwrites. Deferred to after assignment because the
-    # wording reads the role back, and which role "not peeled" means
-    # depends on name_order. (The roman-numeral fork needs no such
+    # rather than overwrites. Deferred to after assignment because what
+    # a pick is declined as depends on the role it took, and which role
+    # "not peeled" means depends on name_order; the field itself is
+    # worded by assemble (#626). (The roman-numeral fork needs no such
     # deferral and is reported here.)
     #
     # Read once in group, after P3's connective joins and ahead of the
@@ -435,8 +436,6 @@ def _assign_main(seg_idx: int, state: ParseState,
     # call budget on every parse otherwise (decisions.md#parse-cost).
     if peeled.names <= 1:
         head = pieces[name_pieces[0]]
-        token = tokens[head[0]]
-        assert token.role is not None
         # Both conventions here turn on a lone name word, so both
         # report at the site that places one
         # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE), and one
@@ -458,16 +457,16 @@ def _assign_main(seg_idx: int, state: ParseState,
         # `suffix-or-name`" (history: decisions.md#H4) -- only the
         # word made into a name reports, and no name piece survived
         # the peel, so the carve-out above made the first post-nominal
-        # the name. The role comes off the token for the reason stated
-        # at the particle emitter below.
+        # the name. Its field is worded by assemble from the final role
+        # (`PendingAmbiguity.field_tail`, #626).
         if peeled.names == 0 and field_undecided:
             text = " ".join(tokens[i].text for i in head)
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.SUFFIX_OR_NAME,
                 f"{text!r} is post-nominal vocabulary with no name word "
-                f"beside it; read as a {token.role.value} name rather than "
-                f"a post-nominal, nothing else being left to be the name",
-                tuple(head)))
+                f"beside it; read as ", tuple(head),
+                field_tail=" rather than a post-nominal, nothing else "
+                           "being left to be the name"))
         # One name piece off the peel: the convention placed a lone
         # name word. A suffix beside it is not a decision -- 'Smith
         # Jr.' and "'Smitty' Jones Jr." ARE this convention -- and the
@@ -489,16 +488,17 @@ def _assign_main(seg_idx: int, state: ParseState,
             # Wales'): the leading-title peel took the whole name.
             if any("vocab:title" in tokens[i].tags for i in head):
                 text = " ".join(tokens[i].text for i in head)
+                lone = len(head) == 1
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.TITLE_OR_NAME,
                     f"{text!r} is title vocabulary and the only name word "
                     f"the title peel left standing; read as the name by "
                     f"convention rather than as more title"
-                    if len(head) == 1 else
+                    if lone else
                     f"{text!r} is the only name unit and joins title "
-                    f"vocabulary to a name word; read as a "
-                    f"{token.role.value} name by convention",
-                    tuple(head)))
+                    f"vocabulary to a name word; read as ",
+                    tuple(head),
+                    field_tail=None if lone else " by convention"))
             # rules.md#O5: "a name of one name word that nothing else has
             # decided reads that word as the given name under the default
             # given-first order, and as the family name under a declared
@@ -517,16 +517,17 @@ def _assign_main(seg_idx: int, state: ParseState,
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.GIVEN_OR_FAMILY,
                     f"{text!r} is the only name word and nothing else "
-                    f"decides it; read as a {token.role.value} name by "
-                    f"convention, which follows the read order",
-                    tuple(head)))
+                    f"decides it; read as ", tuple(head),
+                    field_tail=" by convention, which follows the read "
+                               "order"))
     for piece in peeled.picks:
-        # every pick is in rest, so the loops above just gave it a role
+        # every pick is in rest, so the loops above just gave it a
+        # role; whether it was read as a suffix or a name settles what
+        # it was declined as, and which field assemble names (#626)
         token = tokens[piece[0]]
         assert token.role is not None
-        taken, declined = (
-            ("a suffix", "a name part") if token.role is Role.SUFFIX
-            else (f"a {token.role.value} name", "a post-nominal"))
+        declined = ("a name part" if token.role is Role.SUFFIX
+                    else "a post-nominal")
         # A word in the class by SHAPE (rules.md#S2, #S3) is in no
         # wordlist and may be written with its periods, so the listed
         # member's wording would misdescribe it on both counts (#563)
@@ -537,27 +538,23 @@ def _assign_main(seg_idx: int, state: ParseState,
                      "and an ordinary name")
         ambiguities.append(PendingAmbiguity(
             AmbiguityKind.SUFFIX_OR_NAME,
-            f"{token.text!r} {what}; read as {taken} rather than "
-            f"{declined}",
-            piece))
+            f"{token.text!r} {what}; read as ", piece,
+            field_tail=f" rather than {declined}"))
     # leading ambiguous particle read as a name (#121 surfaced)
     if name_pieces:
         head = pieces[name_pieces[0]]
         if (len(head) == 1 and len(name_pieces) > 1
                 and "vocab:particle-ambiguous" in tokens[head[0]].tags):
-            # the loops above gave the head piece its role from
-            # `order`, which is _effective_order's answer and not
-            # necessarily name_order's -- a script_orders entry
-            # overrides it. So read the role off the token rather than
-            # assume given, or re-derive it here; same reason as
-            # SUFFIX_OR_NAME just above.
-            token = tokens[head[0]]
-            assert token.role is not None
+            # the field is assemble's to word from the final role
+            # (`PendingAmbiguity.field_tail`, #626), never assumed given:
+            # `order` above is _effective_order's answer, not
+            # necessarily name_order's, and a later rule may still move
+            # the word ('Van Ivan Petrovich' under the East Slavic rule
+            # rotates 'Van' into the family)
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.PARTICLE_OR_GIVEN,
-                f"leading {token.text!r} may be a family-name "
-                f"particle; read as a {token.role.value} name",
-                tuple(head)))
+                f"leading {tokens[head[0]].text!r} may be a family-name "
+                f"particle; read as ", tuple(head), field_tail=""))
     return order
 
 
@@ -852,11 +849,13 @@ def assign(state: ParseState) -> ParseState:
         if state.pieces[1] and len(state.pieces[1][0]) == 1:
             i = state.pieces[1][0][0]
             if not tokens[i].tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
+                # the field is assemble's to word: with nothing before
+                # the comma and a title after the word, H1 moves it to
+                # the family (', Ma Dr.', #626's review)
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.SUFFIX_OR_NAME,
                     f"{tokens[i].text!r} after the comma is also an "
-                    f"ordinary name word; read as the given name",
-                    (i,)))
+                    f"ordinary name word; read as ", (i,), field_tail=""))
         # Segment 1 is read before segment 0's wholly-family pass. It
         # consumes piece tags and text only -- nothing segment 0's
         # read writes. (A title standing after the comma behind a whole

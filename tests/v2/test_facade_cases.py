@@ -105,6 +105,11 @@ _CORE_ONLY_IDS = frozenset({
     # #606: the excluded salutation under the order Vietnamese names
     # use, which has no v1 spelling.
     "salutation_that_leads_a_surname_stays_a_name",
+    # #626's reviews: P1's family-first fold and O3's middle_as_family
+    # fold moving a reported word, under a declared order v1 has no
+    # spelling for
+    "a_pick_the_family_first_fold_moves_is_reported_where_it_lands",
+    "a_pick_the_middle_as_family_fold_moves_is_reported_in_the_family",
     # #518 review round: the `by_script` scope's positive controls.
     # An emptied script table has no v1 spelling -- v1 has no script
     # orders to empty -- so both rows are core-only, though the roles

@@ -1,6 +1,8 @@
 """Not a stage: converts the final ParseState into a public ParsedName.
 
-Consumes: tokens (all roles set), dropped, ambiguities (by index).
+Consumes: tokens (all roles set), dropped, ambiguities (by index;
+one carrying ``field_tail`` is worded from its word's final role,
+#626).
 Produces: a validated ParsedName -- the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
@@ -18,7 +20,7 @@ tests/v2/pipeline/test_assemble.py.
 """
 from __future__ import annotations
 
-from nameparser._pipeline._state import ParseState
+from nameparser._pipeline._state import FIELD_READING, ParseState
 from nameparser._types import (
     Ambiguity, AmbiguityKind, ParsedName, Role, Token,
 )
@@ -112,8 +114,17 @@ def assemble(state: ParseState) -> ParsedName:
                 and any(t.role in (Role.SUFFIX, Role.TITLE)
                         for t in materialized)):
             continue
-        ambiguities.append(
-            Ambiguity(pending.kind, pending.detail, materialized))
+        detail = pending.detail
+        if pending.field_tail is not None:
+            # A report naming a field, in a name emptied above (no
+            # emitter of one reaches that today: every referent is a
+            # name word): no field is left to name, so it goes rather
+            # than ship the sentence's first half.
+            if not materialized:
+                continue
+            detail = (f"{detail}{FIELD_READING[materialized[0].role]}"
+                      f"{pending.field_tail}")
+        ambiguities.append(Ambiguity(pending.kind, detail, materialized))
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),
                       ambiguities=tuple(ambiguities))

@@ -2,6 +2,8 @@
 import pytest
 
 from nameparser._lexicon import Lexicon
+from nameparser._pipeline import run
+from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._assign import assign
 from nameparser._pipeline._classify import classify
 from nameparser._pipeline._extract import extract_delimited
@@ -13,7 +15,7 @@ from nameparser._pipeline._tokenize import tokenize
 from nameparser._policy import (
     FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, Policy, Script,
 )
-from nameparser._types import AmbiguityKind, Role
+from nameparser._types import Ambiguity, AmbiguityKind, Role
 
 #: The three read orders and the role a lone name word takes under
 #: each, shared by every parametrized case below that asks the same
@@ -43,6 +45,17 @@ def _assigned(text: str, policy: Policy | None = None,
                        policy=policy or Policy())
     return assign(group(classify(segment(tokenize(
         extract_delimited(state))))))
+
+
+def _reported(text: str, policy: Policy | None = None,
+              lexicon: Lexicon | None = None) -> tuple[Ambiguity, ...]:
+    """The reports as the caller reads them. A report naming a field
+    is worded by assemble from the word's FINAL role (#626), so its
+    detail is complete only there, past the rules that still move a
+    word after assign."""
+    return assemble(run(ParseState(
+        original=text, lexicon=lexicon or _LEX,
+        policy=policy or Policy()))).ambiguities
 
 
 def _by_role(state: ParseState, role: Role) -> str:
@@ -145,8 +158,7 @@ def test_a_by_shape_pick_is_not_described_as_a_listed_member() -> None:
     for text, taken, declined in (
             ("John Smith X.Y.Z.", "a suffix", "a name part"),
             ("Jack X.Y.Z.", "a family name", "a post-nominal")):
-        out = _assigned(text, lexicon=Lexicon.default())
-        (amb,) = [a for a in out.ambiguities
+        (amb,) = [a for a in _reported(text, lexicon=Lexicon.default())
                   if a.kind is AmbiguityKind.SUFFIX_OR_NAME]
         assert amb.detail == (
             f"'X.Y.Z.' is shaped like a post-nominal but listed in no "
@@ -161,8 +173,8 @@ def test_jack_ma_s_two_detail_strings_are_verbatim() -> None:
     # strings verbatim: the credential lean also turns 'Jack' into the
     # only name word left, which is a SECOND fork (GIVEN_OR_FAMILY)
     # this one row now calls.
-    out = _assigned("Jack MA", lexicon=Lexicon.default())
-    details = {a.kind.value: a.detail for a in out.ambiguities}
+    details = {a.kind.value: a.detail
+               for a in _reported("Jack MA", lexicon=Lexicon.default())}
     assert details == {
         "given-or-family": (
             "'Jack' is the only name word and nothing else decides "
@@ -221,16 +233,16 @@ def test_leading_ambiguous_particle_reads_as_given_with_ambiguity() -> None:
 
 
 @pytest.mark.parametrize("policy,role", _ORDERS)
-def test_leading_particle_detail_names_the_role_it_took(
+def test_leading_particle_detail_names_the_field_the_word_lands_in(
         policy: Policy | None, role: str) -> None:
     # The fork is the same under every order -- particle or name --
     # but which role the head piece actually took is the assignment's
-    # answer, so the user-facing detail has to read it off the token
-    # rather than hardcode "given", exactly as SUFFIX_OR_NAME does.
+    # answer, so the user-facing detail names the field the word lands
+    # in rather than hardcoding "given", exactly as SUFFIX_OR_NAME does.
     # kind is public API and stays PARTICLE_OR_GIVEN throughout: the
     # fork really is "particle or given" even where the piece landed
     # in FAMILY.
-    (amb,) = _assigned("Van Johnson", policy).ambiguities
+    (amb,) = _reported("Van Johnson", policy)
     assert amb.kind is AmbiguityKind.PARTICLE_OR_GIVEN
     assert amb.detail == (
         f"leading 'Van' may be a family-name particle; "
@@ -250,12 +262,12 @@ def test_leading_particle_detail_names_the_role_it_took(
      "'John of Prince' is the only name unit and joins title "
      "vocabulary to a name word; read as a {role} name by convention"),
 ])
-def test_convention_details_name_the_role_the_assignment_took(
+def test_convention_details_name_the_field_the_word_lands_in(
         text: str, kind: AmbiguityKind, detail: str,
         policy: Policy | None, role: str) -> None:
     # The three conventions this site reports all place a lone name
-    # word, and all three details have to READ the field back off the
-    # token rather than hardcode "given": the field follows the read
+    # word, and all three details name the field the word lands in
+    # rather than hardcoding "given": the field follows the read
     # order, which is why none of the three kinds names it. The
     # PARTICLE_OR_GIVEN test above is the precedent, and these are the
     # only other details at this site that name a field -- H4's PEEL
@@ -263,7 +275,7 @@ def test_convention_details_name_the_role_the_assignment_took(
     # retags that word after assign under the default order.
     lex = _LEX.add(suffix_words={"rinpoche"}, conjunctions={"of"},
                    titles={"prince"})
-    (amb,) = _assigned(text, policy, lexicon=lex).ambiguities
+    (amb,) = _reported(text, policy, lexicon=lex)
     assert amb.kind is kind
     assert amb.detail == detail.format(role=role)
 
@@ -281,7 +293,7 @@ def test_leading_particle_detail_follows_the_effective_order() -> None:
     assert out.policy.script_orders[0][0] is Script.HAN
     assert _by_role(out, Role.FAMILY) == "毛"
     assert _by_role(out, Role.GIVEN) == "泽东"
-    (amb,) = out.ambiguities
+    (amb,) = _reported("毛 泽东", lexicon=han)
     assert amb.kind is AmbiguityKind.PARTICLE_OR_GIVEN
     assert amb.detail == (
         "leading '毛' may be a family-name particle; "
@@ -746,19 +758,25 @@ def test_the_comma_report_says_which_way_it_read_the_word() -> None:
     fork the parser considered and declined -- is the second one.
     """
     detail = {
-        text: [a.detail for a in _assigned(
-            text, policy, lexicon=Lexicon.default()).ambiguities
+        text: [a.detail for a in _reported(
+            text, policy, lexicon=Lexicon.default())
             if a.kind.value == "suffix-or-name"]
-        for text, policy in (("Smith, Ma", None),
+        for text, policy in (("Smith, Ma", None), (", Ma Dr.", None),
                              ("Smith, A.B.",
                               Policy(unlisted_dotted_suffixes=False)))
     }
     assert detail["Smith, Ma"] == [
         "'Ma' after the comma is also an ordinary name word; read as "
-        "the given name"]
+        "a given name"]
     assert detail["Smith, A.B."] == [
         "'A.B.' after the comma is also an ordinary name word; read as "
-        "the given name"]
+        "a given name"]
+    # #626's review: with nothing before the comma, H1 moves the word
+    # to the family behind the title after this report is made, so the
+    # field is worded from where it lands
+    assert detail[", Ma Dr."] == [
+        "'Ma' after the comma is also an ordinary name word; read as "
+        "a family name"]
 
 
 def test_the_trailing_given_slot_takes_a_bare_class_member() -> None:

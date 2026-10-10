@@ -8221,6 +8221,65 @@ CASES: tuple[Case, ...] = (
                "whether `Prince` is a title rather than which field "
                "the unit takes -- one of the inputs measured to reach "
                "that branch, `prince` being in TITLES"),
+    Case("a_joined_unit_h1_moves_is_reported_in_the_field_it_lands_in",
+         "Attorney General of Minnesota",
+         {"title": "Attorney", "family": "General of Minnesota"},
+         ambiguities=("title-or-name",), classification="parity",
+         notes="#626: assign places the lone unit as the given name and "
+               "H1 moves it to the family behind the title; the report "
+               "was worded at assign and said 'given'. The order sweep "
+               "in test_cases.py checks the field it names"),
+    Case("a_pick_the_attachment_moves_is_reported_in_its_family",
+         "Kim Min Do",
+         {"given": "Kim", "middle": "Min", "family": "Do"},
+         ambiguities=("suffix-or-name",), classification="fix(#289)",
+         notes="#626: under FAMILY_FIRST the order sweep reads P6 "
+               "attaching the Title-case 'Do' to the family ('Do Kim') "
+               "after assign read it as a middle name; the report was "
+               "worded at assign and said 'middle'. Under "
+               "FAMILY_FIRST_GIVEN_LAST nothing moves it: given 'Do'. "
+               "1.4.0 read suffix 'Do'"),
+    Case("a_pick_the_family_first_fold_moves_is_reported_where_it_lands",
+         "de Kim Ma", {"family": "de Kim", "given": "Ma"},
+         ambiguities=("suffix-or-name",), classification="fix(#289)",
+         policy=Policy(name_order=FAMILY_FIRST),
+         notes="#626's review: P1's family-first fold takes the particle "
+               "run and one name unit, and lays the rest out by the "
+               "order, so 'Ma', which assign read as a middle name, "
+               "lands in the given name -- a third rule moving a "
+               "reported word after assign. 2.3.0 read suffix 'Ma'"),
+    Case("a_leading_particle_the_east_slavic_rotation_moves_is_reported_in_the_family",
+         "Van Ivan Petrovich",
+         {"given": "Ivan", "middle": "Petrovich", "family": "Van"},
+         ambiguities=("particle-or-given",), classification="parity",
+         policy=_ES,
+         notes="#626's second review: O1 rotates the leading 'Van', which "
+               "assign reported as a given name, into the family; the "
+               "report names where it lands. Reverting that emitter "
+               "passed every test until this row and its Turkic twin. "
+               "1.4.0 with patronymic_name_order reads the same fields"),
+    Case("a_leading_particle_the_turkic_rotation_moves_is_reported_in_the_family",
+         "Van Ali Veli oglu",
+         {"given": "Ali", "middle": "Veli oglu", "family": "Van"},
+         ambiguities=("particle-or-given",), classification="parity",
+         policy=_TK,
+         notes="#626's second review: O2's twin of the row above"),
+    Case("a_pick_the_middle_as_family_fold_moves_is_reported_in_the_family",
+         "Do Bishop Do", {"given": "Bishop", "family": "Do Do"},
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         classification="fix(#289)",
+         policy=Policy(name_order=FAMILY_FIRST, middle_as_family=True),
+         notes="#626's second review: the trailing 'Do' is a middle name "
+               "at assign and O3's fold takes it into the family. 2.3.0 "
+               "read suffix 'Do'"),
+    Case("a_comma_report_h1_moves_is_reported_in_the_family",
+         ", Ma Dr.", {"title": "Dr.", "family": "Ma"},
+         ambiguities=("suffix-or-name",), classification="fix(#316)",
+         notes="#626's review: with nothing before the comma, the comma "
+               "report on 'Ma' was worded 'the given name' at assign, "
+               "and H1 then moved it to the family behind the trailing "
+               "title. The empty-head comma shape AGENTS.md's sweep "
+               "paragraph asks for; 1.4.0 read first 'Ma', suffix 'Dr.'"),
     Case("lone_joined_unit_carrying_collision_set_title_vocabulary",
          "Smith and King", {"given": "Smith and King"},
          ambiguities=("title-or-name",),
