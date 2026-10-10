@@ -1,7 +1,10 @@
 """Referential integrity for docs/design/ citations.
 
-Checks: cited rule/mechanism IDs exist; citation sentences are
-whitespace-normalized verbatim excerpts of their statements;
+Checks: cited rule/mechanism IDs exist; citation sentences -- in code
+and in the differential ledgers' comments -- are whitespace-normalized
+verbatim excerpts of their statements ("[...]" eliding, in order);
+cited decisions.md entries exist, and a quote opening such a citation
+is verbatim in its entry;
 ``implemented:`` lists match the set of modules actually citing the
 rule; ``interacts:`` IDs exist (existence only -- the field is
 advisory). The legacy-pattern check (armed) keeps gitignored-spec
@@ -23,13 +26,22 @@ _LEGACY_RES = (re.compile(r"§"), re.compile(r"superpowers"),
                re.compile(r"spec\s+[S§]?\d"))
 
 _CITE_RE = re.compile(
-    r"(?:rules|mechanisms|decisions)\.md#"
+    r"(?P<doc>rules|mechanisms|decisions)\.md#"
     r"(?P<cid>[A-Z]\d+|[A-Z][A-Z0-9_]*(?:-[A-Z0-9_]+)*)"
     r":\s*(?P<first>.*)")
 # The excerpt is the FIRST double-quoted span after the ID, wrapped
 # over continuation comment lines; text outside the quotes (v1 names,
 # history pointers, code-local notes) is free.
 _EXCERPT_RE = re.compile(r'"(.*?)"')
+# An excerpt may elide with "[...]": each fragment must then be
+# verbatim, and in order.
+_ELISION = "[...]"
+DEC_DOC = REPO / "docs" / "design" / "decisions.md"
+# Ledger comments cite rules under the same discipline as code
+# (AGENTS.md, "Release-log claims"); they are swept with the code but
+# are not "citing modules" -- rules.md's implemented: names parser
+# modules, never ledgers.
+_LEDGERS = REPO / "tools" / "differential"
 
 
 def _norm(s: str) -> str:
@@ -59,46 +71,105 @@ def _statements() -> dict[str, str]:
     return out
 
 
-def _citations() -> list[tuple[Path, int, str, str]]:
+def _decision_entries() -> dict[str, str]:
+    """decisions.md entry bodies keyed by their ### key. An entry is a
+    dated record rather than a statement, so a citation of one need
+    not quote it; but a quote it does open with must be verbatim."""
+    out: dict[str, str] = {}
+    text = DEC_DOC.read_text(encoding="utf-8")
+    for sec in re.split(r"^(?=#{2,3} )", text, flags=re.M):
+        hm = re.match(r"### ([^\s—]+)", sec)
+        if hm:
+            out[hm.group(1)] = _norm(sec)
+    return out
+
+
+def _is_excerpt(excerpt: str, body: str) -> bool:
+    pos = 0
+    for frag in excerpt.split(_ELISION):
+        frag = frag.strip()
+        found = body.find(frag, pos)
+        if found < 0:
+            return False
+        pos = found + len(frag)
+    return True
+
+
+def _swept_files() -> list[Path]:
+    files = [p for d in SWEEP_DIRS for p in sorted((REPO / d).rglob("*.py"))]
+    return files + sorted(_LEDGERS.glob("*.toml"))
+
+
+def _citations() -> list[tuple[Path, int, str, str, str]]:
+    """(path, line, doc, id, excerpt) for every colon-form citation.
+    The excerpt is "" when none is quoted; for a decisions.md citation
+    only a quote OPENING the citation counts, since a pointer there may
+    paraphrase and a later quote in the block is someone else's."""
     found = []
-    for d in SWEEP_DIRS:
-        for path in sorted((REPO / d).rglob("*.py")):
-            lines = path.read_text(encoding="utf-8").splitlines()
-            for i, line in enumerate(lines):
-                m = _CITE_RE.search(line)
-                if not m:
-                    continue
-                block = [m.group("first")]
-                for cont in lines[i + 1:]:
-                    cs = cont.strip()
-                    if cs.startswith("#") and not _CITE_RE.search(cont):
-                        block.append(cs.lstrip("# "))
-                    else:
-                        break
-                qm = _EXCERPT_RE.search(" ".join(block))
-                found.append((path, i + 1, m.group("cid"),
-                              _norm(qm.group(1)) if qm else ""))
+    for path in _swept_files():
+        lines = path.read_text(encoding="utf-8").splitlines()
+        for i, line in enumerate(lines):
+            m = _CITE_RE.search(line)
+            if not m:
+                continue
+            block = [m.group("first")]
+            for cont in lines[i + 1:]:
+                cs = cont.strip()
+                if cs.startswith("#") and not _CITE_RE.search(cont):
+                    block.append(cs.lstrip("# "))
+                else:
+                    break
+            joined = " ".join(block)
+            if m.group("doc") == "decisions":
+                qm = re.match(r'\s*"(.*?)"', joined)
+            else:
+                qm = _EXCERPT_RE.search(joined)
+            found.append((path, i + 1, m.group("doc"), m.group("cid"),
+                          _norm(qm.group(1)) if qm else ""))
     return found
 
 
 def test_citations_are_verbatim_excerpts() -> None:
     statements = _statements()
+    entries = _decision_entries()
     problems = []
-    for path, lineno, cid, excerpt in _citations():
-        if cid not in statements:
+    for path, lineno, doc, cid, excerpt in _citations():
+        if doc == "decisions":
+            if cid not in entries:
+                problems.append(f"{path}:{lineno}: cites unknown entry {cid}")
+            elif excerpt and not _is_excerpt(excerpt, entries[cid]):
+                problems.append(
+                    f"{path}:{lineno}: not a verbatim excerpt of "
+                    f"decisions.md#{cid}")
+        elif cid not in statements:
             problems.append(f"{path}:{lineno}: cites unknown ID {cid}")
         elif not excerpt:
             problems.append(
                 f"{path}:{lineno}: citation of {cid} has no quoted excerpt")
-        elif excerpt not in statements[cid]:
+        elif not _is_excerpt(excerpt, statements[cid]):
             problems.append(
                 f"{path}:{lineno}: not a verbatim excerpt of {cid}")
     assert not problems, "\n".join(problems)
 
 
+def test_the_sweep_reaches_the_ledger_comments() -> None:
+    # The ledger half of the sweep is decided by a glob; were it to
+    # match nothing, the excerpt test above would pass on code alone.
+    ledgers = {p.name for p, *_ in _citations() if p.suffix == ".toml"}
+    assert {"expected_since_1.4.0.toml",
+            "expected_since_2.3.0.toml"} <= ledgers
+
+
+def test_an_elided_excerpt_must_keep_its_order() -> None:
+    assert _is_excerpt("a b [...] d", "a b c d")
+    assert not _is_excerpt("d [...] a b", "a b c d")
+
+
 def test_implemented_matches_citing_modules() -> None:
     citing: dict[str, set[str]] = {}
-    for path, _lineno, cid, _x in _citations():
+    for path, _lineno, doc, cid, _x in _citations():
+        if doc == "decisions" or path.suffix != ".py":
+            continue
         citing.setdefault(cid, set()).add(str(path.relative_to(REPO)))
     problems = []
     for rule in parse_rules_doc(RULES_DOC.read_text(encoding="utf-8")):

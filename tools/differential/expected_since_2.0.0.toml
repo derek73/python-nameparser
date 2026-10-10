@@ -142,10 +142,14 @@ fields = ["_ambiguities"]
 
 [[change]]
 issue = "feat(#449) an interpunct transcription declines the script order, so the convention decides it"
-# '王·Smith'. rules.md#T3: the 間隔号 marks a transcription and
-# suppresses the script_orders lookup whole, so name_order governs and
-# the one remaining name word is O5's. Literal-anchored, one corpus
-# name.
+# '王·Smith'. rules.md#T3: "The interpunct divides a name only between
+# two characters of a classified East Asian script; anywhere else it is
+# part of the word" -- 'Smith' is Latin, so the name is one word, and
+# '王Smith' reads the same. rules.md#W4: "A name written wholly in one
+# East Asian script, or in the kana-licensed Japanese repertoire, reads
+# family-first whatever order the caller declared" -- a word mixing Han
+# and Latin is neither, so no script order applies, name_order governs
+# and the one name word is O5's. Literal-anchored, one corpus name.
 name_regex = "^王·Smith$"
 fields = ["_ambiguities"]
 
@@ -2598,8 +2602,10 @@ orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#562) a comma credential run holding a particle chain reads by the name-word count"
-# rules.md#C1: "The part is read as its words stand, before any join"
-# (#613, 2026-10-06): no particle chain reaches it, so each member's
+# rules.md#C1: "A part read as postnominal [...] is read as its words
+# stand, before any join, and that reading is final: [...] no particle
+# run, connective join or bound given name reaches into it" (#613,
+# 2026-10-06): no particle chain reaches it, so each member's
 # capitals settle it and the run reads whole as the credential run --
 # silently since #613, where #562 (2026-10-01) had read the pair by the
 # count and reported the flip. The family-comma path had read the part as name text:
@@ -4019,10 +4025,13 @@ fields = ["_ambiguities", "suffix", "title"]
 [[change]]
 # rules.md#S2: "The run at a name's trailing slot is read ONCE, once
 # the connectives have joined (P3) and before the particle chain (P2)
-# and the bound given-name join (P5) are made" (#614, 2026-10-07), and
-# rules.md#H5: "a particle chain (P2) stops in front of a trailing
-# title rather than taking it into the family name". This baseline
-# made the chain first and the title was a word of the family name.
+# and the bound given-name join (P5) are made" and "neither join
+# reaches a word the run took" (#614, 2026-10-07), and rules.md#H5:
+# "successive single words that wear the abbreviation shape and are
+# title vocabulary chain into the title from the end" -- so the chain
+# stops in front of 'Prof.' rather than taking it into the family name.
+# This baseline made the chain first and the title was a word of the
+# family name.
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]

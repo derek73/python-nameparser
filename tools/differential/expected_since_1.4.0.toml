@@ -2994,8 +2994,11 @@ issue = "fix(suffix-routing) a two-token name ending in a credential acronym kee
 # positional reading and are not tracked as deviations." 'Donald mc'
 # has no comma, so P6 never reaches it.
 #
-# What stands instead is rules.md#S2: "an unambiguous suffix is
-# consumed even when that leaves no family name at all". That is the
+# What stands instead is rules.md#S2: "A trailing word of the suffix
+# vocabulary reads as a suffix — generational forms and credential
+# acronyms alike", the words-to-spare count being kept for "A BARE
+# ambiguous acronym" alone, so an unambiguous one is consumed even when
+# that leaves no family name at all (S2's Accepted clause). That is the
 # authority here, and NOT P6's scope note, which does not support it:
 # P6 promises the comma-less shapes keep their POSITIONAL reading, and
 # for the words that are both particle and suffix vocabulary it does
@@ -4907,10 +4910,13 @@ fields = ["title", "given"]
 [[change]]
 # rules.md#S2: "The run at a name's trailing slot is read ONCE, once
 # the connectives have joined (P3) and before the particle chain (P2)
-# and the bound given-name join (P5) are made" (#614, 2026-10-07), and
-# rules.md#H5: "a particle chain (P2) stops in front of a trailing
-# title rather than taking it into the family name". This baseline
-# made the chain first and the title was a word of the family name.
+# and the bound given-name join (P5) are made" and "neither join
+# reaches a word the run took" (#614, 2026-10-07), and rules.md#H5:
+# "successive single words that wear the abbreviation shape and are
+# title vocabulary chain into the title from the end" -- so the chain
+# stops in front of 'Prof.' rather than taking it into the family name.
+# This baseline made the chain first and the title was a word of the
+# family name.
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]
