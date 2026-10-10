@@ -4,10 +4,14 @@ Checks: every reference to a design doc, in code and in the
 differential ledgers' comments, names a rule, section, mechanism or
 decisions entry that exists; every quote a citation carries -- in any
 of the shapes _LEAD_RE accepts, chained quotes included -- is a
-whitespace-normalized verbatim excerpt of what it cites ("[...]"
-eliding, in order): a rule's statement and Accepted: clauses, a
-section's Background, a mechanism's Contract statement, a decisions
-entry's text;
+normalized verbatim excerpt of what it cites ("[...]" eliding, in
+order): a rule's statement and Accepted: clauses, a section's
+Background, a mechanism's Contract statement, a decisions entry's
+text. Normalized means whitespace, case, "--" for the em dash and '
+for a nested ", so emphasis in capitals is not checked. A quote
+standing more than four words from its ID and chained to nothing is
+prose to this module and is NOT checked: the reader cannot tell it
+from a name written in double quotes, which is the common case;
 ``implemented:`` lists match the set of modules actually citing the
 rule; ``interacts:`` IDs exist (existence only -- the field is
 advisory). The legacy-pattern check (armed) keeps gitignored-spec
@@ -38,7 +42,8 @@ _MENTION_RE = re.compile(
 # A reference is a CITATION when a quote follows it in one of the
 # shapes the tree writes: the colon form (`rules.md#S2: "..."`, where
 # prose may stand before the quote), or the ID, an optional "'s", up
-# to four words and a dash, colon, comma or parenthesis, then the
+# to four words and optionally a dash, colon, comma or parenthesis,
+# then the
 # quote (`rules.md#P5 -- "..."`, `rules.md#M2's Accepted clause
 # ("...")`, `rules.md#S2 consumes "..."`, `rules.md#M2 -- the
 # numeral is taken "..."`). Any other reference is a
@@ -69,11 +74,14 @@ class Citation(NamedTuple):
     cid: str
     excerpts: tuple[str, ...]   # normalized; () for a pointer
     colon: bool                 # written in the colon form
+    lead: str                   # the text between the ID and its quote
 
 
 def _norm(s: str) -> str:
-    # "--" is how an ASCII comment spells the em dash the docs use, and
-    # a quote nested in a quoted excerpt can only be written single
+    # Case folds because a quote routinely lowercases the first letter
+    # of the sentence it lifts; "--" is how an ASCII comment spells the
+    # em dash the docs use, and a quote nested in a quoted excerpt can
+    # only be written single
     s = s.replace(" -- ", " — ").replace('"', "'")
     return " ".join(s.split()).lower()
 
@@ -86,23 +94,37 @@ def _statements() -> dict[str, str]:
     a mechanism, its Contract statement."""
     out: dict[str, list[str]] = {}
     current: list[str] | None = None
+    background: list[str] | None = None
     section = None
+    marker = False          # inside a wrapped no-boundary: marker
     for line in RULES_DOC.read_text(encoding="utf-8").splitlines():
         m = _RULE_RE.match(line)
         hm = re.match(r"## .*\(([A-Z])\)\s*$", line)
+        if background is not None:
+            if line.strip():
+                background.append(line)
+                continue
+            background = None
         if hm:
             section = hm.group(1)
         elif section and line.startswith("Background:"):
-            out[section] = [line]
+            background = out[section] = [line]
             section = None
+            continue
+        if re.match(r"\s*(no-boundary|tolerated):", line):
+            marker = True
+            continue
+        if marker and (_POINTER_RE.match(line) or not line.strip()
+                       or line.startswith("      ") or m):
+            marker = False
         if m:
             current = out.setdefault(m.group(1) + m.group(2), [])
             current.append(line[m.end():])
         elif line.startswith("#"):
             current = None
         elif current is not None and line.startswith("    ") and not (
-                line.startswith("      ") or _POINTER_RE.match(line)
-                or re.match(r"\s*(no-boundary|tolerated):", line)):
+                marker or line.startswith("      ")
+                or _POINTER_RE.match(line)):
             current.append(line)
     stmts = {rid: _norm(" ".join(body)) for rid, body in out.items()}
     mech = MECH_DOC.read_text(encoding="utf-8")
@@ -199,12 +221,12 @@ def _citations() -> list[Citation]:
                 if colon and doc != "decisions":
                     # the colon form's quote may follow a paraphrase
                     q = text.find('"')
-                    excerpts = _quotes(text, q) if q >= 0 else ()
                 else:
                     lm = _LEAD_RE.match(text)
-                    excerpts = _quotes(text, lm.end()) if lm else ()
-                found.append(Citation(path, i + 1, doc, cid,
-                                      excerpts, colon))
+                    q = lm.end() if lm else -1
+                excerpts = _quotes(text, q) if q >= 0 else ()
+                found.append(Citation(path, i + 1, doc, cid, excerpts,
+                                      colon, text[:q] if excerpts else ""))
     return found
 
 
@@ -238,7 +260,11 @@ def test_the_sweep_reaches_every_citation_shape() -> None:
                and c.path.suffix == ".toml"}
     assert {"expected_since_1.4.0.toml",
             "expected_since_2.3.0.toml"} <= ledgers
-    assert any(c.excerpts and not c.colon for c in cites)
+    leads = [c.lead for c in cites if c.excerpts and not c.colon]
+    assert any(ld.startswith("'s") for ld in leads)
+    assert any("(" in ld for ld in leads)
+    assert any(ld.strip().startswith("--") for ld in leads)
+    assert any(re.fullmatch(r"(?:\s+[A-Za-z]+)+\s*", ld) for ld in leads)
     assert any(c.excerpts and c.doc == "decisions" for c in cites)
     assert any(len(c.excerpts) > 1 for c in cites)
     assert any(_ELISION in e for c in cites for e in c.excerpts)
@@ -251,27 +277,41 @@ def test_an_elided_excerpt_must_keep_its_order() -> None:
     assert not _is_excerpt("a [...]", "a b c d")
 
 
-# The recorded negative control: excerpts this module once let through
-# (#632), each still false against the text the check reads.
+def test_the_quotable_text_is_the_prose_and_only_the_prose() -> None:
+    stmts = _statements()
+    # an Accepted: clause, and a Background's wrapped lines, are quotable
+    assert _is_excerpt(_norm("an unambiguous suffix is consumed even "
+                             "when that leaves no family name at all"),
+                       stmts["S2"])
+    assert _is_excerpt(_norm("another's opener"), stmts["N"])
+    # an example line, and a wrapped no-boundary: marker, are not
+    assert not _is_excerpt(_norm("Smith Jr."), stmts["S2"])
+    assert not _is_excerpt(_norm("its boundaries are the other rules"),
+                           stmts["O4"])
+
+
+# The recorded negative control: excerpts that stood stale in the tree
+# until #632, each still false against the text the check reads. They
+# guard the QUOTABLE TEXT -- an Accepted clause or a fold loosening the
+# match far enough to let one back in. The scanner's reach is the reach
+# test's to guard.
 _RETIRED_EXCERPTS = (
-    ("rules", "P5", "a trailing roman numeral that assign reads as the "
-                    "suffix (S2) is no word to spare, and is not joined"),
-    ("rules", "M2", "a bare acronym the reading declines is maiden text "
-                    "all the same"),
-    ("rules", "S2", "A suffix never BEGINS a name: position outranks "
-                    "the vocabulary match"),
-    ("rules", "C1", "The part is read as its words stand, before any "
-                    "join"),
-    ("rules", "A1", "a kind is worth adding only if a reader would "
-                    "hesitate too"),
-    # a decisions.md quote checked against the rule of the same ID
-    ("rules", "P6", "the COMMA form only, deliberately."),
+    ("P5", "a trailing roman numeral that assign reads as the "
+            "suffix (S2) is no word to spare, and is not joined"),
+    ("M2", "a bare acronym the reading declines is maiden text "
+            "all the same"),
+    ("S2", "A suffix never BEGINS a name: position outranks "
+            "the vocabulary match"),
+    ("C1", "The part is read as its words stand, before any "
+            "join"),
+    ("A1", "a kind is worth adding only if a reader would "
+            "hesitate too"),
 )
 
 
 def test_retired_excerpts_stay_rejected() -> None:
     statements = _statements()
-    for _doc, cid, old in _RETIRED_EXCERPTS:
+    for cid, old in _RETIRED_EXCERPTS:
         assert not _is_excerpt(_norm(old), statements[cid]), (cid, old)
 
 

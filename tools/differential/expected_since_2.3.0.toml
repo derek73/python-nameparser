@@ -377,25 +377,25 @@ issue = "fix(#563) paired initials after a comma read as the given name unless a
 # two words before the comma may be one surname ('García Márquez,
 # G.J.'), so two dotted single letters alone after it stay the given
 # name and report the fork, where #516 had read them as a credential.
-# "Only a credential in front of them, or another word the class
-# admits by its dotted shape standing in the same part, makes them the
-# credential run": 'John Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.'
-# move to the run, while 'De La Cruz, M.J. PhD' keeps its initials,
-# the degree standing behind them, and so does 'García Márquez, Ms
-# G.J.', a title in front ("a suffix word in front of them that is
-# not also title vocabulary"), which moves nothing at any baseline.
-# The second period is optional ('García Márquez, G.J'). Two pairs
-# speaking only for each other make the run and report it behind two
-# name words ('John Smith, X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz,
-# M.J. K.L.' is no longer that case -- 'De La Cruz' is one name word,
-# so the count no longer reaches it and it reads as 'Cruz, M.J. K.L.'
-# does, given 'M.J.', suffix 'K.L.', reporting both; a listed member
-# in front speaks for nothing
-# ('García Márquez, Ed G.J.' keeps the family comma, and the fix(#531)
-# rule claims what its given part's trailing slot then reads). Against a 2.x baseline the names
-# whose roles match the baseline's move only the report, which a
-# 1.4.0 comparison cannot see; that ledger lists the three role movers
-# alone.
+# "Only an unambiguous suffix word in front of them that is not also
+# title vocabulary, or another word the class admits by its dotted shape
+# standing in the same part, makes them the credential run": 'John
+# Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.' move to the run, while
+# 'De La Cruz, M.J. PhD' keeps its initials, the degree standing behind
+# them, and so does 'García Márquez, Ms G.J.', a title in front ("an
+# unambiguous suffix word in front of them that is not also title
+# vocabulary"), which moves nothing at any baseline. The second period
+# is optional ('García Márquez, G.J'). Two pairs speaking only for each
+# other make the run and report it behind two name words ('John Smith,
+# X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz, M.J. K.L.' is no longer
+# that case -- 'De La Cruz' is one name word, so the count no longer
+# reaches it and it reads as 'Cruz, M.J. K.L.' does, given 'M.J.',
+# suffix 'K.L.', reporting both; a listed member in front speaks for
+# nothing ('García Márquez, Ed G.J.' keeps the family comma, and the
+# fix(#531) rule claims what its given part's trailing slot then reads).
+# Against a 2.x baseline the names whose roles match the baseline's move
+# only the report, which a 1.4.0 comparison cannot see; that ledger
+# lists the three role movers alone.
 name_regex = "^(?:De La Cruz, M\\.J\\. K\\.L\\.|De La Cruz, M\\.J\\. PhD|García Márquez, G\\.J|García Márquez, G\\.J\\.|García Márquez, PhD G\\.J\\.|John Smith, A\\.B\\.|John Smith, A\\.B\\. Ph\\.D\\.|John Smith, PhD X\\.Y\\.|John Smith, X\\.Y\\. P\\.Q\\.)$"
 fields = ["family", "given", "middle", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]

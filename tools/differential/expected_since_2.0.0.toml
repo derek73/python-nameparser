@@ -826,19 +826,20 @@ fields = ["given", "middle", "suffix"]
 
 [[change]]
 issue = "fix(#425/#436/#437) the bound-given reserve runs assign's peel over the joined view"
-# 'abdul Smith Jr Ma', 'abdul Smith Ma': rules.md#P5 -- "the trailing
+# 'abdul Smith Jr Ma', 'abdul Smith Ma': P5 as it landed tried the join
+# on the pieces as it would leave them and read the trailing peel over
+# that, a word the peel read as a suffix unjoined having to read so
+# joined. Since #614 rules.md#P5 reads the run first -- "the trailing
 # suffix run (S2) and the trailing title run (H5), each read over what
 # the other leaves until neither takes anything more, are read once,
-# before the join is tried, and the name words they leave are the words
-# to spare" and "The join joins two name words into one and, read after
-# the trailing run, changes no suffix reading" -- since #614 the run is
-# read ahead of the join rather than over the joined view this rule's
-# issue names. given 'abdul Smith', family '' -> given 'abdul', family
-# 'Smith' (the acronym and the suffix peel as they do for 'John Smith Jr
-# Ma'); given 'abdul Smith', family 'Ma' -> given 'abdul', family
-# 'Smith', suffix 'Ma' (the join would have turned a credential into the
-# family). Both 1.4.0 parity, so the 1.4.0 ledger has no twin. Rules.md
-# examples; no differential corpus name has either shape.
+# before the join is tried" -- and the #289 note below records how
+# 'abdul Smith Ma' has read since 2026-09-18. given 'abdul Smith',
+# family '' -> given 'abdul', family 'Smith' (the acronym and the suffix
+# peel as they do for 'John Smith Jr Ma'); given 'abdul Smith', family
+# 'Ma' -> given 'abdul', family 'Smith', suffix 'Ma' (the join would
+# have turned a credential into the family). Both 1.4.0 parity, so the
+# 1.4.0 ledger has no twin. Rules.md examples; no differential corpus
+# name has either shape.
 #
 # 2026-09-18 (#289): the sentence above -- "Both 1.4.0 parity, so the
 # 1.4.0 ledger has no twin" -- stops being true, and this rule's own
@@ -1650,10 +1651,10 @@ fields = ["given", "family", "nickname", "maiden"]
 [[change]]
 issue = "fix(#335) a marker-led clause leaves the one name word its bare reading"
 # 'Smith (née Jones)', which rules.md#N3 carries as an Accepted line.
-# N3 reads a name that is only a nickname plus one name word as "that
-# word is the family name", and a marker-led clause is not a nickname
-# clause, so N3 no longer reaches this shape: the word keeps the
-# reading the bare "Smith née Jones" gives it -- `given` when this
+# rules.md#N3: "A name that is only a nickname and one name word reads
+# that word as the family name", and a marker-led clause is not a
+# nickname clause, so N3 no longer reaches this shape: the word keeps
+# the reading the bare "Smith née Jones" gives it -- `given` when this
 # rule was written, and `family` since #445 gave the bare spelling
 # the same reading from the other side.
 #
@@ -2632,25 +2633,25 @@ issue = "fix(#563) paired initials after a comma read as the given name unless a
 # two words before the comma may be one surname ('García Márquez,
 # G.J.'), so two dotted single letters alone after it stay the given
 # name and report the fork, where #516 had read them as a credential.
-# "Only a credential in front of them, or another word the class
-# admits by its dotted shape standing in the same part, makes them the
-# credential run": 'John Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.'
-# move to the run, while 'De La Cruz, M.J. PhD' keeps its initials,
-# the degree standing behind them, and so does 'García Márquez, Ms
-# G.J.', a title in front ("a suffix word in front of them that is
-# not also title vocabulary"), which moves nothing at any baseline.
-# The second period is optional ('García Márquez, G.J'). Two pairs
-# speaking only for each other make the run and report it behind two
-# name words ('John Smith, X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz,
-# M.J. K.L.' is no longer that case -- 'De La Cruz' is one name word,
-# so the count no longer reaches it and it reads as 'Cruz, M.J. K.L.'
-# does, given 'M.J.', suffix 'K.L.', reporting both; a listed member
-# in front speaks for nothing
-# ('García Márquez, Ed G.J.' keeps the family comma, and the fix(#531)
-# rule claims what its given part's trailing slot then reads). Against a 2.x baseline the names
-# whose roles match the baseline's move only the report, which a
-# 1.4.0 comparison cannot see; that ledger lists the three role movers
-# alone.
+# "Only an unambiguous suffix word in front of them that is not also
+# title vocabulary, or another word the class admits by its dotted shape
+# standing in the same part, makes them the credential run": 'John
+# Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.' move to the run, while
+# 'De La Cruz, M.J. PhD' keeps its initials, the degree standing behind
+# them, and so does 'García Márquez, Ms G.J.', a title in front ("an
+# unambiguous suffix word in front of them that is not also title
+# vocabulary"), which moves nothing at any baseline. The second period
+# is optional ('García Márquez, G.J'). Two pairs speaking only for each
+# other make the run and report it behind two name words ('John Smith,
+# X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz, M.J. K.L.' is no longer
+# that case -- 'De La Cruz' is one name word, so the count no longer
+# reaches it and it reads as 'Cruz, M.J. K.L.' does, given 'M.J.',
+# suffix 'K.L.', reporting both; a listed member in front speaks for
+# nothing ('García Márquez, Ed G.J.' keeps the family comma, and the
+# fix(#531) rule claims what its given part's trailing slot then reads).
+# Against a 2.x baseline the names whose roles match the baseline's move
+# only the report, which a 1.4.0 comparison cannot see; that ledger
+# lists the three role movers alone.
 name_regex = "^(?:De La Cruz, M\\.J\\. K\\.L\\.|De La Cruz, M\\.J\\. PhD|García Márquez, G\\.J|García Márquez, G\\.J\\.|García Márquez, PhD G\\.J\\.|John Smith, A\\.B\\.|John Smith, A\\.B\\. Ph\\.D\\.|John Smith, PhD X\\.Y\\.|John Smith, X\\.Y\\. P\\.Q\\.)$"
 fields = ["family", "given", "middle", "suffix", "title", "_ambiguities"]
 orders = ["DEFAULT"]
