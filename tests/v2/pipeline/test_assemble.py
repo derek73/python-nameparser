@@ -250,3 +250,24 @@ def test_a_field_tail_report_names_its_first_referent_s_field() -> None:
         PendingAmbiguity(AmbiguityKind.TITLE_OR_NAME, "read as ", (0, 1),
                          field_tail=""))
     assert [a.detail for a in pn.ambiguities] == ["read as a family name"]
+
+
+def test_a_fields_tail_report_names_every_field_in_canonical_order() -> None:
+    # #629: a report on a run whose words land in more than one field
+    # names each field once, by role name, in canonical order however
+    # the referents are ordered, and in an emptied name it goes like a
+    # field_tail report.
+    tokens = (WorkToken("Jr.", Span(0, 3), role=Role.SUFFIX),
+              WorkToken("Dr.", Span(4, 7), role=Role.TITLE),
+              WorkToken("Bart", Span(8, 12), role=Role.SUFFIX))
+    pn = _with_reports(
+        "Jr. Dr. Bart", tokens,
+        PendingAmbiguity(AmbiguityKind.COMMA_STRUCTURE, "consumed as ",
+                         (0, 1, 2), fields_tail=" best-effort"))
+    assert [a.detail for a in pn.ambiguities] == [
+        "consumed as title and suffix best-effort"]
+    pn = _with_reports(
+        "-", (WorkToken("-", Span(0, 1), role=Role.SUFFIX),),
+        PendingAmbiguity(AmbiguityKind.COMMA_STRUCTURE, "consumed as ",
+                         (0,), fields_tail=" best-effort"))
+    assert not pn.ambiguities

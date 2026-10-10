@@ -1,4 +1,6 @@
 from nameparser._lexicon import Lexicon
+from nameparser._pipeline import run
+from nameparser._pipeline._assemble import assemble
 from nameparser._pipeline._extract import extract_delimited
 from nameparser._pipeline._segment import segment
 from nameparser._pipeline._state import ParseState, Structure
@@ -47,6 +49,32 @@ def test_excess_non_suffix_segment_flags_comma_structure() -> None:
     assert out.structure is Structure.FAMILY_COMMA
     kinds = [a.kind for a in out.ambiguities]
     assert AmbiguityKind.COMMA_STRUCTURE in kinds
+
+
+def test_the_comma_structure_report_names_the_fields_its_part_lands_in() -> None:
+    # #629: a title word past the second comma reads as a title
+    # (rules.md#C2, #603), so the part lands in two fields and the
+    # report names what each word landed in, worded at assemble from
+    # the final roles. A part that lands wholly in suffix keeps the
+    # wording every release through 2.3.0 gave it.
+    lex = _LEX.add(titles={"dr", "secretary", "state"}, conjunctions={"of"})
+
+    def detail(text: str) -> str:
+        [report] = [a for a in assemble(run(ParseState(
+            original=text, lexicon=lex, policy=Policy()))).ambiguities
+            if a.kind is AmbiguityKind.COMMA_STRUCTURE]
+        return report.detail
+
+    assert detail("John Smith, Jr., Dr. Bart") == (
+        "segment 'Dr. Bart' beyond the recognized comma structures; "
+        "consumed as title and suffix best-effort")
+    assert detail("John Smith, Jr., Bart") == (
+        "segment 'Bart' beyond the recognized comma structures; "
+        "consumed as suffix best-effort")
+    # C2: a part a connective joins into one title keeps the flag
+    assert detail("John Smith, Jr., Secretary of State") == (
+        "segment 'Secretary of State' beyond the recognized comma "
+        "structures; consumed as title best-effort")
 
 
 def test_empty_input_yields_no_segments() -> None:
