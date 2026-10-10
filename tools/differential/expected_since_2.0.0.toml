@@ -3905,7 +3905,8 @@ name_regex = "^(?:Eric H\\. Holder Jr\\. Attorney General|Jane van der Berg née
 fields = ["_ambiguities", "family", "middle", "suffix", "title"]
 
 [[change]]
-# rules.md#S2: "leaving it nothing to join: then it is the surname"
+# rules.md#S2: "leaving it nothing to join: then it counts as a name
+# word of its own"
 # (#627, 2026-10-10): a lone particle with the credential right behind
 # it counts toward the run's two name words, so it is the family and
 # the run takes the rest.
