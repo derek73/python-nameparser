@@ -4318,8 +4318,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-02, #573: 124 -> 125, 'SMITH, VD DE LA MA' -- a
         # particle chain, 'VD DE LA'. Reach, verified name by name.
         # 2026-10-04, #601/#602: 125 -> 123; the rules.md#M2 examples #601 retired left the corpus, and the names #601 moved left this rule's regex.
+        # 2026-10-10, #627: 123 -> 124, 'John von PhD Jones', the
+        # rules.md#S2 example #627 added -- a lone particle inside the
+        # name. Reach: its roles move, so `_initials` is not compared.
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(123, ('_initials',), "d69d11083dba", ('DEFAULT',)),
+            _Claim(124, ('_initials',), "6f236ee476e9", ('DEFAULT',)),
         # 2026-09-23, #459: 18 -> 19, 'john smith ph. d.', rules.md#R4's
         # two-token line. Reach, verified name by name.
         # 2026-10-04, #603: 19 -> 20; the rules.md#C1 and #C2 examples #603 added entered the corpus.
@@ -4614,6 +4617,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "aaf53040b071", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":
             _Claim(5, ('family', 'middle', 'suffix', 'title'), "3129cd9609b9", None),
+        "fix(#627) a lone particle with the run right behind it is the surname":
+            _Claim(1, ('family', 'middle', 'suffix'), "33096566ba7f", None),
         "fix(#274/#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('family', 'maiden', 'middle', 'suffix'), "acdcc81cb17c", None),
         # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
@@ -5377,6 +5382,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('_ambiguities', 'family', 'given', 'maiden', 'suffix', 'title'), "7d2d5efa8eb5", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":
             _Claim(5, ('_ambiguities', 'family', 'middle', 'suffix', 'title'), "3129cd9609b9", None),
+        "fix(#627) a lone particle with the run right behind it is the surname":
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "33096566ba7f", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         "fix(#601) a marker behind a connective joins the connective run, and the run's initials follow":
@@ -5854,6 +5861,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":
             _Claim(5, ('_ambiguities', 'family', 'middle', 'suffix', 'title'), "3129cd9609b9", None),
+        "fix(#627) a lone particle with the run right behind it is the surname":
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "33096566ba7f", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
@@ -6564,6 +6573,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(5, ('_ambiguities', 'family', 'given', 'maiden', 'suffix', 'title'), "7d2d5efa8eb5", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":
             _Claim(5, ('_ambiguities', 'family', 'middle', 'suffix', 'title'), "3129cd9609b9", None),
+        "fix(#627) a lone particle with the run right behind it is the surname":
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "33096566ba7f", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         "fix(#601) a marker behind a connective joins the connective run, and the run's initials follow":
@@ -6894,6 +6905,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'maiden', 'middle', 'suffix'), "aaf53040b071", None),
         "fix(#602) a credential after the name core starts a run to the end of its part":
             _Claim(4, ('_ambiguities', 'family', 'middle', 'suffix', 'title'), "e638a392a3a4", None),
+        "fix(#627) a lone particle with the run right behind it is the surname":
+            _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "33096566ba7f", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the

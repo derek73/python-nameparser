@@ -1189,7 +1189,8 @@ def run_start(rest: Sequence[int], names: int,
     first credential that starts one (`starts_a_credential_run`) with
     two name pieces in front of it, or `names` where none does -- with
     no comma the family has to exist first. A lone particle does not
-    count toward the two, 'de Mesnil' being one surname. The position
+    count toward the two, 'de Mesnil' being one surname, unless the
+    run starts right behind it (#627). The position
     alone, for readers that need only where the name ends
     (`trailing_start`); `credential_run` builds the rest of the answer.
 
@@ -1209,21 +1210,25 @@ def run_start(rest: Sequence[int], names: int,
     if names < 3:
         return names
     core = 0
+    lone = False
     for p in range(names):
         q = rest[p]
         tags = tokens[pieces[q][0]].tags
-        if (core >= 2 and "vocab:suffix" in tags
+        if (core + lone >= 2 and "vocab:suffix" in tags
                 and tags.isdisjoint(_NOT_A_RUN_START)
                 and starts_a_credential_run(pieces[q], ptags[q], tokens)):
             return p
         # a lone particle is not yet a name: 'de Mesnil' is one surname
         # -- unless it opens a chain run, which is then the surname
-        # (with no `units` every piece opens its own)
-        if (units is None or units[q] == OPENS) and not (
-                len(pieces[q]) == 1 and "particle" in tags
-                and (units is None or q + 1 == len(units)
-                     or units[q + 1] == OPENS)):
-            core += 1
+        # (with no `units` every piece opens its own), or the run
+        # starts right behind it, leaving it nothing to join: then it
+        # counts as a name word of its own, as 'van der' and 'von und
+        # zu' do (#627, 'John von PhD Jones')
+        if units is None or units[q] == OPENS:
+            lone = (len(pieces[q]) == 1 and "particle" in tags
+                    and (units is None or q + 1 == len(units)
+                         or units[q + 1] == OPENS))
+            core += not lone
     return names
 
 

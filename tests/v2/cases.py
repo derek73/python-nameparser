@@ -9998,6 +9998,29 @@ CASES: tuple[Case, ...] = (
                "joining the two after the particle, and the leading "
                "'van' is a lone particle: one name word before 'Jr.', "
                "so #602's run does not start (#620)"),
+    Case("a_lone_particle_before_the_run_is_the_surname",
+         "John von PhD Jones",
+         {"given": "John", "family": "von", "suffix": "PhD Jones"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#627)",
+         notes="the credential stands right behind the lone particle, "
+               "leaving it nothing to join, so the particle is the "
+               "surname and counts toward #602's two name words, as "
+               "'van der' and 'von und zu' already did; the row above "
+               "is the contrast, a lone particle with a name word "
+               "behind it (1.4.0 and 2.3.0 middle 'von PhD')"),
+    Case("a_particle_run_before_the_run_stays_one_name_word",
+         "Freiherr von vd PhD Jones",
+         {"title": "Freiherr", "given": "von vd", "middle": "PhD",
+          "family": "Jones"},
+         ambiguities=("particle-or-given",),
+         classification="parity",
+         notes="the row above with a particle run: 'von vd' is one "
+               "name word, 'vd' a particle the run took, so only one "
+               "name word stands before 'PhD' and #602's run does not "
+               "start -- the lone-particle count is asked only of a "
+               "piece that opens a unit, not of 'vd' standing right "
+               "before the credential (#627's review)"),
     Case("a_dual_in_the_chain_stays_a_name_word_behind_a_title",
          "John van mc Prof.",
          {"title": "Prof.", "given": "John", "family": "van mc"},

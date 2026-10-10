@@ -1160,9 +1160,12 @@ S2. Rationale: generational suffixes and credentials are recognized
     lone member of the ambiguous class, which reads as the
     credential. A lone particle is
     not a name word for the count, 'de Mesnil' being one surname,
-    and a particle run with the words the chain joins to it is one
-    name word, 'der la' and 'la Smith Secretary' each counting once
-    (P2). A title word
+    unless the credential stands right behind it, leaving it nothing
+    to join: then it counts as a name word of its own ('John von PhD
+    Jones'). A
+    particle run with the words the chain joins to it is one name
+    word, 'der la' and 'la Smith Secretary' each counting once (P2).
+    A title word
     never starts the run, and neither does a member of the ambiguous
     class, a single letter, a connective, a word that is also
     particle or bound given-name vocabulary, or a non-Latin honorific
@@ -1250,6 +1253,8 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Eric H. Holder Jr. Attorney General"  →  title="Attorney General"
       "John Smith PhD Prof. Ma"   →  suffix="PhD Ma"
       "Smith, John PhD Jones"     →  suffix="PhD Jones"
+      "John von PhD Jones"        →  family="von"
+      "John von PhD Jones"        →  suffix="PhD Jones"
       "Smith, John PhD de Jr."    →  family="de Smith"  · boundary
       "Mary Jane King Smith"      →  family="Smith"
       "Josep Carod i Rovira"      →  family="Carod i Rovira"
