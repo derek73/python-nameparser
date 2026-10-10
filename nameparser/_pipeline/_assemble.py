@@ -2,8 +2,7 @@
 
 Consumes: tokens (all roles set), dropped, ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
-#626, and one carrying ``fields_tail`` from its words' final roles,
-#629).
+#626).
 Produces: a validated ParsedName -- the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
@@ -125,13 +124,6 @@ def assemble(state: ParseState) -> ParsedName:
                 continue
             detail = (f"{detail}{FIELD_READING[materialized[0].role]}"
                       f"{pending.field_tail}")
-        elif pending.fields_tail is not None:
-            if not materialized:
-                continue
-            held = {t.role for t in materialized}
-            detail = (f"{detail}"
-                      f"{' and '.join([r.value for r in Role if r in held])}"
-                      f"{pending.fields_tail}")
         ambiguities.append(Ambiguity(pending.kind, detail, materialized))
     return ParsedName(original=state.original,
                       tokens=tuple(final.values()),

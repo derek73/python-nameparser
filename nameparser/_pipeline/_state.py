@@ -141,14 +141,6 @@ class PendingAmbiguity:
     assemble tests ``is not None`` -- and assemble joins them around
     the FIELD_READING of the first referent's final role, the one
     place that knows it (#626). Until then ``detail`` is a fragment.
-
-    ``fields_tail`` is the same for a report on a run of words that
-    can land in more than one field: assemble names every field its
-    referents hold, as bare role names in canonical order joined by
-    "and" ("title and suffix"). Its one emitter is segment's report on
-    a part past the second comma, whose title words read as titles
-    and the rest as suffixes (rules.md#C2, #629). An emitter sets one
-    tail or neither.
     """
 
     kind: AmbiguityKind
@@ -156,7 +148,6 @@ class PendingAmbiguity:
     indices: tuple[int, ...] = ()
     origin: int | None = None
     field_tail: str | None = None
-    fields_tail: str | None = None
 
 
 #: How a report names the field a word was read into, by final role.

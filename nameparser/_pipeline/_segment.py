@@ -195,18 +195,15 @@ def segment(state: ParseState) -> ParseState:
         if (seg and not suffixy(seg) and not suffixy(seg, case_class())
                 and not class_run(seg) and not titles_and_suffixes(seg)):
             texts_joined = " ".join([state.tokens[i].text for i in seg])
-            # The part's words land in two fields since #603 -- a title
-            # word reads as a title, the rest as suffixes -- and which
-            # words read as titles is group's and assign's call, so
-            # the fields are worded at assemble from the final roles
-            # (`PendingAmbiguity.fields_tail`, #629): 'consumed as
-            # suffix' had told 'John Smith, Jr., Dr. Bart' its 'Dr.'
-            # was a suffix.
+            # Names no field: since #603 a title word in the part reads
+            # as a title, so 'consumed as suffix' had told
+            # 'John Smith, Jr., Dr. Bart' its 'Dr.' was a suffix, and
+            # the fields themselves say where each word went (#629).
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.COMMA_STRUCTURE,
                 f"segment {texts_joined!r} beyond the recognized comma "
-                f"structures; consumed as ",
-                tuple(seg), fields_tail=" best-effort"))
+                f"structures; read best-effort",
+                tuple(seg)))
     return copy_with(state, segments=tuple(groups),
                      structure=Structure.FAMILY_COMMA,
                      ambiguities=tuple(ambiguities),

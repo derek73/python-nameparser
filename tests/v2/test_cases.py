@@ -2,7 +2,6 @@
 runner (migration plan) consumes the same CASES."""
 import functools
 import re
-from collections.abc import Iterator
 from typing import Any
 
 import pytest
@@ -121,21 +120,6 @@ _FIELD_CLAIM = re.compile(
     r"\b(?:reads? as|joins) ("
     + "|".join(map(re.escape, sorted(_FIELD_CLAIMS, key=len, reverse=True)))
     + r")\b")
-#: segment's report on a part past the second comma names EVERY field
-#: the part's words land in, as role names ("consumed as title and
-#: suffix best-effort", #629), so it is checked for equality rather
-#: than inclusion: a named field nothing landed in is as wrong as a
-#: field left out.
-_FIELDS_CLAIM = re.compile(r"\bconsumed as ([a-z]+(?: and [a-z]+)*) best-effort")
-
-
-def _claims(detail: str) -> Iterator[tuple[str, frozenset[Role], bool]]:
-    """The field claims in a report's detail: the phrase, the fields
-    that make it true, and whether they must ALL be held."""
-    if m := _FIELD_CLAIM.search(detail):
-        yield m[0], _FIELD_CLAIMS[m[1]], False
-    if m := _FIELDS_CLAIM.search(detail):
-        yield m[0], frozenset(map(Role, m[1].split(" and "))), True
 
 
 @pytest.mark.parametrize("case,order", _SWEPT_ROWS, ids=_SWEPT_IDS)
@@ -169,23 +153,17 @@ def test_a_report_names_the_field_its_word_lands_in(
     and so not one `_FIELD_CLAIMS` lists, and `, Ma Dr.` (H1 moving it
     to the family) is pinned instead by test_assign.py's verbatim
     detail. No row reached that shape until #626's review.
-
-    Segment's report on a part past the second comma is read by
-    `_FIELDS_CLAIM` and checked for equality (#629). Its control,
-    measured 2026-10-10 over master's parser (bc243869) with this
-    test: 6 failures, the two rows holding a title past the second
-    comma (`John Smith, Jr., Freiherr von Richthofen` and `John
-    Smith, Jr., and Secretary of State`) under all three orders,
-    each told 'consumed as suffix'.
     """
     pn = _swept(case.id, order)
     for a in pn.ambiguities:
+        m = _FIELD_CLAIM.search(a.detail)
+        if m is None:
+            continue
         landed = {t.role for t in a.tokens}
-        for phrase, fields, every in _claims(a.detail):
-            assert landed == fields if every else landed <= fields, (
-                f"{case.text!r}: {a.kind.value} says {phrase!r} but its "
-                f"tokens landed in {sorted(r.value for r in landed)}: "
-                f"{a.detail!r}")
+        assert landed <= _FIELD_CLAIMS[m[1]], (
+            f"{case.text!r}: {a.kind.value} says {m[0]!r} but its "
+            f"tokens landed in {sorted(r.value for r in landed)}: "
+            f"{a.detail!r}")
 
 
 def test_the_field_sweep_sees_the_claims_it_checks() -> None:
@@ -194,12 +172,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     dropped -- so the count of claims it checks is recorded here.
     Move it deliberately when a row or a phrasing moves, never to 0."""
     claims = sum(
-        1 for case, order in _SWEPT_ROWS
-        for a in _swept(case.id, order).ambiguities
-        for _ in _claims(a.detail))
-    assert claims == 1180, (
-        f"the field sweep checks {claims} claims, recorded as 1180 on "
-        f"2026-10-10")
+        _FIELD_CLAIM.search(a.detail) is not None
+        for case, order in _SWEPT_ROWS
+        for a in _swept(case.id, order).ambiguities)
+    assert claims == 1155, (
+        f"the field sweep checks {claims} claims, recorded as 1155 on "
+        f"2026-10-08")
 
 
 #: Case.__post_init__'s shape checks, each probed for the message that

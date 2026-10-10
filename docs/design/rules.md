@@ -2431,8 +2431,7 @@ A1. Rationale: a caller can only act on doubt that is reported.
     connective-or-initial fork offered, and only that fork's report
     goes — the generation's own stands. And a report that names the
     field its word was read into names the field the word holds in
-    the result, whatever rule moved it after the report was made; a
-    report on words that land in more than one field names each.
+    the result, whatever rule moved it after the report was made.
       "Van Johnson"               →  ambiguities=("particle-or-given",)
       "JOHN QUINCY SMITH I"       →  ambiguities=("suffix-or-name",)
       "Jane „JD Smith"            →  ambiguities=("unbalanced-delimiter",)
