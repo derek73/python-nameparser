@@ -175,9 +175,9 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
         _FIELD_CLAIM.search(a.detail) is not None
         for case, order in _SWEPT_ROWS
         for a in _swept(case.id, order).ambiguities)
-    assert claims == 1155, (
-        f"the field sweep checks {claims} claims, recorded as 1155 on "
-        f"2026-10-08")
+    assert claims == 1158, (
+        f"the field sweep checks {claims} claims, recorded as 1158 on "
+        f"2026-10-10")
 
 
 #: Case.__post_init__'s shape checks, each probed for the message that
