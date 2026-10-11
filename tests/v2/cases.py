@@ -4984,6 +4984,33 @@ CASES: tuple[Case, ...] = (
                "then: the given part's own slot reads the chain too ('Doe, "
                "Jane MA Prof.' gives title and suffix). 2.3.0 read maiden "
                "'Smith MA Prof.'"),
+    Case("a_trailing_title_after_a_family_comma_stops_the_chain",
+         "Smith, John van der Berg Prof.",
+         {"title": "Prof.", "given": "John", "middle": "van der Berg",
+          "family": "Smith"},
+         classification="fix(#623)",
+         notes="the given part's particle chain stops in front of the "
+               "trailing run its walk reads, titles included (rules.md#H5, "
+               "#623), so the title is the title as in 'Smith, John "
+               "Prof.' and 'John van der Berg Prof.'; 1.4.0 and 2.3.0 "
+               "read middle 'van der Berg Prof.'"),
+    Case("a_particle_before_a_trailing_title_after_a_comma_attaches",
+         "Smith, Jan van Prof.",
+         {"title": "Prof.", "given": "Jan", "family": "van Smith"},
+         ambiguities=("particle-or-given",),
+         classification="fix(#623)",
+         notes="P6 reads the given part as though the trailing title "
+               "were absent, so 'van' attaches to the family as in "
+               "'Smith, Jan van' (rules.md#H5, #P6; #623); 1.4.0 and "
+               "2.3.0 read middle 'van Prof.'"),
+    Case("a_bare_title_word_after_a_comma_stays_in_the_chain",
+         "Smith, John van der Berg Prof",
+         {"given": "John", "middle": "van der Berg Prof",
+          "family": "Smith"},
+         classification="parity",
+         notes="the contrast to the row above: a bare title word ending "
+               "a name is a name word (rules.md#H5), so the chain takes "
+               "it (#623 moves only the period-marked spelling)"),
     Case("the_first_word_after_the_marker_stays_even_as_a_title",
          "Jane Doe nee King.",
          {"given": "Jane", "family": "Doe", "maiden": "King."},

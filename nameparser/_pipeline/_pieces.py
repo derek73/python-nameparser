@@ -1896,6 +1896,27 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
                     frozenset(run_titles), peel), start
 
 
+def trailing_run_start(start: int, pieces: Sequence[Sequence[int]],
+                       ptags: Sequence[Set[str]],
+                       tokens: Sequence[WorkToken],
+                       one_case: bool | None) -> int:
+    """Where the run `tail_reading` takes over `pieces[start:]` begins,
+    its trailing titles included: the first index of a piece the peel
+    or the H5 chain took, `len(pieces)` where they take none. The
+    bound for a reading that takes the trailing titles as well as the
+    suffixes, as assign's walk does in the given part after a family
+    comma (#623), where `trailing_start` sees only the suffixes and
+    `trailing_start_past_titles` leaves the titles inside the bound."""
+    rest, titled, peel = tail_reading(peel_walk(start, ptags), pieces,
+                                      ptags, tokens, one_case)
+    first = len(pieces)
+    for k in rest[peel.names:]:
+        first = min(first, k)
+    for k in titled:
+        first = min(first, k)
+    return first
+
+
 # rules.md#H5: "the title is TRANSPARENT to the suffix reading: where
 # two or more name words stand, what stands once the chain is taken
 # reads exactly as it would read written without the title, plus the
