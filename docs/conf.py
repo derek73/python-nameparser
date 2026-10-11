@@ -34,7 +34,14 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.viewcode',
+    'sphinx.ext.extlinks',
 ]
+
+# :issue:`575` renders as a "#575" link. GitHub redirects /issues/N to
+# /pull/N when N is a PR, so the one role serves both.
+extlinks = {
+    'issue': ('https://github.com/derek73/python-nameparser/issues/%s', '#%s'),
+}
 
 # Declaration order is canonical in this codebase (Role order drives the
 # seven-field order everywhere), so the reference lists members in
