@@ -41,7 +41,7 @@ You can also pass a name string to see how it will be parsed:
     ]>
     Initials: H. R.
 
-CI runs tests against Python 3.11–3.15 via GitHub Actions on every push and pull request.
+CI runs tests against every supported Python version (see the matrix in `.github/workflows/python-package.yml`) via GitHub Actions on every push and pull request.
 
 Writing Tests
 ----------------
