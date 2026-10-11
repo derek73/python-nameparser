@@ -2091,14 +2091,18 @@ C2. Rationale: text beyond the recognized comma parts should be
     reach here in any setting: the shape a tail segment is
     recognized by is the dotted one alone.
     A part the parse consumes wholly as suffixes raises no report
-    about reading a word of it as a name, whether it is the part
+    that a word of it was read as a name, whether it is the part
     after a suffix comma (C1) or a part beyond the second: nothing
     in it is read as one, a maiden marker there being an ordinary
     word (M2), and no particle chain (P2) is made in it, so a title
     word behind a particle run there is a title like any other, and
     the part reports neither a particle chained onto a name word nor
     an acronym taken into the name. What such a part reports is its
-    own — C1's flip and this rule's flag.
+    own — C1's report of the decision at its comma (the flip, or the
+    first word after the comma), S2's report on each word a credential
+    in front of it reads as a suffix although it may be a name word (a
+    name word the run absorbs, a member the company decides), and this
+    rule's flag.
       "John Smith, MD, Bart"      →  suffix="MD, Bart"
       "Eric H. Holder, Jr., Attorney General"  →  title="Attorney General"
       "Eric H. Holder, Jr., Attorney General"  →  ambiguities=()
