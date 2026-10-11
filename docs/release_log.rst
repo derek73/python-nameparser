@@ -88,6 +88,8 @@ Release Log
 
     **Additions**
 
+    - **Add Python 3.15 support.** Python 3.15 is now tested as a regular CI target and listed in the package classifiers. (closes #259)
+
     - **Add Lexicon.conjunctions_ambiguous, the one-letter connectives that read as initials.** A subset of ``conjunctions`` holding ``e`` and ``i`` by default; it is the knob for the change above rather than a switch. Portuguese data, where ``e`` links surnames the way ``y`` does in Spanish, takes it out: ``Lexicon.default().remove(conjunctions_ambiguous={"e"})`` restores the joining reading. Dutch data, where a bare single letter is an initial and never a connective, adds the other one: ``Lexicon.default().add(conjunctions_ambiguous={"y"})``. A v1 ``Constants`` has no manager of its own for it -- deleting the word from ``conjunctions`` is what turns the marking off, the same rule the glued-honorific tails follow. See ``docs/customize.rst`` (#383, #479)
 
     - **Add AmbiguityKind.CONJUNCTION_OR_INITIAL, reported when a one-letter connective in a name written wholly in one case is read as an initial:** ``parse("jose e maria santos").ambiguities`` and ``parse("JOSE E MARIA SANTOS").ambiguities`` both name it, and ``detail`` names the letter. That is the call the behavior change above had to make. A letter outside the marked set reports nothing, its reading not being in doubt, so ``JUAN GARCIA Y LOPEZ`` is silent; so is every mixed-case name, where the writing decided it. See the ``P3`` entry of ``docs/design/decisions.md`` (#383, #479)
