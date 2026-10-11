@@ -3888,6 +3888,14 @@ name_regex = "^Smith, J[a-z]+ van( der Berg)? Prof\\.$"
 fields = ["_ambiguities", "family", "middle", "title"]
 
 [[change]]
+# rules.md#C2: "a part past the second comma holds no name word" (#636,
+# 2026-10-11): group makes no particle chain in such a part, so a title
+# word behind a particle run there is a title.
+issue = "fix(#636) a part past the second comma makes no particle chain"
+name_regex = "^John Smith, Jr\\., van der Berg Prof\\.$"
+fields = ["suffix", "title"]
+
+[[change]]
 # rules.md#M2 reads the clause-free name, whose credential starts #602's
 # run -- rules.md#S2: "A credential after the name core starts a run to
 # the end of its part" -- and the take consumes that run: maiden 'Smith',

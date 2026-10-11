@@ -917,8 +917,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # #623). The bound matters only where a particle stands past the
         # chain's lead, so it is not asked otherwise: the chain then
         # merges nothing (the test is `is_prefix_piece`'s, inline).
+        # rules.md#C2: "a part past the second comma holds no name word"
+        # -- nor does the part after a suffix comma: assign reads such a
+        # part wholly as suffixes and its title words as titles, so the
+        # chain builds no name unit there and is not run, and a title
+        # word behind a particle run stays a word C2 can read
+        # ('John Smith, Jr., van der Berg Prof.', #636).
         chains = False
-        if read is None:
+        if read is None and site is not ClauseSite.TAIL:
             for k in range(leading + 1, len(pieces)):
                 if ("prefix" in ptags[k]
                         or len(pieces[k]) == 1
@@ -1141,7 +1147,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 pieces[:], ptags[:] = kept[0], kept[1]
                 del ambiguities[kept[2]:]
                 chain(left)
-        else:
+        elif site is not ClauseSite.TAIL:
             chain(0)
             if read is not None and took:
                 # built, not `_replace`d: two frames a call
