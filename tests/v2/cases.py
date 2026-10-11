@@ -9867,9 +9867,30 @@ CASES: tuple[Case, ...] = (
                "a title. #614's read merged 'van Secretary' into one "
                "piece and the title went into the suffix (its second "
                "review); since #620 the read counts the chain's units "
-               "and merges nothing, so the run's title test sees every "
-               "word as written (1.4.0 middle 'Smith MD', family 'van "
+               "rather than reading a merged copy, and only "
+               "particle runs are merged ahead of it (#625), so the "
+               "run's title test sees 'Secretary' as written (1.4.0 middle 'Smith MD', family 'van "
                "Secretary Jones'; bisected to #602's run)"),
+    Case("two_particle_runs_merge_each",
+         "John van der Smith de la Berg",
+         {"given": "John", "middle": "van der Smith",
+          "family": "de la Berg"},
+         classification="parity",
+         notes="each particle run joins the words after it, the final "
+               "group the family (rules.md#P2); group merges both runs "
+               "ahead of S2's read (#625), whose bookkeeping across the "
+               "first merge no other row reached (#625's review: an "
+               "off-by-one there read family 'van der Smith de la "
+               "Berg', the q + 1 one)"),
+    Case("a_second_run_of_duals_is_the_family",
+         "Anna van der Berg van mc",
+         {"given": "Anna", "middle": "van der Berg",
+          "family": "van mc"},
+         classification="parity",
+         notes="'van mc' is one particle run, the dual a particle the "
+               "run took and no suffix (rules.md#P2, #S2); merged "
+               "ahead of the read after a first run (#625's review: an "
+               "off-by-one left 'mc' a suffix)"),
     Case("a_second_particle_run_is_a_unit_of_its_own",
          "Jan van Berg de Mc",
          {"given": "Jan", "middle": "van Berg", "family": "de Mc"},

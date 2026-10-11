@@ -90,11 +90,11 @@ from nameparser._policy import Policy
 #: #614's /simplify on and were corrected in #620, which moved no row
 #: (decisions.md#parse-cost).
 _CALL_BASELINE = {
-    (3, 11): {"parse": 304, "facade": 341},
-    (3, 12): {"parse": 285, "facade": 322},
-    (3, 13): {"parse": 285, "facade": 322},
-    (3, 14): {"parse": 285, "facade": 322},
-    (3, 15): {"parse": 285, "facade": 322},
+    (3, 11): {"parse": 307, "facade": 344},
+    (3, 12): {"parse": 288, "facade": 325},
+    (3, 13): {"parse": 288, "facade": 325},
+    (3, 14): {"parse": 288, "facade": 325},
+    (3, 15): {"parse": 288, "facade": 325},
 }
 _BAND = 0.02
 
