@@ -21,9 +21,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
-    # 3.15 is pre-release until 2026-10-01 (#259): surface breakage
-    # without blocking the branch; flip to blocking when it goes final.
-    continue-on-error: ${{ matrix.python-version == '3.15' }}
     env:
       # Without this, uv sync honors .python-version (3.11) over the
       # matrix interpreter and every job silently tests 3.11.
@@ -45,7 +42,6 @@ jobs:
       uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
-        allow-prereleases: true
     - name: Install uv
       uses: astral-sh/setup-uv@v7
       with:
@@ -84,18 +80,25 @@ jobs:
   # without it).
   ja-extra:
     runs-on: ubuntu-latest
-    # 3.14, not the matrix's newest: namedivider-python pulls lightgbm,
-    # which pulls scipy/numpy, and those have no 3.15 wheels yet (the
-    # sdist build fails). 3.15 is pre-release and this matrix is ahead
-    # of the ecosystem; revisit when it goes final.
+    # The floor and the newest Python whose wheels the lock pins: uv.lock
+    # splits numpy and scipy at 3.12, so the floor is the only row that
+    # installs the older branch. namedivider-python's compiled
+    # dependencies (numpy, scipy, pandas, regex; lightgbm is py3-none)
+    # had no cp315 wheels at the versions uv.lock pinned before #259,
+    # and numpy's and scipy's sdist builds fail, so moving the top row to
+    # a new Python can need a lock bump first.
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.15"]
     env:
-      UV_PYTHON: "3.14"
+      UV_PYTHON: ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v7
-    - name: Set up Python 3.14
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v7
       with:
-        python-version: "3.14"
+        python-version: ${{ matrix.python-version }}
     - name: Install uv
       uses: astral-sh/setup-uv@v7
       with:
