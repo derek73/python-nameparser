@@ -3853,6 +3853,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-06, #617: 454 -> 455; its reach absorbed the C1 example 'Smith, Chancellor of the Exchequer MP' #617 added to rules.md.
         # 2026-10-10, #623: 455 -> 457; its reach absorbed the two rules.md#H5 examples #623 added, 'Smith, John van der Berg Prof.' and 'Smith, Jan van Prof.', both explained by fix(#623).
         # 2026-10-11, #636: 457 -> 458; its reach absorbed the rules.md#C2 example 'John Smith, Jr., van der Berg Prof.' #636 added, which at 1.4.0 it explains (suffix and title), as fix(#636) does at 2.x.
+        # 2026-10-11, #637/#640: 458 -> 461; its reach absorbed the three rules.md#P5 examples #637/#640 added, 'Berg, abdul Prof.', 'Berg, abdul Prof. Ali' and 'John Smith, Jr., abdul Dr. Smith', the first and last of which it explains at 1.4.0, as fix(#637) and fix(#640) do at 2.x.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -3876,7 +3877,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rules.md#H1 comma example. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(458, ('given', 'suffix', 'title'), "f7ff98eb54b9", None),
+            _Claim(461, ('given', 'suffix', 'title'), "496fb3966b46", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3990,7 +3991,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-06, #613: 452 -> 454; its reach absorbed both C1 examples #613 added to the corpus, 'John Smith, Mr. and Mrs.' and 'Ortega y Gasset, Dr.'.
         # 2026-10-06, #617: 454 -> 455; its reach absorbed the C1 example 'Smith, Chancellor of the Exchequer MP' #617 added to rules.md.
         # 2026-10-10, #623: 455 -> 457; its reach absorbed the two rules.md#H5 examples #623 added, 'Smith, John van der Berg Prof.' and 'Smith, Jan van Prof.', both explained by fix(#623).
-        # 2026-10-11, #636: 457 -> 458; its reach absorbed the rules.md#C2 example 'John Smith, Jr., van der Berg Prof.' #636 added, which at 1.4.0 it explains (suffix and title), as fix(#636) does at 2.x.
+        # 2026-10-11, #636: 457 -> 458; its reach absorbed the rules.md#C2 example 'John Smith, Jr., van der Berg Prof.' #636 added. Reach only: it moves title, outside this rule's fields; the lone post-comma rule explains it at 1.4.0.
+        # 2026-10-11, #637/#640: 458 -> 461; its reach absorbed the three rules.md#P5 examples #637/#640 added, 'Berg, abdul Prof.', 'Berg, abdul Prof. Ali' and 'John Smith, Jr., abdul Dr. Smith'. Reach only: the moved two move title, outside this rule's fields; the lone post-comma rule explains them at 1.4.0.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -4008,7 +4010,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #606: 443 -> 444, 'Greve, Anna'. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(458, ('family', 'given'), "f7ff98eb54b9", None),
+            _Claim(461, ('family', 'given'), "496fb3966b46", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4301,8 +4303,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # another opening bound-given word. Reach again.
         # 2026-10-01, #575: 44 -> 45, 'abdul Salam, Ed'. Reach.
         # 2026-10-04, #601/#602: 45 -> 43; the rules.md#M2 examples #601 retired left the corpus, and the names #601 moved left this rule's regex.
+        # 2026-10-11, #637/#640: 43 -> 46, the three rules.md#P5 examples #637/#640 added ('Berg, abdul Prof.', 'Berg, abdul Prof. Ali', 'John Smith, Jr., abdul Dr. Smith'). Reach: where their roles move, `_initials` is not compared.
         "fix(initials-per-word) a bound-given run initials each word (facade, since 2.0.0)":
-            _Claim(43, ('_initials',), "de26d994148e", ('DEFAULT',)),
+            _Claim(46, ('_initials',), "a91bd719adc6", ('DEFAULT',)),
         # 2026-09-18: 109 -> 110. One new corpus name,
         # 'john van der berg ma' -- rules.md#P2's one-case contrast,
         # and a particle chain like every other member.
@@ -5404,6 +5407,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_ambiguities', 'family', 'middle', 'title'), "bbab0baa7826", None),
         "fix(#636) a part past the second comma makes no particle chain":
             _Claim(1, ('suffix', 'title'), "f409b04e4c16", None),
+        "fix(#637) the bound join declines a trailing title after a family comma":
+            _Claim(1, ('middle', 'title'), "feff01f1e769", None),
+        "fix(#640) the bound join declines a title word past the second comma":
+            _Claim(1, ('suffix', 'title'), "bd68517718e5", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         "fix(#601) a marker behind a connective joins the connective run, and the run's initials follow":
@@ -5889,6 +5896,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_ambiguities', 'family', 'middle', 'title'), "bbab0baa7826", None),
         "fix(#636) a part past the second comma makes no particle chain":
             _Claim(1, ('suffix', 'title'), "f409b04e4c16", None),
+        "fix(#637) the bound join declines a trailing title after a family comma":
+            _Claim(1, ('given', 'title'), "feff01f1e769", None),
+        "fix(#640) the bound join declines a title word past the second comma":
+            _Claim(1, ('suffix', 'title'), "bd68517718e5", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
@@ -6607,6 +6618,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_ambiguities', 'family', 'middle', 'title'), "bbab0baa7826", None),
         "fix(#636) a part past the second comma makes no particle chain":
             _Claim(1, ('suffix', 'title'), "f409b04e4c16", None),
+        "fix(#637) the bound join declines a trailing title after a family comma":
+            _Claim(1, ('middle', 'title'), "feff01f1e769", None),
+        "fix(#640) the bound join declines a title word past the second comma":
+            _Claim(1, ('suffix', 'title'), "bd68517718e5", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         "fix(#601) a marker behind a connective joins the connective run, and the run's initials follow":
@@ -6945,6 +6960,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('_ambiguities', 'family', 'middle', 'title'), "bbab0baa7826", None),
         "fix(#636) a part past the second comma makes no particle chain":
             _Claim(1, ('suffix', 'title'), "f409b04e4c16", None),
+        "fix(#637) the bound join declines a trailing title after a family comma":
+            _Claim(1, ('given', 'title'), "feff01f1e769", None),
+        "fix(#640) the bound join declines a title word past the second comma":
+            _Claim(1, ('suffix', 'title'), "bd68517718e5", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the

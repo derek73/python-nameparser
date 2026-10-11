@@ -131,8 +131,10 @@ class BoundJoin(IntEnum):
     """v1 _join_bound_first_name's reserve_last, as the three states it
     actually has. IntEnum: the value IS the number of name pieces
     assign's peel must leave in the JOINED view for the join to stand
-    (#425), so the >= comparison below reads unchanged. Post-comma no
-    peel is run -- the pair alone is that one piece -- and DISABLED
+    (#425), so the >= comparison below reads unchanged. Post-comma the
+    reserve runs no peel -- the pair alone is that one piece; the
+    decline reads H5's trailing run only where a title word follows
+    the bound word (#637) -- and DISABLED
     is a mode, never compared: as a threshold 0 would join everything,
     which is why the block is entered on identity first."""
 
@@ -1186,14 +1188,33 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # vocabulary (S2), wherever position will then place it"
             # -- and declining it is also what keeps merge_pieces' tag
             # union from making the joined piece a suffix piece.
-            if (_is_maiden_marker_piece(pieces[fk + 1], tokens)
-                    or is_suffix_piece(pieces[fk + 1], ptags[fk + 1],
-                                       tokens)):
+            # rules.md#P5: "nor a title word a trailing rule reads as a
+            # title" -- after a family comma one H5's trailing run takes
+            # from the given part, read as the comma-less name reads it,
+            # which the LENIENT join reads no peel for and so asks here,
+            # only where a title word follows ('Berg, abdul Prof.',
+            # #637; where the given part's own walk then reads the words
+            # behind it otherwise, the title stays a name word, which
+            # rules.md#P5 accepts); in a part past the second
+            # comma any title word, which C2 reads as a title ('John
+            # Smith, Jr., abdul Dr. Smith', #640). A title word standing
+            # in the name is a name word and joins ('abdul Sir Smith
+            # Berg', 'Berg, abdul Prof. Ali').
+            nxt, nxt_tags = pieces[fk + 1], ptags[fk + 1]
+            if (_is_maiden_marker_piece(nxt, tokens)
+                    or is_suffix_piece(nxt, nxt_tags, tokens)
+                    or ((site is ClauseSite.TAIL
+                         or bound_join is BoundJoin.LENIENT)
+                        and is_title_piece(nxt, nxt_tags, tokens)
+                        and (site is ClauseSite.TAIL
+                             or fk + 1 in tail_reading(
+                                 peel_walk(fk, ptags), pieces, ptags,
+                                 tokens, one_case)[1]))):
                 pass
             elif bound_join is BoundJoin.LENIENT:
                 # post-comma the family is fixed and the pair is the
                 # given whatever follows, so no peel is read
-                # (decisions.md#P5, #423)
+                # (decisions.md#P5, #423), save the title test above
                 merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
             else:
                 # rules.md#P5: "the trailing suffix run (S2) and the

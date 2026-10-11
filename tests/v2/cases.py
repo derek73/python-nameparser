@@ -9797,20 +9797,49 @@ CASES: tuple[Case, ...] = (
                "(measured 2026-09-09)"),
     Case("title_word_trailing_behind_a_bound_pair_after_a_comma",
          "Berg, abdul Prof.",
-         {"given": "abdul Prof.", "family": "Berg"},
-         notes="the recorded GAP in rules.md#H5's P5 clause, pinned "
-               "here rather than by an example there so that "
-               "recording it does not make it normative. After a "
-               "family comma the reserve reads no peel (rules.md#P5), "
-               "so the bound join fires over the trailing title word "
-               "and takes it into the given name; the trailing walk "
-               "never sees it. The comma-less spelling is "
-               "transparent -- 'Sir abdul rahman Prof.' above -- and "
-               "so is this segment with an ordinary given name, "
-               "'Smith, John Prof.' reading title 'Prof.'. PARITY, "
-               "which is why it is not a fix row: 1.4.0 read first "
-               "'abdul Prof.', last 'Berg' too (measured 2026-09-09). "
-               "Tracked as part of #316"),
+         {"title": "Prof.", "given": "abdul", "family": "Berg"},
+         classification="fix(#637)",
+         notes="after a family comma the reserve reads no peel "
+               "(rules.md#P5), but the join declines a trailing title "
+               "word the H5 run takes, so the title is read as the "
+               "segment with an ordinary given name reads it ('Smith, "
+               "John Prof.'), and as the comma-less 'Sir abdul rahman "
+               "Prof.' above does. Until #637 the row pinned the gap: "
+               "given 'abdul Prof.', as 1.4.0 read it (measured "
+               "2026-09-09)"),
+    Case("a_bound_join_declines_a_title_past_the_second_comma",
+         "John Smith, Jr., abdul Dr. Smith",
+         {"title": "Dr.", "given": "John", "family": "Smith",
+          "suffix": "Jr., abdul Smith"},
+         ambiguities=("comma-structure",),
+         classification="fix(#640)",
+         notes="a part past the second comma holds no name word, so "
+               "every title word in it is a title (rules.md#C2) and the "
+               "bound join declines one (rules.md#P5, #640), as a "
+               "family comma's tail reads since #603 ('Smith, John, "
+               "abdul Dr. Smith'); 1.4.0 and 2.3.0 read suffix 'Jr., "
+               "abdul Dr. Smith'"),
+    Case("a_bound_join_declines_a_bare_title_past_the_second_comma",
+         "John Smith, Jr., abdul Sir Smith",
+         {"title": "Sir", "given": "John", "family": "Smith",
+          "suffix": "Jr., abdul Smith"},
+         ambiguities=("comma-structure",),
+         classification="fix(#640)",
+         notes="the row above with a bare title word: C2 reads any title "
+               "word past the second comma as a title, period-marked or "
+               "not, so the join declines it too (#643's review: a "
+               "period-only test passed every other row); 1.4.0 and "
+               "2.3.0 read suffix 'Jr., abdul Sir Smith'"),
+    Case("a_bound_join_declines_a_run_of_trailing_titles",
+         "Berg, abdul Prof. Dr.",
+         {"title": "Prof. Dr.", "given": "abdul", "family": "Berg"},
+         classification="fix(#637)",
+         notes="after a family comma the join asks H5's whole trailing "
+               "run, not whether the title is the last word: 'Prof.' "
+               "stands before another title the run takes as well "
+               "(#643's review: a last-word test passed every other "
+               "row); 1.4.0 read first 'abdul Prof.', suffix 'Dr.', and "
+               "2.3.0 title 'Dr.', first 'abdul Prof.'"),
     Case("title_run_leading_addresses_over_a_trailing_title",
          "Sir John Prof.",
          {"title": "Sir Prof.", "given": "John"},
