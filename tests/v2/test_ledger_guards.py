@@ -358,9 +358,10 @@ _SPAN_BEARING_RULES: dict[str, frozenset[str]] = {
     }),
     "expected_since_2.1.0.toml": frozenset(),   # 2.2 cycle: no span-bearing rule
     "expected_since_2.2.0.toml": frozenset(),   # 2.3 cycle: no span-bearing rule
-    # The open cycle's rules (#383/#479, 2026-09-13) are literal
+    # The 2.4 cycle's rules (#383/#479, 2026-09-13) are literal
     # names or alternations of names, and copy no script range.
     "expected_since_2.3.0.toml": frozenset(),
+    "expected_since_2.4.0.toml": frozenset(),   # open cycle, no rules yet
 }
 
 #: The leading `fix(...)`/`feat(...)` tag of a rule's `issue`, which is
@@ -6987,6 +6988,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#614) a trailing title is read before the particle chain":
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
     },
+    "expected_since_2.4.0.toml": {},   # open cycle, no rules yet
 }
 
 
@@ -7088,11 +7090,12 @@ def test_every_rule_claims_the_recorded_share_of_the_corpus() -> None:
 #: of each fact, since two means one of them goes quietly stale.
 _CROSS_RULE_WINNERS: dict[str, dict[str, str]] = {
     "expected_since_2.2.0.toml": {},
-    # The open cycle carries #383/#479's three rules since
-    # 2026-09-13 and still no contest: literal names or alternations
-    # of names, reaching no corpus name in common, so no diff is
-    # claimed twice.
+    # The 2.4 cycle carried #383/#479's three rules from 2026-09-13
+    # and no contest: literal names or alternations of names, reaching
+    # no corpus name in common, so no diff is claimed twice.
     "expected_since_2.3.0.toml": {},
+    # open cycle: no rules, so no contest
+    "expected_since_2.4.0.toml": {},
     "expected_since_1.4.0.toml": {
         # Spelled out since #508: the bare `fix(comma-family)` this row
         # carried is a prefix of THREE rules in this ledger (measured
@@ -8799,10 +8802,11 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
     ],
     "expected_since_2.1.0.toml": [],
     "expected_since_2.2.0.toml": [],
-    # The open cycle's three rules (#383/#479, 2026-09-13) nest with
+    # The 2.4 cycle's three rules (#383/#479, 2026-09-13) nest with
     # nothing: no two of them share a corpus name, so no pair is a
     # contest at all, let alone a wide-first one.
     "expected_since_2.3.0.toml": [],
+    "expected_since_2.4.0.toml": [],   # open cycle, no rules yet
 }
 
 

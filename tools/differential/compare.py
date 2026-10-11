@@ -31,7 +31,7 @@ HERE = Path(__file__).resolve().parent
 FIELDS = ("title", "first", "middle", "last", "suffix", "nickname",
           "maiden")
 
-DEFAULT_BASELINE = "2.3.0"
+DEFAULT_BASELINE = "2.4.0"
 REPO_ROOT = HERE.parents[1]
 #: The v2 API's names for the same seven roles FIELDS names in v1
 #: vocabulary. Both are compared from baseline 2.0 on.
@@ -1748,11 +1748,13 @@ class _ShapeMismatch(NamedTuple):
 #: diffs from nothing.
 _RECORDED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     "expected_since_2.2.0.toml": {},
-    # The open cycle carries #383/#479's three rules since
-    # 2026-09-13, and no contest among them: each is a literal name
-    # or alternation of names, and no two reach the same corpus
-    # name, so the run finds no contested diff to adjudicate.
+    # The 2.4 cycle carried #383/#479's three rules from 2026-09-13,
+    # and no contest among them: each is a literal name or
+    # alternation of names, and no two reach the same corpus name,
+    # so the run finds no contested diff to adjudicate.
     "expected_since_2.3.0.toml": {},
+    # open cycle: no rules, so nothing for a second one to contest
+    "expected_since_2.4.0.toml": {},
     "expected_since_1.4.0.toml": {
         "Andrews, M.D.": ("given", "suffix"),
         # #613's PR review (2026-10-06): a tolerated CJK case row, H1's
@@ -2324,6 +2326,7 @@ _WATCHED_DIFFS: dict[str, dict[str, tuple[str, ...]]] = {
     # cases.py row, a render pin or a v1 bank -- so not one of them
     # meets the population's literal clause and none takes a row here.
     "expected_since_2.3.0.toml": {},
+    "expected_since_2.4.0.toml": {},   # open cycle, no watched name yet
 }
 
 
