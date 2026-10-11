@@ -208,6 +208,23 @@ particles, which are written capitalized:
     >>> str(parse("JUAN DE LA VEGA").capitalized())
     'Juan de la Vega'
 
+Your own entry outranks it the same way, which is how to keep a
+family's capitalized particle. A mask applies wherever its word stands,
+though, so it recases every other name with that particle too:
+
+.. doctest::
+
+    >>> str(parse("martin van buren").capitalized())
+    'Martin van Buren'
+    >>> van_lex = dataclasses.replace(
+    ...     default,
+    ...     capitalization_exceptions=tuple(default.capitalization_exceptions)
+    ...     + (("van", "Van"),))
+    >>> str(parse("martin van buren").capitalized(van_lex))
+    'Martin Van Buren'
+    >>> str(parse("ludwig van beethoven").capitalized(van_lex))
+    'Ludwig Van Beethoven'
+
 How a key matches a word
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
