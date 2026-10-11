@@ -91,7 +91,7 @@ class Span(NamedTuple):
 #: (rules.md#P3, see CONJUNCTION_OR_INITIAL);
 #: "joined" a continuation of the token before it -- within one
 #: merged piece the tag is role-blind and every view joins the pair
-#: with a space ("Ph." + "D."; 'Smith, Ph. D. Smith' gives first_list
+#: with a space ("Ph." + "D."; 'Ph. D., Jr.' gives last_list
 #: ['Ph. D.']), and since #436 it also spans the pieces of one SUFFIX
 #: entry, the run of post-nominals the writer wrote without a comma
 #: ("MD PhD"), which is the half the suffix view alone reads and
@@ -433,8 +433,10 @@ class AmbiguityKind(StrEnum):
     #: A trailing word reads plausibly as either a post-nominal or an
     #: ordinary name part. Covers an ambiguous acronym written without
     #: periods ("John Smith MA" takes MA as a credential because a
-    #: family name remains; "Jack MA" keeps it as the name because none
-    #: would) and a trailing roman numeral, which is a suffix where any
+    #: family name remains; "JACK MA", written wholly in one case, keeps
+    #: it as the name because none would, while in a mixed-case name
+    #: the capitals decide outright -- "Jack MA" is the credential and
+    #: "Jack Ma" the name, rules.md#S2) and a trailing roman numeral, which is a suffix where any
     #: other single letter would be a name ("John Smith V" vs "John
     #: Smith B"). It also covers a family-comma listing, where a
     #: trailing abbreviation that is both a post-nominal and a surname
@@ -474,16 +476,16 @@ class AmbiguityKind(StrEnum):
     #: credential reports nothing new, so "Smith, PhD MA" and "John
     #: Smith, PhD MA" read suffix ``PhD MA`` in silence.
     #: Since 2.4 a maiden marker's clause reports at ITS trailing slot
-    #: too, in both directions: "Doe, Jane nee Smith MA" gives maiden
-    #: ``Smith`` with suffix ``MA`` and says so, "Doe, Jane nee Smith
+    #: too, in both directions: "Jane Doe nee Smith MA" gives maiden
+    #: ``Smith`` with suffix ``MA`` and says so, "Jane Doe nee Smith
     #: Ma" keeps maiden ``Smith Ma`` and says so too, and a member the
     #: clause keeps because it is the only word after the marker
     #: ("Jane Doe nee MA") reports as well. Where no trailing rule
     #: reads the clause's tail, nothing was decided and nothing
     #: reports: a clause in the FAMILY segment of a comma listing
-    #: ("Smith nee Jones MA, Jane" keeps maiden ``Jones MA``) and one
-    #: past a second comma ("Smith, John, Jr nee Jones MA" keeps
-    #: maiden ``Jones MA``) are both silent.
+    #: ("Smith nee Jones MA, Jane" keeps maiden ``Jones MA``) is
+    #: silent. After any other comma a marker is an ordinary word and
+    #: makes no clause at all (rules.md#M2).
     #: FOUR positions stay silent, and all four are boundaries rather
     #: than omissions. The NO-READER clause just named is the first of
     #: them, and the three that follow are about the member's own
@@ -492,10 +494,10 @@ class AmbiguityKind(StrEnum):
     #: John MA Smith" reads middle ``MA Smith``, the ordinary reading,
     #: and nothing consulted the class, and inside a clause the same
     #: holds of a name word ("Jane Doe nee MA Smith" keeps maiden
-    #: ``MA Smith``) and of a trailing TITLE, which breaks the
-    #: clause's peel before it can reach the member at all ("Jane Doe
-    #: nee Smith MA Prof." keeps maiden ``Smith MA Prof.``, where
-    #: "Jane Doe nee Smith Prof. MA" reads suffix ``MA`` and reports).
+    #: ``MA Smith``), a bare trailing title among them ("Jane Doe nee
+    #: Smith MA Prof" keeps maiden ``Smith MA Prof``, where the
+    #: period-marked "Jane Doe nee Smith MA Prof." reads title
+    #: ``Prof.`` and suffix ``MA`` and reports).
     #: Third -- pre-existing, and untouched by 2.4 -- a member with no
     #: name word IN FRONT of it is not at this
     #: slot either, because the slot is the end of a given part and
@@ -510,16 +512,11 @@ class AmbiguityKind(StrEnum):
     #: immediately after the comma and nothing behind that piece:
     #: "Doe, MA Smith" reports its ``MA``, and "Doe, Dr. MA Smith" --
     #: the same member, one title in front of it -- reads given ``MA``
-    #: in silence. A maiden CLAUSE does NOT reach this position, and
-    #: that is a decision rather than an accident: a clause may give
-    #: a word up only where the word then reads as a post-nominal
-    #: (rules.md#M2), and here nothing would read it at all, so the
-    #: clause keeps it and reports instead. "Doe, Dr. nee Smith MA"
-    #: keeps maiden ``Smith MA`` and says so, as does the
-    #: post-nominal spelling "Jane Doe, Jr nee Smith MA" -- the take
-    #: would leave segment 1 as ``Jr MA``, post-nominals only, which
-    #: the gate reads whole. The same holds of the fourth position
-    #: below: a clause never hands a word to a join.
+    #: in silence. A maiden marker cannot reach this position: after
+    #: a family comma it is an ordinary word (rules.md#M2), so "Doe,
+    #: Dr. nee Smith MA" reads given ``nee``, middle ``Smith`` and
+    #: suffix ``MA`` -- and reports, the ``MA`` ending a given part
+    #: like any other.
     #: And fourth -- pre-existing and untouched by 2.4 as well --
     #: a JOIN beside the member can
     #: take it out of this slot, from either side. Where a chain has
@@ -532,9 +529,7 @@ class AmbiguityKind(StrEnum):
     #: and reports. The particle chain is the commonest joiner but not
     #: the only one: the bound-given join takes a member into its pair
     #: the same way, so "Berg, abdul MA" reads given ``abdul MA`` in
-    #: silence -- while "Berg, abdul nee Jones MA" keeps maiden
-    #: ``Jones MA`` and reports, the clause declining to hand the
-    #: member to a join that would swallow it. Where a particle the suffix vocabulary
+    #: silence. Where a particle the suffix vocabulary
     #: does not also claim stands BEHIND it, the given part ends at
     #: that particle as this walk reads it, and the attachment that
     #: moves the particle to the family runs a stage too late to
@@ -612,8 +607,8 @@ class AmbiguityKind(StrEnum):
     #: an INITIAL and this reports the fork: "jose e maria santos" gives
     #: middle "e maria" and "JOSE E MARIA SANTOS" middle "E MARIA",
     #: both flagged. Only a letter the vocabulary marks both ways
-    #: reports -- ``Lexicon.conjunctions_ambiguous``, "e" by default --
-    #: because a letter outside it is not in doubt: "JUAN GARCIA Y
+    #: reports -- ``Lexicon.conjunctions_ambiguous``, "e" and "i" by
+    #: default -- because a letter outside it is not in doubt: "JUAN GARCIA Y
     #: LOPEZ" joins into family "GARCIA Y LOPEZ" and reports nothing,
     #: as does the Cyrillic "ХОСЕ И МАРИЯ САНТОС" -- whose join lands
     #: in GIVEN "ХОСЕ И МАРИЯ" rather than FAMILY, but reports nothing

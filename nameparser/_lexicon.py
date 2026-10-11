@@ -594,9 +594,13 @@ class Lexicon:
     #: default list:
     #: :data:`~nameparser.config.suffixes.SUFFIX_WORDS`.
     suffix_words: frozenset[str] = frozenset()
-    #: Subset of suffix_acronyms counted as suffixes only when written
-    #: WITH periods -- their bare forms are common surnames ("ma",
-    #: "do": "Jack Ma" keeps his family name). Full default list:
+    #: Subset of suffix_acronyms whose bare forms are also common
+    #: surnames ("ma", "do"). Written with periods one is a suffix
+    #: outright; written bare, capitals decide in a mixed-case name
+    #: ("Jack MA" is the credential, "Jack Ma" keeps his family name)
+    #: and otherwise the word counts as a suffix only where a name
+    #: word is left beside it ("John Smith ma"), rules.md#S2. Full
+    #: default list:
     #: :data:`~nameparser.config.suffixes.SUFFIX_ACRONYMS_AMBIGUOUS`.
     suffix_acronyms_ambiguous: frozenset[str] = frozenset()
     #: Family-name particles that chain onto the following piece
@@ -888,7 +892,9 @@ class Lexicon:
                 raise TypeError(
                     "capitalization_exceptions holds key->value pairs; "
                     "use dataclasses.replace(lexicon, "
-                    "capitalization_exceptions={...}) instead of "
+                    "capitalization_exceptions=(*lexicon."
+                    "capitalization_exceptions, ('key', 'KEY'))) "
+                    "instead of "
                     f"{op}()"
                 )
             if name not in _VOCAB_FIELDS:

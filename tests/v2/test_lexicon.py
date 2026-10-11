@@ -1,6 +1,7 @@
 import copy
 import dataclasses
 import pickle
+import re
 import unicodedata
 import warnings
 from collections.abc import Callable
@@ -302,8 +303,21 @@ def test_add_unknown_field_raises_with_valid_names() -> None:
 
 
 def test_add_capitalization_exceptions_raises_pointing_at_replace() -> None:
-    with pytest.raises(TypeError, match="dataclasses.replace"):
+    # The offered spelling is a tuple, not a dict: the field is
+    # annotated as one, so a pasted dict fails mypy (AGENTS.md). And
+    # it must RUN as pasted: the value is a case mask of its key, so
+    # ('key', 'Value') type-checks and then raises (2.4 release sweep).
+    offered = re.escape(
+        "dataclasses.replace(lexicon, capitalization_exceptions="
+        "(*lexicon.capitalization_exceptions, ('key', 'KEY')))")
+    with pytest.raises(TypeError, match=offered) as raised:
         Lexicon.default().add(capitalization_exceptions={"x": "X"})
+    code = re.search(r"dataclasses\.replace\(.*?\)\)\)",
+                     str(raised.value))
+    assert code is not None
+    pasted = eval(code[0], {"dataclasses": dataclasses,
+                            "lexicon": Lexicon.default()})
+    assert pasted.capitalization_exceptions_map["key"] == "KEY"
 
 
 def test_union_is_fieldwise_and_right_biased_for_exceptions() -> None:

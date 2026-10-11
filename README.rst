@@ -91,8 +91,9 @@ deprecations 1.3 and 1.4 announced, so if your test suite runs clean on
 Two things that check will not catch: four removals 1.4 never warned
 about (three raise on contact, the fourth only warns), and one that
 changes results silently — ``name == "John Smith"`` is now ``False``.
+Later 2.x releases add a few breaks of their own.
 `Migrating from HumanName <https://nameparser.readthedocs.io/en/latest/migrate.html>`__
-covers both, and translates a v1 customization into the new API whenever
+covers all of them, and translates a v1 customization into the new API whenever
 that's convenient for you.
 
 See the `release log <https://nameparser.readthedocs.io/en/latest/release_log.html>`__

@@ -675,11 +675,33 @@ grep your fixtures for, with what 1.4 read:
   Berg``.
 - ``"Josep Carod i Rovira"`` (2.4) — ``i`` links two surnames in a
   mixed-case name: 1.4 read middle ``Carod i``, last ``Rovira``.
-- ``"John Smith X.Y.Z."`` (2.4) — an unlisted dotted credential after a
-  full name: 1.4 read last ``X.Y.Z.``, middle ``Smith``. ``"Jack
+- ``"Jane Smith N.C.C."`` (2.4) — an unlisted dotted credential after a
+  full name: 1.4 read last ``N.C.C.``, middle ``Smith``. ``"Jack
   X.Y.Z."`` is unchanged.
-- ``capitalize()`` on ``"john smith md"`` (2.4) — 1.4 wrote ``M.D.``;
-  ``md`` left the exceptions map and now repairs as an acronym.
+- ``"Jane Smith, LEED AP"`` (2.4) — an unlisted all-caps credential
+  after a comma: 1.4 read first ``LEED``, middle ``AP``, last ``Jane
+  Smith``.
+- ``"Eric H. Holder Jr. Attorney General"`` and ``"Eric H. Holder, Jr.,
+  Attorney General"`` (2.4) — a title after a credential is a title:
+  1.4 read middle ``H. Holder Jr. Attorney``, last ``General``, and
+  suffix ``Jr., Attorney General``.
+- ``"Steven Hardman, RN - CRNA"`` (2.4) — a credential after a comma
+  starts a run of credentials: 1.4 read first ``RN``, middle ``-``,
+  last ``Steven Hardman``, suffix ``CRNA``.
+- ``"John van der Berg Prof."`` (2.4) — 1.4 read last ``van der Berg
+  Prof.``.
+- ``"Liam Ó Murchú"`` (2.4) — the Irish particles ``Ó``, ``Ní`` and
+  ``Ua`` join the surname: 1.4 read middle ``Ó``, last ``Murchú``.
+- ``"Herra Väinö Johansson"`` (2.4) — salutations in Finnish,
+  Icelandic, Malay and other languages are titles: 1.4 read first
+  ``Herra``, middle ``Väinö``.
+- ``"山田 ﾀﾛｳ"`` (2.4) — halfwidth katakana reads as katakana: 1.4 read
+  first ``山田``, last ``ﾀﾛｳ``.
+- ``capitalize()`` on ``"john smith md"``, ``"john smith phd"`` and
+  ``"JANE DOE MBA"`` (2.4) — 1.4 wrote ``M.D.``, ``Ph.D.`` and ``Mba``;
+  credentials are now written the usual way (``MD``, ``PhD``, ``MBA``).
+- ``initials()`` on ``"john e smith"`` (2.4) — 1.4 gave ``j. s.``; a
+  one-letter connective read as an initial now contributes one.
 
 .. doctest::
 
@@ -700,9 +722,36 @@ grep your fixtures for, with what 1.4 read:
     'van der Berg'
     >>> HumanName("Josep Carod i Rovira").last
     'Carod i Rovira'
-    >>> HumanName("John Smith X.Y.Z.").suffix
-    'X.Y.Z.'
+    >>> HumanName("Jane Smith N.C.C.").suffix
+    'N.C.C.'
+    >>> HumanName("Jane Smith, LEED AP").suffix
+    'LEED AP'
+    >>> holder = HumanName("Eric H. Holder Jr. Attorney General")
+    >>> holder.title, holder.last, holder.suffix
+    ('Attorney General', 'Holder', 'Jr.')
+    >>> HumanName("Eric H. Holder, Jr., Attorney General").title
+    'Attorney General'
+    >>> HumanName("Steven Hardman, RN - CRNA").suffix
+    'RN - CRNA'
+    >>> HumanName("John van der Berg Prof.").last
+    'van der Berg'
+    >>> HumanName("Liam Ó Murchú").last
+    'Ó Murchú'
+    >>> HumanName("Herra Väinö Johansson").title
+    'Herra'
+    >>> HumanName("山田 ﾀﾛｳ").last
+    '山田'
     >>> md = HumanName("john smith md")
     >>> md.capitalize(force=True)
     >>> str(md)
     'John Smith MD'
+    >>> phd = HumanName("john smith phd")
+    >>> phd.capitalize()
+    >>> str(phd)
+    'John Smith PhD'
+    >>> mba = HumanName("JANE DOE MBA")
+    >>> mba.capitalize()
+    >>> str(mba)
+    'Jane Doe MBA'
+    >>> HumanName("john e smith").initials()
+    'j. e. s.'

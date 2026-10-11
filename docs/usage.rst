@@ -46,7 +46,9 @@ Every piece of each is optional:
 A title written with a period (``Prof.``) is also read at the end of a
 name in forms 1 and 3 and at the end of the given name in form 2;
 written bare there (``Prof``), it is a name word, because many title
-words are also surnames.
+words are also surnames — unless a credential stands before it, which
+starts a run of post-nominals and titles (``John Smith PhD Prof`` reads
+title ``Prof``; see :ref:`trailing-titles`).
 
 The last two differ in what the comma is doing. In form 2 it separates
 the family name from the rest, so the family name comes first; in form
@@ -146,7 +148,7 @@ name to its full vocabulary set:
    * - :mod:`Suffixes <nameparser.config.suffixes>`
      - adjacent suffixes
      - ``suffix``
-     - ``John Smith PhD MD`` → ``PhD, MD``
+     - ``John Smith PhD MD`` → ``PhD MD``
    * - :mod:`Bound given names <nameparser.config.bound_given_names>`
      - the following word
      - ``given``
@@ -885,10 +887,12 @@ Because this is structural rather than vocabulary-driven, emptying
 At the end of a name
 ~~~~~~~~~~~~~~~~~~~~
 
-Only the leading slot INFERS. At the back of a name a period-marked
-word is read by vocabulary alone: a word the parser already knows as a
-post-nominal or as a title reads as one, and an unfamiliar abbreviation
-stays a name word.
+Only the leading slot INFERS. At the back of a name a word ending in a
+single period is read by vocabulary alone: a word the parser already
+knows as a post-nominal or as a title reads as one, and an unfamiliar
+abbreviation stays a name word. A word of two or more period-separated
+chunks is the exception, read as a credential by its shape (see
+:ref:`dotted-credentials`).
 
 .. doctest::
 
@@ -896,6 +900,8 @@ stays a name word.
     'Prof.'
     >>> parse("John Smith Xyz.").family
     'Xyz.'
+    >>> parse("Jane Smith N.C.C.").suffix
+    'N.C.C.'
 
 That asymmetry is deliberate. The title vocabulary holds hundreds of
 words that are ordinary surnames — ``king``, ``judge``, ``bishop`` —
@@ -903,6 +909,16 @@ so inferring a trailing title from the shape alone would cost real
 names their family field. The period is what separates the two: a
 trailing title word written *without* one is a name word, so
 ``parse("Mary Jane King").family`` is ``'King'``.
+
+A credential in front changes that. It starts a run of post-nominals
+and titles that lasts to the end of the name, so a bare title word
+behind it is a title:
+
+.. doctest::
+
+    >>> john_prof = parse("John Smith PhD Prof")
+    >>> (john_prof.title, john_prof.suffix)
+    ('Prof', 'PhD')
 
 Comparing names
 ----------------

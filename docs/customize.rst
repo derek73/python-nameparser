@@ -81,12 +81,17 @@ itself cannot be stored:
     'MD PhD'
 
 That has held since 1.4.0. A credential whose words are not in the
-default vocabulary is reached by adding those words, not the phrase:
+default vocabulary is reached by adding those words, not the phrase.
+After a comma the defaults already read an unlisted all-caps run (see
+:ref:`all-caps-credentials`), so the difference shows at the end of a
+name:
 
 .. doctest::
 
+    >>> parse("John Smith LEED AP").suffix
+    ''
     >>> lex = Lexicon.default().add(suffix_acronyms={"leed", "ap"})
-    >>> Parser(lexicon=lex).parse("John Smith, LEED AP").suffix
+    >>> Parser(lexicon=lex).parse("John Smith LEED AP").suffix
     'LEED AP'
 
 Removing works the same way, and drops the word from recognition:

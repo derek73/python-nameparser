@@ -655,9 +655,9 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     after it to the mixed-case rule rather than to the one-case fork,
     so a bare Latin capital there reads as an initial while its
     lowercase spelling joins — the one shape in which the name's OWN
-    words read differently in its two one-case spellings. So "JUAN
-    NÉE JR Y LOPEZ" reads middle "NÉE JR Y" with its "Y" an initial,
-    while "juan née jr y lopez" reads family "jr y lopez" with its
+    words read differently in its two one-case spellings. So "DR.
+    NÉE JUAN Y LOPEZ" reads middle "JUAN Y" with its "Y" an initial,
+    while "dr. née juan y lopez" reads family "juan y lopez" with its
     own "y" joined. A clause's words are read as they always were,
     and that is not an exception to this: such a letter still takes
     a different tag in the two spellings, so its case repair can

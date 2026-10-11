@@ -42,8 +42,9 @@ the "Ph. D."-split merge (v1 fix_phd; decisions.md#phd-merge).
 The piece-level predicates moved to _pieces in #439 -- the S2
 trailing peel, the leading-title and title-piece tests, the
 suffix-piece test, the no-name-segment test. Most are shared with
-assign; is_title_piece and trailing_start are group's alone and
-travelled because the shared ones call them. They had collected here
+assign; trailing_start is group's alone and travelled because the
+shared ones call it (is_title_piece was too, until #602 and #603 gave
+assign calls of its own). They had collected here
 by import direction rather than by topic (assign imported group and
 could not be imported back), which is the accumulation
 mechanisms.md#ONE-PREDICATE-PER-QUESTION describes; group imports them
