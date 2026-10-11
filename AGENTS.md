@@ -91,6 +91,12 @@ uv run sphinx-build -b html docs dist/docs
 #    explicitly — every one of them has gone stale at least once.
 #    - docs/*.rst: usage.rst examples and API surface, plus any file listing
 #      config constants or HumanName kwargs
+#    - README.rst's announcement at the top: it is the PyPI project page
+#      (pyproject's `readme`), so it should lead with the release being
+#      shipped, drawn from the release log's summary. 2.4.0 nearly shipped
+#      still announcing 2.0 and 2.1. Check it with `python -m doctest
+#      README.rst` and `uv run --with readme_renderer python -m
+#      readme_renderer README.rst -o /tmp/readme.html` (PyPI's renderer)
 #    - docstrings that autodoc renders (nameparser/_policy.py, _types.py, ...).
 #      These ARE the API reference in modules.html, so a docs/*.rst-only sweep
 #      structurally misses half the rendered page — that is how the guide and

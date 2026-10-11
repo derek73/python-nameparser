@@ -7,18 +7,24 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 2.0 is out.** Existing ``HumanName`` code keeps working
-through 2.x, and most 1.x code needs no changes. The `migration guide
-<https://nameparser.readthedocs.io/en/latest/migrate.html>`__ has the
-field-by-field map. Please `open an issue
-<https://github.com/derek73/python-nameparser/issues>`__ for anything that
-parses wrong.
+📣 **nameparser 2.4 is out.** It uses letter case to read post-nominal
+credentials much more reliably — ``Jack MA`` is Jack with an MA and
+``Jack Ma`` is the surname Ma, and ``Jane Smith, PhD MA`` keeps both
+credentials together — recognizes more naming conventions (Catalan,
+Irish, Finnish, Malay and others), and writes credentials the usual way
+when it repairs case. The `release log
+<https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has the
+details.
 
-**2.1 adds East Asian name support.** Chinese, Japanese and Korean names
-written in their own scripts are read family-first, unspaced Korean names
-are split against the census surname list, and CJK honorifics are
-recognized. See `East Asian names
+Chinese, Japanese and Korean names written in their own scripts are read
+family-first, unspaced Korean names are split against the census surname
+list, and CJK honorifics are recognized. See `East Asian names
 <https://nameparser.readthedocs.io/en/latest/usage.html#east-asian-names>`__.
+
+Existing ``HumanName`` code from 1.x keeps working through 2.x, and most
+of it needs no changes; see `Coming from 1.x`_ below. Please `open an
+issue <https://github.com/derek73/python-nameparser/issues>`__ for anything
+that parses wrong.
 
 Installation
 ------------
@@ -51,6 +57,13 @@ Quick Start Example
     ('Juan Q. Xavier', 'Q. Xavier de la Vega')
     >>> name.render("{family}, {given}")
     'de la Vega, Juan'
+
+    >>> parse("Jack MA").suffix                    # capitals mark a credential
+    'MA'
+    >>> parse("Jack Ma").family                    # and a surname
+    'Ma'
+    >>> parse("Jane Smith, PhD MA").suffix
+    'PhD MA'
 
     >>> parse("김민준").family                     # Korean: unspaced, split on the census list
     '김'
