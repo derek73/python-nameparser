@@ -1116,17 +1116,17 @@ def test_the_trailing_read_declines_where_there_is_nothing_to_split() -> None:
     assert _read("John Dr. G.J.")[1] is None
 
 
-def _units(text: str) -> tuple[list[tuple[str, int]], int]:
+def _units(text: str) -> list[tuple[str, int]]:
     """`_chain_units` over a whole name's words, one piece each, as
-    (word, mark) pairs, and where the name starts."""
+    (word, mark) pairs."""
     state = _state_through("classify", text)
     pieces = [[i] for i in state.segments[0]]
     ptags: list[set[str]] = [set() for _ in pieces]
     tokens = list(state.tokens)
-    units, at = _chain_units(pieces, ptags, tokens,
-                             leading_titles(pieces, ptags, tokens))
+    units = _chain_units(pieces, ptags, tokens,
+                         leading_titles(pieces, ptags, tokens))
     assert units is not None
-    return [(tokens[p[0]].text, u) for p, u in zip(pieces, units)], at
+    return [(tokens[p[0]].text, u) for p, u in zip(pieces, units)]
 
 
 def test_the_read_marks_the_units_the_chain_will_make() -> None:
@@ -1134,24 +1134,20 @@ def test_the_read_marks_the_units_the_chain_will_make() -> None:
     is JOINED, and a particle inside the run is BOUND -- a word the run
     took, which the peel does not weigh ('van mc'); a suffix piece ends
     the run and stays a unit of its own."""
-    marks, at = _units("John van mc Berg PhD")
+    marks = _units("John van mc Berg PhD")
     assert marks == [("John", OPENS), ("van", OPENS), ("mc", BOUND),
                      ("Berg", JOINED), ("PhD", OPENS)]
-    assert at == 0
 
 
-def test_a_unit_opened_inside_the_titles_starts_the_name() -> None:
-    """A title that is also a particle opens the chain's unit inside the
-    leading titles, and the name starts there, not past the titles. A
-    word the reading weighs ('MA') is a word of its own though the
-    chain may join it -- and a unit that is nothing else past its opener
-    leaves the titles a title ('Freiherr St MA'), #620's review."""
-    marks, at = _units("Freiherr St van Berg MA")
-    assert [u for _, u in marks] == [OPENS, OPENS, BOUND, JOINED, OPENS]
-    assert at == 1
-    marks, at = _units("Freiherr St MA")
+def test_the_chain_opens_no_unit_inside_the_titles() -> None:
+    """#624: of two titles that are also particles the second leads the
+    chain (`chain_lead`), so no unit opens inside the titles: 'van'
+    opens the first, past them. A word the reading weighs ('MA') is a
+    word of its own though the chain may join it."""
+    marks = _units("Freiherr St van Berg MA")
+    assert [u for _, u in marks] == [OPENS, OPENS, OPENS, JOINED, OPENS]
+    marks = _units("Freiherr St MA")
     assert [u for _, u in marks] == [OPENS, OPENS, OPENS]
-    assert at == 2
 
 
 _WEIGHED_GRID_HEADS = ("John van", "Freiherr von", "anh van", "Jan de la",
@@ -1175,8 +1171,8 @@ def _weighed_grid_violations() -> list[str]:
                 pieces = [[i] for i in state.segments[0]]
                 ptags: list[set[str]] = [set() for _ in pieces]
                 tokens = list(state.tokens)
-                units, _ = _chain_units(pieces, ptags, tokens,
-                                        leading_titles(pieces, ptags, tokens))
+                units = _chain_units(pieces, ptags, tokens,
+                                     leading_titles(pieces, ptags, tokens))
                 if units is None:
                     continue
                 read, _start = found

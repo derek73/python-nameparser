@@ -140,6 +140,44 @@ def is_title_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "vocab:title" in tokens[piece[0]].tags
 
 
+# rules.md#P4: "a particle in the name's leading position chains
+# nothing" -- WHERE that position is, asked once, by group's chain and
+# the trailing read's unit count (#624)
+def chain_lead(pieces: Sequence[Sequence[int]], ptags: Sequence[Set[str]],
+               tokens: Sequence[WorkToken], n: int) -> int:
+    """The particle chain's leading position, given `n`, the end of
+    the leading title run (`leading_titles`): the last title in the run
+    that is also a particle, else the first piece past the run. A title
+    is no name word, so the first piece past the run leads; a word in
+    both vocabularies ('Freiherr', 'St') leads in its stead and puts
+    the particle behind it inside a name ('Freiherr von Berg', 'St van
+    Johnson'), and of several such words the last leads, all being
+    titles ('Freiherr St John Smith' as 'Dr. St John Smith'). No
+    particle stands between the lead and the run's end, so the chain
+    opens no unit inside the titles.
+
+    The run is read as walked, before H3's give-back: a title the run
+    hands back to the name because only suffix words follow it is
+    still a title to the chain, so the particle behind it is the
+    name's leading piece and chains nothing (P4: 'Dr. Mc Mc' keeps
+    'Mc' and 'Mc' apart, as before #624). `leading_titles` stops at a
+    piece that is itself a leading title only where it gave that piece
+    back, before a suffix piece (the tags it tests inline first), or at
+    the segment's last piece, which a title may not be unless it is the
+    whole segment -- the `n + 1 < len(pieces)` test rules that one out.
+    The same tags go first here, so a name with no suffix behind its
+    titles pays no frame for the test."""
+    if (n + 1 < len(pieces)
+            and ("suffix" in ptags[n + 1]
+                 or "vocab:suffix" in tokens[pieces[n + 1][0]].tags)
+            and is_leading_title(pieces[n], ptags[n], tokens)):
+        n += 1
+    for k in range(n - 1, -1, -1):
+        if is_prefix_piece(pieces[k], ptags[k], tokens):
+            return k
+    return n
+
+
 # A particle, or a piece a join made one: what group's prefix chain
 # (at its loop in _group_segment) chains and stops at, what P3's join
 # derives a prefix from, and what group's rootname count and leading
@@ -304,8 +342,8 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
 # still reaches it as `_pieces._PERIOD_ABBREV` -- an import binds the
 # same name here, so the sync test's target did not move. Out of
 # assign since #424 and in the piece layer since #439: the test is
-# assign's, and group's leading-particle scan and trailing-run walk
-# must start where assign starts.
+# assign's, and the chain's leading position (`chain_lead`) and the
+# trailing-run walk must start where assign starts.
 
 
 # rules.md#H2: "an abbreviation opening the part of the name that
@@ -353,10 +391,10 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     (rules.md#H3, decisions.md#H3 -- the block at the floor below
     carries the examples of each half, and the ordering its two inline
     tag reads were measured on).
-    One definition, read by assign (which sets the roles) and by the
-    chain's trailing-run walk; the leading-particle scan shares the
-    predicate, is_leading_title, but stops at a title-and-particle
-    word (P4, #367, #424)."""
+    One definition, read by assign (which sets the roles), by the
+    chain's trailing-run walk, and by `chain_lead`, which finds the
+    chain's leading position inside this run for group's chain and the
+    trailing read alike (P4, #367, #424, #624)."""
     n = 0
     while n < len(pieces):
         if ((n + 1 < len(pieces) or len(pieces) == 1)
@@ -1708,7 +1746,7 @@ def chain_run_end(k: int, pieces: Sequence[Sequence[int]],
 def _chain_units(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
-                 n: int) -> tuple[list[int] | None, int]:
+                 n: int) -> list[int] | None:
     """The name units P2's chain will make of `pieces`, as a mark per
     piece -- OPENS where a piece opens a unit, JOINED where the chain
     will join a name word to the run in front of it and the reading
@@ -1717,13 +1755,11 @@ def _chain_units(pieces: Sequence[Sequence[int]],
     particle inside the run, a word the run took and so a name word
     whatever else it is ('van mc', 'von vd': rules.md#S2, the words
     both particles and suffix vocabulary standing straight behind a
-    particle) -- and where the name starts.
-    `n` is the end of the leading title run; the chain's leading
-    position is the first title that is also a particle ('Freiherr
-    von vd', 'St van Mc'), else `n`, and the chain opens no unit there.
-    A unit the chain opens INSIDE the titles makes a name of them
-    ('Freiherr St van Berg MA', 'Freiherr Freiherr Prof do'), so the
-    first unit at or before `n` is where the name starts.
+    particle).
+    `n` is the end of the leading title run, and the chain starts past
+    its leading position (`chain_lead`, the one answer group's chain
+    takes too, #624), which opens no unit inside the titles: the name
+    starts at `n`.
 
     Nothing is merged: the read counts with the flags and reads every
     piece as written, so no word it weighs is hidden inside a unit
@@ -1737,15 +1773,9 @@ def _chain_units(pieces: Sequence[Sequence[int]],
                and "particle" in tokens[pieces[k][0]].tags)
               for k in range(count)]
     if not any(prefix[1:]):
-        return None, n
-    leading = n
-    for k in range(n):
-        if prefix[k]:
-            leading = k
-            break
+        return None
     units = [OPENS] * count
-    at = n
-    k = leading + 1
+    k = chain_lead(pieces, ptags, tokens, n) + 1
     while k < count:
         if prefix[k]:
             j = chain_run_end(k, pieces, ptags, tokens, count)
@@ -1756,14 +1786,10 @@ def _chain_units(pieces: Sequence[Sequence[int]],
             while q < j and not _weighed(pieces[q], tokens):
                 units[q] = JOINED
                 q += 1
-            # a unit with nothing past its opener is no unit the count
-            # sees, and makes no name of the titles it opens inside
-            if q > k + 1 and k < at:
-                at = k
             k = j
             continue
         k += 1
-    return units, at
+    return units
 
 
 def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
@@ -1773,9 +1799,8 @@ def _weighed(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     word in it by shape, an initial, a roman numeral by shape, or a
     period-marked title word. A word the chain joins and the reading
     weighs is a word the reading may yet take ('Freiherr von Berg MA
-    X.Y.Z.' keeps suffix 'MA X.Y.Z.'), and one that opens a unit inside
-    the titles may leave the titles a title ('St St VI'), so it ends the
-    plain run the count folds into the particle (#620's review). A
+    X.Y.Z.' keeps suffix 'MA X.Y.Z.'), so it ends the plain run the
+    count folds into the particle (#620's review). A
     connective join is one name word, P3's own count. The tests inline:
     this asks once per word behind a particle run."""
     if len(piece) > 1:
@@ -1810,8 +1835,8 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
     n = leading_titles(pieces, ptags, tokens)
     if n == len(pieces):
         return None
-    units, at = _chain_units(pieces, ptags, tokens, n)
-    rest, titled, peel = tail_reading(peel_walk(at, ptags), pieces, ptags,
+    units = _chain_units(pieces, ptags, tokens, n)
+    rest, titled, peel = tail_reading(peel_walk(n, ptags), pieces, ptags,
                                       tokens, one_case, units)
     tail: set[int] = set()
     for k in rest[peel.names:]:
