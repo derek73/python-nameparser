@@ -3852,6 +3852,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-06, #613: 452 -> 454; its reach absorbed both C1 examples #613 added to the corpus, 'John Smith, Mr. and Mrs.' and 'Ortega y Gasset, Dr.'.
         # 2026-10-06, #617: 454 -> 455; its reach absorbed the C1 example 'Smith, Chancellor of the Exchequer MP' #617 added to rules.md.
         # 2026-10-10, #623: 455 -> 457; its reach absorbed the two rules.md#H5 examples #623 added, 'Smith, John van der Berg Prof.' and 'Smith, Jan van Prof.', both explained by fix(#623).
+        # 2026-10-11, #636: 457 -> 458; its reach absorbed the rules.md#C2 example 'John Smith, Jr., van der Berg Prof.' #636 added, which at 1.4.0 it explains (suffix and title), as fix(#636) does at 2.x.
         "fix(comma-family) lone post-comma piece routes to suffix/title, not first":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -3875,7 +3876,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rules.md#H1 comma example. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(457, ('given', 'suffix', 'title'), "3d06697954cf", None),
+            _Claim(458, ('given', 'suffix', 'title'), "f7ff98eb54b9", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -3989,6 +3990,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-06, #613: 452 -> 454; its reach absorbed both C1 examples #613 added to the corpus, 'John Smith, Mr. and Mrs.' and 'Ortega y Gasset, Dr.'.
         # 2026-10-06, #617: 454 -> 455; its reach absorbed the C1 example 'Smith, Chancellor of the Exchequer MP' #617 added to rules.md.
         # 2026-10-10, #623: 455 -> 457; its reach absorbed the two rules.md#H5 examples #623 added, 'Smith, John van der Berg Prof.' and 'Smith, Jan van Prof.', both explained by fix(#623).
+        # 2026-10-11, #636: 457 -> 458; its reach absorbed the rules.md#C2 example 'John Smith, Jr., van der Berg Prof.' #636 added, which at 1.4.0 it explains (suffix and title), as fix(#636) does at 2.x.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',
@@ -4006,7 +4008,7 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #606: 443 -> 444, 'Greve, Anna'. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(457, ('family', 'given'), "3d06697954cf", None),
+            _Claim(458, ('family', 'given'), "f7ff98eb54b9", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4326,8 +4328,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-10, #623: 124 -> 125, 'Smith, John van der Berg
         # Prof.', the rules.md#H5 example #623 added. Reach: its roles
         # move, so `_initials` is not compared.
+        # 2026-10-11, #636: 125 -> 126, 'John Smith, Jr., van der Berg
+        # Prof.', the rules.md#C2 example #636 added. Reach: its roles
+        # move, so `_initials` is not compared.
         "fix(initials-per-word) a particle chain inside a name part initials each word (facade, since 2.0.0)":
-            _Claim(125, ('_initials',), "81f34e8793d3", ('DEFAULT',)),
+            _Claim(126, ('_initials',), "c756ff1fea5c", ('DEFAULT',)),
         # 2026-09-23, #459: 18 -> 19, 'john smith ph. d.', rules.md#R4's
         # two-token line. Reach, verified name by name.
         # 2026-10-04, #603: 19 -> 20; the rules.md#C1 and #C2 examples #603 added entered the corpus.
@@ -5397,6 +5402,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given', 'title'), "c5b6da915be2", None),
         "fix(#623) after a family comma the chain stops before a trailing title":
             _Claim(2, ('_ambiguities', 'family', 'middle', 'title'), "bbab0baa7826", None),
+        "fix(#636) a part past the second comma makes no particle chain":
+            _Claim(1, ('suffix', 'title'), "f409b04e4c16", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         "fix(#601) a marker behind a connective joins the connective run, and the run's initials follow":
@@ -5880,6 +5887,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given', 'title'), "c5b6da915be2", None),
         "fix(#623) after a family comma the chain stops before a trailing title":
             _Claim(2, ('_ambiguities', 'family', 'middle', 'title'), "bbab0baa7826", None),
+        "fix(#636) a part past the second comma makes no particle chain":
+            _Claim(1, ('suffix', 'title'), "f409b04e4c16", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the
@@ -6596,6 +6605,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given', 'title'), "c5b6da915be2", None),
         "fix(#623) after a family comma the chain stops before a trailing title":
             _Claim(2, ('_ambiguities', 'family', 'middle', 'title'), "bbab0baa7826", None),
+        "fix(#636) a part past the second comma makes no particle chain":
+            _Claim(1, ('suffix', 'title'), "f409b04e4c16", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         "fix(#601) a marker behind a connective joins the connective run, and the run's initials follow":
@@ -6932,6 +6943,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('_ambiguities', 'family', 'given', 'title'), "c5b6da915be2", None),
         "fix(#623) after a family comma the chain stops before a trailing title":
             _Claim(2, ('_ambiguities', 'family', 'middle', 'title'), "bbab0baa7826", None),
+        "fix(#636) a part past the second comma makes no particle chain":
+            _Claim(1, ('suffix', 'title'), "f409b04e4c16", None),
         "fix(#601/#602) a credential in the clause starts a run the take consumes":
             _Claim(1, ('_ambiguities', 'family', 'middle', 'suffix'), "acdcc81cb17c", None),
         # 2026-10-04, #604: new, 3; the rules.md#P7 boundary and the

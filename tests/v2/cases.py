@@ -2109,10 +2109,11 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="the row above as a part past the second comma, which "
                "is consumed as suffixes but for its title words (C2): "
-               "'von' still chains in group, but it ends a suffix, so "
-               "the particle-or-given report that 'von' was chained "
-               "onto a name piece named a reading the parse never "
-               "makes. Every 2.x release through 2.3.0 carried it; the "
+               "'von' ends a suffix, so the particle-or-given report "
+               "that 'von' was chained onto a name piece named a "
+               "reading the parse never makes, and since #636 group "
+               "makes no chain in the part at all. Every 2.x release "
+               "through 2.3.0 carried the report; the "
                "comma-structure flag is the part's own report. Since "
                "#603 'Freiherr', a title word, reads as the title it "
                "is there; until then the part read wholly as suffix "
@@ -3030,6 +3031,38 @@ CASES: tuple[Case, ...] = (
                "and the emitter's `j > k + 1` floor is what both have "
                "to clear",
          shape=1),
+    Case("a_title_behind_a_particle_run_past_the_second_comma",
+         "John Smith, Jr., van der Berg Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "Jr., van der Berg"},
+         ambiguities=("comma-structure",),
+         classification="fix(#636)",
+         notes="a part past the second comma holds no name word "
+               "(rules.md#C2), so group makes no particle chain in it "
+               "and the title word behind 'van der' is a title as in "
+               "'John Smith, Jr., Prof.'; the chain from 'der' had "
+               "taken it into the suffix (1.4.0 and 2.3.0 read suffix "
+               "'Jr., van der Berg Prof.')"),
+    Case("a_title_behind_a_particle_run_after_a_family_comma_tail",
+         "Smith, John, van der Berg Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "van der Berg"},
+         ambiguities=("comma-structure",),
+         classification="fix(#636)",
+         notes="the row above after a FAMILY comma: the part past the "
+               "second comma holds no name word there either (rules.md#C2) "
+               "and makes no chain (#636's review: a chain kept after a "
+               "family comma alone passed every other test); 1.4.0 and "
+               "2.3.0 read suffix 'van der Berg Prof.'"),
+    Case("a_title_behind_a_particle_run_after_an_empty_head_tail",
+         ",, van der Berg Prof.",
+         {"title": "Prof.", "suffix": "van der Berg"},
+         ambiguities=("comma-structure",),
+         classification="fix(#636)",
+         notes="the empty head (AGENTS.md's comma sweep): the part past "
+               "the second comma makes no chain, so the title word is a "
+               "title (rules.md#C2, #636); 1.4.0 and 2.3.0 read suffix "
+               "'van der Berg Prof.'"),
     Case("a_credential_run_after_the_comma_reports_no_chain_fork",
          "John Smith, PhD Do Ma",
          {"given": "John", "family": "Smith", "suffix": "PhD Do Ma"},
@@ -3037,9 +3070,10 @@ CASES: tuple[Case, ...] = (
          notes="the row above behind a suffix comma: the part after it "
                "is the credential run C1 flips to, and assign reads a "
                "tail segment wholly as suffixes, so 'Ma' ends a suffix. "
-               "The chain still runs there ('Do' takes 'Ma') but may "
-               "not report taking it into the name, a reading the "
-               "parse never makes (rules.md#C2); the one report is "
+               "The chain may not report taking it into the name, a "
+               "reading the parse never makes (rules.md#C2), and since "
+               "#613 it is not run in the part at all, decide binding the "
+               "part before any join; the one report is "
                "C1's flip over the whole part. Carried a second, "
                "contradicting suffix-or-name on 'Ma' until 2026-09-28. "
                "1.4.0 read the same fields; 2.3.0 read given 'PhD', "

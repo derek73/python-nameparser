@@ -2080,15 +2080,18 @@ C2. Rationale: text beyond the recognized comma parts should be
     about reading a word of it as a name, whether it is the part
     after a suffix comma (C1) or a part beyond the second: nothing
     in it is read as one, a maiden marker there being an ordinary
-    word (M2), so a particle chain run over it (P2) reports neither a
-    particle chained onto a name word nor an acronym taken into the
-    name. What such a part reports is its own — C1's flip and this
-    rule's flag.
+    word (M2), and no particle chain (P2) is made in it, so a title
+    word behind a particle run there is a title like any other, and
+    the part reports neither a particle chained onto a name word nor
+    an acronym taken into the name. What such a part reports is its
+    own — C1's flip and this rule's flag.
       "John Smith, MD, Bart"      →  suffix="MD, Bart"
       "Eric H. Holder, Jr., Attorney General"  →  title="Attorney General"
       "Eric H. Holder, Jr., Attorney General"  →  ambiguities=()
       "Eric H. Holder, Jr., Secretary of State"  →  ambiguities=("comma-structure",)  · boundary
       "Smith, John, Prof."        →  title="Prof."
+      "John Smith, Jr., van der Berg Prof."  →  title="Prof."
+      "John Smith, Jr., van der Berg Prof."  →  suffix="Jr., van der Berg"
       "John Smith, Jr., Lt.Gov."  →  ambiguities=()
       "John Smith, MD, Ms"        →  suffix="MD, Ms"  · boundary
       "John Smith, MD,, Jr."      →  suffix="MD, Jr."  · boundary
@@ -2099,10 +2102,12 @@ C2. Rationale: text beyond the recognized comma parts should be
       "Steven Hardman, MD, DO, DDS"  →  ambiguities=()
       "STEVEN HARDMAN, MD, DO, DDS"  →  ambiguities=("comma-structure",)  · boundary
       "John Smith, MD, XYZ"  unlisted_caps_suffixes-everywhere  →  ambiguities=("comma-structure",)
-    Accepted: the no-name-reading clause carries no example line of
-    its own. What it moves is a report with no field beside it, and
-    an example line would enter the rules corpus for that report
-    alone; its executable witnesses are the case rows
+    Accepted: the no-name-reading clause's REPORT half carries no
+    example line of its own. What it moves is a report with no field
+    beside it, and an example line would enter the rules corpus for
+    that report alone; its title half is witnessed by the two `John
+    Smith, Jr., van der Berg Prof.` lines above, and its report half's
+    executable witnesses are the case rows
     a_credential_run_after_the_comma_reports_no_chain_fork and
     a_part_past_the_second_reports_no_particle_fork in
     tests/v2/cases.py, read beside the two rows the chain still
