@@ -147,13 +147,29 @@ def chain_lead(pieces: Sequence[Sequence[int]], ptags: Sequence[Set[str]],
                tokens: Sequence[WorkToken], n: int) -> int:
     """The particle chain's leading position, given `n`, the end of
     the leading title run (`leading_titles`): the last title in the run
-    that is also a particle, else `n`. A title is no name word, so the
-    first piece past the run leads; a word in both vocabularies
-    ('Freiherr', 'St') leads in its stead and puts the particle behind
-    it inside a name ('Freiherr von Berg', 'St van Johnson'), and of
-    two such words the second leads, both being titles ('Freiherr St
-    John Smith' as 'Dr. St John Smith'). No particle stands between
-    the lead and `n`, so the chain opens no unit inside the titles."""
+    that is also a particle, else the first piece past the run. A title
+    is no name word, so the first piece past the run leads; a word in
+    both vocabularies ('Freiherr', 'St') leads in its stead and puts
+    the particle behind it inside a name ('Freiherr von Berg', 'St van
+    Johnson'), and of several such words the last leads, all being
+    titles ('Freiherr St John Smith' as 'Dr. St John Smith'). No
+    particle stands between the lead and the run's end, so the chain
+    opens no unit inside the titles.
+
+    The run is read as walked, before H3's give-back: a title the run
+    hands back to the name because only suffix words follow it is
+    still a title to the chain, so the particle behind it is the
+    name's leading piece and chains nothing (P4: 'Dr. Mc Mc' keeps
+    'Mc' and 'Mc' apart, as before #624). `leading_titles` stops at a
+    piece that is itself a leading title only where it gave that piece
+    back, and only before a suffix piece, the tags it tests inline
+    first; the same tags go first here, so a name with no suffix behind
+    its titles pays no frame for the test."""
+    if (n + 1 < len(pieces)
+            and ("suffix" in ptags[n + 1]
+                 or "vocab:suffix" in tokens[pieces[n + 1][0]].tags)
+            and is_leading_title(pieces[n], ptags[n], tokens)):
+        n += 1
     for k in range(n - 1, -1, -1):
         if is_prefix_piece(pieces[k], ptags[k], tokens):
             return k
@@ -324,8 +340,8 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
 # still reaches it as `_pieces._PERIOD_ABBREV` -- an import binds the
 # same name here, so the sync test's target did not move. Out of
 # assign since #424 and in the piece layer since #439: the test is
-# assign's, and group's leading-particle scan and trailing-run walk
-# must start where assign starts.
+# assign's, and the chain's leading position (`chain_lead`) and the
+# trailing-run walk must start where assign starts.
 
 
 # rules.md#H2: "an abbreviation opening the part of the name that

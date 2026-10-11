@@ -243,8 +243,8 @@ H4. Rationale: this is a name parser, not a title parser. Handed a
     vocabulary reports `title-or-name` as well, the fork there being
     whether the title word inside the unit is a title at all. Usually
     a join (P3), and a particle chain (P4) is the same shape and
-    reports too — `St St née` reads family "St née" with `st` title
-    vocabulary inside it. The
+    reports too — `St van Bishop` reads family "van Bishop" with
+    `bishop` title vocabulary inside it. The
     clause reaches EVERY join whose non-leading member is TITLES
     vocabulary, not the one word that prompted it: `Smith and King`,
     `John and King`, `Smith and Bishop` and `John of Judge` all
@@ -679,18 +679,19 @@ P4. Rationale: a particle links forward from inside a name; at the
     nothing (the title is not a name word), and why "Van Johnson"
     is a given-name reading at all. An unlisted abbreviation before
     the particle is as transparent as a listed title, since assign
-    reads it as one (H2). A word that is both a title and a particle
-    puts the name's leading position on itself, so the particle behind
-    it is inside a name ('Freiherr von Berg'); of two such words in
-    the leading titles the second does, both reading as titles, so no
-    particle chains inside the titles (#624).
+    reads it as one (H2). A word in the leading titles that is both a
+    title and a particle puts the name's leading position on itself,
+    so the particle behind it is inside a name ('Freiherr von Berg');
+    of several such words the last does, all reading as titles, so no
+    particle chains inside the titles (#624). The titles are those
+    written, before H3 gives the last one back to the name.
       "Van Johnson"               →  given="Van"
       "Sir de Mesnil"             →  pieces=[["Sir"], ["de"], ["Mesnil"]]
       "Xyz. van Johnson"          →  given="van"
       "John van der Berg"         →  pieces=[["John"], ["van", "der", "Berg"]]  · boundary
       "Freiherr St John Smith"    →  title="Freiherr St"
       "Freiherr St John Smith"    →  given="John"
-    history: decisions.md#P2 · interacts: P1, P5, H2 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
+    history: decisions.md#P2 · interacts: P1, P5, H2, H3 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
 
 P5. Rationale: some given-name words are incomplete alone — "abdul"
     is a bound form that the next word completes.

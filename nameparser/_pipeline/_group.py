@@ -819,18 +819,18 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # name text parsed two ways ("Van Johnson" -> given Van, family
         # Johnson; "Dr. Van Johnson" -> family "Van Johnson").
         #
-        # "Title AND NOT prefix" rather than the plain "not a title" the
-        # rule is stated as, and the difference is not academic: `st`,
-        # `do` and `freiherr` are each BOTH a title and an ambiguous
-        # particle, so the plain test skipped over the very piece the
-        # exception exists to protect and "St John Smith" -- no title in
-        # front of it at all -- collapsed from title St, given John,
-        # family Smith into one given "St John Smith". A piece that
-        # could be the name's own first piece stops the scan; only a
-        # piece that can ONLY be a title is stepped over.
+        # A word that is BOTH a title and a particle (`st`, `freiherr`)
+        # in the title run leads in the run's place, and the last such
+        # word does (`chain_lead`, #624): a scan stepping over every
+        # title skipped the very piece the exception exists to protect,
+        # and "St John Smith" -- no title in front of it at all --
+        # collapsed from title St, given John, family Smith into one
+        # given "St John Smith"; a scan stopping at the FIRST such word
+        # chained the second, so "Freiherr St John Smith" read family
+        # "St John Smith" while assign read both words as titles.
         #
         # Computed once, before the loop: every merge below starts at
-        # some k at or past this index, so no merge can move it.
+        # some k past this index, so no merge can move it.
         #
         # Suffix pieces are deliberately NOT skipped, and the reason is
         # what skipping them WOULD do rather than what it would cost.
@@ -927,15 +927,15 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # needs an emitter in each.
                 #
                 # Narrow, and #367 is why. `titled == k` says every
-                # piece ahead of this one is a title, and the
-                # loop skipped k == leading, so `leading` is STRICTLY
-                # before k -- and being before k it is one of those titles,
-                # while being `leading` it satisfies `not title or prefix`.
-                # For both, it must be a prefix as well: a word in both
-                # vocabularies (`st`, `do`, `freiherr` by default, or any
-                # overlap a caller configures). A plain title alone can no
-                # longer put a particle off the name's leading piece; it is
-                # stepped over and _assign reports the fork instead.
+                # piece ahead of this one is a title, and the loop
+                # skipped every piece up to `leading`, so `leading` is
+                # STRICTLY before k -- one of those titles, and, being
+                # before the title run's end, a prefix as well
+                # (`chain_lead`): a word in both vocabularies (`st`,
+                # `freiherr` by default, or any overlap a caller
+                # configures). A plain title alone can no longer put a
+                # particle off the name's leading piece; it is stepped
+                # over and _assign reports the fork instead.
                 #
                 # What that leaves is wider than one shape: any number of
                 # plain title pieces, then a piece in BOTH vocabularies,

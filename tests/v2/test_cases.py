@@ -144,7 +144,7 @@ def test_a_report_names_the_field_its_word_lands_in(
     of a unit H1 moved to the family behind a title (`Attorney General
     of Minnesota`, `John of Prince Prof.`, `Freiherr St MA`, `Freiherr
     von Bishop X.Y.Z.` and five more rows, as declared; on 2026-10-08
-    `St St née` stood where `Freiherr St MA` does), `Kim Min Do`
+    `St St née` stood where `Freiherr St John Smith MA` does), `Kim Min Do`
     under FAMILY_FIRST ('middle', family, P6), `de Kim Ma` under
     FAMILY_FIRST ('middle', given, P1), and the opt-in movers' rows as
     declared: `Van Ivan Petrovich` and `Van Ali Veli oglu` ('given',
@@ -177,8 +177,8 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
         _FIELD_CLAIM.search(a.detail) is not None
         for case, order in _SWEPT_ROWS
         for a in _swept(case.id, order).ambiguities)
-    assert claims == 1146, (
-        f"the field sweep checks {claims} claims, recorded as 1146 on "
+    assert claims == 1149, (
+        f"the field sweep checks {claims} claims, recorded as 1149 on "
         f"2026-10-10")
 
 

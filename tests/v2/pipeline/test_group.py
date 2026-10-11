@@ -905,8 +905,8 @@ def test_the_chain_stops_before_the_numeral_assign_reads_as_the_suffix() -> None
 
 def test_the_chain_keeps_an_acronym_assign_will_not_peel() -> None:
     # Behind a word in both the title and particle vocabularies the
-    # leading-particle scan stops (P4, #367) before assign's title
-    # peel does, so the chain takes the name's first word: read over
+    # chain's leading position sits (P4, #367, `chain_lead`) inside
+    # assign's title run, so the chain takes the name's first word: read over
     # the pieces as they stand the acronym has three pieces to spare,
     # read over the pieces the chain leaves it has two, and assign
     # would make it the family ('Freiherr von Berg Ma' read given 'von

@@ -10102,6 +10102,20 @@ CASES: tuple[Case, ...] = (
                "H5 chain takes no title out of a name of one word, so "
                "'Prof.' is the name (1.4.0 given 'Freiherr St Prof.'; "
                "until #624 title 'Freiherr', family 'St Prof.')"),
+    Case("a_title_given_back_still_leads_no_chain",
+         "Dr. Mc Mc",
+         {"given": "Dr.", "suffix": "Mc Mc"},
+         ambiguities=("title-or-name",),
+         classification="fix(#624)",
+         notes="H3 gives 'Dr.' back to the name, everything behind it "
+               "being suffix vocabulary, and the chain reads the titles "
+               "as written: 'Mc' is the name's leading piece, chains "
+               "nothing (P4), and the two 'Mc' are the post-nominals H3 "
+               "saw (1.4.0 title 'Dr.', family 'Mc Mc'; until #624 given "
+               "'Dr.', middle 'Mc', family 'Mc', the read counting the "
+               "second 'Mc' as bound into a run the chain never built; "
+               "#624's first draft read title 'Dr.', family 'Mc Mc', "
+               "chaining through the give-back)"),
     Case("a_second_title_particle_is_a_title",
          "Freiherr St John Smith MA",
          {"title": "Freiherr St", "given": "John", "family": "Smith",
