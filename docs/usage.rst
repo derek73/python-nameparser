@@ -880,6 +880,8 @@ names:
 Because this is structural rather than vocabulary-driven, emptying
 ``titles`` does not switch it off; see :ref:`title-detection-off`.
 
+.. _trailing-titles:
+
 At the end of a name
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -920,6 +922,8 @@ the DEFAULT parser; to compare against a string using a custom
     >>> parse("JUAN DE LA VEGA").comparison_key() == parse("Juan de la Vega").comparison_key()
     True
 
+.. _parser-guesses:
+
 When the parser had to guess
 -----------------------------
 
@@ -948,6 +952,8 @@ so branching on a kind needs no import:
     True
     >>> [t.text for t in name.ambiguities[0].tokens]
     ['Van']
+
+.. _credentials-also-surnames:
 
 Credentials that are also surnames
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

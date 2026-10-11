@@ -73,10 +73,17 @@ uv run sphinx-build -b html docs dist/docs
 # Maintain docs/release_log.rst as changes land:
 # - Keep an "Unreleased" entry at the top: `* X.Y.Z - Unreleased`
 # - Add one bullet per notable change; prefix with Add/Fix/Remove/Change
-# - Reference the issue or PR in parentheses: (#123) or (#123, #124)
-#   Use "closes #N" when the change directly resolves the issue
+# - A bullet is an index, not the record: a bold lead (plain text only --
+#   RST markup does not nest, so no ``literal`` or role inside ** **), ONE
+#   before/after example naming the releases it differs from, a limit
+#   sentence only where a caller would trip on it, then the issue link(s):
+#   :issue:`123` or :issue:`123`, :issue:`124` (sphinx.ext.extlinks; a PR
+#   number works too). The mechanism, boundary cases and measurements live
+#   in the issue and docs/design/decisions.md, never in the bullet --
+#   2.4.0's entry was cut from 10,765 words to 1,491 on 2026-10-11
+# - Merge bullets a user would see as one change, with several links
 # - Version is decided at release time (patch/minor/major per semver)
-# - Format matches existing entries — see 1.3.0 block for a current example
+# - Format matches existing entries — see the 2.4.0 block for a current example
 
 # Release checklist (PyPI publish is triggered automatically by GitHub Actions on release creation)
 # 0. Sweep for stale prose. Grepping for the changed SYMBOL finds almost none of

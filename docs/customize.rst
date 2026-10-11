@@ -208,6 +208,23 @@ particles, which are written capitalized:
     >>> str(parse("JUAN DE LA VEGA").capitalized())
     'Juan de la Vega'
 
+Your own entry outranks it the same way, which is how to keep a
+family's capitalized particle. A mask applies wherever its word stands,
+though, so it recases every other name with that particle too:
+
+.. doctest::
+
+    >>> str(parse("martin van buren").capitalized())
+    'Martin van Buren'
+    >>> van_lex = dataclasses.replace(
+    ...     default,
+    ...     capitalization_exceptions=tuple(default.capitalization_exceptions)
+    ...     + (("van", "Van"),))
+    >>> str(parse("martin van buren").capitalized(van_lex))
+    'Martin Van Buren'
+    >>> str(parse("ludwig van beethoven").capitalized(van_lex))
+    'Ludwig Van Beethoven'
+
 How a key matches a word
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -398,6 +415,8 @@ ambiguity is recorded and it becomes part of the surname — under any
 For ``particles_ambiguous`` the default runs the other way from
 credentials: a particle that is not borne as a given name belongs
 outside the set, which is where ``mc`` and ``ste`` were moved (#360).
+
+.. _connectives-also-initials:
 
 One-letter connectives that are also initials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1078,6 +1097,8 @@ opposite:
     >>> cred.title, cred.given
     ('Ms', 'G.J.')
 
+.. _dotted-credentials:
+
 Dotted acronyms
 ^^^^^^^^^^^^^^^
 
@@ -1134,6 +1155,8 @@ way:
     'X.Y.Z.'
     >>> dotted_off.parse("Jane Doe nee Smith X.Y.Z.").maiden
     'Smith X.Y.Z.'
+
+.. _all-caps-credentials:
 
 All-caps words
 ^^^^^^^^^^^^^^
