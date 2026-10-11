@@ -22,9 +22,10 @@ from nameparser._pipeline import _comma
 from nameparser._pipeline._pieces import (
     _anchors, _numeral_behind_the_initial_veto, anchor_in_reach,
     credential_anchors,
-    BOUND, JOINED, OPENS, TailRead, _chain_units,
+    JOINED, OPENS, TailRead, _chain_units,
     credential_at_the_given_slot, is_leading_title,
-    join_connectives, leading_titles, read_trailing_run,
+    join_connectives, leading_titles, merge_particle_runs,
+    read_trailing_run,
     own_words, peel_trailing, peel_walk, segment_suffix_reading,
     tail_reading, trailing_candidates, trailing_titles,
 )
@@ -1071,12 +1072,26 @@ def test_only_groups_joins_derive_a_prefix() -> None:
 
 def _read(text: str) -> tuple[ParseState, tuple[TailRead, int] | None]:
     """S2's trailing read (#614) over a whole name's words as classify
-    tagged them, one piece each."""
+    tagged them, one piece each, the particle runs merged as group
+    merges them ahead of the read (#625)."""
     state = _state_through("classify", text)
+    tokens = list(state.tokens)
     pieces = [[i] for i in state.segments[0]]
     ptags: list[set[str]] = [set() for _ in pieces]
-    return state, read_trailing_run(pieces, ptags, list(state.tokens),
-                                    state.one_case)
+    n = leading_titles(pieces, ptags, tokens)
+    _merged, lead = merge_particle_runs(pieces, ptags, tokens, n)
+    return state, read_trailing_run(pieces, ptags, tokens, state.one_case,
+                                    n, lead)
+
+
+def _merged_pieces(state: ParseState) -> tuple[list[list[int]],
+                                               list[set[str]]]:
+    pieces = [[i] for i in state.segments[0]]
+    ptags: list[set[str]] = [set() for _ in pieces]
+    tokens = list(state.tokens)
+    merge_particle_runs(pieces, ptags, tokens,
+                        leading_titles(pieces, ptags, tokens))
+    return pieces, ptags
 
 
 def _texts(state: ParseState, indices: Set[int]) -> list[str]:
@@ -1117,25 +1132,25 @@ def test_the_trailing_read_declines_where_there_is_nothing_to_split() -> None:
 
 
 def _units(text: str) -> list[tuple[str, int]]:
-    """`_chain_units` over a whole name's words, one piece each, as
-    (word, mark) pairs."""
+    """`_chain_units` over a whole name's pieces as group holds them at
+    the read, as (piece text, mark) pairs."""
     state = _state_through("classify", text)
-    pieces = [[i] for i in state.segments[0]]
-    ptags: list[set[str]] = [set() for _ in pieces]
+    pieces, ptags = _merged_pieces(state)
     tokens = list(state.tokens)
     units = _chain_units(pieces, ptags, tokens,
                          leading_titles(pieces, ptags, tokens))
     assert units is not None
-    return [(tokens[p[0]].text, u) for p, u in zip(pieces, units)]
+    return [(" ".join(tokens[i].text for i in p), u)
+            for p, u in zip(pieces, units)]
 
 
 def test_the_read_marks_the_units_the_chain_will_make() -> None:
-    """#620: a particle opens a unit, a name word the chain joins to it
-    is JOINED, and a particle inside the run is BOUND -- a word the run
-    took, which the peel does not weigh ('van mc'); a suffix piece ends
-    the run and stays a unit of its own."""
+    """#620: a particle opens a unit, and a name word the chain joins to
+    it is JOINED; a suffix piece ends the run and stays a unit of its
+    own. The particles behind it are in its piece already, a dual among
+    them no word of its own ('van mc', #625)."""
     marks = _units("John van mc Berg PhD")
-    assert marks == [("John", OPENS), ("van", OPENS), ("mc", BOUND),
+    assert marks == [("John", OPENS), ("van mc", OPENS),
                      ("Berg", JOINED), ("PhD", OPENS)]
 
 
@@ -1148,6 +1163,40 @@ def test_the_chain_opens_no_unit_inside_the_titles() -> None:
     assert [u for _, u in marks] == [OPENS, OPENS, OPENS, JOINED, OPENS]
     marks = _units("Freiherr St MA")
     assert [u for _, u in marks] == [OPENS, OPENS, OPENS]
+
+
+def test_a_merged_particle_run_is_a_particle_and_no_title() -> None:
+    """#625: the particles straight behind each other past the chain's
+    lead merge into one piece that keeps `prefix` and drops `title`.
+    P3's join carries the title tag in from a word in both vocabularies
+    ('St und Berg'), and kept on the merged run it read the run as a
+    leading title: 'Freiherr Do St und Berg MA' read title 'Freiherr Do
+    St und Berg' with the tag kept, family 'Do St und Berg' without it
+    (as the 1.4.0 and 2.3.0 wheels read the family). The particle
+    leading the name stays out of the merge (P4), so 'de la van Vega'
+    merges 'la van' alone."""
+    state = _state_through("classify", "Freiherr Do St und Berg MA")
+    tokens = list(state.tokens)
+    pieces = [[i] for i in state.segments[0]]
+    ptags: list[set[str]] = [set() for _ in pieces]
+    join_connectives(pieces, ptags, tokens, letter_stays=False,
+                     titles_only=False)
+    assert "title" in ptags[2]
+    merged, lead = merge_particle_runs(pieces, ptags, tokens,
+                                       leading_titles(pieces, ptags, tokens))
+    assert lead == 0
+    assert [" ".join(tokens[i].text for i in p) for p in pieces] \
+        == ["Freiherr", "Do St und Berg", "MA"]
+    assert "prefix" in ptags[1] and "title" not in ptags[1]
+    assert merged == {pieces[1][0]}
+    state = _state_through("classify", "de la van Vega")
+    tokens = list(state.tokens)
+    pieces = [[i] for i in state.segments[0]]
+    ptags = [set() for _ in pieces]
+    merged, lead = merge_particle_runs(pieces, ptags, tokens, 0)
+    assert lead == 0
+    assert [" ".join(tokens[i].text for i in p) for p in pieces] \
+        == ["de", "la van", "Vega"]
 
 
 _WEIGHED_GRID_HEADS = ("John van", "Freiherr von", "anh van", "Jan de la",
@@ -1168,8 +1217,7 @@ def _weighed_grid_violations() -> list[str]:
                 state, found = _read(text)
                 if found is None:
                     continue
-                pieces = [[i] for i in state.segments[0]]
-                ptags: list[set[str]] = [set() for _ in pieces]
+                pieces, ptags = _merged_pieces(state)
                 tokens = list(state.tokens)
                 units = _chain_units(pieces, ptags, tokens,
                                      leading_titles(pieces, ptags, tokens))

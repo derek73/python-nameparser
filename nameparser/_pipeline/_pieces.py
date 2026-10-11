@@ -1055,9 +1055,9 @@ def credential_at_the_given_slot(
     return anchored is not None and anchored()
 
 
-#: `_chain_units`' marks: a piece opening a name unit, a name word the
-#: chain joins to the run in front of it, a particle inside that run
-OPENS, JOINED, BOUND = 1, 0, -1
+#: `_chain_units`' marks: a piece opening a name unit, and a name word
+#: the chain joins to the run in front of it
+OPENS, JOINED = 1, 0
 
 
 def second_unit(rest: Sequence[int], units: Sequence[int]) -> int:
@@ -1106,9 +1106,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     `units`, where given, marks each piece by the unit the chain will
     put it in (`_chain_units`, #620): the words to spare are counted in
     units, so a particle chain counts as the one name word P2 makes of
-    it, and a piece the chain joins into a run -- a particle inside
-    it, or a word the reading does not weigh -- is a name word the
-    walk stops at. The numeral fork still reads the piece in front of the
+    it, and a word the chain joins to a run without the reading
+    weighing it is a name word the walk stops at. The numeral fork still reads the piece in front of the
     numeral as written: an initial there keeps it a name word whatever
     unit the initial is in ('John van der J. V', rules.md#P2).
     """
@@ -1119,8 +1118,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     k = len(rest) if start is None else start
     while k > 0:
         piece = pieces[rest[k - 1]]
-        # a piece the chain joins into a run is a name word: a particle
-        # inside the run, or a word the reading does not weigh
+        # a word the chain joins to a run, and the reading does not
+        # weigh, is a name word
         if units is not None and units[rest[k - 1]] != OPENS:
             break
         if is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
@@ -1244,7 +1243,8 @@ def run_start(rest: Sequence[int], names: int,
     `units` (`_chain_units`, #620) counts over pieces the chain has not
     joined yet: a word the chain will join to the run in front of it
     is no name word of its own, and a particle opening such a run is
-    the one the run makes ('der la', one surname)."""
+    the one the run makes ('der la', merged into one piece ahead of
+    the read, one surname)."""
     if names < 3:
         return names
     core = 0
@@ -1344,8 +1344,7 @@ def has_name_content(piece: Sequence[int],
 def credential_run(rest: Sequence[int], peel: Peel, p: int,
                    pieces: Sequence[Sequence[int]],
                    ptags: Sequence[Set[str]],
-                   tokens: Sequence[WorkToken],
-                   units: Sequence[int] | None = None) -> Peel:
+                   tokens: Sequence[WorkToken]) -> Peel:
     """`peel` with its name count cut back to `p`, where #602's run
     starts (`run_start`, which the caller asks first so that a name
     with no run pays one frame, not two).
@@ -1359,30 +1358,7 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
     a run, leaves both lists without the title test's frame."""
     run_titles: list[int] = []
     absorbed: list[tuple[int, ...]] = []
-    r = p + 1
-    while r < peel.names:
-        q = rest[r]
-        # Two or more particles in a row are the one piece P2's chain
-        # makes of them wherever they stand, a dual among them ('van
-        # mc', 'Mc Mc') no post-nominal of its own: where the chain has
-        # run that piece is here already, and S2's read (#620) sees the
-        # pieces before it runs, so it gathers the particles its
-        # `units` mark BOUND behind the one that opens them. M2's
-        # clause-free view reads words before any join and reports them
-        # word by word, as it always has.
-        e = r + 1
-        while (units is not None and e < peel.names
-               and units[rest[e]] == BOUND):
-            e += 1
-        if e > r + 1:
-            run: list[int] = []
-            for x in rest[r:e]:
-                run.extend(pieces[x])
-            if has_name_content(run, tokens):
-                absorbed.append(tuple(run))
-            r = e
-            continue
-        r += 1
+    for q in rest[p + 1:peel.names]:
         if is_suffix_piece(pieces[q], ptags[q], tokens):
             continue
         if is_title_piece(pieces[q], ptags[q], tokens):
@@ -1640,7 +1616,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     if kept == peeled.names:
         p = run_start(rest, peeled.names, pieces, ptags, tokens, units)
         return rest, (), (peeled if p == peeled.names else credential_run(
-            rest, peeled, p, pieces, ptags, tokens, units))
+            rest, peeled, p, pieces, ptags, tokens))
     # `rest[:hi]` stands as written; `behind` holds the peeled runs
     # the splices left after it, and `titled` the chained ones, each
     # back to front -- a pass's run goes in FRONT of what the pass
@@ -1691,7 +1667,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     p = run_start(rest, final.names, pieces, ptags, tokens, units)
     return (rest, tuple(j for run in reversed(titled) for j in run),
             final if p == final.names else credential_run(
-                rest, final, p, pieces, ptags, tokens, units))
+                rest, final, p, pieces, ptags, tokens))
 
 
 class TailRead(NamedTuple):
@@ -1743,26 +1719,78 @@ def chain_run_end(k: int, pieces: Sequence[Sequence[int]],
     return j
 
 
+# rules.md#P2: "A particle joins the words after it into one name part"
+# -- the particles straight behind it first, merged ahead of S2's read
+# so the read counts and absorbs the run as the one piece the chain
+# makes of it (#625)
+def merge_particle_runs(pieces: list[list[int]], ptags: list[set[str]],
+                        tokens: Sequence[WorkToken],
+                        n: int) -> tuple[set[int], int | None]:
+    """Merge each run of two or more adjacent particles past the
+    chain's leading position into one piece, the one `chain_run_end`
+    would open its run with ('van der', 'van mc'). The merged piece is
+    a particle still (`prefix`), and no title: a P3 join can carry the
+    tag in from a word in both vocabularies ('St und Do'), and the
+    merged run would then read as a leading title.
+
+    `n` is the end of the leading title run (`leading_titles`), read
+    before anything merges. Returns the first token of each merged
+    piece -- the chain's PARTICLE_OR_GIVEN report keys on a run that
+    claimed something past its particle, which a merged run has though
+    `chain_run_end` then claims nothing more -- and the leading
+    position (`chain_lead`) where it asked it, else None.
+
+    The particle test is `is_prefix_piece`'s definition written
+    inline, and the leading position is asked only where two particles
+    stand together past the first piece (AGENTS.md's frame budget,
+    question 1)."""
+    prefix: list[bool] = []
+    for k in range(len(pieces)):
+        prefix.append("prefix" in ptags[k]
+                      or len(pieces[k]) == 1
+                      and "particle" in tokens[pieces[k][0]].tags)
+    merged: set[int] = set()
+    k = 1
+    while k + 1 < len(prefix) and not (prefix[k] and prefix[k + 1]):
+        k += 1
+    if k + 1 >= len(prefix):
+        return merged, None
+    lead = chain_lead(pieces, ptags, tokens, n)
+    k = lead + 1
+    while k < len(prefix):
+        if prefix[k]:
+            q = k + 1
+            while q < len(prefix) and prefix[q]:
+                q += 1
+            if q > k + 1:
+                merged.add(pieces[k][0])
+                merge_pieces(pieces, ptags, k, q, add={"prefix"},
+                             drop={"title"})
+                del prefix[k + 1:q]
+        k += 1
+    return merged, lead
+
+
 def _chain_units(pieces: Sequence[Sequence[int]],
                  ptags: Sequence[Set[str]],
                  tokens: Sequence[WorkToken],
-                 n: int) -> list[int] | None:
+                 n: int, lead: int | None = None) -> list[int] | None:
     """The name units P2's chain will make of `pieces`, as a mark per
-    piece -- OPENS where a piece opens a unit, JOINED where the chain
-    will join a name word to the run in front of it and the reading
-    does not weigh the word (`_weighed`, which keeps a word of its own
-    what a position always counted as one), and BOUND for a
-    particle inside the run, a word the run took and so a name word
-    whatever else it is ('van mc', 'von vd': rules.md#S2, the words
-    both particles and suffix vocabulary standing straight behind a
-    particle).
+    piece -- OPENS where a piece opens a unit, and JOINED where the
+    chain will join a name word to the run in front of it and the
+    reading does not weigh the word (`_weighed`, which keeps a word of
+    its own what a position always counted as one). The particles
+    straight behind each other are one piece already
+    (`merge_particle_runs`, #625), so a particle run is one unit and a
+    dual inside it ('van mc', 'von vd') no word the read can take.
     `n` is the end of the leading title run, and the chain starts past
     its leading position (`chain_lead`, the one answer group's chain
-    takes too, #624), which opens no unit inside the titles: the name
-    starts at `n`.
+    takes too, #624; `lead` where the caller has asked it already),
+    which opens no unit inside the titles: the name starts at `n`.
 
-    Nothing is merged: the read counts with the flags and reads every
-    piece as written, so no word it weighs is hidden inside a unit
+    Nothing else is merged: the read counts with the flags and reads
+    every other piece as written, so no word it weighs is hidden
+    inside a unit
     (#620; the merged copy #614 read through hid a title inside a
     credential run and a shape-only numeral, and its indices drifted
     from the pieces'). None where no particle stands past the first
@@ -1775,14 +1803,12 @@ def _chain_units(pieces: Sequence[Sequence[int]],
     if not any(prefix[1:]):
         return None
     units = [OPENS] * count
-    k = chain_lead(pieces, ptags, tokens, n) + 1
+    k = (chain_lead(pieces, ptags, tokens, n) if lead is None
+         else lead) + 1
     while k < count:
         if prefix[k]:
             j = chain_run_end(k, pieces, ptags, tokens, count)
             q = k + 1
-            while q < j and prefix[q]:
-                units[q] = BOUND
-                q += 1
             while q < j and not _weighed(pieces[q], tokens):
                 units[q] = JOINED
                 q += 1
@@ -1818,7 +1844,8 @@ _WEIGHED_TAGS = _TRAILING_WORD_TAGS | {"initial"}
 def read_trailing_run(pieces: Sequence[Sequence[int]],
                       ptags: Sequence[Set[str]],
                       tokens: Sequence[WorkToken],
-                      one_case: bool | None,
+                      one_case: bool | None, n: int,
+                      lead: int | None = None,
                       ) -> tuple[TailRead, int] | None:
     """`tail_reading` read once over a segment's pieces as group holds
     them after rules.md#P3's connective joins and before the particle
@@ -1831,11 +1858,17 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
     ('John Dr. G.J.'), the one shape whose run holds a name piece --
     there group joins as before #614 and assign reads for itself. A
     segment the read takes nothing from reads as a run of no pieces, at
-    the end."""
-    n = leading_titles(pieces, ptags, tokens)
+    the end.
+
+    `n` is the end of the leading title run (`leading_titles`) and
+    `lead` the chain's leading position where the caller has asked it,
+    both read before `merge_particle_runs` merged the pieces: the merge
+    starts past the lead and drops the title tag, so it moves neither
+    -- save where H3 had given a title back before a particle that is
+    suffix vocabulary ('St mc mc'), which reads as written."""
     if n == len(pieces):
         return None
-    units = _chain_units(pieces, ptags, tokens, n)
+    units = _chain_units(pieces, ptags, tokens, n, lead)
     rest, titled, peel = tail_reading(peel_walk(n, ptags), pieces, ptags,
                                       tokens, one_case, units)
     tail: set[int] = set()
