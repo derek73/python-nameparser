@@ -334,8 +334,8 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     of a trailing title rather than taking it into the family name.
     A title word a connective joined into a longer unit is no single
     word for the chain to take. After a family comma the given part's
-    chain stops in front of the trailing run its walk reads, the
-    titles in it as well as the suffixes, so there too a trailing
+    chain stops in front of the trailing run of suffixes and titles,
+    read as the comma-less name reads it, so there too a trailing
     title is the title and P6's attachment reads the particle in
     front of it as though the title were absent. A maiden clause ends where the run the end of the name
     reads without it begins (M2), so where a trailing rule reads the
@@ -981,7 +981,7 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    history: decisions.md#P6 · interacts: A1, C1, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions.md#P6 · interacts: A1, C1, H5, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
 P7. Rationale: a one-letter particle is spelled with the same letter
     as an initial, and the period is what tells them apart. An

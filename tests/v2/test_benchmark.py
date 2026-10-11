@@ -881,6 +881,25 @@ def test_a_comma_part_with_no_free_connective_skips_the_join() -> None:
                        only="join_connectives") == 1
 
 
+def test_a_given_part_with_no_particle_skips_the_chain_bound() -> None:
+    """Group asks where the particle chain stops only where a particle
+    stands past the chain's lead, since the chain merges nothing
+    otherwise: after a family comma the bound is `trailing_run_start`,
+    a whole `tail_reading` (#623), which every family-comma name with a
+    trailing word would pay for nothing. Recorded negative control,
+    #623's review (2026-10-10, py3.11): with the gate removed no output
+    moves (226,776 parses compared), the bound is entered once on each
+    name below, and 'Smith, John Prof.' costs 250 frames against
+    207."""
+    if sys.getprofile() is not None:
+        pytest.skip("a profile hook is already installed; this test owns it")
+    for text in ("Smith, John Prof.", "Smith, John PhD"):
+        assert _frames_for(text, only="trailing_run_start") == 0, text
+    # REACHABILITY: a particle in the given part asks it
+    assert _frames_for("Smith, John van der Berg",
+                       only="trailing_run_start") == 1
+
+
 def test_a_segment_with_no_free_connective_skips_the_join() -> None:
     """Group's side of the same gate: a segment with no connective left
     free to join runs neither P3's rootname count, whose only reader is

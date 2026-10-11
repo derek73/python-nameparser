@@ -953,7 +953,9 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     as they stand from `start`: the index of the first piece the S2
     peel takes, or len(pieces) when it takes none (#424). What P2's
     chain stops before where S2's run was not read once ahead of it
-    (#614: a family comma's parts, a run holding a name piece), and
+    (#614: the part before a family comma, a part past the second
+    comma, a run holding a name piece; the given part after a family
+    comma stops at `trailing_run_start` since #623), and
     what M2's walk stops before where no trailing rule reads the
     clause -- each had asked "is this a
     suffix?" with the suffix-piece test, which vetoes a bare 'V' as

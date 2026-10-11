@@ -3935,7 +3935,7 @@ name_regex = "^Freiherr St John Smith$"
 fields = ["_ambiguities", "family", "given", "title"]
 
 [[change]]
-# rules.md#H5: "chain stops in front of the trailing run its walk reads"
+# rules.md#H5: "chain stops in front of the trailing run of suffixes and titles,"
 # (#623, 2026-10-10): after a family comma a trailing title is the
 # title, and P6 attaches the particle in front of it.
 issue = "fix(#623) after a family comma the chain stops before a trailing title"

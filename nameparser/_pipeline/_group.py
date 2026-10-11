@@ -806,8 +806,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # suffix" -- on a main segment the run read above decides that
         # and is split off already; elsewhere group does not decide
         # it, and stops before whatever
-        # trailing_start says the run is, so the chain ends where assign's
-        # peel begins (#424). The maiden take reads the title-aware
+        # trailing_start says the run is (the given part after a family
+        # comma, `trailing_run_start`, its trailing titles included:
+        # #623, below), so the chain ends where assign's peel begins
+        # (#424). The maiden take reads the title-aware
         # `tail_reading` over the clause-free view instead (#601), so the
         # clause ends where assign's peel and title chain together begin.
         # rules.md#P2: "a particle joins the words after it into one name
@@ -1041,7 +1043,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 #
                 # The DECLINED reading is what this reports, because
                 # this branch only runs over pieces the peel left
-                # standing: `tail` is the peel's own answer, the inner
+                # standing: `tail` is the peel's own answer (with the
+                # trailing titles in the given part after a family
+                # comma, #623), the inner
                 # scan stops at `len(pieces) - tail`, and a piece the
                 # peel TOOK is behind that bound. Where the chain runs
                 # again with a smaller tail (the re-peel below), the

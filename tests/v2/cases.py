@@ -5003,6 +5003,36 @@ CASES: tuple[Case, ...] = (
                "were absent, so 'van' attaches to the family as in "
                "'Smith, Jan van' (rules.md#H5, #P6; #623); 1.4.0 and "
                "2.3.0 read middle 'van Prof.'"),
+    Case("a_title_particle_heading_the_given_part_keeps_the_bound",
+         "Smith, Freiherr von Berg Prof.",
+         {"title": "Freiherr Prof.", "given": "von Berg",
+          "family": "Smith"},
+         classification="fix(#623)",
+         notes="a word in both the title and particle vocabularies "
+               "heads the given part and leads the chain (#624), so the "
+               "particle behind it is the one the bound is asked for "
+               "(#623's review: a scan from the name's start instead of "
+               "the lead skipped it and left the chain unbounded); 1.4.0 "
+               "and 2.3.0 read given 'von Berg Prof.'"),
+    Case("a_joined_particle_phrase_asks_the_bound",
+         "Smith, John von und zu Berg Prof.",
+         {"title": "Prof.", "given": "John", "middle": "von und zu Berg",
+          "family": "Smith"},
+         classification="fix(#623)",
+         notes="P3 joins 'von und zu' into one piece tagged a particle, "
+               "so it asks the bound as a lone particle does (#623's "
+               "review: a test of single-token particles alone left the "
+               "chain unbounded here); 1.4.0 and 2.3.0 read middle 'von "
+               "und zu Berg Prof.'"),
+    Case("a_trailing_title_after_an_empty_head_stops_the_chain",
+         ", Jan van Prof.",
+         {"title": "Prof.", "given": "Jan", "family": "van"},
+         ambiguities=("particle-or-given",),
+         classification="fix(#623)",
+         notes="the empty head (AGENTS.md's comma sweep): the bound "
+               "holds there too, and P6's attachment, read in post_rules "
+               "behind an empty family part, takes 'van' as the family; "
+               "1.4.0 and 2.3.0 read middle 'van Prof.'"),
     Case("a_bare_title_word_after_a_comma_stays_in_the_chain",
          "Smith, John van der Berg Prof",
          {"given": "John", "middle": "van der Berg Prof",
