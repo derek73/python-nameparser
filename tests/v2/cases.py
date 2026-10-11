@@ -3043,6 +3043,26 @@ CASES: tuple[Case, ...] = (
                "'John Smith, Jr., Prof.'; the chain from 'der' had "
                "taken it into the suffix (1.4.0 and 2.3.0 read suffix "
                "'Jr., van der Berg Prof.')"),
+    Case("a_title_behind_a_particle_run_after_a_family_comma_tail",
+         "Smith, John, van der Berg Prof.",
+         {"title": "Prof.", "given": "John", "family": "Smith",
+          "suffix": "van der Berg"},
+         ambiguities=("comma-structure",),
+         classification="fix(#636)",
+         notes="the row above after a FAMILY comma: the part past the "
+               "second comma holds no name word there either (rules.md#C2) "
+               "and makes no chain (#636's review: a chain kept after a "
+               "family comma alone passed every other test); 1.4.0 and "
+               "2.3.0 read suffix 'van der Berg Prof.'"),
+    Case("a_title_behind_a_particle_run_after_an_empty_head_tail",
+         ",, van der Berg Prof.",
+         {"title": "Prof.", "suffix": "van der Berg"},
+         ambiguities=("comma-structure",),
+         classification="fix(#636)",
+         notes="the empty head (AGENTS.md's comma sweep): the part past "
+               "the second comma makes no chain, so the title word is a "
+               "title (rules.md#C2, #636); 1.4.0 and 2.3.0 read suffix "
+               "'van der Berg Prof.'"),
     Case("a_credential_run_after_the_comma_reports_no_chain_fork",
          "John Smith, PhD Do Ma",
          {"given": "John", "family": "Smith", "suffix": "PhD Do Ma"},
@@ -3052,7 +3072,8 @@ CASES: tuple[Case, ...] = (
                "tail segment wholly as suffixes, so 'Ma' ends a suffix. "
                "The chain may not report taking it into the name, a "
                "reading the parse never makes (rules.md#C2), and since "
-               "#636 it is not run in the part at all; the one report is "
+               "#613 it is not run in the part at all, decide binding the "
+               "part before any join; the one report is "
                "C1's flip over the whole part. Carried a second, "
                "contradicting suffix-or-name on 'Ma' until 2026-09-28. "
                "1.4.0 read the same fields; 2.3.0 read given 'PhD', "

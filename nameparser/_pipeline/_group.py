@@ -918,11 +918,13 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # chain's lead, so it is not asked otherwise: the chain then
         # merges nothing (the test is `is_prefix_piece`'s, inline).
         # rules.md#C2: "a part past the second comma holds no name word"
-        # -- nor does the part after a suffix comma: assign reads such a
-        # part wholly as suffixes and its title words as titles, so the
-        # chain builds no name unit there and is not run, and a title
-        # word behind a particle run stays a word C2 can read
-        # ('John Smith, Jr., van der Berg Prof.', #636).
+        # -- assign reads such a part wholly as suffixes and its title
+        # words as titles, so the chain builds no name unit there and is
+        # not run, and a title word behind a particle run stays a word
+        # C2 can read ('John Smith, Jr., van der Berg Prof.', #636). The
+        # part after a suffix comma reaches no chain either: `_comma.
+        # decide` binds it and empties its segment before any join
+        # (#613).
         chains = False
         if read is None and site is not ClauseSite.TAIL:
             for k in range(leading + 1, len(pieces)):
@@ -1113,8 +1115,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # `tail` is 0, so none of what follows runs, as it does not
         # where no particle stands past the lead (#623); it is the path
         # for the segments that read no run above -- a family comma's
-        # parts, a part past the second comma, a run with a name piece
-        # inside it -- and the given part reaches it still
+        # parts and a run with a name piece inside it (a part past the
+        # second comma makes no chain, #636) -- and the given part
+        # reaches it still
         # ('Smith, Freiherr van Berg X.Y.Z.', the row that holds it).
         #
         # The peel was read over the pieces as they stand, and the
@@ -1326,16 +1329,12 @@ def group(state: ParseState) -> ParseState:
             bound_join = BoundJoin.STRICT
         # Suppressed after a family comma for the same reason _assign
         # suppresses it there: the family name is already fixed, so
-        # there is no fork left to report. Suppressed in a tail segment
-        # as well, after either comma: assign reads that segment as
-        # suffixes and its title words as titles (#603), never as a
-        # name, a marker standing in it being an ordinary word
-        # (rules.md#M2, #601), so a
-        # chain report there -- a particle
-        # chained onto a name piece, or an acronym taken into the name
-        # -- names a reading the parse never takes. rules.md#C2: "a part
-        # the parse consumes wholly as suffixes raises no report about
-        # reading a word of it as a name"
+        # there is no fork left to report. A tail segment needs no
+        # suppression: group makes no particle chain there (#636) and
+        # takes no maiden clause (rules.md#M2, #601), so nothing in group
+        # reports in one. rules.md#C2: "a part the parse consumes wholly
+        # as suffixes raises no report about reading a word of it as a
+        # name"
         tail = tail_start is not None and seg_idx >= tail_start
         # #601: where a maiden clause would stand, off the three facts
         # already in hand here -- which decides whether a marker counts
@@ -1388,7 +1387,7 @@ def group(state: ParseState) -> ParseState:
         for part in parts:
             part_pieces, part_ptags, taken = _group_segment(
                 part, additional, tokens, bound_join,
-                None if (family_comma or tail) else ambiguities,
+                None if family_comma else ambiguities,
                 state.lexicon.given_name_titles,
                 opens_the_name=(seg_idx == 0 and not family_comma),
                 one_case=state.one_case,

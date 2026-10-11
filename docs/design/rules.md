@@ -2102,10 +2102,12 @@ C2. Rationale: text beyond the recognized comma parts should be
       "Steven Hardman, MD, DO, DDS"  →  ambiguities=()
       "STEVEN HARDMAN, MD, DO, DDS"  →  ambiguities=("comma-structure",)  · boundary
       "John Smith, MD, XYZ"  unlisted_caps_suffixes-everywhere  →  ambiguities=("comma-structure",)
-    Accepted: the no-name-reading clause carries no example line of
-    its own. What it moves is a report with no field beside it, and
-    an example line would enter the rules corpus for that report
-    alone; its executable witnesses are the case rows
+    Accepted: the no-name-reading clause's REPORT half carries no
+    example line of its own. What it moves is a report with no field
+    beside it, and an example line would enter the rules corpus for
+    that report alone; its title half is witnessed by the two `John
+    Smith, Jr., van der Berg Prof.` lines above, and its report half's
+    executable witnesses are the case rows
     a_credential_run_after_the_comma_reports_no_chain_fork and
     a_part_past_the_second_reports_no_particle_fork in
     tests/v2/cases.py, read beside the two rows the chain still
