@@ -724,7 +724,8 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     vocabulary (S2), wherever position will then place it, nor a
     title word a trailing rule reads as a title: one the trailing
     title run (H5) takes from the given part after a family comma,
-    or any title word in a part past the second comma (C2); a bare
+    read as the comma-less name reads it, or any title word in a part
+    past the second comma (C2); a bare
     ambiguous acronym is a name word wherever the peel does not take
     it; a marker left as a word that a particle join (P2) has already
     taken travels with that join. A title word standing in the name
@@ -799,7 +800,15 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "Sheik abdul salam"  family-first  →  family="abdul salam"
       "Sheik abdul salam"  family-first  →  given=""
       "Sheik abdul salam"  family-first-given-last  →  family="abdul salam"
-    history: decisions.md#P5 · interacts: S2, M2, H1, H5, P2, P4, P6 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
+    Accepted: the given part after a family comma reads the words
+    behind a title by its own walk, and where that walk reads them
+    otherwise than the comma-less name does, the join is declined and
+    no title is read — a shape-only numeral (VI to X), or V before a
+    third comma part, stays a name word there, and a title word that
+    is also a particle is attached by P6 (`Berg, abdul Prof. VI`
+    reads middle 'Prof. VI'; `Berg, abdul St.` reads family 'St.
+    Berg'), each as the same name with an ordinary given word reads.
+    history: decisions.md#P5 · interacts: C2, S2, M2, H1, H5, P2, P4, P6 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 
 P6. Rationale: a particle ending the name has nothing to link
     forward to, so it is not doing a particle's work there. What it
@@ -2118,7 +2127,7 @@ C2. Rationale: text beyond the recognized comma parts should be
     reports on outside a tail:
     the_chain_reports_the_acronym_it_takes and
     titled_particle_chain_survives_a_title_that_is_also_a_particle.
-    history: decisions.md#C1, decisions.md#S2 · interacts: C1, H5, P2, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1, decisions.md#S2 · interacts: C1, H5, P2, P5, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 ## Name order (O)
 

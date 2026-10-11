@@ -3991,8 +3991,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-06, #613: 452 -> 454; its reach absorbed both C1 examples #613 added to the corpus, 'John Smith, Mr. and Mrs.' and 'Ortega y Gasset, Dr.'.
         # 2026-10-06, #617: 454 -> 455; its reach absorbed the C1 example 'Smith, Chancellor of the Exchequer MP' #617 added to rules.md.
         # 2026-10-10, #623: 455 -> 457; its reach absorbed the two rules.md#H5 examples #623 added, 'Smith, John van der Berg Prof.' and 'Smith, Jan van Prof.', both explained by fix(#623).
-        # 2026-10-11, #636: 457 -> 458; its reach absorbed the rules.md#C2 example 'John Smith, Jr., van der Berg Prof.' #636 added, which at 1.4.0 it explains (suffix and title), as fix(#636) does at 2.x.
-        # 2026-10-11, #637/#640: 458 -> 461; its reach absorbed the three rules.md#P5 examples #637/#640 added, 'Berg, abdul Prof.', 'Berg, abdul Prof. Ali' and 'John Smith, Jr., abdul Dr. Smith', the first and last of which it explains at 1.4.0, as fix(#637) and fix(#640) do at 2.x.
+        # 2026-10-11, #636: 457 -> 458; its reach absorbed the rules.md#C2 example 'John Smith, Jr., van der Berg Prof.' #636 added. Reach only: it moves title, outside this rule's fields; the lone post-comma rule explains it at 1.4.0.
+        # 2026-10-11, #637/#640: 458 -> 461; its reach absorbed the three rules.md#P5 examples #637/#640 added, 'Berg, abdul Prof.', 'Berg, abdul Prof. Ali' and 'John Smith, Jr., abdul Dr. Smith'. Reach only: the moved two move title, outside this rule's fields; the lone post-comma rule explains them at 1.4.0.
         "fix(comma-precomma-family) pre-comma run reads as family, not given":
         # 2026-10-01, #564: 423 -> 430, 'John Smith, XYZ', 'Smith,
         # XYZ', 'García Márquez, MJ', 'García Márquez, MJ PhD',

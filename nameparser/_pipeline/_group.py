@@ -131,8 +131,10 @@ class BoundJoin(IntEnum):
     """v1 _join_bound_first_name's reserve_last, as the three states it
     actually has. IntEnum: the value IS the number of name pieces
     assign's peel must leave in the JOINED view for the join to stand
-    (#425), so the >= comparison below reads unchanged. Post-comma no
-    peel is run -- the pair alone is that one piece -- and DISABLED
+    (#425), so the >= comparison below reads unchanged. Post-comma the
+    reserve runs no peel -- the pair alone is that one piece; the
+    decline reads H5's trailing run only where a title word follows
+    the bound word (#637) -- and DISABLED
     is a mode, never compared: as a threshold 0 would join everything,
     which is why the block is entered on identity first."""
 
@@ -1188,9 +1190,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # union from making the joined piece a suffix piece.
             # rules.md#P5: "nor a title word a trailing rule reads as a
             # title" -- after a family comma one H5's trailing run takes
-            # from the given part, which the LENIENT join reads no peel
-            # for and so asks here, only where a title word follows
-            # ('Berg, abdul Prof.', #637); in a part past the second
+            # from the given part, read as the comma-less name reads it,
+            # which the LENIENT join reads no peel for and so asks here,
+            # only where a title word follows ('Berg, abdul Prof.',
+            # #637; where the given part's own walk then reads the words
+            # behind it otherwise, the title stays a name word, which
+            # rules.md#P5 accepts); in a part past the second
             # comma any title word, which C2 reads as a title ('John
             # Smith, Jr., abdul Dr. Smith', #640). A title word standing
             # in the name is a name word and joins ('abdul Sir Smith
@@ -1198,12 +1203,13 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             nxt, nxt_tags = pieces[fk + 1], ptags[fk + 1]
             if (_is_maiden_marker_piece(nxt, tokens)
                     or is_suffix_piece(nxt, nxt_tags, tokens)
-                    or (is_title_piece(nxt, nxt_tags, tokens)
+                    or ((site is ClauseSite.TAIL
+                         or bound_join is BoundJoin.LENIENT)
+                        and is_title_piece(nxt, nxt_tags, tokens)
                         and (site is ClauseSite.TAIL
-                             or (bound_join is BoundJoin.LENIENT
-                                 and fk + 1 in tail_reading(
-                                     peel_walk(fk, ptags), pieces, ptags,
-                                     tokens, one_case)[1])))):
+                             or fk + 1 in tail_reading(
+                                 peel_walk(fk, ptags), pieces, ptags,
+                                 tokens, one_case)[1]))):
                 pass
             elif bound_join is BoundJoin.LENIENT:
                 # post-comma the family is fixed and the pair is the
