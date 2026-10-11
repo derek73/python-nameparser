@@ -56,7 +56,7 @@ Results
    continuation of the token before it
    — within one merged piece the tag is role-blind and every view
    joins the pair with a space, so it renders "Ph. D." as one
-   credential and ``Smith, Ph. D. Smith`` gives ``first_list``
+   credential and ``Smith, Ph. D.`` gives ``suffix_list``
    ``['Ph. D.']``, and since #436 it also spans the pieces of one
    SUFFIX entry, the run of post-nominals the writer wrote without a
    comma — "MD PhD" — which is the half the suffix view alone reads

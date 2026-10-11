@@ -1,6 +1,7 @@
 import copy
 import dataclasses
 import pickle
+import re
 import unicodedata
 import warnings
 from collections.abc import Callable
@@ -302,7 +303,11 @@ def test_add_unknown_field_raises_with_valid_names() -> None:
 
 
 def test_add_capitalization_exceptions_raises_pointing_at_replace() -> None:
-    with pytest.raises(TypeError, match="dataclasses.replace"):
+    # The offered spelling is a tuple, not a dict: the field is
+    # annotated as one, so a pasted dict fails mypy (AGENTS.md).
+    with pytest.raises(TypeError, match=re.escape(
+            "dataclasses.replace(lexicon, capitalization_exceptions="
+            "(*lexicon.capitalization_exceptions, ('key', 'Value')))")):
         Lexicon.default().add(capitalization_exceptions={"x": "X"})
 
 

@@ -833,8 +833,8 @@ def test_unlisted_caps_suffixes_is_a_validated_enum_defaulting_after_comma(
     ).unlisted_caps_suffixes is CapsSuffixes.OFF
     with pytest.raises(ValueError, match="after-comma, everywhere"):
         Policy(unlisted_caps_suffixes="yes")  # type: ignore[arg-type]
-    # the old bool spelling: a TypeError naming both replacements, in
-    # a form that type-checks when pasted (AGENTS.md)
+    # a bool: a TypeError naming the members, in a form that
+    # type-checks when pasted (AGENTS.md)
     for old, new in ((True, "CapsSuffixes.EVERYWHERE"),
                      (False, "CapsSuffixes.OFF")):
         with pytest.raises(TypeError, match=new.replace(".", r"\.")):

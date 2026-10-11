@@ -5103,7 +5103,7 @@ CASES: tuple[Case, ...] = (
          notes="the floor is the title chain's own: the chain may not "
                "take the first word after the marker, so it takes 'Dr.' "
                "and stops at 'Prof.', which stays the maiden name, as "
-               "'Doe, J. nee MA ba' keeps 'MA' and gives up 'ba'. 2.3.0 "
+               "'Jane Doe nee MA ba' keeps 'MA' and gives up 'ba'. 2.3.0 "
                "read maiden 'Prof. Dr.'"),
     Case("a_title_stop_that_leaves_no_name_word_is_no_stop",
          "Dr. nee Jones Smith Prof.",
@@ -5236,8 +5236,10 @@ CASES: tuple[Case, ...] = (
          notes="P5's bound-given join is LENIENT only after a family "
                "comma; before one the STRICT reserve declines a join "
                "that would change a suffix reading, so the release "
-               "here is not withdrawn and the clause gives 'V' up as "
-               "'Berg, abdul nee Smith V' does not. Unchanged from "
+               "here is not withdrawn and the clause gives 'V' up. "
+               "(The contrast this note drew, 'Berg, abdul nee Smith "
+               "V', has made no clause since #601: a marker after a "
+               "family comma is an ordinary word.) Unchanged from "
                "2.3.0"),
     Case("a_title_released_from_the_bound_given_pair",
          "abdul nee Smith Dr.",
@@ -8929,8 +8931,8 @@ CASES: tuple[Case, ...] = (
                "'MD' after the name is the degree. Position decides, "
                "as for 'sr'. The shape-1 tag rides on that disposition "
                "-- 'md' is the ONE deviation from the approved "
-               "2026-07-30 audit table (decisions.md#comma-suffix-arc, "
-               "where #291 is still unshipped), so if the deviation is "
+               "2026-07-30 audit table (decisions.md#comma-suffix-arc), "
+               "so if the deviation is "
                "ever reversed this row stops being a Title Given "
                "Family arrangement and the tag has to move to another "
                "row rather than the expectations being edited under it",
@@ -9582,19 +9584,26 @@ CASES: tuple[Case, ...] = (
                "reading it is. #289 moves it again: the caps lean "
                "takes 'MA' as a credential rather than the family "
                "(decisions.md#S2)"),
-    Case("title_word_trailing_keeps_the_bare_acronym_reserve",
+    Case("title_word_trailing_reads_as_the_leading_title_does",
          "John Prof. MA",
          {"title": "Prof.", "family": "John", "suffix": "MA"},
          ambiguities=("suffix-or-name",), classification="fix(#316)",
          notes="the same principle where the peel's answer DEPENDS on "
                "the spliced list: this is 'John MA' plus a title and "
-               "reads exactly as 'Prof. John MA' does. Laying a "
-               "second peel's roles over the first peel's read family "
-               "'John', suffix 'MA'. #289 MOVES this row: 'MA' is "
-               "written in capitals inside a mixed-case name, so the "
-               "caps lean now takes it with no words to spare, where "
-               "S2's reserve alone used to keep it the family "
-               "(decisions.md#S2)"),
+               "reads exactly as 'Prof. John MA' does. #289 moved this "
+               "row: 'MA' is written in capitals inside a mixed-case "
+               "name, so the caps lean takes it with no words to "
+               "spare, so this spelling no longer shows the reserve at "
+               "work. The one-case row below does (decisions.md#S2)"),
+    Case("title_word_trailing_keeps_the_bare_acronym_reserve",
+         "JOHN PROF. MA",
+         {"title": "PROF.", "given": "JOHN", "family": "MA"},
+         ambiguities=("suffix-or-name",), classification="fix(#316)",
+         notes="the row above in one case, where the capitals say "
+               "nothing and S2's reserve still decides: read as "
+               "'PROF. JOHN MA' is, 'MA' stays the family because "
+               "taking it would leave none. 1.4.0 read last 'PROF.', "
+               "suffix 'MA'"),
     Case("title_word_trailing_between_two_numerals",
          "John Smith V Prof. VI",
          {"title": "Prof.", "given": "John", "middle": "Smith V",

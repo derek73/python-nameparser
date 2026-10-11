@@ -875,15 +875,15 @@ class Policy:
                 raise TypeError(
                     f"{flag} must be a bool, got {value!r}"
                 )
-        # A bool is the likeliest wrong value: the field was a bool
-        # flag until #564, and `True` is an `int` the enum would read
-        # as no member. Name both spellings that replace it.
+        # A bool is the likeliest wrong value -- the sibling
+        # unlisted_dotted_suffixes is one, and `True` is an `int` the
+        # enum would read as no member -- so name every member.
         caps = self.unlisted_caps_suffixes
         if isinstance(caps, bool):
             raise TypeError(
                 f"unlisted_caps_suffixes must be a CapsSuffixes, got "
-                f"{caps!r}; use CapsSuffixes.EVERYWHERE for the old "
-                f"True and CapsSuffixes.OFF for the old False")
+                f"{caps!r}; use CapsSuffixes.OFF, CapsSuffixes.AFTER_COMMA "
+                f"(the default) or CapsSuffixes.EVERYWHERE")
         object.__setattr__(self, "unlisted_caps_suffixes", _coerce_enum(
             caps, CapsSuffixes, "unlisted_caps_suffixes value",
             "values"))
