@@ -1354,7 +1354,7 @@ def group(state: ParseState) -> ParseState:
         # suppression: group makes no particle chain there (#636) and
         # takes no maiden clause (rules.md#M2, #601), so nothing in group
         # reports in one. rules.md#C2: "a part the parse consumes wholly
-        # as suffixes raises no report about reading a word of it as a
+        # as suffixes raises no report that a word of it was read as a
         # name"
         tail = tail_start is not None and seg_idx >= tail_start
         # #601: where a maiden clause would stand, off the three facts
