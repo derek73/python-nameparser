@@ -354,8 +354,9 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     comma-less writing, which is where the chain runs before the
     reserve is read. After a family comma the reserve reads no peel,
     but the join declines a trailing title word the chain takes (P5),
-    so the title is read there too, as the segment written with an
-    ordinary given name reads it.
+    so the title is read there too, save the shapes P5's Accepted
+    clause records, as the segment written with an ordinary given
+    name reads it.
       "Berg, abdul Prof."         →  title="Prof."
     history: decisions.md#H5 · interacts: H1, H2, H3, H4, M2, P2, P5, P6, S2, C1 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
 
