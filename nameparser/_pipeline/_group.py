@@ -1186,14 +1186,29 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             # vocabulary (S2), wherever position will then place it"
             # -- and declining it is also what keeps merge_pieces' tag
             # union from making the joined piece a suffix piece.
-            if (_is_maiden_marker_piece(pieces[fk + 1], tokens)
-                    or is_suffix_piece(pieces[fk + 1], ptags[fk + 1],
-                                       tokens)):
+            # rules.md#P5: "nor a title word a trailing rule reads as a
+            # title" -- after a family comma one H5's trailing run takes
+            # from the given part, which the LENIENT join reads no peel
+            # for and so asks here, only where a title word follows
+            # ('Berg, abdul Prof.', #637); in a part past the second
+            # comma any title word, which C2 reads as a title ('John
+            # Smith, Jr., abdul Dr. Smith', #640). A title word standing
+            # in the name is a name word and joins ('abdul Sir Smith
+            # Berg', 'Berg, abdul Prof. Ali').
+            nxt, nxt_tags = pieces[fk + 1], ptags[fk + 1]
+            if (_is_maiden_marker_piece(nxt, tokens)
+                    or is_suffix_piece(nxt, nxt_tags, tokens)
+                    or (is_title_piece(nxt, nxt_tags, tokens)
+                        and (site is ClauseSite.TAIL
+                             or (bound_join is BoundJoin.LENIENT
+                                 and fk + 1 in tail_reading(
+                                     peel_walk(fk, ptags), pieces, ptags,
+                                     tokens, one_case)[1])))):
                 pass
             elif bound_join is BoundJoin.LENIENT:
                 # post-comma the family is fixed and the pair is the
                 # given whatever follows, so no peel is read
-                # (decisions.md#P5, #423)
+                # (decisions.md#P5, #423), save the title test above
                 merge_pieces(pieces, ptags, fk, fk + 2, drop={"title"})
             else:
                 # rules.md#P5: "the trailing suffix run (S2) and the

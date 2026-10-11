@@ -2392,6 +2392,22 @@ name_regex = "^John Smith, Jr\\., van der Berg Prof\\.$"
 fields = ["suffix", "title"]
 
 [[change]]
+# rules.md#P5: "title word a trailing rule reads as a title" (#637,
+# 2026-10-11): after a family comma the bound join declines the
+# trailing title word H5's run takes, so it is read as the title.
+issue = "fix(#637) the bound join declines a trailing title after a family comma"
+name_regex = "^Berg, abdul Prof\\.$"
+fields = ["given", "title"]
+
+[[change]]
+# rules.md#P5: "title word a trailing rule reads as a title" (#640,
+# 2026-10-11): in a part past the second comma the bound join declines
+# a title word, which C2 reads as a title.
+issue = "fix(#640) the bound join declines a title word past the second comma"
+name_regex = "^John Smith, Jr\\., abdul Dr\\. Smith$"
+fields = ["suffix", "title"]
+
+[[change]]
 # rules.md#M2 reads the clause-free name, whose credential starts #602's
 # run -- rules.md#S2: "A credential after the name core starts a run to
 # the end of its part" -- and the take consumes that run: maiden 'Smith',

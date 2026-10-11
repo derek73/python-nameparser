@@ -352,13 +352,11 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     title absent — and lands in the same field, the run in FRONT of
     the joined pair being the run H1 asks about. Said of the
     comma-less writing, which is where the chain runs before the
-    reserve is read. After a family comma the reserve reads no peel
-    at all (P5), so the join there takes the trailing title word into
-    the given name and the chain never sees it, where the same
-    segment writing with an ordinary given name reads the title. A
-    gap in the segment path rather than a boundary of this rule, and
-    tracked as part of #316. Pinned by a case row rather than by an
-    example here, so recording the gap does not make it normative.
+    reserve is read. After a family comma the reserve reads no peel,
+    but the join declines a trailing title word the chain takes (P5),
+    so the title is read there too, as the segment written with an
+    ordinary given name reads it.
+      "Berg, abdul Prof."         →  title="Prof."
     history: decisions.md#H5 · interacts: H1, H2, H3, H4, M2, P2, P5, P6, S2, C1 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
 
 ## Particles & surname prefixes (P)
@@ -723,7 +721,10 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     them asks the question about a name that will not exist. The join
     never absorbs a marker standing as a word of its own — a marker
     is not a name word (M2) — nor a word of the unambiguous suffix
-    vocabulary (S2), wherever position will then place it; a bare
+    vocabulary (S2), wherever position will then place it, nor a
+    title word a trailing rule reads as a title: one the trailing
+    title run (H5) takes from the given part after a family comma,
+    or any title word in a part past the second comma (C2); a bare
     ambiguous acronym is a name word wherever the peel does not take
     it; a marker left as a word that a particle join (P2) has already
     taken travels with that join. A title word standing in the name
@@ -772,6 +773,9 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "abdul Sir Smith Berg"      →  given="abdul Sir"
       "Berg, abdul van"           →  given="abdul van"
       "Berg, abdul vd"            →  family="vd Berg"
+      "Berg, abdul Prof."         →  given="abdul"
+      "Berg, abdul Prof. Ali"     →  given="abdul Prof."  · boundary
+      "John Smith, Jr., abdul Dr. Smith"  →  title="Dr."
       "abdul Jr Smith Berg"       →  given="abdul"
       "abdul Jr Smith Berg"       →  middle="Jr Smith"
       "abdul Ph. D. Smith Berg"   →  suffix="Ph. D."
