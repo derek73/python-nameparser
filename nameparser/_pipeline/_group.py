@@ -1115,7 +1115,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # `tail` is 0, so none of what follows runs, as it does not
         # where no particle stands past the lead (#623); it is the path
         # for the segments that read no run above -- a family comma's
-        # parts and a run with a name piece inside it (a part past the
+        # two name parts and a run with a name piece inside it (a part past the
         # second comma makes no chain, #636) -- and the given part
         # reaches it still
         # ('Smith, Freiherr van Berg X.Y.Z.', the row that holds it).
