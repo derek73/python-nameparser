@@ -1863,9 +1863,12 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
     `n` is the end of the leading title run (`leading_titles`) and
     `lead` the chain's leading position where the caller has asked it,
     both read before `merge_particle_runs` merged the pieces: the merge
-    starts past the lead and drops the title tag, so it moves neither
-    -- save where H3 had given a title back before a particle that is
-    suffix vocabulary ('St mc mc'), which reads as written."""
+    starts past the lead and drops the title tag, so it moves the lead
+    never, and the title run only where H3 had given a title back
+    before a run of particles that are suffix vocabulary, which the
+    read takes as written: 'Dr. mc Jr mc mc' reads family 'mc', suffix
+    'Jr mc mc', where the run read after the merge would leave 'mc Jr
+    mc mc' in the family."""
     if n == len(pieces):
         return None
     units = _chain_units(pieces, ptags, tokens, n, lead)

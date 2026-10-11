@@ -1171,10 +1171,11 @@ def test_a_merged_particle_run_is_a_particle_and_no_title() -> None:
     P3's join carries the title tag in from a word in both vocabularies
     ('St und Berg'), and kept on the merged run it read the run as a
     leading title: 'Freiherr Do St und Berg MA' read title 'Freiherr Do
-    St und Berg' with the tag kept, family 'Do St und Berg' without it
-    (as the 1.4.0 and 2.3.0 wheels read the family). The particle
-    leading the name stays out of the merge (P4), so 'de la van Vega'
-    merges 'la van' alone."""
+    St und Berg' with the tag kept, family 'Do St und Berg' without it.
+    The particle leading the name stays out of the merge (P4), so 'de
+    la van Vega' merges 'la van' alone; two runs in one name merge
+    each, and a lone particle is no run ('John van Smith de la
+    Berg')."""
     state = _state_through("classify", "Freiherr Do St und Berg MA")
     tokens = list(state.tokens)
     pieces = [[i] for i in state.segments[0]]
@@ -1197,6 +1198,35 @@ def test_a_merged_particle_run_is_a_particle_and_no_title() -> None:
     assert lead == 0
     assert [" ".join(tokens[i].text for i in p) for p in pieces] \
         == ["de", "la van", "Vega"]
+    for text, want in (
+            ("John van der Smith de la Berg",
+             ["John", "van der", "Smith", "de la", "Berg"]),
+            ("John van Smith de la Berg",
+             ["John", "van", "Smith", "de la", "Berg"])):
+        state = _state_through("classify", text)
+        tokens = list(state.tokens)
+        pieces = [[i] for i in state.segments[0]]
+        ptags = [set() for _ in pieces]
+        merged, _lead = merge_particle_runs(pieces, ptags, tokens, 0)
+        assert [" ".join(tokens[i].text for i in p) for p in pieces] \
+            == want
+        assert merged == {p[0] for p in pieces if len(p) > 1}
+
+
+def test_the_read_takes_the_title_run_as_written_before_the_merge(
+) -> None:
+    """#625: group hands the read the title run read before the merge.
+    Merging 'mc mc' makes it no suffix piece, which would undo H3's
+    give-back of 'mc' and move the name's start; the read keeps the
+    run as written, so the credential run behind the first 'mc' stays
+    the read's. Recorded negative control (2026-10-10): with the read
+    asking `leading_titles` again after the merge, the read takes
+    nothing here and the parse reads family 'mc Jr mc mc'."""
+    state, found = _read("Dr. mc Jr mc mc")
+    assert found is not None
+    read, start = found
+    assert start == 2
+    assert _texts(state, read.tail) == ["Jr", "mc", "mc"]
 
 
 _WEIGHED_GRID_HEADS = ("John van", "Freiherr von", "anh van", "Jan de la",
