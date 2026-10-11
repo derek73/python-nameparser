@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 2.5.0 - Unreleased
+
+    nameparser 2.5 is under development.
+
 * 2.4.0 - October 11, 2026
 
     nameparser 2.4 reads post-nominal credentials much more reliably, recognizes more naming conventions, and writes credentials the usual way when it repairs case. Highlights:
