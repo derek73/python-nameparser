@@ -91,7 +91,7 @@ class Span(NamedTuple):
 #: (rules.md#P3, see CONJUNCTION_OR_INITIAL);
 #: "joined" a continuation of the token before it -- within one
 #: merged piece the tag is role-blind and every view joins the pair
-#: with a space ("Ph." + "D."; 'Smith, Ph. D.' gives suffix_list
+#: with a space ("Ph." + "D."; 'Ph. D., Jr.' gives last_list
 #: ['Ph. D.']), and since #436 it also spans the pieces of one SUFFIX
 #: entry, the run of post-nominals the writer wrote without a comma
 #: ("MD PhD"), which is the half the suffix view alone reads and
@@ -515,7 +515,8 @@ class AmbiguityKind(StrEnum):
     #: in silence. A maiden marker cannot reach this position: after
     #: a family comma it is an ordinary word (rules.md#M2), so "Doe,
     #: Dr. nee Smith MA" reads given ``nee``, middle ``Smith`` and
-    #: suffix ``MA``.
+    #: suffix ``MA`` -- and reports, the ``MA`` ending a given part
+    #: like any other.
     #: And fourth -- pre-existing and untouched by 2.4 as well --
     #: a JOIN beside the member can
     #: take it out of this slot, from either side. Where a chain has

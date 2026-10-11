@@ -90,7 +90,7 @@ Declined:
   [de Mesnil]) but breaks "de la Vega": measured, a single group is
   positioned by the declared order — "Cher" reads given under GIVEN_FIRST — so "de la Vega" would read given="de la Vega" unless a further rule forced a particle-headed group into the family. Add that rule and [de Mesnil][Jean] yields the #364 reading anyway, so the deletion buys nothing and costs P4.
 
-Decided 2026-08-18 (was Open: [#360](https://github.com/derek73/python-nameparser/issues/360), which particles count as never-given): #360 applied the criterion at decisions.md#vocabulary-collisions to the set and moved `mc` and `ste` out of it; later vocabulary work extends the set under the same criterion (#604's Irish particles).
+Decided 2026-08-18 (was Open: [#360](https://github.com/derek73/python-nameparser/issues/360), which particles count as never-given): #360 applied the criterion at decisions.md#vocabulary-collisions and moved `mc` and `ste` into the set (from the may-be-given half), adding the Spanish/Portuguese articles; later vocabulary work extends the set under the same criterion (#604's Irish particles).
 
 ### P2 — particles join forward
 

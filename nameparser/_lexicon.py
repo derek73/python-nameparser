@@ -893,7 +893,7 @@ class Lexicon:
                     "capitalization_exceptions holds key->value pairs; "
                     "use dataclasses.replace(lexicon, "
                     "capitalization_exceptions=(*lexicon."
-                    "capitalization_exceptions, ('key', 'Value'))) "
+                    "capitalization_exceptions, ('key', 'KEY'))) "
                     "instead of "
                     f"{op}()"
                 )
