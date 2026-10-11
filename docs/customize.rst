@@ -399,6 +399,8 @@ For ``particles_ambiguous`` the default runs the other way from
 credentials: a particle that is not borne as a given name belongs
 outside the set, which is where ``mc`` and ``ste`` were moved (#360).
 
+.. _connectives-also-initials:
+
 One-letter connectives that are also initials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1078,6 +1080,8 @@ opposite:
     >>> cred.title, cred.given
     ('Ms', 'G.J.')
 
+.. _dotted-credentials:
+
 Dotted acronyms
 ^^^^^^^^^^^^^^^
 
@@ -1134,6 +1138,8 @@ way:
     'X.Y.Z.'
     >>> dotted_off.parse("Jane Doe nee Smith X.Y.Z.").maiden
     'Smith X.Y.Z.'
+
+.. _all-caps-credentials:
 
 All-caps words
 ^^^^^^^^^^^^^^

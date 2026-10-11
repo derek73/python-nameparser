@@ -13,11 +13,11 @@ Release Log
 
     **Behavior Changes**
 
-    - **Fix a credential acronym that is also a surname being read by position alone.** Capitals now decide in a mixed-case name: ``Jack MA`` gives suffix ``MA`` while ``Jack Ma`` keeps last ``Ma``, where 2.0 through 2.3 read both as the last name. A name written wholly in one case keeps its old reading. :issue:`289`
+    - **Fix a credential acronym that is also a surname being read by position alone.** Capitals now decide in a mixed-case name: ``Jack MA`` gives suffix ``MA`` while ``Jack Ma`` keeps last ``Ma``, where 2.0 through 2.3 read both as the last name. A name written wholly in one case keeps its old reading. See :ref:`credentials-also-surnames`. :issue:`289`
 
-    - **New Policy field unlisted_dotted_suffixes, on by default: a dotted acronym nobody has listed is read by position.** ``Jane Smith N.C.C.`` now gives suffix ``N.C.C.``, where 2.3.0 gave last ``N.C.C.``, while a lone ``Jack X.Y.Z.`` keeps its surname. A dotted version string is no longer a suffix: ``John Smith 1.4.2`` gives last ``1.4.2``. :issue:`516`
+    - **New Policy field unlisted_dotted_suffixes, on by default: a dotted acronym nobody has listed is read by position.** ``Jane Smith N.C.C.`` now gives suffix ``N.C.C.``, where 2.3.0 gave last ``N.C.C.``, while a lone ``Jack X.Y.Z.`` keeps its surname. A dotted version string is no longer a suffix: ``John Smith 1.4.2`` gives last ``1.4.2``. See :ref:`dotted-credentials`. :issue:`516`
 
-    - **New Policy field unlisted_caps_suffixes: an unlisted all-caps word after a comma reads as a credential by default, and elsewhere on request.** ``Jane Smith, LEED AP`` now gives suffix ``LEED AP``, where 2.3.0 gave first ``LEED``, middle ``AP``, last ``Jane Smith``. The cost is a given name written in capitals after a two-word surname: ``García Márquez, GABRIEL`` gives suffix ``GABRIEL``; ``CapsSuffixes.OFF`` keeps the old reading. :issue:`516`, :issue:`564`
+    - **New Policy field unlisted_caps_suffixes: an unlisted all-caps word after a comma reads as a credential by default, and elsewhere on request.** ``Jane Smith, LEED AP`` now gives suffix ``LEED AP``, where 2.3.0 gave first ``LEED``, middle ``AP``, last ``Jane Smith``. The cost is a given name written in capitals after a two-word surname: ``García Márquez, GABRIEL`` gives suffix ``GABRIEL``; ``CapsSuffixes.OFF`` keeps the old reading. See :ref:`all-caps-credentials`. :issue:`516`, :issue:`564`
 
     - **A credential after the name now starts a run of suffixes and titles to the end of its part, with or without a comma.** ``Eric H. Holder Jr. Attorney General`` gives title ``Attorney General``, suffix ``Jr.``, where 2.3.0 gave middle ``H. Holder Jr. Attorney``, last ``General``, and ``Steven Hardman, RN - CRNA`` gives suffix ``RN - CRNA``, where 2.3.0 read ``RN`` as the first name. :issue:`602`, :issue:`603`, :issue:`613`
 
@@ -25,31 +25,31 @@ Release Log
 
     - **Fix a credential ending the given part of a family-comma listing being read as a middle name.** ``Doe, John MA`` gives suffix ``MA``, where 2.0 through 2.3 gave middle ``MA``, restoring 1.4.0's reading; ``Doe, John Ma``, written the way a name is, keeps middle ``Ma``. :issue:`531`
 
-    - **Fix a bare trailing Meng or Lac being read as a credential and losing the family name.** ``wang meng`` gives last ``meng`` and reports a suffix-or-name ambiguity, where 2.0.0 through 2.3.0 gave suffix ``meng`` and no last name. The cost falls on the degree spellings: ``John Smith MEng`` gives last ``MEng``. :issue:`540`
+    - **Fix a bare trailing Meng or Lac being read as a credential and losing the family name.** ``wang meng`` gives last ``meng`` and reports a suffix-or-name ambiguity, where 2.0.0 through 2.3.0 gave suffix ``meng`` and no last name. The cost falls on the degree spellings: ``John Smith MEng`` gives last ``MEng``. See :ref:`credentials-also-surnames`. :issue:`540`
 
     - **Fix a surname particle that is also a credential (vd, mc) being split away from the surname or the credentials around it.** ``SMITH VD MA, JOHN`` gives last ``SMITH VD MA``, where 2.2 and 2.3 gave last ``SMITH MA``, suffix ``VD``. :issue:`573`
 
     - **Fix a particle surname before a comma being split when a credential follows it.** ``van der Berg, PhD`` now gives last ``van der Berg``, suffix ``PhD``; 1.4.0 through 2.3.0 gave first ``van``, last ``der Berg``. :issue:`575`
 
-    - **Fix a trailing title being taken into a surname that begins with a particle.** ``John van der Berg Prof.`` gives title ``Prof.``, last ``van der Berg``, where 1.4.0 through 2.3.0 took ``Prof.`` into the last name. :issue:`614`, :issue:`623`, :issue:`637`
+    - **Fix a trailing title being taken into a surname that begins with a particle.** ``John van der Berg Prof.`` gives title ``Prof.``, last ``van der Berg``, where 1.4.0 through 2.3.0 took ``Prof.`` into the last name. See :ref:`titles at the end of a name <trailing-titles>`. :issue:`614`, :issue:`623`, :issue:`637`
 
     - **Change a title word in a part after a second comma to read as a title.** ``Eric H. Holder, Jr., Attorney General`` gives title ``Attorney General``, suffix ``Jr.``, where 1.4.0 through 2.3.0 gave suffix ``Jr., Attorney General``. :issue:`603`, :issue:`629`, :issue:`636`, :issue:`640`
 
-    - **Add the Catalan and Polish surname link i.** ``Josep Carod i Rovira`` gives last ``Carod i Rovira``, where 1.4.0 through 2.3.0 gave middle ``Carod i``, last ``Rovira``. In a name written wholly in one case the letter reads as an initial and is reported, so ``JOSEP CAROD I ROVIRA`` keeps its old fields; remove ``i`` from ``Lexicon.conjunctions_ambiguous`` to join it there too. :issue:`397`, :issue:`538`
+    - **Add the Catalan and Polish surname link i.** ``Josep Carod i Rovira`` gives last ``Carod i Rovira``, where 1.4.0 through 2.3.0 gave middle ``Carod i``, last ``Rovira``. In a name written wholly in one case the letter reads as an initial and is reported, so ``JOSEP CAROD I ROVIRA`` keeps its old fields; remove ``i`` from ``Lexicon.conjunctions_ambiguous`` to join it there too. See :ref:`connectives-also-initials`. :issue:`397`, :issue:`538`
 
-    - **Fix a one-letter connective joining a name written wholly in one case.** ``jose e maria santos`` gives first ``jose``, middle ``e maria``, last ``santos``, where 1.4.0 through 2.3.0 gave first ``jose e maria``, and reports the call. Mixed-case names are unchanged: ``Jose e Maria Santos`` still gives first ``Jose e Maria``. :issue:`383`, :issue:`479`
+    - **Fix a one-letter connective joining a name written wholly in one case.** ``jose e maria santos`` gives first ``jose``, middle ``e maria``, last ``santos``, where 1.4.0 through 2.3.0 gave first ``jose e maria``, and reports the call. Mixed-case names are unchanged: ``Jose e Maria Santos`` still gives first ``Jose e Maria``. See :ref:`connectives-also-initials`. :issue:`383`, :issue:`479`
 
     - **Fix the Irish particles Ó, Ní and Ua and the Malay binti being read as a middle name.** ``Liam Ó Murchú`` gives last ``Ó Murchú``, where 1.4.0 through 2.3.0 gave middle ``Ó``, last ``Murchú``. Your own ``capitalization_exceptions`` entries now outrank the lowercase case repair gives a particle. :issue:`604`
 
     - **Fix salutations in Finnish, Estonian, Romanian, Croatian/Serbian, Icelandic, Czech, Lithuanian, Malay, Filipino and other languages being read as a first name.** ``Herra Väinö Johansson`` now gives title ``Herra``, first ``Väinö``; 1.4.0 through 2.3.0 gave first ``Herra``, middle ``Väinö``. :issue:`606`
 
-    - **Change where a maiden marker takes a maiden name: only behind a surname, and only up to the credentials and titles the name ends with.** ``Jane Doe nee Smith MA`` gives maiden ``Smith``, suffix ``MA``, where 2.0 through 2.3 gave maiden ``Smith MA``. After a family comma the marker is an ordinary word again, as in 1.4.0: ``Doe, Jane nee Smith`` gives middle ``nee Smith``. :issue:`601`
+    - **Change where a maiden marker takes a maiden name: only behind a surname, and only up to the credentials and titles the name ends with.** ``Jane Doe nee Smith MA`` gives maiden ``Smith``, suffix ``MA``, where 2.0 through 2.3 gave maiden ``Smith MA``. After a family comma the marker is an ordinary word again, as in 1.4.0: ``Doe, Jane nee Smith`` gives middle ``nee Smith``. See :ref:`nicknames-and-maiden-names`. :issue:`601`
 
-    - **Fix a declared suffix delimiter being taken into a joined name part instead of separating suffixes.** With ``suffix_delimiter=" - "``, ``Smith, John, PhD - and MD`` gives suffix ``PhD, and MD``, 1.4.0's reading, where 2.0 through 2.3 gave ``PhD - and MD``. :issue:`549`
+    - **Fix a declared suffix delimiter being taken into a joined name part instead of separating suffixes.** With ``suffix_delimiter=" - "``, ``Smith, John, PhD - and MD`` gives suffix ``PhD, and MD``, 1.4.0's reading, where 2.0 through 2.3 gave ``PhD - and MD``. See :ref:`suffix-delimiters`. :issue:`549`
 
-    - **Report more of the parser's credential-or-name decisions, and name the right field in each report.** ``parse("Smith, MA").ambiguities`` now names ``suffix-or-name``, as every decision at an ambiguous credential does, before or after a comma. A report now names the field its word ends up in rather than the one it was first placed in, and a part read wholly as suffixes no longer reports a particle in it as a name. :issue:`289`, :issue:`544`, :issue:`626`
+    - **Report more of the parser's credential-or-name decisions, and name the right field in each report.** ``parse("Smith, MA").ambiguities`` now names ``suffix-or-name``, as every decision at an ambiguous credential does, before or after a comma. A report now names the field its word ends up in rather than the one it was first placed in, and a part read wholly as suffixes no longer reports a particle in it as a name. See :ref:`parser-guesses`. :issue:`289`, :issue:`544`, :issue:`626`
 
-    - **Change case repair to write credentials the way they are usually written.** ``john smith phd`` now capitalizes to ``John Smith PhD``, ``JANE DOE MBA`` to ``Jane Doe MBA``, ``jane smith r.d.n.`` to ``Jane Smith R.D.N.`` and ``john smith vi`` to ``John Smith VI``, where 2.3.0 gave ``Ph.D.``, ``Mba``, ``R.d.n.`` and ``Vi``. A ``capitalization_exceptions`` value is now a case mask over its key's letters, and one that spells anything else (``{"jr": "Junior"}``) raises ``ValueError``. :issue:`459`
+    - **Change case repair to write credentials the way they are usually written.** ``john smith phd`` now capitalizes to ``John Smith PhD``, ``JANE DOE MBA`` to ``Jane Doe MBA``, ``jane smith r.d.n.`` to ``Jane Smith R.D.N.`` and ``john smith vi`` to ``John Smith VI``, where 2.3.0 gave ``Ph.D.``, ``Mba``, ``R.d.n.`` and ``Vi``. A ``capitalization_exceptions`` value is now a case mask over its key's letters, and one that spells anything else (``{"jr": "Junior"}``) raises ``ValueError``. See :ref:`case-exceptions`. :issue:`459`
 
     - **Fix case repair treating a suffix written in capitals as evidence that the whole name was cased on purpose.** ``juan garcia III`` now capitalizes to ``Juan Garcia III``, where every release returned it untouched. :issue:`492`
 
@@ -59,11 +59,11 @@ Release Log
 
     - **Fix initials disagreeing with the parse about one-letter connectives.** ``HumanName("john e smith").initials()`` gives ``j. e. s.``, where earlier releases gave ``j. s.``, and ``John and Jane Smith`` gives ``J. J. S.``, where 2.0 through 2.3 also gave ``and`` an initial. A v1 subclass overriding ``_process_initial`` must now accept and pass on a ``tokens`` keyword. :issue:`461`, :issue:`528`
 
-    - **Fix a Japanese name written in halfwidth katakana being read given-first.** ``山田 ﾀﾛｳ`` gives last ``山田``, first ``ﾀﾛｳ``, as ``山田 タロウ`` does, where every release gave the reverse. :issue:`594`
+    - **Fix a Japanese name written in halfwidth katakana being read given-first.** ``山田 ﾀﾛｳ`` gives last ``山田``, first ``ﾀﾛｳ``, as ``山田 タロウ`` does, where every release gave the reverse. See :ref:`east-asian-names`. :issue:`594`
 
     - **Fix a katakana name typed with a separate voicing mark being read family-first.** ``ア゙イ タロウ`` gives first ``ア゙イ``, last ``タロウ``, as ``アイ タロウ`` does, where 2.1 through 2.3 gave the reverse. :issue:`596`
 
-    - **Fix halfwidth corner brackets not being read as a nickname.** ``山田 ｢ﾀﾛｰ｣ ﾀﾛｳ`` gives nickname ``ﾀﾛｰ``, where every release kept the bracketed word in the name. :issue:`597`
+    - **Fix halfwidth corner brackets not being read as a nickname.** ``山田 ｢ﾀﾛｰ｣ ﾀﾛｳ`` gives nickname ``ﾀﾛｰ``, where every release kept the bracketed word in the name. See :ref:`brackets`. :issue:`597`
 
     - **Fix a v1 Constants entry with stray whitespace, or that is only a CJK full stop, raising or changing the parse.** Such an entry (``c.titles.add(" dean ")``, ``c.titles.add("。")``) is now ignored with a ``UserWarning`` naming it, as 1.4.0 ignored it, where 2.0 through 2.3 raised ``ValueError`` or applied it. :issue:`541`, :issue:`582`
 
@@ -73,7 +73,7 @@ Release Log
 
     - **Add Python 3.15 support.** :issue:`259`
 
-    - **Add Lexicon.conjunctions_ambiguous, the one-letter connectives that read as initials in a one-case name.** It holds ``e`` and ``i`` by default; Portuguese data can remove ``e`` with ``Lexicon.default().remove(conjunctions_ambiguous={"e"})``. :issue:`383`, :issue:`479`
+    - **Add Lexicon.conjunctions_ambiguous, the one-letter connectives that read as initials in a one-case name.** It holds ``e`` and ``i`` by default; Portuguese data can remove ``e`` with ``Lexicon.default().remove(conjunctions_ambiguous={"e"})``. See :ref:`connectives-also-initials`. :issue:`383`, :issue:`479`
 
     - **Add AmbiguityKind.CONJUNCTION_OR_INITIAL,** reported when a one-letter connective in a name written wholly in one case is read as an initial. :issue:`383`, :issue:`479`
 
