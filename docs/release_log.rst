@@ -39,7 +39,7 @@ Release Log
 
     - **Fix a one-letter connective joining a name written wholly in one case.** ``jose e maria santos`` gives first ``jose``, middle ``e maria``, last ``santos``, where 1.4.0 through 2.3.0 gave first ``jose e maria``, and reports the call. Mixed-case names are unchanged: ``Jose e Maria Santos`` still gives first ``Jose e Maria``. See :ref:`connectives-also-initials`. :issue:`383`, :issue:`479`
 
-    - **Fix the Irish particles Ó, Ní and Ua and the Malay binti being read as a middle name.** ``Liam Ó Murchú`` gives last ``Ó Murchú``, where 1.4.0 through 2.3.0 gave middle ``Ó``, last ``Murchú``. Your own ``capitalization_exceptions`` entries now outrank the lowercase case repair gives a particle. :issue:`604`
+    - **Fix the Irish particles Ó, Ní and Ua and the Malay binti being read as a middle name.** ``Liam Ó Murchú`` gives last ``Ó Murchú``, where 1.4.0 through 2.3.0 gave middle ``Ó``, last ``Murchú``. Your own ``capitalization_exceptions`` entries now outrank the lowercase case repair gives a particle. See :ref:`case-exceptions`. :issue:`604`
 
     - **Fix salutations in Finnish, Estonian, Romanian, Croatian/Serbian, Icelandic, Czech, Lithuanian, Malay, Filipino and other languages being read as a first name.** ``Herra Väinö Johansson`` now gives title ``Herra``, first ``Väinö``; 1.4.0 through 2.3.0 gave first ``Herra``, middle ``Väinö``. :issue:`606`
 
