@@ -65,8 +65,8 @@ from nameparser._lexicon import _run_addresses_by_given
 from nameparser._pipeline._pieces import (
     Peel, TailRead, chain_lead, chain_run_end, is_conj_piece, is_leading_title, is_prefix_piece,
     is_suffix_piece, is_title_piece, join_connectives, joined_tags,
-    leading_titles, merge_pieces, peel_walk, read_trailing_run,
-    tail_reading, trailing_candidates, trailing_start,
+    leading_titles, merge_particle_runs, merge_pieces, peel_walk,
+    read_trailing_run, tail_reading, trailing_candidates, trailing_start,
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
@@ -785,8 +785,17 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # part past a comma and a segment of fewer than three pieces --
         # which no join reaches anyway -- read as before, and so does a
         # run holding a name piece (_pieces.read_trailing_run).
+        # The particles straight behind each other are merged first,
+        # into the one piece the chain would open its run with, so the
+        # read counts and absorbs the run as that piece (#625);
+        # `premerged` keeps which runs the merge made, for the chain's
+        # report below.
+        premerged: Set[int] = frozenset()
         if site is ClauseSite.TRAILING:
-            found = read_trailing_run(pieces, ptags, tokens, one_case)
+            n = leading_titles(pieces, ptags, tokens)
+            premerged, lead = merge_particle_runs(pieces, ptags, tokens, n)
+            found = read_trailing_run(pieces, ptags, tokens, one_case, n,
+                                      lead)
             if found is not None:
                 read, start = found
                 tail_pieces, tail_ptags = pieces[start:], ptags[start:]
@@ -964,10 +973,13 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # piece -- nothing
                 # was chained, and _assign reports that case instead.
                 # Without this the two emitters both fire on the same token.
+                # A run merged ahead of the read (`premerged`, #625) has
+                # claimed the particles behind it already, so its chain
+                # is a decision though `j == k + 1` ('Freiherr von der').
                 # (Tag test first: it is a set lookup and almost no name
                 # has an ambiguous particle, while is_leading_title is a
                 # call per piece.)
-                if (j > k + 1
+                if ((j > k + 1 or pieces[k][0] in premerged)
                         and "vocab:particle-ambiguous"
                         in tokens[pieces[k][0]].tags):
                     while titled < k and is_leading_title(
