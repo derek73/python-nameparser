@@ -7,9 +7,10 @@ nameparser parses human names into seven fields — title, given, middle,
 family, suffix, nickname, maiden. Results are immutable, configuration is
 composable, and locale packs are opt-in.
 
-📣 **nameparser 2.4 is out.** It reads post-nominal credentials much more
-reliably — ``Jack MA`` is Jack with an MA and ``Jack Ma`` is the surname
-Ma, and ``Jane Smith, PhD MA`` keeps both credentials together — recognizes
+📣 **nameparser 2.4 is out.** It uses letter case to read post-nominal
+credentials much more reliably — ``Jack MA`` is Jack with an MA and
+``Jack Ma`` is the surname Ma, and ``Jane Smith, PhD MA`` keeps both
+credentials together — recognizes
 more naming conventions (Catalan, Irish, Finnish, Malay and others), and
 writes credentials the usual way when it repairs case. The `release log
 <https://nameparser.readthedocs.io/en/latest/release_log.html>`__ has the
