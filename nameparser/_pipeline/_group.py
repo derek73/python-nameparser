@@ -66,7 +66,8 @@ from nameparser._pipeline._pieces import (
     Peel, TailRead, chain_lead, chain_run_end, is_conj_piece, is_leading_title, is_prefix_piece,
     is_suffix_piece, is_title_piece, join_connectives, joined_tags,
     leading_titles, merge_particle_runs, merge_pieces, peel_walk,
-    read_trailing_run, tail_reading, trailing_candidates, trailing_start,
+    read_trailing_run, tail_reading, trailing_candidates,
+    trailing_run_start, trailing_start,
     trailing_start_past_titles,
 )
 from nameparser._pipeline._state import (
@@ -805,8 +806,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # suffix" -- on a main segment the run read above decides that
         # and is split off already; elsewhere group does not decide
         # it, and stops before whatever
-        # trailing_start says the run is, so the chain ends where assign's
-        # peel begins (#424). The maiden take reads the title-aware
+        # trailing_start says the run is (the given part after a family
+        # comma, `trailing_run_start`, its trailing titles included:
+        # #623, below), so the chain ends where assign's peel begins
+        # (#424). The maiden take reads the title-aware
         # `tail_reading` over the clause-free view instead (#601), so the
         # clause ends where assign's peel and title chain together begin.
         # rules.md#P2: "a particle joins the words after it into one name
@@ -903,10 +906,32 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # asks again after its merges whether the acronym still has
         # the pieces the fork counted (below).
         # the run read above is already split off (#614), so the chain
-        # stops at the end of what is left
-        tail = (0 if read is not None
-                else len(pieces) - trailing_start(name_start, pieces, ptags,
-                                                  tokens, one_case=one_case))
+        # stops at the end of what is left.
+        # rules.md#H5: "the title is TRANSPARENT to the suffix reading"
+        # -- in the given part after a family comma too, where assign's
+        # walk reads the trailing title run, so the chain stops before
+        # the run of suffixes and titles `tail_reading` takes there
+        # rather than before the suffixes alone, and does not carry a
+        # trailing title into the particle's name ('Smith, John van der
+        # Berg Prof.' reads title 'Prof.' as 'Smith, John Prof.' does,
+        # #623). The bound matters only where a particle stands past the
+        # chain's lead, so it is not asked otherwise: the chain then
+        # merges nothing (the test is `is_prefix_piece`'s, inline).
+        chains = False
+        if read is None:
+            for k in range(leading + 1, len(pieces)):
+                if ("prefix" in ptags[k]
+                        or len(pieces[k]) == 1
+                        and "particle" in tokens[pieces[k][0]].tags):
+                    chains = True
+                    break
+        given_slot = site is ClauseSite.GIVEN_SLOT
+        tail = (0 if not chains
+                else len(pieces) - (
+                    trailing_run_start(name_start, pieces, ptags, tokens,
+                                       one_case) if given_slot
+                    else trailing_start(name_start, pieces, ptags, tokens,
+                                        one_case=one_case)))
         # the members the chain reports below, which the read's picks
         # then give up (#614)
         took: set[tuple[int, ...]] = set()
@@ -1018,7 +1043,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 #
                 # The DECLINED reading is what this reports, because
                 # this branch only runs over pieces the peel left
-                # standing: `tail` is the peel's own answer, the inner
+                # standing: `tail` is the peel's own answer (with the
+                # trailing titles in the given part after a family
+                # comma, #623), the inner
                 # scan stops at `len(pieces) - tail`, and a piece the
                 # peel TOOK is behind that bound. Where the chain runs
                 # again with a smaller tail (the re-peel below), the
@@ -1077,10 +1104,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 k += 1
 
         # Where the run was read above (#614) it is split off and
-        # `tail` is 0, so none of what follows runs; it is the path for
-        # the segments that read no run above -- a family comma's
+        # `tail` is 0, so none of what follows runs, as it does not
+        # where no particle stands past the lead (#623); it is the path
+        # for the segments that read no run above -- a family comma's
         # parts, a part past the second comma, a run with a name piece
-        # inside it.
+        # inside it -- and the given part reaches it still
+        # ('Smith, Freiherr van Berg X.Y.Z.', the row that holds it).
         #
         # The peel was read over the pieces as they stand, and the
         # chain's own merges can change what it counts: behind a word
@@ -1102,9 +1131,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
             kept = ([list(q) for q in pieces], [set(t) for t in ptags],
                     len(ambiguities))
             chain(tail)
-            left = len(pieces) - trailing_start(
-                leading_titles(pieces, ptags, tokens), pieces, ptags,
-                tokens, one_case=one_case)
+            start = leading_titles(pieces, ptags, tokens)
+            left = len(pieces) - (
+                trailing_run_start(start, pieces, ptags, tokens, one_case)
+                if given_slot
+                else trailing_start(start, pieces, ptags, tokens,
+                                    one_case=one_case))
             if left < tail:
                 pieces[:], ptags[:] = kept[0], kept[1]
                 del ambiguities[kept[2]:]

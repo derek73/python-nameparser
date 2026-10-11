@@ -953,7 +953,9 @@ def trailing_start(start: int, pieces: Sequence[Sequence[int]],
     as they stand from `start`: the index of the first piece the S2
     peel takes, or len(pieces) when it takes none (#424). What P2's
     chain stops before where S2's run was not read once ahead of it
-    (#614: a family comma's parts, a run holding a name piece), and
+    (#614: the part before a family comma, a part past the second
+    comma, a run holding a name piece; the given part after a family
+    comma stops at `trailing_run_start` since #623), and
     what M2's walk stops before where no trailing rule reads the
     clause -- each had asked "is this a
     suffix?" with the suffix-piece test, which vetoes a bare 'V' as
@@ -1894,6 +1896,27 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
             return None
     return TailRead(frozenset(tail), frozenset(titles),
                     frozenset(run_titles), peel), start
+
+
+def trailing_run_start(start: int, pieces: Sequence[Sequence[int]],
+                       ptags: Sequence[Set[str]],
+                       tokens: Sequence[WorkToken],
+                       one_case: bool | None) -> int:
+    """Where the run `tail_reading` takes over `pieces[start:]` begins,
+    its trailing titles included: the first index of a piece the peel
+    or the H5 chain took, `len(pieces)` where they take none. The
+    bound for a reading that takes the trailing titles as well as the
+    suffixes, as assign's walk does in the given part after a family
+    comma (#623), where `trailing_start` sees only the suffixes and
+    `trailing_start_past_titles` leaves the titles inside the bound."""
+    rest, titled, peel = tail_reading(peel_walk(start, ptags), pieces,
+                                      ptags, tokens, one_case)
+    first = len(pieces)
+    for k in rest[peel.names:]:
+        first = min(first, k)
+    for k in titled:
+        first = min(first, k)
+    return first
 
 
 # rules.md#H5: "the title is TRANSPARENT to the suffix reading: where

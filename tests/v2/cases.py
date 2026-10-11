@@ -4984,6 +4984,76 @@ CASES: tuple[Case, ...] = (
                "then: the given part's own slot reads the chain too ('Doe, "
                "Jane MA Prof.' gives title and suffix). 2.3.0 read maiden "
                "'Smith MA Prof.'"),
+    Case("a_trailing_title_after_a_family_comma_stops_the_chain",
+         "Smith, John van der Berg Prof.",
+         {"title": "Prof.", "given": "John", "middle": "van der Berg",
+          "family": "Smith"},
+         classification="fix(#623)",
+         notes="the given part's particle chain stops in front of the "
+               "trailing run its walk reads, titles included (rules.md#H5, "
+               "#623), so the title is the title as in 'Smith, John "
+               "Prof.' and 'John van der Berg Prof.'; 1.4.0 and 2.3.0 "
+               "read middle 'van der Berg Prof.'"),
+    Case("a_particle_before_a_trailing_title_after_a_comma_attaches",
+         "Smith, Jan van Prof.",
+         {"title": "Prof.", "given": "Jan", "family": "van Smith"},
+         ambiguities=("particle-or-given",),
+         classification="fix(#623)",
+         notes="P6 reads the given part as though the trailing title "
+               "were absent, so 'van' attaches to the family as in "
+               "'Smith, Jan van' (rules.md#H5, #P6; #623); 1.4.0 and "
+               "2.3.0 read middle 'van Prof.'"),
+    Case("a_title_particle_heading_the_given_part_keeps_the_bound",
+         "Smith, Freiherr von Berg Prof.",
+         {"title": "Freiherr Prof.", "given": "von Berg",
+          "family": "Smith"},
+         classification="fix(#623)",
+         notes="a word in both the title and particle vocabularies "
+               "heads the given part and leads the chain (#624), so the "
+               "particle behind it is the one the bound is asked for "
+               "(#623's review: a scan from the name's start instead of "
+               "the lead skipped it and left the chain unbounded); 1.4.0 "
+               "and 2.3.0 read given 'von Berg Prof.'"),
+    Case("a_joined_particle_phrase_asks_the_bound",
+         "Smith, John von und zu Berg Prof.",
+         {"title": "Prof.", "given": "John", "middle": "von und zu Berg",
+          "family": "Smith"},
+         classification="fix(#623)",
+         notes="P3 joins 'von und zu' into one piece tagged a particle, "
+               "so it asks the bound as a lone particle does (#623's "
+               "review: a test of single-token particles alone left the "
+               "chain unbounded here); 1.4.0 and 2.3.0 read middle 'von "
+               "und zu Berg Prof.'"),
+    Case("a_trailing_title_after_an_empty_head_stops_the_chain",
+         ", Jan van Prof.",
+         {"title": "Prof.", "given": "Jan", "family": "van"},
+         ambiguities=("particle-or-given",),
+         classification="fix(#623)",
+         notes="the empty head (AGENTS.md's comma sweep): the bound "
+               "holds there too, and P6's attachment, read in post_rules "
+               "behind an empty family part, takes 'van' as the family; "
+               "1.4.0 and 2.3.0 read middle 'van Prof.'"),
+    Case("the_chain_runs_again_where_its_merges_free_the_acronym",
+         "Smith, Freiherr van Berg X.Y.Z.",
+         {"title": "Freiherr", "given": "van Berg X.Y.Z.",
+          "family": "Smith"},
+         classification="parity",
+         notes="group's re-ask after the chain (rules.md#P2): behind a "
+               "word in both the title and particle vocabularies the "
+               "chain's merges leave the dotted acronym no word to "
+               "spare, so the chain runs again without its stop and "
+               "takes it (without the re-ask: given 'van Berg', suffix "
+               "'X.Y.Z.'); #623's fix review found it live and held by "
+               "no test after #614 moved its documented case, "
+               "'Freiherr von Berg Ma', to the read-once path"),
+    Case("a_bare_title_word_after_a_comma_stays_in_the_chain",
+         "Smith, John van der Berg Prof",
+         {"given": "John", "middle": "van der Berg Prof",
+          "family": "Smith"},
+         classification="parity",
+         notes="the contrast to the row above: a bare title word ending "
+               "a name is a name word (rules.md#H5), so the chain takes "
+               "it (#623 moves only the period-marked spelling)"),
     Case("the_first_word_after_the_marker_stays_even_as_a_title",
          "Jane Doe nee King.",
          {"given": "Jane", "family": "Doe", "maiden": "King."},
