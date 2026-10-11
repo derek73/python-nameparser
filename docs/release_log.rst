@@ -2,19 +2,26 @@ Release Log
 ===========
 * 2.4.0 - Unreleased
 
-    nameparser 2.4 is under development.
+    nameparser 2.4 reads post-nominal credentials much more reliably, recognizes more naming conventions, and writes credentials the usual way when it repairs case. Highlights:
+
+    - **Capitals tell a credential from a surname.** ``Jack MA`` is Jack with an MA and ``Jack Ma`` is the surname Ma, where 2.3 read both as the surname. Credentials the word lists don't carry, such as ``LEED AP`` and ``N.C.C.``, are read too.
+    - **Credentials after a name stay together.** ``Jane Smith, PhD MA`` gives suffix ``PhD MA``, where 2.3 read ``PhD`` as her first name, and ``Eric H. Holder Jr. Attorney General`` gives suffix ``Jr.`` and title ``Attorney General``.
+    - **More naming conventions.** The Catalan surname link (``Josep Carod i Rovira``), the Irish particles (``Liam Ó Murchú``), salutations in Finnish, Icelandic, Malay and other languages (``Herra Väinö Johansson``), and Japanese names in halfwidth katakana (``山田 ﾀﾛｳ``).
+    - **Case repair writes credentials the usual way.** ``john smith phd`` capitalizes to ``John Smith PhD`` and ``JANE DOE MBA`` to ``Jane Doe MBA``, where 2.3 gave ``Ph.D.`` and ``Mba``.
+    - **More ambiguity reports, each naming the field its word ends up in.**
+    - **Python 3.15 support.**
 
     **Behavior Changes**
 
-    - **Fix a credential acronym that is also a surname being read by position alone.** Capitals now decide in a mixed-case name: ``Jack MA`` gives suffix ``MA`` and ``John Smith Ma`` gives last ``Ma``, where 2.0 through 2.3 gave the reverse. A name written wholly in one case keeps its old reading. :issue:`289`
+    - **Fix a credential acronym that is also a surname being read by position alone.** Capitals now decide in a mixed-case name: ``Jack MA`` gives suffix ``MA`` while ``Jack Ma`` keeps last ``Ma``, where 2.0 through 2.3 read both as the last name. A name written wholly in one case keeps its old reading. :issue:`289`
 
-    - **New Policy field unlisted_dotted_suffixes, on by default: a dotted acronym nobody has listed is read by position.** ``John Smith X.Y.Z.`` now gives suffix ``X.Y.Z.``, where every release gave last ``X.Y.Z.``, while ``Jack X.Y.Z.`` keeps its surname. A dotted version string is no longer a suffix: ``John Smith 1.4.2`` gives last ``1.4.2``. :issue:`516`
+    - **New Policy field unlisted_dotted_suffixes, on by default: a dotted acronym nobody has listed is read by position.** ``Jane Smith N.C.C.`` now gives suffix ``N.C.C.``, where 2.3.0 gave last ``N.C.C.``, while a lone ``Jack X.Y.Z.`` keeps its surname. A dotted version string is no longer a suffix: ``John Smith 1.4.2`` gives last ``1.4.2``. :issue:`516`
 
-    - **New Policy field unlisted_caps_suffixes: an unlisted all-caps word after a comma reads as a credential by default, and elsewhere on request.** ``John Smith, XYZ`` now gives suffix ``XYZ``, where 1.4.0 through 2.3.0 gave first ``XYZ``, last ``John Smith``. The cost is a given name written in capitals after a two-word surname: ``García Márquez, GABRIEL`` gives suffix ``GABRIEL``; ``CapsSuffixes.OFF`` keeps the old reading. :issue:`516`, :issue:`564`
+    - **New Policy field unlisted_caps_suffixes: an unlisted all-caps word after a comma reads as a credential by default, and elsewhere on request.** ``Jane Smith, LEED AP`` now gives suffix ``LEED AP``, where 2.3.0 gave first ``LEED``, middle ``AP``, last ``Jane Smith``. The cost is a given name written in capitals after a two-word surname: ``García Márquez, GABRIEL`` gives suffix ``GABRIEL``; ``CapsSuffixes.OFF`` keeps the old reading. :issue:`516`, :issue:`564`
 
-    - **A credential now starts a suffix run to the end of its part, with or without a comma.** ``John Smith PhD Jones`` gives suffix ``PhD Jones``, where 2.3.0 gave middle ``Smith PhD``, last ``Jones``, and ``John Smith, PhD Jones`` gives suffix ``PhD Jones``, where 2.3.0 gave first ``PhD``, middle ``Jones``, last ``John Smith``. A credential that is also a name (``MA``, ``Ed``) does not start a run. :issue:`602`, :issue:`603`, :issue:`613`
+    - **A credential after the name now starts a run of suffixes and titles to the end of its part, with or without a comma.** ``Eric H. Holder Jr. Attorney General`` gives title ``Attorney General``, suffix ``Jr.``, where 2.3.0 gave middle ``H. Holder Jr. Attorney``, last ``General``, and ``Steven Hardman, RN - CRNA`` gives suffix ``RN - CRNA``, where 2.3.0 read ``RN`` as the first name. :issue:`602`, :issue:`603`, :issue:`613`
 
-    - **Fix a credential run after a comma losing the acronyms in it that are also names or particles.** ``John Smith, Ed Ma`` gives suffix ``Ed Ma`` and ``John Smith, PhD DO DO`` gives suffix ``PhD DO DO``, 1.4.0's readings, where 2.0 through 2.3 read part of each run as a name. :issue:`544`, :issue:`562`
+    - **Fix a credential run after a comma losing the acronyms in it that are also names or particles.** ``Jane Smith, PhD MA`` gives suffix ``PhD MA``, where 2.3.0 gave first ``PhD``, middle ``MA``, last ``Jane Smith``. :issue:`544`, :issue:`562`
 
     - **Fix a credential ending the given part of a family-comma listing being read as a middle name.** ``Doe, John MA`` gives suffix ``MA``, where 2.0 through 2.3 gave middle ``MA``, restoring 1.4.0's reading; ``Doe, John Ma``, written the way a name is, keeps middle ``Ma``. :issue:`531`
 
@@ -24,7 +31,7 @@ Release Log
 
     - **Fix a particle surname before a comma being split when a credential follows it.** ``van der Berg, PhD`` now gives last ``van der Berg``, suffix ``PhD``; 1.4.0 through 2.3.0 gave first ``van``, last ``der Berg``. :issue:`575`
 
-    - **Fix a trailing title being taken into a surname that begins with a particle.** ``John van der Berg Prof.`` gives title ``Prof.``, last ``van der Berg``, where 1.4.0 through 2.3.0 gave last ``van der Berg Prof.``. :issue:`614`, :issue:`623`, :issue:`637`
+    - **Fix a trailing title being taken into a surname that begins with a particle.** ``John van der Berg Prof.`` gives title ``Prof.``, last ``van der Berg``, where 1.4.0 through 2.3.0 took ``Prof.`` into the last name. :issue:`614`, :issue:`623`, :issue:`637`
 
     - **Change a title word in a part after a second comma to read as a title.** ``Eric H. Holder, Jr., Attorney General`` gives title ``Attorney General``, suffix ``Jr.``, where 1.4.0 through 2.3.0 gave suffix ``Jr., Attorney General``. :issue:`603`, :issue:`629`, :issue:`636`, :issue:`640`
 
@@ -42,15 +49,15 @@ Release Log
 
     - **Report more of the parser's credential-or-name decisions, and name the right field in each report.** ``parse("Smith, MA").ambiguities`` now names ``suffix-or-name``, as every decision at an ambiguous credential does, before or after a comma. A report now names the field its word ends up in rather than the one it was first placed in, and a part read wholly as suffixes no longer reports a particle in it as a name. :issue:`289`, :issue:`544`, :issue:`626`
 
-    - **Change case repair to write credentials the way they are usually written.** ``john smith phd`` now capitalizes to ``John Smith PhD``, ``JOHN SMITH MBA`` to ``John Smith MBA``, ``john smith x.y.z.`` to ``John Smith X.Y.Z.`` and ``john smith vi`` to ``John Smith VI``, where earlier releases gave ``Ph.D.``, ``Mba``, ``X.y.z.`` and ``Vi``. A ``capitalization_exceptions`` value is now a case mask over its key's letters, and one that spells anything else (``{"jr": "Junior"}``) raises ``ValueError``. :issue:`459`
+    - **Change case repair to write credentials the way they are usually written.** ``john smith phd`` now capitalizes to ``John Smith PhD``, ``JANE DOE MBA`` to ``Jane Doe MBA``, ``jane smith r.d.n.`` to ``Jane Smith R.D.N.`` and ``john smith vi`` to ``John Smith VI``, where 2.3.0 gave ``Ph.D.``, ``Mba``, ``R.d.n.`` and ``Vi``. A ``capitalization_exceptions`` value is now a case mask over its key's letters, and one that spells anything else (``{"jr": "Junior"}``) raises ``ValueError``. :issue:`459`
 
     - **Fix case repair treating a suffix written in capitals as evidence that the whole name was cased on purpose.** ``juan garcia III`` now capitalizes to ``Juan Garcia III``, where every release returned it untouched. :issue:`492`
 
     - **Fix case repair capitalizing the connective inside a hyphenated compound surname.** ``jose ortega-y-gasset`` capitalizes to ``Jose Ortega-y-Gasset`` again, fixing a 2.2 regression that gave ``Ortega-Y-Gasset``. :issue:`478`
 
-    - **Fix initials and case repair on a name typed with decomposed accents (NFD).** Decomposed ``josé garcía`` now capitalizes to ``José García``, where every release gave ``José GarcíA``, and decomposed ``émile zola`` initials ``é. z.``, where every release gave ``e. z.``. :issue:`542`, :issue:`585`
+    - **Fix initials and case repair on a name typed with decomposed accents (NFD).** Decomposed ``josé garcía`` now capitalizes to ``José García``, where every release gave ``José GarcíA``, and decomposed ``émile zola`` initials ``é. z.``, where every release dropped the accent. :issue:`542`, :issue:`585`
 
-    - **Fix initials disagreeing with the parse about one-letter connectives.** ``HumanName("john e smith").initials()`` gives ``j. e. s.``, where earlier releases gave ``j. s.``, and ``John and Jane Smith`` gives ``J. J. S.``, where 2.0 through 2.3 gave ``J. a. J. S.``. A v1 subclass overriding ``_process_initial`` must now accept and pass on a ``tokens`` keyword. :issue:`461`, :issue:`528`
+    - **Fix initials disagreeing with the parse about one-letter connectives.** ``HumanName("john e smith").initials()`` gives ``j. e. s.``, where earlier releases gave ``j. s.``, and ``John and Jane Smith`` gives ``J. J. S.``, where 2.0 through 2.3 also gave ``and`` an initial. A v1 subclass overriding ``_process_initial`` must now accept and pass on a ``tokens`` keyword. :issue:`461`, :issue:`528`
 
     - **Fix a Japanese name written in halfwidth katakana being read given-first.** ``山田 ﾀﾛｳ`` gives last ``山田``, first ``ﾀﾛｳ``, as ``山田 タロウ`` does, where every release gave the reverse. :issue:`594`
 
@@ -60,7 +67,7 @@ Release Log
 
     - **Fix a v1 Constants entry with stray whitespace, or that is only a CJK full stop, raising or changing the parse.** Such an entry (``c.titles.add(" dean ")``, ``c.titles.add("。")``) is now ignored with a ``UserWarning`` naming it, as 1.4.0 ignored it, where 2.0 through 2.3 raised ``ValueError`` or applied it. :issue:`541`, :issue:`582`
 
-    - **Make parsing faster, and fix three input shapes that cost quadratic time.** A long given part after a family comma, a name ending in many alternating credentials and titles, and many leading titles with many surname particles now cost linear time. No parse output changes. :issue:`546`, :issue:`553`, :issue:`558`, :issue:`559`
+    - **Fix three rare input shapes that cost quadratic time.** A long given part after a family comma, a name ending in many alternating credentials and titles, and many leading titles with many surname particles now cost linear time. Speed on ordinary names is unchanged, and no parse output changes. :issue:`546`, :issue:`553`, :issue:`558`, :issue:`559`
 
     **Additions**
 
