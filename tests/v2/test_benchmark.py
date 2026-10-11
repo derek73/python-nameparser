@@ -888,9 +888,9 @@ def test_a_given_part_with_no_particle_skips_the_chain_bound() -> None:
     a whole `tail_reading` (#623), which every family-comma name with a
     trailing word would pay for nothing. Recorded negative control,
     #623's review (2026-10-10, py3.11): with the gate removed no output
-    moves (226,776 parses compared), the bound is entered once on each
-    name below, and 'Smith, John Prof.' costs 250 frames against
-    207."""
+    moves (226,776 parses compared), the bound is entered twice on each
+    name below (the bound and the re-ask after the chain), and 'Smith,
+    John Prof.' costs 250 frames against 207."""
     if sys.getprofile() is not None:
         pytest.skip("a profile hook is already installed; this test owns it")
     for text in ("Smith, John Prof.", "Smith, John PhD"):

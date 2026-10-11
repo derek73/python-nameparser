@@ -1104,10 +1104,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 k += 1
 
         # Where the run was read above (#614) it is split off and
-        # `tail` is 0, so none of what follows runs; it is the path for
-        # the segments that read no run above -- a family comma's
+        # `tail` is 0, so none of what follows runs, as it does not
+        # where no particle stands past the lead (#623); it is the path
+        # for the segments that read no run above -- a family comma's
         # parts, a part past the second comma, a run with a name piece
-        # inside it.
+        # inside it -- and the given part reaches it still
+        # ('Smith, Freiherr van Berg X.Y.Z.', the row that holds it).
         #
         # The peel was read over the pieces as they stand, and the
         # chain's own merges can change what it counts: behind a word

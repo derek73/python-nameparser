@@ -5033,6 +5033,19 @@ CASES: tuple[Case, ...] = (
                "holds there too, and P6's attachment, read in post_rules "
                "behind an empty family part, takes 'van' as the family; "
                "1.4.0 and 2.3.0 read middle 'van Prof.'"),
+    Case("the_chain_runs_again_where_its_merges_free_the_acronym",
+         "Smith, Freiherr van Berg X.Y.Z.",
+         {"title": "Freiherr", "given": "van Berg X.Y.Z.",
+          "family": "Smith"},
+         classification="parity",
+         notes="group's re-ask after the chain (rules.md#P2): behind a "
+               "word in both the title and particle vocabularies the "
+               "chain's merges leave the dotted acronym no word to "
+               "spare, so the chain runs again without its stop and "
+               "takes it (without the re-ask: given 'van Berg', suffix "
+               "'X.Y.Z.'); #623's fix review found it live and held by "
+               "no test after #614 moved its documented case, "
+               "'Freiherr von Berg Ma', to the read-once path"),
     Case("a_bare_title_word_after_a_comma_stays_in_the_chain",
          "Smith, John van der Berg Prof",
          {"given": "John", "middle": "van der Berg Prof",
