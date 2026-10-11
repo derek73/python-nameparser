@@ -682,9 +682,10 @@ P4. Rationale: a particle links forward from inside a name; at the
     reads it as one (H2). A word in the leading titles that is both a
     title and a particle puts the name's leading position on itself,
     so the particle behind it is inside a name ('Freiherr von Berg');
-    of several such words the last does, all reading as titles, so no
-    particle chains inside the titles (#624). The titles are those
-    written, before H3 gives the last one back to the name.
+    of several such words the last does, so no particle chains inside
+    the titles (#624). The titles are those written, before H3 gives
+    the last one back to the name, so each such word reads as a title
+    unless H3 gives it back.
       "Van Johnson"               →  given="Van"
       "Sir de Mesnil"             →  pieces=[["Sir"], ["de"], ["Mesnil"]]
       "Xyz. van Johnson"          →  given="van"

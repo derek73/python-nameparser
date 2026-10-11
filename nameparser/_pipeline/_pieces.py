@@ -162,9 +162,11 @@ def chain_lead(pieces: Sequence[Sequence[int]], ptags: Sequence[Set[str]],
     name's leading piece and chains nothing (P4: 'Dr. Mc Mc' keeps
     'Mc' and 'Mc' apart, as before #624). `leading_titles` stops at a
     piece that is itself a leading title only where it gave that piece
-    back, and only before a suffix piece, the tags it tests inline
-    first; the same tags go first here, so a name with no suffix behind
-    its titles pays no frame for the test."""
+    back, before a suffix piece (the tags it tests inline first), or at
+    the segment's last piece, which a title may not be unless it is the
+    whole segment -- the `n + 1 < len(pieces)` test rules that one out.
+    The same tags go first here, so a name with no suffix behind its
+    titles pays no frame for the test."""
     if (n + 1 < len(pieces)
             and ("suffix" in ptags[n + 1]
                  or "vocab:suffix" in tokens[pieces[n + 1][0]].tags)

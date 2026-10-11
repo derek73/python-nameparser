@@ -1644,8 +1644,8 @@ name_regex = "^John von PhD Jones$"
 fields = ["_ambiguities", "family", "middle", "suffix"]
 
 [[change]]
-# rules.md#P4: "of two such words in the leading titles the second
-# does, both reading as titles" (#624, 2026-10-10): the second
+# rules.md#P4: "of several such words the last does, so no particle
+# chains inside the titles" (#624, 2026-10-10): the second
 # title-particle is a title and the name starts behind it.
 issue = "fix(#624) of two title-particles at the head the second leads the chain"
 name_regex = "^Freiherr St John Smith$"
