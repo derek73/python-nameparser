@@ -1217,16 +1217,21 @@ def test_the_read_takes_the_title_run_as_written_before_the_merge(
 ) -> None:
     """#625: group hands the read the title run read before the merge.
     Merging 'mc mc' makes it no suffix piece, which would undo H3's
-    give-back of 'mc' and move the name's start; the read keeps the
+    give-back of 'Dr.' and move the name's start; the read keeps the
     run as written, so the credential run behind the first 'mc' stays
-    the read's. Recorded negative control (2026-10-10): with the read
+    the read's. Recorded negative controls (2026-10-10): with the read
     asking `leading_titles` again after the merge, the read takes
-    nothing here and the parse reads family 'mc Jr mc mc'."""
+    nothing here and the parse reads family 'mc Jr mc mc'; with group
+    handing the read the run asked after the merge, the read helper
+    below cannot see it and the parse assertion fails the same way."""
     state, found = _read("Dr. mc Jr mc mc")
     assert found is not None
     read, start = found
     assert start == 2
     assert _texts(state, read.tail) == ["Jr", "mc", "mc"]
+    name = parse("Dr. mc Jr mc mc")
+    assert (name.title, name.family, name.suffix) == ("Dr.", "mc",
+                                                       "Jr mc mc")
 
 
 _WEIGHED_GRID_HEADS = ("John van", "Freiherr von", "anh van", "Jan de la",

@@ -9867,9 +9867,9 @@ CASES: tuple[Case, ...] = (
                "a title. #614's read merged 'van Secretary' into one "
                "piece and the title went into the suffix (its second "
                "review); since #620 the read counts the chain's units "
-               "rather than reading a merged copy, and only particle "
-               "runs are merged ahead of it (#625), so the run's title "
-               "test sees 'Secretary' as written (1.4.0 middle 'Smith MD', family 'van "
+               "rather than reading a merged copy, and only "
+               "particle runs are merged ahead of it (#625), so the "
+               "run's title test sees 'Secretary' as written (1.4.0 middle 'Smith MD', family 'van "
                "Secretary Jones'; bisected to #602's run)"),
     Case("two_particle_runs_merge_each",
          "John van der Smith de la Berg",
@@ -9881,7 +9881,7 @@ CASES: tuple[Case, ...] = (
                "ahead of S2's read (#625), whose bookkeeping across the "
                "first merge no other row reached (#625's review: an "
                "off-by-one there read family 'van der Smith de la "
-               "Berg')"),
+               "Berg', the q + 1 one)"),
     Case("a_second_run_of_duals_is_the_family",
          "Anna van der Berg van mc",
          {"given": "Anna", "middle": "van der Berg",
