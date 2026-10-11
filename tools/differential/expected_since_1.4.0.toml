@@ -2002,11 +2002,11 @@ fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#401) the bound-given reserve counts the trailing numeral assign reads as the suffix"
-# 'abdul Smith V', 'abdul Smith Jr V': rules.md#P5 -- "a trailing
-# roman numeral that assign reads as the suffix (S2) is no word to
-# spare, and is not joined". first 'abdul Smith', last 'V' -> given
-# 'abdul', family 'Smith', suffix 'V'; at this baseline the V was not
-# read as a suffix, so all three fields move here where the 2.x
+# 'abdul Smith V', 'abdul Smith Jr V': rules.md#P5 -- "A trailing roman
+# numeral, or a bare acronym the run takes, or a trailing title word the
+# run takes, is no word to spare". first 'abdul Smith', last 'V' ->
+# given 'abdul', family 'Smith', suffix 'V'; at this baseline the V was
+# not read as a suffix, so all three fields move here where the 2.x
 # ledgers list two. Both are rules.md examples; no differential corpus
 # name has the shape. The 'abdul Smith V Ph. D.' spelling stays out
 # of the corpus: a trailing split credential is this ledger's
@@ -2071,21 +2071,24 @@ fields = ["given", "family"]
 
 [[change]]
 issue = "fix(#424) accepted: the maiden walk keeps the numeral an initial before the marker vetoes"
-# 'J. née Jones Smith V': rules.md#M2 -- the numeral is taken "read as
-# the take would leave the name, the word before the numeral being
-# then the word before the marker". 1.4.0 has no maiden support and
-# read middle 'née Jones', last 'Smith', suffix 'V'; 2.x reads maiden
-# 'Jones Smith V' with the J. before the marker vetoing the fork, as
-# 'J. V' reads the V as a name. The fix(#274) rule's fields omit
-# the suffix v1 read, so this accepted reading names its own.
+# 'J. née Jones Smith V': rules.md#M2 -- "It takes them up to the
+# trailing run of post-nominals and titles that the end of the name
+# reads as if the clause were not written". 1.4.0 has no maiden support
+# and read middle 'née Jones', last 'Smith', suffix 'V'; 2.x reads
+# maiden 'Jones Smith V' with the J. before the marker vetoing the fork,
+# as 'J. V' reads the V as a name. The fix(#274) rule's fields omit the
+# suffix v1 read, so this accepted reading names its own.
 name_regex = "(?i)^j\\.\\s+n[ée]e\\s+jones\\s+smith\\s+v$"
 fields = ["middle", "family", "suffix", "maiden"]
 
 [[change]]
 issue = "fix(#424) accepted: the chain keeps an acronym assign will not peel behind a title-and-particle word"
-# 'Freiherr von Berg MA': rules.md#P2 -- the trailing suffix is read
-# "over the pieces the chain leaves". #367 stops the leading-particle
-# scan at a title-and-particle word, so the chain takes 'von Berg',
+# 'Freiherr von Berg MA': P2 at #424 read the trailing suffix over the
+# pieces the chain leaves; since #614 it is read first -- rules.md#P2:
+# "a trailing suffix begins -- the trailing run S2 reads, once, before
+# the chain is made" -- and the 2026-09-18 note below is the reading
+# that ships. #367 stops the leading-particle scan at a
+# title-and-particle word, so the chain takes 'von Berg',
 # and the acronym the fork counted with three pieces meets assign
 # with two; the chain asks the peel again and takes it. first 'von
 # Berg', last 'MA' -> family 'von Berg MA' (master's reading since
@@ -2142,14 +2145,14 @@ fields = ["middle", "family", "suffix"]
 
 [[change]]
 issue = "fix(#424) the particle chain stops before the trailing numeral"
-# 'John van der Berg V': rules.md#P2 -- "a trailing suffix begins --
-# read as assign will read it (S2): a trailing roman numeral, or a
-# bare acronym with words to spare, ends the chain as a suffix word
-# does". last 'van der Berg V' -> family 'van der Berg', suffix 'V',
-# as 'John Smith V' reads. Shipped since 1.x: the chain's stop asked
-# with the suffix-piece test, whose initial veto does not see a bare
-# V. A rules.md example; no differential corpus name has the shape.
-# Without this rule the name landed on the fields-only
+# 'John van der Berg V': rules.md#P2 -- "a trailing suffix begins -- the
+# trailing run S2 reads, once, before the chain is made [...] a trailing
+# roman numeral, or a bare acronym with words to spare, ends the chain
+# as a suffix word does". last 'van der Berg V' -> family 'van der
+# Berg', suffix 'V', as 'John Smith V' reads. Shipped since 1.x: the
+# chain's stop asked with the suffix-piece test, whose initial veto does
+# not see a bare V. A rules.md example; no differential corpus name has
+# the shape. Without this rule the name landed on the fields-only
 # fix(suffix-routing) catch-all -- the count was the tell. #451
 # deleted that catch-all, so this ledger has no fields-only rule left
 # to absorb anything.
@@ -2158,15 +2161,16 @@ fields = ["family", "suffix"]
 
 [[change]]
 issue = "fix(#424/#445) accepted: the maiden walk keeps a bare acronym, and the lone name word is the family"
-# 'John née Jones Smith Ma': rules.md#M2 -- "a bare acronym the
-# reading declines is maiden text all the same". middle
-# 'née Jones', family 'Smith', suffix 'Ma' -> maiden 'Jones Smith Ma':
-# v1 had no maiden support; 2.0 has read the name so since #274, and
-# since #533 the walk asks the acronym fork rather than leaving it:
-# what declines this word is the WRITING, Title case saying name
-# where capitals would say credential, and the count such a reading
-# needs is taken over the name the take would leave rather than over
-# the words as they stand. The fix(#274) rule
+# 'John née Jones Smith Ma': rules.md#M2 -- "It takes them up to the
+# trailing run of post-nominals and titles that the end of the name
+# reads as if the clause were not written", and 'John Ma' reads the Ma
+# as the family. middle 'née Jones', family 'Smith', suffix 'Ma' ->
+# maiden 'Jones Smith Ma': v1 had no maiden support; 2.0 has read the
+# name so since #274, and since #533 the walk asks the acronym fork
+# rather than leaving it: what declines this word is the WRITING, Title
+# case saying name where capitals would say credential, and the count
+# such a reading needs is taken over the name the take would leave
+# rather than over the words as they stand. The fix(#274) rule
 # cannot carry it: its fields omit the suffix v1 read. A rules.md
 # Accepted example, first witnessed here.
 #
@@ -2734,10 +2738,10 @@ fields = ["nickname", "maiden"]
 [[change]]
 issue = "fix(#335) a marker-led clause leaves the one name word its bare reading"
 # 'Smith (née Jones)', which rules.md#N3 carries as an Accepted line.
-# N3 reads a name that is only a nickname plus one name word as "that
-# word is the family name", and a marker-led clause is not a nickname
-# clause, so N3 no longer reaches this shape: the word keeps the
-# reading the bare "Smith née Jones" gives it.
+# rules.md#N3: "A name that is only a nickname and one name word reads
+# that word as the family name", and a marker-led clause is not a
+# nickname clause, so N3 no longer reaches this shape: the word keeps
+# the reading the bare "Smith née Jones" gives it.
 #
 # Its own rule rather than a sixth alternative in the fix(#335) rule
 # above, for the reason that rule states: one rule holding both would
@@ -2994,8 +2998,8 @@ issue = "fix(suffix-routing) a two-token name ending in a credential acronym kee
 # positional reading and are not tracked as deviations." 'Donald mc'
 # has no comma, so P6 never reaches it.
 #
-# What stands instead is rules.md#S2: "an unambiguous suffix is
-# consumed even when that leaves no family name at all". That is the
+# What stands instead is rules.md#S2: "an unambiguous suffix is consumed
+# even when that leaves no family name at all". That is the
 # authority here, and NOT P6's scope note, which does not support it:
 # P6 promises the comma-less shapes keep their POSITIONAL reading, and
 # for the words that are both particle and suffix vocabulary it does
@@ -3006,7 +3010,7 @@ issue = "fix(suffix-routing) a two-token name ending in a credential acronym kee
 # 2026-09-07: P6's Accepted clause now names vd and mc as the two words
 # the positional reading does not hold for, which is what this rule has
 # been classifying all along. This rule is unchanged by that repair and
-# still rests on S2's statement.
+# still rests on S2, its Accepted clause as quoted above.
 #
 # The two neighbouring shapes both already have rules above, and the
 # contrast is the point: 'Mc Donald' has the particle LEADING and folds
@@ -4050,25 +4054,25 @@ issue = "fix(#563) paired initials after a comma read as the given name unless a
 # two words before the comma may be one surname ('García Márquez,
 # G.J.'), so two dotted single letters alone after it stay the given
 # name and report the fork, where #516 had read them as a credential.
-# "Only a credential in front of them, or another word the class
-# admits by its dotted shape standing in the same part, makes them the
-# credential run": 'John Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.'
-# move to the run, while 'De La Cruz, M.J. PhD' keeps its initials,
-# the degree standing behind them, and so does 'García Márquez, Ms
-# G.J.', a title in front ("a suffix word in front of them that is
-# not also title vocabulary"), which moves nothing at any baseline.
-# The second period is optional ('García Márquez, G.J'). Two pairs
-# speaking only for each other make the run and report it behind two
-# name words ('John Smith, X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz,
-# M.J. K.L.' is no longer that case -- 'De La Cruz' is one name word,
-# so the count no longer reaches it and it reads as 'Cruz, M.J. K.L.'
-# does, given 'M.J.', suffix 'K.L.', reporting both; a listed member
-# in front speaks for nothing
-# ('García Márquez, Ed G.J.' keeps the family comma, and the fix(#531)
-# rule claims what its given part's trailing slot then reads). Against a 2.x baseline the names
-# whose roles match the baseline's move only the report, which a
-# 1.4.0 comparison cannot see; that ledger lists the three role movers
-# alone.
+# "Only an unambiguous suffix word in front of them that is not also
+# title vocabulary, or another word the class admits by its dotted shape
+# standing in the same part, makes them the credential run": 'John
+# Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.' move to the run, while
+# 'De La Cruz, M.J. PhD' keeps its initials, the degree standing behind
+# them, and so does 'García Márquez, Ms G.J.', a title in front ("an
+# unambiguous suffix word in front of them that is not also title
+# vocabulary"), which moves nothing at any baseline. The second period
+# is optional ('García Márquez, G.J'). Two pairs speaking only for each
+# other make the run and report it behind two name words ('John Smith,
+# X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz, M.J. K.L.' is no longer
+# that case -- 'De La Cruz' is one name word, so the count no longer
+# reaches it and it reads as 'Cruz, M.J. K.L.' does, given 'M.J.',
+# suffix 'K.L.', reporting both; a listed member in front speaks for
+# nothing ('García Márquez, Ed G.J.' keeps the family comma, and the
+# fix(#531) rule claims what its given part's trailing slot then reads).
+# Against a 2.x baseline the names whose roles match the baseline's move
+# only the report, which a 1.4.0 comparison cannot see; that ledger
+# lists the three role movers alone.
 name_regex = "^(?:De La Cruz, M\\.J\\. K\\.L\\.|García Márquez, PhD G\\.J\\.|John Smith, PhD X\\.Y\\.|John Smith, X\\.Y\\. P\\.Q\\.)$"
 fields = ["family", "given", "middle", "suffix", "title"]
 orders = ["DEFAULT"]
@@ -4272,21 +4276,22 @@ orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#274/#424) accepted: a maiden clause keeps a trailing credential v1 read as a post-nominal"
-# Six names at landing (seven since #544, below) whose reading this
-# change does not touch: each reads on
-# this tree exactly as it read at 2f57ff21, measured name by name,
-# and the whole of the 1.4.0 diff is v1 having no maiden field. The
-# marker takes the words after it, the trailing member among them --
-# rules.md#M2's Accepted reading, which has shipped since #274 and
-# which #533 leaves standing wherever the WRITING declines the word
-# (a Title-cased member in a mixed-case name: 'Jane Doe nee Smith
-# Ma', 'Jane Doe nee Yo-Yo Ma', 'Doe, Jane nee Smith Ma'), wherever
-# the member is the only word the marker would leave ('Jane Doe nee
-# MA'), and wherever P6's attachment claims the word instead ('Doe,
-# Jane nee Smith do', 'Doe, Jane nee Smith MA do'). What #533 adds on
-# these names is a REPORT, and 1.4.0 has no surface to compare one
-# against -- so nothing of this change is visible from here, and the
-# rule is named for the change that is.
+# Six names at landing (seven from #544; three since #601, which moved
+# the three comma names to fix(#601) and the Jr. name to fix(#601/#602),
+# below) whose reading this change does not touch: each reads on this
+# tree exactly as it read at 2f57ff21, measured name by name, and the
+# whole of the 1.4.0 diff is v1 having no maiden field. The marker takes
+# the words after it, the trailing member among them -- rules.md#M2's
+# Accepted reading, which has shipped since #274 and which #533 leaves
+# standing wherever the WRITING declines the word (a Title-cased member
+# in a mixed-case name: 'Jane Doe nee Smith Ma', 'Jane Doe nee Yo-Yo
+# Ma', 'Doe, Jane nee Smith Ma'), wherever the member is the only word
+# the marker would leave ('Jane Doe nee MA'), and wherever P6's
+# attachment claims the word instead ('Doe, Jane nee Smith do', 'Doe,
+# Jane nee Smith MA do'). What #533 adds on these names is a REPORT, and
+# 1.4.0 has no surface to compare one against -- so nothing of this
+# change is visible from here, and the rule is named for the change that
+# is.
 #
 # Its own rule rather than a widening of fix(#274) above, and the
 # reason is that rule's `fields`: it stops at maiden/middle/family
@@ -4302,12 +4307,16 @@ issue = "fix(#274/#424) accepted: a maiden clause keeps a trailing credential v1
 #
 # 2026-09-27, #544: a seventh joins, 'Jane Doe Jr. nee Smith Ma' --
 # maiden 'Smith Ma', suffix 'Jr.', where v1 read middle 'Doe Jr. nee',
-# last 'Smith', suffix 'Ma'. It reads so at 2.0.0 through 2.3.0, at the
-# tree before #544 and at the tree, the report aside: rules.md#M2's
-# Accepted boundary, "a credential written in front of the marker speaks
-# for no word of the clause". #544 decided that boundary and moves no role
-# on the name, so the 1.4.0 diff is this rule's, the Title-case member's
-# writing declining it as it does for 'Jane Doe nee Smith Ma'.
+# last 'Smith', suffix 'Ma'. It read so at 2.0.0 through 2.3.0, at the
+# tree before #544 and at the tree, the report aside, by M2's Accepted
+# boundary as it then stood: a credential in front of the marker spoke
+# for no word of the clause. #544 decided that boundary and moved no
+# role on the name, so the 1.4.0 diff was this rule's, the Title-case
+# member's writing declining it as it does for 'Jane Doe nee Smith Ma'.
+# #601 (2026-10-04) moved it on: it reads suffix 'Jr. nee Smith
+# Ma' -- rules.md#M2: "a marker behind a credential is an ordinary word,
+# and the credential's run (S2) takes it in with everything after it" --
+# and fix(#601/#602) below claims it.
 name_regex = "^(?:Jane Doe nee MA|Jane Doe nee Smith Ma|Jane Doe nee Yo-Yo Ma)$"
 fields = ["family", "maiden", "middle", "suffix"]
 
@@ -4907,10 +4916,11 @@ fields = ["title", "given"]
 [[change]]
 # rules.md#S2: "The run at a name's trailing slot is read ONCE, once
 # the connectives have joined (P3) and before the particle chain (P2)
-# and the bound given-name join (P5) are made" (#614, 2026-10-07), and
-# rules.md#H5: "a particle chain (P2) stops in front of a trailing
-# title rather than taking it into the family name". This baseline
-# made the chain first and the title was a word of the family name.
+# and the bound given-name join (P5) are made" and "neither join
+# reaches a word the run took" (#614, 2026-10-07), and rules.md#H5: "a
+# particle chain (P2) stops in front of a trailing title rather than
+# taking it into the family name". This baseline made the chain first
+# and the title was a word of the family name.
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]

@@ -155,10 +155,15 @@ fields = ["_ambiguities"]
 
 [[change]]
 issue = "feat(#449) an interpunct transcription declines the script order, so the convention decides it"
-# '王·Smith'. rules.md#T3: the 間隔号 marks a transcription and
-# suppresses the script_orders lookup whole, so name_order governs and
-# the one remaining name word is O5's. Literal-anchored, one corpus
-# name.
+# '王·Smith'. rules.md#T3: "The interpunct divides a name only between
+# two characters of a classified East Asian script; anywhere else it is
+# part of the word" -- 'Smith' is Latin, so the name is one word, and
+# '王Smith' reads the same. rules.md#W4: "A name written wholly in one
+# East Asian script, or in the kana-licensed Japanese repertoire, reads
+# family-first whatever order the caller declared" -- a word mixing Han
+# and Latin is neither, so no script order applies, name_order governs
+# and the one name word is O5's. The issue names the interpunct, which
+# is incidental to this name. Literal-anchored, one corpus name.
 name_regex = "^王·Smith$"
 fields = ["_ambiguities"]
 
@@ -1081,8 +1086,10 @@ orders = ["DEFAULT"]
 
 [[change]]
 issue = "fix(#562) a comma credential run holding a particle chain reads by the name-word count"
-# rules.md#C1: "The part is read as its words stand, before any join"
-# (#613, 2026-10-06): no particle chain reaches it, so each member's
+# rules.md#C1: "A part read as postnominal [...] is read as its words
+# stand, before any join, and that reading is final: [...] no particle
+# run, connective join or bound given name reaches into it" (#613,
+# 2026-10-06): no particle chain reaches it, so each member's
 # capitals settle it and the run reads whole as the credential run --
 # silently since #613, where #562 (2026-10-01) had read the pair by the
 # count and reported the flip. The family-comma path had read the part as name text:
@@ -1105,25 +1112,25 @@ issue = "fix(#563) paired initials after a comma read as the given name unless a
 # two words before the comma may be one surname ('García Márquez,
 # G.J.'), so two dotted single letters alone after it stay the given
 # name and report the fork, where #516 had read them as a credential.
-# "Only a credential in front of them, or another word the class
-# admits by its dotted shape standing in the same part, makes them the
-# credential run": 'John Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.'
-# move to the run, while 'De La Cruz, M.J. PhD' keeps its initials,
-# the degree standing behind them, and so does 'García Márquez, Ms
-# G.J.', a title in front ("a suffix word in front of them that is
-# not also title vocabulary"), which moves nothing at any baseline.
-# The second period is optional ('García Márquez, G.J'). Two pairs
-# speaking only for each other make the run and report it behind two
-# name words ('John Smith, X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz,
-# M.J. K.L.' is no longer that case -- 'De La Cruz' is one name word,
-# so the count no longer reaches it and it reads as 'Cruz, M.J. K.L.'
-# does, given 'M.J.', suffix 'K.L.', reporting both; a listed member
-# in front speaks for nothing
-# ('García Márquez, Ed G.J.' keeps the family comma, and the fix(#531)
-# rule claims what its given part's trailing slot then reads). Against a 2.x baseline the names
-# whose roles match the baseline's move only the report, which a
-# 1.4.0 comparison cannot see; that ledger lists the three role movers
-# alone.
+# "Only an unambiguous suffix word in front of them that is not also
+# title vocabulary, or another word the class admits by its dotted shape
+# standing in the same part, makes them the credential run": 'John
+# Smith, PhD X.Y.' and 'John Smith, X.Y. P.Q.' move to the run, while
+# 'De La Cruz, M.J. PhD' keeps its initials, the degree standing behind
+# them, and so does 'García Márquez, Ms G.J.', a title in front ("an
+# unambiguous suffix word in front of them that is not also title
+# vocabulary"), which moves nothing at any baseline. The second period
+# is optional ('García Márquez, G.J'). Two pairs speaking only for each
+# other make the run and report it behind two name words ('John Smith,
+# X.Y. P.Q.'). 2026-10-01, #575: 'De La Cruz, M.J. K.L.' is no longer
+# that case -- 'De La Cruz' is one name word, so the count no longer
+# reaches it and it reads as 'Cruz, M.J. K.L.' does, given 'M.J.',
+# suffix 'K.L.', reporting both; a listed member in front speaks for
+# nothing ('García Márquez, Ed G.J.' keeps the family comma, and the
+# fix(#531) rule claims what its given part's trailing slot then reads).
+# Against a 2.x baseline the names whose roles match the baseline's move
+# only the report, which a 1.4.0 comparison cannot see; that ledger
+# lists the three role movers alone.
 name_regex = "^(?:De La Cruz, M\\.J\\. K\\.L\\.|De La Cruz, M\\.J\\. PhD|García Márquez, G\\.J|García Márquez, G\\.J\\.|García Márquez, PhD G\\.J\\.|John Smith, A\\.B\\.|John Smith, A\\.B\\. Ph\\.D\\.|John Smith, PhD X\\.Y\\.|John Smith, X\\.Y\\. P\\.Q\\.)$"
 fields = ["family", "given", "middle", "suffix", "_ambiguities"]
 orders = ["DEFAULT"]
@@ -1269,8 +1276,8 @@ issue = "fix(#531) a member the writing declines keeps its name reading and repo
 # text whole.
 #
 # Reporting a DECLINED fork is #530's stated rule -- the report tracks
-# the fork consulted, not the lean -- and rules.md#A1's "a kind is
-# worth adding only if a reader would hesitate too" is the standing
+# the fork consulted, not the lean -- and AGENTS.md's "A kind is worth
+# adding only if a reader would hesitate too" is the standing
 # objection it answers. It is also the only part of #531 that adds a
 # report without moving a field, which is why it is a rule of its own
 # rather than a widening of the one above: `fields` is
@@ -1286,8 +1293,10 @@ issue = "fix(#531) a member the writing declines keeps its name reading and repo
 # given part is a title there, 'PhD' is the given name, and the
 # Title-case 'Ma' ending the part is this slot's declining half,
 # reported. No role moves from this baseline; #544 keeps it so
-# (rules.md#S2: nothing in a part whose leading title run holds a dual
-# speaks for the member).
+# (rules.md#S2: "A word of both the title and the suffix vocabulary
+# standing in the given part's leading title run is a title there and
+# speaks for nothing, and no credential behind it speaks for a word of
+# this class in that part").
 #
 # Literal-anchored: the class is the slot's declining half, and a
 # regex for it would claim the thirteen movers above.
@@ -1300,12 +1309,13 @@ issue = "fix(#531) capitals take the do collision from the family-comma particle
 # 'Doe, John DO', alone, because the word is alone in the class: `do`
 # is the one ambiguous credential that is also particle vocabulary, so
 # this slot and P6's attachment (rules.md#P6) want the same word.
-# Derek's decision, recorded at decisions.md#S2: CAPITALS DECIDE, AND
-# THE PARTICLE RULE KEEPS EVERY OTHER SPELLING. An all-caps member in
-# a name written in more than one case carries a positive credential
-# lean, so the credential reading wins and P6 stands down; every other
-# spelling attaches exactly as it did, with P6's own
-# `particle-or-given` and no second report.
+# Derek's decision, recorded at decisions.md#S2: "CAPITALS DECIDE FOR
+# `do`, AND THE PARTICLE RULE KEEPS EVERY OTHER SPELLING". An all-caps
+# member in a name written in more than one case carries a positive
+# credential lean, so the credential reading wins and P6 stands down
+# (and since #544 so does an unambiguous credential in front of it,
+# 'doe, jane v phd do'); every other spelling attaches exactly as it
+# did, with P6's own `particle-or-given` and no second report.
 #
 # THE PAIRING IS THE ARGUMENT and the accepted cost is half of it. In
 # ONE CASE the rule cannot tell 'NASCIMENTO, EDSON ARANTES DO' from
@@ -2453,10 +2463,11 @@ fields = ["family", "given", "middle"]
 [[change]]
 # rules.md#S2: "The run at a name's trailing slot is read ONCE, once
 # the connectives have joined (P3) and before the particle chain (P2)
-# and the bound given-name join (P5) are made" (#614, 2026-10-07), and
-# rules.md#H5: "a particle chain (P2) stops in front of a trailing
-# title rather than taking it into the family name". This baseline
-# made the chain first and the title was a word of the family name.
+# and the bound given-name join (P5) are made" and "neither join
+# reaches a word the run took" (#614, 2026-10-07), and rules.md#H5: "a
+# particle chain (P2) stops in front of a trailing title rather than
+# taking it into the family name". This baseline made the chain first
+# and the title was a word of the family name.
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]
