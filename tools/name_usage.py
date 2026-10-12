@@ -160,7 +160,11 @@ def us_key(word: str) -> str:
     folded = unicodedata.normalize("NFKD", word.translate(_TRANSLITERATE))
     letters = []
     for ch in folded:
-        if unicodedata.combining(ch):
+        # Combining marks are accents NFKD split off; modifier letters
+        # (category Lm) are apostrophe-like marks such as the Hawaiian
+        # ʻokina in Kaʻahumanu. Both are dropped, as O'Brien's apostrophe
+        # is -- refusing them would leave such names with no answer.
+        if unicodedata.combining(ch) or unicodedata.category(ch) == "Lm":
             continue
         if ch.isascii():
             if ch.isalpha():
@@ -347,15 +351,20 @@ def wikidata_countries_query(forms: list[str],
                              languages: tuple[str, ...] = WIKIDATA_LANGUAGES,
                              ) -> str:
     """People per role and country of citizenship. A country with no
-    English label is named by its Q-id rather than dropped, so only a
-    person with no P27 at all lands in the empty country. A person with
-    two citizenships counts under both, so these rows may sum past the
-    role's total, which comes from wikidata_totals_query."""
+    English label is named by its Q-id rather than dropped, and an
+    "unknown value" citizenship (a blank-node IRI, not an item) is named
+    as such, so only a person with no P27 at all lands in the empty
+    country. A person with two citizenships counts under both, so these
+    rows may sum past the role's total, which comes from
+    wikidata_totals_query."""
     return f"""
 SELECT ?role ?country (COUNT(DISTINCT ?p) AS ?n) WHERE {{{_people(forms, languages)}
   OPTIONAL {{ ?p wdt:P27 ?c .
              OPTIONAL {{ ?c rdfs:label ?cl . FILTER(LANG(?cl) = "en") }} }}
-  BIND(IF(BOUND(?c), COALESCE(?cl, STRAFTER(STR(?c), "entity/")), "")
+  BIND(IF(!BOUND(?c), "",
+          COALESCE(?cl, IF(STRSTARTS(STR(?c), STR(wd:)),
+                           STRAFTER(STR(?c), STR(wd:)),
+                           "unknown citizenship")))
        AS ?country)
 }} GROUP BY ?role ?country"""
 
@@ -482,19 +491,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
-    census_error = ""
+    # A source that cannot be loaded is reported per word as failed; it
+    # must not take the other sources' answers down with it.
+    failures = (OSError, ValueError, http.client.HTTPException)
+    census_error = ssa_error = ""
     try:
         census = load_census(download=not args.no_wikidata)
-    except (OSError, ValueError) as exc:
+    except failures as exc:
         census, census_error = None, f"{type(exc).__name__}: {exc}"
-    ssa = load_ssa()
+    try:
+        ssa = load_ssa()
+    except failures as exc:
+        ssa, ssa_error = None, f"{type(exc).__name__}: {exc}"
 
     report = {}
     for word in args.words:
-        usage = census_usage(word, census)
-        if census_error:
-            usage.status, usage.note = "failed", census_error
-        usages = [usage, ssa_usage(word, ssa)]
+        census_row, ssa_row = census_usage(word, census), ssa_usage(word, ssa)
+        for row, error in ((census_row, census_error), (ssa_row, ssa_error)):
+            if error:
+                row.status, row.note = "failed", error
+        usages = [census_row, ssa_row]
         if not args.no_wikidata:
             usages.append(wikidata_usage(word, args.countries))
         report[word] = usages
@@ -503,7 +519,7 @@ def main(argv: list[str] | None = None) -> int:
                          ensure_ascii=False, indent=2))
     else:
         print("\n\n".join(render(w, us) for w, us in report.items()))
-    if ssa is None:
+    if ssa is None and not ssa_error:
         sys.stdout.flush()  # keep the notice after the report, not before it
         print("\n" + ssa_missing_message(), file=sys.stderr)
     failed = any(u.status == "failed" for us in report.values() for u in us)

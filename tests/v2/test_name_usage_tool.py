@@ -79,6 +79,10 @@ SORENSEN,1101,28069,9.5,0,96.6,0.5,0.6,0.5,1.1,0.7
     ("Łukasz", "LUKASZ"),
     ("Æsir", "AESIR"),
     ("Đorđević", "DORDEVIC"),
+    # A modifier letter (the ʻokina) is an apostrophe, dropped like
+    # O'Brien's. The second version refused it as a letter with no ASCII
+    # spelling, leaving the name with no answer.
+    ("Kaʻahumanu", "KAAHUMANU"),
     # No ASCII spelling, wholly or in part: no key at all, never a partial
     # one (the first version looked up AHMED for the second).
     ("关", ""),
@@ -279,3 +283,22 @@ def test_main_exits_2_when_a_source_failed(
     (tmp_path / tool.CENSUS_FILE).write_text("<html>error page</html>")
     assert tool.main(["--no-wikidata", "knight"]) == 2
     assert "delete it and run again" in capsys.readouterr().out
+
+
+def test_main_reports_a_bad_ssa_zip_without_losing_the_other_sources(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # The second version validated the SSA zip outside any try, so a
+    # state-level zip saved in its place crashed the run and lost the
+    # Census answer too.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    with zipfile.ZipFile(tmp_path / tool.CENSUS_FILE, "w") as zf:
+        zf.writestr(tool.CENSUS_MEMBER, _CENSUS)
+    with zipfile.ZipFile(tmp_path / tool.SSA_FILE, "w") as zf:
+        zf.writestr("AK.TXT", "AK,F,1910,Mary,14\n")
+    assert tool.main(["--no-wikidata", "--json", "shehu"]) == 2
+    out, err = capsys.readouterr()
+    census, ssa = json.loads(out)["shehu"]
+    assert census["family"] == 561
+    assert (ssa["status"], ssa["given"]) == ("failed", None)
+    assert "not downloaded" not in err  # the file exists; it is just wrong
