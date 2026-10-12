@@ -180,12 +180,11 @@ def test_render_shows_no_answer_and_unlisted_differently_from_a_count() -> None:
         tool.Usage("ssa", status="not downloaded"),
         tool.Usage("wikidata", given=0, family=12, lower_bound=True),
     ])
-    census, ssa, wikidata = (line.split() for line in text.splitlines()[2::1]
-                             if line.split() and line.split()[0] in
-                             ("census", "ssa", "wikidata"))
-    assert census[1:] == ["-", "<100"]
-    assert ssa[1:] == ["-", "-"]
-    assert wikidata[1:] == ["0+", "12+"]
+    rows = {cells[0]: cells[1:]
+            for cells in map(str.split, text.splitlines()[2:]) if cells}
+    assert rows["census"] == ["-", "<100"]
+    assert rows["ssa"] == ["-", "-"]
+    assert rows["wikidata"] == ["0+", "12+"]
 
 
 def test_spellings_cover_lower_and_capitalized_forms_once() -> None:

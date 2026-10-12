@@ -67,9 +67,10 @@ import urllib.parse
 import urllib.request
 import zipfile
 from collections import Counter
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
 
 CENSUS_URL = "https://www2.census.gov/topics/genealogy/2010surnames/names.zip"
 CENSUS_FILE = "census2010_surnames.zip"
@@ -113,6 +114,7 @@ _TRANSLITERATE = str.maketrans({
 })
 
 Status = Literal["ok", "unrepresentable", "not downloaded", "failed"]
+T = TypeVar("T")
 
 
 @dataclass(slots=True)
@@ -379,16 +381,15 @@ def read_wikidata(totals: list[dict[str, str]],
     """Raises ValueError on a role the queries cannot produce, rather
     than letting it fall through to a count of 0."""
     roles = {"given", "family"}
-    counts = {role: 0 for role in roles}
-    for row in totals:
+    for row in totals + by_country:
         if row["role"] not in roles:
             raise ValueError(f"unexpected role {row['role']!r}")
+    counts = {role: 0 for role in roles}
+    for row in totals:
         counts[row["role"]] = int(row["n"])
     countries: dict[str, list[tuple[str, int]]] = {role: [] for role in roles}
     stateless = {role: 0 for role in roles}
     for row in by_country:
-        if row["role"] not in roles:
-            raise ValueError(f"unexpected role {row['role']!r}")
         if row.get("country"):
             countries[row["role"]].append((row["country"], int(row["n"])))
         else:
@@ -406,7 +407,6 @@ def read_wikidata(totals: list[dict[str, str]],
 
 def wikidata_usage(word: str, top: int) -> Usage:
     forms = spellings(word)
-    matched = "matched as " + ", ".join(forms)
     try:
         usage = read_wikidata(
             _bindings(_sparql(wikidata_totals_query(forms))),
@@ -415,7 +415,7 @@ def wikidata_usage(word: str, top: int) -> Usage:
         return Usage("Wikidata people", status="failed", lower_bound=True,
                      note=f"query failed: {type(exc).__name__}: {exc}")
     zero = "a zero proves nothing" if not (usage.given or usage.family) else ""
-    usage.note = _join(matched, zero)
+    usage.note = _join("matched as " + ", ".join(forms), zero)
     return usage
 
 
@@ -449,6 +449,17 @@ def _download(url: str, path: Path, required_member: str) -> None:
 
 
 # -- output --------------------------------------------------------------
+
+def _attempt(load: Callable[[], T | None]) -> tuple[T | None, str]:
+    """Run a source's loader, returning its table (None when not
+    downloaded) and "" -- or None and the error it raised. A source that
+    cannot be loaded is reported per word as failed; it must not take the
+    other sources' answers down with it."""
+    try:
+        return load(), ""
+    except (OSError, ValueError, http.client.HTTPException) as exc:
+        return None, f"{type(exc).__name__}: {exc}"
+
 
 def _count(n: int | None, usage: Usage) -> str:
     if n is None:
@@ -491,18 +502,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
-    # A source that cannot be loaded is reported per word as failed; it
-    # must not take the other sources' answers down with it.
-    failures = (OSError, ValueError, http.client.HTTPException)
-    census_error = ssa_error = ""
-    try:
-        census = load_census(download=not args.no_wikidata)
-    except failures as exc:
-        census, census_error = None, f"{type(exc).__name__}: {exc}"
-    try:
-        ssa = load_ssa()
-    except failures as exc:
-        ssa, ssa_error = None, f"{type(exc).__name__}: {exc}"
+    census, census_error = _attempt(
+        lambda: load_census(download=not args.no_wikidata))
+    ssa, ssa_error = _attempt(load_ssa)
 
     report = {}
     for word in args.words:
