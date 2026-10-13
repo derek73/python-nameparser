@@ -27,6 +27,7 @@ Policy.unlisted_caps_suffixes.
 """
 from __future__ import annotations
 
+import unicodedata
 from collections.abc import Sequence
 
 from nameparser._lexicon import _normalize
@@ -40,8 +41,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     D, PH, caps_shape_candidate, claimed_as_non_name, delimiter_cores,
-    is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
-    name_word_count, surname_unit_facts, unit_ends, written_as_a_name,
+    composed_len, is_caps_word, is_paired_initials, is_single_letter_numeral,
+    is_wholly_suffix, name_word_count, surname_unit_facts, unit_ends, written_as_a_name,
 )
 from nameparser._policy import CapsSuffixes
 from nameparser._types import AmbiguityKind, Role
@@ -217,8 +218,11 @@ def decide(state: ParseState) -> ParseState:
     maybe = [p[0] for p in p1 if len(p) == 1
              and (AMBIGUOUS_ACRONYM_TAG in (tags := tokens[p[0]].tags)
                   or ("vocab:suffix" not in tags
-                      and tokens[p[0]].text.isalpha()
-                      and tokens[p[0]].text.isupper()))]
+                      and (tokens[p[0]].text.isalpha()
+                           and tokens[p[0]].text.isupper()
+                           or not unicodedata.is_normalized(
+                               "NFC", tokens[p[0]].text)
+                           and is_caps_word(tokens[p[0]].text))))]
     # The part is read ONCE: here where it holds no word of the class,
     # after the count below where it does, with the words the count
     # licensed (a read here and a second after licensing threw the first
@@ -307,7 +311,7 @@ def decide(state: ParseState) -> ParseState:
                     continue
                 text = tokens[i].text
                 if not (is_paired_initials(text)
-                        or (i in caps and len(text) == 2)):
+                        or (i in caps and composed_len(text) == 2)):
                     continue
                 if speaker < 0:
                     speaker = next(
@@ -375,7 +379,8 @@ def decide(state: ParseState) -> ParseState:
         member_set = frozenset(members)
         pairs = [k for k, p in enumerate(p1) if p[0] in member_set
                  and (is_paired_initials(tokens[p[0]].text)
-                      or (p[0] in caps and len(tokens[p[0]].text) == 2))]
+                      or (p[0] in caps
+                      and composed_len(tokens[p[0]].text) == 2))]
         # spoken for by each other only: every class word a pair, and
         # only titles among the other words in front of the first
         pair_only = (len(pairs) >= 2 and len(pairs) == len(members)

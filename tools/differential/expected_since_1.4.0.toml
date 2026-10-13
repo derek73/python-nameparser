@@ -4969,3 +4969,13 @@ fields = ["title", "given"]
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]
+
+[[change]]
+# rules.md#H2: "An accented Latin, Greek or Cyrillic letter written as a
+# base letter plus a combining mark (NFD) is the same letter as the
+# composed one" (#652, 2026-10-12): the abbreviation shape ended its
+# word at the base letter, so a decomposed `inž.` was no abbreviation
+# and became the given name. The rules example is the one name here.
+issue = "fix(#652) a decomposed accented abbreviation is an abbreviation"
+name_regex = "^Dr\\. inz\u030c\\. Janez Novak$"
+fields = ["title", "given", "middle"]
