@@ -2499,10 +2499,12 @@ why = "trailing 'Ph. D.' split-token healing is PARITY, not a 2.0 change: v1 hea
 #
 # NARROWED 2026-10-12, as the paragraph above asks: the last component
 # was `ph\.\s*d\.`, which also matches the UNSPLIT `Ph.D.` -- a single
-# token no healing ever touched. corpus_cldr.jsonl brought 17 names
-# ending `M.D. Ph.D.`, whose only diff against 1.4 is the suffix
-# separator ('M.D., Ph.D.' -> 'M.D. Ph.D.'), and this entry refused
-# them all. `\s+` keeps it to the split pair its `why` is about.
+# token no healing ever touched. corpus_cldr.jsonl brought 27 names
+# ending `M.D. Ph.D.` in either case. 11 carry a FAMILY_FIRST shape and
+# are skipped at 1.4.0; the 16 compared differ only in the suffix
+# separator ('M.D., Ph.D.' -> 'M.D. Ph.D.'). With `paní Alexandra
+# Zuzana Machová Ondřejová, Ph.D.` -- an unsplit `Ph.D.` whose diff is
+# a title move -- the entry refused 17. `\s+` keeps it to the split pair its `why` is about.
 name_regex = "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s+d\\.\\s*$"
 examples = ["John Ph. D.", "John Smith Ph. D.", "John Smith, Ph. D."]
 

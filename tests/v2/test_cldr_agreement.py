@@ -184,3 +184,25 @@ def test_the_summary_counts_each_role_and_matches_the_record(
         assert any(line.split()[0] == role and "agree" in line
                    for line in out.splitlines() if line.strip()), role
     assert "matches the record" in out
+
+
+@pytest.mark.parametrize("text", [
+    "ستوبر، زيزينيا هاميش",   # Arabic comma, as nameparser's COMMA_CHARS has
+    "Smith， John",            # fullwidth comma glued to the word
+])
+def test_a_word_beside_a_non_ascii_comma_still_occurs(text: str) -> None:
+    # Only ',' was stripped at first, so the word glued to the comma did
+    # not occur and CLDR's field was expected empty -- a false
+    # disagreement the parser could never resolve.
+    first = text.split()[0].rstrip("،，")
+    assert agreement.occurs(first, text)
+
+
+def test_an_unspaced_role_is_expected_in_text_order() -> None:
+    # CLDR's field order is given, given2; this rendering writes given2
+    # first. Joined in field order, the parser's correct 'ローズ セシリア'
+    # disagreed with 'セシリア ローズ'.
+    roles = agreement.expected_roles(
+        {"given": "セシリア", "given2": "ローズ", "surname": "ブラウン"},
+        "ブラウン・ローズ・セシリア")
+    assert agreement.same(roles["given_names"], "ローズ セシリア", "ブラウン・ローズ・セシリア")

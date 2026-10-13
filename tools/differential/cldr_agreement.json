@@ -392,7 +392,7 @@
    "got": "طبيب وجراح"
   },
   "suffix": {
-   "expected": "طبيب وجراح",
+   "expected": "الإبن طبيب وجراح",
    "got": ""
   },
   "text": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح",
@@ -402,12 +402,8 @@
   }
  },
  "ar/foreignFull/sorting": {
-  "family": {
-   "expected": "فون",
-   "got": "فون برول"
-  },
   "family_base": {
-   "expected": "",
+   "expected": "برول",
    "got": "فون برول"
   },
   "family_particles": {
@@ -417,12 +413,8 @@
   "text": "فون برول، عايدة كورنيليا سيزار مارتن"
  },
  "ar/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "فون",
-   "got": "فون برول"
-  },
   "family_base": {
-   "expected": "",
+   "expected": "برول",
    "got": "فون برول"
   },
   "family_particles": {
@@ -453,34 +445,6 @@
   },
   "text": "سندباد"
  },
- "ar/foreignGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ستوبر"
-  },
-  "text": "ستوبر، زيزينيا هاميش"
- },
- "ar/foreignGGS/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "ستوبر"
-  },
-  "text": "ستوبر، زيزينيا هاميش"
- },
- "ar/foreignGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "مولر"
-  },
-  "text": "مولر، كاثرين"
- },
- "ar/foreignGS/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "مولر"
-  },
-  "text": "مولر، كاثرين"
- },
  "ar/nativeFull/givenFirst": {
   "family": {
    "expected": "أبو الأغا",
@@ -495,7 +459,7 @@
    "got": "النائب"
   },
   "suffix": {
-   "expected": "النائب",
+   "expected": "الابن النائب",
    "got": ""
   },
   "text": "السيد أحمد رامي نجيب محفوظ أبو الأغا الابن، النائب",
@@ -503,28 +467,6 @@
    "expected": "السيد",
    "got": ""
   }
- },
- "ar/nativeFull/sorting": {
-  "family": {
-   "expected": "أبو",
-   "got": "أبو الأغا"
-  },
-  "family_base": {
-   "expected": "",
-   "got": "الأغا"
-  },
-  "text": "أبو الأغا، أحمد رامي نجيب محفوظ"
- },
- "ar/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "أبو",
-   "got": "أبو الأغا"
-  },
-  "family_base": {
-   "expected": "",
-   "got": "الأغا"
-  },
-  "text": "أبو الأغا، أحمد رامي نجيب محفوظ"
  },
  "ar/nativeG/sorting": {
   "family": {
@@ -547,34 +489,6 @@
    "got": ""
   },
   "text": "منير"
- },
- "ar/nativeGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "العامر"
-  },
-  "text": "العامر، كمال مجدي"
- },
- "ar/nativeGGS/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "العامر"
-  },
-  "text": "العامر، كمال مجدي"
- },
- "ar/nativeGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "النجار"
-  },
-  "text": "النجار، سميرة"
- },
- "ar/nativeGS/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "النجار"
-  },
-  "text": "النجار، سميرة"
  },
  "as/foreignFull/givenFirst": {
   "family": {
@@ -601,7 +515,7 @@
  },
  "as/foreignFull/sorting": {
   "family": {
-   "expected": "ভেন ডেন কুকুৰনেচীয়া",
+   "expected": "কুকুৰনেচীয়া ভেন ডেন",
    "got": "কুকুৰনেচীয়া"
   },
   "family_particles": {
@@ -852,7 +766,7 @@
  },
  "ba/foreignFull/sorting": {
   "family": {
-   "expected": "фон Брюль",
+   "expected": "Брюль фон",
    "got": "Брюль"
   },
   "family_particles": {
@@ -1050,7 +964,7 @@
  },
  "be/foreignFull/sorting": {
   "family": {
-   "expected": "фон Бруль",
+   "expected": "Бруль фон",
    "got": "Бруль"
   },
   "family_particles": {
@@ -1155,7 +1069,7 @@
  },
  "bg/foreignFull/sorting": {
   "family": {
-   "expected": "фон Брюл",
+   "expected": "Брюл фон",
    "got": "Брюл"
   },
   "family_particles": {
@@ -1218,7 +1132,7 @@
  },
  "bg/nativeFull/sorting": {
   "family": {
-   "expected": "фон Вернер",
+   "expected": "Вернер фон",
    "got": "Вернер"
   },
   "family_particles": {
@@ -1309,7 +1223,7 @@
    "got": ""
   },
   "given_names": {
-   "expected": "Samʊwɛl Fostɛɛŋ",
+   "expected": "Fostɛɛŋ Samʊwɛl",
    "got": "ƉAM Fostɛɛŋ Samʊwɛl"
   },
   "text": "fan ƉAM Fostɛɛŋ Samʊwɛl"
@@ -1328,7 +1242,7 @@
    "got": ""
   },
   "given_names": {
-   "expected": "Samʊwɛl Fostɛɛŋ",
+   "expected": "Fostɛɛŋ Samʊwɛl",
    "got": "fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl"
   },
   "suffix": {
@@ -1403,7 +1317,7 @@
    "got": "ʊŋono"
   },
   "given_names": {
-   "expected": "Mustafa Alɛ",
+   "expected": "Alɛ Mustafa",
    "got": "Alaaji KALAM Alɛ Mustafa"
   },
   "suffix": {
@@ -1809,7 +1723,7 @@
    "got": "Van"
   },
   "suffix": {
-   "expected": "II Excma.",
+   "expected": "Excma. II",
    "got": "II"
   },
   "text": "Excma. Dra. Van Dalen Hoogeveen II, Maria da Graça César Martín",
@@ -1873,7 +1787,7 @@
    "got": "Excm. Lloret Palol"
   },
   "suffix": {
-   "expected": "II Excm.",
+   "expected": "Excm. II",
    "got": "Sr., II"
   },
   "text": "Excm. Sr. Lloret Palol II, Josep Antoni Carles Joan",
@@ -1933,7 +1847,7 @@
  },
  "chr/foreignFull/sorting": {
   "family": {
-   "expected": "ᏉᏂ ᏇᎯ",
+   "expected": "ᏇᎯ ᏉᏂ",
    "got": "ᏇᎯ"
   },
   "family_particles": {
@@ -2207,7 +2121,7 @@
  },
  "cv/foreignFull/sorting": {
   "family": {
-   "expected": "фон Брюль",
+   "expected": "Брюль фон",
    "got": "Брюль"
   },
   "family_particles": {
@@ -2556,7 +2470,7 @@
  },
  "el/foreignFull/sorting": {
   "family": {
-   "expected": "φον Μπριλ",
+   "expected": "Μπριλ φον",
    "got": "Μπριλ"
   },
   "family_particles": {
@@ -2955,7 +2869,7 @@
    "got": "دکترای دندانپزشکی"
   },
   "suffix": {
-   "expected": "دکترای دندانپزشکی",
+   "expected": "جونیور دکترای دندانپزشکی",
    "got": ""
   },
   "text": "پروفسور آدا کورنلیا سزار مارتین وان بروهل جونیور، دکترای دندانپزشکی",
@@ -2966,11 +2880,7 @@
  },
  "fa/foreignFull/sorting": {
   "family": {
-   "expected": "وان",
-   "got": "بروهل"
-  },
-  "family_base": {
-   "expected": "",
+   "expected": "بروهل وان",
    "got": "بروهل"
   },
   "family_particles": {
@@ -2984,12 +2894,8 @@
   "text": "بروهل، آدا کورنلیا سزار مارتین وان"
  },
  "fa/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "وان",
-   "got": "وان بروهل"
-  },
   "family_base": {
-   "expected": "",
+   "expected": "بروهل",
    "got": "وان بروهل"
   },
   "family_particles": {
@@ -2999,6 +2905,10 @@
   "given_names": {
    "expected": "آدا کورنلیا سزار مارتین",
    "got": "پروفسور آدا کورنلیا سزار مارتین جونیور"
+  },
+  "suffix": {
+   "expected": "جونیور دکترای دندانپزشکی",
+   "got": "دکترای دندانپزشکی"
   },
   "text": "وان بروهل، پروفسور آدا کورنلیا سزار مارتین جونیور، دکترای دندانپزشکی",
   "title": {
@@ -3028,34 +2938,6 @@
   },
   "text": "سامانتا"
  },
- "fa/foreignGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "استوبر"
-  },
-  "text": "استوبر، زازیلیا هایمیش"
- },
- "fa/foreignGGS/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "استوبر"
-  },
-  "text": "استوبر، زازیلیا هایمیش"
- },
- "fa/foreignGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "مولر"
-  },
-  "text": "مولر، کاتیا"
- },
- "fa/foreignGS/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "مولر"
-  },
-  "text": "مولر، کاتیا"
- },
  "fa/nativeFull/givenFirst": {
   "family": {
    "expected": "رستگار",
@@ -3079,26 +2961,7 @@
    "got": ""
   }
  },
- "fa/nativeFull/sorting": {
-  "family": {
-   "expected": "",
-   "got": "رستگار"
-  },
-  "family_base": {
-   "expected": "",
-   "got": "رستگار"
-  },
-  "text": "رستگار، امیر هوشنگ"
- },
  "fa/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "رستگار"
-  },
-  "family_base": {
-   "expected": "",
-   "got": "رستگار"
-  },
   "given_names": {
    "expected": "امیر هوشنگ",
    "got": "آقای امیر هوشنگ دکتر"
@@ -3134,34 +2997,6 @@
    "got": ""
   },
   "text": "ژیلا"
- },
- "fa/nativeGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ملایری"
-  },
-  "text": "ملایری، امید رضا"
- },
- "fa/nativeGGS/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "ملایری"
-  },
-  "text": "ملایری، امید رضا"
- },
- "fa/nativeGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "عدلو"
-  },
-  "text": "عدلو، آیتین"
- },
- "fa/nativeGS/surnameFirst": {
-  "family": {
-   "expected": "",
-   "got": "عدلو"
-  },
-  "text": "عدلو، آیتین"
  },
  "fi/foreignFull/givenFirst": {
   "given_names": {
@@ -3777,7 +3612,7 @@
  },
  "gu/foreignFull/sorting": {
   "family": {
-   "expected": "ફૉન્ બ્રાઑલ્",
+   "expected": "બ્રાઑલ્ ફૉન્",
    "got": "બ્રાઑલ્"
   },
   "family_particles": {
@@ -3841,11 +3676,11 @@
  },
  "gu/nativeFull/givenFirst": {
   "family": {
-   "expected": "કુમાર શાહ પટેલ",
+   "expected": "પટેલ કુમાર શાહ",
    "got": "શ્રી. પટેલ ખુશી કિંજલ કુમાર શાહ જૂનિયર"
   },
   "family_base": {
-   "expected": "શાહ પટેલ",
+   "expected": "પટેલ શાહ",
    "got": "શ્રી. પટેલ ખુશી કિંજલ કુમાર શાહ જૂનિયર"
   },
   "family_particles": {
@@ -3868,7 +3703,7 @@
  },
  "gu/nativeFull/sorting": {
   "family": {
-   "expected": "કુમાર શાહ પટેલ",
+   "expected": "શાહ પટેલ કુમાર",
    "got": "શાહ"
   },
   "family_base": {
@@ -5420,7 +5255,7 @@
    "got": ""
   },
   "given_names": {
-   "expected": "ジェニファー ソフィア",
+   "expected": "ソフィア ジェニファー",
    "got": "スミス ソフィア ジェニファー"
   },
   "text": "フォン・スミス・ソフィア・ジェニファー"
@@ -5439,7 +5274,7 @@
    "got": ""
   },
   "given_names": {
-   "expected": "ジェニファー ソフィア",
+   "expected": "ソフィア ジェニファー",
    "got": "スミス ソフィア ジェニファー博士"
   },
   "text": "フォン・スミス・ソフィア・ジェニファー博士",
@@ -5469,20 +5304,6 @@
    "got": ""
   },
   "text": "マイケル"
- },
- "ja/foreignGGS/sorting": {
-  "given_names": {
-   "expected": "セシリア ローズ",
-   "got": "ローズ セシリア"
-  },
-  "text": "ブラウン・ローズ・セシリア"
- },
- "ja/foreignGGS/surnameFirst": {
-  "given_names": {
-   "expected": "セシリア ローズ",
-   "got": "ローズ セシリア"
-  },
-  "text": "ブラウン・ローズ・セシリア"
  },
  "ja/nativeFull/givenFirst": {
   "family": {
@@ -5517,7 +5338,7 @@
    "got": "佐藤グレース恵子"
   },
   "given_names": {
-   "expected": "恵子 グレース",
+   "expected": "グレース 恵子",
    "got": ""
   },
   "text": "佐藤グレース恵子"
@@ -5532,7 +5353,7 @@
    "got": "佐藤グレース恵子"
   },
   "given_names": {
-   "expected": "恵子 グレース",
+   "expected": "グレース 恵子",
    "got": ""
   },
   "suffix": {
@@ -5595,7 +5416,7 @@
    "got": "山田トーマス太郎"
   },
   "given_names": {
-   "expected": "太郎 トーマス",
+   "expected": "トーマス 太郎",
    "got": ""
   },
   "text": "山田トーマス太郎"
@@ -5606,7 +5427,7 @@
    "got": "山田トーマス太郎"
   },
   "given_names": {
-   "expected": "太郎 トーマス",
+   "expected": "トーマス 太郎",
    "got": ""
   },
   "text": "山田トーマス太郎"
@@ -5841,7 +5662,7 @@
  },
  "kk/foreignFull/sorting": {
   "family": {
-   "expected": "фон Брюль",
+   "expected": "Брюль фон",
    "got": "Брюль"
   },
   "family_particles": {
@@ -5935,18 +5756,14 @@
    "got": "ءتىس دارىگەرى"
   },
   "suffix": {
-   "expected": "ءتىس دارىگەرى",
+   "expected": "جۋنيور ءتىس دارىگەرى",
    "got": ""
   },
   "text": "ادا كورنەليا فون بريۋل جۋنيور، ءتىس دارىگەرى"
  },
  "kk_Arab/foreignFull/sorting": {
   "family": {
-   "expected": "فون",
-   "got": "بريۋل"
-  },
-  "family_base": {
-   "expected": "",
+   "expected": "بريۋل فون",
    "got": "بريۋل"
   },
   "family_particles": {
@@ -6000,31 +5817,6 @@
   },
   "text": "سينباد"
  },
- "kk_Arab/foreignGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "شتوبەر"
-  },
-  "text": "شتوبەر، سەسيليا حەمىش"
- },
- "kk_Arab/foreignGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "مۇللەر"
-  },
-  "text": "مۇللەر، كەيت"
- },
- "kk_Arab/nativeFull/sorting": {
-  "family": {
-   "expected": "",
-   "got": "بالقىباي"
-  },
-  "family_base": {
-   "expected": "",
-   "got": "بالقىباي"
-  },
-  "text": "بالقىباي، ماقسات توقماحامبەتۇلى"
- },
  "kk_Arab/nativeG/sorting": {
   "family": {
    "expected": "",
@@ -6046,20 +5838,6 @@
    "got": ""
   },
   "text": "اسەم"
- },
- "kk_Arab/nativeGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "قايرات"
-  },
-  "text": "قايرات، قالاجان"
- },
- "kk_Arab/nativeGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "كارىباي"
-  },
-  "text": "كارىباي، مۇرات"
  },
  "km/foreignFull/givenFirst": {
   "family": {
@@ -6090,7 +5868,7 @@
  },
  "km/foreignFull/sorting": {
   "family": {
-   "expected": "វន់ ប្រ៊ូល",
+   "expected": "ប្រ៊ូល វន់",
    "got": "ប្រ៊ូល"
   },
   "family_particles": {
@@ -6241,7 +6019,7 @@
  },
  "kn/foreignFull/sorting": {
   "family": {
-   "expected": "ವಾನ್ ಬ್ರಾಲ್",
+   "expected": "ಬ್ರಾಲ್ ವಾನ್",
    "got": "ಬ್ರಾಲ್"
   },
   "family_particles": {
@@ -6582,7 +6360,7 @@
  },
  "kok/foreignFull/sorting": {
   "family": {
-   "expected": "वॉन ब्रूह्ल",
+   "expected": "ब्रूह्ल वॉन",
    "got": "ब्रूह्ल"
   },
   "family_particles": {
@@ -6673,7 +6451,7 @@
  },
  "kok/nativeFull/sorting": {
   "family": {
-   "expected": "दे सोजा",
+   "expected": "सोजा दे",
    "got": "सोजा"
   },
   "family_particles": {
@@ -7032,7 +6810,7 @@
    "got": "ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ"
   },
   "suffix": {
-   "expected": "ຮຸ່ນລູກ ດຣ. ປອ.",
+   "expected": "ດຣ. ປອ. ຮຸ່ນລູກ",
    "got": ""
   },
   "text": "ດຣ. ປອ. ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ວອນ ບຣູລ ຮຸ່ນລູກ",
@@ -7043,7 +6821,7 @@
  },
  "lo/foreignFull/sorting": {
   "family": {
-   "expected": "ວອນ ບຣູລ",
+   "expected": "ບຣູລ ວອນ",
    "got": "ບຣູລ"
   },
   "family_particles": {
@@ -7074,7 +6852,7 @@
    "got": "ບຣູລ ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ"
   },
   "suffix": {
-   "expected": "ຮຸ່ນລູກ ດຣ. ປອ.",
+   "expected": "ດຣ. ປອ. ຮຸ່ນລູກ",
    "got": ""
   },
   "text": "ດຣ. ປອ. ວອນ ບຣູລ ສຈ. ປອ. ເອດາ ຄໍນີເລຍ ເຊຊາ ມາຕິນ ຮຸ່ນລູກ",
@@ -7119,7 +6897,7 @@
    "got": "ສ.ສ. ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ວູສເຕີ"
   },
   "suffix": {
-   "expected": "ຮຸ່ນລູກ ສ.ສ.",
+   "expected": "ສ.ສ. ຮຸ່ນລູກ",
    "got": ""
   },
   "text": "ສ.ສ. ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ວູສເຕີ ຮຸ່ນລູກ",
@@ -7142,7 +6920,7 @@
    "got": "ວູສເຕີ ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ຮຸ່ນລູກ"
   },
   "suffix": {
-   "expected": "ຮຸ່ນລູກ ສ.ສ.",
+   "expected": "ສ.ສ. ຮຸ່ນລູກ",
    "got": ""
   },
   "text": "ສ.ສ. ວູສເຕີ ທ. ເບີແທຣັມ ວິວເບີຟອດຊ ເຮັນຣີ ໂຣເບີດ ຮຸ່ນລູກ",
@@ -7402,7 +7180,7 @@
  },
  "mk/foreignFull/sorting": {
   "family": {
-   "expected": "ван ден Волф",
+   "expected": "Волф ван ден",
    "got": "Волф"
   },
   "family_particles": {
@@ -7503,7 +7281,7 @@
  },
  "ml/foreignFull/sorting": {
   "family": {
-   "expected": "വാൻ ബ്ര്യൂൾ",
+   "expected": "ബ്ര്യൂൾ വാൻ",
    "got": "ബ്ര്യൂൾ"
   },
   "family_particles": {
@@ -7658,7 +7436,7 @@
  },
  "mn/foreignFull/sorting": {
   "family": {
-   "expected": "вон Брюхл",
+   "expected": "Брюхл вон",
    "got": "Брюхл"
   },
   "family_particles": {
@@ -7793,7 +7571,7 @@
  },
  "mr/foreignFull/sorting": {
   "family": {
-   "expected": "व्हॉन ब्र्यूल",
+   "expected": "ब्र्यूल व्हॉन",
    "got": "ब्र्यूल"
   },
   "family_particles": {
@@ -7985,7 +7763,7 @@
  },
  "ms/nativeFull/sorting": {
   "family": {
-   "expected": "Syed A Ismail",
+   "expected": "Ismail Syed A",
    "got": "Ismail"
   },
   "family_particles": {
@@ -8083,7 +7861,7 @@
    "got": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊"
   },
   "suffix": {
-   "expected": "ဒေါက်တာ",
+   "expected": "ဒေါက်တာ ဂျူနီယာ",
    "got": ""
   },
   "text": "ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ဂျူနီယာ၊ ဒေါက်တာ",
@@ -8094,11 +7872,11 @@
  },
  "my/foreignFull/sorting": {
   "family": {
-   "expected": "ဝူစ်တာ ဗွန်",
+   "expected": "ဝူစ်တာ ဘရူ ဝူစ်တာ ဗွန်",
    "got": "ဝူစ်တာ"
   },
   "family_base": {
-   "expected": "",
+   "expected": "ဝူစ်တာ ဘရူ",
    "got": "ဝူစ်တာ"
   },
   "family_particles": {
@@ -8129,7 +7907,7 @@
    "got": "ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဂျူနီယာ၊ ဒေါက်တာ"
   },
   "suffix": {
-   "expected": "ဒေါက်တာ",
+   "expected": "ဒေါက်တာ ဂျူနီယာ",
    "got": ""
   },
   "text": "ဝူစ်တာ ဗွန် ဝူစ်တာ ဘရူ ပရော်ဖက်ဆာ ဒေါက်တာ အာဒါ ကွန်နီလီယာ ဆီဇာ မာတင် ဂျူနီယာ၊ ဒေါက်တာ",
@@ -8160,20 +7938,6 @@
   },
   "text": "ဆင်းဘတ်"
  },
- "my/foreignGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "စတိုဘာ၊"
-  },
-  "text": "စတိုဘာ၊ ဇာဇီလာ ဟာမစ်ရှ်"
- },
- "my/foreignGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "မူလာ၊"
-  },
-  "text": "မူလာ၊ ကက်သီ"
- },
  "my/nativeFull/givenFirst": {
   "family": {
    "expected": "ဝူစ်တာ",
@@ -8188,7 +7952,7 @@
    "got": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊"
   },
   "suffix": {
-   "expected": "ဒေါက်တာ",
+   "expected": "ဂျူနီယာ ဒေါက်တာ",
    "got": ""
   },
   "text": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဝူစ်တာ ဂျူနီယာ၊ ဒေါက်တာ",
@@ -8197,24 +7961,13 @@
    "got": ""
   }
  },
- "my/nativeFull/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ဝူစ်တာ၊"
-  },
-  "family_base": {
-   "expected": "",
-   "got": "ဝူစ်တာ၊"
-  },
-  "text": "ဝူစ်တာ၊ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်"
- },
  "my/nativeFull/surnameFirst": {
   "given_names": {
    "expected": "ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ်",
    "got": "မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဂျူနီယာ၊ ဒေါက်တာ"
   },
   "suffix": {
-   "expected": "ဒေါက်တာ",
+   "expected": "ဂျူနီယာ ဒေါက်တာ",
    "got": ""
   },
   "text": "ဝူစ်တာ မစ္စတာ ဘာထရမ် ဝဲလ်ဘာဖို့စ် ဟင်နရီ ရောဘတ် ဂျူနီယာ၊ ဒေါက်တာ",
@@ -8245,20 +7998,6 @@
   },
   "text": "ဇင်ဒါယာ"
  },
- "my/nativeGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ဝပ်ဆင်၊"
-  },
-  "text": "ဝပ်ဆင်၊ မေရီ စူး ဟာမစ်ရှ်"
- },
- "my/nativeGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "အက်ဒ်လာ၊"
-  },
-  "text": "အက်ဒ်လာ၊ အိုင်ရင်း"
- },
  "ne/foreignFull/givenFirst": {
   "family": {
    "expected": "भोन ब्रुहल",
@@ -8284,7 +8023,7 @@
  },
  "ne/foreignFull/sorting": {
   "family": {
-   "expected": "भोन ब्रुहल",
+   "expected": "ब्रुहल भोन",
    "got": "ब्रुहल"
   },
   "family_particles": {
@@ -8478,7 +8217,7 @@
    "got": "m.d ph.d. Inger Marie Adele Synnøve"
   },
   "suffix": {
-   "expected": "jr. m.d ph.d.",
+   "expected": "m.d ph.d. jr.",
    "got": "jr."
   },
   "text": "m.d ph.d. Inger Marie Adele Synnøve von Wolf jr."
@@ -8530,7 +8269,7 @@
  },
  "nn/nativeFull/givenFirst": {
   "suffix": {
-   "expected": "jr. st.repr.",
+   "expected": "st.repr. jr.",
    "got": "jr."
   },
   "text": "st.repr. Gregers Werle Marve Almar von Fleksnes jr.",
@@ -8594,7 +8333,7 @@
    "got": "m.d ph.d. Inger Marie Adele Synnøve"
   },
   "suffix": {
-   "expected": "jr. m.d ph.d.",
+   "expected": "m.d ph.d. jr.",
    "got": "jr."
   },
   "text": "m.d ph.d. Inger Marie Adele Synnøve von Wolf jr."
@@ -8646,7 +8385,7 @@
  },
  "no/nativeFull/givenFirst": {
   "suffix": {
-   "expected": "jr. st.repr.",
+   "expected": "st.repr. jr.",
    "got": "jr."
   },
   "text": "st.repr. Gregers Werle Marve Almar von Fleksnes jr.",
@@ -8729,7 +8468,7 @@
  },
  "or/foreignFull/sorting": {
   "family": {
-   "expected": "ୱାନ୍ ଡେନ୍ ୱୋଲ୍ଫ",
+   "expected": "ୱୋଲ୍ଫ ୱାନ୍ ଡେନ୍",
    "got": "ୱୋଲ୍ଫ"
   },
   "family_particles": {
@@ -8868,7 +8607,7 @@
  },
  "pa/foreignFull/sorting": {
   "family": {
-   "expected": "ਵੈਨ ਡੇਨ ਵੌਲਫ਼",
+   "expected": "ਵੌਲਫ਼ ਵੈਨ ਡੇਨ",
    "got": "ਵੌਲਫ਼"
   },
   "family_particles": {
@@ -9495,14 +9234,14 @@
    "got": "Alejandro Manuel César Mamani de la Cruz"
   },
   "suffix": {
-   "expected": "Jr. Ph. D.",
+   "expected": "Ph. D. Jr.",
    "got": "Jr."
   },
   "text": "Ph. D., Prof. Dr. Alejandro Manuel César Mamani de la Cruz Jr."
  },
  "qu/foreignFull/sorting": {
   "family": {
-   "expected": "de la Cruz",
+   "expected": "Cruz de la",
    "got": "Cruz de la Alejandro Manuel César Mamani"
   },
   "family_base": {
@@ -9529,7 +9268,7 @@
    "got": ""
   },
   "suffix": {
-   "expected": "Jr. Ph. D.",
+   "expected": "Ph. D. Jr.",
    "got": "Jr."
   },
   "text": "Ph. D., Prof. Dr. de la Cruz Alejandro Manuel César Mamani Jr."
@@ -9574,14 +9313,14 @@
    "got": "Maria García Rosa de la Cruz"
   },
   "suffix": {
-   "expected": "Jr. A. R.",
+   "expected": "A. R. Jr.",
    "got": "Jr."
   },
   "text": "A. R., Sr. Maria García Rosa de la Cruz Jr."
  },
  "qu/nativeFull/sorting": {
   "family": {
-   "expected": "de la Cruz",
+   "expected": "Cruz de la",
    "got": "Cruz de la Maria García Rosa"
   },
   "family_base": {
@@ -9608,7 +9347,7 @@
    "got": ""
   },
   "suffix": {
-   "expected": "Jr. A. R.",
+   "expected": "A. R. Jr.",
    "got": "Jr."
   },
   "text": "A. R., Sr. de la Cruz Maria García Rosa Jr."
@@ -9685,7 +9424,7 @@
    "got": "Chirurgie dentară Eva-Eleonora Karl Hans"
   },
   "suffix": {
-   "expected": "Jr. MD Chirurgie dentară",
+   "expected": "MD Chirurgie dentară Jr.",
    "got": "Jr."
   },
   "text": "Prof. dr. MD Chirurgie dentară Eva-Eleonora Karl Hans von der Ruhr Jr.",
@@ -9712,7 +9451,7 @@
    "got": "dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans"
   },
   "suffix": {
-   "expected": "Jr. MD Chirurgie dentară",
+   "expected": "MD Chirurgie dentară Jr.",
    "got": "Jr."
   },
   "text": "MD Chirurgie dentară von der Ruhr Prof. dr. Eva-Eleonora Karl Hans Jr.",
@@ -9749,7 +9488,7 @@
    "got": "Dl Dr. Daniel Ionescu Dragoș Ioan"
   },
   "suffix": {
-   "expected": "Jr. Dr.",
+   "expected": "Dr. Jr.",
    "got": "Jr."
   },
   "text": "Dl Dr. Daniel Ionescu Dragoș Ioan Ardelean Jr.",
@@ -9764,7 +9503,7 @@
    "got": "Dl Daniel Ionescu Dragoș Ioan"
   },
   "suffix": {
-   "expected": "Jr. Dr.",
+   "expected": "Dr. Jr.",
    "got": "Jr."
   },
   "text": "Dr. Ardelean Dl Daniel Ionescu Dragoș Ioan Jr.",
@@ -9824,7 +9563,7 @@
  },
  "ru/foreignFull/sorting": {
   "family": {
-   "expected": "фон Брюль",
+   "expected": "Брюль фон",
    "got": "Брюль"
   },
   "family_particles": {
@@ -10574,7 +10313,7 @@
  },
  "sk/foreignFull/sorting": {
   "family": {
-   "expected": "von Kant",
+   "expected": "Kant von",
    "got": "Kant"
   },
   "family_particles": {
@@ -10922,7 +10661,7 @@
  },
  "sq/foreignFull/sorting": {
   "family": {
-   "expected": "van den Popa",
+   "expected": "Popa van den",
    "got": "van den prof. dr. Popa"
   },
   "family_base": {
@@ -11090,7 +10829,7 @@
  },
  "sr/foreignFull/sorting": {
   "family": {
-   "expected": "ван ден Волф",
+   "expected": "Волф ван ден",
    "got": "Волф"
   },
   "family_particles": {
@@ -11430,7 +11169,7 @@
  },
  "sw/foreignFull/sorting": {
   "family": {
-   "expected": "mwana Hamisi",
+   "expected": "Hamisi mwana",
    "got": "Hamisi"
   },
   "family_particles": {
@@ -11752,11 +11491,11 @@
  },
  "te/foreignFull/givenFirst": {
   "family": {
-   "expected": "శర్మ చౌదరి శర్మ చౌదరి",
+   "expected": "శర్మ శర్మ చౌదరి చౌదరి",
    "got": "డి."
   },
   "family_base": {
-   "expected": "చౌదరి శర్మ చౌదరి",
+   "expected": "శర్మ చౌదరి చౌదరి",
    "got": "డి."
   },
   "family_particles": {
@@ -11775,11 +11514,11 @@
  },
  "te/foreignFull/sorting": {
   "family": {
-   "expected": "శర్మ చౌదరి శర్మ చౌదరి",
+   "expected": "శర్మ చౌదరి చౌదరి శర్మ",
    "got": "చౌదరి"
   },
   "family_base": {
-   "expected": "చౌదరి శర్మ చౌదరి",
+   "expected": "శర్మ చౌదరి చౌదరి",
    "got": "చౌదరి"
   },
   "family_particles": {
@@ -11794,11 +11533,11 @@
  },
  "te/foreignFull/surnameFirst": {
   "family": {
-   "expected": "శర్మ చౌదరి శర్మ చౌదరి",
+   "expected": "శర్మ శర్మ చౌదరి చౌదరి",
    "got": "శర్మ"
   },
   "family_base": {
-   "expected": "చౌదరి శర్మ చౌదరి",
+   "expected": "శర్మ చౌదరి చౌదరి",
    "got": "శర్మ"
   },
   "family_particles": {
@@ -12015,7 +11754,7 @@
  },
  "th/foreignFull/sorting": {
   "family": {
-   "expected": "วอน บรืล",
+   "expected": "บรืล วอน",
    "got": "บรืล"
   },
   "family_particles": {
@@ -12135,18 +11874,14 @@
    "got": "ኣዳ ኮርኒሊያ ሲዘር ማርቲን ቮን ብሩሂ ማንጁስ፣ ሓኪም መጥባሕቲ"
   },
   "suffix": {
-   "expected": "ሓኪም መጥባሕቲ ስኒ",
+   "expected": "ማንጁስ ሓኪም መጥባሕቲ ስኒ",
    "got": ""
   },
   "text": "ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ቮን ብሩሂ ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ"
  },
  "ti/foreignFull/sorting": {
   "family": {
-   "expected": "ቮን",
-   "got": "ብሩሂ፣"
-  },
-  "family_base": {
-   "expected": "",
+   "expected": "ብሩሂ ቮን",
    "got": "ብሩሂ፣"
   },
   "family_particles": {
@@ -12177,7 +11912,7 @@
    "got": "ብሩሂ ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ"
   },
   "suffix": {
-   "expected": "ሓኪም መጥባሕቲ ስኒ",
+   "expected": "ማንጁስ ሓኪም መጥባሕቲ ስኒ",
    "got": ""
   },
   "text": "ቮን ብሩሂ ፕሮ. ዶር. ኣዳ ኮርኒሊያ ሲዘር ማርቲን ማንጁስ፣ ሓኪም መጥባሕቲ ስኒ",
@@ -12208,20 +11943,6 @@
   },
   "text": "ሲንባድ"
  },
- "ti/foreignGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ስቶበር፣"
-  },
-  "text": "ስቶበር፣ ዛዚሊያ ሃሚሽ"
- },
- "ti/foreignGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ሙለር፣"
-  },
-  "text": "ሙለር፣ ካቲ"
- },
  "ti/nativeFull/givenFirst": {
   "family": {
    "expected": "ዉስተር",
@@ -12236,7 +11957,7 @@
    "got": "ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ዉስተር ማንጁስ፣ ኣባል"
   },
   "suffix": {
-   "expected": "ኣባል ባይቶ",
+   "expected": "ማንጁስ ኣባል ባይቶ",
    "got": ""
   },
   "text": "ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ዉስተር ማንጁስ፣ ኣባል ባይቶ",
@@ -12245,24 +11966,13 @@
    "got": ""
   }
  },
- "ti/nativeFull/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ዉስተር፣"
-  },
-  "family_base": {
-   "expected": "",
-   "got": "ዉስተር፣"
-  },
-  "text": "ዉስተር፣ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት"
- },
  "ti/nativeFull/surnameFirst": {
   "given_names": {
    "expected": "በርትረም ዊልበርፎርስ ሄንሪ ሮበርት",
    "got": "ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ማንጁስ፣ ኣባል ባይቶ"
   },
   "suffix": {
-   "expected": "ኣባል ባይቶ",
+   "expected": "ማንጁስ ኣባል ባይቶ",
    "got": ""
   },
   "text": "ዉስተር ኣይተ በርትረም ዊልበርፎርስ ሄንሪ ሮበርት ማንጁስ፣ ኣባል ባይቶ",
@@ -12293,20 +12003,6 @@
   },
   "text": "ዘንዳያ"
  },
- "ti/nativeGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ዋትሰን፣"
-  },
-  "text": "ዋትሰን፣ ሜሪ ሱ ሃሚሽ"
- },
- "ti/nativeGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "ኣድለር፣"
-  },
-  "text": "ኣድለር፣ ኣይሪን"
- },
  "tk/foreignFull/givenFirst": {
   "family": {
    "expected": "fon Brül Gonzales Domingo",
@@ -12332,7 +12028,7 @@
  },
  "tk/foreignFull/sorting": {
   "family": {
-   "expected": "fon Brül",
+   "expected": "Brül fon",
    "got": "Brül"
   },
   "family_particles": {
@@ -12460,7 +12156,7 @@
    "got": "DDS Ada Cornelia César Martín"
   },
   "suffix": {
-   "expected": "Jr MD DDS",
+   "expected": "MD DDS Jr",
    "got": "Jr"
   },
   "text": "Prof. Dr. MD DDS Ada Cornelia César Martín von Brühl Jr",
@@ -12764,12 +12460,8 @@
   "text": "یاسمین راشد سدرہ منیر ندیم رضا ایم ڈی ڈی ڈی ایس"
  },
  "ur/foreignFull/sorting": {
-  "family": {
-   "expected": "ندیم",
-   "got": "ندیم رضا"
-  },
   "family_base": {
-   "expected": "",
+   "expected": "رضا",
    "got": "ندیم رضا"
   },
   "family_particles": {
@@ -12831,20 +12523,6 @@
   },
   "text": "سندباد"
  },
- "ur/foreignGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "صابری"
-  },
-  "text": "صابری، محمد ہاشم"
- },
- "ur/foreignGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "منصور"
-  },
-  "text": "منصور، حاتم"
- },
  "ur/nativeFull/givenFirst": {
   "family": {
    "expected": "سید",
@@ -12865,14 +12543,6 @@
   "text": "عبد الکریم عبد الحمید سید ایم پی"
  },
  "ur/nativeFull/sorting": {
-  "family": {
-   "expected": "",
-   "got": "سید"
-  },
-  "family_base": {
-   "expected": "",
-   "got": "سید"
-  },
   "given_names": {
    "expected": "عبد الکریم عبد الحمید",
    "got": "عبد الکریم عبد الحمید ایم پی"
@@ -12915,20 +12585,6 @@
    "got": ""
   },
   "text": "احمد"
- },
- "ur/nativeGGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "خان"
-  },
-  "text": "خان، مریم نواز"
- },
- "ur/nativeGS/sorting": {
-  "family": {
-   "expected": "",
-   "got": "اصغر"
-  },
-  "text": "اصغر، شازیہ"
  },
  "uz/foreignFull/surnameFirst": {
   "family": {
@@ -13060,7 +12716,7 @@
    "got": ""
   },
   "given_names": {
-   "expected": "Ada Cornelia César Martín",
+   "expected": "César Martín Ada Cornelia",
    "got": "Brühl César Martín Ada Cornelia"
   },
   "text": "von Brühl César Martín Ada Cornelia"
@@ -13079,7 +12735,7 @@
    "got": ""
   },
   "given_names": {
-   "expected": "Ada Cornelia César Martín",
+   "expected": "César Martín Ada Cornelia",
    "got": "von Brühl César Martín Ada Cornelia"
   },
   "suffix": {
@@ -13147,7 +12803,7 @@
    "got": "ĐBQH"
   },
   "given_names": {
-   "expected": "Anh Văn",
+   "expected": "Văn Anh",
    "got": "Nguyễn Văn Anh"
   },
   "suffix": {
@@ -13946,7 +13602,7 @@
  },
  "zh/foreignFull/sorting": {
   "family": {
-   "expected": "冯 布鲁赫",
+   "expected": "布鲁赫 冯",
    "got": "布鲁赫"
   },
   "family_particles": {
@@ -14484,7 +14140,7 @@
  },
  "zu/foreignFull/sorting": {
   "family": {
-   "expected": "u-van den u-Wold",
+   "expected": "u-Wold u-van den",
    "got": "den u-Wold"
   },
   "family_particles": {

@@ -11,7 +11,8 @@ matching the record:
 - a recorded disagreement now agrees (progress, which must be recorded so
   that it is guarded from then on);
 - a recorded disagreement's answer changed (a different wrong answer, or
-  progress in disguise -- and a record that never goes stale).
+  progress in disguise -- which keeps the recorded answers current; the
+  recorded `text` and `expected` are refreshed only by a re-record).
 
     uv run python tools/differential/cldr_agreement.py           # summary
     uv run python tools/differential/cldr_agreement.py --record  # re-record
@@ -51,12 +52,21 @@ def _has_space(text: str) -> bool:
     return any(ch.isspace() for ch in text)
 
 
+#: Commas a rendering may carry: nameparser's own COMMA_CHARS (ASCII,
+#: Arabic U+060C, fullwidth U+FF0C) plus the Myanmar U+104A and
+#: Ethiopic U+1363 marks CLDR's sorting forms use, and the ideographic
+#: U+3001, which no CLDR 48 rendering holds -- defensive. A comma
+#: left glued to a word hides that word from occurs(), and CLDR's field
+#: is then expected empty -- a disagreement no parser fix could resolve.
+_COMMAS = str.maketrans({c: " " for c in ",\u060c\uff0c\u104a\u1363\u3001"})
+
+
 def _words(text: str) -> list[str]:
-    return text.replace(",", " ").split()
+    return text.translate(_COMMAS).split()
 
 
 def _squash(text: str) -> str:
-    return "".join(text.replace(",", "").split())
+    return "".join(text.translate(_COMMAS).split())
 
 
 def occurs(value: str, text: str) -> bool:
@@ -76,8 +86,11 @@ def expected_roles(fields: dict[str, str], text: str) -> dict[str, str]:
     The particle and base views are compared only where CLDR states the
     split, i.e. the name has a surname-core."""
     def present(*names: str) -> str:
-        return " ".join(fields[n] for n in names
-                        if n in fields and occurs(fields[n], text))
+        # In the order the values occur in the text, not CLDR's field
+        # order: an unspaced rendering compares in order, and one that
+        # writes given2 before given would otherwise never agree.
+        found = [fields[n] for n in names if n in fields and occurs(fields[n], text)]
+        return " ".join(sorted(found, key=lambda v: _squash(text).find(_squash(v))))
 
     family = (("surname", "surname2") if "surname" in fields
               else ("surname-prefix", "surname-core", "surname2"))

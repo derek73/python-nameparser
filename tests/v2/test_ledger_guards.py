@@ -3354,7 +3354,7 @@ from nameparser import DEFAULT_NICKNAME_DELIMITERS as D
 from nameparser.config.maiden_markers import MAIDEN_MARKERS as V
 from nameparser._lexicon import _normalize
 def _n(x): return x if isinstance(x, str) else x['name']
-names = {_n(json.loads(l)) for f in glob.glob('tools/differential/corpus*.jsonl') for l in open(f, encoding='utf-8') if l.strip()}
+names = {_n(json.loads(l)) for f in glob.glob('tools/differential/corpus*.jsonl') if not f.endswith('corpus_cldr.jsonl') for l in open(f, encoding='utf-8') if l.strip()}
 strip = ''.join({c for p in D for c in p})
 sub = lambda n: any(e in n for e in V if not e.isascii())
 print(sum(not {_normalize(t.strip(strip)) for t in n.split()} & V and sub(n) for n in names),
@@ -8060,7 +8060,11 @@ def _check_shape_rows(compare: ModuleType, roster: str, ledger_name: str,
     # `gone`'s question, at pytest speed and against every ledger
     # rather than only the one a run was pointed at. The gate asks
     # it over the corpora a full run loaded; _CORPUS_NAMES is every
-    # name in every corpus*.jsonl, which is the same population.
+    # name in every corpus*.jsonl EXCEPT _UNMEASURED_CORPORA
+    # (corpus_cldr.jsonl, 2026-10-12), so the two populations differ by
+    # that file: a recorded or watched row on a CLDR-only name reads as
+    # departed here. Keep such rows off CLDR names, or move the name
+    # into a measured corpus first.
     departed = sorted(set(shapes) - set(_CORPUS_NAMES))
     assert not departed, (
         f"{ledger_name}: {departed} carry a recorded shape in {roster} "
