@@ -3,7 +3,8 @@
 Consumes: original, masked (regions to skip), extracted (regions that
 tokenize with a pre-set role).
 Produces: tokens (span-sorted WorkTokens; text always == original
-slice), comma_offsets (segmentation points; never tokens),
+slice), comma_offsets (segmentation points of the main stream; a comma
+there is never a token, one inside an extracted region is word text),
 interpunct_offsets (间隔号 transcription markers, #298; never tokens).
 Reads: Policy.strip_emoji, Policy.strip_bidi.
 
@@ -110,7 +111,12 @@ def _tokenize_region(state: ParseState, start: int, end: int,
     tok_start: int | None = None
     for i in range(start, end):
         ch = text[i]
-        is_separator = ch in COMMA_CHARS or _ignorable(ch, state)
+        # rules.md#N1: "a comma inside it kept as written — the comma
+        # divides nothing there" -- a comma separates only where it
+        # records a segmentation offset, the main stream; inside an
+        # extracted region it is the clause's text, like ';' (#653)
+        is_separator = ((record_offsets and ch in COMMA_CHARS)
+                        or _ignorable(ch, state))
         if ch == _INTERPUNCT:
             # Region-local flanks: a B7 at a region edge stays token
             # text, and the bound also stops a custom delimiter's
@@ -155,8 +161,8 @@ def tokenize(state: ParseState) -> ParseState:
     for start, end in zip(boundaries[::2], boundaries[1::2]):
         _tokenize_region(state, start, end, None, True, tokens, commas,
                          interpuncts)
-    # extracted regions: pre-set role, commas and interpuncts are mere
-    # separators
+    # extracted regions: pre-set role; a comma is word text there and an
+    # interpunct a mere separator, neither recording an offset
     for role, inner in state.extracted:
         _tokenize_region(state, inner.start, inner.end, role, False,
                          tokens, commas, interpuncts)

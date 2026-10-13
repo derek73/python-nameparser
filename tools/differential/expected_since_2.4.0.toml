@@ -32,3 +32,22 @@
 # There is deliberately no `change = []` line. TOML forbids appending a
 # [[change]] table to a statically defined array, so that line would
 # block the first entry.
+
+[[change]]
+# rules.md#N1: "a comma inside it kept as written — the comma divides
+# nothing there" (#653, 2026-10-12): a comma inside a delimited
+# clause is the clause's text, as 1.4.0 kept it. This baseline split it
+# off as a separator, and the nickname rendered without it.
+issue = "fix(#653) a delimited clause keeps its comma"
+name_regex = "^(?:Jane \\(Janey, Jo\\) Smith|Maria Kowalska \\(z, domu Nowak\\))$"
+fields = ["nickname"]
+
+[[change]]
+# rules.md#M3: "a marker followed by a comma is no marker" (#653,
+# 2026-10-12): once a clause kept its comma, a spaced one after the
+# marker would have passed M3's word-after test, so the comma now
+# unmarks it and the clause stays a nickname, as 1.4.0 read it. This
+# baseline dropped the comma and read the clause as the maiden name.
+issue = "fix(#653) a comma after a marker unmarks it"
+name_regex = "^(?:Jane \\(née , Jones\\) Smith|Jane \\(née ,Jones\\) Smith)$"
+fields = ["maiden", "nickname"]

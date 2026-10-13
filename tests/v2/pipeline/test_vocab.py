@@ -9,7 +9,7 @@ from nameparser._lexicon import (
 )
 from nameparser._pipeline._vocab import (
     ambiguous_class_candidate, ambiguous_class_member, ambiguous_lean,
-    caps_shape_candidate,
+    caps_shape_candidate, comma_follows_marker,
     effective_script, is_initial, is_initial_shaped, is_one_case,
     is_single_letter_numeral,
     is_suffix_lenient, is_suffix_strict, is_title_shaped, is_wholly_suffix,
@@ -874,3 +874,16 @@ def test_written_as_a_name(text: str, expected: bool) -> None:
     # as its letter; trailing non-letters and a lowercase letter with
     # no single capital (ß, ĸ) are passed over.
     assert written_as_a_name(text) is expected
+
+
+@pytest.mark.parametrize(("word", "expected"), [
+    (",", True), (",Jones", True), ("\uff0c田中", True), ("\u060c", True),
+    # past what the tokenizer drops or divides at (#653's second review)
+    ("\u200f,", True), ("\U0001f600,", True), ("\u30fb\uff0c田中", True),
+    ("Jones", False), ("Jones,", False), ("\u30fb田中", False),
+    ("-", False), ("", False),
+])
+def test_comma_follows_marker_reads_past_what_tokenize_drops(
+        word: str, expected: bool) -> None:
+    assert comma_follows_marker(word) is expected
+
