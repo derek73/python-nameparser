@@ -110,7 +110,11 @@ H2. Rationale: before a name, an abbreviation is almost always a
     vocabulary: a period-marked opening word is a title even when
     the word is suffix vocabulary — except after a family comma,
     where a part that is nothing but suffix words is the credential
-    run (C1) and the abbreviation opens nothing.
+    run (C1) and the abbreviation opens nothing. A letter written as
+    a base letter plus a combining accent (NFD) is the same letter
+    as the composed one, here and in every dotted shape the
+    credential rules read (#652), so a name parses the same in
+    either encoding.
       "Rev. John Smith"           →  title="Rev."
       "Xyz. John Smith"           →  title="Xyz."
       "Smith, Major. John"        →  title="Major."

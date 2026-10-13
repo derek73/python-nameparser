@@ -1926,3 +1926,30 @@ def test_the_catalan_recipe_unmarks_the_link_for_one_case_names() -> None:
     # removes being the only one these names raised
     assert catalan.parse("JOHN I SMITH").ambiguities == ()
     assert catalan.parse("JOHN QUINCY SMITH I").ambiguities == ()
+
+
+@pytest.mark.parametrize("text", [
+    "Dr. inž. Janez Novak",                # H2: leading shape rule
+    "Janez Novak, univ. dipl. inž.",       # H5/C2: comma-part credential run
+    "Janez Novak inž.",                    # H5: trailing title chain
+    "Janez Novak, Ž.Š.Č.",                 # S3: dotted shape suffix
+    "Janez Novak, Žž.Šš.",                 # S2: chunked dotted shape
+    "Smith, Ž.Š. Jones",                   # C1: paired initials
+    "Janez Novak, Ž.Š.",                   # C1: paired initials, one-word
+])
+def test_a_decomposed_abbreviation_reads_as_its_composed_twin(
+        text: str) -> None:
+    """#652: the abbreviation shape rules saw a combining mark as the
+    end of the word (not \\w), so `inž.` written i, n, z, U+030C, '.'
+    was not an abbreviation and `Dr. inž. Janez Novak` made it the
+    given name. Output keeps the encoding written, so both are
+    compared composed."""
+    composed = unicodedata.normalize("NFC", text)
+    decomposed = unicodedata.normalize("NFD", text)
+    assert decomposed != composed
+
+    def roles(s: str) -> dict[str, str]:
+        return {k: unicodedata.normalize("NFC", v)
+                for k, v in parse(s).as_dict().items()}
+
+    assert roles(decomposed) == roles(composed)

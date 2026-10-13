@@ -29,18 +29,15 @@ def differential_corpus() -> list[str]:
     rather than a package, and the one-JSON-string-per-line format is
     cheaper to read than to make importable.
 
-    corpus_cldr.jsonl is left out, for now and for a measured reason.
-    Joining it on 2026-10-12 took test_properties.py from 34.5 s to
-    39.6 s (py3.11, local) -- affordable -- but four of its Slavic
-    renderings fail test_a_decomposed_name_renders_as_its_composed_twin:
-    decomposed `inž.` is not read as a period abbreviation, so
-    `Janez Novak, univ. dipl. inž.` reverses (#652). Re-include the
-    file when that is fixed. The harness and the CLDR agreement ratchet
-    still parse these names.
+    corpus_cldr.jsonl joins it since #652: decomposed (NFD) renderings
+    of its Slavic names, `Janez Novak, univ. dipl. inž.`, read
+    differently from their composed twins until the shape regexes
+    learned combining marks, and the decomposed-twin property test is
+    the regression guard. Joining it took test_properties.py from
+    34.5 s to 39.6 s (py3.11, local, 2026-10-12).
     """
     corpus_dir = Path(__file__).parents[2] / "tools" / "differential"
-    paths = sorted(p for p in corpus_dir.glob("corpus*.jsonl")
-                   if p.name != "corpus_cldr.jsonl")
+    paths = sorted(corpus_dir.glob("corpus*.jsonl"))
     assert paths, f"no corpus*.jsonl in {corpus_dir}"
     names = [_entry_name(json.loads(line))
              for path in paths

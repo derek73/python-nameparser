@@ -164,7 +164,12 @@ in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
 # in sync by hand (tests/v2/test_regex_sync.py, which reaches this
 # object through `_pieces._PERIOD_ABBREV`, an IMPORT of this one, not
 # a second definition -- the sync test's target name did not move).
-_PERIOD_ABBREV = re.compile(r'^[^\W\d_]{2,}\.$')
+# A letter is one letter (a word character that is not a digit or
+# underscore) plus any combining marks written after it (#652): `inž.` typed as i, n, z, U+030C, '.'
+# is the same word as the composed one.
+_MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
+_LETTER = r'[^\W\d_]' + _MARKS + '*'
+_PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 
 
 # rules.md#H2: "an abbreviation opening the part of the name that
@@ -363,13 +368,13 @@ def ambiguous_lean(text: str, one_case: bool) -> Lean | None:
     return "name"
 
 
-_DOTTED = re.compile(r"(?:[^\W\d_]\.)+")
+_DOTTED = re.compile(r"(?:" + _LETTER + r"\.)+")
 # #544: the CHUNKED spelling -- two or more runs of letters, each
 # closed by a period ('M.Eng.', 'L.Ac.'). Both callers compare the
 # period-free letters against the listed member, so the chunks must
 # spell it; one chunk ('Ma.', 'Ed.') is the single trailing period and
 # stays outside the gate.
-_CHUNKED = re.compile(r"(?:[^\W\d_]+\.){2,}")
+_CHUNKED = re.compile(r"(?:(?:" + _LETTER + r")+\.){2,}")
 
 
 def _dotted(text: str) -> bool:
@@ -389,7 +394,7 @@ def _dotted(text: str) -> bool:
 # a given and a middle initial are written run together ('M.J.',
 # 'G.J.'). The trailing period is optional, as `period_joined_vocab`'s
 # shape verdict lets it be.
-_PAIRED_INITIALS = re.compile(r"[^\W\d_]\.[^\W\d_]\.?")
+_PAIRED_INITIALS = re.compile(_LETTER + r"\." + _LETTER + r"\.?")
 
 
 def is_paired_initials(text: str) -> bool:
