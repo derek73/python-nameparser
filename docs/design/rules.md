@@ -1410,15 +1410,16 @@ another's opener — and the straight apostrophe doubles as a quotation mark and
 N1. Rationale: a quoted or bracketed clause beside a name is an
     informal alias, not part of the name.
     A clause enclosed by a configured nickname delimiter pair reads
-    as the nickname and is lifted out of the name, keeping its
-    punctuation as written — a comma inside it divides nothing; an
-    empty enclosure is simply dropped.
+    as the nickname and is lifted out of the name, a comma inside it
+    kept as written — the comma divides nothing there, though the
+    dots T2 and T3 name still divide a clause as they divide a name;
+    an empty enclosure is simply dropped.
       "Andrew (Andy) Perkins"     →  nickname="Andy"
       "Jane (Janey, Jo) Smith"    →  nickname="Janey, Jo"
       "Jean 'JD' Smith"           →  nickname="JD"
       "Anna () Smith"             →  nickname=""  · boundary
       "John ｢Jack｣ Smith"         →  nickname="Jack"
-    history: decisions.md#N1 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_tokenize.py
+    history: decisions.md#N1 · interacts: T2, T3 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_tokenize.py
 
 N2. Rationale: only a mark standing at word boundaries is quoting;
     anywhere else it is part of the word.
@@ -1649,7 +1650,10 @@ M3. Rationale: an enclosure says nothing about whether it means
     is suffix-shaped, which S1 takes first — the marker itself
     dropped, as M1 drops it. A marker with no word after it is just
     a word in brackets, and so is a marker no separator divides from
-    the name, the fullwidth-colon spelling M2 records. Where the
+    the name, the fullwidth-colon spelling M2 records. And a marker
+    followed by a comma is no marker, whether the comma stands alone
+    or is glued to either word — here and in M1's drop alike, so a
+    clause the caller declared maiden keeps that marker. Where the
     pair is already configured for maiden names M1 governs and this
     adds nothing. Being keyed on the content rather than on the
     pair, this reaches a nickname pair's clause too, and M1's
@@ -1662,6 +1666,8 @@ M3. Rationale: an enclosure says nothing about whether it means
       "Jane Smith (née)"          →  nickname="née"  · boundary
       "Maria Kowalska (z domu Nowak)"  →  maiden="Nowak"
       "Maria Kowalska (z domu)"   →  nickname="z domu"  · boundary
+      "Jane (née , Jones) Smith"  →  nickname="née , Jones"  · boundary
+      "Jane (née ,Jones) Smith"  maiden-parens  →  maiden="née ,Jones"  · boundary
     Accepted: the word taken after the marker is not tested for
     being a name word, so unlike M2's bare take this one does not
     stop at a suffix word — the same two words read one way
@@ -1670,7 +1676,7 @@ M3. Rationale: an enclosure says nothing about whether it means
     suffix-shaped, which the trailing period makes true of the one
     and false of the other, so only the V clause reaches this rule.
       "Jane Smith (née V)"        →  maiden="V"
-    history: decisions.md#M3 · interacts: M1, M2, S1, N1 · implemented: nameparser/_pipeline/_extract.py
+    history: decisions.md#M3 · interacts: M1, M2, S1, N1 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_vocab.py
 
 M4. Rationale: a maiden name is a FORMER family name, and a former
     one only means something beside a current one — nobody announces

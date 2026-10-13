@@ -4023,10 +4023,13 @@ name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]
 
 [[change]]
-# rules.md#N1: "keeping its punctuation as written — a comma inside it
-# divides nothing" (#653, 2026-10-12): a comma inside a delimited
+# rules.md#N1: "a comma inside it kept as written — the comma divides
+# nothing there" (#653, 2026-10-12): a comma inside a delimited
 # clause is the clause's text, as 1.4.0 kept it. This baseline split it
 # off as a separator, and the nickname rendered without it.
 issue = "fix(#653) a delimited clause keeps its comma"
-name_regex = "^(?:Jane \\(Janey, Jo\\) Smith|Maria Kowalska \\(z, domu Nowak\\))$"
+# The two rules.md#M3 comma examples move only this way here: this
+# baseline predates M3, so their clauses were nicknames either way
+# and the comma is the whole diff.
+name_regex = "^(?:Jane \\(Janey, Jo\\) Smith|Maria Kowalska \\(z, domu Nowak\\)|Jane \\(née , Jones\\) Smith|Jane \\(née ,Jones\\) Smith)$"
 fields = ["nickname"]

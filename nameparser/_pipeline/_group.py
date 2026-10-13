@@ -78,7 +78,7 @@ from nameparser._pipeline._state import (
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import (
-    delimiter_cores,
+    comma_follows_marker, delimiter_cores,
 )
 from nameparser._types import AmbiguityKind, Role
 
@@ -1523,8 +1523,11 @@ def group(state: ParseState) -> ParseState:
             # test, since the tokens inside a clause are contiguous in
             # index order -- a clause holding nothing but its marker
             # keeps its words, exactly as a one-token "(Nee)" does.
+            # rules.md#M3: "a marker followed by a comma is no marker"
+            # -- asked of the same word extract's M3 test asks it of
             if (first + run < len(tokens)
-                    and tokens[first + run].span.end <= clause.end):
+                    and tokens[first + run].span.end <= clause.end
+                    and not comma_follows_marker(tokens[first + run].text)):
                 dropped.extend(range(first, first + run))
     return copy_with(
         state, tokens=tuple(tokens), pieces=tuple(all_pieces),

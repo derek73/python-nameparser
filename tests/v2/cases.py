@@ -8612,6 +8612,22 @@ CASES: tuple[Case, ...] = (
                "both clauses merged into the one field, which is the "
                "merged-nickname half of #335 and the only difference "
                "left (re-measured 2026-10-12)"),
+    Case("marker_followed_by_a_comma_behind_a_bidi_mark_is_no_marker",
+         "Jane (n\u00e9e \u200f, Jones) Smith",
+         {"given": "Jane", "family": "Smith", "nickname": "n\u00e9e , Jones"},
+         classification="parity",
+         notes="rules.md#M3's comma clause where the clause's whitespace "
+               "word is '\\u200f,' and its token is ',' -- tokenize drops "
+               "the right-to-left mark under the default strip_bidi. "
+               "Extract's M3 test and group's M1 drop ask "
+               "_vocab.comma_follows_marker of those two different "
+               "strings, so the predicate reads past what tokenize "
+               "drops; testing only the first character made M3 read "
+               "the clause as maiden and the drop pass keep the marker, "
+               "maiden 'n\u00e9e , Jones' (#653's second review, "
+               "measured 2026-10-12). It looks exactly like "
+               "'Jane (n\u00e9e , Jones) Smith', which is the point. "
+               "1.4.0 read nickname 'n\u00e9e , Jones' (2026-10-12)"),
     Case("marker_divided_by_a_nakaguro_keeps_the_clause_a_nickname",
          '佐藤 花子 "旧姓・田中" (旧姓 鈴木)',
          {"given": "花子", "family": "佐藤", "nickname": "旧姓 田中",

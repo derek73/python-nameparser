@@ -3886,11 +3886,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rules.md#H1 comma example. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-        # 2026-10-12, #653: 461 -> 463, 'Jane (Janey, Jo) Smith' and
-        # 'Maria Kowalska (z, domu Nowak)', #653's rules.md#N1 and #M1
+        # 2026-10-12, #653: 461 -> 465, 'Jane (Janey, Jo) Smith',
+        # 'Maria Kowalska (z, domu Nowak)', 'Jane (née , Jones) Smith'
+        # and 'Jane (née ,Jones) Smith', #653's rules.md#N1, #M1 and #M3
         # examples. Reach -- each is a comma name, read at 1.4.0's
         # reading here, so there is no diff to absorb.
-            _Claim(463, ('given', 'suffix', 'title'), "cde6740153e3", None),
+            _Claim(465, ('given', 'suffix', 'title'), "ae1d223b1aa2", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -4023,11 +4024,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #606: 443 -> 444, 'Greve, Anna'. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-        # 2026-10-12, #653: 461 -> 463, 'Jane (Janey, Jo) Smith' and
-        # 'Maria Kowalska (z, domu Nowak)', #653's rules.md#N1 and #M1
+        # 2026-10-12, #653: 461 -> 465, 'Jane (Janey, Jo) Smith',
+        # 'Maria Kowalska (z, domu Nowak)', 'Jane (née , Jones) Smith'
+        # and 'Jane (née ,Jones) Smith', #653's rules.md#N1, #M1 and #M3
         # examples. Reach -- each is a comma name, read at 1.4.0's
         # reading here, so there is no diff to absorb.
-            _Claim(463, ('family', 'given'), "cde6740153e3", None),
+            _Claim(465, ('family', 'given'), "ae1d223b1aa2", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -5465,7 +5467,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#614) a trailing title is read before the particle chain":
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
         "fix(#653) a delimited clause keeps its comma":
-            _Claim(2, ('nickname',), "fad1fd2c06ad", None),
+            # 2 -> 4 the same day: the two rules.md#M3 comma examples
+            # move only their nickname at this pre-M3 baseline.
+            _Claim(4, ('nickname',), "d7a0d8c919c8", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5958,6 +5962,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
         "fix(#653) a delimited clause keeps its comma":
             _Claim(2, ('nickname',), "fad1fd2c06ad", None),
+        "fix(#653) a comma after a marker unmarks it":
+            _Claim(2, ('maiden', 'nickname'), "9ff9af68de6d", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6683,7 +6689,9 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#614) a trailing title is read before the particle chain":
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
         "fix(#653) a delimited clause keeps its comma":
-            _Claim(2, ('nickname',), "fad1fd2c06ad", None),
+            # 2 -> 4 the same day: the two rules.md#M3 comma examples
+            # move only their nickname at this pre-M3 baseline.
+            _Claim(4, ('nickname',), "d7a0d8c919c8", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -7029,10 +7037,14 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
         "fix(#653) a delimited clause keeps its comma":
             _Claim(2, ('nickname',), "fad1fd2c06ad", None),
+        "fix(#653) a comma after a marker unmarks it":
+            _Claim(2, ('maiden', 'nickname'), "9ff9af68de6d", None),
     },
     "expected_since_2.4.0.toml": {
         "fix(#653) a delimited clause keeps its comma":
             _Claim(2, ('nickname',), "fad1fd2c06ad", None),
+        "fix(#653) a comma after a marker unmarks it":
+            _Claim(2, ('maiden', 'nickname'), "9ff9af68de6d", None),
     },
 }
 
@@ -8540,14 +8552,16 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
         # non-effect: the fix(#535) title-stop rule carries the name's
         # diff at every baseline that has one, and `absorbed_by` stays
         # empty.
-        # 63 -> 65 on 2026-10-12 for #653's rules.md#N1 and #M1
-        # examples, 'Jane (Janey, Jo) Smith' and 'Maria Kowalska (z,
-        # domu Nowak)', whose clauses match this shape. They cost the
+        # 63 -> 67 on 2026-10-12 for #653's rules.md#N1, #M1 and #M3
+        # examples, 'Jane (Janey, Jo) Smith', 'Maria Kowalska (z,
+        # domu Nowak)', 'Jane (née , Jones) Smith' and 'Jane (née
+        # ,Jones) Smith', whose clauses match this shape. They cost the
         # entry nothing: #653 restored 1.4.0's comma inside the clause,
-        # so the tree reads both nicknames as 1.4.0 does and there is
-        # no diff to silence -- the entry the fix had tripped before it
-        # landed, per the issue.
-        _Excluded(65, "fe1dd0f26b5c", ()),
+        # so the tree reads all four nicknames as 1.4.0 does and there
+        # is no diff to silence. (The CLDR corpus name the issue reports,
+        # 'Macáková, Alexandra Zuzana (pani, PhD)', tripped this entry
+        # through the bug; that corpus lands separately.)
+        _Excluded(67, "3dd4efe0d13a", ()),
 }
 
 

@@ -51,7 +51,7 @@ from nameparser._lexicon import (
 )
 from nameparser._policy import (CapsSuffixes, Policy, Script, _JA_SCRIPTS, _NO_INITIALS,
                                 _SCRIPT_RANGES, _script_matcher)
-from nameparser._pipeline._state import WorkToken, comma_bucket
+from nameparser._pipeline._state import COMMA_CHARS, WorkToken, comma_bucket
 
 # Ported verbatim from v1 (nameparser/config/regexes.py "initial") minus
 # its empty-string alternative -- WorkToken text is never empty. Kept in
@@ -1165,6 +1165,33 @@ def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
         if key.count(" ") == n - 1 and key in markers:
             return n
     return 0
+
+
+
+# rules.md#M3: "a marker followed by a comma is no marker"
+def comma_follows_marker(word: str) -> bool:
+    """Whether `word`, the one standing after a marker run inside a
+    delimited clause, opens with a comma -- standing alone (' , ') or
+    glued to the name after it (' ,Jones'). A comma glued to the marker
+    itself ('née,') needs no test: that word is no marker to begin with,
+    the vocabulary storing no comma. The one predicate for extract's M3
+    test over whitespace words and group's M1 drop over tokens, which
+    since #653 hold the same comma
+    (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
+
+    The comma need not be the word's first character, only the first
+    that is a comma or a letter or digit. A whitespace word can open
+    with what the tokenizer drops or divides at -- a bidi mark, an
+    emoji, a nakaguro -- so '\u200f, Jones' is a comma-led WORD only
+    past its mark, while the token group asks about is ',' already;
+    reading past the rest makes the two sites agree by construction
+    (#653's second review)."""
+    for ch in word:
+        if ch in COMMA_CHARS:
+            return True
+        if ch.isalnum():
+            return False
+    return False
 
 
 def tag_marker_runs(tokens: Sequence[WorkToken], comma_offsets: Sequence[int],

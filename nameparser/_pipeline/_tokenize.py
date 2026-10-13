@@ -111,8 +111,8 @@ def _tokenize_region(state: ParseState, start: int, end: int,
     tok_start: int | None = None
     for i in range(start, end):
         ch = text[i]
-        # rules.md#N1: "keeping its punctuation as written — a comma
-        # inside it divides nothing" -- a comma separates only where it
+        # rules.md#N1: "a comma inside it kept as written — the comma
+        # divides nothing there" -- a comma separates only where it
         # records a segmentation offset, the main stream; inside an
         # extracted region it is the clause's text, like ';' (#653)
         is_separator = ((record_offsets and ch in COMMA_CHARS)
