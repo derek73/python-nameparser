@@ -677,10 +677,20 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
 def is_caps_word(text: str) -> bool:
     """Whether TEXT is alphabetic capitals once NFC-composed: `isalpha()`
     is False for a combining mark, so the decomposed spelling of
-    'ŽŠČ' would otherwise not be a caps word (#652). Callers test
-    ASCII inline first, in C, and call this for the rest."""
+    'ŽŠČ' would otherwise not be a caps word (#652). Callers test the
+    text as written inline first, in C, and call this only for text
+    that is not NFC (`unicodedata.is_normalized`, also C), so composed
+    text pays no frame."""
     composed = unicodedata.normalize("NFC", text)
     return composed.isalpha() and composed.isupper()
+
+
+def composed_len(text: str) -> int:
+    """The length of TEXT in letters as the writer sees them: code
+    points once NFC-composed. A caps word admitted decomposed (#652)
+    is longer than its composed twin, and the two-letter pair test
+    (`John Smith, MÁ`) counts letters."""
+    return len(text if text.isascii() else unicodedata.normalize("NFC", text))
 
 
 def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:

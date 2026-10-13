@@ -52,6 +52,7 @@ is what lets the fork be reported without being taken.
 """
 from __future__ import annotations
 
+import unicodedata
 
 from nameparser._lexicon import _normalize, _spells_an_initial
 from nameparser._policy import CapsSuffixes
@@ -229,8 +230,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
                 # C: a listed member ('John Smith, MA'), and a word that
                 # is not alphabetic capitals ('John Smith, Ph. D.')
                 and n not in lex.suffix_acronyms_ambiguous
-                and (not token.text.isascii()
-                     or token.text.isalpha() and token.text.isupper())
+                and (token.text.isalpha() and token.text.isupper()
+                     or not unicodedata.is_normalized("NFC", token.text))
                 and caps_shape_candidate(token.text, lex, state.policy,
                                          one_case)):
             # #516's all-caps half: an unlisted word written in capitals

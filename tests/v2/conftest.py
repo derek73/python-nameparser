@@ -35,9 +35,11 @@ def differential_corpus() -> list[str]:
     learned combining marks, and the decomposed-twin property test
     (tests/v2/test_properties.py) is the corpus-wide guard. Recorded
     negative control, measured 2026-10-12 with 04cc0814's nameparser/
-    and this file's corpus: that test fails with four non-hangul texts
-    parsing differently decomposed (`Janez Novak, univ. dipl. inž.`
-    and three more Slavic renderings). Joining the file took
+    and this file's corpus: that test fails with five non-hangul texts
+    parsing differently decomposed -- four from corpus_cldr.jsonl
+    (`g. Janez Peter Novak ml., univ. dipl. inž.` and three more
+    Slavic renderings) and `Dr. inž. Janez Novak` from
+    corpus_rules.jsonl, which #652 added. Joining the file took
     test_properties.py from 34.5 s to 39.6 s before the fix and it
     runs in 39.8 s after (py3.11, local).
     """

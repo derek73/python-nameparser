@@ -143,3 +143,14 @@ def test_example(rule: Rule, example: Example) -> None:
             f"{rule.rule_id}: intended equals today -- remove the marker")
     else:
         assert actual == example.value
+
+
+def test_the_h2_nfd_example_is_still_decomposed() -> None:
+    """#652: rules.md#H2's NFD example is the only executable witness
+    of the encoding clause, and an editor or formatter that
+    NFC-normalizes the file turns it into the composed case, which
+    always worked and still passes. Its bytes are z + U+030C."""
+    from pathlib import Path
+    text = (Path(__file__).parents[2] / "docs" / "design" / "rules.md"
+            ).read_text(encoding="utf-8")
+    assert "inž." in text, "H2's NFD example was recomposed"
