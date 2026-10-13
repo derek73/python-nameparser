@@ -689,7 +689,7 @@ wheels = [
 
 [[package]]
 name = "namedivider-python"
-version = "0.4.1"
+version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "lightgbm" },
@@ -699,9 +699,9 @@ dependencies = [
     { name = "regex" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/82/e4/69d1a59c468d4ea1b80ce2f598de9994f5da7fcff35889b402fdf870e74f/namedivider_python-0.4.1.tar.gz", hash = "sha256:ef5d0aecc71fbf020da2d8b84793109d48aaf65da9d244f4746973c4821b08c0", size = 35271, upload-time = "2025-11-03T04:45:49.245Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/ec/2ad22a0c09101278b4541334b1b3468ce436f46a9150a3339e66f3066168/namedivider_python-0.4.2.tar.gz", hash = "sha256:0c5975511edffcd7cadad705cb903ab24ece9a0a12db65e6a9358e1624d709f6", size = 38063, upload-time = "2026-10-12T06:13:42.804Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3c/b7/8d7aaef9fb1480ab77030c0189929bd5489d848fb390ce945223def2063d/namedivider_python-0.4.1-py2.py3-none-any.whl", hash = "sha256:efedf5cfcddc6fcc46c8116cc883955888d9eed6d518169fe6af1e1683055b3f", size = 46427, upload-time = "2025-11-03T04:45:50.761Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/7d/3b7a793ac2660ddad925ba2f5de226bea958ee340ec3c89bded3da954a48/namedivider_python-0.4.2-py2.py3-none-any.whl", hash = "sha256:e4fe25f17d1da59612e1556dab96eccad53017f320db84cc855e670ef7eb4b4e", size = 49239, upload-time = "2026-10-12T06:13:41.561Z" },
 ]
 
 [[package]]
