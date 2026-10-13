@@ -89,12 +89,8 @@ def test_tolerated_marker_is_read_off_a_rule() -> None:
     A rule may declare its examples ILLUSTRATIVE with a
     ``tolerated: <reason>`` line. The grammar's whole job is to make
     the line visible: the examples still parse and are still executed
-    by test_rules_doc.py, and it is build_rules_corpus.py that acts
-    on the flag by harvesting nothing from a marked rule. The other
-    half of that promise -- that a tolerated rule really contributes
-    no name to corpus_rules.jsonl -- is
-    test_a_tolerated_rule_puts_no_name_in_the_rules_corpus in
-    tests/v2/test_ledger_guards.py, which can see the corpus file.
+    by test_rules_doc.py, and the marker tells a reader the rule
+    describes best-effort behavior rather than promising it.
 
     The fixture is synthetic, like DOC above, and stays local to this
     test so the shared fixture keeps describing a normative doc.

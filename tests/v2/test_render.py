@@ -1630,8 +1630,7 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
     # 'maria y lopez' is a ONE-CASE control, not a mixed-case one: written
     # wholly in lowercase, its 'y' is outside the marked set (rules.md#P3),
     # so it stays the CONNECTIVE on both surfaces rather than reading as
-    # an initial the way 'e' does (tests/v2/test_ledger_guards.py's
-    # "one-case controls" wording, around line 1118). What it no longer
+    # an initial the way 'e' does. What it no longer
     # witnesses is the DROP: #461 gave the letter its initial back here,
     # because it holds the middle part alone and so joins nothing
     # (decisions.md#R3). The joining one-case control below is where

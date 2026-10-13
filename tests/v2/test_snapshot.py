@@ -1,17 +1,10 @@
 """The tree's readings of every corpus name match the committed snapshot
-(tools/differential/snapshot.py). A failure lists the moved names
+(tools/differential/snapshot.py, #664). A failure lists the moved names
 grouped by which fields changed; re-record if the moves are intended,
 and the diff of snapshot.jsonl is then the review's list of moves."""
-from __future__ import annotations
+from ._differential_fixtures import load_tool
 
-import importlib.util
-from pathlib import Path
-
-_PATH = Path(__file__).resolve().parents[2] / "tools" / "differential" / "snapshot.py"
-_spec = importlib.util.spec_from_file_location("_snapshot", _PATH)
-assert _spec and _spec.loader
-snapshot = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(snapshot)
+snapshot = load_tool("snapshot")
 
 
 def test_readings_match_the_snapshot() -> None:
@@ -29,3 +22,11 @@ def test_the_snapshot_can_report_a_move() -> None:
     moved = [{**rows[0], "family": "Smyth"}]
     assert snapshot.grouped({snapshot.key(r): r for r in rows},
                             {snapshot.key(r): r for r in moved})
+
+
+def test_a_name_leaving_the_corpus_is_reported() -> None:
+    # A truncated corpus must not pass for a clean run.
+    rows = snapshot.read([("John Smith", None), ("Jane Doe", None)])
+    assert snapshot.grouped({snapshot.key(r): r for r in rows},
+                            {snapshot.key(rows[0]): rows[0]}) \
+        == ["(removed from corpus): 1", "    Jane Doe"]

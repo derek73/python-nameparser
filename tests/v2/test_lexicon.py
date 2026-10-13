@@ -973,3 +973,26 @@ def test_removing_a_honorific_tail_is_the_peels_off_switch() -> None:
     # the peel being broken outright
     on = Parser().parse("田中さん")
     assert (on.family, on.suffix) == ("田中", "さん")
+
+
+@pytest.mark.parametrize("field", _PHRASE_FIELDS)
+def test_a_shipped_phrase_entry_is_stored_as_written(field: str) -> None:
+    """The half of a phrase entry's storage rule config's own
+    assert_normalized cannot see. It checks the single-spaced lowercase
+    form; the per-WORD period strip is _lexicon._title_key's. So the
+    question is asked here, and it is stronger than the fold: does
+    Lexicon store the shipped constant UNCHANGED? An entry written
+    'z. domu' passes import-time hygiene and is silently rewritten to
+    'z domu' -- inert as a lookup key nobody wrote.
+
+    Over _PHRASE_FIELDS rather than over maiden_markers, so a third
+    phrase field arrives already pinned."""
+    from nameparser.config.maiden_markers import MAIDEN_MARKERS
+    from nameparser.config.titles import GIVEN_NAME_TITLES
+    shipped = {"maiden_markers": MAIDEN_MARKERS,
+               "given_name_titles": GIVEN_NAME_TITLES}[field]
+    assert getattr(Lexicon.default(), field) == frozenset(shipped), (
+        f"{field}: Lexicon rewrote the shipped constant, so the entries "
+        f"it stores are not the ones the data module wrote -- "
+        f"{sorted(frozenset(shipped) - getattr(Lexicon.default(), field))} "
+        f"were folded away or changed")
