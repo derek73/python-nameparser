@@ -18,7 +18,7 @@ from types import ModuleType
 
 import pytest
 
-from nameparser import parse
+from nameparser import locales, parse
 
 _TOOLS = Path(__file__).parents[2] / "tools" / "differential"
 
@@ -206,3 +206,52 @@ def test_an_unspaced_role_is_expected_in_text_order() -> None:
         {"given": "セシリア", "given2": "ローズ", "surname": "ブラウン"},
         "ブラウン・ローズ・セシリア")
     assert agreement.same(roles["given_names"], "ローズ セシリア", "ブラウン・ローズ・セシリア")
+
+
+# -- the locale view (#672) --------------------------------------------------
+
+def test_every_locale_pack_is_measured_or_listed_as_having_no_cldr_file() -> None:
+    # A new pack must add its CLDR files to LOCALE_FILES or say it has
+    # none; otherwise it goes unmeasured by omission.
+    mapped = set(agreement.LOCALE_FILES.values())
+    assert not mapped & agreement.NO_CLDR
+    assert mapped | agreement.NO_CLDR == {code.upper() for code in locales.available()}
+
+
+def test_every_mapped_cldr_file_has_renderings() -> None:
+    # A misspelled file in the table would measure nothing and pass.
+    files = {row["file"] for row in agreement.load_rows()}
+    assert set(agreement.LOCALE_FILES) <= files
+
+
+def test_the_locale_view_parses_with_the_pack() -> None:
+    # A view that fell back to the default parser would record the
+    # default's disagreements and still pass its own ratchet. 王小明 is
+    # one unspaced Han token: only ZH segments it.
+    row = {"file": "zh", "label": "nativeG", "order": "surnameFirst",
+           "text": "王小明", "shape": 4, "fields": {"surname": "王", "given": "小明"}}
+    assert agreement.disagreements([row], locale=True) == {}
+    assert agreement.disagreements([row]) != {}
+
+
+def test_a_pack_parser_keeps_the_family_first_order_of_its_shape() -> None:
+    # Latin text: no script decides the order, so only the FAMILY_FIRST
+    # base the pack is applied over can read Ivanov as the family.
+    name = agreement.parse_rendering("Ivanov Ivan", 4, "RU")
+    assert (name.family, name.given) == ("Ivanov", "Ivan")
+
+
+@pytest.mark.parametrize("pack", [
+    pytest.param(pack, marks=pytest.mark.skipif(
+        not agreement.pack_available(pack),
+        reason=f"needs {agreement._EXTRAS.get(pack)}; CI's ja-extra job runs it"))
+    for pack in sorted(set(agreement.LOCALE_FILES.values()))])
+def test_each_pack_still_agrees_with_cldr_where_it_did(pack: str) -> None:
+    problems = agreement.locale_changes(
+        agreement.load_rows(), pack, agreement.read_record(agreement.LOCALE_RECORD))
+    assert not problems, "\n".join([
+        *problems[:40],
+        f"{len(problems)} change(s) against "
+        f"tools/differential/cldr_agreement_locales.json for {pack}.",
+        f"If every one is intended, re-record with `{agreement.RECORD_COMMAND}` "
+        "and say why in the commit."])
