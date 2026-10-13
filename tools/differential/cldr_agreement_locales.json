@@ -1,0 +1,1333 @@
+{
+ "az/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "van den Volf",
+   "got": "van"
+  },
+  "family_base": {
+   "expected": "Volf",
+   "got": "van"
+  },
+  "family_particles": {
+   "expected": "van den",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ada Kornelia Sezar Martin",
+   "got": "den Volf Ada Kornelia Sezar Martin"
+  },
+  "text": "van den Volf Ada Kornelia Sezar Martin M.D. Ph.D."
+ },
+ "az/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "az/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "az/nativeFull/givenFirst": {
+  "family": {
+   "expected": "Aydan",
+   "got": "Deputat"
+  },
+  "family_base": {
+   "expected": "Aydan",
+   "got": "Deputat"
+  },
+  "given_names": {
+   "expected": "Arif Aliyev İlvus Santak",
+   "got": "Cənab Arif Aliyev İlvus Santak Aydan"
+  },
+  "suffix": {
+   "expected": "Deputat",
+   "got": ""
+  },
+  "text": "Cənab Arif Aliyev İlvus Santak Aydan Deputat",
+  "title": {
+   "expected": "Cənab",
+   "got": ""
+  }
+ },
+ "az/nativeFull/sorting": {
+  "given_names": {
+   "expected": "Arif Aliyev İlvus Santak",
+   "got": "Cənab Arif Aliyev İlvus Santak Deputat"
+  },
+  "suffix": {
+   "expected": "Deputat",
+   "got": ""
+  },
+  "text": "Aydan Cənab Arif Aliyev İlvus Santak Deputat",
+  "title": {
+   "expected": "Cənab",
+   "got": ""
+  }
+ },
+ "az/nativeFull/surnameFirst": {
+  "given_names": {
+   "expected": "Arif Aliyev İlvus Santak",
+   "got": "Arif Aliyev İlvus Santak Deputat"
+  },
+  "suffix": {
+   "expected": "Deputat",
+   "got": ""
+  },
+  "text": "Aydan Arif Aliyev İlvus Santak Deputat"
+ },
+ "az/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "az/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "ja/foreignFull/givenFirst": {
+  "family": {
+   "expected": "フォン スミス",
+   "got": "ジェニファー"
+  },
+  "family_base": {
+   "expected": "スミス",
+   "got": "ジェニファー"
+  },
+  "family_particles": {
+   "expected": "フォン",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "ジェニファー ソフィア",
+   "got": "ソフィア フォン スミス ジュニア博士"
+  },
+  "suffix": {
+   "expected": "ジュニア",
+   "got": ""
+  },
+  "text": "ジェニファー・ソフィア・フォン・スミス・ジュニア博士",
+  "title": {
+   "expected": "博士",
+   "got": ""
+  }
+ },
+ "ja/foreignFull/sorting": {
+  "family": {
+   "expected": "フォン スミス",
+   "got": "フォン"
+  },
+  "family_base": {
+   "expected": "スミス",
+   "got": "フォン"
+  },
+  "family_particles": {
+   "expected": "フォン",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "ソフィア ジェニファー",
+   "got": "スミス ソフィア ジェニファー"
+  },
+  "text": "フォン・スミス・ソフィア・ジェニファー"
+ },
+ "ja/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "フォン スミス",
+   "got": "フォン"
+  },
+  "family_base": {
+   "expected": "スミス",
+   "got": "フォン"
+  },
+  "family_particles": {
+   "expected": "フォン",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "ソフィア ジェニファー",
+   "got": "スミス ソフィア ジェニファー博士"
+  },
+  "text": "フォン・スミス・ソフィア・ジェニファー博士",
+  "title": {
+   "expected": "博士",
+   "got": ""
+  }
+ },
+ "ja/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "マイケル"
+  },
+  "given_names": {
+   "expected": "マイケル",
+   "got": ""
+  },
+  "text": "マイケル"
+ },
+ "ja/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "マイケル"
+  },
+  "given_names": {
+   "expected": "マイケル",
+   "got": ""
+  },
+  "text": "マイケル"
+ },
+ "ja/nativeFull/givenFirst": {
+  "family": {
+   "expected": "佐藤",
+   "got": "恵子"
+  },
+  "family_base": {
+   "expected": "佐藤",
+   "got": "恵子"
+  },
+  "given_names": {
+   "expected": "恵子 グレース",
+   "got": "グレース佐藤ジュニア"
+  },
+  "suffix": {
+   "expected": "ジュニア",
+   "got": "さん"
+  },
+  "text": "恵子グレース佐藤ジュニアさん",
+  "title": {
+   "expected": "さん",
+   "got": ""
+  }
+ },
+ "ja/nativeFull/surnameFirst": {
+  "suffix": {
+   "expected": "",
+   "got": "さん"
+  },
+  "text": "佐藤グレース恵子さん",
+  "title": {
+   "expected": "さん",
+   "got": ""
+  }
+ },
+ "ja/nativeG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "慎"
+  },
+  "given_names": {
+   "expected": "慎太郎",
+   "got": "太郎"
+  },
+  "text": "慎太郎"
+ },
+ "ja/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "慎"
+  },
+  "given_names": {
+   "expected": "慎太郎",
+   "got": "太郎"
+  },
+  "text": "慎太郎"
+ },
+ "ja/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "慎"
+  },
+  "given_names": {
+   "expected": "慎太郎",
+   "got": "太郎"
+  },
+  "text": "慎太郎"
+ },
+ "ja/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "山田",
+   "got": "太郎"
+  },
+  "given_names": {
+   "expected": "太郎 トーマス",
+   "got": "トーマス山田"
+  },
+  "text": "太郎トーマス山田"
+ },
+ "ja/nativeGS/givenFirst": {
+  "family": {
+   "expected": "安藤",
+   "got": "一郎"
+  },
+  "given_names": {
+   "expected": "一郎",
+   "got": "安藤"
+  },
+  "text": "一郎安藤"
+ },
+ "ru/foreignFull/givenFirst": {
+  "family": {
+   "expected": "фон Брюль",
+   "got": "проф."
+  },
+  "family_base": {
+   "expected": "Брюль",
+   "got": "проф."
+  },
+  "family_particles": {
+   "expected": "фон",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ада Корнелия Сезар Мартин",
+   "got": "Ада Корнелия Сезар Мартин фон Брюль — мл."
+  },
+  "suffix": {
+   "expected": "мл. к. м. н.",
+   "got": "к. м. н."
+  },
+  "text": "проф., д-р Ада Корнелия Сезар Мартин фон Брюль — мл., к. м. н.",
+  "title": {
+   "expected": "проф., д-р",
+   "got": "д-р"
+  }
+ },
+ "ru/foreignFull/sorting": {
+  "family": {
+   "expected": "Брюль фон",
+   "got": "Брюль"
+  },
+  "family_particles": {
+   "expected": "фон",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ада Корнелия Сезар Мартин",
+   "got": "Ада Корнелия Сезар Мартин фон"
+  },
+  "text": "Брюль, Ада Корнелия Сезар Мартин фон"
+ },
+ "ru/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "фон Брюль",
+   "got": "фон Брюль Ада Корнелия Сезар Мартин"
+  },
+  "family_base": {
+   "expected": "Брюль",
+   "got": "фон Брюль Ада Корнелия Сезар Мартин"
+  },
+  "family_particles": {
+   "expected": "фон",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ада Корнелия Сезар Мартин",
+   "got": "к. м. н."
+  },
+  "suffix": {
+   "expected": "к. м. н.",
+   "got": ""
+  },
+  "text": "фон Брюль Ада Корнелия Сезар Мартин, к. м. н."
+ },
+ "ru/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Синдбад"
+  },
+  "given_names": {
+   "expected": "Синдбад",
+   "got": ""
+  },
+  "text": "Синдбад"
+ },
+ "ru/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Синдбад"
+  },
+  "given_names": {
+   "expected": "Синдбад",
+   "got": ""
+  },
+  "text": "Синдбад"
+ },
+ "ru/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Сергей"
+  },
+  "given_names": {
+   "expected": "Сергей",
+   "got": ""
+  },
+  "text": "Сергей"
+ },
+ "ru/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Сергей"
+  },
+  "given_names": {
+   "expected": "Сергей",
+   "got": ""
+  },
+  "text": "Сергей"
+ },
+ "tr/foreignFull/givenFirst": {
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "DDS Ada Cornelia César Martín"
+  },
+  "suffix": {
+   "expected": "MD DDS Jr",
+   "got": "Jr"
+  },
+  "text": "Prof. Dr. MD DDS Ada Cornelia César Martín von Brühl Jr",
+  "title": {
+   "expected": "Prof. Dr.",
+   "got": "Prof. Dr. MD"
+  }
+ },
+ "tr/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "von Brühl Plácido Domingo",
+   "got": "von"
+  },
+  "family_base": {
+   "expected": "Brühl Plácido Domingo",
+   "got": "von"
+  },
+  "family_particles": {
+   "expected": "von",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ada Cornelia César Martín",
+   "got": "Brühl Plácido Domingo Ada Cornelia César Martín"
+  },
+  "text": "Prof. Dr. von Brühl Plácido Domingo Ada Cornelia César Martín, MD DDS"
+ },
+ "tr/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "tr/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sinbad"
+  },
+  "given_names": {
+   "expected": "Sinbad",
+   "got": ""
+  },
+  "text": "Sinbad"
+ },
+ "tr/nativeFull/givenFirst": {
+  "suffix": {
+   "expected": "Dr.",
+   "got": ""
+  },
+  "text": "Sn. Dr. Fatma Su Yıldırım",
+  "title": {
+   "expected": "Sn.",
+   "got": "Sn. Dr."
+  }
+ },
+ "tr/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "Yıldırım Kaya",
+   "got": "Yıldırım"
+  },
+  "family_base": {
+   "expected": "Yıldırım Kaya",
+   "got": "Yıldırım"
+  },
+  "given_names": {
+   "expected": "Fatma Su",
+   "got": "Kaya Fatma Su"
+  },
+  "suffix": {
+   "expected": "Dr.",
+   "got": ""
+  },
+  "text": "Sn. Yıldırım Kaya Fatma Su, Dr.",
+  "title": {
+   "expected": "Sn.",
+   "got": "Sn. Dr."
+  }
+ },
+ "tr/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "Zeynep"
+  },
+  "given_names": {
+   "expected": "Zeynep",
+   "got": ""
+  },
+  "text": "Zeynep"
+ },
+ "tr/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "Zeynep"
+  },
+  "given_names": {
+   "expected": "Zeynep",
+   "got": ""
+  },
+  "text": "Zeynep"
+ },
+ "yue/foreignFull/givenFirst": {
+  "family": {
+   "expected": "陳 陳",
+   "got": "小"
+  },
+  "family_base": {
+   "expected": "陳",
+   "got": "小"
+  },
+  "family_particles": {
+   "expected": "陳",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "怡君 達印",
+   "got": "教授 怡君 達印 陳 陳"
+  },
+  "suffix": {
+   "expected": "小 博士",
+   "got": "博士"
+  },
+  "text": "教授·怡君·達印·陳·陳·小，博士",
+  "title": {
+   "expected": "教授",
+   "got": ""
+  }
+ },
+ "yue/foreignFull/sorting": {
+  "family": {
+   "expected": "陳 陳",
+   "got": "陳"
+  },
+  "family_particles": {
+   "expected": "陳",
+   "got": ""
+  },
+  "text": "陳·怡君·達印"
+ },
+ "yue/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "陳 陳",
+   "got": "陳 陳 怡君"
+  },
+  "family_base": {
+   "expected": "陳",
+   "got": "陳 陳 怡君"
+  },
+  "family_particles": {
+   "expected": "陳",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "怡君 達印",
+   "got": "小 達印"
+  },
+  "suffix": {
+   "expected": "小 博士",
+   "got": "教授, 博士"
+  },
+  "text": "陳·陳·怡君·教授，小·達印·博士",
+  "title": {
+   "expected": "教授",
+   "got": ""
+  }
+ },
+ "yue/foreignG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "凱晴"
+  },
+  "given_names": {
+   "expected": "凱晴",
+   "got": ""
+  },
+  "text": "凱晴"
+ },
+ "yue/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "凱晴"
+  },
+  "given_names": {
+   "expected": "凱晴",
+   "got": ""
+  },
+  "text": "凱晴"
+ },
+ "yue/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "凱晴"
+  },
+  "given_names": {
+   "expected": "凱晴",
+   "got": ""
+  },
+  "text": "凱晴"
+ },
+ "yue/nativeFull/givenFirst": {
+  "family": {
+   "expected": "陳",
+   "got": "先生子媚惠儀陳小"
+  },
+  "family_base": {
+   "expected": "陳",
+   "got": "先生子媚惠儀陳小"
+  },
+  "given_names": {
+   "expected": "子媚 惠儀",
+   "got": "太平紳士"
+  },
+  "suffix": {
+   "expected": "小 太平紳士",
+   "got": ""
+  },
+  "text": "先生子媚惠儀陳小，太平紳士",
+  "title": {
+   "expected": "先生",
+   "got": ""
+  }
+ },
+ "yue/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "陳",
+   "got": "陳子媚先生"
+  },
+  "family_base": {
+   "expected": "陳",
+   "got": "陳子媚先生"
+  },
+  "given_names": {
+   "expected": "子媚 惠儀",
+   "got": "小惠儀太平紳士"
+  },
+  "suffix": {
+   "expected": "小 太平紳士",
+   "got": ""
+  },
+  "text": "陳子媚先生，小惠儀太平紳士",
+  "title": {
+   "expected": "先生",
+   "got": ""
+  }
+ },
+ "yue/nativeG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "文傑"
+  },
+  "given_names": {
+   "expected": "文傑",
+   "got": ""
+  },
+  "text": "文傑"
+ },
+ "yue/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "文傑"
+  },
+  "given_names": {
+   "expected": "文傑",
+   "got": ""
+  },
+  "text": "文傑"
+ },
+ "yue/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "文傑"
+  },
+  "given_names": {
+   "expected": "文傑",
+   "got": ""
+  },
+  "text": "文傑"
+ },
+ "yue/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "林",
+   "got": "家豪明德林"
+  },
+  "given_names": {
+   "expected": "家豪 明德",
+   "got": ""
+  },
+  "text": "家豪明德林"
+ },
+ "yue/nativeGS/givenFirst": {
+  "family": {
+   "expected": "張",
+   "got": "雅婷張"
+  },
+  "given_names": {
+   "expected": "雅婷",
+   "got": ""
+  },
+  "text": "雅婷張"
+ },
+ "yue_Hans/foreignFull/givenFirst": {
+  "family": {
+   "expected": "陈 陈",
+   "got": "小"
+  },
+  "family_base": {
+   "expected": "陈",
+   "got": "小"
+  },
+  "family_particles": {
+   "expected": "陈",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "怡君 达印",
+   "got": "教授 怡君 达印 陈 陈"
+  },
+  "suffix": {
+   "expected": "小 博士",
+   "got": "博士"
+  },
+  "text": "教授·怡君·达印·陈·陈·小，博士",
+  "title": {
+   "expected": "教授",
+   "got": ""
+  }
+ },
+ "yue_Hans/foreignFull/sorting": {
+  "family": {
+   "expected": "陈 陈",
+   "got": "陈"
+  },
+  "family_particles": {
+   "expected": "陈",
+   "got": ""
+  },
+  "text": "陈·怡君·达印"
+ },
+ "yue_Hans/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "陈 陈",
+   "got": "陈 陈 怡君"
+  },
+  "family_base": {
+   "expected": "陈",
+   "got": "陈 陈 怡君"
+  },
+  "family_particles": {
+   "expected": "陈",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "怡君 达印",
+   "got": "小 达印"
+  },
+  "suffix": {
+   "expected": "小 博士",
+   "got": "教授, 博士"
+  },
+  "text": "陈·陈·怡君·教授，小·达印·博士",
+  "title": {
+   "expected": "教授",
+   "got": ""
+  }
+ },
+ "yue_Hans/foreignG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "凯晴"
+  },
+  "given_names": {
+   "expected": "凯晴",
+   "got": ""
+  },
+  "text": "凯晴"
+ },
+ "yue_Hans/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "凯晴"
+  },
+  "given_names": {
+   "expected": "凯晴",
+   "got": ""
+  },
+  "text": "凯晴"
+ },
+ "yue_Hans/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "凯晴"
+  },
+  "given_names": {
+   "expected": "凯晴",
+   "got": ""
+  },
+  "text": "凯晴"
+ },
+ "yue_Hans/nativeFull/givenFirst": {
+  "family": {
+   "expected": "陈",
+   "got": "先生子媚惠仪陈小"
+  },
+  "family_base": {
+   "expected": "陈",
+   "got": "先生子媚惠仪陈小"
+  },
+  "given_names": {
+   "expected": "子媚 惠仪",
+   "got": "太平绅士"
+  },
+  "suffix": {
+   "expected": "小 太平绅士",
+   "got": ""
+  },
+  "text": "先生子媚惠仪陈小，太平绅士",
+  "title": {
+   "expected": "先生",
+   "got": ""
+  }
+ },
+ "yue_Hans/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "陈",
+   "got": "陈子媚先生"
+  },
+  "family_base": {
+   "expected": "陈",
+   "got": "陈子媚先生"
+  },
+  "given_names": {
+   "expected": "子媚 惠仪",
+   "got": "小惠仪太平绅士"
+  },
+  "suffix": {
+   "expected": "小 太平绅士",
+   "got": ""
+  },
+  "text": "陈子媚先生，小惠仪太平绅士",
+  "title": {
+   "expected": "先生",
+   "got": ""
+  }
+ },
+ "yue_Hans/nativeG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "文杰"
+  },
+  "given_names": {
+   "expected": "文杰",
+   "got": ""
+  },
+  "text": "文杰"
+ },
+ "yue_Hans/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "文杰"
+  },
+  "given_names": {
+   "expected": "文杰",
+   "got": ""
+  },
+  "text": "文杰"
+ },
+ "yue_Hans/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "文杰"
+  },
+  "given_names": {
+   "expected": "文杰",
+   "got": ""
+  },
+  "text": "文杰"
+ },
+ "yue_Hans/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "林",
+   "got": "家豪明德林"
+  },
+  "given_names": {
+   "expected": "家豪 明德",
+   "got": ""
+  },
+  "text": "家豪明德林"
+ },
+ "yue_Hans/nativeGS/givenFirst": {
+  "family": {
+   "expected": "张",
+   "got": "雅婷张"
+  },
+  "given_names": {
+   "expected": "雅婷",
+   "got": ""
+  },
+  "text": "雅婷张"
+ },
+ "zh/foreignFull/givenFirst": {
+  "family": {
+   "expected": "冯 布鲁赫",
+   "got": "布鲁赫博士"
+  },
+  "family_base": {
+   "expected": "布鲁赫",
+   "got": "布鲁赫博士"
+  },
+  "family_particles": {
+   "expected": "冯",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "艾达·科妮莉亚 塞萨尔·马丁",
+   "got": "小艾达 科妮莉亚 塞萨尔 马丁 冯"
+  },
+  "suffix": {
+   "expected": "小 博士",
+   "got": "教授"
+  },
+  "text": "小艾达·科妮莉亚·塞萨尔·马丁·冯·布鲁赫博士教授",
+  "title": {
+   "expected": "教授",
+   "got": ""
+  }
+ },
+ "zh/foreignFull/sorting": {
+  "family": {
+   "expected": "布鲁赫 冯",
+   "got": "布鲁赫"
+  },
+  "family_particles": {
+   "expected": "冯",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "艾达·科妮莉亚 塞萨尔·马丁",
+   "got": "艾达 科妮莉亚 塞萨尔 马丁 冯"
+  },
+  "text": "布鲁赫·艾达·科妮莉亚·塞萨尔·马丁·冯"
+ },
+ "zh/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "冯 布鲁赫",
+   "got": "小冯"
+  },
+  "family_base": {
+   "expected": "布鲁赫",
+   "got": "小冯"
+  },
+  "family_particles": {
+   "expected": "冯",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "艾达·科妮莉亚 塞萨尔·马丁",
+   "got": "布鲁赫 艾达 科妮莉亚 塞萨尔 马丁"
+  },
+  "suffix": {
+   "expected": "小 博士",
+   "got": "博士 教授"
+  },
+  "text": "小冯·布鲁赫·艾达·科妮莉亚·塞萨尔·马丁·博士教授",
+  "title": {
+   "expected": "教授",
+   "got": ""
+  }
+ },
+ "zh/foreignG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "辛巴达"
+  },
+  "given_names": {
+   "expected": "辛巴达",
+   "got": ""
+  },
+  "text": "辛巴达"
+ },
+ "zh/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "辛巴达"
+  },
+  "given_names": {
+   "expected": "辛巴达",
+   "got": ""
+  },
+  "text": "辛巴达"
+ },
+ "zh/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "辛巴达"
+  },
+  "given_names": {
+   "expected": "辛巴达",
+   "got": ""
+  },
+  "text": "辛巴达"
+ },
+ "zh/nativeFull/givenFirst": {
+  "family": {
+   "expected": "彭",
+   "got": "小德威东升彭议员"
+  },
+  "family_base": {
+   "expected": "彭",
+   "got": "小德威东升彭议员"
+  },
+  "given_names": {
+   "expected": "德威 东升",
+   "got": ""
+  },
+  "suffix": {
+   "expected": "小 议员",
+   "got": "先生"
+  },
+  "text": "小德威东升彭议员先生",
+  "title": {
+   "expected": "先生",
+   "got": ""
+  }
+ },
+ "zh/nativeFull/surnameFirst": {
+  "family": {
+   "expected": "彭",
+   "got": "小彭德威东升议员"
+  },
+  "family_base": {
+   "expected": "彭",
+   "got": "小彭德威东升议员"
+  },
+  "given_names": {
+   "expected": "德威 东升",
+   "got": ""
+  },
+  "suffix": {
+   "expected": "小 议员",
+   "got": "先生"
+  },
+  "text": "小彭德威东升议员先生",
+  "title": {
+   "expected": "先生",
+   "got": ""
+  }
+ },
+ "zh/nativeG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "宇瀚"
+  },
+  "given_names": {
+   "expected": "宇瀚",
+   "got": ""
+  },
+  "text": "宇瀚"
+ },
+ "zh/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "宇瀚"
+  },
+  "given_names": {
+   "expected": "宇瀚",
+   "got": ""
+  },
+  "text": "宇瀚"
+ },
+ "zh/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "宇瀚"
+  },
+  "given_names": {
+   "expected": "宇瀚",
+   "got": ""
+  },
+  "text": "宇瀚"
+ },
+ "zh/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "陈",
+   "got": "俊年杰思陈"
+  },
+  "given_names": {
+   "expected": "俊年 杰思",
+   "got": ""
+  },
+  "text": "俊年杰思陈"
+ },
+ "zh/nativeGS/givenFirst": {
+  "family": {
+   "expected": "张",
+   "got": "安怡张"
+  },
+  "given_names": {
+   "expected": "安怡",
+   "got": ""
+  },
+  "text": "安怡张"
+ },
+ "zh_Hant/foreignFull/givenFirst": {
+  "family": {
+   "expected": "馮 陳",
+   "got": "怡君達印馮 陳二世博士"
+  },
+  "family_base": {
+   "expected": "陳",
+   "got": "怡君達印馮 陳二世博士"
+  },
+  "family_particles": {
+   "expected": "馮",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "怡君 達印",
+   "got": "醫學博士"
+  },
+  "suffix": {
+   "expected": "二世 醫學博士",
+   "got": ""
+  },
+  "text": "怡君達印馮·陳二世博士，醫學博士",
+  "title": {
+   "expected": "博士",
+   "got": ""
+  }
+ },
+ "zh_Hant/foreignFull/sorting": {
+  "family": {
+   "expected": "馮 陳",
+   "got": "馮"
+  },
+  "family_base": {
+   "expected": "陳",
+   "got": "馮"
+  },
+  "family_particles": {
+   "expected": "馮",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "怡君 達印",
+   "got": "陳 怡君 達印"
+  },
+  "text": "馮·陳·怡君·達印"
+ },
+ "zh_Hant/foreignFull/surnameFirst": {
+  "family": {
+   "expected": "馮 陳",
+   "got": "馮"
+  },
+  "family_base": {
+   "expected": "陳",
+   "got": "馮"
+  },
+  "family_particles": {
+   "expected": "馮",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "怡君 達印",
+   "got": "陳 怡君 達印 二世醫學博士"
+  },
+  "suffix": {
+   "expected": "二世 醫學博士",
+   "got": ""
+  },
+  "text": "馮·陳·怡君·達印·二世醫學博士",
+  "title": {
+   "expected": "博士",
+   "got": ""
+  }
+ },
+ "zh_Hant/foreignG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "雅婷"
+  },
+  "given_names": {
+   "expected": "雅婷",
+   "got": ""
+  },
+  "text": "雅婷"
+ },
+ "zh_Hant/foreignG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "雅婷"
+  },
+  "given_names": {
+   "expected": "雅婷",
+   "got": ""
+  },
+  "text": "雅婷"
+ },
+ "zh_Hant/foreignG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "雅婷"
+  },
+  "given_names": {
+   "expected": "雅婷",
+   "got": ""
+  },
+  "text": "雅婷"
+ },
+ "zh_Hant/foreignGGS/givenFirst": {
+  "family": {
+   "expected": "王",
+   "got": "雅婷婷婷王"
+  },
+  "given_names": {
+   "expected": "雅婷 婷婷",
+   "got": ""
+  },
+  "text": "雅婷婷婷王"
+ },
+ "zh_Hant/foreignGS/givenFirst": {
+  "family": {
+   "expected": "王",
+   "got": "雅婷王"
+  },
+  "given_names": {
+   "expected": "雅婷",
+   "got": ""
+  },
+  "text": "雅婷王"
+ },
+ "zh_Hant/nativeFull/givenFirst": {
+  "family": {
+   "expected": "王",
+   "got": "雅婷婷婷王二世先生"
+  },
+  "family_base": {
+   "expected": "王",
+   "got": "雅婷婷婷王二世先生"
+  },
+  "given_names": {
+   "expected": "雅婷 婷婷",
+   "got": "議員"
+  },
+  "suffix": {
+   "expected": "二世 議員",
+   "got": ""
+  },
+  "text": "雅婷婷婷王二世先生，議員",
+  "title": {
+   "expected": "先生",
+   "got": ""
+  }
+ },
+ "zh_Hant/nativeFull/surnameFirst": {
+  "given_names": {
+   "expected": "雅婷 婷婷",
+   "got": "雅婷婷婷二世議員"
+  },
+  "suffix": {
+   "expected": "二世 議員",
+   "got": ""
+  },
+  "text": "王雅婷婷婷二世議員"
+ },
+ "zh_Hant/nativeG/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "文傑"
+  },
+  "given_names": {
+   "expected": "文傑",
+   "got": ""
+  },
+  "text": "文傑"
+ },
+ "zh_Hant/nativeG/sorting": {
+  "family": {
+   "expected": "",
+   "got": "文傑"
+  },
+  "given_names": {
+   "expected": "文傑",
+   "got": ""
+  },
+  "text": "文傑"
+ },
+ "zh_Hant/nativeG/surnameFirst": {
+  "family": {
+   "expected": "",
+   "got": "文傑"
+  },
+  "given_names": {
+   "expected": "文傑",
+   "got": ""
+  },
+  "text": "文傑"
+ },
+ "zh_Hant/nativeGGS/givenFirst": {
+  "family": {
+   "expected": "林",
+   "got": "家豪明德林"
+  },
+  "given_names": {
+   "expected": "家豪 明德",
+   "got": ""
+  },
+  "text": "家豪明德林"
+ },
+ "zh_Hant/nativeGS/givenFirst": {
+  "family": {
+   "expected": "張",
+   "got": "雅婷張"
+  },
+  "given_names": {
+   "expected": "雅婷",
+   "got": ""
+  },
+  "text": "雅婷張"
+ }
+}
