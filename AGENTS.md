@@ -372,7 +372,7 @@ Add a dedicated `copy.deepcopy()` round-trip test for it too (see `test_regexes_
 
 **Adding a flag-gated post-parse transform** (reorder/adjust) — add a `Constants` boolean (default `False`), implement a `handle_*()` method, and call it in `post_process()` after `handle_firstnames()` and before `handle_capitalization()`, gated on the flag. Default-off keeps existing parses byte-for-byte unchanged. Two shipped examples: `patronymic_name_order` gates both `handle_east_slavic_patronymic_name_order()` (#85) and `handle_turkic_patronymic_name_order()` (#185) — one flag driving two independent handlers, added in the same `post_process()` slot; `middle_name_as_last` gates `handle_middle_name_as_last()` (#133), which folds `middle_list` into `last_list`.
 
-**Validating a new parsing rule** — before implementing, simulate it in a throwaway script against `TEST_NAMES` (plus a few target-language examples) to catch regressions/false-positives early. E.g. this surfaced the `last_base` `do`/`st`/`mc` empties and the patronymic `"David Michael Abramovich"` false-reorder.
+**Validating a new parsing rule** — before implementing, simulate it in a throwaway script against `TEST_NAMES` (plus a few target-language examples) to catch regressions/false-positives early. E.g. this surfaced the `last_base` `do`/`st`/`mc` empties and the patronymic `"David Michael Abramovich"` false-reorder. After the change, `uv run python tools/differential/cldr_agreement.py` reports how the tree's agreement with CLDR's stated name fields moved; `tests/v2/test_cldr_agreement.py` fails on any move, and `tools/differential/cldr_agreement.json` doubles as a measured list of names the parser and CLDR read differently.
 
 ## Gotchas
 

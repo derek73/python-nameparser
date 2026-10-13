@@ -204,6 +204,7 @@ that silently shrinks to nothing would otherwise report a green run.
 | `corpus_issues.jsonl` | name-like strings harvested from the GitHub issue tracker | radar | anything nobody ever reported |
 | `corpus_cjk.jsonl` | the CJK-bearing rows of `tests/v2/cases.py` that do not declare `tolerated`, via `build_cjk_corpus.py` (#295) | contract | anything the case table itself missed — it re-witnesses reviewed expectations at the baseline boundary rather than discovering new shapes |
 | `corpus_cjk_tolerated.jsonl` | the `tolerated` CJK rows of `tests/v2/cases.py`, via the same `build_cjk_corpus.py` run (2026-09-01) | radar | any composed or wrapped CJK form nobody wrote a case row for — it holds demoted names, and demotion presupposes admission |
+| `corpus_cldr.jsonl` | Unicode CLDR's person-name formatting test data at `release-48` — each fictional name's long, formal rendering in givenFirst, surnameFirst and sorting order, about 110 locales in native scripts — via `build_cldr_corpus.py` (2026-10-12); Unicode-3.0, notice in `cldr_LICENSE` | radar | real-world name distributions: the names are written to fill every field, so full-house names are over-represented and plain two-word names under-represented |
 | `corpus_rules.jsonl` | every example of every NORMATIVE rule in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) — a rule carrying that doc's `tolerated:` marker is skipped whole, its examples illustrating rather than promising | contract | anything the rules doc has no example for, and anything a tolerated rule's examples are the only witness of |
 | `corpus_shapes.jsonl` | shape-tagged rows of `tests/v2/cases.py`, via `build_shapes_corpus.py` (#468) | contract | anything no one has tagged a row for |
 
@@ -978,3 +979,15 @@ change gate-visible; the 2026-08-26 entry beside it records the
 correction). Value-level coverage for both is `tests/v2/cases.py`,
 whose rows assert values, and whose opt-in rows carry their own
 `policy=`.
+
+## The CLDR agreement ratchet
+
+`corpus_cldr.jsonl` is the one corpus whose names arrive with ground truth: CLDR states every name's fields separately, and `build_cldr_corpus.py` keeps them in `cldr_fields.jsonl`. The harness above still compares those names version against version like any radar corpus. Separately, `cldr_agreement.py` compares them against CLDR, role by role — title, given names, family, suffix, and the particle/base split where CLDR states it — and records every disagreement in `cldr_agreement.json`.
+
+`tests/v2/test_cldr_agreement.py` holds the tree to that record. It fails when a role that agreed stops agreeing, when a recorded disagreement starts agreeing (so it can be recorded and guarded), when a recorded disagreement's answer changes, and when a recorded rendering no longer exists. When every reported change is intended:
+
+    uv run python tools/differential/cldr_agreement.py --record
+
+and say why in the commit. Run it without `--record` for per-role agreement counts. Nothing is special-cased: an unnatural rendering or a modelling difference (CLDR's `さん` title is a suffix here) simply stays a recorded disagreement, which makes the record a measured worklist as well as a guard.
+
+Two populations leave the file out, each for a stated reason (2026-10-12). `_CORPUS_NAMES` in `tests/v2/_differential_fixtures.py`, which the ledger guards measure rule reach over, excludes it through `_UNMEASURED_CORPORA`: counted there it moved fourteen 1.4.0-ledger rules' recorded reach at once, and the recorded claims stay about the names the ledgers were written for. `differential_corpus()` in `tests/v2/conftest.py`, which feeds the property tests, excludes it until #652 (decomposed `inž.` is not read as a period abbreviation) is fixed; re-include it then.

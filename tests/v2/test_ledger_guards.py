@@ -8380,8 +8380,15 @@ class _Excluded(NamedTuple):
 #: protects a shape that reads differently under one, and something to
 #: revisit the day one does.
 _EXCLUSION_EFFECT: dict[str, _Excluded] = {
-    "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s*d\\.\\s*$":
-        _Excluded(7, "85dd96d1f55e",
+    "(?i)^(?!\\s*ph\\.)(?![^\\s,]+\\s*,\\s*ph\\.\\s*d\\.\\s*$)(?![\\u0000-\\u024f]*\\b(?:jr|sr|ii|iii|iv)\\.?\\s+ph\\.\\s*d\\.\\s*$)[\\u0000-\\u024f]*\\bph\\.\\s+d\\.\\s*$":
+        _Excluded(3, "0691d45b4505",
+                  # 2026-10-12: 7 -> 3 captures. The entry was NARROWED to
+                  # the split pair its `why` is about (`ph\\.\\s+d\\.`):
+                  # the unsplit forms 'JOHN SMITH PH.D.', 'John Smith,
+                  # A.B. Ph.D.', 'John Smith, Ph.D.' and 'john smith
+                  # ph.d.' left its reach, as corpus_cldr.jsonl's 17
+                  # 'M.D. Ph.D.' names (suffix-separator diffs only) did.
+                  # absorbed_by unchanged.
                   # 2026-09-30, #563: 6 -> 7 captures, 'John Smith,
                   # A.B. Ph.D.', a rules.md#C1 boundary line whose
                   # trailing 'Ph.D.' the end anchor reaches. It reads
