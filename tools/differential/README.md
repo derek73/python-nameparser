@@ -67,8 +67,10 @@ every corpus name with the pinned release; `compare.py` parses the same
 names with the tree and prints the moves. From 2.0.0 on both surfaces
 are compared; at 1.4.0 the facade alone, since 1.4 has no 2.0 API.
 A name tagged with a family-first shape is skipped below 2.0.0, which
-introduced `name_order`. The last line counts the moved names and how
-many are Latin-only.
+introduced `name_order`. The closing lines count the moved entries
+against the entries compared, how many of the moved are Latin-only,
+and how many order-bearing entries were skipped: quote a figure with
+its population.
 
 Most of what is left in `compare.py` exists for one failure: a
 comparison that silently reads the tree on both sides and reports no
