@@ -47,6 +47,11 @@ def test_period_not_at_end_matches_config() -> None:
     assert _vocab._PERIOD_NOT_AT_END.flags == source.flags
 
 
+def test_combining_mark_class_matches_config() -> None:
+    from nameparser.config import regexes as _regexes
+    assert _vocab._MARKS == _regexes._MARKS
+
+
 def test_period_abbreviation_matches_config() -> None:
     source = _config.REGEXES["period_abbreviation"]
     assert _pieces._PERIOD_ABBREV.pattern == source.pattern

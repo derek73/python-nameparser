@@ -15,6 +15,14 @@ re_emoji = re.compile(
 # as nothing but stick to name parts and break equality/lookups.
 re_bidi = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 
+# Combining marks (Unicode Mn) are not \w, so a letter written as a base
+# plus a mark (NFD `inž.`) must carry them explicitly or the shape
+# rules read a decomposed name differently from its composed twin
+# (#652). Same class as _pipeline/_vocab.py's _MARKS; test_regex_sync
+# compares the two class strings and pins `period_abbreviation`
+# against `_vocab`'s copy.
+_MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
+
 EMPTY_REGEX = re.compile('')
 
 REGEXES = {
@@ -52,7 +60,8 @@ REGEXES = {
         r'^(оглу|оглы|оғлу|ўғли|угли|кызы|гызы|қызы|қизи|улы|ұлы|уулу)$',
         re.I,
     ),
-    "period_abbreviation": re.compile(r'^[^\W\d_]{2,}\.$'),
+    "period_abbreviation": re.compile(
+        r'^(?:[^\W\d_]' + _MARKS + r'*){2,}\.$'),
 }
 """
 All regular expressions used by the parser are precompiled and stored in the config.

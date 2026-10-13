@@ -6,6 +6,7 @@ Release Log
 
     **Behavior Changes**
 
+    - **Fix a decomposed (NFD) accented letter ending its word early.** ``Dr. inž. Janez Novak`` gives title ``Dr. inž.`` when the ``ž`` is written as ``z`` plus a combining caron, where 1.4.0 and 2.0 through 2.4 made ``inž.`` the given name; ``Janez Novak, ŽŠČ`` likewise gives suffix ``ŽŠČ``, where 2.4 reversed it. :issue:`652`
     - **Fix a comma inside a nickname being dropped.** ``Jane (Janey, Jo) Smith`` gives nickname ``Janey, Jo``, where 2.0 through 2.4 gave ``Janey Jo``, restoring 1.4.0's reading. :issue:`653`
 
 * 2.4.0 - October 11, 2026
