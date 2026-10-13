@@ -709,8 +709,8 @@ class HumanName:
             # which compare the seven role fields only (Case carries
             # no initials column); the covering test is
             # tests/test_initials.py::test_initials_middle_name_all_prefixes,
-            # and since #484 the differential compares initials() on
-            # both surfaces for names whose roles agree. _split_last
+            # and tools/differential/snapshot.jsonl records initials()
+            # on both surfaces for every corpus name. _split_last
             # already applies the same guard to the base, which is why
             # last_base was never empty here.
             return [_render._first_letter(w) for w in words]

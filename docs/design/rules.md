@@ -15,7 +15,7 @@ An `annotation` names a policy, locale (`[ru]`), or extras gate (`[ja+segmenter]
 
 One class of rule stands outside the normative reading and declares it on a `tolerated: <reason>` line beside its pointer line. Such a rule is ABOUT an input the writing systems it speaks about do not produce — a shape no convention writes, read best-effort because parsing is total over strings — and it describes what the parser does with that input instead of promising it. Its statement is still precedence-bearing and its examples are still executable and still run, but they illustrate rather than promise, and the behavior is changeable without notice. W3 is the only such rule today (the 2026-09-01 comma demotion).
 
-The marker's unit is the whole rule, because that is the unit `tools/differential/build_rules_corpus.py` skips: it harvests no example from a marked rule, so none of them is enforced against released baselines. Two obligations follow, and neither is automatic. A clause that reaches past the tolerated shape does not belong in a marked rule — say it in a normative one. And the skip only STOPS enforcing a name; keeping it watched is a separate act, discharged here by giving each demoted example a `tolerated` row in `tests/v2/cases.py`, which projects it onto the differential's radar tier.
+The marker's unit is the whole rule, so a clause that reaches past the tolerated shape does not belong in a marked rule — say it in a normative one. The marker changes what the rule promises, not what is watched: a marked rule's examples are in `tools/differential/corpus_rules.jsonl` like any other, so the snapshot shows when their reading moves (#664).
 
 ## Not in scope
 
@@ -1396,13 +1396,11 @@ S3. Rationale: credentials are often written run together with
     writes no abbreviations with a period that only a Latin
     convention writes — `John Smith 田.中.` is the shape — and a
     composed form no writing system produces is tolerated input
-    rather than contract. A normative rule cannot hold an example of
-    it without putting the string into the corpus that enforces it
-    at released baselines, so the witnesses are the tolerated row
+    rather than contract, which an example of a normative rule would
+    promise. So the witnesses are the tolerated row
     tests/v2/cases.py's
-    an_initialless_script_glued_into_periods_is_not_this_shape,
-    which keeps the name on the differential's radar tier, and the
-    CJK assertions in tests/v2/pipeline/test_vocab.py's
+    an_initialless_script_glued_into_periods_is_not_this_shape and
+    the CJK assertions in tests/v2/pipeline/test_vocab.py's
     test_period_joined_vocab_retires_the_single_character_chunk.
     W3 states the same precedence for the same reason.
     history: decisions.md#S2 · interacts: S2, C1, H2, W3 · implemented: nameparser/_pipeline/_vocab.py
@@ -2405,7 +2403,7 @@ W3. Rationale: a family name declared by a comma is the writer's
       "田中さん 様."              →  suffix="さん 様."
       "김민준씨."                 →  suffix="씨."
       "田中. 太郎"                →  family="田中."
-    tolerated: native CJK writing has neither a family-comma convention nor an edge full stop of any width on a name word, so the five comma lines above and the three period lines under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All eight stay watched at every released baseline on the differential's radar tier (tools/differential/corpus_cjk_tolerated.jsonl, projected from the `tolerated` rows of tests/v2/cases.py) instead of its contract tier, and those rows pin them at HEAD.
+    tolerated: native CJK writing has neither a family-comma convention nor an edge full stop of any width on a name word, so the five comma lines above and the three period lines under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All eight stay watched by the snapshot (tools/differential/snapshot.jsonl, over corpus_rules.jsonl and corpus_cjk.jsonl), and the `tolerated` rows of tests/v2/cases.py pin them at HEAD.
     history: decisions.md#W3 · interacts: W1, W2, C1, H2 · implemented: nameparser/_pipeline/_script_segment.py
 
 W4. Rationale: Chinese, Japanese and Korean all write the family

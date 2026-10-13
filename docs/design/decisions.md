@@ -1417,6 +1417,28 @@ Declined:
 - A word-boundary prefix (2026-09-05, #508's option 3) — answers the two Bob Jones rows and not `'Andrews, M.D.'`, and adds a tokenising rule to a string comparison.
 - Refusing two rules in one ledger from sharing a prefix (2026-09-05) — a property of the ledger, not of a pin; the ledger's rule families are deliberate (`fix(comma-family)`, `fix(#296)`), and the resolver already makes the only case that matters loud.
 
+### differential-ledger, retired for a snapshot (2026-10-13, #664)
+
+The ledgers' last arc. They were built to show that 2.0 changed nothing against 1.4 except fixes the release log lists, and they did; as a standing check every later behavior change had to be classified once per ledger, and the guards policing the ledgers outgrew the ledgers.
+
+Decisions that landed:
+
+- 2026-10-13 #664 — **a committed snapshot replaces the classified gate.** `tools/differential/snapshot.jsonl` records every corpus name's reading (the seven role fields, ambiguity kinds, `initials()`, and the facade where it differs), one line per (name, order); `tests/v2/test_snapshot.py` fails on drift and prints the moves grouped by changed field. A change that moves readings re-records, and the PR diff of the snapshot is the list of names it moved. Nothing is classified: what a reviewer reads in the diff is what a ledger rule used to say in a regex. The six `expected_since_*.toml` ledgers and `tests/v2/test_ledger_guards.py` are deleted, and with them the contract/radar tiers, so the CJK corpus is one file again and the rules corpus harvests tolerated rules' examples too.
+- 2026-10-13 #664 — **`compare.py` stays, unclassified.** It keeps the released-wheel runner and its checks against comparing one tree with itself (the version tell, the tree-side path check, the stripped `PYTHONPATH`; mechanisms.md#VERSION-TELL, #GENERATED-SCRIPT-OUTSIDE-THE-WORKTREE), prints the same grouped report as the snapshot and exits 0. It answers "how did release X read these names" for a release tagged before the snapshot existed; after that, `snapshot.py --since <tag>` is the cheaper answer.
+- 2026-10-13 #664 — **the CLDR agreement ratchet stays** (#654). It answers a different question, agreement with CLDR's stated fields rather than stability.
+
+Measured 2026-10-12, before the change, over the last 40 first-parent commits on master with corpus data excluded: 5,236 of 25,226 changed lines (20%) were ledger, `compare.py` or ledger-guard edits, touched by 21 of the 40, and 30–60% on parser-behavior PRs (#655: 236 of 448). Run against the code before and after #655, the snapshot reports five moved names, against that PR's 241 lines of ledger and guard edits; merging master afterwards, it reported #663's one new corpus name where #663 had added the same ten lines to each of six ledgers. RECOMPUTE (shares): `git log --first-parent -40 --format=%h master`, and for each commit sum `git show --numstat` over paths matching `expected_since|compare\.py|ledger_guards|test_differential|_differential_fixtures`, skipping `.jsonl` and `cldr_*` data.
+
+Accepted costs:
+
+- No forced explanation per moved name. A reviewer can approve a large snapshot diff without reading it; the grouping by changed fields is the mitigation.
+- No bound on what a change may reach. `_CORPUS_CLAIMS`, the dormancy checks and the contest pins existed only to police ledgers; mechanisms.md#LEDGER-RULE-SEPARATION and #CROSS-RULE-OUTCOME-PINS are retired with them.
+- The 1.4 compatibility promise is a question asked when needed (`compare.py --baseline 1.4.0`), not a gate at every release. The facade is deleted in 3.0.
+
+Declined:
+
+- Trimming the ledgers rather than retiring them (2026-10-13). The radar tier (#468, 2026-09-01) was that attempt: it stopped new corpora from failing the run, but every contract name still needed a rule in every ledger, and the cost grew by one ledger per release.
+
 ### comma-suffix-arc — #291/#296/#316 (2026-07-26 → 2026-08-01)
 
 #291 was filed 2026-07-26 out of the 2.0 vocabulary cleanup, with

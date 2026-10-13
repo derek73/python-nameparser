@@ -88,11 +88,12 @@ def _corpus_line(path: Path, line: str, orders: dict[int, str | None]) -> Entry:
     return raw["name"], orders[shape]
 
 
-def corpus_entries() -> list[Entry]:
-    """Every distinct (name, order) in the corpora, sorted. The same
+def corpus_entries(paths: list[Path] | None = None) -> list[Entry]:
+    """Every distinct (name, order) in the corpora -- every
+    corpus*.jsonl beside this file, or `paths` -- sorted. The same
     string tagged with two shapes is two entries, one per order."""
     orders = {k: s.order for k, s in load_shapes().items()}
-    paths = sorted(HERE.glob("corpus*.jsonl"))
+    paths = paths or sorted(HERE.glob("corpus*.jsonl"))
     if not paths:
         raise SystemExit(f"no corpus files found in {HERE}")
     found: set[Entry] = set()

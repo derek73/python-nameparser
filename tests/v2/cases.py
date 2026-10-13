@@ -126,12 +126,8 @@ class Case:
     #: not shapes 6/7's. Restricted to CJK-bearing text (`_has_cjk`):
     #: it exists to demote composed/wrapped CJK forms specifically, and
     #: a Latin row asking for it is a smell until some future arc
-    #: argues otherwise. build_cjk_corpus.py reads the flag: a
-    #: tolerated row's text goes to corpus_cjk_tolerated.jsonl instead
-    #: of corpus_cjk.jsonl. Mark every row of a text, or none: the
-    #: generator reads the flag per TEXT (a corpus line is a name
-    #: string) and HARD-ERRORS on a split declaration, which
-    #: __post_init__ cannot catch from inside one row.
+    #: argues otherwise. Its text still goes to corpus_cjk.jsonl, so
+    #: the snapshot shows when its reading moves.
     tolerated: bool = False
 
     def __post_init__(self) -> None:

@@ -341,7 +341,7 @@ def _fake_compare(monkeypatch: pytest.MonkeyPatch, baseline: str,
     """compare() over _ENTRIES with the worker replaced by the tree's
     own readings, optionally altered by `alter(results)`; also returns
     the entries the worker was sent."""
-    monkeypatch.setattr(snapshot, "corpus_entries", lambda: list(_ENTRIES))
+    monkeypatch.setattr(snapshot, "corpus_entries", lambda paths=None: list(_ENTRIES))
     monkeypatch.setattr(compare, "_load_snapshot", lambda: snapshot)
     sent: list[list[dict[str, Any]]] = []
 

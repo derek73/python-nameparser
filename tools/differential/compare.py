@@ -1,6 +1,6 @@
 """A released nameparser against the working tree, over every corpus.
 
-    uv run python tools/differential/compare.py [--baseline VERSION]
+    uv run python tools/differential/compare.py [--baseline VERSION] [--corpus PATH]
 
 Reads every corpus name with a pinned release installed fresh from
 PyPI and with the working tree, and prints the names that read
@@ -318,13 +318,15 @@ def _is_latin_only(name: str) -> bool:
     return all(ord(ch) < 0x250 for ch in name)
 
 
-def compare(baseline: str) -> tuple[list[str], int, int]:
-    """The grouped moves between `baseline` and the tree, with the
-    number of moved names and how many of them are Latin-only."""
+def compare(baseline: str, corpora: list[Path] | None = None
+            ) -> tuple[list[str], int, int]:
+    """The grouped moves between `baseline` and the tree over every
+    corpus (or `corpora`), with the number of moved names and how many
+    of them are Latin-only."""
     snapshot = _load_snapshot()
     shapes = snapshot.load_shapes()
     min_for = {s.order: s.min_baseline for s in shapes.values() if s.order}
-    entries = [(name, order) for name, order in snapshot.corpus_entries()
+    entries = [(name, order) for name, order in snapshot.corpus_entries(corpora)
                if order is None
                or _parse_version(baseline) >= _parse_version(min_for[order])]
     want_v2 = "v2" in _surfaces_for(baseline)
@@ -349,11 +351,15 @@ def main() -> int:
     ap.add_argument("--baseline", default=DEFAULT_BASELINE, metavar="VERSION",
                     help=f"released version to compare the tree against "
                          f"(default {DEFAULT_BASELINE})")
+    ap.add_argument("--corpus", action="append", type=Path, metavar="PATH",
+                    help="a corpus file to compare instead of every "
+                         "corpus*.jsonl here; repeatable. One JSON string "
+                         "per line is a name.")
     args = ap.parse_args()
-    moves, moved, latin = compare(args.baseline)
+    moves, moved, latin = compare(args.baseline, args.corpus)
     print("\n".join(moves) or "no differences")
-    print(f"\n{moved} names read differently from {args.baseline}, "
-          f"{latin} of them Latin-only")
+    print(f"\n{moved} name{'' if moved == 1 else 's'} read differently "
+          f"from {args.baseline}, {latin} of them Latin-only")
     return 0
 
 
