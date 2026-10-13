@@ -11,6 +11,7 @@ tools/ is not a package, so the module is loaded by path, as
 _differential_fixtures.py loads compare.py.
 """
 import importlib.util
+import json
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -96,3 +97,90 @@ def test_got_roles_reads_the_six_views() -> None:
                      "suffix": "Jr.", "family_particles": "von",
                      "family_base": "Fischer"}
     assert tuple(roles) == agreement.ROLES
+
+
+def _row(text: str, shape: int | None, **fields: str) -> dict[str, object]:
+    return {"file": "xx", "label": "nativeG", "order": "givenFirst",
+            "text": text, "shape": shape, "fields": fields}
+
+
+def test_a_shape_4_rendering_is_parsed_family_first() -> None:
+    # The recorder and the checker share parse_rendering, so they cannot
+    # parse a rendering two ways. A lone word under FAMILY_FIRST reads as
+    # the family name, so CLDR's given name disagrees -- by design.
+    found = agreement.disagreements([_row("Lena", 4, given="Lena")])
+    assert found == {"xx/nativeG/givenFirst": {
+        "text": "Lena", "given_names": {"expected": "Lena", "got": ""},
+        "family": {"expected": "", "got": "Lena"}}}
+    assert agreement.disagreements([_row("Lena", None, given="Lena")]) == {}
+
+
+_RECORDED = {"a/nativeG/givenFirst": {"text": "A", "family": {"expected": "X", "got": "Y"}},
+             "b/nativeG/givenFirst": {"text": "B", "title": {"expected": "", "got": "Dr."}}}
+
+
+def test_changes_is_empty_when_nothing_moved() -> None:
+    assert agreement.changes(_RECORDED, _RECORDED, set(_RECORDED)) == []
+
+
+def test_changes_reports_a_regression() -> None:
+    current = {**_RECORDED, "c/nativeG/givenFirst": {
+        "text": "C", "family": {"expected": "Z", "got": ""}}}
+    [message] = agreement.changes(_RECORDED, current, set(current))
+    assert message.startswith("regression: c/nativeG/givenFirst family")
+
+
+def test_changes_reports_progress_that_must_be_recorded() -> None:
+    current = {"a/nativeG/givenFirst": _RECORDED["a/nativeG/givenFirst"]}
+    [message] = agreement.changes(_RECORDED, current, set(_RECORDED))
+    assert message.startswith("progress: b/nativeG/givenFirst title")
+
+
+def test_changes_reports_a_changed_wrong_answer() -> None:
+    current = {**_RECORDED, "a/nativeG/givenFirst": {
+        "text": "A", "family": {"expected": "X", "got": "W"}}}
+    [message] = agreement.changes(_RECORDED, current, set(current))
+    assert message.startswith("changed: a/nativeG/givenFirst family")
+    assert "'Y'" in message and "'W'" in message
+
+
+def test_changes_reports_a_rendering_that_is_gone() -> None:
+    # A rebuild that drops a rendering is not progress.
+    [message] = agreement.changes(
+        _RECORDED, {"a/nativeG/givenFirst": _RECORDED["a/nativeG/givenFirst"]},
+        {"a/nativeG/givenFirst"})
+    assert message.startswith("gone: b/nativeG/givenFirst")
+
+
+def test_the_corpus_and_the_fields_file_hold_the_same_renderings() -> None:
+    from_fields = {(row["text"], row["shape"]) for row in agreement.load_rows()}
+    from_corpus = set()
+    for line in (_TOOLS / "corpus_cldr.jsonl").read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            entry = json.loads(line)
+            from_corpus.add((entry, None) if isinstance(entry, str)
+                            else (entry["name"], entry["shape"]))
+    assert from_corpus == from_fields
+    assert len(from_fields) > 1000, "the CLDR corpus is missing or truncated"
+
+
+def test_nameparser_still_agrees_with_cldr_where_it_did() -> None:
+    rows = agreement.load_rows()
+    problems = agreement.changes(
+        agreement.read_record(), agreement.disagreements(rows),
+        {agreement.rendering_key(row) for row in rows})
+    assert not problems, "\n".join([
+        *problems[:40],
+        f"{len(problems)} change(s) against tools/differential/cldr_agreement.json.",
+        f"If every one is intended, re-record with `{agreement.RECORD_COMMAND}` "
+        "and say why in the commit."])
+
+
+def test_the_summary_counts_each_role_and_matches_the_record(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    assert agreement.main([]) == 0
+    out = capsys.readouterr().out
+    for role in agreement.ROLES:
+        assert any(line.split()[0] == role and "agree" in line
+                   for line in out.splitlines() if line.strip()), role
+    assert "matches the record" in out
