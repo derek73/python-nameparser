@@ -35,6 +35,7 @@ from pathlib import Path
 from typing import Any
 
 HERE = Path(__file__).resolve().parent
+REPO_ROOT = HERE.parents[1]
 SNAPSHOT = HERE / "snapshot.jsonl"
 RECORD_COMMAND = "uv run python tools/differential/snapshot.py --record"
 V2_FIELDS = ("title", "given", "middle", "family", "suffix", "nickname",
@@ -220,13 +221,29 @@ def grouped(old: dict[tuple[str, str], dict[str, Any]],
     return out
 
 
-def _use_tree(path: str) -> None:
-    root = Path(path).resolve()
-    sys.path.insert(0, str(root))
-    import nameparser
-    got = Path(nameparser.__file__).resolve()
-    if root not in got.parents:
-        sys.exit(f"--tree {root}: imported nameparser from {got} instead")
+def check_source(module_file: str, root: Path = REPO_ROOT) -> Path:
+    """Abort unless `module_file` is inside `root`'s source package.
+
+    Run as a script, sys.path[0] is tools/differential/, which holds no
+    nameparser, so a PYTHONPATH entry outranks the editable install and
+    the tree side reads a released wheel while believing it read the
+    checkout -- and a comparison of two wheels, or of a wheel with the
+    snapshot it wrote, reports no moves. The test is "is this the
+    SOURCE PACKAGE", not "is this under the root": the root also holds
+    .venv/, build/lib/ and dist/, any of which can hold a wheel, and an
+    ancestor of the checkout passes the weaker test while the import
+    falls through to the checkout itself."""
+    at = Path(module_file).resolve()
+    source = (root / "nameparser").resolve()
+    if not at.is_relative_to(source):
+        raise SystemExit(
+            f"imported nameparser from {at}, not from the source package "
+            f"{source} -- so this run would read that module instead of "
+            f"the tree it names. Unset PYTHONPATH; uninstall a "
+            f"non-editable nameparser from the active environment; or, in "
+            f"a git worktree, check that the editable install points at "
+            f"THIS worktree rather than the main checkout. Aborted.")
+    return at
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -238,9 +255,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, default=SNAPSHOT,
                     help="where --record writes (default: snapshot.jsonl)")
     args = ap.parse_args(argv)
+    root = Path(args.tree).resolve() if args.tree else REPO_ROOT
     if args.tree:
-        _use_tree(args.tree)
+        sys.path.insert(0, str(root))
     rows = read(corpus_entries())
+    import nameparser
+    check_source(nameparser.__file__, root)
     if args.record:
         args.out.write_text(dump(rows), encoding="utf-8")
         print(f"recorded {len(rows)} readings to {args.out}")
@@ -248,8 +268,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.since:
         rel = SNAPSHOT.relative_to(Path(subprocess.check_output(
             ["git", "rev-parse", "--show-toplevel"], cwd=HERE, text=True).strip()))
-        text = subprocess.check_output(["git", "show", f"{args.since}:{rel}"],
-                                       cwd=HERE, text=True)
+        try:
+            text = subprocess.check_output(
+                ["git", "show", f"{args.since}:{rel}"], cwd=HERE, text=True)
+        except subprocess.CalledProcessError:
+            raise SystemExit(
+                f"no {rel} at {args.since}: the snapshot did not exist "
+                f"there. For a release tagged before it, use "
+                f"`compare.py --baseline <version>`") from None
     else:
         text = SNAPSHOT.read_text(encoding="utf-8")
     moves = grouped(load(text), {key(r): r for r in rows})

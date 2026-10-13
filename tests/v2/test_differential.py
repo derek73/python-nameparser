@@ -196,7 +196,7 @@ def test_check_tree_accepts_the_checkout_and_rejects_anything_else(
         tmp_path: Path) -> None:
     inside = _TOOLS.parents[1] / "nameparser" / "__init__.py"
     assert compare._check_tree(str(inside)) == inside.resolve()
-    with pytest.raises(SystemExit, match="not from this checkout's source"):
+    with pytest.raises(SystemExit, match="not from the source package"):
         compare._check_tree(str(tmp_path / "nameparser" / "__init__.py"))
 
 
@@ -209,7 +209,7 @@ def test_check_tree_rejects_a_wheel_sitting_inside_the_checkout(
         rel: str) -> None:
     """The repo contains .venv/, build/ and dist/, any of which can hold
     a released wheel, so "under the repo" is not "the source package"."""
-    with pytest.raises(SystemExit, match="not from this checkout's source"):
+    with pytest.raises(SystemExit, match="not from the source package"):
         compare._check_tree(str(compare.REPO_ROOT / rel))
 
 
@@ -217,7 +217,7 @@ def test_check_tree_resolves_before_comparing() -> None:
     """Without .resolve(), a path escaping via .. reads as inside."""
     escaped = compare.REPO_ROOT / "nameparser" / ".." / ".." / "x" \
         / "nameparser" / "__init__.py"
-    with pytest.raises(SystemExit, match="not from this checkout's source"):
+    with pytest.raises(SystemExit, match="not from the source package"):
         compare._check_tree(str(escaped))
 
 
@@ -336,8 +336,7 @@ def _tree_results(entries: list[tuple[str, str | None]], want_v2: bool
 
 def _fake_compare(monkeypatch: pytest.MonkeyPatch, baseline: str,
                   alter: "Callable[[list[dict[str, Any]]], None] | None" = None
-                  ) -> tuple[tuple[list[str], int, int],
-                                              list[dict[str, Any]]]:
+                  ) -> tuple[Any, list[dict[str, Any]]]:
     """compare() over _ENTRIES with the worker replaced by the tree's
     own readings, optionally altered by `alter(results)`; also returns
     the entries the worker was sent."""
@@ -358,7 +357,12 @@ def _fake_compare(monkeypatch: pytest.MonkeyPatch, baseline: str,
 
 def test_compare_reports_no_move_when_the_baseline_reads_like_the_tree(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    assert _fake_compare(monkeypatch, "2.4.0")[0] == ([], 0, 0)
+    result, sent = _fake_compare(monkeypatch, "2.4.0")
+    assert (result.moves, result.moved, result.compared, result.skipped) \
+        == ([], 0, 2, 0)
+    # The boundary: an order shipped in 2.0.0, so 2.0.0 itself sends it.
+    _, sent = _fake_compare(monkeypatch, "2.0.0")
+    assert [e["order"] for e in sent] == [None, "FAMILY_FIRST"]
 
 
 def test_compare_reports_a_move(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -367,7 +371,8 @@ def test_compare_reports_a_move(monkeypatch: pytest.MonkeyPatch) -> None:
     def alter(results: list[dict[str, Any]]) -> None:
         results[0]["v2"]["family"] = "Smyth"
         results[0]["facade"]["last"] = "Smyth"
-    (moves, moved, latin), _ = _fake_compare(monkeypatch, "2.4.0", alter)
+    r, _ = _fake_compare(monkeypatch, "2.4.0", alter)
+    moves, moved, latin = r.moves, r.moved, r.latin
     assert (moved, latin) == (1, 1)
     assert moves[0] == "family: 1"
     assert "'Smyth' -> 'Smith'" in moves[1]
@@ -380,9 +385,12 @@ def test_compare_reads_the_facade_alone_below_2_0(
     sent, since no order existed before 2.0."""
     def alter(results: list[dict[str, Any]]) -> None:
         results[0]["facade"]["last"] = "Smyth"
-    (moves, moved, _), sent = _fake_compare(monkeypatch, "1.4.0", alter)
-    assert moved == 1 and moves[0] == "family: 1"
+    r, sent = _fake_compare(monkeypatch, "1.4.0", alter)
+    assert r.moved == 1 and r.moves[0] == "family: 1"
+    # The order-bearing entry is skipped, and COUNTED as skipped: a
+    # figure quoted from this run has a stated population.
     assert [e["order"] for e in sent] == [None]
+    assert (r.compared, r.skipped) == (1, 1)
 
 
 def test_compare_checks_that_the_tree_side_is_the_checkout(
@@ -392,7 +400,7 @@ def test_compare_checks_that_the_tree_side_is_the_checkout(
     the editable install and two wheels would agree on everything.
     REPO_ROOT is moved, which reproduces the trap's effect."""
     monkeypatch.setattr(compare, "REPO_ROOT", tmp_path)
-    with pytest.raises(SystemExit, match="not from this checkout's source"):
+    with pytest.raises(SystemExit, match="not from the source package"):
         _fake_compare(monkeypatch, "2.4.0")
 
 
@@ -407,3 +415,26 @@ def test_compare_checks_that_the_tree_side_is_the_checkout(
 ])
 def test_latin_only_partition(name: str, latin: bool) -> None:
     assert compare._is_latin_only(name) is latin
+
+
+def test_snapshot_checks_that_it_read_the_checkout(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """snapshot.py has compare.py's exposure: run as a script, a
+    PYTHONPATH wheel outranks the editable install, and --record would
+    write the wheel's readings while --since reported parity. Moving
+    REPO_ROOT reproduces the trap's effect."""
+    monkeypatch.setattr(snapshot, "corpus_entries", lambda paths=None: [])
+    monkeypatch.setattr(snapshot, "REPO_ROOT", tmp_path)
+    with pytest.raises(SystemExit, match="not from the source package"):
+        snapshot.main([])
+
+
+def test_snapshot_tree_must_hold_its_own_source_package(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """An ancestor of this checkout holds no nameparser/ of its own, so
+    the import falls through to this checkout; "under the root" would
+    pass it and compare the tree with its own snapshot."""
+    monkeypatch.setattr(snapshot, "corpus_entries", lambda paths=None: [])
+    monkeypatch.setattr(sys, "path", list(sys.path))
+    with pytest.raises(SystemExit, match="not from the source package"):
+        snapshot.main(["--tree", str(_TOOLS.parents[2])])

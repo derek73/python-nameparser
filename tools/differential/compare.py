@@ -29,6 +29,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 from types import ModuleType
+from typing import NamedTuple
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_BASELINE = "2.4.0"
@@ -229,41 +230,18 @@ def _worker_env() -> dict[str, str]:
 def _check_tree(module_file: str) -> Path:
     """Prove the OTHER side of the comparison is the working tree.
 
-    The baseline side gets a version tell, a pinned wheel and a temp
-    dir; the tree side was a bare import trusted on sight. It is
-    reachable by the same road: run as a script, sys.path[0] is
-    tools/differential/ -- which holds no nameparser -- so PYTHONPATH
-    outranks the editable install and compare.py imports a wheel while
-    believing it read the checkout. Two wheels agree on everything, so
-    the run reports parity.
+    The baseline side gets a pinned wheel, a temp dir and a version
+    tell; without this the tree side would be a bare import trusted on
+    sight, reachable by the same PYTHONPATH road. snapshot.py holds the
+    predicate (check_source), so the two tools cannot disagree about
+    what counts as the checkout.
 
-    (The reason this is easy to miss when probing by hand: from the
-    repo root, `python -c` puts the CWD on sys.path first, so the
-    checkout wins there and the trap does not reproduce. Only the
-    script invocation shows it.)
-
-    The test is "is this the SOURCE PACKAGE", not "is this somewhere
-    under the repo". The weaker form was written first and was wrong:
-    the checkout also contains .venv/, build/lib/ and dist/, any of
-    which can hold a released wheel, so `PYTHONPATH=<repo>/build/lib`
-    is the same trap with the shadowing directory moved one level to
-    the left -- and uv never touches build/, so nothing self-heals it.
-    Note the asymmetry the weak form created: <repo>/.venv/.../
-    nameparser is REJECTED as a baseline by _check_tell and would have
-    been ACCEPTED as the tree here.
+    (Why this is easy to miss when probing by hand: from the repo root,
+    `python -c` puts the CWD on sys.path first, so the checkout wins
+    there and the trap does not reproduce. Only the script invocation
+    shows it.)
     """
-    at = Path(module_file).resolve()
-    source = REPO_ROOT / "nameparser"
-    if not at.is_relative_to(source):
-        raise SystemExit(
-            f"the tree side imported nameparser from {at}, not from "
-            f"this checkout's source package ({source}) -- so this run "
-            f"would compare that module against the baseline instead of "
-            f"the working tree. Unset PYTHONPATH; uninstall a "
-            f"non-editable nameparser from the active environment; or, "
-            f"in a git worktree, check that the editable install points "
-            f"at THIS worktree rather than the main checkout. "
-            f"Comparison aborted.")
+    at: Path = _load_snapshot().check_source(module_file, REPO_ROOT)
     return at
 
 
@@ -318,15 +296,24 @@ def _is_latin_only(name: str) -> bool:
     return all(ord(ch) < 0x250 for ch in name)
 
 
-def compare(baseline: str, corpora: list[Path] | None = None
-            ) -> tuple[list[str], int, int]:
+class Result(NamedTuple):
+    moves: list[str]    # snapshot.grouped's report
+    moved: int          # entries that read differently
+    latin: int          # ... of them Latin-only
+    compared: int       # entries compared
+    skipped: int        # order-bearing entries the baseline predates
+
+
+def compare(baseline: str, corpora: list[Path] | None = None) -> Result:
     """The grouped moves between `baseline` and the tree over every
-    corpus (or `corpora`), with the number of moved names and how many
-    of them are Latin-only."""
+    corpus (or `corpora`), with the population they were counted over:
+    an entry whose shape's order the baseline predates is skipped, and
+    a figure quoted without that denominator says nothing about it."""
     snapshot = _load_snapshot()
     shapes = snapshot.load_shapes()
     min_for = {s.order: s.min_baseline for s in shapes.values() if s.order}
-    entries = [(name, order) for name, order in snapshot.corpus_entries(corpora)
+    every = snapshot.corpus_entries(corpora)
+    entries = [(name, order) for name, order in every
                if order is None
                or _parse_version(baseline) >= _parse_version(min_for[order])]
     want_v2 = "v2" in _surfaces_for(baseline)
@@ -343,7 +330,8 @@ def compare(baseline: str, corpora: list[Path] | None = None
     after = {snapshot.key(r): r for r in new}
     moved = [k for k in after if before[k] != after[k]]
     latin = sum(_is_latin_only(name) for name, _ in moved)
-    return snapshot.grouped(before, after), len(moved), latin
+    return Result(snapshot.grouped(before, after), len(moved), latin,
+                  len(entries), len(every) - len(entries))
 
 
 def main() -> int:
@@ -356,10 +344,13 @@ def main() -> int:
                          "corpus*.jsonl here; repeatable. One JSON string "
                          "per line is a name.")
     args = ap.parse_args()
-    moves, moved, latin = compare(args.baseline, args.corpus)
-    print("\n".join(moves) or "no differences")
-    print(f"\n{moved} name{'' if moved == 1 else 's'} read differently "
-          f"from {args.baseline}, {latin} of them Latin-only")
+    r = compare(args.baseline, args.corpus)
+    print("\n".join(r.moves) or "no differences")
+    print(f"\n{r.moved} of {r.compared} entries read differently from "
+          f"{args.baseline}, {r.latin} of them Latin-only")
+    if r.skipped:
+        print(f"{r.skipped} order-bearing entries skipped: {args.baseline} "
+              f"predates their name_order")
     return 0
 
 
