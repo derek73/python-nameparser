@@ -335,12 +335,13 @@ def _tree_results(entries: list[tuple[str, str | None]], want_v2: bool
 
 
 def _fake_compare(monkeypatch: pytest.MonkeyPatch, baseline: str,
-                  alter: "Callable[[list[dict[str, Any]]], None] | None" = None
+                  alter: "Callable[[list[dict[str, Any]]], None] | None" = None,
+                  entries: list[tuple[str, str | None]] = _ENTRIES,
                   ) -> tuple[Any, list[dict[str, Any]]]:
     """compare() over _ENTRIES with the worker replaced by the tree's
     own readings, optionally altered by `alter(results)`; also returns
     the entries the worker was sent."""
-    monkeypatch.setattr(snapshot, "corpus_entries", lambda paths=None: list(_ENTRIES))
+    monkeypatch.setattr(snapshot, "corpus_entries", lambda paths=None: list(entries))
     monkeypatch.setattr(compare, "_load_snapshot", lambda: snapshot)
     sent: list[list[dict[str, Any]]] = []
 
@@ -373,9 +374,22 @@ def test_compare_reports_a_move(monkeypatch: pytest.MonkeyPatch) -> None:
         results[0]["facade"]["last"] = "Smyth"
     r, _ = _fake_compare(monkeypatch, "2.4.0", alter)
     moves, moved, latin = r.moves, r.moved, r.latin
-    assert (moved, latin) == (1, 1)
+    assert (moved, latin, r.cldr) == (1, 1, 0)
     assert moves[0] == "family: 1"
     assert "'Smyth' -> 'Smith'" in moves[1]
+
+
+def test_compare_counts_a_moved_name_only_cldr_holds(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A release figure counts CLDR's fictional renderings out, so the
+    report says how many moved names only corpus_cldr.jsonl holds."""
+    cldr_name = "Macáková, Alexandra Zuzana (pani, PhD)"
+    def alter(results: list[dict[str, Any]]) -> None:
+        results[0]["v2"]["nickname"] = "pani PhD"
+        results[0]["facade"]["nickname"] = "pani PhD"
+    r, _ = _fake_compare(monkeypatch, "2.4.0", alter,
+                         entries=[(cldr_name, None)])
+    assert (r.moved, r.cldr) == (1, 1)
 
 
 def test_compare_reads_the_facade_alone_below_2_0(

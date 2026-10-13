@@ -289,9 +289,9 @@ def main(argv: list[str] | None = None) -> int:
                 ["git", "show", f"{args.since}:{rel}"], cwd=HERE, text=True)
         except subprocess.CalledProcessError:
             raise SystemExit(
-                f"no {rel} at {args.since}: the snapshot did not exist "
-                f"there. For a release tagged before it, use "
-                f"`compare.py --baseline <version>`") from None
+                f"no {rel} at {args.since}: an unknown ref, or one from "
+                f"before the snapshot existed. For a release tagged "
+                f"before it, use `compare.py --baseline <version>`") from None
     else:
         text = SNAPSHOT.read_text(encoding="utf-8")
     old, new = load(text), {key(r): r for r in rows}
