@@ -3645,7 +3645,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-06, #613's PR review: 155 -> 161; its reach absorbed the tolerated CJK case rows the review added.
         # 2026-10-06, #613 /simplify: 161 -> 162; its reach absorbed the tolerated J.씨 case row the /simplify pass added.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(162, ('family', 'given', 'middle'), "927c81f2b6e2", None),
+        # 2026-10-12, #653: 162 -> 163, '佐藤 花子 "旧姓・田中" (旧姓 鈴木)', the case row that
+        # took over the #329 drop-pass witness. Reach, not
+        # explanation: its diff here is fix(#335/#272)'s.
+            _Claim(163, ('family', 'given', 'middle'), "329f9a9c49f1", None),
         # 2026-09-19, #533: 33 -> 68. The count grew with the CORPUS
         # rather than with the rule -- this change added 35
         # maiden-clause names as rules.md example lines and
@@ -3684,7 +3687,12 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-19, #533: 5 -> 6, the same one new corpus name
         # '田中 太郎 旧姓 佐藤 MA' as the CJK rule above.
         "fix(cjk-maiden-marker) maiden marker consumed, compounding with the CJK order flip":
-            _Claim(6, ('family', 'given', 'maiden', 'middle'), "c72a3d5724f5", None),
+        # 2026-10-12, #653: 6 -> 7, '佐藤 花子 "旧姓・田中" (旧姓 鈴木)', the case row that
+        # took over the #329 drop-pass witness. Reach, not
+        # explanation: its diff here is fix(#335/#272)'s.
+            _Claim(7, ('family', 'given', 'maiden', 'middle'), "9879a6808907", None),
+        "fix(#335/#272) a marker-led paren clause beside a quoted one, compounding with the CJK order flip":
+            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "247d488eb9b7", None),
         # 2026-09-18, #531: 13 -> 19. Six corpus names whose trailing
         # word is particle vocabulary this regex already lists --
         # 'Doe, John DO', 'Doe, John Do', 'SMITH, JOHN DO',
@@ -3878,7 +3886,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # rules.md#H1 comma example. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(461, ('given', 'suffix', 'title'), "496fb3966b46", None),
+        # 2026-10-12, #653: 461 -> 463, 'Jane (Janey, Jo) Smith' and
+        # 'Maria Kowalska (z, domu Nowak)', #653's rules.md#N1 and #M1
+        # examples. Reach -- each is a comma name, read at 1.4.0's
+        # reading here, so there is no diff to absorb.
+            _Claim(463, ('given', 'suffix', 'title'), "cde6740153e3", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split":
             _Claim(2, ('family', 'given'), "5bd9c6d96c38", None),
         "fix(comma-family) a comma followed only by titles keeps the given/family split, the C1 example":
@@ -4011,7 +4023,11 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-04, #606: 443 -> 444, 'Greve, Anna'. Reach.
         # 2026-10-04, merging #606 in as well: 441 over the merged
         # corpus. Reach.
-            _Claim(461, ('family', 'given'), "496fb3966b46", None),
+        # 2026-10-12, #653: 461 -> 463, 'Jane (Janey, Jo) Smith' and
+        # 'Maria Kowalska (z, domu Nowak)', #653's rules.md#N1 and #M1
+        # examples. Reach -- each is a comma name, read at 1.4.0's
+        # reading here, so there is no diff to absorb.
+            _Claim(463, ('family', 'given'), "cde6740153e3", None),
         # 2026-10-01, #575: new, 4; 'De La Cruz, Ed', 'Freiherr von
         # Berg, Ed', 'Van Buren, Ed', 'de la Cruz, Ma'.
         "fix(#575) a particle surname before a comma is one name word":
@@ -4035,7 +4051,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "feat(#273) typographic nickname delimiters recognized by default":
             _Claim(8, ('middle', 'nickname'), "968bd4162257", None),
         "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJK order flip":
-            _Claim(6, ('family', 'given', 'nickname'), "ae1dffa01608", None),
+        # 2026-10-12, #653: 6 -> 7, '佐藤 花子 "旧姓・田中" (旧姓 鈴木)', the case row that
+        # took over the #329 drop-pass witness. Reach, not
+        # explanation: its diff here is fix(#335/#272)'s.
+            _Claim(7, ('family', 'given', 'nickname'), "7817294588bc", None),
         "fix(cjk-fullwidth-paren-nickname) fullwidth-parenthesis recognition compounds with the CJK order flip":
             _Claim(1, ('family', 'given', 'middle', 'nickname'), "cf370e856ae7", None),
         # 2026-09-18: 26 -> 29. The three CJK comma forms #289's own
@@ -4796,7 +4815,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
             _Claim(5, ('maiden', 'nickname'), "a419f74143e3", None),
         "fix(#335) a marker-led bracketed clause reads as the maiden name, compounding with the CJK order flip":
-            _Claim(1, ('family', 'given', 'maiden', 'nickname'), "cf370e856ae7", None),
+        # 2026-10-12, #653: 1 -> 2, '佐藤 花子 "旧姓・田中" (旧姓 鈴木)',
+        # the drop-pass witness row, added to the regex by literal:
+        # its paren clause is the marker-led one this rule names.
+            _Claim(2, ('family', 'given', 'maiden', 'nickname'), "3a39bc53290f", None),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(4, ('family', 'given'), "da1dd1473145", None),
         "fix(#430) a credential run does not end at the roman numeral describing it":
@@ -4863,7 +4885,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-06, #613 PR review: 155 -> 161; its reach absorbed the tolerated CJK case rows the review added.
         # 2026-10-06, #613 /simplify: 161 -> 162; its reach absorbed the tolerated J.씨 case row the /simplify pass added.
         "fix(#271/#272/#298) native-script CJK: family-first order, hangul segmentation, the kana license and the dots":
-            _Claim(162, ('_ambiguities', 'family', 'given', 'middle'), "927c81f2b6e2", None),
+        # 2026-10-12, #653: 162 -> 163, '佐藤 花子 "旧姓・田中" (旧姓 鈴木)', the case row that
+        # took over the #329 drop-pass witness. Reach, not
+        # explanation: its diff here is the fix(#335) CJK-order rule's.
+            _Claim(163, ('_ambiguities', 'family', 'given', 'middle'), "329f9a9c49f1", None),
         # 37 -> 35 with the same 2026-09-05 narrowing as the 1.4 twin,
         # whose entry carries the reason. Here the one name that
         # changed hands, '김민준 박사님', goes to the spaced rule
@@ -4880,9 +4905,15 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-09-19, #533: 5 -> 6, the same one new tolerated
         # corpus name as the CJK rule above.
         "fix(#309) 旧姓 maiden marker consumed, compounding with the CJK order flip":
-            _Claim(6, ('family', 'given', 'maiden', 'middle'), "c72a3d5724f5", None),
+        # 2026-10-12, #653: 6 -> 7, '佐藤 花子 "旧姓・田中" (旧姓 鈴木)', the case row that
+        # took over the #329 drop-pass witness. Reach, not
+        # explanation: its diff here is the fix(#335) CJK-order rule's.
+            _Claim(7, ('family', 'given', 'maiden', 'middle'), "9879a6808907", None),
         "fix(#272) nakaguro inside delimited content renders as a space, compounding with the CJK order flip":
-            _Claim(1, ('family', 'given', 'nickname'), "d4069d459f23", None),
+        # 2026-10-12, #653: 1 -> 2, '佐藤 花子 "旧姓・田中" (旧姓 鈴木)', the case row that
+        # took over the #329 drop-pass witness. Reach, not
+        # explanation: its diff here is the fix(#335) CJK-order rule's.
+            _Claim(2, ('family', 'given', 'nickname'), "33c47dfd85eb", None),
         "fix(#298) 间隔号 division changes the comma reading, sending the credential from title to suffix":
             _Claim(1, ('family', 'given', 'suffix', 'title'), "1d45596e6fdb", None),
         "fix(#424) an unlisted abbreviation is as transparent as a listed title to the leading particle":
@@ -5433,6 +5464,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
         "fix(#614) a trailing title is read before the particle chain":
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        "fix(#653) a delimited clause keeps its comma":
+            _Claim(2, ('nickname',), "fad1fd2c06ad", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5923,6 +5956,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
         "fix(#614) a trailing title is read before the particle chain":
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        "fix(#653) a delimited clause keeps its comma":
+            _Claim(2, ('nickname',), "fad1fd2c06ad", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6071,7 +6106,10 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         "fix(#434) a multi-word marker leads a bracketed clause to the maiden name":
             _Claim(1, ('maiden', 'nickname'), "0b3ef183f283", None),
         "fix(#335) a marker-led bracketed clause reads as the maiden name whatever pair encloses it":
-            _Claim(6, ('maiden', 'nickname'), "d0e857deddb2", None),
+        # 2026-10-12, #653: 6 -> 7, '佐藤 花子 "旧姓・田中" (旧姓 鈴木)',
+        # the drop-pass witness row, added to the regex by literal:
+        # its paren clause is the marker-led one this rule names.
+            _Claim(7, ('maiden', 'nickname'), "89cde2208e99", None),
         "fix(#410) a title and one name word name the family, whatever annotation stands beside it":
             _Claim(4, ('family', 'given'), "da1dd1473145", None),
         "fix(#430) a credential run does not end at the roman numeral describing it":
@@ -6644,6 +6682,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
         "fix(#614) a trailing title is read before the particle chain":
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        "fix(#653) a delimited clause keeps its comma":
+            _Claim(2, ('nickname',), "fad1fd2c06ad", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6987,8 +7027,13 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
         "fix(#614) a trailing title is read before the particle chain":
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        "fix(#653) a delimited clause keeps its comma":
+            _Claim(2, ('nickname',), "fad1fd2c06ad", None),
     },
-    "expected_since_2.4.0.toml": {},   # open cycle, no rules yet
+    "expected_since_2.4.0.toml": {
+        "fix(#653) a delimited clause keeps its comma":
+            _Claim(2, ('nickname',), "fad1fd2c06ad", None),
+    },
 }
 
 
@@ -8495,7 +8540,14 @@ _EXCLUSION_EFFECT: dict[str, _Excluded] = {
         # non-effect: the fix(#535) title-stop rule carries the name's
         # diff at every baseline that has one, and `absorbed_by` stays
         # empty.
-        _Excluded(63, "a2bd839d58dd", ()),
+        # 63 -> 65 on 2026-10-12 for #653's rules.md#N1 and #M1
+        # examples, 'Jane (Janey, Jo) Smith' and 'Maria Kowalska (z,
+        # domu Nowak)', whose clauses match this shape. They cost the
+        # entry nothing: #653 restored 1.4.0's comma inside the clause,
+        # so the tree reads both nicknames as 1.4.0 does and there is
+        # no diff to silence -- the entry the fix had tripped before it
+        # landed, per the issue.
+        _Excluded(65, "fe1dd0f26b5c", ()),
 }
 
 
@@ -8729,6 +8781,12 @@ _ORDER_EXEMPTION_EFFECT: dict[str, list[tuple[str, str, int]]] = {
         # a widening -- the declared pair is unchanged.
         ("fix(#274) maiden markers consumed",
          "fix(#379) a tussenvoegsel after a family comma attaches to the family", 5),
+        # NEW on 2026-10-12 (#653): '佐藤 花子 "旧姓・田中" (旧姓 鈴木)',
+        # the drop-pass witness row, is inside both regexes and the
+        # later rule's fields are a strict subset; the earlier rule
+        # carries the [[change.precedes_narrower]] block.
+        ("fix(#335/#272) a marker-led paren clause beside a quoted one, compounding with the CJK order flip",
+         "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJK order flip", 1),
         # The #533 review's own rule is wide-first against three
         # narrower ones, each declared on it with a
         # [[change.precedes_narrower]] block in the 1.4.0 ledger.

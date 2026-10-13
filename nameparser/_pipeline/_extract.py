@@ -164,8 +164,8 @@ def _unmatched(open_: str, offset: int) -> tuple[int, PendingAmbiguity]:
 
 
 # rules.md#N1: "a clause enclosed by a configured nickname delimiter
-# pair reads as the nickname and is lifted out of the name; an empty
-# enclosure is simply dropped"
+# pair reads as the nickname and is lifted out of the name" (its
+# punctuation is tokenize's half of the rule)
 # rules.md#M1: "with a delimiter pair configured for maiden names, its
 # enclosed clause reads as the maiden name" (history: decisions.md#M1)
 def extract_delimited(state: ParseState) -> ParseState:

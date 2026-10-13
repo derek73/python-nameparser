@@ -2503,3 +2503,12 @@ fields = ["family", "given", "middle"]
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]
+
+[[change]]
+# rules.md#N1: "keeping its punctuation as written — a comma inside it
+# divides nothing" (#653, 2026-10-12): a comma inside a delimited
+# clause is the clause's text, as 1.4.0 kept it. This baseline split it
+# off as a separator, and the nickname rendered without it.
+issue = "fix(#653) a delimited clause keeps its comma"
+name_regex = "^(?:Jane \\(Janey, Jo\\) Smith|Maria Kowalska \\(z, domu Nowak\\))$"
+fields = ["nickname"]

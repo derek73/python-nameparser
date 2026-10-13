@@ -32,3 +32,12 @@
 # There is deliberately no `change = []` line. TOML forbids appending a
 # [[change]] table to a statically defined array, so that line would
 # block the first entry.
+
+[[change]]
+# rules.md#N1: "keeping its punctuation as written — a comma inside it
+# divides nothing" (#653, 2026-10-12): a comma inside a delimited
+# clause is the clause's text, as 1.4.0 kept it. This baseline split it
+# off as a separator, and the nickname rendered without it.
+issue = "fix(#653) a delimited clause keeps its comma"
+name_regex = "^(?:Jane \\(Janey, Jo\\) Smith|Maria Kowalska \\(z, domu Nowak\\))$"
+fields = ["nickname"]

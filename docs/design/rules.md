@@ -1410,13 +1410,15 @@ another's opener — and the straight apostrophe doubles as a quotation mark and
 N1. Rationale: a quoted or bracketed clause beside a name is an
     informal alias, not part of the name.
     A clause enclosed by a configured nickname delimiter pair reads
-    as the nickname and is lifted out of the name; an empty
-    enclosure is simply dropped.
+    as the nickname and is lifted out of the name, keeping its
+    punctuation as written — a comma inside it divides nothing; an
+    empty enclosure is simply dropped.
       "Andrew (Andy) Perkins"     →  nickname="Andy"
+      "Jane (Janey, Jo) Smith"    →  nickname="Janey, Jo"
       "Jean 'JD' Smith"           →  nickname="JD"
       "Anna () Smith"             →  nickname=""  · boundary
       "John ｢Jack｣ Smith"         →  nickname="Jack"
-    history: decisions.md#N1 · implemented: nameparser/_pipeline/_extract.py
+    history: decisions.md#N1 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_tokenize.py
 
 N2. Rationale: only a mark standing at word boundaries is quoting;
     anywhere else it is part of the word.
@@ -1490,6 +1492,7 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
       "Jane Smith (Nee) (Jones)"  maiden-parens  →  maiden="Nee Jones"
       "Andrew Perkins (MBA)"  maiden-parens  →  suffix="MBA"  · boundary
       "Maria Kowalska (z domu)"  maiden-parens  →  maiden="z domu"  · boundary
+      "Maria Kowalska (z, domu Nowak)"  maiden-parens  →  maiden="z, domu Nowak"  · boundary
     history: decisions.md#M1 · interacts: S1, M2, M3, M4 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
 
 M2. Rationale: a maiden marker announces that what follows it is the

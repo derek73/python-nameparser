@@ -8572,7 +8572,9 @@ CASES: tuple[Case, ...] = (
                "still pinned -- "
                "that job moved to "
                "marker_glued_to_punctuation_keeps_the_clause_a_nickname "
-               "below, which reaches a marker-led clause M3 declines. "
+               "below and, since #653, on to "
+               "marker_divided_by_a_nakaguro_keeps_the_clause_a_nickname, "
+               "each reaching a marker-led clause M3 declines. "
                "1.4.0 cannot express a brace delimiter at "
                "all (its buckets hold the NAMES of compiled regexes "
                "and there is no brace one; measured 2026-08-03, "
@@ -8587,35 +8589,51 @@ CASES: tuple[Case, ...] = (
                "unchanged)"),
     Case("marker_glued_to_punctuation_keeps_the_clause_a_nickname",
          'Jane "née, Janie" Smith (née Jones)',
-         {"given": "Jane", "family": "Smith", "nickname": "née Janie",
+         {"given": "Jane", "family": "Smith", "nickname": "née, Janie",
           "maiden": "Jones"},
          classification="fix(#335)",
-         notes="M3 and the #329 drop pass ask the marker question of "
-               "different things, and this row is where the two "
-               "answers differ. M3 splits the clause on WHITESPACE and "
-               "normalizes the first word: 'née,' normalizes to "
-               "'née,' -- _normalize strips a trailing period but not "
-               "a comma -- so M3 declines and the quoted clause stays "
-               "a nickname. tokenize splits the comma off as a "
-               "separator, so the clause's first TOKEN is 'née' and "
-               "carries vocab:maiden-marker, which is exactly what "
-               "the 'role is not Role.MAIDEN' branch of "
-               "_group.group's drop pass exists to refuse. Measured 2026-08-26: with that "
-               "branch removed this reads nickname 'Janie', the "
-               "marker dropped out of a nickname. BOTH clauses are "
-               "load-bearing -- the drop pass is gated on the name "
-               "holding a MAIDEN region at all, so the same quoted "
-               "clause alone ('Jane \"née, Janie\" Smith') leaves the "
-               "branch unexercised, removing it measurably changes "
-               "nothing there. The paren clause is what opens the "
-               "block, and M3 is what makes it maiden. The comma is "
-               "absent from the nickname VALUE because tokenize "
-               "treats COMMA_CHARS as a separator inside every region "
-               "including an extracted one, which predates #335 and "
-               "is not part of it. 1.4.0 gave first Jane / last Smith "
-               "/ nickname 'née, Janie née Jones' (2026-08-26) -- "
-               "comma kept, both clauses merged into the one field, "
-               "which is the merged-nickname half of #335"),
+         notes="a marker glued to a comma is no marker, inside a "
+               "clause as in the main stream ('Jane Smith née, Jones' "
+               "reads no maiden either): M3 splits the clause on "
+               "WHITESPACE and normalizes the first word, and 'née,' "
+               "stays 'née,' -- _normalize strips a trailing period "
+               "but not a comma -- so the quoted clause stays a "
+               "nickname, its comma kept as written (#653). Until #653 "
+               "tokenize split a region's comma off as a separator, "
+               "so the clause's first TOKEN was 'née' with "
+               "vocab:maiden-marker while M3 declined, and this row "
+               "was the witness for the 'role is not Role.MAIDEN' "
+               "branch of _group.group's drop pass, reading nickname "
+               "'née Janie'. A region's comma is word text now, the "
+               "two questions agree here, and the witness moved to "
+               "marker_divided_by_a_nakaguro_keeps_the_clause_a_nickname "
+               "below. 1.4.0 gave first Jane / last Smith / nickname "
+               "'née, Janie née Jones' (2026-08-26) -- comma kept, "
+               "both clauses merged into the one field, which is the "
+               "merged-nickname half of #335 and the only difference "
+               "left (re-measured 2026-10-12)"),
+    Case("marker_divided_by_a_nakaguro_keeps_the_clause_a_nickname",
+         '佐藤 花子 "旧姓・田中" (旧姓 鈴木)',
+         {"given": "花子", "family": "佐藤", "nickname": "旧姓 田中",
+          "maiden": "鈴木"},
+         classification="fix(#335) + fix(#271) + fix(#272)",
+         notes="the witness for the 'role is not Role.MAIDEN' branch "
+               "of _group.group's drop pass since #653 took the job "
+               "from the comma row above. M3 and the drop pass ask "
+               "the marker question of different things: M3 splits "
+               "the clause on WHITESPACE, so its first word is "
+               "'旧姓・田中' and it declines, while tokenize divides "
+               "at the nakaguro (rules.md#T2), so the clause's first "
+               "TOKEN is '旧姓' with vocab:maiden-marker -- exactly "
+               "what the branch refuses to drop from a nickname. "
+               "Measured 2026-10-12: with the branch removed this "
+               "reads nickname '田中'. BOTH clauses are load-bearing "
+               "-- the drop pass is gated on the name holding a "
+               "MAIDEN region, which the marker-led paren clause "
+               "supplies through M3. 1.4.0 gave first 佐藤 / last 花子 "
+               "/ nickname '旧姓・田中 旧姓 鈴木' (2026-10-12): the "
+               "order is #271's, the separate maiden #335's, the "
+               "divided nickname #272's"),
     Case("maiden_marker_delimited_two_clauses",
          "Jane Smith (Nee) (Jones)",
          {"given": "Jane", "family": "Smith", "maiden": "Nee Jones"},

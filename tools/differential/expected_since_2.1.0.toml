@@ -1531,8 +1531,8 @@ issue = "fix(#434) a multi-word marker leads a bracketed clause to the maiden na
 # the reach alone leaves this name a nickname, since M3 asks whether
 # the content opens with a recognized marker and through 2.1 no
 # vocabulary answered yes here. The phrase entry is what moves it, so
-# it is #434's diff and not #335's, and it is deliberately NOT a
-# seventh alternative in that rule's six literals.
+# it is #434's diff and not #335's, and it is deliberately NOT one
+# more alternative among that rule's literals.
 #
 # `fields` is the pair that moves. The clause changes role; the name
 # words keep their readings, so a `given`, `middle` or `family`
@@ -1554,20 +1554,25 @@ issue = "fix(#335) a marker-led bracketed clause reads as the maiden name whatev
 # `fields` is exactly the pair that moves and not one field more. The
 # clause changes ROLE and nothing else here: the name words around it
 # keep their readings, so a `given`, `middle` or `family` movement on
-# any of these six is a regression and stays loud. Worth stating
+# any of these is a regression and stays loud. Worth stating
 # because the convenient thing is to declare the union of what the
-# same six names move against OTHER baselines -- against 2.0.0 the
-# CJK name also flips given/family -- and PR #444 is what that costs:
+# same names move against OTHER baselines -- against 2.0.0 the
+# CJK names also flip given/family -- and PR #444 is what that costs:
 # fix(#424) there declared a field its diff had stopped moving, and a
 # real movement was absorbed silently behind it until #444 narrowed
 # the rule.
 #
-# Keyed on the six names by literal, like the #410 rule above. The
+# '佐藤 花子 "旧姓・田中" (旧姓 鈴木)' joined on 2026-10-12 (#653), the
+# case row that witnesses the #329 drop pass's nickname refusal: its
+# paren clause is the marker-led one and moves exactly this pair, the
+# quoted clause beside it staying a nickname at both ends.
+#
+# Keyed on the names by literal, like the #410 rule above. The
 # shape is "a bracketed clause whose first word is a marker", which is
 # a question about the parse rather than about the string, and a
 # fields-only rule standing in for it would pre-excuse every future
 # nickname/maiden confusion in the corpus.
-name_regex = "(?i)^(?:Jane Smith \\(n[ée]e Jones\\)|Jane \\(n[ée]e Jones\\) Smith|Jane Smith \\(n[ée]e V\\)|Anna Müller \\(geb\\. Schmidt\\)|Ursula von der Leyen \\(geb\\. Albrecht\\)|山田 花子（旧姓 佐藤）)$"
+name_regex = "(?i)^(?:Jane Smith \\(n[ée]e Jones\\)|Jane \\(n[ée]e Jones\\) Smith|Jane Smith \\(n[ée]e V\\)|Anna Müller \\(geb\\. Schmidt\\)|Ursula von der Leyen \\(geb\\. Albrecht\\)|山田 花子（旧姓 佐藤）|佐藤 花子 \"旧姓・田中\" \\(旧姓 鈴木\\))$"
 fields = ["nickname", "maiden"]
 
 [[change]]
@@ -4016,3 +4021,12 @@ fields = ["_ambiguities", "suffix", "title"]
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]
+
+[[change]]
+# rules.md#N1: "keeping its punctuation as written — a comma inside it
+# divides nothing" (#653, 2026-10-12): a comma inside a delimited
+# clause is the clause's text, as 1.4.0 kept it. This baseline split it
+# off as a separator, and the nickname rendered without it.
+issue = "fix(#653) a delimited clause keeps its comma"
+name_regex = "^(?:Jane \\(Janey, Jo\\) Smith|Maria Kowalska \\(z, domu Nowak\\))$"
+fields = ["nickname"]
