@@ -241,6 +241,26 @@ def test_a_pack_parser_keeps_the_family_first_order_of_its_shape() -> None:
     assert (name.family, name.given) == ("Ivanov", "Ivan")
 
 
+def test_a_recorded_entry_whose_file_left_the_table_is_reported_gone() -> None:
+    # No pack's check reads such an entry, so without this it would sit
+    # in the record unguarded -- and survive every re-record.
+    [message] = agreement.unmapped({"zh/nativeG/givenFirst": {}, "xx/nativeG/sorting": {}})
+    assert message.startswith("gone: xx/nativeG/sorting")
+    assert agreement.unmapped(agreement.read_record(agreement.LOCALE_RECORD)) == []
+
+
+def test_a_re_record_drops_entries_whose_file_left_the_table(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # The carry-over that keeps an unmeasured pack's entries must not
+    # keep an unmapped file's too.
+    record = tmp_path / "locales.json"
+    agreement.write_record({"xx/nativeG/sorting": {"text": "X"}}, record)
+    monkeypatch.setattr(agreement, "LOCALE_RECORD", record)
+    monkeypatch.setattr(agreement, "RECORD", tmp_path / "default.json")
+    assert agreement.main(["--record"]) == 0
+    assert "xx/nativeG/sorting" not in agreement.read_record(record)
+
+
 @pytest.mark.parametrize("pack", [
     pytest.param(pack, marks=pytest.mark.skipif(
         not agreement.pack_available(pack),

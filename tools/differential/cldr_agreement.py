@@ -248,6 +248,13 @@ def locale_changes(rows: list[dict[str, Any]], pack: str,
                    {rendering_key(row) for row in mine})
 
 
+def unmapped(recorded: dict[str, dict[str, Any]]) -> list[str]:
+    """Locale-record entries whose file is no longer in LOCALE_FILES: no
+    pack's check reads them, so they are reported here as gone."""
+    return [f"gone: {key} is recorded but its file is not in LOCALE_FILES"
+            for key in sorted(recorded) if _file_of(key) not in LOCALE_FILES]
+
+
 def _packs() -> list[str]:
     return sorted(set(LOCALE_FILES.values()))
 
@@ -265,9 +272,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"recorded {len(current)} disagreeing renderings to {RECORD.name}")
         old = read_record(LOCALE_RECORD) if LOCALE_RECORD.exists() else {}
         measured = [p for p in _packs() if pack_available(p)]
+        unmeasured = set(_packs()) - set(measured)
         locale = {k: v for k, v in old.items()
-                  if LOCALE_FILES.get(_file_of(k)) not in measured}
-        for pack in sorted(set(_packs()) - set(measured)):
+                  if LOCALE_FILES.get(_file_of(k)) in unmeasured}
+        for pack in sorted(unmeasured):
             print(f"{pack} not measured (needs {_EXTRAS[pack]}); "
                   "its recorded entries are kept unchanged")
         locale.update(disagreements(
@@ -286,7 +294,7 @@ def main(argv: list[str] | None = None) -> int:
     print("\n".join(problems) or "default view matches the record")
     print("\nlocale view, renderings with every role agreeing:")
     recorded = read_record(LOCALE_RECORD)
-    locale_problems: list[str] = []
+    locale_problems = unmapped(recorded)
     for pack in _packs():
         mine = locale_rows(rows, pack)
         files = ", ".join(sorted({row["file"] for row in mine}))
