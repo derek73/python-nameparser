@@ -16,10 +16,9 @@ expected value is edited in the same commit; the test goes green and
 says nothing. A doc example cannot warn about the change that edited
 it.
 
-The differential run answers the other question. It parses these names
-with a RELEASED baseline, which no commit can edit, so a moved name
-arrives unexplained and has to be classified in a ledger in writing.
-#409 is the worked example: it changed M2's
+The snapshot answers the other question: a moved name shows as a line
+in the diff of tools/differential/snapshot.jsonl, which a reviewer
+reads beside the doc edit (#664). #409 is the worked example: it changed M2's
 
     "Jane de la née Jones"      →  family="de la née Jones"
 
@@ -36,30 +35,12 @@ gaining an example enters the corpus by being written down where it
 already gets reviewed.
 
 Policy annotations are deliberately ignored. The corpus carries name
-STRINGS and the differential run parses them with the default facade,
-so a family-first-scoped example is simply one more name to diff --
-build_cjk_corpus.py makes the same call for its zh-scoped rows.
-
-A TOLERATED rule is skipped whole. A rule carrying rules.md's
-`tolerated: <reason>` line has stepped out of the document's
-normative reading: its statement describes what the parser does with
-input the writing systems it speaks about do not produce, and it says
-so on that line. A tolerated rule's examples ILLUSTRATE, they do not
-promise -- so they stay in the doc, stay executed by
-test_rules_doc.py, and stay pinned at HEAD, while this corpus (which
-is what enforces a name against RELEASED baselines, in a contract
-tier where an unclassified diff fails the run) stops carrying them.
-Skipping the rule rather than filtering its examples is the point:
-the unit the doc marks is a rule, so a tolerated rule gaining an
-example does not quietly re-enter the contract.
-
-That is the whole of the demotion's mechanism here, and it leaves the
-name watched: rules.md#W3's subjects are also tolerated rows in
-tests/v2/cases.py, so build_cjk_corpus.py writes them to the
-radar-tier corpus_cjk_tolerated.jsonl and every baseline still parses
-and classifies them. A tolerated rule whose examples land in NO
-corpus would be a name dropped from the harness, which is a different
-act and not one this skip performs on its own.
+STRINGS and the snapshot reads them under the default policy, so a
+family-first-scoped example is simply one more name to watch --
+build_cjk_corpus.py makes the same call for its zh-scoped rows. A
+rule marked `tolerated:` contributes its examples like any other: the
+marker says the reading is best-effort, not that nobody should see it
+move.
 
 The one example form that carries no name is skipped. A `[subject]`
 example names a policy or locale rather than a name string, so its
@@ -80,9 +61,9 @@ Regenerate after editing rules.md examples:
 
     uv run python tools/differential/build_rules_corpus.py
 
-tests/v2/test_ledger_guards.py pins the checked-in file against this
+tests/v2/test_corpora.py pins the checked-in file against this
 module's selection, so a stale corpus fails the suite rather than
-silently narrowing the differential gate.
+silently narrowing what the snapshot watches.
 """
 from __future__ import annotations
 
@@ -102,12 +83,10 @@ RULES_DOC = ROOT / "docs" / "design" / "rules.md"
 
 def selected_names() -> list[str]:
     """Every distinct example text in the rules doc, sorted for a
-    deterministic file. Rules marked `tolerated:` contribute nothing:
-    their examples illustrate, they do not promise."""
+    deterministic file."""
     rules = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
     return sorted({example.text
                    for rule in rules
-                   if rule.tolerated is None
                    for example in rule.examples
                    if example.text})
 

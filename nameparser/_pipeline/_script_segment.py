@@ -255,8 +255,8 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
 # classification rather than cut into 박사 + 님, which is what the
 # same input gives when the step is removed. '선생님' is post-nominal
 # entire with no name word behind it, so the scan yields no site at
-# all and the token stays whole. Both are contract-tier corpus names
-# and rules.md#W2 example lines; decisions.md#cjk-comma-demotion
+# all and the token stays whole. Both are corpus names and
+# rules.md#W2 example lines; decisions.md#cjk-comma-demotion
 # carries the forced-predicate measurement behind them.
 def _peel_site(state: ParseState, flat: Sequence[int],
                tails: frozenset[str]) -> tuple[int, int] | None:

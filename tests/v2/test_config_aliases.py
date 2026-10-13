@@ -25,8 +25,7 @@ class _Alias(NamedTuple):
     Four same-typed strings whose order carries all the meaning, which
     is what makes a bare tuple the wrong shape here: ``for m, n, _, _ in
     ALIASES`` appeared six times below and reads correctly only if you
-    remember which end is which. Named after ``_LatinCopy`` in
-    ``test_ledger_guards.py`` (#356).
+    remember which end is which (#356).
     """
     old_module: str
     old_name: str

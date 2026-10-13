@@ -647,7 +647,7 @@ def test_the_licence_joins_a_word_not_a_particle_chain() -> None:
     # the bound word must not absorb it: untitled, "abdul van der
     # Berg" keeps the chain as its family, and the title cannot make
     # the surname vanish. Found in review; the rules.md example carries
-    # the shape into the rules corpus, so the gate witnesses it too.
+    # the shape into the rules corpus, so the snapshot watches it too.
     out = _grouped("sir abdul van der Berg", lexicon=_GIVEN_NAME_TITLE_LEX)
     assert _piece_texts(out) == [["sir", "abdul", "van der Berg"]]
 

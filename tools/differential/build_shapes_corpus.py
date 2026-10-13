@@ -1,17 +1,18 @@
 """Regenerate corpus_shapes.jsonl from the shape-tagged rows of the
 case table.
 
-The contract corpus of the v2.3 tier design (#468): every entry here
-was CHOSEN -- a row someone wrote with reviewed expected values --
-and the shape id records, once, at admission, what the name is for.
-The corpus_cjk pattern generalized: same source of truth (cases.py),
-same pinned projection (tests/v2/test_ledger_guards.py holds the
-checked-in file equal to this module's selection), different
-predicate -- explicit tags instead of codepoint content.
+Every entry here was CHOSEN (#468) -- a row someone wrote with
+reviewed expected values -- and the shape id records, once, at
+admission, what the name is for. The corpus_cjk pattern generalized:
+same source of truth (cases.py), same pinned projection
+(tests/v2/test_corpora.py holds the checked-in file equal to this
+module's selection), different predicate -- explicit tags instead of
+codepoint content.
 
-compare.py resolves each entry's shape to its name_order through
-tools/differential/shapes.py and compares family-first entries under
-that order, on the v2 surface, at baselines >= the shape's minimum.
+snapshot.py resolves each entry's shape to its name_order through
+tools/differential/shapes.py and reads family-first entries under
+that order, on the v2 surface; compare.py skips them below the
+shape's minimum baseline.
 
 Regenerate after tagging or editing tagged case rows:
 

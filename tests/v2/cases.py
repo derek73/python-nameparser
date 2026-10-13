@@ -45,7 +45,7 @@ from nameparser._policy import (PatronymicRule, Script, _SCRIPT_RANGES,
                                _order_repr, _script_matcher)
 
 #: mirrors tools/differential/shapes.py's SHAPES keys;
-#: test_case_shape_ids_exist_in_the_inventory (test_ledger_guards.py)
+#: test_case_shape_ids_exist_in_the_inventory (test_corpora.py)
 #: holds the two equal, since this file cannot import tools/.
 _SHAPE_IDS = frozenset({1, 2, 3, 4, 5, 6, 7})
 
@@ -110,24 +110,15 @@ class Case:
     ambiguities: tuple[str, ...] = ()   # expected AmbiguityKind values
     notes: str = ""
     #: input-shape id from tools/differential/shapes.py (#468/#469).
-    #: Tagging a row admits its text to the differential's CONTRACT
-    #: corpus (see tools/differential/shapes.py, projected into
-    #: corpus_shapes.jsonl by build_shapes_corpus.py beside it) under
-    #: the shape's name_order. For shapes 6/7 that admission is
-    #: NOMINAL: a pure CJK text is already in corpus_cjk.jsonl, also
-    #: contract, and compare.py's (name, order) dedup collapses the
-    #: two -- the tag buys the coverage answer, not a comparison.
-    #: Optional: a row
-    #: exercising a policy fork rather than an input shape stays
-    #: untagged.
+    #: Tagging a row puts its text in corpus_shapes.jsonl (projected by
+    #: build_shapes_corpus.py), read under the shape's name_order, so
+    #: the snapshot watches it there. Optional: a row exercising a
+    #: policy fork rather than an input shape stays untagged.
     shape: int | None = None
     #: Marks a row's text as TOLERATED input (2026-09-01 CJK demotion):
-    #: read best-effort, exempt from the DIFFERENTIAL's contract tier
-    #: -- not from this table, whose expectations are asserted by the
-    #: suite either way, and a behavior change on a tolerated row still
-    #: edits its classification. The opposite of a shape
-    #: tag -- mutually exclusive with `shape`, since a shape ADMITS a
-    #: text to the contract and tolerated deliberately does not. Every
+    #: read best-effort, rules.md#W3. This table still asserts its
+    #: expectation, and a behavior change on a tolerated row still edits
+    #: its classification. Mutually exclusive with `shape`. Every
     #: composed/wrapped CJK form (a comma listing, a Latin title or
     #: credential around a CJK name, since 2026-09-05 a trailing ASCII
     #: period on an honorific, and since #323 an edge full stop of any
@@ -135,14 +126,8 @@ class Case:
     #: not shapes 6/7's. Restricted to CJK-bearing text (`_has_cjk`):
     #: it exists to demote composed/wrapped CJK forms specifically, and
     #: a Latin row asking for it is a smell until some future arc
-    #: argues otherwise. build_cjk_corpus.py reads the flag: a
-    #: tolerated row's text goes to the radar-tier
-    #: corpus_cjk_tolerated.jsonl instead of the contract
-    #: corpus_cjk.jsonl, and clearing the flag promotes it back at the
-    #: next regeneration. Mark every row of a text, or none: the
-    #: generator reads the flag per TEXT (a corpus line is a name
-    #: string) and HARD-ERRORS on a split declaration, which
-    #: __post_init__ cannot catch from inside one row.
+    #: argues otherwise. Its text still goes to corpus_cjk.jsonl, so
+    #: the snapshot shows when its reading moves.
     tolerated: bool = False
 
     def __post_init__(self) -> None:
@@ -160,8 +145,8 @@ class Case:
             else:
                 self._check_latin_shape_order()
         # tolerated is the opposite of a shape tag: a reviewed act
-        # admitting a composed/wrapped CJK form to the radar corpus
-        # rather than the contract one. Checked regardless of which
+        # marking a composed/wrapped CJK form as best-effort input
+        # rather than a supported shape. Checked regardless of which
         # branch above ran (or whether shape was tagged at all), so a
         # row cannot smuggle both declarations onto one text.
         if self.tolerated:
@@ -508,10 +493,7 @@ CASES: tuple[Case, ...] = (
                "against the surname, so 2.0.0 through 2.2.0 read "
                "suffix 'Rai' with NO family name at all. 1.4.0 read "
                "family 'Rai' and this restores that reading, which is "
-               "why it classifies parity rather than fix, and why "
-               "the 1.4.0 ledger replaces a NOT WANTED rule where the "
-               "three 2.x ledgers gain a new one, and its heading "
-               "explains four names where theirs explain five. Named "
+               "why it classifies parity rather than fix. Named "
                "in the release note"),
     Case("removed_credential_loses_its_suffix_reading", "John Smith RAI",
          {"given": "John", "middle": "Smith", "family": "RAI"},
@@ -603,8 +585,8 @@ CASES: tuple[Case, ...] = (
     # slot the suffix vocabulary claims, the last word of a name. No rule
     # moves: these rows are rules.md#S2's forks read through two more
     # members, written all-lower so the count decides unless the
-    # writing says otherwise, and shape-tagged so the differential's
-    # contract tier sees them -- no corpus name had either word.
+    # writing says otherwise, and shape-tagged so the snapshot sees
+    # them -- no corpus name had either word.
     Case("bare_meng_is_a_surname", "wang meng",
          {"given": "wang", "family": "meng"},
          ambiguities=("suffix-or-name",),
@@ -1544,10 +1526,9 @@ CASES: tuple[Case, ...] = (
          classification="fix(suffix-routing)",
          ambiguities=("given-or-family",),
          notes="#454, dispositioned by design with this bundle. "
-               "1.4.0 read last 'Mc'; the 1.4.0 ledger's "
-               "fix(suffix-routing) rule -- a two-token name ending "
-               "in a credential acronym keeps it in `suffix` -- is "
-               "what explains the divergence. This is the one "
+               "1.4.0 read last 'Mc'; fix(suffix-routing) -- a "
+               "two-token name ending in a credential acronym keeps "
+               "it in `suffix` -- is the divergence. This is the one "
                "row whose point is that it must NOT change. 'mc' is "
                "SUFFIX_ACRONYMS and PARTICLES both, and it is not a "
                "borne name: it has no vowel, and the Scottish prefix "
@@ -2190,11 +2171,10 @@ CASES: tuple[Case, ...] = (
     # ground.
     #
     # All 17 rows are shape-tagged so build_shapes_corpus.py projects
-    # them into the contract corpus -- measured 2026-09-13, no corpus
+    # them into corpus_shapes.jsonl -- measured 2026-09-13, no corpus
     # file held a uniform-case name with a single-letter connective
     # beyond the eight already there, and none held a standalone و at
-    # all, so without these the fork is invisible to every future gate
-    # run.
+    # all, so without these the fork is invisible to the snapshot.
     Case("one_case_lower_e_reads_as_an_initial", "jose e maria santos",
          {"given": "jose", "middle": "e maria", "family": "santos"},
          classification="fix(#479)",
@@ -3214,11 +3194,11 @@ CASES: tuple[Case, ...] = (
     # Korean names are why the trailing slots stay off
     # (mechanisms.md#VOCABULARY-EXERCISES-FORKS -- each pair pins the
     # setting, not the words). A row that sets
-    # the non-default policy carries no `shape=` tag: the contract
-    # corpus (build_shapes_corpus.py) keys only on (shape, text), with
-    # no policy of its own, so admitting one of these texts under a
-    # shape id would have compare.py diff it against the released
-    # wheels under the DEFAULT policy -- the wrong question for a row
+    # the non-default policy carries no `shape=` tag: corpus_shapes.jsonl
+    # (build_shapes_corpus.py) keys only on (shape, text), with no
+    # policy of its own, so admitting one of these texts under a shape
+    # id would have the snapshot read it under the DEFAULT policy --
+    # the wrong question for a row
     # whose point IS the non-default policy.
     Case("caps_surname_is_a_family_name_by_default", "Jean DUPONT",
          {"given": "Jean", "family": "DUPONT"},
@@ -3516,9 +3496,9 @@ CASES: tuple[Case, ...] = (
     # their DEFAULT-policy siblings above (`caps_ambiguous_leans_
     # credential`, `the_lean_reaches_the_post_comma_slot`) and carry
     # no `shape=` tag for the same reason every other policy-on row
-    # here does not: the contract corpus keys on (shape, text) with no
-    # policy of its own, so tagging one would have the gate diff it
-    # against the released wheels under the DEFAULT policy -- the
+    # here does not: corpus_shapes.jsonl keys on (shape, text) with no
+    # policy of its own, so tagging one would have the snapshot read it
+    # under the DEFAULT policy -- the
     # wrong question for a row whose point IS the non-default policy
     # (`Case.shape`'s own docstring).
     Case("caps_switch_does_not_silence_the_listed_lean", "Jack MA",
@@ -4095,16 +4075,16 @@ CASES: tuple[Case, ...] = (
          {"given": "Carod", "suffix": "i"},
          classification="fix(suffix-routing)",
          ambiguities=("given-or-family",),
-         notes="an ACCEPTED COST, pinned so the ledger rule that "
-               "records it has a witness in this table. Two pieces "
+         notes="an ACCEPTED COST, pinned so it has a witness in "
+               "this table. Two pieces "
                "never reach the join loop at all, which needs three, "
                "so the name reads as a name plus a trailing "
                "generation and the family is empty. 1.4.0 read last "
-               "'i' -- the same two-token divergence the 1.4.0 "
-               "ledger's fix(suffix-routing) rule describes for a "
+               "'i' -- the same two-token divergence "
+               "fix(suffix-routing) describes for a "
                "trailing roman numeral, and the same one 'Donald Mc' "
                "pins above for the acronym half. That reading also "
-               "has a NOT-WANTED rule at 1.4.0 whose standing this "
+               "had a NOT-WANTED rule at 1.4.0 whose standing this "
                "bundle converts from 'unresolved' to 'decided': the "
                "cause is settled and the reading is kept",
          shape=1),
@@ -4150,7 +4130,7 @@ CASES: tuple[Case, ...] = (
                "of Edinburgh' already has, which is why the report is "
                "the lone-name-word one. UNTAGGED on purpose: a "
                "second-order consequence is not a shape this table "
-               "admits to the contract corpus",
+               "admits to the shapes corpus",
          ),
     Case("a_trailing_y_is_not_in_the_both_sides_class",
          "Juan Garcia Lopez y",
@@ -4266,9 +4246,8 @@ CASES: tuple[Case, ...] = (
                "disagreed at 2.3.0 and agree now. NO SHAPE TAG on "
                "any of these four: decisions.md#P3's one-case "
                "paragraph says of them that none is a corpus name, "
-               "and admitting them to the differential's contract "
-               "corpus is a ledger change of its own rather than "
-               "this row's business. The cross-version readings "
+               "and admitting them to a corpus is a change of its "
+               "own rather than this row's business. The cross-version readings "
                "above are what the corpus would have bought, "
                "measured on the wheels instead"),
     Case("a_one_case_link_before_a_generation_is_a_name_word",
@@ -6203,8 +6182,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="a family comma names the family, so the declared "
                "order arbitrates nothing here. Measured identical "
-               "under all three orders, which is also why "
-               "`_ORDER_EXEMPTION_EFFECT` gains no row"),
+               "under all three orders"),
     Case("the_trailing_slot_reads_the_same_under_ff_given_last",
          "Doe, John MA",
          {"given": "John", "family": "Doe", "suffix": "MA"},
@@ -6225,7 +6203,7 @@ CASES: tuple[Case, ...] = (
                "script, so nothing leans, so the positional reading "
                "applies -- and at this slot the positional reading IS "
                "the credential. 1.4.0 parity, measured. A composed "
-               "CJK comma form, so tolerated rather than contract "
+               "CJK comma form, so tolerated rather than shape-tagged "
                "(rules.md#W3's 2026-09-01 demotion)",
          tolerated=True),
     Case("a_hangul_family_takes_the_trailing_credential_too",
@@ -6737,13 +6715,7 @@ CASES: tuple[Case, ...] = (
                "ambiguity, so fields alone do not catch it. Measured: "
                "1.4.0 gave suffix 'Ph. D., Jr.' -- fix_phd EXTRACTED "
                "the pair pre-parse and re-appended it, reordering the "
-               "tail, where 2.0 renders it as written. Same words, "
-               "same roles, different order, and the harness cannot "
-               "currently see it: expected_since_1.4.0.toml states that a "
-               "diffing trailing 'Ph. D.' must fail the run, but this "
-               "input is absorbed by fix(comma-family), whose "
-               "name_regex is a bare comma -- measured on a probe "
-               "corpus, unexplained 0. See the note there"),
+               "tail, where 2.0 renders it as written"),
     Case("tail_segment_entry_space_joined", "John Smith, V MD",
          {"given": "John", "family": "Smith", "suffix": "V MD"},
          notes="v1 renders each tail comma segment as ONE suffix "
@@ -8882,9 +8854,7 @@ CASES: tuple[Case, ...] = (
          classification="parity",
          notes="a bare credential yields a family name, which is "
                "surprising and is 1.4.0's reading exactly. Pinned "
-               "because nothing else in the suite says so -- the "
-               "ledger reaches it, and the ledger is an out-of-band "
-               "tool run"),
+               "because nothing else in the suite says so"),
     Case("phd_split_leading", "Ph. D. John Smith",
          {"title": "Ph.", "given": "D.", "middle": "John",
           "family": "Smith"},
@@ -8984,8 +8954,7 @@ CASES: tuple[Case, ...] = (
     Case("renunciate_title_keeps_the_given_name", "Swami Vivekananda",
          {"title": "Swami", "given": "Vivekananda"},
          classification="fix(#346)",
-         notes="pins the #346 membership change the ledger "
-               "classifies: 'swami' moved from the TITLES-only block "
+         notes="pins the #346 membership change: 'swami' moved from the TITLES-only block "
                "into GIVEN_NAME_TITLES, so H1's fold fires and the "
                "family is empty where 1.4.0 through 2.2.0 read family "
                "'Vivekananda'. The fold itself is already pinned by "
@@ -9018,11 +8987,8 @@ CASES: tuple[Case, ...] = (
          "Swami Vivekananda Saraswati",
          {"title": "Swami", "given": "Vivekananda",
           "family": "Saraswati"},
-         notes="H1's fold requires exactly one name word. The ledger "
-               "carries this name as a _MUST_NOT_MATCH probe, which "
-               "pins the regex and not the parse -- and it is "
-               "radar-tier in corpus_issues.jsonl, so the gate cannot "
-               "fail on it either. The release note advertises it"),
+         notes="H1's fold requires exactly one name word. The "
+               "release note advertises it"),
     Case("renunciate_title_swallows_a_real_given_name", "Guru Dutt",
          {"title": "Guru", "given": "Dutt"},
          classification="fix(#346)",
@@ -10432,8 +10398,7 @@ CASES: tuple[Case, ...] = (
                "the W3 demotion: the rules corpus stopped harvesting "
                "W3's examples, and this text lived in no other "
                "corpus, so without a row it would have left the "
-               "differential harness entirely rather than moving to "
-               "the radar tier. Classification measured for this row "
+               "corpora entirely. Classification measured for this row "
                "rather than copied from the row above: 1.4.0 gives "
                "first 남궁민수 / last 지훈, field for field what 2.3 "
                "gives, so parity",
@@ -10703,8 +10668,8 @@ CASES: tuple[Case, ...] = (
                "divided the RAW text after 김, and the stranded mark "
                "opened the family: given 김, family \u3099민준. "
                "Tolerated: rules.md's W Background leaves a mark after "
-               "a non-kana unpromised, so this reading is watched on "
-               "the radar rather than pinned as contract",
+               "a non-kana unpromised, so this reading is watched by "
+               "the snapshot rather than pinned as contract",
          tolerated=True),
     Case("ja_iteration_mark_is_han", "佐々木 太郎",
          {"family": "佐々木", "given": "太郎"},

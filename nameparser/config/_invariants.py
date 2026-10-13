@@ -30,9 +30,8 @@ asserting things with the parser's own fold makes the constant's
 hygiene depend on the parser, and the question worth asking is not
 "is this entry pre-folded" but "does ``Lexicon`` store it unchanged".
 That is one assertion over ``_PHRASE_FIELDS`` in
-``tests/v2/test_ledger_guards.py``, the suite that already imports the
-parser's fold for exactly this purpose, and it is where an entry
-written ``'z. domu'`` is caught.
+``tests/v2/test_lexicon.py``, and it is where an entry written
+``'z. domu'`` is caught.
 """
 from __future__ import annotations
 

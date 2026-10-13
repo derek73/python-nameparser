@@ -1,7 +1,7 @@
 """Referential integrity for docs/design/ citations.
 
-Checks: every reference to a design doc, in code and in the
-differential ledgers' comments, names a rule, section, mechanism or
+Checks: every reference to a design doc in code names a rule,
+section, mechanism or
 decisions entry that exists; every quote a citation carries -- in any
 of the shapes _LEAD_RE accepts, chained quotes included -- is a
 normalized verbatim excerpt of what it cites ("[...]" eliding, in
@@ -60,11 +60,6 @@ _CHAIN_RE = re.compile(r'\s*,?\s*(?:and\s+|--\s*|—\s*)?(?=")')
 # verbatim, non-empty, and in order.
 _ELISION = "[...]"
 DEC_DOC = REPO / "docs" / "design" / "decisions.md"
-# Ledger comments cite rules under the same discipline as code
-# (AGENTS.md, "Release-log claims"); they are swept with the code but
-# are not "citing modules" -- rules.md's implemented: names parser
-# modules, never ledgers.
-_LEDGERS = REPO / "tools" / "differential"
 
 
 class Citation(NamedTuple):
@@ -173,7 +168,7 @@ def _swept_files() -> list[Path]:
     # this module's own comments show citation shapes, citing nothing
     files = [p for d in SWEEP_DIRS for p in sorted((REPO / d).rglob("*.py"))
              if p != Path(__file__).resolve()]
-    return files + sorted(_LEDGERS.glob("*.toml"))
+    return files
 
 
 def _quotes(text: str, at: int) -> tuple[str, ...]:
@@ -256,18 +251,19 @@ def test_the_sweep_reaches_every_citation_shape() -> None:
     # grammar, an elision, the decisions routing -- and one matching
     # nothing would let the excerpt test pass on what is left.
     cites = _citations()
-    ledgers = {c.path.name for c in cites if c.excerpts
-               and c.path.suffix == ".toml"}
-    assert {"expected_since_1.4.0.toml",
-            "expected_since_2.3.0.toml"} <= ledgers
     leads = [c.lead for c in cites if c.excerpts and not c.colon]
-    assert any(ld.startswith("'s") for ld in leads)
+    # The possessive lead (`rules.md#X's Accepted clause ("...")`), the
+    # dash lead (`rules.md#X -- "..."`) and the "[...]" elision had
+    # their only witnesses in the differential ledgers' comments,
+    # deleted with them (#664). The grammar still reads both leads, and
+    # test_an_elided_excerpt_must_keep_its_order holds the elision.
+    for lead in ("'s Accepted clause (", " -- "):
+        m = _LEAD_RE.match(lead + '"')
+        assert m is not None and m.group() == lead
     assert any("(" in ld for ld in leads)
-    assert any(ld.strip().startswith("--") for ld in leads)
     assert any(re.fullmatch(r"(?:\s+[A-Za-z]+)+\s*", ld) for ld in leads)
     assert any(c.excerpts and c.doc == "decisions" for c in cites)
     assert any(len(c.excerpts) > 1 for c in cites)
-    assert any(_ELISION in e for c in cites for e in c.excerpts)
 
 
 def test_an_elided_excerpt_must_keep_its_order() -> None:
@@ -385,7 +381,7 @@ def test_no_legacy_citations() -> None:
     problems = []
     for d in SWEEP_DIRS:
         for path in sorted((REPO / d).rglob("*")):
-            if path.suffix not in (".py", ".toml"):
+            if path.suffix != ".py":
                 continue
             if path.name in self_files:
                 continue

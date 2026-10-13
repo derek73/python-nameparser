@@ -15,9 +15,8 @@ reported; nothing in them says what the right answer is.
 Writes three files beside this script, always together:
 
 - corpus_cldr.jsonl -- one line per distinct (rendering, shape), in the
-  harness's existing line format. Radar tier (_CORPUS_TIERS): nobody
-  chose these names one by one, so the harness watches them and does
-  not answer for them.
+  existing corpus line format, read by snapshot.py like every other
+  corpus.
 - cldr_fields.jsonl -- one line per rendering, with CLDR's fields, read
   by cldr_agreement.py and its ratchet test.
 - cldr_LICENSE -- the Unicode License v3 notice, which must travel with

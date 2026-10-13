@@ -113,8 +113,9 @@ warned removals:
      - Gone; empty fields are always ``''``
 
 Finally, if you want to see the difference on your own data rather than
-ours, ``tools/differential/`` in the source repository diffs 1.4 and
-2.0 parses over a corpus of names you supply. It is development
+ours, ``tools/differential/compare.py`` in the source repository diffs
+any released version's parses against the source tree over the corpora
+beside it, or over a file of your own names (``--corpus``). It is development
 tooling, not part of the installed package — see its README.
 
 Attribute map
