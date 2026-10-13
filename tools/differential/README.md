@@ -42,7 +42,8 @@ pass for a clean run.
 against the snapshot as committed at that tag: the names this release
 moved. That is the measurement a release-note claim about moved names
 is drawn from. Count CLDR's fictional renderings out of such a figure,
-or say it includes them.
+or say it includes them: the closing line says how many moved names
+only `corpus_cldr.jsonl` holds.
 
 `--tree PATH` reads with another checkout's `nameparser` (the corpus is
 always this checkout's), and checks that the import really came from

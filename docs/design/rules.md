@@ -1313,8 +1313,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     after the name. That reading is older than the company clause,
     so it is witnessed by tests/v2/cases.py's
     a_split_degree_in_front_is_out_of_the_walk rather than by a line
-    here, which would bring the name into the corpus that enforces
-    it at released baselines for a reading this clause did not make.
+    here, which would promise a reading this clause did not make.
     A title standing between the credential and the member, and a
     member a particle chain (P2) had taken, were two more such shapes
     until the credential's run (#602) took both in: the rows
@@ -2061,8 +2060,8 @@ C1. Rationale: a credential run after the comma means the name is in
     Accepted: the further-comma qualifier carries no example line of
     its own. It discriminates PAIRS and spans both branches, so
     exemplifying it means a with-comma partner for each — every one
-    of them a name entering the rules corpus for behavior that has
-    not moved since v1. Its executable witness is instead the pair
+    of them a promise about behavior that has not moved since v1.
+    Its executable witness is instead the pair
     already standing in the v1-style bank,
     tests/test_suffixes.py's
     test_roman_numeral_i_after_single_initial_lastname_comma_format
@@ -2135,8 +2134,8 @@ C2. Rationale: text beyond the recognized comma parts should be
       "John Smith, MD, XYZ"  unlisted_caps_suffixes-everywhere  →  ambiguities=("comma-structure",)
     Accepted: the no-name-reading clause's REPORT half carries no
     example line of its own. What it moves is a report with no field
-    beside it, and an example line would enter the rules corpus for
-    that report alone; its title half is witnessed by the two `John
+    beside it, and an example line would promise that report alone;
+    its title half is witnessed by the two `John
     Smith, Jr., van der Berg Prof.` lines above, and its report half's
     executable witnesses are the case rows
     a_credential_run_after_the_comma_reports_no_chain_fork and

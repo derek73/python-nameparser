@@ -30,3 +30,14 @@ def test_a_name_leaving_the_corpus_is_reported() -> None:
     assert snapshot.grouped({snapshot.key(r): r for r in rows},
                             {snapshot.key(rows[0]): rows[0]}) \
         == ["(removed from corpus): 1", "    Jane Doe"]
+
+
+def test_a_name_only_cldr_holds_is_counted_out() -> None:
+    # A release figure counts CLDR's fictional renderings out (AGENTS.md,
+    # Release-log claims); a name another corpus also holds stays in.
+    # One of #653's movers, a CLDR rendering; 'Jane (Janey, Jo) Smith'
+    # moved with it and is a rules.md example.
+    cldr_name = "Macáková, Alexandra Zuzana (pani, PhD)"
+    cldr = snapshot.only_in(snapshot.CLDR_CORPUS,
+                            {cldr_name, "Jane (Janey, Jo) Smith"})
+    assert cldr == {cldr_name}

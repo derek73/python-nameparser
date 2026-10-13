@@ -107,6 +107,22 @@ def corpus_entries(paths: list[Path] | None = None) -> list[Entry]:
     return sorted(found, key=lambda e: (e[0], e[1] or ""))
 
 
+#: The corpus a release figure counts out (AGENTS.md, Release-log
+#: claims): fictional CLDR renderings, not names anyone reported.
+CLDR_CORPUS = HERE / "corpus_cldr.jsonl"
+
+
+def only_in(path: Path, names: set[str]) -> set[str]:
+    """The `names` that `path` holds and no other corpus beside it does."""
+    orders = {k: s.order for k, s in load_shapes().items()}
+    def held(p: Path) -> set[str]:
+        return {_corpus_line(p, ln, orders)[0]
+                for ln in p.read_text(encoding="utf-8").splitlines() if ln.strip()}
+    others = set().union(*(held(p) for p in sorted(HERE.glob("corpus*.jsonl"))
+                           if p != path))
+    return (names & held(path)) - others
+
+
 def row(name: str, order: str | None, v2: dict[str, Any] | None,
         facade: dict[str, str] | None) -> dict[str, Any]:
     """One snapshot line from one name's readings.
@@ -278,8 +294,14 @@ def main(argv: list[str] | None = None) -> int:
                 f"`compare.py --baseline <version>`") from None
     else:
         text = SNAPSHOT.read_text(encoding="utf-8")
-    moves = grouped(load(text), {key(r): r for r in rows})
+    old, new = load(text), {key(r): r for r in rows}
+    moves = grouped(old, new)
     print("\n".join(moves) or "matches the snapshot")
+    if moves:
+        moved = {k for k in set(old) | set(new) if old.get(k) != new.get(k)}
+        cldr = only_in(CLDR_CORPUS, {name for name, _ in moved})
+        print(f"\n{len(moved)} entries differ, {len(cldr)} of their names "
+              f"held only by {CLDR_CORPUS.name}")
     if moves and not args.since:
         print(f"\nif these moves are intended: {RECORD_COMMAND}")
     return 1 if moves else 0

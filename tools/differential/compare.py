@@ -300,6 +300,7 @@ class Result(NamedTuple):
     moves: list[str]    # snapshot.grouped's report
     moved: int          # entries that read differently
     latin: int          # ... of them Latin-only
+    cldr: int           # ... names of them held only by corpus_cldr.jsonl
     compared: int       # entries compared
     skipped: int        # order-bearing entries the baseline predates
 
@@ -330,7 +331,9 @@ def compare(baseline: str, corpora: list[Path] | None = None) -> Result:
     after = {snapshot.key(r): r for r in new}
     moved = [k for k in after if before[k] != after[k]]
     latin = sum(_is_latin_only(name) for name, _ in moved)
-    return Result(snapshot.grouped(before, after), len(moved), latin,
+    cldr = len(snapshot.only_in(snapshot.CLDR_CORPUS,
+                                {name for name, _ in moved}))
+    return Result(snapshot.grouped(before, after), len(moved), latin, cldr,
                   len(entries), len(every) - len(entries))
 
 
@@ -347,7 +350,8 @@ def main() -> int:
     r = compare(args.baseline, args.corpus)
     print("\n".join(r.moves) or "no differences")
     print(f"\n{r.moved} of {r.compared} entries read differently from "
-          f"{args.baseline}, {r.latin} of them Latin-only")
+          f"{args.baseline}, {r.latin} of them Latin-only; {r.cldr} of "
+          f"their names held only by corpus_cldr.jsonl")
     if r.skipped:
         print(f"{r.skipped} order-bearing entries skipped: {args.baseline} "
               f"predates their name_order")

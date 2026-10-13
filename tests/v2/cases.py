@@ -6182,8 +6182,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="a family comma names the family, so the declared "
                "order arbitrates nothing here. Measured identical "
-               "under all three orders, which is also why "
-               "`_ORDER_EXEMPTION_EFFECT` gains no row"),
+               "under all three orders"),
     Case("the_trailing_slot_reads_the_same_under_ff_given_last",
          "Doe, John MA",
          {"given": "John", "family": "Doe", "suffix": "MA"},
@@ -10669,8 +10668,8 @@ CASES: tuple[Case, ...] = (
                "divided the RAW text after 김, and the stranded mark "
                "opened the family: given 김, family \u3099민준. "
                "Tolerated: rules.md's W Background leaves a mark after "
-               "a non-kana unpromised, so this reading is watched on "
-               "the radar rather than pinned as contract",
+               "a non-kana unpromised, so this reading is watched by "
+               "the snapshot rather than pinned as contract",
          tolerated=True),
     Case("ja_iteration_mark_is_han", "佐々木 太郎",
          {"family": "佐々木", "given": "太郎"},
