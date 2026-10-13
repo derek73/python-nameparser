@@ -611,6 +611,8 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "Carod i"                   →  suffix="i"
       "Josep Lluis Carod i III"   →  suffix="i III"
       "Carod y de Rovira i"       →  middle="y"
+      "John й Smith"              →  middle="й"
+      "É. y É. Smith"             →  given="É."
     Both exceptions are about the written FORM, not the word: the
     three-word carve-out counts letters, so a symbol connective joins
     at any length, and it reaches every single-letter connective the
@@ -622,7 +624,11 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     Cyrillic abbreviates with a dotted letter — so in a name of more
     than one case it joins, the reading #267 blessed, and in a name
     of one case it takes the vocabulary's answer like any other cased
-    letter.
+    letter. A letter written as a base letter plus a combining mark
+    (NFD) is one letter to every count here, and a period-marked
+    initial written that way is one initial (#665), so the last two
+    examples above, both typed decomposed, read as their composed
+    twins.
     Which single letters a tradition actually wants joined differs by
     language, and the marked set is where that answer lives: "y" is
     the commonest Hispanic compound and stays out of it, while "e" and

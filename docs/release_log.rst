@@ -6,6 +6,7 @@ Release Log
 
     **Behavior Changes**
 
+    - **Fix a decomposed (NFD) initial or one-letter connective reading differently from its composed spelling.** ``John й Smith`` typed with ``й`` as ``и`` plus a combining breve gives middle ``й``, where 2.3.0 through 2.4.1 read the whole name as the first name, restoring the reading of 1.4.0 through 2.2.0; decomposed ``É. y É. Smith`` gives first ``É.``, middle ``y É.``, as the composed spelling does, where every release gave first ``É. y É.``; and decomposed ``김. 민준`` no longer reads ``김.`` as a title. :issue:`665`
     - **Fix the Hausa given name Shehu being read as a title.** ``Shehu Shagari`` gives first ``Shehu``, last ``Shagari``, where 1.4.0 through 2.4.1 gave title ``Shehu`` and no first name. :issue:`660`
 
 * 2.4.1 - October 13, 2026

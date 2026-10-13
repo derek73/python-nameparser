@@ -62,8 +62,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    caps_shape_candidate, is_initial, is_one_case, period_joined_vocab,
-    suffix_as_written, tag_marker_runs,
+    caps_shape_candidate, composed_len, is_initial, is_one_case,
+    period_joined_vocab, suffix_as_written, tag_marker_runs,
 )
 from nameparser._pipeline._pieces import own_words
 
@@ -134,9 +134,14 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # written wholly in one case, where nothing says so — where the
     # letter is one the vocabulary marks as reading both ways"
     # (#383/#479; history: decisions.md#P3)
-    single_letter_connective = (len(token.text) == 1
+    # one letter as the writer sees it: a decomposed 'й' is two code
+    # points (#665), so non-ASCII text is counted composed, after the
+    # C-level tests have declined everything else
+    single_letter_connective = (n in lex.conjunctions
                                 and token.text.upper() != token.text.lower()
-                                and n in lex.conjunctions)
+                                and (len(token.text) == 1
+                                     or not token.text.isascii()
+                                     and composed_len(token.text) == 1))
     if single_letter_connective and one_case_own:
         # No case evidence, so the vocabulary decides. No namespaced
         # tag beside it: the emitted ambiguity IS the record of the
@@ -334,10 +339,12 @@ def classify(state: ParseState) -> ParseState:
         # site (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE), per
         # token -- 'e and e' reports twice.
         if (one_case and "initial" in token.tags
-                and len(token.text) == 1
                 and folded[i] in state.lexicon.conjunctions_ambiguous
                 and folded[i] in state.lexicon.conjunctions
-                and i < clause_at and token.role is None):
+                and i < clause_at and token.role is None
+                and (len(token.text) == 1
+                     or not token.text.isascii()
+                     and composed_len(token.text) == 1)):
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.CONJUNCTION_OR_INITIAL,
                 f"{token.text!r} is both a connective and an initial; "

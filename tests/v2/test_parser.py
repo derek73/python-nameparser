@@ -1962,6 +1962,34 @@ _NFD_ROWS = [
     "Janez Novak, Ž.Š.Č.",
     "Janez Novak, Žž.Šš.",
     "Smith, Ž.Š. Jones",
+    # #665: a period-marked initial (`\w\.`) beside a connective, in
+    # each slot and comma shape -- a lone one read alike before the fix
+    "É. y É. Smith",
+    "Й. John Smith",
+    "Ana É. y Luis",
+    "Smith, É. y É.",
+    ", É. y É.",
+    "(Bob), É. y É.",
+    # ... and the one-letter connective written in two code points:
+    # three words (P3's carve-out keeps it a name word), four words
+    # (it joins), one case, and after a comma
+    "John й Smith",
+    "JOHN Й SMITH",
+    "john й smith",
+    "Ivan й Petrov Sidorov",
+    "Smith, John й Jones",
+    # ... and the veto on scripts that write no initials (#320), asked
+    # of the composed spelling too: decomposed hangul is conjoining
+    # jamo, outside every _NO_INITIALS range, so composing the initial
+    # shape alone made a decomposed '씨.' an initial (a title or a
+    # given name). Spaced or after a comma, since an UNSPACED
+    # decomposed hangul name is not split (docs/usage.rst) and so has
+    # no composed twin to match
+    "김민준, 씨.",
+    "김 민준 씨.",
+    "김 민준, 씨.",
+    ", 씨.",
+    "김. 민준",
 ]
 _NFD_POLICIES = [
     Policy(),
@@ -1974,6 +2002,15 @@ _NFD_POLICIES = [
 def _composed_roles(parser: Parser, text: str) -> dict[str, str]:
     return {k: unicodedata.normalize("NFC", v)
             for k, v in parser.parse(text).as_dict().items()}
+
+
+def _composed_reading(parser: Parser, text: str) -> tuple[object, ...]:
+    """The roles, the reports' kinds and initials(), composed: #665's
+    `John й Smith` differed in its report as well as its fields."""
+    name = parser.parse(text)
+    return (_composed_roles(parser, text),
+            [a.kind for a in name.ambiguities],
+            unicodedata.normalize("NFC", name.initials()))
 
 
 @pytest.mark.parametrize("policy", _NFD_POLICIES,
@@ -1996,13 +2033,43 @@ def test_a_decomposed_abbreviation_reads_as_its_composed_twin(
     two-letter rows pass there; the two-letter rows exist for the caps
     fix's own length count, which counted code points the first time
     (`John Smith, MÁ` read as a pair composed and a credential
-    decomposed, found in the review of 08c0dd60)."""
+    decomposed, found in the review of 08c0dd60).
+
+    #665 added sixteen rows and compares kinds and initials() too.
+    Recorded control, measured 2026-10-13 against f9b2b81c's
+    nameparser/: 38 rows x 4 policies = 152 twin cases plus the four
+    direct tests, of which 41 fail -- the six initial rows under all
+    four policies (24; the same 24 with only `is_initial_shaped`'s
+    compose reverted), the three-word `й` rows (12; `_pieces`'
+    carve-out alone), `김. 민준` (4), and the one-case report test
+    below (1; either `_classify` width site alone). The other four
+    hangul rows pass there: they guard the fix itself, failing (with
+    `김. 민준`, 20 in all) when `in_initialless_script`'s compose
+    alone is reverted, since the composed initial shape without the
+    composed veto made a decomposed '씨.' an initial. `Ivan й Petrov
+    Sidorov` and `Smith, John й Jones` pass everywhere and pin parity
+    only."""
     composed = unicodedata.normalize("NFC", text)
     decomposed = unicodedata.normalize("NFD", text)
     assert decomposed != composed
     parser = Parser(policy=policy)
-    assert (_composed_roles(parser, decomposed)
-            == _composed_roles(parser, composed))
+    assert (_composed_reading(parser, decomposed)
+            == _composed_reading(parser, composed))
+
+
+def test_a_decomposed_conjunction_reports_as_its_composed_twin() -> None:
+    """#665: the one-case report on a letter that is both a connective
+    and an initial (rules.md#P3) counted code points, so it is reached
+    by `й` only once a caller marks it ambiguous -- no default entry is
+    decomposable."""
+    parser = Parser(lexicon=Lexicon.default().add(
+        conjunctions_ambiguous={"й"}))
+    text = "ivan й petrov"
+    composed = parser.parse(text)
+    assert [a.kind for a in composed.ambiguities] == [
+        AmbiguityKind.CONJUNCTION_OR_INITIAL]
+    assert (_composed_reading(parser, unicodedata.normalize("NFD", text))
+            == _composed_reading(parser, text))
 
 
 def test_a_decomposed_caps_credential_is_still_a_suffix() -> None:

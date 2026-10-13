@@ -514,6 +514,7 @@
 {"name": "Excm. Sr. Lloret Palol II, Josep Antoni Carles Joan", "order": "FAMILY_FIRST", "given": "Josep", "middle": "Antoni Carles Joan", "family": "Excm. Lloret Palol", "suffix": "Sr., II", "initials": "J. A. C. J. E. L. P."}
 {"name": "Excma. Dra. Maria da Graça César Martín van Dalen Hoogeveen", "title": "Excma. Dra.", "given": "Maria", "middle": "da Graça César Martín", "family": "van Dalen Hoogeveen", "initials": "M. G. C. M. D. H."}
 {"name": "Excma. Dra. Van Dalen Hoogeveen II, Maria da Graça César Martín", "order": "FAMILY_FIRST", "given": "Maria", "middle": "da Graça César Martín", "family": "Excma. Dra. Van Dalen Hoogeveen", "suffix": "II", "initials": "M. G. C. M. E. D. D. H."}
+{"name": "É. y É. Smith", "given": "É.", "middle": "y É.", "family": "Smith", "initials": "É. É. S."}
 {"name": "Fabbri Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
 {"name": "Fabbri, Irene", "given": "Irene", "family": "Fabbri", "initials": "I. F."}
 {"name": "Falke, Iris", "given": "Iris", "family": "Falke", "initials": "I. F."}
@@ -1031,6 +1032,7 @@
 {"name": "John van der J. V", "given": "John", "family": "van der J. V", "initials": "J. J. V."}
 {"name": "John von PhD Jones", "given": "John", "family": "von", "suffix": "PhD Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. v."}
 {"name": "John y Jane", "given": "John", "middle": "y", "family": "Jane", "initials": "J. y. J."}
+{"name": "John й Smith", "given": "John", "middle": "й", "family": "Smith", "initials": "J. й. S."}
 {"name": "John “Jack” Kennedy", "given": "John", "family": "Kennedy", "nickname": "Jack", "initials": "J. K."}
 {"name": "John 王", "given": "John", "family": "王", "initials": "J. 王."}
 {"name": "John 田中さん, XYZ", "given": "John", "family": "田中", "suffix": "さん, XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. 田."}
