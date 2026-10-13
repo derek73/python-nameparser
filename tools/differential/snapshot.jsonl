@@ -467,6 +467,7 @@
 {"name": "Dr. Williams", "title": "Dr.", "family": "Williams", "initials": "W."}
 {"name": "Dr. abdul salam", "title": "Dr.", "given": "abdul", "family": "salam", "initials": "a. s."}
 {"name": "Dr. abdul salam ahmed salem", "title": "Dr.", "given": "abdul salam", "middle": "ahmed", "family": "salem", "initials": "a. s. a. s."}
+{"name": "Dr. inž. Janez Novak", "title": "Dr. inž.", "given": "Janez", "family": "Novak", "initials": "J. N."}
 {"name": "Dr. juan garcia", "title": "Dr.", "given": "juan", "family": "garcia", "initials": "j. g."}
 {"name": "Dr. med. univ.", "title": "Dr. med.", "family": "univ.", "initials": "u."}
 {"name": "Dr. med. univ. Margit Popp", "title": "Dr. med. univ.", "given": "Margit", "family": "Popp", "initials": "M. P."}
