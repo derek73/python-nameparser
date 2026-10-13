@@ -138,8 +138,12 @@ H2. Rationale: before a name, an abbreviation is almost always a
     title by shape (#323; decisions.md#cjk-full-stops) — the same
     veto that keeps 씨. from reading as an initial. The Latin
     reading is unchanged, and W3's example block carries the CJK
-    reading this clause vetoes into.
+    reading this clause vetoes into. The veto reads the composed
+    spelling, so hangul typed decomposed, as conjoining jamo the
+    script table does not hold, is hangul to it too (#665); the
+    second line below is typed that way.
       "Smith. John"               →  title="Smith."
+      "김. 민준"                    →  title=""
     Accepted: before a family comma the pre-comma text is wholly the
     family name (C1), so no shape or vocabulary reading makes a
     title there.
@@ -625,10 +629,10 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     than one case it joins, the reading #267 blessed, and in a name
     of one case it takes the vocabulary's answer like any other cased
     letter. A letter written as a base letter plus a combining mark
-    (NFD) is one letter to every count here, and a period-marked
-    initial written that way is one initial (#665), so the last two
-    examples above, both typed decomposed, read as their composed
-    twins.
+    (NFD) that composes to one character is one letter to every
+    count here, and a period-marked initial written that way is one
+    initial (#665), so the last two examples above, both typed
+    decomposed, read as their composed twins.
     Which single letters a tradition actually wants joined differs by
     language, and the marked set is where that answer lives: "y" is
     the commonest Hispanic compound and stays out of it, while "e" and
