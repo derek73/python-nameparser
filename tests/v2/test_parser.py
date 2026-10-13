@@ -9,7 +9,7 @@ from nameparser import (
     Lexicon, Locale, Parser, Policy, PolicyPatch, locales, parse, parser_for,
 )
 from nameparser._policy import (
-    FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
+    CapsSuffixes, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, PatronymicRule,
 )
 from nameparser._types import (UNJOINED_CONJUNCTION_TAG, UNJOINED_TAG,
                                AmbiguityKind, Role, Segmentation)
@@ -1928,28 +1928,96 @@ def test_the_catalan_recipe_unmarks_the_link_for_one_case_names() -> None:
     assert catalan.parse("JOHN QUINCY SMITH I").ambiguities == ()
 
 
-@pytest.mark.parametrize("text", [
-    "Dr. inž. Janez Novak",                # H2: leading shape rule
-    "Janez Novak, univ. dipl. inž.",       # H5/C2: comma-part credential run
-    "Janez Novak inž.",                    # H5: trailing title chain
-    "Janez Novak, Ž.Š.Č.",                 # S3: dotted shape suffix
-    "Janez Novak, Žž.Šš.",                 # S2: chunked dotted shape
-    "Smith, Ž.Š. Jones",                   # C1: paired initials
-    "Janez Novak, Ž.Š.",                   # C1: paired initials, one-word
-])
+_NFD_ROWS = [
+    # the period-abbreviation shape (rules.md#H2, #H5), in each slot
+    "Dr. inž. Janez Novak",
+    "inž. Janez Novak",
+    "prof. dr. inž. Janez Novak",
+    "Janez Novak, univ. dipl. inž.",
+    "Novak, inž. Janez",
+    "Smith, inž. Ž.Š.",
+    # the comma shapes AGENTS.md asks of every comma grid
+    ", inž.",
+    "(Bob), inž.",
+    # paired initials (rules.md#C1)
+    "Janez Novak, Ž.Š.",
+    "Janez Novak, Ž.Š., Jr.",
+    # the all-caps credential shape: default policy reads it in the
+    # part after a comma
+    "Janez Novak, ŽŠČ",
+    "Janez NOVAK, ŽŠČ",
+    # ... and in every slot under CapsSuffixes.EVERYWHERE
+    "Janez Novak ŽŠČ",
+    "Smith, John ÉS",
+    # pass either way (period_joined_vocab already composes); kept as
+    # parity pins
+    "Janez Novak inž.",
+    "Janez Novak, Ž.Š.Č.",
+    "Janez Novak, Žž.Šš.",
+    "Smith, Ž.Š. Jones",
+]
+_NFD_POLICIES = [
+    Policy(),
+    Policy(name_order=FAMILY_FIRST),
+    Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+    Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
+]
+
+
+def _composed_roles(parser: Parser, text: str) -> dict[str, str]:
+    return {k: unicodedata.normalize("NFC", v)
+            for k, v in parser.parse(text).as_dict().items()}
+
+
+@pytest.mark.parametrize("policy", _NFD_POLICIES,
+                         ids=["default", "family-first", "family-first-given-last",
+                              "caps-everywhere"])
+@pytest.mark.parametrize("text", _NFD_ROWS)
 def test_a_decomposed_abbreviation_reads_as_its_composed_twin(
-        text: str) -> None:
+        text: str, policy: Policy) -> None:
     """#652: the abbreviation shape rules saw a combining mark as the
     end of the word (not \\w), so `inž.` written i, n, z, U+030C, '.'
     was not an abbreviation and `Dr. inž. Janez Novak` made it the
-    given name. Output keeps the encoding written, so both are
-    compared composed."""
+    given name, and the caps shape's isalpha() refused `ŽŠČ` the same
+    way. Output keeps the encoding written, so both are compared
+    composed. Rows red before the fix: those not marked as parity
+    pins above."""
     composed = unicodedata.normalize("NFC", text)
     decomposed = unicodedata.normalize("NFD", text)
     assert decomposed != composed
+    parser = Parser(policy=policy)
+    assert (_composed_roles(parser, decomposed)
+            == _composed_roles(parser, composed))
 
-    def roles(s: str) -> dict[str, str]:
-        return {k: unicodedata.normalize("NFC", v)
-                for k, v in parse(s).as_dict().items()}
 
-    assert roles(decomposed) == roles(composed)
+def test_a_decomposed_caps_credential_is_still_a_suffix() -> None:
+    """The twin comparison above would pass if both encodings broke
+    alike; this pins the reading itself (`Janez Novak, ŽŠČ`)."""
+    name = parse(unicodedata.normalize("NFD", "Janez Novak, ŽŠČ"))
+    assert unicodedata.normalize("NFC", name.suffix) == "ŽŠČ"
+    assert name.given == "Janez"
+
+
+def test_a_decomposed_chunked_credential_reads_as_its_composed_twin() -> None:
+    """`_CHUNKED` is masked by the dotted-shape rule (S3) under the
+    default policy; with that off and the acronym listed, the chunked
+    gate is the only reader, and it read NFD `Ž.Šč.` as no credential."""
+    parser = Parser(
+        lexicon=Lexicon.default().add(suffix_acronyms={"žšč"},
+                                      suffix_acronyms_ambiguous={"žšč"}),
+        policy=Policy(unlisted_dotted_suffixes=False))
+    text = "John Smith Ž.Šč."
+    decomposed = unicodedata.normalize("NFD", text)
+    assert decomposed != text
+    assert (_composed_roles(parser, decomposed)
+            == _composed_roles(parser, text))
+    assert unicodedata.normalize(
+        "NFC", parser.parse(decomposed).suffix) == "Ž.Šč."
+
+
+def test_a_decomposed_dotted_letter_is_dotted() -> None:
+    """`_DOTTED` is unobservable through a parse (`_CHUNKED` subsumes
+    it for two or more letters and no input made the single-letter case
+    differ), so it is pinned directly."""
+    from nameparser._pipeline._vocab import _dotted
+    assert _dotted(unicodedata.normalize("NFD", "Ž.")) is True

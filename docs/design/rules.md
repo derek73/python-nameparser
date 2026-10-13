@@ -110,17 +110,19 @@ H2. Rationale: before a name, an abbreviation is almost always a
     vocabulary: a period-marked opening word is a title even when
     the word is suffix vocabulary — except after a family comma,
     where a part that is nothing but suffix words is the credential
-    run (C1) and the abbreviation opens nothing. A letter written as
-    a base letter plus a combining accent (NFD) is the same letter
-    as the composed one, here and in every dotted shape the
-    credential rules read (#652), so a name parses the same in
-    either encoding.
+    run (C1) and the abbreviation opens nothing. An accented Latin,
+    Greek or Cyrillic letter written as a base letter plus a
+    combining mark (NFD) is the same letter as the composed one,
+    for this shape and for the dotted and all-caps credential
+    shapes C1, S2 and S3 read (#652), so such a name parses the
+    same in either encoding and the output keeps the one written.
       "Rev. John Smith"           →  title="Rev."
       "Xyz. John Smith"           →  title="Xyz."
       "Smith, Major. John"        →  title="Major."
       "Esq. Smith"                →  title="Esq."
       "J. Smith"                  →  given="J."  · boundary
       "J.R. Smith"                →  given="J.R."  · boundary
+      "Dr. inž. Janez Novak"  →  title="Dr. inž."
     Accepted: the shape is only recognizable as an unbroken run of
     letters, so an abbreviation in a script whose letters carry
     combining vowel signs (Bengali, Devanagari) never reads as a
@@ -147,7 +149,7 @@ H2. Rationale: before a name, an abbreviation is almost always a
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions.md#H2 · interacts: C1, P4, H5, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#H2 · interacts: C1, S2, S3, P4, H5, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is

@@ -4089,3 +4089,13 @@ issue = "fix(#653) a delimited clause keeps its comma"
 # and the comma is the whole diff.
 name_regex = "^(?:Jane \\(Janey, Jo\\) Smith|Maria Kowalska \\(z, domu Nowak\\)|Jane \\(née , Jones\\) Smith|Jane \\(née ,Jones\\) Smith)$"
 fields = ["nickname"]
+
+[[change]]
+# rules.md#H2: "An accented Latin, Greek or Cyrillic letter written as a
+# base letter plus a combining mark (NFD) is the same letter as the
+# composed one" (#652, 2026-10-12): the abbreviation shape ended its
+# word at the base letter, so a decomposed `inž.` was no abbreviation
+# and became the given name. The rules example is the one name here.
+issue = "fix(#652) a decomposed accented abbreviation is an abbreviation"
+name_regex = "^Dr\\. inz\u030c\\. Janez Novak$"
+fields = ["title", "given", "middle"]

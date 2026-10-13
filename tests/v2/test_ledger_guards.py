@@ -4677,6 +4677,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
         # 2026-10-07, #614: new, 1; rules.md#H5's 'John van der Berg Prof.' example.
         "fix(#614) a trailing title is read before the particle chain":
             _Claim(1, ('family', 'title'), "4536c33ed2a2", None),
+        "fix(#652) a decomposed accented abbreviation is an abbreviation":
+            _Claim(1, ('given', 'middle', 'title'), "df11091e2fc1", None),
     },
     "expected_since_2.0.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -5470,6 +5472,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             # 2 -> 4 the same day: the two rules.md#M3 comma examples
             # move only their nickname at this pre-M3 baseline.
             _Claim(4, ('nickname',), "d7a0d8c919c8", None),
+        "fix(#652) a decomposed accented abbreviation is an abbreviation":
+            _Claim(1, ('given', 'middle', 'title'), "df11091e2fc1", None),
     },
     # The 2.3 cycle's first rule, and a facade-only render fix: every
     # role is identical, so `_initials` alone. Reach and digest as in
@@ -5964,6 +5968,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('nickname',), "fad1fd2c06ad", None),
         "fix(#653) a comma after a marker unmarks it":
             _Claim(2, ('maiden', 'nickname'), "9ff9af68de6d", None),
+        "fix(#652) a decomposed accented abbreviation is an abbreviation":
+            _Claim(1, ('given', 'middle', 'title'), "df11091e2fc1", None),
     },
     "expected_since_2.1.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -6692,6 +6698,8 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             # 2 -> 4 the same day: the two rules.md#M3 comma examples
             # move only their nickname at this pre-M3 baseline.
             _Claim(4, ('nickname',), "d7a0d8c919c8", None),
+        "fix(#652) a decomposed accented abbreviation is an abbreviation":
+            _Claim(1, ('given', 'middle', 'title'), "df11091e2fc1", None),
     },
     "expected_since_2.3.0.toml": {
         # The ph removal (#459/#521): one literal name, the cases.py
@@ -7039,12 +7047,16 @@ _CORPUS_CLAIMS: dict[str, dict[str, _Claim]] = {
             _Claim(2, ('nickname',), "fad1fd2c06ad", None),
         "fix(#653) a comma after a marker unmarks it":
             _Claim(2, ('maiden', 'nickname'), "9ff9af68de6d", None),
+        "fix(#652) a decomposed accented abbreviation is an abbreviation":
+            _Claim(1, ('given', 'middle', 'title'), "df11091e2fc1", None),
     },
     "expected_since_2.4.0.toml": {
         "fix(#653) a delimited clause keeps its comma":
             _Claim(2, ('nickname',), "fad1fd2c06ad", None),
         "fix(#653) a comma after a marker unmarks it":
             _Claim(2, ('maiden', 'nickname'), "9ff9af68de6d", None),
+        "fix(#652) a decomposed accented abbreviation is an abbreviation":
+            _Claim(1, ('given', 'middle', 'title'), "df11091e2fc1", None),
     },
 }
 

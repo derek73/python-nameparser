@@ -40,7 +40,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     D, PH, caps_shape_candidate, claimed_as_non_name, delimiter_cores,
-    is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
+    is_caps_word, is_paired_initials, is_single_letter_numeral, is_wholly_suffix,
     name_word_count, surname_unit_facts, unit_ends, written_as_a_name,
 )
 from nameparser._policy import CapsSuffixes
@@ -217,8 +217,10 @@ def decide(state: ParseState) -> ParseState:
     maybe = [p[0] for p in p1 if len(p) == 1
              and (AMBIGUOUS_ACRONYM_TAG in (tags := tokens[p[0]].tags)
                   or ("vocab:suffix" not in tags
-                      and tokens[p[0]].text.isalpha()
-                      and tokens[p[0]].text.isupper()))]
+                      and (tokens[p[0]].text.isalpha()
+                           and tokens[p[0]].text.isupper()
+                           if tokens[p[0]].text.isascii()
+                           else is_caps_word(tokens[p[0]].text))))]
     # The part is read ONCE: here where it holds no word of the class,
     # after the count below where it does, with the words the count
     # licensed (a read here and a second after licensing threw the first

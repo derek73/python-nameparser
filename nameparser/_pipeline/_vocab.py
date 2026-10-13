@@ -159,14 +159,22 @@ in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
 # the comma structure to a credential run
 # (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 #
-# Ported verbatim from v1 (nameparser/config/regexes.py
-# "period_abbreviation") -- layering forbids the config import; keep
-# in sync by hand (tests/v2/test_regex_sync.py, which reaches this
-# object through `_pieces._PERIOD_ABBREV`, an IMPORT of this one, not
-# a second definition -- the sync test's target name did not move).
-# A letter is one letter (a word character that is not a digit or
-# underscore) plus any combining marks written after it (#652): `inž.` typed as i, n, z, U+030C, '.'
-# is the same word as the composed one.
+# The shape shared with config's "period_abbreviation" (layering
+# forbids the config import; keep in sync by hand -- the pattern TEXT
+# is what tests/v2/test_regex_sync.py compares, reaching this object
+# through `_pieces._PERIOD_ABBREV`, an IMPORT of this one, not a second
+# definition -- the sync test's target name did not move). It is
+# composed from `_LETTER` below, so the text is v1's plus the marks.
+
+# `_LETTER` is the letter every shape regex in this module spells
+# (`_PERIOD_ABBREV`, `_DOTTED`, `_CHUNKED`, `_PAIRED_INITIALS`): one
+# letter (a word character that is not a digit or underscore) plus the
+# combining marks written after it (#652). `inž.` typed as i, n, z,
+# U+030C, '.' is the same word as the composed one, and `\w` alone ends
+# it at the z. `_MARKS` is the general combining blocks -- what NFD of
+# a Latin, Greek or Cyrillic letter produces -- and not the marks that
+# only some scripts write (Indic vowel signs, Arabic and Hebrew
+# points); rules.md#H2's Accepted clause owns that limit.
 _MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
 _LETTER = r'[^\W\d_]' + _MARKS + '*'
 _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
@@ -656,11 +664,23 @@ def caps_shape_candidate(text: str, lexicon: Lexicon, policy: Policy,
     AMBIGUOUS_ACRONYM_TAG test), so a listed member never pays for
     the call.
     """
-    if not (policy.unlisted_caps_suffixes is not CapsSuffixes.OFF
-            and one_case is False
-            and len(text) >= 2 and text.isalpha() and text.isupper()):
+    if (policy.unlisted_caps_suffixes is CapsSuffixes.OFF
+            or one_case is not False):
+        return False
+    if not text.isascii():
+        text = unicodedata.normalize("NFC", text)
+    if not (len(text) >= 2 and text.isalpha() and text.isupper()):
         return False
     return not in_any_wordlist(_normalize(text), lexicon)
+
+
+def is_caps_word(text: str) -> bool:
+    """Whether TEXT is alphabetic capitals once NFC-composed: `isalpha()`
+    is False for a combining mark, so the decomposed spelling of
+    'ŽŠČ' would otherwise not be a caps word (#652). Callers test
+    ASCII inline first, in C, and call this for the rest."""
+    composed = unicodedata.normalize("NFC", text)
+    return composed.isalpha() and composed.isupper()
 
 
 def in_any_wordlist(n: str, lexicon: Lexicon) -> bool:

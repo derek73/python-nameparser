@@ -19,7 +19,8 @@ re_bidi = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 # plus a mark (NFD `inž.`) must carry them explicitly or the shape
 # rules read a decomposed name differently from its composed twin
 # (#652). Same class as _pipeline/_vocab.py's _MARKS; test_regex_sync
-# pins the patterns that embed it.
+# compares the two class strings and pins `period_abbreviation`
+# against `_vocab`'s copy.
 _MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
 
 EMPTY_REGEX = re.compile('')

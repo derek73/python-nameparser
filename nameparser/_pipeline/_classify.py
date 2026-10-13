@@ -229,7 +229,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
                 # C: a listed member ('John Smith, MA'), and a word that
                 # is not alphabetic capitals ('John Smith, Ph. D.')
                 and n not in lex.suffix_acronyms_ambiguous
-                and token.text.isalpha() and token.text.isupper()
+                and (not token.text.isascii()
+                     or token.text.isalpha() and token.text.isupper())
                 and caps_shape_candidate(token.text, lex, state.policy,
                                          one_case)):
             # #516's all-caps half: an unlisted word written in capitals

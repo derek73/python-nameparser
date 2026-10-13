@@ -32,9 +32,14 @@ def differential_corpus() -> list[str]:
     corpus_cldr.jsonl joins it since #652: decomposed (NFD) renderings
     of its Slavic names, `Janez Novak, univ. dipl. inž.`, read
     differently from their composed twins until the shape regexes
-    learned combining marks, and the decomposed-twin property test is
-    the regression guard. Joining it took test_properties.py from
-    34.5 s to 39.6 s (py3.11, local, 2026-10-12).
+    learned combining marks, and the decomposed-twin property test
+    (tests/v2/test_properties.py) is the corpus-wide guard. Recorded
+    negative control, measured 2026-10-12 with 04cc0814's nameparser/
+    and this file's corpus: that test fails with four non-hangul texts
+    parsing differently decomposed (`Janez Novak, univ. dipl. inž.`
+    and three more Slavic renderings). Joining the file took
+    test_properties.py from 34.5 s to 39.6 s before the fix and it
+    runs in 39.8 s after (py3.11, local).
     """
     corpus_dir = Path(__file__).parents[2] / "tools" / "differential"
     paths = sorted(corpus_dir.glob("corpus*.jsonl"))
