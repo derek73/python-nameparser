@@ -48,7 +48,10 @@ def _entry_name(raw: object) -> str:
 #: rules 461 -> 771 names, feat(#269) 6 -> 196), and the decision was
 #: to keep the recorded claims about the names the ledgers were written
 #: for. The harness still classifies CLDR diffs against the ledger on
-#: the radar tier; only this population does not measure them.
+#: the radar tier; only this population does not measure them. compare.py
+#: holds the same set as its own _UNMEASURED_CORPORA, which keeps these
+#: names out of contest adjudication too; test_differential.py holds the
+#: two equal.
 _UNMEASURED_CORPORA = frozenset({"corpus_cldr.jsonl"})
 
 #: Every name the harness classifies, deduplicated, except the files in

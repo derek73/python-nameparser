@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from ._differential_fixtures import (
-    _LEDGERS, _TOOLS, _claimed, _rules, load_tool)
+    _LEDGERS, _TOOLS, _UNMEASURED_CORPORA, _claimed, _rules, load_tool)
 
 compare = load_tool("compare")
 shapes = load_tool("shapes")
@@ -4790,3 +4790,37 @@ def test_the_sentence_screen_keeps_its_hands_off_names() -> None:
                  "Marie Takes War Bonnet", "Rob And Beth Edmunds",
                  "Duke of Wellington", "Anh Do", "Will De Groot"):
         assert harvester._harvest(f"reported `{name}` today") == {name}, name
+
+
+@pytest.mark.parametrize(("filename", "adjudicated"), [
+    # A name held only by an unmeasured corpus is classified but not
+    # adjudicated: CLDR's fictional renderings would otherwise demand
+    # pins (2026-10-12: three at 1.4.0) for rule pairs nobody wrote
+    # them to decide. The control is the same name in any other file.
+    ("corpus_cldr.jsonl", False),
+    ("corpus_x.jsonl", True),
+])
+def test_an_unmeasured_corpus_name_is_not_adjudicated(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        filename: str, adjudicated: bool) -> None:
+    monkeypatch.setitem(compare._RECORDED_DIFFS, "expected_since_2.0.0.toml", {})
+    monkeypatch.setitem(compare._WATCHED_DIFFS, "expected_since_2.0.0.toml", {})
+    ledger = ('[[change]]\nissue = "fix(a) the winner"\n'
+              'name_regex = "Smith"\nfields = ["family"]\n\n'
+              '[[change]]\nissue = "fix(b) the loser"\n'
+              'name_regex = "Smith"\nfields = ["family"]\n'
+              'dormant = "shadowed by fix(a) on the only name it reaches"\n')
+    code, out = _run_main_over(
+        tmp_path, monkeypatch, [(filename, "radar", ["John Smith"])],
+        [_default_order_diff("John Smith", "SMYTHE")], ledger)
+    assert ("UNPINNED CONTEST" in out) is adjudicated, out
+    assert (code != 0) is adjudicated, out
+
+
+def test_the_guards_and_the_gate_leave_out_the_same_corpora() -> None:
+    """The ledger guards' population (_CORPUS_NAMES) and the gate's
+    contest adjudication leave out one set of files, held in two places
+    because tests/ cannot import tools/ at module scope. Two copies that
+    drift would measure a rule's reach over one population and
+    adjudicate its contests over another."""
+    assert _UNMEASURED_CORPORA == compare._UNMEASURED_CORPORA

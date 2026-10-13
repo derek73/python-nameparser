@@ -659,6 +659,19 @@ _CORPUS_FLOORS = {
 #: what the contract answers for; a [[never]] entry declares a shape
 #: nobody may explain away, so it outranks the tier the name happens
 #: to sit in.
+#: Corpora the harness compares and classifies but does not ADJUDICATE:
+#: a name held only by one of these never raises an UNPINNED CONTEST.
+#: corpus_cldr.jsonl (2026-10-12): CLDR's fictional renderings raised
+#: three at 1.4.0 between rule pairs nobody wrote them to decide, and the
+#: decision was to keep ledger accounting about the names the ledgers
+#: were written for -- the run-time twin of the ledger guards'
+#: population, which leaves the same file out (tests/v2/
+#: _differential_fixtures.py, held equal to this by a test). Their diffs
+#: still classify, by file order. The cost is the guards': a rule that
+#: over-reaches onto these names is not measured here either.
+_UNMEASURED_CORPORA = frozenset({"corpus_cldr.jsonl"})
+
+
 _CORPUS_TIERS = {
     "corpus.jsonl": "radar",
     "corpus_cjk.jsonl": "contract",
@@ -2915,6 +2928,11 @@ def main() -> int:
     # refuses CJK text and shapes 6/7's requires it, so no string can
     # ever carry two order-None shape tags with different minimums,
     # whichever file loaded first.
+    # Names some MEASURED corpus holds, read before the dedup below
+    # can keep an unmeasured file's copy of a string another file also
+    # holds: such a name is adjudicated like any other.
+    measured_names = {e["name"] for e in entries
+                      if e["file"] not in _UNMEASURED_CORPORA}
     by_key: dict[tuple[str, str | None], dict[str, object]] = {}
     for e in entries:
         by_key.setdefault((e["name"], e.get("order")), e)
@@ -3584,8 +3602,9 @@ def main() -> int:
     # FATAL on both tiers, in the exit expression beside `shape_bad`.
     # A contest row is fatal on either tier because it carries an
     # argument; an owed row is fatal because it carries none yet.
-    unowned = unowned_contests(diffing, rules, exclusions,
-                               set(recorded), tier_of)
+    unowned = unowned_contests(
+        [d for d in diffing if d[0] in measured_names], rules, exclusions,
+        set(recorded), tier_of)
     if unowned:
         # Grouped by (winner, loser), so a reader editing one rule
         # sees its whole cost at once rather than meeting the same
