@@ -1362,7 +1362,7 @@
 {"name": "Mkwawa John", "order": "FAMILY_FIRST", "given": "John", "family": "Mkwawa", "initials": "J. M."}
 {"name": "Mkwawa, John", "given": "John", "family": "Mkwawa", "initials": "J. M."}
 {"name": "Modibbo Malam Shehu Bello MP", "order": "FAMILY_FIRST", "given": "Malam", "middle": "Shehu Bello", "family": "Modibbo", "suffix": "MP", "initials": "M. S. B. M."}
-{"name": "Modibbo, Shehu Bello", "title": "Shehu", "given": "Bello", "family": "Modibbo", "initials": "B. M."}
+{"name": "Modibbo, Shehu Bello", "given": "Shehu", "middle": "Bello", "family": "Modibbo", "initials": "S. B. M."}
 {"name": "Mohamad Ahmad Ali Hassan", "given": "Mohamad", "middle": "Ahmad Ali", "family": "Hassan", "initials": "M. A. A. H."}
 {"name": "Mohamad Ali", "given": "Mohamad", "family": "Ali", "initials": "M. A."}
 {"name": "Mohamad Ali Khalil", "given": "Mohamad", "middle": "Ali", "family": "Khalil", "initials": "M. A. K."}
@@ -1396,7 +1396,7 @@
 {"name": "Mueller, Kathy", "given": "Kathy", "family": "Mueller", "initials": "K. M."}
 {"name": "Muhammad Yusuf Qodirov", "given": "Muhammad", "middle": "Yusuf", "family": "Qodirov", "initials": "M. Y. Q."}
 {"name": "Muhammed Shehu", "order": "FAMILY_FIRST", "given": "Shehu", "family": "Muhammed", "initials": "S. M."}
-{"name": "Muhammed, Shehu", "title": "Shehu", "family": "Muhammed", "initials": "M."}
+{"name": "Muhammed, Shehu", "given": "Shehu", "family": "Muhammed", "initials": "S. M."}
 {"name": "Mujanović Razija", "order": "FAMILY_FIRST", "given": "Razija", "family": "Mujanović", "initials": "R. M."}
 {"name": "Muller Kathe", "order": "FAMILY_FIRST", "given": "Kathe", "family": "Muller", "initials": "K. M."}
 {"name": "Muller Kathi", "order": "FAMILY_FIRST", "given": "Kathi", "family": "Muller", "initials": "K. M."}
@@ -1632,7 +1632,7 @@
 {"name": "Señor Carlos García", "title": "Señor", "given": "Carlos", "family": "García", "initials": "C. G."}
 {"name": "Señora María García", "title": "Señora", "given": "María", "family": "García", "initials": "M. G."}
 {"name": "Shanti Gaonkar", "given": "Shanti", "family": "Gaonkar", "initials": "S. G."}
-{"name": "Shehu Muhammed", "title": "Shehu", "family": "Muhammed", "initials": "M."}
+{"name": "Shehu Muhammed", "given": "Shehu", "family": "Muhammed", "initials": "S. M."}
 {"name": "Sheik Abu Bakar", "title": "Sheik", "given": "Abu Bakar", "initials": "A. B."}
 {"name": "Sheik abdul Jr Smith", "title": "Sheik", "given": "abdul", "middle": "Jr", "family": "Smith", "initials": "a. J. S."}
 {"name": "Sheik abdul salam", "title": "Sheik", "given": "abdul salam", "initials": "a. s."}

@@ -672,7 +672,6 @@ TITLES = GIVEN_NAME_TITLES | {
     'sgt',
     'sgtmaj',
     'sgtmajmc',
-    'shehu',
     'sheikh',
     'sheriff',
     'siddha',

@@ -6,9 +6,9 @@ position (titles, never-given particles) is safe to claim outright only
 if it is not borne as a name IN THE POSITION THE CLAIM ACTS ON (C-i;
 decisions.md#salutation-titles records the one TITLES-only exception,
 decided on counts). That check was often run from memory, which misses
-what the data shows at once: `shehu`, a title, is also an Albanian and
-Nigerian surname, with 561 bearers in the 2010 US Census. This answers
-the question with counts instead.
+what the data shows at once: `shehu`, a title until #660, is also an
+Albanian and Nigerian surname, with 561 bearers in the 2010 US Census.
+This answers the question with counts instead.
 
     uv run python tools/name_usage.py shehu greve marshal
     uv run python tools/name_usage.py McDonald     # pass names as written
