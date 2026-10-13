@@ -1311,7 +1311,7 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # none of the five, and any rule wide enough to match them is this rule
 # plus a role -- which then also claims the two silent names and leaves
 # this one dormant.
-name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
+name_regex = "(?ai)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
 fields = ["middle", "family", "_ambiguities"]
 
 [[change]]

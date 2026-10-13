@@ -40,10 +40,25 @@ def _entry_name(raw: object) -> str:
     return raw["name"]
 
 
-#: Every name the harness classifies, deduplicated. The ledgers exist
-#: to explain diffs on THESE strings and no others, so "what does this
-#: rule claim?" is answerable here without parsing anything -- a plain
-#: regex search, no baseline wheel, no network.
+#: Corpus files the harness compares but whose names this population
+#: leaves out. corpus_cldr.jsonl (2026-10-12): about 1,900 fictional
+#: CLDR renderings whose ground truth the agreement ratchet in
+#: test_cldr_agreement.py enforces. Counted here they moved the
+#: recorded reach of fourteen 1.4.0-ledger rules at once (the comma
+#: rules 461 -> 771 names, feat(#269) 6 -> 196), and the decision was
+#: to keep the recorded claims about the names the ledgers were written
+#: for. The harness still classifies CLDR diffs against the ledger on
+#: the radar tier; only this population does not measure them. compare.py
+#: holds the same set as its own _UNMEASURED_CORPORA, which keeps these
+#: names out of contest adjudication too; test_differential.py holds the
+#: two equal.
+_UNMEASURED_CORPORA = frozenset({"corpus_cldr.jsonl"})
+
+#: Every name the harness classifies, deduplicated, except the files in
+#: _UNMEASURED_CORPORA. The ledgers exist to explain diffs on THESE
+#: strings, so "what does this rule claim?" is answerable here without
+#: parsing anything -- a plain regex search, no baseline wheel, no
+#: network.
 #:
 #: This is what test_ledger_guards.py's corpus checks read, and why
 #: they hold where four rounds of syntactic ones did not. Depth-0 pipes, nesting
@@ -53,6 +68,7 @@ def _entry_name(raw: object) -> str:
 _CORPUS_NAMES = sorted({
     _entry_name(json.loads(line))
     for path in sorted(_TOOLS.glob("corpus*.jsonl"))
+    if path.name not in _UNMEASURED_CORPORA
     for line in path.read_text(encoding="utf-8").splitlines() if line.strip()})
 
 

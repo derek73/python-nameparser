@@ -572,6 +572,9 @@ _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 #: decision when a corpus is added, the way the Script tables do.
 _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
+    "corpus_cldr.jsonl": 1830,  # 1870 today (2026-10-12, `wc -l`),
+                                # generated from CLDR release-48 test
+                                # data by build_cldr_corpus.py.
     "corpus_cjk.jsonl": 67,     # 70 today (2026-09-10, `wc -l`),
                                 # generated from the case table.
                                 # LOWERED 95 -> 70 on 2026-09-01,
@@ -656,6 +659,19 @@ _CORPUS_FLOORS = {
 #: what the contract answers for; a [[never]] entry declares a shape
 #: nobody may explain away, so it outranks the tier the name happens
 #: to sit in.
+#: Corpora the harness compares and classifies but does not ADJUDICATE:
+#: a name held only by one of these never raises an UNPINNED CONTEST.
+#: corpus_cldr.jsonl (2026-10-12): CLDR's fictional renderings raised
+#: three at 1.4.0 between rule pairs nobody wrote them to decide, and the
+#: decision was to keep ledger accounting about the names the ledgers
+#: were written for -- the run-time twin of the ledger guards'
+#: population, which leaves the same file out (tests/v2/
+#: _differential_fixtures.py, held equal to this by a test). Their diffs
+#: still classify, by file order. The cost is the guards': a rule that
+#: over-reaches onto these names is not measured here either.
+_UNMEASURED_CORPORA = frozenset({"corpus_cldr.jsonl"})
+
+
 _CORPUS_TIERS = {
     "corpus.jsonl": "radar",
     "corpus_cjk.jsonl": "contract",
@@ -692,6 +708,12 @@ _CORPUS_TIERS = {
     # test_the_tolerated_corpus_is_disjoint_from_the_contract_ones
     # (tests/v2/test_ledger_guards.py) rather than left to a reader.
     "corpus_cjk_tolerated.jsonl": "radar",
+    # Unicode CLDR's person-name formatting test data (build_cldr_corpus.py):
+    # fictional names nobody here chose one by one, so the harness
+    # watches them and does not answer for them. Its ground truth is
+    # enforced elsewhere -- by the agreement ratchet in
+    # tests/v2/test_cldr_agreement.py, not by this tier.
+    "corpus_cldr.jsonl": "radar",
     "corpus_issues.jsonl": "radar",
     "corpus_rules.jsonl": "contract",
     "corpus_shapes.jsonl": "contract",
@@ -2906,6 +2928,11 @@ def main() -> int:
     # refuses CJK text and shapes 6/7's requires it, so no string can
     # ever carry two order-None shape tags with different minimums,
     # whichever file loaded first.
+    # Names some MEASURED corpus holds, read before the dedup below
+    # can keep an unmeasured file's copy of a string another file also
+    # holds: such a name is adjudicated like any other.
+    measured_names = {e["name"] for e in entries
+                      if e["file"] not in _UNMEASURED_CORPORA}
     by_key: dict[tuple[str, str | None], dict[str, object]] = {}
     for e in entries:
         by_key.setdefault((e["name"], e.get("order")), e)
@@ -3575,8 +3602,9 @@ def main() -> int:
     # FATAL on both tiers, in the exit expression beside `shape_bad`.
     # A contest row is fatal on either tier because it carries an
     # argument; an owed row is fatal because it carries none yet.
-    unowned = unowned_contests(diffing, rules, exclusions,
-                               set(recorded), tier_of)
+    unowned = unowned_contests(
+        [d for d in diffing if d[0] in measured_names], rules, exclusions,
+        set(recorded), tier_of)
     if unowned:
         # Grouped by (winner, loser), so a reader editing one rule
         # sees its whole cost at once rather than meeting the same

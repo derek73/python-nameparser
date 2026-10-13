@@ -1408,7 +1408,7 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # read the trailing run as a middle name as 2.1 did, and no ambiguity
 # surface changed between them. The union over the seven is the three
 # fields declared.
-name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
+name_regex = "(?ai)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
 fields = ["middle", "family", "_ambiguities"]
 
 [[change]]
