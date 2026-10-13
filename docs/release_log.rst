@@ -1,8 +1,8 @@
 Release Log
 ===========
-* 2.5.0 - Unreleased
+* 2.4.1 - October 13, 2026
 
-    nameparser 2.5 is under development.
+    nameparser 2.4.1 fixes two readings: an accented abbreviation written in decomposed form, and a comma inside a nickname.
 
     **Behavior Changes**
 
