@@ -4,6 +4,10 @@ Release Log
 
     nameparser 2.5 is under development.
 
+    **Behavior Changes**
+
+    - **Fix the Hausa given name Shehu being read as a title.** ``Shehu Shagari`` gives first ``Shehu``, last ``Shagari``, where 1.4.0 through 2.4.1 gave title ``Shehu`` and no first name. :issue:`660`
+
 * 2.4.1 - October 13, 2026
 
     nameparser 2.4.1 fixes two readings: an accented abbreviation written in decomposed form, and a comma inside a nickname.

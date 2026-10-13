@@ -3825,17 +3825,6 @@
    "got": ""
   }
  },
- "ha/nativeFull/sorting": {
-  "given_names": {
-   "expected": "Shehu Bello",
-   "got": "Bello"
-  },
-  "text": "Modibbo, Shehu Bello",
-  "title": {
-   "expected": "",
-   "got": "Shehu"
-  }
- },
  "ha/nativeFull/surnameFirst": {
   "given_names": {
    "expected": "Shehu Bello",
@@ -3868,28 +3857,6 @@
    "got": ""
   },
   "text": "Sule"
- },
- "ha/nativeGS/givenFirst": {
-  "given_names": {
-   "expected": "Shehu",
-   "got": ""
-  },
-  "text": "Shehu Muhammed",
-  "title": {
-   "expected": "",
-   "got": "Shehu"
-  }
- },
- "ha/nativeGS/sorting": {
-  "given_names": {
-   "expected": "Shehu",
-   "got": ""
-  },
-  "text": "Muhammed, Shehu",
-  "title": {
-   "expected": "",
-   "got": "Shehu"
-  }
  },
  "he/foreignFull/givenFirst": {
   "family": {
