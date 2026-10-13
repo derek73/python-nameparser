@@ -1227,7 +1227,7 @@ issue = "fix(#379) a tussenvoegsel after a family comma attaches to the family"
 # naming tradition, so a future {middle,family} regression on
 # 'Nguyen, Van' -- one of the two corpus names it reaches, and the one
 # that does NOT move -- would classify as intended.
-name_regex = "(?i)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
+name_regex = "(?ai)^[\\u0000-\\u024f]*,[\\u0000-\\u024f]*\\s(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu)(\\s+(de|del|den|der|di|do|dos|du|la|le|los|mc|van|vd|von|zu))*\\s*$"
 fields = ["middle", "family"]
 
 [[change]]

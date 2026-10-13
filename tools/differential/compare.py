@@ -572,6 +572,9 @@ _SENTINELS = ("John Smith", "田中さん", "Хосе Сантос", "x")
 #: decision when a corpus is added, the way the Script tables do.
 _CORPUS_FLOORS = {
     "corpus.jsonl": 480,        # 486 today, from v1's banks at a pinned ref
+    "corpus_cldr.jsonl": 1830,  # 1870 today (2026-10-12, `wc -l`),
+                                # generated from CLDR release-48 test
+                                # data by build_cldr_corpus.py.
     "corpus_cjk.jsonl": 67,     # 70 today (2026-09-10, `wc -l`),
                                 # generated from the case table.
                                 # LOWERED 95 -> 70 on 2026-09-01,
@@ -692,6 +695,12 @@ _CORPUS_TIERS = {
     # test_the_tolerated_corpus_is_disjoint_from_the_contract_ones
     # (tests/v2/test_ledger_guards.py) rather than left to a reader.
     "corpus_cjk_tolerated.jsonl": "radar",
+    # Unicode CLDR's person-name formatting test data (build_cldr_corpus.py):
+    # fictional names nobody here chose one by one, so the harness
+    # watches them and does not answer for them. Its ground truth is
+    # enforced elsewhere -- by the agreement ratchet in
+    # tests/v2/test_cldr_agreement.py, not by this tier.
+    "corpus_cldr.jsonl": "radar",
     "corpus_issues.jsonl": "radar",
     "corpus_rules.jsonl": "contract",
     "corpus_shapes.jsonl": "contract",
