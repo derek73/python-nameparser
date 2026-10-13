@@ -470,6 +470,34 @@ name_regex = "旧姓"
 fields = ["given", "middle", "family", "maiden"]
 
 [[change]]
+issue = "fix(#335/#272) a marker-led paren clause beside a quoted one, compounding with the CJK order flip"
+# '佐藤 花子 "旧姓・田中" (旧姓 鈴木)' (#653, 2026-10-12), the case row
+# that witnesses the #329 drop pass's nickname refusal. 1.4 read both
+# clauses as nicknames, merged, and the name given-first. Now the paren
+# clause is marker-led and reads as the maiden name (rules.md#M3), the
+# quoted clause stays a nickname divided at its nakaguro (#272), and
+# the wholly-Han remainder reads family-first (#271).
+#
+# Its own rule rather than a widening of fix(cjk-maiden-marker) above,
+# whose fields stop short of `nickname` on purpose, or of
+# fix(cjk-delimited-nickname), whose fields stop short of `maiden`: the
+# union would be a superset for every other name either reaches. The
+# literal is the whole regex for the reason the #335 CJK rules give.
+name_regex = "^佐藤 花子 \"旧姓・田中\" \\(旧姓 鈴木\\)$"
+fields = ["given", "family", "nickname", "maiden"]
+
+[[change.precedes_narrower]]
+issue = "fix(cjk-delimited-nickname) delimiter recognition compounds with the CJK order flip"
+why = """
+LIVE on its one name, '佐藤 花子 "旧姓・田中" (旧姓 鈴木)' (#653): the
+later rule's quoted-clause regex reaches it and its fields (family,
+given, nickname) are a strict subset of these. This rule is the one that
+names what moved -- the paren clause leaving the nickname for `maiden`
+-- which the later rule cannot describe; it would match only if the
+maiden half had stayed put.
+"""
+
+[[change]]
 issue = "fix(credential-pair-order) a split credential and a suffix render in written order"
 # 'John Smith, Jr. Ph. D.': 1.4 rendered the pair as 'Ph. D., Jr.',
 # 2.x renders 'Jr. Ph. D.' -- the order the name was written in.

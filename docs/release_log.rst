@@ -4,6 +4,10 @@ Release Log
 
     nameparser 2.5 is under development.
 
+    **Behavior Changes**
+
+    - **Fix a comma inside a nickname being dropped.** ``Jane (Janey, Jo) Smith`` gives nickname ``Janey, Jo``, where 2.0 through 2.4 gave ``Janey Jo``, restoring 1.4.0's reading. :issue:`653`
+
 * 2.4.0 - October 11, 2026
 
     nameparser 2.4 reads post-nominal credentials much more reliably, recognizes more naming conventions, and writes credentials the usual way when it repairs case. Highlights:

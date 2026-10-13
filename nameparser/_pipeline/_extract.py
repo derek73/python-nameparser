@@ -38,7 +38,9 @@ from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._state import (
     COMMA_CHARS, ParseState, PendingAmbiguity, copy_with,
 )
-from nameparser._pipeline._vocab import maiden_marker_run
+from nameparser._pipeline._vocab import (
+    comma_follows_marker, maiden_marker_run,
+)
 from nameparser._types import AmbiguityKind, Role, Span
 
 
@@ -76,9 +78,12 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
     itself rather than reading the tags classify will set. The two
     questions are deliberately not the same one: this splits on
     WHITESPACE, so a marker the writer glued to punctuation is not one
-    here ('née,'); the tokenizer splits that comma off and classify
-    still tags the token, which is what keeps _group's Role.MAIDEN
-    filter reachable. Sharing the PREDICATE does not merge the two
+    here ('née,') -- nor to classify, since #653 keeps a clause's comma
+    on its word. A nakaguro still divides the two: the tokenizer splits
+    '旧姓・田中' at it (rules.md#T2) and classify tags '旧姓', which is
+    what keeps _group's Role.MAIDEN filter reachable (cases.py's
+    marker_divided_by_a_nakaguro_keeps_the_clause_a_nickname). Sharing
+    the PREDICATE does not merge the two
     questions -- each hands it a different sequence of words."""
     words = content.split()
     # A one-word clause cannot satisfy the condition whatever the
@@ -88,7 +93,8 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
     if len(words) < 2:
         return False
     run = maiden_marker_run(words, lexicon.maiden_markers)
-    return run > 0 and len(words) > run
+    return (run > 0 and len(words) > run
+            and not comma_follows_marker(words[run]))
 
 
 # rules.md#N2: "a quote whose open and close are the same character
@@ -164,8 +170,8 @@ def _unmatched(open_: str, offset: int) -> tuple[int, PendingAmbiguity]:
 
 
 # rules.md#N1: "a clause enclosed by a configured nickname delimiter
-# pair reads as the nickname and is lifted out of the name; an empty
-# enclosure is simply dropped"
+# pair reads as the nickname and is lifted out of the name" (its
+# punctuation is tokenize's half of the rule)
 # rules.md#M1: "with a delimiter pair configured for maiden names, its
 # enclosed clause reads as the maiden name" (history: decisions.md#M1)
 def extract_delimited(state: ParseState) -> ParseState:

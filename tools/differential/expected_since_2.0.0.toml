@@ -1601,8 +1601,8 @@ issue = "fix(#434) a multi-word marker leads a bracketed clause to the maiden na
 # the reach alone leaves this name a nickname, since M3 asks whether
 # the content opens with a recognized marker and through 2.1 no
 # vocabulary answered yes here. The phrase entry is what moves it, so
-# it is #434's diff and not #335's, and it is deliberately NOT a
-# seventh alternative in that rule's six literals.
+# it is #434's diff and not #335's, and it is deliberately NOT one
+# more alternative among that rule's literals.
 #
 # `fields` is the pair that moves. The clause changes role; the name
 # words keep their readings, so a `given`, `middle` or `family`
@@ -1645,7 +1645,13 @@ issue = "fix(#335) a marker-led bracketed clause reads as the maiden name, compo
 # The literal is the whole regex: no shape test can separate "the
 # fullwidth clause is a maiden clause now" from "the fullwidth clause
 # is a nickname", which is the distinction the fields above turn on.
-name_regex = "^山田 花子（旧姓 佐藤）$"
+#
+# '佐藤 花子 "旧姓・田中" (旧姓 鈴木)' joined on 2026-10-12 (#653): its
+# paren clause is the marker-led one, and the wholly-Han remainder
+# flips given/family the same way. Its quoted clause stays a nickname,
+# moving inside that field too -- '旧姓・田中' to '旧姓 田中', #272's
+# nakaguro -- which is a field this rule already declares.
+name_regex = "^(?:山田 花子（旧姓 佐藤）|佐藤 花子 \"旧姓・田中\" \\(旧姓 鈴木\\))$"
 fields = ["given", "family", "nickname", "maiden"]
 
 [[change]]
@@ -4071,3 +4077,15 @@ fields = ["_ambiguities", "suffix", "title"]
 issue = "fix(#614) a trailing title is read before the particle chain"
 name_regex = "^John van der Berg Prof\\.$"
 fields = ["family", "title"]
+
+[[change]]
+# rules.md#N1: "a comma inside it kept as written — the comma divides
+# nothing there" (#653, 2026-10-12): a comma inside a delimited
+# clause is the clause's text, as 1.4.0 kept it. This baseline split it
+# off as a separator, and the nickname rendered without it.
+issue = "fix(#653) a delimited clause keeps its comma"
+# The two rules.md#M3 comma examples move only this way here: this
+# baseline predates M3, so their clauses were nicknames either way
+# and the comma is the whole diff.
+name_regex = "^(?:Jane \\(Janey, Jo\\) Smith|Maria Kowalska \\(z, domu Nowak\\)|Jane \\(née , Jones\\) Smith|Jane \\(née ,Jones\\) Smith)$"
+fields = ["nickname"]

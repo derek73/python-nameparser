@@ -71,11 +71,13 @@ def test_two_simultaneous_extracted_regions_interleave_correctly() -> None:
     assert starts == sorted(starts)
 
 
-def test_comma_inside_extracted_region_is_not_an_offset() -> None:
+def test_comma_inside_extracted_region_is_word_text_not_an_offset() -> None:
+    # #653: a region segments nothing, so its comma is punctuation the
+    # clause keeps, like ';' -- the view then renders 'Jack, Jr'
     out = _tokenized('John "Jack, Jr" Kim')
     assert out.comma_offsets == ()
     nick = [t.text for t in out.tokens if t.role is Role.NICKNAME]
-    assert nick == ["Jack", "Jr"]
+    assert nick == ["Jack,", "Jr"]
 
 
 def test_emoji_and_bidi_are_ignorable_by_policy() -> None:
