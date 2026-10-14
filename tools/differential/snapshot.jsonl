@@ -95,6 +95,7 @@
 {"name": "Amy E Maid", "given": "Amy", "middle": "E", "family": "Maid", "initials": "A. E. M."}
 {"name": "Amy E. Maid", "given": "Amy", "middle": "E.", "family": "Maid", "initials": "A. E. M."}
 {"name": "An tOll. An Dr. Brigid Aoibhe Sophia de Bhulbh", "given": "An", "middle": "tOll. An Dr. Brigid Aoibhe Sophia", "family": "de Bhulbh", "initials": "A. t. A. D. B. A. S. B."}
+{"name": "Ana Horvat stariji Jones", "given": "Ana", "family": "Horvat", "suffix": "stariji Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. H."}
 {"name": "Ana Marija Vera Kovač", "given": "Ana", "middle": "Marija Vera", "family": "Kovač", "initials": "A. M. V. K."}
 {"name": "Ana Torres", "given": "Ana", "family": "Torres", "initials": "A. T."}
 {"name": "Andersen Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Andersen", "initials": "I. A."}
@@ -2359,6 +2360,7 @@
 {"name": "Амосова Ирина", "order": "FAMILY_FIRST", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
 {"name": "Амосова, Ирина", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
 {"name": "Ана Иванова Димитрова", "given": "Ана", "middle": "Иванова", "family": "Димитрова", "initials": "А. И. Д."}
+{"name": "Ана Хорват старији Џонс", "given": "Ана", "middle": "Хорват старији", "family": "Џонс", "initials": "А. Х. с. Џ."}
 {"name": "Анна Мельник", "given": "Анна", "family": "Мельник", "initials": "А. М."}
 {"name": "Аталан", "given": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "А."}
 {"name": "Аталан", "order": "FAMILY_FIRST", "family": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "А."}
