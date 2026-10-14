@@ -426,7 +426,7 @@ def _sparql(query: str) -> dict[str, Any]:
     body = urllib.parse.urlencode({"query": query}).encode()
     request = urllib.request.Request(WIKIDATA_ENDPOINT, data=body, headers={
         "Accept": "application/sparql-results+json",
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
         "User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=90) as response:
         result: dict[str, Any] = json.load(response)

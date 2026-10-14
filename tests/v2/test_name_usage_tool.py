@@ -75,7 +75,7 @@ def test_sparql_sends_the_query_in_the_body_not_the_url(
         return io.BytesIO(b'{"results": {"bindings": []}}')
     monkeypatch.setattr(urllib.request, "urlopen", capture)
     query = tool.wikidata_countries_query(tool.spellings("Младший"))
-    tool._sparql(query)
+    assert tool._sparql(query) == {"results": {"bindings": []}}
     (request,) = sent
     assert request.get_method() == "POST"
     assert request.full_url == tool.WIKIDATA_ENDPOINT
