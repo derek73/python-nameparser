@@ -4353,21 +4353,9 @@
   "text": "Sinbad"
  },
  "hr/nativeFull/givenFirst": {
-  "family": {
-   "expected": "Marić",
-   "got": "mlađi"
-  },
-  "family_base": {
-   "expected": "Marić",
-   "got": "mlađi"
-  },
-  "given_names": {
-   "expected": "Branko Hrvoje",
-   "got": "Branko Hrvoje Marić"
-  },
   "suffix": {
    "expected": "mlađi prof.",
-   "got": ""
+   "got": "mlađi"
   },
   "text": "dr. sc. Branko Hrvoje Marić mlađi, prof.",
   "title": {
@@ -4376,13 +4364,9 @@
   }
  },
  "hr/nativeFull/surnameFirst": {
-  "given_names": {
-   "expected": "Branko Hrvoje",
-   "got": "Branko Hrvoje mlađi"
-  },
   "suffix": {
    "expected": "mlađi prof.",
-   "got": ""
+   "got": "mlađi"
   },
   "text": "Marić, dr. sc. Branko Hrvoje mlađi, prof.",
   "title": {
@@ -10824,11 +10808,11 @@
   },
   "given_names": {
    "expected": "Александра Ева Сара",
-   "got": "ден Волф проф. др Александра Ева Сара млађи"
+   "got": "ден Волф проф. др Александра Ева Сара"
   },
   "suffix": {
    "expected": "млађи дипл. инж.",
-   "got": ""
+   "got": "млађи"
   },
   "text": "ван ден Волф проф. др Александра Ева Сара млађи, дипл. инж.",
   "title": {
@@ -10884,11 +10868,11 @@
  "sr/nativeFull/surnameFirst": {
   "given_names": {
    "expected": "Слађана Вера",
-   "got": "др Слађана Вера млађи"
+   "got": "др Слађана Вера"
   },
   "suffix": {
    "expected": "млађи дипл. инж.",
-   "got": ""
+   "got": "млађи"
   },
   "text": "Миленковић др Слађана Вера млађи, дипл. инж.",
   "title": {
@@ -10948,11 +10932,11 @@
   },
   "given_names": {
    "expected": "Aleksandra Eva Sara",
-   "got": "den Volf prof. dr Aleksandra Eva Sara mlađi"
+   "got": "den Volf prof. dr Aleksandra Eva Sara"
   },
   "suffix": {
    "expected": "mlađi dipl. inž.",
-   "got": ""
+   "got": "mlađi"
   },
   "text": "van den Volf prof. dr Aleksandra Eva Sara mlađi, dipl. inž.",
   "title": {
@@ -11004,11 +10988,11 @@
  "sr_Latn/nativeFull/surnameFirst": {
   "given_names": {
    "expected": "Slađana Vera",
-   "got": "dr Slađana Vera mlađi"
+   "got": "dr Slađana Vera"
   },
   "suffix": {
    "expected": "mlađi dipl. inž.",
-   "got": ""
+   "got": "mlađi"
   },
   "text": "Milenković dr Slađana Vera mlađi, dipl. inž.",
   "title": {

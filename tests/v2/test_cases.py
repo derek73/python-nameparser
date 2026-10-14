@@ -178,10 +178,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
         for case, order in _SWEPT_ROWS
         for a in _swept(case.id, order).ambiguities)
     # 1156 -> 1159 on 2026-10-11: the JOHN PROF. MA row (one
-    # suffix-or-name claim under each of the three orders).
-    assert claims == 1159, (
-        f"the field sweep checks {claims} claims, recorded as 1159 on "
-        f"2026-10-11")
+    # suffix-or-name claim under each of the three orders); 1159 ->
+    # 1162 on 2026-10-14: the Агриппина Младшая row (#661, one
+    # given-or-family claim under each order).
+    assert claims == 1162, (
+        f"the field sweep checks {claims} claims, recorded as 1162 on "
+        f"2026-10-14")
 
 
 #: Case.__post_init__'s shape checks, each probed for the message that

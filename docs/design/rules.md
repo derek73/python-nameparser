@@ -1238,6 +1238,11 @@ S2. Rationale: generational suffixes and credentials are recognized
     part in silence, unless paired initials speak only for each
     other.
       "John Smith Jr."            →  suffix="Jr."
+      "Antonio Pavlović mlađi"    →  family="Pavlović"
+      "Antonio Pavlović mlađi"    →  suffix="mlađi"
+      "Агриппина Младшая"         →  suffix="Младшая"
+      "Pavlović, Antonio mlađi"   →  suffix="mlađi"
+      "Stariji Bruegel"           →  given="Stariji"  · boundary
       "John Smith M.A."           →  suffix="M.A."
       "John Smith PhD"            →  suffix="PhD"
       "John Ma"                   →  family="Ma"  · boundary
@@ -1302,6 +1307,10 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Mary Jane King Smith"      →  family="Smith"
       "Josep Carod i Rovira"      →  family="Carod i Rovira"
       "Mohamed Ali Abd Allah"     →  family="Allah"
+      "Antonio Pavlović mlađi Jones"  →  suffix="mlađi Jones"
+      "Pieter Bruegel stariji Jones"  →  suffix="stariji Jones"
+      "Гай Плиний Старший Иванов"  →  family="Иванов"  · boundary
+      "Taro Tanaka さん Jones"    →  family="Jones"  · boundary
       "John PhD Smith"            →  family="Smith"  · boundary
     Accepted: a title before the credential keeps it a credential,
     and the name loses its surname exactly as it did before this

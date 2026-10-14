@@ -981,6 +981,28 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="generational words start the run as credentials do "
                "(decided on #602). 2.3.0 read middle 'Smith Jr.'"),
+    Case("a_generational_word_in_another_language", "Antonio Pavlović mlađi",
+         {"given": "Antonio", "family": "Pavlović", "suffix": "mlađi"},
+         classification="fix(#661)",
+         notes="junior/senior words of other languages are suffix "
+               "vocabulary. 1.4.0 and 2.4.2 read middle 'Pavlović', "
+               "family 'mlađi'"),
+    Case("a_generational_word_after_a_family_comma",
+         "Pavlović, Antonio mlađi",
+         {"given": "Antonio", "family": "Pavlović", "suffix": "mlađi"},
+         classification="fix(#661)",
+         notes="1.4.0 and 2.4.2 read middle 'mlađi'"),
+    Case("a_feminine_generational_word_in_cyrillic", "Агриппина Младшая",
+         {"given": "Агриппина", "suffix": "Младшая"},
+         classification="fix(#661)",
+         ambiguities=("given-or-family",),
+         notes="the feminine form ships beside the masculine, and the "
+               "title case of a historical name matches through the "
+               "fold. 1.4.0 and 2.4.2 read family 'Младшая'"),
+    Case("a_generational_word_in_devanagari", "बलबीर सिंह सीनियर",
+         {"given": "बलबीर", "family": "सिंह", "suffix": "सीनियर"},
+         classification="fix(#661)",
+         notes="1.4.0 and 2.4.2 read middle 'सिंह', family 'सीनियर'"),
     Case("a_title_inside_the_run_is_a_title",
          "Eric H. Holder Jr. Attorney General",
          {"title": "Attorney General", "given": "Eric", "middle": "H.",
