@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 2.5.0 - Unreleased
+
+    nameparser 2.5 is under development.
+
 * 2.4.2 - October 13, 2026
 
     nameparser 2.4.2 fixes two readings: a name typed with decomposed accents or hangul, and the Hausa given name Shehu.
