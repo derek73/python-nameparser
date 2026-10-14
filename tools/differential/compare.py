@@ -32,7 +32,7 @@ from types import ModuleType
 from typing import NamedTuple
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_BASELINE = "2.4.1"
+DEFAULT_BASELINE = "2.4.2"
 REPO_ROOT = HERE.parents[1]
 
 
