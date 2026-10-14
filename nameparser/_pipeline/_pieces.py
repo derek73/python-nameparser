@@ -466,8 +466,8 @@ def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
 # the given-part walk (mechanisms.md#ONE-PREDICATE-PER-QUESTION)
 def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
                             tokens: Sequence[WorkToken]) -> bool:
-    """Whether one piece starts #602's run: an unambiguous LATIN
-    suffix word of two or more letters -- a credential acronym or a
+    """Whether one piece starts #602's run: an unambiguous suffix
+    word of two or more letters, in any script -- a credential acronym or a
     generational word -- that no other vocabulary claims as a name.
 
     `is_suffix_piece` already refuses the ambiguous class and an
@@ -475,11 +475,9 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     `i` or `v` mid-name is an initial or a connective far more often
     than a numeral, and carries no `initial` tag), a connective, a
     word that is also bound given-name or particle vocabulary (`abd`
-    heads `Abd Allah`; `vd`, `mc`), and a word with a letter of another
-    script, which is what refuses the non-Latin honorifics (`Taro
-    Tanaka さん Jones` keeps family 'Jones'). Latin means the letters'
-    Unicode names, not ASCII: #661's `mlađi` starts the run as `stariji`
-    does (decisions.md#generational-words, #678).
+    heads `Abd Allah`; `vd`, `mc`). No script is refused: an honorific
+    starts the run as a credential does (#679, decisions.md#S2), so
+    `Ана Хорват старији Џонс` reads as `Ana Horvat stariji Jones` does.
 
     The split credential group merges ('Ph. D.', the one piece carrying
     the "suffix" piece tag) starts it as its one-token spelling 'PhD'
@@ -504,16 +502,7 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
         return False
     # C-level, no generator frame per character
     letters = "".join(filter(str.isalpha, tok.text.lower()))
-    return len(letters) >= 2 and (letters.isascii()
-                                  or _all_latin(letters))
-
-
-def _all_latin(letters: str) -> bool:
-    """Whether every letter is a Latin one by its Unicode name. Asked
-    only of a non-ASCII word, so the ASCII test above keeps the common
-    case free of a frame per letter."""
-    return all(unicodedata.name(c, "").startswith("LATIN ")
-               for c in letters)
+    return len(letters) >= 2
 
 
 #: tags of suffix words another vocabulary claims as a name word or a

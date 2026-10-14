@@ -95,7 +95,6 @@
 {"name": "Amy E Maid", "given": "Amy", "middle": "E", "family": "Maid", "initials": "A. E. M."}
 {"name": "Amy E. Maid", "given": "Amy", "middle": "E.", "family": "Maid", "initials": "A. E. M."}
 {"name": "An tOll. An Dr. Brigid Aoibhe Sophia de Bhulbh", "given": "An", "middle": "tOll. An Dr. Brigid Aoibhe Sophia", "family": "de Bhulbh", "initials": "A. t. A. D. B. A. S. B."}
-{"name": "Ana Horvat stariji Jones", "given": "Ana", "family": "Horvat", "suffix": "stariji Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. H."}
 {"name": "Ana Marija Vera Kovač", "given": "Ana", "middle": "Marija Vera", "family": "Kovač", "initials": "A. M. V. K."}
 {"name": "Ana Torres", "given": "Ana", "family": "Torres", "initials": "A. T."}
 {"name": "Andersen Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Andersen", "initials": "I. A."}
@@ -1841,7 +1840,6 @@
 {"name": "Szabados, Máté Bendegúz", "given": "Máté", "middle": "Bendegúz", "family": "Szabados", "initials": "M. B. S."}
 {"name": "Tammik hr Mari-Ann Henri Roobert parlamendiliige", "order": "FAMILY_FIRST", "given": "hr", "middle": "Mari-Ann Henri Roobert parlamendiliige", "family": "Tammik", "initials": "h. M. H. R. p. T."}
 {"name": "Tammik, Mari-Ann Henri Roobert, parlamendiliige", "given": "Mari-Ann", "middle": "Henri Roobert", "family": "Tammik", "suffix": "parlamendiliige", "ambiguities": ["COMMA_STRUCTURE"], "initials": "M. H. R. T."}
-{"name": "Taro Tanaka さん Jones", "given": "Taro", "middle": "Tanaka さん", "family": "Jones", "initials": "T. T. さ. J."}
 {"name": "Te Awanui-a-Rangi Black", "given": "Te", "middle": "Awanui-a-Rangi", "family": "Black", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "T. A. B."}
 {"name": "Tham Jun", "given": "Tham", "family": "Jun", "initials": "T. J."}
 {"name": "Tham Jun Hoe", "given": "Tham", "middle": "Jun", "family": "Hoe", "initials": "T. J. H."}
@@ -2360,7 +2358,7 @@
 {"name": "Амосова Ирина", "order": "FAMILY_FIRST", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
 {"name": "Амосова, Ирина", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
 {"name": "Ана Иванова Димитрова", "given": "Ана", "middle": "Иванова", "family": "Димитрова", "initials": "А. И. Д."}
-{"name": "Ана Хорват старији Џонс", "given": "Ана", "middle": "Хорват старији", "family": "Џонс", "initials": "А. Х. с. Џ."}
+{"name": "Ана Хорват старији Џонс", "given": "Ана", "family": "Хорват", "suffix": "старији Џонс", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "А. Х."}
 {"name": "Анна Мельник", "given": "Анна", "family": "Мельник", "initials": "А. М."}
 {"name": "Аталан", "given": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "А."}
 {"name": "Аталан", "order": "FAMILY_FIRST", "family": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "А."}
@@ -2385,7 +2383,7 @@
 {"name": "Волф, Ана Марија Цезар Мартин ван ден", "given": "Ана", "middle": "Марија Цезар Мартин ван ден", "family": "Волф", "initials": "А. М. Ц. М. в. д. В."}
 {"name": "Вольга Караліна Равенская", "given": "Вольга", "middle": "Караліна", "family": "Равенская", "initials": "В. К. Р."}
 {"name": "Вустер Бертрам Вилберфорс Ҳенру Роберт", "order": "FAMILY_FIRST", "given": "Бертрам", "middle": "Вилберфорс Ҳенру Роберт", "family": "Вустер", "initials": "Б. В. Ҳ. Р. В."}
-{"name": "Гай Плиний Старший Иванов", "given": "Гай", "middle": "Плиний Старший", "family": "Иванов", "initials": "Г. П. С. И."}
+{"name": "Гай Плиний Старший Иванов", "given": "Гай", "family": "Плиний", "suffix": "Старший Иванов", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "Г. П."}
 {"name": "Джон", "given": "Джон", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "Д."}
 {"name": "Джон", "order": "FAMILY_FIRST", "family": "Джон", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "Д."}
 {"name": "Джоунс, Зара Мери", "given": "Зара", "middle": "Мери", "family": "Джоунс", "initials": "З. М. Д."}
@@ -2758,6 +2756,7 @@
 {"name": "मुलर, क्याथी", "given": "क्याथी", "family": "मुलर", "initials": "क. म."}
 {"name": "मैरी सिलविया जोनस", "given": "मैरी", "middle": "सिलविया", "family": "जोनस", "initials": "म. स. ज."}
 {"name": "रमिता पोख्रेल", "given": "रमिता", "family": "पोख्रेल", "initials": "र. प."}
+{"name": "राम शर्मा साहब मोहन", "given": "राम", "family": "शर्मा", "suffix": "साहब मोहन", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "र. श."}
 {"name": "रिधान समीर फडके", "given": "रिधान", "middle": "समीर", "family": "फडके", "initials": "र. स. फ."}
 {"name": "रॉबर्ट", "given": "रॉबर्ट", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "र."}
 {"name": "रॉबर्ट", "order": "FAMILY_FIRST", "family": "रॉबर्ट", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "र."}
