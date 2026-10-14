@@ -51,6 +51,52 @@ SUFFIX_WORDS = frozenset({
     'jaunesnysis', 'jaunesnioji',                    # lt
     'vyresnysis', 'vyresnioji',                      # lt
     'जूनियर', 'जुनियर', 'सीनियर',                    # hi, junior in both u spellings
+    # #679: the rest of CLDR's `generation` samples, vetted the same
+    # way. CLDR is a lead, not a source: where its word is a label
+    # translation, an adjective written BEFORE the name, or unused, the
+    # word the language's Wikipedia writes after names ships instead
+    # (lo, ti, or, ta, si, mk). Transliterations of "senior" ship only
+    # where the surname Senior was not measured in that script (סניור
+    # and シニア were), and English `senior` is not a suffix at all.
+    # Left out with reasons in decisions.md#generational-words,
+    # including fils/père and the Latin ml./st., which collide outside
+    # their languages and wait on a pack.
+    'yngri', 'eldri',                                # is
+    'jaunākais', 'jaunākā', 'vecākais', 'vecākā',    # lv
+    'малодшы', 'малодшая', 'старэйшы', 'старэйшая',  # be
+    'помладиот', 'постариот',                        # mk
+    'mlajši', 'mlajša', 'starejši', 'starejša',      # sl
+    'mladšia', 'staršia',                            # sk feminine
+    'мл',                                            # ru/bg/sr мл.
+    'τζούνιορ', 'σίνιορ',                            # el
+    'կրտսեր',                                        # hy
+    'უმცროსი', 'უფროსი',                             # ka
+    "ג'וניור", 'ג׳וניור', 'ג’וניור',                 # he, three apostrophes
+    'הבן', 'האב',                                    # he the son / the father
+    'الابن', 'الإبن', 'الأب',                        # ar the son / the father
+    'جونيور', 'سينيور',                              # ar
+    'جونیئر', 'جونيئر', 'جونئیر', 'سینئر', 'سینیئر',  # ur/sd
+    'جونیور', 'سینیور',                              # fa
+    'ज्युनियर', 'ज्यूनियर',                          # mr
+    'কনিষ্ঠ', 'জ্যেষ্ঠ', 'জুনিয়ৰ',                  # as
+    'জুনিয়র', 'সিনিয়র',                            # bn
+    'ਜੂਨੀਅਰ', 'ਸੀਨੀਅਰ',                              # pa
+    'જુનિયર', 'જૂનિયર', 'સિનિયર',                    # gu
+    'ଜୁନିଅର', 'ଜୁନିୟର୍',                             # or
+    'இளையவர்', 'மூத்தவர்', 'ஜூனியர்',                # ta
+    'జూనియర్', 'సీనియర్',                            # te
+    'ಜೂನಿಯರ್',                                       # kn
+    'ജൂനിയർ', 'സീനിയർ',                              # ml
+    'ජූනියර්',                                       # si
+    'ジュニア',                                       # ja
+    '주니어', '시니어',                               # ko
+    'จูเนียร์', 'ซีเนียร์',                          # th
+    'ຈູເນຍ',                                         # lo
+    'ဂျူနီယာ',                                       # my
+    'ၵျူႇၼီႇယႃႇ',                                    # shn
+    'ជូនៀរ',                                         # km
+    'ጁንየር', 'ጁኒየር',                                # ti, am
+    'ƙarami',                                        # ha the Younger
 
     # #269 follow-up: Hebrew post-nominals, both gershayim spellings
     # (ASCII '"' and U+05F4); the mid-word quote is inert in

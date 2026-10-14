@@ -846,6 +846,7 @@
 {"name": "Jill St. John", "given": "Jill", "family": "St. John", "initials": "J. J."}
 {"name": "Jiří", "given": "Jiří", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
 {"name": "Jiří", "order": "FAMILY_FIRST", "family": "Jiří", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
+{"name": "Jiří Dienstbier ml.", "given": "Jiří", "middle": "Dienstbier", "family": "ml.", "initials": "J. D. m."}
 {"name": "Jo Ann", "given": "Jo", "family": "Ann", "initials": "J. A."}
 {"name": "Joao da Silva Do Amaral de Souza", "given": "Joao", "middle": "da Silva Do Amaral", "family": "de Souza", "initials": "J. S. A. S."}
 {"name": "Joao da Silva do Amaral de Souza", "given": "Joao", "middle": "da Silva do Amaral", "family": "de Souza", "initials": "J. S. A. S."}
@@ -1299,6 +1300,7 @@
 {"name": "Maria Silva", "given": "Maria", "family": "Silva", "initials": "M. S."}
 {"name": "Maria Wijaya", "given": "Maria", "family": "Wijaya", "initials": "M. W."}
 {"name": "Mariam Geedi Hamish Hussein", "given": "Mariam", "middle": "Geedi Hamish", "family": "Hussein", "initials": "M. G. H. H."}
+{"name": "Marie Fils", "given": "Marie", "family": "Fils", "initials": "M. F."}
 {"name": "Marie-Agnès Suzanne Gilot", "given": "Marie-Agnès", "middle": "Suzanne", "family": "Gilot", "initials": "M. S. G."}
 {"name": "Marijana Tomislav Babić", "given": "Marijana", "middle": "Tomislav", "family": "Babić", "initials": "M. T. B."}
 {"name": "Mario", "given": "Mario", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
@@ -1677,7 +1679,7 @@
 {"name": "Sir de Mesnil", "title": "Sir", "family": "de Mesnil", "initials": "M."}
 {"name": "Sister Mary", "title": "Sister", "given": "Mary", "initials": "M."}
 {"name": "Sister Souljah", "title": "Sister", "given": "Souljah", "initials": "S."}
-{"name": "Skeggjason Hr. Geir Jón Magnús Brynjar yngri, þingmaður", "order": "FAMILY_FIRST", "given": "þingmaður", "family": "Skeggjason Hr. Geir Jón Magnús Brynjar yngri", "initials": "þ. S. H. G. J. M. B. y."}
+{"name": "Skeggjason Hr. Geir Jón Magnús Brynjar yngri, þingmaður", "order": "FAMILY_FIRST", "given": "þingmaður", "family": "Skeggjason Hr. Geir Jón Magnús Brynjar", "suffix": "yngri", "initials": "þ. S. H. G. J. M. B."}
 {"name": "Slovák Ján Matej", "order": "FAMILY_FIRST", "given": "Ján", "middle": "Matej", "family": "Slovák", "initials": "J. M. S."}
 {"name": "Slovák, Ján Matej", "given": "Ján", "middle": "Matej", "family": "Slovák", "initials": "J. M. S."}
 {"name": "Smith", "given": "Smith", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
@@ -2257,7 +2259,7 @@
 {"name": "van nguyen", "given": "van", "family": "nguyen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. n."}
 {"name": "van. den. Wolf Ada Cornelia Eva Sophia M.D. Ph.D.", "order": "FAMILY_FIRST", "title": "van. den.", "given": "Ada", "middle": "Cornelia Eva Sophia", "family": "Wolf", "suffix": "M.D. Ph.D.", "initials": "A. C. E. S. W."}
 {"name": "van. den. Wolf, Ada Cornelia Eva Sophia M.D. Ph.D.", "given": "Ada", "middle": "Cornelia Eva Sophia", "family": "van. den. Wolf", "suffix": "M.D. Ph.D.", "initials": "A. C. E. S. W."}
-{"name": "von Bjarnadóttir dr. Sigríður Jóna Valgerður Fanndís yngri, M.A. í bókmenntafræði", "order": "FAMILY_FIRST", "given": "Bjarnadóttir", "middle": "dr. Sigríður Jóna Valgerður Fanndís yngri", "family": "von", "suffix": "M.A. í bókmenntafræði", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "initials": "B. d. S. J. V. F. y. v."}
+{"name": "von Bjarnadóttir dr. Sigríður Jóna Valgerður Fanndís yngri, M.A. í bókmenntafræði", "order": "FAMILY_FIRST", "given": "Bjarnadóttir", "middle": "dr. Sigríður Jóna Valgerður Fanndís", "family": "von", "suffix": "yngri, M.A. í bókmenntafræði", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "initials": "B. d. S. J. V. F. v."}
 {"name": "von Braun", "given": "von", "family": "Braun", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. B."}
 {"name": "von Bruhel Ada Cornelia Martina MD DDS", "order": "FAMILY_FIRST", "given": "Bruhel", "middle": "Ada Cornelia Martina", "family": "von", "suffix": "MD DDS", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. A. C. M. v."}
 {"name": "von Bruhl Prof. Dr. Ada Cornelia Cesar Martin Jr, MD DDS", "order": "FAMILY_FIRST", "given": "Bruhl", "middle": "Prof. Dr. Ada Cornelia Cesar Martin", "family": "von", "suffix": "Jr, MD DDS", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. P. D. A. C. C. M. v."}
@@ -2471,6 +2473,7 @@
 {"name": "Петренко Анна Марія Богдан-Зиновій, доц., проф.", "title": "доц. проф.", "given": "Петренко", "middle": "Анна Марія", "family": "Богдан-Зиновій", "initials": "П. А. М. Б."}
 {"name": "Петрова, Мария", "given": "Мария", "family": "Петрова", "initials": "М. П."}
 {"name": "Петрова, Мария", "order": "FAMILY_FIRST", "given": "Мария", "family": "Петрова", "initials": "М. П."}
+{"name": "Питер Брейгель мл.", "given": "Питер", "family": "Брейгель", "suffix": "мл.", "initials": "П. Б."}
 {"name": "Поповић Јован Драган", "order": "FAMILY_FIRST", "given": "Јован", "middle": "Драган", "family": "Поповић", "initials": "Ј. Д. П."}
 {"name": "Поповић, Јован Драган", "given": "Јован", "middle": "Драган", "family": "Поповић", "initials": "Ј. Д. П."}
 {"name": "Проф. Док. Ада Корнелиа Сезар Мартин вон Брухи Гонзалес Доминго", "title": "Проф. Док.", "given": "Ада", "middle": "Корнелиа Сезар Мартин вон Брухи Гонзалес", "family": "Доминго", "initials": "А. К. С. М. в. Б. Г. Д."}
@@ -2547,8 +2550,8 @@
 {"name": "проф. др Александра Ева Сара ван ден Волф Петровић Југовић дипл. инж.", "title": "проф.", "given": "др", "middle": "Александра Ева Сара ван ден Волф Петровић Југовић дипл.", "family": "инж.", "initials": "д. А. Е. С. в. д. В. П. Ј. д. и."}
 {"name": "проф. фон Вольф Гонзалес Домінго Анастасія Єва Софія д-р", "order": "FAMILY_FIRST", "title": "проф.", "given": "Вольф", "middle": "Гонзалес Домінго Анастасія Єва Софія д-р", "family": "фон", "initials": "В. Г. Д. А. Є. С. д. ф."}
 {"name": "проф., д-р Ада Корнелия Сезар Мартин фон Брюль кесе, м. ф. д.", "title": "д-р", "given": "Ада", "middle": "Корнелия Сезар Мартин фон Брюль кесе", "family": "проф.", "suffix": "м. ф. д.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "А. К. С. М. ф. Б. к. п."}
-{"name": "проф., д-р Ада Корнелия Сезар Мартин фон Брюль — мл., к. м. н.", "title": "д-р", "given": "Ада", "middle": "Корнелия Сезар Мартин фон Брюль — мл.", "family": "проф.", "suffix": "к. м. н.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "А. К. С. М. ф. Б. —. м. п."}
-{"name": "проф., д-р Ада Корнелия Сезар Мартин фон Брюль — мл., к.м.н.", "title": "д-р", "given": "Ада", "middle": "Корнелия Сезар Мартин фон Брюль — мл.", "family": "проф.", "suffix": "к.м.н.", "initials": "А. К. С. М. ф. Б. —. м. п."}
+{"name": "проф., д-р Ада Корнелия Сезар Мартин фон Брюль — мл., к. м. н.", "title": "д-р", "given": "Ада", "middle": "Корнелия Сезар Мартин фон Брюль —", "family": "проф.", "suffix": "мл., к. м. н.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "А. К. С. М. ф. Б. —. п."}
+{"name": "проф., д-р Ада Корнелия Сезар Мартин фон Брюль — мл., к.м.н.", "title": "д-р", "given": "Ада", "middle": "Корнелия Сезар Мартин фон Брюль —", "family": "проф.", "suffix": "мл., к.м.н.", "initials": "А. К. С. М. ф. Б. —. п."}
 {"name": "уулу Төрөкул Махмудов, Мырза Чыңгыз Айтматов Исхак Раззаков Парламент мүчөсү", "given": "Мырза", "middle": "Чыңгыз Айтматов Исхак Раззаков Парламент мүчөсү", "family": "уулу Төрөкул Махмудов", "initials": "М. Ч. А. И. Р. П. м. у. Т. М."}
 {"name": "уулу Төрөкул Чыңгыз Айтматов Исхак Раззаков Парламент мүчөсү", "order": "FAMILY_FIRST", "given": "Төрөкул", "middle": "Чыңгыз Айтматов Исхак Раззаков Парламент мүчөсү", "family": "уулу", "initials": "Т. Ч. А. И. Р. П. м. у."}
 {"name": "фон Бруль Ада Карнэлія Сесар Марцін д-р", "order": "FAMILY_FIRST", "given": "Бруль", "middle": "Ада Карнэлія Сесар Марцін д-р", "family": "фон", "initials": "Б. А. К. С. М. д. ф."}
@@ -2613,8 +2616,8 @@
 {"name": "اسەم", "order": "FAMILY_FIRST", "family": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ا."}
 {"name": "اصغر شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
 {"name": "اصغر، شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
-{"name": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح", "given": "طبيب", "middle": "وجراح", "family": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن", "initials": "ط. و. ا. ع. ك. س. م. ف. ب. ا."}
-{"name": "السيد أحمد رامي نجيب محفوظ أبو الأغا الابن، النائب", "given": "النائب", "family": "السيد أحمد رامي نجيب محفوظ أبو الأغا الابن", "initials": "ا. ا. أ. ر. ن. م. ا. ا."}
+{"name": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح", "given": "طبيب", "middle": "وجراح", "family": "الدكتور عايدة كورنيليا سيزار مارتن فون برول", "suffix": "الإبن", "initials": "ط. و. ا. ع. ك. س. م. ف. ب."}
+{"name": "السيد أحمد رامي نجيب محفوظ أبو الأغا الابن، النائب", "given": "النائب", "family": "السيد أحمد رامي نجيب محفوظ أبو الأغا", "suffix": "الابن", "initials": "ا. ا. أ. ر. ن. م. ا."}
 {"name": "العامر، كمال مجدي", "order": "FAMILY_FIRST", "given": "كمال", "middle": "مجدي", "family": "العامر", "initials": "ك. م. ا."}
 {"name": "النجار، سميرة", "order": "FAMILY_FIRST", "given": "سميرة", "family": "النجار", "initials": "س. ا."}
 {"name": "امید رضا ملایری", "given": "امید", "middle": "رضا", "family": "ملایری", "initials": "ا. ر. م."}
@@ -2624,6 +2627,7 @@
 {"name": "بروهل، آدا کورنلیا سزار مارتین وان", "order": "FAMILY_FIRST", "given": "آدا", "middle": "کورنلیا سزار مارتین وان", "family": "بروهل", "initials": "آ. ک. س. م. و. ب."}
 {"name": "بريۋل، ادا كورنەليا سەزار مارتين فون", "order": "FAMILY_FIRST", "given": "ادا", "middle": "كورنەليا سەزار مارتين فون", "family": "بريۋل", "initials": "ا. ك. س. م. ف. ب."}
 {"name": "جان همیش واټسن", "given": "جان", "middle": "همیش", "family": "واټسن", "initials": "ج. ه. و."}
+{"name": "جورج بوش الابن", "given": "جورج", "family": "بوش", "suffix": "الابن", "initials": "ج. ب."}
 {"name": "حاتم منصور", "given": "حاتم", "family": "منصور", "initials": "ح. م."}
 {"name": "خان مریم نواز", "order": "FAMILY_FIRST", "given": "مریم", "middle": "نواز", "family": "خان", "initials": "م. ن. خ."}
 {"name": "خان، مریم نواز", "order": "FAMILY_FIRST", "given": "مریم", "middle": "نواز", "family": "خان", "initials": "م. ن. خ."}
@@ -2690,14 +2694,14 @@
 {"name": "ندیم رضا، یاسمین راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "order": "FAMILY_FIRST", "given": "یاسمین", "middle": "راشد سدرہ منیر ایم ڈی ڈی ڈی ایس", "family": "ندیم رضا", "initials": "ی. ر. س. م. ا. ڈ. ڈ. ڈ. ا. ن. ر."}
 {"name": "وان برل گونزالس ڊومنگو پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "order": "FAMILY_FIRST", "given": "برل", "middle": "گونزالس ڊومنگو پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "family": "وان", "initials": "ب. گ. ڊ. پ. ڊ. ا. ڪ. س. م. ا. ڊ. ڊ. ڊ. ا. و."}
 {"name": "وان برل گونزالس ڊومنگو, پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "given": "پروفيسر", "middle": "ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن ايم ڊي ڊي ڊي ايس", "family": "وان برل گونزالس ڊومنگو", "initials": "پ. ڊ. ا. ڪ. س. م. ا. ڊ. ڊ. ڊ. ا. و. ب. گ. ڊ."}
-{"name": "وان بروهل، پروفسور آدا کورنلیا سزار مارتین جونیور، دکترای دندانپزشکی", "order": "FAMILY_FIRST", "given": "پروفسور", "middle": "آدا کورنلیا سزار مارتین جونیور", "family": "وان بروهل", "suffix": "دکترای دندانپزشکی", "ambiguities": ["COMMA_STRUCTURE"], "initials": "پ. آ. ک. س. م. ج. و. ب."}
+{"name": "وان بروهل، پروفسور آدا کورنلیا سزار مارتین جونیور، دکترای دندانپزشکی", "order": "FAMILY_FIRST", "given": "پروفسور", "middle": "آدا کورنلیا سزار مارتین", "family": "وان بروهل", "suffix": "جونیور, دکترای دندانپزشکی", "ambiguities": ["COMMA_STRUCTURE"], "initials": "پ. آ. ک. س. م. و. ب."}
 {"name": "واټسن جان همیش", "order": "FAMILY_FIRST", "given": "جان", "middle": "همیش", "family": "واټسن", "initials": "ج. ه. و."}
 {"name": "واٽسن ميري سيو ھامش", "order": "FAMILY_FIRST", "given": "ميري", "middle": "سيو ھامش", "family": "واٽسن", "initials": "م. س. ھ. و."}
 {"name": "ووسټر ښاغلی. برټرام ولبرفورس هنري رابرټ ایم پی", "order": "FAMILY_FIRST", "given": "ښاغلی.", "middle": "برټرام ولبرفورس هنري رابرټ ایم پی", "family": "ووسټر", "initials": "ښ. ب. و. ه. ر. ا. پ. و."}
 {"name": "ووسٽر محترم برٽرم ولبرفورس ھينري رابرٽ ايم پي", "order": "FAMILY_FIRST", "given": "محترم", "middle": "برٽرم ولبرفورس ھينري رابرٽ ايم پي", "family": "ووسٽر", "initials": "م. ب. و. ھ. ر. ا. پ. و."}
 {"name": "وون لیوه بیکر شمیت پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "order": "FAMILY_FIRST", "given": "لیوه", "middle": "بیکر شمیت پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "family": "وون", "initials": "ل. ب. ش. پ. ډ. ا. ک. ا. س. ا. ‌. ډ. ډ. ا. و."}
 {"name": "وون لیوه بیکر شمیت, پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "given": "پروفیسور", "middle": "ډاکټر اډا کورنیلیا ایوا سوفیا ایم ‌ډی ډیی ډیی ایس", "family": "وون لیوه بیکر شمیت", "initials": "پ. ډ. ا. ک. ا. س. ا. ‌. ډ. ډ. ا. و. ل. ب. ش."}
-{"name": "پروفسور آدا کورنلیا سزار مارتین وان بروهل جونیور، دکترای دندانپزشکی", "given": "دکترای", "middle": "دندانپزشکی", "family": "پروفسور آدا کورنلیا سزار مارتین وان بروهل جونیور", "initials": "د. د. پ. آ. ک. س. م. و. ب. ج."}
+{"name": "پروفسور آدا کورنلیا سزار مارتین وان بروهل جونیور، دکترای دندانپزشکی", "given": "دکترای", "middle": "دندانپزشکی", "family": "پروفسور آدا کورنلیا سزار مارتین وان بروهل", "suffix": "جونیور", "initials": "د. د. پ. آ. ک. س. م. و. ب."}
 {"name": "پروفيسر ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن وان برل گونزالس ڊومنگو ايم ڊي ڊي ڊي ايس", "given": "پروفيسر", "middle": "ڊاڪٽر ايڊا ڪورنيليا سيزر مارٽن وان برل گونزالس ڊومنگو ايم ڊي ڊي ڊي", "family": "ايس", "initials": "پ. ڊ. ا. ڪ. س. م. و. ب. گ. ڊ. ا. ڊ. ڊ. ڊ. ا."}
 {"name": "پروفیسور ډاکټر اډا کورنیلیا ایوا سوفیا وون لیوه بیکر شمیت ایم ‌ډی ډیی ډیی ایس", "given": "پروفیسور", "middle": "ډاکټر اډا کورنیلیا ایوا سوفیا وون لیوه بیکر شمیت ایم ‌ډی ډیی ډیی", "family": "ایس", "initials": "پ. ډ. ا. ک. ا. س. و. ل. ب. ش. ا. ‌. ډ. ډ. ا."}
 {"name": "ژیلا", "given": "ژیلا", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ژ."}
@@ -2861,19 +2865,19 @@
 {"name": "આઇરીન અદાણી", "given": "આઇરીન", "family": "અદાણી", "initials": "આ. અ."}
 {"name": "કિરણ", "given": "કિરણ", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ક."}
 {"name": "કિરણ", "order": "FAMILY_FIRST", "family": "કિરણ", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ક."}
-{"name": "કુમાર શાહ શ્રી. પટેલ ખુશી કિંજલ જૂનિયર, એમપી", "order": "FAMILY_FIRST", "given": "એમપી", "family": "કુમાર શાહ શ્રી. પટેલ ખુશી કિંજલ જૂનિયર", "initials": "એ. ક. શ. શ. પ. ખ. ક. જ."}
+{"name": "કુમાર શાહ શ્રી. પટેલ ખુશી કિંજલ જૂનિયર, એમપી", "order": "FAMILY_FIRST", "given": "એમપી", "family": "કુમાર શાહ શ્રી. પટેલ ખુશી કિંજલ", "suffix": "જૂનિયર", "initials": "એ. ક. શ. શ. પ. ખ. ક."}
 {"name": "કૅથિ મુલર", "given": "કૅથિ", "family": "મુલર", "initials": "ક. મ."}
 {"name": "ખુશી પટેલ હેતલ દવે", "given": "ખુશી", "middle": "પટેલ હેતલ", "family": "દવે", "initials": "ખ. પ. હ. દ."}
 {"name": "જઝિલીયા હૅમીશ સ્ટૂબર", "given": "જઝિલીયા", "middle": "હૅમીશ", "family": "સ્ટૂબર", "initials": "જ. હ. સ."}
 {"name": "દવે ખુશી પટેલ હેતલ", "order": "FAMILY_FIRST", "given": "ખુશી", "middle": "પટેલ હેતલ", "family": "દવે", "initials": "ખ. પ. હ. દ."}
 {"name": "દવે, ખુશી પટેલ હેતલ", "given": "ખુશી", "middle": "પટેલ હેતલ", "family": "દવે", "initials": "ખ. પ. હ. દ."}
-{"name": "પ્રો. ડૉ. એડા કૉર્નેલિયા સિઝર માર્ટિન ફૉન્ બ્રાઑલ્ જૂનિયર, એમ.ડી. ડી.ડી.એસ.", "given": "એમ.ડી.", "middle": "ડી.ડી.એસ.", "family": "પ્રો. ડૉ. એડા કૉર્નેલિયા સિઝર માર્ટિન ફૉન્ બ્રાઑલ્ જૂનિયર", "initials": "એ. ડ. પ. ડ. એ. ક. સ. મ. ફ. બ. જ."}
-{"name": "ફૉન્ બ્રાઑલ્ પ્રો. ડૉ. એડા કૉર્નેલિયા સિઝર માર્ટિન જૂનિયર, એમ.ડી. ડી.ડી.એસ.", "order": "FAMILY_FIRST", "given": "એમ.ડી.", "middle": "ડી.ડી.એસ.", "family": "ફૉન્ બ્રાઑલ્ પ્રો. ડૉ. એડા કૉર્નેલિયા સિઝર માર્ટિન જૂનિયર", "initials": "એ. ડ. ફ. બ. પ. ડ. એ. ક. સ. મ. જ."}
+{"name": "પ્રો. ડૉ. એડા કૉર્નેલિયા સિઝર માર્ટિન ફૉન્ બ્રાઑલ્ જૂનિયર, એમ.ડી. ડી.ડી.એસ.", "given": "એમ.ડી.", "middle": "ડી.ડી.એસ.", "family": "પ્રો. ડૉ. એડા કૉર્નેલિયા સિઝર માર્ટિન ફૉન્ બ્રાઑલ્", "suffix": "જૂનિયર", "initials": "એ. ડ. પ. ડ. એ. ક. સ. મ. ફ. બ."}
+{"name": "ફૉન્ બ્રાઑલ્ પ્રો. ડૉ. એડા કૉર્નેલિયા સિઝર માર્ટિન જૂનિયર, એમ.ડી. ડી.ડી.એસ.", "order": "FAMILY_FIRST", "given": "એમ.ડી.", "middle": "ડી.ડી.એસ.", "family": "ફૉન્ બ્રાઑલ્ પ્રો. ડૉ. એડા કૉર્નેલિયા સિઝર માર્ટિન", "suffix": "જૂનિયર", "initials": "એ. ડ. ફ. બ. પ. ડ. એ. ક. સ. મ."}
 {"name": "બ્રાઑલ્, એડા કૉર્નેલિયા સિઝર માર્ટિન ફૉન્", "given": "એડા", "middle": "કૉર્નેલિયા સિઝર માર્ટિન ફૉન્", "family": "બ્રાઑલ્", "initials": "એ. ક. સ. મ. ફ. બ."}
 {"name": "મુલર કૅથિ", "order": "FAMILY_FIRST", "given": "કૅથિ", "family": "મુલર", "initials": "ક. મ."}
 {"name": "મુલર, કૅથિ", "given": "કૅથિ", "family": "મુલર", "initials": "ક. મ."}
 {"name": "શાહ, પટેલ ખુશી કિંજલ કુમાર", "given": "પટેલ", "middle": "ખુશી કિંજલ કુમાર", "family": "શાહ", "initials": "પ. ખ. ક. ક. શ."}
-{"name": "શ્રી. પટેલ ખુશી કિંજલ કુમાર શાહ જૂનિયર, એમપી", "given": "એમપી", "family": "શ્રી. પટેલ ખુશી કિંજલ કુમાર શાહ જૂનિયર", "initials": "એ. શ. પ. ખ. ક. ક. શ. જ."}
+{"name": "શ્રી. પટેલ ખુશી કિંજલ કુમાર શાહ જૂનિયર, એમપી", "given": "એમપી", "family": "શ્રી. પટેલ ખુશી કિંજલ કુમાર શાહ", "suffix": "જૂનિયર", "initials": "એ. શ. પ. ખ. ક. ક. શ."}
 {"name": "સિનબાદ", "given": "સિનબાદ", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "સ."}
 {"name": "સિનબાદ", "order": "FAMILY_FIRST", "family": "સિનબાદ", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "સ."}
 {"name": "સ્ટૂબર જઝિલીયા હૅમીશ", "order": "FAMILY_FIRST", "given": "જઝિલીયા", "middle": "હૅમીશ", "family": "સ્ટૂબર", "initials": "જ. હ. સ."}
@@ -2950,14 +2954,14 @@
 {"name": "ಝೆಂಡಾಯಾ", "order": "FAMILY_FIRST", "family": "ಝೆಂಡಾಯಾ", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ಝ."}
 {"name": "ಪಾಟೀಲ್ ಶ್ರೀ. ನಾರಯಣ ಕುಮಾರ್ ಶಿವ ರಾಮ ಕಿರಿ, ಎಮ್‌ಪಿ", "order": "FAMILY_FIRST", "given": "ಎಮ್‌ಪಿ", "family": "ಪಾಟೀಲ್ ಶ್ರೀ. ನಾರಯಣ ಕುಮಾರ್ ಶಿವ ರಾಮ ಕಿರಿ", "initials": "ಎ. ಪ. ಶ. ನ. ಕ. ಶ. ರ. ಕ."}
 {"name": "ಪಾಟೀಲ್, ನಾರಯಣ ಕುಮಾರ್ ಶಿವ ರಾಮ", "given": "ನಾರಯಣ", "middle": "ಕುಮಾರ್ ಶಿವ ರಾಮ", "family": "ಪಾಟೀಲ್", "initials": "ನ. ಕ. ಶ. ರ. ಪ."}
-{"name": "ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ವಾನ್ ಬ್ರಾಲ್ ಜೂನಿಯರ್, ಎಂ.ಡಿ ಡಿ.ಡಿ.ಎಸ್", "given": "ಎಂ.ಡಿ", "middle": "ಡಿ.ಡಿ.ಎಸ್", "family": "ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ವಾನ್ ಬ್ರಾಲ್ ಜೂನಿಯರ್", "initials": "ಎ. ಡ. ಪ. ಡ. ಅ. ಕ. ಸ. ಮ. ವ. ಬ. ಜ."}
+{"name": "ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ವಾನ್ ಬ್ರಾಲ್ ಜೂನಿಯರ್, ಎಂ.ಡಿ ಡಿ.ಡಿ.ಎಸ್", "given": "ಎಂ.ಡಿ", "middle": "ಡಿ.ಡಿ.ಎಸ್", "family": "ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ವಾನ್ ಬ್ರಾಲ್", "suffix": "ಜೂನಿಯರ್", "initials": "ಎ. ಡ. ಪ. ಡ. ಅ. ಕ. ಸ. ಮ. ವ. ಬ."}
 {"name": "ಬ್ರಾಲ್, ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ವಾನ್", "given": "ಅಡಾ", "middle": "ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ವಾನ್", "family": "ಬ್ರಾಲ್", "initials": "ಅ. ಕ. ಸ. ಮ. ವ. ಬ."}
 {"name": "ಮುಲ್ಲರ್ ಕ್ಯಾಥಿ", "order": "FAMILY_FIRST", "given": "ಕ್ಯಾಥಿ", "family": "ಮುಲ್ಲರ್", "initials": "ಕ. ಮ."}
 {"name": "ಮುಲ್ಲರ್, ಕ್ಯಾಥಿ", "given": "ಕ್ಯಾಥಿ", "family": "ಮುಲ್ಲರ್", "initials": "ಕ. ಮ."}
 {"name": "ಯಶ್ ವಿಜಯ ಲಕ್ಷ್ಮಿ ಹರೀಶ್", "order": "FAMILY_FIRST", "given": "ವಿಜಯ", "middle": "ಲಕ್ಷ್ಮಿ ಹರೀಶ್", "family": "ಯಶ್", "initials": "ವ. ಲ. ಹ. ಯ."}
 {"name": "ಯಶ್, ವಿಜಯ ಲಕ್ಷ್ಮಿ ಹರೀಶ್", "given": "ವಿಜಯ", "middle": "ಲಕ್ಷ್ಮಿ ಹರೀಶ್", "family": "ಯಶ್", "initials": "ವ. ಲ. ಹ. ಯ."}
 {"name": "ರಶ್ಮಿಕಾ ಶೆಟ್ಟಿ", "given": "ರಶ್ಮಿಕಾ", "family": "ಶೆಟ್ಟಿ", "initials": "ರ. ಶ."}
-{"name": "ವಾನ್ ಬ್ರಾಲ್ ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ಜೂನಿಯರ್, ಎಂ.ಡಿ ಡಿ.ಡಿ.ಎಸ್", "order": "FAMILY_FIRST", "given": "ಎಂ.ಡಿ", "middle": "ಡಿ.ಡಿ.ಎಸ್", "family": "ವಾನ್ ಬ್ರಾಲ್ ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ಜೂನಿಯರ್", "initials": "ಎ. ಡ. ವ. ಬ. ಪ. ಡ. ಅ. ಕ. ಸ. ಮ. ಜ."}
+{"name": "ವಾನ್ ಬ್ರಾಲ್ ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್ ಜೂನಿಯರ್, ಎಂ.ಡಿ ಡಿ.ಡಿ.ಎಸ್", "order": "FAMILY_FIRST", "given": "ಎಂ.ಡಿ", "middle": "ಡಿ.ಡಿ.ಎಸ್", "family": "ವಾನ್ ಬ್ರಾಲ್ ಪ್ರೊ. ಡಾ. ಅಡಾ ಕಾರ್ನೆಲಿಯಾ ಸಿಸಾರ್ ಮಾರ್ಟಿನ್", "suffix": "ಜೂನಿಯರ್", "initials": "ಎ. ಡ. ವ. ಬ. ಪ. ಡ. ಅ. ಕ. ಸ. ಮ."}
 {"name": "ವಿಜಯ ಲಕ್ಷ್ಮಿ ಹರೀಶ್ ಯಶ್", "given": "ವಿಜಯ", "middle": "ಲಕ್ಷ್ಮಿ ಹರೀಶ್", "family": "ಯಶ್", "initials": "ವ. ಲ. ಹ. ಯ."}
 {"name": "ಶೆಟ್ಟಿ ರಶ್ಮಿಕಾ", "order": "FAMILY_FIRST", "given": "ರಶ್ಮಿಕಾ", "family": "ಶೆಟ್ಟಿ", "initials": "ರ. ಶ."}
 {"name": "ಶೆಟ್ಟಿ, ರಶ್ಮಿಕಾ", "given": "ರಶ್ಮಿಕಾ", "family": "ಶೆಟ್ಟಿ", "initials": "ರ. ಶ."}
@@ -2968,7 +2972,7 @@
 {"name": "ಸ್ಟೋಬರ್, ಝಝಿಲಿಯಾ ಹಮಿಶ್", "given": "ಝಝಿಲಿಯಾ", "middle": "ಹಮಿಶ್", "family": "ಸ್ಟೋಬರ್", "initials": "ಝ. ಹ. ಸ."}
 {"name": "അശ്വതി നായർ", "given": "അശ്വതി", "family": "നായർ", "initials": "അ. ന."}
 {"name": "എയ്‌ഡ കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ വാൻ ബ്ര്യൂൾ എം.ഡി. ഡി.ഡി.എസ്", "given": "എയ്‌ഡ", "middle": "കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ വാൻ ബ്ര്യൂൾ എം.ഡി.", "family": "ഡി.ഡി.എസ്", "initials": "എ. ക. സ. മ. വ. ബ. എ. ഡ."}
-{"name": "കറുവാപ്പറമ്പിൽ ശ്രീ. തോമസ് കുരുവിള അന്തോണി ജൂനിയർ, എംപി", "order": "FAMILY_FIRST", "given": "എംപി", "family": "കറുവാപ്പറമ്പിൽ ശ്രീ. തോമസ് കുരുവിള അന്തോണി ജൂനിയർ", "initials": "എ. ക. ശ. ത. ക. അ. ജ."}
+{"name": "കറുവാപ്പറമ്പിൽ ശ്രീ. തോമസ് കുരുവിള അന്തോണി ജൂനിയർ, എംപി", "order": "FAMILY_FIRST", "given": "എംപി", "family": "കറുവാപ്പറമ്പിൽ ശ്രീ. തോമസ് കുരുവിള അന്തോണി", "suffix": "ജൂനിയർ", "initials": "എ. ക. ശ. ത. ക. അ."}
 {"name": "കറുവാപ്പറമ്പിൽ, തോമസ് കുരുവിള അന്തോണി", "given": "തോമസ്", "middle": "കുരുവിള അന്തോണി", "family": "കറുവാപ്പറമ്പിൽ", "initials": "ത. ക. അ. ക."}
 {"name": "കാത്തി മുള്ളർ", "given": "കാത്തി", "family": "മുള്ളർ", "initials": "ക. മ."}
 {"name": "ജോൺ ചാണ്ടി പടവീട്ടിൽ", "given": "ജോൺ", "middle": "ചാണ്ടി", "family": "പടവീട്ടിൽ", "initials": "ജ. ച. പ."}
@@ -2982,7 +2986,7 @@
 {"name": "ബ്ര്യൂൾ, എയ്‌ഡ കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ വാൻ", "given": "എയ്‌ഡ", "middle": "കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ വാൻ", "family": "ബ്ര്യൂൾ", "initials": "എ. ക. സ. മ. വ. ബ."}
 {"name": "മുള്ളർ കാത്തി", "order": "FAMILY_FIRST", "given": "കാത്തി", "family": "മുള്ളർ", "initials": "ക. മ."}
 {"name": "മുള്ളർ, കാത്തി", "given": "കാത്തി", "family": "മുള്ളർ", "initials": "ക. മ."}
-{"name": "വാൻ ബ്ര്യൂൾ പ്രൊഫ. ഡോ. എയ്‌ഡ കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ ജൂനിയർ, എം.ഡി. ഡി.ഡി.എസ്", "order": "FAMILY_FIRST", "given": "എം.ഡി.", "middle": "ഡി.ഡി.എസ്", "family": "വാൻ ബ്ര്യൂൾ പ്രൊഫ. ഡോ. എയ്‌ഡ കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ ജൂനിയർ", "initials": "എ. ഡ. വ. ബ. പ. ഡ. എ. ക. സ. മ. ജ."}
+{"name": "വാൻ ബ്ര്യൂൾ പ്രൊഫ. ഡോ. എയ്‌ഡ കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ ജൂനിയർ, എം.ഡി. ഡി.ഡി.എസ്", "order": "FAMILY_FIRST", "given": "എം.ഡി.", "middle": "ഡി.ഡി.എസ്", "family": "വാൻ ബ്ര്യൂൾ പ്രൊഫ. ഡോ. എയ്‌ഡ കോർണീലിയ സീസ൪ മാ൪ട്ടിൻ", "suffix": "ജൂനിയർ", "initials": "എ. ഡ. വ. ബ. പ. ഡ. എ. ക. സ. മ."}
 {"name": "സസിലിയ ഹാമിഷ് സ്‌റ്റോബർ", "given": "സസിലിയ", "middle": "ഹാമിഷ്", "family": "സ്‌റ്റോബർ", "initials": "സ. ഹ. സ."}
 {"name": "സിൻബാദ്", "given": "സിൻബാദ്", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "സ."}
 {"name": "സിൻബാദ്", "order": "FAMILY_FIRST", "family": "സിൻബാദ്", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "സ."}
@@ -3213,6 +3217,7 @@
 {"name": "マイケル.", "given": "マイケル.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "マ."}
 {"name": "マイケル·ジャクソン", "given": "マイケル", "family": "ジャクソン", "initials": "マ. ジ."}
 {"name": "マイケル・ジャクソン", "given": "マイケル", "family": "ジャクソン", "initials": "マ. ジ."}
+{"name": "ロバート・ダウニー・ジュニア", "given": "ロバート", "family": "ダウニー", "suffix": "ジュニア", "initials": "ロ. ダ."}
 {"name": "一郎安藤", "family": "一郎安藤", "initials": "一."}
 {"name": "佐々木 太郎", "given": "太郎", "family": "佐々木", "initials": "太. 佐."}
 {"name": "佐藤 花子 \"旧姓・田中\" (旧姓 鈴木)", "given": "花子", "family": "佐藤", "nickname": "旧姓 田中", "maiden": "鈴木", "initials": "花. 佐."}
@@ -3402,6 +3407,7 @@
 {"name": "남궁민수", "given": "민수", "family": "남궁", "ambiguities": ["SEGMENTATION"], "initials": "민. 남."}
 {"name": "남궁민수 지훈", "given": "민수", "middle": "지훈", "family": "남궁", "ambiguities": ["SEGMENTATION"], "initials": "민. 지. 남."}
 {"name": "남궁민수, 지훈", "given": "지훈", "family": "남궁민수", "initials": "지. 남."}
+{"name": "로버트 다우니 주니어", "given": "다우니", "family": "로버트", "suffix": "주니어", "initials": "다. 로."}
 {"name": "마이클·잭슨", "given": "마이클", "family": "잭슨", "initials": "마. 잭."}
 {"name": "마틴 킹, MA", "given": "틴", "middle": "킹", "family": "마", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "틴. 킹. 마."}
 {"name": "뮐러 케테", "order": "FAMILY_FIRST", "given": "케테", "family": "뮐러", "initials": "케. 뮐."}

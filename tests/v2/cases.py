@@ -1003,6 +1003,21 @@ CASES: tuple[Case, ...] = (
          {"given": "बलबीर", "family": "सिंह", "suffix": "सीनियर"},
          classification="fix(#661)",
          notes="1.4.0 and 2.4.2 read middle 'सिंह', family 'सीनियर'"),
+    Case("a_generational_word_in_hangul_comes_off_before_the_order",
+         "로버트 다우니 주니어",
+         {"given": "다우니", "family": "로버트", "suffix": "주니어"},
+         classification="fix(#679)",
+         notes="the suffix peels before the wholly-hangul name reads "
+               "family-first by script (rules.md#W4), so the transcribed "
+               "Robert is the family name as it was before; 2.4.2 read "
+               "middle '주니어', and 1.4.0 family '주니어'"),
+    Case("a_generational_word_after_a_nakaguro", "ロバート・ダウニー・ジュニア",
+         {"given": "ロバート", "family": "ダウニー", "suffix": "ジュニア"},
+         classification="fix(#679)",
+         notes="the nakaguro separates tokens, so the katakana Jr. is "
+               "a word of its own; pure katakana keeps the positional "
+               "order. 2.4.2 read middle 'ダウニー', family 'ジュニア'; "
+               "1.4.0 read the whole text as the first name"),
     Case("a_title_inside_the_run_is_a_title",
          "Eric H. Holder Jr. Attorney General",
          {"title": "Attorney General", "given": "Eric", "middle": "H.",

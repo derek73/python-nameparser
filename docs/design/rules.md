@@ -1242,6 +1242,11 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Antonio Pavlović mlađi"    →  family="Pavlović"
       "Antonio Pavlović mlađi"    →  suffix="mlađi"
       "Агриппина Младшая"         →  suffix="Младшая"
+      "جورج بوش الابن"            →  suffix="الابن"
+      "ロバート・ダウニー・ジュニア"  →  suffix="ジュニア"
+      "Питер Брейгель мл."        →  suffix="мл."
+      "Marie Fils"                →  family="Fils"  · boundary
+      "Jiří Dienstbier ml."       →  family="ml."  · boundary
       "Pavlović, Antonio mlađi"   →  suffix="mlađi"
       "Stariji Bruegel"           →  given="Stariji"  · boundary
       "John Smith M.A."           →  suffix="M.A."
