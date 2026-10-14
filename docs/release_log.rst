@@ -6,6 +6,7 @@ Release Log
 
     **Behavior Changes**
 
+    - **Fix a name typed with decomposed (NFD) accents or hangul reading differently from its composed spelling.** ``John й Smith`` typed with ``й`` as ``и`` plus a combining breve gives middle ``й``, where 2.3.0 through 2.4.1 read the whole name as the first name, restoring 1.4.0's reading. :issue:`665`
     - **Fix the Hausa given name Shehu being read as a title.** ``Shehu Shagari`` gives first ``Shehu``, last ``Shagari``, where 1.4.0 through 2.4.1 gave title ``Shehu`` and no first name. :issue:`660`
 
 * 2.4.1 - October 13, 2026

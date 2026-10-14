@@ -143,7 +143,18 @@ def _drop_kana_voicing_marks(text: str) -> str:
 # vetoes the whole word -- 'Kim김.' is refused as a title along with
 # '田中.' -- and that is deliberate: a word carrying a script with no
 # abbreviations is not wearing an abbreviation's period.
-in_initialless_script = _script_matcher(*_NO_INITIALS, whole=False)
+_has_initialless_char = _script_matcher(*_NO_INITIALS, whole=False)
+
+
+def in_initialless_script(text: str) -> bool:
+    """Whether TEXT holds a character of a script that writes no
+    initials (#320), asked of the composed spelling: a decomposed
+    hangul syllable is conjoining jamo, which no _NO_INITIALS range
+    holds, so '씨.' typed decomposed escaped the veto every shape test
+    beside it reads composed (#665). ASCII answers without the
+    matcher's frame, as the callers' own `isascii()` gates do."""
+    return (not text.isascii()
+            and _has_initialless_char(unicodedata.normalize("NFC", text)))
 
 
 # H2's own shape, text-level: an unlisted period-marked abbreviation,
@@ -224,7 +235,15 @@ def is_initial_shaped(text: str) -> bool:
     name want is_initial (#320). The two answers differ only inside
     _NO_INITIALS scripts, where '씨.' is initial-SHAPED but is not an
     initial -- see assign's roman-numeral fork, the shape caller, for
-    what picking the wrong one costs."""
+    what picking the wrong one costs.
+
+    Asked of the composed spelling, as `_render` asks it (#542): `\\w`
+    does not match a combining mark, so a decomposed 'É.' is three
+    characters to the pattern and no initial (#665). Composing rather
+    than widening keeps the pattern v1-verbatim, and both calls are
+    C-level, so the predicate costs no frame it did not before."""
+    if not text.isascii():
+        text = unicodedata.normalize("NFC", text)
     return bool(_INITIAL.fullmatch(text))
 
 

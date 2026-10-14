@@ -145,12 +145,22 @@ def test_example(rule: Rule, example: Example) -> None:
         assert actual == example.value
 
 
-def test_the_h2_nfd_example_is_still_decomposed() -> None:
-    """#652: rules.md#H2's NFD example is the only executable witness
-    of the encoding clause, and an editor or formatter that
-    NFC-normalizes the file turns it into the composed case, which
-    always worked and still passes. Its bytes are z + U+030C."""
+@pytest.mark.parametrize("decomposed", [
+    "inž.",  # H2's abbreviation shape (#652): z + U+030C
+    "John й Smith",  # P3's one-letter connective (#665)
+    "É. y É. Smith",  # P3's initial beside a connective (#665)
+    "김. 민준",  # H2's script veto on hangul typed as jamo (#665)
+])
+def test_the_nfd_examples_are_still_decomposed(decomposed: str) -> None:
+    """The decomposed example lines in rules.md are the only executable
+    witnesses of its encoding clauses (H2, P3), and an editor or
+    formatter that NFC-normalizes the file turns each into the
+    composed case, which always worked and still passes. Each entry
+    here is typed decomposed, which the first assert checks so that
+    normalizing this file cannot hollow the test out either."""
+    import unicodedata
     from pathlib import Path
+    assert not unicodedata.is_normalized("NFC", decomposed)
     text = (Path(__file__).parents[2] / "docs" / "design" / "rules.md"
             ).read_text(encoding="utf-8")
-    assert "inž." in text, "H2's NFD example was recomposed"
+    assert decomposed in text, f"the NFD example {decomposed!r} was recomposed"

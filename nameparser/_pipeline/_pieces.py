@@ -52,6 +52,7 @@ helper.
 """
 from __future__ import annotations
 
+import unicodedata
 from collections.abc import (
     Callable, Container, Iterable, Mapping, Sequence, Set)
 from typing import NamedTuple
@@ -314,6 +315,10 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
             continue
         if letter_stays and len(pieces[k]) == 1:
             text = tokens[pieces[k][0]].text
+            if not text.isascii():
+                # a decomposed 'й' is one letter in two code points
+                # (#665); compose it, as the lookup does
+                text = unicodedata.normalize("NFC", text)
             if len(text) == 1 and text.isalpha():
                 k += 1
                 continue
