@@ -16,6 +16,7 @@ import importlib.util
 import io
 import json
 import sys
+import urllib.parse
 import urllib.request
 import zipfile
 from collections import Counter
@@ -59,6 +60,27 @@ def test_the_network_guard_bites() -> None:
     # query.wikidata.org.
     with pytest.raises(_NetworkUsed):
         tool._sparql("SELECT * WHERE {}")
+
+
+def test_sparql_sends_the_query_in_the_body_not_the_url(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # #680: a GET carried the query in the URL, and the endpoint answered
+    # HTTP 431 once it passed about 7 KB -- reached by a seven-letter
+    # Cyrillic word (Младший), each letter six bytes percent-encoded and
+    # repeated once per label language and spelling.
+    sent: list[urllib.request.Request] = []
+
+    def capture(request: urllib.request.Request, **kwargs: object) -> io.BytesIO:
+        sent.append(request)
+        return io.BytesIO(b'{"results": {"bindings": []}}')
+    monkeypatch.setattr(urllib.request, "urlopen", capture)
+    query = tool.wikidata_countries_query(tool.spellings("Младший"))
+    tool._sparql(query)
+    (request,) = sent
+    assert request.get_method() == "POST"
+    assert request.full_url == tool.WIKIDATA_ENDPOINT
+    assert isinstance(request.data, bytes)
+    assert urllib.parse.parse_qs(request.data.decode()) == {"query": [query]}
 
 
 _CENSUS = """name,rank,count,prop100k,cum_prop100k,pctwhite,pctblack,pctapi,pctaian,pct2prace,pcthispanic
