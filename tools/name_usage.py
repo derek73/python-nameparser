@@ -420,9 +420,13 @@ def wikidata_usage(word: str, top: int) -> Usage:
 
 
 def _sparql(query: str) -> dict[str, Any]:
-    url = WIKIDATA_ENDPOINT + "?" + urllib.parse.urlencode({"query": query})
-    request = urllib.request.Request(url, headers={
+    # POSTed, not a GET: the VALUES block repeats every spelling once per
+    # label language, so a seven-letter Cyrillic word already pushes the
+    # URL past the endpoint's limit (HTTP 431, #680).
+    body = urllib.parse.urlencode({"query": query}).encode()
+    request = urllib.request.Request(WIKIDATA_ENDPOINT, data=body, headers={
         "Accept": "application/sparql-results+json",
+        "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
         "User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=90) as response:
         result: dict[str, Any] = json.load(response)
