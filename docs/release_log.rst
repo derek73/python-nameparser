@@ -4,6 +4,10 @@ Release Log
 
     nameparser 2.5 is under development.
 
+    **Behavior Changes**
+
+    - **Add junior and senior in other languages as suffixes.** ``Antonio Pavlović mlađi`` gives last ``Pavlović``, suffix ``mlađi``, where 1.4.0 through 2.4.2 gave middle ``Pavlović``, last ``mlađi``; the words are Croatian, Serbian, Bosnian, Bulgarian, Russian, Ukrainian, Czech, Slovak, Finnish, Lithuanian and Hindi, written as a separate word after the name. :issue:`661`
+
 * 2.4.2 - October 13, 2026
 
     nameparser 2.4.2 fixes two readings: a name typed with decomposed accents or hangul, and the Hausa given name Shehu.

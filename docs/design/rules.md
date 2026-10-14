@@ -1238,6 +1238,11 @@ S2. Rationale: generational suffixes and credentials are recognized
     part in silence, unless paired initials speak only for each
     other.
       "John Smith Jr."            →  suffix="Jr."
+      "Antonio Pavlović mlađi"    →  family="Pavlović"
+      "Antonio Pavlović mlađi"    →  suffix="mlađi"
+      "Агриппина Младшая"         →  suffix="Младшая"
+      "Pavlović, Antonio mlađi"   →  suffix="mlađi"
+      "Stariji Bruegel"           →  given="Stariji"  · boundary
       "John Smith M.A."           →  suffix="M.A."
       "John Smith PhD"            →  suffix="PhD"
       "John Ma"                   →  family="Ma"  · boundary
@@ -1302,6 +1307,10 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Mary Jane King Smith"      →  family="Smith"
       "Josep Carod i Rovira"      →  family="Carod i Rovira"
       "Mohamed Ali Abd Allah"     →  family="Allah"
+      "Antonio Pavlović mlađi Jones"  →  suffix="mlađi Jones"
+      "Pieter Bruegel stariji Jones"  →  suffix="stariji Jones"
+      "Гай Плиний Старший Иванов"  →  family="Иванов"  · boundary
+      "Taro Tanaka さん Jones"    →  family="Jones"  · boundary
       "John PhD Smith"            →  family="Smith"  · boundary
     Accepted: a title before the credential keeps it a credential,
     and the name loses its surname exactly as it did before this
@@ -1353,6 +1362,14 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
+    Accepted: the non-Latin refusal is drawn by script, because the
+    vocabulary does not say which suffix words are honorifics, so a
+    generational word in another script does not start the run
+    either, and Serbian reads by the script it is written in. Only a
+    name word written after the generational word reaches the
+    difference (decisions.md#generational-words, open at #679).
+      "Ana Horvat stariji Jones"  →  suffix="stariji Jones"
+      "Ана Хорват старији Џонс"   →  family="Џонс"  · boundary
     history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P1, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with

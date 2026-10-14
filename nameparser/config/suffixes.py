@@ -5,7 +5,8 @@ SUFFIX_WORDS = frozenset({
     # pending the within-script collision vetting the issue asks for;
     # 'ст' especially is a plausible false-positive risk (many two-
     # letter Cyrillic abbreviations exist), and both are short enough
-    # to worry about. Not shipped in this pass.
+    # to worry about. Not shipped in this pass. The spelled-out words
+    # ship since #661 (the block below 'vet'); the abbreviations do not.
     'esq',
     'esquire',
     'jr',
@@ -27,6 +28,29 @@ SUFFIX_WORDS = frozenset({
     # literally instead of going through nickname/suffix disambiguation).
     'ret',
     'vet',
+
+    # #661: junior/senior in other languages, the spelled-out words
+    # written spaced AFTER the name ("Hans Holbein mlađi", "Плиний
+    # Младший"). Each was found in that position in real titles on its
+    # own language's Wikipedia, and none is borne as a name beyond noise
+    # (US Census, SSA, Wikidata via tools/name_usage.py; nuorempi has one
+    # Wikidata bearer each way). Feminine forms ship beside
+    # the masculine where the language has them. Left out, with reasons,
+    # in decisions.md#generational-words: kıdemli, sóisearach and
+    # sinsearach (rank words, not generations), Hungarian ifj./id.
+    # (written BEFORE the name), Bulgarian млада (a given name), and the
+    # abbreviations ml./мл./st. (the #269 deferral above).
+    'mlađi', 'mlađa', 'stariji', 'starija',          # hr/sr/bs Latin
+    'млађи', 'млађа', 'старији', 'старија',          # sr Cyrillic
+    'младши', 'младша', 'старши', 'старша',          # bg; старша is uk too
+    'млади', 'стари',                                # bg the Younger/the Elder
+    'младший', 'младшая', 'старший', 'старшая',      # ru
+    'молодший', 'молодша',                           # uk
+    'mladší', 'starší',                              # cs/sk
+    'nuorempi', 'vanhempi',                          # fi
+    'jaunesnysis', 'jaunesnioji',                    # lt
+    'vyresnysis', 'vyresnioji',                      # lt
+    'जूनियर', 'जुनियर', 'सीनियर',                    # hi, junior in both u spellings
 
     # #269 follow-up: Hebrew post-nominals, both gershayim spellings
     # (ASCII '"' and U+05F4); the mid-word quote is inert in

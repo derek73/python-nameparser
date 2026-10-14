@@ -95,6 +95,7 @@
 {"name": "Amy E Maid", "given": "Amy", "middle": "E", "family": "Maid", "initials": "A. E. M."}
 {"name": "Amy E. Maid", "given": "Amy", "middle": "E.", "family": "Maid", "initials": "A. E. M."}
 {"name": "An tOll. An Dr. Brigid Aoibhe Sophia de Bhulbh", "given": "An", "middle": "tOll. An Dr. Brigid Aoibhe Sophia", "family": "de Bhulbh", "initials": "A. t. A. D. B. A. S. B."}
+{"name": "Ana Horvat stariji Jones", "given": "Ana", "family": "Horvat", "suffix": "stariji Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. H."}
 {"name": "Ana Marija Vera Kovač", "given": "Ana", "middle": "Marija Vera", "family": "Kovač", "initials": "A. M. V. K."}
 {"name": "Ana Torres", "given": "Ana", "family": "Torres", "initials": "A. T."}
 {"name": "Andersen Irene", "order": "FAMILY_FIRST", "given": "Irene", "family": "Andersen", "initials": "I. A."}
@@ -140,6 +141,8 @@
 {"name": "Anne Sofie Holm Hansen", "given": "Anne", "middle": "Sofie Holm", "family": "Hansen", "initials": "A. S. H. H."}
 {"name": "Annelise Weber", "given": "Annelise", "family": "Weber", "initials": "A. W."}
 {"name": "Annette Charlotte Freiherrin von und zu der Tann-Rathsamhausen", "given": "Annette", "middle": "Charlotte", "family": "Freiherrin von und zu der Tann-Rathsamhausen", "initials": "A. C. T."}
+{"name": "Antonio Pavlović mlađi", "given": "Antonio", "family": "Pavlović", "suffix": "mlađi", "initials": "A. P."}
+{"name": "Antonio Pavlović mlađi Jones", "given": "Antonio", "family": "Pavlović", "suffix": "mlađi Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. P."}
 {"name": "Ardelean, Daniel Ionescu Dragoș Ioan", "given": "Daniel", "middle": "Ionescu Dragoș Ioan", "family": "Ardelean", "initials": "D. I. D. I. A."}
 {"name": "Asmar", "given": "Asmar", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "A."}
 {"name": "Asmar", "order": "FAMILY_FIRST", "family": "Asmar", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "A."}
@@ -1302,7 +1305,7 @@
 {"name": "Mario", "given": "Mario", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
 {"name": "Mario", "order": "FAMILY_FIRST", "family": "Mario", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
 {"name": "Marić, Branko Hrvoje", "given": "Branko", "middle": "Hrvoje", "family": "Marić", "initials": "B. H. M."}
-{"name": "Marić, dr. sc. Branko Hrvoje mlađi, prof.", "order": "FAMILY_FIRST", "title": "dr. sc. prof.", "given": "Branko", "middle": "Hrvoje mlađi", "family": "Marić", "initials": "B. H. m. M."}
+{"name": "Marić, dr. sc. Branko Hrvoje mlađi, prof.", "order": "FAMILY_FIRST", "title": "dr. sc. prof.", "given": "Branko", "middle": "Hrvoje", "family": "Marić", "suffix": "mlađi", "initials": "B. H. M."}
 {"name": "Marja-Liisa Katariina Lehtola-Aalto kansanedustaja", "given": "Marja-Liisa", "middle": "Katariina Lehtola-Aalto", "family": "kansanedustaja", "initials": "M. K. L. k."}
 {"name": "Mark", "given": "Mark", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
 {"name": "Mark", "order": "FAMILY_FIRST", "family": "Mark", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
@@ -1345,7 +1348,7 @@
 {"name": "Mgr. Ing. Anna Karolína Eva Kristína von Kant Nováková Predná, CSc.", "title": "Mgr. Ing.", "given": "Anna", "middle": "Karolína Eva Kristína", "family": "von Kant Nováková Predná", "suffix": "CSc.", "initials": "A. K. E. K. K. N. P."}
 {"name": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSc.", "order": "FAMILY_FIRST", "title": "Mgr. Ing.", "given": "Kant", "middle": "Nováková Predná Anna Karolína Eva Kristína", "family": "von", "suffix": "CSc.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "K. N. P. A. K. E. K. v."}
 {"name": "Mike van der Velt", "given": "Mike", "family": "van der Velt", "initials": "M. V."}
-{"name": "Milenković dr Slađana Vera mlađi, dipl. inž.", "order": "FAMILY_FIRST", "title": "dipl. inž.", "given": "dr", "middle": "Slađana Vera mlađi", "family": "Milenković", "initials": "d. S. V. m. M."}
+{"name": "Milenković dr Slađana Vera mlađi, dipl. inž.", "order": "FAMILY_FIRST", "title": "dipl. inž.", "given": "dr", "middle": "Slađana Vera", "family": "Milenković", "suffix": "mlađi", "initials": "d. S. V. M."}
 {"name": "Milenković, Slađana Vera", "given": "Slađana", "middle": "Vera", "family": "Milenković", "initials": "S. V. M."}
 {"name": "Miler Kete", "order": "FAMILY_FIRST", "given": "Kete", "family": "Miler", "initials": "K. M."}
 {"name": "Miler, Kete", "given": "Kete", "family": "Miler", "initials": "K. M."}
@@ -1474,6 +1477,7 @@
 {"name": "Pablo Pérez, Sr. Miguel Ángel Juan Antonio", "title": "Sr.", "given": "Miguel", "middle": "Ángel Juan Antonio", "family": "Pablo Pérez", "initials": "M. Á. J. A. P. P."}
 {"name": "Pan Nowak Tomasz Jan", "order": "FAMILY_FIRST", "given": "Nowak", "middle": "Tomasz Jan", "family": "Pan", "initials": "N. T. J. P."}
 {"name": "Pan Tomasz Nowak", "given": "Pan", "middle": "Tomasz", "family": "Nowak", "initials": "P. T. N."}
+{"name": "Pavlović, Antonio mlađi", "given": "Antonio", "family": "Pavlović", "suffix": "mlađi", "initials": "A. P."}
 {"name": "Pedro", "given": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
 {"name": "Pedro", "order": "FAMILY_FIRST", "family": "Pedro", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
 {"name": "Penkauskienė Sofija Rita", "order": "FAMILY_FIRST", "given": "Sofija", "middle": "Rita", "family": "Penkauskienė", "initials": "S. R. P."}
@@ -1492,6 +1496,7 @@
 {"name": "Ph. D., Prof. Dr. de la Cruz Alejandro Manuel César Mamani Jr.", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "family": "Ph. D. de la Cruz Alejandro Manuel César Mamani", "suffix": "Jr.", "initials": "P. D. C. A. M. C. M."}
 {"name": "Piet", "given": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
 {"name": "Piet", "order": "FAMILY_FIRST", "family": "Piet", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "P."}
+{"name": "Pieter Bruegel stariji Jones", "given": "Pieter", "family": "Bruegel", "suffix": "stariji Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. B."}
 {"name": "Piras Giuanne Marcu", "order": "FAMILY_FIRST", "given": "Giuanne", "middle": "Marcu", "family": "Piras", "initials": "G. M. P."}
 {"name": "Piras, Giuanne Marcu", "given": "Giuanne", "middle": "Marcu", "family": "Piras", "initials": "G. M. P."}
 {"name": "Planta, Margaritta Marionna Maria de", "given": "Margaritta", "middle": "Marionna Maria", "family": "de Planta", "initials": "M. M. M. P."}
@@ -1790,6 +1795,7 @@
 {"name": "St Clair", "title": "St", "family": "Clair", "initials": "C."}
 {"name": "Stander Zelda Herman", "order": "FAMILY_FIRST", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stander, Zelda Herman", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
+{"name": "Stariji Bruegel", "given": "Stariji", "family": "Bruegel", "initials": "S. B."}
 {"name": "Ste Marie", "family": "Ste Marie", "initials": "M."}
 {"name": "Stefan", "given": "Stefan", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
 {"name": "Stefan", "order": "FAMILY_FIRST", "family": "Stefan", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
@@ -1835,6 +1841,7 @@
 {"name": "Szabados, Máté Bendegúz", "given": "Máté", "middle": "Bendegúz", "family": "Szabados", "initials": "M. B. S."}
 {"name": "Tammik hr Mari-Ann Henri Roobert parlamendiliige", "order": "FAMILY_FIRST", "given": "hr", "middle": "Mari-Ann Henri Roobert parlamendiliige", "family": "Tammik", "initials": "h. M. H. R. p. T."}
 {"name": "Tammik, Mari-Ann Henri Roobert, parlamendiliige", "given": "Mari-Ann", "middle": "Henri Roobert", "family": "Tammik", "suffix": "parlamendiliige", "ambiguities": ["COMMA_STRUCTURE"], "initials": "M. H. R. T."}
+{"name": "Taro Tanaka さん Jones", "given": "Taro", "middle": "Tanaka さん", "family": "Jones", "initials": "T. T. さ. J."}
 {"name": "Te Awanui-a-Rangi Black", "given": "Te", "middle": "Awanui-a-Rangi", "family": "Black", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "T. A. B."}
 {"name": "Tham Jun", "given": "Tham", "family": "Jun", "initials": "T. J."}
 {"name": "Tham Jun Hoe", "given": "Tham", "middle": "Jun", "family": "Hoe", "initials": "T. J. H."}
@@ -2094,7 +2101,7 @@
 {"name": "dr. juan de la vega jr.", "title": "dr.", "given": "juan", "family": "de la vega", "suffix": "jr.", "initials": "j. v."}
 {"name": "dr. juan garcia III", "title": "dr.", "given": "juan", "family": "garcia", "suffix": "III", "initials": "j. g."}
 {"name": "dr. p. Gabrielė Aldona Petraitytė", "title": "dr.", "given": "p.", "middle": "Gabrielė Aldona", "family": "Petraitytė", "initials": "p. G. A. P."}
-{"name": "dr. sc. Branko Hrvoje Marić mlađi, prof.", "title": "dr. sc. prof.", "given": "Branko", "middle": "Hrvoje Marić", "family": "mlađi", "initials": "B. H. M. m."}
+{"name": "dr. sc. Branko Hrvoje Marić mlađi, prof.", "title": "dr. sc. prof.", "given": "Branko", "middle": "Hrvoje", "family": "Marić", "suffix": "mlađi", "initials": "B. H. M."}
 {"name": "e and e", "given": "e and e", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "e. e."}
 {"name": "e j smith", "given": "e", "middle": "j", "family": "smith", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "e. j. s."}
 {"name": "émile zola", "given": "émile", "family": "zola", "initials": "é. z."}
@@ -2239,7 +2246,7 @@
 {"name": "van den Volf Ada Kornelia Sezar Martin M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "den Volf Ada Kornelia Sezar Martin", "family": "van", "suffix": "M.D. Ph.D.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. A. K. S. M. v."}
 {"name": "van den Volf Ada Kornelia Yeva Sofiya M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "den Volf Ada Kornelia Yeva Sofiya", "family": "van", "suffix": "M.D. Ph.D.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. A. K. Y. S. v."}
 {"name": "van den Volf Becker Schmidt, Prof. Dr. Ada Kornelia Sezar Martin M.D. Ph.D.", "title": "Prof. Dr.", "given": "Ada", "middle": "Kornelia Sezar Martin", "family": "van den Volf Becker Schmidt", "suffix": "M.D. Ph.D.", "initials": "A. K. S. M. V. B. S."}
-{"name": "van den Volf prof. dr Aleksandra Eva Sara mlađi, dipl. inž.", "order": "FAMILY_FIRST", "title": "dipl. inž.", "given": "den Volf prof. dr Aleksandra Eva Sara mlađi", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. p. d. A. E. S. m. v."}
+{"name": "van den Volf prof. dr Aleksandra Eva Sara mlađi, dipl. inž.", "order": "FAMILY_FIRST", "title": "dipl. inž.", "given": "den Volf prof. dr Aleksandra Eva Sara", "family": "van", "suffix": "mlađi", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. p. d. A. E. S. v."}
 {"name": "van den Volfa Laima Kristīne", "order": "FAMILY_FIRST", "given": "den Volfa Laima Kristīne", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. L. K. v."}
 {"name": "van den Volfa Laima Kristīne Eva Sofija", "order": "FAMILY_FIRST", "given": "den Volfa Laima Kristīne Eva Sofija", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. L. K. E. S. v."}
 {"name": "van den Wolf Becker Schmidt Farf. Dr. Ada Cornelia Eva Sophia M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "den Wolf Becker Schmidt Farf. Dr. Ada Cornelia Eva Sophia", "family": "van", "suffix": "M.D. Ph.D.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. W. B. S. F. D. A. C. E. S. v."}
@@ -2341,6 +2348,7 @@
 {"name": "Єва Марія Шевченко", "given": "Єва", "middle": "Марія", "family": "Шевченко", "initials": "Є. М. Ш."}
 {"name": "Ірына Алейнік", "given": "Ірына", "family": "Алейнік", "initials": "І. А."}
 {"name": "Јован Драган Поповић", "given": "Јован", "middle": "Драган", "family": "Поповић", "initials": "Ј. Д. П."}
+{"name": "Агриппина Младшая", "given": "Агриппина", "suffix": "Младшая", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "А."}
 {"name": "Ада Карнэлія Сесар Марцін фон Бруль д-р", "given": "Ада", "middle": "Карнэлія Сесар Марцін фон Бруль", "family": "д-р", "initials": "А. К. С. М. ф. Б. д."}
 {"name": "Ада Корнелия фон Брюль Джуниор, тіс дәрігері", "given": "тіс", "middle": "дәрігері", "family": "Ада Корнелия фон Брюль Джуниор", "initials": "т. д. А. К. ф. Б. Д."}
 {"name": "Адлер Ирене", "order": "FAMILY_FIRST", "given": "Ирене", "family": "Адлер", "initials": "И. А."}
@@ -2352,6 +2360,7 @@
 {"name": "Амосова Ирина", "order": "FAMILY_FIRST", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
 {"name": "Амосова, Ирина", "given": "Ирина", "family": "Амосова", "initials": "И. А."}
 {"name": "Ана Иванова Димитрова", "given": "Ана", "middle": "Иванова", "family": "Димитрова", "initials": "А. И. Д."}
+{"name": "Ана Хорват старији Џонс", "given": "Ана", "middle": "Хорват старији", "family": "Џонс", "initials": "А. Х. с. Џ."}
 {"name": "Анна Мельник", "given": "Анна", "family": "Мельник", "initials": "А. М."}
 {"name": "Аталан", "given": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "А."}
 {"name": "Аталан", "order": "FAMILY_FIRST", "family": "Аталан", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "А."}
@@ -2376,6 +2385,7 @@
 {"name": "Волф, Ана Марија Цезар Мартин ван ден", "given": "Ана", "middle": "Марија Цезар Мартин ван ден", "family": "Волф", "initials": "А. М. Ц. М. в. д. В."}
 {"name": "Вольга Караліна Равенская", "given": "Вольга", "middle": "Караліна", "family": "Равенская", "initials": "В. К. Р."}
 {"name": "Вустер Бертрам Вилберфорс Ҳенру Роберт", "order": "FAMILY_FIRST", "given": "Бертрам", "middle": "Вилберфорс Ҳенру Роберт", "family": "Вустер", "initials": "Б. В. Ҳ. Р. В."}
+{"name": "Гай Плиний Старший Иванов", "given": "Гай", "middle": "Плиний Старший", "family": "Иванов", "initials": "Г. П. С. И."}
 {"name": "Джон", "given": "Джон", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "Д."}
 {"name": "Джон", "order": "FAMILY_FIRST", "family": "Джон", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "Д."}
 {"name": "Джоунс, Зара Мери", "given": "Зара", "middle": "Мери", "family": "Джоунс", "initials": "З. М. Д."}
@@ -2431,7 +2441,7 @@
 {"name": "Марковић Ирена", "order": "FAMILY_FIRST", "given": "Ирена", "family": "Марковић", "initials": "И. М."}
 {"name": "Марковић, Ирена", "given": "Ирена", "family": "Марковић", "initials": "И. М."}
 {"name": "Мельник Анна", "order": "FAMILY_FIRST", "given": "Анна", "family": "Мельник", "initials": "А. М."}
-{"name": "Миленковић др Слађана Вера млађи, дипл. инж.", "order": "FAMILY_FIRST", "title": "дипл. инж.", "given": "др", "middle": "Слађана Вера млађи", "family": "Миленковић", "initials": "д. С. В. м. М."}
+{"name": "Миленковић др Слађана Вера млађи, дипл. инж.", "order": "FAMILY_FIRST", "title": "дипл. инж.", "given": "др", "middle": "Слађана Вера", "family": "Миленковић", "suffix": "млађи", "initials": "д. С. В. М."}
 {"name": "Миленковић, Слађана Вера", "given": "Слађана", "middle": "Вера", "family": "Миленковић", "initials": "С. В. М."}
 {"name": "Милер Кете", "order": "FAMILY_FIRST", "given": "Кете", "family": "Милер", "initials": "К. М."}
 {"name": "Милер, Кете", "given": "Кете", "family": "Милер", "initials": "К. М."}
@@ -2517,7 +2527,7 @@
 {"name": "Юрій", "order": "FAMILY_FIRST", "family": "Юрій", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "Ю."}
 {"name": "Яҡупова Ирина", "order": "FAMILY_FIRST", "given": "Ирина", "family": "Яҡупова", "initials": "И. Я."}
 {"name": "Яҡупова, Ирина", "given": "Ирина", "family": "Яҡупова", "initials": "И. Я."}
-{"name": "ван ден Волф проф. др Александра Ева Сара млађи, дипл. инж.", "order": "FAMILY_FIRST", "title": "дипл. инж.", "given": "ден", "middle": "Волф проф. др Александра Ева Сара млађи", "family": "ван", "initials": "д. В. п. д. А. Е. С. м. в."}
+{"name": "ван ден Волф проф. др Александра Ева Сара млађи, дипл. инж.", "order": "FAMILY_FIRST", "title": "дипл. инж.", "given": "ден", "middle": "Волф проф. др Александра Ева Сара", "family": "ван", "suffix": "млађи", "initials": "д. В. п. д. А. Е. С. в."}
 {"name": "ван ден Вольф Алтынай Сулайманова Асель Сартбаева Илимдин кандидаты", "order": "FAMILY_FIRST", "given": "ден", "middle": "Вольф Алтынай Сулайманова Асель Сартбаева Илимдин кандидаты", "family": "ван", "initials": "д. В. А. С. А. С. И. к. в."}
 {"name": "ван ден Вольф Бекер Шмидт, Проф. Доктор. Алтынай Сулайманова Асель Сартбаева Илимдин кандидаты", "title": "Проф. Доктор.", "given": "Алтынай", "middle": "Сулайманова Асель Сартбаева Илимдин кандидаты", "family": "ван ден Вольф Бекер Шмидт", "initials": "А. С. А. С. И. к. в. д. В. Б. Ш."}
 {"name": "вон Брухи Гонзалес Доминго Проф. Док. Ада Корнелиа Сезар Мартин", "order": "FAMILY_FIRST", "given": "Брухи", "middle": "Гонзалес Доминго Проф. Док. Ада Корнелиа Сезар Мартин", "family": "вон", "initials": "Б. Г. Д. П. Д. А. К. С. М. в."}
