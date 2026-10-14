@@ -28,9 +28,10 @@ _LEX = Lexicon(
     given_name_titles=frozenset({"sir"}),
     particles=frozenset({"de", "der", "ibn", "la", "van", "vd"}),
     particles_ambiguous=frozenset({"la", "van"}),
-    # `씨` is a suffix word that starts no credential run (rules.md#S2,
-    # #602: an honorific word never does), the filler a test needs
-    # where a credential would now take the rest of the part
+    # `씨` is a ONE-LETTER suffix word, which starts no credential run
+    # (rules.md#S2's two-letter minimum -- any longer suffix word would,
+    # an honorific included since #679), the filler a test needs where
+    # a credential would now take the rest of the part
     suffix_words=frozenset({"jr", "씨"}),
     # `vd` mirrors its shipped dual membership -- particle AND
     # UNAMBIGUOUS suffix acronym -- which is what puts a name on P6's
@@ -829,8 +830,9 @@ def test_a_suffix_word_mid_run_ends_the_chain(
     # Without it the whole leftover is ONE unit and lands in one field.
     # Three leftover units here, so this is also the only place the two
     # orders are pinned apart at a count other than two. The suffix word
-    # is an honorific because a credential here would start #602's run
-    # and take `Juan` with it (rules.md#S2); it was `MD` until then.
+    # is one letter because a longer one -- a credential, or since #679
+    # an honorific -- would start #602's run and take `Juan` with it
+    # (rules.md#S2); it was `MD` until #602.
     out = _parsed("de Mesnil van Berg 씨 Juan", policy)
     assert _by_role(out, Role.FAMILY) == "de Mesnil"
     assert _by_role(out, Role.GIVEN) == given

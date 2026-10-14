@@ -6,7 +6,8 @@ SUFFIX_WORDS = frozenset({
     # 'ст' especially is a plausible false-positive risk (many two-
     # letter Cyrillic abbreviations exist), and both are short enough
     # to worry about. Not shipped in this pass. The spelled-out words
-    # ship since #661 (the block below 'vet'); the abbreviations do not.
+    # ship since #661 (the block below 'vet'), and мл since #679, which
+    # found nothing it collides with in Cyrillic; ст stays deferred.
     'esq',
     'esquire',
     'jr',
@@ -39,7 +40,7 @@ SUFFIX_WORDS = frozenset({
     # in decisions.md#generational-words: kıdemli, sóisearach and
     # sinsearach (rank words, not generations), Hungarian ifj./id.
     # (written BEFORE the name), Bulgarian млада (a given name), and the
-    # abbreviations ml./мл./st. (the #269 deferral above).
+    # abbreviations ml./st. (#679 ships мл.; see the deferral above).
     'mlađi', 'mlađa', 'stariji', 'starija',          # hr/sr/bs Latin
     'млађи', 'млађа', 'старији', 'старија',          # sr Cyrillic
     'младши', 'младша', 'старши', 'старша',          # bg; старша is uk too
@@ -55,9 +56,10 @@ SUFFIX_WORDS = frozenset({
     # way. CLDR is a lead, not a source: where its word is a label
     # translation, an adjective written BEFORE the name, or unused, the
     # word the language's Wikipedia writes after names ships instead
-    # (lo, ti, or, ta, si, mk). Transliterations of "senior" ship only
-    # where the surname Senior was not measured in that script (סניור
-    # and シニア were), and English `senior` is not a suffix at all.
+    # (lo, ti, or, ta, si, mk). Transliterations of "senior" ship, but
+    # not Hebrew סניור, which Israelis bear as a surname (אלי סניור), nor
+    # Japanese シニア (decisions.md#generational-words); English
+    # `senior` is not a suffix at all, Senior being a surname.
     # Left out with reasons in decisions.md#generational-words,
     # including fils/père and the Latin ml./st., which collide outside
     # their languages and wait on a pack.

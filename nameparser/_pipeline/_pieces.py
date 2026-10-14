@@ -467,8 +467,9 @@ def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
 def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
                             tokens: Sequence[WorkToken]) -> bool:
     """Whether one piece starts #602's run: an unambiguous suffix
-    word of two or more letters, in any script -- a credential acronym or a
-    generational word -- that no other vocabulary claims as a name.
+    word of two or more letters, in any script -- a credential acronym,
+    a generational word or an honorific -- that no other vocabulary
+    claims as a name.
 
     `is_suffix_piece` already refuses the ambiguous class and an
     initial-shaped letter. Refused here: any single letter (a lowercase
