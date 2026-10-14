@@ -6,7 +6,7 @@ Release Log
 
     **Behavior Changes**
 
-    - **Add junior and senior in other languages as suffixes.** ``Antonio Pavlović mlađi`` gives last ``Pavlović``, suffix ``mlađi``, where 1.4.0 through 2.4.2 gave middle ``Pavlović``, last ``mlađi``; the words are Croatian, Serbian, Bosnian, Bulgarian, Russian, Ukrainian, Czech, Slovak, Finnish, Lithuanian and Hindi, written as a separate word after the name. :issue:`661`
+    - **Add junior and senior in other languages as suffixes.** ``Antonio Pavlović mlađi`` gives last ``Pavlović``, suffix ``mlađi``, where 1.4.0 through 2.4.2 gave middle ``Pavlović``, last ``mlađi``. The words come from 45 languages and are read when written as a separate word after the name. :issue:`661`, :issue:`679`
 
 * 2.4.2 - October 13, 2026
 

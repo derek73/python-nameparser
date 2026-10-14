@@ -1193,8 +1193,8 @@ S2. Rationale: generational suffixes and credentials are recognized
     word, which reads wholly as the credential run. A member its own
     capitals already made the credential reports nothing new.
     A credential after the name core starts a run to the end of its
-    part (#602). An unambiguous Latin suffix word of two or more
-    letters, standing after two name words where no comma divides
+    part (#602). An unambiguous suffix word of two or more letters,
+    in any script, standing after two name words where no comma divides
     the name or before a suffix comma, or after the given word in
     the part after a family comma, makes every later word of that
     part a suffix, except a title word, which reads as a title, and
@@ -1211,9 +1211,10 @@ S2. Rationale: generational suffixes and credentials are recognized
     A title word
     never starts the run, and neither does a member of the ambiguous
     class, a single letter, a connective, a word that is also
-    particle or bound given-name vocabulary, or a non-Latin honorific
-    word: a credential is the writer's mark that the post-nominals
-    have begun, and those carry no such mark. A name word the run
+    particle or bound given-name vocabulary: a credential is the
+    writer's mark that the post-nominals have begun, and those carry
+    no such mark. An honorific or a generational word carries it as
+    a credential does, whatever its script. A name word the run
     absorbs is reported `suffix-or-name`.
     An unlisted word joins this same ambiguous class by SHAPE where
     the caller asks for it. Two or more period-separated chunks is
@@ -1241,6 +1242,11 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Antonio Pavlović mlađi"    →  family="Pavlović"
       "Antonio Pavlović mlađi"    →  suffix="mlađi"
       "Агриппина Младшая"         →  suffix="Младшая"
+      "جورج بوش الابن"            →  suffix="الابن"
+      "ロバート・ダウニー・ジュニア"  →  suffix="ジュニア"
+      "Питер Брейгель мл."        →  suffix="мл."
+      "Marie Fils"                →  family="Fils"  · boundary
+      "Jiří Dienstbier ml."       →  family="ml."  · boundary
       "Pavlović, Antonio mlađi"   →  suffix="mlađi"
       "Stariji Bruegel"           →  given="Stariji"  · boundary
       "John Smith M.A."           →  suffix="M.A."
@@ -1309,8 +1315,10 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Mohamed Ali Abd Allah"     →  family="Allah"
       "Antonio Pavlović mlađi Jones"  →  suffix="mlađi Jones"
       "Pieter Bruegel stariji Jones"  →  suffix="stariji Jones"
-      "Гай Плиний Старший Иванов"  →  family="Иванов"  · boundary
-      "Taro Tanaka さん Jones"    →  family="Jones"  · boundary
+      "Ана Хорват старији Џонс"   →  suffix="старији Џонс"
+      "Гай Плиний Старший Иванов"  →  suffix="Старший Иванов"
+      "राम शर्मा साहब मोहन"          →  suffix="साहब मोहन"
+      "राम शर्मा साहब मोहन"          →  ambiguities=("suffix-or-name",)
       "John PhD Smith"            →  family="Smith"  · boundary
     Accepted: a title before the credential keeps it a credential,
     and the name loses its surname exactly as it did before this
@@ -1362,14 +1370,6 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions.md#v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    Accepted: the non-Latin refusal is drawn by script, because the
-    vocabulary does not say which suffix words are honorifics, so a
-    generational word in another script does not start the run
-    either, and Serbian reads by the script it is written in. Only a
-    name word written after the generational word reaches the
-    difference (decisions.md#generational-words, open at #679).
-      "Ana Horvat stariji Jones"  →  suffix="stariji Jones"
-      "Ана Хорват старији Џонс"   →  family="Џонс"  · boundary
     history: decisions.md#S2 · interacts: H1, H2, H3, H5, C1, C2, S3, P1, P2, P3, P5, P6, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 S3. Rationale: credentials are often written run together with
