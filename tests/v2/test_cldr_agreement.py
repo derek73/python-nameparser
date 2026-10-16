@@ -1,11 +1,12 @@
-"""The CLDR agreement ratchet, and the comparison rules it rests on.
+"""The CLDR and GND agreement ratchets, and the comparison rules they rest on.
 
-tools/differential/cldr_agreement.py decides, for each CLDR rendering and
-each role, whether nameparser agrees with CLDR's stated fields. The rules
+tools/differential/cldr_agreement.py decides, for each rendering and
+each role, whether nameparser agrees with the source's stated fields
+(CLDR's, and the GND's written in CLDR's vocabulary). The rules
 are pinned here first, each with the wrong answer the plausible
 alternative gives recorded beside it; the ratchet test at the end then
-holds the whole corpus to the recorded disagreements in
-tools/differential/cldr_agreement.json.
+holds each source's corpus to its recorded disagreements in
+tools/differential/cldr_agreement.json and gnd_agreement.json.
 
 tools/ is not a package, so the module is loaded by path, as
 _differential_fixtures.py loads compare.py.
@@ -152,26 +153,40 @@ def test_changes_reports_a_rendering_that_is_gone() -> None:
     assert message.startswith("gone: b/nativeG/givenFirst")
 
 
-def test_the_corpus_and_the_fields_file_hold_the_same_renderings() -> None:
-    from_fields = {(row["text"], row["shape"]) for row in agreement.load_rows()}
+#: Each source's corpus file, and the fewest renderings it may hold: a
+#: truncated file would otherwise pass both checks below.
+_CORPORA = {"CLDR": ("corpus_cldr.jsonl", 1000), "GND": ("corpus_gnd.jsonl", 500)}
+
+
+def test_every_source_has_a_corpus_file() -> None:
+    assert set(_CORPORA) == set(agreement.sources())
+
+
+@pytest.mark.parametrize("source", sorted(_CORPORA))
+def test_the_corpus_and_the_fields_file_hold_the_same_renderings(source: str) -> None:
+    fields, _ = agreement.sources()[source]
+    corpus, least = _CORPORA[source]
+    from_fields = {(row["text"], row["shape"]) for row in agreement.load_rows(fields)}
     from_corpus = set()
-    for line in (_TOOLS / "corpus_cldr.jsonl").read_text(encoding="utf-8").splitlines():
+    for line in (_TOOLS / corpus).read_text(encoding="utf-8").splitlines():
         if line.strip():
             entry = json.loads(line)
             from_corpus.add((entry, None) if isinstance(entry, str)
                             else (entry["name"], entry["shape"]))
     assert from_corpus == from_fields
-    assert len(from_fields) > 1000, "the CLDR corpus is missing or truncated"
+    assert len(from_fields) > least, f"the {source} corpus is missing or truncated"
 
 
-def test_nameparser_still_agrees_with_cldr_where_it_did() -> None:
-    rows = agreement.load_rows()
+@pytest.mark.parametrize("source", sorted(_CORPORA))
+def test_nameparser_still_agrees_with_each_source_where_it_did(source: str) -> None:
+    fields, record = agreement.sources()[source]
+    rows = agreement.load_rows(fields)
     problems = agreement.changes(
-        agreement.read_record(), agreement.disagreements(rows),
+        agreement.read_record(record), agreement.disagreements(rows),
         {agreement.rendering_key(row) for row in rows})
     assert not problems, "\n".join([
         *problems[:40],
-        f"{len(problems)} change(s) against tools/differential/cldr_agreement.json.",
+        f"{len(problems)} change(s) against tools/differential/{record.name}.",
         f"If every one is intended, re-record with `{agreement.RECORD_COMMAND}` "
         "and say why in the commit."])
 
@@ -183,7 +198,9 @@ def test_the_summary_counts_each_role_and_matches_the_record(
     for role in agreement.ROLES:
         assert any(line.split()[0] == role and "agree" in line
                    for line in out.splitlines() if line.strip()), role
-    assert "matches the record" in out
+    for source in agreement.sources():
+        assert f"{source} view matches the record" in out
+    assert "locale view matches the record" in out
 
 
 @pytest.mark.parametrize("text", [
@@ -257,6 +274,7 @@ def test_a_re_record_drops_entries_whose_file_left_the_table(
     agreement.write_record({"xx/nativeG/sorting": {"text": "X"}}, record)
     monkeypatch.setattr(agreement, "LOCALE_RECORD", record)
     monkeypatch.setattr(agreement, "RECORD", tmp_path / "default.json")
+    monkeypatch.setattr(agreement, "GND_RECORD", tmp_path / "gnd.json")
     assert agreement.main(["--record"]) == 0
     assert "xx/nativeG/sorting" not in agreement.read_record(record)
 

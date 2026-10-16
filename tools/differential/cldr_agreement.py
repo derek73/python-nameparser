@@ -5,7 +5,10 @@ name's fields separately. This module parses each CLDR rendering with the
 working tree and compares, role by role, with what CLDR says; the
 DISAGREEMENTS are recorded in cldr_agreement.json, and
 tests/v2/test_cldr_agreement.py fails when the tree's disagreements stop
-matching the record:
+matching the record. The GND corpus (build_gnd_corpus.py) writes its
+fields in CLDR's vocabulary, so it is a second SOURCE compared by the
+same rules, with its record in gnd_agreement.json. For each source the
+test fails on:
 
 - a role that agreed now disagrees (a regression);
 - a recorded disagreement now agrees (progress, which must be recorded so
@@ -17,11 +20,14 @@ matching the record:
     uv run python tools/differential/cldr_agreement.py           # summary
     uv run python tools/differential/cldr_agreement.py --record  # re-record
 
+--record rewrites every record, the GND one and the locale one below
+included.
+
 A second view does the same with each locale pack (#672): the renderings
 of every CLDR file in LOCALE_FILES are parsed with parser_for(pack), and
 their disagreements are recorded in cldr_agreement_locales.json and
 ratcheted the same way, so a pack change shows what it moved on its own
-language. --record rewrites both records. A pack needing an optional
+language. It reads the CLDR source only. A pack needing an optional
 extra that is not installed (JA's namedivider) is not measured, and its
 recorded entries are carried over unchanged.
 
@@ -52,6 +58,8 @@ HERE = Path(__file__).resolve().parent
 FIELDS = HERE / "cldr_fields.jsonl"
 RECORD = HERE / "cldr_agreement.json"
 LOCALE_RECORD = HERE / "cldr_agreement_locales.json"
+GND_FIELDS = HERE / "gnd_fields.jsonl"
+GND_RECORD = HERE / "gnd_agreement.json"
 RECORD_COMMAND = "uv run python tools/differential/cldr_agreement.py --record"
 #: shapes.py's FAMILY_FIRST shape, the only tag build_cldr_corpus.py writes.
 FAMILY_FIRST_SHAPE = 4
@@ -215,7 +223,7 @@ def changes(recorded: dict[str, dict[str, Any]], current: dict[str, dict[str, An
     out: list[str] = []
     for key in sorted(set(recorded) | set(current)):
         if key not in keys:
-            out.append(f"gone: {key} is recorded but no longer a CLDR rendering")
+            out.append(f"gone: {key} is recorded but no longer a rendering")
             continue
         old, new = recorded.get(key, {}), current.get(key, {})
         for role in sorted((set(old) | set(new)) - {"text"}):
@@ -259,17 +267,42 @@ def _packs() -> list[str]:
     return sorted(set(LOCALE_FILES.values()))
 
 
+def sources() -> dict[str, tuple[Path, Path]]:
+    """Each source of stated fields: name -> (fields file, record). Read
+    at call time, so a test that points a record elsewhere is obeyed."""
+    return {"CLDR": (FIELDS, RECORD), "GND": (GND_FIELDS, GND_RECORD)}
+
+
+def _summary(name: str, rows: list[dict[str, Any]],
+             current: dict[str, dict[str, Any]], record: Path) -> list[str]:
+    """Print one source's per-role agreement; return its changes."""
+    totals: Counter[str] = Counter()
+    for row in rows:
+        totals.update(expected_roles(row["fields"], row["text"]).keys())
+    wrong = Counter(role for entry in current.values() for role in entry if role != "text")
+    print(f"{name}, {len(rows)} renderings:")
+    for role in ROLES:
+        agree = totals[role] - wrong[role]
+        print(f"{role:17} {agree:5}/{totals[role]:<5} agree")
+    problems = changes(read_record(record), current, {rendering_key(r) for r in rows})
+    print("\n".join(problems) or f"{name} view matches the record")
+    return problems
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--record", action="store_true",
-                    help=f"rewrite {RECORD.name} and {LOCALE_RECORD.name} "
+                    help="rewrite every source's record and the locale record "
                     "from the working tree")
     args = ap.parse_args(argv)
-    rows = load_rows()
-    current = disagreements(rows)
+    loaded = {name: (load_rows(fields), record)
+              for name, (fields, record) in sources().items()}
+    current = {name: disagreements(rows) for name, (rows, _) in loaded.items()}
+    rows = loaded["CLDR"][0]
     if args.record:
-        write_record(current)
-        print(f"recorded {len(current)} disagreeing renderings to {RECORD.name}")
+        for name, (_, record) in loaded.items():
+            write_record(current[name], record)
+            print(f"recorded {len(current[name])} disagreeing renderings to {record.name}")
         old = read_record(LOCALE_RECORD) if LOCALE_RECORD.exists() else {}
         measured = [p for p in _packs() if pack_available(p)]
         unmeasured = set(_packs()) - set(measured)
@@ -283,16 +316,11 @@ def main(argv: list[str] | None = None) -> int:
         write_record(dict(sorted(locale.items())), LOCALE_RECORD)
         print(f"recorded {len(locale)} disagreeing renderings to {LOCALE_RECORD.name}")
         return 0
-    totals: Counter[str] = Counter()
-    for row in rows:
-        totals.update(expected_roles(row["fields"], row["text"]).keys())
-    wrong = Counter(role for entry in current.values() for role in entry if role != "text")
-    for role in ROLES:
-        agree = totals[role] - wrong[role]
-        print(f"{role:17} {agree:5}/{totals[role]:<5} agree")
-    problems = changes(read_record(), current, {rendering_key(r) for r in rows})
-    print("\n".join(problems) or "default view matches the record")
-    print("\nlocale view, renderings with every role agreeing:")
+    problems: list[str] = []
+    for name, (source_rows, record) in loaded.items():
+        problems += _summary(name, source_rows, current[name], record)
+        print()
+    print("CLDR locale view, renderings with every role agreeing:")
     recorded = read_record(LOCALE_RECORD)
     locale_problems = unmapped(recorded)
     for pack in _packs():
@@ -302,7 +330,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{pack:6} {files}: not measured (needs {_EXTRAS[pack]})")
             continue
         found = disagreements(mine, locale=True)
-        before = sum(rendering_key(row) not in current for row in mine)
+        before = sum(rendering_key(row) not in current["CLDR"] for row in mine)
         after = len(mine) - len(found)
         print(f"{pack:6} {files}: {before}/{len(mine)} default -> "
               f"{after}/{len(mine)} with the pack")
