@@ -88,6 +88,37 @@ def test_a_pending_field_is_scored_inside_its_merged_role_until_parsed_name_has_
     assert "surname2" not in agreement.disagreements(rows).get("Q1/x/givenFirst", {})
 
 
+@pytest.mark.parametrize("field", sorted(agreement.PENDING_ROLES))
+def test_each_pending_field_is_scored_inside_the_role_it_names(field: str) -> None:
+    # PENDING_ROLES names the merged role; expected_roles must agree.
+    roles = agreement.expected_roles({"given": "Ana", "surname": "Ruiz", field: "Vila"},
+                                     "Ana Vila Ruiz")
+    merged = agreement.PENDING_ROLES[field]
+    assert "Vila" in roles[merged].split()
+    assert not [r for r in ("given_names", "family") if r != merged
+                and "Vila" in roles[r].split()]
+
+
+def test_the_summary_says_where_each_pending_field_is_scored(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    agreement.main([])
+    out = capsys.readouterr().out
+    assert "patronymic" in out and "(scored inside given_names)" in out
+    assert "(scored inside family)" in out
+
+
+def test_a_role_parsed_name_stops_answering_still_fails_loudly(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Only a PENDING_ROLES field may go unanswered; any other gap is a bug.
+    rows = [{"file": "Q1", "label": "x", "order": "givenFirst", "shape": None,
+             "text": "Ana Ruiz", "fields": {"given": "Ana", "surname": "Ruiz"}}]
+    real = agreement.got_roles
+    monkeypatch.setattr(agreement, "got_roles", lambda name: {
+        k: v for k, v in real(name).items() if k != "family"})
+    with pytest.raises(KeyError):
+        agreement.disagreements(rows)
+
+
 def test_a_pending_field_is_scored_once_parsed_name_answers_it() -> None:
     class WithSurname2:
         title = given_names = suffix = family_particles = family_base = ""

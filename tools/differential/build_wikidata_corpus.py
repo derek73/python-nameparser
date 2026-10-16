@@ -35,10 +35,15 @@ articles -- and ordered by an MD5 of the item URI, so the sample is
 deterministic. The queries run one at a time. The items are then fetched
 with wbgetentities in batches of 50, and a stratum takes the first items
 in that order that survive the alignment below, up to its quota. A
-stratum's count says what was sampled, not how common the shape is.
+stratum that falls below its floor stops the build before anything is
+written, as does a query that matches nothing or a response that is not
+what was asked for: a Wikidata change must fail the build, not shrink
+the corpus. A stratum's count says what was sampled, not how common the
+shape is.
 
 Item labels are NOT concatenated into a name. Joining the parts
-reproduces the person's own written name for well under half of them:
+reproduced the person's own written name for 12-64% of them, by country,
+in the 2026-10-16 corpus survey:
 parts are missing, an extra baptismal name is stated, a Russian surname
 item holds the masculine form of a woman's name. Instead each written
 name -- the person's P1559 (name in native language) and their label in
@@ -51,7 +56,8 @@ words, and the text is kept only if
   (`bin`, `binti`, `i`, `y`, ...) standing directly before a claimed
   part, which joins that part as written (`bin Hamzah`, `i Coll`);
 - no part matches in two places, and no two parts claim the same word
-  (Malaysian items with the same item as P734 and P5056 fall out here);
+  (a person whose P734 and P5056 are the same item, seen in Malaysian
+  data, falls out here);
 - the stratum's own property is among the parts found, with a given name
   and, for a second surname, the first one.
 
@@ -77,7 +83,10 @@ Blind to: everything the strict filter drops. The survivors are tidy
 names whose every word has a Wikidata item, so short display forms
 (`Pedro Martínez`, with no second surname written), nicknames, and names
 with an unrecorded middle part are missing; and only the eight
-citizenships below are sampled. No title, credential or suffix is in any text.
+citizenships below are sampled, Malaysia thinly (its floor says why). A
+family-first text with no family part (an Icelandic or Malay name in a
+sorted list without a comma) cannot be told from a given-first one, so
+it would be read given-first; none is in the committed data. No title, credential or suffix is in any text.
 """
 from __future__ import annotations
 
@@ -114,10 +123,11 @@ FEMALE = "Q6581072"
 PARTS = {"P735": "given", "P734": "surname", "P1950": "surname2",
          "P5056": "patronymic"}
 #: Words that introduce the part after them and have no item of their
-#: own: Malay bin/binti (and abbreviations), Catalan i, Spanish y.
-CONNECTIVES = frozenset({"bin", "binti", "bt", "bt.", "b.", "i", "y"})
-#: Characters a written name must not hold: a disambiguator or a note.
-_REJECT = set("()[]/\"")
+#: own: Malay bin/binti (and abbreviations), Catalan i, Spanish y. Matched
+#: as written: a capital `I` or `Y` is an initial, not a connective.
+CONNECTIVES = frozenset({"bin", "binti", "bt", "bt.", "b.", "i", "y",
+                         # Malay writes these capitalized too
+                         "Bin", "Binti"})
 
 LICENSE_TEXT = """\
 corpus_wikidata.jsonl and wikidata_fields.jsonl are derived from Wikidata
@@ -146,6 +156,13 @@ class Stratum(NamedTuple):
     prop: str         # the property every sampled item states
     language: str     # the language its people's names are written in
     quota: int
+    #: The fewest names the build accepts; below it, it stops. Set below
+    #: the quota only where the pool is known to run short.
+    least: int | None = None
+
+    @property
+    def floor(self) -> int:
+        return self.quota if self.least is None else self.least
 
 
 STRATA = (
@@ -156,7 +173,9 @@ STRATA = (
     Stratum("patronymic-su", "Q15180", "P5056", "ru", 60),
     Stratum("patronymic-ri", "Q34266", "P5056", "ru", 40),
     Stratum("patronymic-is", "Q189", "P5056", "is", 100),
-    Stratum("patronymic-my", "Q833", "P5056", "ms", 40),
+    # 17 Malaysian public figures with a P5056 statement on 2026-10-16,
+    # and most write a part with no item of its own: the pool is the limit.
+    Stratum("patronymic-my", "Q833", "P5056", "ms", 40, least=8),
 )
 
 
@@ -168,18 +187,34 @@ def cache_dir() -> Path:
     return path
 
 
-def _fetch(url: str, data: bytes | None, refresh: bool) -> dict[str, Any]:
+def _checked(body: bytes | str, source: str, kind: str) -> dict[str, Any]:
+    """A WDQS result (`kind` "results") or a wbgetentities response
+    ("entities"), or ValueError naming where it came from. An API error
+    arrives with status 200, so the shape is what tells."""
+    try:
+        data = json.loads(body)
+    except ValueError as error:
+        raise ValueError(f"{source} is not JSON ({error})") from None
+    if not isinstance(data, dict) or kind not in data or "error" in data:
+        detail = data.get("error") if isinstance(data, dict) else None
+        raise ValueError(f"{source} has no {kind!r}" + (f": {detail}" if detail else ""))
+    return data
+
+
+def _fetch(url: str, data: bytes | None, refresh: bool, kind: str) -> dict[str, Any]:
     key = url + "\n" + (data or b"").decode()
     cached = cache_dir() / (hashlib.sha256(key.encode()).hexdigest()[:24] + ".json")
     if cached.exists() and not refresh:
-        cached_data: dict[str, Any] = json.loads(cached.read_text(encoding="utf-8"))
-        return cached_data
+        return _checked(cached.read_text(encoding="utf-8"),
+                        f"{cached} (cached; delete it or pass --refresh)", kind)
     headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     request = urllib.request.Request(url, data=data, headers=headers)
     with urllib.request.urlopen(request, timeout=90) as response:
         body = response.read()
-    parsed: dict[str, Any] = json.loads(body)
-    cached.write_bytes(body)
+    parsed = _checked(body, url, kind)
+    partial = cached.with_suffix(".part")
+    partial.write_bytes(body)
+    os.replace(partial, cached)
     time.sleep(1)  # sequential, and gentle
     return parsed
 
@@ -194,19 +229,32 @@ def query(stratum: Stratum) -> str:
 
 
 def pool(stratum: Stratum, refresh: bool) -> list[str]:
+    """The stratum's QIDs in MD5 order; raises on a query matching
+    nothing, since that means the query or Wikidata changed."""
     data = urllib.parse.urlencode({"query": query(stratum), "format": "json"}).encode()
-    result = _fetch(SPARQL, data, refresh)
-    return [b["item"]["value"].rsplit("/", 1)[1] for b in result["results"]["bindings"]]
+    result = _fetch(SPARQL, data, refresh, "results")
+    qids = [b["item"]["value"].rsplit("/", 1)[1] for b in result["results"]["bindings"]]
+    if not qids:
+        raise ValueError(f"{stratum.label}: the query matches nothing; has a "
+                         f"property or item changed?\n{query(stratum)}")
+    return qids
 
 
 def entities(ids: Iterable[str], props: str, refresh: bool) -> dict[str, Any]:
+    """Each requested item, keyed by the id asked for (a redirected item
+    comes back under that id, holding its target). Raises on an id the
+    response leaves out, and on one Wikidata reports missing."""
     ids = sorted(set(ids))
     out: dict[str, Any] = {}
     for start in range(0, len(ids), BATCH):
         url = API + "?" + urllib.parse.urlencode({
             "action": "wbgetentities", "ids": "|".join(ids[start:start + BATCH]),
             "props": props, "format": "json"})
-        out.update(_fetch(url, None, refresh)["entities"])
+        out.update(_fetch(url, None, refresh, "entities")["entities"])
+    lost = sorted(i for i in ids if i not in out or "missing" in out[i])
+    if lost:
+        raise ValueError(f"wbgetentities returned no item for {', '.join(lost[:10])}"
+                         f"{' ...' if len(lost) > 10 else ''}; rerun with --refresh")
     return out
 
 
@@ -313,7 +361,7 @@ def renderings(qid: str, person: dict[str, Any], names: dict[str, Any],
     seen: set[str] = set()
     for text, lang in texts:
         text = " ".join(text.split())
-        if text in seen or _REJECT & set(text):
+        if text in seen:
             continue
         seen.add(text)
         languages = (lang, stratum.language, "mul")
@@ -361,25 +409,36 @@ def fields_lines(rows: list[dict[str, Any]]) -> list[str]:
 
 
 def build(refresh: bool) -> list[dict[str, Any]]:
+    """Every stratum's rows, or ValueError naming each stratum that fell
+    below its floor -- raised before main() writes anything."""
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
+    short: list[str] = []
     for stratum in STRATA:
-        qids = [q for q in pool(stratum, refresh) if q not in seen]
+        pooled = pool(stratum, refresh)
+        qids = [q for q in pooled if q not in seen]
         people = entities(qids, "labels|claims", refresh)
         parts = {v for p in people.values() for prop in PARTS
                  for v in statements(p, prop)}
         names = entities(parts, "labels|claims", refresh)
-        taken = 0
+        taken = refused = 0
         for qid in qids:
             if taken == stratum.quota:
                 break
-            mine = renderings(qid, people.get(qid, {}), names, stratum)
-            if mine:
-                seen.add(qid)
-                rows.extend(mine)
-                taken += 1
+            mine = renderings(qid, people[qid], names, stratum)
+            if not mine:
+                refused += 1
+                continue
+            seen.add(qid)
+            rows.extend(mine)
+            taken += 1
         print(f"{stratum.label:15} {taken:3}/{stratum.quota} names "
-              f"from {len(qids)} fetched")
+              f"({refused} refused, {len(pooled) - len(qids)} taken by an "
+              f"earlier stratum, {len(pooled)} pooled)")
+        if taken < stratum.floor:
+            short.append(f"{stratum.label} {taken}/{stratum.floor}")
+    if short:
+        raise ValueError(f"strata below their floor, nothing written: {', '.join(short)}")
     return rows
 
 

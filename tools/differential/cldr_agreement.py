@@ -42,7 +42,7 @@ Each record doubles as a measured worklist: every entry is a place the
 parser and the source read a name differently.
 
 Two fields are stated but not yet scored on their own: `surname2` (a
-second surname, CLDR's and Wikidata's P1950) and `patronymic`
+second surname: CLDR's `surname2`, Wikidata's P1950) and `patronymic`
 (Wikidata's P5056, a field CLDR does not have). ParsedName has neither,
 so each is scored inside the role it belongs to today -- `surname2`
 inside `family`, as CLDR's own merge does, and `patronymic` inside
@@ -50,8 +50,9 @@ inside `family`, as CLDR's own merge does, and `patronymic` inside
 convention: `Vigdís Finnbogadóttir` expects the family empty). They are
 in PENDING_ROLES, and each is also scored on its own the day ParsedName
 gains an attribute of that name; until then the summary says how many
-renderings state it. The merged scoring stays either way: if 3.0 takes a
-field out of `family` or `given_names`, this mapping changes with it.
+renderings state it. Scoring a field on its own does not end the merged
+scoring; only a 3.0 decision to take the field out of `family` or
+`given_names` changes PENDING_ROLES.
 
 Nothing is special-cased. A deliberately unnatural rendering, `さん` read
 as a suffix where CLDR calls it a title, a lone word under a family-first
@@ -72,11 +73,11 @@ from nameparser import FAMILY_FIRST, ParsedName, Parser, Policy, locales, parser
 
 ROLES = ("title", "given_names", "family", "suffix",
          "family_particles", "family_base")
-#: Fields a source states that ParsedName has no attribute for yet.
-#: Each is always scored inside `family` or `given_names`, and ALSO on
-#: its own once ParsedName has it (see got_roles); whether the merged
-#: role should then drop it is the 3.0 design's question, not this one.
-PENDING_ROLES = ("surname2", "patronymic")
+#: Fields a source states that ParsedName has no attribute for yet, each
+#: with the role it is scored inside: always there, and ALSO on its own
+#: once ParsedName has it (see got_roles). Whether the merged role should
+#: then drop it is the 3.0 design's question, not this one.
+PENDING_ROLES = {"surname2": "family", "patronymic": "given_names"}
 HERE = Path(__file__).resolve().parent
 FIELDS = HERE / "cldr_fields.jsonl"
 RECORD = HERE / "cldr_agreement.json"
@@ -196,8 +197,9 @@ def got_roles(name: ParsedName) -> dict[str, str]:
            "family_particles": name.family_particles,
            "family_base": name.family_base}
     for role in PENDING_ROLES:
-        if hasattr(name, role):
-            got[role] = str(getattr(name, role))
+        value = getattr(name, role, None)
+        if isinstance(value, str):
+            got[role] = value
     return got
 
 
@@ -239,7 +241,8 @@ def disagreements(rows: list[dict[str, Any]],
         got = got_roles(parse_rendering(row["text"], row["shape"], pack))
         bad = {role: {"expected": expected, "got": got[role]}
                for role, expected in expected_roles(row["fields"], row["text"]).items()
-               if role in got and not same(expected, got[role], row["text"])}
+               if (role in got or role not in PENDING_ROLES)
+               and not same(expected, got[role], row["text"])}
         if bad:
             found[rendering_key(row)] = {"text": row["text"], **bad}
     return dict(sorted(found.items()))
@@ -325,10 +328,10 @@ def _summary(name: str, rows: list[dict[str, Any]],
     for role in ROLES:
         agree = totals[role] - wrong[role]
         print(f"{role:17} {agree:5}/{totals[role]:<5} agree")
-    for role in PENDING_ROLES:
+    for role, merged in PENDING_ROLES.items():
         if totals[role] and not hasattr(ParsedName, role):
             print(f"{role:17} {totals[role]:5} stated, not a ParsedName field "
-                  "yet (scored inside family/given_names)")
+                  f"yet (scored inside {merged})")
     problems = changes(read_record(record), current, {rendering_key(r) for r in rows})
     print("\n".join(problems) or f"{name} view matches the record")
     return problems
