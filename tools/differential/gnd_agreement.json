@@ -30,10 +30,6 @@
    "expected": "Quinquela Martín",
    "got": "Martín"
   },
-  "family_base": {
-   "expected": "Quinquela Martín",
-   "got": "Martín"
-  },
   "given_names": {
    "expected": "Benito",
    "got": "Benito Quinquela"
@@ -42,10 +38,6 @@
  },
  "1014265487/compound-latam/givenFirst": {
   "family": {
-   "expected": "Moreno Casamitjana",
-   "got": "Casamitjana"
-  },
-  "family_base": {
    "expected": "Moreno Casamitjana",
    "got": "Casamitjana"
   },
@@ -105,10 +97,6 @@
  },
  "1017967407/compound-iberia/givenFirst": {
   "family": {
-   "expected": "Domènech Estapà",
-   "got": "Estapà"
-  },
-  "family_base": {
    "expected": "Domènech Estapà",
    "got": "Estapà"
   },
@@ -266,17 +254,6 @@
   },
   "text": "Azizi Hj. Abdullah"
  },
- "1034118587/index-hu/sorting": {
-  "family_base": {
-   "expected": "Simonyi von Vitézvár",
-   "got": "Simonyi Vitézvár"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "von"
-  },
-  "text": "Simonyi von Vitézvár, Lajos"
- },
  "1036271862/direct-my-id/givenFirst": {
   "family": {
    "expected": "",
@@ -326,10 +303,6 @@
    "expected": "Esteva a Alsina",
    "got": "Alsina"
   },
-  "family_base": {
-   "expected": "Esteva a Alsina",
-   "got": "Alsina"
-  },
   "given_names": {
    "expected": "Maurus Daniel",
    "got": "Maurus Daniel Esteva a"
@@ -352,10 +325,6 @@
    "expected": "Amigo Vallejo",
    "got": "Vallejo"
   },
-  "family_base": {
-   "expected": "Amigo Vallejo",
-   "got": "Vallejo"
-  },
   "given_names": {
    "expected": "Carlos",
    "got": "Carlos Amigo"
@@ -375,10 +344,6 @@
  },
  "1048644847/compound-latam/givenFirst": {
   "family": {
-   "expected": "Valderrama Fernández",
-   "got": "Fernández"
-  },
-  "family_base": {
    "expected": "Valderrama Fernández",
    "got": "Fernández"
   },
@@ -426,10 +391,6 @@
    "expected": "López Rayón",
    "got": "Rayón"
   },
-  "family_base": {
-   "expected": "López Rayón",
-   "got": "Rayón"
-  },
   "given_names": {
    "expected": "Ignacio",
    "got": "Ignacio López"
@@ -438,10 +399,6 @@
  },
  "1056353457/compound-latam/givenFirst": {
   "family": {
-   "expected": "Arenas Betancourt",
-   "got": "Betancourt"
-  },
-  "family_base": {
    "expected": "Arenas Betancourt",
    "got": "Betancourt"
   },
@@ -467,10 +424,6 @@
    "expected": "González Gortázar",
    "got": "Gortázar"
   },
-  "family_base": {
-   "expected": "González Gortázar",
-   "got": "Gortázar"
-  },
   "given_names": {
    "expected": "Fernando",
    "got": "Fernando González"
@@ -482,10 +435,6 @@
    "expected": "Ospina Pérez",
    "got": "Pérez"
   },
-  "family_base": {
-   "expected": "Ospina Pérez",
-   "got": "Pérez"
-  },
   "given_names": {
    "expected": "Mariano",
    "got": "Mariano Ospina"
@@ -494,10 +443,6 @@
  },
  "1056652217/compound-latam/givenFirst": {
   "family": {
-   "expected": "Ruiz Armengol",
-   "got": "Armengol"
-  },
-  "family_base": {
    "expected": "Ruiz Armengol",
    "got": "Armengol"
   },
@@ -599,40 +544,10 @@
   },
   "text": "Annebault, Claude d'"
  },
- "1082774367/compound-latam/givenFirst": {
-  "family_base": {
-   "expected": "Van Rooten",
-   "got": "Rooten"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "Van"
-  },
-  "text": "Luis Van Rooten"
- },
- "1082774367/compound-latam/sorting": {
-  "family_base": {
-   "expected": "Van Rooten",
-   "got": "Rooten"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "Van"
-  },
-  "text": "Van Rooten, Luis"
- },
  "1083655477/compound-latam/givenFirst": {
   "family": {
    "expected": "Málaga de Prado",
    "got": "de Prado"
-  },
-  "family_base": {
-   "expected": "Málaga de Prado",
-   "got": "Prado"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
   },
   "given_names": {
    "expected": "Clorinda",
@@ -640,23 +555,8 @@
   },
   "text": "Clorinda Málaga de Prado"
  },
- "1083655477/compound-latam/sorting": {
-  "family_base": {
-   "expected": "Málaga de Prado",
-   "got": "Málaga Prado"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
-  "text": "Málaga de Prado, Clorinda"
- },
  "1100729747/compound-latam/givenFirst": {
   "family": {
-   "expected": "Sordo Madaleno",
-   "got": "Madaleno"
-  },
-  "family_base": {
    "expected": "Sordo Madaleno",
    "got": "Madaleno"
   },
@@ -720,10 +620,6 @@
  },
  "1123958947/compound-iberia/givenFirst": {
   "family": {
-   "expected": "López Domínguez",
-   "got": "Domínguez"
-  },
-  "family_base": {
    "expected": "López Domínguez",
    "got": "Domínguez"
   },
@@ -915,10 +811,6 @@
    "expected": "Campo Serrano",
    "got": "Serrano"
   },
-  "family_base": {
-   "expected": "Campo Serrano",
-   "got": "Serrano"
-  },
   "given_names": {
    "expected": "José María",
    "got": "José María Campo"
@@ -927,10 +819,6 @@
  },
  "1163022667/compound-latam/givenFirst": {
   "family": {
-   "expected": "Guardia Neyra",
-   "got": "Neyra"
-  },
-  "family_base": {
    "expected": "Guardia Neyra",
    "got": "Neyra"
   },
@@ -975,10 +863,6 @@
  },
  "1172012407/compound-iberia/givenFirst": {
   "family": {
-   "expected": "Rascón Navarro Seña y Redondo",
-   "got": "Seña y Redondo"
-  },
-  "family_base": {
    "expected": "Rascón Navarro Seña y Redondo",
    "got": "Seña y Redondo"
   },
@@ -1193,10 +1077,6 @@
    "expected": "Martín Descalzo",
    "got": "Descalzo"
   },
-  "family_base": {
-   "expected": "Martín Descalzo",
-   "got": "Descalzo"
-  },
   "given_names": {
    "expected": "José Luis",
    "got": "José Luis Martín"
@@ -1275,10 +1155,6 @@
    "expected": "Castelo Branco",
    "got": "Branco"
   },
-  "family_base": {
-   "expected": "Castelo Branco",
-   "got": "Branco"
-  },
   "given_names": {
    "expected": "Camilo",
    "got": "Camilo Castelo"
@@ -1345,60 +1221,22 @@
    "expected": "Nunes de Ávila e Silva",
    "got": "de Ávila e Silva"
   },
-  "family_base": {
-   "expected": "Nunes de Ávila e Silva",
-   "got": "Ávila e Silva"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
   "given_names": {
    "expected": "Epaminondas",
    "got": "Epaminondas Nunes"
   },
   "text": "Epaminondas Nunes de Ávila e Silva"
  },
- "1187542687/compound-latam/sorting": {
-  "family_base": {
-   "expected": "Nunes de Ávila e Silva",
-   "got": "Nunes Ávila e Silva"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
-  "text": "Nunes de Ávila e Silva, Epaminondas"
- },
  "118767917/compound-iberia/givenFirst": {
   "family": {
    "expected": "Vélez de Guevara",
    "got": "de Guevara"
-  },
-  "family_base": {
-   "expected": "Vélez de Guevara",
-   "got": "Guevara"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
   },
   "given_names": {
    "expected": "Luis",
    "got": "Luis Vélez"
   },
   "text": "Luis Vélez de Guevara"
- },
- "118767917/compound-iberia/sorting": {
-  "family_base": {
-   "expected": "Vélez de Guevara",
-   "got": "Vélez Guevara"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
-  "text": "Vélez de Guevara, Luis"
  },
  "118782835/direct-arab/givenFirst": {
   "family": {
@@ -1567,10 +1405,6 @@
    "expected": "Marulanda Vélez",
    "got": "Vélez"
   },
-  "family_base": {
-   "expected": "Marulanda Vélez",
-   "got": "Vélez"
-  },
   "given_names": {
    "expected": "Manuel",
    "got": "Manuel Marulanda"
@@ -1605,10 +1439,6 @@
  },
  "119075067/compound-latam/givenFirst": {
   "family": {
-   "expected": "López Portillo y Pacheco",
-   "got": "Portillo y Pacheco"
-  },
-  "family_base": {
    "expected": "López Portillo y Pacheco",
    "got": "Portillo y Pacheco"
   },
@@ -2034,10 +1864,6 @@
    "expected": "López Ochoa",
    "got": "Ochoa"
   },
-  "family_base": {
-   "expected": "López Ochoa",
-   "got": "Ochoa"
-  },
   "given_names": {
    "expected": "Eduardo",
    "got": "Eduardo López"
@@ -2046,10 +1872,6 @@
  },
  "120584727/compound-latam/givenFirst": {
   "family": {
-   "expected": "Livraga Rizzi",
-   "got": "Rizzi"
-  },
-  "family_base": {
    "expected": "Livraga Rizzi",
    "got": "Rizzi"
   },
@@ -2108,10 +1930,6 @@
    "expected": "Asas Manterola",
    "got": "Manterola"
   },
-  "family_base": {
-   "expected": "Asas Manterola",
-   "got": "Manterola"
-  },
   "given_names": {
    "expected": "Benita",
    "got": "Benita Asas"
@@ -2120,10 +1938,6 @@
  },
  "121487237/compound-latam/givenFirst": {
   "family": {
-   "expected": "Serrano Poncela",
-   "got": "Poncela"
-  },
-  "family_base": {
    "expected": "Serrano Poncela",
    "got": "Poncela"
   },
@@ -2164,10 +1978,6 @@
    "expected": "Sanz Briz",
    "got": "Briz"
   },
-  "family_base": {
-   "expected": "Sanz Briz",
-   "got": "Briz"
-  },
   "given_names": {
    "expected": "Ángel",
    "got": "Ángel Sanz"
@@ -2176,10 +1986,6 @@
  },
  "123089077/compound-iberia/givenFirst": {
   "family": {
-   "expected": "Nieves Conde",
-   "got": "Conde"
-  },
-  "family_base": {
    "expected": "Nieves Conde",
    "got": "Conde"
   },
@@ -2264,30 +2070,11 @@
    "expected": "Carrillo de Mendoza y Pimentel",
    "got": "de Mendoza y Pimentel"
   },
-  "family_base": {
-   "expected": "Carrillo de Mendoza y Pimentel",
-   "got": "Mendoza y Pimentel"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
   "given_names": {
    "expected": "Diego",
    "got": "Diego Carrillo"
   },
   "text": "Diego Carrillo de Mendoza y Pimentel"
- },
- "1238191037/compound-iberia/sorting": {
-  "family_base": {
-   "expected": "Carrillo de Mendoza y Pimentel",
-   "got": "Carrillo Mendoza y Pimentel"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
-  "text": "Carrillo de Mendoza y Pimentel, Diego"
  },
  "123907373/particle-arab/sorting": {
   "family": {
@@ -2350,10 +2137,6 @@
    "expected": "Prats Gonzaléz",
    "got": "Gonzaléz"
   },
-  "family_base": {
-   "expected": "Prats Gonzaléz",
-   "got": "Gonzaléz"
-  },
   "given_names": {
    "expected": "Carlos",
    "got": "Carlos Prats"
@@ -2362,10 +2145,6 @@
  },
  "125827547/compound-iberia/givenFirst": {
   "family": {
-   "expected": "Modrego Casaus",
-   "got": "Casaus"
-  },
-  "family_base": {
    "expected": "Modrego Casaus",
    "got": "Casaus"
   },
@@ -2402,30 +2181,11 @@
    "expected": "Polo de Bernabé",
    "got": "de Bernabé"
   },
-  "family_base": {
-   "expected": "Polo de Bernabé",
-   "got": "Bernabé"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
   "given_names": {
    "expected": "Luis",
    "got": "Luis Polo"
   },
   "text": "Luis Polo de Bernabé"
- },
- "1280472707/compound-iberia/sorting": {
-  "family_base": {
-   "expected": "Polo de Bernabé",
-   "got": "Polo Bernabé"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
-  "text": "Polo de Bernabé, Luis"
  },
  "128048638/direct-is/givenFirst": {
   "family": {
@@ -2628,10 +2388,6 @@
    "expected": "Robles Pazos",
    "got": "Pazos"
   },
-  "family_base": {
-   "expected": "Robles Pazos",
-   "got": "Pazos"
-  },
   "given_names": {
    "expected": "José",
    "got": "José Robles"
@@ -2665,37 +2421,14 @@
    "expected": "Frühbeck de Burgos",
    "got": "de Burgos"
   },
-  "family_base": {
-   "expected": "Frühbeck de Burgos",
-   "got": "Burgos"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
   "given_names": {
    "expected": "Rafael",
    "got": "Rafael Frühbeck"
   },
   "text": "Rafael Frühbeck de Burgos"
  },
- "132686147/compound-iberia/sorting": {
-  "family_base": {
-   "expected": "Frühbeck de Burgos",
-   "got": "Frühbeck Burgos"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
-  "text": "Frühbeck de Burgos, Rafael"
- },
  "132883317/compound-latam/givenFirst": {
   "family": {
-   "expected": "Ayala Pérez",
-   "got": "Pérez"
-  },
-  "family_base": {
    "expected": "Ayala Pérez",
    "got": "Pérez"
   },
@@ -2721,30 +2454,11 @@
    "expected": "Mendes de Almeida",
    "got": "de Almeida"
   },
-  "family_base": {
-   "expected": "Mendes de Almeida",
-   "got": "Almeida"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
   "given_names": {
    "expected": "Luciano",
    "got": "Luciano Mendes"
   },
   "text": "Luciano Mendes de Almeida"
- },
- "133824047/compound-latam/sorting": {
-  "family_base": {
-   "expected": "Mendes de Almeida",
-   "got": "Mendes Almeida"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "de"
-  },
-  "text": "Mendes de Almeida, Luciano"
  },
  "134456467/direct-eu/givenFirst": {
   "family": {
@@ -2836,10 +2550,6 @@
  },
  "136563457/compound-latam/givenFirst": {
   "family": {
-   "expected": "Gutiérrez Carreola",
-   "got": "Carreola"
-  },
-  "family_base": {
    "expected": "Gutiérrez Carreola",
    "got": "Carreola"
   },
@@ -2972,10 +2682,6 @@
    "expected": "Garaikoetxea Urriza",
    "got": "Urriza"
   },
-  "family_base": {
-   "expected": "Garaikoetxea Urriza",
-   "got": "Urriza"
-  },
   "given_names": {
    "expected": "Juan C.",
    "got": "Juan C. Garaikoetxea"
@@ -2984,10 +2690,6 @@
  },
  "172013437/compound-latam/givenFirst": {
   "family": {
-   "expected": "Caballero Calderón",
-   "got": "Calderón"
-  },
-  "family_base": {
    "expected": "Caballero Calderón",
    "got": "Calderón"
   },
@@ -3018,27 +2720,5 @@
    "got": "Ásmundur"
   },
   "text": "Ásmundur Sveinsson"
- },
- "189570547/compound-latam/givenFirst": {
-  "family_base": {
-   "expected": "Santa María González",
-   "got": "María González"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "Santa"
-  },
-  "text": "Domingo Santa María González"
- },
- "189570547/compound-latam/sorting": {
-  "family_base": {
-   "expected": "Santa María González",
-   "got": "María González"
-  },
-  "family_particles": {
-   "expected": "",
-   "got": "Santa"
-  },
-  "text": "Santa María González, Domingo"
  }
 }

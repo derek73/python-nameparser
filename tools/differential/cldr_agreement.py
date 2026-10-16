@@ -1,4 +1,4 @@
-"""Where nameparser and CLDR disagree about a name's fields -- a ratchet.
+"""Where nameparser disagrees with CLDR and the GND about a name's fields -- a ratchet.
 
 CLDR's person-name test data (see build_cldr_corpus.py) states every
 name's fields separately. This module parses each CLDR rendering with the
@@ -7,7 +7,8 @@ DISAGREEMENTS are recorded in cldr_agreement.json, and
 tests/v2/test_cldr_agreement.py fails when the tree's disagreements stop
 matching the record. The GND corpus (build_gnd_corpus.py) writes its
 fields in CLDR's vocabulary, so it is a second SOURCE compared by the
-same rules, with its record in gnd_agreement.json. For each source the
+same rules, with its record in gnd_agreement.json; "CLDR" below means
+either source wherever the rule is about fields. For each source the
 test fails on:
 
 - a role that agreed now disagrees (a regression);
@@ -15,13 +16,16 @@ test fails on:
   that it is guarded from then on);
 - a recorded disagreement's answer changed (a different wrong answer, or
   progress in disguise -- which keeps the recorded answers current; the
-  recorded `text` and `expected` are refreshed only by a re-record).
+  recorded `text` and `expected` are refreshed only by a re-record);
+- a recorded rendering that no longer exists.
 
     uv run python tools/differential/cldr_agreement.py           # summary
     uv run python tools/differential/cldr_agreement.py --record  # re-record
 
 --record rewrites every record, the GND one and the locale one below
-included.
+included, and first prints, per source, how many of each kind of change
+it is accepting, so a re-record made for one source cannot slip another
+source's regressions in unseen.
 
 A second view does the same with each locale pack (#672): the renderings
 of every CLDR file in LOCALE_FILES are parsed with parser_for(pack), and
@@ -32,8 +36,8 @@ extra that is not installed (JA's namedivider) is not measured, and its
 recorded entries are carried over unchanged.
 
 Re-record deliberately, and say why in the commit, as with a watched diff.
-The record doubles as a measured worklist: every entry is a place the
-parser and CLDR read a name differently.
+Each record doubles as a measured worklist: every entry is a place the
+parser and the source read a name differently.
 
 Nothing is special-cased. A deliberately unnatural rendering, `さん` read
 as a suffix where CLDR calls it a title, a lone word under a family-first
@@ -117,7 +121,7 @@ def _squash(text: str) -> str:
 
 
 def occurs(value: str, text: str) -> bool:
-    """Whether a CLDR field's value appears in a rendering: word by word
+    """Whether a field's value appears in a rendering: word by word
     where the rendering has spaces (so `Wolf` is not found in `Wolfgang`),
     by substring where it has none (unspaced scripts)."""
     if _has_space(text):
@@ -127,11 +131,11 @@ def occurs(value: str, text: str) -> bool:
 
 
 def expected_roles(fields: dict[str, str], text: str) -> dict[str, str]:
-    """What CLDR says each role holds IN THIS RENDERING. CLDR's formats
-    drop fields by locale and order, so a role is built only from the
-    fields whose value occurs in the text; a role with none expects ''.
-    The particle and base views are compared only where CLDR states the
-    split, i.e. the name has a surname-core."""
+    """What the source says each role holds IN THIS RENDERING. CLDR's
+    formats drop fields by locale and order, so a role is built only from
+    the fields whose value occurs in the text; a role with none expects
+    ''. The particle and base views are compared only where the source
+    states the split, i.e. the name has a surname-core."""
     def present(*names: str) -> str:
         # In the order the values occur in the text, not CLDR's field
         # order: an unspaced rendering compares in order, and one that
@@ -179,8 +183,14 @@ def parse_rendering(text: str, shape: int | None, pack: str | None = None) -> Pa
 
 
 def load_rows(path: Path = FIELDS) -> list[dict[str, Any]]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
+    """A fields file's rows. An empty file is an error: compared against
+    an empty record it would agree with everything."""
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
             if line.strip()]
+    if not rows:
+        raise ValueError(f"{path} holds no renderings; rebuild it with its "
+                         f"build_*_corpus.py")
+    return rows
 
 
 def locale_rows(rows: list[dict[str, Any]], pack: str) -> list[dict[str, Any]]:
@@ -300,9 +310,14 @@ def main(argv: list[str] | None = None) -> int:
     current = {name: disagreements(rows) for name, (rows, _) in loaded.items()}
     rows = loaded["CLDR"][0]
     if args.record:
-        for name, (_, record) in loaded.items():
+        for name, (source_rows, record) in loaded.items():
+            old_record = read_record(record) if record.exists() else {}
+            kinds = Counter(line.split(":", 1)[0] for line in changes(
+                old_record, current[name], {rendering_key(r) for r in source_rows}))
+            accepted = ", ".join(f"{n} {kind}" for kind, n in sorted(kinds.items()))
             write_record(current[name], record)
-            print(f"recorded {len(current[name])} disagreeing renderings to {record.name}")
+            print(f"recorded {len(current[name])} disagreeing renderings to "
+                  f"{record.name} (accepting: {accepted or 'no change'})")
         old = read_record(LOCALE_RECORD) if LOCALE_RECORD.exists() else {}
         measured = [p for p in _packs() if pack_available(p)]
         unmeasured = set(_packs()) - set(measured)

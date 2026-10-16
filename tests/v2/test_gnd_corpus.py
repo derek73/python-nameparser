@@ -2,9 +2,16 @@
 
 The build script is the only part of the GND corpus that touches the
 network, so the renderings it writes from a lobid record are pinned here
-on hand-written records in lobid's shape. tools/ is not a package, so the
-module is loaded by path, as _differential_fixtures.py loads compare.py.
+on hand-written records in lobid's shape, its sampling on a stubbed
+search, and the committed files on the invariants the build promises.
+tools/ is not a package, so the module is loaded by path, as
+_differential_fixtures.py loads compare.py.
 """
+import json
+import urllib.request
+from collections import Counter
+from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -18,14 +25,16 @@ _PLAIN = build.Stratum("plain", "q", 1)
 _FAMILY_FIRST = build.Stratum("cjk", "q", 1, family_first=True)
 
 
-def _record(written: str, **entity: str) -> dict[str, Any]:
-    return {"gndIdentifier": "118540238", "preferredName": written,
+def _record(written: str, gnd: str = "118540238", **entity: str) -> dict[str, Any]:
+    return {"gndIdentifier": gnd, "preferredName": written,
             "preferredNameEntityForThePerson": {k: [v] for k, v in entity.items()}}
 
 
 def _texts(rows: list[dict[str, Any]]) -> list[tuple[str, str, bool]]:
     return [(row["order"], row["text"], row["composed"]) for row in rows]
 
+
+# -- renderings ---------------------------------------------------------------
 
 def test_a_surname_record_gives_its_index_form_and_a_composed_one() -> None:
     rows = build.renderings(_record("Gogh, Vincent van", forename="Vincent",
@@ -36,30 +45,28 @@ def test_a_surname_record_gives_its_index_form_and_a_composed_one() -> None:
                                  "surname-core": "Gogh"}
 
 
-def test_every_field_occurs_in_every_rendering() -> None:
-    # A field that did not occur would be expected EMPTY by the
-    # comparison, a disagreement no parser fix could resolve. That is
-    # what a glued particle did before its composed line stated the word
-    # whole: `d'` and `Arenberg` are not words of `d'Arenberg`.
-    for written, entity in [
-            ("Arenberg, Auguste d'", {"forename": "Auguste", "prefix": "d'",
-                                      "surname": "Arenberg"}),
-            ("Ǧaʿfarī, Ibrāhīm al-", {"forename": "Ibrāhīm", "prefix": "al-",
-                                     "surname": "Ǧaʿfarī"}),
-            ("García Márquez, Gabriel", {"forename": "Gabriel",
-                                         "surname": "García Márquez"})]:
-        for row in build.renderings(_record(written, **entity), _PLAIN):
-            for value in row["fields"].values():
-                assert agreement.occurs(value, row["text"]), (row["text"], value)
+def test_a_surname_with_no_prefix_is_stated_whole() -> None:
+    # GND keeps a particle inside a surname (`Vélez de Guevara`), so a
+    # missing prefix is not a statement that there is none. As
+    # surname-core it would expect family_particles '' and record the
+    # parser's `de` as a disagreement no fix could clear.
+    rows = build.renderings(_record("Vélez de Guevara, Luis", forename="Luis",
+                                    surname="Vélez de Guevara"), _PLAIN)
+    for row in rows:
+        assert row["fields"] == {"given": "Luis", "surname": "Vélez de Guevara"}
+        assert "family_particles" not in agreement.expected_roles(row["fields"], row["text"])
 
 
-def test_a_glued_particle_is_stated_whole_where_it_is_glued() -> None:
+@pytest.mark.parametrize("mark", build._GLUED)
+def test_a_glued_particle_is_stated_whole_where_it_is_glued(mark: str) -> None:
+    # `d'` and `Arenberg` are not words of `d'Arenberg`: stated apart, the
+    # comparison would expect an empty family no parser fix could match.
     index, composed = build.renderings(
-        _record("Arenberg, Auguste d'", forename="Auguste", prefix="d'",
-                surname="Arenberg"), _PLAIN)
-    assert composed["text"] == "Auguste d'Arenberg"
-    assert composed["fields"] == {"given": "Auguste", "surname": "d'Arenberg"}
-    assert index["fields"]["surname-prefix"] == "d'"
+        _record(f"Arenberg, Auguste d{mark}", forename="Auguste",
+                prefix=f"d{mark}", surname="Arenberg"), _PLAIN)
+    assert composed["text"] == f"Auguste d{mark}Arenberg"
+    assert composed["fields"] == {"given": "Auguste", "surname": f"d{mark}Arenberg"}
+    assert index["fields"]["surname-prefix"] == f"d{mark}"
 
 
 def test_a_family_first_area_keeps_the_index_form_only() -> None:
@@ -83,18 +90,42 @@ def test_a_regnal_name_is_composed_without_its_name_addition() -> None:
     assert row["fields"] == {"given": "Johann", "generation": "II."}
 
 
+def test_a_field_value_is_read_without_its_edge_spaces() -> None:
+    [index, _] = build.renderings(_record("Gogh, Vincent", forename=" Vincent ",
+                                          surname="Gogh"), _PLAIN)
+    assert index["fields"]["given"] == "Vincent"
+
+
+def _multi(written: str, **entity: list[str]) -> dict[str, Any]:
+    return {"gndIdentifier": "1", "preferredName": written,
+            "preferredNameEntityForThePerson": entity}
+
+
 @pytest.mark.parametrize("record", [
+    # Each row is refused by one guard alone; the comment names it.
     # a descriptor the fields cannot place
     _record("Eutychios, von Alexandria", personalName="Eutychios",
             nameAddition="von Alexandria"),
-    _record("King, Martin Luther, Jr.", forename="Martin Luther",
-            surname="King", nameAddition="Jr."),
+    # a nameAddition on a surname record whose index form still matches
+    _record("King, Martin", forename="Martin", surname="King", nameAddition="Jr."),
     # a preferred name its fields do not spell
     _record("Gogh, Vincent", forename="Vincent", prefix="van", surname="Gogh"),
     _record("Amha Selassie", personalName="Amha Selassie I."),
-    # two values for one field
-    {"gndIdentifier": "1", "preferredName": "A, B",
-     "preferredNameEntityForThePerson": {"surname": ["A", "C"], "forename": ["B"]}},
+    _record("Something else", personalName="Ludwig", counting="II."),
+    # a personalName beside surname fields
+    _record("Musabbiḥī al-", personalName="Musabbiḥī", prefix="al-"),
+    _record("Ludwig II.", personalName="Ludwig", counting="II.",
+            prefix="von", surname="Bayern"),
+    # a comma inside a field, where the written name agrees
+    _record("A, B", personalName="A, B"),
+    _record("A, B, C", surname="A, B", forename="C"),
+    # a surname with no forename
+    _record("Gogh", surname="Gogh"),
+    # a field this script does not know
+    _record("Björk", personalName="Björk", epithet="the Great"),
+    # two values for one field: the plain direct name would lose its number
+    _multi("Johann", personalName=["Johann"], counting=["II.", "III."]),
+    _multi("A, B", surname=["A", "C"], forename=["B"]),
 ])
 def test_a_record_its_fields_cannot_account_for_is_left_out(
         record: dict[str, Any]) -> None:
@@ -115,3 +146,172 @@ def test_a_duplicate_rendering_is_refused() -> None:
 def test_every_stratum_has_a_distinct_label() -> None:
     labels = [stratum.label for stratum in build.STRATA]
     assert len(labels) == len(set(labels))
+
+
+# -- sampling: pool() and build() on a stubbed search --------------------------
+
+def _stub_search(totals: dict[str, int], members: dict[str, list[dict[str, Any]]],
+                 calls: list[tuple[str, int, int]]
+                 ) -> Callable[[str, int, int, bool], dict[str, Any]]:
+    """A _search answering by the query's id-slice suffix ('' for none)."""
+    def search(query: str, size: int, start: int, refresh: bool) -> dict[str, Any]:
+        suffix = query.rsplit("gndIdentifier:", 1)[1] if "gndIdentifier:" in query else ""
+        calls.append((suffix, size, start))
+        return {"totalItems": totals[suffix],
+                "member": members.get(suffix, [])[start:start + size]}
+    return search
+
+
+def _people(n: int) -> list[dict[str, Any]]:
+    return [_record(f"P{i}", gnd=str(i), personalName=f"P{i}") for i in range(n)]
+
+
+def test_pool_takes_the_widest_slice_that_fits_and_pages_it_whole(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[str, int, int]] = []
+    totals = {"": build.POOL + 1, "*7": build.POOL, "*07": 3, "*007": 1}
+    monkeypatch.setattr(build, "_search", _stub_search(
+        totals, {"*7": _people(build.POOL)}, calls))
+    records = build.pool(_PLAIN, refresh=False)
+    assert len(records) == build.POOL          # total == POOL fits
+    pages = [start for suffix, size, start in calls if size == build.PAGE]
+    assert pages == list(range(0, build.POOL, build.PAGE))
+    assert {suffix for suffix, _, _ in calls} == {"", "*7"}
+
+
+def test_pool_applies_the_stratum_predicate(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(build, "_search", _stub_search({"": 4}, {"": _people(4)}, []))
+    odd = build.Stratum("odd", "q", 1, keep=lambda r: int(r["gndIdentifier"]) % 2 == 1)
+    assert [r["gndIdentifier"] for r in build.pool(odd, False)] == ["1", "3"]
+
+
+@pytest.mark.parametrize(("totals", "members", "message"), [
+    ({"": 0}, {}, "matches nothing"),
+    ({"": 5}, {"": _people(3)}, "paged for a total of 5"),
+    ({"": 2}, {"": [_people(1)[0], _people(1)[0]]}, r"\(1 distinct\)"),
+    ({s: build.POOL + 1 for s in build.SLICES}, {}, "add a slice"),
+])
+def test_pool_refuses_a_stratum_it_cannot_trust(
+        monkeypatch: pytest.MonkeyPatch, totals: dict[str, int],
+        members: dict[str, list[dict[str, Any]]], message: str) -> None:
+    monkeypatch.setattr(build, "_search", _stub_search(totals, members, []))
+    with pytest.raises(ValueError, match=message):
+        build.pool(_PLAIN, refresh=False)
+
+
+def test_build_takes_records_once_in_hash_order_up_to_the_quota(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    people = _people(6)
+    # A refused record that sorts FIRST, so it is met before the quota fills.
+    gnd = min((str(i) for i in range(100, 200)),
+              key=lambda g: build._order({"gndIdentifier": g}))
+    refused = _record("Wrong", gnd=gnd, personalName="Right")
+    assert build._order(refused) < min(build._order(p) for p in people)
+    first = build.Stratum("first", "a", 2)
+    second = build.Stratum("second", "b", 10, least=1)
+    pools = {"a": [*people, refused], "b": list(people)}
+    monkeypatch.setattr(build, "STRATA", (first, second))
+    monkeypatch.setattr(build, "pool", lambda stratum, refresh: pools[stratum.query])
+    rows = build.build(refresh=False)
+    taken = {label: [r["file"] for r in rows if r["label"] == label]
+             for label in ("first", "second")}
+    by_hash = [p["gndIdentifier"] for p in sorted(people, key=build._order)]
+    # taken in hash order, not input order; the refused record costs no quota
+    assert taken["first"] == by_hash[:2]
+    # an id the first stratum took is not taken again
+    assert taken["second"] == by_hash[2:]
+
+
+def test_build_stops_before_writing_when_a_stratum_falls_short(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(build, "STRATA", (build.Stratum("thin", "a", 5, least=3),))
+    monkeypatch.setattr(build, "pool", lambda stratum, refresh: _people(2))
+    with pytest.raises(ValueError, match="thin 2/3"):
+        build.build(refresh=False)
+
+
+# -- the cache ----------------------------------------------------------------
+
+class _Response:
+    def __init__(self, body: bytes) -> None:
+        self.body = body
+
+    def __enter__(self) -> "_Response":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
+
+    def read(self) -> bytes:
+        return self.body
+
+
+def _serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    fetched: list[str] = []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
+        fetched.append(request.full_url)
+        return _Response(body)
+    monkeypatch.setattr(build.urllib.request, "urlopen", urlopen)
+    return fetched
+
+
+_GOOD = json.dumps({"totalItems": 0, "member": []}).encode()
+
+
+def test_a_cached_response_is_read_without_fetching(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    fetched = _serve(monkeypatch, tmp_path, _GOOD)
+    build._get_json({"q": "x"}, refresh=False)
+    build._get_json({"q": "x"}, refresh=False)
+    assert len(fetched) == 1
+    build._get_json({"q": "x"}, refresh=True)
+    assert len(fetched) == 2
+    assert not list((tmp_path / "gnd").glob("*.part"))
+
+
+def test_a_response_that_is_not_a_search_result_is_not_cached(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _serve(monkeypatch, tmp_path, b'{"error": "rate limited"}')
+    with pytest.raises(ValueError, match="not a lobid search response"):
+        build._get_json({"q": "x"}, refresh=False)
+    assert not list((tmp_path / "gnd").iterdir())
+
+
+def test_a_damaged_cache_file_is_named(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _serve(monkeypatch, tmp_path, _GOOD)
+    build._get_json({"q": "x"}, refresh=False)
+    [cached] = (tmp_path / "gnd").iterdir()
+    cached.write_text('{"totalItems": 0, "memb', encoding="utf-8")
+    with pytest.raises(ValueError, match=f"{cached.name}.*--refresh"):
+        build._get_json({"q": "x"}, refresh=False)
+
+
+# -- the committed files -------------------------------------------------------
+
+_ROWS = agreement.load_rows(agreement.GND_FIELDS)
+_STRATA = {stratum.label: stratum for stratum in build.STRATA}
+
+
+def test_every_committed_field_occurs_in_its_rendering() -> None:
+    # A field that did not occur would be expected EMPTY by the
+    # comparison, a disagreement no parser fix could resolve.
+    missing = [(row["text"], value) for row in _ROWS for value in row["fields"].values()
+               if not agreement.occurs(value, row["text"])]
+    assert not missing
+
+
+def test_each_committed_stratum_holds_what_the_build_promises() -> None:
+    names = {label: {row["file"] for row in _ROWS if row["label"] == label}
+             for label in {row["label"] for row in _ROWS}}
+    assert set(names) == set(_STRATA)
+    for label, ids in names.items():
+        assert _STRATA[label].floor <= len(ids) <= _STRATA[label].quota, label
+    # one stratum per person: a person in two would be counted twice
+    owners = Counter(len({r["label"] for r in _ROWS if r["file"] == gnd})
+                     for gnd in {row["file"] for row in _ROWS})
+    assert set(owners) == {1}
+    assert not [row for row in _ROWS if _STRATA[row["label"]].family_first
+                and row["order"] == "givenFirst"]

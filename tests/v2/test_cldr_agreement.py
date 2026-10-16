@@ -153,8 +153,9 @@ def test_changes_reports_a_rendering_that_is_gone() -> None:
     assert message.startswith("gone: b/nativeG/givenFirst")
 
 
-#: Each source's corpus file, and the fewest renderings it may hold: a
-#: truncated file would otherwise pass both checks below.
+#: Each source's corpus file, and a floor its distinct texts must
+#: exceed: a truncated file would otherwise pass both checks below, and
+#: an emptied one re-recorded would match its emptied record.
 _CORPORA = {"CLDR": ("corpus_cldr.jsonl", 1000), "GND": ("corpus_gnd.jsonl", 500)}
 
 
@@ -270,13 +271,20 @@ def test_a_re_record_drops_entries_whose_file_left_the_table(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     # The carry-over that keeps an unmeasured pack's entries must not
     # keep an unmapped file's too.
+    # Every record is redirected through sources() itself, so a source
+    # added later cannot be written into the tree by this test.
     record = tmp_path / "locales.json"
     agreement.write_record({"xx/nativeG/sorting": {"text": "X"}}, record)
+    real = agreement.sources()
+    redirected = {name: (fields, tmp_path / f"{name}.json")
+                  for name, (fields, _) in real.items()}
     monkeypatch.setattr(agreement, "LOCALE_RECORD", record)
-    monkeypatch.setattr(agreement, "RECORD", tmp_path / "default.json")
-    monkeypatch.setattr(agreement, "GND_RECORD", tmp_path / "gnd.json")
+    monkeypatch.setattr(agreement, "sources", lambda: redirected)
     assert agreement.main(["--record"]) == 0
     assert "xx/nativeG/sorting" not in agreement.read_record(record)
+    # and the re-record wrote every source's record, not CLDR's alone
+    for name, (fields, written) in redirected.items():
+        assert agreement.read_record(written) == agreement.read_record(real[name][1]), name
 
 
 @pytest.mark.parametrize("pack", [
