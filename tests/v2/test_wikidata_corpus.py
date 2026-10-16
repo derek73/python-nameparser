@@ -1,0 +1,170 @@
+"""Offline checks on tools/differential/build_wikidata_corpus.py.
+
+The build script is the only part of the Wikidata corpus that touches the
+network, so the token alignment it applies to a person's written names is
+pinned here on hand-written items in wbgetentities' shape. tools/ is not
+a package, so the module is loaded by path, as _differential_fixtures.py
+loads compare.py.
+"""
+from typing import Any
+
+import pytest
+
+from ._differential_fixtures import load_tool
+
+build = load_tool("build_wikidata_corpus")
+agreement = load_tool("cldr_agreement")
+
+_ES = build.Stratum("surname2-es", "Q29", "P1950", "es", 1)
+_RU = build.Stratum("patronymic-ru", "Q159", "P5056", "ru", 1)
+_IS = build.Stratum("patronymic-is", "Q189", "P5056", "is", 1)
+_MY = build.Stratum("patronymic-my", "Q833", "P5056", "ms", 1)
+
+
+def _claim(value: dict[str, str]) -> dict[str, Any]:
+    return {"rank": "normal", "mainsnak": {"snaktype": "value",
+                                           "datavalue": {"value": value}}}
+
+
+def _person(label: str, language: str, native: str = "", female: bool = False,
+            **parts: str | list[str]) -> dict[str, Any]:
+    claims: dict[str, list[dict[str, Any]]] = {}
+    for prop, ids in parts.items():
+        claims[prop] = [_claim({"id": i}) for i in ([ids] if isinstance(ids, str) else ids)]
+    if native:
+        claims["P1559"] = [_claim({"text": native, "language": language})]
+    if female:
+        claims["P21"] = [_claim({"id": build.FEMALE})]
+    return {"labels": {language: {"value": label}}, "claims": claims}
+
+
+def _names(**labels: str) -> dict[str, Any]:
+    """Part items, each labelled in `mul` only."""
+    return {qid: {"labels": {"mul": {"value": text}}} for qid, text in labels.items()}
+
+
+def _texts(rows: list[dict[str, Any]]) -> list[tuple[str, str]]:
+    return [(row["order"], row["text"]) for row in rows]
+
+
+_GGM = _names(Q1="Gabriel", Q2="García", Q3="Márquez")
+
+
+def test_a_written_name_every_part_covers_gives_one_rendering() -> None:
+    person = _person("Gabriel García Márquez", "es",
+                     P735="Q1", P734="Q2", P1950="Q3")
+    [row] = build.renderings("Q5878", person, _GGM, _ES)
+    assert (row["order"], row["shape"], row["composed"]) == ("givenFirst", None, False)
+    assert row["fields"] == {"given": "Gabriel", "surname": "García",
+                             "surname2": "Márquez"}
+
+
+def test_a_short_display_name_without_the_second_surname_is_left_out() -> None:
+    # Every word is claimed, but the field the stratum exists for is not
+    # written, so the name tests nothing about it.
+    person = _person("Gabriel García", "es", P735="Q1", P734="Q2", P1950="Q3")
+    assert build.renderings("Q5878", person, _GGM, _ES) == []
+
+
+@pytest.mark.parametrize("label", [
+    "Gabriel José García Márquez",       # a word no part claims
+    "Gabriel García Márquez (escritor)",  # a disambiguator
+    "Gabriel García Márquez García",     # a part found in two places
+])
+def test_a_name_not_covered_once_per_word_is_left_out(label: str) -> None:
+    person = _person(label, "es", P735="Q1", P734="Q2", P1950="Q3")
+    assert build.renderings("Q5878", person, _GGM, _ES) == []
+
+
+def test_a_connective_joins_the_part_after_it() -> None:
+    names = _names(Q1="Josep", Q2="Carreras", Q3="Coll")
+    person = _person("Josep Carreras i Coll", "es", P735="Q1", P734="Q2", P1950="Q3")
+    [row] = build.renderings("Q1", person, names, _ES)
+    assert row["fields"]["surname2"] == "i Coll"
+    names = _names(Q1="Mohamed", Q4="Hamzah")
+    person = _person("Mohamed bin Hamzah", "ms", P735="Q1", P5056="Q4")
+    [row] = build.renderings("Q2", person, names, _MY)
+    assert row["fields"] == {"given": "Mohamed", "patronymic": "bin Hamzah"}
+
+
+def test_a_capital_letter_is_not_a_connective() -> None:
+    names = _names(Q1="Josep", Q2="Carreras", Q3="Coll")
+    person = _person("Josep Carreras I Coll", "es", P735="Q1", P734="Q2", P1950="Q3")
+    assert build.renderings("Q1", person, names, _ES) == []
+
+
+def test_one_item_stated_as_two_parts_is_left_out() -> None:
+    # Malaysian items sometimes give the same name item as P734 and P5056.
+    names = _names(Q1="Salma", Q2="Ismail")
+    person = _person("Salma Ismail", "ms", P735="Q1", P734="Q2", P5056="Q2")
+    assert build.renderings("Q1", person, names, _MY) == []
+
+
+def test_a_womans_russian_surname_matches_the_feminine_form() -> None:
+    names = _names(Q1="Елена", Q2="Лядов", Q3="Игоревна")
+    person = _person("Елена Игоревна Лядова", "ru", female=True,
+                     P735="Q1", P734="Q2", P5056="Q3")
+    [row] = build.renderings("Q1", person, names, _RU)
+    assert row["fields"]["surname"] == "Лядова"
+    # ... for a woman only.
+    man = _person("Елена Игоревна Лядова", "ru", P735="Q1", P734="Q2", P5056="Q3")
+    assert build.renderings("Q1", man, names, _RU) == []
+
+
+def test_a_sorting_label_and_a_native_name_are_two_renderings() -> None:
+    names = _names(Q1="Юрий", Q2="Кушнарёв", Q3="Викторович")
+    person = _person("Кушнарёв, Юрий Викторович", "ru",
+                     native="Юрий Викторович Кушнарёв",
+                     P735="Q1", P734="Q2", P5056="Q3")
+    rows = build.renderings("Q1", person, names, _RU)
+    assert _texts(rows) == [("givenFirst", "Юрий Викторович Кушнарёв"),
+                            ("sorting", "Кушнарёв, Юрий Викторович")]
+    assert rows[1]["fields"]["surname"] == "Кушнарёв"
+
+
+def test_family_first_without_a_comma_carries_the_family_first_shape() -> None:
+    names = _names(Q1="Юрий", Q2="Кушнарёв", Q3="Викторович")
+    person = _person("Кушнарёв Юрий Викторович", "ru",
+                     P735="Q1", P734="Q2", P5056="Q3")
+    [row] = build.renderings("Q1", person, names, _RU)
+    assert (row["order"], row["shape"]) == ("surnameFirst", build.FAMILY_FIRST_SHAPE)
+    assert build.corpus_lines([row]) == [
+        '{"name": "Кушнарёв Юрий Викторович", "shape": 4}']
+
+
+def test_a_patronymic_expects_no_family_name() -> None:
+    names = _names(Q1="Vigdís", Q2="Finnbogadóttir")
+    person = _person("Vigdís Finnbogadóttir", "is", P735="Q1", P5056="Q2")
+    [row] = build.renderings("Q1", person, names, _IS)
+    assert agreement.expected_roles(row["fields"], row["text"])["family"] == ""
+
+
+def test_every_field_occurs_in_its_rendering() -> None:
+    # A field that did not occur would be expected EMPTY by the comparison,
+    # a disagreement no parser fix could resolve; the glued comma of a
+    # sorting form is the case to watch.
+    names = _names(Q1="Юрий", Q2="Кушнарёв", Q3="Викторович")
+    person = _person("Кушнарёв, Юрий Викторович", "ru",
+                     P735="Q1", P734="Q2", P5056="Q3")
+    for row in build.renderings("Q1", person, names, _RU):
+        for value in row["fields"].values():
+            assert agreement.occurs(value, row["text"]), (row["text"], value)
+
+
+def test_a_deprecated_or_valueless_statement_is_ignored() -> None:
+    item = {"claims": {"P734": [
+        {**_claim({"id": "Q1"}), "rank": "deprecated"},
+        {"rank": "normal", "mainsnak": {"snaktype": "novalue"}},
+        _claim({"id": "Q2"})]}}
+    assert build.statements(item, "P734") == ["Q2"]
+
+
+def test_a_duplicate_rendering_is_refused() -> None:
+    row = {"file": "Q1", "label": "x", "order": "sorting", "text": "A, B"}
+    with pytest.raises(ValueError, match="duplicate rendering Q1/x/sorting"):
+        build.fields_lines([row, dict(row)])
+
+
+def test_every_stratum_has_a_distinct_label() -> None:
+    labels = [stratum.label for stratum in build.STRATA]
+    assert len(labels) == len(set(labels))

@@ -61,7 +61,39 @@ def test_expected_roles_drop_fields_the_rendering_omits() -> None:
     roles = agreement.expected_roles(fields, "Sr. Miguel Ángel Juan Antonio Pablo II")
     assert roles == {"title": "Sr.", "given_names": "Miguel Ángel Juan Antonio",
                      "family": "Pablo", "suffix": "II",
-                     "family_particles": "", "family_base": "Pablo"}
+                     "family_particles": "", "family_base": "Pablo",
+                     # stated, so expected empty where the rendering omits it
+                     "surname2": ""}
+
+
+def test_a_pending_field_is_scored_inside_its_merged_role_until_parsed_name_has_it(
+        ) -> None:
+    # surname2 inside family, as CLDR merges it; a patronymic inside
+    # given_names, never family -- so an Icelandic name expects no family.
+    text = "Vigdís Finnbogadóttir"
+    roles = agreement.expected_roles({"given": "Vigdís",
+                                      "patronymic": "Finnbogadóttir"}, text)
+    assert (roles["given_names"], roles["family"]) == (text, "")
+    assert roles["patronymic"] == "Finnbogadóttir"
+    roles = agreement.expected_roles(
+        {"given": "Gabriel", "surname": "García", "surname2": "Márquez"},
+        "Gabriel García Márquez")
+    assert (roles["family"], roles["surname2"]) == ("García Márquez", "Márquez")
+    # Not scored on its own while ParsedName lacks the attribute ...
+    assert "surname2" not in agreement.got_roles(parse("Gabriel García Márquez"))
+    rows = [{"file": "Q1", "label": "x", "order": "givenFirst", "shape": None,
+             "text": "Gabriel García Márquez",
+             "fields": {"given": "Gabriel", "surname": "García",
+                        "surname2": "Márquez"}}]
+    assert "surname2" not in agreement.disagreements(rows).get("Q1/x/givenFirst", {})
+
+
+def test_a_pending_field_is_scored_once_parsed_name_answers_it() -> None:
+    class WithSurname2:
+        title = given_names = suffix = family_particles = family_base = ""
+        family = "García Márquez"
+        surname2 = "García"
+    assert agreement.got_roles(WithSurname2())["surname2"] == "García"  # type: ignore[arg-type]
 
 
 def test_expected_roles_compare_particles_only_where_cldr_splits_them() -> None:
@@ -156,7 +188,8 @@ def test_changes_reports_a_rendering_that_is_gone() -> None:
 #: Each source's corpus file, and a floor its distinct texts must
 #: exceed: a truncated file would otherwise pass both checks below, and
 #: an emptied one re-recorded would match its emptied record.
-_CORPORA = {"CLDR": ("corpus_cldr.jsonl", 1000), "GND": ("corpus_gnd.jsonl", 500)}
+_CORPORA = {"CLDR": ("corpus_cldr.jsonl", 1000), "GND": ("corpus_gnd.jsonl", 500),
+            "Wikidata": ("corpus_wikidata.jsonl", 500)}
 
 
 def test_every_source_has_a_corpus_file() -> None:

@@ -1,0 +1,17 @@
+corpus_wikidata.jsonl and wikidata_fields.jsonl are derived from Wikidata
+(https://www.wikidata.org), read through the Wikidata Query Service and
+the wbgetentities API, and carry Wikidata's license.
+
+Wikidata states that "All structured data (i.e. the main, Property,
+Lexeme, and EntitySchema namespaces) is released into the public
+domain".
+https://www.wikidata.org/wiki/Wikidata:Licensing
+
+CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/
+
+No attribution is required; this file credits the source anyway.
+Source: Wikidata, Wikimedia Foundation. Each line of
+wikidata_fields.jsonl names its item's QID, resolvable at
+https://www.wikidata.org/wiki/<QID>. Only public figures are sampled
+(deceased, or with at least 10 sitelinks), and only name strings and
+QIDs are kept.

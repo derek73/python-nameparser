@@ -7,8 +7,10 @@ DISAGREEMENTS are recorded in cldr_agreement.json, and
 tests/v2/test_cldr_agreement.py fails when the tree's disagreements stop
 matching the record. The GND corpus (build_gnd_corpus.py) writes its
 fields in CLDR's vocabulary, so it is a second SOURCE compared by the
-same rules, with its record in gnd_agreement.json; "CLDR" below means
-either source wherever the rule is about fields. For each source the
+same rules, with its record in gnd_agreement.json, and so is the
+Wikidata corpus (build_wikidata_corpus.py, wikidata_agreement.json),
+which states the two fields CLDR's vocabulary merges or lacks; "CLDR"
+below means any source wherever the rule is about fields. For each source the
 test fails on:
 
 - a role that agreed now disagrees (a regression);
@@ -39,6 +41,17 @@ Re-record deliberately, and say why in the commit, as with a watched diff.
 Each record doubles as a measured worklist: every entry is a place the
 parser and the source read a name differently.
 
+Two fields are stated but not yet scored on their own: `surname2` (a
+second surname, CLDR's and Wikidata's P1950) and `patronymic`
+(Wikidata's P5056, a field CLDR does not have). ParsedName has neither,
+so each is scored inside the role it belongs to today -- `surname2`
+inside `family`, as CLDR's own merge does, and `patronymic` inside
+`given_names`, since a patronymic is not a family name (the GND and LC
+convention: `Vigdís Finnbogadóttir` expects the family empty). They are
+in PENDING_ROLES, and each starts being scored on its own the day
+ParsedName gains an attribute of that name, with no change here; until
+then the summary says how many renderings state it.
+
 Nothing is special-cased. A deliberately unnatural rendering, `さん` read
 as a suffix where CLDR calls it a title, a lone word under a family-first
 order: each simply disagrees, and the ratchet guards what agrees.
@@ -58,12 +71,18 @@ from nameparser import FAMILY_FIRST, ParsedName, Parser, Policy, locales, parser
 
 ROLES = ("title", "given_names", "family", "suffix",
          "family_particles", "family_base")
+#: Fields a source states that ParsedName has no attribute for yet:
+#: scored on their own once it does (see got_roles), and meanwhile
+#: inside `family` and `given_names`.
+PENDING_ROLES = ("surname2", "patronymic")
 HERE = Path(__file__).resolve().parent
 FIELDS = HERE / "cldr_fields.jsonl"
 RECORD = HERE / "cldr_agreement.json"
 LOCALE_RECORD = HERE / "cldr_agreement_locales.json"
 GND_FIELDS = HERE / "gnd_fields.jsonl"
 GND_RECORD = HERE / "gnd_agreement.json"
+WIKIDATA_FIELDS = HERE / "wikidata_fields.jsonl"
+WIKIDATA_RECORD = HERE / "wikidata_agreement.json"
 RECORD_COMMAND = "uv run python tools/differential/cldr_agreement.py --record"
 #: shapes.py's FAMILY_FIRST shape, the only tag build_cldr_corpus.py writes.
 FAMILY_FIRST_SHAPE = 4
@@ -146,12 +165,15 @@ def expected_roles(fields: dict[str, str], text: str) -> dict[str, str]:
     family = (("surname", "surname2") if "surname" in fields
               else ("surname-prefix", "surname-core", "surname2"))
     roles = {"title": present("title"),
-             "given_names": present("given", "given2"),
+             "given_names": present("given", "given2", "patronymic"),
              "family": present(*family),
              "suffix": present("generation", "credentials")}
     if "surname-core" in fields:
         roles["family_particles"] = present("surname-prefix")
         roles["family_base"] = present("surname-core", "surname2")
+    for role in PENDING_ROLES:
+        if role in fields:
+            roles[role] = present(role)
     return roles
 
 
@@ -165,10 +187,16 @@ def same(expected: str, got: str, text: str) -> bool:
 
 
 def got_roles(name: ParsedName) -> dict[str, str]:
-    return {"title": name.title, "given_names": name.given_names,
-            "family": name.family, "suffix": name.suffix,
-            "family_particles": name.family_particles,
-            "family_base": name.family_base}
+    """The parser's answer for every role it can answer: ROLES always,
+    a PENDING_ROLES field only once ParsedName has it."""
+    got = {"title": name.title, "given_names": name.given_names,
+           "family": name.family, "suffix": name.suffix,
+           "family_particles": name.family_particles,
+           "family_base": name.family_base}
+    for role in PENDING_ROLES:
+        if hasattr(name, role):
+            got[role] = str(getattr(name, role))
+    return got
 
 
 def rendering_key(row: dict[str, Any]) -> str:
@@ -209,7 +237,7 @@ def disagreements(rows: list[dict[str, Any]],
         got = got_roles(parse_rendering(row["text"], row["shape"], pack))
         bad = {role: {"expected": expected, "got": got[role]}
                for role, expected in expected_roles(row["fields"], row["text"]).items()
-               if not same(expected, got[role], row["text"])}
+               if role in got and not same(expected, got[role], row["text"])}
         if bad:
             found[rendering_key(row)] = {"text": row["text"], **bad}
     return dict(sorted(found.items()))
@@ -280,7 +308,8 @@ def _packs() -> list[str]:
 def sources() -> dict[str, tuple[Path, Path]]:
     """Each source of stated fields: name -> (fields file, record). Read
     at call time, so a test that points a record elsewhere is obeyed."""
-    return {"CLDR": (FIELDS, RECORD), "GND": (GND_FIELDS, GND_RECORD)}
+    return {"CLDR": (FIELDS, RECORD), "GND": (GND_FIELDS, GND_RECORD),
+            "Wikidata": (WIKIDATA_FIELDS, WIKIDATA_RECORD)}
 
 
 def _summary(name: str, rows: list[dict[str, Any]],
@@ -294,6 +323,10 @@ def _summary(name: str, rows: list[dict[str, Any]],
     for role in ROLES:
         agree = totals[role] - wrong[role]
         print(f"{role:17} {agree:5}/{totals[role]:<5} agree")
+    for role in PENDING_ROLES:
+        if totals[role] and not hasattr(ParsedName, role):
+            print(f"{role:17} {totals[role]:5} stated, not a ParsedName field "
+                  "yet (scored inside family/given_names)")
     problems = changes(read_record(record), current, {rendering_key(r) for r in rows})
     print("\n".join(problems) or f"{name} view matches the record")
     return problems
