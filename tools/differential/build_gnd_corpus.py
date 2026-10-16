@@ -21,9 +21,9 @@ Writes three files beside this script, always together:
   render alike), in the existing corpus line format, read by
   snapshot.py like every other corpus.
 - gnd_fields.jsonl -- one line per rendering, with the GND fields
-  written in CLDR's field vocabulary (`given`, `surname-prefix`,
-  `surname-core`, `generation`), so cldr_agreement.py compares both
-  sources by the same rules.
+  written in CLDR's field vocabulary (`given`, `surname`,
+  `surname-prefix` and `surname-core`, `generation`), so
+  cldr_agreement.py compares both sources by the same rules.
 - gnd_LICENSE -- the CC0 statement and the source credit.
 
 Raw lobid responses are cached outside the repository, in a gnd/
@@ -54,10 +54,11 @@ Renderings, per record:
   script wrote, as CLDR's renderings are formatter output. A glued
   particle's composed line states the glued word as a whole `surname`,
   since the comparison matches fields word by word; the index form,
-  where the particle is a word of its own, keeps the split. A surname
-  GND states with no prefix is stated whole as well (`surname`, not
-  `surname-core`): GND does not split a particle inside a surname
-  (`Vélez de Guevara`), so an absent prefix means "not stated", not "no
+  where the particle is a word of its own, keeps the split. The split
+  is stated only for a prefix before a one-word surname; otherwise the
+  family is stated whole (`surname`, not `surname-core`): GND does not
+  split a particle inside a surname (`Vélez de Guevara`, `Zuylen van
+  Nijevelt`), so what it leaves unsplit means "not stated", not "no
   particle", and only the family is compared.
 - a personalName record gives the name as written; it is in direct
   order and has no inverted form. CLDR's `given` holds it, so the
@@ -336,8 +337,15 @@ def renderings(record: dict[str, Any], stratum: Stratum) -> list[dict[str, Any]]
     index = f"{surname}, {forename}" + (f" {prefix}" if prefix else "")
     if written != index:
         return []  # the preferred name is not what its fields say
-    fields = ({"given": forename, "surname-prefix": prefix, "surname-core": surname}
-              if prefix else {"given": forename, "surname": surname})
+    # The particle split is stated only where GND states all of it: a
+    # prefix before a one-word core. With no prefix, or a core of several
+    # words (`Zuylen van Nijevelt`), a particle may sit unstated inside,
+    # so the family is stated whole and the split is not compared.
+    if prefix and " " not in surname:
+        fields = {"given": forename, "surname-prefix": prefix, "surname-core": surname}
+    else:
+        fields = {"given": forename,
+                  "surname": f"{prefix} {surname}" if prefix else surname}
     rows = [row("sorting", written, fields, False)]
     if not stratum.family_first:
         if prefix.endswith(_GLUED):

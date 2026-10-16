@@ -45,6 +45,21 @@ def test_a_surname_record_gives_its_index_form_and_a_composed_one() -> None:
                                  "surname-core": "Gogh"}
 
 
+@pytest.mark.parametrize(("written", "entity"), [
+    ("Zuylen van Nijevelt, Julius van",
+     {"forename": "Julius", "prefix": "van", "surname": "Zuylen van Nijevelt"}),
+    ("Croix, Edmond de La", {"forename": "Edmond", "prefix": "de La", "surname": "Croix"}),
+])
+def test_the_split_is_compared_only_before_a_one_word_core(
+        written: str, entity: dict[str, str]) -> None:
+    # A core of several words may hold an unstated particle (the second
+    # `van`), so its family is stated whole; a one-word core keeps the split.
+    index = build.renderings(_record(written, **entity), _PLAIN)[0]
+    split = " " not in entity["surname"]
+    assert ("surname-core" in index["fields"]) is split
+    assert ("family_particles" in agreement.expected_roles(index["fields"], written)) is split
+
+
 def test_a_surname_with_no_prefix_is_stated_whole() -> None:
     # GND keeps a particle inside a surname (`Vélez de Guevara`), so a
     # missing prefix is not a statement that there is none. As
@@ -102,7 +117,7 @@ def _multi(written: str, **entity: list[str]) -> dict[str, Any]:
 
 
 @pytest.mark.parametrize("record", [
-    # Each row is refused by one guard alone; the comment names it.
+    # Grouped by the guard each row is for; the comment names it.
     # a descriptor the fields cannot place
     _record("Eutychios, von Alexandria", personalName="Eutychios",
             nameAddition="von Alexandria"),

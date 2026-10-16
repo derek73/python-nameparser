@@ -736,28 +736,6 @@
   },
   "text": "Hooghvorst, Emmanuel d'"
  },
- "1147237387/particle-iberia/givenFirst": {
-  "family_base": {
-   "expected": "La Croix",
-   "got": "Croix"
-  },
-  "family_particles": {
-   "expected": "de",
-   "got": "de La"
-  },
-  "text": "Edmond de La Croix"
- },
- "1147237387/particle-iberia/sorting": {
-  "family_base": {
-   "expected": "La Croix",
-   "got": "Croix"
-  },
-  "family_particles": {
-   "expected": "de",
-   "got": "de La"
-  },
-  "text": "La Croix, Edmond de"
- },
  "1147649030/direct-my-id/givenFirst": {
   "family": {
    "expected": "",
@@ -877,26 +855,11 @@
    "expected": "van Zuylen van Nijevelt",
    "got": "van Nijevelt"
   },
-  "family_base": {
-   "expected": "Zuylen van Nijevelt",
-   "got": "Nijevelt"
-  },
   "given_names": {
    "expected": "Julius",
    "got": "Julius van Zuylen"
   },
   "text": "Julius van Zuylen van Nijevelt"
- },
- "1172046697/particle-nl-be/sorting": {
-  "family_base": {
-   "expected": "Zuylen van Nijevelt",
-   "got": "Zuylen Nijevelt"
-  },
-  "family_particles": {
-   "expected": "van",
-   "got": "van van"
-  },
-  "text": "Zuylen van Nijevelt, Julius van"
  },
  "1172113386/direct-my-id/givenFirst": {
   "family": {
@@ -914,26 +877,11 @@
    "expected": "von Ungnad von Weissenwolf",
    "got": "von Weissenwolf"
   },
-  "family_base": {
-   "expected": "Ungnad von Weissenwolf",
-   "got": "Weissenwolf"
-  },
   "given_names": {
    "expected": "David zu Sonnegg",
    "got": "David zu Sonnegg von Ungnad"
   },
   "text": "David zu Sonnegg von Ungnad von Weissenwolf"
- },
- "117310107/particle-de-at/sorting": {
-  "family_base": {
-   "expected": "Ungnad von Weissenwolf",
-   "got": "Ungnad Weissenwolf"
-  },
-  "family_particles": {
-   "expected": "von",
-   "got": "von von"
-  },
-  "text": "Ungnad von Weissenwolf, David zu Sonnegg von"
  },
  "117546712/direct-arab/givenFirst": {
   "family": {
@@ -1194,28 +1142,6 @@
   },
   "text": "Ǧalāl-ad-Dīn Rūmī"
  },
- "118751107/particle-iberia/givenFirst": {
-  "family_base": {
-   "expected": "San Pedro",
-   "got": "Pedro"
-  },
-  "family_particles": {
-   "expected": "de",
-   "got": "de San"
-  },
-  "text": "Diego Fernández de San Pedro"
- },
- "118751107/particle-iberia/sorting": {
-  "family_base": {
-   "expected": "San Pedro",
-   "got": "Pedro"
-  },
-  "family_particles": {
-   "expected": "de",
-   "got": "de San"
-  },
-  "text": "San Pedro, Diego Fernández de"
- },
  "1187542687/compound-latam/givenFirst": {
   "family": {
    "expected": "Nunes de Ávila e Silva",
@@ -1259,28 +1185,6 @@
    "got": "Ṯābit"
   },
   "text": "Ṯābit Ibn-Qurra"
- },
- "118835467/particle-fr/givenFirst": {
-  "family_base": {
-   "expected": "La Barre",
-   "got": "Barre"
-  },
-  "family_particles": {
-   "expected": "de",
-   "got": "de La"
-  },
-  "text": "Jean-François Lefebvre de La Barre"
- },
- "118835467/particle-fr/sorting": {
-  "family_base": {
-   "expected": "La Barre",
-   "got": "Barre"
-  },
-  "family_particles": {
-   "expected": "de",
-   "got": "de La"
-  },
-  "text": "La Barre, Jean-François Lefebvre de"
  },
  "118848062/particle-arab/sorting": {
   "family": {

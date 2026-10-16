@@ -43,8 +43,8 @@
 {"composed": false, "fields": {"given": "ʿĀliya Bint-ʿAlī al-Ḥiǧāzī"}, "file": "1018479422", "label": "direct-arab", "order": "givenFirst", "shape": null, "text": "ʿĀliya Bint-ʿAlī al-Ḥiǧāzī"}
 {"composed": true, "fields": {"given": "Jean de Beaumanoir", "surname-core": "Lavardin", "surname-prefix": "de"}, "file": "1018811257", "label": "particle-fr", "order": "givenFirst", "shape": null, "text": "Jean de Beaumanoir de Lavardin"}
 {"composed": false, "fields": {"given": "Jean de Beaumanoir", "surname-core": "Lavardin", "surname-prefix": "de"}, "file": "1018811257", "label": "particle-fr", "order": "sorting", "shape": null, "text": "Lavardin, Jean de Beaumanoir de"}
-{"composed": true, "fields": {"given": "Cayetano Alberto", "surname-core": "Barrera y Leirado", "surname-prefix": "de la"}, "file": "101938977", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Cayetano Alberto de la Barrera y Leirado"}
-{"composed": false, "fields": {"given": "Cayetano Alberto", "surname-core": "Barrera y Leirado", "surname-prefix": "de la"}, "file": "101938977", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Barrera y Leirado, Cayetano Alberto de la"}
+{"composed": true, "fields": {"given": "Cayetano Alberto", "surname": "de la Barrera y Leirado"}, "file": "101938977", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Cayetano Alberto de la Barrera y Leirado"}
+{"composed": false, "fields": {"given": "Cayetano Alberto", "surname": "de la Barrera y Leirado"}, "file": "101938977", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Barrera y Leirado, Cayetano Alberto de la"}
 {"composed": true, "fields": {"given": "Karl August Ferdinand", "surname-core": "Borcke", "surname-prefix": "von"}, "file": "1019726407", "label": "particle-de-at", "order": "givenFirst", "shape": null, "text": "Karl August Ferdinand von Borcke"}
 {"composed": false, "fields": {"given": "Karl August Ferdinand", "surname-core": "Borcke", "surname-prefix": "von"}, "file": "1019726407", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Borcke, Karl August Ferdinand von"}
 {"composed": true, "fields": {"generation": "II.", "given": "Christian Ulrich"}, "file": "1019728027", "label": "regnal", "order": "givenFirst", "shape": null, "text": "Christian Ulrich II."}
@@ -127,8 +127,8 @@
 {"composed": false, "fields": {"given": "F.", "surname-core": "Lange", "surname-prefix": "de"}, "file": "1050991397", "label": "particle-nl-be", "order": "sorting", "shape": null, "text": "Lange, F. de"}
 {"composed": false, "fields": {"given": "Drífa Viðar"}, "file": "1051922143", "label": "direct-is", "order": "givenFirst", "shape": null, "text": "Drífa Viðar"}
 {"composed": false, "fields": {"given": "Oddur Björnsson"}, "file": "1051927471", "label": "direct-is", "order": "givenFirst", "shape": null, "text": "Oddur Björnsson"}
-{"composed": true, "fields": {"given": "Tomás Antonio", "surname-core": "Cerda y Aragón", "surname-prefix": "de la"}, "file": "1053081987", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Tomás Antonio de la Cerda y Aragón"}
-{"composed": false, "fields": {"given": "Tomás Antonio", "surname-core": "Cerda y Aragón", "surname-prefix": "de la"}, "file": "1053081987", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Cerda y Aragón, Tomás Antonio de la"}
+{"composed": true, "fields": {"given": "Tomás Antonio", "surname": "de la Cerda y Aragón"}, "file": "1053081987", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Tomás Antonio de la Cerda y Aragón"}
+{"composed": false, "fields": {"given": "Tomás Antonio", "surname": "de la Cerda y Aragón"}, "file": "1053081987", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Cerda y Aragón, Tomás Antonio de la"}
 {"composed": true, "fields": {"given": "Ignacio", "surname": "López Rayón"}, "file": "1053275307", "label": "compound-latam", "order": "givenFirst", "shape": null, "text": "Ignacio López Rayón"}
 {"composed": false, "fields": {"given": "Ignacio", "surname": "López Rayón"}, "file": "1053275307", "label": "compound-latam", "order": "sorting", "shape": null, "text": "López Rayón, Ignacio"}
 {"composed": true, "fields": {"generation": "III.", "given": "Håkon"}, "file": "1053284357", "label": "regnal", "order": "givenFirst", "shape": null, "text": "Håkon III."}
@@ -213,8 +213,8 @@
 {"composed": false, "fields": {"given": "Tadsch ad-Din al-Hasani"}, "file": "1145191851", "label": "direct-arab", "order": "givenFirst", "shape": null, "text": "Tadsch ad-Din al-Hasani"}
 {"composed": true, "fields": {"given": "Emmanuel", "surname": "d'Hooghvorst"}, "file": "1147042357", "label": "particle-elided", "order": "givenFirst", "shape": null, "text": "Emmanuel d'Hooghvorst"}
 {"composed": false, "fields": {"given": "Emmanuel", "surname-core": "Hooghvorst", "surname-prefix": "d'"}, "file": "1147042357", "label": "particle-elided", "order": "sorting", "shape": null, "text": "Hooghvorst, Emmanuel d'"}
-{"composed": true, "fields": {"given": "Edmond", "surname-core": "La Croix", "surname-prefix": "de"}, "file": "1147237387", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Edmond de La Croix"}
-{"composed": false, "fields": {"given": "Edmond", "surname-core": "La Croix", "surname-prefix": "de"}, "file": "1147237387", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "La Croix, Edmond de"}
+{"composed": true, "fields": {"given": "Edmond", "surname": "de La Croix"}, "file": "1147237387", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Edmond de La Croix"}
+{"composed": false, "fields": {"given": "Edmond", "surname": "de La Croix"}, "file": "1147237387", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "La Croix, Edmond de"}
 {"composed": false, "fields": {"given": "Mohamed Khir Johari"}, "file": "1147649030", "label": "direct-my-id", "order": "givenFirst", "shape": null, "text": "Mohamed Khir Johari"}
 {"composed": true, "fields": {"given": "Johann", "surname": "Klingenberg"}, "file": "1150683007", "label": "plain-europe", "order": "givenFirst", "shape": null, "text": "Johann Klingenberg"}
 {"composed": false, "fields": {"given": "Johann", "surname": "Klingenberg"}, "file": "1150683007", "label": "plain-europe", "order": "sorting", "shape": null, "text": "Klingenberg, Johann"}
@@ -236,8 +236,8 @@
 {"composed": false, "fields": {"given": "Johann", "surname-core": "Dumreicher", "surname-prefix": "von"}, "file": "116251107", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Dumreicher, Johann von"}
 {"composed": true, "fields": {"given": "Jaime", "surname": "Guardia Neyra"}, "file": "1163022667", "label": "compound-latam", "order": "givenFirst", "shape": null, "text": "Jaime Guardia Neyra"}
 {"composed": false, "fields": {"given": "Jaime", "surname": "Guardia Neyra"}, "file": "1163022667", "label": "compound-latam", "order": "sorting", "shape": null, "text": "Guardia Neyra, Jaime"}
-{"composed": true, "fields": {"given": "Francisco Inácio", "surname-core": "Carvalho Moreira", "surname-prefix": "de"}, "file": "1163326437", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Francisco Inácio de Carvalho Moreira"}
-{"composed": false, "fields": {"given": "Francisco Inácio", "surname-core": "Carvalho Moreira", "surname-prefix": "de"}, "file": "1163326437", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Carvalho Moreira, Francisco Inácio de"}
+{"composed": true, "fields": {"given": "Francisco Inácio", "surname": "de Carvalho Moreira"}, "file": "1163326437", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Francisco Inácio de Carvalho Moreira"}
+{"composed": false, "fields": {"given": "Francisco Inácio", "surname": "de Carvalho Moreira"}, "file": "1163326437", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Carvalho Moreira, Francisco Inácio de"}
 {"composed": false, "fields": {"given": "Sigfús Einarsson"}, "file": "116424702", "label": "direct-is", "order": "givenFirst", "shape": null, "text": "Sigfús Einarsson"}
 {"composed": true, "fields": {"given": "Jean-Dominique", "surname-core": "Cassini", "surname-prefix": "de"}, "file": "116470887", "label": "particle-fr", "order": "givenFirst", "shape": null, "text": "Jean-Dominique de Cassini"}
 {"composed": false, "fields": {"given": "Jean-Dominique", "surname-core": "Cassini", "surname-prefix": "de"}, "file": "116470887", "label": "particle-fr", "order": "sorting", "shape": null, "text": "Cassini, Jean-Dominique de"}
@@ -245,8 +245,8 @@
 {"composed": false, "fields": {"given": "August", "surname-core": "Cetto", "surname-prefix": "von"}, "file": "116480807", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Cetto, August von"}
 {"composed": true, "fields": {"given": "Wolf", "surname-core": "Engelhardt", "surname-prefix": "von"}, "file": "116496207", "label": "particle-de-at", "order": "givenFirst", "shape": null, "text": "Wolf von Engelhardt"}
 {"composed": false, "fields": {"given": "Wolf", "surname-core": "Engelhardt", "surname-prefix": "von"}, "file": "116496207", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Engelhardt, Wolf von"}
-{"composed": true, "fields": {"given": "Gottfried Huyn", "surname-core": "Geleen und Amsterad", "surname-prefix": "von"}, "file": "116522607", "label": "particle-de-at", "order": "givenFirst", "shape": null, "text": "Gottfried Huyn von Geleen und Amsterad"}
-{"composed": false, "fields": {"given": "Gottfried Huyn", "surname-core": "Geleen und Amsterad", "surname-prefix": "von"}, "file": "116522607", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Geleen und Amsterad, Gottfried Huyn von"}
+{"composed": true, "fields": {"given": "Gottfried Huyn", "surname": "von Geleen und Amsterad"}, "file": "116522607", "label": "particle-de-at", "order": "givenFirst", "shape": null, "text": "Gottfried Huyn von Geleen und Amsterad"}
+{"composed": false, "fields": {"given": "Gottfried Huyn", "surname": "von Geleen und Amsterad"}, "file": "116522607", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Geleen und Amsterad, Gottfried Huyn von"}
 {"composed": false, "fields": {"given": "Jón Magnússon"}, "file": "1165817241", "label": "direct-is", "order": "givenFirst", "shape": null, "text": "Jón Magnússon"}
 {"composed": true, "fields": {"given": "Heinz", "surname": "Kägebein"}, "file": "1166467007", "label": "plain-europe", "order": "givenFirst", "shape": null, "text": "Heinz Kägebein"}
 {"composed": false, "fields": {"given": "Heinz", "surname": "Kägebein"}, "file": "1166467007", "label": "plain-europe", "order": "sorting", "shape": null, "text": "Kägebein, Heinz"}
@@ -271,12 +271,12 @@
 {"composed": false, "fields": {"given": "Frances", "surname-core": "Bunsen", "surname-prefix": "von"}, "file": "117157007", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Bunsen, Frances von"}
 {"composed": true, "fields": {"given": "Juan Antonio", "surname": "Rascón Navarro Seña y Redondo"}, "file": "1172012407", "label": "compound-iberia", "order": "givenFirst", "shape": null, "text": "Juan Antonio Rascón Navarro Seña y Redondo"}
 {"composed": false, "fields": {"given": "Juan Antonio", "surname": "Rascón Navarro Seña y Redondo"}, "file": "1172012407", "label": "compound-iberia", "order": "sorting", "shape": null, "text": "Rascón Navarro Seña y Redondo, Juan Antonio"}
-{"composed": true, "fields": {"given": "Julius", "surname-core": "Zuylen van Nijevelt", "surname-prefix": "van"}, "file": "1172046697", "label": "particle-nl-be", "order": "givenFirst", "shape": null, "text": "Julius van Zuylen van Nijevelt"}
-{"composed": false, "fields": {"given": "Julius", "surname-core": "Zuylen van Nijevelt", "surname-prefix": "van"}, "file": "1172046697", "label": "particle-nl-be", "order": "sorting", "shape": null, "text": "Zuylen van Nijevelt, Julius van"}
+{"composed": true, "fields": {"given": "Julius", "surname": "van Zuylen van Nijevelt"}, "file": "1172046697", "label": "particle-nl-be", "order": "givenFirst", "shape": null, "text": "Julius van Zuylen van Nijevelt"}
+{"composed": false, "fields": {"given": "Julius", "surname": "van Zuylen van Nijevelt"}, "file": "1172046697", "label": "particle-nl-be", "order": "sorting", "shape": null, "text": "Zuylen van Nijevelt, Julius van"}
 {"composed": false, "fields": {"given": "Ahmad Shah Al-Musta’in Billah ibni Almarhum Sultan Abu Bakar Riayatuddin Al-Mu’azzam Shah"}, "file": "1172113386", "label": "direct-my-id", "order": "givenFirst", "shape": null, "text": "Ahmad Shah Al-Musta’in Billah ibni Almarhum Sultan Abu Bakar Riayatuddin Al-Mu’azzam Shah"}
 {"composed": false, "fields": {"given": "Hugo", "surname": "Weigold"}, "file": "117249807", "label": "index-cjk", "order": "sorting", "shape": null, "text": "Weigold, Hugo"}
-{"composed": true, "fields": {"given": "David zu Sonnegg", "surname-core": "Ungnad von Weissenwolf", "surname-prefix": "von"}, "file": "117310107", "label": "particle-de-at", "order": "givenFirst", "shape": null, "text": "David zu Sonnegg von Ungnad von Weissenwolf"}
-{"composed": false, "fields": {"given": "David zu Sonnegg", "surname-core": "Ungnad von Weissenwolf", "surname-prefix": "von"}, "file": "117310107", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Ungnad von Weissenwolf, David zu Sonnegg von"}
+{"composed": true, "fields": {"given": "David zu Sonnegg", "surname": "von Ungnad von Weissenwolf"}, "file": "117310107", "label": "particle-de-at", "order": "givenFirst", "shape": null, "text": "David zu Sonnegg von Ungnad von Weissenwolf"}
+{"composed": false, "fields": {"given": "David zu Sonnegg", "surname": "von Ungnad von Weissenwolf"}, "file": "117310107", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Ungnad von Weissenwolf, David zu Sonnegg von"}
 {"composed": true, "fields": {"given": "Herma", "surname": "Studeny"}, "file": "117354007", "label": "plain-europe", "order": "givenFirst", "shape": null, "text": "Herma Studeny"}
 {"composed": false, "fields": {"given": "Herma", "surname": "Studeny"}, "file": "117354007", "label": "plain-europe", "order": "sorting", "shape": null, "text": "Studeny, Herma"}
 {"composed": true, "fields": {"given": "Richard", "surname-core": "Süßkind-Schwendi", "surname-prefix": "von"}, "file": "117372307", "label": "particle-de-at", "order": "givenFirst", "shape": null, "text": "Richard von Süßkind-Schwendi"}
@@ -363,8 +363,8 @@
 {"composed": true, "fields": {"given": "Robert", "surname": "Morris"}, "file": "118737007", "label": "plain-anglo", "order": "givenFirst", "shape": null, "text": "Robert Morris"}
 {"composed": false, "fields": {"given": "Robert", "surname": "Morris"}, "file": "118737007", "label": "plain-anglo", "order": "sorting", "shape": null, "text": "Morris, Robert"}
 {"composed": false, "fields": {"given": "Rethar"}, "file": "118750127", "label": "direct-eu", "order": "givenFirst", "shape": null, "text": "Rethar"}
-{"composed": true, "fields": {"given": "Diego Fernández", "surname-core": "San Pedro", "surname-prefix": "de"}, "file": "118751107", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Diego Fernández de San Pedro"}
-{"composed": false, "fields": {"given": "Diego Fernández", "surname-core": "San Pedro", "surname-prefix": "de"}, "file": "118751107", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "San Pedro, Diego Fernández de"}
+{"composed": true, "fields": {"given": "Diego Fernández", "surname": "de San Pedro"}, "file": "118751107", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Diego Fernández de San Pedro"}
+{"composed": false, "fields": {"given": "Diego Fernández", "surname": "de San Pedro"}, "file": "118751107", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "San Pedro, Diego Fernández de"}
 {"composed": true, "fields": {"given": "Epaminondas", "surname": "Nunes de Ávila e Silva"}, "file": "1187542687", "label": "compound-latam", "order": "givenFirst", "shape": null, "text": "Epaminondas Nunes de Ávila e Silva"}
 {"composed": false, "fields": {"given": "Epaminondas", "surname": "Nunes de Ávila e Silva"}, "file": "1187542687", "label": "compound-latam", "order": "sorting", "shape": null, "text": "Nunes de Ávila e Silva, Epaminondas"}
 {"composed": false, "fields": {"given": "Suharto"}, "file": "118757741", "label": "direct-my-id", "order": "givenFirst", "shape": null, "text": "Suharto"}
@@ -387,8 +387,8 @@
 {"composed": false, "fields": {"given": "Musashi", "surname": "Miyamoto"}, "file": "118820907", "label": "index-cjk", "order": "sorting", "shape": null, "text": "Miyamoto, Musashi"}
 {"composed": true, "fields": {"given": "Ludwig", "surname": "Hempel"}, "file": "118824007", "label": "plain-europe", "order": "givenFirst", "shape": null, "text": "Ludwig Hempel"}
 {"composed": false, "fields": {"given": "Ludwig", "surname": "Hempel"}, "file": "118824007", "label": "plain-europe", "order": "sorting", "shape": null, "text": "Hempel, Ludwig"}
-{"composed": true, "fields": {"given": "Jean-François Lefebvre", "surname-core": "La Barre", "surname-prefix": "de"}, "file": "118835467", "label": "particle-fr", "order": "givenFirst", "shape": null, "text": "Jean-François Lefebvre de La Barre"}
-{"composed": false, "fields": {"given": "Jean-François Lefebvre", "surname-core": "La Barre", "surname-prefix": "de"}, "file": "118835467", "label": "particle-fr", "order": "sorting", "shape": null, "text": "La Barre, Jean-François Lefebvre de"}
+{"composed": true, "fields": {"given": "Jean-François Lefebvre", "surname": "de La Barre"}, "file": "118835467", "label": "particle-fr", "order": "givenFirst", "shape": null, "text": "Jean-François Lefebvre de La Barre"}
+{"composed": false, "fields": {"given": "Jean-François Lefebvre", "surname": "de La Barre"}, "file": "118835467", "label": "particle-fr", "order": "sorting", "shape": null, "text": "La Barre, Jean-François Lefebvre de"}
 {"composed": true, "fields": {"given": "Muḥammad Ibn-ʿAbd-al-Malik", "surname": "Ibn-Ṭufail"}, "file": "118847147", "label": "compound-iberia", "order": "givenFirst", "shape": null, "text": "Muḥammad Ibn-ʿAbd-al-Malik Ibn-Ṭufail"}
 {"composed": false, "fields": {"given": "Muḥammad Ibn-ʿAbd-al-Malik", "surname": "Ibn-Ṭufail"}, "file": "118847147", "label": "compound-iberia", "order": "sorting", "shape": null, "text": "Ibn-Ṭufail, Muḥammad Ibn-ʿAbd-al-Malik"}
 {"composed": true, "fields": {"given": "Hafis", "surname": "al-Assad"}, "file": "118848062", "label": "particle-arab", "order": "givenFirst", "shape": null, "text": "Hafis al-Assad"}
@@ -460,8 +460,8 @@
 {"composed": false, "fields": {"given": "Giuliano", "surname-core": "Medici", "surname-prefix": "de"}, "file": "119151197", "label": "particle-it", "order": "sorting", "shape": null, "text": "Medici, Giuliano de"}
 {"composed": false, "fields": {"given": "Muḥammad Ibn-ʿAbd-al-Wahhāb"}, "file": "119152169", "label": "direct-arab", "order": "givenFirst", "shape": null, "text": "Muḥammad Ibn-ʿAbd-al-Wahhāb"}
 {"composed": false, "fields": {"given": "Zarea Yaeqob"}, "file": "11915689X", "label": "direct-et-mm", "order": "givenFirst", "shape": null, "text": "Zarea Yaeqob"}
-{"composed": true, "fields": {"given": "Antonio", "surname-core": "Santos Cabral", "surname-prefix": "dos"}, "file": "119160617", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Antonio dos Santos Cabral"}
-{"composed": false, "fields": {"given": "Antonio", "surname-core": "Santos Cabral", "surname-prefix": "dos"}, "file": "119160617", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Santos Cabral, Antonio dos"}
+{"composed": true, "fields": {"given": "Antonio", "surname": "dos Santos Cabral"}, "file": "119160617", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Antonio dos Santos Cabral"}
+{"composed": false, "fields": {"given": "Antonio", "surname": "dos Santos Cabral"}, "file": "119160617", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Santos Cabral, Antonio dos"}
 {"composed": true, "fields": {"given": "Ferdinand-Philippe", "surname": "d'Orléans"}, "file": "119177447", "label": "particle-elided", "order": "givenFirst", "shape": null, "text": "Ferdinand-Philippe d'Orléans"}
 {"composed": false, "fields": {"given": "Ferdinand-Philippe", "surname-core": "Orléans", "surname-prefix": "d'"}, "file": "119177447", "label": "particle-elided", "order": "sorting", "shape": null, "text": "Orléans, Ferdinand-Philippe d'"}
 {"composed": false, "fields": {"given": "Nobuo", "surname": "Naora"}, "file": "119179407", "label": "index-cjk", "order": "sorting", "shape": null, "text": "Naora, Nobuo"}
@@ -557,8 +557,8 @@
 {"composed": false, "fields": {"given": "Segundo", "surname": "Serrano Poncela"}, "file": "121487237", "label": "compound-latam", "order": "sorting", "shape": null, "text": "Serrano Poncela, Segundo"}
 {"composed": true, "fields": {"given": "Amélie", "surname": "Beaury-Saurel"}, "file": "1215994877", "label": "compound-iberia", "order": "givenFirst", "shape": null, "text": "Amélie Beaury-Saurel"}
 {"composed": false, "fields": {"given": "Amélie", "surname": "Beaury-Saurel"}, "file": "1215994877", "label": "compound-iberia", "order": "sorting", "shape": null, "text": "Beaury-Saurel, Amélie"}
-{"composed": true, "fields": {"given": "Mathilde Therese", "surname-core": "Thurn und Taxis", "surname-prefix": "von"}, "file": "121734307", "label": "particle-de-at", "order": "givenFirst", "shape": null, "text": "Mathilde Therese von Thurn und Taxis"}
-{"composed": false, "fields": {"given": "Mathilde Therese", "surname-core": "Thurn und Taxis", "surname-prefix": "von"}, "file": "121734307", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Thurn und Taxis, Mathilde Therese von"}
+{"composed": true, "fields": {"given": "Mathilde Therese", "surname": "von Thurn und Taxis"}, "file": "121734307", "label": "particle-de-at", "order": "givenFirst", "shape": null, "text": "Mathilde Therese von Thurn und Taxis"}
+{"composed": false, "fields": {"given": "Mathilde Therese", "surname": "von Thurn und Taxis"}, "file": "121734307", "label": "particle-de-at", "order": "sorting", "shape": null, "text": "Thurn und Taxis, Mathilde Therese von"}
 {"composed": true, "fields": {"given": "Alan", "surname": "Ridout"}, "file": "121803007", "label": "plain-anglo", "order": "givenFirst", "shape": null, "text": "Alan Ridout"}
 {"composed": false, "fields": {"given": "Alan", "surname": "Ridout"}, "file": "121803007", "label": "plain-anglo", "order": "sorting", "shape": null, "text": "Ridout, Alan"}
 {"composed": false, "fields": {"given": "Lukardis"}, "file": "121968987", "label": "direct-eu", "order": "givenFirst", "shape": null, "text": "Lukardis"}
@@ -657,8 +657,8 @@
 {"composed": false, "fields": {"given": "Antico"}, "file": "129065307", "label": "direct-eu", "order": "givenFirst", "shape": null, "text": "Antico"}
 {"composed": true, "fields": {"given": "Costanza", "surname-core": "Varano", "surname-prefix": "da"}, "file": "129069787", "label": "particle-it", "order": "givenFirst", "shape": null, "text": "Costanza da Varano"}
 {"composed": false, "fields": {"given": "Costanza", "surname-core": "Varano", "surname-prefix": "da"}, "file": "129069787", "label": "particle-it", "order": "sorting", "shape": null, "text": "Varano, Costanza da"}
-{"composed": true, "fields": {"given": "Fadrique", "surname-core": "Toledo Osorio", "surname-prefix": "de"}, "file": "1292092467", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Fadrique de Toledo Osorio"}
-{"composed": false, "fields": {"given": "Fadrique", "surname-core": "Toledo Osorio", "surname-prefix": "de"}, "file": "1292092467", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Toledo Osorio, Fadrique de"}
+{"composed": true, "fields": {"given": "Fadrique", "surname": "de Toledo Osorio"}, "file": "1292092467", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Fadrique de Toledo Osorio"}
+{"composed": false, "fields": {"given": "Fadrique", "surname": "de Toledo Osorio"}, "file": "1292092467", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Toledo Osorio, Fadrique de"}
 {"composed": false, "fields": {"given": "Gerður Helgadóttir"}, "file": "129229970", "label": "direct-is", "order": "givenFirst", "shape": null, "text": "Gerður Helgadóttir"}
 {"composed": false, "fields": {"given": "Stefán Karl Stefánsson"}, "file": "1293064432", "label": "direct-is", "order": "givenFirst", "shape": null, "text": "Stefán Karl Stefánsson"}
 {"composed": false, "fields": {"given": "Guðmundur Böðvarsson"}, "file": "12937427X", "label": "direct-is", "order": "givenFirst", "shape": null, "text": "Guðmundur Böðvarsson"}
@@ -793,8 +793,8 @@
 {"composed": false, "fields": {"given": "Kho Liang Ie"}, "file": "174317840", "label": "direct-my-id", "order": "givenFirst", "shape": null, "text": "Kho Liang Ie"}
 {"composed": false, "fields": {"given": "Ásmundur Sveinsson"}, "file": "174346352", "label": "direct-is", "order": "givenFirst", "shape": null, "text": "Ásmundur Sveinsson"}
 {"composed": false, "fields": {"given": "Yingda", "surname": "Kong"}, "file": "176221107", "label": "index-cjk", "order": "sorting", "shape": null, "text": "Kong, Yingda"}
-{"composed": true, "fields": {"given": "Ricardo", "surname-core": "Orueta y Duarte", "surname-prefix": "de"}, "file": "188410767", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Ricardo de Orueta y Duarte"}
-{"composed": false, "fields": {"given": "Ricardo", "surname-core": "Orueta y Duarte", "surname-prefix": "de"}, "file": "188410767", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Orueta y Duarte, Ricardo de"}
+{"composed": true, "fields": {"given": "Ricardo", "surname": "de Orueta y Duarte"}, "file": "188410767", "label": "particle-iberia", "order": "givenFirst", "shape": null, "text": "Ricardo de Orueta y Duarte"}
+{"composed": false, "fields": {"given": "Ricardo", "surname": "de Orueta y Duarte"}, "file": "188410767", "label": "particle-iberia", "order": "sorting", "shape": null, "text": "Orueta y Duarte, Ricardo de"}
 {"composed": true, "fields": {"given": "Domingo", "surname": "Santa María González"}, "file": "189570547", "label": "compound-latam", "order": "givenFirst", "shape": null, "text": "Domingo Santa María González"}
 {"composed": false, "fields": {"given": "Domingo", "surname": "Santa María González"}, "file": "189570547", "label": "compound-latam", "order": "sorting", "shape": null, "text": "Santa María González, Domingo"}
 {"composed": true, "fields": {"given": "Remigio", "surname": "Gandásegui y Gorrochátegui"}, "file": "189575697", "label": "compound-iberia", "order": "givenFirst", "shape": null, "text": "Remigio Gandásegui y Gorrochátegui"}
