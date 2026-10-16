@@ -6,6 +6,7 @@ pinned here on hand-written items in wbgetentities' shape. tools/ is not
 a package, so the module is loaded by path, as _differential_fixtures.py
 loads compare.py.
 """
+from collections import Counter
 from typing import Any
 
 import pytest
@@ -149,6 +150,30 @@ def test_every_field_occurs_in_its_rendering() -> None:
     for row in build.renderings("Q1", person, names, _RU):
         for value in row["fields"].values():
             assert agreement.occurs(value, row["text"]), (row["text"], value)
+
+
+_ROWS = agreement.load_rows(agreement.WIKIDATA_FIELDS)
+
+
+def test_every_committed_field_occurs_in_its_rendering() -> None:
+    # A field that did not occur would be expected EMPTY by the
+    # comparison, a disagreement no parser fix could resolve.
+    missing = [(row["text"], value) for row in _ROWS for value in row["fields"].values()
+               if not agreement.occurs(value, row["text"])]
+    assert not missing
+
+
+def test_every_committed_rendering_is_covered_by_its_fields() -> None:
+    # The comparison reads a missing field as an EMPTY role. That is
+    # sound here only because the fields claim every word of the text:
+    # an absent P734 or P5056 means "not entered", and would otherwise
+    # leave a word whose role the comparison wrongly expects empty.
+    uncovered = [row["text"] for row in _ROWS
+                 if Counter(agreement._words(row["text"]))
+                 != Counter(w for v in row["fields"].values()
+                            for w in agreement._words(v))]
+    assert not uncovered
+    assert len(_ROWS) > 500, "the Wikidata fields file is missing or truncated"
 
 
 def test_a_deprecated_or_valueless_statement_is_ignored() -> None:
