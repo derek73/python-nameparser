@@ -328,8 +328,9 @@ def _summary(name: str, rows: list[dict[str, Any]],
     for role in ROLES:
         agree = totals[role] - wrong[role]
         print(f"{role:17} {agree:5}/{totals[role]:<5} agree")
+    answered = got_roles(parse_rendering("Ana Ruiz", None))
     for role, merged in PENDING_ROLES.items():
-        if totals[role] and not hasattr(ParsedName, role):
+        if totals[role] and role not in answered:
             print(f"{role:17} {totals[role]:5} stated, not a ParsedName field "
                   f"yet (scored inside {merged})")
     problems = changes(read_record(record), current, {rendering_key(r) for r in rows})

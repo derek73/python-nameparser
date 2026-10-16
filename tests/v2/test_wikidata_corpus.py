@@ -284,7 +284,7 @@ def _stub_build(monkeypatch: pytest.MonkeyPatch, strata: tuple[Any, ...],
                          P1950="Q3") for qs in pooled.values() for q in qs}
     monkeypatch.setattr(build, "STRATA", strata)
     monkeypatch.setattr(build, "pool", lambda stratum, refresh: pooled[stratum.label])
-    monkeypatch.setattr(build, "entities", lambda ids, props, refresh:
+    monkeypatch.setattr(build, "entities", lambda ids, props, refresh, required=True:
                         {**{q: people[q] for q in ids if q in people},
                          **{q: _GGM[q] for q in ids if q in _GGM}})
 
@@ -379,11 +379,24 @@ def test_a_query_matching_nothing_stops_the_build(
         build.pool(_RU, refresh=False)
 
 
-def test_an_item_the_response_leaves_out_or_reports_missing_stops_the_build(
+def test_an_item_the_response_leaves_out_stops_the_build(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, b'{"entities": {"Q1": {"id": "Q1", "missing": ""}}}')
-    with pytest.raises(ValueError, match="no item for Q1, Q2"):
+    _serve(monkeypatch, tmp_path, b'{"entities": {"Q1": {"id": "Q1"}}}')
+    with pytest.raises(ValueError, match="left out Q2"):
         build.entities(["Q1", "Q2"], "labels", refresh=False)
+
+
+def test_a_missing_person_stops_the_build_and_a_missing_part_does_not(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # A pooled person must exist; a deleted name-part item only refuses
+    # the person stating it (it has no spellings), which --refresh could
+    # not fix anyway.
+    _serve(monkeypatch, tmp_path, b'{"entities": {"Q1": {"id": "Q1", "missing": ""}}}')
+    with pytest.raises(ValueError, match="reports missing: Q1"):
+        build.entities(["Q1"], "labels", refresh=False)
+    names = build.entities(["Q1"], "labels", refresh=False, required=False)
+    person = _person("Gabriel García Márquez", "es", P735="Q1", P734="Q2", P1950="Q3")
+    assert build.renderings("Q5878", person, {**_GGM, **names}, _ES) == []
 
 
 # -- the committed files, by stratum ---------------------------------------------

@@ -174,8 +174,8 @@ STRATA = (
     Stratum("patronymic-ri", "Q34266", "P5056", "ru", 40),
     Stratum("patronymic-is", "Q189", "P5056", "is", 100),
     # 17 Malaysian public figures with a P5056 statement on 2026-10-16,
-    # and most write a part with no item of its own: the pool is the limit.
-    Stratum("patronymic-my", "Q833", "P5056", "ms", 40, least=8),
+    # 9 aligning: the pool is the limit, and the floor leaves 3 to lose.
+    Stratum("patronymic-my", "Q833", "P5056", "ms", 40, least=6),
 )
 
 
@@ -240,10 +240,13 @@ def pool(stratum: Stratum, refresh: bool) -> list[str]:
     return qids
 
 
-def entities(ids: Iterable[str], props: str, refresh: bool) -> dict[str, Any]:
+def entities(ids: Iterable[str], props: str, refresh: bool,
+             required: bool = True) -> dict[str, Any]:
     """Each requested item, keyed by the id asked for (a redirected item
     comes back under that id, holding its target). Raises on an id the
-    response leaves out, and on one Wikidata reports missing."""
+    response leaves out, and, where `required`, on one Wikidata reports
+    missing: a pooled person must exist, while a deleted name-part item
+    is a fact about the data, and only refuses the person stating it."""
     ids = sorted(set(ids))
     out: dict[str, Any] = {}
     for start in range(0, len(ids), BATCH):
@@ -251,10 +254,15 @@ def entities(ids: Iterable[str], props: str, refresh: bool) -> dict[str, Any]:
             "action": "wbgetentities", "ids": "|".join(ids[start:start + BATCH]),
             "props": props, "format": "json"})
         out.update(_fetch(url, None, refresh, "entities")["entities"])
-    lost = sorted(i for i in ids if i not in out or "missing" in out[i])
-    if lost:
-        raise ValueError(f"wbgetentities returned no item for {', '.join(lost[:10])}"
-                         f"{' ...' if len(lost) > 10 else ''}; rerun with --refresh")
+    absent = sorted(i for i in ids if i not in out)
+    if absent:
+        raise ValueError(f"wbgetentities left out {', '.join(absent[:10])}"
+                         f"{' ...' if len(absent) > 10 else ''}; rerun with --refresh")
+    missing = sorted(i for i in ids if "missing" in out[i])
+    if required and missing:
+        raise ValueError(f"WDQS pooled items Wikidata reports missing: "
+                         f"{', '.join(missing[:10])}; the pool is stale, rerun "
+                         "with --refresh")
     return out
 
 
@@ -420,7 +428,7 @@ def build(refresh: bool) -> list[dict[str, Any]]:
         people = entities(qids, "labels|claims", refresh)
         parts = {v for p in people.values() for prop in PARTS
                  for v in statements(p, prop)}
-        names = entities(parts, "labels|claims", refresh)
+        names = entities(parts, "labels|claims", refresh, required=False)
         taken = refused = 0
         for qid in qids:
             if taken == stratum.quota:
