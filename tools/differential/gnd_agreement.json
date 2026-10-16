@@ -1,0 +1,2628 @@
+{
+ "101063857/particle-elided/sorting": {
+  "family": {
+   "expected": "Arenberg d'",
+   "got": "Arenberg"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Auguste Marie Raymond",
+   "got": "Auguste Marie Raymond d'"
+  },
+  "text": "Arenberg, Auguste Marie Raymond d'"
+ },
+ "1012101827/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Eldjárn"
+  },
+  "given_names": {
+   "expected": "Kristján Eldjárn",
+   "got": "Kristján"
+  },
+  "text": "Kristján Eldjárn"
+ },
+ "1012555887/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Quinquela Martín",
+   "got": "Martín"
+  },
+  "given_names": {
+   "expected": "Benito",
+   "got": "Benito Quinquela"
+  },
+  "text": "Benito Quinquela Martín"
+ },
+ "1014265487/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Moreno Casamitjana",
+   "got": "Casamitjana"
+  },
+  "given_names": {
+   "expected": "Antonio",
+   "got": "Antonio Moreno"
+  },
+  "text": "Antonio Moreno Casamitjana"
+ },
+ "101526814/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gíslason"
+  },
+  "given_names": {
+   "expected": "Konráð Gíslason",
+   "got": "Konráð"
+  },
+  "text": "Konráð Gíslason"
+ },
+ "1017076367/particle-elided/sorting": {
+  "family": {
+   "expected": "Orléans-Longueville d'",
+   "got": "Orléans-Longueville"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Jean Louis Charles",
+   "got": "Jean Louis Charles d'"
+  },
+  "text": "Orléans-Longueville, Jean Louis Charles d'"
+ },
+ "1017511667/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Sancho I."
+ },
+ "1017599777/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Mustafa I."
+ },
+ "1017967407/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Domènech Estapà",
+   "got": "Estapà"
+  },
+  "given_names": {
+   "expected": "Josep",
+   "got": "Josep Domènech"
+  },
+  "text": "Josep Domènech Estapà"
+ },
+ "1018479422/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Ḥiǧāzī"
+  },
+  "given_names": {
+   "expected": "ʿĀliya Bint-ʿAlī al-Ḥiǧāzī",
+   "got": "ʿĀliya Bint-ʿAlī"
+  },
+  "text": "ʿĀliya Bint-ʿAlī al-Ḥiǧāzī"
+ },
+ "1019728027/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ulrich"
+  },
+  "given_names": {
+   "expected": "Christian Ulrich",
+   "got": "Christian"
+  },
+  "text": "Christian Ulrich II."
+ },
+ "1019736747/particle-elided/sorting": {
+  "family": {
+   "expected": "Estrées d'",
+   "got": "Estrées"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Victor-Marie",
+   "got": "Victor-Marie d'"
+  },
+  "text": "Estrées, Victor-Marie d'"
+ },
+ "1020770929/particle-arab/sorting": {
+  "family": {
+   "expected": "Ǧaʿfarī al-",
+   "got": "Ǧaʿfarī"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ibrāhīm",
+   "got": "Ibrāhīm al-"
+  },
+  "text": "Ǧaʿfarī, Ibrāhīm al-"
+ },
+ "1021332496/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ġūrī"
+  },
+  "given_names": {
+   "expected": "Šihāb-ad-Dīn Muḥammad Ġūrī",
+   "got": "Šihāb-ad-Dīn Muḥammad"
+  },
+  "text": "Šihāb-ad-Dīn Muḥammad Ġūrī"
+ },
+ "1023019787/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Karl I."
+ },
+ "102371512/particle-arab/sorting": {
+  "family": {
+   "expected": "Maqrīzī al-",
+   "got": "Maqrīzī"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Aḥmad Ibn-ʿAlī",
+   "got": "Aḥmad Ibn-ʿAlī al-"
+  },
+  "text": "Maqrīzī, Aḥmad Ibn-ʿAlī al-"
+ },
+ "1025906977/particle-elided/sorting": {
+  "family": {
+   "expected": "Alzon d'",
+   "got": "Alzon"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Emmanuel",
+   "got": "Emmanuel d'"
+  },
+  "text": "Alzon, Emmanuel d'"
+ },
+ "1026632668/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Zénāwi"
+  },
+  "given_names": {
+   "expected": "Malas Zénāwi",
+   "got": "Malas"
+  },
+  "text": "Malas Zénāwi"
+ },
+ "102836299/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Maimon"
+  },
+  "given_names": {
+   "expected": "Avraham ben Mosheh ben Maimon",
+   "got": "Avraham ben Mosheh ben"
+  },
+  "text": "Avraham ben Mosheh ben Maimon"
+ },
+ "1031212523/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Fanṣūrī"
+  },
+  "given_names": {
+   "expected": "Ḥamza Fanṣūrī",
+   "got": "Ḥamza"
+  },
+  "text": "Ḥamza Fanṣūrī"
+ },
+ "1033486469/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Abdullah"
+  },
+  "given_names": {
+   "expected": "Azizi Hj. Abdullah",
+   "got": "Azizi Hj."
+  },
+  "text": "Azizi Hj. Abdullah"
+ },
+ "1036271862/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hadimadja"
+  },
+  "given_names": {
+   "expected": "Ramadhan Karta Hadimadja",
+   "got": "Ramadhan Karta"
+  },
+  "text": "Ramadhan Karta Hadimadja"
+ },
+ "104056606/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn-Sinān"
+  },
+  "given_names": {
+   "expected": "Ibrāhīm Ibn-Sinān",
+   "got": "Ibrāhīm"
+  },
+  "text": "Ibrāhīm Ibn-Sinān"
+ },
+ "104057726/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-H̱uzāʿī"
+  },
+  "given_names": {
+   "expected": "Nuʿaim Ibn-Ḥammād al-H̱uzāʿī",
+   "got": "Nuʿaim Ibn-Ḥammād"
+  },
+  "text": "Nuʿaim Ibn-Ḥammād al-H̱uzāʿī"
+ },
+ "104113405/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Armanī"
+  },
+  "given_names": {
+   "expected": "Abū-Ṣāliḥ al-Armanī",
+   "got": "Abū-Ṣāliḥ"
+  },
+  "text": "Abū-Ṣāliḥ al-Armanī"
+ },
+ "1041656467/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Esteva a Alsina",
+   "got": "Alsina"
+  },
+  "given_names": {
+   "expected": "Maurus Daniel",
+   "got": "Maurus Daniel Esteva a"
+  },
+  "text": "Maurus Daniel Esteva a Alsina"
+ },
+ "104175346/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Þórðarson"
+  },
+  "given_names": {
+   "expected": "Sighvatur Þórðarson",
+   "got": "Sighvatur"
+  },
+  "text": "Sighvatur Þórðarson"
+ },
+ "1042379017/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Amigo Vallejo",
+   "got": "Vallejo"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Amigo"
+  },
+  "text": "Carlos Amigo Vallejo"
+ },
+ "104303603/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Badāʾūnī"
+  },
+  "given_names": {
+   "expected": "ʿAbd-al-Qādir Badāʾūnī",
+   "got": "ʿAbd-al-Qādir"
+  },
+  "text": "ʿAbd-al-Qādir Badāʾūnī"
+ },
+ "1048644847/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Valderrama Fernández",
+   "got": "Fernández"
+  },
+  "given_names": {
+   "expected": "Ricardo",
+   "got": "Ricardo Valderrama"
+  },
+  "text": "Ricardo Valderrama Fernández"
+ },
+ "1050400062/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "given_names": {
+   "expected": "Amha Selassie I.",
+   "got": "Amha Selassie"
+  },
+  "text": "Amha Selassie I."
+ },
+ "1051922143/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Viðar"
+  },
+  "given_names": {
+   "expected": "Drífa Viðar",
+   "got": "Drífa"
+  },
+  "text": "Drífa Viðar"
+ },
+ "1051927471/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Björnsson"
+  },
+  "given_names": {
+   "expected": "Oddur Björnsson",
+   "got": "Oddur"
+  },
+  "text": "Oddur Björnsson"
+ },
+ "1053275307/compound-latam/givenFirst": {
+  "family": {
+   "expected": "López Rayón",
+   "got": "Rayón"
+  },
+  "given_names": {
+   "expected": "Ignacio",
+   "got": "Ignacio López"
+  },
+  "text": "Ignacio López Rayón"
+ },
+ "1056353457/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Arenas Betancourt",
+   "got": "Betancourt"
+  },
+  "given_names": {
+   "expected": "Rodrigo",
+   "got": "Rodrigo Arenas"
+  },
+  "text": "Rodrigo Arenas Betancourt"
+ },
+ "1056403667/particle-it/givenFirst": {
+  "family": {
+   "expected": "de'Medici",
+   "got": "di Pierfranceso de'Medici"
+  },
+  "given_names": {
+   "expected": "Lorenzo di Pierfranceso",
+   "got": "Lorenzo"
+  },
+  "text": "Lorenzo di Pierfranceso de'Medici"
+ },
+ "1056425067/compound-latam/givenFirst": {
+  "family": {
+   "expected": "González Gortázar",
+   "got": "Gortázar"
+  },
+  "given_names": {
+   "expected": "Fernando",
+   "got": "Fernando González"
+  },
+  "text": "Fernando González Gortázar"
+ },
+ "1056478497/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Ospina Pérez",
+   "got": "Pérez"
+  },
+  "given_names": {
+   "expected": "Mariano",
+   "got": "Mariano Ospina"
+  },
+  "text": "Mariano Ospina Pérez"
+ },
+ "1056652217/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Ruiz Armengol",
+   "got": "Armengol"
+  },
+  "given_names": {
+   "expected": "Mario",
+   "got": "Mario Ruiz"
+  },
+  "text": "Mario Ruiz Armengol"
+ },
+ "1059795337/direct-eu/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "de Roucy"
+  },
+  "given_names": {
+   "expected": "Renaud de Roucy",
+   "got": "Renaud"
+  },
+  "text": "Renaud de Roucy"
+ },
+ "1061106225/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn-Ḥārīṯa"
+  },
+  "given_names": {
+   "expected": "Zaid Ibn-Ḥārīṯa",
+   "got": "Zaid"
+  },
+  "text": "Zaid Ibn-Ḥārīṯa"
+ },
+ "1061494667/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hagalín"
+  },
+  "given_names": {
+   "expected": "Sigríður Hagalín",
+   "got": "Sigríður"
+  },
+  "text": "Sigríður Hagalín"
+ },
+ "1066832900/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Muda"
+  },
+  "given_names": {
+   "expected": "Mohamad Asri Muda",
+   "got": "Mohamad Asri"
+  },
+  "text": "Mohamad Asri Muda"
+ },
+ "1074956427/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Ulrich I."
+ },
+ "1077612168/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "bar Sabbaʿe"
+  },
+  "given_names": {
+   "expected": "Simeon bar Sabbaʿe",
+   "got": "Simeon"
+  },
+  "text": "Simeon bar Sabbaʿe"
+ },
+ "1081653337/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Şikak"
+  },
+  "given_names": {
+   "expected": "Simkoyê Şikak",
+   "got": "Simkoyê"
+  },
+  "text": "Simkoyê Şikak"
+ },
+ "1081737697/particle-elided/sorting": {
+  "family": {
+   "expected": "Annebault d'",
+   "got": "Annebault"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Claude",
+   "got": "Claude d'"
+  },
+  "text": "Annebault, Claude d'"
+ },
+ "1083655477/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Málaga de Prado",
+   "got": "de Prado"
+  },
+  "given_names": {
+   "expected": "Clorinda",
+   "got": "Clorinda Málaga"
+  },
+  "text": "Clorinda Málaga de Prado"
+ },
+ "1100729747/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Sordo Madaleno",
+   "got": "Madaleno"
+  },
+  "given_names": {
+   "expected": "Juan",
+   "got": "Juan Sordo"
+  },
+  "text": "Juan Sordo Madaleno"
+ },
+ "110685716X/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ambar"
+  },
+  "given_names": {
+   "expected": "Malik Ambar",
+   "got": "Malik"
+  },
+  "text": "Malik Ambar"
+ },
+ "1112629513/particle-arab/sorting": {
+  "family": {
+   "expected": "Zaʿīm az-",
+   "got": "Zaʿīm"
+  },
+  "family_particles": {
+   "expected": "az-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ḥusnī",
+   "got": "Ḥusnī az-"
+  },
+  "text": "Zaʿīm, Ḥusnī az-"
+ },
+ "111277957/particle-fr/sorting": {
+  "family": {
+   "expected": "Ivoi d'",
+   "got": "Ivoi"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Paul",
+   "got": "Paul d'"
+  },
+  "text": "Ivoi, Paul d'"
+ },
+ "1115673882/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-ʿAẓma"
+  },
+  "given_names": {
+   "expected": "Yūsuf al-ʿAẓma",
+   "got": "Yūsuf"
+  },
+  "text": "Yūsuf al-ʿAẓma"
+ },
+ "1123958947/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "López Domínguez",
+   "got": "Domínguez"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José López"
+  },
+  "text": "José López Domínguez"
+ },
+ "1124785817/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "el-Hachemi"
+  },
+  "given_names": {
+   "expected": "Khaled el-Hassani ben el-Hachemi",
+   "got": "Khaled el-Hassani ben"
+  },
+  "text": "Khaled el-Hassani ben el-Hachemi"
+ },
+ "112712797/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Grímsson"
+  },
+  "given_names": {
+   "expected": "Stefán Hörður Grímsson",
+   "got": "Stefán Hörður"
+  },
+  "text": "Stefán Hörður Grímsson"
+ },
+ "1129925617/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Selassie"
+  },
+  "given_names": {
+   "expected": "Makonnen Haile Selassie",
+   "got": "Makonnen Haile"
+  },
+  "text": "Makonnen Haile Selassie"
+ },
+ "1138377546/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Eiríksson"
+  },
+  "given_names": {
+   "expected": "Magnús Eiríksson",
+   "got": "Magnús"
+  },
+  "text": "Magnús Eiríksson"
+ },
+ "1139846442/particle-arab/sorting": {
+  "family": {
+   "expected": "Rikābī ar-",
+   "got": "Rikābī"
+  },
+  "family_particles": {
+   "expected": "ar-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Fuʾād",
+   "got": "Fuʾād ar-"
+  },
+  "text": "Rikābī, Fuʾād ar-"
+ },
+ "1143145518/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn Marwān"
+  },
+  "given_names": {
+   "expected": "ʿAbd al-ʿAzīz Ibn Marwān",
+   "got": "ʿAbd al-ʿAzīz"
+  },
+  "text": "ʿAbd al-ʿAzīz Ibn Marwān"
+ },
+ "1143970381/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "ibn Muhammad"
+  },
+  "given_names": {
+   "expected": "Abd al-Aziz ibn Muhammad",
+   "got": "Abd al-Aziz"
+  },
+  "text": "Abd al-Aziz ibn Muhammad"
+ },
+ "1145191851/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Hasani"
+  },
+  "given_names": {
+   "expected": "Tadsch ad-Din al-Hasani",
+   "got": "Tadsch ad-Din"
+  },
+  "text": "Tadsch ad-Din al-Hasani"
+ },
+ "1147042357/particle-elided/sorting": {
+  "family": {
+   "expected": "Hooghvorst d'",
+   "got": "Hooghvorst"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Emmanuel",
+   "got": "Emmanuel d'"
+  },
+  "text": "Hooghvorst, Emmanuel d'"
+ },
+ "1147649030/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Johari"
+  },
+  "given_names": {
+   "expected": "Mohamed Khir Johari",
+   "got": "Mohamed Khir"
+  },
+  "text": "Mohamed Khir Johari"
+ },
+ "1155661249/particle-arab/sorting": {
+  "family": {
+   "expected": "Saad es-",
+   "got": "Saad"
+  },
+  "family_particles": {
+   "expected": "es-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Habib Pacha",
+   "got": "Habib Pacha es-"
+  },
+  "text": "Saad, Habib Pacha es-"
+ },
+ "1155767624/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Dowleh"
+  },
+  "given_names": {
+   "expected": "Vossug ed Dowleh",
+   "got": "Vossug ed"
+  },
+  "text": "Vossug ed Dowleh"
+ },
+ "1157689973/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Fjeldsted"
+  },
+  "given_names": {
+   "expected": "Thorkild Fjeldsted",
+   "got": "Thorkild"
+  },
+  "text": "Thorkild Fjeldsted"
+ },
+ "1160043817/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Campo Serrano",
+   "got": "Serrano"
+  },
+  "given_names": {
+   "expected": "José María",
+   "got": "José María Campo"
+  },
+  "text": "José María Campo Serrano"
+ },
+ "1163022667/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Guardia Neyra",
+   "got": "Neyra"
+  },
+  "given_names": {
+   "expected": "Jaime",
+   "got": "Jaime Guardia"
+  },
+  "text": "Jaime Guardia Neyra"
+ },
+ "116424702/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Einarsson"
+  },
+  "given_names": {
+   "expected": "Sigfús Einarsson",
+   "got": "Sigfús"
+  },
+  "text": "Sigfús Einarsson"
+ },
+ "1165817241/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Magnússon"
+  },
+  "given_names": {
+   "expected": "Jón Magnússon",
+   "got": "Jón"
+  },
+  "text": "Jón Magnússon"
+ },
+ "117126089X/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Lwin"
+  },
+  "given_names": {
+   "expected": "Sein Lwin",
+   "got": "Sein"
+  },
+  "text": "Sein Lwin"
+ },
+ "1172012407/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Rascón Navarro Seña y Redondo",
+   "got": "Seña y Redondo"
+  },
+  "given_names": {
+   "expected": "Juan Antonio",
+   "got": "Juan Antonio Rascón Navarro"
+  },
+  "text": "Juan Antonio Rascón Navarro Seña y Redondo"
+ },
+ "1172046697/particle-nl-be/givenFirst": {
+  "family": {
+   "expected": "van Zuylen van Nijevelt",
+   "got": "van Nijevelt"
+  },
+  "given_names": {
+   "expected": "Julius",
+   "got": "Julius van Zuylen"
+  },
+  "text": "Julius van Zuylen van Nijevelt"
+ },
+ "1172113386/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Abu Bakar Riayatuddin Al-Mu’azzam Shah"
+  },
+  "given_names": {
+   "expected": "Ahmad Shah Al-Musta’in Billah ibni Almarhum Sultan Abu Bakar Riayatuddin Al-Mu’azzam Shah",
+   "got": "Ahmad Shah Al-Musta’in Billah ibni Almarhum Sultan"
+  },
+  "text": "Ahmad Shah Al-Musta’in Billah ibni Almarhum Sultan Abu Bakar Riayatuddin Al-Mu’azzam Shah"
+ },
+ "117310107/particle-de-at/givenFirst": {
+  "family": {
+   "expected": "von Ungnad von Weissenwolf",
+   "got": "von Weissenwolf"
+  },
+  "given_names": {
+   "expected": "David zu Sonnegg",
+   "got": "David zu Sonnegg von Ungnad"
+  },
+  "text": "David zu Sonnegg von Ungnad von Weissenwolf"
+ },
+ "117546712/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Kamil"
+  },
+  "given_names": {
+   "expected": "Hussein Kamil",
+   "got": "Hussein"
+  },
+  "text": "Hussein Kamil"
+ },
+ "117606227/particle-it/sorting": {
+  "family": {
+   "expected": "Orsi d'",
+   "got": "Orsi"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Achille",
+   "got": "Achille d'"
+  },
+  "text": "Orsi, Achille d'"
+ },
+ "117763497/particle-it/sorting": {
+  "family": {
+   "expected": "Arco d'",
+   "got": "Arco"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Giovanni Battista Gherardo",
+   "got": "Giovanni Battista Gherardo d'"
+  },
+  "text": "Arco, Giovanni Battista Gherardo d'"
+ },
+ "118049062/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jónsson"
+  },
+  "given_names": {
+   "expected": "Finnur Jónsson",
+   "got": "Finnur"
+  },
+  "text": "Finnur Jónsson"
+ },
+ "118500333/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn-ʿAlī"
+  },
+  "given_names": {
+   "expected": "Abu-'l-Fidāʾ Ismāʿīl Ibn-ʿAlī",
+   "got": "Abu-'l-Fidāʾ Ismāʿīl"
+  },
+  "text": "Abu-'l-Fidāʾ Ismāʿīl Ibn-ʿAlī"
+ },
+ "118501437/particle-elided/sorting": {
+  "family": {
+   "expected": "Albert d'",
+   "got": "Albert"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Eugen",
+   "got": "Eugen d'"
+  },
+  "text": "Albert, Eugen d'"
+ },
+ "118513257/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "VIII."
+  },
+  "suffix": {
+   "expected": "VIII.",
+   "got": ""
+  },
+  "text": "Bonifatius VIII."
+ },
+ "118528947/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "V."
+  },
+  "suffix": {
+   "expected": "V.",
+   "got": ""
+  },
+  "text": "Eduard V."
+ },
+ "118531107/particle-elided/sorting": {
+  "family": {
+   "expected": "Escoto d'",
+   "got": "Escoto"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Miguel",
+   "got": "Miguel d'"
+  },
+  "text": "Escoto, Miguel d'"
+ },
+ "118534947/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Franz I."
+ },
+ "118568647/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "László I."
+ },
+ "118578367/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Martín Descalzo",
+   "got": "Descalzo"
+  },
+  "given_names": {
+   "expected": "José Luis",
+   "got": "José Luis Martín"
+  },
+  "text": "José Luis Martín Descalzo"
+ },
+ "1185824316/particle-arab/sorting": {
+  "family": {
+   "expected": "Faḥḥām al-",
+   "got": "Faḥḥām"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Šākir",
+   "got": "Šākir al-"
+  },
+  "text": "Faḥḥām, Šākir al-"
+ },
+ "118587587/direct-eu/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Thiong'o"
+  },
+  "given_names": {
+   "expected": "Ngugi wa Thiong'o",
+   "got": "Ngugi wa"
+  },
+  "text": "Ngugi wa Thiong'o"
+ },
+ "118604740/particle-arab/sorting": {
+  "family": {
+   "expected": "Sādāt as-",
+   "got": "Sādāt"
+  },
+  "family_particles": {
+   "expected": "as-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ǧīhān",
+   "got": "Ǧīhān as-"
+  },
+  "text": "Sādāt, Ǧīhān as-"
+ },
+ "118624571/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Tumsa"
+  },
+  "given_names": {
+   "expected": "Gudina Tumsa",
+   "got": "Gudina"
+  },
+  "text": "Gudina Tumsa"
+ },
+ "118650947/particle-fr/sorting": {
+  "family": {
+   "expected": "Aubigné d'",
+   "got": "Aubigné"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Théodore Agrippa",
+   "got": "Théodore Agrippa d'"
+  },
+  "text": "Aubigné, Théodore Agrippa d'"
+ },
+ "118668757/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Castelo Branco",
+   "got": "Branco"
+  },
+  "given_names": {
+   "expected": "Camilo",
+   "got": "Camilo Castelo"
+  },
+  "text": "Camilo Castelo Branco"
+ },
+ "118687387/direct-eu/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "S."
+  },
+  "given_names": {
+   "expected": "Meister E. S.",
+   "got": "Meister E."
+  },
+  "text": "Meister E. S."
+ },
+ "118690477/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "VI."
+  },
+  "suffix": {
+   "expected": "VI.",
+   "got": ""
+  },
+  "text": "Georg VI."
+ },
+ "118716158/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Rūmī"
+  },
+  "given_names": {
+   "expected": "Ǧalāl-ad-Dīn Rūmī",
+   "got": "Ǧalāl-ad-Dīn"
+  },
+  "text": "Ǧalāl-ad-Dīn Rūmī"
+ },
+ "1187542687/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Nunes de Ávila e Silva",
+   "got": "de Ávila e Silva"
+  },
+  "given_names": {
+   "expected": "Epaminondas",
+   "got": "Epaminondas Nunes"
+  },
+  "text": "Epaminondas Nunes de Ávila e Silva"
+ },
+ "118767917/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Vélez de Guevara",
+   "got": "de Guevara"
+  },
+  "given_names": {
+   "expected": "Luis",
+   "got": "Luis Vélez"
+  },
+  "text": "Luis Vélez de Guevara"
+ },
+ "118782835/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Bāšā"
+  },
+  "given_names": {
+   "expected": "Muḥammad ʿAlī Bāšā",
+   "got": "Muḥammad ʿAlī"
+  },
+  "text": "Muḥammad ʿAlī Bāšā"
+ },
+ "118801724/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn-Qurra"
+  },
+  "given_names": {
+   "expected": "Ṯābit Ibn-Qurra",
+   "got": "Ṯābit"
+  },
+  "text": "Ṯābit Ibn-Qurra"
+ },
+ "118848062/particle-arab/sorting": {
+  "family": {
+   "expected": "Assad al-",
+   "got": "Assad"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Hafis",
+   "got": "Hafis al-"
+  },
+  "text": "Assad, Hafis al-"
+ },
+ "118850555/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ardabīlī"
+  },
+  "given_names": {
+   "expected": "Ṣafī-ad-Dīn Ardabīlī",
+   "got": "Ṣafī-ad-Dīn"
+  },
+  "text": "Ṣafī-ad-Dīn Ardabīlī"
+ },
+ "118857770/particle-arab/sorting": {
+  "family": {
+   "expected": "Buḥturī al-",
+   "got": "Buḥturī"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "al-Walīd Ibn-ʿUbaid",
+   "got": "al-Walīd Ibn-ʿUbaid al-"
+  },
+  "text": "Buḥturī, al-Walīd Ibn-ʿUbaid al-"
+ },
+ "1188659936/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Mašhadī"
+  },
+  "given_names": {
+   "expected": "Ḥusain Ṯanāʾī Mašhadī",
+   "got": "Ḥusain Ṯanāʾī"
+  },
+  "text": "Ḥusain Ṯanāʾī Mašhadī"
+ },
+ "118894978/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jónsson"
+  },
+  "given_names": {
+   "expected": "Einar Jónsson",
+   "got": "Einar"
+  },
+  "text": "Einar Jónsson"
+ },
+ "118932497/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Ismail I."
+ },
+ "118935577/direct-eu/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Pascha"
+  },
+  "given_names": {
+   "expected": "Enver Pascha",
+   "got": "Enver"
+  },
+  "text": "Enver Pascha"
+ },
+ "118963430/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hānum"
+  },
+  "given_names": {
+   "expected": "Ğawīdān _ Hānum",
+   "got": "Ğawīdān _"
+  },
+  "text": "Ğawīdān _ Hānum"
+ },
+ "118972197/direct-eu/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Violet"
+  },
+  "given_names": {
+   "expected": "Ultra Violet",
+   "got": "Ultra"
+  },
+  "text": "Ultra Violet"
+ },
+ "118976869/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn-Aḥmad"
+  },
+  "given_names": {
+   "expected": "ʿAbd-al-Ǧabbār Ibn-Aḥmad",
+   "got": "ʿAbd-al-Ǧabbār"
+  },
+  "text": "ʿAbd-al-Ǧabbār Ibn-Aḥmad"
+ },
+ "118988417/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Marulanda Vélez",
+   "got": "Vélez"
+  },
+  "given_names": {
+   "expected": "Manuel",
+   "got": "Manuel Marulanda"
+  },
+  "text": "Manuel Marulanda Vélez"
+ },
+ "119007703/particle-arab/sorting": {
+  "family": {
+   "expected": "Ġazālī al-",
+   "got": "Ġazālī"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Zainab",
+   "got": "Zainab al-"
+  },
+  "text": "Ġazālī, Zainab al-"
+ },
+ "119022397/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "VII."
+  },
+  "suffix": {
+   "expected": "VII.",
+   "got": ""
+  },
+  "text": "Konstantin VII."
+ },
+ "119075067/compound-latam/givenFirst": {
+  "family": {
+   "expected": "López Portillo y Pacheco",
+   "got": "Portillo y Pacheco"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José López"
+  },
+  "text": "José López Portillo y Pacheco"
+ },
+ "1190758520/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Guðmundsson"
+  },
+  "given_names": {
+   "expected": "Albert Guðmundsson",
+   "got": "Albert"
+  },
+  "text": "Albert Guðmundsson"
+ },
+ "119104644/particle-arab/givenFirst": {
+  "family": {
+   "expected": "of Carnarvon",
+   "got": "Herbert of Carnarvon"
+  },
+  "family_base": {
+   "expected": "Carnarvon",
+   "got": "Herbert of Carnarvon"
+  },
+  "family_particles": {
+   "expected": "of",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "George Edward Stanhope Molyneux Herbert",
+   "got": "George Edward Stanhope Molyneux"
+  },
+  "text": "George Edward Stanhope Molyneux Herbert of Carnarvon"
+ },
+ "119104644/particle-arab/sorting": {
+  "family": {
+   "expected": "Carnarvon of",
+   "got": "Carnarvon"
+  },
+  "family_particles": {
+   "expected": "of",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "George Edward Stanhope Molyneux Herbert",
+   "got": "George Edward Stanhope Molyneux Herbert of"
+  },
+  "text": "Carnarvon, George Edward Stanhope Molyneux Herbert of"
+ },
+ "119112655/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gröndal"
+  },
+  "given_names": {
+   "expected": "Benedikt Gröndal",
+   "got": "Benedikt"
+  },
+  "text": "Benedikt Gröndal"
+ },
+ "11914512X/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn-Muḥammad"
+  },
+  "given_names": {
+   "expected": "Abū-Maʿšar Ǧaʿfar Ibn-Muḥammad",
+   "got": "Abū-Maʿšar Ǧaʿfar"
+  },
+  "text": "Abū-Maʿšar Ǧaʿfar Ibn-Muḥammad"
+ },
+ "119147726/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Kāẓīm"
+  },
+  "given_names": {
+   "expected": "Mūsā al-Kāẓīm",
+   "got": "Mūsā"
+  },
+  "text": "Mūsā al-Kāẓīm"
+ },
+ "119152169/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn-ʿAbd-al-Wahhāb"
+  },
+  "given_names": {
+   "expected": "Muḥammad Ibn-ʿAbd-al-Wahhāb",
+   "got": "Muḥammad"
+  },
+  "text": "Muḥammad Ibn-ʿAbd-al-Wahhāb"
+ },
+ "11915689X/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Yaeqob"
+  },
+  "given_names": {
+   "expected": "Zarea Yaeqob",
+   "got": "Zarea"
+  },
+  "text": "Zarea Yaeqob"
+ },
+ "119177447/particle-elided/sorting": {
+  "family": {
+   "expected": "Orléans d'",
+   "got": "Orléans"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ferdinand-Philippe",
+   "got": "Ferdinand-Philippe d'"
+  },
+  "text": "Orléans, Ferdinand-Philippe d'"
+ },
+ "119192047/particle-iberia/sorting": {
+  "family": {
+   "expected": "Maǧrīṭī al-",
+   "got": "Maǧrīṭī"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Abu-'l-Qāsim Maslama Ibn-Aḥmad",
+   "got": "Abu-'l-Qāsim Maslama Ibn-Aḥmad al-"
+  },
+  "text": "Maǧrīṭī, Abu-'l-Qāsim Maslama Ibn-Aḥmad al-"
+ },
+ "119196824/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Qušairī"
+  },
+  "given_names": {
+   "expected": "Muslim Ibn-al-Ḥaǧǧāǧ al-Qušairī",
+   "got": "Muslim Ibn-al-Ḥaǧǧāǧ"
+  },
+  "text": "Muslim Ibn-al-Ḥaǧǧāǧ al-Qušairī"
+ },
+ "11920519X/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn-Sahl"
+  },
+  "given_names": {
+   "expected": "Sābūr Ibn-Sahl",
+   "got": "Sābūr"
+  },
+  "text": "Sābūr Ibn-Sahl"
+ },
+ "11921203X/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Kalakānī"
+  },
+  "given_names": {
+   "expected": "Ḥabīballāh Kalakānī",
+   "got": "Ḥabīballāh"
+  },
+  "text": "Ḥabīballāh Kalakānī"
+ },
+ "119236591/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "ʿAmū-ūġlī"
+  },
+  "given_names": {
+   "expected": "Haider Hān ʿAmū-ūġlī",
+   "got": "Haider Hān"
+  },
+  "text": "Haider Hān ʿAmū-ūġlī"
+ },
+ "119255782/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Ḫurramī"
+  },
+  "given_names": {
+   "expected": "Bābak Yaḥyā Ibn-Muʿāḏ al-Ḫurramī",
+   "got": "Bābak Yaḥyā Ibn-Muʿāḏ"
+  },
+  "text": "Bābak Yaḥyā Ibn-Muʿāḏ al-Ḫurramī"
+ },
+ "119270277/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Friedrich"
+  },
+  "given_names": {
+   "expected": "Eitel Friedrich",
+   "got": "Eitel"
+  },
+  "text": "Eitel Friedrich II."
+ },
+ "119272911/particle-arab/sorting": {
+  "family": {
+   "expected": "Ḥakīm al-",
+   "got": "Ḥakīm"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Taufīq",
+   "got": "Taufīq al-"
+  },
+  "text": "Ḥakīm, Taufīq al-"
+ },
+ "119288109/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "San"
+  },
+  "given_names": {
+   "expected": "Aung San",
+   "got": "Aung"
+  },
+  "text": "Aung San"
+ },
+ "119288370/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Benediktsson"
+  },
+  "given_names": {
+   "expected": "Einar Benediktsson",
+   "got": "Einar"
+  },
+  "text": "Einar Benediktsson"
+ },
+ "119392275/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðsson"
+  },
+  "given_names": {
+   "expected": "Pétur Sigurðsson",
+   "got": "Pétur"
+  },
+  "text": "Pétur Sigurðsson"
+ },
+ "119398184/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ḥofni"
+  },
+  "given_names": {
+   "expected": "Shemuʾel ben Ḥofni",
+   "got": "Shemuʾel ben"
+  },
+  "text": "Shemuʾel ben Ḥofni"
+ },
+ "119418029/particle-arab/sorting": {
+  "family": {
+   "expected": "Zaiyāt az-",
+   "got": "Zaiyāt"
+  },
+  "family_particles": {
+   "expected": "az-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Laṭīfa",
+   "got": "Laṭīfa az-"
+  },
+  "text": "Zaiyāt, Laṭīfa az-"
+ },
+ "119426838/particle-arab/sorting": {
+  "family": {
+   "expected": "Ḫarrāṭ al-",
+   "got": "Ḫarrāṭ"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Idwār",
+   "got": "Idwār al-"
+  },
+  "text": "Ḫarrāṭ, Idwār al-"
+ },
+ "119436167/particle-it/sorting": {
+  "family": {
+   "expected": "Pèrs di",
+   "got": "Pèrs"
+  },
+  "family_particles": {
+   "expected": "di",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ciro",
+   "got": ""
+  },
+  "suffix": {
+   "expected": "",
+   "got": "Ciro di"
+  },
+  "text": "Pèrs, Ciro di"
+ },
+ "1194558798/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ḫān"
+  },
+  "given_names": {
+   "expected": "Amīn as-Sulṭān ʿAlī Aṣġar Ḫān",
+   "got": "Amīn as-Sulṭān ʿAlī Aṣġar"
+  },
+  "text": "Amīn as-Sulṭān ʿAlī Aṣġar Ḫān"
+ },
+ "119465175/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Þórhallsson"
+  },
+  "given_names": {
+   "expected": "Þorlákur Þórhallsson",
+   "got": "Þorlákur"
+  },
+  "text": "Þorlákur Þórhallsson"
+ },
+ "11952645X/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Ḥasanī"
+  },
+  "given_names": {
+   "expected": "ʿImād al-Ḥasanī",
+   "got": "ʿImād"
+  },
+  "text": "ʿImād al-Ḥasanī"
+ },
+ "119534827/direct-eu/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Yehudah"
+  },
+  "given_names": {
+   "expected": "Elʿazar ben Yehudah",
+   "got": "Elʿazar ben"
+  },
+  "text": "Elʿazar ben Yehudah"
+ },
+ "119536897/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Werner I."
+ },
+ "1199143707/particle-elided/sorting": {
+  "family": {
+   "expected": "Orville d'",
+   "got": "Orville"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Johann Friedrich",
+   "got": "Johann Friedrich d'"
+  },
+  "text": "Orville, Johann Friedrich d'"
+ },
+ "120010887/particle-elided/sorting": {
+  "family": {
+   "expected": "Angoulême d'",
+   "got": "Angoulême"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Louis Antoine d'Artois",
+   "got": "Louis Antoine d'Artois d'"
+  },
+  "text": "Angoulême, Louis Antoine d'Artois d'"
+ },
+ "1200607953/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Egziabher"
+  },
+  "given_names": {
+   "expected": "Tewolde Berhan Gebre Egziabher",
+   "got": "Tewolde Berhan Gebre"
+  },
+  "text": "Tewolde Berhan Gebre Egziabher"
+ },
+ "120147327/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "VIIII."
+  },
+  "suffix": {
+   "expected": "VIIII.",
+   "got": ""
+  },
+  "text": "Hamengku Buwono VIIII."
+ },
+ "1202958737/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "López Ochoa",
+   "got": "Ochoa"
+  },
+  "given_names": {
+   "expected": "Eduardo",
+   "got": "Eduardo López"
+  },
+  "text": "Eduardo López Ochoa"
+ },
+ "120584727/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Livraga Rizzi",
+   "got": "Rizzi"
+  },
+  "given_names": {
+   "expected": "Jorge A.",
+   "got": "Jorge A. Livraga"
+  },
+  "text": "Jorge A. Livraga Rizzi"
+ },
+ "120770377/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Magnus I."
+ },
+ "120926172/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Pisyān"
+  },
+  "given_names": {
+   "expected": "Muḥammad Taqī Ḫān Pisyān",
+   "got": "Muḥammad Taqī Ḫān"
+  },
+  "text": "Muḥammad Taqī Ḫān Pisyān"
+ },
+ "120942550/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Aṣġar"
+  },
+  "given_names": {
+   "expected": "Surāqa Ibn-Mirdās al-Aṣġar",
+   "got": "Surāqa Ibn-Mirdās"
+  },
+  "text": "Surāqa Ibn-Mirdās al-Aṣġar"
+ },
+ "121086135/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Leifs"
+  },
+  "given_names": {
+   "expected": "Jón Leifs",
+   "got": "Jón"
+  },
+  "text": "Jón Leifs"
+ },
+ "1213251737/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Asas Manterola",
+   "got": "Manterola"
+  },
+  "given_names": {
+   "expected": "Benita",
+   "got": "Benita Asas"
+  },
+  "text": "Benita Asas Manterola"
+ },
+ "121487237/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Serrano Poncela",
+   "got": "Poncela"
+  },
+  "given_names": {
+   "expected": "Segundo",
+   "got": "Segundo Serrano"
+  },
+  "text": "Segundo Serrano Poncela"
+ },
+ "122313208/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ásgeirsson"
+  },
+  "given_names": {
+   "expected": "Ásgeir Ásgeirsson",
+   "got": "Ásgeir"
+  },
+  "text": "Ásgeir Ásgeirsson"
+ },
+ "122734017/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al I."
+  },
+  "given_names": {
+   "expected": "Malik al-ʿĀdil al",
+   "got": "Malik al-ʿĀdil"
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Malik al-ʿĀdil al I."
+ },
+ "122991567/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Sanz Briz",
+   "got": "Briz"
+  },
+  "given_names": {
+   "expected": "Ángel",
+   "got": "Ángel Sanz"
+  },
+  "text": "Ángel Sanz Briz"
+ },
+ "123089077/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Nieves Conde",
+   "got": "Conde"
+  },
+  "given_names": {
+   "expected": "José Antonio",
+   "got": "José Antonio Nieves"
+  },
+  "text": "José Antonio Nieves Conde"
+ },
+ "123225663/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sayadaw"
+  },
+  "given_names": {
+   "expected": "Ledi Sayadaw",
+   "got": "Ledi"
+  },
+  "text": "Ledi Sayadaw"
+ },
+ "1233224425/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "ar-Rizzī"
+  },
+  "given_names": {
+   "expected": "Sarkīs ar-Rizzī",
+   "got": "Sarkīs"
+  },
+  "text": "Sarkīs ar-Rizzī"
+ },
+ "123439647/particle-elided/sorting": {
+  "family": {
+   "expected": "Alquen d'",
+   "got": "Alquen"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Gunter",
+   "got": "Gunter d'"
+  },
+  "text": "Alquen, Gunter d'"
+ },
+ "123505585/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Al-Hadi"
+  },
+  "given_names": {
+   "expected": "Ahmad Al-Hadi",
+   "got": "Ahmad"
+  },
+  "text": "Ahmad Al-Hadi"
+ },
+ "123676797/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Hermann I."
+ },
+ "1237298350/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Bakar"
+  },
+  "given_names": {
+   "expected": "Abu Bakar",
+   "got": "Abu"
+  },
+  "text": "Abu Bakar"
+ },
+ "1238191037/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Carrillo de Mendoza y Pimentel",
+   "got": "de Mendoza y Pimentel"
+  },
+  "given_names": {
+   "expected": "Diego",
+   "got": "Diego Carrillo"
+  },
+  "text": "Diego Carrillo de Mendoza y Pimentel"
+ },
+ "123907373/particle-arab/sorting": {
+  "family": {
+   "expected": "Šiblī aš-",
+   "got": "Šiblī"
+  },
+  "family_particles": {
+   "expected": "aš-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Abū-Bakr",
+   "got": "Abū-Bakr aš-"
+  },
+  "text": "Šiblī, Abū-Bakr aš-"
+ },
+ "124211917/particle-fr/sorting": {
+  "family": {
+   "expected": "Auxiron d'",
+   "got": "Auxiron"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Claude François Joseph",
+   "got": "Claude François Joseph d'"
+  },
+  "text": "Auxiron, Claude François Joseph d'"
+ },
+ "124714617/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Guðnason"
+  },
+  "given_names": {
+   "expected": "Svavar Guðnason",
+   "got": "Svavar"
+  },
+  "text": "Svavar Guðnason"
+ },
+ "124788165/particle-arab/sorting": {
+  "family": {
+   "expected": "Yāzīǧī al-",
+   "got": "Yāzīǧī"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Ibrāhīm",
+   "got": "Ibrāhīm al-"
+  },
+  "text": "Yāzīǧī, Ibrāhīm al-"
+ },
+ "124955487/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Prats Gonzaléz",
+   "got": "Gonzaléz"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Prats"
+  },
+  "text": "Carlos Prats Gonzaléz"
+ },
+ "125827547/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Modrego Casaus",
+   "got": "Casaus"
+  },
+  "given_names": {
+   "expected": "Gregorio",
+   "got": "Gregorio Modrego"
+  },
+  "text": "Gregorio Modrego Casaus"
+ },
+ "1260866602/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Shah"
+  },
+  "given_names": {
+   "expected": "Ismail Nasiruddin Shah",
+   "got": "Ismail Nasiruddin"
+  },
+  "text": "Ismail Nasiruddin Shah"
+ },
+ "1267417625/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gudeta"
+  },
+  "given_names": {
+   "expected": "Agitu Ideo Gudeta",
+   "got": "Agitu Ideo"
+  },
+  "text": "Agitu Ideo Gudeta"
+ },
+ "1280472707/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Polo de Bernabé",
+   "got": "de Bernabé"
+  },
+  "given_names": {
+   "expected": "Luis",
+   "got": "Luis Polo"
+  },
+  "text": "Luis Polo de Bernabé"
+ },
+ "128048638/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Arnórsson"
+  },
+  "given_names": {
+   "expected": "Einar Arnórsson",
+   "got": "Einar"
+  },
+  "text": "Einar Arnórsson"
+ },
+ "1284598136/direct-ir-af/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ḫān"
+  },
+  "given_names": {
+   "expected": "Bāqir Ḫān",
+   "got": "Bāqir"
+  },
+  "text": "Bāqir Ḫān"
+ },
+ "1285103238/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Alam"
+  },
+  "given_names": {
+   "expected": "Paku Alam VIII",
+   "got": "Paku"
+  },
+  "suffix": {
+   "expected": "",
+   "got": "VIII"
+  },
+  "text": "Paku Alam VIII"
+ },
+ "128739088/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Stephansson"
+  },
+  "given_names": {
+   "expected": "Stephan Guðmundsson Stephansson",
+   "got": "Stephan Guðmundsson"
+  },
+  "text": "Stephan Guðmundsson Stephansson"
+ },
+ "128851473/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ahmad"
+  },
+  "given_names": {
+   "expected": "Shahnon Ahmad",
+   "got": "Shahnon"
+  },
+  "text": "Shahnon Ahmad"
+ },
+ "128897732/particle-arab/sorting": {
+  "family": {
+   "expected": "Ḥāǧǧ al-",
+   "got": "Ḥāǧǧ"
+  },
+  "family_particles": {
+   "expected": "al-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Kamāl Yūsuf",
+   "got": "Kamāl Yūsuf al-"
+  },
+  "text": "Ḥāǧǧ, Kamāl Yūsuf al-"
+ },
+ "129229970/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Helgadóttir"
+  },
+  "given_names": {
+   "expected": "Gerður Helgadóttir",
+   "got": "Gerður"
+  },
+  "text": "Gerður Helgadóttir"
+ },
+ "1293064432/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Stefánsson"
+  },
+  "given_names": {
+   "expected": "Stefán Karl Stefánsson",
+   "got": "Stefán Karl"
+  },
+  "text": "Stefán Karl Stefánsson"
+ },
+ "12937427X/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Böðvarsson"
+  },
+  "given_names": {
+   "expected": "Guðmundur Böðvarsson",
+   "got": "Guðmundur"
+  },
+  "text": "Guðmundur Böðvarsson"
+ },
+ "129465046/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "David"
+  },
+  "given_names": {
+   "expected": "Anan ben David",
+   "got": "Anan ben"
+  },
+  "text": "Anan ben David"
+ },
+ "129765767/particle-nl-be/sorting": {
+  "family": {
+   "expected": "Outrein d'",
+   "got": "Outrein"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Johannes",
+   "got": "Johannes d'"
+  },
+  "text": "Outrein, Johannes d'"
+ },
+ "1298312620/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Liat"
+  },
+  "given_names": {
+   "expected": "Lim Boo Liat",
+   "got": "Lim Boo"
+  },
+  "text": "Lim Boo Liat"
+ },
+ "129854697/particle-elided/givenFirst": {
+  "family": {
+   "expected": "d'Angiviller",
+   "got": "de La Billarderie d'Angiviller"
+  },
+  "given_names": {
+   "expected": "Charles Claude de La Billarderie",
+   "got": "Charles Claude"
+  },
+  "text": "Charles Claude de La Billarderie d'Angiviller"
+ },
+ "129854697/particle-elided/sorting": {
+  "family": {
+   "expected": "Angiviller d'",
+   "got": "Angiviller"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Charles Claude de La Billarderie",
+   "got": "Charles Claude de La Billarderie d'"
+  },
+  "text": "Angiviller, Charles Claude de La Billarderie d'"
+ },
+ "130656097/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "bin Haji Ahmad Badawi"
+  },
+  "given_names": {
+   "expected": "Abdullah bin Haji Ahmad Badawi",
+   "got": "Abdullah"
+  },
+  "text": "Abdullah bin Haji Ahmad Badawi"
+ },
+ "130897035/particle-arab/sorting": {
+  "family": {
+   "expected": "Ṭihrānī aṭ-",
+   "got": "Ṭihrānī"
+  },
+  "family_particles": {
+   "expected": "aṭ-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Āqā Buzurg",
+   "got": "Āqā Buzurg aṭ-"
+  },
+  "text": "Ṭihrānī, Āqā Buzurg aṭ-"
+ },
+ "131443097/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Robles Pazos",
+   "got": "Pazos"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José Robles"
+  },
+  "text": "José Robles Pazos"
+ },
+ "13167398X/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Onn"
+  },
+  "given_names": {
+   "expected": "Hussein Onn",
+   "got": "Hussein"
+  },
+  "text": "Hussein Onn"
+ },
+ "1316845230/direct-et-mm/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Maw"
+  },
+  "given_names": {
+   "expected": "Ba Maw",
+   "got": "Ba"
+  },
+  "text": "Ba Maw"
+ },
+ "132686147/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Frühbeck de Burgos",
+   "got": "de Burgos"
+  },
+  "given_names": {
+   "expected": "Rafael",
+   "got": "Rafael Frühbeck"
+  },
+  "text": "Rafael Frühbeck de Burgos"
+ },
+ "132883317/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Ayala Pérez",
+   "got": "Pérez"
+  },
+  "given_names": {
+   "expected": "Daniel",
+   "got": "Daniel Ayala"
+  },
+  "text": "Daniel Ayala Pérez"
+ },
+ "13358285X/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Miskīn"
+  },
+  "given_names": {
+   "expected": "Mattā al-Miskīn",
+   "got": "Mattā"
+  },
+  "text": "Mattā al-Miskīn"
+ },
+ "133824047/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Mendes de Almeida",
+   "got": "de Almeida"
+  },
+  "given_names": {
+   "expected": "Luciano",
+   "got": "Luciano Mendes"
+  },
+  "text": "Luciano Mendes de Almeida"
+ },
+ "134456467/direct-eu/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Martin"
+  },
+  "given_names": {
+   "expected": "Andreas Martin",
+   "got": "Andreas"
+  },
+  "text": "Andreas Martin"
+ },
+ "135094097/direct-eu/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "O."
+  },
+  "given_names": {
+   "expected": "L. U. P. O.",
+   "got": "L. U. P."
+  },
+  "text": "L. U. P. O."
+ },
+ "135683637/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Ulrich I."
+ },
+ "135858755/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "SteinÞórsson"
+  },
+  "given_names": {
+   "expected": "Steingrímur SteinÞórsson",
+   "got": "Steingrímur"
+  },
+  "text": "Steingrímur SteinÞórsson"
+ },
+ "13606860X/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gizursson"
+  },
+  "given_names": {
+   "expected": "Ísleifur Gizursson",
+   "got": "Ísleifur"
+  },
+  "text": "Ísleifur Gizursson"
+ },
+ "136135064/direct-et-mm/givenFirst": {
+  "given_names": {
+   "expected": "Khun Sa",
+   "got": "Khun"
+  },
+  "suffix": {
+   "expected": "",
+   "got": "Sa"
+  },
+  "text": "Khun Sa"
+ },
+ "13628471X/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Maidin"
+  },
+  "given_names": {
+   "expected": "Rashid Maidin",
+   "got": "Rashid"
+  },
+  "text": "Rashid Maidin"
+ },
+ "136516106/direct-arab/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "al-Dīn"
+  },
+  "given_names": {
+   "expected": "Nūr al-Dīn",
+   "got": "Nūr"
+  },
+  "text": "Nūr al-Dīn"
+ },
+ "136563457/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Gutiérrez Carreola",
+   "got": "Carreola"
+  },
+  "given_names": {
+   "expected": "Francisco",
+   "got": "Francisco Gutiérrez"
+  },
+  "text": "Francisco Gutiérrez Carreola"
+ },
+ "137324847/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Heinrich I."
+ },
+ "13775390X/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jalaluddin"
+  },
+  "given_names": {
+   "expected": "Tahir Jalaluddin",
+   "got": "Tahir"
+  },
+  "text": "Tahir Jalaluddin"
+ },
+ "137841817/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "V."
+  },
+  "suffix": {
+   "expected": "V.",
+   "got": ""
+  },
+  "text": "Friedrich V."
+ },
+ "138621497/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Thomas I."
+ },
+ "139287647/regnal/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "I."
+  },
+  "suffix": {
+   "expected": "I.",
+   "got": ""
+  },
+  "text": "Vladislav I."
+ },
+ "140876936/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Zaba"
+  },
+  "given_names": {
+   "expected": "Pendeta Zaba",
+   "got": "Pendeta"
+  },
+  "text": "Pendeta Zaba"
+ },
+ "141518618/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Benediktsson"
+  },
+  "given_names": {
+   "expected": "Gunnar Benediktsson",
+   "got": "Gunnar"
+  },
+  "text": "Gunnar Benediktsson"
+ },
+ "14240439X/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Bonjol"
+  },
+  "given_names": {
+   "expected": "Imam Bonjol",
+   "got": ""
+  },
+  "text": "Imam Bonjol",
+  "title": {
+   "expected": "",
+   "got": "Imam"
+  }
+ },
+ "142486175/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibn-ʿAbdalqādir"
+  },
+  "given_names": {
+   "expected": "ʿAbdallāh Ibn-ʿAbdalqādir",
+   "got": "ʿAbdallāh"
+  },
+  "text": "ʿAbdallāh Ibn-ʿAbdalqādir"
+ },
+ "151529558/particle-arab/sorting": {
+  "family": {
+   "expected": "Šaʿrāwī aš-",
+   "got": "Šaʿrāwī"
+  },
+  "family_particles": {
+   "expected": "aš-",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Hudā",
+   "got": "Hudā aš-"
+  },
+  "text": "Šaʿrāwī, Hudā aš-"
+ },
+ "170741427/compound-iberia/givenFirst": {
+  "family": {
+   "expected": "Garaikoetxea Urriza",
+   "got": "Urriza"
+  },
+  "given_names": {
+   "expected": "Juan C.",
+   "got": "Juan C. Garaikoetxea"
+  },
+  "text": "Juan C. Garaikoetxea Urriza"
+ },
+ "172013437/compound-latam/givenFirst": {
+  "family": {
+   "expected": "Caballero Calderón",
+   "got": "Calderón"
+  },
+  "given_names": {
+   "expected": "Eduardo",
+   "got": "Eduardo Caballero"
+  },
+  "text": "Eduardo Caballero Calderón"
+ },
+ "174317840/direct-my-id/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ie"
+  },
+  "given_names": {
+   "expected": "Kho Liang Ie",
+   "got": "Kho Liang"
+  },
+  "text": "Kho Liang Ie"
+ },
+ "174346352/direct-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sveinsson"
+  },
+  "given_names": {
+   "expected": "Ásmundur Sveinsson",
+   "got": "Ásmundur"
+  },
+  "text": "Ásmundur Sveinsson"
+ }
+}
