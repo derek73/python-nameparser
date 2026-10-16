@@ -71,13 +71,13 @@ surname: Wikidata does not split it, so the particle and base views are
 not compared. cldr_agreement.py scores `surname2` inside `family` and
 `patronymic` inside `given_names` -- a patronymic is not a family name,
 the GND and LC convention, so `Vigdís Finnbogadóttir` expects the family
-empty -- and scores each field on its own once ParsedName has one.
+empty -- and also scores each field on its own once ParsedName has one.
 
 Blind to: everything the strict filter drops. The survivors are tidy
 names whose every word has a Wikidata item, so short display forms
 (`Pedro Martínez`, with no second surname written), nicknames, and names
-with an unrecorded middle part are missing; and only the six countries
-below are sampled. No title, credential or suffix is in any text.
+with an unrecorded middle part are missing; and only the eight
+citizenships below are sampled. No title, credential or suffix is in any text.
 """
 from __future__ import annotations
 

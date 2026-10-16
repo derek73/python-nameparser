@@ -48,9 +48,10 @@ so each is scored inside the role it belongs to today -- `surname2`
 inside `family`, as CLDR's own merge does, and `patronymic` inside
 `given_names`, since a patronymic is not a family name (the GND and LC
 convention: `Vigdís Finnbogadóttir` expects the family empty). They are
-in PENDING_ROLES, and each starts being scored on its own the day
-ParsedName gains an attribute of that name, with no change here; until
-then the summary says how many renderings state it.
+in PENDING_ROLES, and each is also scored on its own the day ParsedName
+gains an attribute of that name; until then the summary says how many
+renderings state it. The merged scoring stays either way: if 3.0 takes a
+field out of `family` or `given_names`, this mapping changes with it.
 
 Nothing is special-cased. A deliberately unnatural rendering, `さん` read
 as a suffix where CLDR calls it a title, a lone word under a family-first
@@ -71,9 +72,10 @@ from nameparser import FAMILY_FIRST, ParsedName, Parser, Policy, locales, parser
 
 ROLES = ("title", "given_names", "family", "suffix",
          "family_particles", "family_base")
-#: Fields a source states that ParsedName has no attribute for yet:
-#: scored on their own once it does (see got_roles), and meanwhile
-#: inside `family` and `given_names`.
+#: Fields a source states that ParsedName has no attribute for yet.
+#: Each is always scored inside `family` or `given_names`, and ALSO on
+#: its own once ParsedName has it (see got_roles); whether the merged
+#: role should then drop it is the 3.0 design's question, not this one.
 PENDING_ROLES = ("surname2", "patronymic")
 HERE = Path(__file__).resolve().parent
 FIELDS = HERE / "cldr_fields.jsonl"
