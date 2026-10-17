@@ -3005,7 +3005,7 @@
 {"name": "Torres, Ana", "given": "Ana", "family": "Torres", "initials": "A. T."}
 {"name": "Tounens, Antoine de", "given": "Antoine", "family": "de Tounens", "initials": "A. T."}
 {"name": "Traberth, Julie", "given": "Julie", "family": "Traberth", "initials": "J. T."}
-{"name": "Tran Thi Mai", "order": "FAMILY_FIRST", "given": "Thi", "family": "Tran", "suffix": "Mai", "initials": "T. T."}
+{"name": "Tran Thi Mai", "order": "FAMILY_FIRST", "given": "Thi", "middle": "Mai", "family": "Tran", "initials": "T. M. T."}
 {"name": "Tschagribeg", "given": "Tschagribeg", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "T."}
 {"name": "Tschurtschenthaler, Anton von", "given": "Anton", "family": "von Tschurtschenthaler", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "A. T."}
 {"name": "Tunde Seun Okeke", "given": "Tunde", "middle": "Seun", "family": "Okeke", "initials": "T. S. O."}

@@ -76,6 +76,8 @@ _CORE_ONLY_IDS = frozenset({
     # #296's bundle: the positional read of the pre-comma name under a
     # declared family-first order -- v1 has no name order to declare
     "family_comma_no_name_word_family_first",
+    # #687: a declared Vietnamese order, which v1 cannot express
+    "trailing_given_name_mai_is_not_a_credential",
     "family_comma_no_name_word_family_first_given_last",
     "family_comma_no_name_word_family_first_plain",
     "leading_never_given_particle_two_leftovers_family_first",
