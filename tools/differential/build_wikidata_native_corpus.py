@@ -252,22 +252,9 @@ def query(stratum: Stratum) -> str:
 
 
 def pool(stratum: Stratum, refresh: bool) -> list[str]:
-    """The stratum's QIDs in MD5 order; raises on a query matching
-    nothing, since that means the query or Wikidata changed."""
-    data = urllib.parse.urlencode({"query": query(stratum), "format": "json"}).encode()
-    result = wikidata._fetch(wikidata.SPARQL, data, refresh, "results")
-    qids = [b["item"]["value"].rsplit("/", 1)[1] for b in result["results"]["bindings"]]
-    if not qids:
-        raise ValueError(f"{stratum.label}: the query matches nothing; has a "
-                         f"property or item changed?\n{query(stratum)}")
-    if len(qids) < stratum.pool and not stratum.whole:
-        raise ValueError(f"{stratum.label}: the query matched {len(qids)} people, "
-                         f"fewer than its pool of {stratum.pool}; if that is now "
-                         "the whole population, mark the stratum whole=True")
-    if len(qids) == stratum.pool and stratum.whole:
-        raise ValueError(f"{stratum.label}: marked whole=True, but the query filled "
-                         f"its pool of {stratum.pool}; drop whole=True")
-    return qids
+    """The stratum's QIDs in MD5 order."""
+    return wikidata.pooled(stratum.label, query(stratum), stratum.pool,
+                           stratum.whole, refresh)
 
 
 def entities(ids: list[str], language: str, refresh: bool) -> dict[str, Any]:

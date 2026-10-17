@@ -36,7 +36,9 @@ deterministic. The queries run one at a time. The items are then fetched
 with wbgetentities in batches of 50, and a stratum takes the first items
 in that order that survive the alignment below, up to its quota. A
 stratum that falls below its floor stops the build before anything is
-written, as does a query that matches nothing or a response that is not
+written, as does a query that matches nothing, a pool short of its size
+(unless the stratum is marked `whole`, its population smaller than the
+pool, which a full pool then contradicts) or a response that is not
 what was asked for: a Wikidata change must fail the build, not shrink
 the corpus. A stratum's count says what was sampled, not how common the
 shape is.
@@ -164,8 +166,17 @@ class Stratum(NamedTuple):
     language: str     # the language its people's names are written in
     quota: int
     #: The fewest names the build accepts; below it, it stops. Set below
-    #: the quota only where the pool is known to run short.
+    #: the quota only where the names that align are known to run short of it.
     least: int | None = None
+    #: Whether the query's whole population is smaller than `size`; a
+    #: pool short of `size` stops the build unless this is set, and a full
+    #: pool stops it when it is.
+    whole: bool = False
+
+    @property
+    def size(self) -> int:
+        """How many people the query takes."""
+        return self.quota * POOL_FACTOR
 
     @property
     def floor(self) -> int:
@@ -179,10 +190,12 @@ STRATA = (
     Stratum("patronymic-ru", "Q159", "P5056", "ru", 110),
     Stratum("patronymic-su", "Q15180", "P5056", "ru", 60),
     Stratum("patronymic-ri", "Q34266", "P5056", "ru", 40),
-    Stratum("patronymic-is", "Q189", "P5056", "is", 100),
+    # Icelandic public figures with a P5056 statement: 270 of a pool of
+    # 600 on 2026-10-16, so the population is smaller than the pool.
+    Stratum("patronymic-is", "Q189", "P5056", "is", 100, whole=True),
     # 17 Malaysian public figures with a P5056 statement on 2026-10-16,
-    # 9 aligning: the pool is the limit, and the floor leaves 3 to lose.
-    Stratum("patronymic-my", "Q833", "P5056", "ms", 40, least=6),
+    # 9 aligning: the population is the limit, and the floor leaves 3 to lose.
+    Stratum("patronymic-my", "Q833", "P5056", "ms", 40, least=6, whole=True),
 )
 
 
@@ -216,19 +229,38 @@ def query(stratum: Stratum) -> str:
   ?item wdt:{stratum.prop} ?part; wdt:P31 wd:Q5; wdt:P27 wd:{stratum.country};
         wikibase:sitelinks ?links.
   FILTER(?links >= {MIN_SITELINKS} || EXISTS {{ ?item wdt:P570 ?died }})
-}} GROUP BY ?item ORDER BY MD5(STR(?item)) LIMIT {stratum.quota * POOL_FACTOR}"""
+}} GROUP BY ?item ORDER BY MD5(STR(?item)) LIMIT {stratum.size}"""
 
 
-def pool(stratum: Stratum, refresh: bool) -> list[str]:
-    """The stratum's QIDs in MD5 order; raises on a query matching
-    nothing, since that means the query or Wikidata changed."""
-    data = urllib.parse.urlencode({"query": query(stratum), "format": "json"}).encode()
+def pooled(label: str, text: str, size: int, whole: bool,
+           refresh: bool) -> list[str]:
+    """The QIDs a WDQS query returns, in its order, and ValueError unless
+    their number is the one the stratum expects: some, and `size` of
+    them -- the query's LIMIT -- unless `whole` says the population is
+    smaller than that (then fewer, and a full pool means the mark is
+    stale). A query that starts matching fewer people (a property
+    deprecated, a country item merged) would otherwise rebuild the
+    corpus from a smaller, different sample; both Wikidata builders pool
+    through here."""
+    data = urllib.parse.urlencode({"query": text, "format": "json"}).encode()
     result = _fetch(SPARQL, data, refresh, "results")
     qids = [b["item"]["value"].rsplit("/", 1)[1] for b in result["results"]["bindings"]]
     if not qids:
-        raise ValueError(f"{stratum.label}: the query matches nothing; has a "
-                         f"property or item changed?\n{query(stratum)}")
+        raise ValueError(f"{label}: the query matches nothing; has a "
+                         f"property or item changed?\n{text}")
+    if len(qids) < size and not whole:
+        raise ValueError(f"{label}: the query matched {len(qids)} people, "
+                         f"fewer than its pool of {size}; if that is now "
+                         "the whole population, mark the stratum whole=True")
+    if len(qids) >= size and whole:
+        raise ValueError(f"{label}: marked whole=True, but the query filled "
+                         f"its pool of {size}; drop whole=True")
     return qids
+
+
+def pool(stratum: Stratum, refresh: bool) -> list[str]:
+    """The stratum's QIDs in MD5 order."""
+    return pooled(stratum.label, query(stratum), stratum.size, stratum.whole, refresh)
 
 
 def entities(ids: Iterable[str], props: str, refresh: bool,
