@@ -92,8 +92,8 @@ H1. Rationale: a title normally addresses by surname, so a title
     that word to the title, under a declared family-first order too.
     Written last without a period, or alone before a family comma,
     it is the name; a period behind it makes it the title by H5, as
-    for `Mary Jane King.` (#606), and another word behind it before a
-    family comma makes it the title by H6.
+    for `Mary Jane King.` (#606), and a name word behind it before
+    a family comma makes it the title by H6.
       "Greve Smith, Anna"         →  title="Greve"
       "Greve Anna"                →  family="Anna"
       "Anna Greve"                →  family="Greve"
@@ -179,8 +179,8 @@ H3. Rationale: compound titles are written as a run of title words,
       "John Doctor Smith"         →  middle="Doctor"  · boundary
     Accepted: before a family comma the run is H6's, which stops
     where nothing but post-nominals follows for the reason this one
-    gives a word back, and leaves the family its last word whatever
-    that word is.
+    gives a word back, and always leaves the family one word,
+    whatever that word is.
       "Dr. Jr., John"             →  family="Dr."
     Accepted: the word given back must stand alone, so a title
     written as one joined unit stays whole and the post-nominal
@@ -385,9 +385,10 @@ H6. Rationale: the listing form moves the surname to the front and
     A run of title words opening the part before a family comma is
     the title, joining the title field in input order with any title
     after the comma. The run admits a title word only as vocabulary
-    knows it, stops at a word that is also a particle and where
-    nothing but post-nominals stands behind it (H3), and leaves the
-    family its last word. The comma decides the family whatever
+    knows it, stops at a word that is also a particle, or where
+    nothing but post-nominals stands behind it (H3), and always
+    leaves the family at least one word. The comma decides the
+    family whatever
     the order declared, so the reading is the same under every
     name_order.
       "Dr. Smith, John"           →  title="Dr."
@@ -400,6 +401,7 @@ H6. Rationale: the listing form moves the surname to the front and
       "Dr. Mc Donald, John"       →  family="Mc Donald"
       "Prof. Smith, John, PhD"    →  family="Smith"
       "Dr., John"                 →  family="Dr."  · boundary
+      "Dr. King, John"            →  family="King"  · boundary
       "MD PhD Jr., John"          →  family="MD"  · boundary
       "St Pierre, Ed"             →  family="St Pierre"  · boundary
       "Dr. St. Pierre, Ed"        →  family="St. Pierre"  · boundary
@@ -408,10 +410,15 @@ H6. Rationale: the listing form moves the surname to the front and
     the title, as it is in front of a name with no comma (H1). A
     double-barrelled surname that begins with such a word loses it.
       "King Smith, John"          →  title="King"
-    Accepted: 'Freiherr' and 'St' are particles too, so they stay in
-    the family in either spelling, keeping the German rank that is
-    part of the legal surname (C1) and a surname like 'St Pierre'
-    whole. A title in front of them still peels.
+    Accepted: what keeps a word in the family is the particle stop
+    and nothing else. 'Freiherr' and 'St' are particles as well as
+    titles, so they stay in either spelling, keeping 'St Pierre'
+    whole and 'Freiherr von Berg' as C1 reads it. The other German
+    ranks are titles only, so they peel, though since 1919 a rank
+    is part of the legal surname for all of them alike; that is the
+    vocabulary's distinction, not this rule's. A title in front of
+    a particle still peels.
+      "Graf Lambsdorff, Otto"     →  title="Graf"
       "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
       "Dr. Freiherr von Berg, Ed" →  title="Dr."
     history: decisions.md#H6 · interacts: C1, H1, H2, H3, M2, P1, P2, P4, S2, W3 · implemented: nameparser/_pipeline/_assign.py
@@ -2423,8 +2430,9 @@ W3. Rationale: a family name declared by a comma is the writer's
     it does not promise it.
     Under a family comma the pre-comma text is the family by
     declaration and never divides, and the post-comma side is given
-    text with no family to find, a title run opening the pre-comma
-    text aside (H6); only the honorific split-off (W2)
+    text with no family to find. A title run opening the pre-comma
+    text is H6's title, not family text. Only the honorific
+    split-off (W2)
     crosses the comma, an honorific being no part of the name on
     either side — the crossing is stated here rather than in W2
     because it is a claim about the comma, and the comma is the part

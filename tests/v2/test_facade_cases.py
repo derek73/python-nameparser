@@ -76,6 +76,7 @@ _CORE_ONLY_IDS = frozenset({
     # #701: H6's peel under a declared family-first order, which v1
     # cannot express
     "a_title_before_a_family_comma_reads_the_same_family_first",
+    "a_title_before_a_family_comma_reads_the_same_given_last",
     # #296's bundle: the positional read of the pre-comma name under a
     # declared family-first order -- v1 has no name order to declare
     "family_comma_no_name_word_family_first",

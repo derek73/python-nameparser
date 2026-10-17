@@ -869,9 +869,10 @@ names:
   even with a period,
   since those scripts write no abbreviation with one (``"田中. 太郎"``
   has family ``田中.``).
-- **Before a family comma** only a listed title is a title, since that
-  slot holds a surname too: ``Dr. Smith, John`` gives title ``Dr.``,
-  while ``Xyz. Smith, John`` keeps family ``Xyz. Smith``.
+- **Before a family comma** the inference does not run, since that
+  slot holds a surname too: ``Xyz. Smith, John`` keeps family
+  ``Xyz. Smith``. A listed title is still read there, so
+  ``Dr. Smith, John`` gives title ``Dr.``.
 
 .. doctest::
 
@@ -881,8 +882,6 @@ names:
     'E.T.'
     >>> parse("Jane Insp. Morse").middle
     'Insp.'
-    >>> parse("Dr. Smith, John").title
-    'Dr.'
     >>> parse("Xyz. Smith, John").family
     'Xyz. Smith'
 

@@ -727,6 +727,7 @@
 {"name": "Dr. Juan de la Vega, Jr.", "title": "Dr.", "given": "Juan", "family": "de la Vega", "suffix": "Jr.", "initials": "J. V."}
 {"name": "Dr. King", "title": "Dr.", "family": "King", "ambiguities": ["TITLE_OR_NAME"], "initials": "K."}
 {"name": "Dr. King MD", "title": "Dr.", "family": "King", "suffix": "MD", "ambiguities": ["TITLE_OR_NAME"], "initials": "K."}
+{"name": "Dr. King, John", "title": "Dr.", "given": "John", "family": "King", "initials": "J. K."}
 {"name": "Dr. Martin Luther King Jr.", "title": "Dr.", "given": "Martin", "middle": "Luther", "family": "King", "suffix": "Jr.", "initials": "M. L. K."}
 {"name": "Dr. Mazen Elrouqi", "title": "Dr.", "given": "Mazen", "family": "Elrouqi", "initials": "M. E."}
 {"name": "Dr. Mc Donald, John", "title": "Dr.", "given": "John", "family": "Mc Donald", "initials": "J. D."}
@@ -1023,6 +1024,7 @@
 {"name": "Gottfried Huyn von Geleen und Amsterad", "given": "Gottfried", "middle": "Huyn", "family": "von Geleen und Amsterad", "initials": "G. H. G. A."}
 {"name": "Gottfried IV.", "given": "Gottfried", "suffix": "IV.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "G."}
 {"name": "Goëß, Johann von", "given": "Johann", "family": "von Goëß", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. G."}
+{"name": "Graf Lambsdorff, Otto", "title": "Graf", "given": "Otto", "family": "Lambsdorff", "initials": "O. L."}
 {"name": "Gragger, Robert", "given": "Robert", "family": "Gragger", "initials": "R. G."}
 {"name": "Gramont, Antoine de", "given": "Antoine", "family": "de Gramont", "initials": "A. G."}
 {"name": "Grand Rounds", "title": "Grand", "family": "Rounds", "initials": "R."}

@@ -3796,7 +3796,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#701)",
          notes="'Ms' is suffix vocabulary too, and a name word follows "
                "it, so it is a title as in 'Hon. Ms Jane Smith'. The "
-               "first #701 draft stopped in front of any suffix word "
+               "second #701 draft stopped in front of any suffix word "
                "and read family 'Hon. Smith', suffix 'Ms' (rules.md#H6's "
                "'Rev. Sr.' example; the design-docs review)"),
     Case("a_title_before_a_family_comma_stops_at_a_bare_saint",
@@ -3818,6 +3818,41 @@ CASES: tuple[Case, ...] = (
          classification="fix(#701)",
          notes="the comma names the family, so no declared order moves "
                "the title or the particle surname behind it"),
+    Case("a_joined_title_unit_before_a_family_comma_peels_whole",
+         "Secretary of State Smith, John",
+         {"title": "Secretary of State", "given": "John",
+          "family": "Smith"},
+         classification="fix(#701)",
+         notes="a connective join makes one title piece, which the run "
+               "reads by its piece tag rather than its first word"),
+    Case("a_joined_salutation_before_a_family_comma_peels_whole",
+         "Mr. and Mrs. Smith, John",
+         {"title": "Mr. and Mrs.", "given": "John", "family": "Smith"},
+         classification="fix(#701)"),
+    Case("a_two_word_abbreviated_title_before_a_family_comma_peels_whole",
+         "Lt. Gov. Smith, John",
+         {"title": "Lt. Gov.", "given": "John", "family": "Smith"},
+         classification="fix(#701)",
+         notes="the run is vocabulary-only, so before 'gov' was listed "
+               "it stopped after 'Lt.' and read family 'Gov. Smith', "
+               "where the comma-less name reads title 'Lt. Gov.' by "
+               "H2's shape (the PR review of #701)"),
+    Case("a_title_before_a_family_comma_reads_the_same_given_last",
+         "Prof. Dr. Brühl, Ada",
+         {"title": "Prof. Dr.", "given": "Ada", "family": "Brühl"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#701)",
+         notes="the second family-first order, beside the FAMILY_FIRST "
+               "row: test_cases' three-order sweep checks R2's family "
+               "partition only, so it would not see the title move"),
+    Case("bare_gov_opening_a_name_is_a_title",
+         "Gov Smith",
+         {"title": "Gov", "family": "Smith"},
+         classification="fix(#701)",
+         notes="'gov' joined TITLES in the #701 review, as the listed "
+               "'governor' abbreviated; 1.4.0 through 2.4.2 read given "
+               "'Gov'. 236 US Census surname bearers, so a surname "
+               "written first loses it (decisions.md#H6)"),
     Case("the_comma_count_counts_names_not_words_behind_a_suffix",
          "Smith Jr, Ma",
          {"given": "Ma", "family": "Smith", "suffix": "Jr"},
@@ -8950,7 +8985,8 @@ CASES: tuple[Case, ...] = (
     # is_leading_title's H2 shape test -- so an UNLISTED period-marked
     # opener counted as a NAME word where a LISTED one did not, and
     # this pair split on that alone: 'Dr. Smith, Ed' (LISTED 'Dr.')
-    # read family 'Dr. Smith' unflipped, but 'Xyz. Smith, Ed'
+    # read family 'Dr. Smith' unflipped (the count is unchanged; since
+    # #701 the listed 'Dr.' then peels, rules.md#H6), but 'Xyz. Smith, Ed'
     # (UNLISTED, H2-shaped) flipped the comma structure and read title
     # 'Xyz.', family 'Smith', suffix 'Ed' -- a different STRUCTURE for
     # the same shape, from a title-vocabulary difference the count had

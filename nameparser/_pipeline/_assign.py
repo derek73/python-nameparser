@@ -36,7 +36,8 @@ The v1 single-name+nickname rule lives here (decisions.md#N3): a
 nonempty nickname beside exactly one piece in total puts that piece
 in FAMILY.
 FAMILY_COMMA: segment 0 FAMILY but for a leading run of listed titles
-(rules.md#H6, #701; v1 kept them in the family). A part after the
+(rules.md#H6, #701; v1 kept them in the family) and the post-nominals
+behind its first family piece (SUFFIX, 'Smith Jr., John'). A part after the
 comma that holds no name word, or that a credential opens (#603), is
 not read here: group's head binds its SUFFIX and TITLE roles before
 any join (`_comma.decide`, #613), making the comma a suffix comma
@@ -1413,18 +1414,6 @@ def assign(state: ParseState) -> ParseState:
                                                          tokens)):
                 _attach_particle_tail(pieces, tokens, n, k6, end6,
                                       ambiguities)
-        # rules.md#P2: a particle "joins the words after it into one
-        # name part" -- so a particle that is suffix vocabulary too
-        # (vd, mc) with a name piece behind it in this part heads
-        # that name, and is not peeled from between two family words
-        # (#573: 'SMITH VD MA, JOHN', where the uniform case left the
-        # chain stopped before VD; 'SMITH VD JR, JOHN', a suffix word
-        # behind it, keeps suffix 'VD JR'). Read here because only
-        # this family pass needs it: a comma followed by no name
-        # word behind a whole name is group's suffix comma since #613,
-        # and the NO_COMMA read takes segment 0, trailing run and all
-        # ('Berg de MA, Prof.').
-        #
         # rules.md#H6: "A run of title words opening the part before a
         # family comma is the title" -- by vocabulary only, never H2's
         # shape, leaving one piece for the family, and stopping at a
@@ -1452,6 +1441,19 @@ def assign(state: ParseState) -> ParseState:
                    and "particle" not in tokens[fam_pieces[lead][0]].tags):
                 _set_roles(tokens, fam_pieces[lead], Role.TITLE)
                 lead += 1
+        # rules.md#P2: a particle "joins the words after it into one
+        # name part" -- so a particle that is suffix vocabulary too
+        # (vd, mc) with a name piece behind it in this part heads
+        # that name, and is not peeled from between two family words
+        # (#573: 'SMITH VD MA, JOHN', where the uniform case left the
+        # chain stopped before VD; 'SMITH VD JR, JOHN', a suffix word
+        # behind it, keeps suffix 'VD JR'). Read here because only
+        # this family pass needs it: a comma followed by no name
+        # word behind a whole name is group's suffix comma since #613,
+        # and the NO_COMMA read takes segment 0, trailing run and all
+        # ('Berg de MA, Prof.'). The first piece the title run leaves
+        # is the family's first and is family whatever it is, as piece
+        # 0 is with no title ('Dr. PhD Smith, John' as 'PhD Smith, John').
         for k in range(lead, len(fam_pieces)):
             piece = fam_pieces[k]
             if (k > lead and is_suffix_piece(piece, fam_tags[k], tokens)

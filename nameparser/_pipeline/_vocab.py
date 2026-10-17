@@ -163,7 +163,8 @@ def in_initialless_script(text: str) -> bool:
 # ask the SAME question _pieces.is_leading_title asks -- measured
 # divergence before the move: 'Dr. Smith, Ed' (LISTED title 'Dr.') and
 # 'Xyz. Smith, Ed' (UNLISTED, H2-shaped) both read family 'Dr.
-# Smith'/'Xyz. Smith', given 'Ed' at the peel, because is_leading_title
+# Smith'/'Xyz. Smith', given 'Ed' at the peel (since #701 the listed
+# 'Dr.' then peels into the title, rules.md#H6), because is_leading_title
 # reads H2's shape and a bare `folded in lexicon.titles` lookup does
 # not -- but name_word_count's OWN count disagreed: 'Xyz.' counted as
 # a name word where 'Dr.' did not, so 'Xyz. Smith, Ed' alone flipped
