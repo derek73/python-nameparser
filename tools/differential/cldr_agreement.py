@@ -12,10 +12,10 @@ Wikidata corpus (build_wikidata_corpus.py, wikidata_agreement.json),
 which states the two fields CLDR's vocabulary merges or lacks, and the
 hand-written conventions table (build_conventions_corpus.py,
 conventions_agreement.json), which adds `honorific`, a word of address
-written after the name, scored inside `suffix`, and the native-script
+written after the name, scored inside `suffix`. The native-script
 Wikidata corpus (build_wikidata_native_corpus.py,
-wikidata_native_agreement.json), real names in their own scripts;
-"CLDR" below means any
+wikidata_native_agreement.json), real names in their own scripts, is a
+fifth source. "CLDR" below means any
 source wherever the rule is about fields. For each source the
 test fails on:
 
@@ -358,11 +358,11 @@ def locale_changes(rows: list[dict[str, Any]], pack: str,
 
 
 def unmapped(recorded: dict[str, dict[str, Any]],
-             rows: list[dict[str, Any]] | None = None) -> list[str]:
+             rows: list[dict[str, Any]]) -> list[str]:
     """Locale-record entries no pack's check reads -- a CLDR file no
     longer in LOCALE_FILES, or a rendering that is gone and names no
     CLDR file -- reported here as gone."""
-    packs = _key_packs(rows or [], recorded)
+    packs = _key_packs(rows, recorded)
     return [f"gone: {key} is recorded but no locale pack reads it"
             for key in sorted(recorded) if packs[key] is None]
 
@@ -382,8 +382,9 @@ def sources() -> dict[str, tuple[Path, Path]]:
 
 def locale_sources() -> dict[str, tuple[Path, Path]]:
     """The sources the locale view reads: name -> (fields file, locale
-    record), each also a source in sources() by the same name. CLDR's renderings take their pack from LOCALE_FILES, the
-    native-script Wikidata renderings from their own `pack`."""
+    record), each also a source in sources() by the same name. CLDR's
+    renderings take their pack from LOCALE_FILES, the native-script
+    Wikidata renderings from their own `pack`."""
     return {"CLDR": (FIELDS, LOCALE_RECORD),
             "Wikidata native": (NATIVE_FIELDS, NATIVE_LOCALE_RECORD)}
 
@@ -427,14 +428,14 @@ def main(argv: list[str] | None = None) -> int:
             write_record(current[name], record)
             print(f"recorded {len(current[name])} disagreeing renderings to "
                   f"{record.name} (accepting: {accepted or 'no change'})")
-        for name, (fields, record) in locale_sources().items():
-            _record_locale(name, load_rows(fields), record)
+        for name, (_, record) in locale_sources().items():
+            _record_locale(name, loaded[name][0], record)
         return 0
     problems: list[str] = []
     for name, (source_rows, record) in loaded.items():
         problems += _summary(name, source_rows, current[name], record)
         print()
-    for name, (fields, record) in locale_sources().items():
+    for name, (_, record) in locale_sources().items():
         problems += _locale_summary(name, loaded[name][0], record, set(current[name]))
     return 1 if problems else 0
 
@@ -471,8 +472,8 @@ def _locale_summary(name: str, rows: list[dict[str, Any]], record: Path,
         if not mine:  # nothing to print, but its recorded entries are still checked
             problems += locale_changes(rows, pack, recorded)
             continue
-        where = ", ".join(sorted({row["label"] if "pack" in row else row["file"]
-                                  for row in mine}))
+        where = ", ".join(sorted({row["file"] if row["file"] in LOCALE_FILES
+                                  else row["label"] for row in mine}))
         if not pack_available(pack):
             print(f"{pack:6} {where}: not measured (needs {_EXTRAS[pack]})")
             continue

@@ -4,9 +4,10 @@ A corpus with its own provenance (the roster, with each file's source and
 blind spot, is the table in tools/differential/README.md). Every other
 real-name corpus is Latin script but for Wikidata's Russian patronymics,
 and CLDR's native-script names are fictional, so the parser's
-script-conditional rules -- family-first order for Han, Hangul and kana,
-Korean surname segmentation, the CJK honorific peel -- had been tested
-against no real name. This corpus holds real names as Wikidata writes
+script-conditional readings -- family-first order for Han, Hangul and
+kana, Korean surname segmentation -- had been tested against no real
+name. It holds no honorific, so it does not exercise the CJK honorific
+peel; it shows only that the peel leaves plain names alone. This corpus holds real names as Wikidata writes
 them in Arabic, Hebrew, Devanagari, Bengali, Thai, Greek, Georgian,
 Armenian, Hangul, Han and kana, and Cyrillic beyond Russian. Wikidata is
 CC0.
@@ -37,7 +38,8 @@ P734 surname, P5056 patronymic). What this builder adds:
   deceased, or with at least MIN_SITELINKS sitelinks -- who state a given
   or family name and carry a label in that language, in MD5 order. A
   text (the person's P1559 in that language, or their label in it) is
-  used only if every letter in it is in the stratum's script: `mul`
+  used only if every letter and combining mark in it is in the
+  stratum's script (digits and punctuation are not asked): `mul`
   labels are Latin, and a Latin text would pass as a Hindi name.
 - Unspaced text is aligned by character. A Han, kana or Hangul text
   with no space (most of them) is aligned with the same rule over its
@@ -54,35 +56,39 @@ P734 surname, P5056 patronymic). What this builder adds:
 - The script decides the order. A Han, kana or Hangul text carries no
   shape: the parser reads those scripts family-first by itself, which
   is what the corpus is for. Pure katakana, which the parser leaves to
-  the declared order, and any other text are ordered as
-  build_wikidata_corpus.py orders them.
+  the declared order, and any other text are ordered by where the
+  surname stands, as build_wikidata_corpus.py orders them.
 
 A stratum that falls below its floor stops the build before anything is
 written, as does a query matching nothing or a response that is not what
 was asked for. A stratum's count says what was sampled, not how common
-the shape is. Its pool is sized from the yield measured on 2026-10-16;
-some pools are the whole population (Thailand, Kazakhstan, Bangladesh),
-and their floors are set below the quota for that reason. A pool short
-of its size stops the build unless the stratum is marked as its whole
-population.
+the shape is. Its pool is sized from the yield measured on 2026-10-16.
+Where the yield was thin (under about two and a half times the quota),
+or the pool is the whole population (Thailand, Kazakhstan, Bangladesh),
+the floor is set below the quota, leaving a margin a re-pool may lose.
+A pool short of its size stops the build unless the stratum is marked
+as its whole population, and so does a stratum so marked whose pool
+comes back full, since its population has then outgrown the mark.
 
 --lc-check compares each name, where its item states a Library of
 Congress authority id (P244), with the native-script variants (MARC 400
 $a) of that LC record, and prints per stratum how many LC confirms and
 which it splits differently. LC is a witness, never a source: the check
-writes nothing and filters nothing. LC's split is its comma (`הלוי,
+runs after the build has written its files, and adds nothing to them and
+filters nothing from them. LC's split is its comma (`הלוי,
 אהרן`) or, in CJK, a space (`이 병기`); most Han variants are written
 unspaced and give no split. Records are cached under
 $NAMEPARSER_TOOLS_CACHE/lc; an LCCN LC no longer has (HTTP 404) is
 counted as such and not cached.
 
 Blind to: everything the strict filter drops. Survivors are tidy names
-whose every word has a Wikidata item labelled in the script: Arabic
-nasab chains (`بن`), `آل` family names and kunyas are missing because
-most Arabic items state no family name, so the Arabic rows are mostly
+whose every word has a Wikidata item labelled in the script. Arabic
+nasab chains never align, since `بن` is not a connective in Arabic
+script, and `آل` family names and kunyas are missing because most
+Arabic items state no family name, so the Arabic rows are mostly
 two-word modern names; Chinese rows are names whose given name has an
-item, a minority; Japanese given-name items mostly carry kana readings,
-so kanji given names are thin; Devanagari, Bengali and Thai items are
+item, a minority; most Japanese items are refused because the
+given-name item holds only a kana reading; Devanagari, Bengali and Thai items are
 mostly labelled in Latin script only, so those strata are small. A
 transcribed foreign name written with the 间隔号 (·) never aligns.
 Urdu and Marathi are left out: 8 and 5 names of 600 aligned
@@ -135,7 +141,8 @@ _UKRAINIAN = (("ський", "ська"), ("цький", "цька"), ("ін", "
 class Language(NamedTuple):
     #: Label languages a text may come from (P1559 is matched by prefix).
     labels: tuple[str, ...]
-    #: Unicode character-name prefixes every letter of a text must have.
+    #: Unicode character-name prefixes every letter and combining mark of
+    #: a text must have.
     script: tuple[str, ...]
     feminine: tuple[tuple[str, str], ...] = ()
     #: The nameparser.locales pack the locale view also scores it under.
@@ -177,7 +184,8 @@ class Stratum(NamedTuple):
     #: 2026-10-16.
     pool: int
     #: The fewest names the build accepts; below it, it stops. Set below
-    #: the quota only where the pool is known to run short.
+    #: the quota where the yield is thin enough that a re-pool could
+    #: fall short, or the pool is the whole population.
     least: int | None = None
     #: Whether the query's whole population is smaller than `pool`. A
     #: pool short of `pool` stops the build unless this is set: a query
@@ -189,7 +197,8 @@ class Stratum(NamedTuple):
         return self.quota if self.least is None else self.least
 
 
-# The yields in the comments are names kept of 600 pooled, 2026-10-16.
+# The yields in the comments are names kept of 600 pooled, 2026-10-16,
+# unless the comment gives another denominator.
 STRATA = (
     Stratum("ko-kr", "Q884", "ko", 120, 300),           # 405
     Stratum("ka-ge", "Q230", "ka", 60, 150),            # 402
@@ -259,6 +268,9 @@ def pool(stratum: Stratum, refresh: bool) -> list[str]:
         raise ValueError(f"{stratum.label}: the query matched {len(qids)} people, "
                          f"fewer than its pool of {stratum.pool}; if that is now "
                          "the whole population, mark the stratum whole=True")
+    if len(qids) == stratum.pool and stratum.whole:
+        raise ValueError(f"{stratum.label}: marked whole=True, but the query filled "
+                         f"its pool of {stratum.pool}; drop whole=True")
     return qids
 
 
@@ -310,8 +322,9 @@ def align_chars(text: str,
 
 
 def _texts(person: dict[str, Any], language: Language) -> list[tuple[str, str]]:
-    """The person's written names in the language, P1559 first, each as
-    (text, its language), whitespace-normalized and deduplicated."""
+    """The person's written names in the language that are in its script,
+    P1559 first, each as (text, its language), whitespace-normalized and
+    deduplicated."""
     found = [(text, lang) for text, lang in statements(person, "P1559")
              if lang.split("-")[0] == language.labels[0].split("-")[0]]
     found += [(wikidata._label(person, lang), lang) for lang in language.labels]
@@ -375,8 +388,9 @@ def lccn(person: dict[str, Any]) -> str | None:
 
 def build(refresh: bool) -> tuple[list[dict[str, Any]], dict[str, str]]:
     """Every stratum's rows, and the LCCN of each person used who states
-    one; or ValueError naming each stratum below its floor, raised
-    before main() writes anything."""
+    one. Raises ValueError, before main() writes anything, naming each
+    stratum below its floor, or on a pooled person Wikidata reports
+    missing, or (from pool()) on a pool that is empty or the wrong size."""
     rows: list[dict[str, Any]] = []
     lccns: dict[str, str] = {}
     seen: set[str] = set()

@@ -239,6 +239,7 @@ def entities(ids: Iterable[str], props: str, refresh: bool,
     when given, limits the labels fetched to those languages: a famous
     person's item carries hundreds, and the cache holds every one."""
     ids = sorted(set(ids))
+    languages = tuple(languages)  # read once per batch: an iterator would run dry
     out: dict[str, Any] = {}
     for start in range(0, len(ids), BATCH):
         query = {"action": "wbgetentities", "ids": "|".join(ids[start:start + BATCH]),

@@ -154,6 +154,9 @@ def test_an_unspaced_pure_katakana_name_keeps_the_family_first_shape() -> None:
     row = _one(_person({"ja": "サトウハチロー"}, P734="Q2", P735="Q3"),
                _names("ja", Q2="サトウ", Q3="ハチロー"), "ja-jp")
     assert (row["order"], row["shape"]) == ("surnameFirst", wikidata.FAMILY_FIRST_SHAPE)
+    row = _one(_person({"ja": "ハチローサトウ"}, P734="Q2", P735="Q3"),
+               _names("ja", Q2="サトウ", Q3="ハチロー"), "ja-jp")
+    assert (row["order"], row["shape"]) == ("givenFirst", None)
 
 
 def test_a_one_word_name_outside_the_unspaced_scripts_is_never_split() -> None:
@@ -185,9 +188,26 @@ def test_the_native_name_wins_and_one_rendering_is_kept() -> None:
 
 
 def test_a_given_name_and_a_surname_are_both_required() -> None:
-    person = _person({"he": "אהרן"}, P735="Q3", P734="Q2")
+    person = _person({"he": "אהרן"}, P735="Q3", P734="Q2")    # no surname written
     assert native.renderings("Q1", person, _names("he", Q2="הלוי", Q3="אהרן"),
                              _STRATA["he-il"]) == []
+    person = _person({"ko": "김"}, P735="Q3", P734="Q2")       # no given name written
+    assert native.renderings("Q1", person, _names("ko", Q2="김", Q3="기영"),
+                             _STRATA["ko-kr"]) == []
+
+
+def test_a_name_in_a_variant_language_is_used() -> None:
+    # A zh-tw person may be labelled only in zh-hant.
+    row = _one(_person({"zh-hant": "李正中"}, P734="Q2", P735="Q3"),
+               _names("zh-hant", Q2="李", Q3="正中"), "zh-tw")
+    assert row["text"] == "李正中"
+
+
+def test_a_native_name_in_another_language_is_not_used() -> None:
+    # A ja P1559 on a Chinese stratum is not a Chinese name, even in Han.
+    person = _person({}, native_name=("李正中", "ja"), P734="Q2", P735="Q3")
+    assert native.renderings("Q1", person, _names("zh", Q2="李", Q3="正中"),
+                             _STRATA["zh-tw"]) == []
 
 
 # -- feminine surnames ---------------------------------------------------------------
@@ -203,6 +223,17 @@ def test_a_given_name_and_a_surname_are_both_required() -> None:
 ])
 def test_feminine_forms_by_language(language: str, male: str, female: str) -> None:
     assert wikidata.feminine(male, native.LANGUAGES[language].feminine) == female
+
+
+@pytest.mark.parametrize("text", ["Тарас Шевченко", "Оксана Полунін"])
+def test_a_womans_surname_still_matches_as_its_item_spells_it(text: str) -> None:
+    # The feminine forms are added to the item's spellings, not put in
+    # their place: a surname with no feminine form (Шевченко), or one a
+    # woman writes as the item does, still matches.
+    given, surname = text.split()
+    row = _one(_person({"uk": text}, female=True, P734="Q2", P735="Q3"),
+               _names("uk", Q2=surname, Q3=given), "uk-ua")
+    assert row["fields"]["surname"] == surname
 
 
 def test_a_womans_greek_surname_matches_its_feminine_form() -> None:
@@ -270,8 +301,9 @@ def test_a_deprecated_lccn_is_not_read() -> None:
 
 
 def test_a_query_names_the_strata_label_language() -> None:
-    assert 'FILTER(LANG(?own) = "zh")' in native.query(_STRATA["zh-cn"])
-    assert "LIMIT 800" in native.query(_STRATA["zh-cn"])
+    stratum = _STRATA["zh-cn"]
+    assert 'FILTER(LANG(?own) = "zh")' in native.query(stratum)
+    assert f"LIMIT {stratum.pool}" in native.query(stratum)
 
 
 # -- the network and the cache ------------------------------------------------
@@ -302,6 +334,16 @@ def test_a_pool_short_of_its_size_stops_the_build_unless_it_is_the_whole(
                                          "than its pool of 300"):
         native.pool(_STRATA["ko-kr"], refresh=False)
     assert len(native.pool(_STRATA["th-th"], refresh=False)) == 5
+
+
+def test_a_stratum_marked_whole_whose_pool_fills_stops_the_build(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # The population has outgrown the mark, which would otherwise go on
+    # excusing a short pool.
+    whole = native.Stratum("w", "Q869", "th", 1, 3, whole=True)
+    _serve(monkeypatch, tmp_path, _results(3))
+    with pytest.raises(ValueError, match="w: marked whole=True, but the query filled"):
+        native.pool(whole, refresh=False)
 
 
 def test_entities_asks_only_for_the_languages_labels(
@@ -343,6 +385,19 @@ def test_any_other_lc_error_stops_the_check(
     caught.value.close()  # unclosed, it warns on 3.14 and fails the run
 
 
+def test_the_lc_check_tallies_each_name_once(monkeypatch: pytest.MonkeyPatch,
+                                            capsys: pytest.CaptureFixture[str]) -> None:
+    rows = [{"file": q, "label": "he-il", "text": "אהרן הלוי",
+             "fields": {"given": "אהרן", "surname": "הלוי"}} for q in ("Q1", "Q2", "Q3")]
+    variants = {"n2": ["הלוי, אהרן"], "n3": ["אהרן, הלוי"]}
+    monkeypatch.setattr(native, "lc_variants", lambda lccn, refresh: variants[lccn])
+    native.lc_check(rows, {"Q2": "n2", "Q3": "n3"}, refresh=False)
+    out = capsys.readouterr().out
+    assert ("names 3, with an LCCN 2, no LC record 0, LC splits it 2, agree 1"
+            in out)
+    assert "1 split differently" in out and "Q3" in out
+
+
 def test_the_lc_check_counts_a_stale_lccn(monkeypatch: pytest.MonkeyPatch,
                                          capsys: pytest.CaptureFixture[str]) -> None:
     row = {"file": "Q1", "label": "he-il", "text": "אהרן הלוי",
@@ -375,6 +430,11 @@ def test_an_lc_record_yields_its_variants() -> None:
     ("이병기", ["이병기", "이 병기"], ("이", "병기")),          # a CJK space
     ("李秉岐", ["李秉岐"], None),                            # unspaced: no split
     ("אהרן הלוי", ["Haleṿi, Aharon"], None),               # other letters
+    ("إبراهيم صالح", ["صالح، إبراهيم"], ("صالح", "إبراهيم")),  # the Arabic comma
+    # the comma's words in the text's own order: LC's family still leads
+    ("إبراهيم صالح", ["إبراهيم، صالح"], ("إبراهيم", "صالح")),
+    # no comma, and the text is spaced: a space splits only unspaced CJK
+    ("إبراهيم صالح", ["إبراهيم صالح"], None),
 ])
 def test_lc_splits_a_name_by_its_comma_or_a_cjk_space(
         text: str, variants: list[str], split: tuple[str, str] | None) -> None:
@@ -403,7 +463,7 @@ def test_every_committed_text_is_in_its_strata_script() -> None:
 
 def test_every_committed_pack_is_a_locale_pack() -> None:
     packs = {row["pack"] for row in _ROWS if "pack" in row}
-    assert packs == {"ZH", "JA"}
+    assert packs, "no committed rendering names a pack: the locale view reads none"
     assert {p.lower() for p in packs} <= set(locales.available())
     # and one the locale view measures, or its rows are read by nothing
     assert packs <= set(agreement._packs())

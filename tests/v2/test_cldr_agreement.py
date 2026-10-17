@@ -328,7 +328,15 @@ def test_the_summary_counts_each_role_and_matches_the_record(
                    for line in out.splitlines() if line.strip()), role
     for source in agreement.sources():
         assert f"{source} view matches the record" in out
-    assert "locale view matches the record" in out
+    for source in agreement.locale_sources():
+        assert f"{source} locale view matches the record" in out
+    # each locale view prints its own default count, not another source's
+    native = out.split("Wikidata native locale view", 1)[1]
+    rows = agreement.load_rows(agreement.NATIVE_FIELDS)
+    wrong = agreement.disagreements(rows)
+    zh = agreement.locale_rows(rows, "ZH")
+    before = sum(agreement.rendering_key(r) not in wrong for r in zh)
+    assert f"ZH     zh-cn, zh-tw: {before}/{len(zh)} default" in native
 
 
 @pytest.mark.parametrize("text", [
@@ -389,9 +397,11 @@ def test_a_pack_parser_keeps_the_family_first_order_of_its_shape() -> None:
 def test_a_recorded_entry_whose_file_left_the_table_is_reported_gone() -> None:
     # No pack's check reads such an entry, so without this it would sit
     # in the record unguarded -- and survive every re-record.
-    [message] = agreement.unmapped({"zh/nativeG/givenFirst": {}, "xx/nativeG/sorting": {}})
+    [message] = agreement.unmapped({"zh/nativeG/givenFirst": {}, "xx/nativeG/sorting": {}},
+                                   [])
     assert message.startswith("gone: xx/nativeG/sorting")
-    assert agreement.unmapped(agreement.read_record(agreement.LOCALE_RECORD)) == []
+    assert agreement.unmapped(agreement.read_record(agreement.LOCALE_RECORD),
+                              agreement.load_rows()) == []
 
 
 def test_a_re_record_drops_entries_whose_file_left_the_table(
@@ -415,7 +425,8 @@ def test_a_re_record_drops_entries_whose_file_left_the_table(
     # and the re-record wrote every source's record, not CLDR's alone,
     # and every locale record -- each matching the committed one
     # (an unmeasured pack's entries are carried over only from the old
-    # record, which here is empty, so only measured packs are compared)
+    # record, which here holds nothing of a pack's, so only measured
+    # packs are compared)
     for name, (fields, written) in redirected.items():
         assert agreement.read_record(written) == agreement.read_record(real[name][1]), name
     for name, (fields, written) in redirected_locale.items():
