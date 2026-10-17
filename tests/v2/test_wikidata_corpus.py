@@ -298,6 +298,17 @@ def test_build_stops_before_writing_when_a_stratum_falls_short(
         build.build(refresh=False)
 
 
+def test_a_query_takes_as_many_people_as_the_pool_check_expects() -> None:
+    assert f"LIMIT {build.POOL_FACTOR * _RU.quota}" in build.query(_RU)
+    assert _RU.size == build.POOL_FACTOR * _RU.quota
+
+
+def test_the_strata_marked_whole_are_the_ones_measured_short() -> None:
+    # Pooled 2026-10-16: Iceland 270 of 600, Malaysia 17 of 240; the others
+    # filled. A live rebuild is the only other check of these marks.
+    assert {s.label for s in build.STRATA if s.whole} == {"patronymic-is", "patronymic-my"}
+
+
 # -- the network and the cache ------------------------------------------------
 
 def _serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:

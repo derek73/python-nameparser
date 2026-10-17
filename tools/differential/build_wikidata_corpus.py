@@ -189,11 +189,11 @@ STRATA = (
     Stratum("patronymic-ru", "Q159", "P5056", "ru", 110),
     Stratum("patronymic-su", "Q15180", "P5056", "ru", 60),
     Stratum("patronymic-ri", "Q34266", "P5056", "ru", 40),
-    # Icelandic public figures with a P5056 statement: 270 of a possible
-    # 600 on 2026-10-16, so the pool is the whole population.
+    # Icelandic public figures with a P5056 statement: 270 of a pool of
+    # 600 on 2026-10-16, so the population is smaller than the pool.
     Stratum("patronymic-is", "Q189", "P5056", "is", 100, whole=True),
     # 17 Malaysian public figures with a P5056 statement on 2026-10-16,
-    # 9 aligning: the pool is the limit, and the floor leaves 3 to lose.
+    # 9 aligning: the population is the limit, and the floor leaves 3 to lose.
     Stratum("patronymic-my", "Q833", "P5056", "ms", 40, least=6, whole=True),
 )
 
