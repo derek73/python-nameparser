@@ -94,12 +94,10 @@ from __future__ import annotations
 
 import argparse
 import sys
-import time
 import urllib.parse
-import urllib.request
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Protocol
 
 # The shared cache and file helpers (corpus_build.py), found by putting
 # this directory on sys.path: see corpus_build's docstring for why.
@@ -212,12 +210,9 @@ def _checked(body: bytes | str, source: str, kind: str) -> dict[str, Any]:
 
 def _fetch(url: str, data: bytes | None, refresh: bool, kind: str) -> dict[str, Any]:
     def fetch() -> bytes:
-        headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
-        request = urllib.request.Request(url, data=data, headers=headers)
-        with urllib.request.urlopen(request, timeout=90) as response:
-            body: bytes = response.read()
-        time.sleep(1)  # sequential, and gentle
-        return body
+        return corpus_build.fetch_bytes(
+            url, user_agent=USER_AGENT, timeout=90, data=data,
+            headers={"Accept": "application/json"}, delay=1)  # sequential, and gentle
     return corpus_build.cached_json(
         corpus_build.cache_dir("wikidata"), url + "\n" + (data or b"").decode(), url,
         fetch, lambda body, source: _checked(body, source, kind), refresh)
@@ -450,25 +445,49 @@ def renderings(qid: str, person: dict[str, Any], names: dict[str, Any],
     return rows
 
 
-def build(refresh: bool) -> list[dict[str, Any]]:
+class _Counted(Protocol):
+    """What the driver reads of a stratum; each builder's own NamedTuple."""
+    label: str
+    quota: int
+
+    @property
+    def floor(self) -> int: ...
+
+
+def build_strata(strata: Iterable[_Counted], *, props: Iterable[str], label_width: int,
+                 refresh: bool,
+                 pool: Callable[[Any, bool], list[str]],
+                 entities: Callable[[list[str], Any, bool], dict[str, Any]],
+                 renderings: Callable[[str, dict[str, Any], dict[str, Any], Any],
+                                      list[dict[str, Any]]],
+                 keep: Callable[[str, dict[str, Any]], None] | None = None,
+                 ) -> list[dict[str, Any]]:
     """Every stratum's rows, or ValueError naming each stratum that fell
-    below its floor -- raised before main() writes anything."""
+    below its floor -- raised before main() writes anything -- or on a
+    pooled person Wikidata reports missing. Both Wikidata builders run
+    their strata through here, so a guard on the loop (a person taken
+    once across strata, the missing-person stop, the floor) is written
+    once; what differs is passed in: how a stratum is pooled, how
+    entities are fetched for it (`entities(ids, stratum, refresh)`), how
+    a person is rendered, and `keep(qid, person)`, called for each
+    person a stratum takes. `props` are the properties whose values are
+    the name-part items to fetch."""
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
     short: list[str] = []
-    for stratum in STRATA:
+    for stratum in strata:
         pooled = pool(stratum, refresh)
         qids = [q for q in pooled if q not in seen]
-        people = entities(qids, "labels|claims", refresh)
+        people = entities(qids, stratum, refresh)
         # A pooled person must exist; a deleted name-part item is a fact
         # about the data, and only refuses the person stating it.
         stale = sorted(q for q in qids if "missing" in people[q])
         if stale:
             raise ValueError(f"{stratum.label}: WDQS pooled items Wikidata reports "
                              f"missing: {', '.join(stale[:10])}; rerun with --refresh")
-        parts = {v for p in people.values() for prop in PARTS
+        parts = {v for p in people.values() for prop in props
                  for v in statements(p, prop)}
-        names = entities(parts, "labels|claims", refresh)
+        names = entities(sorted(parts), stratum, refresh)
         taken = refused = 0
         for qid in qids:
             if taken == stratum.quota:
@@ -479,8 +498,10 @@ def build(refresh: bool) -> list[dict[str, Any]]:
                 continue
             seen.add(qid)
             rows.extend(mine)
+            if keep is not None:
+                keep(qid, people[qid])
             taken += 1
-        print(f"{stratum.label:15} {taken:3}/{stratum.quota} names "
+        print(f"{stratum.label:{label_width}} {taken:3}/{stratum.quota} names "
               f"({refused} refused, {len(pooled) - len(qids)} taken by an "
               f"earlier stratum, {len(pooled)} pooled)")
         if taken < stratum.floor:
@@ -488,6 +509,14 @@ def build(refresh: bool) -> list[dict[str, Any]]:
     if short:
         raise ValueError(f"strata below their floor, nothing written: {', '.join(short)}")
     return rows
+
+
+def build(refresh: bool) -> list[dict[str, Any]]:
+    """Every stratum's rows; see build_strata."""
+    return build_strata(
+        STRATA, props=PARTS, label_width=15, refresh=refresh, pool=pool,
+        entities=lambda ids, stratum, refresh: entities(ids, "labels|claims", refresh),
+        renderings=renderings)
 
 
 def main() -> None:

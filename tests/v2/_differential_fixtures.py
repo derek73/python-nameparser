@@ -9,6 +9,7 @@ pytest's sense, and several modules want them by name.
 """
 import importlib.util
 import json
+import time
 import urllib.request
 from pathlib import Path
 from types import ModuleType
@@ -76,10 +77,11 @@ class _Response:
 
 
 def serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:
-    """Answer every urlopen with `body`, cache into `tmp_path`, and return
-    the list each fetched URL is appended to: the build scripts' network,
-    offline."""
+    """Answer every urlopen with `body` and skip every sleep, cache into
+    `tmp_path`, and return the list each fetched URL is appended to: the
+    build scripts' network, offline."""
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(time, "sleep", lambda seconds: None)  # the builders' politeness delay
     fetched: list[str] = []
 
     def urlopen(request: urllib.request.Request, timeout: int) -> _Response:

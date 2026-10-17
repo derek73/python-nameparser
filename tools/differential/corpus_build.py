@@ -1,10 +1,11 @@
-"""What the labeled-corpus builders share: the cache, the files they write.
+"""What the labeled-corpus builders share: the fetch, the cache, the files they write.
 
 build_cldr_corpus.py, build_gnd_corpus.py and build_wikidata_corpus.py
 each write a corpus file and a fields file in the same formats, and GND
 and Wikidata, the two that cache, keep their raw responses outside the
-repository the same way. Not a builder itself: it writes nothing on
-import, and has no main().
+repository the same way. Every builder's network fetch goes through
+`fetch_bytes`. Not a builder itself: it writes nothing on import, and has
+no main().
 
 A builder imports it by name, after appending its own directory to
 sys.path: that directory is usually sys.path[0] when a builder runs as a
@@ -19,7 +20,9 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from collections.abc import Callable, Iterable
+import time
+import urllib.request
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +36,23 @@ def cache_dir(name: str) -> Path:
     path = root / name
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def fetch_bytes(url: str, *, user_agent: str, timeout: int, data: bytes | None = None,
+                headers: Mapping[str, str] | None = None, delay: float = 0) -> bytes:
+    """The response body of `url` (a POST when `data` is given), sent
+    with the builder's User-Agent and any further `headers`, then
+    `delay` seconds of sleep: a builder that fetches in a row passes
+    one, so that it stays gentle on the source. Raises what urllib
+    raises. Looks up `urllib.request.urlopen` at call time, which is
+    what lets the tests answer every fetch from one stub."""
+    request = urllib.request.Request(
+        url, data=data, headers={"User-Agent": user_agent, **(headers or {})})
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        body: bytes = response.read()
+    if delay:
+        time.sleep(delay)
+    return body
 
 
 def parse_json(body: bytes | str, source: str) -> object:

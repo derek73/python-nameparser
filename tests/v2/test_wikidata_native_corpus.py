@@ -317,8 +317,6 @@ def test_a_query_names_the_strata_label_language() -> None:
 # -- the network and the cache ------------------------------------------------
 
 def _serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:
-    # native imports build_wikidata_corpus by name, not as load_tool's copy
-    monkeypatch.setattr(native.wikidata.time, "sleep", lambda seconds: None)
     return serve(monkeypatch, tmp_path, body)
 
 

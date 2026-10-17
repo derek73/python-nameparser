@@ -306,7 +306,6 @@ def test_a_query_takes_as_many_people_as_the_pool_check_expects() -> None:
 # -- the network and the cache ------------------------------------------------
 
 def _serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:
-    monkeypatch.setattr(build.time, "sleep", lambda seconds: None)
     return serve(monkeypatch, tmp_path, body)
 
 

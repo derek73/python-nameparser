@@ -91,7 +91,6 @@ import argparse
 import hashlib
 import sys
 import urllib.parse
-import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -251,10 +250,7 @@ def _get_json(params: dict[str, str | int], refresh: bool) -> dict[str, Any]:
     url = f"{SEARCH}?{urllib.parse.urlencode(params)}"
 
     def fetch() -> bytes:
-        request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(request, timeout=120) as response:
-            body: bytes = response.read()
-        return body
+        return corpus_build.fetch_bytes(url, user_agent=USER_AGENT, timeout=120)
     return corpus_build.cached_json(corpus_build.cache_dir("gnd"), url, url,
                                     fetch, _checked, refresh)
 
