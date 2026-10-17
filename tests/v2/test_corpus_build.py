@@ -69,7 +69,7 @@ def test_fetch_bytes_posts_when_given_data(monkeypatch: pytest.MonkeyPatch) -> N
     assert request.get_method() == "POST" and request.data == b"a=b"
 
 
-def test_fetch_bytes_sleeps_after_the_response_only_when_asked(
+def test_fetch_bytes_sleeps_only_when_given_a_delay(
         monkeypatch: pytest.MonkeyPatch) -> None:
     slept: list[float] = []
     _record_fetches(monkeypatch)

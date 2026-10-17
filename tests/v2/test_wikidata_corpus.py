@@ -305,10 +305,6 @@ def test_a_query_takes_as_many_people_as_the_pool_check_expects() -> None:
 
 # -- the network and the cache ------------------------------------------------
 
-def _serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:
-    return serve(monkeypatch, tmp_path, body)
-
-
 def _results(n: int) -> bytes:
     return json.dumps({"results": {"bindings": [
         {"item": {"value": f"http://www.wikidata.org/entity/Q{7747 + i}"}}
@@ -319,9 +315,22 @@ def _results(n: int) -> bytes:
 _RESULTS = _results(build.POOL_FACTOR)
 
 
+def test_a_query_is_posted_as_json_and_the_fetch_waits_after_it(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    requests: list[Any] = []
+    sleeps: list[float] = []
+    serve(monkeypatch, tmp_path, _RESULTS, requests=requests, sleeps=sleeps)
+    build.pool(_RU, refresh=False)
+    [request] = requests
+    assert request.get_method() == "POST" and b"query=" in request.data
+    assert request.get_header("Accept") == "application/json"
+    assert request.get_header("User-agent") == build.USER_AGENT
+    assert sleeps == [1]
+
+
 def test_a_cached_response_is_read_without_fetching(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    fetched = _serve(monkeypatch, tmp_path, _RESULTS)
+    fetched = serve(monkeypatch, tmp_path, _RESULTS)
     assert build.pool(_RU, refresh=False)[0] == "Q7747"
     assert len(build.pool(_RU, refresh=False)) == build.POOL_FACTOR
     assert len(fetched) == 1
@@ -335,7 +344,7 @@ def test_a_cached_response_is_read_without_fetching(
     b'<html>Query timeout</html>'])
 def test_a_response_that_is_not_what_was_asked_for_is_not_cached(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> None:
-    _serve(monkeypatch, tmp_path, body)
+    serve(monkeypatch, tmp_path, body)
     with pytest.raises(ValueError, match="not JSON|has no 'entities'.*maxlag"):
         build.entities(["Q1"], "labels", refresh=False)
     assert not list((tmp_path / "wikidata").iterdir())
@@ -343,7 +352,7 @@ def test_a_response_that_is_not_what_was_asked_for_is_not_cached(
 
 def test_a_damaged_cache_file_is_named(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, _RESULTS)
+    serve(monkeypatch, tmp_path, _RESULTS)
     build.pool(_RU, refresh=False)
     [cached] = (tmp_path / "wikidata").iterdir()
     cached.write_text('{"results": {"bind', encoding="utf-8")
@@ -353,14 +362,14 @@ def test_a_damaged_cache_file_is_named(
 
 def test_a_query_matching_nothing_stops_the_build(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, b'{"results": {"bindings": []}}')
+    serve(monkeypatch, tmp_path, b'{"results": {"bindings": []}}')
     with pytest.raises(ValueError, match="patronymic-ru: the query matches nothing"):
         build.pool(_RU, refresh=False)
 
 
 def test_a_pool_short_of_its_size_stops_the_build_unless_it_is_the_whole(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, _results(3))
+    serve(monkeypatch, tmp_path, _results(3))
     with pytest.raises(ValueError, match="patronymic-ru: the query matched 3 people, "
                                          "fewer than its pool of 6"):
         build.pool(_RU, refresh=False)
@@ -369,7 +378,7 @@ def test_a_pool_short_of_its_size_stops_the_build_unless_it_is_the_whole(
 
 def test_a_stratum_marked_whole_whose_pool_fills_stops_the_build(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, _results(build.POOL_FACTOR))
+    serve(monkeypatch, tmp_path, _results(build.POOL_FACTOR))
     with pytest.raises(ValueError, match="patronymic-ru: marked whole=True, but the "
                                          "query filled"):
         build.pool(_RU._replace(whole=True), refresh=False)
@@ -377,7 +386,7 @@ def test_a_stratum_marked_whole_whose_pool_fills_stops_the_build(
 
 def test_an_item_the_response_leaves_out_stops_the_build(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, b'{"entities": {"Q1": {"id": "Q1"}}}')
+    serve(monkeypatch, tmp_path, b'{"entities": {"Q1": {"id": "Q1"}}}')
     with pytest.raises(ValueError, match="left out Q2"):
         build.entities(["Q1", "Q2"], "labels", refresh=False)
 

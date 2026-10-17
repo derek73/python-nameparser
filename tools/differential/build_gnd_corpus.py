@@ -95,7 +95,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NamedTuple
 
-# The shared cache and file helpers (corpus_build.py), found by putting
+# The shared fetch, cache and file helpers (corpus_build.py), found by putting
 # this directory on sys.path: see corpus_build's docstring for why.
 _HERE = str(Path(__file__).resolve().parent)
 if _HERE not in sys.path:

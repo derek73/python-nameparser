@@ -1,10 +1,10 @@
 """What the labeled-corpus builders share: the fetch, the cache, the files they write.
 
-build_cldr_corpus.py, build_gnd_corpus.py and build_wikidata_corpus.py
-each write a corpus file and a fields file in the same formats, and GND
-and Wikidata, the two that cache, keep their raw responses outside the
-repository the same way. Every builder's network fetch goes through
-`fetch_bytes`. Not a builder itself: it writes nothing on import, and has
+The builders (build_cldr_corpus.py, build_gnd_corpus.py,
+build_wikidata_corpus.py and build_wikidata_native_corpus.py) each write
+a corpus file and a fields file in the same formats; every one but CLDR
+caches its raw responses outside the repository the same way. Every
+builder's network fetch goes through `fetch_bytes`. Not a builder itself: it writes nothing on import, and has
 no main().
 
 A builder imports it by name, after appending its own directory to

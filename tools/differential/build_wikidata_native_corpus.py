@@ -358,8 +358,9 @@ def lccn(person: dict[str, Any]) -> str | None:
 
 def build(refresh: bool) -> tuple[list[dict[str, Any]], dict[str, str]]:
     """Every stratum's rows, and the LCCN of each person used who states
-    one. Raises ValueError, before main() writes anything, naming each
-    stratum below its floor, or on a pooled person Wikidata reports
+    one. The loop is `wikidata.build_strata`, shared with the parent
+    builder. Raises ValueError, before main() writes anything, naming
+    each stratum below its floor, or on a pooled person Wikidata reports
     missing, or (from pool()) on a pool that is empty or the wrong size."""
     lccns: dict[str, str] = {}
 

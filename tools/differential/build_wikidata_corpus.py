@@ -97,9 +97,9 @@ import sys
 import urllib.parse
 from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Any, NamedTuple, Protocol
+from typing import Any, NamedTuple, Protocol, TypeVar
 
-# The shared cache and file helpers (corpus_build.py), found by putting
+# The shared fetch, cache and file helpers (corpus_build.py), found by putting
 # this directory on sys.path: see corpus_build's docstring for why.
 _HERE = str(Path(__file__).resolve().parent)
 if _HERE not in sys.path:
@@ -446,19 +446,24 @@ def renderings(qid: str, person: dict[str, Any], names: dict[str, Any],
 
 
 class _Counted(Protocol):
-    """What the driver reads of a stratum; each builder's own NamedTuple."""
-    label: str
-    quota: int
-
+    """What the driver reads of a stratum; each builder's own NamedTuple.
+    Read-only properties, since a NamedTuple's fields cannot be set."""
+    @property
+    def label(self) -> str: ...
+    @property
+    def quota(self) -> int: ...
     @property
     def floor(self) -> int: ...
 
 
-def build_strata(strata: Iterable[_Counted], *, props: Iterable[str], label_width: int,
+S = TypeVar("S", bound=_Counted)
+
+
+def build_strata(strata: Iterable[S], *, props: Iterable[str], label_width: int,
                  refresh: bool,
-                 pool: Callable[[Any, bool], list[str]],
-                 entities: Callable[[list[str], Any, bool], dict[str, Any]],
-                 renderings: Callable[[str, dict[str, Any], dict[str, Any], Any],
+                 pool: Callable[[S, bool], list[str]],
+                 entities: Callable[[list[str], S, bool], dict[str, Any]],
+                 renderings: Callable[[str, dict[str, Any], dict[str, Any], S],
                                       list[dict[str, Any]]],
                  keep: Callable[[str, dict[str, Any]], None] | None = None,
                  ) -> list[dict[str, Any]]:
