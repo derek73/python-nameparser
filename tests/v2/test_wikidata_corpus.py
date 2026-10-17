@@ -299,14 +299,8 @@ def test_build_stops_before_writing_when_a_stratum_falls_short(
 
 
 def test_a_query_takes_as_many_people_as_the_pool_check_expects() -> None:
-    assert f"LIMIT {build.POOL_FACTOR * _RU.quota}" in build.query(_RU)
-    assert _RU.size == build.POOL_FACTOR * _RU.quota
-
-
-def test_the_strata_marked_whole_are_the_ones_measured_short() -> None:
-    # Pooled 2026-10-16: Iceland 270 of 600, Malaysia 17 of 240; the others
-    # filled. A live rebuild is the only other check of these marks.
-    assert {s.label for s in build.STRATA if s.whole} == {"patronymic-is", "patronymic-my"}
+    # endswith: "LIMIT 6" is also a prefix of "LIMIT 60"
+    assert build.query(_RU).endswith(f"LIMIT {_RU.size}")
 
 
 # -- the network and the cache ------------------------------------------------

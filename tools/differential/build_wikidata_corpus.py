@@ -166,10 +166,11 @@ class Stratum(NamedTuple):
     language: str     # the language its people's names are written in
     quota: int
     #: The fewest names the build accepts; below it, it stops. Set below
-    #: the quota only where the pool is known to run short.
+    #: the quota only where the names that align are known to run short of it.
     least: int | None = None
     #: Whether the query's whole population is smaller than `size`; a
-    #: pool short of `size` stops the build unless this is set.
+    #: pool short of `size` stops the build unless this is set, and a full
+    #: pool stops it when it is.
     whole: bool = False
 
     @property
