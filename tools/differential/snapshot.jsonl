@@ -283,7 +283,7 @@
 {"name": "Balóch Karima Mehráb", "order": "FAMILY_FIRST", "given": "Karima", "middle": "Mehráb", "family": "Balóch", "initials": "K. M. B."}
 {"name": "Balóch Wj. Monir Mómen Monir Mómen", "order": "FAMILY_FIRST", "given": "Wj.", "middle": "Monir Mómen Monir Mómen", "family": "Balóch", "initials": "W. M. M. M. M. B."}
 {"name": "Bapak Adinata, Dwi Putro bin MP", "order": "FAMILY_FIRST", "given": "Dwi", "middle": "Putro", "family": "bin Bapak Adinata", "suffix": "MP", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. P. B. A."}
-{"name": "Bapak Dwi Putro bin Adinata MP", "given": "Bapak", "middle": "Dwi Putro", "family": "bin Adinata", "suffix": "MP", "initials": "B. D. P. A."}
+{"name": "Bapak Dwi Putro bin Adinata MP", "title": "Bapak", "given": "Dwi", "middle": "Putro", "family": "bin Adinata", "suffix": "MP", "initials": "D. P. A."}
 {"name": "Barbara Brukalska", "given": "Barbara", "family": "Brukalska", "initials": "B. B."}
 {"name": "Barbara Scharf", "given": "Barbara", "family": "Scharf", "initials": "B. S."}
 {"name": "Barbara Scharf, CPPM", "given": "Barbara", "family": "Scharf", "suffix": "CPPM", "initials": "B. S."}
@@ -2402,7 +2402,7 @@
 {"name": "Ospina Pérez, Mariano", "given": "Mariano", "family": "Ospina Pérez", "initials": "M. O. P."}
 {"name": "Otto III.", "given": "Otto", "suffix": "III.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "O."}
 {"name": "Outrein, Johannes d'", "given": "Johannes", "middle": "d'", "family": "Outrein", "initials": "J. d. O."}
-{"name": "Owura Bertram Wilberforce Henry Robert Wooster MP", "given": "Owura", "middle": "Bertram Wilberforce Henry Robert", "family": "Wooster", "suffix": "MP", "initials": "O. B. W. H. R. W."}
+{"name": "Owura Bertram Wilberforce Henry Robert Wooster MP", "title": "Owura", "given": "Bertram", "middle": "Wilberforce Henry Robert", "family": "Wooster", "suffix": "MP", "initials": "B. W. H. R. W."}
 {"name": "Ozaki, Shirō", "given": "Shirō", "family": "Ozaki", "initials": "S. O."}
 {"name": "Ozawa, Seiji", "given": "Seiji", "family": "Ozawa", "initials": "S. O."}
 {"name": "Ozoliņš Pēteris", "order": "FAMILY_FIRST", "given": "Pēteris", "family": "Ozoliņš", "initials": "P. O."}
