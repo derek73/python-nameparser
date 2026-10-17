@@ -96,8 +96,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NamedTuple
 
-# The shared cache and file helpers (corpus_build.py). sys.path[0] is
-# this directory when run as a script; the tests load this module by path.
+# The shared cache and file helpers (corpus_build.py), found by putting
+# this directory on sys.path: see corpus_build's docstring for why.
 _HERE = str(Path(__file__).resolve().parent)
 if _HERE not in sys.path:
     sys.path.append(_HERE)

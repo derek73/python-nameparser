@@ -1,15 +1,18 @@
 """What the labeled-corpus builders share: the cache, the files they write.
 
 build_cldr_corpus.py, build_gnd_corpus.py and build_wikidata_corpus.py
-each write a corpus file and a fields file in the same formats, and the
-two that query a live service cache its raw responses outside the
+each write a corpus file and a fields file in the same formats, and GND
+and Wikidata, the two that cache, keep their raw responses outside the
 repository the same way. Not a builder itself: it writes nothing on
 import, and has no main().
 
-A builder imports it by name. Run as a script, a builder's own directory
-is sys.path[0]; loaded by path in the tests (load_tool), it is not, so
-each builder appends its directory first (append, not insert, so nothing
-here can shadow another module of the same name).
+A builder imports it by name, after appending its own directory to
+sys.path: that directory is usually sys.path[0] when a builder runs as a
+script, but not under -P or PYTHONSAFEPATH (which AGENTS.md recommends
+for comparisons) nor when the tests load a builder by path. It is
+appended rather than inserted so that it cannot shadow a stdlib or
+installed module; the cost is that an earlier `corpus_build` on sys.path
+would shadow this one, and none exists.
 """
 from __future__ import annotations
 
@@ -71,9 +74,11 @@ def corpus_lines(rows: Iterable[dict[str, Any]]) -> list[str]:
         if shape is not None and not isinstance(shape, int):
             raise TypeError(f"shape must be an int or None, not {shape!r}")
         pairs.add((str(row["text"]), shape))
+    # An untagged line sorts before every tagged one of the same text, so
+    # the order never rests on set iteration (shape 0 would tie with None).
     return [json.dumps(text, ensure_ascii=False) if shape is None
             else json.dumps({"name": text, "shape": shape}, ensure_ascii=False)
-            for text, shape in sorted(pairs, key=lambda p: (p[0], p[1] or 0))]
+            for text, shape in sorted(pairs, key=lambda p: (p[0], -1 if p[1] is None else p[1]))]
 
 
 def fields_lines(rows: Iterable[dict[str, Any]]) -> list[str]:
@@ -91,6 +96,10 @@ def fields_lines(rows: Iterable[dict[str, Any]]) -> list[str]:
 
 
 def write_corpus(rows: list[dict[str, Any]], corpus: Path, fields: Path) -> None:
-    """Write the corpus file and the fields file, always together."""
-    corpus.write_text("\n".join(corpus_lines(rows)) + "\n", encoding="utf-8")
-    fields.write_text("\n".join(fields_lines(rows)) + "\n", encoding="utf-8")
+    """Write the corpus file and the fields file. Both are built before
+    either is written, so a refused row (a duplicate rendering, a bad
+    shape) leaves the committed pair as it was."""
+    corpus_text = "\n".join(corpus_lines(rows)) + "\n"
+    fields_text = "\n".join(fields_lines(rows)) + "\n"
+    corpus.write_text(corpus_text, encoding="utf-8")
+    fields.write_text(fields_text, encoding="utf-8")

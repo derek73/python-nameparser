@@ -22,9 +22,9 @@ Writes three files beside this script, always together:
   compares it by the same rules.
 - wikidata_LICENSE -- the CC0 statement and the source credit.
 
-Raw responses are cached outside the repository, in
-$NAMEPARSER_TOOLS_CACHE or ~/.cache/nameparser-tools (as
-tools/name_usage.py does), so a rebuild reads the same items until
+Raw responses are cached outside the repository, in a wikidata/
+directory under $NAMEPARSER_TOOLS_CACHE (default
+~/.cache/nameparser-tools, as tools/name_usage.py uses), so a rebuild reads the same items until
 --refresh fetches them again. Wikidata changes constantly; the QID on
 each fields line is the provenance.
 
@@ -99,8 +99,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, NamedTuple
 
-# The shared cache and file helpers (corpus_build.py). sys.path[0] is
-# this directory when run as a script; the tests load this module by path.
+# The shared cache and file helpers (corpus_build.py), found by putting
+# this directory on sys.path: see corpus_build's docstring for why.
 _HERE = str(Path(__file__).resolve().parent)
 if _HERE not in sys.path:
     sys.path.append(_HERE)
