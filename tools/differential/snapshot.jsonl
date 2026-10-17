@@ -35,6 +35,7 @@
 {"name": "Abu Bakar", "given": "Abu", "family": "Bakar", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "A. B."}
 {"name": "Abu Bakar Salim", "given": "Abu Bakar", "family": "Salim", "initials": "A. B. S."}
 {"name": "Abu Bakr Al Baghdadi, MD", "given": "Abu Bakr", "family": "Al Baghdadi", "suffix": "MD", "initials": "A. B. B."}
+{"name": "Abu Karim", "given": "Abu", "family": "Karim", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "A. K."}
 {"name": "Abu-'l-Fidāʾ Ismāʿīl Ibn-ʿAlī", "given": "Abu-'l-Fidāʾ", "middle": "Ismāʿīl", "family": "Ibn-ʿAlī", "initials": "A. I. I."}
 {"name": "Abu-'l-Qāsim Maslama Ibn-Aḥmad al-Maǧrīṭī", "given": "Abu-'l-Qāsim", "middle": "Maslama Ibn-Aḥmad", "family": "al-Maǧrīṭī", "initials": "A. M. I. a."}
 {"name": "Abū-Bakr aš-Šiblī", "given": "Abū-Bakr", "family": "aš-Šiblī", "initials": "A. a."}
@@ -121,6 +122,7 @@
 {"name": "Ali Ahmad oglu", "given": "Ali", "middle": "Ahmad", "family": "oglu", "initials": "A. A. o."}
 {"name": "Ali Amina", "order": "FAMILY_FIRST", "given": "Amina", "family": "Ali", "initials": "A. A."}
 {"name": "Ali Juma Hamisi", "given": "Ali", "middle": "Juma", "family": "Hamisi", "initials": "A. J. H."}
+{"name": "Ali Kara Oğlu", "given": "Ali", "middle": "Kara", "family": "Oğlu", "initials": "A. K. O."}
 {"name": "Ali, Amina", "given": "Amina", "family": "Ali", "initials": "A. A."}
 {"name": "Alice Rühle-Gerstel", "given": "Alice", "family": "Rühle-Gerstel", "initials": "A. R."}
 {"name": "Alina", "given": "Alina", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "A."}
@@ -438,6 +440,7 @@
 {"name": "Carlos Sáenz Echeverría", "given": "Carlos", "middle": "Sáenz", "family": "Echeverría", "initials": "C. S. E."}
 {"name": "Carlos Uribe Cordovez", "given": "Carlos", "middle": "Uribe", "family": "Cordovez", "initials": "C. U. C."}
 {"name": "Carlos Zabala", "given": "Carlos", "family": "Zabala", "initials": "C. Z."}
+{"name": "Carmen Díaz Vda. de Mora", "given": "Carmen", "middle": "Díaz Vda.", "family": "de Mora", "initials": "C. D. V. M."}
 {"name": "Carnarvon, George Edward Stanhope Molyneux Herbert of", "given": "George", "middle": "Edward Stanhope Molyneux Herbert of", "family": "Carnarvon", "initials": "G. E. S. M. H. C."}
 {"name": "Carod i", "given": "Carod", "suffix": "i", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "C."}
 {"name": "Carod i Rovira", "given": "Carod", "middle": "i", "family": "Rovira", "initials": "C. i. R."}
@@ -530,8 +533,10 @@
 {"name": "Daniel Ayala Pérez", "given": "Daniel", "middle": "Ayala", "family": "Pérez", "initials": "D. A. P."}
 {"name": "Daniel Bautista Rocha", "given": "Daniel", "middle": "Bautista", "family": "Rocha", "initials": "D. B. R."}
 {"name": "David Ben Gurion", "given": "David", "middle": "Ben", "family": "Gurion", "initials": "D. B. G."}
+{"name": "David arap Kirui", "given": "David", "middle": "arap", "family": "Kirui", "initials": "D. a. K."}
 {"name": "David zu Sonnegg von Ungnad von Weissenwolf", "given": "David", "middle": "zu Sonnegg von Ungnad", "family": "von Weissenwolf", "initials": "D. S. U. W."}
 {"name": "Davis Royce, Ed", "given": "Davis", "family": "Royce", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "D. R."}
+{"name": "Daw Thida", "given": "Daw", "family": "Thida", "initials": "D. T."}
 {"name": "Daði Freyr Pétursson", "given": "Daði", "middle": "Freyr", "family": "Pétursson", "initials": "D. F. P."}
 {"name": "De Groot", "family": "De Groot", "initials": "G."}
 {"name": "De La Cruz, Ed", "given": "Ed", "family": "De La Cruz", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. C."}
@@ -1055,6 +1060,7 @@
 {"name": "Gylfi Sigurðsson", "given": "Gylfi", "family": "Sigurðsson", "initials": "G. S."}
 {"name": "Gábor, Andor", "given": "Andor", "family": "Gábor", "initials": "A. G."}
 {"name": "Gössmann, Elisabeth", "given": "Elisabeth", "family": "Gössmann", "initials": "E. G."}
+{"name": "H. Budi Santoso", "given": "H.", "middle": "Budi", "family": "Santoso", "initials": "H. B. S."}
 {"name": "Habib Pacha es-Saad", "given": "Habib", "middle": "Pacha", "family": "es-Saad", "initials": "H. P. e."}
 {"name": "Hafis al-Assad", "given": "Hafis", "family": "al-Assad", "initials": "H. a."}
 {"name": "Hagen, Hermann von", "given": "Hermann", "family": "von Hagen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "H. H."}
@@ -1086,6 +1092,7 @@
 {"name": "Haren, Willem van", "given": "Willem", "family": "van Haren", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "W. H."}
 {"name": "Harietta Keopuolani Nahi'ena'ena", "given": "Harietta", "middle": "Keopuolani", "family": "Nahi'ena'ena", "initials": "H. K. N."}
 {"name": "Harms, Claus", "given": "Claus", "family": "Harms", "initials": "C. H."}
+{"name": "Harpreet Kaur Dhillon", "given": "Harpreet", "middle": "Kaur", "family": "Dhillon", "initials": "H. K. D."}
 {"name": "Harrieta Keōpūolani Nāhiʻenaʻena", "given": "Harrieta", "middle": "Keōpūolani", "family": "Nāhiʻenaʻena", "initials": "H. K. N."}
 {"name": "Hasani Maria", "order": "FAMILY_FIRST", "given": "Maria", "family": "Hasani", "initials": "M. H."}
 {"name": "Hasani, Maria", "given": "Maria", "family": "Hasani", "initials": "M. H."}
@@ -1093,7 +1100,9 @@
 {"name": "Hashimoto, Chikanobu", "given": "Chikanobu", "family": "Hashimoto", "initials": "C. H."}
 {"name": "Hassan", "given": "Hassan", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "H."}
 {"name": "Hassan", "order": "FAMILY_FIRST", "family": "Hassan", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "H."}
+{"name": "Hassan B. Yusof", "given": "Hassan", "middle": "B.", "family": "Yusof", "initials": "H. B. Y."}
 {"name": "Hassan Mohamad Ali", "given": "Hassan", "middle": "Mohamad", "family": "Ali", "initials": "H. M. A."}
+{"name": "Hassan bin Yusof", "given": "Hassan", "family": "bin Yusof", "initials": "H. Y."}
 {"name": "Hassan, Mohamad Ahmad Ali", "given": "Mohamad", "middle": "Ahmad Ali", "family": "Hassan", "initials": "M. A. A. H."}
 {"name": "Haukur Ágústsson", "given": "Haukur", "family": "Ágústsson", "initials": "H. Á."}
 {"name": "Hebe de Bonafini", "given": "Hebe", "family": "de Bonafini", "initials": "H. B."}
@@ -1130,6 +1139,7 @@
 {"name": "His Holiness", "title": "His", "family": "Holiness", "ambiguities": ["TITLE_OR_NAME"], "initials": "H."}
 {"name": "His Holiness the Dalai Lama", "title": "His Holiness the Dalai", "family": "Lama", "ambiguities": ["TITLE_OR_NAME"], "initials": "L."}
 {"name": "Hisham Ibrahim, CPA, CFA", "given": "Hisham", "family": "Ibrahim", "suffix": "CPA, CFA", "initials": "H. I."}
+{"name": "Hodan Farah Warsame", "given": "Hodan", "middle": "Farah", "family": "Warsame", "initials": "H. F. W."}
 {"name": "Hon Solo", "title": "Hon", "family": "Solo", "initials": "S."}
 {"name": "Hon. Barrington P. Doe-Ray, Jr.", "title": "Hon.", "given": "Barrington", "middle": "P.", "family": "Doe-Ray", "suffix": "Jr.", "initials": "B. P. D."}
 {"name": "Hon. Charles J. Siragusa", "title": "Hon.", "given": "Charles", "middle": "J.", "family": "Siragusa", "initials": "C. J. S."}
@@ -1206,6 +1216,7 @@
 {"name": "Ivan", "given": "Ivan", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "I."}
 {"name": "Ivan", "order": "FAMILY_FIRST", "family": "Ivan", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "I."}
 {"name": "Ivan Ivanov", "given": "Ivan", "family": "Ivanov", "initials": "I. I."}
+{"name": "Ivan Petrov Dimitrov", "given": "Ivan", "middle": "Petrov", "family": "Dimitrov", "initials": "I. P. D."}
 {"name": "Ivan Tham Jun Hoe", "given": "Ivan", "middle": "Tham Jun", "family": "Hoe", "initials": "I. T. J. H."}
 {"name": "Ivanov Ivan", "given": "Ivanov", "family": "Ivan", "initials": "I. I."}
 {"name": "Ivanov Ivan Ivanovich", "given": "Ivanov", "middle": "Ivan", "family": "Ivanovich", "initials": "I. I. I."}
@@ -1658,6 +1669,7 @@
 {"name": "Josep Maria Tarridas i Barri", "given": "Josep", "middle": "Maria", "family": "Tarridas i Barri", "initials": "J. M. T. B."}
 {"name": "Josep Vergés i Vallmajor", "given": "Josep", "family": "Vergés i Vallmajor", "initials": "J. V. V."}
 {"name": "Josep i Rovira", "given": "Josep", "middle": "i", "family": "Rovira", "initials": "J. i. R."}
+{"name": "Joseph ole Sankale", "given": "Joseph", "middle": "ole", "family": "Sankale", "initials": "J. o. S."}
 {"name": "Joset, Theodor", "given": "Theodor", "family": "Joset", "initials": "T. J."}
 {"name": "José Antonio Nieves Conde", "given": "José", "middle": "Antonio Nieves", "family": "Conde", "initials": "J. A. N. C."}
 {"name": "José Antonio Osorio Lizarazo", "given": "José", "middle": "Antonio Osorio", "family": "Lizarazo", "initials": "J. A. O. L."}
@@ -1789,6 +1801,7 @@
 {"name": "Júlíus Agnarsson", "given": "Júlíus", "family": "Agnarsson", "initials": "J. A."}
 {"name": "Jānis", "given": "Jānis", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
 {"name": "Jānis", "order": "FAMILY_FIRST", "family": "Jānis", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
+{"name": "K. Sivakumar", "given": "K.", "family": "Sivakumar", "initials": "K. S."}
 {"name": "KALAM Alɛ Mustafa", "order": "FAMILY_FIRST", "given": "Alɛ", "middle": "Mustafa", "family": "KALAM", "initials": "A. M. K."}
 {"name": "KANSULO Iiɖa", "order": "FAMILY_FIRST", "given": "Iiɖa", "family": "KANSULO", "initials": "I. K."}
 {"name": "Kajal Patel Hiring Globally", "given": "Kajal", "middle": "Patel Hiring", "family": "Globally", "initials": "K. P. H. G."}
@@ -1820,6 +1833,7 @@
 {"name": "Katrín Jakobsdóttir", "given": "Katrín", "family": "Jakobsdóttir", "initials": "K. J."}
 {"name": "Katrín Júlíusdóttir", "given": "Katrín", "family": "Júlíusdóttir", "initials": "K. J."}
 {"name": "Katy Mané", "given": "Katy", "family": "Mané", "initials": "K. M."}
+{"name": "Kavitha a/p Raman", "given": "Kavitha", "middle": "a/p", "family": "Raman", "initials": "K. a. R."}
 {"name": "Kaya Yağız Can", "order": "FAMILY_FIRST", "given": "Yağız", "middle": "Can", "family": "Kaya", "initials": "Y. C. K."}
 {"name": "Kaya, Yağız Can", "given": "Yağız", "middle": "Can", "family": "Kaya", "initials": "Y. C. K."}
 {"name": "Kazlauskienė Irena", "order": "FAMILY_FIRST", "given": "Irena", "family": "Kazlauskienė", "initials": "I. K."}
@@ -1838,8 +1852,10 @@
 {"name": "Kevin", "order": "FAMILY_FIRST", "family": "Kevin", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "K."}
 {"name": "Khaled el-Hassani ben el-Hachemi", "given": "Khaled", "middle": "el-Hassani ben", "family": "el-Hachemi", "initials": "K. e. b. e."}
 {"name": "Kho Liang Ie", "given": "Kho", "middle": "Liang", "family": "Ie", "initials": "K. L. I."}
+{"name": "Khun Malee", "given": "Khun", "family": "Malee", "initials": "K. M."}
 {"name": "Khun Sa", "given": "Khun", "suffix": "Sa", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "K."}
 {"name": "Ki, Tomonori", "given": "Tomonori", "family": "Ki", "initials": "T. K."}
+{"name": "Kim Min Ho", "order": "FAMILY_FIRST", "given": "Min", "middle": "Ho", "family": "Kim", "initials": "M. H. K."}
 {"name": "Kim, Jr.", "family": "Kim", "suffix": "Jr.", "initials": "K."}
 {"name": "Kim김민준씨, MA", "family": "Kim김민준", "suffix": "씨, MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "K."}
 {"name": "King Curtis", "title": "King", "given": "Curtis", "initials": "C."}
@@ -1934,6 +1950,7 @@
 {"name": "Liberty Hyde Bailey", "given": "Liberty", "middle": "Hyde", "family": "Bailey", "initials": "L. H. B."}
 {"name": "Lilja Alfreðsdóttir", "given": "Lilja", "family": "Alfreðsdóttir", "initials": "L. A."}
 {"name": "Lim Boo Liat", "given": "Lim", "middle": "Boo", "family": "Liat", "initials": "L. B. L."}
+{"name": "Lim Mei Ling Jessica", "order": "FAMILY_FIRST", "given": "Mei", "middle": "Ling Jessica", "family": "Lim", "initials": "M. L. J. L."}
 {"name": "Lipset, Seymour Martin", "given": "Seymour", "middle": "Martin", "family": "Lipset", "initials": "S. M. L."}
 {"name": "Lisa Schmidt, MBA", "given": "Lisa", "family": "Schmidt", "suffix": "MBA", "initials": "L. S."}
 {"name": "Lisandro Leyva Mazuera", "given": "Lisandro", "middle": "Leyva", "family": "Mazuera", "initials": "L. L. M."}
@@ -2012,6 +2029,7 @@
 {"name": "Ma III, Jack Jr", "given": "Jack", "family": "Ma", "suffix": "III, Jr", "initials": "J. M."}
 {"name": "Ma, Andrew", "given": "Andrew", "family": "Ma", "initials": "A. M."}
 {"name": "Ma, Jack", "given": "Jack", "family": "Ma", "initials": "J. M."}
+{"name": "Ma. Teresa Cruz Bautista", "title": "Ma.", "given": "Teresa", "middle": "Cruz", "family": "Bautista", "initials": "T. C. B."}
 {"name": "Maazị Christopher Chukwudike Amadi MP", "given": "Maazị", "middle": "Christopher Chukwudike", "family": "Amadi", "suffix": "MP", "initials": "M. C. C. A."}
 {"name": "Mac Miller", "given": "Mac", "family": "Miller", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "M. M."}
 {"name": "Mac a’ Ghobhainn Chorùna, Mgr. Dòmhnall Iain Bàn am post", "order": "FAMILY_FIRST", "title": "Mgr.", "given": "Dòmhnall", "middle": "Iain Bàn", "family": "Mac a’ Ghobhainn Chorùna", "suffix": "am post", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "D. I. B. a. G. C."}
@@ -2183,6 +2201,7 @@
 {"name": "Mgr. Dòmhnall Iain Bàn Mac a’ Ghobhainn Chorùna am post", "title": "Mgr.", "given": "Dòmhnall", "middle": "Iain Bàn", "family": "Mac a’ Ghobhainn Chorùna", "suffix": "am post", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "D. I. B. a. G. C."}
 {"name": "Mgr. Ing. Anna Karolína Eva Kristína von Kant Nováková Predná, CSc.", "title": "Mgr. Ing.", "given": "Anna", "middle": "Karolína Eva Kristína", "family": "von Kant Nováková Predná", "suffix": "CSc.", "initials": "A. K. E. K. K. N. P."}
 {"name": "Mgr. Ing. von Kant Nováková Predná Anna Karolína Eva Kristína, CSc.", "order": "FAMILY_FIRST", "title": "Mgr. Ing.", "given": "Kant", "middle": "Nováková Predná Anna Karolína Eva Kristína", "family": "von", "suffix": "CSc.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "K. N. P. A. K. E. K. v."}
+{"name": "Michael Wong Kar Ming", "given": "Michael", "middle": "Wong Kar", "family": "Ming", "initials": "M. W. K. M."}
 {"name": "Miguel García Martínez", "given": "Miguel", "middle": "García", "family": "Martínez", "initials": "M. G. M."}
 {"name": "Miguel Lanz Duret", "given": "Miguel", "middle": "Lanz", "family": "Duret", "initials": "M. L. D."}
 {"name": "Miguel Sánchez Pesquera", "given": "Miguel", "middle": "Sánchez", "family": "Pesquera", "initials": "M. S. P."}
@@ -2270,6 +2289,7 @@
 {"name": "Muniiru", "order": "FAMILY_FIRST", "family": "Muniiru", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
 {"name": "Munster, Jan van", "given": "Jan", "family": "van Munster", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. M."}
 {"name": "Murad III.", "given": "Murad", "suffix": "III.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
+{"name": "Murat Bey", "given": "Murat", "family": "Bey", "initials": "M. B."}
 {"name": "Muslim Ibn-al-Ḥaǧǧāǧ al-Qušairī", "given": "Muslim", "middle": "Ibn-al-Ḥaǧǧāǧ", "family": "al-Qušairī", "initials": "M. I. a."}
 {"name": "Muspratt, James", "given": "James", "family": "Muspratt", "initials": "J. M."}
 {"name": "Mustafa I.", "given": "Mustafa", "family": "I.", "initials": "M. I."}
@@ -2368,6 +2388,7 @@
 {"name": "Ortega y Gasset, Dr.", "title": "Dr.", "given": "Ortega", "middle": "y", "family": "Gasset", "initials": "O. y. G."}
 {"name": "Ortega y Gasset, Ed", "given": "Ortega", "middle": "y", "family": "Gasset", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "O. y. G."}
 {"name": "Orueta y Duarte, Ricardo de", "given": "Ricardo", "family": "de Orueta y Duarte", "initials": "R. O. D."}
+{"name": "Orval, Pierre d'", "given": "Pierre", "middle": "d'", "family": "Orval", "initials": "P. d. O."}
 {"name": "Orville, Johann Friedrich d'", "given": "Johann", "middle": "Friedrich d'", "family": "Orville", "initials": "J. F. d. O."}
 {"name": "Ospina Pérez, Mariano", "given": "Mariano", "family": "Ospina Pérez", "initials": "M. O. P."}
 {"name": "Otto III.", "given": "Otto", "suffix": "III.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "O."}
@@ -2385,6 +2406,7 @@
 {"name": "Paku Alam VIII", "given": "Paku", "family": "Alam", "suffix": "VIII", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. A."}
 {"name": "Pan Nowak Tomasz Jan", "order": "FAMILY_FIRST", "given": "Nowak", "middle": "Tomasz Jan", "family": "Pan", "initials": "N. T. J. P."}
 {"name": "Pan Tomasz Nowak", "given": "Pan", "middle": "Tomasz", "family": "Nowak", "initials": "P. T. N."}
+{"name": "Park Ji-hoon ssi", "order": "FAMILY_FIRST", "given": "Ji-hoon", "middle": "ssi", "family": "Park", "initials": "J. s. P."}
 {"name": "Pascual Ortiz Rubio", "given": "Pascual", "middle": "Ortiz", "family": "Rubio", "initials": "P. O. R."}
 {"name": "Patricia Terrazas Allen", "given": "Patricia", "middle": "Terrazas", "family": "Allen", "initials": "P. T. A."}
 {"name": "Patricio Flores Sandoval", "given": "Patricio", "middle": "Flores", "family": "Sandoval", "initials": "P. F. S."}
@@ -2398,6 +2420,7 @@
 {"name": "Pedro Galindo Galarza", "given": "Pedro", "middle": "Galindo", "family": "Galarza", "initials": "P. G. G."}
 {"name": "Pedro Infante Torrentera", "given": "Pedro", "middle": "Infante", "family": "Torrentera", "initials": "P. I. T."}
 {"name": "Pedro Jorba y Gassó", "given": "Pedro", "family": "Jorba y Gassó", "initials": "P. J. G."}
+{"name": "Pedro López Ruiz H.", "given": "Pedro", "middle": "López Ruiz", "family": "H.", "initials": "P. L. R. H."}
 {"name": "Pedro Morales Pino", "given": "Pedro", "middle": "Morales", "family": "Pino", "initials": "P. M. P."}
 {"name": "Pendeta Zaba", "given": "Pendeta", "family": "Zaba", "initials": "P. Z."}
 {"name": "Penkauskienė Sofija Rita", "order": "FAMILY_FIRST", "given": "Sofija", "middle": "Rita", "family": "Penkauskienė", "initials": "S. R. P."}
@@ -2533,6 +2556,7 @@
 {"name": "Rev John A. Kenneth Doe III (Kenny)", "title": "Rev", "given": "John", "middle": "A. Kenneth", "family": "Doe", "suffix": "III", "nickname": "Kenny", "initials": "J. A. K. D."}
 {"name": "Rev. John A. Kenneth Doe", "title": "Rev.", "given": "John", "middle": "A. Kenneth", "family": "Doe", "initials": "J. A. K. D."}
 {"name": "Rev. John Smith", "title": "Rev.", "given": "John", "family": "Smith", "initials": "J. S."}
+{"name": "Reza Hossein Zadeh", "given": "Reza", "middle": "Hossein", "family": "Zadeh", "initials": "R. H. Z."}
 {"name": "Ricardo Bodenlle Corral", "given": "Ricardo", "middle": "Bodenlle", "family": "Corral", "initials": "R. B. C."}
 {"name": "Ricardo Legorreta Vilchis", "given": "Ricardo", "middle": "Legorreta", "family": "Vilchis", "initials": "R. L. V."}
 {"name": "Ricardo Valderrama Fernández", "given": "Ricardo", "middle": "Valderrama", "family": "Fernández", "initials": "R. V. F."}
@@ -2903,8 +2927,11 @@
 {"name": "Sulaiman, Salimah", "given": "Salimah", "family": "Sulaiman", "initials": "S. S."}
 {"name": "Sule", "given": "Sule", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
 {"name": "Sule", "order": "FAMILY_FIRST", "family": "Sule", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
+{"name": "Suresh a/l Muthu", "given": "Suresh", "middle": "a/l", "family": "Muthu", "initials": "S. a. M."}
 {"name": "Surāqa Ibn-Mirdās al-Aṣġar", "given": "Surāqa", "middle": "Ibn-Mirdās", "family": "al-Aṣġar", "initials": "S. I. a."}
+{"name": "Suzuki san", "order": "FAMILY_FIRST", "given": "san", "family": "Suzuki", "initials": "s. S."}
 {"name": "Suzuki, Shōsan", "given": "Shōsan", "family": "Suzuki", "initials": "S. S."}
+{"name": "Suzuki-san", "order": "FAMILY_FIRST", "family": "Suzuki-san", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
 {"name": "Svarun", "given": "Svarun", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
 {"name": "Svarun", "order": "FAMILY_FIRST", "family": "Svarun", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
 {"name": "Svavar Guðnason", "given": "Svavar", "family": "Guðnason", "initials": "S. G."}
@@ -2920,6 +2947,9 @@
 {"name": "Syukri @ Shu Qi Mohd Nor", "given": "Syukri", "middle": "@ Shu Qi Mohd", "family": "Nor", "initials": "S. @. S. Q. M. N."}
 {"name": "Szabados Máté Bendegúz", "order": "FAMILY_FIRST", "given": "Máté", "middle": "Bendegúz", "family": "Szabados", "initials": "M. B. S."}
 {"name": "Szabados, Máté Bendegúz", "given": "Máté", "middle": "Bendegúz", "family": "Szabados", "initials": "M. B. S."}
+{"name": "Szabó Péter úr", "order": "FAMILY_FIRST", "given": "Péter", "middle": "úr", "family": "Szabó", "initials": "P. ú. S."}
+{"name": "Szabó Péterné", "order": "FAMILY_FIRST", "given": "Péterné", "family": "Szabó", "initials": "P. S."}
+{"name": "Szabóné Kiss Éva", "order": "FAMILY_FIRST", "given": "Kiss", "middle": "Éva", "family": "Szabóné", "initials": "K. É. S."}
 {"name": "Szigeti, Joseph", "given": "Joseph", "family": "Szigeti", "initials": "J. S."}
 {"name": "Sébastien de Brossard", "given": "Sébastien", "family": "de Brossard", "initials": "S. B."}
 {"name": "Séverine", "given": "Séverine", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
@@ -2975,9 +3005,11 @@
 {"name": "Torres, Ana", "given": "Ana", "family": "Torres", "initials": "A. T."}
 {"name": "Tounens, Antoine de", "given": "Antoine", "family": "de Tounens", "initials": "A. T."}
 {"name": "Traberth, Julie", "given": "Julie", "family": "Traberth", "initials": "J. T."}
+{"name": "Tran Thi Mai", "order": "FAMILY_FIRST", "given": "Thi", "family": "Tran", "suffix": "Mai", "initials": "T. T."}
 {"name": "Tschagribeg", "given": "Tschagribeg", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "T."}
 {"name": "Tschurtschenthaler, Anton von", "given": "Anton", "family": "von Tschurtschenthaler", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "A. T."}
 {"name": "Tunde Seun Okeke", "given": "Tunde", "middle": "Seun", "family": "Okeke", "initials": "T. S. O."}
+{"name": "U Kyaw Win", "given": "U", "middle": "Kyaw", "family": "Win", "initials": "U. K. W."}
 {"name": "U. S. Grant", "given": "U.", "middle": "S.", "family": "Grant", "initials": "U. S. G."}
 {"name": "U.S. District Judge Marc Thomas Treadwell", "given": "U.S.", "middle": "District Judge Marc Thomas", "family": "Treadwell", "initials": "U. D. J. M. T. T."}
 {"name": "UNILEVER LTD", "given": "UNILEVER", "family": "LTD", "initials": "U. L."}
@@ -3021,6 +3053,7 @@
 {"name": "Van Rooten, Luis", "given": "Luis", "family": "Van Rooten", "initials": "L. R."}
 {"name": "Van der Merwe Jan Koos", "order": "FAMILY_FIRST", "given": "der Merwe Jan Koos", "family": "Van", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. M. J. K. V."}
 {"name": "Van der Merwe, Jan Koos", "given": "Jan", "middle": "Koos", "family": "Van der Merwe", "initials": "J. K. M."}
+{"name": "Van der Walt", "given": "Van", "family": "der Walt", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "V. W."}
 {"name": "Varano, Costanza da", "given": "Costanza", "family": "da Varano", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "C. V."}
 {"name": "Vatson Con Hamiş", "order": "FAMILY_FIRST", "given": "Con", "middle": "Hamiş", "family": "Vatson", "initials": "C. H. V."}
 {"name": "Vega Smith", "given": "Vega", "family": "Smith", "initials": "V. S."}
@@ -3073,6 +3106,7 @@
 {"name": "Wang M.Eng.", "given": "Wang", "suffix": "M.Eng.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "W."}
 {"name": "Wang Ma PhD", "given": "Wang", "family": "Ma", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "W. M."}
 {"name": "Wang, Zhaojun", "given": "Zhaojun", "family": "Wang", "initials": "Z. W."}
+{"name": "Wanjiru wa Kamau", "given": "Wanjiru", "middle": "wa", "family": "Kamau", "initials": "W. w. K."}
 {"name": "Washington Jr. MD, Franklin", "given": "Franklin", "family": "Washington", "suffix": "Jr. MD", "initials": "F. W."}
 {"name": "Watson John Hamish", "order": "FAMILY_FIRST", "given": "John", "middle": "Hamish", "family": "Watson", "initials": "J. H. W."}
 {"name": "Watson John Hámish", "order": "FAMILY_FIRST", "given": "John", "middle": "Hámish", "family": "Watson", "initials": "J. H. W."}
@@ -3104,6 +3138,7 @@
 {"name": "Willemse, Bertus Wilbers Henri Retief", "given": "Bertus", "middle": "Wilbers Henri Retief", "family": "Willemse", "initials": "B. W. H. R. W."}
 {"name": "Willemse, Heidi Johannes", "given": "Heidi", "middle": "Johannes", "family": "Willemse", "initials": "H. J. W."}
 {"name": "Willington Baena Ortiz", "given": "Willington", "middle": "Baena", "family": "Ortiz", "initials": "W. B. O."}
+{"name": "Wing Lau", "title": "Wing", "family": "Lau", "initials": "L."}
 {"name": "Winghe, Jodocus van", "given": "Jodocus", "family": "van Winghe", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. W."}
 {"name": "Witte, Jean Joseph Antoine Marie de", "given": "Jean", "middle": "Joseph Antoine Marie", "family": "de Witte", "initials": "J. J. A. M. W."}
 {"name": "Wićazowa, Jěwa-Marja Hańža", "given": "Jěwa-Marja", "middle": "Hańža", "family": "Wićazowa", "initials": "J. H. W."}
