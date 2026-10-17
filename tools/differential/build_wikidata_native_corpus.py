@@ -446,6 +446,7 @@ def lc_variants(lccn: str, refresh: bool) -> list[str] | None:
                                           fetch, _lc_checked, refresh)
     except urllib.error.HTTPError as error:
         if error.code == 404:
+            error.close()  # it holds the response; unclosed, 3.14 warns
             return None
         raise
     return list(record["variants"])

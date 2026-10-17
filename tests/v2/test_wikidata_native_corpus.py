@@ -338,8 +338,9 @@ def test_an_lccn_lc_no_longer_has_is_none_and_not_cached(
 def test_any_other_lc_error_stops_the_check(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _fail(monkeypatch, tmp_path, 503)
-    with pytest.raises(urllib.error.HTTPError):
+    with pytest.raises(urllib.error.HTTPError) as caught:
         native.lc_variants("n0", refresh=False)
+    caught.value.close()  # unclosed, it warns on 3.14 and fails the run
 
 
 def test_the_lc_check_counts_a_stale_lccn(monkeypatch: pytest.MonkeyPatch,
