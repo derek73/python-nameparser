@@ -1422,18 +1422,22 @@ def assign(state: ParseState) -> ParseState:
         # leaves no family word to address -- H3's concern, by a
         # stricter test than H3's one-word give-back, so this is not
         # `leading_titles` ('MD PhD Jr., John' keeps family 'MD', where
-        # 'MD PhD Jr. John' reads title 'MD'). A dual is a title wherever a name word follows it
-        # ('Rev. Sr. Smith, Mary'). `is_title_piece` is H5's vocabulary
-        # read, so the two slots that refuse the shape agree on what a
-        # title word is.
+        # 'MD PhD Jr. John' reads title 'MD'). A dual is a title wherever
+        # a name word follows it ('Rev. Sr. Smith, Mary').
+        # `is_title_piece` is H5's vocabulary read, so the two slots that
+        # refuse the shape agree on what a title word is.
         lead = 0
-        # the length test first: a one-piece part ('Smith, John') never
-        # pays the title read's frame
-        if (len(fam_pieces) > 1
+        floor = len(fam_pieces)
+        # the length test and the tag test first, both C-level: a part
+        # no title opens ('Smith, John', 'Smith Jones, John') pays no
+        # frame. The tags are the two arms `is_title_piece` answers yes
+        # from, so the predicate stays the one that answers
+        if (floor > 1
+                and ("title" in fam_tags[0]
+                     or "vocab:title" in tokens[fam_pieces[0][0]].tags)
                 and is_title_piece(fam_pieces[0], fam_tags[0], tokens)):
             # where the trailing post-nominal run starts: walked once,
             # and only for a part a title opens
-            floor = len(fam_pieces)
             while floor > 1 and is_suffix_piece(fam_pieces[floor - 1],
                                                 fam_tags[floor - 1],
                                                 tokens):
@@ -1458,9 +1462,13 @@ def assign(state: ParseState) -> ParseState:
         # ('Berg de MA, Prof.'). The first piece the title run leaves
         # is the family's first and is family whatever it is, as piece
         # 0 is with no title ('Dr. PhD Smith, John' as 'PhD Smith, John').
+        # A piece at or past the floor is already known to be a suffix
+        # with nothing but suffixes behind it, so it is not asked again.
         for k in range(lead, len(fam_pieces)):
             piece = fam_pieces[k]
-            if (k > lead and is_suffix_piece(piece, fam_tags[k], tokens)
+            if k >= floor:
+                _set_roles(tokens, piece, Role.SUFFIX)
+            elif (k > lead and is_suffix_piece(piece, fam_tags[k], tokens)
                     and not (k + 1 < len(fam_pieces)
                              and "particle" in tokens[piece[0]].tags
                              and not is_suffix_piece(
