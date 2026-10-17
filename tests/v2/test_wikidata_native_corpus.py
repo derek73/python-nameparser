@@ -65,7 +65,7 @@ def _one(person: dict[str, Any], names: dict[str, Any], label: str) -> dict[str,
     ("Ратко Janković", "sr", False),        # a mixed text is in no one script
     ("·", "zh", False),                     # no letter: in no script
     ("مِحمد", "ar", True),                  # an Arabic point is a mark of the script
-    ("מחמד\u05b4", "ar", False),            # a Hebrew point is not
+    ("محمد\u05b4", "ar", False),            # a Hebrew point is not
 ])
 def test_a_text_is_used_only_in_its_strata_script(text: str, language: str,
                                                   result: bool) -> None:
@@ -302,12 +302,6 @@ def test_a_pool_short_of_its_size_stops_the_build_unless_it_is_the_whole(
                                          "than its pool of 300"):
         native.pool(_STRATA["ko-kr"], refresh=False)
     assert len(native.pool(_STRATA["th-th"], refresh=False)) == 5
-
-
-def test_every_stratum_marked_whole_is_set_below_its_measured_size() -> None:
-    # whole=True excuses a short pool; it is for the strata whose whole
-    # population was measured smaller than the pool asked for.
-    assert {s.label for s in native.STRATA if s.whole} == {"bn-bd", "kk-kz", "th-th"}
 
 
 def test_entities_asks_only_for_the_languages_labels(

@@ -173,8 +173,8 @@ class Stratum(NamedTuple):
     country: str      # Wikidata item for the country of citizenship (P27)
     language: str     # a LANGUAGES key
     quota: int
-    #: How many people the query takes, from the yield measured on
-    #: 2026-10-16; a pool short of this is the whole population.
+    #: How many people the query takes, sized from the yield measured on
+    #: 2026-10-16.
     pool: int
     #: The fewest names the build accepts; below it, it stops. Set below
     #: the quota only where the pool is known to run short.

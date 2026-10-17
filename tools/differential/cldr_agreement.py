@@ -465,7 +465,7 @@ def _locale_summary(name: str, rows: list[dict[str, Any]], record: Path,
     problems = unmapped(recorded, rows)
     stray = {row_pack(row) for row in rows} - {None} - set(_packs())
     problems += [f"unmeasured: renderings name pack {pack!r}, which no locale view "
-                 "measures; add it to LOCALE_FILES" for pack in sorted(map(str, stray))]
+                 "measures (_packs() reads LOCALE_FILES)" for pack in sorted(map(str, stray))]
     for pack in _packs():
         mine = locale_rows(rows, pack)
         if not mine:  # nothing to print, but its recorded entries are still checked
