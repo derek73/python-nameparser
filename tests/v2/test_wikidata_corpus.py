@@ -305,15 +305,21 @@ def _serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list
     return serve(monkeypatch, tmp_path, body)
 
 
-_RESULTS = json.dumps({"results": {"bindings": [
-    {"item": {"value": "http://www.wikidata.org/entity/Q7747"}}]}}).encode()
+def _results(n: int) -> bytes:
+    return json.dumps({"results": {"bindings": [
+        {"item": {"value": f"http://www.wikidata.org/entity/Q{7747 + i}"}}
+        for i in range(n)]}}).encode()
+
+
+# a pool the size of _RU's (quota 1, six times that)
+_RESULTS = _results(build.POOL_FACTOR)
 
 
 def test_a_cached_response_is_read_without_fetching(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     fetched = _serve(monkeypatch, tmp_path, _RESULTS)
-    assert build.pool(_RU, refresh=False) == ["Q7747"]
-    assert build.pool(_RU, refresh=False) == ["Q7747"]
+    assert build.pool(_RU, refresh=False)[0] == "Q7747"
+    assert len(build.pool(_RU, refresh=False)) == build.POOL_FACTOR
     assert len(fetched) == 1
     build.pool(_RU, refresh=True)
     assert len(fetched) == 2
@@ -346,6 +352,23 @@ def test_a_query_matching_nothing_stops_the_build(
     _serve(monkeypatch, tmp_path, b'{"results": {"bindings": []}}')
     with pytest.raises(ValueError, match="patronymic-ru: the query matches nothing"):
         build.pool(_RU, refresh=False)
+
+
+def test_a_pool_short_of_its_size_stops_the_build_unless_it_is_the_whole(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _serve(monkeypatch, tmp_path, _results(3))
+    with pytest.raises(ValueError, match="patronymic-ru: the query matched 3 people, "
+                                         "fewer than its pool of 6"):
+        build.pool(_RU, refresh=False)
+    assert len(build.pool(_RU._replace(whole=True), refresh=False)) == 3
+
+
+def test_a_stratum_marked_whole_whose_pool_fills_stops_the_build(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _serve(monkeypatch, tmp_path, _results(build.POOL_FACTOR))
+    with pytest.raises(ValueError, match="patronymic-ru: marked whole=True, but the "
+                                         "query filled"):
+        build.pool(_RU._replace(whole=True), refresh=False)
 
 
 def test_an_item_the_response_leaves_out_stops_the_build(
