@@ -106,12 +106,12 @@ def test_each_pending_field_is_scored_inside_the_role_it_names(field: str) -> No
 
 
 @functools.cache
-def _summary_run() -> tuple[int, str]:
-    """One `main([])` run and what it printed, shared by the tests that
+def _summary_run(*args: str) -> tuple[int, str]:
+    """One `main(args)` run and what it printed, shared by the tests that
     read the summary: each run scores every source (about 0.7 s)."""
     out = io.StringIO()
     with contextlib.redirect_stdout(out):
-        code = agreement.main([])
+        code = agreement.main(list(args))
     return code, out.getvalue()
 
 
@@ -528,3 +528,46 @@ def test_each_pack_still_agrees_with_each_source_where_it_did(source: str, pack:
         f"tools/differential/{locale.record.name} for {pack}.",
         f"If every one is intended, re-record with `{agreement.RECORD_COMMAND}` "
         "and say why in the commit."])
+
+
+def test_the_split_view_reports_a_compound_given_name_the_merged_role_passes() -> None:
+    # #702: Kim Min Ho reads given Min, middle Ho; the merged role agrees.
+    row = _row("Kim Min Ho", 4, given="Min Ho", surname="Kim")
+    assert agreement.disagreements([row]) == {}
+    assert agreement.split_disagreements([row]) == {"xx/nativeG/givenFirst": {
+        "text": "Kim Min Ho", "given": {"expected": "Min Ho", "got": "Min"},
+        "middle": {"expected": "", "got": "Ho"}}}
+    # a split the source states and the parser reads the same way is silent
+    agreed = _row("Ana Maria Ruiz", None, given="Ana", given2="Maria", surname="Ruiz")
+    assert agreement.split_disagreements([agreed]) == {}
+
+
+def test_the_split_view_skips_a_rendering_whose_merged_role_already_disagrees() -> None:
+    # reported once, by the ratcheted role, not again by the split view
+    row = _row("Kim Min Ho", 4, given="Zed Qux", surname="Kim")
+    assert agreement.disagreements([row])
+    assert agreement.split_disagreements([row]) == {}
+
+
+def test_the_split_view_skips_a_rendering_that_states_a_patronymic() -> None:
+    # the merged role holds the patronymic; the split has nowhere to put it
+    text = "Anna Ivanovna Petrova"
+    row = _row(text, None, given="Anna", patronymic="Ivanovna", surname="Petrova")
+    assert agreement.parse_rendering(text, None).middle == "Ivanovna"
+    assert agreement.split_disagreements([row]) == {}
+
+
+def test_the_split_view_is_reported_for_exactly_the_sources_that_state_it() -> None:
+    # GND and Wikidata record every given name in one field: never scored on it
+    assert agreement.SPLIT_SOURCES == {"CLDR", "Conventions"}
+    assert agreement.SPLIT_SOURCES <= set(agreement.sources())
+    out = _summary_run()[1]
+    assert {line.split(" given/middle split")[0] for line in out.splitlines()
+            if "given/middle split" in line} == agreement.SPLIT_SOURCES
+    assert "expected '" not in out  # no listing without --split
+
+
+def test_split_lists_the_view_s_renderings() -> None:
+    out = _summary_run("--split")[1]
+    assert "conventions/Kim Min Ho/FAMILY_FIRST: 'Kim Min Ho': given expected " \
+           "'Min Ho', got 'Min'" in out
