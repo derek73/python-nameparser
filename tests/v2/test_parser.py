@@ -2103,3 +2103,33 @@ def test_a_decomposed_dotted_letter_is_dotted() -> None:
     differ), so it is pinned directly."""
     from nameparser._pipeline._vocab import _dotted
     assert _dotted(unicodedata.normalize("NFD", "Ž.")) is True
+
+
+# #671: the credential, office and generational words, one spelling each
+# per distinct entry. They are spaced / after-comma vocabulary only; the
+# glued bar was not met (#707 revisits it), so none may become a glued
+# honorific without this list being edited on purpose.
+_CJK_SPACED_WORDS = (
+    "議員", "议员", "国会議員", "國會議員", "太平紳士", "太平绅士",
+    "医学博士", "醫學博士", "二世", "社長", "部長", "課長",
+)
+
+
+@pytest.mark.parametrize("word", _CJK_SPACED_WORDS)
+def test_a_cjk_credential_word_is_a_suffix_spaced_and_after_a_comma(
+        word: str) -> None:
+    parser = Parser()
+    for text in (f"田中 {word}", f"田中, {word}", f"Tanaka, {word}"):
+        parsed = parser.parse(text)
+        assert parsed.suffix == word, text
+        assert word not in parsed.family + parsed.given, text
+    # a one-word head and an empty head (CSV data with the surname
+    # missing) are the comma paths that have disagreed before
+    assert parser.parse(f", {word}").suffix == word
+
+
+@pytest.mark.parametrize("word", _CJK_SPACED_WORDS)
+def test_a_cjk_credential_word_does_not_peel_off_a_glued_name(
+        word: str) -> None:
+    assert word not in Parser().lexicon.honorific_tails
+    assert Parser().parse(f"田中{word}").suffix == ""
