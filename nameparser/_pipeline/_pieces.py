@@ -802,7 +802,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     run ends where it always did. Reading no policy here silently
     overrode the one knob a caller sets to prevent exactly this.
 
-    The FAMILY_COMMA rule "segment 0 is wholly the family name" rests
+    The FAMILY_COMMA rule that segment 0 is the family name rests
     on the writer having said where the family name ends. A comma
     followed by no name word said no such thing -- 'John Smith, Dr.' is
     'Dr. John Smith' with the honorific moved -- so the pre-comma name

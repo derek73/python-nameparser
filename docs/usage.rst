@@ -858,7 +858,7 @@ rule applies there in exactly the same way:
 Where the inference stops
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The rule is bounded in four ways, so it doesn't swallow ordinary
+The rule is bounded in five ways, so it doesn't swallow ordinary
 names:
 
 - **Single initials** are left alone (``J.``).
@@ -869,6 +869,9 @@ names:
   even with a period,
   since those scripts write no abbreviation with one (``"田中. 太郎"``
   has family ``田中.``).
+- **Before a family comma** only a listed title is a title, since that
+  slot holds a surname too: ``Dr. Smith, John`` gives title ``Dr.``,
+  while ``Xyz. Smith, John`` keeps family ``Xyz. Smith``.
 
 .. doctest::
 
@@ -878,6 +881,10 @@ names:
     'E.T.'
     >>> parse("Jane Insp. Morse").middle
     'Insp.'
+    >>> parse("Dr. Smith, John").title
+    'Dr.'
+    >>> parse("Xyz. Smith, John").family
+    'Xyz. Smith'
 
 Because this is structural rather than vocabulary-driven, emptying
 ``titles`` does not switch it off; see :ref:`title-detection-off`.

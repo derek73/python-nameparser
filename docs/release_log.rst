@@ -8,6 +8,7 @@ Release Log
 
     - **Add junior and senior in other languages as suffixes.** ``Antonio Pavlović mlađi`` gives last ``Pavlović``, suffix ``mlađi``, where 1.4.0 through 2.4.2 gave middle ``Pavlović``, last ``mlađi``. The words come from 45 languages and are read when written as a separate word after the name. :issue:`661`, :issue:`679`
     - **Remove mai from the default post-nominal acronyms, so a trailing Mai keeps the name.** ``Tran Thi Mai`` read in Vietnamese order (``FAMILY_FIRST_GIVEN_LAST``) gives given ``Mai``, middle ``Thi``, family ``Tran``, where 2.0.0 through 2.4.2 gave suffix ``Mai`` and no given name; ``Nguyen Mai`` gives family ``Mai``, as 1.4.0 did. The cost is that ``John Smith MAI`` gives last ``MAI`` instead of suffix; ``Smith, John, MAI`` and ``John Smith M.A.I.`` still read as credentials. A caller who needs it back adds it: ``Lexicon.default().add(suffix_acronyms={"mai"})``. See the ``suffix-acronym-collisions`` entry of ``docs/design/decisions.md`` (:issue:`687`)
+    - **Fix a title written before a family comma reading as part of the family name.** ``Dr. Smith, John`` gives title ``Dr.``, last ``Smith``, where 1.4.0 through 2.4.2 gave last ``Dr. Smith``. Only listed titles are read there, so ``Xyz. Smith, John`` keeps its family, and ``St`` and ``Freiherr`` stay in the surname. :issue:`701`
 
 * 2.4.2 - October 13, 2026
 

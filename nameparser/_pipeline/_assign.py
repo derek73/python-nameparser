@@ -35,7 +35,8 @@ only one and its answer stands.
 The v1 single-name+nickname rule lives here (decisions.md#N3): a
 nonempty nickname beside exactly one piece in total puts that piece
 in FAMILY.
-FAMILY_COMMA: segment 0 wholly FAMILY (v1 parity). A part after the
+FAMILY_COMMA: segment 0 FAMILY but for a leading run of listed titles
+(rules.md#H6, #701; v1 kept them in the family). A part after the
 comma that holds no name word, or that a credential opens (#603), is
 not read here: group's head binds its SUFFIX and TITLE roles before
 any join (`_comma.decide`, #613), making the comma a suffix comma
@@ -857,7 +858,7 @@ def assign(state: ParseState) -> ParseState:
                     AmbiguityKind.SUFFIX_OR_NAME,
                     f"{tokens[i].text!r} after the comma is also an "
                     f"ordinary name word; read as ", (i,), field_tail=""))
-        # Segment 1 is read before segment 0's wholly-family pass. It
+        # Segment 1 is read before segment 0's family pass. It
         # consumes piece tags and text only -- nothing segment 0's
         # read writes. (A title standing after the comma behind a whole
         # name, 'John V, Dr.', is bound at group's head since #613 and
@@ -1419,12 +1420,41 @@ def assign(state: ParseState) -> ParseState:
         # (#573: 'SMITH VD MA, JOHN', where the uniform case left the
         # chain stopped before VD; 'SMITH VD JR, JOHN', a suffix word
         # behind it, keeps suffix 'VD JR'). Read here because only
-        # this wholly-family pass needs it: a comma followed by no name
+        # this family pass needs it: a comma followed by no name
         # word behind a whole name is group's suffix comma since #613,
         # and the NO_COMMA read takes segment 0, trailing run and all
         # ('Berg de MA, Prof.').
-        for k, piece in enumerate(fam_pieces):
-            if (k > 0 and is_suffix_piece(piece, fam_tags[k], tokens)
+        #
+        # rules.md#H6: "A run of title words opening the part before a
+        # family comma is the title" -- by vocabulary only, never H2's
+        # shape, leaving one piece for the family, and stopping at a
+        # word that is a particle too ('St Pierre', 'Freiherr von
+        # Berg'), or where everything behind it is post-nominal, which
+        # leaves no family word to address (H3's floor: 'MD PhD Jr.,
+        # John'). A dual is a title wherever a name word follows it
+        # ('Rev. Sr. Smith, Mary'). `is_title_piece` is H5's vocabulary
+        # read, so the two slots that refuse the shape agree on what a
+        # title word is.
+        lead = 0
+        if (len(fam_pieces) > 1
+                and is_title_piece(fam_pieces[0], fam_tags[0], tokens)):
+            # where the trailing post-nominal run starts: walked once,
+            # and only for a part a title opens
+            floor = len(fam_pieces)
+            while floor > 1 and is_suffix_piece(fam_pieces[floor - 1],
+                                                fam_tags[floor - 1],
+                                                tokens):
+                floor -= 1
+            # the first piece is a title, asked above
+            while (lead + 1 < floor
+                   and (lead == 0 or is_title_piece(
+                       fam_pieces[lead], fam_tags[lead], tokens))
+                   and "particle" not in tokens[fam_pieces[lead][0]].tags):
+                _set_roles(tokens, fam_pieces[lead], Role.TITLE)
+                lead += 1
+        for k in range(lead, len(fam_pieces)):
+            piece = fam_pieces[k]
+            if (k > lead and is_suffix_piece(piece, fam_tags[k], tokens)
                     and not (k + 1 < len(fam_pieces)
                              and "particle" in tokens[piece[0]].tags
                              and not is_suffix_piece(

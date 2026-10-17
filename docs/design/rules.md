@@ -90,13 +90,15 @@ H1. Rationale: a title normally addresses by surname, so a title
     the title in front of a name, so a name that BEGINS with it -- a
     surname written first without a comma, or a given name -- gives
     that word to the title, under a declared family-first order too.
-    Written last without a period, or before a family comma, it is
-    the name; a period behind it makes it the title by H5, as for
-    `Mary Jane King.` (#606).
+    Written last without a period, or alone before a family comma,
+    it is the name; a period behind it makes it the title by H5, as
+    for `Mary Jane King.` (#606), and another word behind it before a
+    family comma makes it the title by H6.
+      "Greve Smith, Anna"         →  title="Greve"
       "Greve Anna"                →  family="Anna"
       "Anna Greve"                →  family="Greve"
       "Greve, Anna"               →  family="Greve"
-    history: decisions.md#H1 · interacts: H3, H5, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions.md#H1 · interacts: H3, H5, H6, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 
 H2. Rationale: before a name, an abbreviation is almost always a
     title — "Rev.", "Ing.", "Mag." — and no vocabulary can list
@@ -144,16 +146,16 @@ H2. Rationale: before a name, an abbreviation is almost always a
     second line below is typed that way.
       "Smith. John"               →  title="Smith."
       "김. 민준"                    →  title=""
-    Accepted: before a family comma the pre-comma text is wholly the
-    family name (C1), so no shape or vocabulary reading makes a
-    title there.
+    Accepted: before a family comma the shape does not fire: the
+    titles there are the vocabulary's alone (H6), so an unlisted
+    abbreviation opening that part stays in the family.
       "Xyz. Smith, John"          →  family="Xyz. Smith"
     Accepted: after a family comma a part that is nothing but suffix
     words is the credential run (C1), which the abbreviation does
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions.md#H2 · interacts: C1, S2, S3, P4, H5, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions.md#H2 · interacts: C1, S2, S3, P4, H5, H6, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 
 H3. Rationale: compound titles are written as a run of title words,
     connectives included; a title word standing inside the name is
@@ -175,9 +177,11 @@ H3. Rationale: compound titles are written as a run of title words,
       "Dr King Jr"                →  suffix="Jr"
       "MD DDS"                    →  family="DDS"
       "John Doctor Smith"         →  middle="Doctor"  · boundary
-    Accepted: before a family comma the pre-comma text is wholly the
-    family name (C1), title words included.
-      "Dr. Smith, John"           →  family="Dr. Smith"
+    Accepted: before a family comma the run is H6's, which stops
+    where nothing but post-nominals follows for the reason this one
+    gives a word back, and leaves the family its last word whatever
+    that word is.
+      "Dr. Jr., John"             →  family="Dr."
     Accepted: the word given back must stand alone, so a title
     written as one joined unit stays whole and the post-nominal
     behind it is the name — turning the unit into a name and leaving
@@ -188,7 +192,7 @@ H3. Rationale: compound titles are written as a run of title words,
     the name and the parse reports the doubt (H4).
       "Dr Jr"                     →  given="Dr"
       "Dr Jr"                     →  ambiguities=("title-or-name",)
-    history: decisions.md#H3 · interacts: C1, H1, H4, H5, S2 · implemented: nameparser/_pipeline/_pieces.py
+    history: decisions.md#H3 · interacts: C1, H1, H4, H5, H6, S2 · implemented: nameparser/_pipeline/_pieces.py
 
 H4. Rationale: this is a name parser, not a title parser. Handed a
     string the title peel eats down to one last word which is itself
@@ -369,6 +373,48 @@ H5. Rationale: a word abbreviated with a period at the END of a name
     name reads it.
       "Berg, abdul Prof."         →  title="Prof."
     history: decisions.md#H5 · interacts: H1, H2, H3, H4, M2, P2, P5, P6, S2, C1 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
+
+H6. Rationale: the listing form moves the surname to the front and
+    leaves everything else where it was written, so a title written
+    ahead of the name ends up ahead of the surname — `Dr. Smith,
+    John` is `Dr. John Smith` indexed. The comma names the family,
+    and a title is no part of it. But the slot in front of a family
+    comma is a surname's slot as well, so only the vocabulary claims
+    a word there, never H2's shape, and a word that is a particle as
+    well as a title opens a surname rather than ranking a person.
+    A run of title words opening the part before a family comma is
+    the title, joining the title field in input order with any title
+    after the comma. The run admits a title word only as vocabulary
+    knows it, stops at a word that is also a particle and where
+    nothing but post-nominals stands behind it (H3), and leaves the
+    family its last word. The comma decides the family whatever
+    the order declared, so the reading is the same under every
+    name_order.
+      "Dr. Smith, John"           →  title="Dr."
+      "Dr. Smith, John"           →  family="Smith"
+      "Prof. Dr. Brühl, Ada"      →  title="Prof. Dr."
+      "Dr. de la Vega, Juan"      →  family="de la Vega"
+      "Sir Smith, John"           →  given="John"
+      "Prof. Smith, Dr. John"     →  title="Prof. Dr."
+      "Rev. Sr. Smith, Mary"      →  title="Rev. Sr."
+      "Dr. Mc Donald, John"       →  family="Mc Donald"
+      "Prof. Smith, John, PhD"    →  family="Smith"
+      "Dr., John"                 →  family="Dr."  · boundary
+      "MD PhD Jr., John"          →  family="MD"  · boundary
+      "St Pierre, Ed"             →  family="St Pierre"  · boundary
+      "Dr. St. Pierre, Ed"        →  family="St. Pierre"  · boundary
+    Accepted: a title word that is also an ordinary surname (king,
+    judge, bishop, greve) opening a surname of two words is read as
+    the title, as it is in front of a name with no comma (H1). A
+    double-barrelled surname that begins with such a word loses it.
+      "King Smith, John"          →  title="King"
+    Accepted: 'Freiherr' and 'St' are particles too, so they stay in
+    the family in either spelling, keeping the German rank that is
+    part of the legal surname (C1) and a surname like 'St Pierre'
+    whole. A title in front of them still peels.
+      "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
+      "Dr. Freiherr von Berg, Ed" →  title="Dr."
+    history: decisions.md#H6 · interacts: C1, H1, H2, H3, M2, P1, P2, P4, S2, W3 · implemented: nameparser/_pipeline/_assign.py
 
 ## Particles & surname prefixes (P)
 
@@ -1062,7 +1108,8 @@ S2. Rationale: generational suffixes and credentials are recognized
     says "opening" and does not mean what P4 and the H Background
     mean by it. A family comma is the other boundary: the comma has
     already named the family, so a credential run may open the part
-    after it (C1), and the part before it is that family.
+    after it (C1), and the part before it is that family, less a
+    title run opening it (H6).
     A trailing word of the suffix vocabulary reads as a suffix —
     generational forms and credential acronyms alike, and an
     ambiguous acronym written with its periods, one after each
@@ -1756,8 +1803,9 @@ C1. Rationale: a credential run after the comma means the name is in
     With a comma present, the name reads as trailing suffixes when
     the part after the first comma is entirely suffix words and more
     than one word precedes the comma; otherwise it reads as the
-    listing form, the part before the comma being the family name
-    unless the part after it fixes no family boundary (below). Only
+    listing form, the part before the comma being the family name,
+    less a title run opening it (H6), unless the part after it fixes
+    no family boundary (below). Only
     the part after the first comma decides.
     Wherever this rule counts the words before the comma, a particle
     run and the one name word it attaches to are one word, the reach
@@ -2034,11 +2082,11 @@ C1. Rationale: a credential run after the comma means the name is in
       "Smith, John, Puig - i Soler" extra_suffix_delimiters-dash →  suffix="Puig, i Soler"
       "Smith, John, PhD - and MD" extra_suffix_delimiters-dash →  suffix="PhD, and MD"
     Accepted: a title in front of a particle surname, before the
-    credential class's word, is read into the family. The surname
+    credential class's word, reads the listing form. The surname
     counts once and the title is no name word, so the count reads the
-    listing form, and the listing form keeps a title before the comma
-    in the family, as it already did for any one-word surname ('Prof.
-    Cruz, Ed'). For a German rank that reading is the right one:
+    listing form, and the listing form peels a title before the comma
+    (H6) unless the word is a particle too, as 'Freiherr' is, which
+    stays in the family. For a German rank that reading is the right one:
     since 1919 a former noble title is part of the legal surname,
     written between the given name and the particle, so 'Freiherr von
     Berg' is the family name in 'Freiherr von Berg, Ed', as 2.0
@@ -2097,7 +2145,7 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions.md#C1 · interacts: H1, H2, P1, P2, P3, P5, P6, W3, S2, S3, M2 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions.md#C1 · interacts: H1, H2, H6, P1, P2, P3, P5, P6, W3, S2, S3, M2 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
 C2. Rationale: text beyond the recognized comma parts should be
     taken in without silent guessing.
@@ -2375,7 +2423,8 @@ W3. Rationale: a family name declared by a comma is the writer's
     it does not promise it.
     Under a family comma the pre-comma text is the family by
     declaration and never divides, and the post-comma side is given
-    text with no family to find; only the honorific split-off (W2)
+    text with no family to find, a title run opening the pre-comma
+    text aside (H6); only the honorific split-off (W2)
     crosses the comma, an honorific being no part of the name on
     either side — the crossing is stated here rather than in W2
     because it is a claim about the comma, and the comma is the part
@@ -2430,7 +2479,7 @@ W3. Rationale: a family name declared by a comma is the writer's
       "김민준씨."                 →  suffix="씨."
       "田中. 太郎"                →  family="田中."
     tolerated: native CJK writing has neither a family-comma convention nor an edge full stop of any width on a name word, so the five comma lines above and the three period lines under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All eight stay watched by the snapshot (tools/differential/snapshot.jsonl, over corpus_rules.jsonl and corpus_cjk.jsonl), and the `tolerated` rows of tests/v2/cases.py pin them at HEAD.
-    history: decisions.md#W3 · interacts: W1, W2, C1, H2 · implemented: nameparser/_pipeline/_script_segment.py
+    history: decisions.md#W3 · interacts: W1, W2, C1, H2, H6 · implemented: nameparser/_pipeline/_script_segment.py
 
 W4. Rationale: Chinese, Japanese and Korean all write the family
     name first in native script — the script settles the order
