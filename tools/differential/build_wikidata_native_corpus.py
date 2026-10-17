@@ -102,7 +102,6 @@ import sys
 import unicodedata
 import urllib.error
 import urllib.parse
-import urllib.request
 import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
@@ -359,43 +358,19 @@ def lccn(person: dict[str, Any]) -> str | None:
 
 def build(refresh: bool) -> tuple[list[dict[str, Any]], dict[str, str]]:
     """Every stratum's rows, and the LCCN of each person used who states
-    one. Raises ValueError, before main() writes anything, naming each
-    stratum below its floor, or on a pooled person Wikidata reports
+    one. The loop is `wikidata.build_strata`, shared with the parent
+    builder. Raises ValueError, before main() writes anything, naming
+    each stratum below its floor, or on a pooled person Wikidata reports
     missing, or (from pool()) on a pool that is empty or the wrong size."""
-    rows: list[dict[str, Any]] = []
     lccns: dict[str, str] = {}
-    seen: set[str] = set()
-    short: list[str] = []
-    for stratum in STRATA:
-        pooled = pool(stratum, refresh)
-        qids = [q for q in pooled if q not in seen]
-        people = entities(qids, stratum.language, refresh)
-        stale = sorted(q for q in qids if "missing" in people[q])
-        if stale:
-            raise ValueError(f"{stratum.label}: WDQS pooled items Wikidata reports "
-                             f"missing: {', '.join(stale[:10])}; rerun with --refresh")
-        parts = {v for p in people.values() for prop in PARTS for v in statements(p, prop)}
-        names = entities(sorted(parts), stratum.language, refresh)
-        taken = refused = 0
-        for qid in qids:
-            if taken == stratum.quota:
-                break
-            mine = renderings(qid, people[qid], names, stratum)
-            if not mine:
-                refused += 1
-                continue
-            seen.add(qid)
-            rows.extend(mine)
-            if (found := lccn(people[qid])) is not None:
-                lccns[qid] = found
-            taken += 1
-        print(f"{stratum.label:6} {taken:3}/{stratum.quota} names ({refused} refused, "
-              f"{len(pooled) - len(qids)} taken by an earlier stratum, "
-              f"{len(pooled)} pooled)")
-        if taken < stratum.floor:
-            short.append(f"{stratum.label} {taken}/{stratum.floor}")
-    if short:
-        raise ValueError(f"strata below their floor, nothing written: {', '.join(short)}")
+
+    def keep(qid: str, person: dict[str, Any]) -> None:
+        if (found := lccn(person)) is not None:
+            lccns[qid] = found
+    rows = wikidata.build_strata(
+        STRATA, props=PARTS, label_width=6, refresh=refresh, pool=pool,
+        entities=lambda ids, stratum, refresh: entities(ids, stratum.language, refresh),
+        renderings=renderings, keep=keep)
     return rows, lccns
 
 
@@ -421,11 +396,8 @@ def lc_variants(lccn: str, refresh: bool) -> list[str] | None:
     url = LC_RECORD.format(urllib.parse.quote(lccn))
 
     def fetch() -> bytes:
-        request = urllib.request.Request(url, headers={"User-Agent": wikidata.USER_AGENT})
-        with urllib.request.urlopen(request, timeout=60) as response:
-            body: bytes = response.read()
-        wikidata.time.sleep(1)
-        return body
+        return corpus_build.fetch_bytes(url, user_agent=wikidata.USER_AGENT,
+                                        timeout=60, delay=1)
     try:
         record = corpus_build.cached_json(corpus_build.cache_dir("lc"), url, url,
                                           fetch, _lc_checked, refresh)

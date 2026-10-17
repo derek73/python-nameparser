@@ -49,15 +49,15 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import urllib.request
 from pathlib import Path
 
-# The shared cache and file helpers (corpus_build.py), found by putting
+# The shared fetch, cache and file helpers (corpus_build.py), found by putting
 # this directory on sys.path: see corpus_build's docstring for why.
 _HERE = str(Path(__file__).resolve().parent)
 if _HERE not in sys.path:
     sys.path.append(_HERE)
 
+import corpus_build  # noqa: E402
 from corpus_build import corpus_lines, fields_lines, write_corpus  # noqa: E402,F401
 
 HERE = Path(__file__).resolve().parent
@@ -138,10 +138,7 @@ def parse_test_file(text: str, stem: str) -> list[dict[str, object]]:
 
 
 def _get(url: str) -> bytes:
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=60) as response:
-        data: bytes = response.read()
-    return data
+    return corpus_build.fetch_bytes(url, user_agent=USER_AGENT, timeout=60)
 
 
 def main() -> None:

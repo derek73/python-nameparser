@@ -9,11 +9,13 @@ are loaded by path, as _differential_fixtures.py loads compare.py.
 import json
 import subprocess
 import sys
+import time
+import urllib.request
 from pathlib import Path
 
 import pytest
 
-from ._differential_fixtures import _TOOLS, load_tool
+from ._differential_fixtures import _TOOLS, _Response, load_tool
 
 corpus_build = load_tool("corpus_build")
 
@@ -35,6 +37,59 @@ def test_each_builder_finds_the_shared_module_on_its_own(
                             capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "True"
+
+
+def _record_fetches(monkeypatch: pytest.MonkeyPatch) -> list[tuple[urllib.request.Request, int]]:
+    """Answer every urlopen with b"ok"; each entry is the request and its timeout."""
+    seen: list[tuple[urllib.request.Request, int]] = []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
+        seen.append((request, timeout))
+        return _Response(b"ok")
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    return seen
+
+
+def test_fetch_bytes_sends_the_user_agent_and_the_extra_headers(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    seen = _record_fetches(monkeypatch)
+    body = corpus_build.fetch_bytes("https://x.test/a", user_agent="bot/1", timeout=7,
+                                    headers={"Accept": "application/json"})
+    [(request, timeout)] = seen
+    assert body == b"ok" and timeout == 7
+    assert request.get_method() == "GET" and request.data is None
+    assert request.get_header("User-agent") == "bot/1"
+    assert request.get_header("Accept") == "application/json"
+
+
+def test_fetch_bytes_posts_when_given_data(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen = _record_fetches(monkeypatch)
+    corpus_build.fetch_bytes("https://x.test/q", user_agent="bot/1", timeout=1, data=b"a=b")
+    [(request, _)] = seen
+    assert request.get_method() == "POST" and request.data == b"a=b"
+
+
+def test_fetch_bytes_sleeps_only_when_given_a_delay(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    slept: list[float] = []
+    _record_fetches(monkeypatch)
+    monkeypatch.setattr(time, "sleep", slept.append)
+    corpus_build.fetch_bytes("https://x.test/a", user_agent="bot/1", timeout=1)
+    assert slept == []
+    corpus_build.fetch_bytes("https://x.test/a", user_agent="bot/1", timeout=1, delay=1)
+    assert slept == [1]
+
+
+def test_a_failed_fetch_does_not_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
+    slept: list[float] = []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> None:
+        raise OSError("down")
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(time, "sleep", slept.append)
+    with pytest.raises(OSError, match="down"):
+        corpus_build.fetch_bytes("https://x.test/a", user_agent="bot/1", timeout=1, delay=1)
+    assert slept == []
 
 
 def test_a_shape_must_be_an_int_or_none() -> None:

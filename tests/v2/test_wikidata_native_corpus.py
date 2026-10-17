@@ -264,6 +264,8 @@ def _stub_build(monkeypatch: pytest.MonkeyPatch, strata: tuple[Any, ...],
               for qs in pooled.values() for q in qs}
     if "Q11" in people:
         people["Q11"]["claims"]["P244"] = [_claim("n82128473")]
+    if "Q12" in people:  # past the first stratum's quota: never taken, so never kept
+        people["Q12"]["claims"]["P244"] = [_claim("n99999999")]
     names = _names("ko", Q2="김", Q3="기영")
     monkeypatch.setattr(native, "STRATA", strata)
     monkeypatch.setattr(native, "pool", lambda stratum, refresh: pooled[stratum.label])
@@ -316,12 +318,6 @@ def test_a_query_names_the_strata_label_language() -> None:
 
 # -- the network and the cache ------------------------------------------------
 
-def _serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:
-    # native imports build_wikidata_corpus by name, not as load_tool's copy
-    monkeypatch.setattr(native.wikidata.time, "sleep", lambda seconds: None)
-    return serve(monkeypatch, tmp_path, body)
-
-
 def _results(n: int) -> bytes:
     return json.dumps({"results": {"bindings": [
         {"item": {"value": f"http://www.wikidata.org/entity/Q{i}"}}
@@ -330,14 +326,14 @@ def _results(n: int) -> bytes:
 
 def test_a_query_matching_nothing_stops_the_build(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, _results(0))
+    serve(monkeypatch, tmp_path, _results(0))
     with pytest.raises(ValueError, match="ko-kr: the query matches nothing"):
         native.pool(_STRATA["ko-kr"], refresh=False)
 
 
 def test_a_pool_short_of_its_size_stops_the_build_unless_it_is_the_whole(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, _results(5))
+    serve(monkeypatch, tmp_path, _results(5))
     with pytest.raises(ValueError, match="ko-kr: the query matched 5 people, fewer "
                                          "than its pool of 300"):
         native.pool(_STRATA["ko-kr"], refresh=False)
@@ -349,14 +345,14 @@ def test_a_stratum_marked_whole_whose_pool_fills_stops_the_build(
     # The population has outgrown the mark, which would otherwise go on
     # excusing a short pool.
     whole = native.Stratum("w", "Q869", "th", 1, 3, whole=True)
-    _serve(monkeypatch, tmp_path, _results(3))
+    serve(monkeypatch, tmp_path, _results(3))
     with pytest.raises(ValueError, match="w: marked whole=True, but the query filled"):
         native.pool(whole, refresh=False)
 
 
 def test_entities_asks_only_for_the_languages_labels(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    fetched = _serve(monkeypatch, tmp_path, b'{"entities": {"Q1": {"id": "Q1"}}}')
+    fetched = serve(monkeypatch, tmp_path, b'{"entities": {"Q1": {"id": "Q1"}}}')
     native.entities(["Q1"], "zh", refresh=False)
     [url] = fetched
     assert "languages=zh%7Czh-hans%7Czh-hant%7Czh-cn%7Czh-tw%7Czh-hk%7Cmul" in url
@@ -364,10 +360,12 @@ def test_entities_asks_only_for_the_languages_labels(
 
 def test_an_lc_record_is_cached_and_read_back(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    fetched = _serve(monkeypatch, tmp_path, _MARC.encode())
+    sleeps: list[float] = []
+    fetched = serve(monkeypatch, tmp_path, _MARC.encode(), sleeps=sleeps)
     assert native.lc_variants("nr93008484", refresh=False) == ["הלוי, אהרן", "이 병기"]
     assert native.lc_variants("nr93008484", refresh=False) == ["הלוי, אהרן", "이 병기"]
     assert len(fetched) == 1
+    assert sleeps == [1]  # one fetch, one polite wait; the cached read waits for nothing
 
 
 def _fail(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, code: int) -> None:
