@@ -15,17 +15,28 @@ selection, so a row added without regenerating fails the suite.
 """
 from __future__ import annotations
 
+import importlib.util
 import json
-import sys
 from pathlib import Path
+from types import ModuleType
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-
-from conventions import CONVENTIONS  # noqa: E402
-from shapes import SHAPES  # noqa: E402
-
 OUT = HERE / "corpus_conventions.jsonl"
+
+
+def _load(stem: str) -> ModuleType:
+    """A sibling module, loaded by path as snapshot.load_shapes does:
+    tools/ is not a package, and putting tools/differential/ on sys.path
+    would let its modules shadow bare imports for the rest of a test run."""
+    spec = importlib.util.spec_from_file_location(f"_{stem}", HERE / f"{stem}.py")
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+CONVENTIONS = _load("conventions").CONVENTIONS
+SHAPES = _load("shapes").SHAPES
 
 
 def _shape_for(order: str) -> int:

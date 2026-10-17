@@ -302,12 +302,12 @@ uv run python tools/differential/build_cjk_corpus.py
 ```
 
 Every distinct CJK-bearing `text` in `tests/v2/cases.py`, `tolerated`
-rows included. The generated corpora (`corpus_cjk`, `corpus_conventions`,
-`corpus_rules`, `corpus_shapes`) are each pinned by `tests/v2/test_corpora.py` against
-their generator's selection, so a case row, a rules.md example or a
-`conventions.py` row added
-without regenerating fails the suite instead of silently narrowing
-what the snapshot watches.
+rows included. The generated corpora (`corpus_cjk`,
+`corpus_conventions`, `corpus_rules`, `corpus_shapes`) are each pinned
+by `tests/v2/test_corpora.py` against their generator's selection, so a
+case row, a rules.md example or a `conventions.py` row added without
+regenerating fails the suite instead of silently narrowing what the
+snapshot watches.
 
 `corpus_conventions.jsonl` is generated from `conventions.py`, a table
 whose rows record the tradition, the convention a name exercises, and
@@ -318,10 +318,11 @@ uv run python tools/differential/build_conventions_corpus.py
 ```
 
 That expectation is a note, not a pin, and nothing scores against
-it: many are stated in terms the model cannot express yet (a
-patronymic, a name with no family name), and a fields file would
-read each such unstated part as an empty role (#686). A row whose
-reading is settled graduates to `tests/v2/cases.py`. The names are
+it: many are stated in terms no field states (a father's or
+grandfather's name, an honorific that is not a title, a married form),
+some are undecided, and a fields file must state every part, since the
+scorer reads an unstated one as an empty role (#686). A row whose
+reading is settled can graduate to `tests/v2/cases.py`. The names are
 invented, never copied from the references the conventions come
 from.
 

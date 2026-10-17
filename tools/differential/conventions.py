@@ -11,15 +11,16 @@ corpus's.
 
 `expect` is a NOTE, not a pin: what a reader who knows the convention
 would take each part to be, often in terms the model cannot express yet
-(a patronymic, a name with no family name, an honorific that is not a
-title). Nothing scores the parser against it (#686 decided against a
-fields file). Today's reading is deliberately not recorded here either:
+(a father's or grandfather's name, an honorific that is not a title, a
+married form), and sometimes left undecided (`H. Budi Santoso`). Nothing
+scores the parser against it (#686 decided against a fields file). Today's reading is deliberately not recorded here either:
 snapshot.jsonl holds it, and a second copy would go stale. A row whose
 reading is settled can graduate to tests/v2/cases.py, where it becomes a
 contract.
 
-`order` is a public nameparser constant name, as in shapes.py; None is
-the default order.
+`order` names an order some shapes.py shape declares, `"FAMILY_FIRST"`
+or `"FAMILY_FIRST_GIVEN_LAST"`; the default order is None, not
+`"GIVEN_FIRST"`, which no shape declares.
 """
 from typing import NamedTuple
 
@@ -39,8 +40,8 @@ CONVENTIONS: tuple[Convention, ...] = (
                "given names, not a family name"),
     Convention("Sikh", "religious name between given and family name",
                "Harpreet Kaur Dhillon", None,
-               "given Harpreet; Kaur is the religious name every Sikh woman bears, "
-               "written as a surname when no family name is; family Dhillon"),
+               "given Harpreet; Kaur is the religious name Sikh women traditionally "
+               "take, written as a surname when no family name is; family Dhillon"),
     Convention("Tamil", "father's given name as a leading initial",
                "K. Sivakumar", None,
                "K. is the father's given name; Sivakumar is the person's own given "
@@ -72,7 +73,9 @@ CONVENTIONS: tuple[Convention, ...] = (
     Convention("Vietnamese", "Thi as the female middle name",
                "Tran Thi Mai", "FAMILY_FIRST",
                "family Tran; middle Thi; given Mai, which the convention writes "
-               "last (the order FAMILY_FIRST_GIVEN_LAST names)"),
+               "last (the order FAMILY_FIRST_GIVEN_LAST names; read under "
+               "FAMILY_FIRST as the issue measured it); Mai is also a "
+               "suffix acronym, so either order reads it as a suffix"),
     Convention("Bulgarian", "patronymic between given and family name",
                "Ivan Petrov Dimitrov", None,
                "given Ivan; Petrov his patronymic, from his father Petar; family "
