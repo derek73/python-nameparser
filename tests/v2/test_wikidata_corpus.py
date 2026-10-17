@@ -7,14 +7,13 @@ a package, so the module is loaded by path, as _differential_fixtures.py
 loads compare.py.
 """
 import json
-import urllib.request
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from ._differential_fixtures import load_tool
+from ._differential_fixtures import load_tool, serve
 
 build = load_tool("build_wikidata_corpus")
 agreement = load_tool("cldr_agreement")
@@ -236,23 +235,14 @@ def test_every_field_occurs_in_its_rendering() -> None:
 _ROWS = agreement.load_rows(agreement.WIKIDATA_FIELDS)
 
 
-def test_every_committed_field_occurs_in_its_rendering() -> None:
-    # A field that did not occur would be expected EMPTY by the
-    # comparison, a disagreement no parser fix could resolve.
-    missing = [(row["text"], value) for row in _ROWS for value in row["fields"].values()
-               if not agreement.occurs(value, row["text"])]
-    assert not missing
-
-
 def test_every_committed_rendering_is_covered_by_its_fields() -> None:
     # The comparison reads a missing field as an EMPTY role. That is
     # sound here only because the fields claim every word of the text:
     # an absent P734 or P5056 means "not entered", and would otherwise
     # leave a word whose role the comparison wrongly expects empty.
     uncovered = [row["text"] for row in _ROWS
-                 if Counter(agreement._words(row["text"]))
-                 != Counter(w for v in row["fields"].values()
-                            for w in agreement._words(v))]
+                 if not agreement.same(" ".join(row["fields"].values()),
+                                       row["text"], row["text"])]
     assert not uncovered
     assert len(_ROWS) > 500, "the Wikidata fields file is missing or truncated"
 
@@ -284,7 +274,7 @@ def _stub_build(monkeypatch: pytest.MonkeyPatch, strata: tuple[Any, ...],
                          P1950="Q3") for qs in pooled.values() for q in qs}
     monkeypatch.setattr(build, "STRATA", strata)
     monkeypatch.setattr(build, "pool", lambda stratum, refresh: pooled[stratum.label])
-    monkeypatch.setattr(build, "entities", lambda ids, props, refresh, required=True:
+    monkeypatch.setattr(build, "entities", lambda ids, props, refresh:
                         {**{q: people[q] for q in ids if q in people},
                          **{q: _GGM[q] for q in ids if q in _GGM}})
 
@@ -310,30 +300,9 @@ def test_build_stops_before_writing_when_a_stratum_falls_short(
 
 # -- the network and the cache ------------------------------------------------
 
-class _Response:
-    def __init__(self, body: bytes) -> None:
-        self.body = body
-
-    def __enter__(self) -> "_Response":
-        return self
-
-    def __exit__(self, *exc: object) -> None:
-        return None
-
-    def read(self) -> bytes:
-        return self.body
-
-
 def _serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:
-    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     monkeypatch.setattr(build.time, "sleep", lambda seconds: None)
-    fetched: list[str] = []
-
-    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
-        fetched.append(request.full_url)
-        return _Response(body)
-    monkeypatch.setattr(build.urllib.request, "urlopen", urlopen)
-    return fetched
+    return serve(monkeypatch, tmp_path, body)
 
 
 _RESULTS = json.dumps({"results": {"bindings": [
@@ -387,16 +356,21 @@ def test_an_item_the_response_leaves_out_stops_the_build(
 
 
 def test_a_missing_person_stops_the_build_and_a_missing_part_does_not(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch: pytest.MonkeyPatch) -> None:
     # A pooled person must exist; a deleted name-part item only refuses
     # the person stating it (it has no spellings), which --refresh could
     # not fix anyway.
-    _serve(monkeypatch, tmp_path, b'{"entities": {"Q1": {"id": "Q1", "missing": ""}}}')
-    with pytest.raises(ValueError, match="reports missing: Q1"):
-        build.entities(["Q1"], "labels", refresh=False)
-    names = build.entities(["Q1"], "labels", refresh=False, required=False)
-    person = _person("Gabriel García Márquez", "es", P735="Q1", P734="Q2", P1950="Q3")
-    assert build.renderings("Q5878", person, {**_GGM, **names}, _ES) == []
+    stratum = build.Stratum("s", "Q29", "P1950", "es", 1, least=0)
+    _stub_build(monkeypatch, (stratum,), {"s": ["Q10"]})
+    deleted = {"id": "Q1", "missing": ""}
+    real = build.entities
+    monkeypatch.setattr(build, "entities", lambda ids, props, refresh: {
+        **real(ids, props, refresh), **({"Q1": deleted} if "Q1" in ids else {})})
+    assert build.build(refresh=False) == []  # the part: the person is refused
+    monkeypatch.setattr(build, "entities", lambda ids, props, refresh: {
+        **real(ids, props, refresh), **({"Q10": deleted} if "Q10" in ids else {})})
+    with pytest.raises(ValueError, match="s: WDQS pooled items .*missing: Q10"):
+        build.build(refresh=False)
 
 
 # -- the committed files, by stratum ---------------------------------------------

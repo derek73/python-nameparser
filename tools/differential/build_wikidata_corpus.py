@@ -240,13 +240,10 @@ def pool(stratum: Stratum, refresh: bool) -> list[str]:
     return qids
 
 
-def entities(ids: Iterable[str], props: str, refresh: bool,
-             required: bool = True) -> dict[str, Any]:
+def entities(ids: Iterable[str], props: str, refresh: bool) -> dict[str, Any]:
     """Each requested item, keyed by the id asked for (a redirected item
-    comes back under that id, holding its target). Raises on an id the
-    response leaves out, and, where `required`, on one Wikidata reports
-    missing: a pooled person must exist, while a deleted name-part item
-    is a fact about the data, and only refuses the person stating it."""
+    comes back under that id, holding its target; a deleted one, marked
+    `missing`). Raises on an id the response leaves out."""
     ids = sorted(set(ids))
     out: dict[str, Any] = {}
     for start in range(0, len(ids), BATCH):
@@ -258,11 +255,6 @@ def entities(ids: Iterable[str], props: str, refresh: bool,
     if absent:
         raise ValueError(f"wbgetentities left out {', '.join(absent[:10])}"
                          f"{' ...' if len(absent) > 10 else ''}; rerun with --refresh")
-    missing = sorted(i for i in ids if "missing" in out[i])
-    if required and missing:
-        raise ValueError(f"WDQS pooled items Wikidata reports missing: "
-                         f"{', '.join(missing[:10])}; the pool is stale, rerun "
-                         "with --refresh")
     return out
 
 
@@ -313,6 +305,25 @@ def _word(token: str) -> str:
     return token.rstrip(",")
 
 
+def _spans(tokens: list[str], words: list[str], names: set[str]) -> set[tuple[int, int]]:
+    """Where any spelling occurs as whole words, as (start, end) word
+    positions. A comma may only end a span: `Кушнарёв, Юрий` is two parts."""
+    found: set[tuple[int, int]] = set()
+    for name in names:
+        want = name.split()
+        for i in range(len(words) - len(want) + 1):
+            j = i + len(want)
+            if words[i:j] == want and not any(t.endswith(",") for t in tokens[i:j - 1]):
+                found.add((i, j))
+    return found
+
+
+def _widest(spans: set[tuple[int, int]]) -> set[tuple[int, int]]:
+    """The spans no other span contains: `María José` over its `María`."""
+    return {(i, j) for i, j in spans
+            if not any(a <= i and j <= b and (a, b) != (i, j) for a, b in spans)}
+
+
 def align(text: str, parts: list[tuple[str, set[str]]]) -> dict[str, list[int]] | None:
     """Each field's word positions in `text`, or None when the text is
     not covered by exactly one part per word. `parts` holds one
@@ -321,14 +332,7 @@ def align(text: str, parts: list[tuple[str, set[str]]]) -> dict[str, list[int]] 
     words = [_word(t) for t in tokens]
     claimed: dict[int, str] = {}
     for field, names in parts:
-        spans = {(i, i + len(n.split()))
-                 for n in names for i in range(len(words))
-                 if words[i:i + len(n.split())] == n.split()}
-        # a comma may only end the span: `Кушнарёв, Юрий` is two parts
-        spans = {(i, j) for i, j in spans
-                 if not any(t.endswith(",") for t in tokens[i:j - 1])}
-        widest = {(i, j) for i, j in spans
-                  if not any(a <= i and j <= b and (a, b) != (i, j) for a, b in spans)}
+        widest = _widest(_spans(tokens, words, names))
         if len(widest) > 1:
             return None  # the part matches in two places
         for i, j in widest:
@@ -336,6 +340,8 @@ def align(text: str, parts: list[tuple[str, set[str]]]) -> dict[str, list[int]] 
                 if k in claimed:
                     return None  # two parts claim one word
                 claimed[k] = field
+    # Right to left, so a run of connectives chains to the part after it;
+    # tokens[k], not words[k], since a connective carrying a comma joins nothing.
     for k in range(len(words) - 1, -1, -1):
         if k not in claimed and words[k] in CONNECTIVES \
                 and k + 1 in claimed and not tokens[k].endswith(","):
@@ -362,7 +368,7 @@ def renderings(qid: str, person: dict[str, Any], names: dict[str, Any],
     """The fields lines one person contributes; [] when no written name
     of theirs aligns."""
     female = FEMALE in statements(person, "P21")
-    texts = [(t, lang) for t, lang in statements(person, "P1559")]
+    texts = list(statements(person, "P1559"))
     if _label(person, stratum.language):
         texts.append((_label(person, stratum.language), stratum.language))
     rows: list[dict[str, Any]] = []
@@ -426,9 +432,15 @@ def build(refresh: bool) -> list[dict[str, Any]]:
         pooled = pool(stratum, refresh)
         qids = [q for q in pooled if q not in seen]
         people = entities(qids, "labels|claims", refresh)
+        # A pooled person must exist; a deleted name-part item is a fact
+        # about the data, and only refuses the person stating it.
+        stale = sorted(q for q in qids if "missing" in people[q])
+        if stale:
+            raise ValueError(f"{stratum.label}: WDQS pooled items Wikidata reports "
+                             f"missing: {', '.join(stale[:10])}; rerun with --refresh")
         parts = {v for p in people.values() for prop in PARTS
                  for v in statements(p, prop)}
-        names = entities(parts, "labels|claims", refresh, required=False)
+        names = entities(parts, "labels|claims", refresh)
         taken = refused = 0
         for qid in qids:
             if taken == stratum.quota:

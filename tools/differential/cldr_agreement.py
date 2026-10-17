@@ -165,15 +165,18 @@ def expected_roles(fields: dict[str, str], text: str) -> dict[str, str]:
         found = [fields[n] for n in names if n in fields and occurs(fields[n], text)]
         return " ".join(sorted(found, key=lambda v: _squash(text).find(_squash(v))))
 
-    family = (("surname", "surname2") if "surname" in fields
-              else ("surname-prefix", "surname-core", "surname2"))
+    def pending(role: str) -> tuple[str, ...]:
+        """The PENDING_ROLES fields scored inside `role`."""
+        return tuple(f for f, merged in PENDING_ROLES.items() if merged == role)
+
+    family = ("surname",) if "surname" in fields else ("surname-prefix", "surname-core")
     roles = {"title": present("title"),
-             "given_names": present("given", "given2", "patronymic"),
-             "family": present(*family),
+             "given_names": present("given", "given2", *pending("given_names")),
+             "family": present(*family, *pending("family")),
              "suffix": present("generation", "credentials")}
     if "surname-core" in fields:
         roles["family_particles"] = present("surname-prefix")
-        roles["family_base"] = present("surname-core", "surname2")
+        roles["family_base"] = present("surname-core", *pending("family"))
     for role in PENDING_ROLES:
         if role in fields:
             roles[role] = present(role)

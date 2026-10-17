@@ -242,6 +242,19 @@ def test_the_corpus_and_the_fields_file_hold_the_same_renderings(source: str) ->
     assert len(from_fields) > least, f"the {source} corpus is missing or truncated"
 
 
+@pytest.mark.parametrize("source", sorted(set(_CORPORA) - {"CLDR"}))
+def test_every_committed_field_occurs_in_its_rendering(source: str) -> None:
+    # A field that did not occur would be expected EMPTY by the
+    # comparison, a disagreement no parser fix could resolve. CLDR is
+    # exempt by design: its formats drop fields by locale and order, and
+    # it states fields (locale, given-informal) no rendering writes.
+    fields, _ = agreement.sources()[source]
+    missing = [(row["text"], value) for row in agreement.load_rows(fields)
+               for value in row["fields"].values()
+               if not agreement.occurs(value, row["text"])]
+    assert not missing
+
+
 @pytest.mark.parametrize("source", sorted(_CORPORA))
 def test_nameparser_still_agrees_with_each_source_where_it_did(source: str) -> None:
     fields, record = agreement.sources()[source]
