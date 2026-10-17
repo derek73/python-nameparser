@@ -91,15 +91,22 @@ it would be read given-first; none is in the committed data. No title, credentia
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
-import os
+import sys
 import time
 import urllib.parse
 import urllib.request
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, NamedTuple
+
+# The shared cache and file helpers (corpus_build.py). sys.path[0] is
+# this directory when run as a script; the tests load this module by path.
+_HERE = str(Path(__file__).resolve().parent)
+if _HERE not in sys.path:
+    sys.path.append(_HERE)
+
+import corpus_build  # noqa: E402
+from corpus_build import corpus_lines, fields_lines  # noqa: E402,F401
 
 HERE = Path(__file__).resolve().parent
 CORPUS = HERE / "corpus_wikidata.jsonl"
@@ -179,22 +186,11 @@ STRATA = (
 )
 
 
-def cache_dir() -> Path:
-    root = Path(os.environ.get("NAMEPARSER_TOOLS_CACHE",
-                               Path.home() / ".cache" / "nameparser-tools"))
-    path = root / "wikidata"
-    path.mkdir(parents=True, exist_ok=True)
-    return path
-
-
 def _checked(body: bytes | str, source: str, kind: str) -> dict[str, Any]:
     """A WDQS result (`kind` "results") or a wbgetentities response
     ("entities"), or ValueError naming where it came from. An API error
     arrives with status 200, so the shape is what tells."""
-    try:
-        data = json.loads(body)
-    except ValueError as error:
-        raise ValueError(f"{source} is not JSON ({error})") from None
+    data = corpus_build.parse_json(body, source)
     if not isinstance(data, dict) or kind not in data or "error" in data:
         detail = data.get("error") if isinstance(data, dict) else None
         raise ValueError(f"{source} has no {kind!r}" + (f": {detail}" if detail else ""))
@@ -202,21 +198,16 @@ def _checked(body: bytes | str, source: str, kind: str) -> dict[str, Any]:
 
 
 def _fetch(url: str, data: bytes | None, refresh: bool, kind: str) -> dict[str, Any]:
-    key = url + "\n" + (data or b"").decode()
-    cached = cache_dir() / (hashlib.sha256(key.encode()).hexdigest()[:24] + ".json")
-    if cached.exists() and not refresh:
-        return _checked(cached.read_text(encoding="utf-8"),
-                        f"{cached} (cached; delete it or pass --refresh)", kind)
-    headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
-    request = urllib.request.Request(url, data=data, headers=headers)
-    with urllib.request.urlopen(request, timeout=90) as response:
-        body = response.read()
-    parsed = _checked(body, url, kind)
-    partial = cached.with_suffix(".part")
-    partial.write_bytes(body)
-    os.replace(partial, cached)
-    time.sleep(1)  # sequential, and gentle
-    return parsed
+    def fetch() -> bytes:
+        headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+        request = urllib.request.Request(url, data=data, headers=headers)
+        with urllib.request.urlopen(request, timeout=90) as response:
+            body: bytes = response.read()
+        time.sleep(1)  # sequential, and gentle
+        return body
+    return corpus_build.cached_json(
+        corpus_build.cache_dir("wikidata"), url + "\n" + (data or b"").decode(), url,
+        fetch, lambda body, source: _checked(body, source, kind), refresh)
 
 
 def query(stratum: Stratum) -> str:
@@ -402,26 +393,6 @@ def renderings(qid: str, person: dict[str, Any], names: dict[str, Any],
     return rows
 
 
-def corpus_lines(rows: list[dict[str, Any]]) -> list[str]:
-    """One harness line per distinct (text, shape), sorted for stable diffs."""
-    pairs = {(str(row["text"]), row["shape"]) for row in rows}
-    return [json.dumps(text, ensure_ascii=False) if shape is None
-            else json.dumps({"name": text, "shape": shape}, ensure_ascii=False)
-            for text, shape in sorted(pairs, key=lambda p: (p[0], p[1] or 0))]
-
-
-def fields_lines(rows: list[dict[str, Any]]) -> list[str]:
-    """One line per rendering, sorted by its key (QID/stratum/order)."""
-    keyed: dict[str, dict[str, Any]] = {}
-    for row in rows:
-        key = f"{row['file']}/{row['label']}/{row['order']}"
-        if key in keyed:
-            raise ValueError(f"duplicate rendering {key}")
-        keyed[key] = row
-    return [json.dumps(keyed[k], ensure_ascii=False, sort_keys=True)
-            for k in sorted(keyed)]
-
-
 def build(refresh: bool) -> list[dict[str, Any]]:
     """Every stratum's rows, or ValueError naming each stratum that fell
     below its floor -- raised before main() writes anything."""
@@ -467,8 +438,7 @@ def main() -> None:
     ap.add_argument("--refresh", action="store_true",
                     help="fetch from Wikidata again instead of reading the cache")
     rows = build(ap.parse_args().refresh)
-    CORPUS.write_text("\n".join(corpus_lines(rows)) + "\n", encoding="utf-8")
-    FIELDS.write_text("\n".join(fields_lines(rows)) + "\n", encoding="utf-8")
+    corpus_build.write_corpus(rows, CORPUS, FIELDS)
     LICENSE.write_text(LICENSE_TEXT, encoding="utf-8")
     print(f"Wikidata: {len(rows)} renderings of {len({r['file'] for r in rows})} "
           f"names; wrote {CORPUS.name}, {FIELDS.name}, {LICENSE.name}")

@@ -48,8 +48,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import urllib.request
 from pathlib import Path
+
+# The shared cache and file helpers (corpus_build.py). sys.path[0] is
+# this directory when run as a script; the tests load this module by path.
+_HERE = str(Path(__file__).resolve().parent)
+if _HERE not in sys.path:
+    sys.path.append(_HERE)
+
+from corpus_build import corpus_lines, fields_lines, write_corpus  # noqa: E402,F401
 
 HERE = Path(__file__).resolve().parent
 CLDR_TAG = "release-48"
@@ -128,32 +137,6 @@ def parse_test_file(text: str, stem: str) -> list[dict[str, object]]:
     return rows
 
 
-def corpus_lines(rows: list[dict[str, object]]) -> list[str]:
-    """One harness line per distinct (text, shape), sorted for stable diffs."""
-    pairs: set[tuple[str, int | None]] = set()
-    for row in rows:
-        shape = row["shape"]
-        if shape is not None and not isinstance(shape, int):
-            raise TypeError(f"shape must be an int or None, not {shape!r}")
-        pairs.add((str(row["text"]), shape))
-    return [json.dumps(text, ensure_ascii=False) if shape is None
-            else json.dumps({"name": text, "shape": shape}, ensure_ascii=False)
-            for text, shape in sorted(pairs, key=lambda p: (p[0], p[1] or 0))]
-
-
-def fields_lines(rows: list[dict[str, object]]) -> list[str]:
-    """One line per rendering, sorted by its key. A key is unique per
-    rendering; a duplicate means the format was misread."""
-    keyed: dict[str, dict[str, object]] = {}
-    for row in rows:
-        key = f"{row['file']}/{row['label']}/{row['order']}"
-        if key in keyed:
-            raise ValueError(f"duplicate rendering {key}")
-        keyed[key] = row
-    return [json.dumps(keyed[k], ensure_ascii=False, sort_keys=True)
-            for k in sorted(keyed)]
-
-
 def _get(url: str) -> bytes:
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=60) as response:
@@ -170,8 +153,7 @@ def main() -> None:
     for name in names:
         text = _get(f"{RAW}/{_DIR}/{name}").decode("utf-8")
         rows.extend(parse_test_file(text, name[:-len(".txt")]))
-    CORPUS.write_text("\n".join(corpus_lines(rows)) + "\n", encoding="utf-8")
-    FIELDS.write_text("\n".join(fields_lines(rows)) + "\n", encoding="utf-8")
+    write_corpus(rows, CORPUS, FIELDS)
     LICENSE.write_bytes(_get(f"{RAW}/LICENSE"))
     print(f"CLDR {CLDR_TAG}: {len(names)} files, {len(rows)} renderings; "
           f"wrote {CORPUS.name}, {FIELDS.name}, {LICENSE.name}")
