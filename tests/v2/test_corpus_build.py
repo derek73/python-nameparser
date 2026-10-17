@@ -42,10 +42,14 @@ def test_a_shape_must_be_an_int_or_none() -> None:
 
 
 def test_an_untagged_line_sorts_before_the_tagged_ones_of_its_text() -> None:
-    rows = [{"text": "a", "shape": 0}, {"text": "a", "shape": None},
-            {"text": "a", "shape": 4}, {"text": "a", "shape": None}]
+    # Shape 0 is the case to watch: a key that ties it with None leaves
+    # the order to set iteration, which a single text can pass by luck.
+    texts = [f"name {i}" for i in range(40)]
+    rows = [{"text": t, "shape": shape} for t in texts for shape in (0, None, 4)]
     assert corpus_build.corpus_lines(rows) == [
-        '"a"', '{"name": "a", "shape": 0}', '{"name": "a", "shape": 4}']
+        line for t in sorted(texts)
+        for line in (json.dumps(t), json.dumps({"name": t, "shape": 0}),
+                     json.dumps({"name": t, "shape": 4}))]
 
 
 def _row(text: str, order: str = "givenFirst") -> dict[str, object]:
