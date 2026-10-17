@@ -840,6 +840,12 @@ TITLES = GIVEN_NAME_TITLES | {
     # English Knight, the rank the post-nominal 'knt' names.
     'knight',       # borne
 
+    # #662: Akan and Indonesian Mr.; under 100 census bearers each and
+    # none found on Wikidata. Hausa malam and Turkish bay are excluded
+    # (decisions.md, Excluded (TITLES)).
+    'owura',
+    'bapak',
+
     # #269: Cyrillic (ru/uk) -- mr/mrs/dr/prof/academician/pan(i)
     # honorifics, same title-then-family convention as 'mr'/'dr'/'prof'
     # above (not GIVEN_NAME_TITLES: "г-н Петров" families the surname

@@ -145,17 +145,6 @@
   },
   "text": "Sinbad"
  },
- "ak/nativeFull/givenFirst": {
-  "given_names": {
-   "expected": "Bertram Wilberforce Henry Robert",
-   "got": "Owura Bertram Wilberforce Henry Robert"
-  },
-  "text": "Owura Bertram Wilberforce Henry Robert Wooster MP",
-  "title": {
-   "expected": "Owura",
-   "got": ""
-  }
- },
  "ak/nativeFull/sorting": {
   "given_names": {
    "expected": "Bertram Wilberforce Henry Robert",
@@ -4667,13 +4656,9 @@
   },
   "given_names": {
    "expected": "Dwi Putro bin",
-   "got": "Bapak Dwi Putro"
+   "got": "Dwi Putro"
   },
-  "text": "Bapak Dwi Putro bin Adinata MP",
-  "title": {
-   "expected": "Bapak",
-   "got": ""
-  }
+  "text": "Bapak Dwi Putro bin Adinata MP"
  },
  "id/nativeFull/sorting": {
   "family": {
