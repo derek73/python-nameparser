@@ -840,8 +840,9 @@ TITLES = GIVEN_NAME_TITLES | {
     # English Knight, the rank the post-nominal 'knt' names.
     'knight',       # borne
 
-    # #662: Akan and Indonesian Mr.; neither has a census or Wikidata
-    # bearer. Hausa malam is excluded (decisions.md#salutation-titles).
+    # #662: Akan and Indonesian Mr.; under 100 census bearers each and
+    # none found on Wikidata. Hausa malam and Turkish bay are excluded
+    # (decisions.md, Excluded (TITLES)).
     'owura',
     'bapak',
 
