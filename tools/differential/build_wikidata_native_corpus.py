@@ -22,9 +22,8 @@ Writes three files beside this script, always together:
   shape), read by snapshot.py like every other corpus.
 - wikidata_native_fields.jsonl -- one line per rendering, in
   build_wikidata_corpus.py's field vocabulary (`given`, `surname`,
-  `patronymic`), scored by cldr_agreement.py; a rendering in a script a
-  locale pack exists for also names that pack (`pack`), and the locale
-  view scores it under the pack as well.
+  `patronymic`), scored by cldr_agreement.py, which also scores the
+  Han and kana strata under their locale packs (its NATIVE_LABELS).
 - wikidata_native_LICENSE -- the CC0 statement and the source credit.
 
 The machinery is build_wikidata_corpus.py's, imported: the cache under
@@ -145,8 +144,6 @@ class Language(NamedTuple):
     #: a text must have.
     script: tuple[str, ...]
     feminine: tuple[tuple[str, str], ...] = ()
-    #: The nameparser.locales pack the locale view also scores it under.
-    pack: str | None = None
 
 
 _HAN = ("CJK UNIFIED", "CJK COMPATIBILITY", "IDEOGRAPHIC")
@@ -165,9 +162,8 @@ LANGUAGES = {
     "ka": Language(("ka",), ("GEORGIAN",)),
     "hy": Language(("hy",), ("ARMENIAN",)),
     "ko": Language(("ko",), ("HANGUL",)),
-    "ja": Language(("ja",), (*_HAN, "HIRAGANA", "KATAKANA"), pack="JA"),
-    "zh": Language(("zh", "zh-hans", "zh-hant", "zh-cn", "zh-tw", "zh-hk"), _HAN,
-                   pack="ZH"),
+    "ja": Language(("ja",), (*_HAN, "HIRAGANA", "KATAKANA")),
+    "zh": Language(("zh", "zh-hans", "zh-hant", "zh-cn", "zh-tw", "zh-hk"), _HAN),
     "uk": Language(("uk",), ("CYRILLIC",), _UKRAINIAN),
     "bg": Language(("bg",), ("CYRILLIC",), _BULGARIAN),
     "sr": Language(("sr", "sr-ec"), ("CYRILLIC",)),
@@ -296,29 +292,25 @@ def align_chars(text: str,
     """align() for a text with no space: each field's character positions,
     or None unless every character is claimed by exactly one part, each
     part matching (at its widest spelling) in one place only."""
-    claimed: dict[int, str] = {}
-    for field, names in parts:
-        spans: set[tuple[int, int]] = set()
+    def spans(names: set[str]) -> set[tuple[int, int]]:
+        found: set[tuple[int, int]] = set()
         for name in names:
             name = "".join(name.split())
             start = text.find(name) if name else -1
             while start != -1:
-                spans.add((start, start + len(name)))
+                found.add((start, start + len(name)))
                 start = text.find(name, start + 1)
-        widest = wikidata._widest(spans)
-        if len(widest) > 1:
-            return None  # the part matches in two places
-        for i, j in widest:
-            for k in range(i, j):
-                if k in claimed:
-                    return None  # two parts claim one character
-                claimed[k] = field
-    if len(claimed) != len(text):
+        return found
+    claimed = wikidata.claim([(field, spans(names)) for field, names in parts])
+    if claimed is None or len(claimed) != len(text):
         return None
-    out: dict[str, list[int]] = {}
-    for k in sorted(claimed):
-        out.setdefault(claimed[k], []).append(k)
-    return out
+    return wikidata.by_field(claimed)
+
+
+def script_orders(text: str) -> bool:
+    """Whether the parser reads `text` family-first by its script alone:
+    Han, kana or Hangul, but not pure katakana."""
+    return in_script(text, _SELF_ORDERED) and not in_script(text, ("KATAKANA",))
 
 
 def _texts(person: dict[str, Any], language: Language) -> list[tuple[str, str]]:
@@ -358,22 +350,14 @@ def renderings(qid: str, person: dict[str, Any], names: dict[str, Any],
         aligned = align_chars(text, parts) if by_char else align(text, parts)
         if aligned is None or "given" not in aligned or "surname" not in aligned:
             continue
-        if by_char:
-            fields = {f: "".join(text[k] for k in ks) for f, ks in aligned.items()}
-            first = min(aligned["surname"]) == 0
-            order, shape = (("surnameFirst", wikidata.FAMILY_FIRST_SHAPE) if first
-                            else ("givenFirst", None))
-        else:
-            words = [wikidata._word(t) for t in text.split()]
-            fields = {f: " ".join(words[k] for k in ks) for f, ks in aligned.items()}
-            order, shape = wikidata._order(text, aligned)
-        if in_script(text, _SELF_ORDERED) and not in_script(text, ("KATAKANA",)):
+        units, joint = (text, "") if by_char else (
+            [wikidata._word(t) for t in text.split()], " ")
+        fields = {f: joint.join(units[k] for k in ks) for f, ks in aligned.items()}
+        order, shape = wikidata._order(text, aligned)
+        if script_orders(text):
             shape = None  # the script decides the order: what is under test
-        row = {"file": qid, "label": stratum.label, "order": order, "text": text,
-               "shape": shape, "composed": False, "fields": fields}
-        if language.pack:
-            row["pack"] = language.pack
-        return [row]
+        return [{"file": qid, "label": stratum.label, "order": order, "text": text,
+                 "shape": shape, "composed": False, "fields": fields}]
     return []
 
 
@@ -476,12 +460,10 @@ def lc_split(row: dict[str, Any], variants: list[str]) -> tuple[str, str] | None
     space, with one space (`이 병기`); None when no variant gives one."""
     whole = _squash(row["text"])
     for variant in variants:
-        for mark in (",", "،"):
-            if mark in variant:
-                family, _, rest = variant.partition(mark)
-                # inverted, so the text may write the parts either way round
-                if whole in (_squash(family + rest), _squash(rest + family)):
-                    return _squash(family), _squash(rest)
+        family, comma, rest = variant.replace("،", ",").partition(",")
+        # inverted, so the text may write the parts either way round
+        if comma and whole in (_squash(family + rest), _squash(rest + family)):
+            return _squash(family), _squash(rest)
         words = variant.split()
         if " " not in row["text"] and len(words) == 2 and _squash(variant) == whole:
             return words[0], words[1]

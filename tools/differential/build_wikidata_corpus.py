@@ -324,22 +324,41 @@ def _widest(spans: set[tuple[int, int]]) -> set[tuple[int, int]]:
             if not any(a <= i and j <= b and (a, b) != (i, j) for a, b in spans)}
 
 
+def claim(found: list[tuple[str, set[tuple[int, int]]]]) -> dict[int, str] | None:
+    """The field each position is claimed by, from each part's (field,
+    spans): a part claims its widest span, or None when it matches in two
+    places or two parts claim one position. Positions are words or, for
+    an unspaced text, characters; coverage is the caller's to check."""
+    claimed: dict[int, str] = {}
+    for field, spans in found:
+        widest = _widest(spans)
+        if len(widest) > 1:
+            return None  # the part matches in two places
+        for i, j in widest:
+            for k in range(i, j):
+                if k in claimed:
+                    return None  # two parts claim one position
+                claimed[k] = field
+    return claimed
+
+
+def by_field(claimed: dict[int, str]) -> dict[str, list[int]]:
+    """claim()'s positions, grouped by field in text order."""
+    out: dict[str, list[int]] = {}
+    for k in sorted(claimed):
+        out.setdefault(claimed[k], []).append(k)
+    return out
+
+
 def align(text: str, parts: list[tuple[str, set[str]]]) -> dict[str, list[int]] | None:
     """Each field's word positions in `text`, or None when the text is
     not covered by exactly one part per word. `parts` holds one
     (field, spellings) entry per statement."""
     tokens = text.split()
     words = [_word(t) for t in tokens]
-    claimed: dict[int, str] = {}
-    for field, names in parts:
-        widest = _widest(_spans(tokens, words, names))
-        if len(widest) > 1:
-            return None  # the part matches in two places
-        for i, j in widest:
-            for k in range(i, j):
-                if k in claimed:
-                    return None  # two parts claim one word
-                claimed[k] = field
+    claimed = claim([(field, _spans(tokens, words, names)) for field, names in parts])
+    if claimed is None:
+        return None
     # Right to left, so a run of connectives chains to the part after it;
     # tokens[k], not words[k], since a connective carrying a comma joins nothing.
     for k in range(len(words) - 1, -1, -1):
@@ -348,10 +367,7 @@ def align(text: str, parts: list[tuple[str, set[str]]]) -> dict[str, list[int]] 
             claimed[k] = claimed[k + 1]
     if len(claimed) != len(words):
         return None
-    out: dict[str, list[int]] = {}
-    for k in sorted(claimed):
-        out.setdefault(claimed[k], []).append(k)
-    return out
+    return by_field(claimed)
 
 
 def _order(text: str, fields: dict[str, list[int]]) -> tuple[str, int | None]:

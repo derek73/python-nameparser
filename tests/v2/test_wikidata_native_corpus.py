@@ -15,7 +15,7 @@ from typing import Any
 
 import pytest
 
-from nameparser import locales
+from nameparser import Policy
 
 from ._differential_fixtures import load_tool, serve
 
@@ -120,18 +120,26 @@ def test_a_hangul_name_is_ordered_by_its_script() -> None:
                _names("ko", Q2="김", Q3="기영"), "ko-kr")
     assert (row["order"], row["shape"]) == ("surnameFirst", None)
     assert row["fields"] == {"surname": "김", "given": "기영"}
-    assert "pack" not in row  # Hangul segments by default: no pack to score it under
 
 
-@pytest.mark.parametrize(("label", "text", "pack"), [
-    ("zh-cn", "刘放", "ZH"), ("ja-jp", "平賀淳", "JA")])
-def test_a_han_name_names_the_pack_the_locale_view_scores_it_under(
-        label: str, text: str, pack: str) -> None:
+@pytest.mark.parametrize(("label", "surname", "given"), [
+    ("zh-cn", "刘", "放"), ("ja-jp", "平賀", "淳")])
+def test_a_han_name_is_ordered_by_its_script(label: str, surname: str, given: str) -> None:
     language = native.LANGUAGES[_STRATA[label].language].labels[0]
-    surname, given = (text[:1], text[1:]) if pack == "ZH" else (text[:2], text[2:])
-    row = _one(_person({language: text}, P734="Q2", P735="Q3"),
+    row = _one(_person({language: surname + given}, P734="Q2", P735="Q3"),
                _names(language, Q2=surname, Q3=given), label)
-    assert (row["pack"], row["shape"]) == (pack, None)
+    assert (row["order"], row["shape"]) == ("surnameFirst", None)
+
+
+def test_the_scripts_said_to_decide_the_order_are_the_parsers() -> None:
+    # A drift alarm, not a derivation: the builder states which scripts
+    # order a name by themselves, so that a parser change shows in the
+    # record; this fails when the two stop naming the same scripts.
+    assert {script.name for script in dict(Policy().script_orders)} == {
+        "HAN", "HANGUL", "HIRAGANA"}
+    assert native.script_orders("平賀淳") and native.script_orders("김기영")
+    assert native.script_orders("高橋みなみ")       # kana beside Han: licensed
+    assert not native.script_orders("サトウハチロー")  # pure katakana: not
 
 
 def test_a_spaced_han_name_is_ordered_by_its_script_not_by_a_shape() -> None:
@@ -461,16 +469,14 @@ def test_every_committed_text_is_in_its_strata_script() -> None:
         row["text"], native.LANGUAGES[_STRATA[row["label"]].language].script)]
 
 
-def test_every_committed_pack_is_a_locale_pack() -> None:
-    packs = {row["pack"] for row in _ROWS if "pack" in row}
-    assert packs, "no committed rendering names a pack: the locale view reads none"
-    assert {p.lower() for p in packs} <= set(locales.available())
-    # and one the locale view measures, or its rows are read by nothing
-    assert packs <= set(agreement._packs())
+def test_every_han_and_kana_stratum_is_scored_under_its_pack() -> None:
+    # Both ways: a zh or ja stratum missing from the scorer's NATIVE_LABELS
+    # would never be parsed with its pack, and nothing else would notice.
+    packs = {"zh": "ZH", "ja": "JA"}
+    assert agreement.NATIVE_LABELS == {s.label: packs[s.language]
+                                       for s in native.STRATA if s.language in packs}
 
 
-def test_a_committed_rendering_in_a_self_ordered_script_has_no_shape() -> None:
+def test_a_committed_rendering_its_script_orders_has_no_shape() -> None:
     assert not [row["text"] for row in _ROWS
-                if native.in_script(row["text"], native._SELF_ORDERED)
-                and not native.in_script(row["text"], ("KATAKANA",))
-                and row["shape"] is not None]
+                if native.script_orders(row["text"]) and row["shape"] is not None]
