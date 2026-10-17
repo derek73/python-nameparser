@@ -189,6 +189,7 @@ invocation shows it.
 | `corpus_cldr.jsonl` | Unicode CLDR's person-name formatting test data at `release-48`: each fictional name's long, formal rendering in givenFirst, surnameFirst and sorting order, about 110 locales in native scripts, via `build_cldr_corpus.py` (2026-10-12); Unicode-3.0, notice in `cldr_LICENSE` | real-world name distributions: the names are written to fill every field, so full-house names are over-represented and plain two-word names under-represented |
 | `corpus_gnd.jsonl` | the German National Library's authority file (GND, via lobid), real people who are deceased and have a Wikipedia article: each preferred name as cataloged (`Gogh, Vincent van`) and, outside family-first areas, a given-first rendering composed from its fields (a regnal name is composed only, `Johann II.`, without its German descriptor), sampled by shape and area via `build_gnd_corpus.py` (2026-10-16); CC0, credit in `gnd_LICENSE` | names as their bearers write them: German library romanization and German forms for historic figures, Latin script only, titles, credentials and nicknames kept out of the preferred name (a few slip into a `personalName`: `Imam Bonjol`), and the catalog's entry rules (not the bearer's culture) decide what counts as a surname |
 | `corpus_wikidata.jsonl` | Wikidata, real public figures (deceased, or with at least 10 sitelinks) whose item states a second surname (P1950: Spain, Mexico, Colombia) or a patronymic (P5056: Russia, the Soviet Union, the Russian Empire, Iceland, Malaysia): each P1559 native-language name and own-language label whose every word aligns with exactly one stated part, via `build_wikidata_corpus.py` (2026-10-16); CC0, credit in `wikidata_LICENSE` | everything the strict alignment drops: short display forms without the second surname, nicknames, and names with an unrecorded part, so tidy names are over-represented; only those eight citizenships; no titles, credentials or suffixes |
+| `corpus_conventions.jsonl` | invented names patterned on naming conventions the other corpora barely cover -- no family name, religious names, positional patronymics, honorifics after the name -- from the hand-written table in `conventions.py`, via `build_conventions_corpus.py` (#686) | real names, and every convention nobody has written a row for: about one row per convention, so it shows that a convention moved, not how often |
 | `corpus_rules.jsonl` | every example in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) | anything the rules doc has no example for |
 | `corpus_shapes.jsonl` | shape-tagged rows of `tests/v2/cases.py`, via `build_shapes_corpus.py` (#468) | anything no one has tagged a row for |
 
@@ -301,11 +302,29 @@ uv run python tools/differential/build_cjk_corpus.py
 ```
 
 Every distinct CJK-bearing `text` in `tests/v2/cases.py`, `tolerated`
-rows included. The generated corpora (`corpus_cjk`, `corpus_rules`,
-`corpus_shapes`) are each pinned by `tests/v2/test_corpora.py` against
-their generator's selection, so a case row or rules.md example added
-without regenerating fails the suite instead of silently narrowing
-what the snapshot watches.
+rows included. The generated corpora (`corpus_cjk`,
+`corpus_conventions`, `corpus_rules`, `corpus_shapes`) are each pinned
+by `tests/v2/test_corpora.py` against their generator's selection, so a
+case row, a rules.md example or a `conventions.py` row added without
+regenerating fails the suite instead of silently narrowing what the
+snapshot watches.
+
+`corpus_conventions.jsonl` is generated from `conventions.py`, a table
+whose rows record the tradition, the convention a name exercises, and
+what a reader who knows the convention would take each part to be:
+
+```
+uv run python tools/differential/build_conventions_corpus.py
+```
+
+That expectation is a note, not a pin, and nothing scores against
+it: many are stated in terms no field states (a father's or
+grandfather's name, an honorific that is not a title, a married form),
+some are undecided, and a fields file must state every part, since the
+scorer reads an unstated one as an empty role (#686). A row whose
+reading is settled can graduate to `tests/v2/cases.py`. The names are
+invented, never copied from the references the conventions come
+from.
 
 ## What the corpora do not cover
 

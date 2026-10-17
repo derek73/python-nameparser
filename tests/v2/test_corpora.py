@@ -42,6 +42,15 @@ def test_shapes_corpus_matches_the_case_table() -> None:
         "`uv run python tools/differential/build_shapes_corpus.py`")
 
 
+def test_conventions_corpus_matches_its_table() -> None:
+    """corpus_conventions.jsonl is generated from conventions.py's
+    hand-written table (#686)."""
+    module = load_tool("build_conventions_corpus")
+    assert _checked_in("corpus_conventions.jsonl") == module.selected(), (
+        "corpus_conventions.jsonl is stale: regenerate with "
+        "`uv run python tools/differential/build_conventions_corpus.py`")
+
+
 def test_case_shape_ids_exist_in_the_inventory() -> None:
     """cases.py cannot import tools/, so Case.__post_init__ validates
     every shape tag against its own hand copy of the inventory's ids
