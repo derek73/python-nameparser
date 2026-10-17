@@ -1,0 +1,309 @@
+{
+ "conventions/Ali Kara Oğlu/default": {
+  "family": {
+   "expected": "Kara Oğlu",
+   "got": "Oğlu"
+  },
+  "given_names": {
+   "expected": "Ali",
+   "got": "Ali Kara"
+  },
+  "text": "Ali Kara Oğlu"
+ },
+ "conventions/Carmen Díaz Vda. de Mora/default": {
+  "family": {
+   "expected": "Díaz Vda. de Mora",
+   "got": "de Mora"
+  },
+  "given_names": {
+   "expected": "Carmen",
+   "got": "Carmen Díaz Vda."
+  },
+  "text": "Carmen Díaz Vda. de Mora"
+ },
+ "conventions/Daw Thida/default": {
+  "family": {
+   "expected": "",
+   "got": "Thida"
+  },
+  "given_names": {
+   "expected": "Thida",
+   "got": "Daw"
+  },
+  "text": "Daw Thida",
+  "title": {
+   "expected": "Daw",
+   "got": ""
+  }
+ },
+ "conventions/H. Budi Santoso/default": {
+  "family": {
+   "expected": "",
+   "got": "Santoso"
+  },
+  "given_names": {
+   "expected": "Budi Santoso",
+   "got": "H. Budi"
+  },
+  "text": "H. Budi Santoso",
+  "title": {
+   "expected": "H.",
+   "got": ""
+  }
+ },
+ "conventions/Hassan B. Yusof/default": {
+  "family": {
+   "expected": "",
+   "got": "Yusof"
+  },
+  "given_names": {
+   "expected": "Hassan B. Yusof",
+   "got": "Hassan B."
+  },
+  "text": "Hassan B. Yusof"
+ },
+ "conventions/Hassan bin Yusof/default": {
+  "family": {
+   "expected": "",
+   "got": "bin Yusof"
+  },
+  "given_names": {
+   "expected": "Hassan bin Yusof",
+   "got": "Hassan"
+  },
+  "text": "Hassan bin Yusof"
+ },
+ "conventions/Hodan Farah Warsame/default": {
+  "family": {
+   "expected": "",
+   "got": "Warsame"
+  },
+  "given_names": {
+   "expected": "Hodan Farah Warsame",
+   "got": "Hodan Farah"
+  },
+  "text": "Hodan Farah Warsame"
+ },
+ "conventions/K. Sivakumar/default": {
+  "family": {
+   "expected": "",
+   "got": "Sivakumar"
+  },
+  "given_names": {
+   "expected": "K. Sivakumar",
+   "got": "K."
+  },
+  "text": "K. Sivakumar"
+ },
+ "conventions/Kavitha a/p Raman/default": {
+  "family": {
+   "expected": "",
+   "got": "Raman"
+  },
+  "given_names": {
+   "expected": "Kavitha a/p Raman",
+   "got": "Kavitha a/p"
+  },
+  "text": "Kavitha a/p Raman"
+ },
+ "conventions/Khun Malee/default": {
+  "family": {
+   "expected": "",
+   "got": "Malee"
+  },
+  "given_names": {
+   "expected": "Malee",
+   "got": "Khun"
+  },
+  "text": "Khun Malee",
+  "title": {
+   "expected": "Khun",
+   "got": ""
+  }
+ },
+ "conventions/Ma. Teresa Cruz Bautista/default": {
+  "family": {
+   "expected": "Cruz Bautista",
+   "got": "Bautista"
+  },
+  "given_names": {
+   "expected": "Ma. Teresa",
+   "got": "Teresa Cruz"
+  },
+  "text": "Ma. Teresa Cruz Bautista",
+  "title": {
+   "expected": "",
+   "got": "Ma."
+  }
+ },
+ "conventions/Michael Wong Kar Ming/default": {
+  "family": {
+   "expected": "Wong",
+   "got": "Ming"
+  },
+  "given_names": {
+   "expected": "Michael Kar Ming",
+   "got": "Michael Wong Kar"
+  },
+  "text": "Michael Wong Kar Ming"
+ },
+ "conventions/Murat Bey/default": {
+  "family": {
+   "expected": "",
+   "got": "Bey"
+  },
+  "suffix": {
+   "expected": "Bey",
+   "got": ""
+  },
+  "text": "Murat Bey"
+ },
+ "conventions/Orval, Pierre d'/default": {
+  "family": {
+   "expected": "Orval d'",
+   "got": "Orval"
+  },
+  "family_particles": {
+   "expected": "d'",
+   "got": ""
+  },
+  "given_names": {
+   "expected": "Pierre",
+   "got": "Pierre d'"
+  },
+  "text": "Orval, Pierre d'"
+ },
+ "conventions/Park Ji-hoon ssi/FAMILY_FIRST": {
+  "given_names": {
+   "expected": "Ji-hoon",
+   "got": "Ji-hoon ssi"
+  },
+  "suffix": {
+   "expected": "ssi",
+   "got": ""
+  },
+  "text": "Park Ji-hoon ssi"
+ },
+ "conventions/Pedro López Ruiz H./default": {
+  "family": {
+   "expected": "López Ruiz",
+   "got": "H."
+  },
+  "given_names": {
+   "expected": "Pedro",
+   "got": "Pedro López Ruiz"
+  },
+  "suffix": {
+   "expected": "H.",
+   "got": ""
+  },
+  "text": "Pedro López Ruiz H."
+ },
+ "conventions/Reza Hossein Zadeh/default": {
+  "family": {
+   "expected": "Hossein Zadeh",
+   "got": "Zadeh"
+  },
+  "given_names": {
+   "expected": "Reza",
+   "got": "Reza Hossein"
+  },
+  "text": "Reza Hossein Zadeh"
+ },
+ "conventions/Suresh a/l Muthu/default": {
+  "family": {
+   "expected": "",
+   "got": "Muthu"
+  },
+  "given_names": {
+   "expected": "Suresh a/l Muthu",
+   "got": "Suresh a/l"
+  },
+  "text": "Suresh a/l Muthu"
+ },
+ "conventions/Suzuki san/FAMILY_FIRST": {
+  "given_names": {
+   "expected": "",
+   "got": "san"
+  },
+  "suffix": {
+   "expected": "san",
+   "got": ""
+  },
+  "text": "Suzuki san"
+ },
+ "conventions/Suzuki-san/FAMILY_FIRST": {
+  "family": {
+   "expected": "Suzuki",
+   "got": "Suzuki-san"
+  },
+  "suffix": {
+   "expected": "-san",
+   "got": ""
+  },
+  "text": "Suzuki-san"
+ },
+ "conventions/Szabó Péter úr/FAMILY_FIRST": {
+  "given_names": {
+   "expected": "Péter",
+   "got": "Péter úr"
+  },
+  "suffix": {
+   "expected": "úr",
+   "got": ""
+  },
+  "text": "Szabó Péter úr"
+ },
+ "conventions/Tran Thi Mai/FAMILY_FIRST": {
+  "given_names": {
+   "expected": "Thi Mai",
+   "got": "Thi"
+  },
+  "suffix": {
+   "expected": "",
+   "got": "Mai"
+  },
+  "text": "Tran Thi Mai"
+ },
+ "conventions/U Kyaw Win/default": {
+  "family": {
+   "expected": "",
+   "got": "Win"
+  },
+  "given_names": {
+   "expected": "Kyaw Win",
+   "got": "U Kyaw"
+  },
+  "text": "U Kyaw Win",
+  "title": {
+   "expected": "U",
+   "got": ""
+  }
+ },
+ "conventions/Van der Walt/default": {
+  "family": {
+   "expected": "Van der Walt",
+   "got": "der Walt"
+  },
+  "family_particles": {
+   "expected": "Van der",
+   "got": "der"
+  },
+  "given_names": {
+   "expected": "",
+   "got": "Van"
+  },
+  "text": "Van der Walt"
+ },
+ "conventions/Wing Lau/default": {
+  "given_names": {
+   "expected": "Wing",
+   "got": ""
+  },
+  "text": "Wing Lau",
+  "title": {
+   "expected": "",
+   "got": "Wing"
+  }
+ }
+}

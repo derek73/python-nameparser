@@ -1,4 +1,4 @@
-"""Where nameparser disagrees with CLDR and the GND about a name's fields -- a ratchet.
+"""Where nameparser disagrees with each source's stated fields -- a ratchet.
 
 CLDR's person-name test data (see build_cldr_corpus.py) states every
 name's fields separately. This module parses each CLDR rendering with the
@@ -9,8 +9,11 @@ matching the record. The GND corpus (build_gnd_corpus.py) writes its
 fields in CLDR's vocabulary, so it is a second SOURCE compared by the
 same rules, with its record in gnd_agreement.json, and so is the
 Wikidata corpus (build_wikidata_corpus.py, wikidata_agreement.json),
-which states the two fields CLDR's vocabulary merges or lacks; "CLDR"
-below means any source wherever the rule is about fields. For each source the
+which states the two fields CLDR's vocabulary merges or lacks, and the
+hand-written conventions table (build_conventions_corpus.py,
+conventions_agreement.json), which adds `honorific`, a word of address
+written after the name, scored inside `suffix`; "CLDR" below means any
+source wherever the rule is about fields. For each source the
 test fails on:
 
 - a role that agreed now disagrees (a regression);
@@ -24,8 +27,7 @@ test fails on:
     uv run python tools/differential/cldr_agreement.py           # summary
     uv run python tools/differential/cldr_agreement.py --record  # re-record
 
---record rewrites every record, the GND one and the locale one below
-included, and first prints, per source, how many of each kind of change
+--record rewrites every record, each source's and the locale one below, and first prints, per source, how many of each kind of change
 it is accepting, so a re-record made for one source cannot slip another
 source's regressions in unseen.
 
@@ -52,7 +54,14 @@ in PENDING_ROLES, and each is also scored on its own the day ParsedName
 gains an attribute of that name; until then the summary says how many
 renderings state it. Scoring a field on its own does not end the merged
 scoring; only a 3.0 decision to take the field out of `family` or
-`given_names` changes PENDING_ROLES.
+`given_names` changes PENDING_ROLES. The conventions source's
+`honorific` is not pending: it is scored inside `suffix` by design, as
+nameparser reads `さん`, and ParsedName is not meant to gain it.
+
+A field name no rule reads raises: a mistyped `honorfic` would
+otherwise be expected in no role and pass as agreement. KNOWN_FIELDS is
+every name expected_roles reads, IGNORED_FIELDS what a source states
+that no rendering writes (CLDR's `locale` and `given-informal`).
 
 Nothing is special-cased. A deliberately unnatural rendering, `さん` read
 as a suffix where CLDR calls it a title, a lone word under a family-first
@@ -69,7 +78,8 @@ from importlib.util import find_spec
 from pathlib import Path
 from typing import Any
 
-from nameparser import FAMILY_FIRST, ParsedName, Parser, Policy, locales, parser_for
+from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, ParsedName, Parser, Policy,
+                        locales, parser_for)
 
 ROLES = ("title", "given_names", "family", "suffix",
          "family_particles", "family_base")
@@ -86,11 +96,17 @@ GND_FIELDS = HERE / "gnd_fields.jsonl"
 GND_RECORD = HERE / "gnd_agreement.json"
 WIKIDATA_FIELDS = HERE / "wikidata_fields.jsonl"
 WIKIDATA_RECORD = HERE / "wikidata_agreement.json"
+CONVENTIONS_FIELDS = HERE / "conventions_fields.jsonl"
+CONVENTIONS_RECORD = HERE / "conventions_agreement.json"
 RECORD_COMMAND = "uv run python tools/differential/cldr_agreement.py --record"
 #: shapes.py's FAMILY_FIRST shape, the only tag build_cldr_corpus.py writes.
 FAMILY_FIRST_SHAPE = 4
+#: shapes.py's FAMILY_FIRST_GIVEN_LAST shape, which a conventions row may name.
+FAMILY_FIRST_GIVEN_LAST_SHAPE = 5
 _PARSERS = {None: Parser(),
-            FAMILY_FIRST_SHAPE: Parser(policy=Policy(name_order=FAMILY_FIRST))}
+            FAMILY_FIRST_SHAPE: Parser(policy=Policy(name_order=FAMILY_FIRST)),
+            FAMILY_FIRST_GIVEN_LAST_SHAPE:
+                Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))}
 
 #: The locale view: CLDR file -> the nameparser.locales pack its
 #: renderings are parsed with. One pack per file, so the locale record is
@@ -152,12 +168,23 @@ def occurs(value: str, text: str) -> bool:
     return bool(_squash(value)) and _squash(value) in _squash(text)
 
 
+#: Every field name expected_roles reads, and the ones it skips on purpose.
+KNOWN_FIELDS = frozenset({"title", "given", "given2", "surname", "surname-prefix",
+                          "surname-core", "generation", "credentials", "honorific",
+                          *PENDING_ROLES})
+IGNORED_FIELDS = frozenset({"locale", "given-informal"})
+
+
 def expected_roles(fields: dict[str, str], text: str) -> dict[str, str]:
     """What the source says each role holds IN THIS RENDERING. CLDR's
     formats drop fields by locale and order, so a role is built only from
     the fields whose value occurs in the text; a role with none expects
     ''. The particle and base views are compared only where the source
     states the split, i.e. the name has a surname-core."""
+    unknown = set(fields) - KNOWN_FIELDS - IGNORED_FIELDS
+    if unknown:
+        raise ValueError(f"fields {sorted(unknown)} of {text!r} are read by no "
+                         f"rule; use one of {sorted(KNOWN_FIELDS)}")
     def present(*names: str) -> str:
         # In the order the values occur in the text, not CLDR's field
         # order: an unspaced rendering compares in order, and one that
@@ -173,7 +200,7 @@ def expected_roles(fields: dict[str, str], text: str) -> dict[str, str]:
     roles = {"title": present("title"),
              "given_names": present("given", "given2", *pending("given_names")),
              "family": present(*family, *pending("family")),
-             "suffix": present("generation", "credentials")}
+             "suffix": present("generation", "credentials", "honorific")}
     if "surname-core" in fields:
         roles["family_particles"] = present("surname-prefix")
         roles["family_base"] = present("surname-core", *pending("family"))
@@ -317,7 +344,8 @@ def sources() -> dict[str, tuple[Path, Path]]:
     """Each source of stated fields: name -> (fields file, record). Read
     at call time, so a test that points a record elsewhere is obeyed."""
     return {"CLDR": (FIELDS, RECORD), "GND": (GND_FIELDS, GND_RECORD),
-            "Wikidata": (WIKIDATA_FIELDS, WIKIDATA_RECORD)}
+            "Wikidata": (WIKIDATA_FIELDS, WIKIDATA_RECORD),
+            "Conventions": (CONVENTIONS_FIELDS, CONVENTIONS_RECORD)}
 
 
 def _summary(name: str, rows: list[dict[str, Any]],
