@@ -29,6 +29,7 @@ test fails on:
 
     uv run python tools/differential/cldr_agreement.py           # summary
     uv run python tools/differential/cldr_agreement.py --record  # re-record
+    uv run python tools/differential/cldr_agreement.py --split   # list the given/middle view
 
 --record rewrites every record, each source's and the locale ones below, and first prints, per source, how many of each kind of change
 it is accepting, so a re-record made for one source cannot slip another
@@ -68,7 +69,9 @@ split of the given names (`given` and `given2`), and the merged
 `given_names` role cannot see a parse that splits them wrongly
 (`Kim Min Ho` reads given `Min`, middle `Ho`). The summary counts the
 renderings that agree merged but split differently, and `--split` lists
-them. It is not a ratcheted role: GND and Wikidata record every given name
+them (measured 2026-10-17: 251 of CLDR's 265 hold a multi-word `given`; the
+rest write `given2` before `given`, an order swap that `FAMILY_FIRST_GIVEN_LAST`
+reads, so the list mixes two populations). It is not a ratcheted role: GND and Wikidata record every given name
 in one field and are never scored on it, and what `middle` means for a
 compound given name is a design question. See split_disagreements.
 
