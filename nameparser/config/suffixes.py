@@ -814,7 +814,6 @@ SUFFIX_ACRONYMS = frozenset({
     'lvt',
     'ma',
     'maaa',
-    'mai',
     'mba',
     'mbe',
     'mbs',

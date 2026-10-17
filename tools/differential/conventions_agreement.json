@@ -254,17 +254,6 @@
   },
   "text": "Szabó Péter úr"
  },
- "conventions/Tran Thi Mai/FAMILY_FIRST": {
-  "given_names": {
-   "expected": "Thi Mai",
-   "got": "Thi"
-  },
-  "suffix": {
-   "expected": "",
-   "got": "Mai"
-  },
-  "text": "Tran Thi Mai"
- },
  "conventions/U Kyaw Win/default": {
   "family": {
    "expected": "",

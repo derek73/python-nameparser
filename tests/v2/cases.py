@@ -536,6 +536,32 @@ CASES: tuple[Case, ...] = (
                "join the ambiguous class by shape and the words-to-"
                "spare count reads this one a credential too",
          shape=1),
+    # -- #687: 'mai' left SUFFIX_ACRONYMS by the same criterion. Mai is
+    # a Vietnamese given and family name, a Chinese surname and a
+    # Japanese given name; MAI (Member, Appraisal Institute) is a
+    # specialized US credential. The name reading dominates, so the
+    # entry is removed rather than marked.
+    Case("trailing_given_name_mai_is_not_a_credential", "Tran Thi Mai",
+         {"given": "Mai", "middle": "Thi", "family": "Tran"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#687)",
+         notes="every release read suffix 'Mai' here, so a Vietnamese "
+               "name in its own declared order lost the name the "
+               "person is addressed by. 1.4.0 has no name_order and "
+               "read suffix 'Mai' for the default order too"),
+    Case("bare_family_name_mai_keeps_the_family", "Nguyen Mai",
+         {"given": "Nguyen", "family": "Mai"},
+         notes="1.4.0's reading, which 2.0.0 through 2.4.2 lost to the "
+               "MAI entry"),
+    Case("removed_mai_credential_loses_its_suffix_reading",
+         "John Smith MAI",
+         {"given": "John", "middle": "Smith", "family": "MAI"},
+         classification="fix(#687)",
+         notes="the accepted cost, as 'John Smith RAI' above: with no "
+               "comma or periods the all-caps shape carries no signal "
+               "the parser reads. 'Smith, John, MAI' and 'John Smith "
+               "M.A.I.' still read suffix, by the comma and the "
+               "dotted shape"),
     # -- #342: 'ba' is the other half of the same decision. BA is a
     # common credential and Ba a real surname (Vietnamese; Senegalese
     # Fula), which is the ma/Ma shape exactly, so it takes the
