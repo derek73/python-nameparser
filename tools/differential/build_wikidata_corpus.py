@@ -231,16 +231,22 @@ def pool(stratum: Stratum, refresh: bool) -> list[str]:
     return qids
 
 
-def entities(ids: Iterable[str], props: str, refresh: bool) -> dict[str, Any]:
+def entities(ids: Iterable[str], props: str, refresh: bool,
+             languages: Iterable[str] = ()) -> dict[str, Any]:
     """Each requested item, keyed by the id asked for (a redirected item
     comes back under that id, holding its target; a deleted one, marked
-    `missing`). Raises on an id the response leaves out."""
+    `missing`). Raises on an id the response leaves out. `languages`,
+    when given, limits the labels fetched to those languages: a famous
+    person's item carries hundreds, and the cache holds every one."""
     ids = sorted(set(ids))
+    languages = tuple(languages)  # read once per batch: an iterator would run dry
     out: dict[str, Any] = {}
     for start in range(0, len(ids), BATCH):
-        url = API + "?" + urllib.parse.urlencode({
-            "action": "wbgetentities", "ids": "|".join(ids[start:start + BATCH]),
-            "props": props, "format": "json"})
+        query = {"action": "wbgetentities", "ids": "|".join(ids[start:start + BATCH]),
+                 "props": props, "format": "json"}
+        if languages:
+            query["languages"] = "|".join(languages)
+        url = API + "?" + urllib.parse.urlencode(query)
         out.update(_fetch(url, None, refresh, "entities")["entities"])
     absent = sorted(i for i in ids if i not in out)
     if absent:
@@ -283,9 +289,12 @@ _FEMININE = (("ский", "ская"), ("цкий", "цкая"), ("ой", "ая"
              ("ын", "ына"))
 
 
-def feminine(surname: str) -> str:
-    """The feminine form of a masculine Russian surname, or ''."""
-    for male, female in _FEMININE:
+def feminine(surname: str,
+             endings: tuple[tuple[str, str], ...] = _FEMININE) -> str:
+    """The feminine form of a masculine surname, or '': Russian by
+    default, or by another language's table of (masculine, feminine)
+    endings, tried in order, so a longer ending goes first."""
+    for male, female in endings:
         if surname.endswith(male):
             return surname[: -len(male)] + female
     return ""
@@ -315,22 +324,41 @@ def _widest(spans: set[tuple[int, int]]) -> set[tuple[int, int]]:
             if not any(a <= i and j <= b and (a, b) != (i, j) for a, b in spans)}
 
 
+def claim(found: list[tuple[str, set[tuple[int, int]]]]) -> dict[int, str] | None:
+    """The field each position is claimed by, from each part's (field,
+    spans): a part claims its widest span, or None when it matches in two
+    places or two parts claim one position. Positions are words or, for
+    an unspaced text, characters; coverage is the caller's to check."""
+    claimed: dict[int, str] = {}
+    for field, spans in found:
+        widest = _widest(spans)
+        if len(widest) > 1:
+            return None  # the part matches in two places
+        for i, j in widest:
+            for k in range(i, j):
+                if k in claimed:
+                    return None  # two parts claim one position
+                claimed[k] = field
+    return claimed
+
+
+def by_field(claimed: dict[int, str]) -> dict[str, list[int]]:
+    """claim()'s positions, grouped by field in text order."""
+    out: dict[str, list[int]] = {}
+    for k in sorted(claimed):
+        out.setdefault(claimed[k], []).append(k)
+    return out
+
+
 def align(text: str, parts: list[tuple[str, set[str]]]) -> dict[str, list[int]] | None:
     """Each field's word positions in `text`, or None when the text is
     not covered by exactly one part per word. `parts` holds one
     (field, spellings) entry per statement."""
     tokens = text.split()
     words = [_word(t) for t in tokens]
-    claimed: dict[int, str] = {}
-    for field, names in parts:
-        widest = _widest(_spans(tokens, words, names))
-        if len(widest) > 1:
-            return None  # the part matches in two places
-        for i, j in widest:
-            for k in range(i, j):
-                if k in claimed:
-                    return None  # two parts claim one word
-                claimed[k] = field
+    claimed = claim([(field, _spans(tokens, words, names)) for field, names in parts])
+    if claimed is None:
+        return None
     # Right to left, so a run of connectives chains to the part after it;
     # tokens[k], not words[k], since a connective carrying a comma joins nothing.
     for k in range(len(words) - 1, -1, -1):
@@ -339,10 +367,7 @@ def align(text: str, parts: list[tuple[str, set[str]]]) -> dict[str, list[int]] 
             claimed[k] = claimed[k + 1]
     if len(claimed) != len(words):
         return None
-    out: dict[str, list[int]] = {}
-    for k in sorted(claimed):
-        out.setdefault(claimed[k], []).append(k)
-    return out
+    return by_field(claimed)
 
 
 def _order(text: str, fields: dict[str, list[int]]) -> tuple[str, int | None]:

@@ -12,7 +12,10 @@ Wikidata corpus (build_wikidata_corpus.py, wikidata_agreement.json),
 which states the two fields CLDR's vocabulary merges or lacks, and the
 hand-written conventions table (build_conventions_corpus.py,
 conventions_agreement.json), which adds `honorific`, a word of address
-written after the name, scored inside `suffix`; "CLDR" below means any
+written after the name, scored inside `suffix`. The native-script
+Wikidata corpus (build_wikidata_native_corpus.py,
+wikidata_native_agreement.json), real names in their own scripts, is a
+fifth source. "CLDR" below means any
 source wherever the rule is about fields. For each source the
 test fails on:
 
@@ -27,17 +30,19 @@ test fails on:
     uv run python tools/differential/cldr_agreement.py           # summary
     uv run python tools/differential/cldr_agreement.py --record  # re-record
 
---record rewrites every record, each source's and the locale one below, and first prints, per source, how many of each kind of change
+--record rewrites every record, each source's and the locale ones below, and first prints, per source, how many of each kind of change
 it is accepting, so a re-record made for one source cannot slip another
 source's regressions in unseen.
 
 A second view does the same with each locale pack (#672): the renderings
-of every CLDR file in LOCALE_FILES are parsed with parser_for(pack), and
-their disagreements are recorded in cldr_agreement_locales.json and
-ratcheted the same way, so a pack change shows what it moved on its own
-language. It reads the CLDR source only. A pack needing an optional
-extra that is not installed (JA's namedivider) is not measured, and its
-recorded entries are carried over unchanged.
+of every CLDR file in LOCALE_FILES, and of every native-script Wikidata
+stratum in NATIVE_LABELS (its Han and kana names), are parsed
+with parser_for(pack), and their disagreements are recorded in
+cldr_agreement_locales.json and wikidata_native_agreement_locales.json
+and ratcheted the same way, so a pack change shows what it moved on its
+own language. A pack needing an optional extra that is not installed
+(JA's namedivider) is not measured, and its recorded entries are
+carried over unchanged.
 
 Re-record deliberately, and say why in the commit, as with a watched diff.
 Each record doubles as a measured worklist: every entry is a place the
@@ -76,7 +81,7 @@ import sys
 from collections import Counter
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, ParsedName, Parser, Policy,
                         locales, parser_for)
@@ -98,6 +103,9 @@ WIKIDATA_FIELDS = HERE / "wikidata_fields.jsonl"
 WIKIDATA_RECORD = HERE / "wikidata_agreement.json"
 CONVENTIONS_FIELDS = HERE / "conventions_fields.jsonl"
 CONVENTIONS_RECORD = HERE / "conventions_agreement.json"
+NATIVE_FIELDS = HERE / "wikidata_native_fields.jsonl"
+NATIVE_RECORD = HERE / "wikidata_native_agreement.json"
+NATIVE_LOCALE_RECORD = HERE / "wikidata_native_agreement_locales.json"
 RECORD_COMMAND = "uv run python tools/differential/cldr_agreement.py --record"
 #: shapes.py's FAMILY_FIRST shape, the only tag build_cldr_corpus.py writes.
 FAMILY_FIRST_SHAPE = 4
@@ -116,6 +124,9 @@ LOCALE_FILES = {"zh": "ZH", "zh_Hant": "ZH", "yue": "ZH", "yue_Hans": "ZH",
                 "ja": "JA", "ru": "RU", "tr": "TR_AZ", "az": "TR_AZ"}
 #: Packs with no CLDR file to measure them on.
 NO_CLDR: frozenset[str] = frozenset()
+#: The locale view of the native-script Wikidata source: stratum label ->
+#: the pack its renderings are parsed with (its QID file names no language).
+NATIVE_LABELS = {"zh-cn": "ZH", "zh-tw": "ZH", "ja-jp": "JA"}
 #: Packs measured only where an optional extra is installed: pack -> the
 #: module the extra provides.
 _EXTRAS = {"JA": "namedivider"}
@@ -255,19 +266,32 @@ def load_rows(path: Path = FIELDS) -> list[dict[str, Any]]:
     return rows
 
 
-def locale_rows(rows: list[dict[str, Any]], pack: str) -> list[dict[str, Any]]:
+class LocaleSource(NamedTuple):
+    """How the locale view reads one source: its record, and which part of
+    a rendering key (`file/label/order`) names the pack, through what map.
+    The key alone decides, so a recorded rendering that is gone still
+    belongs to its pack's check."""
+    record: Path
+    segment: int
+    packs: dict[str, str]
+
+    def pack_of(self, key: str) -> str | None:
+        return self.packs.get(key.split("/")[self.segment])
+
+
+def locale_rows(rows: list[dict[str, Any]], source: LocaleSource,
+                pack: str) -> list[dict[str, Any]]:
     """The renderings the locale view parses with `pack`."""
-    return [row for row in rows if LOCALE_FILES.get(row["file"]) == pack]
+    return [row for row in rows if source.pack_of(rendering_key(row)) == pack]
 
 
 def disagreements(rows: list[dict[str, Any]],
-                  locale: bool = False) -> dict[str, dict[str, Any]]:
+                  pack: str | None = None) -> dict[str, dict[str, Any]]:
     """Every rendering where some role disagrees, with each disagreeing
-    role's expected and parsed value, sorted by key. With `locale`, each
-    row is parsed with its file's pack, so every row must be mapped."""
+    role's expected and parsed value, sorted by key; parsed with `pack`
+    (the locale view) where one is named."""
     found: dict[str, dict[str, Any]] = {}
     for row in rows:
-        pack = LOCALE_FILES[row["file"]] if locale else None
         got = got_roles(parse_rendering(row["text"], row["shape"], pack))
         bad = {role: {"expected": expected, "got": got[role]}
                for role, expected in expected_roles(row["fields"], row["text"]).items()
@@ -314,30 +338,29 @@ def changes(recorded: dict[str, dict[str, Any]], current: dict[str, dict[str, An
     return out
 
 
-def _file_of(key: str) -> str:
-    return key.split("/", 1)[0]
-
-
-def locale_changes(rows: list[dict[str, Any]], pack: str,
-                   recorded: dict[str, dict[str, Any]]) -> list[str]:
+def locale_changes(rows: list[dict[str, Any]], source: LocaleSource, pack: str,
+                   recorded: dict[str, dict[str, Any]],
+                   found: dict[str, dict[str, Any]] | None = None) -> list[str]:
     """changes() for one pack in the locale view: its renderings against
-    its share of the locale record."""
-    mine = locale_rows(rows, pack)
-    return changes({k: v for k, v in recorded.items()
-                    if LOCALE_FILES.get(_file_of(k)) == pack},
-                   disagreements(mine, locale=True),
-                   {rendering_key(row) for row in mine})
+    its share of the locale record. `found` is the pack's disagreements,
+    where the caller has them already."""
+    mine = locale_rows(rows, source, pack)
+    if found is None:
+        found = disagreements(mine, pack)
+    return changes({k: v for k, v in recorded.items() if source.pack_of(k) == pack},
+                   found, {rendering_key(row) for row in mine})
 
 
-def unmapped(recorded: dict[str, dict[str, Any]]) -> list[str]:
-    """Locale-record entries whose file is no longer in LOCALE_FILES: no
-    pack's check reads them, so they are reported here as gone."""
-    return [f"gone: {key} is recorded but its file is not in LOCALE_FILES"
-            for key in sorted(recorded) if _file_of(key) not in LOCALE_FILES]
+def unmapped(recorded: dict[str, dict[str, Any]], source: LocaleSource) -> list[str]:
+    """Locale-record entries no pack's check reads (a CLDR file no longer
+    in LOCALE_FILES, a stratum no longer in NATIVE_LABELS), reported here
+    as gone."""
+    return [f"gone: {key} is recorded but no locale pack reads it"
+            for key in sorted(recorded) if source.pack_of(key) is None]
 
 
 def _packs() -> list[str]:
-    return sorted(set(LOCALE_FILES.values()))
+    return sorted(set(LOCALE_FILES.values()) | set(NATIVE_LABELS.values()))
 
 
 def sources() -> dict[str, tuple[Path, Path]]:
@@ -345,7 +368,16 @@ def sources() -> dict[str, tuple[Path, Path]]:
     at call time, so a test that points a record elsewhere is obeyed."""
     return {"CLDR": (FIELDS, RECORD), "GND": (GND_FIELDS, GND_RECORD),
             "Wikidata": (WIKIDATA_FIELDS, WIKIDATA_RECORD),
-            "Conventions": (CONVENTIONS_FIELDS, CONVENTIONS_RECORD)}
+            "Conventions": (CONVENTIONS_FIELDS, CONVENTIONS_RECORD),
+            "Wikidata native": (NATIVE_FIELDS, NATIVE_RECORD)}
+
+
+def locale_sources() -> dict[str, LocaleSource]:
+    """The sources the locale view reads, each named as in sources(): CLDR
+    by its file (LOCALE_FILES), the native-script Wikidata source by its
+    stratum (NATIVE_LABELS)."""
+    return {"CLDR": LocaleSource(LOCALE_RECORD, 0, LOCALE_FILES),
+            "Wikidata native": LocaleSource(NATIVE_LOCALE_RECORD, 1, NATIVE_LABELS)}
 
 
 def _summary(name: str, rows: list[dict[str, Any]],
@@ -378,7 +410,6 @@ def main(argv: list[str] | None = None) -> int:
     loaded = {name: (load_rows(fields), record)
               for name, (fields, record) in sources().items()}
     current = {name: disagreements(rows) for name, (rows, _) in loaded.items()}
-    rows = loaded["CLDR"][0]
     if args.record:
         for name, (source_rows, record) in loaded.items():
             old_record = read_record(record) if record.exists() else {}
@@ -388,40 +419,59 @@ def main(argv: list[str] | None = None) -> int:
             write_record(current[name], record)
             print(f"recorded {len(current[name])} disagreeing renderings to "
                   f"{record.name} (accepting: {accepted or 'no change'})")
-        old = read_record(LOCALE_RECORD) if LOCALE_RECORD.exists() else {}
-        measured = [p for p in _packs() if pack_available(p)]
-        unmeasured = set(_packs()) - set(measured)
-        locale = {k: v for k, v in old.items()
-                  if LOCALE_FILES.get(_file_of(k)) in unmeasured}
-        for pack in sorted(unmeasured):
-            print(f"{pack} not measured (needs {_EXTRAS[pack]}); "
-                  "its recorded entries are kept unchanged")
-        locale.update(disagreements(
-            [r for p in measured for r in locale_rows(rows, p)], locale=True))
-        write_record(dict(sorted(locale.items())), LOCALE_RECORD)
-        print(f"recorded {len(locale)} disagreeing renderings to {LOCALE_RECORD.name}")
+        for name, source in locale_sources().items():
+            _record_locale(name, loaded[name][0], source)
         return 0
     problems: list[str] = []
     for name, (source_rows, record) in loaded.items():
         problems += _summary(name, source_rows, current[name], record)
         print()
-    print("CLDR locale view, renderings with every role agreeing:")
-    recorded = read_record(LOCALE_RECORD)
-    locale_problems = unmapped(recorded)
+    for name, source in locale_sources().items():
+        problems += _locale_summary(name, loaded[name][0], source, current[name])
+    return 1 if problems else 0
+
+
+def _record_locale(name: str, rows: list[dict[str, Any]], source: LocaleSource) -> None:
+    """Rewrite one source's locale record, keeping the entries of a pack
+    this run cannot measure."""
+    old = read_record(source.record) if source.record.exists() else {}
+    locale: dict[str, dict[str, Any]] = {}
     for pack in _packs():
-        mine = locale_rows(rows, pack)
-        files = ", ".join(sorted({row["file"] for row in mine}))
-        if not pack_available(pack):
-            print(f"{pack:6} {files}: not measured (needs {_EXTRAS[pack]})")
-            continue
-        found = disagreements(mine, locale=True)
-        before = sum(rendering_key(row) not in current["CLDR"] for row in mine)
-        after = len(mine) - len(found)
-        print(f"{pack:6} {files}: {before}/{len(mine)} default -> "
-              f"{after}/{len(mine)} with the pack")
-        locale_problems += locale_changes(rows, pack, recorded)
-    print("\n".join(locale_problems) or "locale view matches the record")
-    return 1 if problems or locale_problems else 0
+        if pack_available(pack):
+            locale.update(disagreements(locale_rows(rows, source, pack), pack))
+        else:
+            print(f"{name}: {pack} not measured (needs {_EXTRAS[pack]}); "
+                  "its recorded entries are kept unchanged")
+            locale.update({k: v for k, v in old.items() if source.pack_of(k) == pack})
+    write_record(dict(sorted(locale.items())), source.record)
+    print(f"recorded {len(locale)} disagreeing renderings to {source.record.name}")
+
+
+def _locale_summary(name: str, rows: list[dict[str, Any]], source: LocaleSource,
+                    default_wrong: dict[str, dict[str, Any]]) -> list[str]:
+    """Print one source's locale view, pack by pack; return its changes.
+    `default_wrong` is the default parser's disagreements."""
+    print(f"{name} locale view, renderings with every role agreeing:")
+    recorded = read_record(source.record)
+    problems = unmapped(recorded, source)
+    for pack in _packs():
+        mine = locale_rows(rows, source, pack)
+        found = None
+        if mine:
+            where = ", ".join(sorted({rendering_key(r).split("/")[source.segment]
+                                      for r in mine}))
+            if not pack_available(pack):
+                print(f"{pack:6} {where}: not measured (needs {_EXTRAS[pack]})")
+                continue
+            found = disagreements(mine, pack)
+            before = sum(rendering_key(row) not in default_wrong for row in mine)
+            print(f"{pack:6} {where}: {before}/{len(mine)} default -> "
+                  f"{len(mine) - len(found)}/{len(mine)} with the pack")
+        # with no renderings left, its recorded entries are still checked
+        problems += locale_changes(rows, source, pack, recorded, found)
+    print("\n".join(problems) or f"{name} locale view matches the record")
+    print()
+    return problems
 
 
 if __name__ == "__main__":
