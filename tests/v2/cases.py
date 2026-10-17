@@ -1728,6 +1728,11 @@ CASES: tuple[Case, ...] = (
          "Greve, Anna",
          {"given": "Anna", "family": "Greve"},
          notes="the family comma fixes the surname (#606)"),
+    Case("salutation_in_akan_hausa_and_indonesian", "Bapak Dwi Putro",
+         {"title": "Bapak", "given": "Dwi", "family": "Putro"},
+         classification="fix(#662)",
+         notes="owura (Akan) and bapak (Indonesian) are Mr. "
+               "(decisions.md#salutation-titles)"),
     Case("knt_is_a_post_nominal", "Sir John Smith Knt",
          {"title": "Sir", "given": "John", "family": "Smith",
           "suffix": "Knt"},
