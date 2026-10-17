@@ -295,17 +295,6 @@
   },
   "text": "Van der Walt"
  },
- "conventions/Wanjiru wa Kamau/default": {
-  "family": {
-   "expected": "",
-   "got": "Kamau"
-  },
-  "given_names": {
-   "expected": "Wanjiru wa Kamau",
-   "got": "Wanjiru wa"
-  },
-  "text": "Wanjiru wa Kamau"
- },
  "conventions/Wing Lau/default": {
   "given_names": {
    "expected": "Wing",

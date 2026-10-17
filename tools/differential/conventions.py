@@ -167,8 +167,9 @@ CONVENTIONS: tuple[Convention, ...] = (
                unstated="ole Sankale is a patronymic or a family name by family"),
     Convention("Kikuyu", "wa ('of')",
                "Wanjiru wa Kamau", None,
-               "given Wanjiru; wa Kamau names her father",
-               fields={'given': 'Wanjiru', 'patronymic': 'wa Kamau'}),
+               "given Wanjiru; wa Kamau names a parent, her father or her mother",
+               unstated="wa Kamau is a patronymic, a matronymic or a family name "
+                        "by family"),
     Convention("Hong Kong", "English given name before the Chinese name",
                "Michael Wong Kar Ming", None,
                "given Michael; family Wong; Kar Ming the Chinese given name",

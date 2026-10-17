@@ -22,7 +22,6 @@
 {"fields": {"given": "Suresh", "patronymic": "a/l Muthu"}, "file": "conventions", "label": "Suresh a/l Muthu", "order": "default", "shape": null, "text": "Suresh a/l Muthu"}
 {"fields": {"given": "Kavitha", "patronymic": "a/p Raman"}, "file": "conventions", "label": "Kavitha a/p Raman", "order": "default", "shape": null, "text": "Kavitha a/p Raman"}
 {"fields": {"given": "Budi Santoso", "title": "H."}, "file": "conventions", "label": "H. Budi Santoso", "order": "default", "shape": null, "text": "H. Budi Santoso"}
-{"fields": {"given": "Wanjiru", "patronymic": "wa Kamau"}, "file": "conventions", "label": "Wanjiru wa Kamau", "order": "default", "shape": null, "text": "Wanjiru wa Kamau"}
 {"fields": {"given": "Michael", "given2": "Kar Ming", "surname": "Wong"}, "file": "conventions", "label": "Michael Wong Kar Ming", "order": "default", "shape": null, "text": "Michael Wong Kar Ming"}
 {"fields": {"given": "Mei Ling", "given2": "Jessica", "surname": "Lim"}, "file": "conventions", "label": "Lim Mei Ling Jessica", "order": "FAMILY_FIRST", "shape": 4, "text": "Lim Mei Ling Jessica"}
 {"fields": {"given": "Wing", "surname": "Lau"}, "file": "conventions", "label": "Wing Lau", "order": "default", "shape": null, "text": "Wing Lau"}
