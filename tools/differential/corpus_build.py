@@ -96,10 +96,20 @@ def fields_lines(rows: Iterable[dict[str, Any]]) -> list[str]:
 
 
 def write_corpus(rows: list[dict[str, Any]], corpus: Path, fields: Path) -> None:
-    """Write the corpus file and the fields file. Both are built before
-    either is written, so a refused row (a duplicate rendering, a bad
-    shape) leaves the committed pair as it was."""
-    corpus_text = "\n".join(corpus_lines(rows)) + "\n"
-    fields_text = "\n".join(fields_lines(rows)) + "\n"
-    corpus.write_text(corpus_text, encoding="utf-8")
-    fields.write_text(fields_text, encoding="utf-8")
+    """Write the corpus file and the fields file. Both are built, then
+    written to .part files, before either is renamed into place, so a
+    refused row (a duplicate rendering, a bad shape) or a failed write
+    leaves the committed pair as it was; only a crash between the two
+    renames could leave them out of step."""
+    texts = {corpus: "\n".join(corpus_lines(rows)) + "\n",
+             fields: "\n".join(fields_lines(rows)) + "\n"}
+    parts = {path: path.with_name(path.name + ".part") for path in texts}
+    try:
+        for path, text in texts.items():
+            parts[path].write_text(text, encoding="utf-8")
+    except BaseException:
+        for part in parts.values():  # beside the committed files: never leave one
+            part.unlink(missing_ok=True)
+        raise
+    for path, part in parts.items():
+        os.replace(part, path)

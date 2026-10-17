@@ -75,6 +75,26 @@ def test_a_refused_row_leaves_both_files_as_they_were(tmp_path: Path) -> None:
     assert fields.read_text(encoding="utf-8") == "old fields\n"
 
 
+def test_a_failed_write_leaves_both_files_as_they_were(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    corpus, fields = tmp_path / "corpus.jsonl", tmp_path / "fields.jsonl"
+    corpus.write_text("old corpus\n", encoding="utf-8")
+    fields.write_text("old fields\n", encoding="utf-8")
+    real = Path.write_text
+
+    def full_disk(self: Path, text: str, encoding: str | None = None) -> int:
+        if self.name.startswith("fields"):
+            raise OSError("No space left on device")
+        return real(self, text, encoding=encoding)
+    monkeypatch.setattr(Path, "write_text", full_disk)
+    with pytest.raises(OSError, match="No space"):
+        corpus_build.write_corpus([_row("A")], corpus, fields)
+    monkeypatch.undo()
+    assert corpus.read_text(encoding="utf-8") == "old corpus\n"
+    assert fields.read_text(encoding="utf-8") == "old fields\n"
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["corpus.jsonl", "fields.jsonl"]
+
+
 def _check(body: bytes | str, source: str) -> dict[str, object]:
     data = corpus_build.parse_json(body, source)
     assert isinstance(data, dict)
