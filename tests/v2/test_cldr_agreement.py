@@ -457,6 +457,58 @@ def test_every_locale_source_is_a_source() -> None:
         assert sources[name][0] == fields, name
 
 
+def test_every_locale_record_is_read_and_every_pack_row_is_measured() -> None:
+    # Dropping a source from locale_sources() would leave its committed
+    # record read by nothing, and its rows' ratchet would simply vanish
+    # from the parametrization.
+    records = {record.name for _, record in agreement.locale_sources().values()}
+    assert records == {path.name for path in _TOOLS.glob("*_agreement_locales.json")}
+    for name, (fields, _) in agreement.sources().items():
+        packs = {agreement.row_pack(row) for row in agreement.load_rows(fields)
+                 if "pack" in row}
+        assert packs <= set(agreement._packs()), name
+        if packs:
+            assert name in agreement.locale_sources(), name
+
+
+@pytest.mark.parametrize("source", sorted(agreement.locale_sources()))
+def test_a_re_record_keeps_an_unmeasured_packs_entries(
+        source: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # Without the ja extra, --record must carry the JA entries over, or a
+    # run without it would erase them and only CI's ja-extra job would see.
+    fields, committed = agreement.locale_sources()[source]
+    record = tmp_path / committed.name
+    record.write_text(committed.read_text(encoding="utf-8"), encoding="utf-8")
+    monkeypatch.setattr(agreement, "_EXTRAS", {"JA": "a_module_that_is_not_installed"})
+    rows = agreement.load_rows(fields)
+    agreement._record_locale(source, rows, record)
+    old, new = agreement.read_record(committed), agreement.read_record(record)
+    packs = agreement._key_packs(rows, old)
+    kept = {k: v for k, v in old.items() if packs[k] == "JA"}
+    assert kept, f"{source} records no JA entry: the carry-over is not exercised"
+    assert {k: v for k, v in new.items() if packs.get(k) == "JA"} == kept
+    assert "JA not measured" in capsys.readouterr().out
+
+
+def test_the_summary_still_checks_a_pack_with_no_renderings_left(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # Its recorded entries are gone, and must be reported as such.
+    rows = [r for r in agreement.load_rows() if agreement.row_pack(r) != "ZH"]
+    problems = agreement._locale_summary("CLDR", rows, agreement.LOCALE_RECORD, set())
+    assert problems and all(p.startswith("gone:") for p in problems)
+
+
+def test_the_summary_reports_a_pack_no_locale_view_measures(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    row = {"file": "Q1", "label": "x", "order": "givenFirst", "pack": "KO",
+           "text": "김기영", "shape": None, "fields": {"surname": "김", "given": "기영"}}
+    record = tmp_path / "r.json"
+    agreement.write_record({}, record)
+    [problem] = agreement._locale_summary("X", [row], record, set())
+    assert problem.startswith("unmeasured: renderings name pack 'KO'")
+
+
 @pytest.mark.parametrize(("source", "pack"), [
     pytest.param(source, pack, marks=pytest.mark.skipif(
         not agreement.pack_available(pack),

@@ -39,8 +39,8 @@ P734 surname, P5056 patronymic). What this builder adds:
   text (the person's P1559 in that language, or their label in it) is
   used only if every letter in it is in the stratum's script: `mul`
   labels are Latin, and a Latin text would pass as a Hindi name.
-- Unspaced text is aligned by character. A text with no space (most
-  Han, kana and Hangul names) is aligned with the same rule over its
+- Unspaced text is aligned by character. A Han, kana or Hangul text
+  with no space (most of them) is aligned with the same rule over its
   characters: each part's widest occurrence must be its only one, no
   two parts may claim a character, and every character must be
   claimed. No part is inferred: a Chinese item stating only P734 (most
@@ -53,15 +53,18 @@ P734 surname, P5056 patronymic). What this builder adds:
   nothing: it matches no word, and the name falls out as before.
 - The script decides the order. A Han, kana or Hangul text carries no
   shape: the parser reads those scripts family-first by itself, which
-  is what the corpus is for. Any other text is ordered as
-  build_wikidata_corpus.py orders it.
+  is what the corpus is for. Pure katakana, which the parser leaves to
+  the declared order, and any other text are ordered as
+  build_wikidata_corpus.py orders them.
 
 A stratum that falls below its floor stops the build before anything is
 written, as does a query matching nothing or a response that is not what
 was asked for. A stratum's count says what was sampled, not how common
 the shape is. Its pool is sized from the yield measured on 2026-10-16;
 some pools are the whole population (Thailand, Kazakhstan, Bangladesh),
-and their floors are set below the quota for that reason.
+and their floors are set below the quota for that reason. A pool short
+of its size stops the build unless the stratum is marked as its whole
+population.
 
 --lc-check compares each name, where its item states a Library of
 Congress authority id (P244), with the native-script variants (MARC 400
@@ -70,7 +73,8 @@ which it splits differently. LC is a witness, never a source: the check
 writes nothing and filters nothing. LC's split is its comma (`הלוי,
 אהרן`) or, in CJK, a space (`이 병기`); most Han variants are written
 unspaced and give no split. Records are cached under
-$NAMEPARSER_TOOLS_CACHE/lc.
+$NAMEPARSER_TOOLS_CACHE/lc; an LCCN LC no longer has (HTTP 404) is
+counted as such and not cached.
 
 Blind to: everything the strict filter drops. Survivors are tidy names
 whose every word has a Wikidata item labelled in the script: Arabic
@@ -175,6 +179,10 @@ class Stratum(NamedTuple):
     #: The fewest names the build accepts; below it, it stops. Set below
     #: the quota only where the pool is known to run short.
     least: int | None = None
+    #: Whether the query's whole population is smaller than `pool`. A
+    #: pool short of `pool` stops the build unless this is set: a query
+    #: that suddenly matches less would otherwise drift the sample unseen.
+    whole: bool = False
 
     @property
     def floor(self) -> int:
@@ -199,11 +207,11 @@ STRATA = (
     Stratum("fa-ir", "Q794", "fa", 30, 600, least=25),  # 49
     Stratum("uk-ua", "Q212", "uk", 30, 900, least=25),  # 38, before feminine forms
     Stratum("bn-in", "Q668", "bn", 25, 900, least=20),  # 29
-    # The pools below are the whole population on 2026-10-16.
-    Stratum("bn-bd", "Q902", "bn", 15, 600, least=12),  # 26 of 563
-    Stratum("kk-kz", "Q232", "kk", 15, 600, least=12),  # 22 of 491
     Stratum("hi-in", "Q668", "hi", 15, 1000, least=12),  # 21
-    Stratum("th-th", "Q869", "th", 10, 600, least=8),   # 13 of 224
+    # The pools below are the whole population on 2026-10-16.
+    Stratum("bn-bd", "Q902", "bn", 15, 600, least=12, whole=True),  # 26 of 563
+    Stratum("kk-kz", "Q232", "kk", 15, 600, least=12, whole=True),  # 22 of 491
+    Stratum("th-th", "Q869", "th", 10, 600, least=8, whole=True),   # 13 of 224
 )
 
 LICENSE_TEXT = """\
@@ -247,6 +255,10 @@ def pool(stratum: Stratum, refresh: bool) -> list[str]:
     if not qids:
         raise ValueError(f"{stratum.label}: the query matches nothing; has a "
                          f"property or item changed?\n{query(stratum)}")
+    if len(qids) < stratum.pool and not stratum.whole:
+        raise ValueError(f"{stratum.label}: the query matched {len(qids)} people, "
+                         f"fewer than its pool of {stratum.pool}; if that is now "
+                         "the whole population, mark the stratum whole=True")
     return qids
 
 
@@ -327,17 +339,21 @@ def renderings(qid: str, person: dict[str, Any], names: dict[str, Any],
                     written |= {f for f in (wikidata.feminine(w, language.feminine)
                                             for w in written) if f}
                 parts.append((field, written))
-        spaced = len(text.split()) > 1
-        aligned = align(text, parts) if spaced else align_chars(text, parts)
+        # Only Han, kana and Hangul are written unspaced; a one-word text
+        # in another script is word-aligned, and so never splits a word.
+        by_char = len(text.split()) == 1 and in_script(text, _SELF_ORDERED)
+        aligned = align_chars(text, parts) if by_char else align(text, parts)
         if aligned is None or "given" not in aligned or "surname" not in aligned:
             continue
-        if spaced:
+        if by_char:
+            fields = {f: "".join(text[k] for k in ks) for f, ks in aligned.items()}
+            first = min(aligned["surname"]) == 0
+            order, shape = (("surnameFirst", wikidata.FAMILY_FIRST_SHAPE) if first
+                            else ("givenFirst", None))
+        else:
             words = [wikidata._word(t) for t in text.split()]
             fields = {f: " ".join(words[k] for k in ks) for f, ks in aligned.items()}
-        else:
-            fields = {f: "".join(text[k] for k in ks) for f, ks in aligned.items()}
-        order, shape = wikidata._order(text, aligned) if spaced else (
-            "surnameFirst" if min(aligned["surname"]) == 0 else "givenFirst", None)
+            order, shape = wikidata._order(text, aligned)
         if in_script(text, _SELF_ORDERED) and not in_script(text, ("KATAKANA",)):
             shape = None  # the script decides the order: what is under test
         row = {"file": qid, "label": stratum.label, "order": order, "text": text,
@@ -468,7 +484,10 @@ def lc_check(rows: list[dict[str, Any]], lccns: dict[str, str], refresh: bool) -
             continue
         counts["with an LCCN"] += 1
         variants = lc_variants(lccns[row["file"]], refresh)
-        split = lc_split(row, variants or [])
+        if variants is None:
+            counts["no LC record"] += 1  # a stale P244
+            continue
+        split = lc_split(row, variants)
         if split is None:
             continue
         counts["LC splits it"] += 1
@@ -482,7 +501,8 @@ def lc_check(rows: list[dict[str, Any]], lccns: dict[str, str], refresh: bool) -
                           f"LC {split} (lccn {lccns[row['file']]})")
     for label, counts in tally.items():
         print(f"{label:6} " + ", ".join(f"{k} {counts[k]}" for k in
-                                        ("names", "with an LCCN", "LC splits it", "agree")))
+                                        ("names", "with an LCCN", "no LC record",
+                                         "LC splits it", "agree")))
     print(f"{len(differ)} split differently:", *differ, sep="\n")
 
 
