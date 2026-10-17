@@ -11475,6 +11475,53 @@ CASES: tuple[Case, ...] = (
                "Hiroshi, an attested given name, so 博士 never peels "
                "-- it stays recognized in the SPACED position only, "
                "where the writer's own token boundary settles it"),
+    Case("zh_spaced_legislator_is_a_suffix", "彭德威 议员",
+         {"family": "彭", "given": "德威", "suffix": "议员"},
+         locale="zh", classification="fix(#671)",
+         notes="2.4.2 read middle '议员'; the spaced word is a token "
+               "the writer drew, so it needs only to be no name"),
+    Case("ja_spaced_diet_member_is_a_suffix", "佐藤恵子 国会議員",
+         {"family": "佐藤恵子", "suffix": "国会議員"},
+         classification="fix(#671)",
+         notes="2.4.2 read given '国会議員', and the unspaced twin "
+               "moves the same way, so the kana-licensed family-first "
+               "reading is unchanged"),
+    Case("zh_comma_legislator_is_a_suffix", "王雅婷，議員",
+         {"family": "王雅婷", "suffix": "議員"},
+         classification="fix(#671)", tolerated=True,
+         notes="the fullwidth comma is a listing convention (W3, "
+               "best-effort); the word is vocabulary, so C1 reads the "
+               "part after the comma as a credential run rather than "
+               "reversing the name -- 2.4.2 gave it as the given name"),
+    Case("zh_comma_degree_is_a_suffix", "陳怡君，醫學博士",
+         {"family": "陳怡君", "suffix": "醫學博士"},
+         classification="fix(#671)", tolerated=True,
+         notes="the degree the glued 博士 exclusion cannot reach: the "
+               "four-character word is whole after the comma"),
+    Case("zh_spaced_generational_two_is_a_suffix", "陳怡君 二世",
+         {"family": "陳", "given": "怡君", "suffix": "二世"},
+         locale="zh", classification="fix(#671)",
+         notes="2.4.2 read middle '二世'"),
+    Case("ja_spaced_job_title_is_a_suffix", "田中 社長",
+         {"family": "田中", "suffix": "社長"},
+         classification="fix(#671)",
+         notes="a form of address after the name, the slot 先生 "
+               "fills; a job title, not a credential"),
+    Case("ja_glued_job_title_stays", "田中部長",
+         {"family": "田中部長"},
+         classification="fix(#271)",
+         notes="the glued bar is unmet: 長 alone is a borne given "
+               "name (阿部長 = 阿部 + 長), so 部長 is spaced-only. "
+               "Unchanged from 2.4.2, pinned so GLUED_HONORIFICS "
+               "cannot gain it unseen"),
+    Case("zh_glued_generational_two_is_not_peeled", "陳怡君二世",
+         {"family": "陳", "given": "怡君二世"},
+         locale="zh", classification="fix(#271)",
+         notes="the glued form #671 left open: no peel reads it, "
+               "and 二世 is not vetted against real names. The "
+               "SEGMENTER's division of 王二世 is another matter -- "
+               "the pack reads family 王, suffix 二世, because the "
+               "split-off piece is a whole-token suffix word"),
     Case("zh_glued_jun_stays", "王君",
          {"family": "王君"},
          classification="fix(#271)",

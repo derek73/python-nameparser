@@ -165,6 +165,30 @@ SUFFIX_WORDS = frozenset({
     'さま',      # ja the kana spelling of 様
     'くん',      # ja the kana spelling of 君
     'ちゃん',    # ja familiar/diminutive
+    # #671: CJK credential, office and generational words. SPACED
+    # (and after-comma) ONLY -- none is in GLUED_HONORIFICS below.
+    # The spaced position is a token boundary the writer drew, so
+    # the vetting bar is just "is a word standing alone ever a
+    # name?"; the glued bar ("can it END a name?") needs real-name
+    # data this set was not measured against (a Wikidata suffix query
+    # timed out; the native-script corpus holds none of these words),
+    # so the glued forms (陳怡君二世, 田中社長) stay unpeeled and
+    # glued peeling is a separate question.
+    # - 二世: Japanese/Chinese "II" (the generational numeral).
+    #   王二世 is read family 王 + given 二世 by the Han segmenter
+    #   today, so the glued form is exactly the open question.
+    # - 議員/议员, 国会議員/國會議員: legislator, Diet member.
+    # - 太平紳士/太平绅士: Justice of the Peace (Hong Kong).
+    # - 医学博士/醫學博士: Doctor of Medicine.
+    # - 社長/部長/課長: Japanese job titles used as forms of address
+    #   after a name (田中 社長), not credentials -- the same slot as
+    #   先生. 部長 is the reason glued is out: 長 alone is a borne
+    #   given name (阿部長 = 阿部 + 長).
+    '二世',
+    '議員', '议员', '国会議員', '國會議員',
+    '太平紳士', '太平绅士',
+    '医学博士', '醫學博士',
+    '社長', '部長', '課長',
     # #346/#344/#343: spaced trailing honorifics, South Asian and
     # Tibetan. SPACED ONLY -- none of these is in GLUED_HONORIFICS
     # below, and none may be added to it. जी is the reason and the

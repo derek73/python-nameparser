@@ -13086,11 +13086,11 @@
   },
   "given_names": {
    "expected": "子媚 惠儀",
-   "got": "太平紳士"
+   "got": ""
   },
   "suffix": {
    "expected": "小 太平紳士",
-   "got": ""
+   "got": "太平紳士"
   },
   "text": "先生子媚惠儀陳小，太平紳士",
   "title": {
@@ -13344,11 +13344,11 @@
   },
   "given_names": {
    "expected": "子媚 惠仪",
-   "got": "太平绅士"
+   "got": ""
   },
   "suffix": {
    "expected": "小 太平绅士",
-   "got": ""
+   "got": "太平绅士"
   },
   "text": "先生子媚惠仪陈小，太平绅士",
   "title": {
@@ -13758,11 +13758,11 @@
  "zh_Hant/foreignFull/givenFirst": {
   "family": {
    "expected": "馮 陳",
-   "got": "怡君達印馮 陳二世博士"
+   "got": "陳二世博士"
   },
   "family_base": {
    "expected": "陳",
-   "got": "怡君達印馮 陳二世博士"
+   "got": "陳二世博士"
   },
   "family_particles": {
    "expected": "馮",
@@ -13770,11 +13770,11 @@
   },
   "given_names": {
    "expected": "怡君 達印",
-   "got": "醫學博士"
+   "got": "怡君達印馮"
   },
   "suffix": {
    "expected": "二世 醫學博士",
-   "got": ""
+   "got": "醫學博士"
   },
   "text": "怡君達印馮·陳二世博士，醫學博士",
   "title": {
@@ -13886,19 +13886,19 @@
  "zh_Hant/nativeFull/givenFirst": {
   "family": {
    "expected": "王",
-   "got": "雅婷婷婷王二世先生"
+   "got": "雅婷婷婷王二世"
   },
   "family_base": {
    "expected": "王",
-   "got": "雅婷婷婷王二世先生"
+   "got": "雅婷婷婷王二世"
   },
   "given_names": {
    "expected": "雅婷 婷婷",
-   "got": "議員"
+   "got": ""
   },
   "suffix": {
    "expected": "二世 議員",
-   "got": ""
+   "got": "先生, 議員"
   },
   "text": "雅婷婷婷王二世先生，議員",
   "title": {
