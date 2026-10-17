@@ -20,13 +20,14 @@ scored inside the given names and `surname2` inside the family, as for
 the Wikidata source, and `honorific` (a word of address written after
 the name: Bey, ssi, san) inside the suffix. A row no field can state is
 left without one rather than stated wrongly, since the comparison reads
-an unstated part as an empty role: the kunya, the glued `-san`, the
-`-né` married form on a family name, and `arap`/`ole`, whose last word
-is a patronymic or a family name by family. build_conventions_corpus.py
-writes conventions_fields.jsonl from these.
+an unstated part as an empty role, and says why in `unstated`; every
+row carries `fields` or `unstated`, so neither can be left out by
+accident. build_conventions_corpus.py writes conventions_fields.jsonl
+from the `fields`.
 
-Today's reading is deliberately not recorded here: snapshot.jsonl and
-conventions_agreement.json hold it, and a second copy would go stale. A row whose
+Today's reading is deliberately not recorded here: snapshot.jsonl holds
+it, and conventions_agreement.json holds it where it disagrees with
+`fields`. A second copy would go stale. A row whose
 reading is settled can graduate to tests/v2/cases.py, where it becomes a
 contract.
 
@@ -44,6 +45,7 @@ class Convention(NamedTuple):
     order: str | None
     expect: str
     fields: dict[str, str] | None = None
+    unstated: str | None = None
 
 
 CONVENTIONS: tuple[Convention, ...] = (
@@ -82,7 +84,7 @@ CONVENTIONS: tuple[Convention, ...] = (
                fields={'given': 'Murat', 'honorific': 'Bey'}),
     Convention("Hungarian", "title after the name",
                "Szabó Péter úr", "FAMILY_FIRST",
-               "family Szabó, given Péter; úr ('Mr.') a title written last",
+               "family Szabó, given Péter; úr ('Mr.') a word of address written last",
                fields={'surname': 'Szabó', 'given': 'Péter', 'honorific': 'úr'}),
     Convention("Hungarian", "married form: -né on the husband's given name",
                "Szabó Péterné", "FAMILY_FIRST",
@@ -120,7 +122,8 @@ CONVENTIONS: tuple[Convention, ...] = (
                fields={'surname': 'Suzuki', 'honorific': 'san'}),
     Convention("Japanese", "romanized honorific, hyphenated",
                "Suzuki-san", "FAMILY_FIRST",
-               "family Suzuki; -san an honorific glued to it"),
+               "family Suzuki; -san an honorific glued to it",
+               fields={'surname': 'Suzuki', 'honorific': '-san'}),
     Convention("Burmese", "no family name; honorific U for a man",
                "U Kyaw Win", None,
                "U an honorific; Kyaw Win the whole personal name; no family name",
@@ -156,10 +159,12 @@ CONVENTIONS: tuple[Convention, ...] = (
                fields={'title': 'H.', 'given': 'Budi Santoso'}),
     Convention("Kalenjin", "arap ('son of')",
                "David arap Kirui", None,
-               "given David; arap Kirui, used as a family name"),
+               "given David; arap Kirui, used as a family name",
+               unstated="arap Kirui is a patronymic or a family name by family"),
     Convention("Maasai", "ole ('son of')",
                "Joseph ole Sankale", None,
-               "given Joseph; ole Sankale, used as a family name"),
+               "given Joseph; ole Sankale, used as a family name",
+               unstated="ole Sankale is a patronymic or a family name by family"),
     Convention("Kikuyu", "wa ('of')",
                "Wanjiru wa Kamau", None,
                "given Wanjiru; wa Kamau names her father",
@@ -179,7 +184,8 @@ CONVENTIONS: tuple[Convention, ...] = (
                fields={'given': 'Wing', 'surname': 'Lau'}),
     Convention("Hungarian", "married form on the husband's family name",
                "Szabóné Kiss Éva", "FAMILY_FIRST",
-               "Szabóné ('wife of Szabó') a married form; family Kiss; given Éva"),
+               "Szabóné ('wife of Szabó') a married form; family Kiss; given Éva",
+               unstated="no field states a married form on the husband's family name"),
     Convention("Afrikaans/Dutch", "capitalized particle, no given name",
                "Van der Walt", None,
                "family Van der Walt; no given name",
@@ -187,7 +193,8 @@ CONVENTIONS: tuple[Convention, ...] = (
     Convention("Arabic", "kunya ('father of')",
                "Abu Karim", None,
                "a kunya, 'father of Karim', used as a name of address; not a given "
-               "name plus a family name"),
+               "name plus a family name",
+               unstated="no field states a kunya"),
     Convention("Iranian", "-zadeh written as a separate word",
                "Reza Hossein Zadeh", None,
                "given Reza; family Hossein Zadeh, the separated spelling of "

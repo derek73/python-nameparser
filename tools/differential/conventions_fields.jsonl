@@ -13,6 +13,7 @@
 {"fields": {"given": "Ma. Teresa", "surname": "Bautista", "surname2": "Cruz"}, "file": "conventions", "label": "Ma. Teresa Cruz Bautista", "order": "default", "shape": null, "text": "Ma. Teresa Cruz Bautista"}
 {"fields": {"given": "Ji-hoon", "honorific": "ssi", "surname": "Park"}, "file": "conventions", "label": "Park Ji-hoon ssi", "order": "FAMILY_FIRST", "shape": 4, "text": "Park Ji-hoon ssi"}
 {"fields": {"honorific": "san", "surname": "Suzuki"}, "file": "conventions", "label": "Suzuki san", "order": "FAMILY_FIRST", "shape": 4, "text": "Suzuki san"}
+{"fields": {"honorific": "-san", "surname": "Suzuki"}, "file": "conventions", "label": "Suzuki-san", "order": "FAMILY_FIRST", "shape": 4, "text": "Suzuki-san"}
 {"fields": {"given": "Kyaw Win", "title": "U"}, "file": "conventions", "label": "U Kyaw Win", "order": "default", "shape": null, "text": "U Kyaw Win"}
 {"fields": {"given": "Thida", "title": "Daw"}, "file": "conventions", "label": "Daw Thida", "order": "default", "shape": null, "text": "Daw Thida"}
 {"fields": {"given": "Malee", "title": "Khun"}, "file": "conventions", "label": "Khun Malee", "order": "default", "shape": null, "text": "Khun Malee"}

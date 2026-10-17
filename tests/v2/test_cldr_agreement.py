@@ -1,12 +1,13 @@
-"""The CLDR and GND agreement ratchets, and the comparison rules they rest on.
+"""The agreement ratchets, and the comparison rules they rest on.
 
 tools/differential/cldr_agreement.py decides, for each rendering and
 each role, whether nameparser agrees with the source's stated fields
-(CLDR's, and the GND's written in CLDR's vocabulary). The rules
+(CLDR's, and the GND's, Wikidata's and the conventions table's written
+in CLDR's vocabulary). The rules
 are pinned here first, each with the wrong answer the plausible
 alternative gives recorded beside it; the ratchet test at the end then
 holds each source's corpus to its recorded disagreements in
-tools/differential/cldr_agreement.json and gnd_agreement.json.
+tools/differential/, one record per source.
 
 tools/ is not a package, so the module is loaded by path, as
 _differential_fixtures.py loads compare.py.
@@ -14,6 +15,7 @@ _differential_fixtures.py loads compare.py.
 import importlib.util
 import json
 import sys
+from collections import Counter
 from pathlib import Path
 from types import ModuleType
 
@@ -132,8 +134,16 @@ def test_an_honorific_is_scored_inside_the_suffix() -> None:
     source's `honorific`, #686) is a suffix, as nameparser reads さん."""
     roles = agreement.expected_roles({"given": "Murat", "honorific": "Bey"}, "Murat Bey")
     assert roles["suffix"] == "Bey"
+    assert roles["title"] == ""
     assert roles["given_names"] == "Murat"
     assert roles["family"] == ""
+
+
+def test_a_field_no_rule_reads_raises() -> None:
+    """A mistyped field would be expected in no role, and a row holding
+    it would pass as agreeing with an empty parse."""
+    with pytest.raises(ValueError, match="honorfic"):
+        agreement.expected_roles({"given": "Murat", "honorfic": "Bey"}, "Murat Bey")
 
 
 def test_expected_roles_compare_particles_only_where_cldr_splits_them() -> None:
@@ -233,7 +243,7 @@ _CORPORA = {"CLDR": ("corpus_cldr.jsonl", 1000), "GND": ("corpus_gnd.jsonl", 500
             "Conventions": ("corpus_conventions.jsonl", 25)}
 #: Sources whose fields file states only some of its corpus's names: the
 #: conventions table leaves a row without fields where no field can state
-#: it (conventions.py says which and why).
+#: it, and says why in the row's `unstated`.
 _PARTIAL = frozenset({"Conventions"})
 
 
@@ -242,7 +252,7 @@ def test_every_source_has_a_corpus_file() -> None:
 
 
 @pytest.mark.parametrize("source", sorted(_CORPORA))
-def test_the_corpus_and_the_fields_file_hold_the_same_renderings(source: str) -> None:
+def test_the_fields_file_holds_the_corpus_renderings(source: str) -> None:
     fields, _ = agreement.sources()[source]
     corpus, least = _CORPORA[source]
     from_fields = {(row["text"], row["shape"]) for row in agreement.load_rows(fields)}
@@ -270,6 +280,27 @@ def test_every_committed_field_occurs_in_its_rendering(source: str) -> None:
                for value in row["fields"].values()
                if not agreement.occurs(value, row["text"])]
     assert not missing
+
+
+@pytest.mark.parametrize("source", sorted(set(_CORPORA) - {"CLDR"}))
+def test_the_fields_partition_their_rendering(source: str) -> None:
+    """Every word of a rendering is stated by exactly one field, so a part
+    left out is a failure here rather than an expectation of empty. CLDR
+    is exempt for the reason above; the other sources' builders claim
+    every word, and the conventions table is written to."""
+    fields, _ = agreement.sources()[source]
+    bad = []
+    for row in agreement.load_rows(fields):
+        values = list(row["fields"].values())
+        if agreement._has_space(row["text"]):
+            ok = (Counter(w for v in values for w in agreement._words(v))
+                  == Counter(agreement._words(row["text"])))
+        else:
+            ok = (sum(len(agreement._squash(v)) for v in values)
+                  == len(agreement._squash(row["text"])))
+        if not ok:
+            bad.append((row["text"], row["fields"]))
+    assert not bad
 
 
 @pytest.mark.parametrize("source", sorted(_CORPORA))

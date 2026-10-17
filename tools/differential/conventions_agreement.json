@@ -232,6 +232,17 @@
   },
   "text": "Suzuki san"
  },
+ "conventions/Suzuki-san/FAMILY_FIRST": {
+  "family": {
+   "expected": "Suzuki",
+   "got": "Suzuki-san"
+  },
+  "suffix": {
+   "expected": "-san",
+   "got": ""
+  },
+  "text": "Suzuki-san"
+ },
  "conventions/Szabó Péter úr/FAMILY_FIRST": {
   "given_names": {
    "expected": "Péter",

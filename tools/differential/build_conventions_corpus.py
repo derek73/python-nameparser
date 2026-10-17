@@ -59,6 +59,9 @@ def selected() -> list[object]:
     seen: set[tuple[str, str | None]] = set()
     lines: list[object] = []
     for row in CONVENTIONS:
+        if (row.fields is None) == (row.unstated is None):
+            raise ValueError(f"conventions.py row {row.name!r} needs exactly one "
+                             f"of `fields` and `unstated` (why no field states it)")
         if (row.name, row.order) in seen:
             raise ValueError(f"conventions.py lists {row.name!r} under "
                              f"{row.order or 'the default order'} twice")
