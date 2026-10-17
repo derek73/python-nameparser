@@ -170,20 +170,22 @@ SUFFIX_WORDS = frozenset({
     # The spaced position is a token boundary the writer drew, so
     # the vetting bar is just "is a word standing alone ever a
     # name?"; the glued bar ("can it END a name?") needs real-name
-    # data this set was not measured against (a Wikidata suffix query
-    # timed out; the native-script corpus holds none of these words),
-    # so the glued forms (陳怡君二世, 田中社長) stay unpeeled and
-    # glued peeling is a separate question.
+    # data this set was not measured against (decisions.md#W2, #671),
+    # so no peel splits them off a glued name (陳怡君二世, 田中社長
+    # keep the word) and glued peeling is a separate question (#707).
+    # The Chinese pack's SEGMENTER is not a peel and still exposes
+    # them after a listed surname: 王二世 and 李部長 divide at the
+    # surname and the split-off word is then a whole-token suffix
+    # word, as 王博士 already reads.
     # - 二世: Japanese/Chinese "II" (the generational numeral).
-    #   王二世 is read family 王 + given 二世 by the Han segmenter
-    #   today, so the glued form is exactly the open question.
     # - 議員/议员, 国会議員/國會議員: legislator, Diet member.
     # - 太平紳士/太平绅士: Justice of the Peace (Hong Kong).
     # - 医学博士/醫學博士: Doctor of Medicine.
     # - 社長/部長/課長: Japanese job titles used as forms of address
     #   after a name (田中 社長), not credentials -- the same slot as
-    #   先生. 部長 is the reason glued is out: 長 alone is a borne
-    #   given name (阿部長 = 阿部 + 長).
+    #   先生. Japanese spellings only; 社长/部长/课长 are not listed.
+    #   部長 is the reason glued is out: 長 alone is a borne given
+    #   name (阿部長 = 阿部 + 長).
     '二世',
     '議員', '议员', '国会議員', '國會議員',
     '太平紳士', '太平绅士',

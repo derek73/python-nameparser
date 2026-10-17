@@ -11483,9 +11483,9 @@ CASES: tuple[Case, ...] = (
     Case("ja_spaced_diet_member_is_a_suffix", "佐藤恵子 国会議員",
          {"family": "佐藤恵子", "suffix": "国会議員"},
          classification="fix(#671)",
-         notes="2.4.2 read given '国会議員', and the unspaced twin "
-               "moves the same way, so the kana-licensed family-first "
-               "reading is unchanged"),
+         notes="2.4.2 read given '国会議員'. The unspaced twin "
+               "佐藤恵子国会議員 is unchanged (glued, nothing peels it); "
+               "family-first comes from the wholly-Han script order"),
     Case("zh_comma_legislator_is_a_suffix", "王雅婷，議員",
          {"family": "王雅婷", "suffix": "議員"},
          classification="fix(#671)", tolerated=True,
@@ -11496,8 +11496,8 @@ CASES: tuple[Case, ...] = (
     Case("zh_comma_degree_is_a_suffix", "陳怡君，醫學博士",
          {"family": "陳怡君", "suffix": "醫學博士"},
          classification="fix(#671)", tolerated=True,
-         notes="the degree the glued 博士 exclusion cannot reach: the "
-               "four-character word is whole after the comma"),
+         notes="a four-character degree word that is whole after the "
+               "comma, so the glued-博士 exclusion never applies"),
     Case("zh_spaced_generational_two_is_a_suffix", "陳怡君 二世",
          {"family": "陳", "given": "怡君", "suffix": "二世"},
          locale="zh", classification="fix(#671)",
@@ -11514,13 +11514,21 @@ CASES: tuple[Case, ...] = (
                "name (阿部長 = 阿部 + 長), so 部長 is spaced-only. "
                "Unchanged from 2.4.2, pinned so GLUED_HONORIFICS "
                "cannot gain it unseen"),
+    Case("zh_listed_surname_then_new_word_divides", "李部長",
+         {"family": "李", "suffix": "部長"},
+         locale="zh", classification="fix(#671)",
+         notes="the segmenter divides at the listed surname and the "
+               "split-off word is a whole-token suffix word, as 王博士 "
+               "already reads; 2.4.2 read given '部長'. 阿部長 stays "
+               "whole because 阿 is no listed surname"),
     Case("zh_glued_generational_two_is_not_peeled", "陳怡君二世",
          {"family": "陳", "given": "怡君二世"},
          locale="zh", classification="fix(#271)",
          notes="the glued form #671 left open: no peel reads it, "
                "and 二世 is not vetted against real names. The "
-               "SEGMENTER's division of 王二世 is another matter -- "
-               "the pack reads family 王, suffix 二世, because the "
+               "SEGMENTER's division is another matter: after a "
+               "listed surname the pack reads 王二世 as family 王, "
+               "suffix 二世, and 李部長 likewise, because the "
                "split-off piece is a whole-token suffix word"),
     Case("zh_glued_jun_stays", "王君",
          {"family": "王君"},
