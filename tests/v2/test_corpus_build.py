@@ -17,7 +17,8 @@ from ._differential_fixtures import _TOOLS, load_tool
 
 corpus_build = load_tool("corpus_build")
 
-_BUILDERS = ("build_cldr_corpus", "build_gnd_corpus", "build_wikidata_corpus")
+_BUILDERS = ("build_cldr_corpus", "build_gnd_corpus", "build_wikidata_corpus",
+             "build_wikidata_native_corpus")
 
 
 @pytest.mark.parametrize("stem", _BUILDERS)

@@ -18,6 +18,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -240,7 +241,8 @@ def test_changes_reports_a_rendering_that_is_gone() -> None:
 #: an emptied one re-recorded would match its emptied record.
 _CORPORA = {"CLDR": ("corpus_cldr.jsonl", 1000), "GND": ("corpus_gnd.jsonl", 500),
             "Wikidata": ("corpus_wikidata.jsonl", 500),
-            "Conventions": ("corpus_conventions.jsonl", 25)}
+            "Conventions": ("corpus_conventions.jsonl", 25),
+            "Wikidata native": ("corpus_wikidata_native.jsonl", 700)}
 #: Sources whose fields file states only some of its corpus's names: the
 #: conventions table leaves a row without fields where no field can state
 #: it, and says why in the row's `unstated`.
@@ -398,31 +400,76 @@ def test_a_re_record_drops_entries_whose_file_left_the_table(
     # keep an unmapped file's too.
     # Every record is redirected through sources() itself, so a source
     # added later cannot be written into the tree by this test.
-    record = tmp_path / "locales.json"
-    agreement.write_record({"xx/nativeG/sorting": {"text": "X"}}, record)
     real = agreement.sources()
     redirected = {name: (fields, tmp_path / f"{name}.json")
                   for name, (fields, _) in real.items()}
-    monkeypatch.setattr(agreement, "LOCALE_RECORD", record)
+    real_locale = agreement.locale_sources()
+    redirected_locale = {name: (fields, tmp_path / f"{name}.locales.json")
+                         for name, (fields, _) in real_locale.items()}
+    record = redirected_locale["CLDR"][1]
+    agreement.write_record({"xx/nativeG/sorting": {"text": "X"}}, record)
     monkeypatch.setattr(agreement, "sources", lambda: redirected)
+    monkeypatch.setattr(agreement, "locale_sources", lambda: redirected_locale)
     assert agreement.main(["--record"]) == 0
     assert "xx/nativeG/sorting" not in agreement.read_record(record)
-    # and the re-record wrote every source's record, not CLDR's alone
+    # and the re-record wrote every source's record, not CLDR's alone,
+    # and every locale record -- each matching the committed one
+    # (an unmeasured pack's entries are carried over only from the old
+    # record, which here is empty, so only measured packs are compared)
     for name, (fields, written) in redirected.items():
         assert agreement.read_record(written) == agreement.read_record(real[name][1]), name
+    for name, (fields, written) in redirected_locale.items():
+        rows = agreement.load_rows(fields)
+        packs = agreement._key_packs(rows, agreement.read_record(real_locale[name][1]))
+        measured = {k: v for k, v in agreement.read_record(real_locale[name][1]).items()
+                    if agreement.pack_available(packs[k] or "")}
+        assert agreement.read_record(written) == measured, name
 
 
-@pytest.mark.parametrize("pack", [
-    pytest.param(pack, marks=pytest.mark.skipif(
+def test_a_row_naming_a_pack_is_parsed_with_it() -> None:
+    # The native-script Wikidata rows name their pack: their file is a QID,
+    # which LOCALE_FILES never maps.
+    row = {"file": "Q1", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH",
+           "text": "王小明", "shape": None, "fields": {"surname": "王", "given": "小明"}}
+    assert agreement.row_pack(row) == "ZH"
+    assert agreement.disagreements([row], locale=True) == {}
+    assert agreement.disagreements([row]) != {}
+    with pytest.raises(ValueError, match="Q1/zh-cn/surnameFirst has no locale pack"):
+        agreement.disagreements([{**row, "pack": None}], locale=True)
+
+
+def test_a_recorded_native_entry_whose_rendering_is_gone_is_reported() -> None:
+    # It names no CLDR file, so only its rendering said which pack reads it.
+    row = {"file": "Q1", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH",
+           "text": "王小明", "shape": None, "fields": {"surname": "王", "given": "小明"}}
+    recorded: dict[str, dict[str, Any]] = {"Q1/zh-cn/surnameFirst": {},
+                                           "Q2/zh-cn/surnameFirst": {}}
+    [message] = agreement.unmapped(recorded, [row])
+    assert message.startswith("gone: Q2/zh-cn/surnameFirst")
+    for name, (fields, record) in agreement.locale_sources().items():
+        assert agreement.unmapped(agreement.read_record(record),
+                                  agreement.load_rows(fields)) == [], name
+
+
+def test_every_locale_source_is_a_source() -> None:
+    sources = agreement.sources()
+    for name, (fields, _) in agreement.locale_sources().items():
+        assert sources[name][0] == fields, name
+
+
+@pytest.mark.parametrize(("source", "pack"), [
+    pytest.param(source, pack, marks=pytest.mark.skipif(
         not agreement.pack_available(pack),
         reason=f"needs {agreement._EXTRAS.get(pack)}; CI's ja-extra job runs it"))
+    for source in sorted(agreement.locale_sources())
     for pack in sorted(set(agreement.LOCALE_FILES.values()))])
-def test_each_pack_still_agrees_with_cldr_where_it_did(pack: str) -> None:
+def test_each_pack_still_agrees_with_each_source_where_it_did(source: str, pack: str) -> None:
+    fields, record = agreement.locale_sources()[source]
     problems = agreement.locale_changes(
-        agreement.load_rows(), pack, agreement.read_record(agreement.LOCALE_RECORD))
+        agreement.load_rows(fields), pack, agreement.read_record(record))
     assert not problems, "\n".join([
         *problems[:40],
         f"{len(problems)} change(s) against "
-        f"tools/differential/cldr_agreement_locales.json for {pack}.",
+        f"tools/differential/{record.name} for {pack}.",
         f"If every one is intended, re-record with `{agreement.RECORD_COMMAND}` "
         "and say why in the commit."])

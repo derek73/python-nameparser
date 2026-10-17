@@ -1,0 +1,910 @@
+{"composed": false, "fields": {"given": "陶", "surname": "葉"}, "file": "Q100152143", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "葉陶"}
+{"composed": false, "fields": {"given": "ალექსი", "surname": "მახარაშვილი"}, "file": "Q100163409", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ალექსი მახარაშვილი"}
+{"composed": false, "fields": {"given": "Γιάννης", "surname": "Θεοδωράκης"}, "file": "Q100804515", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Γιάννης Θεοδωράκης"}
+{"composed": false, "fields": {"given": "عبد الإله", "surname": "نبهان"}, "file": "Q100995846", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عبد الإله نبهان"}
+{"composed": false, "fields": {"given": "Ալբերտ", "surname": "Հովհաննիսյան"}, "file": "Q101236956", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ալբերտ Հովհաննիսյան"}
+{"composed": false, "fields": {"given": "გიორგი", "surname": "ჭოღოშვილი"}, "file": "Q102123708", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გიორგი ჭოღოშვილი"}
+{"composed": false, "fields": {"given": "俊一", "surname": "小柳"}, "file": "Q102246922", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "小柳俊一"}
+{"composed": false, "fields": {"given": "سعيد", "surname": "حماد"}, "file": "Q102280881", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "سعيد حماد"}
+{"composed": false, "fields": {"given": "ლევან", "surname": "მაღნარაძე"}, "file": "Q102407470", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ლევან მაღნარაძე"}
+{"composed": false, "fields": {"given": "هشام", "surname": "عباس"}, "file": "Q1036918", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "هشام عباس"}
+{"composed": false, "fields": {"given": "रवि", "surname": "शंकर"}, "file": "Q103774", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "रवि शंकर"}
+{"composed": false, "fields": {"given": "桓", "surname": "詹"}, "file": "Q103785817", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "詹桓"}
+{"composed": false, "fields": {"given": "金生", "surname": "蔡"}, "file": "Q103791050", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "蔡金生"}
+{"composed": false, "fields": {"given": "宗文", "surname": "李"}, "file": "Q103791103", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "李宗文"}
+{"composed": false, "fields": {"given": "Олег", "surname": "Литвиненко"}, "file": "Q1045997", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Олег Литвиненко"}
+{"composed": false, "fields": {"given": "乃", "surname": "黄"}, "file": "Q104782874", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "黄乃"}
+{"composed": false, "fields": {"given": "محمد سليم", "surname": "الحلواني"}, "file": "Q104846821", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "محمد سليم الحلواني"}
+{"composed": false, "fields": {"given": "موفق", "surname": "الخاني"}, "file": "Q105080162", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "موفق الخاني"}
+{"composed": false, "fields": {"given": "سليمان", "surname": "الجوخدار"}, "file": "Q105238222", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "سليمان الجوخدار"}
+{"composed": false, "fields": {"given": "輝一", "surname": "上山"}, "file": "Q105260064", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "上山輝一"}
+{"composed": false, "fields": {"given": "Іван", "patronymic": "Сергійович", "surname": "Федоров"}, "file": "Q105302343", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Федоров Іван Сергійович"}
+{"composed": false, "fields": {"given": "إبراهيم", "surname": "الغلاييني"}, "file": "Q105371002", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "إبراهيم الغلاييني"}
+{"composed": false, "fields": {"given": "عبد الوكيل", "surname": "الهاشمي"}, "file": "Q105450688", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عبد الوكيل الهاشمي"}
+{"composed": false, "fields": {"given": "Ստեփան", "surname": "Նալբանդյան"}, "file": "Q105601587", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ստեփան Նալբանդյան"}
+{"composed": false, "fields": {"given": "Δημήτρης", "surname": "Μιχαηλίδης"}, "file": "Q105697966", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Δημήτρης Μιχαηλίδης"}
+{"composed": false, "fields": {"given": "रणबीर", "surname": "कपूर"}, "file": "Q1063412", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "रणबीर कपूर"}
+{"composed": false, "fields": {"given": "ורה", "surname": "אלכסנדר"}, "file": "Q106471667", "label": "he-il", "order": "givenFirst", "shape": null, "text": "ורה אלכסנדר"}
+{"composed": false, "fields": {"given": "عبد الباسط", "surname": "بدر"}, "file": "Q106534219", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عبد الباسط بدر"}
+{"composed": false, "fields": {"given": "عادل", "surname": "التويجري"}, "file": "Q106768850", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عادل التويجري"}
+{"composed": false, "fields": {"given": "בלה", "surname": "קאופמן"}, "file": "Q106829524", "label": "he-il", "order": "givenFirst", "shape": null, "text": "בלה קאופמן"}
+{"composed": false, "fields": {"given": "재규", "surname": "전"}, "file": "Q106853957", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "전재규"}
+{"composed": false, "fields": {"given": "Κωνσταντίνος", "surname": "Γιαννίτσης"}, "file": "Q106929737", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Κωνσταντίνος Γιαννίτσης"}
+{"composed": false, "fields": {"given": "حازم", "surname": "هاشم"}, "file": "Q107171437", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "حازم هاشم"}
+{"composed": false, "fields": {"given": "ილია", "surname": "სულამანიძე"}, "file": "Q107191545", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ილია სულამანიძე"}
+{"composed": false, "fields": {"given": "نبيهة", "surname": "حداد"}, "file": "Q107323523", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "نبيهة حداد"}
+{"composed": false, "fields": {"given": "عبد الستار", "surname": "إبراهيم"}, "file": "Q107370114", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "عبد الستار إبراهيم"}
+{"composed": false, "fields": {"given": "سحر", "surname": "كامل"}, "file": "Q107424104", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "سحر كامل"}
+{"composed": false, "fields": {"given": "יהודה", "surname": "כהן"}, "file": "Q108101296", "label": "he-il", "order": "givenFirst", "shape": null, "text": "יהודה כהן"}
+{"composed": false, "fields": {"given": "مُوفَّق", "surname": "دعبول"}, "file": "Q108593267", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "مُوفَّق دعبول"}
+{"composed": false, "fields": {"given": "Пеньо", "surname": "Велков"}, "file": "Q108689436", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Пеньо Велков"}
+{"composed": false, "fields": {"given": "سیروس", "surname": "گرجستانی"}, "file": "Q10869896", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "سیروس گرجستانی"}
+{"composed": false, "fields": {"given": "卯一", "surname": "森"}, "file": "Q108855843", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "森卯一"}
+{"composed": false, "fields": {"given": "放", "surname": "刘"}, "file": "Q10897593", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "刘放"}
+{"composed": false, "fields": {"given": "桂英", "surname": "蔡"}, "file": "Q109343195", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "蔡桂英"}
+{"composed": false, "fields": {"given": "محمد", "surname": "عطا"}, "file": "Q110067", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "محمد عطا"}
+{"composed": false, "fields": {"given": "Балдырған", "surname": "Қожамқұлова"}, "file": "Q110114060", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Балдырған Қожамқұлова"}
+{"composed": false, "fields": {"given": "صلاح", "surname": "المُولَّد"}, "file": "Q110301591", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "صلاح المُولَّد"}
+{"composed": false, "fields": {"given": "世英", "surname": "朱"}, "file": "Q110406653", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "朱世英"}
+{"composed": false, "fields": {"given": "豪", "surname": "方"}, "file": "Q11085014", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "方豪"}
+{"composed": false, "fields": {"given": "禎", "surname": "安達"}, "file": "Q111081424", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "安達禎"}
+{"composed": false, "fields": {"given": "亀蔵", "surname": "鈴木"}, "file": "Q111117644", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "鈴木亀蔵"}
+{"composed": false, "fields": {"given": "عبد الرحيم", "surname": "منصور"}, "file": "Q11162165", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "عبد الرحيم منصور"}
+{"composed": false, "fields": {"given": "Јелена", "surname": "Беговић"}, "file": "Q111654011", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Јелена Беговић"}
+{"composed": false, "fields": {"given": "აბელ", "surname": "მამარდაშვილი"}, "file": "Q111697223", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "აბელ მამარდაშვილი"}
+{"composed": false, "fields": {"given": "خضر", "surname": "الأحمد"}, "file": "Q112334101", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "خضر الأحمد"}
+{"composed": false, "fields": {"given": "瑞麟", "surname": "何"}, "file": "Q112577331", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "何瑞麟"}
+{"composed": false, "fields": {"given": "병기", "surname": "이"}, "file": "Q11265902", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이병기"}
+{"composed": false, "fields": {"given": "세균", "surname": "정"}, "file": "Q11270093", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "정세균"}
+{"composed": false, "fields": {"given": "מנחם", "surname": "נאור"}, "file": "Q113004767", "label": "he-il", "order": "givenFirst", "shape": null, "text": "מנחם נאור"}
+{"composed": false, "fields": {"given": "Любомир", "surname": "Кръстанов"}, "file": "Q1130902", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Любомир Кръстанов"}
+{"composed": false, "fields": {"given": "淳", "surname": "三橋"}, "file": "Q11356021", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "三橋淳"}
+{"composed": false, "fields": {"given": "淳", "surname": "平賀"}, "file": "Q113567973", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "平賀淳"}
+{"composed": false, "fields": {"given": "力", "surname": "中内"}, "file": "Q11363041", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "中内力"}
+{"composed": false, "fields": {"given": "瞻", "surname": "李"}, "file": "Q113644075", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "李瞻"}
+{"composed": false, "fields": {"given": "徹", "surname": "中島"}, "file": "Q11364497", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "中島 徹"}
+{"composed": false, "fields": {"given": "龍一", "surname": "中川"}, "file": "Q11364982", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "中川龍一"}
+{"composed": false, "fields": {"given": "誠", "surname": "内田"}, "file": "Q11394360", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "内田誠"}
+{"composed": false, "fields": {"given": "博文", "surname": "内藤"}, "file": "Q11394483", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "内藤博文"}
+{"composed": false, "fields": {"given": "弘", "surname": "吉尾"}, "file": "Q11412770", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "吉尾弘"}
+{"composed": false, "fields": {"given": "Јован", "surname": "Мијатовић"}, "file": "Q114162918", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Јован Мијатовић"}
+{"composed": false, "fields": {"given": "なつみ", "surname": "安倍"}, "file": "Q1142423", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "安倍なつみ"}
+{"composed": false, "fields": {"given": "四郎", "surname": "城戸"}, "file": "Q11426161", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "城戸 四郎"}
+{"composed": false, "fields": {"given": "克明", "surname": "堀内"}, "file": "Q11427266", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "堀内 克明"}
+{"composed": false, "fields": {"given": "衛", "surname": "大沢"}, "file": "Q11436998", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "大沢衛"}
+{"composed": false, "fields": {"given": "三郎", "surname": "太田"}, "file": "Q11444084", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "太田三郎"}
+{"composed": false, "fields": {"given": "宏", "surname": "小林"}, "file": "Q11461529", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "小林宏"}
+{"composed": false, "fields": {"given": "由佳", "surname": "小林"}, "file": "Q11461743", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "小林由佳"}
+{"composed": false, "fields": {"given": "章", "surname": "揖斐"}, "file": "Q11498424", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "揖斐章"}
+{"composed": false, "fields": {"given": "Александар", "surname": "Станковић"}, "file": "Q115110251", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Александар Станковић"}
+{"composed": false, "fields": {"given": "형진", "surname": "박"}, "file": "Q11521580", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박형진"}
+{"composed": false, "fields": {"given": "喜一", "surname": "村田"}, "file": "Q11523418", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "村田喜一"}
+{"composed": false, "fields": {"given": "وديع", "surname": "بشور"}, "file": "Q115300746", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "وديع بشور"}
+{"composed": false, "fields": {"given": "力", "surname": "林"}, "file": "Q11532869", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "林 力"}
+{"composed": false, "fields": {"given": "亨", "surname": "河合"}, "file": "Q11553704", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "河合亨"}
+{"composed": false, "fields": {"given": "虎雄", "surname": "牧野"}, "file": "Q11570608", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "牧野虎雄"}
+{"composed": false, "fields": {"given": "Соња", "surname": "Петровић"}, "file": "Q1158152", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Соња Петровић"}
+{"composed": false, "fields": {"given": "彦三郎", "surname": "秦"}, "file": "Q11596044", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "秦彦三郎"}
+{"composed": false, "fields": {"given": "Νίκος", "surname": "Σκυλακάκης"}, "file": "Q116029945", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νίκος Σκυλακάκης"}
+{"composed": false, "fields": {"given": "信夫", "surname": "米川"}, "file": "Q11604183", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "米川信夫"}
+{"composed": false, "fields": {"given": "建文", "surname": "罗"}, "file": "Q11608580", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "罗建文"}
+{"composed": false, "fields": {"given": "茂", "surname": "荒木"}, "file": "Q11618744", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "荒木茂"}
+{"composed": false, "fields": {"given": "דניאל", "surname": "פאר"}, "file": "Q1162057", "label": "he-il", "order": "givenFirst", "shape": null, "text": "דניאל פאר"}
+{"composed": false, "fields": {"given": "博", "surname": "諫山"}, "file": "Q11631995", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "諫山博"}
+{"composed": false, "fields": {"given": "平三郎", "surname": "近藤"}, "file": "Q11638789", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "近藤平三郎"}
+{"composed": false, "fields": {"given": "晴", "surname": "遠藤"}, "file": "Q11642264", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "遠藤晴"}
+{"composed": false, "fields": {"given": "재구", "surname": "김"}, "file": "Q11646612", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김재구"}
+{"composed": false, "fields": {"given": "弥彦", "surname": "鎌田"}, "file": "Q11651055", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "鎌田 弥彦"}
+{"composed": false, "fields": {"given": "章", "surname": "高橋"}, "file": "Q11671502", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "高橋章"}
+{"composed": false, "fields": {"given": "علي", "surname": "القرني"}, "file": "Q116765522", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "علي القرني"}
+{"composed": false, "fields": {"given": "Игор", "surname": "Матић"}, "file": "Q1168604", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Игор Матић"}
+{"composed": false, "fields": {"given": "Էրիկ", "surname": "Սահակյան"}, "file": "Q117133476", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Էրիկ Սահակյան"}
+{"composed": false, "fields": {"given": "Олександр", "surname": "Положинський"}, "file": "Q11801469", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Олександр Положинський"}
+{"composed": false, "fields": {"given": "健一", "surname": "渋谷"}, "file": "Q118125689", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "渋谷健一"}
+{"composed": false, "fields": {"given": "نعيم", "surname": "عيسى"}, "file": "Q118190274", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "نعيم عيسى"}
+{"composed": false, "fields": {"given": "Василиса", "patronymic": "Іллівна", "surname": "Степаненко"}, "file": "Q118224301", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Степаненко Василиса Іллівна"}
+{"composed": false, "fields": {"given": "Дејан", "surname": "Стојановић"}, "file": "Q1183503", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Дејан Стојановић"}
+{"composed": false, "fields": {"given": "გიორგი", "surname": "სხირტლაძე"}, "file": "Q1194871", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გიორგი სხირტლაძე"}
+{"composed": false, "fields": {"given": "محمد نبيه", "surname": "المسيري"}, "file": "Q119534307", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "محمد نبيه المسيري"}
+{"composed": false, "fields": {"given": "Πέτρος", "surname": "Παυλίδης"}, "file": "Q11995504", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Πέτρος Παυλίδης"}
+{"composed": false, "fields": {"given": "Յուրի", "surname": "Հայրապետյան"}, "file": "Q12077223", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Յուրի Հայրապետյան"}
+{"composed": false, "fields": {"given": "Юлія", "surname": "Волчкова"}, "file": "Q12090553", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Юлія Волчкова"}
+{"composed": false, "fields": {"given": "عائشة", "surname": "ذو الغنى"}, "file": "Q121061159", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عائشة ذو الغنى"}
+{"composed": false, "fields": {"given": "Микола", "surname": "Козленко"}, "file": "Q12111417", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Микола Козленко"}
+{"composed": false, "fields": {"given": "Володимир", "surname": "Лукань"}, "file": "Q12118705", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Лукань Володимир"}
+{"composed": false, "fields": {"given": "Борис", "patronymic": "Олексійович", "surname": "Мовчан"}, "file": "Q12123956", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Мовчан Борис Олексійович"}
+{"composed": false, "fields": {"given": "Ալեքսանդր", "surname": "Երիցյան"}, "file": "Q121288238", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ալեքսանդր Երիցյան"}
+{"composed": false, "fields": {"given": "Михайло", "patronymic": "Степанович", "surname": "Полунін"}, "file": "Q12141961", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Полунін Михайло Степанович"}
+{"composed": false, "fields": {"given": "Олександр", "patronymic": "Васильович", "surname": "Царук"}, "file": "Q12168221", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Царук Олександр Васильович"}
+{"composed": false, "fields": {"given": "أبو بكر", "surname": "سالم"}, "file": "Q12177902", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "أبو بكر سالم"}
+{"composed": false, "fields": {"given": "أحلام", "surname": "الجريتلي"}, "file": "Q12178431", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "أحلام الجريتلي"}
+{"composed": false, "fields": {"given": "أحمد", "surname": "قنديل"}, "file": "Q12179060", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "أحمد قنديل"}
+{"composed": false, "fields": {"given": "أمين", "surname": "دابو"}, "file": "Q12180687", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "أمين دابو"}
+{"composed": false, "fields": {"given": "أنطوانيت", "surname": "نجيب"}, "file": "Q12180850", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "أنطوانيت نجيب"}
+{"composed": false, "fields": {"given": "أيمن", "surname": "الدُّقر"}, "file": "Q12181415", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "أيمن الدُّقر"}
+{"composed": false, "fields": {"given": "إبراهيم", "surname": "البغدادي"}, "file": "Q12181553", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "إبراهيم البغدادي"}
+{"composed": false, "fields": {"given": "إلياس", "surname": "الزيَّات"}, "file": "Q12194988", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "إلياس الزيَّات"}
+{"composed": false, "fields": {"given": "حسني", "surname": "سبح"}, "file": "Q12208060", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "حسني سبح"}
+{"composed": false, "fields": {"given": "حسين", "surname": "خطاب"}, "file": "Q12208195", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "حسين خطاب"}
+{"composed": false, "fields": {"given": "رجاء", "surname": "يوسف"}, "file": "Q12213144", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "رجاء يوسف"}
+{"composed": false, "fields": {"given": "رشاد", "surname": "رشدي"}, "file": "Q12213374", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "رشاد رشدي"}
+{"composed": false, "fields": {"given": "رمضان", "surname": "ديب"}, "file": "Q12213708", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "رمضان ديب"}
+{"composed": false, "fields": {"given": "زكي", "surname": "مبارك"}, "file": "Q12214522", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "زكي مبارك"}
+{"composed": false, "fields": {"given": "سمير", "surname": "سرور"}, "file": "Q12216881", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "سمير سرور"}
+{"composed": false, "fields": {"given": "سوسن", "surname": "ربيع"}, "file": "Q12217290", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "سوسن ربيع"}
+{"composed": false, "fields": {"given": "سيد", "surname": "كريم"}, "file": "Q12217558", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "سيد كريم"}
+{"composed": false, "fields": {"given": "أبو بكر", "surname": "الشاطري"}, "file": "Q12219331", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "أبو بكر الشاطري"}
+{"composed": false, "fields": {"given": "صالح", "surname": "اللحيدان"}, "file": "Q12219592", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "صالح اللحيدان"}
+{"composed": false, "fields": {"given": "طارق", "surname": "عبد العزيز"}, "file": "Q12221498", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "طارق عبد العزيز"}
+{"composed": false, "fields": {"given": "طلعت", "surname": "زكريا"}, "file": "Q12221848", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "طلعت زكريا"}
+{"composed": false, "fields": {"given": "عبد الرحمن", "surname": "العجلان"}, "file": "Q12222701", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عبد الرحمن العجلان"}
+{"composed": false, "fields": {"given": "عبد الهادي", "surname": "الباني"}, "file": "Q12223882", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عبد الهادي الباني"}
+{"composed": false, "fields": {"given": "عدنان", "surname": "بركات"}, "file": "Q12224508", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عدنان بركات"}
+{"composed": false, "fields": {"given": "فائق", "surname": "عرقسُوسي"}, "file": "Q12229998", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "فائق عرقسُوسي"}
+{"composed": false, "fields": {"given": "فاروق", "surname": "خورشيد"}, "file": "Q12230099", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "فاروق خورشيد"}
+{"composed": false, "fields": {"given": "لطفي", "surname": "لبيب"}, "file": "Q12237244", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "لطفي لبيب"}
+{"composed": false, "fields": {"given": "مازن", "surname": "المبارك"}, "file": "Q12238255", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "مازن المبارك"}
+{"composed": false, "fields": {"given": "محمد ضياء الدين", "surname": "الصابوني"}, "file": "Q12240653", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "محمد ضياء الدين الصابوني"}
+{"composed": false, "fields": {"given": "محمود", "surname": "شاكر"}, "file": "Q12241249", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "محمود شاكر"}
+{"composed": false, "fields": {"given": "نبيل", "surname": "فهمي"}, "file": "Q12247944", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "نبيل فهمي"}
+{"composed": false, "fields": {"given": "نسرين", "surname": "طافش"}, "file": "Q12248386", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "نسرين طافش"}
+{"composed": false, "fields": {"given": "هدى", "surname": "شعراوي"}, "file": "Q12249862", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "هدى شعراوي"}
+{"composed": false, "fields": {"given": "Александър", "surname": "Александров"}, "file": "Q12271398", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Александър Александров"}
+{"composed": false, "fields": {"given": "Ангел", "surname": "Андреев"}, "file": "Q12271832", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Ангел Андреев"}
+{"composed": false, "fields": {"given": "Васил", "surname": "Стоилов"}, "file": "Q12274835", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Васил Стоилов"}
+{"composed": false, "fields": {"given": "Георги", "surname": "Боков"}, "file": "Q12276311", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Георги Боков"}
+{"composed": false, "fields": {"given": "Георги", "surname": "Живков"}, "file": "Q12276443", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Георги Живков"}
+{"composed": false, "fields": {"given": "Иван", "surname": "Андонов"}, "file": "Q12280706", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Иван Андонов"}
+{"composed": false, "fields": {"given": "Константин", "surname": "Константинов"}, "file": "Q12283564", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Константин Константинов"}
+{"composed": false, "fields": {"given": "Красимир", "surname": "Спасов"}, "file": "Q12284027", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Красимир Спасов"}
+{"composed": false, "fields": {"given": "Крум", "surname": "Дерменджиев"}, "file": "Q12284129", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Крум Дерменджиев"}
+{"composed": false, "fields": {"given": "Никола", "surname": "Славков"}, "file": "Q12288560", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Никола Славков"}
+{"composed": false, "fields": {"given": "Παύλος", "surname": "Ιωάννου"}, "file": "Q12289677", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Παύλος Ιωάννου"}
+{"composed": false, "fields": {"given": "Свобода", "surname": "Бъчварова"}, "file": "Q12293389", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Свобода Бъчварова"}
+{"composed": false, "fields": {"given": "Стефан", "surname": "Огнянов"}, "file": "Q12295264", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Стефан Огнянов"}
+{"composed": false, "fields": {"given": "Христо", "surname": "Боев"}, "file": "Q12298224", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Христо Боев"}
+{"composed": false, "fields": {"given": "Христо", "surname": "Далчев"}, "file": "Q12298272", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Христо Далчев"}
+{"composed": false, "fields": {"given": "소희", "surname": "이"}, "file": "Q1234482", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이소희"}
+{"composed": false, "fields": {"given": "هدى", "surname": "عابدين"}, "file": "Q123474039", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "هدى عابدين"}
+{"composed": false, "fields": {"given": "সলিল", "surname": "সেন"}, "file": "Q123564925", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "সলিল সেন"}
+{"composed": false, "fields": {"given": "إبراهيم", "surname": "صالح"}, "file": "Q123818706", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "إبراهيم صالح"}
+{"composed": false, "fields": {"given": "שמואל", "surname": "דביר"}, "file": "Q123939041", "label": "he-il", "order": "givenFirst", "shape": null, "text": "שמואל דביר"}
+{"composed": false, "fields": {"given": "霖", "surname": "朱"}, "file": "Q123945439", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "朱霖"}
+{"composed": false, "fields": {"given": "אדם", "surname": "מזור"}, "file": "Q12403456", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אדם מזור"}
+{"composed": false, "fields": {"given": "אלישע", "surname": "אפרת"}, "file": "Q12403983", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אלישע אפרת"}
+{"composed": false, "fields": {"given": "יצחק", "surname": "יעקב"}, "file": "Q12408261", "label": "he-il", "order": "givenFirst", "shape": null, "text": "יצחק יעקב"}
+{"composed": false, "fields": {"given": "משה", "surname": "בן-שאול"}, "file": "Q12409569", "label": "he-il", "order": "givenFirst", "shape": null, "text": "משה בן-שאול"}
+{"composed": false, "fields": {"given": "Срђан", "surname": "Новаковић"}, "file": "Q124096162", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Срђан Новаковић"}
+{"composed": false, "fields": {"given": "Սուրեն", "surname": "Ծատուրյան"}, "file": "Q124101304", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Սուրեն Ծատուրյան"}
+{"composed": false, "fields": {"given": "עמוס", "surname": "ברנס"}, "file": "Q12410362", "label": "he-il", "order": "givenFirst", "shape": null, "text": "עמוס ברנס"}
+{"composed": false, "fields": {"given": "שולה", "surname": "ליטן"}, "file": "Q124881923", "label": "he-il", "order": "givenFirst", "shape": null, "text": "שולה ליטן"}
+{"composed": false, "fields": {"given": "সুনীল", "surname": "কর্মকার"}, "file": "Q124936063", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "সুনীল কর্মকার"}
+{"composed": false, "fields": {"given": "啓太", "surname": "小杉"}, "file": "Q125044295", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "小杉 啓太"}
+{"composed": false, "fields": {"given": "Данка", "surname": "Илић"}, "file": "Q125351913", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Данка Илић"}
+{"composed": false, "fields": {"given": "Төле", "surname": "Кенжебаев"}, "file": "Q12567555", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Төле Кенжебаев"}
+{"composed": false, "fields": {"given": "جميل", "surname": "عز الدين"}, "file": "Q125699198", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "جميل عز الدين"}
+{"composed": false, "fields": {"given": "상돈", "surname": "고"}, "file": "Q12584259", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "고 상돈"}
+{"composed": false, "fields": {"given": "중동", "surname": "권"}, "file": "Q12586148", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "권중동"}
+{"composed": false, "fields": {"given": "선영", "surname": "김"}, "file": "Q12587669", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김선영"}
+{"composed": false, "fields": {"given": "약수", "surname": "김"}, "file": "Q12587949", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김약수"}
+{"composed": false, "fields": {"given": "영환", "surname": "김"}, "file": "Q12588113", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김영환"}
+{"composed": false, "fields": {"given": "종삼", "surname": "김"}, "file": "Q12588664", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김종삼"}
+{"composed": false, "fields": {"given": "익진", "surname": "나"}, "file": "Q12589621", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "나익진"}
+{"composed": false, "fields": {"given": "다름", "surname": "남"}, "file": "Q12589788", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "남다름"}
+{"composed": false, "fields": {"given": "유상", "surname": "노"}, "file": "Q12590425", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "노유상"}
+{"composed": false, "fields": {"given": "만원", "surname": "박"}, "file": "Q12596625", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박만원"}
+{"composed": false, "fields": {"given": "응모", "surname": "방"}, "file": "Q12597567", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "방응모"}
+{"composed": false, "fields": {"given": "용훈", "surname": "신"}, "file": "Q12604481", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "신용훈"}
+{"composed": false, "fields": {"given": "춘호", "surname": "신"}, "file": "Q12604649", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "신춘호"}
+{"composed": false, "fields": {"given": "영국", "surname": "유"}, "file": "Q12609905", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "유영국"}
+{"composed": false, "fields": {"given": "인수", "surname": "육"}, "file": "Q12610163", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "육인수"}
+{"composed": false, "fields": {"given": "상익", "surname": "이"}, "file": "Q12611662", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이상익"}
+{"composed": false, "fields": {"given": "순택", "surname": "정"}, "file": "Q12615774", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "정순택"}
+{"composed": false, "fields": {"given": "경자", "surname": "천"}, "file": "Q12618820", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "천경자"}
+{"composed": false, "fields": {"given": "국현", "surname": "최"}, "file": "Q12619473", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "최국현"}
+{"composed": false, "fields": {"given": "희서", "surname": "최"}, "file": "Q12619546", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "최희서"}
+{"composed": false, "fields": {"given": "윤호", "surname": "황"}, "file": "Q12625879", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "황윤호"}
+{"composed": false, "fields": {"given": "우현", "surname": "장"}, "file": "Q126285829", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "장우현"}
+{"composed": false, "fields": {"given": "فاروق", "surname": "عطية"}, "file": "Q126362537", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "فاروق عطية"}
+{"composed": false, "fields": {"given": "Մամիկոն", "surname": "Աքուլյան"}, "file": "Q126548284", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Մամիկոն Աքուլյան"}
+{"composed": false, "fields": {"given": "ნელი", "surname": "მგალობლიშვილი"}, "file": "Q126720860", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ნელი მგალობლიშვილი"}
+{"composed": false, "fields": {"given": "ტარიელ", "surname": "ჭიჭინაძე"}, "file": "Q126949502", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ტარიელ ჭიჭინაძე"}
+{"composed": false, "fields": {"given": "حمدي", "surname": "الحريري"}, "file": "Q127095296", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "حمدي الحريري"}
+{"composed": false, "fields": {"given": "Љубомир", "surname": "Јовановић"}, "file": "Q12747930", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Љубомир Јовановић"}
+{"composed": false, "fields": {"given": "محمد", "surname": "الزعبي"}, "file": "Q127510341", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "محمد الزعبي"}
+{"composed": false, "fields": {"given": "惠林", "surname": "卫"}, "file": "Q127605824", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "卫惠林"}
+{"composed": false, "fields": {"given": "فریدون", "surname": "ابراهیمی"}, "file": "Q12839522", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "فریدون ابراهیمی"}
+{"composed": false, "fields": {"given": "নাহিদ", "surname": "ইসলাম"}, "file": "Q128605495", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "নাহিদ ইসলাম"}
+{"composed": false, "fields": {"given": "ნოდარ", "surname": "ღვალაძე"}, "file": "Q12867684", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ნოდარ ღვალაძე"}
+{"composed": false, "fields": {"given": "Αναστάσιος", "surname": "Σταμούλης"}, "file": "Q12873591", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Αναστάσιος Σταμούλης"}
+{"composed": false, "fields": {"given": "Βούλα", "surname": "Ζουμπουλάκη"}, "file": "Q12874729", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Βούλα Ζουμπουλάκη"}
+{"composed": false, "fields": {"given": "Γεώργιος", "surname": "Αντωνόπουλος"}, "file": "Q12875030", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Γεώργιος Αντωνόπουλος"}
+{"composed": false, "fields": {"given": "Γεώργιος", "surname": "Παπαδιαμαντόπουλος"}, "file": "Q12875137", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Γεώργιος Παπαδιαμαντόπουλος"}
+{"composed": false, "fields": {"given": "Δημήτρης", "surname": "Καπράλος"}, "file": "Q12875911", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Δημήτρης Καπράλος"}
+{"composed": false, "fields": {"given": "Επαμεινώνδας", "surname": "Κριεζής"}, "file": "Q12877156", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Επαμεινώνδας Κριεζής"}
+{"composed": false, "fields": {"given": "Νικόλαος", "surname": "Γεωργιάδης"}, "file": "Q12881780", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νικόλαος Γεωργιάδης"}
+{"composed": false, "fields": {"given": "Στυλιανός", "surname": "Λυκούδης"}, "file": "Q12884909", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Στυλιανός Λυκούδης"}
+{"composed": false, "fields": {"given": "Χρήστος", "surname": "Αντωνόπουλος"}, "file": "Q12886126", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Χρήστος Αντωνόπουλος"}
+{"composed": false, "fields": {"given": "ნოდარ", "surname": "ჯობავა"}, "file": "Q129264137", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ნოდარ ჯობავა"}
+{"composed": false, "fields": {"given": "ელგუჯა", "surname": "ღონღაძე"}, "file": "Q130118585", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ელგუჯა ღონღაძე"}
+{"composed": false, "fields": {"given": "عبد القدوس", "surname": "أبو صالح"}, "file": "Q130263795", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عبد القدوس أبو صالح"}
+{"composed": false, "fields": {"given": "Νικόλαος", "surname": "Φράγκος"}, "file": "Q130325486", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νικόλαος Φράγκος"}
+{"composed": false, "fields": {"given": "현만", "surname": "이"}, "file": "Q130376125", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이현만"}
+{"composed": false, "fields": {"given": "أحمد", "surname": "سالم"}, "file": "Q130483261", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "أحمد سالم"}
+{"composed": false, "fields": {"given": "Անդրանիկ", "surname": "Ղուկասյան"}, "file": "Q13050839", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Անդրանիկ Ղուկասյան"}
+{"composed": false, "fields": {"given": "명순", "surname": "강"}, "file": "Q130539951", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "강명순"}
+{"composed": false, "fields": {"given": "Մարիա", "surname": "Հակոբյան"}, "file": "Q13054009", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Մարիա Հակոբյան"}
+{"composed": false, "fields": {"given": "თამაზ", "surname": "წივწივაძე"}, "file": "Q130741831", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "თამაზ წივწივაძე"}
+{"composed": false, "fields": {"given": "Здравко", "surname": "Палазов"}, "file": "Q130753246", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Здравко Палазов"}
+{"composed": false, "fields": {"given": "نبيل", "surname": "درويش"}, "file": "Q131048129", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "نبيل درويش"}
+{"composed": false, "fields": {"given": "თემურ", "surname": "აბულაშვილი"}, "file": "Q131310719", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "თემურ აბულაშვილი"}
+{"composed": false, "fields": {"given": "فايزة", "surname": "حسين"}, "file": "Q131338682", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "فايزة حسين"}
+{"composed": false, "fields": {"given": "سميرة", "surname": "عزت"}, "file": "Q131366763", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "سميرة عزت"}
+{"composed": false, "fields": {"given": "Иван", "surname": "Коцев"}, "file": "Q131390261", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Иван Коцев"}
+{"composed": false, "fields": {"given": "إلهام", "surname": "حسين"}, "file": "Q13141377", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "إلهام حسين"}
+{"composed": false, "fields": {"given": "لويس", "surname": "جريس"}, "file": "Q13142108", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "لويس جريس"}
+{"composed": false, "fields": {"given": "Михайло", "surname": "Немелівський"}, "file": "Q131538079", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Немелівський Михайло"}
+{"composed": false, "fields": {"given": "ناصر", "surname": "الأنصاري"}, "file": "Q131593921", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "ناصر الأنصاري"}
+{"composed": false, "fields": {"given": "旭", "surname": "杨"}, "file": "Q1318216", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "杨旭"}
+{"composed": false, "fields": {"given": "გიორგი", "surname": "გონჯილაშვილი"}, "file": "Q132177850", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გიორგი გონჯილაშვილი"}
+{"composed": false, "fields": {"given": "მამუკა", "surname": "ზაალიშვილი"}, "file": "Q132893275", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "მამუკა ზაალიშვილი"}
+{"composed": false, "fields": {"given": "אלישבע", "surname": "מיכאלי"}, "file": "Q1330746", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אלישבע מיכאלי"}
+{"composed": false, "fields": {"given": "Иван", "surname": "Катранов"}, "file": "Q133462003", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Иван Катранов"}
+{"composed": false, "fields": {"given": "楠", "surname": "宋"}, "file": "Q1335601", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "宋楠"}
+{"composed": false, "fields": {"given": "نادية", "surname": "زغلول"}, "file": "Q133885394", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "نادية زغلول"}
+{"composed": false, "fields": {"given": "عبد الحليم", "surname": "قدور"}, "file": "Q133932317", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عبد الحليم قدور"}
+{"composed": false, "fields": {"given": "ვლადიმერ", "surname": "უზნაძე"}, "file": "Q134029617", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ვლადიმერ უზნაძე"}
+{"composed": false, "fields": {"given": "გიორგი", "surname": "ჩახავა"}, "file": "Q13425862", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გიორგი ჩახავა"}
+{"composed": false, "fields": {"given": "ვახტანგ", "surname": "აბაშიძე"}, "file": "Q134269176", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ვახტანგ აბაშიძე"}
+{"composed": false, "fields": {"given": "علي", "surname": "الرواس"}, "file": "Q134284583", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "علي الرواس"}
+{"composed": false, "fields": {"given": "ალექსანდრე", "surname": "ციბაძე"}, "file": "Q134288567", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ალექსანდრე ციბაძე"}
+{"composed": false, "fields": {"given": "سمر", "surname": "عبد العزيز"}, "file": "Q134298671", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "سمر عبد العزيز"}
+{"composed": false, "fields": {"given": "Стеван", "surname": "Плетикосић"}, "file": "Q1343084", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Стеван Плетикосић"}
+{"composed": false, "fields": {"given": "حكمت", "surname": "هاشم"}, "file": "Q134461786", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "حكمت هاشم"}
+{"composed": false, "fields": {"given": "עמרי", "surname": "שרון"}, "file": "Q1344931", "label": "he-il", "order": "givenFirst", "shape": null, "text": "עמרי שרון"}
+{"composed": false, "fields": {"given": "ვაჟა", "surname": "დადიანიძე"}, "file": "Q134502009", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ვაჟა დადიანიძე"}
+{"composed": false, "fields": {"given": "অজিত", "surname": "পাণ্ডে"}, "file": "Q13455620", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "অজিত পাণ্ডে"}
+{"composed": false, "fields": {"given": "Սերգեյ", "surname": "Ներսիսյան"}, "file": "Q134688519", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Սերգեյ Ներսիսյան"}
+{"composed": false, "fields": {"given": "ბადრი", "surname": "თოიძე"}, "file": "Q134700717", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ბადრი თოიძე"}
+{"composed": false, "fields": {"given": "ვახტანგ", "surname": "ჯაფარიძე"}, "file": "Q134721071", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ვახტანგ ჯაფარიძე"}
+{"composed": false, "fields": {"given": "Віктор", "surname": "Пинзеник"}, "file": "Q1348657", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Віктор Пинзеник"}
+{"composed": false, "fields": {"given": "سهيل", "surname": "الغزي"}, "file": "Q135298243", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "سهيل الغزي"}
+{"composed": false, "fields": {"given": "חנה", "surname": "אייכינגרין"}, "file": "Q135451437", "label": "he-il", "order": "givenFirst", "shape": null, "text": "חנה אייכינגרין"}
+{"composed": false, "fields": {"given": "Ігор", "surname": "Рибак"}, "file": "Q1358195", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Ігор Рибак"}
+{"composed": false, "fields": {"given": "Γιάννης", "surname": "Κανάκης"}, "file": "Q13582466", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Γιάννης Κανάκης"}
+{"composed": false, "fields": {"given": "Павел", "surname": "Попов"}, "file": "Q136030194", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Павел Попов"}
+{"composed": false, "fields": {"given": "성수", "surname": "박"}, "file": "Q136304620", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박성수"}
+{"composed": false, "fields": {"given": "호왕", "surname": "이"}, "file": "Q1363894", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이호왕"}
+{"composed": false, "fields": {"given": "建柱", "surname": "孟"}, "file": "Q1365182", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "孟建柱"}
+{"composed": false, "fields": {"given": "예정", "surname": "하"}, "file": "Q136644064", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "하예정"}
+{"composed": false, "fields": {"given": "Петар", "surname": "Јовичић"}, "file": "Q136945566", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Петар Јовичић"}
+{"composed": false, "fields": {"given": "حسین", "surname": "امینی"}, "file": "Q1371315", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "حسین امینی"}
+{"composed": false, "fields": {"given": "Стефан", "surname": "Петров"}, "file": "Q137170665", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Стефан Петров"}
+{"composed": false, "fields": {"given": "رائد", "surname": "المتني"}, "file": "Q137186977", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "رائد المتني"}
+{"composed": false, "fields": {"given": "Марія", "surname": "Панчишин"}, "file": "Q137719745", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Марія Панчишин"}
+{"composed": false, "fields": {"given": "ชัชวาลย์", "surname": "แท่งทอง"}, "file": "Q137724131", "label": "th-th", "order": "givenFirst", "shape": null, "text": "ชัชวาลย์ แท่งทอง"}
+{"composed": false, "fields": {"given": "صالح", "surname": "اسدی"}, "file": "Q138522333", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "صالح اسدی"}
+{"composed": false, "fields": {"given": "هشام", "surname": "فؤاد"}, "file": "Q138580013", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "هشام فؤاد"}
+{"composed": false, "fields": {"given": "玲子", "surname": "駒井"}, "file": "Q138590768", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "駒井玲子"}
+{"composed": false, "fields": {"given": "정균", "surname": "주"}, "file": "Q138608130", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "주정균"}
+{"composed": false, "fields": {"given": "جيانيس", "surname": "كريستو"}, "file": "Q1391648", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "جيانيس كريستو"}
+{"composed": false, "fields": {"given": "فريد", "surname": "الأطرش"}, "file": "Q1391669", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "فريد الأطرش"}
+{"composed": false, "fields": {"given": "إحسان", "surname": "الرفاعي"}, "file": "Q139379782", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "إحسان الرفاعي"}
+{"composed": false, "fields": {"given": "კახა", "surname": "ბენდუქიძე"}, "file": "Q1395782", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "კახა ბენდუქიძე"}
+{"composed": false, "fields": {"given": "เกรียงศักดิ์", "surname": "โกวิทวาณิช"}, "file": "Q1396370", "label": "th-th", "order": "givenFirst", "shape": null, "text": "เกรียงศักดิ์ โกวิทวาณิช"}
+{"composed": false, "fields": {"given": "عدنان", "surname": "مصطفى"}, "file": "Q140264039", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عدنان مصطفى"}
+{"composed": false, "fields": {"given": "Անուշավան", "surname": "Ազատյան"}, "file": "Q140324778", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Անուշավան Ազատյան"}
+{"composed": false, "fields": {"given": "Σταύρος", "surname": "Γεωργίου"}, "file": "Q140661872", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Σταύρος Γεωργίου"}
+{"composed": false, "fields": {"given": "Виктор", "surname": "Георгиев"}, "file": "Q141135124", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Виктор Георгиев"}
+{"composed": false, "fields": {"given": "محمد", "surname": "کوثری"}, "file": "Q141536821", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "محمد کوثری"}
+{"composed": false, "fields": {"given": "Արայիկ", "surname": "Մաթևոսյան"}, "file": "Q141610362", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Արայիկ Մաթևոսյան"}
+{"composed": false, "fields": {"given": "Бранко", "surname": "Борковић"}, "file": "Q141749349", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Бранко Борковић"}
+{"composed": false, "fields": {"given": "Ανδρέας", "surname": "Καραντώνης"}, "file": "Q14192722", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Ανδρέας Καραντώνης"}
+{"composed": false, "fields": {"given": "정희", "surname": "박"}, "file": "Q14356", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박정희"}
+{"composed": false, "fields": {"given": "智英", "surname": "黎"}, "file": "Q1447095", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "黎智英"}
+{"composed": false, "fields": {"given": "Վարդան", "surname": "Ստեփանյան"}, "file": "Q14478838", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Վարդան Ստեփանյան"}
+{"composed": false, "fields": {"given": "Ιωάννης", "surname": "Πετρίδης"}, "file": "Q14535892", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Ιωάννης Πετρίδης"}
+{"composed": false, "fields": {"given": "Աշոտ", "surname": "Պետրոսյան"}, "file": "Q15062430", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Աշոտ Պետրոսյան"}
+{"composed": false, "fields": {"given": "Милко", "surname": "Бјелица"}, "file": "Q1506733", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Милко Бјелица"}
+{"composed": false, "fields": {"given": "გურამ", "surname": "მეტონიძე"}, "file": "Q15072393", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გურამ მეტონიძე"}
+{"composed": false, "fields": {"given": "Մարտին", "surname": "Սուքիասյան"}, "file": "Q15075331", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Մարտին Սուքիասյան"}
+{"composed": false, "fields": {"given": "Κωνσταντίνος", "surname": "Θεοτόκης"}, "file": "Q15135101", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Κωνσταντίνος Θεοτόκης"}
+{"composed": false, "fields": {"given": "Լևոն", "surname": "Աղասյան"}, "file": "Q15234643", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Լևոն Աղասյան"}
+{"composed": false, "fields": {"given": "გურანდა", "surname": "ღვალაძე"}, "file": "Q1555152", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გურანდა ღვალაძე"}
+{"composed": false, "fields": {"given": "আনোয়ার", "surname": "হোসেন"}, "file": "Q15633501", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "আনোয়ার হোসেন"}
+{"composed": false, "fields": {"given": "लता", "surname": "मंगेशकर"}, "file": "Q156347", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "लता मंगेशकर"}
+{"composed": false, "fields": {"given": "मनीष", "surname": "मल्होत्रा"}, "file": "Q1563710", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "मनीष मल्होत्रा"}
+{"composed": false, "fields": {"given": "Теофил", "surname": "Панчић"}, "file": "Q1568494", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Теофил Панчић"}
+{"composed": false, "fields": {"given": "अरुणा", "surname": "ईरानी"}, "file": "Q158225", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "अरुणा ईरानी"}
+{"composed": false, "fields": {"given": "Γιώργος", "surname": "Παπαδάκης"}, "file": "Q15839351", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Γιώργος Παπαδάκης"}
+{"composed": false, "fields": {"given": "জুহি", "surname": "চাওলা"}, "file": "Q158745", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "জুহি চাওলা"}
+{"composed": false, "fields": {"given": "光", "surname": "韩"}, "file": "Q15916581", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "韩光"}
+{"composed": false, "fields": {"given": "毓麟", "surname": "邵"}, "file": "Q15950247", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "邵毓麟"}
+{"composed": false, "fields": {"given": "雪莹", "surname": "王"}, "file": "Q15950777", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "王雪莹"}
+{"composed": false, "fields": {"given": "Юлия", "surname": "Кръстева"}, "file": "Q159876", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Юлия Кръстева"}
+{"composed": false, "fields": {"given": "Мија", "surname": "Јовановић"}, "file": "Q16010018", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Мија Јовановић"}
+{"composed": false, "fields": {"given": "Θάνος", "surname": "Κωτσόπουλος"}, "file": "Q16061999", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Θάνος Κωτσόπουλος"}
+{"composed": false, "fields": {"given": "계원", "surname": "김"}, "file": "Q16067532", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김계원"}
+{"composed": false, "fields": {"given": "재진", "surname": "권"}, "file": "Q16080127", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "권재진"}
+{"composed": false, "fields": {"given": "병관", "surname": "김"}, "file": "Q16080234", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김병관"}
+{"composed": false, "fields": {"given": "Александар", "surname": "Антић"}, "file": "Q16082744", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Александар Антић"}
+{"composed": false, "fields": {"given": "광노", "surname": "이"}, "file": "Q16090710", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이광노"}
+{"composed": false, "fields": {"given": "석모", "surname": "정"}, "file": "Q16091629", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "정석모"}
+{"composed": false, "fields": {"given": "준석", "surname": "추"}, "file": "Q16092276", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "추준석"}
+{"composed": false, "fields": {"given": "莉奈", "surname": "伊豆田"}, "file": "Q16097636", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "伊豆田莉奈"}
+{"composed": false, "fields": {"given": "Невен", "surname": "Суботић"}, "file": "Q161038", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Невен Суботић"}
+{"composed": false, "fields": {"given": "কেনেথ", "surname": "পাওয়েল"}, "file": "Q16105455", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "কেনেথ পাওয়েল"}
+{"composed": false, "fields": {"given": "أمينة", "surname": "رشيد"}, "file": "Q16123001", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "أمينة رشيد"}
+{"composed": false, "fields": {"given": "نهلة", "surname": "القدسي"}, "file": "Q16124000", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "نهلة القدسي"}
+{"composed": false, "fields": {"given": "طارق", "surname": "سلامة"}, "file": "Q16126549", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "طارق سلامة"}
+{"composed": false, "fields": {"given": "אשר", "surname": "דורי"}, "file": "Q16128860", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אשר דורי"}
+{"composed": false, "fields": {"given": "ברכה", "surname": "רוזנפלד"}, "file": "Q16131281", "label": "he-il", "order": "givenFirst", "shape": null, "text": "ברכה רוזנפלד"}
+{"composed": false, "fields": {"given": "יצחק", "surname": "טישלר"}, "file": "Q16132207", "label": "he-il", "order": "givenFirst", "shape": null, "text": "יצחק טישלר"}
+{"composed": false, "fields": {"given": "Олексій", "patronymic": "Олексійович", "surname": "Гончаренко"}, "file": "Q16172176", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Олексій Олексійович Гончаренко"}
+{"composed": false, "fields": {"given": "경애", "surname": "박"}, "file": "Q16173397", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박경애"}
+{"composed": false, "fields": {"given": "성우", "surname": "박"}, "file": "Q16174643", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박성우"}
+{"composed": false, "fields": {"given": "강훈", "surname": "이"}, "file": "Q16174783", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이강훈"}
+{"composed": false, "fields": {"given": "병훈", "surname": "이"}, "file": "Q16177359", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이병훈"}
+{"composed": false, "fields": {"given": "장섭", "surname": "김"}, "file": "Q16178152", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김장섭"}
+{"composed": false, "fields": {"given": "순옥", "surname": "홍"}, "file": "Q16179838", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "홍순옥"}
+{"composed": false, "fields": {"given": "대규", "surname": "임"}, "file": "Q16189078", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "임 대규"}
+{"composed": false, "fields": {"given": "هالة", "surname": "شكر الله"}, "file": "Q16230492", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "هالة شكر الله"}
+{"composed": false, "fields": {"given": "Немања", "surname": "Максимовић"}, "file": "Q16236874", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Немања Максимовић"}
+{"composed": false, "fields": {"given": "Никола", "surname": "Мараш"}, "file": "Q16236878", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Никола Мараш"}
+{"composed": false, "fields": {"given": "정구", "surname": "허"}, "file": "Q16262220", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "허정구"}
+{"composed": false, "fields": {"given": "洁", "surname": "柯"}, "file": "Q16262307", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "柯洁"}
+{"composed": false, "fields": {"given": "Вук", "surname": "Драшковић"}, "file": "Q162740", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Вук Драшковић"}
+{"composed": false, "fields": {"given": "ნიკოლოზ", "surname": "ბასილაშვილი"}, "file": "Q16297666", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ნიკოლოზ ბასილაშვილი"}
+{"composed": false, "fields": {"given": "Βασίλης", "surname": "Καραπατάκης"}, "file": "Q16328534", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Βασίλης Καραπατάκης"}
+{"composed": false, "fields": {"given": "Χαράλαμπος", "surname": "Σιμόπουλος"}, "file": "Q16332430", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Χαράλαμπος Σιμόπουλος"}
+{"composed": false, "fields": {"given": "რევაზ", "surname": "ადამია"}, "file": "Q16334103", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "რევაზ ადამია"}
+{"composed": false, "fields": {"given": "ანასტასია", "surname": "ვირსალაძე"}, "file": "Q16364800", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ანასტასია ვირსალაძე"}
+{"composed": false, "fields": {"given": "ვლადიმერ", "surname": "ანთაძე"}, "file": "Q16369188", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ვლადიმერ ანთაძე"}
+{"composed": false, "fields": {"given": "სოსო", "surname": "პაიჭაძე"}, "file": "Q16375930", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "სოსო პაიჭაძე"}
+{"composed": false, "fields": {"given": "Հենրիկ", "surname": "Ազատյան"}, "file": "Q16388316", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Հենրիկ Ազատյան"}
+{"composed": false, "fields": {"given": "Սուրեն", "surname": "Բաբայան"}, "file": "Q16399896", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Սուրեն Բաբայան"}
+{"composed": false, "fields": {"given": "Φαίδων", "surname": "Θεοφίλου"}, "file": "Q16512416", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Φαίδων Θεοφίλου"}
+{"composed": false, "fields": {"given": "Γεώργιος", "surname": "Μητσόπουλος"}, "file": "Q16512475", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Γεώργιος Μητσόπουλος"}
+{"composed": false, "fields": {"given": "Σταύρος", "surname": "Κωστόπουλος"}, "file": "Q16512517", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Σταύρος Κωστόπουλος"}
+{"composed": false, "fields": {"given": "志伟", "surname": "邓"}, "file": "Q16539540", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "邓志伟"}
+{"composed": false, "fields": {"given": "응천", "surname": "김"}, "file": "Q16630799", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김응천"}
+{"composed": false, "fields": {"given": "Иван", "surname": "Радулов"}, "file": "Q1675990", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Иван Радулов"}
+{"composed": false, "fields": {"given": "Радован", "surname": "Панков"}, "file": "Q16935153", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Радован Панков"}
+{"composed": false, "fields": {"given": "Немања", "surname": "Милетић"}, "file": "Q16980084", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Немања Милетић"}
+{"composed": false, "fields": {"given": "维", "surname": "刘"}, "file": "Q17020840", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "刘维"}
+{"composed": false, "fields": {"given": "Йордан", "surname": "Мутафчиев"}, "file": "Q1703641", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Йордан Мутафчиев"}
+{"composed": false, "fields": {"given": "Ալեքսանդր", "surname": "Թումասյան"}, "file": "Q17285756", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ալեքսանդր Թումասյան"}
+{"composed": false, "fields": {"given": "Илија", "surname": "Петковић"}, "file": "Q173923", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Илија Петковић"}
+{"composed": false, "fields": {"given": "상현", "surname": "조"}, "file": "Q17401441", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "조상현"}
+{"composed": false, "fields": {"given": "অবন্তিকা", "surname": "মিশ্র"}, "file": "Q17708728", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "অবন্তিকা মিশ্র"}
+{"composed": false, "fields": {"given": "فتح‌الله", "surname": "بنی‌صدر"}, "file": "Q17993037", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "فتح‌الله بنی‌صدر"}
+{"composed": false, "fields": {"given": "عباس", "surname": "وفایی"}, "file": "Q17994757", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "عباس وفایی"}
+{"composed": false, "fields": {"given": "მიხეილ", "surname": "ჯოჯუა"}, "file": "Q18015439", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "მიხეილ ჯოჯუა"}
+{"composed": false, "fields": {"given": "Στέφανος", "surname": "Λάντσας"}, "file": "Q18019609", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Στέφανος Λάντσας"}
+{"composed": false, "fields": {"given": "محمد", "surname": "خاتمی"}, "file": "Q180795", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "محمد خاتمی"}
+{"composed": false, "fields": {"given": "희완", "surname": "이"}, "file": "Q1811820", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이희완"}
+{"composed": false, "fields": {"given": "Румяна", "surname": "Бъчварова"}, "file": "Q18535066", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Румяна Бъчварова"}
+{"composed": false, "fields": {"given": "影", "surname": "李"}, "file": "Q18653800", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "李影"}
+{"composed": false, "fields": {"given": "เดชาพล", "surname": "พัววรานุเคราะห์"}, "file": "Q18670515", "label": "th-th", "order": "givenFirst", "shape": null, "text": "เดชาพล พัววรานุเคราะห์"}
+{"composed": false, "fields": {"given": "ชวเลิศ", "surname": "ชุ่มคำ"}, "file": "Q186736", "label": "th-th", "order": "givenFirst", "shape": null, "text": "ชวเลิศ ชุ่มคำ"}
+{"composed": false, "fields": {"given": "أحمد", "surname": "مصطفى"}, "file": "Q18710313", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "أحمد مصطفى"}
+{"composed": false, "fields": {"given": "태곤", "surname": "손"}, "file": "Q18815574", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "손태곤"}
+{"composed": false, "fields": {"given": "محمود", "surname": "الزعبي"}, "file": "Q1884964", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "محمود الزعبي"}
+{"composed": false, "fields": {"given": "Ιωάννης", "surname": "Μεταξάς"}, "file": "Q189139", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Ιωάννης Μεταξάς"}
+{"composed": false, "fields": {"given": "شيماء", "surname": "الصباغ"}, "file": "Q18918574", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "شيماء الصباغ"}
+{"composed": false, "fields": {"given": "기봉", "surname": "고"}, "file": "Q18998322", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "고기봉"}
+{"composed": false, "fields": {"given": "경원", "surname": "박"}, "file": "Q18999980", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박경원"}
+{"composed": false, "fields": {"given": "형부", "surname": "조"}, "file": "Q19162058", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "조형부"}
+{"composed": false, "fields": {"given": "병규", "surname": "천"}, "file": "Q19162110", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "천병규"}
+{"composed": false, "fields": {"given": "두환", "surname": "최"}, "file": "Q19162130", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "최두환"}
+{"composed": false, "fields": {"given": "美玲", "surname": "周"}, "file": "Q191916", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "周美玲"}
+{"composed": false, "fields": {"given": "კახა", "surname": "კალაძე"}, "file": "Q192031", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "კახა კალაძე"}
+{"composed": false, "fields": {"given": "Антон", "surname": "Каблешков"}, "file": "Q19203803", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Антон Каблешков"}
+{"composed": false, "fields": {"given": "ლევან", "surname": "ინწკირველი"}, "file": "Q19516152", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ლევან ინწკირველი"}
+{"composed": false, "fields": {"given": "ალექსანდრე", "surname": "იაშვილი"}, "file": "Q195317", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ალექსანდრე იაშვილი"}
+{"composed": false, "fields": {"given": "Найден", "surname": "Тодоров"}, "file": "Q1963895", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Найден Тодоров"}
+{"composed": false, "fields": {"given": "আবদুল করিম", "surname": "শাহ"}, "file": "Q19646586", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "আবদুল করিম শাহ"}
+{"composed": false, "fields": {"given": "হেলেনা", "surname": "খান"}, "file": "Q19661679", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "হেলেনা খান"}
+{"composed": false, "fields": {"given": "অসীম", "surname": "বসু"}, "file": "Q19663402", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "অসীম বসু"}
+{"composed": false, "fields": {"given": "Симона", "surname": "Пейчева"}, "file": "Q1968919", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Симона Пейчева"}
+{"composed": false, "fields": {"given": "Желязко", "surname": "Ангелов"}, "file": "Q19705456", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Желязко Ангелов"}
+{"composed": false, "fields": {"given": "Գոհար", "surname": "Գասպարյան"}, "file": "Q1971489", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Գոհար Գասպարյան"}
+{"composed": false, "fields": {"given": "祖權", "surname": "茅"}, "file": "Q19825302", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "茅祖權"}
+{"composed": false, "fields": {"given": "জিয়াউর", "surname": "রহমান"}, "file": "Q198313", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "জিয়াউর রহমান"}
+{"composed": false, "fields": {"given": "정곤", "surname": "장"}, "file": "Q19940974", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "장정곤"}
+{"composed": false, "fields": {"given": "鵬", "surname": "沈"}, "file": "Q20063761", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "沈鵬"}
+{"composed": false, "fields": {"given": "Едуард", "patronymic": "Михайлович", "surname": "Москальов"}, "file": "Q20068674", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Едуард Михайлович Москальов"}
+{"composed": false, "fields": {"given": "Անդրանիկ", "surname": "Հարությունյան"}, "file": "Q20091434", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Անդրանիկ Հարությունյան"}
+{"composed": false, "fields": {"given": "正雄", "surname": "岡"}, "file": "Q2017050", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "岡正雄"}
+{"composed": false, "fields": {"given": "Олег", "surname": "Сакиркин"}, "file": "Q2019276", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Олег Сакиркин"}
+{"composed": false, "fields": {"given": "凯歌", "surname": "陈"}, "file": "Q202597", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "陈凯歌"}
+{"composed": false, "fields": {"given": "Владимир", "surname": "Вазов"}, "file": "Q2039111", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Владимир Вазов"}
+{"composed": false, "fields": {"given": "Արա", "surname": "Աբրահամյան"}, "file": "Q204689", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Արա Աբրահամյան"}
+{"composed": false, "fields": {"given": "Սուրեն", "surname": "Երեմյան"}, "file": "Q2047004", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Սուրեն Երեմյան"}
+{"composed": false, "fields": {"given": "Յուրի", "surname": "Դավթյան"}, "file": "Q20508268", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Յուրի Դավթյան"}
+{"composed": false, "fields": {"given": "Ալեքսանդր", "surname": "Մանասյան"}, "file": "Q20508413", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ալեքսանդր Մանասյան"}
+{"composed": false, "fields": {"given": "Գրիգոր", "surname": "Բրուտյան"}, "file": "Q20509962", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Գրիգոր Բրուտյան"}
+{"composed": false, "fields": {"given": "Ռաֆիկ", "surname": "Եղոյան"}, "file": "Q20510173", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ռաֆիկ Եղոյան"}
+{"composed": false, "fields": {"given": "Զառա", "surname": "Տոնիկյան"}, "file": "Q20511451", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Զառա Տոնիկյան"}
+{"composed": false, "fields": {"given": "Հրանտ", "surname": "Թովմասյան"}, "file": "Q20513355", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Հրանտ Թովմասյան"}
+{"composed": false, "fields": {"given": "თეიმურაზ", "surname": "კვირკველია"}, "file": "Q20559095", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "თეიმურაზ კვირკველია"}
+{"composed": false, "fields": {"given": "ნოდარ", "surname": "ცინცაძე"}, "file": "Q20562083", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ნოდარ ცინცაძე"}
+{"composed": false, "fields": {"given": "ირაკლი", "surname": "ელიავა"}, "file": "Q20573528", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ირაკლი ელიავა"}
+{"composed": false, "fields": {"given": "亨", "surname": "吉川"}, "file": "Q2057423", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "吉川亨"}
+{"composed": false, "fields": {"given": "თამაზ", "surname": "კვაჭანტირაძე"}, "file": "Q20576060", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "თამაზ კვაჭანტირაძე"}
+{"composed": false, "fields": {"given": "영근", "surname": "최"}, "file": "Q2059290", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "최영근"}
+{"composed": false, "fields": {"given": "أمين", "surname": "سامي"}, "file": "Q20608488", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "أمين سامي"}
+{"composed": false, "fields": {"given": "상옥", "surname": "최"}, "file": "Q20644439", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "최상옥"}
+{"composed": false, "fields": {"given": "Александър", "surname": "Цветков"}, "file": "Q2065023", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Александър Цветков"}
+{"composed": false, "fields": {"given": "Душан", "surname": "Милошевић"}, "file": "Q2068173", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Душан Милошевић"}
+{"composed": false, "fields": {"given": "Βασίλειος", "surname": "Κόκκινος"}, "file": "Q20722812", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Βασίλειος Κόκκινος"}
+{"composed": false, "fields": {"given": "مريم", "surname": "صالح"}, "file": "Q20730848", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "مريم صالح"}
+{"composed": false, "fields": {"given": "Կոնստանտին", "surname": "Օրբելյան"}, "file": "Q2074401", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Կոնստանտին Օրբելյան"}
+{"composed": false, "fields": {"given": "Γεώργιος", "surname": "Δρόσος"}, "file": "Q20894440", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Γεώργιος Δρόσος"}
+{"composed": false, "fields": {"given": "勇人", "surname": "佐々木"}, "file": "Q210231", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "佐々木 勇人"}
+{"composed": false, "fields": {"given": "Вероніка", "surname": "Марченко"}, "file": "Q21067016", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Вероніка Марченко"}
+{"composed": false, "fields": {"given": "윤기", "surname": "민"}, "file": "Q21075020", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "민윤기"}
+{"composed": false, "fields": {"given": "ประวัติ", "surname": "ปัตตพงศ์"}, "file": "Q2108027", "label": "th-th", "order": "givenFirst", "shape": null, "text": "ประวัติ ปัตตพงศ์"}
+{"composed": false, "fields": {"given": "Գոհար", "surname": "Գասպարյան"}, "file": "Q2109153", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Գոհար Գասպարյան"}
+{"composed": false, "fields": {"given": "주영", "surname": "박"}, "file": "Q210928", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박주영"}
+{"composed": false, "fields": {"given": "جيهان", "surname": "السادات"}, "file": "Q212190", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "جيهان السادات"}
+{"composed": false, "fields": {"given": "昌司", "surname": "桜井"}, "file": "Q21438706", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "桜井昌司"}
+{"composed": false, "fields": {"given": "명희", "surname": "유"}, "file": "Q21445432", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "유명희"}
+{"composed": false, "fields": {"given": "명한", "surname": "장"}, "file": "Q21825038", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "장명한"}
+{"composed": false, "fields": {"given": "성태", "surname": "허"}, "file": "Q21825451", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "허성태"}
+{"composed": false, "fields": {"given": "Христо", "surname": "Миладинов"}, "file": "Q21994789", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Христо Миладинов"}
+{"composed": false, "fields": {"given": "정희", "surname": "이"}, "file": "Q224639", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이정희"}
+{"composed": false, "fields": {"given": "أكرم", "surname": "التلاوي"}, "file": "Q22684231", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "أكرم التلاوي"}
+{"composed": false, "fields": {"given": "حميدة", "surname": "الطاهر"}, "file": "Q22687617", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "حميدة الطاهر"}
+{"composed": false, "fields": {"given": "隆基", "surname": "罗"}, "file": "Q2275823", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "罗隆基"}
+{"composed": false, "fields": {"given": "شهره", "surname": "آغداشلو"}, "file": "Q229766", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "شهره آغداشلو"}
+{"composed": false, "fields": {"given": "მიხეილ", "surname": "ქორქია"}, "file": "Q2323687", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "მიხეილ ქორქია"}
+{"composed": false, "fields": {"given": "Оксана", "patronymic": "Сергіївна", "surname": "Баюл"}, "file": "Q232995", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Оксана Сергіївна Баюл"}
+{"composed": false, "fields": {"given": "নিখিল", "surname": "আডবাণী"}, "file": "Q2332619", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "নিখিল আডবাণী"}
+{"composed": false, "fields": {"given": "Տիգրան", "surname": "Նալբանդյան"}, "file": "Q2335548", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Տիգրան Նալբանդյան"}
+{"composed": false, "fields": {"given": "अक्षय", "surname": "कुमार"}, "file": "Q233748", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "अक्षय कुमार"}
+{"composed": false, "fields": {"given": "璐美", "surname": "朴"}, "file": "Q233902", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "朴璐美"}
+{"composed": false, "fields": {"given": "أصالة", "surname": "نصري"}, "file": "Q2353139", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "أصالة نصري"}
+{"composed": false, "fields": {"given": "扬", "surname": "杨"}, "file": "Q236282", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "杨扬"}
+{"composed": false, "fields": {"given": "亜美", "surname": "小清水"}, "file": "Q236715", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "小清水 亜美"}
+{"composed": false, "fields": {"given": "Константин", "surname": "Марков"}, "file": "Q23680686", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Константин Марков"}
+{"composed": false, "fields": {"given": "Μαρίκα", "surname": "Τζιραλίδου"}, "file": "Q23888864", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Μαρίκα Τζιραλίδου"}
+{"composed": false, "fields": {"given": "Վազգեն", "surname": "Մանուկյան"}, "file": "Q2389099", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Վազգեն Մանուկյան"}
+{"composed": false, "fields": {"given": "Արթուր", "surname": "Մկրտչյան"}, "file": "Q2389126", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Արթուր Մկրտչյան"}
+{"composed": false, "fields": {"given": "信雄", "surname": "藤田"}, "file": "Q2404303", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "藤田信雄"}
+{"composed": false, "fields": {"given": "Урош", "surname": "Рачић"}, "file": "Q24084219", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Урош Рачић"}
+{"composed": false, "fields": {"given": "أحمد", "surname": "حجازي"}, "file": "Q2409638", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "أحمد حجازي"}
+{"composed": false, "fields": {"given": "سلام", "surname": "امینی"}, "file": "Q24175830", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "سلام امینی"}
+{"composed": false, "fields": {"given": "진주", "surname": "이"}, "file": "Q24287375", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이진주"}
+{"composed": false, "fields": {"given": "Динко", "surname": "Цветков Дерменджиев"}, "file": "Q2444179", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Динко Цветков Дерменджиев"}
+{"composed": false, "fields": {"given": "信夫", "surname": "木内"}, "file": "Q24876650", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "木内 信夫"}
+{"composed": false, "fields": {"given": "علی", "surname": "حاتمی"}, "file": "Q250608", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "علی حاتمی"}
+{"composed": false, "fields": {"given": "وليد", "surname": "الشهري"}, "file": "Q2529866", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "وليد الشهري"}
+{"composed": false, "fields": {"given": "静", "surname": "陈"}, "file": "Q253708", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "陈静"}
+{"composed": false, "fields": {"given": "Александър", "surname": "Марков"}, "file": "Q25487517", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Александър Марков"}
+{"composed": false, "fields": {"given": "Қайрат", "patronymic": "Болатұлы", "surname": "Тұрлыханов"}, "file": "Q25490264", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Қайрат Болатұлы Тұрлыханов"}
+{"composed": false, "fields": {"given": "תמרה", "surname": "כהן"}, "file": "Q25491919", "label": "he-il", "order": "givenFirst", "shape": null, "text": "תמרה כהן"}
+{"composed": false, "fields": {"given": "Төлеу", "surname": "Шаханов"}, "file": "Q25510301", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Төлеу Шаханов"}
+{"composed": false, "fields": {"given": "Драган", "surname": "Стојковић"}, "file": "Q257548", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Драган Стојковић"}
+{"composed": false, "fields": {"given": "רון", "surname": "ארד"}, "file": "Q258128", "label": "he-il", "order": "givenFirst", "shape": null, "text": "רון ארד"}
+{"composed": false, "fields": {"given": "ألكسندر", "surname": "دارسي"}, "file": "Q2603039", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "ألكسندر دارسي"}
+{"composed": false, "fields": {"given": "غادة", "surname": "السمان"}, "file": "Q2612563", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "غادة السمان"}
+{"composed": false, "fields": {"given": "Анастас", "surname": "Јовановић"}, "file": "Q2613585", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Анастас Јовановић"}
+{"composed": false, "fields": {"given": "Ռոբերտ", "surname": "Հովհաննիսյան"}, "file": "Q2616692", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ռոբերտ Հովհաննիսյան"}
+{"composed": false, "fields": {"given": "Нено", "surname": "Неделчев"}, "file": "Q26212354", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Нено Неделчев"}
+{"composed": false, "fields": {"given": "אברהם", "surname": "אדן"}, "file": "Q2624233", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אברהם אדן"}
+{"composed": false, "fields": {"given": "Карина", "surname": "Горичева"}, "file": "Q26248683", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Карина Горичева"}
+{"composed": false, "fields": {"given": "小蘭", "surname": "趙"}, "file": "Q263322", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "趙小蘭"}
+{"composed": false, "fields": {"given": "Бранислав", "surname": "Јовановић"}, "file": "Q2638729", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Бранислав Јовановић"}
+{"composed": false, "fields": {"given": "Бақытжан", "surname": "Қанапиянов"}, "file": "Q2640776", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Бақытжан Қанапиянов"}
+{"composed": false, "fields": {"given": "Վլադիմիր", "surname": "Դարբինյան"}, "file": "Q2644893", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Վլադիմիր Դարբինյան"}
+{"composed": false, "fields": {"given": "Драгомир", "surname": "Јовановић"}, "file": "Q265772", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Драгомир Јовановић"}
+{"composed": false, "fields": {"given": "مها", "surname": "عامر"}, "file": "Q26664055", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "مها عامر"}
+{"composed": false, "fields": {"given": "Биљана", "surname": "Плавшић"}, "file": "Q26769", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Биљана Плавшић"}
+{"composed": false, "fields": {"given": "謙一郎", "surname": "佐々木"}, "file": "Q26776575", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "佐々木謙一郎"}
+{"composed": false, "fields": {"given": "Ֆելիքս", "surname": "Բախչինյան"}, "file": "Q26973541", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ֆելիքս Բախչինյան"}
+{"composed": false, "fields": {"given": "연경", "surname": "김"}, "file": "Q270135", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김연경"}
+{"composed": false, "fields": {"given": "अनिल", "surname": "जोशी"}, "file": "Q2722277", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "अनिल जोशी"}
+{"composed": false, "fields": {"given": "Νίκος", "surname": "Γαλανός"}, "file": "Q27262754", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νίκος Γαλανός"}
+{"composed": false, "fields": {"given": "Մանուել", "surname": "Պետրոսյան"}, "file": "Q27529864", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Մանուել Պետրոսյան"}
+{"composed": false, "fields": {"given": "পঙ্কজ", "surname": "মিশ্র"}, "file": "Q277575", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "পঙ্কজ মিশ্র"}
+{"composed": false, "fields": {"given": "顺", "surname": "汪"}, "file": "Q2789989", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "汪顺"}
+{"composed": false, "fields": {"given": "نورس", "surname": "عبد الواحد"}, "file": "Q27914098", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "نورس عبد الواحد"}
+{"composed": false, "fields": {"given": "용완", "surname": "김"}, "file": "Q27919953", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김용완"}
+{"composed": false, "fields": {"given": "지수", "surname": "육"}, "file": "Q27953830", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "육지수"}
+{"composed": false, "fields": {"given": "浩", "surname": "湯浅"}, "file": "Q28068683", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "湯浅浩"}
+{"composed": false, "fields": {"given": "Νίκος", "surname": "Καράμπελας"}, "file": "Q2814369", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νίκος Καράμπελας"}
+{"composed": false, "fields": {"given": "সুলতান", "surname": "মাহমুদ"}, "file": "Q28179433", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "সুলতান মাহমুদ"}
+{"composed": false, "fields": {"given": "曦", "surname": "魏"}, "file": "Q28355175", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "魏曦"}
+{"composed": false, "fields": {"given": "明忠", "surname": "陳"}, "file": "Q28417390", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "陳明忠"}
+{"composed": false, "fields": {"given": "תמיר", "surname": "כהן"}, "file": "Q284590", "label": "he-il", "order": "givenFirst", "shape": null, "text": "תמיר כהן"}
+{"composed": false, "fields": {"given": "Андрија", "surname": "Милошевић"}, "file": "Q2846579", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Андрија Милошевић"}
+{"composed": false, "fields": {"given": "Васил", "surname": "Янакиев"}, "file": "Q28480344", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Васил Янакиев"}
+{"composed": false, "fields": {"given": "Янко", "surname": "Павлов"}, "file": "Q28548236", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Янко Павлов"}
+{"composed": false, "fields": {"given": "Филип", "surname": "Ђуричић"}, "file": "Q285518", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Филип Ђуричић"}
+{"composed": false, "fields": {"given": "אהרן", "surname": "מונדשיין"}, "file": "Q28605098", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אהרן מונדשיין"}
+{"composed": false, "fields": {"given": "Татьяна", "patronymic": "Васильевна", "surname": "Костина"}, "file": "Q28664784", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Татьяна Васильевна Костина"}
+{"composed": false, "fields": {"given": "호연", "surname": "정"}, "file": "Q28699137", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "정호연"}
+{"composed": false, "fields": {"given": "진구", "surname": "박"}, "file": "Q28700409", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박진구"}
+{"composed": false, "fields": {"given": "Мирослав", "surname": "Радовановић"}, "file": "Q28760891", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Мирослав Радовановић"}
+{"composed": false, "fields": {"given": "Николай", "surname": "Кашев"}, "file": "Q28836262", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Николай Кашев"}
+{"composed": false, "fields": {"given": "Тијана", "surname": "Богићевић"}, "file": "Q28849470", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Тијана Богићевић"}
+{"composed": false, "fields": {"given": "Бранислав", "surname": "Блажић"}, "file": "Q28911753", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Бранислав Блажић"}
+{"composed": false, "fields": {"given": "سامي", "surname": "الكيالي"}, "file": "Q28936497", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "سامي الكيالي"}
+{"composed": false, "fields": {"given": "경애", "surname": "김"}, "file": "Q28966728", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김경애"}
+{"composed": false, "fields": {"given": "עמוס", "surname": "הדר"}, "file": "Q2900487", "label": "he-il", "order": "givenFirst", "shape": null, "text": "עמוס הדר"}
+{"composed": false, "fields": {"given": "אברהם", "surname": "כץ"}, "file": "Q2901672", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אברהם כץ"}
+{"composed": false, "fields": {"given": "علی‌اصغر", "surname": "زارعی"}, "file": "Q29018353", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "علی‌اصغر زارعی"}
+{"composed": false, "fields": {"given": "ששון", "surname": "סומך"}, "file": "Q2903564", "label": "he-il", "order": "givenFirst", "shape": null, "text": "ששון סומך"}
+{"composed": false, "fields": {"given": "Богдан", "surname": "Несторовић"}, "file": "Q2908636", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Богдан Несторовић"}
+{"composed": false, "fields": {"given": "אהרן", "surname": "מסקין"}, "file": "Q2909433", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אהרן מסקין"}
+{"composed": false, "fields": {"given": "אמה", "surname": "תלמי"}, "file": "Q2909759", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אמה תלמי"}
+{"composed": false, "fields": {"given": "דבורה", "surname": "עומר"}, "file": "Q2910028", "label": "he-il", "order": "givenFirst", "shape": null, "text": "דבורה עומר"}
+{"composed": false, "fields": {"given": "אמיר", "surname": "דרורי"}, "file": "Q2910092", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אמיר דרורי"}
+{"composed": false, "fields": {"given": "Синиша", "surname": "Михајловић"}, "file": "Q294351", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Синиша Михајловић"}
+{"composed": false, "fields": {"given": "بهروز", "surname": "بوچانی"}, "file": "Q29452528", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "بهروز بوچانی"}
+{"composed": false, "fields": {"given": "وداد", "surname": "أنطوان"}, "file": "Q29514393", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "وداد أنطوان"}
+{"composed": false, "fields": {"given": "Լորիս", "surname": "Ճգնավորյան"}, "file": "Q2984588", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Լորիս Ճգնավորյան"}
+{"composed": false, "fields": {"given": "मुकेश", "surname": "अंबानी"}, "file": "Q298547", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "मुकेश अंबानी"}
+{"composed": false, "fields": {"given": "Євген", "surname": "Гуцало"}, "file": "Q2993752", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Євген Гуцало"}
+{"composed": false, "fields": {"given": "Αθανάσιος", "surname": "Δροσόπουλος"}, "file": "Q30085506", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Αθανάσιος Δροσόπουλος"}
+{"composed": false, "fields": {"given": "Լենա", "surname": "Նազարյան"}, "file": "Q30195988", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Լենա Նազարյան"}
+{"composed": false, "fields": {"given": "Κωνσταντίνος", "surname": "Πυλαρινός"}, "file": "Q30276264", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Κωνσταντίνος Πυλαρινός"}
+{"composed": false, "fields": {"given": "Παναγιώτης", "surname": "Καραλής"}, "file": "Q30302667", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Παναγιώτης Καραλής"}
+{"composed": false, "fields": {"given": "משה", "surname": "חלוץ"}, "file": "Q30527587", "label": "he-il", "order": "givenFirst", "shape": null, "text": "משה חלוץ"}
+{"composed": false, "fields": {"given": "صنع الله", "surname": "إبراهيم"}, "file": "Q3053937", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "صنع الله إبراهيم"}
+{"composed": false, "fields": {"given": "Νίκος", "surname": "Νικολαΐδης"}, "file": "Q3107029", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νίκος Νικολαΐδης"}
+{"composed": false, "fields": {"given": "ნიკო", "surname": "ფიროსმანი"}, "file": "Q310896", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ნიკო ფიროსმანი"}
+{"composed": false, "fields": {"given": "Коста", "surname": "Михаиловић"}, "file": "Q31184057", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Коста Михаиловић"}
+{"composed": false, "fields": {"given": "Анђелија", "surname": "Веснић"}, "file": "Q31185519", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Анђелија Веснић"}
+{"composed": false, "fields": {"given": "Константин", "surname": "Марков"}, "file": "Q31192684", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Константин Марков"}
+{"composed": false, "fields": {"given": "Тина", "surname": "Крајишник"}, "file": "Q31271087", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Тина Крајишник"}
+{"composed": false, "fields": {"given": "經國", "surname": "蔣"}, "file": "Q313598", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "蔣經國"}
+{"composed": false, "fields": {"given": "Дејан", "surname": "Бодирога"}, "file": "Q313622", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Дејан Бодирога"}
+{"composed": false, "fields": {"given": "عبد الرحمن", "surname": "السديس"}, "file": "Q317948", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عبد الرحمن السديس"}
+{"composed": false, "fields": {"given": "Δημήτρης", "surname": "Μητρόπουλος"}, "file": "Q319741", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Δημήτρης Μητρόπουλος"}
+{"composed": false, "fields": {"given": "성혜", "surname": "김"}, "file": "Q32059867", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김성혜"}
+{"composed": false, "fields": {"given": "栄二", "surname": "高田"}, "file": "Q3244756", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "高田栄二"}
+{"composed": false, "fields": {"given": "大介", "surname": "多田"}, "file": "Q3245427", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "多田大介"}
+{"composed": false, "fields": {"given": "কামাল", "surname": "হোসেন"}, "file": "Q327967", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "কামাল হোসেন"}
+{"composed": false, "fields": {"given": "Ранко", "surname": "Поповић"}, "file": "Q3301248", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Ранко Поповић"}
+{"composed": false, "fields": {"given": "Стеван", "surname": "Хорват"}, "file": "Q330152", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Стеван Хорват"}
+{"composed": false, "fields": {"given": "Бошко", "surname": "Јанковић"}, "file": "Q332675", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Бошко Јанковић"}
+{"composed": false, "fields": {"given": "আকরাম", "surname": "খান"}, "file": "Q3345604", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "আকরাম খান"}
+{"composed": false, "fields": {"given": "সুভাষ", "surname": "মুখোপাধ্যায়"}, "file": "Q3347955", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "সুভাষ মুখোপাধ্যায়"}
+{"composed": false, "fields": {"given": "সেলিনা", "surname": "হোসেন"}, "file": "Q3348154", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "সেলিনা হোসেন"}
+{"composed": false, "fields": {"given": "Георги", "surname": "Богданов"}, "file": "Q3400984", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Георги Богданов"}
+{"composed": false, "fields": {"given": "יצחק", "surname": "רבין"}, "file": "Q34060", "label": "he-il", "order": "givenFirst", "shape": null, "text": "יצחק רבין"}
+{"composed": false, "fields": {"given": "경림", "surname": "신"}, "file": "Q3482149", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "신경림"}
+{"composed": false, "fields": {"given": "Николай", "surname": "Михайлов"}, "file": "Q350412", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Николай Михайлов"}
+{"composed": false, "fields": {"given": "रोहित", "surname": "शर्मा"}, "file": "Q3520045", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "रोहित शर्मा"}
+{"composed": false, "fields": {"given": "Վահագն", "surname": "Խաչատրյան"}, "file": "Q3553274", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Վահագն Խաչատրյան"}
+{"composed": false, "fields": {"given": "Σταύρος", "surname": "Κουγιουμτζής"}, "file": "Q3567196", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Σταύρος Κουγιουμτζής"}
+{"composed": false, "fields": {"given": "عدنان", "surname": "خاشقجي"}, "file": "Q359381", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عدنان خاشقجي"}
+{"composed": false, "fields": {"given": "জিমি", "surname": "জর্জ"}, "file": "Q3595581", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "জিমি জর্জ"}
+{"composed": false, "fields": {"given": "সুজাতা", "surname": "মহাপাত্র"}, "file": "Q3595802", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "সুজাতা মহাপাত্র"}
+{"composed": false, "fields": {"given": "기현", "surname": "설"}, "file": "Q359789", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "설기현"}
+{"composed": false, "fields": {"given": "عبد اللطيف", "surname": "عبد الحميد"}, "file": "Q3603413", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عبد اللطيف عبد الحميد"}
+{"composed": false, "fields": {"given": "暉", "surname": "謝"}, "file": "Q360402", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "謝暉"}
+{"composed": false, "fields": {"given": "عزت‌الله", "surname": "انتظامی"}, "file": "Q360665", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "عزت‌الله انتظامی"}
+{"composed": false, "fields": {"given": "Анђелија", "surname": "Арбутина"}, "file": "Q3620534", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Анђелија Арбутина"}
+{"composed": false, "fields": {"given": "Ιωάννης", "surname": "Παπαϊωάννου"}, "file": "Q3657177", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Ιωάννης Παπαϊωάννου"}
+{"composed": false, "fields": {"given": "효순", "surname": "신"}, "file": "Q36967357", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "신효순"}
+{"composed": false, "fields": {"given": "Ռոբերտ", "surname": "Արզումանյան"}, "file": "Q373390", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ռոբերտ Արզումանյան"}
+{"composed": false, "fields": {"given": "زكية", "surname": "إبراهيم"}, "file": "Q37530921", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "زكية إبراهيم"}
+{"composed": false, "fields": {"given": "דוד", "surname": "בן־גוריון"}, "file": "Q37610", "label": "he-il", "order": "givenFirst", "shape": null, "text": "דוד בן־גוריון"}
+{"composed": false, "fields": {"given": "दुर्गाबाई", "surname": "देशमुख"}, "file": "Q3763917", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "दुर्गाबाई देशमुख"}
+{"composed": false, "fields": {"given": "علی‌اکبر", "surname": "حیدری"}, "file": "Q377334", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "علی‌اکبر حیدری"}
+{"composed": false, "fields": {"given": "龍馬", "surname": "坂本"}, "file": "Q378450", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "坂本 龍馬"}
+{"composed": false, "fields": {"given": "景綱", "surname": "柴山"}, "file": "Q37878853", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "柴山景綱"}
+{"composed": false, "fields": {"given": "Јован", "surname": "Шајновић"}, "file": "Q3810649", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Јован Шајновић"}
+{"composed": false, "fields": {"given": "أكرم", "surname": "عجة"}, "file": "Q381574", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "أكرم عجة"}
+{"composed": false, "fields": {"given": "Петко", "surname": "Петков"}, "file": "Q382172", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Петко Петков"}
+{"composed": false, "fields": {"given": "Τάκης", "surname": "Κανελλόπουλος"}, "file": "Q384122", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Τάκης Κανελλόπουλος"}
+{"composed": false, "fields": {"given": "영수", "surname": "육"}, "file": "Q390099", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "육영수"}
+{"composed": false, "fields": {"given": "楠", "surname": "华"}, "file": "Q39040747", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "华楠"}
+{"composed": false, "fields": {"given": "Велко", "surname": "Дачев"}, "file": "Q39357276", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Велко Дачев"}
+{"composed": false, "fields": {"given": "محمود", "surname": "جركس"}, "file": "Q39524743", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "محمود جركس"}
+{"composed": false, "fields": {"given": "Страхил", "surname": "Попов"}, "file": "Q3975764", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Страхил Попов"}
+{"composed": false, "fields": {"given": "婷", "surname": "陳"}, "file": "Q3991527", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "陳婷"}
+{"composed": false, "fields": {"given": "مصطفى", "surname": "خليل"}, "file": "Q403740", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "مصطفى خليل"}
+{"composed": false, "fields": {"given": "Միքայել", "surname": "Հարությունյան"}, "file": "Q4070523", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Միքայել Հարությունյան"}
+{"composed": false, "fields": {"given": "حاتم", "surname": "علي"}, "file": "Q4119326", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "حاتم علي"}
+{"composed": false, "fields": {"given": "هشام", "surname": "حافظ"}, "file": "Q4119921", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "هشام حافظ"}
+{"composed": false, "fields": {"given": "დავით", "surname": "ბააზოვი"}, "file": "Q4128091", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "დავით ბააზოვი"}
+{"composed": false, "fields": {"given": "Ана", "surname": "Дабовић"}, "file": "Q4153527", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Ана Дабовић"}
+{"composed": false, "fields": {"given": "سميرة", "surname": "خاشقجي"}, "file": "Q4164708", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "سميرة خاشقجي"}
+{"composed": false, "fields": {"given": "هشام", "surname": "سليم"}, "file": "Q4165425", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "هشام سليم"}
+{"composed": false, "fields": {"given": "Камен", "surname": "Петков"}, "file": "Q41789800", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Камен Петков"}
+{"composed": false, "fields": {"given": "অনিল", "surname": "দে"}, "file": "Q41790847", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "অনিল দে"}
+{"composed": false, "fields": {"given": "Հայկ", "surname": "Ղազարյան"}, "file": "Q4208031", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Հայկ Ղազարյան"}
+{"composed": false, "fields": {"given": "Әбіш", "surname": "Кекілбайұлы"}, "file": "Q4219024", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Әбіш Кекілбайұлы"}
+{"composed": false, "fields": {"given": "Христо", "surname": "Койчев"}, "file": "Q4227223", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Христо Койчев"}
+{"composed": false, "fields": {"given": "賢斗", "surname": "桃田"}, "file": "Q422959", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "桃田賢斗"}
+{"composed": false, "fields": {"given": "กุลวุฒิ", "surname": "วิทิตศานต์"}, "file": "Q42306393", "label": "th-th", "order": "givenFirst", "shape": null, "text": "กุลวุฒิ วิทิตศานต์"}
+{"composed": false, "fields": {"given": "Дмитро", "patronymic": "Олександрович", "surname": "Корчинський"}, "file": "Q4234503", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Дмитро Олександрович Корчинський"}
+{"composed": false, "fields": {"given": "Արամ", "surname": "Քոչարյան"}, "file": "Q4236635", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Արամ Քոչարյան"}
+{"composed": false, "fields": {"given": "Αλέξανδρος", "surname": "Παπαδημητρίου"}, "file": "Q426030", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Αλέξανδρος Παπαδημητρίου"}
+{"composed": false, "fields": {"given": "Святослав", "patronymic": "Ігорович", "surname": "Луньов"}, "file": "Q4269586", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Луньов Святослав Ігорович"}
+{"composed": false, "fields": {"given": "Володимир", "surname": "Максименко"}, "file": "Q4276114", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Володимир Максименко"}
+{"composed": false, "fields": {"given": "Էդուարդ", "surname": "Մնացականյան"}, "file": "Q4298775", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Էդուարդ Մնացականյան"}
+{"composed": false, "fields": {"given": "Олександр", "surname": "Музичко"}, "file": "Q4306709", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Олександр Музичко"}
+{"composed": false, "fields": {"given": "민호", "surname": "도"}, "file": "Q43088843", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "도민호"}
+{"composed": false, "fields": {"given": "유빈", "surname": "이"}, "file": "Q43142694", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이유빈"}
+{"composed": false, "fields": {"given": "রাণী", "surname": "হামিদ"}, "file": "Q432748", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "রাণী হামিদ"}
+{"composed": false, "fields": {"given": "Герман", "surname": "Германов"}, "file": "Q43358517", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Герман Германов"}
+{"composed": false, "fields": {"given": "جورج", "surname": "ميشيل"}, "file": "Q43380826", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "جورج ميشيل"}
+{"composed": false, "fields": {"given": "Андрій", "patronymic": "Володимирович", "surname": "Портнов"}, "file": "Q4373277", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Андрій Володимирович Портнов"}
+{"composed": false, "fields": {"given": "ნიკოლოზ", "surname": "სანიშვილი"}, "file": "Q4407618", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ნიკოლოზ სანიშვილი"}
+{"composed": false, "fields": {"given": "Արամ", "surname": "Սարգսյան"}, "file": "Q4408661", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Արամ Սարգսյան"}
+{"composed": false, "fields": {"given": "Григорій", "patronymic": "Кузьмич", "surname": "Середа"}, "file": "Q4417458", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Середа Григорій Кузьмич"}
+{"composed": false, "fields": {"given": "ლევან", "surname": "ყენია"}, "file": "Q442746", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ლევან ყენია"}
+{"composed": false, "fields": {"given": "Станіслав", "surname": "Станкевич"}, "file": "Q4439452", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Станіслав Станкевич"}
+{"composed": false, "fields": {"given": "Небојша", "surname": "Стефановић"}, "file": "Q4442477", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Небојша Стефановић"}
+{"composed": false, "fields": {"given": "丹", "surname": "郭"}, "file": "Q445244", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "郭丹"}
+{"composed": false, "fields": {"given": "منال", "surname": "الشريف"}, "file": "Q445754", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "منال الشريف"}
+{"composed": false, "fields": {"given": "ทรัพย์สิรี", "surname": "แต้รัตนชัย"}, "file": "Q448045", "label": "th-th", "order": "givenFirst", "shape": null, "text": "ทรัพย์สิรี แต้รัตนชัย"}
+{"composed": false, "fields": {"given": "გივი", "surname": "წულაია"}, "file": "Q4506156", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გივი წულაია"}
+{"composed": false, "fields": {"given": "ლეო", "surname": "შერვაშიძე"}, "file": "Q4523035", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ლეო შერვაშიძე"}
+{"composed": false, "fields": {"given": "Неда", "surname": "Украден"}, "file": "Q453228", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Неда Украден"}
+{"composed": false, "fields": {"given": "Սերգեյ", "surname": "Մովսեսյան"}, "file": "Q460020", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Սերգեյ Մովսեսյան"}
+{"composed": false, "fields": {"given": "Հայկ", "surname": "Հակոբյան"}, "file": "Q460071", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Հայկ Հակոբյան"}
+{"composed": false, "fields": {"given": "相蓉", "surname": "刘"}, "file": "Q460899", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "刘相蓉"}
+{"composed": false, "fields": {"given": "Δημήτριος", "surname": "Ιωαννίδης"}, "file": "Q460912", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Δημήτριος Ιωαννίδης"}
+{"composed": false, "fields": {"given": "Владимир", "surname": "Седов"}, "file": "Q461051", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Владимир Седов"}
+{"composed": false, "fields": {"given": "红", "surname": "韩"}, "file": "Q463835", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "韩红"}
+{"composed": false, "fields": {"given": "মনিকা", "surname": "আলী"}, "file": "Q464960", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "মনিকা আলী"}
+{"composed": false, "fields": {"given": "অনুষ্কা", "surname": "শর্মা"}, "file": "Q465815", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "অনুষ্কা শর্মা"}
+{"composed": false, "fields": {"given": "عباس", "surname": "شفیعی"}, "file": "Q4663791", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "عباس شفیعی"}
+{"composed": false, "fields": {"given": "Անի", "surname": "Խաչիկյան"}, "file": "Q467299", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Անի Խաչիկյան"}
+{"composed": false, "fields": {"given": "অজিত", "surname": "রায়"}, "file": "Q4699800", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "অজিত রায়"}
+{"composed": false, "fields": {"given": "旺", "surname": "刘"}, "file": "Q470059", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "刘旺"}
+{"composed": false, "fields": {"given": "旭", "surname": "藤井"}, "file": "Q4701131", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "藤井旭"}
+{"composed": false, "fields": {"given": "Александар", "surname": "Пантић"}, "file": "Q4714843", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Александар Пантић"}
+{"composed": false, "fields": {"given": "علیرضا", "surname": "بیرانوند"}, "file": "Q4726869", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "علیرضا بیرانوند"}
+{"composed": false, "fields": {"given": "晓桐", "surname": "崔"}, "file": "Q47462831", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "崔晓桐"}
+{"composed": false, "fields": {"given": "अंजलि", "surname": "देवी"}, "file": "Q4765733", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "अंजलि देवी"}
+{"composed": false, "fields": {"given": "अंजलि", "surname": "शर्मा"}, "file": "Q4765744", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "अंजलि शर्मा"}
+{"composed": false, "fields": {"given": "婉婷", "surname": "刘"}, "file": "Q4801752", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "刘婉婷"}
+{"composed": false, "fields": {"given": "অরুণ", "surname": "মিত্র"}, "file": "Q4802120", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "অরুণ মিত্র"}
+{"composed": false, "fields": {"given": "Константин", "surname": "Аврамов"}, "file": "Q48347979", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Константин Аврамов"}
+{"composed": false, "fields": {"given": "태현", "surname": "차"}, "file": "Q483704", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "차태현"}
+{"composed": false, "fields": {"given": "მერაბ", "surname": "დვალიშვილი"}, "file": "Q48471377", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "მერაბ დვალიშვილი"}
+{"composed": false, "fields": {"given": "효희", "surname": "장"}, "file": "Q485293", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "장효희"}
+{"composed": false, "fields": {"given": "병득", "surname": "조"}, "file": "Q485833", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "조병득"}
+{"composed": false, "fields": {"given": "시후", "surname": "박"}, "file": "Q486158", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박시후"}
+{"composed": false, "fields": {"given": "ברוך", "surname": "מודן"}, "file": "Q4865865", "label": "he-il", "order": "givenFirst", "shape": null, "text": "ברוך מודן"}
+{"composed": false, "fields": {"given": "효영", "surname": "류"}, "file": "Q486594", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "류효영"}
+{"composed": false, "fields": {"given": "순철", "surname": "한"}, "file": "Q486987", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "한순철"}
+{"composed": false, "fields": {"given": "요시히로", "surname": "아키야마"}, "file": "Q487335", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "아키야마 요시히로"}
+{"composed": false, "fields": {"given": "정은", "surname": "김"}, "file": "Q489001", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김정은"}
+{"composed": false, "fields": {"given": "Бисерка", "surname": "Цвејић"}, "file": "Q4917296", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Бисерка Цвејић"}
+{"composed": false, "fields": {"given": "מישאל", "surname": "חשין"}, "file": "Q4920714", "label": "he-il", "order": "givenFirst", "shape": null, "text": "מישאל חשין"}
+{"composed": false, "fields": {"given": "진영", "surname": "박"}, "file": "Q492313", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박진영"}
+{"composed": false, "fields": {"given": "정은", "surname": "임"}, "file": "Q493257", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "임정은"}
+{"composed": false, "fields": {"given": "대남", "surname": "송"}, "file": "Q493875", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "송대남"}
+{"composed": false, "fields": {"given": "기영", "surname": "김"}, "file": "Q494258", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김기영"}
+{"composed": false, "fields": {"given": "필모", "surname": "이"}, "file": "Q494987", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이필모"}
+{"composed": false, "fields": {"given": "소연", "surname": "이"}, "file": "Q496370", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이소연"}
+{"composed": false, "fields": {"given": "소은", "surname": "김"}, "file": "Q496433", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김소은"}
+{"composed": false, "fields": {"given": "Драган", "surname": "Томић"}, "file": "Q506587", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Драган Томић"}
+{"composed": false, "fields": {"given": "Նունե", "surname": "Սարգսյան"}, "file": "Q50818130", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Նունե Սարգսյան"}
+{"composed": false, "fields": {"given": "אריק", "surname": "איינשטיין"}, "file": "Q509660", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אריק איינשטיין"}
+{"composed": false, "fields": {"given": "세희", "surname": "조"}, "file": "Q5103384", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "조세희"}
+{"composed": false, "fields": {"given": "บุศนันทน์", "surname": "อึ๊งบำรุงพันธุ์"}, "file": "Q510884", "label": "th-th", "order": "givenFirst", "shape": null, "text": "บุศนันทน์ อึ๊งบำรุงพันธุ์"}
+{"composed": false, "fields": {"given": "悦", "surname": "孙"}, "file": "Q514117", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "孙悦"}
+{"composed": false, "fields": {"given": "Євгенія", "surname": "Казбекова"}, "file": "Q51712036", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Євгенія Казбекова"}
+{"composed": false, "fields": {"given": "Дејан", "surname": "Миловановић"}, "file": "Q517302", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Дејан Миловановић"}
+{"composed": false, "fields": {"given": "حمدان", "surname": "شلبي"}, "file": "Q51843930", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "حمدان شلبي"}
+{"composed": false, "fields": {"given": "Նորայր", "surname": "Ասլանյան"}, "file": "Q518501", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Նորայր Ասլանյան"}
+{"composed": false, "fields": {"given": "Велизар", "surname": "Димитров"}, "file": "Q519280", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Велизар Димитров"}
+{"composed": false, "fields": {"given": "พรทิพย์", "surname": "บูรณะประเสริฐสุข"}, "file": "Q524232", "label": "th-th", "order": "givenFirst", "shape": null, "text": "พรทิพย์ บูรณะประเสริฐสุข"}
+{"composed": false, "fields": {"given": "দেবী", "surname": "শর্মা"}, "file": "Q5266964", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "দেবী শর্মা"}
+{"composed": false, "fields": {"given": "Димитрије", "surname": "Нешић"}, "file": "Q5277558", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Димитрије Нешић"}
+{"composed": false, "fields": {"given": "Ангел", "surname": "Кънчев"}, "file": "Q531739", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Ангел Кънчев"}
+{"composed": false, "fields": {"given": "أنطونيوس", "surname": "نجيب"}, "file": "Q532882", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "أنطونيوس نجيب"}
+{"composed": false, "fields": {"given": "خالد", "surname": "عزيز"}, "file": "Q533525", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "خالد عزيز"}
+{"composed": false, "fields": {"given": "প্রকাশ", "surname": "মেহরা"}, "file": "Q535404", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "প্রকাশ মেহরা"}
+{"composed": false, "fields": {"given": "지수", "surname": "김"}, "file": "Q53764925", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김지수"}
+{"composed": false, "fields": {"given": "عبد العزيز", "surname": "الربيعي"}, "file": "Q54875231", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عبد العزيز الربيعي"}
+{"composed": false, "fields": {"given": "Валерій", "surname": "Залужний"}, "file": "Q54964679", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Валерій Залужний"}
+{"composed": false, "fields": {"given": "성숙", "surname": "한"}, "file": "Q55082182", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "한성숙"}
+{"composed": false, "fields": {"given": "Галина", "surname": "Савова"}, "file": "Q5518683", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Галина Савова"}
+{"composed": false, "fields": {"given": "貞昌", "surname": "蘇"}, "file": "Q551904", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "蘇貞昌"}
+{"composed": false, "fields": {"given": "सौंदर्या", "surname": "शर्मा"}, "file": "Q55231409", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "सौंदर्या शर्मा"}
+{"composed": false, "fields": {"given": "אהרן", "surname": "הלוי"}, "file": "Q55293464", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אהרן הלוי"}
+{"composed": false, "fields": {"given": "جمال", "surname": "محمد"}, "file": "Q55389628", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "جمال محمد"}
+{"composed": false, "fields": {"given": "جورج", "surname": "إسحاق"}, "file": "Q5540966", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "جورج إسحاق"}
+{"composed": false, "fields": {"given": "محمدتقی", "surname": "شریعتی"}, "file": "Q5555662", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "محمدتقی شریعتی"}
+{"composed": false, "fields": {"given": "გიორგი", "surname": "ბაგრატიონი"}, "file": "Q5563405", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გიორგი ბაგრატიონი"}
+{"composed": false, "fields": {"given": "მუხრან", "surname": "ვახტანგაძე"}, "file": "Q556656", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "მუხრან ვახტანგაძე"}
+{"composed": false, "fields": {"given": "지현", "surname": "박"}, "file": "Q55730087", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박지현"}
+{"composed": false, "fields": {"given": "도현", "surname": "신"}, "file": "Q55731330", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "신도현"}
+{"composed": false, "fields": {"given": "남표", "surname": "홍"}, "file": "Q55736063", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "홍남표"}
+{"composed": false, "fields": {"given": "উদয়", "surname": "চোপড়া"}, "file": "Q560094", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "উদয় চোপড়া"}
+{"composed": false, "fields": {"given": "만희", "surname": "이"}, "file": "Q562322", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이만희"}
+{"composed": false, "fields": {"given": "Νικόλαος", "surname": "Τρικούπης"}, "file": "Q563117", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νικόλαος Τρικούπης"}
+{"composed": false, "fields": {"given": "سیروس", "surname": "قهرمانی"}, "file": "Q56364577", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "سیروس قهرمانی"}
+{"composed": false, "fields": {"given": "حليم", "surname": "بركات"}, "file": "Q5642325", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "حليم بركات"}
+{"composed": false, "fields": {"given": "원영", "surname": "장"}, "file": "Q56476186", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "장원영"}
+{"composed": false, "fields": {"given": "혜원", "surname": "강"}, "file": "Q56506824", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "강혜원"}
+{"composed": false, "fields": {"given": "翰", "surname": "张"}, "file": "Q5650855", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "张翰"}
+{"composed": false, "fields": {"given": "Денис", "surname": "Попов"}, "file": "Q56524763", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Денис Попов"}
+{"composed": false, "fields": {"given": "정은", "surname": "김"}, "file": "Q56816418", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김정은"}
+{"composed": false, "fields": {"given": "محمود", "surname": "فروغی"}, "file": "Q5685124", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "محمود فروغی"}
+{"composed": false, "fields": {"given": "احمد", "surname": "گلشیری"}, "file": "Q5722569", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "احمد گلشیری"}
+{"composed": false, "fields": {"given": "诗沣", "surname": "李"}, "file": "Q57273226", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "李诗沣"}
+{"composed": false, "fields": {"given": "Αντώνης", "surname": "Σαμαράς"}, "file": "Q57806", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Αντώνης Σαμαράς"}
+{"composed": false, "fields": {"given": "Αντίοχος", "surname": "Ευαγγελάτος"}, "file": "Q579624", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Αντίοχος Ευαγγελάτος"}
+{"composed": false, "fields": {"given": "عبد الله", "surname": "الحقيل"}, "file": "Q58117337", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عبد الله الحقيل"}
+{"composed": false, "fields": {"given": "동권", "surname": "정"}, "file": "Q58476446", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "정동권"}
+{"composed": false, "fields": {"given": "明", "surname": "姚"}, "file": "Q58590", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "姚明"}
+{"composed": false, "fields": {"given": "حسین", "surname": "حسینی"}, "file": "Q5865783", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "حسین حسینی"}
+{"composed": false, "fields": {"given": "萍", "surname": "夏"}, "file": "Q589739", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "夏萍"}
+{"composed": false, "fields": {"given": "ফারহান", "surname": "আখতার"}, "file": "Q590853", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "ফারহান আখতার"}
+{"composed": false, "fields": {"given": "جلال", "surname": "همتی"}, "file": "Q5920016", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "جلال همتی"}
+{"composed": false, "fields": {"given": "পুরুষোত্তম", "surname": "লাল"}, "file": "Q5932306", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "পুরুষোত্তম লাল"}
+{"composed": false, "fields": {"given": "ლევან", "surname": "კაჭარავა"}, "file": "Q59348487", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ლევან კაჭარავა"}
+{"composed": false, "fields": {"given": "پردیس", "surname": "افکاری"}, "file": "Q5936609", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "پردیس افکاری"}
+{"composed": false, "fields": {"given": "عباس", "surname": "کریمی"}, "file": "Q5955168", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "عباس کریمی"}
+{"composed": false, "fields": {"given": "სოსო", "surname": "ლიპარტელიანი"}, "file": "Q5959714", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "სოსო ლიპარტელიანი"}
+{"composed": false, "fields": {"given": "حسن", "surname": "دانشفر"}, "file": "Q5960213", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "حسن دانشفر"}
+{"composed": false, "fields": {"given": "محمدعلی", "surname": "حفیظی"}, "file": "Q5960923", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "محمدعلی حفیظی"}
+{"composed": false, "fields": {"given": "旭", "surname": "韩"}, "file": "Q59828188", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "韩旭"}
+{"composed": false, "fields": {"given": "رامي", "surname": "مخلوف"}, "file": "Q599233", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "رامي مخلوف"}
+{"composed": false, "fields": {"given": "Стоян", "surname": "Мурин"}, "file": "Q60155437", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Стоян Мурин"}
+{"composed": false, "fields": {"given": "محمد", "surname": "سليمان"}, "file": "Q60578283", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "محمد سليمان"}
+{"composed": false, "fields": {"given": "Μάνος", "surname": "Σταλάκης"}, "file": "Q60583087", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Μάνος Σταλάκης"}
+{"composed": false, "fields": {"given": "रवि", "surname": "राय"}, "file": "Q6064863", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "रवि राय"}
+{"composed": false, "fields": {"given": "상철", "surname": "김"}, "file": "Q60694327", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김상철"}
+{"composed": false, "fields": {"given": "Ντόρα", "surname": "Λελούδα"}, "file": "Q60752013", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Ντόρα Λελούδα"}
+{"composed": false, "fields": {"given": "আইভি", "surname": "রহমান"}, "file": "Q6099929", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "আইভি রহমান"}
+{"composed": false, "fields": {"given": "Стефка", "surname": "Георгиева"}, "file": "Q61315430", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Стефка Георгиева"}
+{"composed": false, "fields": {"given": "克強", "surname": "葉"}, "file": "Q6145892", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "葉克強"}
+{"composed": false, "fields": {"given": "文彦", "surname": "東郷"}, "file": "Q6147652", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "東郷文彦"}
+{"composed": false, "fields": {"given": "غسان", "surname": "جبري"}, "file": "Q61740872", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "غسان جبري"}
+{"composed": false, "fields": {"given": "ხვიჩა", "surname": "კვარაცხელია"}, "file": "Q61780902", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ხვიჩა კვარაცხელია"}
+{"composed": false, "fields": {"given": "رنا", "surname": "أحمد"}, "file": "Q61885794", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "رنا أحمد"}
+{"composed": false, "fields": {"given": "Դերենիկ", "surname": "Սաֆարյան"}, "file": "Q61985947", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Դերենիկ Սաֆարյան"}
+{"composed": false, "fields": {"given": "Θανάσης", "surname": "Παπαδόπουλος"}, "file": "Q61992018", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Θανάσης Παπαδόπουλος"}
+{"composed": false, "fields": {"given": "کیوان", "surname": "وحدانی"}, "file": "Q62116767", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "کیوان وحدانی"}
+{"composed": false, "fields": {"given": "Αγγελική", "surname": "Ελευθερίου"}, "file": "Q62121126", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Αγγελική Ελευθερίου"}
+{"composed": false, "fields": {"given": "현주", "surname": "손"}, "file": "Q624683", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "손현주"}
+{"composed": false, "fields": {"given": "상득", "surname": "이"}, "file": "Q625487", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이상득"}
+{"composed": false, "fields": {"given": "옥진", "surname": "공"}, "file": "Q626819", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "공옥진"}
+{"composed": false, "fields": {"given": "Леонід", "patronymic": "Данилович", "surname": "Кучма"}, "file": "Q629702", "label": "uk-ua", "order": "surnameFirst", "shape": 4, "text": "Кучма Леонід Данилович"}
+{"composed": false, "fields": {"given": "ირაკლი", "surname": "მწითური"}, "file": "Q63089630", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ირაკლი მწითური"}
+{"composed": false, "fields": {"given": "Գառնիկ", "surname": "Հովհաննիսյան"}, "file": "Q63213360", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Գառնիկ Հովհաննիսյան"}
+{"composed": false, "fields": {"given": "Ольга", "surname": "Рыпакова"}, "file": "Q6338", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Ольга Рыпакова"}
+{"composed": false, "fields": {"given": "Христо", "surname": "Бончев"}, "file": "Q63448778", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Христо Бончев"}
+{"composed": false, "fields": {"given": "지성", "surname": "한"}, "file": "Q63997686", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "한지성"}
+{"composed": false, "fields": {"given": "한민", "surname": "김"}, "file": "Q6408704", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김한민"}
+{"composed": false, "fields": {"given": "요한", "surname": "고"}, "file": "Q6424182", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "고요한"}
+{"composed": false, "fields": {"given": "রবিন", "surname": "ঘোষ"}, "file": "Q6435638", "label": "bn-bd", "order": "givenFirst", "shape": null, "text": "রবিন ঘোষ"}
+{"composed": false, "fields": {"given": "محمد", "surname": "البغدادي"}, "file": "Q64744436", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "محمد البغدادي"}
+{"composed": false, "fields": {"given": "תומר", "surname": "שחורי"}, "file": "Q65031190", "label": "he-il", "order": "givenFirst", "shape": null, "text": "תומר שחורי"}
+{"composed": false, "fields": {"given": "Андрій", "patronymic": "Володимирович", "surname": "Бондар"}, "file": "Q651264", "label": "uk-ua", "order": "givenFirst", "shape": null, "text": "Андрій Володимирович Бондар"}
+{"composed": false, "fields": {"given": "보나", "surname": "이"}, "file": "Q6513102", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "이보나"}
+{"composed": false, "fields": {"given": "თეიმურაზ", "surname": "გორდელაძე"}, "file": "Q65284773", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "თეიმურაზ გორდელაძე"}
+{"composed": false, "fields": {"given": "آمال", "surname": "فهمي"}, "file": "Q6536650", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "آمال فهمي"}
+{"composed": false, "fields": {"given": "博", "surname": "李"}, "file": "Q6538654", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "李博"}
+{"composed": false, "fields": {"given": "翔", "surname": "李"}, "file": "Q6539157", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "李翔"}
+{"composed": false, "fields": {"given": "محمدعلی", "surname": "ییلاقی اشرفی"}, "file": "Q65548699", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "محمدعلی ییلاقی اشرفی"}
+{"composed": false, "fields": {"given": "זאב", "surname": "מרגלית"}, "file": "Q6563391", "label": "he-il", "order": "givenFirst", "shape": null, "text": "זאב מרגלית"}
+{"composed": false, "fields": {"given": "מאיר", "surname": "ישראל"}, "file": "Q6572546", "label": "he-il", "order": "givenFirst", "shape": null, "text": "מאיר ישראל"}
+{"composed": false, "fields": {"given": "אבנר", "surname": "ברזני"}, "file": "Q6597500", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אבנר ברזני"}
+{"composed": false, "fields": {"given": "גיא", "surname": "וסרדם"}, "file": "Q6643335", "label": "he-il", "order": "givenFirst", "shape": null, "text": "גיא וסרדם"}
+{"composed": false, "fields": {"given": "Сергей", "surname": "Каримов"}, "file": "Q664728", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Сергей Каримов"}
+{"composed": false, "fields": {"given": "לולה", "surname": "פולמן"}, "file": "Q6668818", "label": "he-il", "order": "givenFirst", "shape": null, "text": "לולה פולמן"}
+{"composed": false, "fields": {"given": "רחל", "surname": "שור"}, "file": "Q6702967", "label": "he-il", "order": "givenFirst", "shape": null, "text": "רחל שור"}
+{"composed": false, "fields": {"given": "誠", "surname": "北野"}, "file": "Q6739942", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "北野誠"}
+{"composed": false, "fields": {"given": "মনোজ", "surname": "মিত্র"}, "file": "Q6751180", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "মনোজ মিত্র"}
+{"composed": false, "fields": {"given": "אסתר", "surname": "אלכסנדר"}, "file": "Q6776510", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אסתר אלכסנדר"}
+{"composed": false, "fields": {"given": "ברוך", "surname": "אורן"}, "file": "Q6808832", "label": "he-il", "order": "givenFirst", "shape": null, "text": "ברוך אורן"}
+{"composed": false, "fields": {"given": "아정", "surname": "윤"}, "file": "Q6814532", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "윤아정"}
+{"composed": false, "fields": {"given": "فتحي", "surname": "قورة"}, "file": "Q6823735", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "فتحي قورة"}
+{"composed": false, "fields": {"given": "أمجد", "surname": "الطرابلسي"}, "file": "Q6827466", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "أمجد الطرابلسي"}
+{"composed": false, "fields": {"given": "মিমি", "surname": "চক্রবর্তী"}, "file": "Q6862116", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "মিমি চক্রবর্তী"}
+{"composed": false, "fields": {"given": "გია", "surname": "გულუა"}, "file": "Q68814638", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გია გულუა"}
+{"composed": false, "fields": {"given": "محمد", "surname": "دهمان"}, "file": "Q6893052", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "محمد دهمان"}
+{"composed": false, "fields": {"given": "אברהם", "surname": "מור"}, "file": "Q6976086", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אברהם מור"}
+{"composed": false, "fields": {"given": "ידידיה", "surname": "כהן"}, "file": "Q6986039", "label": "he-il", "order": "givenFirst", "shape": null, "text": "ידידיה כהן"}
+{"composed": false, "fields": {"given": "לייב", "surname": "וייספיש"}, "file": "Q6993554", "label": "he-il", "order": "givenFirst", "shape": null, "text": "לייב וייספיש"}
+{"composed": false, "fields": {"given": "מנשה", "surname": "רז"}, "file": "Q6997275", "label": "he-il", "order": "givenFirst", "shape": null, "text": "מנשה רז"}
+{"composed": false, "fields": {"given": "韶涵", "surname": "張"}, "file": "Q702557", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "張韶涵"}
+{"composed": false, "fields": {"given": "Νικόλαος", "surname": "Κοντόπουλος"}, "file": "Q7036059", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νικόλαος Κοντόπουλος"}
+{"composed": false, "fields": {"given": "Νίκος", "surname": "Γούναρης"}, "file": "Q7036608", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νίκος Γούναρης"}
+{"composed": false, "fields": {"given": "镇", "surname": "王"}, "file": "Q703861", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "王镇"}
+{"composed": false, "fields": {"given": "Ռոմեն", "surname": "Դավթյան"}, "file": "Q70429926", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ռոմեն Դավթյան"}
+{"composed": false, "fields": {"given": "חיים", "surname": "מולכו"}, "file": "Q7043178", "label": "he-il", "order": "givenFirst", "shape": null, "text": "חיים מולכו"}
+{"composed": false, "fields": {"given": "良一", "surname": "引地"}, "file": "Q70544716", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "引地良一"}
+{"composed": false, "fields": {"given": "רון", "surname": "פלר"}, "file": "Q7065151", "label": "he-il", "order": "givenFirst", "shape": null, "text": "רון פלר"}
+{"composed": false, "fields": {"given": "정숙", "surname": "오"}, "file": "Q7080586", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "오정숙"}
+{"composed": false, "fields": {"given": "Արթուր", "surname": "Բաղդասարյան"}, "file": "Q708540", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Արթուր Բաղդասարյան"}
+{"composed": false, "fields": {"given": "পঙ্কজ", "surname": "রায়"}, "file": "Q7131294", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "পঙ্কজ রায়"}
+{"composed": false, "fields": {"given": "민지", "surname": "박"}, "file": "Q7137905", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "박민지"}
+{"composed": false, "fields": {"given": "איתי", "surname": "שכטר"}, "file": "Q715963", "label": "he-il", "order": "givenFirst", "shape": null, "text": "איתי שכטר"}
+{"composed": false, "fields": {"given": "靜", "surname": "郭"}, "file": "Q716055", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "郭靜"}
+{"composed": false, "fields": {"given": "Вук", "surname": "Јеремић"}, "file": "Q722579", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Вук Јеремић"}
+{"composed": false, "fields": {"given": "Иван", "surname": "Радовановић"}, "file": "Q722916", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Иван Радовановић"}
+{"composed": false, "fields": {"given": "Νίκος", "surname": "Κούρκουλος"}, "file": "Q724724", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Νίκος Κούρκουλος"}
+{"composed": false, "fields": {"given": "ლევან", "surname": "გაჩეჩილაძე"}, "file": "Q728094", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ლევან გაჩეჩილაძე"}
+{"composed": false, "fields": {"given": "রেণুকা", "surname": "দাশগুপ্ত"}, "file": "Q7313582", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "রেণুকা দাশগুপ্ত"}
+{"composed": false, "fields": {"given": "يوسف", "surname": "إدريس"}, "file": "Q733393", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "يوسف إدريس"}
+{"composed": false, "fields": {"given": "حسن", "surname": "شحاتة"}, "file": "Q734006", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "حسن شحاتة"}
+{"composed": false, "fields": {"given": "Ռուբեն", "surname": "Վարդանյան"}, "file": "Q7376010", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Ռուբեն Վարդանյան"}
+{"composed": false, "fields": {"given": "Դավիթ", "surname": "Համբարձումյան"}, "file": "Q737852", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Դավիթ Համբարձումյան"}
+{"composed": false, "fields": {"given": "三郎", "surname": "亀井"}, "file": "Q7396492", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "亀井三郎"}
+{"composed": false, "fields": {"given": "صالح خالد", "surname": "الشهري"}, "file": "Q7403894", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "صالح خالد الشهري"}
+{"composed": false, "fields": {"given": "संजय", "surname": "ख़ान"}, "file": "Q7418443", "label": "hi-in", "order": "givenFirst", "shape": null, "text": "संजय ख़ान"}
+{"composed": false, "fields": {"given": "俊傑", "surname": "陳"}, "file": "Q75078779", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "陳俊傑"}
+{"composed": false, "fields": {"given": "Σταύρος", "surname": "Τσιώλης"}, "file": "Q7604867", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Σταύρος Τσιώλης"}
+{"composed": false, "fields": {"given": "Страшимир", "surname": "Димитров"}, "file": "Q7621704", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Страшимир Димитров"}
+{"composed": false, "fields": {"given": "সুবোধ", "surname": "সরকার"}, "file": "Q7631762", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "সুবোধ সরকার"}
+{"composed": false, "fields": {"given": "سلطان", "surname": "البرقان"}, "file": "Q7636629", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "سلطان البرقان"}
+{"composed": false, "fields": {"given": "Սուրեն", "surname": "Նազարյան"}, "file": "Q7645634", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Սուրեն Նազարյան"}
+{"composed": false, "fields": {"given": "Βασίλειος", "surname": "Ξυδάς"}, "file": "Q765694", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Βασίλειος Ξυδάς"}
+{"composed": false, "fields": {"given": "ريما", "surname": "الجفالي"}, "file": "Q76823843", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "ريما الجفالي"}
+{"composed": false, "fields": {"given": "Бобан", "surname": "Марковић"}, "file": "Q772645", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Бобан Марковић"}
+{"composed": false, "fields": {"given": "Александр", "surname": "Кучма"}, "file": "Q77450", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Александр Кучма"}
+{"composed": false, "fields": {"given": "بهيج", "surname": "الخطيب"}, "file": "Q780862", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "بهيج الخطيب"}
+{"composed": false, "fields": {"given": "Георги", "surname": "Георгиев"}, "file": "Q782926", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Георги Георгиев"}
+{"composed": false, "fields": {"given": "强", "surname": "文"}, "file": "Q7927961", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "文强"}
+{"composed": false, "fields": {"given": "إيهاب", "surname": "خورشيد"}, "file": "Q79351570", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "إيهاب خورشيد"}
+{"composed": false, "fields": {"given": "文正", "surname": "白"}, "file": "Q7976520", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "白文正"}
+{"composed": false, "fields": {"given": "بهمن", "surname": "جلالی"}, "file": "Q800254", "label": "fa-ir", "order": "givenFirst", "shape": null, "text": "بهمن جلالی"}
+{"composed": false, "fields": {"given": "Երվանդ", "surname": "Սուքիասյան"}, "file": "Q8052695", "label": "hy-am", "order": "givenFirst", "shape": null, "text": "Երվանդ Սուքիասյան"}
+{"composed": false, "fields": {"given": "ישעיהו", "surname": "פרס"}, "file": "Q8052802", "label": "he-il", "order": "givenFirst", "shape": null, "text": "ישעיהו פרס"}
+{"composed": false, "fields": {"given": "يوسف", "surname": "السالم"}, "file": "Q8059032", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "يوسف السالم"}
+{"composed": false, "fields": {"given": "ზაალ", "surname": "სამადაშვილი"}, "file": "Q8063398", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "ზაალ სამადაშვილი"}
+{"composed": false, "fields": {"given": "爽", "surname": "郑"}, "file": "Q8070736", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "郑爽"}
+{"composed": false, "fields": {"given": "旭", "surname": "朱"}, "file": "Q8071157", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "朱旭"}
+{"composed": false, "fields": {"given": "צבי", "surname": "ארד"}, "file": "Q8075532", "label": "he-il", "order": "givenFirst", "shape": null, "text": "צבי ארד"}
+{"composed": false, "fields": {"given": "אלישע", "surname": "פורת"}, "file": "Q8195632", "label": "he-il", "order": "givenFirst", "shape": null, "text": "אלישע פורת"}
+{"composed": false, "fields": {"given": "孟緝", "surname": "彭"}, "file": "Q8275740", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "彭孟緝"}
+{"composed": false, "fields": {"given": "逸凡", "surname": "邓"}, "file": "Q8318748", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "邓逸凡"}
+{"composed": false, "fields": {"given": "洋", "surname": "汪"}, "file": "Q8321539", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "汪洋"}
+{"composed": false, "fields": {"given": "瑞", "surname": "張"}, "file": "Q8325220", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "張瑞"}
+{"composed": false, "fields": {"given": "忠左衛門", "surname": "端山"}, "file": "Q84463020", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "端山 忠左衛門"}
+{"composed": false, "fields": {"given": "عالي", "surname": "القرشي"}, "file": "Q85202166", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عالي القرشي"}
+{"composed": false, "fields": {"given": "דן", "surname": "מורי"}, "file": "Q862940", "label": "he-il", "order": "givenFirst", "shape": null, "text": "דן מורי"}
+{"composed": false, "fields": {"given": "নেহা", "surname": "শর্মা"}, "file": "Q863745", "label": "bn-in", "order": "givenFirst", "shape": null, "text": "নেহা শর্মা"}
+{"composed": false, "fields": {"given": "Παντελής", "surname": "Πετρακάκης"}, "file": "Q89191445", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Παντελής Πετρακάκης"}
+{"composed": false, "fields": {"given": "บุญศักดิ์", "surname": "พลสนะ"}, "file": "Q893081", "label": "th-th", "order": "givenFirst", "shape": null, "text": "บุญศักดิ์ พลสนะ"}
+{"composed": false, "fields": {"given": "Борис", "surname": "Галчев"}, "file": "Q893657", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Борис Галчев"}
+{"composed": false, "fields": {"given": "定國", "surname": "馮"}, "file": "Q8966024", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "馮定國"}
+{"composed": false, "fields": {"given": "炅", "surname": "何"}, "file": "Q8969884", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "何炅"}
+{"composed": false, "fields": {"given": "正中", "surname": "李"}, "file": "Q8995497", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "李正中"}
+{"composed": false, "fields": {"given": "鑫", "surname": "王"}, "file": "Q9066967", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "王鑫"}
+{"composed": false, "fields": {"given": "國華", "surname": "林"}, "file": "Q9183343", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "林國華"}
+{"composed": false, "fields": {"given": "Миодраг", "surname": "Павловић"}, "file": "Q929359", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Миодраг Павловић"}
+{"composed": false, "fields": {"given": "国强", "surname": "蔡"}, "file": "Q930462", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "蔡国强"}
+{"composed": false, "fields": {"given": "英", "surname": "胡"}, "file": "Q9329762", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "胡英"}
+{"composed": false, "fields": {"given": "عثمان", "surname": "آل حميد"}, "file": "Q93766497", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "عثمان آل حميد"}
+{"composed": false, "fields": {"given": "Βασίλης", "surname": "Χατζηπαναγής"}, "file": "Q943558", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Βασίλης Χατζηπαναγής"}
+{"composed": false, "fields": {"given": "שלמה", "surname": "תמיר"}, "file": "Q94536900", "label": "he-il", "order": "givenFirst", "shape": null, "text": "שלמה תמיר"}
+{"composed": false, "fields": {"given": "潤", "surname": "草刈"}, "file": "Q95163244", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "草刈潤"}
+{"composed": false, "fields": {"given": "عبد الأكرم", "surname": "السقَّا"}, "file": "Q95373668", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عبد الأكرم السقَّا"}
+{"composed": false, "fields": {"given": "გიგა", "surname": "ჭიკაძე"}, "file": "Q95453345", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "გიგა ჭიკაძე"}
+{"composed": false, "fields": {"given": "智勇", "surname": "石"}, "file": "Q954851", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "石智勇"}
+{"composed": false, "fields": {"given": "מיכאל", "surname": "אלמוג"}, "file": "Q95994375", "label": "he-il", "order": "givenFirst", "shape": null, "text": "מיכאל אלמוג"}
+{"composed": false, "fields": {"given": "مُحمَّد علي", "surname": "محجوب"}, "file": "Q96099631", "label": "ar-eg", "order": "givenFirst", "shape": null, "text": "مُحمَّد علي محجوب"}
+{"composed": false, "fields": {"given": "Γιάννης", "surname": "Γκούμας"}, "file": "Q96146719", "label": "el-gr", "order": "givenFirst", "shape": null, "text": "Γιάννης Γκούμας"}
+{"composed": false, "fields": {"given": "성훈", "surname": "김"}, "file": "Q96742497", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "김성훈"}
+{"composed": false, "fields": {"given": "عبد الجبار", "surname": "الضحاك"}, "file": "Q96788805", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "عبد الجبار الضحاك"}
+{"composed": false, "fields": {"given": "秀樹", "surname": "前田"}, "file": "Q970696", "label": "ja-jp", "order": "surnameFirst", "pack": "JA", "shape": null, "text": "前田秀樹"}
+{"composed": false, "fields": {"given": "종덕", "surname": "최"}, "file": "Q97198853", "label": "ko-kr", "order": "surnameFirst", "shape": null, "text": "최종덕"}
+{"composed": false, "fields": {"given": "文清", "surname": "谢"}, "file": "Q97202579", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "谢文清"}
+{"composed": false, "fields": {"given": "პაატა", "surname": "კოღუაშვილი"}, "file": "Q97231535", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "პაატა კოღუაშვილი"}
+{"composed": false, "fields": {"given": "დავით", "surname": "გოცირიძე"}, "file": "Q97244061", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "დავით გოცირიძე"}
+{"composed": false, "fields": {"given": "由之", "surname": "唐"}, "file": "Q97300636", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "唐由之"}
+{"composed": false, "fields": {"given": "სერგო", "surname": "რიგვავა"}, "file": "Q97359916", "label": "ka-ge", "order": "givenFirst", "shape": null, "text": "სერგო რიგვავა"}
+{"composed": false, "fields": {"given": "俊賢", "surname": "李"}, "file": "Q97588844", "label": "zh-tw", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "李俊賢"}
+{"composed": false, "fields": {"given": "Стоян", "surname": "Александров"}, "file": "Q977718", "label": "bg-bg", "order": "givenFirst", "shape": null, "text": "Стоян Александров"}
+{"composed": false, "fields": {"given": "Дәулет", "patronymic": "Болатұлы", "surname": "Тұрлыханов"}, "file": "Q981187", "label": "kk-kz", "order": "givenFirst", "shape": null, "text": "Дәулет Болатұлы Тұрлыханов"}
+{"composed": false, "fields": {"given": "משה", "surname": "מזור"}, "file": "Q98320452", "label": "he-il", "order": "givenFirst", "shape": null, "text": "משה מזור"}
+{"composed": false, "fields": {"given": "يوسف", "surname": "مكي"}, "file": "Q98362001", "label": "ar-sa", "order": "givenFirst", "shape": null, "text": "يوسف مكي"}
+{"composed": false, "fields": {"given": "Драгомир", "surname": "Милошевић"}, "file": "Q984195", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Драгомир Милошевић"}
+{"composed": false, "fields": {"given": "Коста", "surname": "Алексић"}, "file": "Q99315136", "label": "sr-rs", "order": "givenFirst", "shape": null, "text": "Коста Алексић"}
+{"composed": false, "fields": {"given": "نور الدين", "surname": "عتر"}, "file": "Q99540872", "label": "ar-sy", "order": "givenFirst", "shape": null, "text": "نور الدين عتر"}
+{"composed": false, "fields": {"given": "浩", "surname": "黄"}, "file": "Q99630410", "label": "zh-cn", "order": "surnameFirst", "pack": "ZH", "shape": null, "text": "黄浩"}

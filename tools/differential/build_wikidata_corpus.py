@@ -231,16 +231,21 @@ def pool(stratum: Stratum, refresh: bool) -> list[str]:
     return qids
 
 
-def entities(ids: Iterable[str], props: str, refresh: bool) -> dict[str, Any]:
+def entities(ids: Iterable[str], props: str, refresh: bool,
+             languages: Iterable[str] = ()) -> dict[str, Any]:
     """Each requested item, keyed by the id asked for (a redirected item
     comes back under that id, holding its target; a deleted one, marked
-    `missing`). Raises on an id the response leaves out."""
+    `missing`). Raises on an id the response leaves out. `languages`,
+    when given, limits the labels fetched to those languages: a famous
+    person's item carries hundreds, and the cache holds every one."""
     ids = sorted(set(ids))
     out: dict[str, Any] = {}
     for start in range(0, len(ids), BATCH):
-        url = API + "?" + urllib.parse.urlencode({
-            "action": "wbgetentities", "ids": "|".join(ids[start:start + BATCH]),
-            "props": props, "format": "json"})
+        query = {"action": "wbgetentities", "ids": "|".join(ids[start:start + BATCH]),
+                 "props": props, "format": "json"}
+        if languages:
+            query["languages"] = "|".join(languages)
+        url = API + "?" + urllib.parse.urlencode(query)
         out.update(_fetch(url, None, refresh, "entities")["entities"])
     absent = sorted(i for i in ids if i not in out)
     if absent:
@@ -283,9 +288,12 @@ _FEMININE = (("ский", "ская"), ("цкий", "цкая"), ("ой", "ая"
              ("ын", "ына"))
 
 
-def feminine(surname: str) -> str:
-    """The feminine form of a masculine Russian surname, or ''."""
-    for male, female in _FEMININE:
+def feminine(surname: str,
+             endings: tuple[tuple[str, str], ...] = _FEMININE) -> str:
+    """The feminine form of a masculine surname, or '': Russian by
+    default, or by another language's table of (masculine, feminine)
+    endings, tried in order, so a longer ending goes first."""
+    for male, female in endings:
         if surname.endswith(male):
             return surname[: -len(male)] + female
     return ""
