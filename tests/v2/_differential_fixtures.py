@@ -9,8 +9,11 @@ pytest's sense, and several modules want them by name.
 """
 import importlib.util
 import json
+import urllib.request
 from pathlib import Path
 from types import ModuleType
+
+import pytest
 
 _TOOLS = Path(__file__).parents[2] / "tools" / "differential"
 
@@ -53,3 +56,33 @@ def load_tool(stem: str) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+class _Response:
+    """What urllib.request.urlopen returns, as far as the build scripts read it."""
+
+    def __init__(self, body: bytes) -> None:
+        self.body = body
+
+    def __enter__(self) -> "_Response":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        return None
+
+    def read(self) -> bytes:
+        return self.body
+
+
+def serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:
+    """Answer every urlopen with `body`, cache into `tmp_path`, and return
+    the list each fetched URL is appended to: the build scripts' network,
+    offline."""
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    fetched: list[str] = []
+
+    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
+        fetched.append(request.full_url)
+        return _Response(body)
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    return fetched

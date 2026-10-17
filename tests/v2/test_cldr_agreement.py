@@ -61,7 +61,70 @@ def test_expected_roles_drop_fields_the_rendering_omits() -> None:
     roles = agreement.expected_roles(fields, "Sr. Miguel Ángel Juan Antonio Pablo II")
     assert roles == {"title": "Sr.", "given_names": "Miguel Ángel Juan Antonio",
                      "family": "Pablo", "suffix": "II",
-                     "family_particles": "", "family_base": "Pablo"}
+                     "family_particles": "", "family_base": "Pablo",
+                     # stated, so expected empty where the rendering omits it
+                     "surname2": ""}
+
+
+def test_a_pending_field_is_scored_inside_its_merged_role_until_parsed_name_has_it(
+        ) -> None:
+    # surname2 inside family, as CLDR merges it; a patronymic inside
+    # given_names, never family -- so an Icelandic name expects no family.
+    text = "Vigdís Finnbogadóttir"
+    roles = agreement.expected_roles({"given": "Vigdís",
+                                      "patronymic": "Finnbogadóttir"}, text)
+    assert (roles["given_names"], roles["family"]) == (text, "")
+    assert roles["patronymic"] == "Finnbogadóttir"
+    roles = agreement.expected_roles(
+        {"given": "Gabriel", "surname": "García", "surname2": "Márquez"},
+        "Gabriel García Márquez")
+    assert (roles["family"], roles["surname2"]) == ("García Márquez", "Márquez")
+    # Not scored on its own while ParsedName lacks the attribute ...
+    assert "surname2" not in agreement.got_roles(parse("Gabriel García Márquez"))
+    rows = [{"file": "Q1", "label": "x", "order": "givenFirst", "shape": None,
+             "text": "Gabriel García Márquez",
+             "fields": {"given": "Gabriel", "surname": "García",
+                        "surname2": "Márquez"}}]
+    assert "surname2" not in agreement.disagreements(rows).get("Q1/x/givenFirst", {})
+
+
+@pytest.mark.parametrize("field", sorted(agreement.PENDING_ROLES))
+def test_each_pending_field_is_scored_inside_the_role_it_names(field: str) -> None:
+    # PENDING_ROLES names the merged role; expected_roles must agree.
+    roles = agreement.expected_roles({"given": "Ana", "surname": "Ruiz", field: "Vila"},
+                                     "Ana Vila Ruiz")
+    merged = agreement.PENDING_ROLES[field]
+    assert "Vila" in roles[merged].split()
+    assert not [r for r in ("given_names", "family") if r != merged
+                and "Vila" in roles[r].split()]
+
+
+def test_the_summary_says_where_each_pending_field_is_scored(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    agreement.main([])
+    out = capsys.readouterr().out
+    assert "patronymic" in out and "(scored inside given_names)" in out
+    assert "(scored inside family)" in out
+
+
+def test_a_role_parsed_name_stops_answering_still_fails_loudly(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Only a PENDING_ROLES field may go unanswered; any other gap is a bug.
+    rows = [{"file": "Q1", "label": "x", "order": "givenFirst", "shape": None,
+             "text": "Ana Ruiz", "fields": {"given": "Ana", "surname": "Ruiz"}}]
+    real = agreement.got_roles
+    monkeypatch.setattr(agreement, "got_roles", lambda name: {
+        k: v for k, v in real(name).items() if k != "family"})
+    with pytest.raises(KeyError):
+        agreement.disagreements(rows)
+
+
+def test_a_pending_field_is_scored_once_parsed_name_answers_it() -> None:
+    class WithSurname2:
+        title = given_names = suffix = family_particles = family_base = ""
+        family = "García Márquez"
+        surname2 = "García"
+    assert agreement.got_roles(WithSurname2())["surname2"] == "García"  # type: ignore[arg-type]
 
 
 def test_expected_roles_compare_particles_only_where_cldr_splits_them() -> None:
@@ -156,7 +219,8 @@ def test_changes_reports_a_rendering_that_is_gone() -> None:
 #: Each source's corpus file, and a floor its distinct texts must
 #: exceed: a truncated file would otherwise pass both checks below, and
 #: an emptied one re-recorded would match its emptied record.
-_CORPORA = {"CLDR": ("corpus_cldr.jsonl", 1000), "GND": ("corpus_gnd.jsonl", 500)}
+_CORPORA = {"CLDR": ("corpus_cldr.jsonl", 1000), "GND": ("corpus_gnd.jsonl", 500),
+            "Wikidata": ("corpus_wikidata.jsonl", 500)}
 
 
 def test_every_source_has_a_corpus_file() -> None:
@@ -176,6 +240,19 @@ def test_the_corpus_and_the_fields_file_hold_the_same_renderings(source: str) ->
                             else (entry["name"], entry["shape"]))
     assert from_corpus == from_fields
     assert len(from_fields) > least, f"the {source} corpus is missing or truncated"
+
+
+@pytest.mark.parametrize("source", sorted(set(_CORPORA) - {"CLDR"}))
+def test_every_committed_field_occurs_in_its_rendering(source: str) -> None:
+    # A field that did not occur would be expected EMPTY by the
+    # comparison, a disagreement no parser fix could resolve. CLDR is
+    # exempt by design: its formats drop fields by locale and order, and
+    # it states fields (locale, given-informal) no rendering writes.
+    fields, _ = agreement.sources()[source]
+    missing = [(row["text"], value) for row in agreement.load_rows(fields)
+               for value in row["fields"].values()
+               if not agreement.occurs(value, row["text"])]
+    assert not missing
 
 
 @pytest.mark.parametrize("source", sorted(_CORPORA))

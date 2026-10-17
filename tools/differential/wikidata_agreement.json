@@ -1,0 +1,4215 @@
+{
+ "Q100755460/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Viciana Aráez",
+   "got": "Aráez"
+  },
+  "given_names": {
+   "expected": "Rafael",
+   "got": "Rafael Viciana"
+  },
+  "text": "Rafael Viciana Aráez"
+ },
+ "Q101688196/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Gutiérrez Arango",
+   "got": "Arango"
+  },
+  "given_names": {
+   "expected": "Pompilio",
+   "got": "Pompilio Gutiérrez"
+  },
+  "text": "Pompilio Gutiérrez Arango"
+ },
+ "Q104155694/surname2-es/givenFirst": {
+  "family": {
+   "expected": "García Rodrigo",
+   "got": "Rodrigo"
+  },
+  "given_names": {
+   "expected": "Román",
+   "got": "Román García"
+  },
+  "text": "Román García Rodrigo"
+ },
+ "Q1042940/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Gaviria Díaz",
+   "got": "Díaz"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Gaviria"
+  },
+  "text": "Carlos Gaviria Díaz"
+ },
+ "Q1042947/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Girón Gutiérrez",
+   "got": "Gutiérrez"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Girón"
+  },
+  "text": "Carlos Girón Gutiérrez"
+ },
+ "Q105208032/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Gómez Esguerra",
+   "got": "Esguerra"
+  },
+  "given_names": {
+   "expected": "Julio Roberto",
+   "got": "Julio Roberto Gómez"
+  },
+  "text": "Julio Roberto Gómez Esguerra"
+ },
+ "Q106561769/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Camacho Carrizosa",
+   "got": "Carrizosa"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José Camacho"
+  },
+  "text": "José Camacho Carrizosa"
+ },
+ "Q106769309/surname2-co/givenFirst": {
+  "family": {
+   "expected": "López Gómez",
+   "got": "Gómez"
+  },
+  "given_names": {
+   "expected": "Libardo",
+   "got": "Libardo López"
+  },
+  "text": "Libardo López Gómez"
+ },
+ "Q107542992/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Covarrubias Garza",
+   "got": "Garza"
+  },
+  "given_names": {
+   "expected": "José Luis",
+   "got": "José Luis Covarrubias"
+  },
+  "text": "José Luis Covarrubias Garza"
+ },
+ "Q108111287/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Santamaría Montoya",
+   "got": "Montoya"
+  },
+  "given_names": {
+   "expected": "Gabriel Jaime",
+   "got": "Gabriel Jaime Santamaría"
+  },
+  "text": "Gabriel Jaime Santamaría Montoya"
+ },
+ "Q109044495/surname2-co/givenFirst": {
+  "family": {
+   "expected": "González Arias",
+   "got": "Arias"
+  },
+  "given_names": {
+   "expected": "Jesús Ángel",
+   "got": "Jesús Ángel González"
+  },
+  "text": "Jesús Ángel González Arias"
+ },
+ "Q109738043/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "López Díaz",
+   "got": "Díaz"
+  },
+  "given_names": {
+   "expected": "Javier",
+   "got": "Javier López"
+  },
+  "text": "Javier López Díaz"
+ },
+ "Q109853607/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Sáenz Echeverría",
+   "got": "Echeverría"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Sáenz"
+  },
+  "text": "Carlos Sáenz Echeverría"
+ },
+ "Q110144093/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Murillo Chapull",
+   "got": "Chapull"
+  },
+  "given_names": {
+   "expected": "Emilio",
+   "got": "Emilio Murillo"
+  },
+  "text": "Emilio Murillo Chapull"
+ },
+ "Q110463644/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Uribe Cordovez",
+   "got": "Cordovez"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Uribe"
+  },
+  "text": "Carlos Uribe Cordovez"
+ },
+ "Q111234704/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Díaz-Corralejo Fernández",
+   "got": "Fernández"
+  },
+  "given_names": {
+   "expected": "Teógenes",
+   "got": "Teógenes Díaz-Corralejo"
+  },
+  "text": "Teógenes Díaz-Corralejo Fernández"
+ },
+ "Q111473046/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Alonso Romero",
+   "got": "Romero"
+  },
+  "given_names": {
+   "expected": "María Paz",
+   "got": "María Paz Alonso"
+  },
+  "text": "María Paz Alonso Romero"
+ },
+ "Q111523698/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Arvizu Lara",
+   "got": "Lara"
+  },
+  "given_names": {
+   "expected": "Orlando",
+   "got": "Orlando Arvizu"
+  },
+  "text": "Orlando Arvizu Lara"
+ },
+ "Q111603657/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Terrazas Allen",
+   "got": "Allen"
+  },
+  "given_names": {
+   "expected": "Patricia",
+   "got": "Patricia Terrazas"
+  },
+  "text": "Patricia Terrazas Allen"
+ },
+ "Q112116024/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ólafsson"
+  },
+  "given_names": {
+   "expected": "Sigurður Ólafsson",
+   "got": "Sigurður"
+  },
+  "text": "Sigurður Ólafsson"
+ },
+ "Q112116260/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Böðvarsson"
+  },
+  "given_names": {
+   "expected": "Bjarni Böðvarsson",
+   "got": "Bjarni"
+  },
+  "text": "Bjarni Böðvarsson"
+ },
+ "Q112116353/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Karlsdóttir"
+  },
+  "given_names": {
+   "expected": "Soffía Karlsdóttir",
+   "got": "Soffía"
+  },
+  "text": "Soffía Karlsdóttir"
+ },
+ "Q112128748/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jensson"
+  },
+  "given_names": {
+   "expected": "Ketill Jensson",
+   "got": "Ketill"
+  },
+  "text": "Ketill Jensson"
+ },
+ "Q112130218/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jónsson"
+  },
+  "given_names": {
+   "expected": "Magnús Jónsson",
+   "got": "Magnús"
+  },
+  "text": "Magnús Jónsson"
+ },
+ "Q112130399/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ólafsson"
+  },
+  "given_names": {
+   "expected": "Skapti Ólafsson",
+   "got": "Skapti"
+  },
+  "text": "Skapti Ólafsson"
+ },
+ "Q112131085/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðsson"
+  },
+  "given_names": {
+   "expected": "Jón Sigurðsson",
+   "got": "Jón"
+  },
+  "text": "Jón Sigurðsson"
+ },
+ "Q112131257/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Benediktsdóttir"
+  },
+  "given_names": {
+   "expected": "Gerður Benediktsdóttir",
+   "got": "Gerður"
+  },
+  "text": "Gerður Benediktsdóttir"
+ },
+ "Q112135101/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Kristjánsson"
+  },
+  "given_names": {
+   "expected": "Kristján Kristjánsson",
+   "got": "Kristján"
+  },
+  "text": "Kristján Kristjánsson"
+ },
+ "Q112135757/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurdórsson"
+  },
+  "given_names": {
+   "expected": "Sigurdór Sigurdórsson",
+   "got": "Sigurdór"
+  },
+  "text": "Sigurdór Sigurdórsson"
+ },
+ "Q112184094/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gunnarsson"
+  },
+  "given_names": {
+   "expected": "Rúnar Gunnarsson",
+   "got": "Rúnar"
+  },
+  "text": "Rúnar Gunnarsson"
+ },
+ "Q112184468/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Björnsson"
+  },
+  "given_names": {
+   "expected": "Grettir Björnsson",
+   "got": "Grettir"
+  },
+  "text": "Grettir Björnsson"
+ },
+ "Q112208455/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Konráðsson"
+  },
+  "given_names": {
+   "expected": "Jóhann Konráðsson",
+   "got": "Jóhann"
+  },
+  "text": "Jóhann Konráðsson"
+ },
+ "Q112340787/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Einarsson"
+  },
+  "given_names": {
+   "expected": "Karl Einarsson",
+   "got": "Karl"
+  },
+  "text": "Karl Einarsson"
+ },
+ "Q112455664/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jónsson"
+  },
+  "given_names": {
+   "expected": "Ólafur Þ. Jónsson",
+   "got": "Ólafur Þ."
+  },
+  "text": "Ólafur Þ. Jónsson"
+ },
+ "Q112579257/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gunnarsson"
+  },
+  "given_names": {
+   "expected": "Eiður Gunnarsson",
+   "got": "Eiður"
+  },
+  "text": "Eiður Gunnarsson"
+ },
+ "Q112579515/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Þorláksson"
+  },
+  "given_names": {
+   "expected": "Guðmundur Óli Þorláksson",
+   "got": "Guðmundur Óli"
+  },
+  "text": "Guðmundur Óli Þorláksson"
+ },
+ "Q112723929/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Hernández Pla",
+   "got": "Hernández"
+  },
+  "suffix": {
+   "expected": "",
+   "got": "Pla"
+  },
+  "text": "Francisco Hernández Pla"
+ },
+ "Q113001057/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Simancas Torres",
+   "got": "Torres"
+  },
+  "given_names": {
+   "expected": "Libardo",
+   "got": "Libardo Simancas"
+  },
+  "text": "Libardo Simancas Torres"
+ },
+ "Q113129508/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Rosas Solis",
+   "got": "Solis"
+  },
+  "given_names": {
+   "expected": "Fernando",
+   "got": "Fernando Rosas"
+  },
+  "text": "Fernando Rosas Solis"
+ },
+ "Q113514978/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Pérez Ximeno",
+   "got": "Ximeno"
+  },
+  "given_names": {
+   "expected": "Fabián",
+   "got": "Fabián Pérez"
+  },
+  "text": "Fabián Pérez Ximeno"
+ },
+ "Q113548032/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Díaz Moreno",
+   "got": "Moreno"
+  },
+  "given_names": {
+   "expected": "Luis",
+   "got": "Luis Díaz"
+  },
+  "text": "Luis Díaz Moreno"
+ },
+ "Q113557761/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Novo Verdes",
+   "got": "Verdes"
+  },
+  "given_names": {
+   "expected": "Justo",
+   "got": "Justo Novo"
+  },
+  "text": "Justo Novo Verdes"
+ },
+ "Q114799707/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Gil Pérez",
+   "got": "Pérez"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José Gil"
+  },
+  "text": "José Gil Pérez"
+ },
+ "Q114973166/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Bodenlle Corral",
+   "got": "Corral"
+  },
+  "given_names": {
+   "expected": "Ricardo",
+   "got": "Ricardo Bodenlle"
+  },
+  "text": "Ricardo Bodenlle Corral"
+ },
+ "Q115641830/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Leyva Mazuera",
+   "got": "Mazuera"
+  },
+  "given_names": {
+   "expected": "Lisandro",
+   "got": "Lisandro Leyva"
+  },
+  "text": "Lisandro Leyva Mazuera"
+ },
+ "Q116059/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Lara Bonilla",
+   "got": "Bonilla"
+  },
+  "given_names": {
+   "expected": "Rodrigo",
+   "got": "Rodrigo Lara"
+  },
+  "text": "Rodrigo Lara Bonilla"
+ },
+ "Q11686420/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Cárdenas Arroyo",
+   "got": "Arroyo"
+  },
+  "given_names": {
+   "expected": "Juan",
+   "got": "Juan Cárdenas"
+  },
+  "text": "Juan Cárdenas Arroyo"
+ },
+ "Q11699292/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Oriola Garriga",
+   "got": "Garriga"
+  },
+  "given_names": {
+   "expected": "Pierre David",
+   "got": "Pierre David Oriola"
+  },
+  "text": "Pierre David Oriola Garriga"
+ },
+ "Q117125906/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Lorenzo Oroza",
+   "got": "Oroza"
+  },
+  "given_names": {
+   "expected": "Francisco Javier",
+   "got": "Francisco Javier Lorenzo"
+  },
+  "text": "Francisco Javier Lorenzo Oroza"
+ },
+ "Q117327794/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sveinsson"
+  },
+  "given_names": {
+   "expected": "Þorsteinn Sveinsson",
+   "got": "Þorsteinn"
+  },
+  "text": "Þorsteinn Sveinsson"
+ },
+ "Q117459965/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Rangel de la Fuente",
+   "got": "de la Fuente"
+  },
+  "given_names": {
+   "expected": "Elvia",
+   "got": "Elvia Rangel"
+  },
+  "text": "Elvia Rangel de la Fuente"
+ },
+ "Q11905781/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Alemany Dezcallar",
+   "got": "Dezcallar"
+  },
+  "given_names": {
+   "expected": "Antonio",
+   "got": "Antonio Alemany"
+  },
+  "text": "Antonio Alemany Dezcallar"
+ },
+ "Q11946783/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Ortiga Torres",
+   "got": "Torres"
+  },
+  "given_names": {
+   "expected": "Salvador",
+   "got": "Salvador Ortiga"
+  },
+  "text": "Salvador Ortiga Torres"
+ },
+ "Q11947672/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Díaz Moyano",
+   "got": "Moyano"
+  },
+  "given_names": {
+   "expected": "Santiago",
+   "got": "Santiago Díaz"
+  },
+  "text": "Santiago Díaz Moyano"
+ },
+ "Q11949860/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Gutiérrez Mas",
+   "got": "Mas"
+  },
+  "given_names": {
+   "expected": "Sinibaldo",
+   "got": "Sinibaldo Gutiérrez"
+  },
+  "text": "Sinibaldo Gutiérrez Mas"
+ },
+ "Q11957/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Santos Montejo",
+   "got": "Montejo"
+  },
+  "given_names": {
+   "expected": "Enrique",
+   "got": "Enrique Santos"
+  },
+  "text": "Enrique Santos Montejo"
+ },
+ "Q119792168/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Arroyo Carreras",
+   "got": "Carreras"
+  },
+  "given_names": {
+   "expected": "José Luis",
+   "got": "José Luis Arroyo"
+  },
+  "text": "José Luis Arroyo Carreras"
+ },
+ "Q119898412/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Guzmán Reveles",
+   "got": "Reveles"
+  },
+  "given_names": {
+   "expected": "Luis",
+   "got": "Luis Guzmán"
+  },
+  "text": "Luis Guzmán Reveles"
+ },
+ "Q120212131/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Valdemar Lima",
+   "got": "Lima"
+  },
+  "given_names": {
+   "expected": "Hilda Luisa",
+   "got": "Hilda Luisa Valdemar"
+  },
+  "text": "Hilda Luisa Valdemar Lima"
+ },
+ "Q122156972/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Dorado Baltazar",
+   "got": "Baltazar"
+  },
+  "given_names": {
+   "expected": "Emilia",
+   "got": "Emilia Dorado"
+  },
+  "text": "Emilia Dorado Baltazar"
+ },
+ "Q123013116/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Giraldo Builes",
+   "got": "Builes"
+  },
+  "given_names": {
+   "expected": "Luis Fernando",
+   "got": "Luis Fernando Giraldo"
+  },
+  "text": "Luis Fernando Giraldo Builes"
+ },
+ "Q123410560/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Serrano Blanco",
+   "got": "Blanco"
+  },
+  "given_names": {
+   "expected": "Manuel",
+   "got": "Manuel Serrano"
+  },
+  "text": "Manuel Serrano Blanco"
+ },
+ "Q123410567/surname2-co/givenFirst": {
+  "family": {
+   "expected": "López Gómez",
+   "got": "Gómez"
+  },
+  "given_names": {
+   "expected": "Adel",
+   "got": "Adel López"
+  },
+  "text": "Adel López Gómez"
+ },
+ "Q123518919/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Valdez Muñoz",
+   "got": "Muñoz"
+  },
+  "given_names": {
+   "expected": "Jorge",
+   "got": "Jorge Valdez"
+  },
+  "text": "Jorge Valdez Muñoz"
+ },
+ "Q123681393/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Quintana Suárez",
+   "got": "Suárez"
+  },
+  "given_names": {
+   "expected": "Héctor",
+   "got": "Héctor Quintana"
+  },
+  "text": "Héctor Quintana Suárez"
+ },
+ "Q123792443/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Becerra Vaca",
+   "got": "Vaca"
+  },
+  "given_names": {
+   "expected": "Vicente",
+   "got": "Vicente Becerra"
+  },
+  "text": "Vicente Becerra Vaca"
+ },
+ "Q123819744/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Losada Estévez",
+   "got": "Estévez"
+  },
+  "given_names": {
+   "expected": "María",
+   "got": "María Losada"
+  },
+  "text": "María Losada Estévez"
+ },
+ "Q124228701/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Giraldo Hernández",
+   "got": "Hernández"
+  },
+  "given_names": {
+   "expected": "Francisco",
+   "got": "Francisco Giraldo"
+  },
+  "text": "Francisco Giraldo Hernández"
+ },
+ "Q124294405/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Londoño Aristizábal",
+   "got": "Aristizábal"
+  },
+  "given_names": {
+   "expected": "Álvaro",
+   "got": "Álvaro Londoño"
+  },
+  "text": "Álvaro Londoño Aristizábal"
+ },
+ "Q124364476/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Latorre Jaramillo",
+   "got": "Jaramillo"
+  },
+  "given_names": {
+   "expected": "Gabriel",
+   "got": "Gabriel Latorre"
+  },
+  "text": "Gabriel Latorre Jaramillo"
+ },
+ "Q125025465/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Garcés Córdoba",
+   "got": "Córdoba"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Garcés"
+  },
+  "text": "Carlos Garcés Córdoba"
+ },
+ "Q126949794/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Sánchez Pesquera",
+   "got": "Pesquera"
+  },
+  "given_names": {
+   "expected": "Miguel",
+   "got": "Miguel Sánchez"
+  },
+  "text": "Miguel Sánchez Pesquera"
+ },
+ "Q129570988/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Irazabal Agirre",
+   "got": "Agirre"
+  },
+  "given_names": {
+   "expected": "Jon",
+   "got": "Jon Irazabal"
+  },
+  "text": "Jon Irazabal Agirre"
+ },
+ "Q130383803/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Rodríguez Agudelo",
+   "got": "Agudelo"
+  },
+  "given_names": {
+   "expected": "Juan Carlos",
+   "got": "Juan Carlos Rodríguez"
+  },
+  "text": "Juan Carlos Rodríguez Agudelo"
+ },
+ "Q130492677/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Jiménez Ruiz",
+   "got": "Ruiz"
+  },
+  "given_names": {
+   "expected": "Eliseo",
+   "got": "Eliseo Jiménez"
+  },
+  "text": "Eliseo Jiménez Ruiz"
+ },
+ "Q130546670/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Mora Tovar",
+   "got": "Tovar"
+  },
+  "given_names": {
+   "expected": "Luis",
+   "got": "Luis Mora"
+  },
+  "text": "Luis Mora Tovar"
+ },
+ "Q130706816/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Tamayo Garcera",
+   "got": "Garcera"
+  },
+  "given_names": {
+   "expected": "Diego Alberto",
+   "got": "Diego Alberto Tamayo"
+  },
+  "text": "Diego Alberto Tamayo Garcera"
+ },
+ "Q131151443/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Gómez Campos",
+   "got": "Campos"
+  },
+  "given_names": {
+   "expected": "Agustín",
+   "got": "Agustín Gómez"
+  },
+  "text": "Agustín Gómez Campos"
+ },
+ "Q131387351/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Sánchez Bedoya",
+   "got": "Bedoya"
+  },
+  "given_names": {
+   "expected": "Federico",
+   "got": "Federico Sánchez"
+  },
+  "text": "Federico Sánchez Bedoya"
+ },
+ "Q131567217/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Alcántara Miranda",
+   "got": "Miranda"
+  },
+  "given_names": {
+   "expected": "Jesús",
+   "got": "Jesús Alcántara"
+  },
+  "text": "Jesús Alcántara Miranda"
+ },
+ "Q131623018/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Lema Villar",
+   "got": "Villar"
+  },
+  "given_names": {
+   "expected": "Manuela",
+   "got": "Manuela Lema"
+  },
+  "text": "Manuela Lema Villar"
+ },
+ "Q131756403/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Palafox Herrán",
+   "got": "Herrán"
+  },
+  "given_names": {
+   "expected": "Elvira",
+   "got": "Elvira Palafox"
+  },
+  "text": "Elvira Palafox Herrán"
+ },
+ "Q1330120/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Lozano Márquez",
+   "got": "Márquez"
+  },
+  "given_names": {
+   "expected": "Jorge",
+   "got": "Jorge Lozano"
+  },
+  "text": "Jorge Lozano Márquez"
+ },
+ "Q13419335/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Bjarnason"
+  },
+  "given_names": {
+   "expected": "Ragnar Bjarnason",
+   "got": "Ragnar"
+  },
+  "text": "Ragnar Bjarnason"
+ },
+ "Q13423492/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Cañada Acebal",
+   "got": "Acebal"
+  },
+  "given_names": {
+   "expected": "Silverio",
+   "got": "Silverio Cañada"
+  },
+  "text": "Silverio Cañada Acebal"
+ },
+ "Q134423201/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Baena Ortiz",
+   "got": "Ortiz"
+  },
+  "given_names": {
+   "expected": "Willington",
+   "got": "Willington Baena"
+  },
+  "text": "Willington Baena Ortiz"
+ },
+ "Q134424045/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Vergara Cárdenas",
+   "got": "Cárdenas"
+  },
+  "given_names": {
+   "expected": "Joaquín",
+   "got": "Joaquín Vergara"
+  },
+  "text": "Joaquín Vergara Cárdenas"
+ },
+ "Q134424647/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Porto Egea",
+   "got": "Egea"
+  },
+  "given_names": {
+   "expected": "Leonardo",
+   "got": "Leonardo Porto"
+  },
+  "text": "Leonardo Porto Egea"
+ },
+ "Q134424654/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Villazón Ochoa",
+   "got": "Ochoa"
+  },
+  "given_names": {
+   "expected": "Martín",
+   "got": "Martín Villazón"
+  },
+  "text": "Martín Villazón Ochoa"
+ },
+ "Q134479122/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðsson"
+  },
+  "given_names": {
+   "expected": "Haraldur Sigurðsson",
+   "got": "Haraldur"
+  },
+  "text": "Haraldur Sigurðsson"
+ },
+ "Q134544566/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Cunillera Torrent",
+   "got": "Torrent"
+  },
+  "given_names": {
+   "expected": "Benigno",
+   "got": "Benigno Cunillera"
+  },
+  "text": "Benigno Cunillera Torrent"
+ },
+ "Q1351501/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Rodríguez Orejuela",
+   "got": "Orejuela"
+  },
+  "given_names": {
+   "expected": "Gilberto",
+   "got": "Gilberto Rodríguez"
+  },
+  "text": "Gilberto Rodríguez Orejuela"
+ },
+ "Q135270599/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Romero Jiménez",
+   "got": "Jiménez"
+  },
+  "given_names": {
+   "expected": "Carlos Arturo",
+   "got": "Carlos Arturo Romero"
+  },
+  "text": "Carlos Arturo Romero Jiménez"
+ },
+ "Q135275204/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Rosas Magallón",
+   "got": "Magallón"
+  },
+  "given_names": {
+   "expected": "Salvador",
+   "got": "Salvador Rosas"
+  },
+  "text": "Salvador Rosas Magallón"
+ },
+ "Q13534607/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Rodríguez López",
+   "got": "López"
+  },
+  "given_names": {
+   "expected": "Consuelo",
+   "got": "Consuelo Rodríguez"
+  },
+  "text": "Consuelo Rodríguez López"
+ },
+ "Q135792718/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Peña Maldonado",
+   "got": "Maldonado"
+  },
+  "given_names": {
+   "expected": "Ever",
+   "got": "Ever Peña"
+  },
+  "text": "Ever Peña Maldonado"
+ },
+ "Q136100927/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Rodríguez Fernández",
+   "got": "Fernández"
+  },
+  "given_names": {
+   "expected": "Saturnino",
+   "got": "Saturnino Rodríguez"
+  },
+  "text": "Saturnino Rodríguez Fernández"
+ },
+ "Q13634266/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Eyjólfsson"
+  },
+  "given_names": {
+   "expected": "Egill Eyjólfsson",
+   "got": "Egill"
+  },
+  "text": "Egill Eyjólfsson"
+ },
+ "Q136342922/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Alinari Adarve",
+   "got": "Adarve"
+  },
+  "given_names": {
+   "expected": "Leonor",
+   "got": "Leonor Alinari"
+  },
+  "text": "Leonor Alinari Adarve"
+ },
+ "Q136349166/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Anta Seoane",
+   "got": "Seoane"
+  },
+  "given_names": {
+   "expected": "Adolfo",
+   "got": "Adolfo Anta"
+  },
+  "text": "Adolfo Anta Seoane"
+ },
+ "Q136461155/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Samper Sordo",
+   "got": "Sordo"
+  },
+  "given_names": {
+   "expected": "Juan",
+   "got": "Juan Samper"
+  },
+  "text": "Juan Samper Sordo"
+ },
+ "Q136469205/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Ascanio Sepúlveda",
+   "got": "Sepúlveda"
+  },
+  "given_names": {
+   "expected": "Adiel",
+   "got": "Adiel Ascanio"
+  },
+  "text": "Adiel Ascanio Sepúlveda"
+ },
+ "Q136487682/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Padilla Mejía",
+   "got": "Mejía"
+  },
+  "given_names": {
+   "expected": "Andrés David",
+   "got": "Andrés David Padilla"
+  },
+  "text": "Andrés David Padilla Mejía"
+ },
+ "Q1364903/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Þórðarson"
+  },
+  "given_names": {
+   "expected": "Teitur Þórðarson",
+   "got": "Teitur"
+  },
+  "text": "Teitur Þórðarson"
+ },
+ "Q137351899/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Álvarez Iglesias",
+   "got": "Iglesias"
+  },
+  "given_names": {
+   "expected": "Luisa",
+   "got": "Luisa Álvarez"
+  },
+  "text": "Luisa Álvarez Iglesias"
+ },
+ "Q137963805/surname2-es/givenFirst": {
+  "family": {
+   "expected": "López González",
+   "got": "González"
+  },
+  "given_names": {
+   "expected": "Manuel",
+   "got": "Manuel López"
+  },
+  "text": "Manuel López González"
+ },
+ "Q138690631/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ásgeirsson"
+  },
+  "given_names": {
+   "expected": "Sveinn Ásgeirsson",
+   "got": "Sveinn"
+  },
+  "text": "Sveinn Ásgeirsson"
+ },
+ "Q138703138/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ágústsson"
+  },
+  "given_names": {
+   "expected": "Haukur Ágústsson",
+   "got": "Haukur"
+  },
+  "text": "Haukur Ágústsson"
+ },
+ "Q139381793/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Córdoba Henao",
+   "got": "Henao"
+  },
+  "given_names": {
+   "expected": "Yenifer",
+   "got": "Yenifer Córdoba"
+  },
+  "text": "Yenifer Córdoba Henao"
+ },
+ "Q139505098/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Duque Pastrana",
+   "got": "Pastrana"
+  },
+  "given_names": {
+   "expected": "Carlos Mauricio",
+   "got": "Carlos Mauricio Duque"
+  },
+  "text": "Carlos Mauricio Duque Pastrana"
+ },
+ "Q1395848/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Leoz Almirón",
+   "got": "Almirón"
+  },
+  "given_names": {
+   "expected": "Nicolás",
+   "got": "Nicolás Leoz"
+  },
+  "text": "Nicolás Leoz Almirón"
+ },
+ "Q139969004/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Agnarsson"
+  },
+  "given_names": {
+   "expected": "Júlíus Agnarsson",
+   "got": "Júlíus"
+  },
+  "text": "Júlíus Agnarsson"
+ },
+ "Q140266874/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Lucumí Mina",
+   "got": "Mina"
+  },
+  "given_names": {
+   "expected": "Sebastián",
+   "got": "Sebastián Lucumí"
+  },
+  "text": "Sebastián Lucumí Mina"
+ },
+ "Q140420991/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Rojas Benavides",
+   "got": "Benavides"
+  },
+  "given_names": {
+   "expected": "Robiro",
+   "got": "Robiro Rojas"
+  },
+  "text": "Robiro Rojas Benavides"
+ },
+ "Q141607976/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Santacruz Aguilar",
+   "got": "Aguilar"
+  },
+  "given_names": {
+   "expected": "Milton",
+   "got": "Milton Santacruz"
+  },
+  "text": "Milton Santacruz Aguilar"
+ },
+ "Q141668335/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Guillin Mercado",
+   "got": "Mercado"
+  },
+  "given_names": {
+   "expected": "Dionisio",
+   "got": "Dionisio Guillin"
+  },
+  "text": "Dionisio Guillin Mercado"
+ },
+ "Q148075/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "González Garza",
+   "got": "Garza"
+  },
+  "given_names": {
+   "expected": "Roque",
+   "got": "Roque González"
+  },
+  "text": "Roque González Garza"
+ },
+ "Q15079846/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Ramos Millán",
+   "got": "Millán"
+  },
+  "given_names": {
+   "expected": "Gabriel",
+   "got": "Gabriel Ramos"
+  },
+  "text": "Gabriel Ramos Millán"
+ },
+ "Q15109949/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Egilsdóttir"
+  },
+  "given_names": {
+   "expected": "Þórunn Egilsdóttir",
+   "got": "Þórunn"
+  },
+  "text": "Þórunn Egilsdóttir"
+ },
+ "Q1516038/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Baqueiro Foster",
+   "got": "Foster"
+  },
+  "given_names": {
+   "expected": "Gerónimo",
+   "got": "Gerónimo Baqueiro"
+  },
+  "text": "Gerónimo Baqueiro Foster"
+ },
+ "Q15242226/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Björnsdóttir"
+  },
+  "given_names": {
+   "expected": "Guðrún Björnsdóttir",
+   "got": "Guðrún"
+  },
+  "text": "Guðrún Björnsdóttir"
+ },
+ "Q152472/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Betancourt Pulecio",
+   "got": "Pulecio"
+  },
+  "given_names": {
+   "expected": "Ingrid",
+   "got": "Ingrid Betancourt"
+  },
+  "text": "Ingrid Betancourt Pulecio"
+ },
+ "Q15635899/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Erlingsson"
+  },
+  "given_names": {
+   "expected": "Benedikt Erlingsson",
+   "got": "Benedikt"
+  },
+  "text": "Benedikt Erlingsson"
+ },
+ "Q15711621/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Cuadra Medina",
+   "got": "Medina"
+  },
+  "given_names": {
+   "expected": "Mariano",
+   "got": "Mariano Cuadra"
+  },
+  "text": "Mariano Cuadra Medina"
+ },
+ "Q1601312/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Helgason"
+  },
+  "given_names": {
+   "expected": "Sigurður Helgason",
+   "got": "Sigurður"
+  },
+  "text": "Sigurður Helgason"
+ },
+ "Q16143814/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Echeverría Comas",
+   "got": "Comas"
+  },
+  "given_names": {
+   "expected": "Adolfo Ernesto",
+   "got": "Adolfo Ernesto Echeverría"
+  },
+  "text": "Adolfo Ernesto Echeverría Comas"
+ },
+ "Q16151254/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Flores Sandoval",
+   "got": "Sandoval"
+  },
+  "given_names": {
+   "expected": "Patricio",
+   "got": "Patricio Flores"
+  },
+  "text": "Patricio Flores Sandoval"
+ },
+ "Q16190279/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Cussà Balaguer",
+   "got": "Balaguer"
+  },
+  "given_names": {
+   "expected": "Jordi",
+   "got": "Jordi Cussà"
+  },
+  "text": "Jordi Cussà Balaguer"
+ },
+ "Q1621643/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Félix Gallardo",
+   "got": "Gallardo"
+  },
+  "given_names": {
+   "expected": "Miguel Ángel",
+   "got": "Miguel Ángel Félix"
+  },
+  "text": "Miguel Ángel Félix Gallardo"
+ },
+ "Q16419219/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ólafsdóttir"
+  },
+  "given_names": {
+   "expected": "Kristín Ólafsdóttir",
+   "got": "Kristín"
+  },
+  "text": "Kristín Ólafsdóttir"
+ },
+ "Q16420505/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ragnarsson"
+  },
+  "given_names": {
+   "expected": "Ólafur Ragnarsson",
+   "got": "Ólafur"
+  },
+  "text": "Ólafur Ragnarsson"
+ },
+ "Q16420913/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Guðmundsson"
+  },
+  "given_names": {
+   "expected": "Loftur Guðmundsson",
+   "got": "Loftur"
+  },
+  "text": "Loftur Guðmundsson"
+ },
+ "Q16421121/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Björnsson"
+  },
+  "given_names": {
+   "expected": "Bjarni Björnsson",
+   "got": "Bjarni"
+  },
+  "text": "Bjarni Björnsson"
+ },
+ "Q16421247/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gíslason"
+  },
+  "given_names": {
+   "expected": "Björgvin Gíslason",
+   "got": "Björgvin"
+  },
+  "text": "Björgvin Gíslason"
+ },
+ "Q16421751/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hannesson"
+  },
+  "given_names": {
+   "expected": "Þorsteinn Hannesson",
+   "got": "Þorsteinn"
+  },
+  "text": "Þorsteinn Hannesson"
+ },
+ "Q16424675/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Haraldsson"
+  },
+  "given_names": {
+   "expected": "Rúrik Haraldsson",
+   "got": "Rúrik"
+  },
+  "text": "Rúrik Haraldsson"
+ },
+ "Q16425767/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Björnsson"
+  },
+  "given_names": {
+   "expected": "Sigurður Björnsson",
+   "got": "Sigurður"
+  },
+  "text": "Sigurður Björnsson"
+ },
+ "Q16426100/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jónsson"
+  },
+  "given_names": {
+   "expected": "Guðmundur Jónsson",
+   "got": "Guðmundur"
+  },
+  "text": "Guðmundur Jónsson"
+ },
+ "Q16426181/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Lárusdóttir"
+  },
+  "given_names": {
+   "expected": "Guðrún Lárusdóttir",
+   "got": "Guðrún"
+  },
+  "text": "Guðrún Lárusdóttir"
+ },
+ "Q16426629/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Bjarnadóttir"
+  },
+  "given_names": {
+   "expected": "Hallbjörg Bjarnadóttir",
+   "got": "Hallbjörg"
+  },
+  "text": "Hallbjörg Bjarnadóttir"
+ },
+ "Q16429743/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jónasson"
+  },
+  "given_names": {
+   "expected": "Jónas Jónasson",
+   "got": "Jónas"
+  },
+  "text": "Jónas Jónasson"
+ },
+ "Q16429802/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jónatansdóttir"
+  },
+  "given_names": {
+   "expected": "Jónína Jónatansdóttir",
+   "got": "Jónína"
+  },
+  "text": "Jónína Jónatansdóttir"
+ },
+ "Q16490264/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Colorado Vera",
+   "got": "Vera"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Colorado"
+  },
+  "text": "Carlos Colorado Vera"
+ },
+ "Q16599489/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Peña Muñoz",
+   "got": "Muñoz"
+  },
+  "given_names": {
+   "expected": "Margarita",
+   "got": "Margarita Peña"
+  },
+  "text": "Margarita Peña Muñoz"
+ },
+ "Q1684202/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gunnarsson"
+  },
+  "given_names": {
+   "expected": "Róbert Gunnarsson",
+   "got": "Róbert"
+  },
+  "text": "Róbert Gunnarsson"
+ },
+ "Q16941958/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Mora Toro",
+   "got": "Toro"
+  },
+  "given_names": {
+   "expected": "Libardo",
+   "got": "Libardo Mora"
+  },
+  "text": "Libardo Mora Toro"
+ },
+ "Q16942160/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Prado y Colón de Carvajal",
+   "got": "de Carvajal"
+  },
+  "given_names": {
+   "expected": "Diego",
+   "got": "Diego Prado y Colón"
+  },
+  "text": "Diego Prado y Colón de Carvajal"
+ },
+ "Q17037033/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Todó Garcia",
+   "got": "Garcia"
+  },
+  "given_names": {
+   "expected": "Francesc",
+   "got": "Francesc Todó"
+  },
+  "text": "Francesc Todó Garcia"
+ },
+ "Q1703837/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "González Camarena",
+   "got": "Camarena"
+  },
+  "given_names": {
+   "expected": "Jorge",
+   "got": "Jorge González"
+  },
+  "text": "Jorge González Camarena"
+ },
+ "Q1715055/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Steingrímsson"
+  },
+  "given_names": {
+   "expected": "Jón Steingrímsson",
+   "got": "Jón"
+  },
+  "text": "Jón Steingrímsson"
+ },
+ "Q17155819/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Vilató Ruiz",
+   "got": "Ruiz"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José Vilató"
+  },
+  "text": "José Vilató Ruiz"
+ },
+ "Q174100/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Bautista Rocha",
+   "got": "Rocha"
+  },
+  "given_names": {
+   "expected": "Daniel",
+   "got": "Daniel Bautista"
+  },
+  "text": "Daniel Bautista Rocha"
+ },
+ "Q17413229/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Brea Segade",
+   "got": "Segade"
+  },
+  "given_names": {
+   "expected": "Xosé María",
+   "got": "Xosé María Brea"
+  },
+  "text": "Xosé María Brea Segade"
+ },
+ "Q17478000/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Duque Márquez",
+   "got": "Márquez"
+  },
+  "given_names": {
+   "expected": "Iván",
+   "got": "Iván Duque"
+  },
+  "text": "Iván Duque Márquez"
+ },
+ "Q175119/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Björnsdóttir"
+  },
+  "given_names": {
+   "expected": "Selma Björnsdóttir",
+   "got": "Selma"
+  },
+  "text": "Selma Björnsdóttir"
+ },
+ "Q1766810/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ottesen"
+  },
+  "given_names": {
+   "expected": "Sölvi Ottesen",
+   "got": "Sölvi"
+  },
+  "text": "Sölvi Ottesen"
+ },
+ "Q177712/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Þórðarson"
+  },
+  "given_names": {
+   "expected": "Björn Þórðarson",
+   "got": "Björn"
+  },
+  "text": "Björn Þórðarson"
+ },
+ "Q181383/patronymic-my/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "bin Mohamad"
+  },
+  "given_names": {
+   "expected": "Mahathir bin Mohamad",
+   "got": "Mahathir"
+  },
+  "text": "Mahathir bin Mohamad"
+ },
+ "Q1859374/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Fernández Castrillón",
+   "got": "Castrillón"
+  },
+  "given_names": {
+   "expected": "Manuel",
+   "got": "Manuel Fernández"
+  },
+  "text": "Manuel Fernández Castrillón"
+ },
+ "Q1880038/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Yáñez Carrillo",
+   "got": "Carrillo"
+  },
+  "given_names": {
+   "expected": "José María",
+   "got": "José María Yáñez"
+  },
+  "text": "José María Yáñez Carrillo"
+ },
+ "Q189797/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Finnbogadóttir"
+  },
+  "given_names": {
+   "expected": "Vigdís Finnbogadóttir",
+   "got": "Vigdís"
+  },
+  "text": "Vigdís Finnbogadóttir"
+ },
+ "Q19561528/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Mesa Soto",
+   "got": "Soto"
+  },
+  "given_names": {
+   "expected": "Simón",
+   "got": "Simón Mesa"
+  },
+  "text": "Simón Mesa Soto"
+ },
+ "Q19601974/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Marcos González",
+   "got": "González"
+  },
+  "given_names": {
+   "expected": "Sergio",
+   "got": "Sergio Marcos"
+  },
+  "text": "Sergio Marcos González"
+ },
+ "Q1960343/surname2-es/givenFirst": {
+  "family": {
+   "expected": "González Carvajal",
+   "got": "Carvajal"
+  },
+  "given_names": {
+   "expected": "Tomás",
+   "got": "Tomás González"
+  },
+  "text": "Tomás González Carvajal"
+ },
+ "Q19684894/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Ferrer Comas",
+   "got": "Comas"
+  },
+  "given_names": {
+   "expected": "Eduardo",
+   "got": "Eduardo Ferrer"
+  },
+  "text": "Eduardo Ferrer Comas"
+ },
+ "Q19694625/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Martínez Baena",
+   "got": "Baena"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Martínez"
+  },
+  "text": "Carlos Martínez Baena"
+ },
+ "Q1976742/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Arellano Félix",
+   "got": "Félix"
+  },
+  "given_names": {
+   "expected": "Ramón",
+   "got": "Ramón Arellano"
+  },
+  "text": "Ramón Arellano Félix"
+ },
+ "Q1981295/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Santos Calderón",
+   "got": "Calderón"
+  },
+  "given_names": {
+   "expected": "Francisco",
+   "got": "Francisco Santos"
+  },
+  "text": "Francisco Santos Calderón"
+ },
+ "Q19816923/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Sierra y Velásquez",
+   "got": "de Dios Sierra y Velásquez"
+  },
+  "given_names": {
+   "expected": "Juan de Dios",
+   "got": "Juan"
+  },
+  "text": "Juan de Dios Sierra y Velásquez"
+ },
+ "Q1993924/surname2-es/givenFirst": {
+  "family": {
+   "expected": "González Díaz",
+   "got": "Díaz"
+  },
+  "given_names": {
+   "expected": "Jorge",
+   "got": "Jorge González"
+  },
+  "text": "Jorge González Díaz"
+ },
+ "Q20006244/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Rebassa Bisquerra",
+   "got": "Bisquerra"
+  },
+  "given_names": {
+   "expected": "Pere",
+   "got": "Pere Rebassa"
+  },
+  "text": "Pere Rebassa Bisquerra"
+ },
+ "Q20242421/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Bonet Marrugat",
+   "got": "Marrugat"
+  },
+  "given_names": {
+   "expected": "Albert",
+   "got": "Albert Bonet"
+  },
+  "text": "Albert Bonet Marrugat"
+ },
+ "Q2029076/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Bjarnason"
+  },
+  "given_names": {
+   "expected": "Brynjólfur Bjarnason",
+   "got": "Brynjólfur"
+  },
+  "text": "Brynjólfur Bjarnason"
+ },
+ "Q20534308/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Banet Fontenla",
+   "got": "Fontenla"
+  },
+  "given_names": {
+   "expected": "Manuel",
+   "got": "Manuel Banet"
+  },
+  "text": "Manuel Banet Fontenla"
+ },
+ "Q20535225/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Guerra Cobián",
+   "got": "Cobián"
+  },
+  "given_names": {
+   "expected": "José María",
+   "got": "José María Guerra"
+  },
+  "text": "José María Guerra Cobián"
+ },
+ "Q20535338/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Harguindey Broussain",
+   "got": "Broussain"
+  },
+  "given_names": {
+   "expected": "Juan",
+   "got": "Juan Harguindey"
+  },
+  "text": "Juan Harguindey Broussain"
+ },
+ "Q20536051/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Veres Acevedo",
+   "got": "Acevedo"
+  },
+  "given_names": {
+   "expected": "Laureano",
+   "got": "Laureano Veres"
+  },
+  "text": "Laureano Veres Acevedo"
+ },
+ "Q20558835/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Pálsson"
+  },
+  "given_names": {
+   "expected": "Lárus Pálsson",
+   "got": "Lárus"
+  },
+  "text": "Lárus Pálsson"
+ },
+ "Q20743706/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Ortega Martín",
+   "got": "Martín"
+  },
+  "given_names": {
+   "expected": "Alberto",
+   "got": "Alberto Ortega"
+  },
+  "text": "Alberto Ortega Martín"
+ },
+ "Q20829083/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Ruiz Romero",
+   "got": "Romero"
+  },
+  "given_names": {
+   "expected": "Elisa",
+   "got": "Elisa Ruiz"
+  },
+  "text": "Elisa Ruiz Romero"
+ },
+ "Q2083675/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Gorostieta Velarde",
+   "got": "Velarde"
+  },
+  "given_names": {
+   "expected": "Enrique",
+   "got": "Enrique Gorostieta"
+  },
+  "text": "Enrique Gorostieta Velarde"
+ },
+ "Q2259207/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Guzmán Rodríguez",
+   "got": "Rodríguez"
+  },
+  "given_names": {
+   "expected": "Jorge Ernesto",
+   "got": "Jorge Ernesto Guzmán"
+  },
+  "text": "Jorge Ernesto Guzmán Rodríguez"
+ },
+ "Q23000865/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Llanos González",
+   "got": "González"
+  },
+  "given_names": {
+   "expected": "Ángel",
+   "got": "Ángel Llanos"
+  },
+  "text": "Ángel Llanos González"
+ },
+ "Q235562/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Duque Mariño",
+   "got": "Mariño"
+  },
+  "given_names": {
+   "expected": "Mariana",
+   "got": "Mariana Duque"
+  },
+  "text": "Mariana Duque Mariño"
+ },
+ "Q23753778/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Alfreðsdóttir"
+  },
+  "given_names": {
+   "expected": "Lilja Alfreðsdóttir",
+   "got": "Lilja"
+  },
+  "text": "Lilja Alfreðsdóttir"
+ },
+ "Q23927812/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Zupo Gutiérrez",
+   "got": "Gutiérrez"
+  },
+  "given_names": {
+   "expected": "Claudio",
+   "got": "Claudio Zupo"
+  },
+  "text": "Claudio Zupo Gutiérrez"
+ },
+ "Q24013732/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Puga Franco",
+   "got": "Franco"
+  },
+  "given_names": {
+   "expected": "Valentín",
+   "got": "Valentín Puga"
+  },
+  "text": "Valentín Puga Franco"
+ },
+ "Q24239355/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "González Irigoyen",
+   "got": "Irigoyen"
+  },
+  "given_names": {
+   "expected": "Rómulo",
+   "got": "Rómulo González"
+  },
+  "text": "Rómulo González Irigoyen"
+ },
+ "Q24255040/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Parra Cabrera",
+   "got": "Cabrera"
+  },
+  "given_names": {
+   "expected": "Antonio",
+   "got": "Antonio Parra"
+  },
+  "text": "Antonio Parra Cabrera"
+ },
+ "Q24279112/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Andino y del Solar",
+   "got": "Solar"
+  },
+  "given_names": {
+   "expected": "Eladio",
+   "got": "Eladio Andino y del"
+  },
+  "text": "Eladio Andino y del Solar"
+ },
+ "Q2449340/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðsson"
+  },
+  "given_names": {
+   "expected": "Kristján Örn Sigurðsson",
+   "got": "Kristján Örn"
+  },
+  "text": "Kristján Örn Sigurðsson"
+ },
+ "Q24494577/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Tómasdóttir"
+  },
+  "given_names": {
+   "expected": "Halla Tómasdóttir",
+   "got": "Halla"
+  },
+  "text": "Halla Tómasdóttir"
+ },
+ "Q2463622/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Blanco Romasanta",
+   "got": "Romasanta"
+  },
+  "given_names": {
+   "expected": "Manuel",
+   "got": "Manuel Blanco"
+  },
+  "text": "Manuel Blanco Romasanta"
+ },
+ "Q24961757/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "García Ocejo",
+   "got": "Ocejo"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José García"
+  },
+  "text": "José García Ocejo"
+ },
+ "Q25038297/patronymic-my/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "bin Hamzah"
+  },
+  "given_names": {
+   "expected": "Mohamed bin Hamzah",
+   "got": "Mohamed"
+  },
+  "text": "Mohamed bin Hamzah"
+ },
+ "Q252282/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Þorláksson"
+  },
+  "given_names": {
+   "expected": "Árni Þorláksson",
+   "got": "Árni"
+  },
+  "text": "Árni Þorláksson"
+ },
+ "Q252586/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jóhannesdóttir"
+  },
+  "given_names": {
+   "expected": "Ásta Ragnheiður Jóhannesdóttir",
+   "got": "Ásta Ragnheiður"
+  },
+  "text": "Ásta Ragnheiður Jóhannesdóttir"
+ },
+ "Q25402592/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Posada Díaz",
+   "got": "Díaz"
+  },
+  "given_names": {
+   "expected": "Francisco",
+   "got": "Francisco Posada"
+  },
+  "text": "Francisco Posada Díaz"
+ },
+ "Q262253/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðardóttir"
+  },
+  "given_names": {
+   "expected": "Yrsa Sigurðardóttir",
+   "got": "Yrsa"
+  },
+  "text": "Yrsa Sigurðardóttir"
+ },
+ "Q2623568/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Infante Torrentera",
+   "got": "Torrentera"
+  },
+  "given_names": {
+   "expected": "Pedro",
+   "got": "Pedro Infante"
+  },
+  "text": "Pedro Infante Torrentera"
+ },
+ "Q2625826/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Rodríguez Romero",
+   "got": "Romero"
+  },
+  "given_names": {
+   "expected": "José Antonio",
+   "got": "José Antonio Rodríguez"
+  },
+  "text": "José Antonio Rodríguez Romero"
+ },
+ "Q2635734/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hjartardóttir"
+  },
+  "given_names": {
+   "expected": "Hera Hjartardóttir",
+   "got": "Hera"
+  },
+  "text": "Hera Hjartardóttir"
+ },
+ "Q264516/patronymic-my/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hussein"
+  },
+  "given_names": {
+   "expected": "Abdul Razak Hussein",
+   "got": "Abdul Razak"
+  },
+  "text": "Abdul Razak Hussein"
+ },
+ "Q2718231/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Árnason"
+  },
+  "given_names": {
+   "expected": "Kári Árnason",
+   "got": "Kári"
+  },
+  "text": "Kári Árnason"
+ },
+ "Q28028537/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Bassols Batalla",
+   "got": "Batalla"
+  },
+  "given_names": {
+   "expected": "Ángel",
+   "got": "Ángel Bassols"
+  },
+  "text": "Ángel Bassols Batalla"
+ },
+ "Q28163843/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Cepeda Torres",
+   "got": "Torres"
+  },
+  "given_names": {
+   "expected": "Rafael",
+   "got": "Rafael Cepeda"
+  },
+  "text": "Rafael Cepeda Torres"
+ },
+ "Q28343272/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Martínez Arango",
+   "got": "Arango"
+  },
+  "given_names": {
+   "expected": "Gilberto",
+   "got": "Gilberto Martínez"
+  },
+  "text": "Gilberto Martínez Arango"
+ },
+ "Q28355768/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Chillón de la Fuente",
+   "got": "de la Fuente"
+  },
+  "given_names": {
+   "expected": "Gregorio",
+   "got": "Gregorio Chillón"
+  },
+  "text": "Gregorio Chillón de la Fuente"
+ },
+ "Q2839714/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Acevedo Vallarino",
+   "got": "Vallarino"
+  },
+  "given_names": {
+   "expected": "Arturo",
+   "got": "Arturo Acevedo"
+  },
+  "text": "Arturo Acevedo Vallarino"
+ },
+ "Q28501494/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Mazón Pineda",
+   "got": "Pineda"
+  },
+  "given_names": {
+   "expected": "Crisóforo",
+   "got": "Crisóforo Mazón"
+  },
+  "text": "Crisóforo Mazón Pineda"
+ },
+ "Q28739698/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Coello de Portugal y Pacheco",
+   "got": "de Portugal y Pacheco"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Coello"
+  },
+  "text": "Carlos Coello de Portugal y Pacheco"
+ },
+ "Q28792898/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Lanz Duret",
+   "got": "Duret"
+  },
+  "given_names": {
+   "expected": "Miguel",
+   "got": "Miguel Lanz"
+  },
+  "text": "Miguel Lanz Duret"
+ },
+ "Q28792973/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Zuleta Ferrer",
+   "got": "Ferrer"
+  },
+  "given_names": {
+   "expected": "Juan",
+   "got": "Juan Zuleta"
+  },
+  "text": "Juan Zuleta Ferrer"
+ },
+ "Q2917254/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Cañas Serrano",
+   "got": "Serrano"
+  },
+  "given_names": {
+   "expected": "Pedro",
+   "got": "Pedro Cañas"
+  },
+  "text": "Pedro Cañas Serrano"
+ },
+ "Q291858/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ingimarsson"
+  },
+  "given_names": {
+   "expected": "Ívar Ingimarsson",
+   "got": "Ívar"
+  },
+  "text": "Ívar Ingimarsson"
+ },
+ "Q294666/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jónasson"
+  },
+  "given_names": {
+   "expected": "Ögmundur Jónasson",
+   "got": "Ögmundur"
+  },
+  "text": "Ögmundur Jónasson"
+ },
+ "Q29649988/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Villada Hoyos",
+   "got": "Hoyos"
+  },
+  "given_names": {
+   "expected": "Salomón",
+   "got": "Salomón Villada"
+  },
+  "text": "Salomón Villada Hoyos"
+ },
+ "Q29860266/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Colomo Castro",
+   "got": "Castro"
+  },
+  "given_names": {
+   "expected": "Felipe",
+   "got": "Felipe Colomo"
+  },
+  "text": "Felipe Colomo Castro"
+ },
+ "Q299574/patronymic-my/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibrahim"
+  },
+  "given_names": {
+   "expected": "Anwar Ibrahim",
+   "got": "Anwar"
+  },
+  "text": "Anwar Ibrahim"
+ },
+ "Q29959449/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Corral Romero",
+   "got": "Romero"
+  },
+  "given_names": {
+   "expected": "Octavio",
+   "got": "Octavio Corral"
+  },
+  "text": "Octavio Corral Romero"
+ },
+ "Q3031692/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Gómez Bolaños",
+   "got": "Bolaños"
+  },
+  "given_names": {
+   "expected": "Horacio",
+   "got": "Horacio Gómez"
+  },
+  "text": "Horacio Gómez Bolaños"
+ },
+ "Q303293/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Padilla Gutiérrez",
+   "got": "Gutiérrez"
+  },
+  "given_names": {
+   "expected": "Aarón",
+   "got": "Aarón Padilla"
+  },
+  "text": "Aarón Padilla Gutiérrez"
+ },
+ "Q30899494/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Freire Barreiro",
+   "got": "Barreiro"
+  },
+  "given_names": {
+   "expected": "Francisco",
+   "got": "Francisco Freire"
+  },
+  "text": "Francisco Freire Barreiro"
+ },
+ "Q31186764/patronymic-my/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Yassin"
+  },
+  "given_names": {
+   "expected": "Abdul Aziz Yassin",
+   "got": "Abdul Aziz"
+  },
+  "text": "Abdul Aziz Yassin"
+ },
+ "Q3124411/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Uruchurtu Ramírez",
+   "got": "Ramírez"
+  },
+  "given_names": {
+   "expected": "Manuel",
+   "got": "Manuel Uruchurtu"
+  },
+  "text": "Manuel Uruchurtu Ramírez"
+ },
+ "Q31749372/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Pétursson"
+  },
+  "given_names": {
+   "expected": "Daði Freyr Pétursson",
+   "got": "Daði Freyr"
+  },
+  "text": "Daði Freyr Pétursson"
+ },
+ "Q3294918/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "García Cantú",
+   "got": "Cantú"
+  },
+  "given_names": {
+   "expected": "Guillermo",
+   "got": "Guillermo García"
+  },
+  "text": "Guillermo García Cantú"
+ },
+ "Q3397750/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Álvarez Blázquez",
+   "got": "Blázquez"
+  },
+  "given_names": {
+   "expected": "Xosé María",
+   "got": "Xosé María Álvarez"
+  },
+  "text": "Xosé María Álvarez Blázquez"
+ },
+ "Q3480844/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Garðarsdóttir"
+  },
+  "given_names": {
+   "expected": "Edda Garðarsdóttir",
+   "got": "Edda"
+  },
+  "text": "Edda Garðarsdóttir"
+ },
+ "Q3481235/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gunnarsdóttir"
+  },
+  "given_names": {
+   "expected": "Sara Björk Gunnarsdóttir",
+   "got": "Sara Björk"
+  },
+  "text": "Sara Björk Gunnarsdóttir"
+ },
+ "Q35160252/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Nava García",
+   "got": "García"
+  },
+  "given_names": {
+   "expected": "Martha",
+   "got": "Martha Nava"
+  },
+  "text": "Martha Nava García"
+ },
+ "Q3548080/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Schreiber Castañón",
+   "got": "Castañón"
+  },
+  "given_names": {
+   "expected": "Elizabeth Margot",
+   "got": "Elizabeth Margot Schreiber"
+  },
+  "text": "Elizabeth Margot Schreiber Castañón"
+ },
+ "Q356302/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðardóttir"
+  },
+  "given_names": {
+   "expected": "Steinunn Sigurðardóttir",
+   "got": "Steinunn"
+  },
+  "text": "Steinunn Sigurðardóttir"
+ },
+ "Q35689580/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Gómez-Mena Vila",
+   "got": "Vila"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José Gómez-Mena"
+  },
+  "text": "José Gómez-Mena Vila"
+ },
+ "Q362531/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðsson"
+  },
+  "given_names": {
+   "expected": "Sigurjón Birgir Sigurðsson",
+   "got": "Sigurjón Birgir"
+  },
+  "text": "Sigurjón Birgir Sigurðsson"
+ },
+ "Q3808593/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "García Icazbalceta",
+   "got": "Icazbalceta"
+  },
+  "given_names": {
+   "expected": "Joaquín",
+   "got": "Joaquín García"
+  },
+  "text": "Joaquín García Icazbalceta"
+ },
+ "Q380925/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jochumsson"
+  },
+  "given_names": {
+   "expected": "Matthías Jochumsson",
+   "got": "Matthías"
+  },
+  "text": "Matthías Jochumsson"
+ },
+ "Q3810410/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Cabrera Gándara",
+   "got": "Gándara"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José Cabrera"
+  },
+  "text": "José Cabrera Gándara"
+ },
+ "Q381086/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gunnarsson"
+  },
+  "given_names": {
+   "expected": "Gunnar Gunnarsson",
+   "got": "Gunnar"
+  },
+  "text": "Gunnar Gunnarsson"
+ },
+ "Q3816879/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Lejárraga y García",
+   "got": "de la O Lejárraga y García"
+  },
+  "given_names": {
+   "expected": "María de la O",
+   "got": "María"
+  },
+  "text": "María de la O Lejárraga y García"
+ },
+ "Q4016455/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Lemos Simmonds",
+   "got": "Simmonds"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Lemos"
+  },
+  "text": "Carlos Lemos Simmonds"
+ },
+ "Q4198159/patronymic-my/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Rahman"
+  },
+  "given_names": {
+   "expected": "Ismail Abdul Rahman",
+   "got": "Ismail Abdul"
+  },
+  "text": "Ismail Abdul Rahman"
+ },
+ "Q41991777/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Fernández Bazán",
+   "got": "Bazán"
+  },
+  "given_names": {
+   "expected": "Juan",
+   "got": "Juan Fernández"
+  },
+  "text": "Juan Fernández Bazán"
+ },
+ "Q42455/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Guðmundsdóttir"
+  },
+  "given_names": {
+   "expected": "Björk Guðmundsdóttir",
+   "got": "Björk"
+  },
+  "text": "Björk Guðmundsdóttir"
+ },
+ "Q425825/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Calvo Ospina",
+   "got": "Ospina"
+  },
+  "given_names": {
+   "expected": "Hernando",
+   "got": "Hernando Calvo"
+  },
+  "text": "Hernando Calvo Ospina"
+ },
+ "Q4283792/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Tello Macías",
+   "got": "Macías"
+  },
+  "given_names": {
+   "expected": "Manuel",
+   "got": "Manuel Tello"
+  },
+  "text": "Manuel Tello Macías"
+ },
+ "Q42907085/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Halldórsson"
+  },
+  "given_names": {
+   "expected": "Óskar Halldórsson",
+   "got": "Óskar"
+  },
+  "text": "Óskar Halldórsson"
+ },
+ "Q437932/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Friðleifsdóttir"
+  },
+  "given_names": {
+   "expected": "Siv Friðleifsdóttir",
+   "got": "Siv"
+  },
+  "text": "Siv Friðleifsdóttir"
+ },
+ "Q438008/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Mínervudóttir"
+  },
+  "given_names": {
+   "expected": "Guðrún Eva Mínervudóttir",
+   "got": "Guðrún Eva"
+  },
+  "text": "Guðrún Eva Mínervudóttir"
+ },
+ "Q438031/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gunnarsdóttir"
+  },
+  "given_names": {
+   "expected": "Guðbjörg Gunnarsdóttir",
+   "got": "Guðbjörg"
+  },
+  "text": "Guðbjörg Gunnarsdóttir"
+ },
+ "Q4429030/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Soriano Fuertes",
+   "got": "Fuertes"
+  },
+  "given_names": {
+   "expected": "Indalecio",
+   "got": "Indalecio Soriano"
+  },
+  "text": "Indalecio Soriano Fuertes"
+ },
+ "Q448642/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Paredes Rangel",
+   "got": "Rangel"
+  },
+  "given_names": {
+   "expected": "Beatriz Elena",
+   "got": "Beatriz Elena Paredes"
+  },
+  "text": "Beatriz Elena Paredes Rangel"
+ },
+ "Q455683/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Ortiz Rubio",
+   "got": "Rubio"
+  },
+  "given_names": {
+   "expected": "Pascual",
+   "got": "Pascual Ortiz"
+  },
+  "text": "Pascual Ortiz Rubio"
+ },
+ "Q456321/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Guzmán Loera",
+   "got": "Loera"
+  },
+  "given_names": {
+   "expected": "Joaquín",
+   "got": "Joaquín Guzmán"
+  },
+  "text": "Joaquín Guzmán Loera"
+ },
+ "Q462196/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Davíðsdóttir"
+  },
+  "given_names": {
+   "expected": "Vilborg Davíðsdóttir",
+   "got": "Vilborg"
+  },
+  "text": "Vilborg Davíðsdóttir"
+ },
+ "Q467464/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jakobsdóttir"
+  },
+  "given_names": {
+   "expected": "Katrín Jakobsdóttir",
+   "got": "Katrín"
+  },
+  "text": "Katrín Jakobsdóttir"
+ },
+ "Q47087536/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Mataix Monllor",
+   "got": "Monllor"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José Mataix"
+  },
+  "text": "José Mataix Monllor"
+ },
+ "Q4739054/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Aguirre Santiago",
+   "got": "Santiago"
+  },
+  "given_names": {
+   "expected": "Amado",
+   "got": "Amado Aguirre"
+  },
+  "text": "Amado Aguirre Santiago"
+ },
+ "Q47495573/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Pallares Portillo",
+   "got": "Portillo"
+  },
+  "given_names": {
+   "expected": "Eduardo",
+   "got": "Eduardo Pallares"
+  },
+  "text": "Eduardo Pallares Portillo"
+ },
+ "Q4776859/surname2-co/givenFirst": {
+  "family": {
+   "expected": "París Sanz de Santamaría",
+   "got": "de Santamaría"
+  },
+  "given_names": {
+   "expected": "Antonio",
+   "got": "Antonio París Sanz"
+  },
+  "text": "Antonio París Sanz de Santamaría"
+ },
+ "Q47772146/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Pascual Nunell",
+   "got": "Nunell"
+  },
+  "given_names": {
+   "expected": "Julián",
+   "got": "Julián Pascual"
+  },
+  "text": "Julián Pascual Nunell"
+ },
+ "Q47792390/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Bertomeu Font",
+   "got": "Font"
+  },
+  "given_names": {
+   "expected": "Albert",
+   "got": "Albert Bertomeu"
+  },
+  "text": "Albert Bertomeu Font"
+ },
+ "Q4785197/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Poveda Ricalde",
+   "got": "Ricalde"
+  },
+  "given_names": {
+   "expected": "Arcadio",
+   "got": "Arcadio Poveda"
+  },
+  "text": "Arcadio Poveda Ricalde"
+ },
+ "Q48554/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jóhannsson"
+  },
+  "given_names": {
+   "expected": "Aron Jóhannsson",
+   "got": "Aron"
+  },
+  "text": "Aron Jóhannsson"
+ },
+ "Q5041784/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Ardila Lülle",
+   "got": "Lülle"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Ardila"
+  },
+  "text": "Carlos Ardila Lülle"
+ },
+ "Q50422593/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Ruiz Pérez",
+   "got": "Pérez"
+  },
+  "given_names": {
+   "expected": "Catalina",
+   "got": "Catalina Ruiz"
+  },
+  "text": "Catalina Ruiz Pérez"
+ },
+ "Q504250/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Rodríguez Bahena",
+   "got": "Bahena"
+  },
+  "given_names": {
+   "expected": "Ignacio",
+   "got": "Ignacio Rodríguez"
+  },
+  "text": "Ignacio Rodríguez Bahena"
+ },
+ "Q511882/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigfússon"
+  },
+  "given_names": {
+   "expected": "Steingrímur Jóhann Sigfússon",
+   "got": "Steingrímur Jóhann"
+  },
+  "text": "Steingrímur Jóhann Sigfússon"
+ },
+ "Q5125955/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Brugada Molina",
+   "got": "Molina"
+  },
+  "given_names": {
+   "expected": "Clara",
+   "got": "Clara Brugada"
+  },
+  "text": "Clara Brugada Molina"
+ },
+ "Q512843/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Gómez Pérez",
+   "got": "Pérez"
+  },
+  "given_names": {
+   "expected": "Sócrates",
+   "got": "Sócrates Gómez"
+  },
+  "text": "Sócrates Gómez Pérez"
+ },
+ "Q520713/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Torres García",
+   "got": "García"
+  },
+  "given_names": {
+   "expected": "Joaquín",
+   "got": "Joaquín Torres"
+  },
+  "text": "Joaquín Torres García"
+ },
+ "Q525581/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Hernández Villaseñor",
+   "got": "Villaseñor"
+  },
+  "given_names": {
+   "expected": "Bernardo",
+   "got": "Bernardo Hernández"
+  },
+  "text": "Bernardo Hernández Villaseñor"
+ },
+ "Q539394/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Viðarsdóttir"
+  },
+  "given_names": {
+   "expected": "Margrét Lára Viðarsdóttir",
+   "got": "Margrét Lára"
+  },
+  "text": "Margrét Lára Viðarsdóttir"
+ },
+ "Q539421/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Júlíusdóttir"
+  },
+  "given_names": {
+   "expected": "Katrín Júlíusdóttir",
+   "got": "Katrín"
+  },
+  "text": "Katrín Júlíusdóttir"
+ },
+ "Q5399460/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Santo Domingo Pumarejo",
+   "got": "Pumarejo"
+  },
+  "given_names": {
+   "expected": "Julio Mario",
+   "got": "Julio Mario Santo Domingo"
+  },
+  "text": "Julio Mario Santo Domingo Pumarejo"
+ },
+ "Q540138/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Helgadóttir"
+  },
+  "given_names": {
+   "expected": "Guðrún Helgadóttir",
+   "got": "Guðrún"
+  },
+  "text": "Guðrún Helgadóttir"
+ },
+ "Q5412830/surname2-es/givenFirst": {
+  "family": {
+   "expected": "González Macías",
+   "got": "Macías"
+  },
+  "given_names": {
+   "expected": "Francisco",
+   "got": "Francisco González"
+  },
+  "text": "Francisco González Macías"
+ },
+ "Q55229105/surname2-es/givenFirst": {
+  "family": {
+   "expected": "García Ulecia",
+   "got": "Ulecia"
+  },
+  "given_names": {
+   "expected": "Alberto",
+   "got": "Alberto García"
+  },
+  "text": "Alberto García Ulecia"
+ },
+ "Q554086/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Busquets Barroso",
+   "got": "Barroso"
+  },
+  "given_names": {
+   "expected": "Carles",
+   "got": "Carles Busquets"
+  },
+  "text": "Carles Busquets Barroso"
+ },
+ "Q555086/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Ruiz Martorell",
+   "got": "Martorell"
+  },
+  "given_names": {
+   "expected": "Julián",
+   "got": "Julián Ruiz"
+  },
+  "text": "Julián Ruiz Martorell"
+ },
+ "Q555661/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Treviño Morales",
+   "got": "Morales"
+  },
+  "given_names": {
+   "expected": "Miguel",
+   "got": "Miguel Treviño"
+  },
+  "text": "Miguel Treviño Morales"
+ },
+ "Q5576768/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Encinas González",
+   "got": "González"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Encinas"
+  },
+  "text": "Carlos Encinas González"
+ },
+ "Q55769527/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Rodríguez Osorio",
+   "got": "Osorio"
+  },
+  "given_names": {
+   "expected": "Eduardo",
+   "got": "Eduardo Rodríguez"
+  },
+  "text": "Eduardo Rodríguez Osorio"
+ },
+ "Q55949540/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Arasanz Raso",
+   "got": "Raso"
+  },
+  "given_names": {
+   "expected": "Joaquín",
+   "got": "Joaquín Arasanz"
+  },
+  "text": "Joaquín Arasanz Raso"
+ },
+ "Q55999012/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Díaz Roig",
+   "got": "Roig"
+  },
+  "given_names": {
+   "expected": "Mercedes",
+   "got": "Mercedes Díaz"
+  },
+  "text": "Mercedes Díaz Roig"
+ },
+ "Q562079/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Þorláksson"
+  },
+  "given_names": {
+   "expected": "Jón Þorláksson",
+   "got": "Jón"
+  },
+  "text": "Jón Þorláksson"
+ },
+ "Q5667134/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Reyes Echandía",
+   "got": "Echandía"
+  },
+  "given_names": {
+   "expected": "Alfonso",
+   "got": "Alfonso Reyes"
+  },
+  "text": "Alfonso Reyes Echandía"
+ },
+ "Q5677081/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Zalamea Borda",
+   "got": "Borda"
+  },
+  "given_names": {
+   "expected": "Eduardo",
+   "got": "Eduardo Zalamea"
+  },
+  "text": "Eduardo Zalamea Borda"
+ },
+ "Q5696422/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Osorio Lizarazo",
+   "got": "Lizarazo"
+  },
+  "given_names": {
+   "expected": "José Antonio",
+   "got": "José Antonio Osorio"
+  },
+  "text": "José Antonio Osorio Lizarazo"
+ },
+ "Q5704474/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Domínguez Borrás",
+   "got": "Borrás"
+  },
+  "given_names": {
+   "expected": "Armando",
+   "got": "Armando Domínguez"
+  },
+  "text": "Armando Domínguez Borrás"
+ },
+ "Q5711984/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "García Lesmes",
+   "got": "Lesmes"
+  },
+  "given_names": {
+   "expected": "Aurelio",
+   "got": "Aurelio García"
+  },
+  "text": "Aurelio García Lesmes"
+ },
+ "Q5751162/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Obregón Borrero",
+   "got": "Borrero"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Obregón"
+  },
+  "text": "Carlos Obregón Borrero"
+ },
+ "Q57553590/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Vidal Estévez",
+   "got": "Estévez"
+  },
+  "given_names": {
+   "expected": "Engracia",
+   "got": "Engracia Vidal"
+  },
+  "text": "Engracia Vidal Estévez"
+ },
+ "Q57675/patronymic-my/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "bin Abdul Razak"
+  },
+  "given_names": {
+   "expected": "Mohd Najib bin Abdul Razak",
+   "got": "Mohd Najib"
+  },
+  "text": "Mohd Najib bin Abdul Razak"
+ },
+ "Q57772/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðardóttir"
+  },
+  "given_names": {
+   "expected": "Jóhanna Sigurðardóttir",
+   "got": "Jóhanna"
+  },
+  "text": "Jóhanna Sigurðardóttir"
+ },
+ "Q5806647/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Uribe Vargas",
+   "got": "Vargas"
+  },
+  "given_names": {
+   "expected": "Diego",
+   "got": "Diego Uribe"
+  },
+  "text": "Diego Uribe Vargas"
+ },
+ "Q5846831/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Francos Rodríguez",
+   "got": "Rodríguez"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José Francos"
+  },
+  "text": "José Francos Rodríguez"
+ },
+ "Q585266/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigmarsson"
+  },
+  "given_names": {
+   "expected": "Jón Páll Sigmarsson",
+   "got": "Jón Páll"
+  },
+  "text": "Jón Páll Sigmarsson"
+ },
+ "Q5858108/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Bermejo Araujo",
+   "got": "Araujo"
+  },
+  "given_names": {
+   "expected": "Felipe",
+   "got": "Felipe Bermejo"
+  },
+  "text": "Felipe Bermejo Araujo"
+ },
+ "Q5859665/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Gordillo Escudero",
+   "got": "Escudero"
+  },
+  "given_names": {
+   "expected": "Fernando",
+   "got": "Fernando Gordillo"
+  },
+  "text": "Fernando Gordillo Escudero"
+ },
+ "Q5859707/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Hiriart Balderrama",
+   "got": "Balderrama"
+  },
+  "given_names": {
+   "expected": "Fernando",
+   "got": "Fernando Hiriart"
+  },
+  "text": "Fernando Hiriart Balderrama"
+ },
+ "Q5865541/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Díez-Barroso Govantes",
+   "got": "Govantes"
+  },
+  "given_names": {
+   "expected": "Francisco",
+   "got": "Francisco Díez-Barroso"
+  },
+  "text": "Francisco Díez-Barroso Govantes"
+ },
+ "Q5866696/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Martínez de Cenicero",
+   "got": "de Cenicero"
+  },
+  "given_names": {
+   "expected": "Francisco",
+   "got": "Francisco Martínez"
+  },
+  "text": "Francisco Martínez de Cenicero"
+ },
+ "Q5888901/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Rousset Banda",
+   "got": "Banda"
+  },
+  "given_names": {
+   "expected": "Guillermo",
+   "got": "Guillermo Rousset"
+  },
+  "text": "Guillermo Rousset Banda"
+ },
+ "Q5889711/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "León González",
+   "got": "González"
+  },
+  "given_names": {
+   "expected": "Gustavo",
+   "got": "Gustavo León"
+  },
+  "text": "Gustavo León González"
+ },
+ "Q5894640/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hilmarsdóttir"
+  },
+  "given_names": {
+   "expected": "Hera Hilmarsdóttir",
+   "got": "Hera"
+  },
+  "text": "Hera Hilmarsdóttir"
+ },
+ "Q59105/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðsson"
+  },
+  "given_names": {
+   "expected": "Gylfi Sigurðsson",
+   "got": "Gylfi"
+  },
+  "text": "Gylfi Sigurðsson"
+ },
+ "Q5924935/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Blanco García",
+   "got": "García"
+  },
+  "given_names": {
+   "expected": "Jaime",
+   "got": "Jaime Blanco"
+  },
+  "text": "Jaime Blanco García"
+ },
+ "Q5925060/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "García Terrés",
+   "got": "Terrés"
+  },
+  "given_names": {
+   "expected": "Jaime",
+   "got": "Jaime García"
+  },
+  "text": "Jaime García Terrés"
+ },
+ "Q5930137/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Gallego Marquina",
+   "got": "Marquina"
+  },
+  "given_names": {
+   "expected": "Jesús",
+   "got": "Jesús Gallego"
+  },
+  "text": "Jesús Gallego Marquina"
+ },
+ "Q5932430/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Traggia Uribarri",
+   "got": "Uribarri"
+  },
+  "given_names": {
+   "expected": "Joaquín",
+   "got": "Joaquín Traggia"
+  },
+  "text": "Joaquín Traggia Uribarri"
+ },
+ "Q5942856/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Díaz Casariego",
+   "got": "Casariego"
+  },
+  "given_names": {
+   "expected": "José María",
+   "got": "José María Díaz"
+  },
+  "text": "José María Díaz Casariego"
+ },
+ "Q5943286/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Otaolaurruchi Tobía",
+   "got": "Tobía"
+  },
+  "given_names": {
+   "expected": "José María",
+   "got": "José María Otaolaurruchi"
+  },
+  "text": "José María Otaolaurruchi Tobía"
+ },
+ "Q5952614/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Suñé Benages",
+   "got": "Benages"
+  },
+  "given_names": {
+   "expected": "Juan",
+   "got": "Juan Suñé"
+  },
+  "text": "Juan Suñé Benages"
+ },
+ "Q5952704/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Torres de Vera y Aragón",
+   "got": "de Vera y Aragón"
+  },
+  "given_names": {
+   "expected": "Juan",
+   "got": "Juan Torres"
+  },
+  "text": "Juan Torres de Vera y Aragón"
+ },
+ "Q59747508/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Björnsdóttir"
+  },
+  "given_names": {
+   "expected": "Hansína Regína Björnsdóttir",
+   "got": "Hansína Regína"
+  },
+  "text": "Hansína Regína Björnsdóttir"
+ },
+ "Q6055948/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Riveros Reina",
+   "got": "Reina"
+  },
+  "given_names": {
+   "expected": "Pablo Emilio",
+   "got": "Pablo Emilio Riveros"
+  },
+  "text": "Pablo Emilio Riveros Reina"
+ },
+ "Q606189/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Alvarez Lleras",
+   "got": "Lleras"
+  },
+  "given_names": {
+   "expected": "Antonio",
+   "got": "Antonio Alvarez"
+  },
+  "text": "Antonio Alvarez Lleras"
+ },
+ "Q6068853/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Galindo Galarza",
+   "got": "Galarza"
+  },
+  "given_names": {
+   "expected": "Pedro",
+   "got": "Pedro Galindo"
+  },
+  "text": "Pedro Galindo Galarza"
+ },
+ "Q6069555/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Morales Pino",
+   "got": "Pino"
+  },
+  "given_names": {
+   "expected": "Pedro",
+   "got": "Pedro Morales"
+  },
+  "text": "Pedro Morales Pino"
+ },
+ "Q6097928/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Rubio Carrión",
+   "got": "Carrión"
+  },
+  "given_names": {
+   "expected": "Rafael",
+   "got": "Rafael Rubio"
+  },
+  "text": "Rafael Rubio Carrión"
+ },
+ "Q6109726/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Escobar Gaviria",
+   "got": "Gaviria"
+  },
+  "given_names": {
+   "expected": "Roberto",
+   "got": "Roberto Escobar"
+  },
+  "text": "Roberto Escobar Gaviria"
+ },
+ "Q6110535/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Landeros Gallegos",
+   "got": "Gallegos"
+  },
+  "given_names": {
+   "expected": "Rodolfo",
+   "got": "Rodolfo Landeros"
+  },
+  "text": "Rodolfo Landeros Gallegos"
+ },
+ "Q6146414/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Pérez Cuervo",
+   "got": "Cuervo"
+  },
+  "given_names": {
+   "expected": "Tiburcio",
+   "got": "Tiburcio Pérez"
+  },
+  "text": "Tiburcio Pérez Cuervo"
+ },
+ "Q6161316/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Rodríguez Casado",
+   "got": "Casado"
+  },
+  "given_names": {
+   "expected": "Vicente",
+   "got": "Vicente Rodríguez"
+  },
+  "text": "Vicente Rodríguez Casado"
+ },
+ "Q6165597/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Luna Gómez",
+   "got": "Gómez"
+  },
+  "given_names": {
+   "expected": "Víctor",
+   "got": "Víctor Luna"
+  },
+  "text": "Víctor Luna Gómez"
+ },
+ "Q61697989/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Azcárraga Madero",
+   "got": "Madero"
+  },
+  "given_names": {
+   "expected": "Rogerio",
+   "got": "Rogerio Azcárraga"
+  },
+  "text": "Rogerio Azcárraga Madero"
+ },
+ "Q61743963/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Iglesias Pérez",
+   "got": "Pérez"
+  },
+  "given_names": {
+   "expected": "Tomás",
+   "got": "Tomás Iglesias"
+  },
+  "text": "Tomás Iglesias Pérez"
+ },
+ "Q61972124/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Örnólfsdóttir"
+  },
+  "given_names": {
+   "expected": "Arnbjörg Auður Örnólfsdóttir",
+   "got": "Arnbjörg Auður"
+  },
+  "text": "Arnbjörg Auður Örnólfsdóttir"
+ },
+ "Q61972280/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Sigurðsson"
+  },
+  "given_names": {
+   "expected": "Dóra Sigurðsson",
+   "got": "Dóra"
+  },
+  "text": "Dóra Sigurðsson"
+ },
+ "Q61972351/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Erlingsdóttir"
+  },
+  "given_names": {
+   "expected": "Elísabet Erlingsdóttir",
+   "got": "Elísabet"
+  },
+  "text": "Elísabet Erlingsdóttir"
+ },
+ "Q61972491/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Elíasdóttir"
+  },
+  "given_names": {
+   "expected": "Guðmunda Elíasdóttir",
+   "got": "Guðmunda"
+  },
+  "text": "Guðmunda Elíasdóttir"
+ },
+ "Q61973674/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Jónsdóttir"
+  },
+  "given_names": {
+   "expected": "Sigrún Jónsdóttir",
+   "got": "Sigrún"
+  },
+  "text": "Sigrún Jónsdóttir"
+ },
+ "Q61974032/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Pálsdóttir"
+  },
+  "given_names": {
+   "expected": "Þuríður Pálsdóttir",
+   "got": "Þuríður"
+  },
+  "text": "Þuríður Pálsdóttir"
+ },
+ "Q62837944/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Lastra Santos",
+   "got": "Santos"
+  },
+  "given_names": {
+   "expected": "Laura Ángeles",
+   "got": "Laura Ángeles Lastra"
+  },
+  "text": "Laura Ángeles Lastra Santos"
+ },
+ "Q62995489/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Castillo Santiago",
+   "got": "Santiago"
+  },
+  "given_names": {
+   "expected": "Rosa",
+   "got": "Rosa Castillo"
+  },
+  "text": "Rosa Castillo Santiago"
+ },
+ "Q63761164/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Fernández Alonso",
+   "got": "Alonso"
+  },
+  "given_names": {
+   "expected": "Aniceto",
+   "got": "Aniceto Fernández"
+  },
+  "text": "Aniceto Fernández Alonso"
+ },
+ "Q63970106/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Abello Vives",
+   "got": "Vives"
+  },
+  "given_names": {
+   "expected": "Alberto",
+   "got": "Alberto Abello"
+  },
+  "text": "Alberto Abello Vives"
+ },
+ "Q64509480/surname2-es/givenFirst": {
+  "family": {
+   "expected": "García Martínez",
+   "got": "Martínez"
+  },
+  "given_names": {
+   "expected": "Miguel",
+   "got": "Miguel García"
+  },
+  "text": "Miguel García Martínez"
+ },
+ "Q66464825/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Landín Martínez",
+   "got": "Martínez"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Landín"
+  },
+  "text": "Carlos Landín Martínez"
+ },
+ "Q6672254/patronymic-my/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Ibrahim"
+  },
+  "given_names": {
+   "expected": "Azhar Ibrahim",
+   "got": "Azhar"
+  },
+  "text": "Azhar Ibrahim"
+ },
+ "Q6737805/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Iglesias Añino",
+   "got": "Añino"
+  },
+  "given_names": {
+   "expected": "Eduardo",
+   "got": "Eduardo Iglesias"
+  },
+  "text": "Eduardo Iglesias Añino"
+ },
+ "Q6762303/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Aguilar Barrera",
+   "got": "Barrera"
+  },
+  "given_names": {
+   "expected": "Mariano",
+   "got": "Mariano Aguilar"
+  },
+  "text": "Mariano Aguilar Barrera"
+ },
+ "Q690876/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Gunnlaugsson"
+  },
+  "given_names": {
+   "expected": "Arnar Gunnlaugsson",
+   "got": "Arnar"
+  },
+  "text": "Arnar Gunnlaugsson"
+ },
+ "Q6963798/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hilmarsdóttir"
+  },
+  "given_names": {
+   "expected": "Nanna Bryndís Hilmarsdóttir",
+   "got": "Nanna Bryndís"
+  },
+  "text": "Nanna Bryndís Hilmarsdóttir"
+ },
+ "Q701362/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Mayor Oreja",
+   "got": "Oreja"
+  },
+  "given_names": {
+   "expected": "Jaime",
+   "got": "Jaime Mayor"
+  },
+  "text": "Jaime Mayor Oreja"
+ },
+ "Q723705/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Viðarsson"
+  },
+  "given_names": {
+   "expected": "Bjarni Viðarsson",
+   "got": "Bjarni"
+  },
+  "text": "Bjarni Viðarsson"
+ },
+ "Q728833/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Pastrana Borrero",
+   "got": "Borrero"
+  },
+  "given_names": {
+   "expected": "Misael Eduardo",
+   "got": "Misael Eduardo Pastrana"
+  },
+  "text": "Misael Eduardo Pastrana Borrero"
+ },
+ "Q732502/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Legorreta Vilchis",
+   "got": "Vilchis"
+  },
+  "given_names": {
+   "expected": "Ricardo",
+   "got": "Ricardo Legorreta"
+  },
+  "text": "Ricardo Legorreta Vilchis"
+ },
+ "Q7429440/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "González Herrera",
+   "got": "Herrera"
+  },
+  "given_names": {
+   "expected": "Saúl",
+   "got": "Saúl González"
+  },
+  "text": "Saúl González Herrera"
+ },
+ "Q7882106/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Guðmundsdóttir"
+  },
+  "given_names": {
+   "expected": "Una Guðmundsdóttir",
+   "got": "Una"
+  },
+  "text": "Una Guðmundsdóttir"
+ },
+ "Q81619240/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Aguirre Miramón",
+   "got": "Miramón"
+  },
+  "given_names": {
+   "expected": "Severo",
+   "got": "Severo Aguirre"
+  },
+  "text": "Severo Aguirre Miramón"
+ },
+ "Q817764/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Castillo Plascencia",
+   "got": "Plascencia"
+  },
+  "given_names": {
+   "expected": "Benjamín",
+   "got": "Benjamín Castillo"
+  },
+  "text": "Benjamín Castillo Plascencia"
+ },
+ "Q8198059/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Martínez Sagi",
+   "got": "Sagi"
+  },
+  "given_names": {
+   "expected": "Anna Maria",
+   "got": "Anna Maria Martínez"
+  },
+  "text": "Anna Maria Martínez Sagi"
+ },
+ "Q8338233/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Romero Deschamps",
+   "got": "Deschamps"
+  },
+  "given_names": {
+   "expected": "Carlos",
+   "got": "Carlos Romero"
+  },
+  "text": "Carlos Romero Deschamps"
+ },
+ "Q83983039/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Alcolea Fernández",
+   "got": "Fernández"
+  },
+  "given_names": {
+   "expected": "Jesús",
+   "got": "Jesús Alcolea"
+  },
+  "text": "Jesús Alcolea Fernández"
+ },
+ "Q85632107/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Hurtado Montaño",
+   "got": "del Pilar Hurtado Montaño"
+  },
+  "given_names": {
+   "expected": "María del Pilar",
+   "got": "María"
+  },
+  "text": "María del Pilar Hurtado Montaño"
+ },
+ "Q85689041/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Parra Uribe",
+   "got": "Uribe"
+  },
+  "given_names": {
+   "expected": "Alexander",
+   "got": "Alexander Parra"
+  },
+  "text": "Alexander Parra Uribe"
+ },
+ "Q85740163/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Gómez Mier",
+   "got": "Mier"
+  },
+  "given_names": {
+   "expected": "Vicente",
+   "got": "Vicente Gómez"
+  },
+  "text": "Vicente Gómez Mier"
+ },
+ "Q87124000/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Abad Miró",
+   "got": "Miró"
+  },
+  "given_names": {
+   "expected": "Gabriela",
+   "got": "Gabriela Abad"
+  },
+  "text": "Gabriela Abad Miró"
+ },
+ "Q879568/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Bjarnason"
+  },
+  "given_names": {
+   "expected": "Björn Bjarnason",
+   "got": "Björn"
+  },
+  "text": "Björn Bjarnason"
+ },
+ "Q8846206/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Ríos Alemán",
+   "got": "Alemán"
+  },
+  "given_names": {
+   "expected": "Eulalio",
+   "got": "Eulalio Ríos"
+  },
+  "text": "Eulalio Ríos Alemán"
+ },
+ "Q88677122/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Perianes Carro",
+   "got": "Carro"
+  },
+  "given_names": {
+   "expected": "José",
+   "got": "José Perianes"
+  },
+  "text": "José Perianes Carro"
+ },
+ "Q9023260/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Ferrer Martí",
+   "got": "Martí"
+  },
+  "given_names": {
+   "expected": "Llorenç",
+   "got": "Llorenç Ferrer"
+  },
+  "text": "Llorenç Ferrer Martí"
+ },
+ "Q9028171/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Sánchez Mármol",
+   "got": "Mármol"
+  },
+  "given_names": {
+   "expected": "Manuel",
+   "got": "Manuel Sánchez"
+  },
+  "text": "Manuel Sánchez Mármol"
+ },
+ "Q9030148/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Rubio Tejero",
+   "got": "Tejero"
+  },
+  "given_names": {
+   "expected": "María",
+   "got": "María Rubio"
+  },
+  "text": "María Rubio Tejero"
+ },
+ "Q9065896/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Ruiz Balerdi",
+   "got": "Balerdi"
+  },
+  "given_names": {
+   "expected": "Rafael",
+   "got": "Rafael Ruiz"
+  },
+  "text": "Rafael Ruiz Balerdi"
+ },
+ "Q9072991/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Aguirre Anguiano",
+   "got": "Anguiano"
+  },
+  "given_names": {
+   "expected": "Salvador",
+   "got": "Salvador Aguirre"
+  },
+  "text": "Salvador Aguirre Anguiano"
+ },
+ "Q9157913/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "López Aviña",
+   "got": "Aviña"
+  },
+  "given_names": {
+   "expected": "Antonio",
+   "got": "Antonio López"
+  },
+  "text": "Antonio López Aviña"
+ },
+ "Q93221888/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Aguayo Spencer",
+   "got": "Spencer"
+  },
+  "given_names": {
+   "expected": "Rafael",
+   "got": "Rafael Aguayo"
+  },
+  "text": "Rafael Aguayo Spencer"
+ },
+ "Q93419447/surname2-es/givenFirst": {
+  "family": {
+   "expected": "López de Abiada",
+   "got": "de Abiada"
+  },
+  "given_names": {
+   "expected": "José Manuel",
+   "got": "José Manuel López"
+  },
+  "text": "José Manuel López de Abiada"
+ },
+ "Q93432465/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Luzón Cuesta",
+   "got": "Cuesta"
+  },
+  "given_names": {
+   "expected": "José María",
+   "got": "José María Luzón"
+  },
+  "text": "José María Luzón Cuesta"
+ },
+ "Q94643621/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "López Moreno",
+   "got": "Moreno"
+  },
+  "given_names": {
+   "expected": "Jacinto",
+   "got": "Jacinto López"
+  },
+  "text": "Jacinto López Moreno"
+ },
+ "Q956043/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Hrafnsson"
+  },
+  "given_names": {
+   "expected": "Kristinn Hrafnsson",
+   "got": "Kristinn"
+  },
+  "text": "Kristinn Hrafnsson"
+ },
+ "Q959666/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Luque Sánchez",
+   "got": "Sánchez"
+  },
+  "given_names": {
+   "expected": "Crisanto",
+   "got": "Crisanto Luque"
+  },
+  "text": "Crisanto Luque Sánchez"
+ },
+ "Q96060653/surname2-mx/givenFirst": {
+  "family": {
+   "expected": "Bueno Sánchez",
+   "got": "Sánchez"
+  },
+  "given_names": {
+   "expected": "Francis Anel",
+   "got": "Francis Anel Bueno"
+  },
+  "text": "Francis Anel Bueno Sánchez"
+ },
+ "Q96063461/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Fortea Pérez",
+   "got": "Pérez"
+  },
+  "given_names": {
+   "expected": "Francisco Javier",
+   "got": "Francisco Javier Fortea"
+  },
+  "text": "Francisco Javier Fortea Pérez"
+ },
+ "Q970917/surname2-co/givenFirst": {
+  "family": {
+   "expected": "Camacho Macías",
+   "got": "Macías"
+  },
+  "given_names": {
+   "expected": "Nemesio",
+   "got": "Nemesio Camacho"
+  },
+  "text": "Nemesio Camacho Macías"
+ },
+ "Q97413787/patronymic-my/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "bin Malek"
+  },
+  "given_names": {
+   "expected": "Anuar bin Malek",
+   "got": "Anuar"
+  },
+  "text": "Anuar bin Malek"
+ },
+ "Q975791/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Árnason"
+  },
+  "given_names": {
+   "expected": "Jón Árnason",
+   "got": "Jón"
+  },
+  "text": "Jón Árnason"
+ },
+ "Q98069704/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Fernández Seijo",
+   "got": "Seijo"
+  },
+  "given_names": {
+   "expected": "Pilar",
+   "got": "Pilar Fernández"
+  },
+  "text": "Pilar Fernández Seijo"
+ },
+ "Q984003/patronymic-is/givenFirst": {
+  "family": {
+   "expected": "",
+   "got": "Helgason"
+  },
+  "given_names": {
+   "expected": "Jón Helgason",
+   "got": "Jón"
+  },
+  "text": "Jón Helgason"
+ },
+ "Q99318879/surname2-es/givenFirst": {
+  "family": {
+   "expected": "Santos Fernández",
+   "got": "Fernández"
+  },
+  "given_names": {
+   "expected": "Juan",
+   "got": "Juan Santos"
+  },
+  "text": "Juan Santos Fernández"
+ }
+}

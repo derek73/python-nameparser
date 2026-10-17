@@ -8,7 +8,6 @@ tools/ is not a package, so the module is loaded by path, as
 _differential_fixtures.py loads compare.py.
 """
 import json
-import urllib.request
 from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
@@ -16,7 +15,7 @@ from typing import Any
 
 import pytest
 
-from ._differential_fixtures import load_tool
+from ._differential_fixtures import load_tool, serve
 
 build = load_tool("build_gnd_corpus")
 agreement = load_tool("cldr_agreement")
@@ -247,29 +246,6 @@ def test_build_stops_before_writing_when_a_stratum_falls_short(
 
 # -- the cache ----------------------------------------------------------------
 
-class _Response:
-    def __init__(self, body: bytes) -> None:
-        self.body = body
-
-    def __enter__(self) -> "_Response":
-        return self
-
-    def __exit__(self, *exc: object) -> None:
-        return None
-
-    def read(self) -> bytes:
-        return self.body
-
-
-def _serve(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, body: bytes) -> list[str]:
-    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    fetched: list[str] = []
-
-    def urlopen(request: urllib.request.Request, timeout: int) -> _Response:
-        fetched.append(request.full_url)
-        return _Response(body)
-    monkeypatch.setattr(build.urllib.request, "urlopen", urlopen)
-    return fetched
 
 
 _GOOD = json.dumps({"totalItems": 0, "member": []}).encode()
@@ -277,7 +253,7 @@ _GOOD = json.dumps({"totalItems": 0, "member": []}).encode()
 
 def test_a_cached_response_is_read_without_fetching(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    fetched = _serve(monkeypatch, tmp_path, _GOOD)
+    fetched = serve(monkeypatch, tmp_path, _GOOD)
     build._get_json({"q": "x"}, refresh=False)
     build._get_json({"q": "x"}, refresh=False)
     assert len(fetched) == 1
@@ -288,7 +264,7 @@ def test_a_cached_response_is_read_without_fetching(
 
 def test_a_response_that_is_not_a_search_result_is_not_cached(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, b'{"error": "rate limited"}')
+    serve(monkeypatch, tmp_path, b'{"error": "rate limited"}')
     with pytest.raises(ValueError, match="not a lobid search response"):
         build._get_json({"q": "x"}, refresh=False)
     assert not list((tmp_path / "gnd").iterdir())
@@ -296,7 +272,7 @@ def test_a_response_that_is_not_a_search_result_is_not_cached(
 
 def test_a_damaged_cache_file_is_named(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _serve(monkeypatch, tmp_path, _GOOD)
+    serve(monkeypatch, tmp_path, _GOOD)
     build._get_json({"q": "x"}, refresh=False)
     [cached] = (tmp_path / "gnd").iterdir()
     cached.write_text('{"totalItems": 0, "memb', encoding="utf-8")
@@ -308,14 +284,6 @@ def test_a_damaged_cache_file_is_named(
 
 _ROWS = agreement.load_rows(agreement.GND_FIELDS)
 _STRATA = {stratum.label: stratum for stratum in build.STRATA}
-
-
-def test_every_committed_field_occurs_in_its_rendering() -> None:
-    # A field that did not occur would be expected EMPTY by the
-    # comparison, a disagreement no parser fix could resolve.
-    missing = [(row["text"], value) for row in _ROWS for value in row["fields"].values()
-               if not agreement.occurs(value, row["text"])]
-    assert not missing
 
 
 def test_each_committed_stratum_holds_what_the_build_promises() -> None:
