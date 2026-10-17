@@ -147,7 +147,8 @@ def test_a_record_its_fields_cannot_account_for_is_left_out(
 
 
 def test_the_corpus_holds_each_text_once() -> None:
-    rows = [{"text": "Björk"}, {"text": "Björk"}, {"text": "Abe, Kōbō"}]
+    rows = [{"text": "Björk", "shape": None}, {"text": "Björk", "shape": None},
+            {"text": "Abe, Kōbō", "shape": None}]
     assert build.corpus_lines(rows) == ['"Abe, Kōbō"', '"Björk"']
 
 

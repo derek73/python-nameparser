@@ -89,13 +89,21 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import json
-import os
+import sys
 import urllib.parse
 import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NamedTuple
+
+# The shared cache and file helpers (corpus_build.py), found by putting
+# this directory on sys.path: see corpus_build's docstring for why.
+_HERE = str(Path(__file__).resolve().parent)
+if _HERE not in sys.path:
+    sys.path.append(_HERE)
+
+import corpus_build  # noqa: E402
+from corpus_build import corpus_lines, fields_lines  # noqa: E402,F401
 
 HERE = Path(__file__).resolve().parent
 CORPUS = HERE / "corpus_gnd.jsonl"
@@ -231,20 +239,9 @@ STRATA = (
 )
 
 
-def cache_dir() -> Path:
-    root = Path(os.environ.get("NAMEPARSER_TOOLS_CACHE",
-                               Path.home() / ".cache" / "nameparser-tools"))
-    path = root / "gnd"
-    path.mkdir(parents=True, exist_ok=True)
-    return path
-
-
 def _checked(body: bytes | str, source: str) -> dict[str, Any]:
     """A lobid search response, or ValueError naming where it came from."""
-    try:
-        data = json.loads(body)
-    except ValueError as error:
-        raise ValueError(f"{source} is not JSON ({error})") from None
+    data = corpus_build.parse_json(body, source)
     if not isinstance(data, dict) or "totalItems" not in data or "member" not in data:
         raise ValueError(f"{source} is not a lobid search response")
     return data
@@ -252,18 +249,14 @@ def _checked(body: bytes | str, source: str) -> dict[str, Any]:
 
 def _get_json(params: dict[str, str | int], refresh: bool) -> dict[str, Any]:
     url = f"{SEARCH}?{urllib.parse.urlencode(params)}"
-    cached = cache_dir() / (hashlib.sha256(url.encode()).hexdigest()[:24] + ".json")
-    if cached.exists() and not refresh:
-        return _checked(cached.read_text(encoding="utf-8"),
-                        f"{cached} (cached {url}; delete it or pass --refresh)")
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=120) as response:
-        body = response.read()
-    data = _checked(body, url)
-    partial = cached.with_suffix(".part")
-    partial.write_bytes(body)
-    os.replace(partial, cached)
-    return data
+
+    def fetch() -> bytes:
+        request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(request, timeout=120) as response:
+            body: bytes = response.read()
+        return body
+    return corpus_build.cached_json(corpus_build.cache_dir("gnd"), url, url,
+                                    fetch, _checked, refresh)
 
 
 def _search(query: str, size: int, start: int, refresh: bool) -> dict[str, Any]:
@@ -361,25 +354,6 @@ def renderings(record: dict[str, Any], stratum: Stratum) -> list[dict[str, Any]]
     return rows
 
 
-def corpus_lines(rows: list[dict[str, Any]]) -> list[str]:
-    """One harness line per distinct text, sorted for stable diffs. No
-    GND rendering carries a shape: a comma or the default order reads it."""
-    return [json.dumps(text, ensure_ascii=False)
-            for text in sorted({str(row["text"]) for row in rows})]
-
-
-def fields_lines(rows: list[dict[str, Any]]) -> list[str]:
-    """One line per rendering, sorted by its key (GND id/stratum/order)."""
-    keyed: dict[str, dict[str, Any]] = {}
-    for row in rows:
-        key = f"{row['file']}/{row['label']}/{row['order']}"
-        if key in keyed:
-            raise ValueError(f"duplicate rendering {key}")
-        keyed[key] = row
-    return [json.dumps(keyed[k], ensure_ascii=False, sort_keys=True)
-            for k in sorted(keyed)]
-
-
 def build(refresh: bool) -> list[dict[str, Any]]:
     """Every stratum's rows, or ValueError naming each stratum that fell
     below its floor -- raised before main() writes anything."""
@@ -416,8 +390,7 @@ def main() -> None:
     ap.add_argument("--refresh", action="store_true",
                     help="fetch from lobid again instead of reading the cache")
     rows = build(ap.parse_args().refresh)
-    CORPUS.write_text("\n".join(corpus_lines(rows)) + "\n", encoding="utf-8")
-    FIELDS.write_text("\n".join(fields_lines(rows)) + "\n", encoding="utf-8")
+    corpus_build.write_corpus(rows, CORPUS, FIELDS)
     LICENSE.write_text(LICENSE_TEXT, encoding="utf-8")
     print(f"GND: {len(rows)} renderings of {len({r['file'] for r in rows})} "
           f"names; wrote {CORPUS.name}, {FIELDS.name}, {LICENSE.name}")

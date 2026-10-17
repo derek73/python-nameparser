@@ -48,8 +48,9 @@ def load_tool(stem: str) -> ModuleType:
 
     `tools/` is outside testpaths, and adding it would run
     --doctest-modules over the corpus builders, so these are imported
-    this way rather than made importable. None has import-time side
-    effects: each main() is behind a __name__ guard."""
+    this way rather than made importable. Each main() is behind a
+    __name__ guard; the one import-time effect is that a corpus builder
+    appends its own directory to sys.path to find corpus_build.py."""
     spec = importlib.util.spec_from_file_location(
         f"differential_{stem}", _TOOLS / f"{stem}.py")
     assert spec is not None and spec.loader is not None, stem
