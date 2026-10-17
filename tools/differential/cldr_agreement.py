@@ -63,6 +63,15 @@ scoring; only a 3.0 decision to take the field out of `family` or
 `honorific` is not pending: it is scored inside `suffix` by design, as
 nameparser reads `さん`, and ParsedName is not meant to gain it.
 
+One view is report-only (#702): CLDR and the conventions table state the
+split of the given names (`given` and `given2`), and the merged
+`given_names` role cannot see a parse that splits them wrongly
+(`Kim Min Ho` reads given `Min`, middle `Ho`). The summary counts the
+renderings that agree merged but split differently, and `--split` lists
+them. It is not a ratcheted role: GND and Wikidata record every given name
+in one field and are never scored on it, and what `middle` means for a
+compound given name is a design question. See split_disagreements.
+
 A field name no rule reads raises: a mistyped `honorfic` would
 otherwise be expected in no role and pass as agreement. KNOWN_FIELDS is
 every name expected_roles reads, IGNORED_FIELDS what a source states
@@ -219,6 +228,42 @@ def expected_roles(fields: dict[str, str], text: str) -> dict[str, str]:
         if role in fields:
             roles[role] = present(role)
     return roles
+
+
+#: Sources that state the given/middle split: CLDR (`given2`) and the
+#: hand-written conventions table, where `given` holds a compound given
+#: name whole (`Min Ho`). GND and Wikidata record every given name in one
+#: field, so a split scored against them would call their convention a
+#: disagreement (#702).
+SPLIT_SOURCES = frozenset({"CLDR", "Conventions"})
+
+
+def split_disagreements(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """The report-only given/middle view (#702): renderings whose merged
+    `given_names` agrees but whose `given` and `middle` are split
+    differently from what the source states -- `given` expected from
+    `given`, `middle` from `given2`. Not ratcheted: most entries are the
+    parser's convention (first word given, the rest middle) against a
+    multi-word `given`, and what `middle` means for a compound given name
+    is a design question. A rendering stating a patronymic is skipped,
+    since the merged role holds it and the split has nowhere to put it."""
+    found: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        fields, text = row["fields"], row["text"]
+        if "patronymic" in fields:
+            continue
+        name = parse_rendering(text, row["shape"])
+        if not same(expected_roles(fields, text)["given_names"], name.given_names, text):
+            continue
+        expected = {role: " ".join(v for n in names if n in fields
+                                   and occurs(v := fields[n], text))
+                    for role, names in (("given", ("given",)), ("middle", ("given2",)))}
+        got = {"given": name.given, "middle": name.middle}
+        bad = {role: {"expected": expected[role], "got": got[role]}
+               for role in expected if not same(expected[role], got[role], text)}
+        if bad:
+            found[rendering_key(row)] = {"text": text, **bad}
+    return dict(sorted(found.items()))
 
 
 def same(expected: str, got: str, text: str) -> bool:
@@ -381,7 +426,8 @@ def locale_sources() -> dict[str, LocaleSource]:
 
 
 def _summary(name: str, rows: list[dict[str, Any]],
-             current: dict[str, dict[str, Any]], record: Path) -> list[str]:
+             current: dict[str, dict[str, Any]], record: Path,
+             show_split: bool = False) -> list[str]:
     """Print one source's per-role agreement; return its changes."""
     totals: Counter[str] = Counter()
     for row in rows:
@@ -398,6 +444,16 @@ def _summary(name: str, rows: list[dict[str, Any]],
                   f"yet (scored inside {merged})")
     problems = changes(read_record(record), current, {rendering_key(r) for r in rows})
     print("\n".join(problems) or f"{name} view matches the record")
+    if name in SPLIT_SOURCES:
+        split = split_disagreements(rows)
+        print(f"{name} given/middle split (report only, #702): {len(split)} of "
+              f"{len(rows)} renderings agree on given_names but split it "
+              f"differently; --split lists them")
+        if show_split:
+            for key, entry in split.items():
+                detail = "; ".join(f"{r} expected {entry[r]['expected']!r}, got "
+                                   f"{entry[r]['got']!r}" for r in entry if r != "text")
+                print(f"  {key}: {entry['text']!r}: {detail}")
     return problems
 
 
@@ -406,6 +462,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--record", action="store_true",
                     help="rewrite every source's record and the locale record "
                     "from the working tree")
+    ap.add_argument("--split", action="store_true",
+                    help="list the renderings of the report-only given/middle view")
     args = ap.parse_args(argv)
     loaded = {name: (load_rows(fields), record)
               for name, (fields, record) in sources().items()}
@@ -424,7 +482,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     problems: list[str] = []
     for name, (source_rows, record) in loaded.items():
-        problems += _summary(name, source_rows, current[name], record)
+        problems += _summary(name, source_rows, current[name], record, args.split)
         print()
     for name, source in locale_sources().items():
         problems += _locale_summary(name, loaded[name][0], source, current[name])

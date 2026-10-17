@@ -528,3 +528,23 @@ def test_each_pack_still_agrees_with_each_source_where_it_did(source: str, pack:
         f"tools/differential/{locale.record.name} for {pack}.",
         f"If every one is intended, re-record with `{agreement.RECORD_COMMAND}` "
         "and say why in the commit."])
+
+
+def test_the_split_view_reports_a_compound_given_name_the_merged_role_passes() -> None:
+    # #702: Kim Min Ho reads given Min, middle Ho; the merged role agrees.
+    row = _row("Kim Min Ho", 4, given="Min Ho", surname="Kim")
+    assert agreement.disagreements([row]) == {}
+    assert agreement.split_disagreements([row]) == {"xx/nativeG/givenFirst": {
+        "text": "Kim Min Ho", "given": {"expected": "Min Ho", "got": "Min"},
+        "middle": {"expected": "", "got": "Ho"}}}
+    # a split the source states and the parser reads the same way is silent
+    agreed = _row("Ana Maria Ruiz", None, given="Ana", given2="Maria", surname="Ruiz")
+    assert agreement.split_disagreements([agreed]) == {}
+
+
+def test_the_split_view_is_reported_for_exactly_the_sources_that_state_it() -> None:
+    # a count line per source, and no listing without --split
+    out = _summary_run()[1]
+    assert out.count("given/middle split (report only") == len(agreement.SPLIT_SOURCES)
+    assert "CLDR given/middle split" in out and "Conventions given/middle split" in out
+    assert "  conventions/Kim Min Ho" not in out
