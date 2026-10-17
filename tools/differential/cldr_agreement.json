@@ -4590,11 +4590,7 @@
  "id/nativeFull/surnameFirst": {
   "family": {
    "expected": "Adinata",
-   "got": "bin Bapak Adinata"
-  },
-  "family_base": {
-   "expected": "Adinata",
-   "got": "Bapak Adinata"
+   "got": "bin Adinata"
   },
   "family_particles": {
    "expected": "",
@@ -4604,11 +4600,7 @@
    "expected": "Dwi Putro bin",
    "got": "Dwi Putro"
   },
-  "text": "Bapak Adinata, Dwi Putro bin MP",
-  "title": {
-   "expected": "Bapak",
-   "got": ""
-  }
+  "text": "Bapak Adinata, Dwi Putro bin MP"
  },
  "id/nativeG/sorting": {
   "family": {

@@ -282,7 +282,7 @@
 {"name": "Balóch Karima", "order": "FAMILY_FIRST", "given": "Karima", "family": "Balóch", "initials": "K. B."}
 {"name": "Balóch Karima Mehráb", "order": "FAMILY_FIRST", "given": "Karima", "middle": "Mehráb", "family": "Balóch", "initials": "K. M. B."}
 {"name": "Balóch Wj. Monir Mómen Monir Mómen", "order": "FAMILY_FIRST", "given": "Wj.", "middle": "Monir Mómen Monir Mómen", "family": "Balóch", "initials": "W. M. M. M. M. B."}
-{"name": "Bapak Adinata, Dwi Putro bin MP", "order": "FAMILY_FIRST", "given": "Dwi", "middle": "Putro", "family": "bin Bapak Adinata", "suffix": "MP", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. P. B. A."}
+{"name": "Bapak Adinata, Dwi Putro bin MP", "order": "FAMILY_FIRST", "title": "Bapak", "given": "Dwi", "middle": "Putro", "family": "bin Adinata", "suffix": "MP", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. P. A."}
 {"name": "Bapak Dwi Putro bin Adinata MP", "title": "Bapak", "given": "Dwi", "middle": "Putro", "family": "bin Adinata", "suffix": "MP", "initials": "D. P. A."}
 {"name": "Barbara Brukalska", "given": "Barbara", "family": "Brukalska", "initials": "B. B."}
 {"name": "Barbara Scharf", "given": "Barbara", "family": "Scharf", "initials": "B. S."}
