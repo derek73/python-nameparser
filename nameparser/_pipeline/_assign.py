@@ -1419,12 +1419,16 @@ def assign(state: ParseState) -> ParseState:
         # shape, leaving one piece for the family, and stopping at a
         # word that is a particle too ('St Pierre', 'Freiherr von
         # Berg'), or where everything behind it is post-nominal, which
-        # leaves no family word to address (H3's floor: 'MD PhD Jr.,
-        # John'). A dual is a title wherever a name word follows it
+        # leaves no family word to address -- H3's concern, by a
+        # stricter test than H3's one-word give-back, so this is not
+        # `leading_titles` ('MD PhD Jr., John' keeps family 'MD', where
+        # 'MD PhD Jr. John' reads title 'MD'). A dual is a title wherever a name word follows it
         # ('Rev. Sr. Smith, Mary'). `is_title_piece` is H5's vocabulary
         # read, so the two slots that refuse the shape agree on what a
         # title word is.
         lead = 0
+        # the length test first: a one-piece part ('Smith, John') never
+        # pays the title read's frame
         if (len(fam_pieces) > 1
                 and is_title_piece(fam_pieces[0], fam_tags[0], tokens)):
             # where the trailing post-nominal run starts: walked once,
