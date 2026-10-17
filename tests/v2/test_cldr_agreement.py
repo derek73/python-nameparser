@@ -127,6 +127,15 @@ def test_a_pending_field_is_scored_once_parsed_name_answers_it() -> None:
     assert agreement.got_roles(WithSurname2())["surname2"] == "García"  # type: ignore[arg-type]
 
 
+def test_an_honorific_is_scored_inside_the_suffix() -> None:
+    """A word of address written after the name (the conventions
+    source's `honorific`, #686) is a suffix, as nameparser reads さん."""
+    roles = agreement.expected_roles({"given": "Murat", "honorific": "Bey"}, "Murat Bey")
+    assert roles["suffix"] == "Bey"
+    assert roles["given_names"] == "Murat"
+    assert roles["family"] == ""
+
+
 def test_expected_roles_compare_particles_only_where_cldr_splits_them() -> None:
     plain = agreement.expected_roles({"given": "Iris", "surname": "Falke"}, "Iris Falke")
     assert set(plain) == {"title", "given_names", "family", "suffix"}
@@ -220,7 +229,12 @@ def test_changes_reports_a_rendering_that_is_gone() -> None:
 #: exceed: a truncated file would otherwise pass both checks below, and
 #: an emptied one re-recorded would match its emptied record.
 _CORPORA = {"CLDR": ("corpus_cldr.jsonl", 1000), "GND": ("corpus_gnd.jsonl", 500),
-            "Wikidata": ("corpus_wikidata.jsonl", 500)}
+            "Wikidata": ("corpus_wikidata.jsonl", 500),
+            "Conventions": ("corpus_conventions.jsonl", 25)}
+#: Sources whose fields file states only some of its corpus's names: the
+#: conventions table leaves a row without fields where no field can state
+#: it (conventions.py says which and why).
+_PARTIAL = frozenset({"Conventions"})
 
 
 def test_every_source_has_a_corpus_file() -> None:
@@ -238,7 +252,10 @@ def test_the_corpus_and_the_fields_file_hold_the_same_renderings(source: str) ->
             entry = json.loads(line)
             from_corpus.add((entry, None) if isinstance(entry, str)
                             else (entry["name"], entry["shape"]))
-    assert from_corpus == from_fields
+    if source in _PARTIAL:
+        assert from_fields <= from_corpus
+    else:
+        assert from_corpus == from_fields
     assert len(from_fields) > least, f"the {source} corpus is missing or truncated"
 
 

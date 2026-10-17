@@ -1,0 +1,30 @@
+{"fields": {"given": "Hodan", "patronymic": "Farah Warsame"}, "file": "conventions", "label": "Hodan Farah Warsame", "order": "default", "shape": null, "text": "Hodan Farah Warsame"}
+{"fields": {"given": "Harpreet", "given2": "Kaur", "surname": "Dhillon"}, "file": "conventions", "label": "Harpreet Kaur Dhillon", "order": "default", "shape": null, "text": "Harpreet Kaur Dhillon"}
+{"fields": {"given": "Sivakumar", "patronymic": "K."}, "file": "conventions", "label": "K. Sivakumar", "order": "default", "shape": null, "text": "K. Sivakumar"}
+{"fields": {"generation": "H.", "given": "Pedro", "surname": "López", "surname2": "Ruiz"}, "file": "conventions", "label": "Pedro López Ruiz H.", "order": "default", "shape": null, "text": "Pedro López Ruiz H."}
+{"fields": {"given": "Carmen", "surname": "Díaz Vda. de Mora"}, "file": "conventions", "label": "Carmen Díaz Vda. de Mora", "order": "default", "shape": null, "text": "Carmen Díaz Vda. de Mora"}
+{"fields": {"given": "Ali", "surname": "Kara Oğlu"}, "file": "conventions", "label": "Ali Kara Oğlu", "order": "default", "shape": null, "text": "Ali Kara Oğlu"}
+{"fields": {"given": "Murat", "honorific": "Bey"}, "file": "conventions", "label": "Murat Bey", "order": "default", "shape": null, "text": "Murat Bey"}
+{"fields": {"given": "Péter", "honorific": "úr", "surname": "Szabó"}, "file": "conventions", "label": "Szabó Péter úr", "order": "FAMILY_FIRST", "shape": 4, "text": "Szabó Péter úr"}
+{"fields": {"given": "Péterné", "surname": "Szabó"}, "file": "conventions", "label": "Szabó Péterné", "order": "FAMILY_FIRST", "shape": 4, "text": "Szabó Péterné"}
+{"fields": {"given": "Min Ho", "surname": "Kim"}, "file": "conventions", "label": "Kim Min Ho", "order": "FAMILY_FIRST", "shape": 4, "text": "Kim Min Ho"}
+{"fields": {"given": "Mai", "given2": "Thi", "surname": "Tran"}, "file": "conventions", "label": "Tran Thi Mai", "order": "FAMILY_FIRST", "shape": 4, "text": "Tran Thi Mai"}
+{"fields": {"given": "Ivan", "patronymic": "Petrov", "surname": "Dimitrov"}, "file": "conventions", "label": "Ivan Petrov Dimitrov", "order": "default", "shape": null, "text": "Ivan Petrov Dimitrov"}
+{"fields": {"given": "Ma. Teresa", "surname": "Bautista", "surname2": "Cruz"}, "file": "conventions", "label": "Ma. Teresa Cruz Bautista", "order": "default", "shape": null, "text": "Ma. Teresa Cruz Bautista"}
+{"fields": {"given": "Ji-hoon", "honorific": "ssi", "surname": "Park"}, "file": "conventions", "label": "Park Ji-hoon ssi", "order": "FAMILY_FIRST", "shape": 4, "text": "Park Ji-hoon ssi"}
+{"fields": {"honorific": "san", "surname": "Suzuki"}, "file": "conventions", "label": "Suzuki san", "order": "FAMILY_FIRST", "shape": 4, "text": "Suzuki san"}
+{"fields": {"given": "Kyaw Win", "title": "U"}, "file": "conventions", "label": "U Kyaw Win", "order": "default", "shape": null, "text": "U Kyaw Win"}
+{"fields": {"given": "Thida", "title": "Daw"}, "file": "conventions", "label": "Daw Thida", "order": "default", "shape": null, "text": "Daw Thida"}
+{"fields": {"given": "Malee", "title": "Khun"}, "file": "conventions", "label": "Khun Malee", "order": "default", "shape": null, "text": "Khun Malee"}
+{"fields": {"given": "Hassan", "patronymic": "bin Yusof"}, "file": "conventions", "label": "Hassan bin Yusof", "order": "default", "shape": null, "text": "Hassan bin Yusof"}
+{"fields": {"given": "Hassan", "patronymic": "B. Yusof"}, "file": "conventions", "label": "Hassan B. Yusof", "order": "default", "shape": null, "text": "Hassan B. Yusof"}
+{"fields": {"given": "Suresh", "patronymic": "a/l Muthu"}, "file": "conventions", "label": "Suresh a/l Muthu", "order": "default", "shape": null, "text": "Suresh a/l Muthu"}
+{"fields": {"given": "Kavitha", "patronymic": "a/p Raman"}, "file": "conventions", "label": "Kavitha a/p Raman", "order": "default", "shape": null, "text": "Kavitha a/p Raman"}
+{"fields": {"given": "Budi Santoso", "title": "H."}, "file": "conventions", "label": "H. Budi Santoso", "order": "default", "shape": null, "text": "H. Budi Santoso"}
+{"fields": {"given": "Wanjiru", "patronymic": "wa Kamau"}, "file": "conventions", "label": "Wanjiru wa Kamau", "order": "default", "shape": null, "text": "Wanjiru wa Kamau"}
+{"fields": {"given": "Michael", "given2": "Kar Ming", "surname": "Wong"}, "file": "conventions", "label": "Michael Wong Kar Ming", "order": "default", "shape": null, "text": "Michael Wong Kar Ming"}
+{"fields": {"given": "Mei Ling", "given2": "Jessica", "surname": "Lim"}, "file": "conventions", "label": "Lim Mei Ling Jessica", "order": "FAMILY_FIRST", "shape": 4, "text": "Lim Mei Ling Jessica"}
+{"fields": {"given": "Wing", "surname": "Lau"}, "file": "conventions", "label": "Wing Lau", "order": "default", "shape": null, "text": "Wing Lau"}
+{"fields": {"surname-core": "Walt", "surname-prefix": "Van der"}, "file": "conventions", "label": "Van der Walt", "order": "default", "shape": null, "text": "Van der Walt"}
+{"fields": {"given": "Reza", "surname": "Hossein Zadeh"}, "file": "conventions", "label": "Reza Hossein Zadeh", "order": "default", "shape": null, "text": "Reza Hossein Zadeh"}
+{"fields": {"given": "Pierre", "surname-core": "Orval", "surname-prefix": "d'"}, "file": "conventions", "label": "Orval, Pierre d'", "order": "default", "shape": null, "text": "Orval, Pierre d'"}

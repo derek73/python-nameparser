@@ -43,12 +43,14 @@ def test_shapes_corpus_matches_the_case_table() -> None:
 
 
 def test_conventions_corpus_matches_its_table() -> None:
-    """corpus_conventions.jsonl is generated from conventions.py's
-    hand-written table (#686)."""
+    """corpus_conventions.jsonl and conventions_fields.jsonl are
+    generated from conventions.py's hand-written table (#686)."""
     module = load_tool("build_conventions_corpus")
-    assert _checked_in("corpus_conventions.jsonl") == module.selected(), (
-        "corpus_conventions.jsonl is stale: regenerate with "
-        "`uv run python tools/differential/build_conventions_corpus.py`")
+    for name, expected in (("corpus_conventions.jsonl", module.selected()),
+                           ("conventions_fields.jsonl", module.fields_rows())):
+        assert _checked_in(name) == expected, (
+            f"{name} is stale: regenerate with "
+            "`uv run python tools/differential/build_conventions_corpus.py`")
 
 
 def test_case_shape_ids_exist_in_the_inventory() -> None:

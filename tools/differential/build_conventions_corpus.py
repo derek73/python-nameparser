@@ -1,17 +1,20 @@
-"""Regenerate corpus_conventions.jsonl from conventions.py's table (#686).
+"""Regenerate corpus_conventions.jsonl and conventions_fields.jsonl from
+conventions.py's table (#686).
 
 The table holds invented names patterned on naming conventions the other
 corpora barely cover; conventions.py says where the conventions come
 from and why each row's expected reading is a note rather than a pin.
 A row read under a non-default order is written with the shapes.py id
-for that order, so the snapshot reads it under that order.
+for that order, so the snapshot reads it under that order. A row with
+`fields` is also written to conventions_fields.jsonl, in the row format
+cldr_agreement.py compares, keyed by the name and its order.
 
 Regenerate after editing the table:
 
     uv run python tools/differential/build_conventions_corpus.py
 
-tests/v2/test_corpora.py pins the checked-in file against this module's
-selection, so a row added without regenerating fails the suite.
+tests/v2/test_corpora.py pins both checked-in files against this
+module's selection, so a row added without regenerating fails the suite.
 """
 from __future__ import annotations
 
@@ -22,6 +25,7 @@ from types import ModuleType
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "corpus_conventions.jsonl"
+FIELDS_OUT = HERE / "conventions_fields.jsonl"
 
 
 def _load(stem: str) -> ModuleType:
@@ -64,12 +68,26 @@ def selected() -> list[object]:
     return lines
 
 
-def main() -> None:
-    lines = selected()
-    with OUT.open("w", encoding="utf-8") as fh:
+def fields_rows() -> list[dict[str, object]]:
+    """The fields file's rows, for the table's rows that state fields."""
+    selected()  # the same row checks as the corpus
+    return [{"fields": row.fields, "file": "conventions", "label": row.name,
+             "order": row.order or "default",
+             "shape": None if row.order is None else _shape_for(row.order),
+             "text": row.name}
+            for row in CONVENTIONS if row.fields is not None]
+
+
+def _write(path: Path, lines: list[object]) -> None:
+    with path.open("w", encoding="utf-8") as fh:
         for line in lines:
-            fh.write(json.dumps(line, ensure_ascii=False) + "\n")
-    print(f"wrote {len(lines)} names to {OUT.name}")
+            fh.write(json.dumps(line, ensure_ascii=False, sort_keys=True) + "\n")
+    print(f"wrote {len(lines)} lines to {path.name}")
+
+
+def main() -> None:
+    _write(OUT, selected())
+    _write(FIELDS_OUT, list(fields_rows()))
 
 
 if __name__ == "__main__":

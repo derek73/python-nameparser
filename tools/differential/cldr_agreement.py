@@ -9,8 +9,11 @@ matching the record. The GND corpus (build_gnd_corpus.py) writes its
 fields in CLDR's vocabulary, so it is a second SOURCE compared by the
 same rules, with its record in gnd_agreement.json, and so is the
 Wikidata corpus (build_wikidata_corpus.py, wikidata_agreement.json),
-which states the two fields CLDR's vocabulary merges or lacks; "CLDR"
-below means any source wherever the rule is about fields. For each source the
+which states the two fields CLDR's vocabulary merges or lacks, and the
+hand-written conventions table (build_conventions_corpus.py,
+conventions_agreement.json), which adds `honorific`, a word of address
+written after the name, scored inside `suffix`; "CLDR" below means any
+source wherever the rule is about fields. For each source the
 test fails on:
 
 - a role that agreed now disagrees (a regression);
@@ -86,6 +89,8 @@ GND_FIELDS = HERE / "gnd_fields.jsonl"
 GND_RECORD = HERE / "gnd_agreement.json"
 WIKIDATA_FIELDS = HERE / "wikidata_fields.jsonl"
 WIKIDATA_RECORD = HERE / "wikidata_agreement.json"
+CONVENTIONS_FIELDS = HERE / "conventions_fields.jsonl"
+CONVENTIONS_RECORD = HERE / "conventions_agreement.json"
 RECORD_COMMAND = "uv run python tools/differential/cldr_agreement.py --record"
 #: shapes.py's FAMILY_FIRST shape, the only tag build_cldr_corpus.py writes.
 FAMILY_FIRST_SHAPE = 4
@@ -173,7 +178,7 @@ def expected_roles(fields: dict[str, str], text: str) -> dict[str, str]:
     roles = {"title": present("title"),
              "given_names": present("given", "given2", *pending("given_names")),
              "family": present(*family, *pending("family")),
-             "suffix": present("generation", "credentials")}
+             "suffix": present("generation", "credentials", "honorific")}
     if "surname-core" in fields:
         roles["family_particles"] = present("surname-prefix")
         roles["family_base"] = present("surname-core", *pending("family"))
@@ -317,7 +322,8 @@ def sources() -> dict[str, tuple[Path, Path]]:
     """Each source of stated fields: name -> (fields file, record). Read
     at call time, so a test that points a record elsewhere is obeyed."""
     return {"CLDR": (FIELDS, RECORD), "GND": (GND_FIELDS, GND_RECORD),
-            "Wikidata": (WIKIDATA_FIELDS, WIKIDATA_RECORD)}
+            "Wikidata": (WIKIDATA_FIELDS, WIKIDATA_RECORD),
+            "Conventions": (CONVENTIONS_FIELDS, CONVENTIONS_RECORD)}
 
 
 def _summary(name: str, rows: list[dict[str, Any]],
