@@ -158,21 +158,6 @@
   },
   "text": "Murat Bey"
  },
- "conventions/Orval, Pierre d'/default": {
-  "family": {
-   "expected": "Orval d'",
-   "got": "Orval"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Pierre",
-   "got": "Pierre d'"
-  },
-  "text": "Orval, Pierre d'"
- },
  "conventions/Park Ji-hoon ssi/FAMILY_FIRST": {
   "given_names": {
    "expected": "Ji-hoon",

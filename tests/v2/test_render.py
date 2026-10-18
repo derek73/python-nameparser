@@ -5,7 +5,8 @@ import warnings
 import pytest
 
 from nameparser._policy import CapsSuffixes
-from nameparser import FAMILY_FIRST, HumanName, Parser, Policy, parse
+from nameparser import (FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST, HumanName,
+                        Parser, Policy, parse)
 from nameparser._lexicon import Lexicon
 from nameparser.config import Constants
 from nameparser._render import _apply_mask, _collapse, render
@@ -1693,3 +1694,42 @@ def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
                                ("John Smith, PhD XYZ", "John Smith PhD XYZ")):
             name = parser.parse(text)
             assert str(name.capitalized(force=True)) == rendered, (setting, text)
+
+
+def test_a_marked_particle_lowercases_only_where_the_particle_arm_would(
+) -> None:
+    """rules.md#R4, #700: a particle written with its mark ("d'",
+    "al-", "'t") is asked the particle arm's question as a whole token,
+    since the per-word walk splits it at the mark and asks the stem.
+    Only the arm's lowercase is taken whole; wherever the arm declines,
+    the token repairs by the walk exactly as before. The first version
+    sent every whole-token particle through the rest of _cap_word, and
+    the full suite passed it: 'ED-' became 'Ed-' and a configured
+    'van-der' became 'Van-der' (the #700 fix-commit review). Both
+    surfaces for the lowercase; the declines on the core."""
+    lowered = {
+        "IVOI, PAUL D'": "Paul d' Ivoi",
+        "rashid, harun al-": "Harun al- Rashid",
+        "jacobus henricus van 't hoff": "Jacobus Henricus van 't Hoff",
+    }
+    for text, expected in lowered.items():
+        assert str(parse(text).capitalized()) == expected, text
+        hn = HumanName(text)
+        hn.capitalize(force=True)
+        assert str(hn) == expected, text
+    declined = {
+        # an all-particle part: repaired as ordinary name words
+        ", PAUL D'": "Paul D'",
+        "HARUN AL-": "Harun Al-",
+        # the suffix role: the walk's acronym clause reads the stem
+        "smith, john, ed-": "John Smith ED-",
+    }
+    for text, expected in declined.items():
+        assert str(parse(text).capitalized()) == expected, text
+    given_last = Parser(policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST))
+    name = given_last.parse("IVOI PAUL D'")
+    assert name.given == "D'"  # the declared given slot, not P6's
+    assert name.capitalized().given == "D'"
+    hyphened = Parser(lexicon=Lexicon.default().add(particles={"van-der"}))
+    assert str(hyphened.capitalized(hyphened.parse("jan van-der"))) == \
+        "Jan Van-Der"
