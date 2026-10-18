@@ -2447,6 +2447,15 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
     listed surname followed by it divides there and the word reads
     as a suffix, so 李部長 reads family 李, suffix 部長, as 王博士
     already does.
+    Accepted: a longer office or degree word that ends in a listed
+    tail is split at it, whether glued or spaced, because the tail
+    is matched at the end of the token and the longer word is not
+    listed: 衆議院議員, 副社長, 代表取締役社長 and 獣医学博士 leave
+    their head (衆議院, 副, 代表取締役, 獣) in the name. Before the
+    tail was listed the whole word stayed in the name, which was no
+    more right (#707).
+      "田中 副社長"               →  given="副"
+      "岸田文雄衆議院議員"        →  family="岸田文雄衆議院"
     history: decisions.md#W2 · interacts: W3 · implemented: nameparser/_pipeline/_script_segment.py
 
 W3. Rationale: a family name declared by a comma is the writer's

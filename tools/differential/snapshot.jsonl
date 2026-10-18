@@ -5482,6 +5482,7 @@
 {"name": "山田｢ﾀﾛｰ｣太郎", "given": "太郎", "family": "山田", "nickname": "ﾀﾛｰ", "initials": "太. 山."}
 {"name": "山田ﾀﾛｳ", "family": "山田ﾀﾛｳ", "initials": "山."}
 {"name": "岡正雄", "family": "岡正雄", "initials": "岡."}
+{"name": "岸田文雄衆議院議員", "family": "岸田文雄衆議院", "suffix": "議員", "initials": "岸."}
 {"name": "崔晓桐", "family": "崔晓桐", "initials": "崔."}
 {"name": "布鲁赫·艾达·科妮莉亚·塞萨尔·马丁·冯", "order": "FAMILY_FIRST", "given": "艾达", "middle": "科妮莉亚 塞萨尔 马丁 冯", "family": "布鲁赫", "initials": "艾. 科. 塞. 马. 冯. 布."}
 {"name": "平賀淳", "family": "平賀淳", "initials": "平."}
@@ -5570,6 +5571,7 @@
 {"name": "王雅婷，議員", "family": "王雅婷", "suffix": "議員", "initials": "王."}
 {"name": "王雪莹", "family": "王雪莹", "initials": "王."}
 {"name": "田中 さん", "family": "田中", "suffix": "さん", "initials": "田."}
+{"name": "田中 副社長", "given": "副", "family": "田中", "suffix": "社長", "initials": "副. 田."}
 {"name": "田中 太郎 旧姓 佐藤 MA", "given": "太郎", "family": "田中", "suffix": "MA", "maiden": "佐藤", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "太. 田."}
 {"name": "田中 太郎 様", "given": "太郎", "family": "田中", "suffix": "様", "initials": "太. 田."}
 {"name": "田中 太郎, MA", "given": "太郎", "family": "田中", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "太. 田."}

@@ -287,6 +287,9 @@ GLUED_HONORIFICS = frozenset({
     # its label), and no person bears a family name and a given name
     # that end in one together. 部長/部长 are absent on the 阿部 + 長
     # argument (above), which a lower-bound zero does not refute.
+    # Accepted cost: a longer office word ending in one of these is
+    # split at it (田中 副社長 → given 副, suffix 社長; 獣医学博士 leaves
+    # 獣), since nothing longer is listed (decisions.md#W2, #707).
     '二世',
     '議員', '议员', '国会議員', '國會議員',
     '太平紳士', '太平绅士',
