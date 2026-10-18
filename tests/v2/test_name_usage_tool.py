@@ -16,13 +16,14 @@ import importlib.util
 import io
 import json
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
 from collections import Counter
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, Protocol
 
 import pytest
 
@@ -323,3 +324,373 @@ def test_main_reports_a_bad_ssa_zip_without_losing_the_other_sources(
     assert census["family"] == 561
     assert (ssa["status"], ssa["given"]) == ("failed", None)
     assert "not downloaded" not in err  # the file exists; it is just wrong
+
+
+# -- the CJK name index (#707) --------------------------------------------
+
+@pytest.mark.parametrize(("word", "cjk"), [
+    ("关", True), ("씨", True), ("さん", True), ("ｻﾝ", True),
+    ("佐々木", True), ("Smith", False), ("Sørensen", False),
+])
+def test_is_cjk_finds_han_kana_and_hangul(word: str, cjk: bool) -> None:
+    assert tool.is_cjk(word) is cjk
+
+
+def test_us_sources_say_they_do_not_apply_to_a_cjk_word() -> None:
+    # A CJK word is not an unlisted name there: the lists hold no
+    # non-Latin spelling at all, and the report says so in those words.
+    census = tool.census_usage("議員", tool.read_census(_CENSUS))
+    ssa = tool.ssa_usage("議員", {"justice": Counter(M=5)})
+    for usage in (census, ssa):
+        assert usage.status == "unrepresentable"
+        assert "does not apply to a CJK word" in usage.note
+
+
+def test_labels_query_asks_for_the_batch_by_item_and_filters_to_cjk() -> None:
+    query = tool.labels_query(["Q1", "Q2"])
+    assert "VALUES ?item { wd:Q1 wd:Q2 }" in query
+    assert "REGEX(STR(?label)" in query
+    assert "wd:Q101352" in tool.ids_query("Q101352")
+
+
+def _listing(*qids: str) -> list[list[dict[str, str]]]:
+    """The count query's answer, then the listing's."""
+    return [[{"n": str(len(qids))}],
+            [{"item": f"http://www.wikidata.org/entity/{q}"} for q in qids]]
+
+
+def _labels(*pairs: tuple[str, str]) -> list[dict[str, str]]:
+    return [{"item": f"http://www.wikidata.org/entity/{q}", "label": label}
+            for q, label in pairs]
+
+
+def _overrun() -> Exception:
+    # What WDQS sends at its limit: a 200 whose JSON stops mid-stream.
+    return json.JSONDecodeError("Expecting ',' delimiter", "{...", 3)
+
+
+@pytest.fixture
+def one_class(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # The listing is fetched as CSV; route it through the _sparql stub so
+    # one response queue serves every query.
+    monkeypatch.setattr(tool, "_sparql_csv",
+                        lambda query: tool._bindings(tool._sparql(query)))
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "NAME_CLASSES", {"Q101352": "family"})
+    monkeypatch.setattr(tool, "INDEX_BATCH", 2)
+    monkeypatch.setattr(tool, "INDEX_MIN_BATCH", 1)
+
+
+def _values(query: str) -> list[str]:
+    return query.split("VALUES ?item { ")[1].split(" }")[0].split()
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_class_is_listed_once_and_labelled_by_batch(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    queries = _stub_sparql(monkeypatch, [
+        *_listing("Q10", "Q9", "Q300", "Q2", "Q9"),  # unsorted, one repeat
+        _labels(("Q2", "向殿")), _labels(("Q10", "井殿")),
+    ])
+    index = tool.load_index(download=True)
+    assert index is not None
+    # Sorted by number, not as strings, with the repeat dropped.
+    assert [_values(q) for q in queries[2:]] == [
+        ["wd:Q2", "wd:Q9"], ["wd:Q10", "wd:Q300"]]
+    assert {(e.qid, e.role, e.label) for e in index.entries} == {
+        ("Q2", "family", "向殿"), ("Q10", "family", "井殿")}
+
+
+@pytest.mark.usefixtures("one_class")
+def test_the_listing_skips_lexemes_and_refuses_anything_else(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Lexemes and their senses carry P31 family name too (L1000723 and
+    # L2873-S1 did, 2026-10-17); no person bears one, and the first two
+    # builds failed on them.
+    queries = _stub_sparql(monkeypatch, [
+        *_listing("Q1", "L1000723", "L2873-S1", "L5-F2"), _labels()])
+    assert tool.load_index(download=True) is not None
+    assert _values(queries[2]) == ["wd:Q1"]
+    _stub_sparql(monkeypatch, [[{"n": "1"}], [{"item": "_:b0"}]])
+    with pytest.raises(ValueError, match="not an item"):
+        tool.load_index(download=True, refresh=True)
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_batch_that_overruns_is_halved(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    queries = _stub_sparql(monkeypatch, [
+        *_listing("Q1", "Q2"), _overrun(), _labels(("Q1", "向殿")), _labels(),
+    ])
+    index = tool.load_index(download=True)
+    assert index is not None
+    assert [_values(q) for q in queries[2:]] == [
+        ["wd:Q1", "wd:Q2"], ["wd:Q1"], ["wd:Q2"]]
+    assert [e.label for e in index.entries] == ["向殿"]
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_resumed_build_queries_only_what_is_missing(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # An interrupted build keeps its finished batches and its item list,
+    # and a halved batch is not asked whole again -- it would only
+    # overrun a second time.
+    _stub_sparql(monkeypatch, [
+        *_listing("Q1", "Q2", "Q3", "Q4"), _overrun(), _labels(("Q1", "向殿")),
+        OSError("down")])
+    with pytest.raises(OSError):
+        tool.load_index(download=True)
+    queries = _stub_sparql(monkeypatch, [
+        _labels(("Q2", "井殿")), _labels(("Q3", "殿"))])
+    index = tool.load_index(download=True)
+    assert index is not None
+    assert [_values(q) for q in queries] == [["wd:Q2"], ["wd:Q3", "wd:Q4"]]
+    assert sorted(e.label for e in index.entries) == ["井殿", "向殿", "殿"]
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_complete_index_loads_offline_and_an_incomplete_one_does_not(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [])  # any query fails the test
+    assert tool.load_index(download=False) is None
+    _stub_sparql(monkeypatch, [*_listing("Q1"), _labels(("Q1", "向殿"))])
+    fetched = tool.load_index(download=True)
+    assert fetched is not None and fetched.fetched
+    _stub_sparql(monkeypatch, [])
+    index = tool.load_index(download=False)
+    assert index is not None and index.entries[0].label == "向殿"
+
+
+@pytest.mark.usefixtures("one_class")
+def test_refresh_fetches_the_index_again(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [*_listing("Q1"), _labels(("Q1", "向殿"))])
+    tool.load_index(download=True)
+    _stub_sparql(monkeypatch, [*_listing("Q1"), _labels(("Q1", "井殿"))])
+    index = tool.load_index(download=True, refresh=True)
+    assert index is not None and index.entries[0].label == "井殿"
+
+
+@pytest.mark.usefixtures("one_class")
+@pytest.mark.parametrize("failure", [
+    urllib.error.HTTPError("u", 400, "Bad Request", {}, io.BytesIO(b"syntax")),  # type: ignore[arg-type]
+    urllib.error.HTTPError("u", 500, "Error", {}, io.BytesIO(b"MalformedQuery")),  # type: ignore[arg-type]
+])
+def test_an_error_that_is_not_an_overrun_is_not_retried_smaller(
+        monkeypatch: pytest.MonkeyPatch, failure: Exception) -> None:
+    queries = _stub_sparql(monkeypatch, [*_listing("Q1", "Q2"), failure])
+    with pytest.raises(urllib.error.HTTPError):
+        tool.load_index(download=True)
+    assert len(queries) == 3  # count, listing, and the one failure
+
+
+@pytest.mark.usefixtures("one_class")
+@pytest.mark.parametrize("failure", [
+    urllib.error.HTTPError("u", 504, "Gateway Timeout", {}, io.BytesIO(b"")),  # type: ignore[arg-type]
+    urllib.error.HTTPError("u", 500, "Error", {}, io.BytesIO(  # type: ignore[arg-type]
+        b"java.util.concurrent.TimeoutException")),
+    TimeoutError("read timed out"),
+])
+def test_a_timeout_is_an_overrun(
+        monkeypatch: pytest.MonkeyPatch, failure: Exception) -> None:
+    _stub_sparql(monkeypatch, [*_listing("Q1", "Q2"), failure, _labels(), _labels()])
+    assert tool.load_index(download=True) is not None
+
+
+@pytest.mark.usefixtures("one_class")
+def test_halving_stops_at_the_smallest_batch(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [*_listing("Q1", "Q2"), _overrun(), _overrun()])
+    with pytest.raises(ValueError, match="items 0-1 still overran"):
+        tool.load_index(download=True)
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_listing_cut_short_is_an_error(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [[{"n": "5000"}], _listing("Q1", "Q2")[1]])
+    with pytest.raises(ValueError, match="returned 2 of 5,000 items"):
+        tool.load_index(download=True)
+
+
+def test_sparql_csv_reads_the_rows_by_header(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(urllib.request, "urlopen", lambda request, timeout: (
+        io.BytesIO(b"item\r\nhttp://www.wikidata.org/entity/Q1\r\n")))
+    assert tool._sparql_csv("SELECT") == [
+        {"item": "http://www.wikidata.org/entity/Q1"}]
+
+
+@pytest.mark.usefixtures("one_class")
+def test_an_overrun_listing_is_an_error_not_an_empty_class(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [_overrun()])
+    with pytest.raises(ValueError, match="listing wd:Q101352 items overran"):
+        tool.load_index(download=True)
+
+
+class _Index(Protocol):
+    # tools/ is loaded by path, so mypy cannot see NameIndex itself.
+    def ending_in(self, word: str) -> list[Any]: ...
+    def boundaries(self, word: str) -> list[Any]: ...
+
+
+def _index(*entries: tuple[str, str, str]) -> _Index:
+    return tool.NameIndex([tool.IndexEntry(*e) for e in entries],
+                          fetched="2026-10-17")
+
+
+def test_ending_in_matches_labels_that_end_in_the_word_or_equal_it() -> None:
+    index = _index(("Q1", "family", "向殿"), ("Q2", "family", "殿"),
+                   ("Q3", "family", "殿村"), ("Q4", "given", "二世"))
+    assert {e.qid for e in index.ending_in("殿")} == {"Q1", "Q2"}
+
+
+def test_boundaries_find_a_family_tail_followed_by_a_whole_given_name() -> None:
+    # 阿部 + 長 is how 部長 ends a real name without either part ending
+    # in 部長: the argument #707 makes against peeling it.
+    index = _index(("Q1", "family", "阿部"), ("Q2", "family", "岡部"),
+                   ("Q3", "given", "長"), ("Q4", "given", "部長代"),
+                   ("Q5", "family", "長"))
+    splits = index.boundaries("部長")
+    assert [(s.family_tail, s.given) for s in splits] == [("部", "長")]
+    assert splits[0].family_items == ["Q1", "Q2"]
+    assert splits[0].given_items == ["Q3"]
+
+
+def test_ends_with_usage_counts_bearers_of_the_matched_items(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    index = _index(("Q1", "family", "向殿"), ("Q2", "family", "井殿"),
+                   ("Q3", "given", "太郎"))
+    queries = _stub_sparql(monkeypatch, [
+        [{"role": "family", "n": "7"}],
+        [{"role": "family", "country": "Japan", "n": "6"},
+         {"role": "family", "n": "1"}],
+    ])
+    usage = tool.ends_with_usage("殿", index, top=5)
+    assert "VALUES ?item { wd:Q1 wd:Q2 }" in queries[0]
+    assert "rdfs:label" not in queries[0].split("UNION")[0]
+    assert (usage.given, usage.family) == (0, 7)
+    assert usage.family_countries == [("Japan", 6)]
+    assert "2 name items end in it: 井殿 Q2, 向殿 Q1" in usage.note
+
+
+def test_ends_with_usage_names_a_single_item_in_the_singular(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [[{"role": "given", "n": "109"}], []])
+    usage = tool.ends_with_usage("二世", _index(("Q18339792", "given", "厄德二世")),
+                                 top=5)
+    assert "1 name item ends in it: 厄德二世 Q18339792" in usage.note
+
+
+@pytest.mark.usefixtures("one_class")
+def test_loading_a_cached_index_prints_no_progress(
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(tool, "INDEX_BATCH", 1)
+    _stub_sparql(monkeypatch, [*_listing(*(f"Q{n}" for n in range(1, 51))),
+                               *([_labels()] * 50)])
+    tool.load_index(download=True)
+    assert "50 of 50 items" in capsys.readouterr().err
+    _stub_sparql(monkeypatch, [])
+    tool.load_index(download=True)
+    assert capsys.readouterr().err == ""
+
+
+def test_ends_with_usage_with_no_matching_item_sends_no_query(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    queries = _stub_sparql(monkeypatch, [])
+    usage = tool.ends_with_usage("議員", _index(("Q1", "family", "向殿")), top=5)
+    assert queries == []
+    assert (usage.status, usage.given, usage.family) == ("ok", 0, 0)
+    assert "no indexed name item ends in 議員" in usage.note
+
+
+def test_ends_with_usage_sums_chunks_and_says_it_may_double_count(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "ITEM_CHUNK", 1)
+    index = _index(("Q1", "family", "向殿"), ("Q2", "family", "井殿"))
+    _stub_sparql(monkeypatch, [
+        [{"role": "family", "n": "3"}], [{"role": "family", "n": "3"}],
+        [{"role": "family", "n": "4"}], [{"role": "family", "n": "4"}],
+    ])
+    usage = tool.ends_with_usage("殿", index, top=5)
+    assert usage.family == 7
+    assert "may count twice" in usage.note
+
+
+def test_ends_with_usage_counts_people_across_a_boundary(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    index = _index(("Q1", "family", "阿部"), ("Q3", "given", "長"))
+    queries = _stub_sparql(monkeypatch, [
+        [{"n": "2", "example": "http://www.wikidata.org/entity/Q99"}],
+    ])
+    usage = tool.ends_with_usage("部長", index, top=5)
+    assert (usage.given, usage.family) == (0, 0)  # nothing ENDS in 部長
+    assert "VALUES ?f { wd:Q1 }" in queries[0]
+    assert "VALUES ?g { wd:Q3 }" in queries[0]
+    [split] = usage.splits
+    assert (split.people, split.example) == (2, "Q99")
+    text = tool.render("部長", [usage])
+    assert "family ending 部 + given 長: 2+ people" in text
+    assert "e.g. 阿部; Q99" in text
+
+
+def test_sparql_waits_out_a_rate_limit_and_retries(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    waits: list[float] = []
+    calls: list[int] = []
+
+    def answer(request: urllib.request.Request, timeout: float) -> io.BytesIO:
+        calls.append(1)
+        if len(calls) == 1:
+            raise urllib.error.HTTPError(
+                "u", 429, "Too Many Requests",
+                {"Retry-After": "7"}, io.BytesIO(b""))  # type: ignore[arg-type]
+        return io.BytesIO(b'{"results": {"bindings": []}}')
+    monkeypatch.setattr(urllib.request, "urlopen", answer)
+    monkeypatch.setattr(tool, "_sleep", waits.append)
+    assert tool._sparql("SELECT") == {"results": {"bindings": []}}
+    assert waits == [7]
+
+
+def test_main_skips_the_index_for_a_latin_word(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    monkeypatch.setattr(tool, "load_index", lambda download, refresh=False: (
+        pytest.fail("the index was loaded for a Latin word")))
+    _stub_sparql(monkeypatch, [[], []])
+    assert tool.main(["--json", "knight"]) == 0
+    sources = [u["source"] for u in json.loads(capsys.readouterr().out)["knight"]]
+    assert sources[-1] == "Wikidata people"
+
+
+def test_main_adds_the_ends_with_row_for_a_cjk_word(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    monkeypatch.setattr(tool, "load_index", lambda download, refresh=False:
+                        _index(("Q1", "family", "向殿")))
+    _stub_sparql(monkeypatch, [[], [], [{"role": "family", "n": "1"}], []])
+    assert tool.main(["--json", "殿"]) == 0
+    rows = json.loads(capsys.readouterr().out)["殿"]
+    assert rows[-1]["source"] == tool.ENDS_WITH_SOURCE
+    assert rows[-1]["family"] == 1
+
+
+def test_main_reports_an_index_that_failed_to_load(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+
+    def broken(download: bool, refresh: bool = False) -> None:
+        raise OSError("down")
+    monkeypatch.setattr(tool, "load_index", broken)
+    _stub_sparql(monkeypatch, [[], []])
+    assert tool.main(["--json", "殿"]) == 2
+    row = json.loads(capsys.readouterr().out)["殿"][-1]
+    assert (row["status"], row["family"]) == ("failed", None)
