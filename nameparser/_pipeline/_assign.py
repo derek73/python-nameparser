@@ -16,7 +16,7 @@ across pieces); token/piece tags; Lexicon only through tags already
 applied by classify (plus the leading-title period rule).
 
 Implements rules H2, H4, H5, N3, O4, O5, W4, and P6 after a family comma,
-of docs/design/rules.md,
+of docs/design/rules/,
 each cited at its code below. Ports v1's assignment loops.
 NO_COMMA (per name_order):
 leading title pieces chain while no given-position name has been seen

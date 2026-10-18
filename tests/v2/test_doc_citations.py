@@ -146,11 +146,11 @@ def _statements() -> dict[str, str]:
 
 
 def _decision_entries() -> dict[str, str]:
-    """decisions.md entry bodies keyed by their ### key. An entry is a
-    dated record rather than a statement, so a citation of one need
-    not quote it; but what it does quote must be verbatim. An arc
-    spread over several headings ('### differential-ledger, the ...
-    arc') answers to its key with all of them."""
+    """decisions entry bodies keyed by their key, one file each. An
+    entry is a dated record rather than a statement, so a citation of
+    one need not quote it; but what it does quote must be verbatim. An
+    arc spread over several headings (the differential-ledger arcs)
+    answers to its key with all of them."""
     return {key: _norm(text) for key, text in read_decision_files().items()}
 
 

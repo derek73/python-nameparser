@@ -45,7 +45,7 @@ bare core the half that flips "田中さん, /").
 
 Implements rules W1 (the vocabulary/segmenter division), W2 (the
 glued-honorific peel) and W3 (the writer's divisions are respected)
-of docs/design/rules.md, cited at their code below; the decision
+of docs/design/rules/, cited at their code below; the decision
 chain (#308, #312, #319, the vetting bars, the measured
 spaced-honorific trade) is decisions/W1, #W2 and #W3. Both splits
 make sub-slices of one token, rewriting nothing -- spans still index

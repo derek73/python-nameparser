@@ -163,7 +163,7 @@ def test_repair_keeps_a_conjunction_lowercase_in_a_particle_part() -> None:
     a part". Witnessing it needs a word in `particles` AND
     `conjunctions`; the shipped sets are disjoint, in the default
     vocabulary and in every locale pack, so no input string can
-    witness it and rules.md can carry no example line for it. Gating
+    witness it and the rules can carry no example line for it. Gating
     the conjunct on the mark passed the entire suite until this test
     existed.
 
@@ -199,12 +199,12 @@ def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
     the default vocabulary, where a lone connective now initials too.
     decisions/R3 records the rule and what it costs.
 
-    Still not a `deviates:` marker and still not a rules.md example
+    Still not a `deviates:` marker and still not a rules example
     line: markers hang on example lines and every line there names an
     input parsed with the DEFAULT vocabulary, over which `particles`
     and `conjunctions` are disjoint, so no string reaches the
     all-particle-with-a-connective shape. It is also what keeps the
-    values quoted in prose by decisions.md, mechanisms.md and
+    values quoted in prose by decisions/, mechanisms.md and
     `_render.py` from going stale unnoticed.
     """
     assert "y" in Lexicon.default().conjunctions, (
@@ -1681,7 +1681,7 @@ def test_initials_separator_is_honored_on_the_live_token_path() -> None:
 def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
 ) -> None:
     # A credential read by its capitals (S2) repairs to its all-caps
-    # spelling (R4 in rules.md). #564 made the comma reading a default
+    # spelling (rules/R4). #564 made the comma reading a default
     # decided in `segment` from the text, and classify's shape tag --
     # what repair reads -- has to follow it there too, or the default
     # title-cases a credential EVERYWHERE keeps: the first draft gave

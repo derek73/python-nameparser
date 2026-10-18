@@ -1,4 +1,4 @@
-"""Regenerate corpus_rules.jsonl from the examples in docs/design/rules.md.
+"""Regenerate corpus_rules.jsonl from the examples in docs/design/rules/.
 
 A corpus with its own provenance (#414). Each corpus covers a blind
 spot the others have -- the roster, with each file's source and the
@@ -44,7 +44,7 @@ move.
 
 The one example form that carries no name is skipped. A `[subject]`
 example names a policy or locale rather than a name string, so its
-`text` is empty -- rules.md has three, and without the filter all
+`text` is empty -- the rules have three, and without the filter all
 three collapse into a single "" that the doc never wrote. Skipping
 them is also why the promise above is honest: an example enters the
 corpus by being written down, and a form with nothing to enter is
@@ -57,7 +57,7 @@ diff. They are more concentrated here than elsewhere because the doc
 argues its edges explicitly, which is a reason to keep them rather
 than to drop them.
 
-Regenerate after editing rules.md examples:
+Regenerate after editing rules examples:
 
     uv run python tools/differential/build_rules_corpus.py
 

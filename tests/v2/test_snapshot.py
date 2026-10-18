@@ -36,7 +36,7 @@ def test_a_name_only_cldr_holds_is_counted_out() -> None:
     # A release figure counts CLDR's fictional renderings out (AGENTS.md,
     # Release-log claims); a name another corpus also holds stays in.
     # One of #653's movers, a CLDR rendering; 'Jane (Janey, Jo) Smith'
-    # moved with it and is a rules.md example only. 'マイケル' is in CLDR
+    # moved with it and is a rules example only. 'マイケル' is in CLDR
     # AND the CJK corpus, which is the half the subtraction decides.
     cldr_name = "Macáková, Alexandra Zuzana (pani, PhD)"
     shared = "マイケル"

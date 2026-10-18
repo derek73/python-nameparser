@@ -1,4 +1,4 @@
-"""THE shared behavior case table (rules.md cites it as the pin of
+"""THE shared behavior case table (the rules cite it as the pin of
 CURRENT behavior).
 
 Format is fixed here, in the first pipeline PR, and never per-PR:
@@ -405,7 +405,7 @@ CASES: tuple[Case, ...] = (
                "positional read, family 'Ph.', where every release since "
                "1.4.0 read suffix. Same criterion as the esq rows above, "
                "asked of the machinery: the entry described the merge, "
-               "not a word. decisions.md, Excluded (SUFFIX_ACRONYMS -- ph)",
+               "not a word. decisions, Excluded (SUFFIX_ACRONYMS -- ph)",
          shape=1),
     Case("suffix_word_esq_still_reads_as_a_suffix", "John Smith Esq",
          {"given": "John", "family": "Smith", "suffix": "Esq"},
@@ -7252,7 +7252,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="a declared core parts a tail as a comma would, so a "
                "connective beside it joins nothing across it and the "
-               "core is dropped (rules.md C1, #549) -- 1.4.0's "
+               "core is dropped (rules/C1, #549) -- 1.4.0's "
                "expand_suffix_delimiter reading, where 2.0.0 through "
                "2.3.0 merged the core into the joined piece and "
                "rendered 'PhD - and MD'"),
@@ -7276,7 +7276,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="the marker ends its part with nothing behind it, as it "
                "does before a typed comma, so it takes no clause "
-               "(rules.md C1's Accepted entry, #549). 2.0.0 through "
+               "(rules/C1's Accepted entry, #549). 2.0.0 through "
                "2.3.0 read maiden 'Jones', stepping past the core"),
     Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
          "Smith, MD - PhD - FACS",
@@ -9104,7 +9104,7 @@ CASES: tuple[Case, ...] = (
          notes="#371's own subject: the leading pair read given "
                "'Van Johnson' with an EMPTY family until the merge "
                "learned to decline at the head of the input. A Case "
-               "row rather than a rules.md line because the empty "
+               "row rather than a rules line because the empty "
                "fields are the symptom -- test_case asserts the whole "
                "dict, so `suffix` and `middle` being empty is pinned "
                "here and nowhere else"),
@@ -9894,7 +9894,7 @@ CASES: tuple[Case, ...] = (
          "Mary Jane King", {"given": "Mary", "middle": "Jane",
                             "family": "King"},
          classification="parity",
-         notes="negative control: decisions.md's trailing-position "
+         notes="negative control: the decisions' trailing-position "
                "rule that must NOT be adopted, still not adopted"),
     Case("title_word_trailing_credential_is_a_suffix",
          "John Smith Esq.",
@@ -10929,7 +10929,7 @@ CASES: tuple[Case, ...] = (
                "the token then classified as hangul, the surname site "
                "divided the RAW text after 김, and the stranded mark "
                "opened the family: given 김, family \u3099민준. "
-               "Tolerated: rules.md's W Background leaves a mark after "
+               "Tolerated: rules/W's Background leaves a mark after "
                "a non-kana unpromised, so this reading is watched by "
                "the snapshot rather than pinned as contract",
          tolerated=True),
@@ -11356,7 +11356,7 @@ CASES: tuple[Case, ...] = (
                "which _is_post_nominal's docstring says the surname "
                "site reads as an ANSWER rather than a token to step "
                "past -- and declines, leaving 지훈 whole. The stop "
-               "stays on the token: nothing rewrites text (rules.md T "
+               "stays on the token: nothing rewrites text (rules/T's "
                "Background). 2.2.0 read given 양., middle 지, family "
                "훈.",
          tolerated=True),

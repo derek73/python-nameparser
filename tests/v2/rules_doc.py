@@ -1,6 +1,6 @@
-"""Parser and annotation registry for docs/design/rules.md example lines.
+"""Parser and annotation registry for docs/design/rules/ example lines.
 
-The grammar (described for humans in rules.md's preamble; this module
+The grammar (described for humans in the rules README's preamble; this module
 is its executable definition):
 
     "INPUT" [annotation] →  field=VALUE  [· boundary]
@@ -122,7 +122,7 @@ POLICIES: dict[str, Policy] = {
     "strict-comma-suffixes": Policy(lenient_comma_suffixes=False),
     #: The two switches over the by-shape credential class (#516).
     #: Named after the Policy FIELD rather than after the behavior,
-    #: which is deliberate: rules.md's statements stay
+    #: which is deliberate: the rules' statements stay
     #: implementation-free, so the annotation slot is the one place
     #: the doc can put the caller-facing name of the switch its prose
     #: describes. The suffix says which way the field is set, since

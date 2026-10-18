@@ -633,7 +633,7 @@ def test_a_by_shape_token_takes_the_count_and_never_a_lean() -> None:
 
 
 @pytest.mark.parametrize("text, expected", [
-    ("Xyz.", True),        # H2 (rules.md): an unlisted Latin abbreviation
+    ("Xyz.", True),        # rules/H2 -- an unlisted Latin abbreviation
     ("김민준.", False),     # #323: hangul has no period abbreviations
     ("田中.", False),       # nor Han
     ("たなか.", False),     # nor kana

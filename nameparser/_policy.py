@@ -132,7 +132,7 @@ class Script(StrEnum):
 # personal name uses them. Halfwidth kana (U+FF65-U+FF9F, #594) IS
 # katakana here: legacy bank, payroll and CSV data written for JIS X
 # 0201 systems spells names in it, and 山田 ﾀﾛｳ must read as 山田 タロウ
-# does. Classifying it is a range, not a fold. rules.md's T Background
+# does. Classifying it is a range, not a fold. rules/T's Background
 # says "nothing rewrites the text before parsing", which rules out a
 # fold at tokenize, and an NFKC fold at classification would reach far
 # past the kana (fullwidth Latin, ㈱), and when #594 decided it a

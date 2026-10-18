@@ -253,7 +253,7 @@ PARTICLES = NON_GIVEN_NAME_PARTICLES | {
               # particle (DiCaprio)
     'dí',
     'do',     # Vietnamese Đỗ leads a great many surnames. Also in
-              # TITLES -- decisions.md records TITLES n ambiguous ==
+              # TITLES -- the decisions record TITLES n ambiguous ==
               # {do, freiherr, st} as load-bearing for the emitter
     'du',     # Du is a Chinese surname (Du Fu), leading under a
               # family-first reading

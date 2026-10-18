@@ -127,7 +127,7 @@ def test_every_entry_file_is_indexed_once(folder: Path) -> None:
 def test_index_title_matches_heading_and_file_name(folder: Path) -> None:
     for e in read_index(folder):
         first = e.path.read_text(encoding="utf-8").split("\n", 1)[0]
-        if len(e.key) == 1:     # a section keeps its rules.md heading
+        if len(e.key) == 1:     # a section keeps its old heading
             assert first == "## " + e.title, e.path.name
             name = e.title.rsplit(" (", 1)[0]
         else:

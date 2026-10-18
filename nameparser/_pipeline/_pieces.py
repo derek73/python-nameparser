@@ -29,7 +29,7 @@ longer names _group at all. What still holds is the rule that replaced
 it, and tests/v2/test_layering.py is where it is written down -- a
 piece predicate may not depend on a stage, in either direction.
 
-The S2 trailing peel travels as the unit decisions.md describes --
+The S2 trailing peel travels as the unit the decisions describe --
 peel_walk, peel_trailing and trailing_start together -- though only
 the first two cross a stage boundary. trailing_titles joins them
 because it reads what that peel left: the two answer one question

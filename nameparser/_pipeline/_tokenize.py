@@ -8,7 +8,7 @@ there is never a token, one inside an extracted region is word text),
 interpunct_offsets (间隔号 transcription markers, #298; never tokens).
 Reads: Policy.strip_emoji, Policy.strip_bidi.
 
-Implements rules T1, T2 and T3 of docs/design/rules.md, cited at
+Implements rules T1, T2 and T3 of docs/design/rules/, cited at
 their code below. There is NO text-rewriting normalize stage: all
 three are character-classification rules, so spans always index the
 original exactly as given (v1 contrast: decisions/T1).

@@ -1,4 +1,4 @@
-"""Executes every example line in docs/design/rules.md.
+"""Executes every example line in docs/design/rules/.
 
 Wrong-on-arrival defense: each example runs against the live parser.
 ``deviates:`` examples assert TODAY's output (strict, like an xfail)
@@ -23,7 +23,7 @@ RULES = parse_rules_doc(read_rules_text())
 
 
 def test_doc_has_rules() -> None:
-    assert RULES, "rules.md holds no rules yet -- extraction not started"
+    assert RULES, "docs/design/rules/ holds no rules"
 
 
 @pytest.mark.parametrize("rule", RULES, ids=lambda r: r.rule_id)
@@ -153,7 +153,7 @@ def test_example(rule: Rule, example: Example) -> None:
     "김. 민준",  # H2's script veto on hangul typed as jamo (#665)
 ])
 def test_the_nfd_examples_are_still_decomposed(decomposed: str) -> None:
-    """The decomposed example lines in rules.md are the only executable
+    """The decomposed example lines in the rules are the only executable
     witnesses of its encoding clauses (H2, P3), and an editor or
     formatter that NFC-normalizes the file turns each into the
     composed case, which always worked and still passes. Each entry

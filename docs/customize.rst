@@ -274,7 +274,7 @@ or ``edd``. A mask applies wherever its word stands, so it would
 re-spell a person called Meng or Edd, and these get none: they repair
 in plain capitals. The reasoning is the Excluded block for
 ``CAPITALIZATION_EXCEPTIONS`` under ``R4`` in
-``docs/design/decisions.md``.
+``docs/design/decisions/``.
 
 .. doctest::
 

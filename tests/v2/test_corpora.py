@@ -3,7 +3,7 @@ what their generators would write, and every corpus line is one the
 snapshot can read.
 
 A generated corpus that falls behind its source silently narrows the
-names snapshot.jsonl watches: a case row or a rules.md example added
+names snapshot.jsonl watches: a case row or a rules example added
 without regenerating is then read by nothing but its own test, which
 moves with the change it pins. These pins make a stale corpus fail
 instead.
@@ -73,7 +73,7 @@ def test_case_shape_ids_exist_in_the_inventory() -> None:
 
 
 def test_rules_corpus_matches_the_rules_doc() -> None:
-    """corpus_rules.jsonl is generated from docs/design/rules.md's own
+    """corpus_rules.jsonl is generated from docs/design/rules/'s own
     examples (#414), through the doc's parser. test_rules_doc executes
     every example against an expectation stored beside it, so a
     deliberate behavior change edits both and stays green; the snapshot
@@ -91,7 +91,7 @@ def test_rules_corpus_matches_the_rules_doc() -> None:
     from .rules_doc import parse_rules_doc
     rules = parse_rules_doc(read_rules_text())
     assert len(rules) >= 38, (
-        f"rules.md parsed to {len(rules)} rules, fewer than the 38 this "
+        f"docs/design/rules/ parsed to {len(rules)} rules, fewer than the 38 this "
         f"corpus was built from. A rule block that stops parsing hands "
         f"its examples to its neighbour and shrinks the corpus "
         f"silently. Ratchet this floor up when rules are added")

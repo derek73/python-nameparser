@@ -22,7 +22,7 @@ for a part of by-shape credentials; and Lexicon.titles DIRECTLY, with
 _vocab.period_joined_vocab for a period-joined title, for a part of
 titles and suffixes (#603).
 
-Implements rule C2 of docs/design/rules.md, and C1's segmentation;
+Implements rule C2 of docs/design/rules/, and C1's segmentation;
 C1's decision is `_comma.decide`'s. History in decisions/C1.
 """
 from __future__ import annotations

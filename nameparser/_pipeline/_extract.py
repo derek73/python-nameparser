@@ -17,7 +17,7 @@ Lexicon.maiden_markers, and
 Lexicon.suffix_words / suffix_acronyms / suffix_acronyms_ambiguous
 through _suffix_shaped.
 
-Implements rules N1, N2, S1, M1 and M3 of docs/design/rules.md (the #273
+Implements rules N1, N2, S1, M1 and M3 of docs/design/rules/ (the #273
 matching mechanism); each is cited at its code below. One scan
 mechanic worth stating up front: matching is one left-to-right pass,
 no nesting, and delimiter characters inside a matched region are

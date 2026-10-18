@@ -1,6 +1,6 @@
 """Recorded roster of spellings that have actually shipped wrong in
 docs, docstrings, or messages. Add an entry when one is caught; never
-remove one without a decisions.md note."""
+remove one without a decisions note."""
 from __future__ import annotations
 
 from pathlib import Path

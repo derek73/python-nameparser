@@ -700,7 +700,7 @@ def test_a_voicing_mark_takes_the_script_of_the_kana_before_it(
     assert effective_script("김" + mark + "민준") is None
     assert effective_script("山" + mark) is Script.HIRAGANA
     # a mark with nothing before it has no base either. Degenerate
-    # input, recorded rather than promised (rules.md's W Background)
+    # input, recorded rather than promised (rules/W's Background)
     assert effective_script(mark + "アイ") is Script.HIRAGANA
     assert effective_script(mark) is Script.HIRAGANA
 

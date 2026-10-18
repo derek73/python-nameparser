@@ -3202,7 +3202,7 @@ def _comma_twin_findings(parser: Parser) -> tuple[list[str], int]:
 
 
 def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
-    """rules.md's C1: "a delimiter the policy declares parts a trailing
+    """rules/C1's statement: "a delimiter the policy declares parts a trailing
     suffix part as a comma would" (#549). Every role field of a name
     with a declared core standing in a part after the suffix comma, and
     every kind it reports but `comma-structure` (`_twin_record`),

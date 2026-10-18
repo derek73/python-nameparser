@@ -1,9 +1,9 @@
-"""Unit tests for the rules.md example-line grammar parser.
+"""Unit tests for the rules example-line grammar parser.
 
 DOC below is a SYNTHETIC fixture: it exists only to exercise the
 grammar and is never executed against the parser. Its rule IDs and
 content are illustrative (they echo the spec's worked examples for
-readability) and deliberately do NOT track docs/design/rules.md —
+readability) and deliberately do NOT track docs/design/rules/ —
 do not "fix" this fixture when the real doc changes.
 """
 from __future__ import annotations
@@ -13,7 +13,7 @@ import pytest
 from tests.v2.rules_doc import Example, parse_rules_doc
 
 DOC = '''\
-# Parsing rules (synthetic grammar fixture -- not the real rules.md)
+# Parsing rules (synthetic grammar fixture -- not the real rules)
 
 ## Particles
 
