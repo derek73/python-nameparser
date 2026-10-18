@@ -167,19 +167,13 @@ def _is_excerpt(excerpt: str, body: str) -> bool:
     return True
 
 
-# The #713 migration script and its test spell old-form citations as
-# fixtures; they are deleted once the split lands.
-_MIGRATION = (REPO / "tools" / "split_design_docs.py",
-              REPO / "tests" / "v2" / "test_split_design_docs.py")
-
-
 def _swept_files() -> list[Path]:
     # this module's own comments show citation shapes, citing nothing,
     # and so do test_design_docs.py's fixtures for the citation pattern
     shapes = {Path(__file__).resolve(),
               REPO / "tests" / "v2" / "test_design_docs.py"}
     files = [p for d in SWEEP_DIRS for p in sorted((REPO / d).rglob("*.py"))
-             if p not in shapes and p not in _MIGRATION]
+             if p not in shapes]
     return files
 
 
@@ -415,10 +409,9 @@ def test_no_old_design_doc_anchors() -> None:
     go unchecked; this keeps the form out of every tracked file."""
     tracked = subprocess.run(["git", "ls-files"], cwd=REPO, check=True,
                              capture_output=True, text=True).stdout.split()
-    exempt = {str(p.relative_to(REPO)) for p in _MIGRATION}
     problems = []
     for rel in tracked:
-        if rel in exempt or not rel.endswith((".py", ".md", ".rst")):
+        if not rel.endswith((".py", ".md", ".rst")):
             continue
         path = REPO / rel
         if not path.exists():
