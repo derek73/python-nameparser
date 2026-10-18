@@ -325,9 +325,6 @@ def _withdraw_unjoined_connectives(segments: Sequence[Sequence[int]],
                                    tokens: Sequence[WorkToken],
                                    ambiguities: list[PendingAmbiguity],
                                    ) -> None:
-    if not any(a.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
-               for a in ambiguities):
-        return
     unjoined = set()
     for seg in segments:
         last, after = None, False
@@ -1585,8 +1582,14 @@ def assign(state: ParseState) -> ParseState:
                            and not any("vocab:suffix" in tokens[i].tags
                                        for i in piece))
                        else Role.SUFFIX)
+    # a plain loop, so a one-case name with no connective report pays
+    # no frame for the pass
     if state.one_case:
-        _withdraw_unjoined_connectives(state.segments, tokens, ambiguities)
+        for amb in ambiguities:
+            if amb.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL:
+                _withdraw_unjoined_connectives(state.segments, tokens,
+                                               ambiguities)
+                break
     return copy_with(state, tokens=tuple(tokens),
                      order=order,
                      ambiguities=tuple(ambiguities))
