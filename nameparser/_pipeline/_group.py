@@ -81,7 +81,7 @@ from nameparser._pipeline._state import (
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import (
-    comma_follows_marker, delimiter_cores, numeral_settled_by_case,
+    comma_follows_marker, delimiter_cores,
 )
 from nameparser._types import AmbiguityKind, Role
 
@@ -332,14 +332,9 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         # -- the take consumed the run, so the forks the reading called
         # on it are reported here, where assign will never see them
         consumed = {i for j in range(end, len(pieces)) for i in pieces[j]}
-        # rules/S10: "a numeral written in lower case in a name of mixed
-        # case is the generation and reports nothing" -- here as at
-        # assign's numeral report (#718's review)
-        numeral = (() if vpeel.numeral is None
-                   or numeral_settled_by_case(
-                       tokens[vpeel.numeral[0]].text, one_case)
-                   else (vpeel.numeral,))
-        for piece in (*vpeel.picks, *vpeel.absorbed, *numeral):
+        for piece in (*vpeel.picks, *vpeel.absorbed,
+                      *(() if vpeel.numeral is None
+                        else (vpeel.numeral,))):
             if piece[0] in consumed:
                 ambiguities.append(PendingAmbiguity(
                     AmbiguityKind.SUFFIX_OR_NAME,

@@ -255,8 +255,7 @@ _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 # rules/S10: "A roman numeral ending a name written without a comma
 # reads as the generation" -- which the initial veto would otherwise
 # take: V and I are suffix vocabulary, X a numeral by shape alone, and
-# all three are bare capitals, which inside a name are middle initials. Whether a one-letter
-# numeral has the words to spare is the caller's count (`peel_trailing`).
+# all three are bare capitals, which inside a name are middle initials.
 def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
     """assign's roman-numeral fork, shared with group's bound-given
     reserve (#401): a FINAL single-token piece that is a roman numeral
@@ -279,8 +278,8 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
 # rules/S10: "a numeral written in lower case in a name of mixed case is
 # the generation and reports nothing" -- the one writing that settles
 # the fork, since nobody writes an initial in lower case beside
-# capitals. Asked by the walk, which then needs no words to spare, and
-# by assign, which then reports nothing, so the two cannot drift.
+# capitals. Asked by the walk alone, which takes such a numeral as any
+# suffix word and records no call for a reporter to report.
 def numeral_settled_by_case(text: str, one_case: bool | None) -> bool:
     """Whether a numeral the trailing fork reads is lower case in a
     name written in more than one case. `one_case` is

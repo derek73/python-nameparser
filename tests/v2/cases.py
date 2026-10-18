@@ -8834,12 +8834,9 @@ CASES: tuple[Case, ...] = (
                "silenced all the same: what the report is about is a "
                "field NOTHING decided, and this one a title decided. "
                "The word lands in `family`, AGAINST H1's given-name "
-               "title clause, as it did before #718 ('John Jr., Sir' "
-               "and 'John PhD, Sir' too). Until #718 this row was "
-               "'comma_path_given_name_title_decides_the_lone_word' on "
-               "'John V, Sir', the one spelling that read H1's given "
-               "name, and #718 made that 'V' a name word (the next "
-               "row), so nothing pins H1's reading behind a comma now"),
+               "title clause ('John Jr., Sir' and 'John PhD, Sir' "
+               "too, #720). 'John V, Sir' read H1's given name until "
+               "#718; nothing pins that reading behind a comma now"),
     Case("a_lone_numeral_before_a_given_name_title_comma",
          "John V, Sir",
          {"title": "Sir", "given": "John", "family": "V"},

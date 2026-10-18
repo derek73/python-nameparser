@@ -59,7 +59,7 @@ from typing import NamedTuple
 
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD,
-    AmbiguityKind, PendingAmbiguity, WorkToken,
+    WorkToken,
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
@@ -918,7 +918,9 @@ class Peel(NamedTuple):
     pieces and rest[names:] the suffixes. The other two are pieces --
     token-index tuples, as PendingAmbiguity wants them -- and each is
     one token long: `numeral` is the piece the roman-numeral fork
-    took (None when it did not fire; always the walk's last piece),
+    took as a call, which is reported (None when it did not fire, and
+    for a numeral its lower case settled, which is taken unrecorded;
+    always the walk's last piece),
     `picks` the bare ambiguous acronyms the peel had to resolve, in
     peel order, either way (the last may sit at rest[names - 1]), and
     a one-letter numeral the fork declined for want of words to spare
@@ -1158,8 +1160,15 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                 and is_trailing_numeral_suffix(
                     text := tokens[piece[0]].text,
                     tokens[pieces[rest[k - 2]][0]].text)):
-            if (len(text) > 1 or not count_numeral or k - 2 >= second
-                    or numeral_settled_by_case(text, one_case)):
+            # rules/S10: "a numeral written in lower case in a name of
+            # mixed case is the generation and reports nothing" --
+            # decided here once: taken as any suffix word is, and not
+            # recorded as the fork's call, so no reporter meets it
+            if numeral_settled_by_case(text, one_case):
+                k -= 1
+                continue
+            if (not is_single_letter_numeral(text) or not count_numeral
+                    or k - 2 >= second):
                 numeral = tuple(piece)
                 k -= 1
                 continue
@@ -1362,22 +1371,6 @@ def particle_tail(seg: Sequence[Sequence[int]],
         lo -= 1
     return lo, hi
 
-
-# rules/S10: "a letter already reported as read as an initial reports
-# nothing new" -- asked by assign's report of the numeral fork's
-# declined pick (#718). The maiden clause's report on the numeral it
-# keeps cannot meet the case: classify reads no connective inside a
-# clause, so a clause word never carries that report
-def reported_as_initial(ambiguities: Iterable[PendingAmbiguity],
-                        index: int) -> bool:
-    """Whether classify's connective-or-initial fork already reported
-    the token at `index`, which it reads as an initial when it reaches
-    the trailing peel as a lone piece. Declining the numeral reads the
-    letter as that same name word, so a second report would name one
-    reading twice. Asked only of a declined numeral pick, a rare
-    shape, so the scan costs ordinary names nothing."""
-    return any(a.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
-               and index in a.indices for a in ambiguities)
 
 
 def has_name_content(piece: Sequence[int],
@@ -1960,9 +1953,10 @@ def trailing_run_start(start: int, pieces: Sequence[Sequence[int]],
     comma (#623), where `trailing_start` sees only the suffixes and
     `trailing_start_past_titles` leaves the titles inside the bound."""
     # rules/S4: "the given part's trailing slot after a family comma is
-    # read without it (S5)" -- the count, which assign's walk there
-    # never asks of the numeral either, so the chain this bounds stops
-    # where that walk will read the suffix (#718's review)
+    # read without it (S5)" -- the numeral half of the count, which
+    # assign's walk there never asks either, so the chain this bounds
+    # stops where that walk will read the suffix (#718's review); the
+    # acronym half is still counted here, as before #718
     rest, titled, peel = tail_reading(peel_walk(start, ptags), pieces,
                                       ptags, tokens, one_case,
                                       count_numeral=False)

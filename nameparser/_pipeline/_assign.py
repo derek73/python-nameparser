@@ -89,15 +89,13 @@ from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    effective_script, is_suffix_lenient, numeral_settled_by_case,
-    resolve_script_set,
+    effective_script, is_suffix_lenient, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
     Peel, TailRead, is_suffix_piece, is_title_piece, leading_titles,
-    particle_tail, listed_lean, peel_walk, reported_as_initial,
-    starts_a_credential_run,
+    particle_tail, listed_lean, peel_walk, starts_a_credential_run,
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
@@ -308,6 +306,21 @@ def _placed(read: TailRead, rest: list[int],
         peel.absorbed)
 
 
+# rules/S10: "a letter already reported as read as an initial reports
+# nothing new" -- asked only by the numeral fork's declined pick
+# (#718). The maiden clause's report on the numeral it keeps cannot
+# meet the case: classify reads no connective inside a clause
+def _reported_as_initial(ambiguities: Sequence[PendingAmbiguity],
+                         index: int) -> bool:
+    """Whether classify's connective-or-initial fork already reported
+    the token at `index`, reading it as an initial. Declining the
+    numeral reads the letter as that same name word, so a second
+    report would name one reading twice. A rare shape, so the scan
+    costs ordinary names nothing."""
+    return any(a.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
+               and index in a.indices for a in ambiguities)
+
+
 def _assign_main(seg_idx: int, state: ParseState,
                  tokens: list[WorkToken],
                  ambiguities: list[PendingAmbiguity],
@@ -408,10 +421,7 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[piece_idx], Role.TITLE)
     for piece in peeled.absorbed:
         ambiguities.append(_absorbed(piece, tokens))
-    # rules/S10: "a numeral written in lower case in a name of mixed
-    # case is the generation and reports nothing"
-    if peeled.numeral is not None and not numeral_settled_by_case(
-            tokens[peeled.numeral[0]].text, state.one_case):
+    if peeled.numeral is not None:
         # a trailing single letter is a name part unless it happens
         # to be a roman numeral -- and V/X/I are ordinary middle
         # initials, so taking it as a suffix is a call, not a fact
@@ -540,13 +550,12 @@ def _assign_main(seg_idx: int, state: ParseState,
         # declined pick (#718), which carries neither credential tag
         # (the acronym fork's picks carry one) and is never a suffix
         if token.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
-            if reported_as_initial(ambiguities, piece[0]):
-                continue
-            ambiguities.append(PendingAmbiguity(
-                AmbiguityKind.SUFFIX_OR_NAME,
-                f"{token.text!r} is a roman numeral, but the name has "
-                f"no other word to spare for it; read as ", piece,
-                field_tail=" rather than a generational suffix"))
+            if not _reported_as_initial(ambiguities, piece[0]):
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.SUFFIX_OR_NAME,
+                    f"{token.text!r} is a roman numeral, but the name "
+                    f"has no other word to spare for it; read as ", piece,
+                    field_tail=" rather than a generational suffix"))
             continue
         declined = ("a name part" if token.role is Role.SUFFIX
                     else "a post-nominal")
