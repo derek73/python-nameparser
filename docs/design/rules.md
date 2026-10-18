@@ -1298,6 +1298,8 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Агриппина Младшая"         →  suffix="Младшая"
       "جورج بوش الابن"            →  suffix="الابن"
       "ロバート・ダウニー・ジュニア"  →  suffix="ジュニア"
+      "佐藤恵子 国会議員"         →  suffix="国会議員"
+      "陳子媚 二世"               →  suffix="二世"
       "Питер Брейгель мл."        →  suffix="мл."
       "Marie Fils"                →  family="Fils"  · boundary
       "Jiří Dienstbier ml."       →  family="ml."  · boundary
@@ -2417,6 +2419,21 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
       "김지양"                    →  suffix=""  · boundary
       "선생님"                    →  family="선생님"  · boundary
       "王君"                      →  family="王君"  · boundary
+      "田中 社長"                 →  suffix="社長"
+      "田中部長"                  →  family="田中部長"  · boundary
+      "陳怡君二世"                →  family="陳怡君二世"  · boundary
+    Accepted: the credential, office and generational words of #671
+    (議員, 国会議員, 太平紳士, 医学博士, 二世, 社長, 部長, 課長 and their
+    variant spellings) are vocabulary in the spaced and after-comma
+    positions only and no peel splits them off a glued name:
+    陳怡君二世 and 田中部長 keep the word in the name. The glued bar
+    is "can it END a name?", and none of these was measured against
+    real names (部長 fails it outright, 阿部長 being 阿部 + 長). The
+    Han segmenter's own division is not a peel and still exposes
+    them: under the Chinese pack a listed surname followed by one of
+    the words divides there and the word reads as a suffix, so
+    王二世 reads family 王, suffix 二世 and 李部長 family 李, suffix
+    部長, as 王博士 already does.
     history: decisions.md#W2 · interacts: W3 · implemented: nameparser/_pipeline/_script_segment.py
 
 W3. Rationale: a family name declared by a comma is the writer's
