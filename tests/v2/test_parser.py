@@ -2112,6 +2112,7 @@ def test_a_decomposed_dotted_letter_is_dotted() -> None:
 _CJK_SPACED_WORDS = (
     "議員", "议员", "国会議員", "國會議員", "太平紳士", "太平绅士",
     "医学博士", "醫學博士", "二世", "社長", "部長", "課長",
+    "社长", "部长", "课长",
 )
 
 

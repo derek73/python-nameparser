@@ -181,16 +181,19 @@ SUFFIX_WORDS = frozenset({
     # - 議員/议员, 国会議員/國會議員: legislator, Diet member.
     # - 太平紳士/太平绅士: Justice of the Peace (Hong Kong).
     # - 医学博士/醫學博士: Doctor of Medicine.
-    # - 社長/部長/課長: Japanese job titles used as forms of address
-    #   after a name (田中 社長), not credentials -- the same slot as
-    #   先生. Japanese spellings only; 社长/部长/课长 are not listed.
+    # - 社長/部長/課長 and the simplified 社长/部长/课长: job titles
+    #   used as forms of address after a name (田中 社長, 李部长),
+    #   not credentials -- the same slot as 先生. Japanese president,
+    #   department head, section chief; Chinese society head,
+    #   minister, section chief. The simplified 长 never occurs in
+    #   Japanese text, so those entries touch no Japanese name.
     #   部長 is the reason glued is out: 長 alone is a borne given
     #   name (阿部長 = 阿部 + 長).
     '二世',
     '議員', '议员', '国会議員', '國會議員',
     '太平紳士', '太平绅士',
     '医学博士', '醫學博士',
-    '社長', '部長', '課長',
+    '社長', '部長', '課長', '社长', '部长', '课长',
     # #346/#344/#343: spaced trailing honorifics, South Asian and
     # Tibetan. SPACED ONLY -- none of these is in GLUED_HONORIFICS
     # below, and none may be added to it. जी is the reason and the
