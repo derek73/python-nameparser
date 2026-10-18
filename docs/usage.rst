@@ -591,10 +591,11 @@ not 님 with 박사 left behind.
 
 Credential and office words (議員 legislator, 医学博士 doctor of
 medicine, 社長 company president, 二世 the second) peel when glued as
-well: they are not known to end a name. 部長 (department
-head) is the exception and is read only when spaced, because 長 alone
-is a given name, so 阿部長 can be the surname 阿部 and the given name
-長:
+well: they are not known to end a name. A longer office word that
+ends in one of them is split at it, so 田中 副社長 (vice-president)
+gives the given name 副 and the suffix 社長. 部長 (department head) is
+the exception and is not peeled when glued, because 長 alone is a
+given name, so 阿部長 can be the surname 阿部 and the given name 長:
 
 .. doctest::
 

@@ -13,8 +13,10 @@ tools/ is not a package, so the module is loaded by path, as
 _differential_fixtures.py loads compare.py.
 """
 import importlib.util
+import http.client
 import io
 import json
+import unicodedata
 import sys
 import urllib.error
 import urllib.parse
@@ -489,6 +491,8 @@ def test_an_error_that_is_not_an_overrun_is_not_retried_smaller(
     urllib.error.HTTPError("u", 504, "Gateway Timeout", {}, io.BytesIO(b"")),  # type: ignore[arg-type]
     urllib.error.HTTPError("u", 500, "Error", {}, io.BytesIO(  # type: ignore[arg-type]
         b"java.util.concurrent.TimeoutException")),
+    urllib.error.HTTPError("u", 502, "Bad Gateway", {}, io.BytesIO(b"")),  # type: ignore[arg-type]
+    http.client.IncompleteRead(b""),
     TimeoutError("read timed out"),
 ])
 def test_a_timeout_is_an_overrun(
@@ -622,18 +626,16 @@ def test_ends_with_usage_sums_chunks_and_says_it_may_double_count(
 def test_ends_with_usage_counts_people_across_a_boundary(
         monkeypatch: pytest.MonkeyPatch) -> None:
     index = _index(("Q1", "family", "阿部"), ("Q3", "given", "長"))
-    queries = _stub_sparql(monkeypatch, [
-        [{"n": "2", "example": "http://www.wikidata.org/entity/Q99"}],
-    ])
+    queries = _stub_sparql(monkeypatch, [_people("Q99", "Q7")])
     usage = tool.ends_with_usage("部長", index, top=5)
     assert (usage.given, usage.family) == (0, 0)  # nothing ENDS in 部長
     assert "VALUES ?f { wd:Q1 }" in queries[0]
     assert "VALUES ?g { wd:Q3 }" in queries[0]
     [split] = usage.splits
-    assert (split.people, split.example) == (2, "Q99")
+    assert (split.people, split.example) == (2, "Q7")
     text = tool.render("部長", [usage])
     assert "family ending 部 + given 長: 2+ people" in text
-    assert "e.g. 阿部; Q99" in text
+    assert "e.g. 阿部; bearer Q7" in text
 
 
 def test_sparql_waits_out_a_rate_limit_and_retries(
@@ -694,3 +696,308 @@ def test_main_reports_an_index_that_failed_to_load(
     assert tool.main(["--json", "殿"]) == 2
     row = json.loads(capsys.readouterr().out)["殿"][-1]
     assert (row["status"], row["family"]) == ("failed", None)
+
+
+# -- review of #712: the index's failure paths ------------------------------
+
+def _people(*qids: str) -> list[dict[str, str]]:
+    return [{"p": f"http://www.wikidata.org/entity/{q}"} for q in qids]
+
+
+@pytest.mark.usefixtures("one_class")
+def test_each_class_keeps_its_own_role_and_batches(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "NAME_CLASSES",
+                        {"Q101352": "family", "Q202444": "given"})
+    queries = _stub_sparql(monkeypatch, [
+        *_listing("Q1"), _labels(("Q1", "向殿")),
+        *_listing("Q2"), _labels(("Q2", "太郎")),
+    ])
+    index = tool.load_index(download=True)
+    assert index is not None
+    assert {(e.qid, e.role) for e in index.entries} == {
+        ("Q1", "family"), ("Q2", "given")}
+    assert [_values(q) for q in queries if "rdfs:label" in q] == [
+        ["wd:Q1"], ["wd:Q2"]]
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_class_that_lists_no_items_is_an_error_not_an_empty_index(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # A mistyped or merged class answers 0 to both queries; caching that
+    # would make every later ends-with row a silent zero.
+    _stub_sparql(monkeypatch, [*_listing()])
+    with pytest.raises(ValueError, match="wd:Q101352 lists no items"):
+        tool.load_index(download=True)
+    assert not (tool.cache_dir() / tool.INDEX_DIR / "Q101352-ids.json").exists()
+
+
+@pytest.mark.usefixtures("one_class")
+@pytest.mark.parametrize(("rows", "loads"), [(999, True), (998, False)])
+def test_the_listing_count_allows_a_thousandth_of_slack(
+        monkeypatch: pytest.MonkeyPatch, rows: int, loads: bool) -> None:
+    monkeypatch.setattr(tool, "INDEX_BATCH", 5000)
+    qids = [f"Q{n}" for n in range(1, rows + 1)]
+    _stub_sparql(monkeypatch, [[{"n": "1000"}], _listing(*qids)[1], _labels()])
+    if loads:
+        assert tool.load_index(download=True) is not None
+    else:
+        with pytest.raises(ValueError, match="returned 998 of 1,000"):
+            tool.load_index(download=True)
+
+
+@pytest.mark.usefixtures("one_class")
+@pytest.mark.parametrize(("name", "content"), [
+    ("Q101352-ids.json", "["),
+    ("Q101352-ids.json", "{}"),
+    ("Q101352-ids.json", '["Q1", "L5"]'),
+    ("Q101352-ids.json", "[]"),
+    ("Q101352-0-1.json", '{"rows": []}'),
+    ("Q101352-0-1.json", '{"fetched": "x", "span": ["Q1", "Q1"], "rows": null}'),
+    ("Q101352-0-1.json", '{"fetched": "x", "span": ["Q1", "Q1"], "rows": [["Q9", "殿"]]}'),
+])
+def test_an_unusable_cache_file_is_named_with_its_remedy(
+        monkeypatch: pytest.MonkeyPatch, name: str, content: str) -> None:
+    _stub_sparql(monkeypatch, [*_listing("Q1"), _labels(("Q1", "向殿"))])
+    tool.load_index(download=True)
+    (tool.cache_dir() / tool.INDEX_DIR / name).write_text(content)
+    _stub_sparql(monkeypatch, [])
+    with pytest.raises(ValueError, match=f"{name} is unusable.*--refresh-index"):
+        tool.load_index(download=True)
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_batch_cached_against_another_listing_is_fetched_again(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Deleting one class's listing must not leave its batches answering
+    # for whatever items now sit at the same positions.
+    _stub_sparql(monkeypatch, [*_listing("Q1", "Q2"), _labels(("Q1", "向殿"))])
+    tool.load_index(download=True)
+    (tool.cache_dir() / tool.INDEX_DIR / "Q101352-ids.json").unlink()
+    queries = _stub_sparql(monkeypatch, [
+        *_listing("Q10", "Q11"), _labels(("Q11", "井殿"))])
+    index = tool.load_index(download=True)
+    assert index is not None
+    assert [(e.qid, e.label) for e in index.entries] == [("Q11", "井殿")]
+    assert _values(queries[2]) == ["wd:Q10", "wd:Q11"]
+
+
+@pytest.mark.usefixtures("one_class")
+def test_an_index_from_an_older_version_of_the_tool_is_rebuilt(
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    _stub_sparql(monkeypatch, [*_listing("Q1"), _labels(("Q1", "向殿"))])
+    tool.load_index(download=True)
+    (tool.cache_dir() / tool.INDEX_DIR / "version.json").write_text("1")
+    _stub_sparql(monkeypatch, [])
+    assert tool.load_index(download=False) is None
+    capsys.readouterr()
+    _stub_sparql(monkeypatch, [*_listing("Q1"), _labels(("Q1", "井殿"))])
+    index = tool.load_index(download=True)
+    assert index is not None and index.entries[0].label == "井殿"
+    assert "older version" in capsys.readouterr().err
+
+
+def test_sparql_csv_refuses_a_body_cut_mid_line(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # A last line cut inside its IRI (Q1234567 arriving as Q12) is still
+    # a valid Q-id; the missing newline is the only sign.
+    monkeypatch.setattr(urllib.request, "urlopen", lambda request, timeout: (
+        io.BytesIO(b"item\r\nhttp://www.wikidata.org/entity/Q12")))
+    with pytest.raises(ValueError, match="cut short"):
+        tool._sparql_csv("SELECT")
+
+
+def test_sparql_csv_asks_for_csv(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list[str | None] = []
+
+    def answer(request: urllib.request.Request, timeout: float) -> io.BytesIO:
+        seen.append(request.get_header("Accept"))
+        return io.BytesIO(b"item\r\n")
+    monkeypatch.setattr(urllib.request, "urlopen", answer)
+    tool._sparql_csv("SELECT")
+    assert seen == ["text/csv"]
+
+
+@pytest.mark.parametrize(("word", "cjk"), [
+    ("𠮷田", True),     # supplementary-plane Han (Extension B)
+    ("〇", True),
+    ("䷀", False),      # a Yijing hexagram, inside the old range
+])
+def test_is_cjk_covers_the_supplementary_han_planes(word: str, cjk: bool) -> None:
+    assert tool.is_cjk(word) is cjk
+
+
+def test_the_index_query_and_is_cjk_share_one_character_class() -> None:
+    assert f"[{tool._CJK_CHARS}]" in tool.labels_query(["Q1"])
+
+
+def test_boundaries_try_every_cut_and_match_the_given_name_whole() -> None:
+    index = _index(("Q1", "family", "某国会"), ("Q2", "given", "議員"),
+                   ("Q3", "given", "信議員"), ("Q4", "given", "某国"),
+                   ("Q5", "given", "国会議員"))
+    splits = index.boundaries("国会議員")
+    # The only split is at the second cut, and 信議員 ends in the tail
+    # without being it; 某国 is a GIVEN name ending in the head, which is
+    # no family name; and a word equal to a whole given name is no split.
+    assert [(s.family_tail, s.given, s.family_items, s.given_items)
+            for s in splits] == [("国会", "議員", ["Q1"], ["Q2"])]
+
+
+def test_a_failed_bearer_count_fails_the_row(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [OSError("down")])
+    usage = tool.ends_with_usage("殿", _index(("Q1", "family", "向殿")), top=5)
+    assert (usage.source, usage.status) == (tool.ENDS_WITH_SOURCE, "failed")
+    assert (usage.given, usage.family) == (None, None)
+
+
+def test_a_failed_boundary_count_keeps_the_rows_other_counts(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    index = _index(("Q1", "family", "阿部"), ("Q2", "given", "長"),
+                   ("Q3", "family", "山部長"))
+    _stub_sparql(monkeypatch, [[{"role": "family", "n": "7"}], [],
+                               OSError("timed out")])
+    usage = tool.ends_with_usage("部長", index, top=5)
+    assert (usage.status, usage.family) == ("ok", 7)
+    [split] = usage.splits
+    assert split.people is None and "timed out" in split.error
+    assert "family ending 部 + given 長: - people (query failed" in (
+        tool.render("部長", [usage]))
+
+
+def test_a_boundary_count_is_chunked_and_counts_a_person_once(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "ITEM_CHUNK", 1)
+    index = _index(("Q1", "family", "阿部"), ("Q2", "family", "岡部"),
+                   ("Q3", "given", "長"))
+    queries = _stub_sparql(monkeypatch, [_people("Q9"), _people("Q9", "Q8")])
+    usage = tool.ends_with_usage("部長", index, top=5)
+    assert len(queries) == 2
+    assert usage.splits[0].people == 2
+
+
+def test_an_empty_boundary_answer_is_zero_people(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [[]])
+    usage = tool.ends_with_usage(
+        "部長", _index(("Q1", "family", "阿部"), ("Q3", "given", "長")), top=5)
+    assert (usage.splits[0].people, usage.splits[0].example) == (0, "")
+
+
+def test_the_ends_with_note_gives_the_index_size(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [])
+    usage = tool.ends_with_usage("議員", _index(("Q1", "family", "向殿")), top=5)
+    assert "index of 1 entries" in usage.note
+
+
+def test_chunked_country_counts_are_summed(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "ITEM_CHUNK", 1)
+    index = _index(("Q1", "family", "向殿"), ("Q2", "family", "井殿"))
+    _stub_sparql(monkeypatch, [
+        [{"role": "family", "n": "3"}], [{"role": "family", "country": "Japan", "n": "3"}],
+        [{"role": "family", "n": "4"}], [{"role": "family", "country": "Japan", "n": "4"}],
+    ])
+    usage = tool.ends_with_usage("殿", index, top=5)
+    assert usage.family_countries == [("Japan", 7)]
+
+
+def _http_error(code: int, retry_after: str = "") -> urllib.error.HTTPError:
+    headers = {"Retry-After": retry_after} if retry_after else {}
+    return urllib.error.HTTPError("u", code, "x", headers, io.BytesIO(b""))  # type: ignore[arg-type]
+
+
+def test_sparql_raises_a_non_rate_limit_error_without_waiting(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[int] = []
+    waits: list[float] = []
+
+    def answer(request: urllib.request.Request, timeout: float) -> io.BytesIO:
+        calls.append(1)
+        raise _http_error(500)
+    monkeypatch.setattr(urllib.request, "urlopen", answer)
+    monkeypatch.setattr(tool, "_sleep", waits.append)
+    with pytest.raises(urllib.error.HTTPError) as caught:
+        tool._sparql("SELECT")
+    caught.value.close()  # 3.14 warns on an HTTPError left open
+    assert (len(calls), waits) == (1, [])
+
+
+def test_sparql_gives_up_after_its_retries_with_the_http_error(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    waits: list[float] = []
+
+    def answer(request: urllib.request.Request, timeout: float) -> io.BytesIO:
+        raise _http_error(429, "Fri, 17 Oct 2026 18:00:00 GMT")
+    monkeypatch.setattr(urllib.request, "urlopen", answer)
+    monkeypatch.setattr(tool, "_sleep", waits.append)
+    with pytest.raises(urllib.error.HTTPError) as caught:
+        tool._sparql("SELECT")
+    caught.value.close()
+    # A date-form Retry-After waits the default minute.
+    assert waits == [60] * tool.SPARQL_RETRIES
+
+
+@pytest.mark.parametrize(("argv", "refresh"), [
+    (["--json", "殿"], False), (["--json", "--refresh-index", "殿"], True),
+    (["--json", "--refresh-index", "knight"], True),
+])
+def test_main_passes_refresh_to_the_index(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        argv: list[str], refresh: bool) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    seen: list[bool] = []
+
+    def load(download: bool, refresh: bool = False) -> _Index:
+        seen.append(refresh)
+        return _index(("Q1", "family", "x"))
+    monkeypatch.setattr(tool, "load_index", load)
+    monkeypatch.setattr(tool, "_sparql", lambda query: {"results": {"bindings": []}})
+    tool.main(argv)
+    assert seen == [refresh]
+
+
+def test_main_reads_a_decomposed_word_as_its_composed_twin(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # Wikidata labels are NFC; a decomposed hangul word is conjoining
+    # jamo, which neither is_cjk nor any label would match.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    monkeypatch.setattr(tool, "load_index", lambda download, refresh=False:
+                        _index(("Q1", "given", "민준씨")))
+    monkeypatch.setattr(tool, "_sparql", lambda query: {"results": {"bindings": []}})
+    tool.main(["--json", unicodedata.normalize("NFD", "씨")])
+    [rows] = json.loads(capsys.readouterr().out).values()
+    assert rows[-1]["source"] == tool.ENDS_WITH_SOURCE
+
+
+def test_main_exits_2_when_a_boundary_count_failed(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    monkeypatch.setattr(tool, "load_index", lambda download, refresh=False:
+                        _index(("Q1", "family", "阿部"), ("Q2", "given", "長")))
+    _stub_sparql(monkeypatch, [[], [], OSError("timed out")])
+    assert tool.main(["--json", "部長"]) == 2
+
+
+def test_main_reports_an_unusable_cache_without_losing_the_other_sources(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "NAME_CLASSES", {"Q101352": "family"})
+    with zipfile.ZipFile(tmp_path / tool.CENSUS_FILE, "w") as zf:
+        zf.writestr(tool.CENSUS_MEMBER, _CENSUS)
+    index_dir = tmp_path / tool.INDEX_DIR
+    index_dir.mkdir()
+    (index_dir / "version.json").write_text(str(tool.INDEX_VERSION))
+    (index_dir / "Q101352-ids.json").write_text("{")
+    _stub_sparql(monkeypatch, [[], []])
+    assert tool.main(["--json", "殿"]) == 2
+    rows = json.loads(capsys.readouterr().out)["殿"]
+    assert rows[-1]["status"] == "failed" and "unusable" in rows[-1]["note"]

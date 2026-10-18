@@ -40,10 +40,10 @@ What a number means depends on its source, and the report says so:
   little and a zero proves nothing. Labels are matched exactly, in the
   spellings the report lists, so a name with internal capitals is found
   only when passed as written (`McDonald`, not `mcdonald`).
-- Wikidata, name ends with (CC0), for a word holding a Han, kana or
-  hangul letter only: people bearing a name item whose CJK label ENDS
+- Wikidata, name ends with (CC0), only for a word holding at least one
+  Han, kana or hangul letter: people bearing a name item whose CJK label ENDS
   in the word, which is what a glued honorific's peel risks (#707). The
-  matching runs against a local index of every CJK label on the
+  matching runs against a local index of every CJK rdfs:label (not aliases) on the
   name-item classes, fetched once (resumable; 33 minutes on 2026-10-17) and
   refreshed with --refresh-index; the bearers are counted live. It
   also counts the names the word ends ACROSS the family/given join,
@@ -471,9 +471,17 @@ def _sparql(query: str) -> dict[str, Any]:
 
 
 def _sparql_csv(query: str) -> list[dict[str, str]]:
-    """The rows as CSV, for a listing too big for JSON: 700,581 family-name
-    items are 30MB as CSV and were cut off at 73MB as JSON (2026-10-17)."""
-    return list(csv.DictReader(io.StringIO(_post(query, "text/csv").decode())))
+    """The rows as CSV, for a listing too big for JSON: the 700,581
+    family-name listing rows are 30MB as CSV and were cut off at 73MB as JSON (2026-10-17)."""
+    body = _post(query, "text/csv").decode()
+    if body and not body.endswith("\n"):
+        # A line cut inside its IRI is still a valid Q-id (Q1234567
+        # arriving as Q12); the missing line end is the only sign.
+        raise ValueError("CSV response ends mid-line; it was cut short")
+    try:
+        return list(csv.DictReader(io.StringIO(body)))
+    except csv.Error as exc:
+        raise ValueError(f"unreadable CSV response: {exc}") from exc
 
 
 def _post(query: str, accept: str) -> bytes:
@@ -498,6 +506,7 @@ def _post(query: str, accept: str) -> bytes:
                 raise
             retry = exc.headers.get("Retry-After", "")
             wait = int(retry) if retry.isdigit() else 60
+            exc.close()  # it holds the response; 3.14 warns on a leak
             print(f"rate-limited by {WIKIDATA_ENDPOINT}; waiting {wait}s",
                   file=sys.stderr)
             _sleep(wait)
@@ -536,15 +545,20 @@ def _download(url: str, path: Path, required_member: str) -> None:
 #
 # The fetch lists a class's items, then asks for their labels by VALUES
 # batch. Slicing the class inside one query instead (by Q-id suffix)
-# scans the whole class every time -- 700,581 family-name items -- so a
-# slice of 250 labels overran as surely as one of 25,000.
+# scans the whole class every time -- 700,581 family-name listing rows,
+# 700,304 items once lexemes are dropped -- so a slice of 250 labels
+# overran as surely as one of 25,000.
+
+Role = Literal["given", "family"]
 
 #: Name-item classes the index lists, and the role their items play.
-#: Read off the P31 statements of known items, 2026-10-17: Japanese and
-#: Chinese items usually carry the general class beside their own, but
-#: not always, and the undifferentiated kanji surnames (高橋, 阿部 as bare
-#: kanji, no reading) carry only theirs.
-NAME_CLASSES = {
+#: Counted on the index, 2026-10-17: Japanese and Chinese family-name
+#: items and Chinese given-name items nearly all carry the general class
+#: beside their own, but Japanese given names almost never do (13 of
+#: 4,620), nor do most male and female given names, and the
+#: undifferentiated kanji surnames (高橋, 阿部 as bare kanji, no
+#: reading) carry only theirs -- so every class is listed.
+NAME_CLASSES: dict[str, Role] = {
     "Q101352": "family",    # family name
     "Q19914123": "family",  # Japanese family name
     "Q88865432": "family",  # undifferentiated kanji surname
@@ -557,7 +571,15 @@ NAME_CLASSES = {
     "Q22812564": "given",   # Japanese given name
     "Q22809413": "given",   # Chinese given name
 }
+# A misspelled role would drop its class out of the boundary count
+# without a word, so the roles are checked here, where a typo lands.
+assert set(NAME_CLASSES.values()) == {"given", "family"}, NAME_CLASSES
+
 INDEX_DIR = "wikidata_cjk_names"
+#: Bumped whenever what the index holds changes (version 2 widened the
+#: character class to supplementary-plane Han); a cache built by another
+#: version is rebuilt rather than trusted.
+INDEX_VERSION = 2
 #: Items per label query. Measured 2026-10-17 on family-name items not
 #: queried before: 1,000 took 2.2-2.4s and 2,000 took 24s.
 INDEX_BATCH = 1000
@@ -568,11 +590,15 @@ INDEX_MIN_BATCH = 50
 ITEM_CHUNK = 500
 ENDS_WITH_SOURCE = "Wikidata people, name ends with"
 
-#: Kana with the iteration mark 々, the CJK ideograph blocks with their
-#: compatibility block, hangul syllables, and halfwidth katakana. One
-#: such letter makes a label CJK; the query and is_cjk share it.
-_CJK_CHARS = ("々぀-ヿ㐀-鿿가-힯"
-              "豈-﫿･-ﾟ")
+#: The iteration mark 々 and 〇, kana, the CJK ideograph blocks (Extension
+#: A, the unified block, compatibility, and Extensions B onward in the
+#: supplementary planes, where rare surname characters live), hangul
+#: syllables, and halfwidth katakana. The Yijing hexagrams between
+#: Extension A and the unified block are left out. One such letter makes
+#: a label or a word CJK; the query and is_cjk share the class.
+_CJK_CHARS = ("々〇぀-ヿ㐀-䶿一-鿿"
+              "가-힯豈-﫿･-ﾟ"
+              "\U00020000-\U0003134f\U0002f800-\U0002fa1f")
 _CJK = re.compile(f"[{_CJK_CHARS}]")
 
 
@@ -583,7 +609,7 @@ def is_cjk(word: str) -> bool:
 @dataclass(frozen=True, slots=True)
 class IndexEntry:
     qid: str
-    role: str
+    role: Role
     label: str
 
 
@@ -591,7 +617,8 @@ class IndexEntry:
 class Split:
     """People whose family name ends in `family_tail` and whose given
     name is `given`, so that the two written together end in the word:
-    阿部 + 長 ends in 部長."""
+    阿部 + 長 ends in 部長. `people` is None until counted, and stays
+    None, with `error` saying why, when the count failed."""
 
     family_tail: str
     given: str
@@ -599,7 +626,9 @@ class Split:
     given_items: list[str]
     family_examples: list[str] = field(default_factory=list)
     people: int | None = None
+    #: The Q-id of one bearer, for looking the pairing up.
     example: str = ""
+    error: str = ""
 
 
 @dataclass(slots=True)
@@ -639,7 +668,8 @@ def count_query(cls: str) -> str:
 
 
 def labels_query(qids: list[str]) -> str:
-    """The CJK labels of the items, every language."""
+    """The CJK rdfs:labels of the items, every language. Aliases and
+    native-label statements are not read."""
     return f"""
 SELECT ?item ?label WHERE {{
   {_item_match(qids)}
@@ -669,13 +699,18 @@ def _index_sparql(query: str, as_csv: bool = False) -> list[dict[str, str]]:
     except urllib.error.HTTPError as exc:
         # A 500 is an overrun only when it says so: halving a malformed
         # query would send it again and again.
-        if exc.code in (502, 504) or (
-                exc.code == 500 and b"TimeoutException" in exc.read()):
-            raise _Overrun(f"HTTP {exc.code}") from exc
+        try:
+            overran = exc.code in (502, 504) or (
+                exc.code == 500 and b"TimeoutException" in exc.read())
+        finally:
+            exc.close()
+        if overran:
+            raise _Overrun(f"HTTP {exc.code}") from None
         raise
     except (ValueError, TimeoutError, http.client.IncompleteRead) as exc:
         # At its limit WDQS cuts a 200 off mid-stream, which surfaces as
-        # JSON that stops (ValueError) or a short read.
+        # JSON that stops (ValueError), a CSV line with no end, or a
+        # short read.
         raise _Overrun(f"{type(exc).__name__}: {exc}") from exc
 
 
@@ -686,11 +721,30 @@ def _write(path: Path, data: object) -> None:
     tmp.replace(path)
 
 
+def _unusable(path: Path, why: str) -> ValueError:
+    return ValueError(f"{path} is unusable ({why}); delete it, or run "
+                      "again with --refresh-index")
+
+
+def _read_json(path: Path) -> object:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise _unusable(path, f"{type(exc).__name__}: {exc}") from exc
+
+
+def _is_qid(value: object) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"Q\d+", value) is not None
+
+
 def _class_ids(cls: str, fetch: bool) -> list[str]:
     path = cache_dir() / INDEX_DIR / f"{cls}-ids.json"
     if path.exists():
-        ids: list[str] = json.loads(path.read_text(encoding="utf-8"))
-        return ids
+        cached = _read_json(path)
+        if not (isinstance(cached, list) and cached
+                and all(map(_is_qid, cached))):
+            raise _unusable(path, "not a non-empty list of Q-ids")
+        return [str(q) for q in cached]
     if not fetch:
         raise _Missing(path.name)
     try:
@@ -698,6 +752,9 @@ def _class_ids(cls: str, fetch: bool) -> list[str]:
         rows = _index_sparql(ids_query(cls), as_csv=True)
     except _Overrun as exc:
         raise ValueError(f"listing wd:{cls} items overran ({exc})") from exc
+    if rows and "item" not in rows[0]:
+        raise ValueError(f"listing wd:{cls} has columns {sorted(rows[0])}, "
+                         "not item")
     # CSV has no closing bracket to show a stream cut short, so the
     # listing is held to a count taken just before it. The slack is for
     # edits landing between the two queries; a cut loses far more.
@@ -711,9 +768,33 @@ def _class_ids(cls: str, fetch: bool) -> list[str]:
     ids = sorted({_qid(row["item"]) for row in rows
                   if not re.search(r"/L\d+(-[SF]\d+)?$", row["item"])},
                  key=lambda q: int(q[1:]))
+    if not ids:
+        # A merged or mistyped class answers 0 to both queries; caching
+        # that would make every later ends-with row a silent zero.
+        raise ValueError(f"wd:{cls} lists no items; check NAME_CLASSES")
     _write(path, ids)
     print(f"  wd:{cls}: {len(ids):,} items", file=sys.stderr)
     return ids
+
+
+def _cached_batch(path: Path, span: list[str],
+                  ids: list[str]) -> tuple[str, list[list[str]]] | None:
+    """A batch file's date and rows, or None when it was built against
+    another listing: batches are named by position, so after a class is
+    listed again the same position can hold other items."""
+    data = _read_json(path)
+    if not (isinstance(data, dict) and isinstance(data.get("fetched"), str)
+            and isinstance(data.get("rows"), list)):
+        raise _unusable(path, "not a batch: needs fetched, span and rows")
+    if data.get("span") != span:
+        return None
+    rows = data["rows"]
+    batch = set(ids)
+    for row in rows:
+        if not (isinstance(row, list) and len(row) == 2
+                and row[0] in batch and isinstance(row[1], str)):
+            raise _unusable(path, f"row {row!r} is not an item of the batch")
+    return data["fetched"], rows
 
 
 def _fetch_batch(cls: str, ids: list[str], start: int, end: int, fetch: bool,
@@ -725,48 +806,66 @@ def _fetch_batch(cls: str, ids: list[str], start: int, end: int, fetch: bool,
     True when anything was queried."""
     base = cache_dir() / INDEX_DIR / f"{cls}-{start}-{end}"
     done, halved = base.with_suffix(".json"), base.with_suffix(".halved")
+    batch = ids[start:end]
+    span = [batch[0], batch[-1]]
     if done.exists():
-        data = json.loads(done.read_text(encoding="utf-8"))
-        dates.add(data["fetched"])
-        out.extend(IndexEntry(q, NAME_CLASSES[cls], label)
-                   for q, label in data["rows"])
-        return False
-    if not halved.exists():
-        if not fetch:
-            raise _Missing(done.name)
-        try:
-            rows = [[_qid(row["item"]), row["label"]]
-                    for row in _index_sparql(labels_query(ids[start:end]))]
-        except _Overrun as exc:
-            if end - start <= INDEX_MIN_BATCH:
-                raise ValueError(f"wd:{cls} items {start}-{end} still "
-                                 f"overran ({exc})") from exc
-            halved.parent.mkdir(parents=True, exist_ok=True)
-            halved.touch()
-        else:
-            today = date.today().isoformat()
-            _write(done, {"fetched": today, "rows": rows})
-            dates.add(today)
+        cached = _cached_batch(done, span, batch)
+        if cached is not None:
+            dates.add(cached[0])
             out.extend(IndexEntry(q, NAME_CLASSES[cls], label)
-                       for q, label in rows)
-            return True
-    middle = (start + end) // 2
-    first = _fetch_batch(cls, ids, start, middle, fetch, out, dates)
-    second = _fetch_batch(cls, ids, middle, end, fetch, out, dates)
-    return first or second
+                       for q, label in cached[1])
+            return False
+        halved.unlink(missing_ok=True)  # it was halved for other items
+    elif halved.exists():
+        middle = (start + end) // 2
+        first = _fetch_batch(cls, ids, start, middle, fetch, out, dates)
+        second = _fetch_batch(cls, ids, middle, end, fetch, out, dates)
+        return first or second
+    if not fetch:
+        raise _Missing(done.name)
+    try:
+        rows = [[_qid(row["item"]), row["label"]]
+                for row in _index_sparql(labels_query(batch))]
+    except _Overrun as exc:
+        if end - start <= INDEX_MIN_BATCH:
+            raise ValueError(f"wd:{cls} items {start}-{end} still "
+                             f"overran ({exc})") from exc
+        halved.parent.mkdir(parents=True, exist_ok=True)
+        halved.touch()
+        middle = (start + end) // 2
+        _fetch_batch(cls, ids, start, middle, fetch, out, dates)
+        _fetch_batch(cls, ids, middle, end, fetch, out, dates)
+        return True
+    today = date.today().isoformat()
+    _write(done, {"fetched": today, "span": span, "rows": rows})
+    dates.add(today)
+    out.extend(IndexEntry(q, NAME_CLASSES[cls], label) for q, label in rows)
+    return True
 
 
 def load_index(download: bool, refresh: bool = False) -> NameIndex | None:
     """The cached CJK name index; None when part of it is not cached and
-    `download` is off. Building it is a one-time fetch of about a
-    thousand queries, paced by the endpoint's rate limit, and resumable."""
+    `download` is off. Building it is a one-time fetch of about 900
+    queries (2026-10-17), paced by the endpoint's rate limit, and
+    resumable. Raises ValueError naming any cache file it cannot use."""
     path = cache_dir() / INDEX_DIR
+    version = path / "version.json"
     if refresh and path.exists():
         shutil.rmtree(path)
-    if download and not path.exists():
+    if path.exists() and (not version.exists()
+                          or _read_json(version) != INDEX_VERSION):
+        if not download:
+            return None
+        print(f"the CJK name index in {path} was built by an older version "
+              "of this tool; rebuilding it", file=sys.stderr)
+        shutil.rmtree(path)
+    if not path.exists():
+        if not download:
+            return None
         print(f"building the CJK name index in {path} -- a one-time fetch "
               "of about half an hour; an interrupted build resumes",
               file=sys.stderr)
+        _write(version, INDEX_VERSION)
     entries: list[IndexEntry] = []
     dates: set[str] = set()
     try:
@@ -785,8 +884,12 @@ def load_index(download: bool, refresh: bool = False) -> NameIndex | None:
                      fetched=min(dates) if dates else "")
 
 
+def _chunks(qids: list[str]) -> list[list[str]]:
+    return [qids[i:i + ITEM_CHUNK] for i in range(0, len(qids), ITEM_CHUNK)]
+
+
 def _count_items(qids: list[str], top: int) -> tuple[Usage, int]:
-    chunks = [qids[i:i + ITEM_CHUNK] for i in range(0, len(qids), ITEM_CHUNK)]
+    chunks = _chunks(qids)
     totals: list[dict[str, str]] = []
     by_country: list[dict[str, str]] = []
     for chunk in chunks:
@@ -796,24 +899,35 @@ def _count_items(qids: list[str], top: int) -> tuple[Usage, int]:
 
 
 def _count_split(split: Split) -> None:
-    family = " ".join(f"wd:{q}" for q in split.family_items)
+    """The distinct bearers of the pairing, the family items asked in
+    chunks (a one-letter tail such as 部 or 田 matches hundreds) and the
+    people gathered here, so a person is counted once across chunks."""
     given = " ".join(f"wd:{q}" for q in split.given_items)
-    [row] = _bindings(_sparql(f"""
-SELECT (COUNT(DISTINCT ?p) AS ?n) (SAMPLE(?p) AS ?example) WHERE {{
+    people: set[str] = set()
+    for chunk in _chunks(split.family_items):
+        family = " ".join(f"wd:{q}" for q in chunk)
+        rows = _bindings(_sparql(f"""
+SELECT DISTINCT ?p WHERE {{
   VALUES ?f {{ {family} }}
   VALUES ?g {{ {given} }}
   ?p wdt:P734 ?f ; wdt:P735 ?g .
-}}""")) or [{"n": "0"}]
-    split.people = int(row["n"])
-    split.example = row.get("example", "").rsplit("/", 1)[-1]
+}}"""))
+        people |= {_qid(row["p"]) for row in rows}
+    split.people = len(people)
+    split.example = min(people, key=lambda q: int(q[1:])) if people else ""
+
+
+_QUERY_ERRORS = (OSError, ValueError, KeyError, http.client.HTTPException)
 
 
 def ends_with_usage(word: str, index: NameIndex, top: int) -> Usage:
     """Bearers of the indexed name items whose label ends in the word,
-    and of the family/given pairs that end in it together."""
+    and of the family/given pairs that end in it together. A failed
+    pairing count fails only that pairing (Split.error)."""
     matches = index.ending_in(word)
     qids = sorted({e.qid for e in matches})
-    fetched = f"index fetched {index.fetched}"
+    about = (f"index of {len(index.entries):,} entries fetched "
+             f"{index.fetched}")
     try:
         if qids:
             usage, queries = _count_items(qids, top)
@@ -828,19 +942,21 @@ def ends_with_usage(word: str, index: NameIndex, top: int) -> Usage:
                      if queries > 1 else "")
             items = "1 name item ends" if len(qids) == 1 else (
                 f"{len(qids)} name items end")
-            usage.note = _join(f"{items} in it: {shown}",
-                               twice, fetched)
+            usage.note = _join(f"{items} in it: {shown}", twice, about)
         else:
             usage = Usage("", given=0, family=0, lower_bound=True,
                           note=_join(f"no indexed name item ends in {word}",
-                                     fetched))
-        usage.splits = index.boundaries(word)
-        for split in usage.splits:
-            _count_split(split)
-    except (OSError, ValueError, KeyError, http.client.HTTPException) as exc:
+                                     about))
+    except _QUERY_ERRORS as exc:
         return Usage(ENDS_WITH_SOURCE, status="failed", lower_bound=True,
                      note=f"query failed: {type(exc).__name__}: {exc}")
     usage.source = ENDS_WITH_SOURCE
+    usage.splits = index.boundaries(word)
+    for split in usage.splits:
+        try:
+            _count_split(split)
+        except _QUERY_ERRORS as exc:
+            split.error = f"query failed: {type(exc).__name__}: {exc}"
     return usage
 
 
@@ -885,12 +1001,14 @@ def render(word: str, usages: list[Usage]) -> str:
                 lines.append(f"  {'':<{width}}    {role} by citizenship: "
                              + ", ".join(parts))
         for split in u.splits:
-            example = "; ".join(split.family_examples
-                                + ([split.example] if split.example else []))
+            example = "; ".join(
+                split.family_examples
+                + ([f"bearer {split.example}"] if split.example else []))
+            detail = split.error or (f"e.g. {example}" if example else "")
             lines.append(
                 f"  {'':<{width}}    family ending {split.family_tail} + "
                 f"given {split.given}: {_count(split.people, u)} people"
-                + (f" (e.g. {example})" if example else ""))
+                + (f" ({detail})" if detail else ""))
     return "\n".join(lines)
 
 
@@ -910,14 +1028,18 @@ def main(argv: list[str] | None = None) -> int:
     census, census_error = _attempt(
         lambda: load_census(download=not args.no_wikidata))
     ssa, ssa_error = _attempt(load_ssa)
+    # Wikidata labels are NFC: a decomposed word (hangul as conjoining
+    # jamo, an accent as a combining mark) would match no label at all.
+    words = [unicodedata.normalize("NFC", word) for word in args.words]
     index: NameIndex | None = None
     index_error = ""
-    if not args.no_wikidata and any(map(is_cjk, args.words)):
+    if not args.no_wikidata and (args.refresh_index
+                                 or any(map(is_cjk, words))):
         index, index_error = _attempt(
             lambda: load_index(download=True, refresh=args.refresh_index))
 
     report = {}
-    for word in args.words:
+    for word in words:
         census_row, ssa_row = census_usage(word, census), ssa_usage(word, ssa)
         for row, error in ((census_row, census_error), (ssa_row, ssa_error)):
             if error:
@@ -940,7 +1062,8 @@ def main(argv: list[str] | None = None) -> int:
     if ssa is None and not ssa_error:
         sys.stdout.flush()  # keep the notice after the report, not before it
         print("\n" + ssa_missing_message(), file=sys.stderr)
-    failed = any(u.status == "failed" for us in report.values() for u in us)
+    failed = any(u.status == "failed" or any(s.error for s in u.splits)
+                 for us in report.values() for u in us)
     return 2 if failed else 0
 
 
