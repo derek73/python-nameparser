@@ -753,14 +753,20 @@ def test_the_listing_count_allows_a_thousandth_of_slack(
     ("Q101352-ids.json", '["Q1", "L5"]'),
     ("Q101352-ids.json", "[]"),
     ("Q101352-0-1.json", '{"rows": []}'),
-    ("Q101352-0-1.json", '{"fetched": "x", "span": ["Q1", "Q1"], "rows": null}'),
-    ("Q101352-0-1.json", '{"fetched": "x", "span": ["Q1", "Q1"], "rows": [["Q9", "殿"]]}'),
+    ("Q101352-0-1.json", '[]'),
+    ("Q101352-0-1.json", '{"fetched": "x", "digest": "DIGEST", "rows": null}'),
+    ("Q101352-0-1.json", '{"fetched": "x", "digest": "DIGEST", "rows": [["Q9", "殿"]]}'),
+    ("Q101352-0-1.json", '{"fetched": "x", "digest": "DIGEST", "rows": [["Q1"]]}'),
+    ("Q101352-0-1.json", '{"fetched": "x", "digest": "DIGEST", "rows": [["Q1", 5]]}'),
+    ("version.json", "{"),
 ])
 def test_an_unusable_cache_file_is_named_with_its_remedy(
         monkeypatch: pytest.MonkeyPatch, name: str, content: str) -> None:
     _stub_sparql(monkeypatch, [*_listing("Q1"), _labels(("Q1", "向殿"))])
     tool.load_index(download=True)
-    (tool.cache_dir() / tool.INDEX_DIR / name).write_text(content)
+    # DIGEST stands for the batch's own, so the row checks are reached.
+    (tool.cache_dir() / tool.INDEX_DIR / name).write_text(
+        content.replace("DIGEST", tool._batch_digest(["Q1"])))
     _stub_sparql(monkeypatch, [])
     with pytest.raises(ValueError, match=f"{name} is unusable.*--refresh-index"):
         tool.load_index(download=True)
@@ -871,7 +877,9 @@ def test_a_boundary_count_is_chunked_and_counts_a_person_once(
     monkeypatch.setattr(tool, "ITEM_CHUNK", 1)
     index = _index(("Q1", "family", "阿部"), ("Q2", "family", "岡部"),
                    ("Q3", "given", "長"))
-    queries = _stub_sparql(monkeypatch, [_people("Q9"), _people("Q9", "Q8")])
+    # The larger answer first: a count that kept only the last chunk's
+    # people would read 1.
+    queries = _stub_sparql(monkeypatch, [_people("Q9", "Q8"), _people("Q9")])
     usage = tool.ends_with_usage("部長", index, top=5)
     assert len(queries) == 2
     assert usage.splits[0].people == 2
@@ -1001,3 +1009,148 @@ def test_main_reports_an_unusable_cache_without_losing_the_other_sources(
     assert tool.main(["--json", "殿"]) == 2
     rows = json.loads(capsys.readouterr().out)["殿"]
     assert rows[-1]["status"] == "failed" and "unusable" in rows[-1]["note"]
+
+
+# -- second review of #712 ---------------------------------------------------
+
+@pytest.mark.usefixtures("one_class")
+@pytest.mark.parametrize("relisted", [
+    ("Q1", "Q3"),          # the first item kept
+    ("Q0", "Q2"),          # the last item kept
+])
+def test_a_batch_whose_items_changed_at_either_end_is_fetched_again(
+        monkeypatch: pytest.MonkeyPatch, relisted: tuple[str, str]) -> None:
+    _stub_sparql(monkeypatch, [*_listing("Q1", "Q2"), _labels(("Q1", "向殿"))])
+    tool.load_index(download=True)
+    (tool.cache_dir() / tool.INDEX_DIR / "Q101352-ids.json").unlink()
+    queries = _stub_sparql(monkeypatch, [*_listing(*relisted), _labels()])
+    tool.load_index(download=True)
+    assert _values(queries[2]) == [f"wd:{q}" for q in relisted]
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_batch_whose_middle_item_changed_is_fetched_again(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Same first and last items, another in between: the batch's whole
+    # membership is what its file is checked against.
+    monkeypatch.setattr(tool, "INDEX_BATCH", 3)
+    _stub_sparql(monkeypatch, [*_listing("Q1", "Q2", "Q4"),
+                               _labels(("Q2", "向殿"))])
+    tool.load_index(download=True)
+    (tool.cache_dir() / tool.INDEX_DIR / "Q101352-ids.json").unlink()
+    queries = _stub_sparql(monkeypatch, [*_listing("Q1", "Q3", "Q4"),
+                                         _labels(("Q3", "井殿"))])
+    index = tool.load_index(download=True)
+    assert index is not None
+    assert [e.label for e in index.entries] == ["井殿"]
+    assert _values(queries[2]) == ["wd:Q1", "wd:Q3", "wd:Q4"]
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_batch_halved_under_a_new_listing_leaves_no_stale_whole(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # Listing A fetched the batch whole; listing B overran it and cached
+    # its halves. The whole batch's old file must not shadow the halves,
+    # or the complete index reads as missing offline.
+    _stub_sparql(monkeypatch, [*_listing("Q1", "Q2"), _labels(("Q1", "向殿"))])
+    tool.load_index(download=True)
+    (tool.cache_dir() / tool.INDEX_DIR / "Q101352-ids.json").unlink()
+    _stub_sparql(monkeypatch, [*_listing("Q1", "Q3"), _overrun(),
+                               _labels(("Q1", "向殿")), _labels(("Q3", "井殿"))])
+    tool.load_index(download=True)
+    _stub_sparql(monkeypatch, [])  # any query fails the test
+    offline = tool.load_index(download=False)
+    assert offline is not None
+    assert sorted(e.label for e in offline.entries) == ["井殿", "向殿"]
+    online = tool.load_index(download=True)
+    assert online is not None and len(online.entries) == 2
+
+
+@pytest.mark.usefixtures("one_class")
+def test_an_index_built_before_versioning_is_rebuilt(
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # The first index (2026-10-17) had no version file at all, and its
+    # character class missed supplementary-plane Han.
+    _stub_sparql(monkeypatch, [*_listing("Q1"), _labels(("Q1", "向殿"))])
+    tool.load_index(download=True)
+    (tool.cache_dir() / tool.INDEX_DIR / "version.json").unlink()
+    _stub_sparql(monkeypatch, [])
+    assert tool.load_index(download=False) is None
+    capsys.readouterr()
+    _stub_sparql(monkeypatch, [*_listing("Q1"), _labels(("Q1", "𠮷田"))])
+    index = tool.load_index(download=True)
+    assert index is not None and index.entries[0].label == "𠮷田"
+    assert "older version" in capsys.readouterr().err
+
+
+@pytest.mark.usefixtures("one_class")
+def test_a_listing_without_an_item_column_is_an_error(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_sparql(monkeypatch, [[{"n": "1"}], [{"x": "y"}]])
+    with pytest.raises(ValueError, match="not item"):
+        tool.load_index(download=True)
+
+
+@pytest.mark.parametrize(("word", "cjk"), [
+    ("\U00031350", True),   # Extension H
+    ("\U0002f800", True),   # the supplementary compatibility block
+])
+def test_is_cjk_covers_extension_h(word: str, cjk: bool) -> None:
+    assert tool.is_cjk(word) is cjk
+
+
+def _closable(code: int, body: bytes = b"") -> tuple[urllib.error.HTTPError, io.BytesIO]:
+    fp = io.BytesIO(body)
+    return urllib.error.HTTPError("u", code, "x", {}, fp), fp  # type: ignore[arg-type]
+
+
+@pytest.mark.usefixtures("one_class")
+@pytest.mark.parametrize(("code", "body"), [
+    (504, b""), (500, b"java.util.concurrent.TimeoutException"), (400, b"syntax")])
+def test_the_index_closes_each_http_error_it_reads(
+        monkeypatch: pytest.MonkeyPatch, code: int, body: bytes) -> None:
+    # Since 3.14 an HTTPError left open warns when collected.
+    error, fp = _closable(code, body)
+    _stub_sparql(monkeypatch, [*_listing("Q1", "Q2"), error, _labels(), _labels()])
+    try:
+        tool.load_index(download=True)
+    except urllib.error.HTTPError:
+        pass
+    assert fp.closed
+
+
+def test_a_failed_wikidata_row_closes_its_http_error(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    error, fp = _closable(400)
+    _stub_sparql(monkeypatch, [error])
+    assert tool.wikidata_usage("shehu", top=5).status == "failed"
+    assert fp.closed
+
+
+def test_a_failed_ends_with_row_and_pairing_close_their_http_errors(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    first, first_fp = _closable(400)
+    _stub_sparql(monkeypatch, [first])
+    tool.ends_with_usage("殿", _index(("Q1", "family", "向殿")), top=5)
+    second, second_fp = _closable(400)
+    _stub_sparql(monkeypatch, [second])
+    tool.ends_with_usage(
+        "部長", _index(("Q1", "family", "阿部"), ("Q3", "given", "長")), top=5)
+    assert first_fp.closed and second_fp.closed
+
+
+def test_main_reports_a_refresh_that_failed_for_a_latin_word(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # A Latin word has no ends-with row to carry the failure, and the
+    # refresh has already deleted the old index.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+
+    def broken(download: bool, refresh: bool = False) -> None:
+        raise OSError("down")
+    monkeypatch.setattr(tool, "load_index", broken)
+    _stub_sparql(monkeypatch, [[], []])
+    assert tool.main(["--refresh-index", "knight"]) == 2
+    assert "CJK name index: OSError: down" in capsys.readouterr().err
