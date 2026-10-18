@@ -180,10 +180,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1156 -> 1159 on 2026-10-11: the JOHN PROF. MA row (one
     # suffix-or-name claim under each of the three orders); 1159 ->
     # 1162 on 2026-10-14: the Агриппина Младшая row (#661, one
-    # given-or-family claim under each order).
-    assert claims == 1162, (
-        f"the field sweep checks {claims} claims, recorded as 1162 on "
-        f"2026-10-14")
+    # given-or-family claim under each order); 1162 -> 1171 on
+    # 2026-10-17: three #701 rows reporting suffix-or-name, under each
+    # order.
+    assert claims == 1171, (
+        f"the field sweep checks {claims} claims, recorded as 1171 on "
+        f"2026-10-17")
 
 
 #: Case.__post_init__'s shape checks, each probed for the message that

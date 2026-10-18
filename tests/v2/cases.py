@@ -3390,13 +3390,14 @@ CASES: tuple[Case, ...] = (
                "read suffix 'ANDREW PhD'"),
     Case("a_title_supplies_no_contrast_for_the_caps_shape",
          "Mr LLOYD WEBBER, ANDREW PhD",
-         {"given": "ANDREW", "family": "Mr LLOYD WEBBER", "suffix": "PhD"},
+         {"title": "Mr", "given": "ANDREW", "family": "LLOYD WEBBER",
+          "suffix": "PhD"},
+         classification="fix(#701)",
          notes="#564 boundary: titles and particles are written in "
                "lowercase in a record that capitalizes its surname, so "
                "neither counts as the name's contrast and the given name "
-               "stays. The title in the family is the listing form's "
-               "long-standing reading of a title before the comma "
-               "('Prof. Cruz, Ed'), master's too"),
+               "stays. Until #701 the title read into the family, the "
+               "listing form keeping the text before the comma whole"),
     Case("a_generation_supplies_no_contrast_for_the_caps_shape",
          "LLOYD WEBBER Jr., ANDREW",
          {"given": "ANDREW", "family": "LLOYD WEBBER", "suffix": "Jr."},
@@ -3748,13 +3749,110 @@ CASES: tuple[Case, ...] = (
                "credential produced a name reading"),
     Case("the_comma_count_counts_names_not_words_behind_a_title",
          "Mr Smith, Ma",
-         {"given": "Ma", "family": "Mr Smith"},
+         {"title": "Mr", "given": "Ma", "family": "Smith"},
          ambiguities=("suffix-or-name",),
+         classification="fix(#701)",
          notes="MEASURED. name_word_count's TITLE arm: 'Mr' is title "
                "vocabulary, so the part before the comma holds ONE "
                "name word and the count declines the flip. Without "
                "that arm two tokens would read as two names and hand "
                "the family to `given`"),
+    # rules.md#H6 (#701): a title opening the part before a family
+    # comma. The rows sweep the spellings and comma neighbours the rule
+    # reads; its own examples carry the plain shapes.
+    Case("a_title_before_a_family_comma_peels_beside_a_nickname",
+         "Dr. (Bob) Smith, John",
+         {"title": "Dr.", "given": "John", "family": "Smith",
+          "nickname": "Bob"},
+         classification="fix(#701)",
+         notes="the nickname is extracted before the run is read, so "
+               "it does not stand between the title and the family"),
+    Case("a_title_before_a_family_comma_peels_ahead_of_a_maiden_clause",
+         "Dr. Smith née Jones, Mary",
+         {"title": "Dr.", "given": "Mary", "family": "Smith",
+          "maiden": "Jones"},
+         classification="fix(#701)"),
+    Case("a_title_before_a_family_comma_peels_ahead_of_a_shape_numeral",
+         "Dr. Smith VI, John",
+         {"title": "Dr.", "given": "John", "family": "Smith VI"},
+         classification="fix(#701)",
+         notes="VI is read by shape alone, and the part before a "
+               "family comma keeps it as it does without the title"),
+    Case("a_title_before_a_family_comma_stops_at_a_period_marked_dual",
+         "Dr. Freiherr. von Berg, Ed",
+         {"title": "Dr.", "given": "Ed", "family": "Freiherr. von Berg"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#701)",
+         notes="'Freiherr' is a particle as well as a title in either "
+               "spelling, so the run stops at it; the bare spelling is "
+               "rules.md#H6's example"),
+    Case("a_period_marked_dual_opening_a_family_comma_stays_family",
+         "Freiherr. von Berg, Ed",
+         {"given": "Ed", "family": "Freiherr. von Berg"},
+         ambiguities=("suffix-or-name",)),
+    Case("a_dual_second_in_a_title_run_before_a_family_comma_peels",
+         "Hon. Ms Smith, Jane",
+         {"title": "Hon. Ms", "given": "Jane", "family": "Smith"},
+         classification="fix(#701)",
+         notes="'Ms' is suffix vocabulary too, and a name word follows "
+               "it, so it is a title as in 'Hon. Ms Jane Smith'. The "
+               "second #701 draft stopped in front of any suffix word "
+               "and read family 'Hon. Smith', suffix 'Ms' (rules.md#H6's "
+               "'Rev. Sr.' example; the design-docs review)"),
+    Case("a_title_before_a_family_comma_stops_at_a_bare_saint",
+         "Dr. St Pierre, Ed",
+         {"title": "Dr.", "given": "Ed", "family": "St Pierre"},
+         ambiguities=("suffix-or-name",),
+         classification="fix(#701)"),
+    Case("a_listed_title_before_a_family_comma_peels_in_cyrillic",
+         "г-н Вернер, Иван Асен",
+         {"title": "г-н", "given": "Иван", "middle": "Асен",
+          "family": "Вернер"},
+         classification="fix(#701)",
+         notes="CLDR's bg index rendering: a listed title with no "
+               "period, which H2's shape could never have read"),
+    Case("a_title_before_a_family_comma_reads_the_same_family_first",
+         "Dr. de Mesnil, Jean",
+         {"title": "Dr.", "given": "Jean", "family": "de Mesnil"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#701)",
+         notes="the comma names the family, so no declared order moves "
+               "the title or the particle surname behind it"),
+    Case("a_joined_title_unit_before_a_family_comma_peels_whole",
+         "Secretary of State Smith, John",
+         {"title": "Secretary of State", "given": "John",
+          "family": "Smith"},
+         classification="fix(#701)",
+         notes="a connective join makes one title piece, which the run "
+               "reads by its piece tag rather than its first word"),
+    Case("a_joined_salutation_before_a_family_comma_peels_whole",
+         "Mr. and Mrs. Smith, John",
+         {"title": "Mr. and Mrs.", "given": "John", "family": "Smith"},
+         classification="fix(#701)"),
+    Case("a_two_word_abbreviated_title_before_a_family_comma_peels_whole",
+         "Lt. Gov. Smith, John",
+         {"title": "Lt. Gov.", "given": "John", "family": "Smith"},
+         classification="fix(#701)",
+         notes="the run is vocabulary-only, so before 'gov' was listed "
+               "it stopped after 'Lt.' and read family 'Gov. Smith', "
+               "where the comma-less name reads title 'Lt. Gov.' by "
+               "H2's shape (the PR review of #701)"),
+    Case("a_title_before_a_family_comma_reads_the_same_given_last",
+         "Prof. Dr. Brühl, Ada",
+         {"title": "Prof. Dr.", "given": "Ada", "family": "Brühl"},
+         policy=Policy(name_order=FAMILY_FIRST_GIVEN_LAST),
+         classification="fix(#701)",
+         notes="the second family-first order, beside the FAMILY_FIRST "
+               "row: test_cases' three-order sweep checks R2's family "
+               "partition only, so it would not see the title move"),
+    Case("bare_gov_opening_a_name_is_a_title",
+         "Gov Smith",
+         {"title": "Gov", "family": "Smith"},
+         classification="fix(#701)",
+         notes="'gov' joined TITLES in the #701 review, as the listed "
+               "'governor' abbreviated; 1.4.0 through 2.4.2 read given "
+               "'Gov'. 236 US Census surname bearers, so a surname "
+               "written first loses it (decisions.md#H6)"),
     Case("the_comma_count_counts_names_not_words_behind_a_suffix",
          "Smith Jr, Ma",
          {"given": "Ma", "family": "Smith", "suffix": "Jr"},
@@ -8887,7 +8985,8 @@ CASES: tuple[Case, ...] = (
     # is_leading_title's H2 shape test -- so an UNLISTED period-marked
     # opener counted as a NAME word where a LISTED one did not, and
     # this pair split on that alone: 'Dr. Smith, Ed' (LISTED 'Dr.')
-    # read family 'Dr. Smith' unflipped, but 'Xyz. Smith, Ed'
+    # read family 'Dr. Smith' unflipped (the count is unchanged; since
+    # #701 the listed 'Dr.' then peels, rules.md#H6), but 'Xyz. Smith, Ed'
     # (UNLISTED, H2-shaped) flipped the comma structure and read title
     # 'Xyz.', family 'Smith', suffix 'Ed' -- a different STRUCTURE for
     # the same shape, from a title-vocabulary difference the count had
@@ -9341,7 +9440,10 @@ CASES: tuple[Case, ...] = (
          notes="segment 0 is the family segment even when it is wholly "
                "credential-shaped, so 'MD' is the FAMILY and not the "
                "head of a credential run, and that is what this row "
-               "still guards. The SEPARATOR is no longer the row's "
+               "still guards. Since #701 it guards rules.md#H6's stop "
+               "too: 'MD' is title vocabulary, and a title before the "
+               "comma peels only in front of a family word, which 'PhD' "
+               "is not. The SEPARATOR is no longer the row's "
                "subject. Until #436 it was: the join was asked of "
                "segment 1 alone, and dropping that conjunct left the "
                "whole suite green while this shape's suffix silently "

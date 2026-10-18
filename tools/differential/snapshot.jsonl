@@ -282,7 +282,7 @@
 {"name": "Balóch Karima", "order": "FAMILY_FIRST", "given": "Karima", "family": "Balóch", "initials": "K. B."}
 {"name": "Balóch Karima Mehráb", "order": "FAMILY_FIRST", "given": "Karima", "middle": "Mehráb", "family": "Balóch", "initials": "K. M. B."}
 {"name": "Balóch Wj. Monir Mómen Monir Mómen", "order": "FAMILY_FIRST", "given": "Wj.", "middle": "Monir Mómen Monir Mómen", "family": "Balóch", "initials": "W. M. M. M. M. B."}
-{"name": "Bapak Adinata, Dwi Putro bin MP", "order": "FAMILY_FIRST", "given": "Dwi", "middle": "Putro", "family": "bin Bapak Adinata", "suffix": "MP", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. P. B. A."}
+{"name": "Bapak Adinata, Dwi Putro bin MP", "order": "FAMILY_FIRST", "title": "Bapak", "given": "Dwi", "middle": "Putro", "family": "bin Adinata", "suffix": "MP", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. P. A."}
 {"name": "Bapak Dwi Putro bin Adinata MP", "title": "Bapak", "given": "Dwi", "middle": "Putro", "family": "bin Adinata", "suffix": "MP", "initials": "D. P. A."}
 {"name": "Barbara Brukalska", "given": "Barbara", "family": "Brukalska", "initials": "B. B."}
 {"name": "Barbara Scharf", "given": "Barbara", "family": "Scharf", "initials": "B. S."}
@@ -687,6 +687,7 @@
 {"name": "Dr. Abdul Salam Hassan, MD", "title": "Dr.", "given": "Abdul Salam", "family": "Hassan", "suffix": "MD", "initials": "A. S. H."}
 {"name": "Dr. Ardelean Dl Daniel Ionescu Dragoș Ioan Jr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Dl", "middle": "Daniel Ionescu Dragoș Ioan", "family": "Ardelean", "suffix": "Jr.", "initials": "D. D. I. D. I. A."}
 {"name": "Dr. Do Van Johnson, MD", "title": "Dr.", "given": "Do", "family": "Van Johnson", "suffix": "MD", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "D. J."}
+{"name": "Dr. Freiherr von Berg, Ed", "title": "Dr.", "given": "Ed", "family": "Freiherr von Berg", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. B."}
 {"name": "Dr. Jason", "title": "Dr.", "family": "Jason", "initials": "J."}
 {"name": "Dr. Jason Ross Jay", "title": "Dr.", "given": "Jason", "middle": "Ross", "family": "Jay", "initials": "J. R. J."}
 {"name": "Dr. John A. Doe", "title": "Dr.", "given": "John", "middle": "A.", "family": "Doe", "initials": "J. A. D."}
@@ -703,6 +704,7 @@
 {"name": "Dr. John Smith", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Dr. John Smith Prof.", "title": "Dr. Prof.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Dr. John van der Berg", "title": "Dr.", "given": "John", "family": "van der Berg", "initials": "J. B."}
+{"name": "Dr. Jr., John", "given": "John", "family": "Dr.", "suffix": "Jr.", "initials": "J. D."}
 {"name": "Dr. Juan Q. Velasquez y Garcia", "title": "Dr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "initials": "J. Q. V. G."}
 {"name": "Dr. Juan Q. Velasquez y Garcia III", "title": "Dr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "suffix": "III", "initials": "J. Q. V. G."}
 {"name": "Dr. Juan Q. Velasquez y Garcia, Jr.", "title": "Dr.", "given": "Juan", "middle": "Q.", "family": "Velasquez y Garcia", "suffix": "Jr.", "initials": "J. Q. V. G."}
@@ -725,18 +727,22 @@
 {"name": "Dr. Juan de la Vega, Jr.", "title": "Dr.", "given": "Juan", "family": "de la Vega", "suffix": "Jr.", "initials": "J. V."}
 {"name": "Dr. King", "title": "Dr.", "family": "King", "ambiguities": ["TITLE_OR_NAME"], "initials": "K."}
 {"name": "Dr. King MD", "title": "Dr.", "family": "King", "suffix": "MD", "ambiguities": ["TITLE_OR_NAME"], "initials": "K."}
+{"name": "Dr. King, John", "title": "Dr.", "given": "John", "family": "King", "initials": "J. K."}
 {"name": "Dr. Martin Luther King Jr.", "title": "Dr.", "given": "Martin", "middle": "Luther", "family": "King", "suffix": "Jr.", "initials": "M. L. K."}
 {"name": "Dr. Mazen Elrouqi", "title": "Dr.", "given": "Mazen", "family": "Elrouqi", "initials": "M. E."}
+{"name": "Dr. Mc Donald, John", "title": "Dr.", "given": "John", "family": "Mc Donald", "initials": "J. D."}
 {"name": "Dr. Paul Vinzent von Fischer jr. MdB", "title": "Dr.", "given": "Paul", "middle": "Vinzent", "family": "von Fischer", "suffix": "jr. MdB", "initials": "P. V. F."}
 {"name": "Dr. Sir John", "title": "Dr. Sir", "given": "John", "initials": "J."}
 {"name": "Dr. Smith", "title": "Dr.", "family": "Smith", "initials": "S."}
 {"name": "Dr. Smith Sir.", "title": "Dr. Sir.", "family": "Smith", "initials": "S."}
 {"name": "Dr. Smith née Jones", "title": "Dr.", "family": "Smith", "maiden": "Jones", "initials": "S."}
-{"name": "Dr. Smith, John", "given": "John", "family": "Dr. Smith", "initials": "J. D. S."}
+{"name": "Dr. Smith, John", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
+{"name": "Dr. St. Pierre, Ed", "title": "Dr.", "given": "Ed", "family": "St. Pierre", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. P."}
 {"name": "Dr. Van Johnson", "title": "Dr.", "given": "Van", "family": "Johnson", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "V. J."}
 {"name": "Dr. Williams", "title": "Dr.", "family": "Williams", "initials": "W."}
 {"name": "Dr. abdul salam", "title": "Dr.", "given": "abdul", "family": "salam", "initials": "a. s."}
 {"name": "Dr. abdul salam ahmed salem", "title": "Dr.", "given": "abdul salam", "middle": "ahmed", "family": "salem", "initials": "a. s. a. s."}
+{"name": "Dr. de la Vega, Juan", "title": "Dr.", "given": "Juan", "family": "de la Vega", "initials": "J. V."}
 {"name": "Dr. inž. Janez Novak", "title": "Dr. inž.", "given": "Janez", "family": "Novak", "initials": "J. N."}
 {"name": "Dr. juan garcia", "title": "Dr.", "given": "juan", "family": "garcia", "initials": "j. g."}
 {"name": "Dr. med. univ.", "title": "Dr. med.", "family": "univ.", "initials": "u."}
@@ -744,6 +750,7 @@
 {"name": "Dr. med. univ. Margit Popp, MSc", "title": "Dr. med. univ.", "given": "Margit", "family": "Popp", "suffix": "MSc", "initials": "M. P."}
 {"name": "Dr. nee Smith PhD Prof.", "title": "Dr. Prof.", "given": "nee", "family": "Smith", "suffix": "PhD", "initials": "n. S."}
 {"name": "Dr. 김민준씨, MA", "title": "Dr.", "given": "민준", "family": "김", "suffix": "씨, MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "민. 김."}
+{"name": "Dr., John", "given": "John", "family": "Dr.", "initials": "J. D."}
 {"name": "Dr.philol. Laima Kristīne Eva Sofija van den Volfa Bērziņa-Kalniņa", "title": "Dr.philol.", "given": "Laima", "middle": "Kristīne Eva Sofija", "family": "van den Volfa Bērziņa-Kalniņa", "initials": "L. K. E. S. V. B."}
 {"name": "Dra. Andréia da Silva", "title": "Dra.", "given": "Andréia", "family": "da Silva", "initials": "A. S."}
 {"name": "Dra. Erika Cornelia Anna Isabelle von Brül Cabral de Melo II", "title": "Dra.", "given": "Erika", "middle": "Cornelia Anna Isabelle von Brül Cabral", "family": "de Melo", "suffix": "II", "initials": "E. C. A. I. B. C. M."}
@@ -1017,6 +1024,7 @@
 {"name": "Gottfried Huyn von Geleen und Amsterad", "given": "Gottfried", "middle": "Huyn", "family": "von Geleen und Amsterad", "initials": "G. H. G. A."}
 {"name": "Gottfried IV.", "given": "Gottfried", "suffix": "IV.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "G."}
 {"name": "Goëß, Johann von", "given": "Johann", "family": "von Goëß", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. G."}
+{"name": "Graf Lambsdorff, Otto", "title": "Graf", "given": "Otto", "family": "Lambsdorff", "initials": "O. L."}
 {"name": "Gragger, Robert", "given": "Robert", "family": "Gragger", "initials": "R. G."}
 {"name": "Gramont, Antoine de", "given": "Antoine", "family": "de Gramont", "initials": "A. G."}
 {"name": "Grand Rounds", "title": "Grand", "family": "Rounds", "initials": "R."}
@@ -1027,6 +1035,7 @@
 {"name": "Gregorio Modrego Casaus", "given": "Gregorio", "middle": "Modrego", "family": "Casaus", "initials": "G. M. C."}
 {"name": "Grettir Björnsson", "given": "Grettir", "family": "Björnsson", "initials": "G. B."}
 {"name": "Greve Anna", "title": "Greve", "family": "Anna", "initials": "A."}
+{"name": "Greve Smith, Anna", "title": "Greve", "given": "Anna", "family": "Smith", "initials": "A. S."}
 {"name": "Greve, Anna", "given": "Anna", "family": "Greve", "initials": "A. G."}
 {"name": "Grouchy, Emmanuel de", "given": "Emmanuel", "family": "de Grouchy", "initials": "E. G."}
 {"name": "Guardia Neyra, Jaime", "given": "Jaime", "family": "Guardia Neyra", "initials": "J. G. N."}
@@ -1862,6 +1871,7 @@
 {"name": "King Henry", "title": "King", "given": "Henry", "initials": "H."}
 {"name": "King John Alexander V", "title": "King", "given": "John", "family": "Alexander", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. A."}
 {"name": "King John V.", "title": "King", "given": "John", "family": "V.", "initials": "J. V."}
+{"name": "King Smith, John", "title": "King", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Kishi, Kōichi", "given": "Kōichi", "family": "Kishi", "initials": "K. K."}
 {"name": "Kjetil Bjørn Løseth", "given": "Kjetil", "middle": "Bjørn", "family": "Løseth", "initials": "K. B. L."}
 {"name": "Klaus Poeck", "given": "Klaus", "family": "Poeck", "initials": "K. P."}
@@ -2022,6 +2032,7 @@
 {"name": "MD DDS", "title": "MD", "family": "DDS", "initials": "D."}
 {"name": "MD DDS Dut.ra Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa", "order": "FAMILY_FIRST", "title": "MD", "given": "Dut.ra", "middle": "Prof.ra von Brühl González Domingo Maria Giusepa Juana Teresa", "family": "DDS", "initials": "D. P. B. G. D. M. G. J. T. D."}
 {"name": "MD DDS von Brühl César Martín Ada Cornelia", "order": "FAMILY_FIRST", "title": "MD", "given": "von Brühl César Martín Ada Cornelia", "family": "DDS", "initials": "v. B. C. M. A. C. D."}
+{"name": "MD PhD Jr., John", "given": "John", "family": "MD", "suffix": "PhD Jr.", "initials": "J. M."}
 {"name": "MD, DO, DDS", "given": "DO", "family": "MD", "suffix": "DDS", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "D. M."}
 {"name": "MD, PHD", "family": "MD", "suffix": "PHD", "initials": "M."}
 {"name": "MP Pēteris Kārlis Ozoliņš", "given": "MP", "middle": "Pēteris Kārlis", "family": "Ozoliņš", "initials": "M. P. K. O."}
@@ -2493,16 +2504,19 @@
 {"name": "Prof. Dr. Ada Kornelia Sezar Martin van den Volf Becker Schmidt M.D. Ph.D.", "title": "Prof. Dr.", "given": "Ada", "middle": "Kornelia Sezar Martin", "family": "van den Volf Becker Schmidt", "suffix": "M.D. Ph.D.", "initials": "A. K. S. M. V. B. S."}
 {"name": "Prof. Dr. Adama Coulibaly Camara Massamba won Baar Dominique Goudiaby MD DDS", "title": "Prof. Dr.", "given": "Adama", "middle": "Coulibaly Camara Massamba won Baar Dominique", "family": "Goudiaby", "suffix": "MD DDS", "initials": "A. C. C. M. w. B. D. G."}
 {"name": "Prof. Dr. Anna Cornelia Eva Sophia van den Wolf jr. M.D. Ph.D.", "title": "Prof. Dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. M.D. Ph.D.", "initials": "A. C. E. S. W."}
+{"name": "Prof. Dr. Brühl, Ada", "title": "Prof. Dr.", "given": "Ada", "family": "Brühl", "initials": "A. B."}
 {"name": "Prof. Dr. MD DDS Ada Cornelia César Martín von Brühl Jr", "title": "Prof. Dr. MD", "given": "DDS", "middle": "Ada Cornelia César Martín", "family": "von Brühl", "suffix": "Jr", "initials": "D. A. C. C. M. B."}
 {"name": "Prof. Dr. Mary Lou Cesare Martín von Brühl Jr., Dr. Ph.D", "title": "Prof. Dr. Dr.", "given": "Mary", "middle": "Lou Cesare Martín", "family": "von Brühl", "suffix": "Jr., Ph.D", "initials": "M. L. C. M. B."}
 {"name": "Prof. Dr. Mary Sue Marie von Miller II, MD DDS", "title": "Prof. Dr.", "given": "Mary", "middle": "Sue Marie", "family": "von Miller", "suffix": "II, MD DDS", "initials": "M. S. M. M."}
 {"name": "Prof. Dr. María Florencia Martina Cristina von Brühl Jr., MD DDS", "title": "Prof. Dr.", "given": "María", "middle": "Florencia Martina Cristina", "family": "von Brühl", "suffix": "Jr., MD DDS", "initials": "M. F. M. C. B."}
-{"name": "Prof. Dr. von Bruhl, Ada Cornelia Cesar Martín Jr, M.D., Ph.D.", "order": "FAMILY_FIRST", "given": "Ada", "middle": "Cornelia Cesar Martín", "family": "Prof. Dr. von Bruhl", "suffix": "Jr, M.D., Ph.D.", "initials": "A. C. C. M. P. D. B."}
+{"name": "Prof. Dr. von Bruhl, Ada Cornelia Cesar Martín Jr, M.D., Ph.D.", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "given": "Ada", "middle": "Cornelia Cesar Martín", "family": "von Bruhl", "suffix": "Jr, M.D., Ph.D.", "initials": "A. C. C. M. B."}
 {"name": "Prof. Dr. von Brühl Ada Cornelia César Martín Jr, MD DDS", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "given": "Brühl", "middle": "Ada Cornelia César Martín", "family": "von", "suffix": "Jr, MD DDS", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. A. C. C. M. v."}
 {"name": "Prof. Dr. von Brühl González Domingo Ada Cornelia César Martín, M.D. DDS.", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "given": "Brühl", "middle": "González Domingo Ada Cornelia César Martín", "family": "von", "suffix": "M.D. DDS.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. G. D. A. C. C. M. v."}
 {"name": "Prof. Dr. von Brühl María Florencia Martina Cristina Jr., MD DDS", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "given": "Brühl", "middle": "María Florencia Martina Cristina", "family": "von", "suffix": "Jr., MD DDS", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. M. F. M. C. v."}
 {"name": "Prof. Dr. von Brühl Plácido Domingo Ada Cornelia César Martín, MD DDS", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "given": "Brühl", "middle": "Plácido Domingo Ada Cornelia César Martín", "family": "von", "suffix": "MD DDS", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. P. D. A. C. C. M. v."}
-{"name": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD", "given": "MBChB", "family": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg", "suffix": "jnr., PhD", "initials": "M. P. d. C. M. S. A. B."}
+{"name": "Prof. Smith, Dr. John", "title": "Prof. Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
+{"name": "Prof. Smith, John, PhD", "title": "Prof.", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
+{"name": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD", "title": "Prof. dr.", "given": "MBChB", "family": "Cornelia Margarita Sofia Aletta van den Berg", "suffix": "jnr., PhD", "initials": "M. C. M. S. A. B."}
 {"name": "Prof. dr. MD Chirurgie dentară Eva-Eleonora Karl Hans von der Ruhr Jr.", "title": "Prof. dr. MD", "given": "Chirurgie", "middle": "dentară Eva-Eleonora Karl Hans", "family": "von der Ruhr", "suffix": "Jr.", "initials": "C. d. E. K. H. R."}
 {"name": "Prof. Ɖr. MƉ Samʊwɛl fan ƉAM Fostɛɛŋ", "title": "Prof. Ɖr.", "given": "MƉ", "middle": "Samʊwɛl fan ƉAM", "family": "Fostɛɛŋ", "initials": "M. S. f. Ɖ. F."}
 {"name": "Prof. Ɖr. MƉ fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "title": "Prof. Ɖr.", "given": "fan", "middle": "ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "family": "MƉ", "initials": "f. Ɖ. Ɖ. F. S. M."}
@@ -2556,6 +2570,7 @@
 {"name": "Rev John A. Kenneth Doe III (Kenny)", "title": "Rev", "given": "John", "middle": "A. Kenneth", "family": "Doe", "suffix": "III", "nickname": "Kenny", "initials": "J. A. K. D."}
 {"name": "Rev. John A. Kenneth Doe", "title": "Rev.", "given": "John", "middle": "A. Kenneth", "family": "Doe", "initials": "J. A. K. D."}
 {"name": "Rev. John Smith", "title": "Rev.", "given": "John", "family": "Smith", "initials": "J. S."}
+{"name": "Rev. Sr. Smith, Mary", "title": "Rev. Sr.", "given": "Mary", "family": "Smith", "initials": "M. S."}
 {"name": "Reza Hossein Zadeh", "given": "Reza", "middle": "Hossein", "family": "Zadeh", "initials": "R. H. Z."}
 {"name": "Ricardo Bodenlle Corral", "given": "Ricardo", "middle": "Bodenlle", "family": "Corral", "initials": "R. B. C."}
 {"name": "Ricardo Legorreta Vilchis", "given": "Ricardo", "middle": "Legorreta", "family": "Vilchis", "initials": "R. L. V."}
@@ -2752,6 +2767,7 @@
 {"name": "Sir John", "title": "Sir", "given": "John", "initials": "J."}
 {"name": "Sir John Prof.", "title": "Sir Prof.", "given": "John", "initials": "J."}
 {"name": "Sir Ph. D. Van Johnson", "title": "Sir", "given": "Van Johnson", "suffix": "Ph. D.", "initials": "V. J."}
+{"name": "Sir Smith, John", "title": "Sir", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Sir Van Johnson", "title": "Sir", "given": "Van", "family": "Johnson", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "V. J."}
 {"name": "Sir abdul van der Berg", "title": "Sir", "given": "abdul", "family": "van der Berg", "initials": "a. B."}
 {"name": "Sir de Mesnil", "title": "Sir", "family": "de Mesnil", "initials": "M."}
@@ -2882,6 +2898,7 @@
 {"name": "Sr. Xosé Carlos Francisco Xavier de Castro Sáez", "title": "Sr.", "given": "Xosé", "middle": "Carlos Francisco Xavier", "family": "de Castro Sáez", "initials": "X. C. F. X. C. S."}
 {"name": "Srta. Andréia da Silva", "title": "Srta.", "given": "Andréia", "family": "da Silva", "initials": "A. S."}
 {"name": "St Clair", "title": "St", "family": "Clair", "initials": "C."}
+{"name": "St Pierre, Ed", "given": "Ed", "family": "St Pierre", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. P."}
 {"name": "Stander Zelda Herman", "order": "FAMILY_FIRST", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stander, Zelda Herman", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stariji Bruegel", "given": "Stariji", "family": "Bruegel", "initials": "S. B."}
@@ -3332,7 +3349,7 @@
 {"name": "g. Hodžić Adnan Mirza, zastupnik u parlamentu", "order": "FAMILY_FIRST", "given": "zastupnik", "middle": "u parlamentu", "family": "g. Hodžić Adnan Mirza", "initials": "z. u. p. g. H. A. M."}
 {"name": "g. Janez Peter Novak ml., univ. dipl. inž.", "title": "univ. dipl. inž.", "given": "g.", "middle": "Janez Peter Novak", "family": "ml.", "initials": "g. J. P. N. m."}
 {"name": "g. Novak Janez Peter, univ. dipl. inž.", "order": "FAMILY_FIRST", "title": "univ. dipl. inž.", "given": "Novak", "middle": "Janez Peter", "family": "g.", "initials": "N. J. P. g."}
-{"name": "hr. Hans Henrik Sven Åge Møller, MF", "given": "MF", "family": "hr. Hans Henrik Sven Åge Møller", "initials": "M. h. H. H. S. Å. M."}
+{"name": "hr. Hans Henrik Sven Åge Møller, MF", "title": "hr.", "given": "MF", "family": "Hans Henrik Sven Åge Møller", "initials": "M. H. H. S. Å. M."}
 {"name": "ibn Awf abdul Rahman", "family": "ibn Awf abdul Rahman", "initials": "A. a. R."}
 {"name": "ina binti navalamar", "given": "ina", "family": "binti navalamar", "initials": "i. n."}
 {"name": "j.-e.-p. dupont", "given": "j.-e.-p.", "family": "dupont", "initials": "j. d."}
@@ -3425,17 +3442,17 @@
 {"name": "prof. dr Ada Cornelia von Brühl", "title": "prof. dr", "given": "Ada", "middle": "Cornelia", "family": "von Brühl", "initials": "A. C. B."}
 {"name": "prof. dr Aleksandra Eva Sara van den Volf Petrović Jugović dipl. inž.", "title": "prof. dr", "given": "Aleksandra", "middle": "Eva Sara", "family": "van den Volf Petrović Jugović dipl. inž.", "initials": "A. E. S. V. P. J. d. i."}
 {"name": "prof. dr von Brühl Ada Cornelia César Martín", "order": "FAMILY_FIRST", "title": "prof. dr", "given": "Brühl", "middle": "Ada Cornelia César Martín", "family": "von", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. A. C. C. M. v."}
-{"name": "prof. dr. Ada Cornelia César Martín von Brühl Jr, univ. bacc", "title": "univ.", "given": "bacc", "family": "prof. dr. Ada Cornelia César Martín von Brühl", "suffix": "Jr", "initials": "b. p. d. A. C. C. M. B."}
+{"name": "prof. dr. Ada Cornelia César Martín von Brühl Jr, univ. bacc", "title": "prof. dr. univ.", "given": "bacc", "family": "Ada Cornelia César Martín von Brühl", "suffix": "Jr", "initials": "b. A. C. C. M. B."}
 {"name": "prof. dr. Ada Cornelia César Martín von Brühl ml., dr. med., dr. dent. med.", "title": "prof. dr. dr. med. dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl ml.", "suffix": "dent. med.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "A. C. C. M. B. m."}
 {"name": "prof. dr. Anna Cornelia Eva Sophia van den Wolf jr. m.d. ph.d.", "title": "prof. dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. m.d. ph.d.", "initials": "A. C. E. S. W."}
 {"name": "prof. dr. Gentiana van den Popa, dr. shk. mjek.", "title": "prof. dr. dr. shk. mjek.", "given": "Gentiana", "family": "van den Popa", "initials": "G. P."}
 {"name": "prof. dr. Izeta Amra von Selimović Hodžić, dipl. stom.", "title": "prof. dr. dipl. stom.", "given": "Izeta", "middle": "Amra", "family": "von Selimović Hodžić", "initials": "I. A. S. H."}
-{"name": "prof. dr. Popa, Gentiana van den", "given": "Gentiana", "family": "van den prof. dr. Popa", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "G. p. d. P."}
-{"name": "prof. dr. van den Popa, Gentiana M., dr. shk. mjek.", "order": "FAMILY_FIRST", "title": "dr.", "given": "Gentiana", "middle": "M.", "family": "prof. dr. van den Popa", "suffix": "shk. mjek.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "G. M. p. d. P."}
+{"name": "prof. dr. Popa, Gentiana van den", "title": "prof. dr.", "given": "Gentiana", "family": "van den Popa", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "G. P."}
+{"name": "prof. dr. van den Popa, Gentiana M., dr. shk. mjek.", "order": "FAMILY_FIRST", "title": "prof. dr. dr.", "given": "Gentiana", "middle": "M.", "family": "van den Popa", "suffix": "shk. mjek.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "G. M. P."}
 {"name": "prof. dr. von Brühl Ada Cornelia César Martín, dr. med., dr. dent. med.", "order": "FAMILY_FIRST", "title": "prof. dr. dr. med. dr.", "given": "Brühl", "middle": "Ada Cornelia César Martín", "family": "von", "suffix": "dent. med.", "ambiguities": ["COMMA_STRUCTURE", "PARTICLE_OR_GIVEN"], "initials": "B. A. C. C. M. v."}
-{"name": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.", "given": "Izeta", "middle": "Amra", "family": "prof. dr. von Selimović Hodžić", "suffix": "dipl. stom.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "I. A. p. d. S. H."}
-{"name": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.", "order": "FAMILY_FIRST", "given": "Izeta", "middle": "Amra", "family": "prof. dr. von Selimović Hodžić", "suffix": "dipl. stom.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "I. A. p. d. S. H."}
-{"name": "prof. dr. von Vilkas Jankauskas-Baranauskas, Ada Kornelija Eva Sofija", "order": "FAMILY_FIRST", "given": "Ada", "middle": "Kornelija Eva Sofija", "family": "prof. dr. von Vilkas Jankauskas-Baranauskas", "initials": "A. K. E. S. p. d. V. J."}
+{"name": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.", "title": "prof. dr.", "given": "Izeta", "middle": "Amra", "family": "von Selimović Hodžić", "suffix": "dipl. stom.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "I. A. S. H."}
+{"name": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Izeta", "middle": "Amra", "family": "von Selimović Hodžić", "suffix": "dipl. stom.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "I. A. S. H."}
+{"name": "prof. dr. von Vilkas Jankauskas-Baranauskas, Ada Kornelija Eva Sofija", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Ada", "middle": "Kornelija Eva Sofija", "family": "von Vilkas Jankauskas-Baranauskas", "initials": "A. K. E. S. V. J."}
 {"name": "professori Ana Christina Lëja von Wright González Domingo, MD DDS", "given": "professori", "middle": "Ana Christina Lëja", "family": "von Wright González Domingo", "suffix": "MD DDS", "initials": "p. A. C. L. W. G. D."}
 {"name": "qc mp", "given": "qc", "suffix": "mp", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "q."}
 {"name": "salem, abdul", "given": "abdul", "family": "salem", "initials": "a. s."}
@@ -4102,7 +4119,7 @@
 {"name": "Преображенский, Василий Алексеевич", "given": "Василий", "middle": "Алексеевич", "family": "Преображенский", "initials": "В. А. П."}
 {"name": "Проф. Док. Ада Корнелиа Сезар Мартин вон Брухи Гонзалес Доминго", "title": "Проф. Док.", "given": "Ада", "middle": "Корнелиа Сезар Мартин вон Брухи Гонзалес", "family": "Доминго", "initials": "А. К. С. М. в. Б. Г. Д."}
 {"name": "Проф. Доктор. Алтынай Сулайманова Асель Сартбаева ван ден Вольф Бекер Шмидт Илимдин кандидаты", "title": "Проф. Доктор.", "given": "Алтынай", "middle": "Сулайманова Асель Сартбаева ван ден Вольф Бекер Шмидт Илимдин", "family": "кандидаты", "initials": "А. С. А. С. в. д. В. Б. Ш. И. к."}
-{"name": "Проф. Др. Ада Корнелиа Эва Софиа вон Брюхл Жр, Анагаах ухааны доктор", "given": "Анагаах", "middle": "ухааны доктор", "family": "Проф. Др. Ада Корнелиа Эва Софиа вон Брюхл Жр", "initials": "А. у. д. П. Д. А. К. Э. С. в. Б. Ж."}
+{"name": "Проф. Др. Ада Корнелиа Эва Софиа вон Брюхл Жр, Анагаах ухааны доктор", "title": "Проф.", "given": "Анагаах", "middle": "ухааны доктор", "family": "Др. Ада Корнелиа Эва Софиа вон Брюхл Жр", "initials": "А. у. д. Д. А. К. Э. С. в. Б. Ж."}
 {"name": "Пётр Васильевич Быков", "given": "Пётр", "middle": "Васильевич", "family": "Быков", "initials": "П. В. Б."}
 {"name": "Пётр Иванович Почивалов", "given": "Пётр", "middle": "Иванович", "family": "Почивалов", "initials": "П. И. П."}
 {"name": "Пётр Николаевич Краснов", "given": "Пётр", "middle": "Николаевич", "family": "Краснов", "initials": "П. Н. К."}
@@ -4243,16 +4260,16 @@
 {"name": "вон Брухи Гонзалес Доминго Проф. Док. Ада Корнелиа Сезар Мартин", "order": "FAMILY_FIRST", "given": "Брухи", "middle": "Гонзалес Доминго Проф. Док. Ада Корнелиа Сезар Мартин", "family": "вон", "initials": "Б. Г. Д. П. Д. А. К. С. М. в."}
 {"name": "вон Брухи Гонзалес Доминго, Проф. Док. Ада Корнелиа Сезар Мартин", "title": "Проф. Док.", "given": "Ада", "middle": "Корнелиа Сезар Мартин", "family": "вон Брухи Гонзалес Доминго", "initials": "А. К. С. М. в. Б. Г. Д."}
 {"name": "вон Брюхл Гонзалес Доминго Проф. Др. Ада Корнелиа Эва Софиа Анагаах ухааны доктор", "order": "FAMILY_FIRST", "given": "Брюхл", "middle": "Гонзалес Доминго Проф. Др. Ада Корнелиа Эва Софиа Анагаах ухааны доктор", "family": "вон", "initials": "Б. Г. Д. П. Д. А. К. Э. С. А. у. д. в."}
-{"name": "г-н Вернер, Иван Асен, проф. д-р", "order": "FAMILY_FIRST", "title": "проф. д-р", "given": "Иван", "middle": "Асен", "family": "г-н Вернер", "initials": "И. А. г. В."}
+{"name": "г-н Вернер, Иван Асен, проф. д-р", "order": "FAMILY_FIRST", "title": "г-н проф. д-р", "given": "Иван", "middle": "Асен", "family": "Вернер", "initials": "И. А. В."}
 {"name": "г-н Иван Асен Вернер, проф. д-р", "title": "г-н проф. д-р", "given": "Иван", "middle": "Асен", "family": "Вернер", "initials": "И. А. В."}
 {"name": "г-н Иван Петров", "title": "г-н", "given": "Иван", "family": "Петров", "initials": "И. П."}
 {"name": "др Слађана Вера Миленковић дипл. инж.", "given": "др", "middle": "Слађана Вера Миленковић дипл.", "family": "инж.", "initials": "д. С. В. М. д. и."}
 {"name": "проф. Анастасія Єва Софія фон Вольф Гонзалес Домінго, д-р", "title": "проф. д-р", "given": "Анастасія", "middle": "Єва Софія фон Вольф Гонзалес", "family": "Домінго", "initials": "А. Є. С. ф. В. Г. Д."}
 {"name": "проф. Анна Марія Богдан-Зиновій Петренко доц.", "title": "проф.", "given": "Анна", "middle": "Марія Богдан-Зиновій Петренко", "family": "доц.", "initials": "А. М. Б. П. д."}
 {"name": "проф. Петренко Анна Марія Богдан-Зиновій доц.", "order": "FAMILY_FIRST", "title": "проф.", "given": "Анна", "middle": "Марія Богдан-Зиновій доц.", "family": "Петренко", "initials": "А. М. Б. д. П."}
-{"name": "проф. д-р Ада Корнелия Цезар Мартин Брюл, доктор", "given": "доктор", "family": "проф. д-р Ада Корнелия Цезар Мартин Брюл", "initials": "д. п. д. А. К. Ц. М. Б."}
+{"name": "проф. д-р Ада Корнелия Цезар Мартин Брюл, доктор", "title": "проф. д-р", "given": "доктор", "family": "Ада Корнелия Цезар Мартин Брюл", "initials": "д. А. К. Ц. М. Б."}
 {"name": "проф. д-р Ана Марија Цезар Мартин ван ден Волф", "title": "проф. д-р", "given": "Ана", "middle": "Марија Цезар Мартин ван ден", "family": "Волф", "initials": "А. М. Ц. М. в. д. В."}
-{"name": "проф. д-р Брюл, Ада Корнелия Цезар Мартин, доктор", "order": "FAMILY_FIRST", "given": "Ада", "middle": "Корнелия Цезар Мартин", "family": "проф. д-р Брюл", "suffix": "доктор", "ambiguities": ["COMMA_STRUCTURE"], "initials": "А. К. Ц. М. п. д. Б."}
+{"name": "проф. д-р Брюл, Ада Корнелия Цезар Мартин, доктор", "order": "FAMILY_FIRST", "title": "проф. д-р", "given": "Ада", "middle": "Корнелия Цезар Мартин", "family": "Брюл", "suffix": "доктор", "ambiguities": ["COMMA_STRUCTURE"], "initials": "А. К. Ц. М. Б."}
 {"name": "проф. д-р Крсте Петков Мисирков", "title": "проф. д-р", "given": "Крсте", "middle": "Петков", "family": "Мисирков", "initials": "К. П. М."}
 {"name": "проф. д-р Мисирков Крсте Петков", "order": "FAMILY_FIRST", "title": "проф. д-р", "given": "Крсте", "middle": "Петков", "family": "Мисирков", "initials": "К. П. М."}
 {"name": "проф. д-р ван ден Волф Ана Марија Цезар Мартин", "order": "FAMILY_FIRST", "title": "проф. д-р", "given": "ден", "middle": "Волф Ана Марија Цезар Мартин", "family": "ван", "initials": "д. В. А. М. Ц. М. в."}
@@ -4473,7 +4490,7 @@
 {"name": "اسەم", "order": "FAMILY_FIRST", "family": "اسەم", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "ا."}
 {"name": "اصغر شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
 {"name": "اصغر، شازیہ", "order": "FAMILY_FIRST", "given": "شازیہ", "family": "اصغر", "initials": "ش. ا."}
-{"name": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح", "given": "طبيب", "middle": "وجراح", "family": "الدكتور عايدة كورنيليا سيزار مارتن فون برول", "suffix": "الإبن", "initials": "ط. و. ا. ع. ك. س. م. ف. ب."}
+{"name": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح", "title": "الدكتور", "given": "طبيب", "middle": "وجراح", "family": "عايدة كورنيليا سيزار مارتن فون برول", "suffix": "الإبن", "initials": "ط. و. ع. ك. س. م. ف. ب."}
 {"name": "السيد أحمد رامي نجيب محفوظ أبو الأغا الابن، النائب", "given": "النائب", "family": "السيد أحمد رامي نجيب محفوظ أبو الأغا", "suffix": "الابن", "initials": "ا. ا. أ. ر. ن. م. ا."}
 {"name": "العامر، كمال مجدي", "order": "FAMILY_FIRST", "given": "كمال", "middle": "مجدي", "family": "العامر", "initials": "ك. م. ا."}
 {"name": "النجار، سميرة", "order": "FAMILY_FIRST", "given": "سميرة", "family": "النجار", "initials": "س. ا."}
@@ -4750,8 +4767,8 @@
 {"name": "पोख्रेल रमिता", "order": "FAMILY_FIRST", "given": "रमिता", "family": "पोख्रेल", "initials": "र. प."}
 {"name": "पोख्रेल, रमिता", "given": "रमिता", "family": "पोख्रेल", "initials": "र. प."}
 {"name": "प्रेमप्रसाद हिमलाल वास्तोला", "given": "प्रेमप्रसाद", "middle": "हिमलाल", "family": "वास्तोला", "initials": "प. ह. व."}
-{"name": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर, बी.ए. एल.एल.बी", "given": "बी.ए.", "middle": "एल.एल.बी", "family": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर", "initials": "ब. ए. प. ड. आ. क. स. म. व. ब. ग. ड. ज."}
-{"name": "प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु., एम. डी. डी. डी. एस.", "title": "एम.", "given": "डी.", "middle": "डी. डी. एस.", "family": "प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु.", "initials": "ड. ड. ड. ए. प. अ. श. स. म. व. ब. ज."}
+{"name": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर, बी.ए. एल.एल.बी", "title": "प्रो. डॉ.", "given": "बी.ए.", "middle": "एल.एल.बी", "family": "आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर", "initials": "ब. ए. आ. क. स. म. व. ब. ग. ड. ज."}
+{"name": "प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु., एम. डी. डी. डी. एस.", "title": "प्रोफे.डॉ. एम.", "given": "डी.", "middle": "डी. डी. एस.", "family": "अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु.", "initials": "ड. ड. ड. ए. अ. श. स. म. व. ब. ज."}
 {"name": "प्रो॰ डॉ॰ माइकल जॉन वॉन वॉटसन चेस्टर, एम॰डी॰, पी॰एच॰डी॰", "given": "एम॰डी॰", "family": "प्रो॰ डॉ॰ माइकल जॉन वॉन वॉटसन चेस्टर", "suffix": "पी॰एच॰डी॰", "ambiguities": ["COMMA_STRUCTURE"], "initials": "ए. प. ड. म. ज. व. व. च."}
 {"name": "प्रो॰ डॉ॰ वॉन वॉटसन माइकल जॉन, एम॰डी॰, पी॰एच॰डी॰", "order": "FAMILY_FIRST", "given": "एम॰डी॰", "family": "प्रो॰ डॉ॰ वॉन वॉटसन माइकल जॉन", "suffix": "पी॰एच॰डी॰", "ambiguities": ["COMMA_STRUCTURE"], "initials": "ए. प. ड. व. व. म. ज."}
 {"name": "फडके रिधान समीर", "order": "FAMILY_FIRST", "given": "रिधान", "middle": "समीर", "family": "फडके", "initials": "र. स. फ."}
@@ -4804,10 +4821,10 @@
 {"name": "शर्मा, ललित कुमार एम॰डी॰", "given": "ललित", "middle": "कुमार एम॰डी॰", "family": "शर्मा", "initials": "ल. क. ए. श."}
 {"name": "शर्मा, ललित मोहन", "given": "ललित", "middle": "मोहन", "family": "शर्मा", "initials": "ल. म. श."}
 {"name": "शांति गांवकर", "given": "शांति", "family": "गांवकर", "initials": "श. ग."}
-{"name": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा., एमपी", "given": "एमपी", "family": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा.", "initials": "ए. श. फ. श. ज. आ. द. स. ए. म. ध."}
+{"name": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा., एमपी", "title": "श्री", "given": "एमपी", "family": "फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा.", "initials": "ए. फ. श. ज. आ. द. स. ए. म. ध."}
 {"name": "श्री ललित कुमार शर्मा एम॰डी॰", "title": "श्री", "given": "ललित", "middle": "कुमार शर्मा", "family": "एम॰डी॰", "initials": "ल. क. श. ए."}
-{"name": "श्री शर्मा ललित कुमार, एम॰डी॰", "order": "FAMILY_FIRST", "given": "एम॰डी॰", "family": "श्री शर्मा ललित कुमार", "initials": "ए. श. श. ल. क."}
-{"name": "श्री. धिरज देशपांडे विजय देशपांडे देशपांडे क., एम. पी.", "title": "एम.", "given": "पी.", "family": "श्री. धिरज देशपांडे विजय देशपांडे देशपांडे क.", "initials": "प. श. ध. द. व. द. द. क."}
+{"name": "श्री शर्मा ललित कुमार, एम॰डी॰", "order": "FAMILY_FIRST", "title": "श्री", "given": "एम॰डी॰", "family": "शर्मा ललित कुमार", "initials": "ए. श. ल. क."}
+{"name": "श्री. धिरज देशपांडे विजय देशपांडे देशपांडे क., एम. पी.", "title": "श्री. एम.", "given": "पी.", "family": "धिरज देशपांडे विजय देशपांडे देशपांडे क.", "initials": "प. ध. द. व. द. द. क."}
 {"name": "संजय ख़ान", "given": "संजय", "family": "ख़ान", "initials": "स. ख."}
 {"name": "सिंदबाद", "given": "सिंदबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "स."}
 {"name": "सिंदबाद", "order": "FAMILY_FIRST", "family": "सिंदबाद", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "स."}

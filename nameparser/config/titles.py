@@ -404,6 +404,7 @@ TITLES = GIVEN_NAME_TITLES | {
     'giani',
     'goodman',
     'goodwife',
+    'gov',
     'governor',
     'graf',
     'gräfin',

@@ -2,11 +2,11 @@
  "af/foreignFull/givenFirst": {
   "family": {
    "expected": "van den Berg",
-   "got": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg"
+   "got": "Cornelia Margarita Sofia Aletta van den Berg"
   },
   "family_base": {
    "expected": "Berg",
-   "got": "Prof. dr. Cornelia Margarita Sofia Aletta Berg"
+   "got": "Cornelia Margarita Sofia Aletta Berg"
   },
   "given_names": {
    "expected": "Cornelia Margarita Sofia Aletta",
@@ -16,11 +16,7 @@
    "expected": "jnr. MBChB PhD",
    "got": "jnr., PhD"
   },
-  "text": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD",
-  "title": {
-   "expected": "Prof. dr.",
-   "got": ""
-  }
+  "text": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD"
  },
  "af/foreignFull/surnameFirst": {
   "family": {
@@ -366,11 +362,11 @@
  "ar/foreignFull/givenFirst": {
   "family": {
    "expected": "فون برول",
-   "got": "الدكتور عايدة كورنيليا سيزار مارتن فون برول"
+   "got": "عايدة كورنيليا سيزار مارتن فون برول"
   },
   "family_base": {
    "expected": "برول",
-   "got": "الدكتور عايدة كورنيليا سيزار مارتن فون برول"
+   "got": "عايدة كورنيليا سيزار مارتن فون برول"
   },
   "family_particles": {
    "expected": "فون",
@@ -384,11 +380,7 @@
    "expected": "الإبن طبيب وجراح",
    "got": "الإبن"
   },
-  "text": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح",
-  "title": {
-   "expected": "الدكتور",
-   "got": ""
-  }
+  "text": "الدكتور عايدة كورنيليا سيزار مارتن فون برول الإبن، طبيب وجراح"
  },
  "ar/foreignFull/sorting": {
   "family_base": {
@@ -1036,11 +1028,11 @@
  "bg/foreignFull/givenFirst": {
   "family": {
    "expected": "Брюл",
-   "got": "проф. д-р Ада Корнелия Цезар Мартин Брюл"
+   "got": "Ада Корнелия Цезар Мартин Брюл"
   },
   "family_base": {
    "expected": "Брюл",
-   "got": "проф. д-р Ада Корнелия Цезар Мартин Брюл"
+   "got": "Ада Корнелия Цезар Мартин Брюл"
   },
   "given_names": {
    "expected": "Ада Корнелия Цезар Мартин",
@@ -1050,11 +1042,7 @@
    "expected": "доктор",
    "got": ""
   },
-  "text": "проф. д-р Ада Корнелия Цезар Мартин Брюл, доктор",
-  "title": {
-   "expected": "проф. д-р",
-   "got": ""
-  }
+  "text": "проф. д-р Ада Корнелия Цезар Мартин Брюл, доктор"
  },
  "bg/foreignFull/sorting": {
   "family": {
@@ -1070,21 +1058,6 @@
    "got": "Ада Корнелия Цезар Мартин фон"
   },
   "text": "Брюл, Ада Корнелия Цезар Мартин фон"
- },
- "bg/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "Брюл",
-   "got": "проф. д-р Брюл"
-  },
-  "family_base": {
-   "expected": "Брюл",
-   "got": "проф. д-р Брюл"
-  },
-  "text": "проф. д-р Брюл, Ада Корнелия Цезар Мартин, доктор",
-  "title": {
-   "expected": "проф. д-р",
-   "got": ""
-  }
  },
  "bg/foreignG/sorting": {
   "family": {
@@ -1135,14 +1108,6 @@
   "text": "Вернер, Иван Асен фон"
  },
  "bg/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "Вернер",
-   "got": "г-н Вернер"
-  },
-  "family_base": {
-   "expected": "Вернер",
-   "got": "г-н Вернер"
-  },
   "suffix": {
    "expected": "проф. д-р",
    "got": ""
@@ -1150,7 +1115,7 @@
   "text": "г-н Вернер, Иван Асен, проф. д-р",
   "title": {
    "expected": "г-н",
-   "got": "проф. д-р"
+   "got": "г-н проф. д-р"
   }
  },
  "bg/nativeG/sorting": {
@@ -1531,36 +1496,6 @@
   "title": {
    "expected": "prof. dr.",
    "got": "prof. dr. dipl. stom."
-  }
- },
- "bs/foreignFull/sorting": {
-  "family": {
-   "expected": "von Selimović Hodžić",
-   "got": "prof. dr. von Selimović Hodžić"
-  },
-  "family_base": {
-   "expected": "Selimović Hodžić",
-   "got": "prof. dr. Selimović Hodžić"
-  },
-  "text": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.",
-  "title": {
-   "expected": "prof. dr.",
-   "got": ""
-  }
- },
- "bs/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Selimović Hodžić",
-   "got": "prof. dr. von Selimović Hodžić"
-  },
-  "family_base": {
-   "expected": "Selimović Hodžić",
-   "got": "prof. dr. Selimović Hodžić"
-  },
-  "text": "prof. dr. von Selimović Hodžić, Izeta Amra, dipl. stom.",
-  "title": {
-   "expected": "prof. dr.",
-   "got": ""
   }
  },
  "bs/foreignG/sorting": {
@@ -2300,11 +2235,11 @@
  "da/nativeFull/givenFirst": {
   "family": {
    "expected": "Møller",
-   "got": "hr. Hans Henrik Sven Åge Møller"
+   "got": "Hans Henrik Sven Åge Møller"
   },
   "family_base": {
    "expected": "Møller",
-   "got": "hr. Hans Henrik Sven Åge Møller"
+   "got": "Hans Henrik Sven Åge Møller"
   },
   "given_names": {
    "expected": "Hans Henrik Sven Åge",
@@ -2314,11 +2249,7 @@
    "expected": "MF",
    "got": ""
   },
-  "text": "hr. Hans Henrik Sven Åge Møller, MF",
-  "title": {
-   "expected": "hr.",
-   "got": ""
-  }
+  "text": "hr. Hans Henrik Sven Åge Møller, MF"
  },
  "da/nativeG/sorting": {
   "family": {
@@ -4157,11 +4088,11 @@
  "hi/nativeFull/surnameFirst": {
   "family": {
    "expected": "शर्मा",
-   "got": "श्री शर्मा ललित कुमार"
+   "got": "शर्मा ललित कुमार"
   },
   "family_base": {
    "expected": "शर्मा",
-   "got": "श्री शर्मा ललित कुमार"
+   "got": "शर्मा ललित कुमार"
   },
   "given_names": {
    "expected": "ललित कुमार",
@@ -4171,11 +4102,7 @@
    "expected": "एम॰डी॰",
    "got": ""
   },
-  "text": "श्री शर्मा ललित कुमार, एम॰डी॰",
-  "title": {
-   "expected": "श्री",
-   "got": ""
-  }
+  "text": "श्री शर्मा ललित कुमार, एम॰डी॰"
  },
  "hi/nativeG/sorting": {
   "family": {
@@ -4291,11 +4218,11 @@
  "hr/foreignFull/givenFirst": {
   "family": {
    "expected": "von Brühl",
-   "got": "prof. dr. Ada Cornelia César Martín von Brühl"
+   "got": "Ada Cornelia César Martín von Brühl"
   },
   "family_base": {
    "expected": "Brühl",
-   "got": "prof. dr. Ada Cornelia César Martín Brühl"
+   "got": "Ada Cornelia César Martín Brühl"
   },
   "given_names": {
    "expected": "Ada Cornelia César Martín",
@@ -4308,7 +4235,7 @@
   "text": "prof. dr. Ada Cornelia César Martín von Brühl Jr, univ. bacc",
   "title": {
    "expected": "prof. dr.",
-   "got": "univ."
+   "got": "prof. dr. univ."
   }
  },
  "hr/foreignG/sorting": {
@@ -4608,21 +4535,6 @@
   },
   "text": "Արթուր"
  },
- "id/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Bruhl",
-   "got": "Prof. Dr. von Bruhl"
-  },
-  "family_base": {
-   "expected": "Bruhl",
-   "got": "Prof. Dr. Bruhl"
-  },
-  "text": "Prof. Dr. von Bruhl, Ada Cornelia Cesar Martín Jr, M.D., Ph.D.",
-  "title": {
-   "expected": "Prof. Dr.",
-   "got": ""
-  }
- },
  "id/foreignG/sorting": {
   "family": {
    "expected": "",
@@ -4678,11 +4590,7 @@
  "id/nativeFull/surnameFirst": {
   "family": {
    "expected": "Adinata",
-   "got": "bin Bapak Adinata"
-  },
-  "family_base": {
-   "expected": "Adinata",
-   "got": "Bapak Adinata"
+   "got": "bin Adinata"
   },
   "family_particles": {
    "expected": "",
@@ -4692,11 +4600,7 @@
    "expected": "Dwi Putro bin",
    "got": "Dwi Putro"
   },
-  "text": "Bapak Adinata, Dwi Putro bin MP",
-  "title": {
-   "expected": "Bapak",
-   "got": ""
-  }
+  "text": "Bapak Adinata, Dwi Putro bin MP"
  },
  "id/nativeG/sorting": {
   "family": {
@@ -6258,11 +6162,11 @@
  "kok/foreignFull/givenFirst": {
   "family": {
    "expected": "वॉन ब्रूह्ल गॉन्जालेज डोमिंगो",
-   "got": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर"
+   "got": "आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर"
   },
   "family_base": {
    "expected": "ब्रूह्ल गॉन्जालेज डोमिंगो",
-   "got": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर"
+   "got": "आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर"
   },
   "family_particles": {
    "expected": "वॉन",
@@ -6276,11 +6180,7 @@
    "expected": "जेआर बी.ए. एल.एल.बी",
    "got": ""
   },
-  "text": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर, बी.ए. एल.एल.बी",
-  "title": {
-   "expected": "प्रो. डॉ.",
-   "got": ""
-  }
+  "text": "प्रो. डॉ. आडा कोर्नेलिया सेजार मार्टिन वॉन ब्रूह्ल गॉन्जालेज डोमिंगो जेआर, बी.ए. एल.एल.बी"
  },
  "kok/foreignFull/sorting": {
   "family": {
@@ -6349,11 +6249,11 @@
  "kok/nativeFull/givenFirst": {
   "family": {
    "expected": "दे सोजा ए मेनेजेस",
-   "got": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा."
+   "got": "फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा."
   },
   "family_base": {
    "expected": "सोजा ए मेनेजेस",
-   "got": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा."
+   "got": "फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा."
   },
   "family_particles": {
    "expected": "दे",
@@ -6367,11 +6267,7 @@
    "expected": "धा. एमपी",
    "got": ""
   },
-  "text": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा., एमपी",
-  "title": {
-   "expected": "श्री",
-   "got": ""
-  }
+  "text": "श्री फ्रांसिस शावियेर जुआंव आंतोन दे सोजा ए मेनेजेस धा., एमपी"
  },
  "kok/nativeFull/sorting": {
   "family": {
@@ -6890,21 +6786,6 @@
    "got": "med."
   }
  },
- "lt/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "von Vilkas Jankauskas-Baranauskas",
-   "got": "prof. dr. von Vilkas Jankauskas-Baranauskas"
-  },
-  "family_base": {
-   "expected": "Vilkas Jankauskas-Baranauskas",
-   "got": "prof. dr. Vilkas Jankauskas-Baranauskas"
-  },
-  "text": "prof. dr. von Vilkas Jankauskas-Baranauskas, Ada Kornelija Eva Sofija",
-  "title": {
-   "expected": "prof. dr.",
-   "got": ""
-  }
- },
  "lt/foreignG/sorting": {
   "family": {
    "expected": "",
@@ -7334,11 +7215,11 @@
  "mn/foreignFull/givenFirst": {
   "family": {
    "expected": "вон Брюхл",
-   "got": "Проф. Др. Ада Корнелиа Эва Софиа вон Брюхл Жр"
+   "got": "Др. Ада Корнелиа Эва Софиа вон Брюхл Жр"
   },
   "family_base": {
    "expected": "Брюхл",
-   "got": "Проф. Др. Ада Корнелиа Эва Софиа вон Брюхл Жр"
+   "got": "Др. Ада Корнелиа Эва Софиа вон Брюхл Жр"
   },
   "family_particles": {
    "expected": "вон",
@@ -7355,7 +7236,7 @@
   "text": "Проф. Др. Ада Корнелиа Эва Софиа вон Брюхл Жр, Анагаах ухааны доктор",
   "title": {
    "expected": "Проф. Др.",
-   "got": ""
+   "got": "Проф."
   }
  },
  "mn/foreignFull/sorting": {
@@ -7469,11 +7350,11 @@
  "mr/foreignFull/givenFirst": {
   "family": {
    "expected": "व्हॉन ब्र्यूल",
-   "got": "प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु."
+   "got": "अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु."
   },
   "family_base": {
    "expected": "ब्र्यूल",
-   "got": "प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु."
+   "got": "अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु."
   },
   "family_particles": {
    "expected": "व्हॉन",
@@ -7490,7 +7371,7 @@
   "text": "प्रोफे.डॉ. अदा शर्मा सीझर मार्टिन व्हॉन ब्र्यूल ज्यु., एम. डी. डी. डी. एस.",
   "title": {
    "expected": "प्रोफे.डॉ.",
-   "got": "एम."
+   "got": "प्रोफे.डॉ. एम."
   }
  },
  "mr/foreignFull/sorting": {
@@ -7560,11 +7441,11 @@
  "mr/nativeFull/givenFirst": {
   "family": {
    "expected": "देशपांडे",
-   "got": "श्री. धिरज देशपांडे विजय देशपांडे देशपांडे क."
+   "got": "धिरज देशपांडे विजय देशपांडे देशपांडे क."
   },
   "family_base": {
    "expected": "देशपांडे",
-   "got": "श्री. धिरज देशपांडे विजय देशपांडे देशपांडे क."
+   "got": "धिरज देशपांडे विजय देशपांडे देशपांडे क."
   },
   "given_names": {
    "expected": "धिरज देशपांडे विजय देशपांडे",
@@ -7577,7 +7458,7 @@
   "text": "श्री. धिरज देशपांडे विजय देशपांडे देशपांडे क., एम. पी.",
   "title": {
    "expected": "श्री.",
-   "got": "एम."
+   "got": "श्री. एम."
   }
  },
  "mr/nativeFull/surnameFirst": {
@@ -10579,30 +10460,7 @@
    "got": "prof. dr. dr. shk. mjek."
   }
  },
- "sq/foreignFull/sorting": {
-  "family": {
-   "expected": "Popa van den",
-   "got": "van den prof. dr. Popa"
-  },
-  "family_base": {
-   "expected": "Popa",
-   "got": "prof. dr. Popa"
-  },
-  "text": "prof. dr. Popa, Gentiana van den",
-  "title": {
-   "expected": "prof. dr.",
-   "got": ""
-  }
- },
  "sq/foreignFull/surnameFirst": {
-  "family": {
-   "expected": "van den Popa",
-   "got": "prof. dr. van den Popa"
-  },
-  "family_base": {
-   "expected": "Popa",
-   "got": "prof. dr. Popa"
-  },
   "given_names": {
    "expected": "Gentiana",
    "got": "Gentiana M."
@@ -10614,7 +10472,7 @@
   "text": "prof. dr. van den Popa, Gentiana M., dr. shk. mjek.",
   "title": {
    "expected": "prof. dr.",
-   "got": "dr."
+   "got": "prof. dr. dr."
   }
  },
  "sq/foreignG/sorting": {
