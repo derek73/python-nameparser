@@ -54,9 +54,10 @@ class IndexEntry:
 
 def slugify(name: str) -> str:
     """A name as a file-name slug: `&` read as "and", one leading
-    article dropped, folded to lowercase ASCII, every run of other
-    characters one hyphen."""
+    article dropped, an apostrophe dropped ("run's" is "runs"), folded
+    to lowercase ASCII, every run of other characters one hyphen."""
     name = _ARTICLE_RE.sub("", name.replace("&", " and ").strip(' "\''))
+    name = re.sub(r"(?<=\w)['’](?=\w)", "", name)
     ascii_name = (unicodedata.normalize("NFKD", name)
                   .encode("ascii", "ignore").decode())
     return re.sub(r"[^a-z0-9]+", "-", ascii_name.lower()).strip("-")

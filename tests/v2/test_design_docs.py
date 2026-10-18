@@ -38,6 +38,8 @@ def test_slugify_follows_the_spec() -> None:
     assert slugify("Suffixes: generational & credentials") == (
         "suffixes-generational-and-credentials")
     assert slugify('the "Ph. D." split') == "ph-d-split"
+    assert slugify("the title run's floor") == "title-runs-floor"
+    assert slugify("the writer’s divisions") == "writers-divisions"
 
 
 def test_stem_for_names_rules_and_keeps_slugs() -> None:
