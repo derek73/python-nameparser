@@ -780,7 +780,7 @@ TITLES = GIVEN_NAME_TITLES | {
     # and sources are in
     # decisions/salutation-titles, and so are the words that failed:
     # among them Vietnamese ông/bà, Tamil thiru and pl/cs pan, all in
-    # its Excluded (TITLES) block.
+    # decisions/vocabulary-exclusions, Excluded (TITLES).
     # English offices, completing runs like "Police Commissioner".
     # 'marshal' and 'justice' stay out: both are given names.
     'administrator',

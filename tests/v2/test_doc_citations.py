@@ -277,9 +277,12 @@ def test_the_sweep_reaches_every_citation_shape() -> None:
 def test_the_sweep_finds_the_tree_s_citations() -> None:
     # A change to the citation pattern can narrow what it reads without
     # failing anything: #713's first pattern dropped three keys wrapped
-    # at a hyphen, found only by diffing citation sets. 1,004 citations
-    # on 2026-10-17 (#713); the floor catches a pattern that stops
-    # reading a whole shape, not the ordinary loss of one comment.
+    # at a hyphen, found only by diffing citation sets (that shape is
+    # pinned by test_mention_re_reads_a_key_wrapped_at_its_hyphen).
+    # 1,010 references, pointers included, on 2026-10-17 (#713): the
+    # floor catches a pattern that stops reading a large shape -- the
+    # mechanisms.md form, slug keys, hyphenated keys -- and not a small
+    # one, nor a lead change that turns citations into pointers.
     assert len(_citations()) >= 1000
 
 

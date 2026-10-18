@@ -13,7 +13,7 @@ Excluded (Lexicon.conjunctions — nameparser/config/conjunctions.py):
 
 - `a` — the Māori link in `Te Awanui-a-Rangi` is the one hyphen-interior connective the #478 rule (rules/R4) leaves capitalized under force, `Te Awanui-A-Rangi Black`, and it must not be fixed by adding `a` here: a spaced `a` is an initial (`John A Smith`) or a name word elsewhere, and a connective entry would join or lowercase it in every one of those names. The non-reach is recorded under R4 with that name as its witness (2026-09-23, #478).
 
-Open (Lexicon.conjunctions — contested membership; the issue is canonical): none. The block held one entry, [#397](https://github.com/derek73/python-nameparser/issues/397) — whether Catalan `i` belongs in the conjunctions at all — answered 2026-09-20 by the bullet of that date above: it does, and it joins `conjunctions_ambiguous` in the same change, which was never the contested half. The heading stays with nothing under it on purpose, the same reason an empty ledger roster section is a statement and a missing one is nobody having looked.
+Open (Lexicon.conjunctions — contested membership; the issue is canonical): none. The block held one entry, [#397](https://github.com/derek73/python-nameparser/issues/397) — whether Catalan `i` belongs in the conjunctions at all — answered 2026-09-20 by decisions/P3's bullet of that date: it does, and it joins `conjunctions_ambiguous` in the same change, which was never the contested half. The heading stays with nothing under it on purpose, the same reason an empty ledger roster section is a statement and a missing one is nobody having looked.
 
 Excluded (the never-given / ambiguous particle line, nameparser/config/particles.py — #360 owns the vocabulary question):
 
@@ -37,7 +37,7 @@ Excluded (SUFFIX_ACRONYMS — ph, removed 2026-09-13, #459/#521):
 Excluded (BOUND_GIVEN_NAMES):
 
 - mohamad — a standalone given name in its own right; binding it would eat the middle name.
-- abd — ADDED 2026-08-18, see the entry above; the exclusion stood on two reasons and only one of them survived. The collision with the post-nominal "ABD" turned out to cost nothing (position decides at both ends). The other reason stands as a known limit: the three-token spelling "abd al rahman" is still not joined, `al` being a particle that chains forward, so only the two-token "abd X" and the hyphenated "abd al-Rahman X" join.
+- abd — ADDED 2026-08-18, see decisions/P5's entry of that date; the exclusion stood on two reasons and only one of them survived. The collision with the post-nominal "ABD" turned out to cost nothing (position decides at both ends). The other reason stands as a known limit: the three-token spelling "abd al rahman" is still not joined, `al` being a particle that chains forward, so only the two-token "abd X" and the hyphenated "abd al-Rahman X" join.
 
 Excluded (DEFAULT_NICKNAME_DELIMITERS):
 
@@ -108,4 +108,4 @@ Excluded (CAPITALIZATION_EXCEPTIONS — meng, edd, lac, ded, left out of the 202
 
 Excluded (CAPITALIZATION_EXCEPTIONS — md, ii, iii, iv, removed 2026-09-23, #459):
 
-- `md`, `ii`, `iii` and `iv` are OUT of the exceptions map and must not be put back by a sweep that finds one of them title-cased somewhere. As a SUFFIX each is written in capitals with no entry — `md` by the acronym clause, the numerals by the numeral clause — and in any other role each repairs as the parse read it by decision (the item-4 bullet above), so an entry would only bring back the role-free capitals that bullet retired: `iv smith` → `IV Smith`, `Md Abdul Karim` → `MD Abdul Karim`. A caller who wants them back adds them to a private lexicon, as masks.
+- `md`, `ii`, `iii` and `iv` are OUT of the exceptions map and must not be put back by a sweep that finds one of them title-cased somewhere. As a SUFFIX each is written in capitals with no entry — `md` by the acronym clause, the numerals by the numeral clause — and in any other role each repairs as the parse read it by decision (decisions/R4's item-4 bullet), so an entry would only bring back the role-free capitals that bullet retired: `iv smith` → `IV Smith`, `Md Abdul Karim` → `MD Abdul Karim`. A caller who wants them back adds them to a private lexicon, as masks.

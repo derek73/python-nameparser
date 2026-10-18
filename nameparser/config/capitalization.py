@@ -8,7 +8,7 @@ CAPITALIZATION_EXCEPTIONS = {
     # (#459): without a mask the acronym repair writes each in
     # capitals. A mask applies wherever its word stands, so a word
     # borne as a name must not get one -- meng and edd are listed
-    # acronyms that are, and stay out on purpose (the
+    # acronyms that are, and stay out on purpose (the meng/edd/lac/ded
     # CAPITALIZATION_EXCEPTIONS block in decisions/vocabulary-exclusions).
     'bt': 'Bt',
     'chfc': 'ChFC',

@@ -273,7 +273,7 @@ The exception is an acronym that is also a name word, such as ``meng``
 or ``edd``. A mask applies wherever its word stands, so it would
 re-spell a person called Meng or Edd, and these get none: they repair
 in plain capitals. The reasoning is the Excluded block for
-``CAPITALIZATION_EXCEPTIONS`` in
+``CAPITALIZATION_EXCEPTIONS`` (meng, edd, lac, ded) in
 ``docs/design/decisions/vocabulary-exclusions.md``.
 
 .. doctest::
