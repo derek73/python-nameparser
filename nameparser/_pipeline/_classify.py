@@ -63,8 +63,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    caps_shape_candidate, composed_len, is_initial, is_one_case,
-    is_single_letter_numeral,
+    _ROMAN, caps_shape_candidate, composed_len, is_initial, is_one_case,
     period_joined_vocab, suffix_as_written, tag_marker_runs,
 )
 from nameparser._pipeline._pieces import own_words
@@ -167,12 +166,13 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # there is the initial its capital is, and every reader that
         # vetoes 'V' vetoes 'v' too (#721). The NAME-level fact, as
         # #516's caps branch reads it: a capital 'V' in a maiden clause
-        # is an initial, so a one-case 'v' there is one too. `len`
-        # first, C-level, so only one-character words of a one-case
-        # name pay the call
+        # is an initial, so a one-case 'v' there is one too. One
+        # character already, so `_ROMAN` alone asks what
+        # `is_single_letter_numeral` would, at C level: no frame per
+        # one-letter word
         initial = is_initial(token.text) or (
             one_case and len(token.text) == 1
-            and is_single_letter_numeral(token.text))
+            and _ROMAN.match(token.text) is not None)
         if n in lex.conjunctions and not initial:
             tags.add("conjunction")
         if initial:
@@ -321,14 +321,12 @@ def classify(state: ParseState) -> ParseState:
     # rules/P3: "A connective with nothing to its right is connecting
     # nothing" -- so a letter ending its part (the last own word before
     # a comma, a marker's clause or the end of the name) offers the
-    # fork no connective reading, and it is not reported here (#721);
-    # the numeral fork reads such a letter instead (rules/S10). Built
-    # only for a one-case name, the one the emitter below can reach.
-    ends = frozenset(
-        own_seg[-1] for seg in state.segments
-        if (own_seg := [j for j in seg
-                        if j < clause_at and tokens[j].role is None])
-    ) if one_case else frozenset()
+    # fork no connective reading, and it is not reported here (#721):
+    # it is read as an initial, and where it is a roman numeral the
+    # numeral fork reports instead (rules/S10). Built only when a
+    # letter has passed the emitter's other tests, so a name that holds
+    # no marked letter pays nothing for it.
+    ends: set[int] | None = None
     for i, token in enumerate(tokens):
         if (token.role is Role.NICKNAME
                 and AMBIGUOUS_ACRONYM_TAG in token.tags):
@@ -347,11 +345,14 @@ def classify(state: ParseState) -> ParseState:
         # Of the two clauses beside it, one is load-bearing and one is
         # not. `conjunctions_ambiguous` is IMPLIED by the others for a
         # fresh parse -- the contrapositive of what it looks like:
-        # `is_initial` matches an ASCII capital only, so ONLY the
-        # fork's branch can tag a bare LOWERCASE letter "initial"
-        # ("jose e maria santos" tags a lowercase e), and it does so
-        # only for a conjunctions_ambiguous member. So for a letter of
-        # EITHER case, "initial" plus len 1 implies membership. It is
+        # `is_initial` matches an ASCII capital only, so a bare
+        # LOWERCASE letter is tagged "initial" only by the fork's
+        # branch ("jose e maria santos" tags a lowercase e), for a
+        # conjunctions_ambiguous member, or by the one-case numeral
+        # (#721), which is no connective and fails `conjunctions`
+        # below unless the caller made it one. So for a letter of
+        # EITHER case in `conjunctions`, "initial" plus len 1 implies
+        # membership. It is
         # kept only because `_tags_for` starts from `set(token.tags)`, so
         # this clause is what keeps the emitter honest if a runner ever
         # hands classify tokens it did not build; no such path exists
@@ -369,10 +370,18 @@ def classify(state: ParseState) -> ParseState:
                 and folded[i] in state.lexicon.conjunctions_ambiguous
                 and folded[i] in state.lexicon.conjunctions
                 and i < clause_at and token.role is None
-                and i not in ends
                 and (len(token.text) == 1
                      or not token.text.isascii()
                      and composed_len(token.text) == 1)):
+            if ends is None:
+                ends = set()
+                for seg in state.segments:
+                    for j in reversed(seg):
+                        if j < clause_at and tokens[j].role is None:
+                            ends.add(j)
+                            break
+            if i in ends:
+                continue
             ambiguities.append(PendingAmbiguity(
                 AmbiguityKind.CONJUNCTION_OR_INITIAL,
                 f"{token.text!r} is both a connective and an initial; "

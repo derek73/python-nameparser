@@ -3344,21 +3344,26 @@ def test_every_one_letter_particle_veto_is_load_bearing(
 # after it -- with the numerals a listed and a shape-only spelling of
 # each length, three heads (one Catalan, one holding an ambiguous
 # acronym) and all three orders:
-# 1,197 pairs, about 2,400 parses, 0.19s on py3.11 (2026-10-18).
+# 1,575 pairs, about 3,150 parses, 0.24s on py3.11 (2026-10-18).
 _ONE_CASE_SHAPES = (
     "{a} {n}", "{a} {b} {n}", "{a} {n}, phd", "{a} {b} {n}, phd",
     "{a} {n}, jr.", "{b}, {a} {n}", ", {a} {n}", "{a} nee {b} {n}",
     "{a} {b} nee {c} {n}", "dr {a} {n}", "dr {a} {b} {n}", "sir {a} {n}",
     "{a} van {b} {n}", "freiherr von {b} {n}", "abdul {a} {n}",
-    "{a} j. {n}", "({c}) {a} {n}", "{a} {b} jr {n}", "{a} {n} phd")
+    "{a} j. {n}", "({c}) {a} {n}", "{a} {b} jr {n}", "{a} {n} phd",
+    # #721's review: a bare letter in front, a trailing title, a
+    # doubled numeral and a trailing period
+    "{a} b {n}", "{a} e {n}", "{a} {n} prof.", "{a} {b} {n} prof.",
+    "{a} {b} {n} {n}", "{a} {b} {n}.")
 _ONE_CASE_NUMERALS = ("v", "i", "x", "vi", "iii", "ii", "iv")
 _ONE_CASE_HEADS = (("john", "smith", "jones"), ("carod", "puig", "rovira"),
                    ("mary", "ma", "lee"))
-#: the negative control: the pairs that disagree with classify's
-#: one-case numeral initial taken out, measured 2026-10-18 -- the
-#: same 171 master disagreed on before #721, so the tag is the whole
-#: of the fix the grid sees.
-_ONE_CASE_UNGUARDED = 171
+#: the negative controls, measured 2026-10-18 on this grid, which
+#: master (2bfa9533) disagreed on 288 of: with classify's one-case
+#: numeral initial taken out, and with the numeral fork's one-case
+#: letter in front taken out -- each guard seen on its own
+_ONE_CASE_UNGUARDED = 216
+_ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 99
 
 
 def _one_case_disagreements() -> list[str]:
@@ -3383,6 +3388,18 @@ def test_a_one_case_name_reads_as_its_capitals() -> None:
 
 def test_the_one_case_grid_sees_the_numeral_initial(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("nameparser._pipeline._classify."
-                        "is_single_letter_numeral", lambda text: False)
+    # classify's one use of `_ROMAN` is the one-case numeral initial
+    monkeypatch.setattr("nameparser._pipeline._classify._ROMAN",
+                        re.compile(r"(?!)"))
     assert len(_one_case_disagreements()) == _ONE_CASE_UNGUARDED
+
+
+def test_the_one_case_grid_sees_the_letter_in_front(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    from nameparser._pipeline import _vocab
+    monkeypatch.setattr(
+        "nameparser._pipeline._pieces.is_trailing_numeral_suffix",
+        lambda text, preceding, one_case=None:
+            _vocab.is_trailing_numeral_suffix(text, preceding))
+    assert (len(_one_case_disagreements())
+            == _ONE_CASE_LETTER_IN_FRONT_UNGUARDED)

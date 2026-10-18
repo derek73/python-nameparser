@@ -19,7 +19,9 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     initial in a name written wholly in one case, is a call that could
     have gone the other way, and is reported — unless nothing of its
     part stands to its right, where it connects nothing and there is
-    no other way for the call to go; S10 reads such a letter.
+    no other way for the call to go: it is read as an initial and
+    not reported, and where it is a roman numeral S10's fork reports
+    it instead.
     The joined part is ONE name word wherever another rule counts
     them, so a rule taking "one name word" takes the whole join and
     never half of it — except C1's count of the words before a comma,

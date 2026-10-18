@@ -88,7 +88,8 @@ class Span(NamedTuple):
 #: word READ as an initial -- initial-shaped in a script that HAS
 #: initials ("J." or "А.", never "씨.", #320), or a marked
 #: single-letter connective in a name written in one case
-#: (rules/P3, see CONJUNCTION_OR_INITIAL);
+#: (rules/P3, see CONJUNCTION_OR_INITIAL), or a one-letter roman
+#: numeral in a name written in one case, as its capital is (rules/S10);
 #: "joined" a continuation of the token before it -- within one
 #: merged piece the tag is role-blind and every view joins the pair
 #: with a space ("Ph." + "D."; 'Ph. D., Jr.' gives last_list
@@ -625,6 +626,11 @@ class AmbiguityKind(StrEnum):
     #: doctrine, rules/P3): appending " née Jones" or a nickname
     #: changes no report, because the clause's words were never
     #: eligible for it.
+    #: A letter that ends its part -- nothing of the name after it
+    #: before a comma, a clause or the end, as in "JOSE E" or
+    #: "rovira, i" -- connects nothing, so it is read as an initial and
+    #: not reported; a roman numeral there is reported by the numeral
+    #: fork instead (SUFFIX_OR_NAME).
     #: ``detail`` names the token, the kind naming neither the field nor
     #: the letter: which field the reading lands in follows the name's
     #: shape and its ``name_order``, the PARTICLE_OR_GIVEN precedent.
