@@ -7,7 +7,9 @@ main segment's placement takes rather than peeling again, save where
 group's joins left no name word in front of it.
 Produces: tokens with roles set on every main-stream token, and the
 folded-middle tag on the particles P6's attachment joins to the family
-after a family comma (#613).
+after a family comma (#613); its own ambiguities (below), less
+classify's CONJUNCTION_OR_INITIAL on a letter that only suffixes and
+titles follow in its part (#721).
 Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
@@ -100,7 +102,8 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
+    AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, ParseState, PendingAmbiguity,
+    Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
 from nameparser._policy import Policy, Script
@@ -307,24 +310,40 @@ def _placed(read: TailRead, rest: list[int],
         peel.absorbed)
 
 
-# rules/S10: "a letter already reported as read as an initial reports
-# nothing new" -- asked only by the numeral fork's declined pick
-# (#718). Defensive since #721: classify withdraws its report on a
-# letter ending its part, and the check below on the part's last name
-# word withdraws it before a trailing run, so no input reached it on
-# #721's final tree (its full suite and a 1,680-parse trailing-title
-# sweep fail and pass alike without it). The maiden clause's report
-# on the numeral it keeps cannot meet the case: classify reads no
-# connective inside a clause
-def _reported_as_initial(ambiguities: Sequence[PendingAmbiguity],
-                         index: int) -> bool:
-    """Whether classify's connective-or-initial fork already reported
-    the token at `index`, reading it as an initial. Declining the
-    numeral reads the letter as that same name word, so a second
-    report would name one reading twice. A rare shape, so the scan
-    costs ordinary names nothing."""
-    return any(a.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
-               and index in a.indices for a in ambiguities)
+# rules/P3: "unless no name word of its part stands to its right" --
+# a marked letter whose part holds nothing after it but suffixes and
+# titles connects nothing, so classify's connective-or-initial report
+# on it is withdrawn here, once every segment's roles are known: the
+# no-comma name, a particle chain ending in the letter ('john van e
+# phd') and the given part after a family comma ('smith, john e phd')
+# alike (#721's reviews). A letter with nothing at all after it never
+# carried the report (classify). Where the letter is also a numeral the
+# fork read, its own report (S10) is the one left, so one token never
+# carries both -- which is why #718's stand-down is gone. Called only
+# for a one-case name, the one classify can report on.
+def _withdraw_unjoined_connectives(segments: Sequence[Sequence[int]],
+                                   tokens: Sequence[WorkToken],
+                                   ambiguities: list[PendingAmbiguity],
+                                   ) -> None:
+    if not any(a.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
+               for a in ambiguities):
+        return
+    unjoined = set()
+    for seg in segments:
+        last, after = None, False
+        for j in seg:
+            role = tokens[j].role
+            if role in NAME_ROLES:
+                last, after = j, False
+            elif role is Role.SUFFIX or role is Role.TITLE:
+                after = after or last is not None
+        if last is not None and after:
+            unjoined.add(last)
+    if unjoined:
+        ambiguities[:] = [
+            a for a in ambiguities
+            if a.kind is not AmbiguityKind.CONJUNCTION_OR_INITIAL
+            or len(a.indices) != 1 or a.indices[0] not in unjoined]
 
 
 def _assign_main(seg_idx: int, state: ParseState,
@@ -546,26 +565,21 @@ def _assign_main(seg_idx: int, state: ParseState,
                     f"decides it; read as ", tuple(head),
                     field_tail=" by convention, which follows the read "
                                "order"))
-    # rules/P3: "unless no name word of its part stands to its right"
-    # and rules/S10: "a one-letter numeral before a credential is the
+    # rules/S10: "a one-letter numeral before a credential is the
     # family name, and the reading is reported" -- the part's last name
     # word with nothing but the trailing run behind it (#721, Derek:
-    # 'john i phd' reports as 'john i, phd' does). Decided here, where
-    # the trailing read has said what that run is; classify's own
-    # end-of-part test covers a letter with nothing at all behind it
+    # 'John Smith V PhD' keeps family 'V' and reports, as 'john i, phd'
+    # does). Decided here, where the trailing read has said what that
+    # run is
     if name_pieces and (suffix_pieces or titled_tail):
         last = pieces[name_pieces[-1]]
         word = tokens[last[0]].text
         if len(last) == 1:
-            # a connective with only post-nominals or titles to its
-            # right connects nothing; reported only in a one-case name
-            if state.one_case:
-                ambiguities[:] = [
-                    a for a in ambiguities
-                    if a.kind is not AmbiguityKind.CONJUNCTION_OR_INITIAL
-                    or a.indices != (last[0],)]
             # `_ROMAN` first, C-level, so an ordinary name word pays
-            # no frame for the rest
+            # no frame for the rest; the connective report the letter
+            # may carry is withdrawn at the end of the stage, once
+            # every segment's roles are known
+            # (`_withdraw_unjoined_connectives`)
             if (_ROMAN.match(word) is not None and len(name_pieces) >= 2
                     and tuple(last) not in peeled.picks
                     and is_trailing_numeral_suffix(
@@ -587,12 +601,11 @@ def _assign_main(seg_idx: int, state: ParseState,
         # declined pick (#718), which carries neither credential tag
         # (the acronym fork's picks carry one) and is never a suffix
         if token.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
-            if not _reported_as_initial(ambiguities, piece[0]):
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.SUFFIX_OR_NAME,
-                    f"{token.text!r} is a roman numeral, but the name "
-                    f"has no other word to spare for it; read as ", piece,
-                    field_tail=" rather than a generational suffix"))
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.SUFFIX_OR_NAME,
+                f"{token.text!r} is a roman numeral, but the name has "
+                f"no other word to spare for it; read as ", piece,
+                field_tail=" rather than a generational suffix"))
             continue
         declined = ("a name part" if token.role is Role.SUFFIX
                     else "a post-nominal")
@@ -1572,6 +1585,8 @@ def assign(state: ParseState) -> ParseState:
                            and not any("vocab:suffix" in tokens[i].tags
                                        for i in piece))
                        else Role.SUFFIX)
+    if state.one_case:
+        _withdraw_unjoined_connectives(state.segments, tokens, ambiguities)
     return copy_with(state, tokens=tuple(tokens),
                      order=order,
                      ambiguities=tuple(ambiguities))

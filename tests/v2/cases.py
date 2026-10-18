@@ -6025,10 +6025,13 @@ CASES: tuple[Case, ...] = (
          {"given": "Jane", "family": "Doe", "suffix": "MA",
           "maiden": "Smith V"},
          classification="fix(#533)",
-         ambiguities=("suffix-or-name",),
+         ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="both stops read the TRAILING word, so the numeral is "
                "not the word either fork asks about: the acronym fork "
                "stops at 'MA' and 'V' stays maiden text behind it. "
+               "Since #721 the kept 'V', a numeral with a post-nominal "
+               "behind it, reports as 'John Smith V MA' reports its "
+               "own (S10, the trailing roman numeral). "
                "The mirror image, 'Jane Smith née Jones Ma V', keeps "
                "maiden 'Jones Ma' and reads suffix 'V'",
          shape=2),
@@ -7643,6 +7646,38 @@ CASES: tuple[Case, ...] = (
          notes="the lowercase twin of the row above, and the one whose "
                "decomposed spelling had read otherwise under #721's "
                "first form"),
+    Case("a_one_case_link_ending_a_particle_chain_before_a_credential",
+         "john van e phd",
+         {"given": "john", "family": "van e", "suffix": "phd"},
+         notes="the letter ends the chain the particle made, with only "
+               "a credential behind it: it connects nothing (P3), so "
+               "nothing reports. #721's first withdrawal tested a "
+               "one-token piece and missed it"),
+    Case("a_one_case_link_before_a_credential_after_a_family_comma",
+         "smith, john e phd",
+         {"given": "john", "middle": "e", "family": "smith",
+          "suffix": "phd"},
+         notes="the given part after a family comma: the same rule, "
+               "decided over roles at the end of the stage, so it "
+               "reaches the comma's own walk too"),
+    Case("a_chained_one_case_numeral_before_a_title_reports_once",
+         "freiherr von i dr.",
+         {"title": "freiherr dr.", "family": "von i"},
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         classification="fix(#316)",
+         notes="a letter ending a particle chain with only a title "
+               "behind it: the numeral's report, the connective's "
+               "withdrawn -- where #718's stand-down had kept the "
+               "connective's and dropped the numeral's. 1.4.0 read "
+               "first 'freiherr von', last 'i', suffix 'dr.'"),
+    Case("a_numeral_kept_by_a_maiden_clause_before_a_credential_reports",
+         "Jane Doe nee Smith V PhD",
+         {"given": "Jane", "family": "Doe", "suffix": "PhD",
+          "maiden": "Smith V"},
+         ambiguities=("suffix-or-name",), classification="fix(#274)",
+         notes="the clause's twin of 'John Smith V PhD': the clause "
+               "keeps the numeral a post-nominal stands behind, and "
+               "reports it (S10). 1.4.0 had no maiden markers"),
     Case("a_lowercase_numeral_in_a_one_case_name_still_reports",
          "john smith i", {"given": "john", "family": "smith",
                           "suffix": "i"},

@@ -1356,6 +1356,7 @@
 {"name": "Jane Doe nee Smith Prof. MA", "title": "Prof.", "given": "Jane", "family": "Doe", "suffix": "MA", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee Smith V", "given": "Jane", "family": "Doe", "suffix": "V", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee Smith V MA", "given": "Jane", "family": "Doe", "suffix": "MA", "maiden": "Smith V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
+{"name": "Jane Doe nee Smith V PhD", "given": "Jane", "family": "Doe", "suffix": "PhD", "maiden": "Smith V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee Smith V Prof.", "title": "Prof.", "given": "Jane", "family": "Doe", "suffix": "V", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee Smith VI Prof.", "title": "Prof.", "given": "Jane", "family": "Doe", "suffix": "VI", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "Jane Doe nee Smith X.Y.Z.", "given": "Jane", "family": "Doe", "suffix": "X.Y.Z.", "maiden": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
@@ -1548,6 +1549,7 @@
 {"name": "John Smith Rev.", "title": "Rev.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith Sir", "given": "John", "middle": "Smith", "family": "Sir", "initials": "J. S. S."}
 {"name": "John Smith V", "given": "John", "family": "Smith", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith V Ph. D.", "given": "John", "family": "Smith", "suffix": "V Ph. D.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith V PhD", "given": "John", "middle": "Smith", "family": "V", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S. V."}
 {"name": "John Smith V.", "given": "John", "middle": "Smith", "family": "V.", "initials": "J. S. V."}
 {"name": "John Smith VI", "given": "John", "family": "Smith", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
@@ -3418,6 +3420,7 @@
 {"name": "john smith, vi", "given": "vi", "family": "john smith", "initials": "v. j. s."}
 {"name": "john v", "given": "john", "family": "v", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. v."}
 {"name": "john van der berg ma", "given": "john", "family": "van der berg", "suffix": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. b."}
+{"name": "john van e phd", "given": "john", "family": "van e", "suffix": "phd", "initials": "j. e."}
 {"name": "johnny y", "given": "johnny", "family": "y", "initials": "j. y."}
 {"name": "jones, john e", "given": "john", "middle": "e", "family": "jones", "initials": "j. e. j."}
 {"name": "jose e maria santos", "given": "jose", "middle": "e maria", "family": "santos", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "j. e. m. s."}
@@ -3489,6 +3492,7 @@
 {"name": "scott l. werner", "given": "scott", "middle": "l.", "family": "werner", "initials": "s. l. w."}
 {"name": "señora María García", "title": "señora", "given": "María", "family": "García", "initials": "M. G."}
 {"name": "smith, de ma", "family": "smith de ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "s. m."}
+{"name": "smith, john e phd", "given": "john", "middle": "e", "family": "smith", "suffix": "phd", "initials": "j. e. s."}
 {"name": "st.repr. Gregers Werle Marve Almar von Fleksnes jr.", "title": "st.repr.", "given": "Gregers", "middle": "Werle Marve Almar", "family": "von Fleksnes", "suffix": "jr.", "initials": "G. W. M. A. F."}
 {"name": "st.repr. von Fleksnes Gregers Werle Marve Almar", "order": "FAMILY_FIRST", "title": "st.repr.", "given": "Fleksnes", "middle": "Gregers Werle Marve Almar", "family": "von", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "F. G. W. M. A. v."}
 {"name": "test", "given": "test", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "t."}

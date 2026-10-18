@@ -20,9 +20,8 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     have gone the other way, and is reported — unless no name word
     of its part stands to its right, nothing at all or only
     post-nominals and titles, where it connects nothing and there is
-    no other way for the call to go: it is read as an initial and
-    not reported, and where it is a roman numeral ending the name
-    S10 reports it instead.
+    no other way for the call to go: it is not reported, and where
+    S10 reads it as a numeral S10's report is the one.
     The joined part is ONE name word wherever another rule counts
     them, so a rule taking "one name word" takes the whole join and
     never half of it — except C1's count of the words before a comma,
@@ -81,6 +80,8 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "Carod i"                   →  suffix="i"
       "carod i"                   →  ambiguities=("suffix-or-name",)  · boundary
       "jose e phd"                →  ambiguities=()  · boundary
+      "smith, john e phd"         →  ambiguities=()  · boundary
+      "john van e phd"            →  ambiguities=()  · boundary
       "Josep Lluis Carod i III"   →  suffix="i III"
       "Carod y de Rovira i"       →  middle="y"
       "John й Smith"              →  middle="й"

@@ -16,9 +16,9 @@ S10. Rationale: a roman numeral ending a name is its generation,
     being no word to spare, and either reading is reported, as
     either reading of an ambiguous acronym is. A numeral read by its
     shape alone reports too; a numeral the vocabulary lists in two
-    or more letters is not in question and reports nothing, and a
-    letter already reported as read as an initial reports nothing
-    new. Written case
+    or more letters is not in question and reports nothing; a marked
+    letter (P3) that is such a numeral reports this way and not as a
+    connective. Written case
     settles the fork in one way only: a numeral written in lower
     case in a name of mixed case is the generation and reports
     nothing, since nobody writes an initial that way. A name written
@@ -59,4 +59,9 @@ S10. Rationale: a roman numeral ending a name is its generation,
       "John Smith V PhD"          →  family="V"
       "John Smith V PhD"          →  ambiguities=("suffix-or-name",)
       "john i phd"                →  ambiguities=("suffix-or-name",)
+      "Jane Doe nee Smith V PhD"  →  ambiguities=("suffix-or-name",)
+    Accepted: a credential written split across two words is read
+    as one with the numeral in front of it, the run taking both, as
+    1.4.0 read it.
+      "John Smith V Ph. D."       →  suffix="V Ph. D."
     history: decisions/S10 · interacts: S2, S4, S7, C1, P2, P3, M2, H1, H3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
