@@ -962,6 +962,7 @@ Excluded (Lexicon.honorific_tails — a glued tail peels only if it could never 
 - 博士 — 田中博士 is Tanaka Hiroshi as readily as Doctor Tanaka.
 - 殿 — Japanese surnames end in it (鵜殿, 真殿, four-figure populations); peeling it would cut a real family name in two.
 - 君 — 王君 is a complete Chinese name; its kana spelling くん does peel.
+- 部長, 部长 — 長 alone is a borne given name, so 阿部長 can be 阿部 + 長 (#707). The measurement found no such bearer, as it found none for the words that shipped; the exclusion rests on the argument, which a lower-bound zero does not refute, so a re-measure that again comes back zero is no reason to add them.
 - जी, and with it the whole spaced trailing set the 2026-09-06 Indic bundle shipped — जी, साहब, साहिब, साहेब, महाराज, সাহেব, বাবু, মহারাজ and Latin rinpoche. None is a honorific_tails entry and none may become one. The evidence is जी's and it carries the set: Banerjee, Mukherjee and Chatterjee end in the substring (बनर्जी/मुखर्जी/चटर्जी), and glued peeling strands a fragment on a bare virama (बनर् + जी). The 殿 criterion, in a non-CJK script — which also shows the criterion is not CJK-specific. The accepted cost is that गांधीजी stays unpeeled, and it is the right trade: an unrecognized honorific costs one field, a strand cuts a real family name in two. Both shapes are pinned in tests/v2/test_locales.py. See #indic-honorifics.
 
 Excluded (TITLES):

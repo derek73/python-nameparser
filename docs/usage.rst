@@ -591,7 +591,7 @@ not 님 with 박사 left behind.
 
 Credential and office words (議員 legislator, 医学博士 doctor of
 medicine, 社長 company president, 二世 the second) peel when glued as
-well: no name Wikidata records ends in one of them. 部長 (department
+well: they are not known to end a name. 部長 (department
 head) is the exception and is read only when spaced, because 長 alone
 is a given name, so 阿部長 can be the surname 阿部 and the given name
 長:
