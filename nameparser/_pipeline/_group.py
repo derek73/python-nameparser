@@ -67,7 +67,8 @@ from nameparser._pipeline._pieces import (
     Peel, TailRead, chain_lead, chain_run_end, is_conj_piece, is_leading_title, is_prefix_piece,
     is_suffix_piece, is_title_piece, join_connectives, joined_tags,
     leading_titles, merge_particle_runs, merge_pieces, peel_walk,
-    read_trailing_run, tail_reading, trailing_candidates,
+    read_trailing_run, reported_as_initial, tail_reading,
+    trailing_candidates,
     trailing_run_start, trailing_start,
     trailing_start_past_titles,
 )
@@ -303,6 +304,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     c = trailing_candidates(lo, pieces, ptags, tokens)
     end = len(pieces)
     released: list[tuple[int, Role]] = []
+    # the view's picks, for the kept member below (#718)
+    picked: tuple[tuple[int, ...], ...] = ()
     # nothing behind the clause that a trailing rule could take: the
     # view would be the head alone, and the whole rest is the clause
     if c < len(pieces):
@@ -312,6 +315,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         vrest, vchained, vpeel = tail_reading(
             peel_walk(leading_titles(view, vtags, tokens), vtags),
             view, vtags, tokens, one_case)
+        picked = vpeel.picks
         titles = set(vchained) | set(vpeel.run_titles)
         in_run = titles | set(vrest[vpeel.names:]) | {
             q for q in range(m, len(view)) if "suffix" in vtags[q]}
@@ -345,6 +349,16 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"{word.text!r} ending the maiden name is also a "
             f"post-nominal; the maiden marker's clause keeps it rather "
             f"than reading it as one", tuple(last)))
+    elif (tuple(last) in picked
+          and not reported_as_initial(ambiguities, last[0])):
+        # rules/S10: "either reading is reported" -- a numeral the read
+        # declined for want of words to spare, which the clause keeps
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{word.text!r} ending the maiden name is a roman numeral, "
+            f"but the name has no other word to spare for it; the "
+            f"maiden marker's clause keeps it rather than reading it as "
+            f"a generational suffix", tuple(last)))
     return (list(range(m, lo)),
             [(j, Role.MAIDEN) for j in range(lo, end)] + released)
 
@@ -1098,7 +1112,27 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # the given role the fold then moves ('Freiherr von
                 # Berg Ma' was told 'given name').
                 last = pieces[j - 1]
-                if (j > k + 1 and len(last) == 1
+                # ...and a numeral S2's read declined (rules/S10, #718),
+                # a pick with no credential tag: the read's picks are
+                # where it is recorded, and `tuple` is C-level, so a
+                # chained name still pays no frame
+                numeral = (j > k + 1 and len(last) == 1
+                           and read is not None
+                           and tuple(last) in read.peel.picks
+                           and tokens[last[0]].tags.isdisjoint(
+                               _AMBIGUOUS_CREDENTIAL_TAGS))
+                if numeral:
+                    if not reported_as_initial(ambiguities, last[0]):
+                        ambiguities.append(PendingAmbiguity(
+                        AmbiguityKind.SUFFIX_OR_NAME,
+                            f"{tokens[last[0]].text!r} is a roman "
+                            f"numeral, but the name has no other word to "
+                            f"spare for it; the particle chain took it "
+                            f"into the name rather than reading it as a "
+                            f"generational suffix",
+                            tuple(last)))
+                    took.add(tuple(last))
+                elif (j > k + 1 and len(last) == 1
                         and not tokens[last[0]].tags.isdisjoint(
                             _AMBIGUOUS_CREDENTIAL_TAGS)
                         and not is_prefix_piece(last, ptags[j - 1],

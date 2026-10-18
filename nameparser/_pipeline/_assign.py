@@ -95,7 +95,8 @@ from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
     _NOT_A_RUN_START, has_name_content, is_lone_never_given_particle,
     Peel, TailRead, is_suffix_piece, is_title_piece, leading_titles,
-    particle_tail, listed_lean, peel_walk, starts_a_credential_run,
+    particle_tail, listed_lean, peel_walk, reported_as_initial,
+    starts_a_credential_run,
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
@@ -104,6 +105,10 @@ from nameparser._pipeline._state import (
 )
 from nameparser._policy import Policy, Script
 from nameparser._types import FOLDED_TAG, SHAPE_ACRONYM_TAG, AmbiguityKind, Role
+
+#: either tag marks a pick of the ambiguous-acronym fork; a pick with
+#: neither is the numeral fork's (#718)
+_ACRONYM_TAGS = frozenset({AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
 
 def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
                role: Role) -> None:
@@ -533,6 +538,18 @@ def _assign_main(seg_idx: int, state: ParseState,
         # it was declined as, and which field assemble names (#626)
         token = tokens[piece[0]]
         assert token.role is not None
+        # rules/S10: "either reading is reported" -- the numeral fork's
+        # declined pick (#718), which carries neither acronym tag and
+        # is never a suffix
+        if token.tags.isdisjoint(_ACRONYM_TAGS):
+            if reported_as_initial(ambiguities, piece[0]):
+                continue
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.SUFFIX_OR_NAME,
+                f"{token.text!r} is a roman numeral, but the name has "
+                f"no other word to spare for it; read as ", piece,
+                field_tail=" rather than a generational suffix"))
+            continue
         declined = ("a name part" if token.role is Role.SUFFIX
                     else "a post-nominal")
         # rules/S9: "An unlisted word joins the ambiguous class (S4) by

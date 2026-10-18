@@ -12,10 +12,12 @@ S10. Rationale: a roman numeral ending a name is its generation,
     numeral past X is a name word. A numeral of one letter needs
     words to spare, as a bare ambiguous acronym does (S4): as the
     second of two name words it is the family name, a title in front
-    being no word to spare, and where it is read as the generation
-    the reading is reported, as it is for a numeral read by its
-    shape alone. A numeral the vocabulary lists in two or more
-    letters is not in question and reports nothing. Written case
+    being no word to spare, and either reading is reported, as
+    either reading of an ambiguous acronym is. A numeral read by its
+    shape alone reports too; a numeral the vocabulary lists in two
+    or more letters is not in question and reports nothing, and a
+    letter already reported as read as an initial reports nothing
+    new. Written case
     settles the fork in one way only: a numeral written in lower
     case in a name of mixed case is the generation and reports
     nothing, since nobody writes an initial that way. A name written
@@ -30,6 +32,7 @@ S10. Rationale: a roman numeral ending a name is its generation,
       "John Smith III"            →  ambiguities=()
       "John III"                  →  suffix="III"
       "John V"                    →  family="V"
+      "John V"                    →  ambiguities=("suffix-or-name",)
       "Malcolm X"                 →  family="X"
       "JOHN V"                    →  family="V"
       "Dr Smith V"                →  family="V"
@@ -48,4 +51,4 @@ S10. Rationale: a roman numeral ending a name is its generation,
     the last word of the name and is read as any word there is, so a
     one-letter numeral before a credential is the family name.
       "John Smith V PhD"          →  family="V"
-    history: decisions/S10 · interacts: S2, S4, S7, C1, P2, P3, M2, H1, H3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions/S10 · interacts: S2, S4, S7, C1, P2, P3, M2, H1, H3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

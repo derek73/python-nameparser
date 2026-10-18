@@ -59,7 +59,7 @@ from typing import NamedTuple
 
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, SHAPE_ACRONYM_TAG, SUFFIX_OR_UNREAD,
-    WorkToken,
+    AmbiguityKind, PendingAmbiguity, WorkToken,
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
@@ -919,7 +919,9 @@ class Peel(NamedTuple):
     one token long: `numeral` is the piece the roman-numeral fork
     took (None when it did not fire; always the walk's last piece),
     `picks` the bare ambiguous acronyms the peel had to resolve, in
-    peel order, either way (the last may sit at rest[names - 1]).
+    peel order, either way (the last may sit at rest[names - 1]), and
+    a one-letter numeral the fork declined for want of words to spare
+    (#718), always the walk's last piece and a name.
     `anchors` is `peel_trailing`'s working state for `tail_reading`
     alone -- the walk's `credential_anchors` pass over `rest` where a
     member needed one, handed to the next pass of the fixed point
@@ -1143,16 +1145,20 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # the is_initial_shaped reasoning (#320). rules/S10: "A numeral
         # of one letter needs words to spare, as a bare ambiguous
         # acronym does" -- the acronym fork's own count,
-        # below, so 'John V' keeps family 'V' (#718)
+        # below, so 'John V' keeps family 'V' (#718). Declined, it is a
+        # pick, since "either reading is reported", and no branch below
+        # can take a numeral
         if (k == len(rest) and k >= 2 and len(piece) == 1
                 and is_trailing_numeral_suffix(
                     text := tokens[piece[0]].text,
-                    tokens[pieces[rest[k - 2]][0]].text)
-                and (len(text) > 1 or k - 2 >= second
-                     or numeral_settled_by_case(text, one_case))):
-            numeral = tuple(piece)
-            k -= 1
-            continue
+                    tokens[pieces[rest[k - 2]][0]].text)):
+            if (len(text) > 1 or k - 2 >= second
+                    or numeral_settled_by_case(text, one_case)):
+                numeral = tuple(piece)
+                k -= 1
+                continue
+            picks.append(tuple(piece))
+            break
         # A bare ambiguous acronym ("MA", not "M.A.") is a credential
         # only when peeling it still leaves a given AND a family name.
         # With two pieces, "one of them is a credential" is the less
@@ -1349,6 +1355,22 @@ def particle_tail(seg: Sequence[Sequence[int]],
             break
         lo -= 1
     return lo, hi
+
+
+# rules/S10: "a letter already reported as read as an initial reports
+# nothing new" -- the one question the numeral fork's three declined-
+# pick emitters (assign's, the particle chain's and the maiden
+# clause's, #718) all ask, so it has one answer
+def reported_as_initial(ambiguities: Iterable[PendingAmbiguity],
+                        index: int) -> bool:
+    """Whether classify's connective-or-initial fork already reported
+    the token at `index`, which it reads as an initial when it reaches
+    the trailing peel as a lone piece. Declining the numeral reads the
+    letter as that same name word, so a second report would name one
+    reading twice. Asked only of a declined numeral pick, a rare
+    shape, so the scan costs ordinary names nothing."""
+    return any(a.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
+               and index in a.indices for a in ambiguities)
 
 
 def has_name_content(piece: Sequence[int],

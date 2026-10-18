@@ -678,7 +678,7 @@
 {"name": "Dr Jr", "given": "Dr", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "initials": "D."}
 {"name": "Dr King Jr", "title": "Dr", "family": "King", "suffix": "Jr", "ambiguities": ["TITLE_OR_NAME"], "initials": "K."}
 {"name": "Dr Martin Luther King, Jr.", "title": "Dr", "given": "Martin", "middle": "Luther", "family": "King", "suffix": "Jr.", "initials": "M. L. K."}
-{"name": "Dr Smith V", "title": "Dr", "given": "Smith", "family": "V", "initials": "S. V."}
+{"name": "Dr Smith V", "title": "Dr", "given": "Smith", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S. V."}
 {"name": "Dr 田中さん, V.", "title": "Dr", "family": "田中", "suffix": "さん, V.", "initials": "田."}
 {"name": "Dr 김민준, Jr.", "title": "Dr", "given": "민준", "family": "김", "suffix": "Jr.", "initials": "민. 김."}
 {"name": "Dr 김민준, MA", "title": "Dr", "given": "민준", "family": "김", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "민. 김."}
@@ -937,7 +937,7 @@
 {"name": "Freiherr von Berg MA", "title": "Freiherr", "family": "von Berg", "suffix": "MA", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "initials": "B."}
 {"name": "Freiherr von Berg, Ed", "given": "Ed", "family": "Freiherr von Berg", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. B."}
 {"name": "Freiherr von Richthofen", "title": "Freiherr", "family": "von Richthofen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "R."}
-{"name": "Freiherr von Richthofen V", "title": "Freiherr", "family": "von Richthofen V", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "R. V."}
+{"name": "Freiherr von Richthofen V", "title": "Freiherr", "family": "von Richthofen V", "ambiguities": ["PARTICLE_OR_GIVEN", "SUFFIX_OR_NAME"], "initials": "R. V."}
 {"name": "Freire Xiana", "order": "FAMILY_FIRST", "given": "Xiana", "family": "Freire", "initials": "X. F."}
 {"name": "Freire, Xiana", "given": "Xiana", "family": "Freire", "initials": "X. F."}
 {"name": "Friedrich IV.", "given": "Friedrich", "suffix": "IV.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "F."}
@@ -1271,7 +1271,7 @@
 {"name": "JOHN SMITH PH.D.", "given": "JOHN", "family": "SMITH", "suffix": "PH.D.", "initials": "J. S."}
 {"name": "JOHN SMITH, MA", "given": "JOHN", "family": "SMITH", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "JOHN SMITH, VD MA", "given": "JOHN", "family": "SMITH", "suffix": "VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
-{"name": "JOHN V", "given": "JOHN", "family": "V", "initials": "J. V."}
+{"name": "JOHN V", "given": "JOHN", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. V."}
 {"name": "JOSE E MARIA SANTOS", "given": "JOSE", "middle": "E MARIA", "family": "SANTOS", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "J. E. M. S."}
 {"name": "JOSE ORTEGA-Y-GASSET", "given": "JOSE", "family": "ORTEGA-Y-GASSET", "initials": "J. O."}
 {"name": "JOSEP CAROD I ROVIRA", "given": "JOSEP", "middle": "CAROD I", "family": "ROVIRA", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "J. C. I. R."}
@@ -1609,8 +1609,8 @@
 {"name": "John Smith, X.Y.Z. MA", "given": "John", "family": "Smith", "suffix": "X.Y.Z. MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, XYZ", "given": "John", "family": "Smith", "suffix": "XYZ", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith, vd Ma", "given": "John", "family": "Smith", "suffix": "vd Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
-{"name": "John V", "given": "John", "family": "V", "initials": "J. V."}
-{"name": "John V, Dr.", "title": "Dr.", "given": "John", "family": "V", "initials": "J. V."}
+{"name": "John V", "given": "John", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. V."}
+{"name": "John V, Dr.", "title": "Dr.", "given": "John", "family": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. V."}
 {"name": "John V. Smith", "given": "John", "middle": "V.", "family": "Smith", "initials": "J. V. S."}
 {"name": "John W. Ingram", "given": "John", "middle": "W.", "family": "Ingram", "initials": "J. W. I."}
 {"name": "John W. Ingram V", "given": "John", "middle": "W.", "family": "Ingram", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. W. I."}
@@ -1625,7 +1625,7 @@
 {"name": "John e Smith, III", "given": "John", "middle": "e", "family": "Smith", "suffix": "III", "initials": "J. e. S."}
 {"name": "John nee Prof. ba MA", "family": "John", "suffix": "MA", "maiden": "Prof. ba", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J."}
 {"name": "John née Jones Smith Ma", "family": "John", "maiden": "Jones Smith Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J."}
-{"name": "John née Jones Smith V", "family": "John", "maiden": "Jones Smith V", "initials": "J."}
+{"name": "John née Jones Smith V", "family": "John", "maiden": "Jones Smith V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J."}
 {"name": "John of the Doe", "given": "John of the Doe", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J. D."}
 {"name": "John van Buren, Ed", "given": "John", "family": "van Buren", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. B."}
 {"name": "John van Mc", "given": "John", "family": "van Mc", "initials": "J. v. M."}
@@ -2088,7 +2088,7 @@
 {"name": "Makonnen Haile Selassie", "given": "Makonnen", "middle": "Haile", "family": "Selassie", "initials": "M. H. S."}
 {"name": "Malam Shehu Bello Modibbo MP", "given": "Malam", "middle": "Shehu Bello", "family": "Modibbo", "suffix": "MP", "initials": "M. S. B. M."}
 {"name": "Malas Zénāwi", "given": "Malas", "family": "Zénāwi", "initials": "M. Z."}
-{"name": "Malcolm X", "given": "Malcolm", "family": "X", "initials": "M. X."}
+{"name": "Malcolm X", "given": "Malcolm", "family": "X", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. X."}
 {"name": "Maleingreau, Paul de", "given": "Paul", "family": "de Maleingreau", "initials": "P. M."}
 {"name": "Malik Ambar", "given": "Malik", "family": "Ambar", "initials": "M. A."}
 {"name": "Malik al-ʿĀdil al I.", "given": "Malik", "middle": "al-ʿĀdil", "family": "al I.", "initials": "M. a. I."}
@@ -2263,7 +2263,7 @@
 {"name": "Mohamad Ali", "given": "Mohamad", "family": "Ali", "initials": "M. A."}
 {"name": "Mohamad Ali Khalil", "given": "Mohamad", "middle": "Ali", "family": "Khalil", "initials": "M. A. K."}
 {"name": "Mohamad Asri Muda", "given": "Mohamad", "middle": "Asri", "family": "Muda", "initials": "M. A. M."}
-{"name": "Mohamad X", "given": "Mohamad", "family": "X", "initials": "M. X."}
+{"name": "Mohamad X", "given": "Mohamad", "family": "X", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. X."}
 {"name": "Mohamad X Surname", "given": "Mohamad", "middle": "X", "family": "Surname", "initials": "M. X. S."}
 {"name": "Mohamad Zein El Dine", "given": "Mohamad", "middle": "Zein El", "family": "Dine", "initials": "M. Z. E. D."}
 {"name": "Mohamad Zeineddine", "given": "Mohamad", "family": "Zeineddine", "initials": "M. Z."}
