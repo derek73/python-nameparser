@@ -765,8 +765,9 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     two name words -- and each reads as a suffix whatever its writing
     or company.
 
-    rules/S2's initial veto keeps a roman numeral out of a suffix
-    reading, which is right after a NAME word: 'Smith, John V.' is a
+    The initial veto (`_vocab.is_initial`) keeps a roman numeral out
+    of a suffix reading, which is right after a NAME word (rules/C1's
+    one-character suffix word, read by what stands before it): 'Smith, John V.' is a
     middle initial (#432). After a SUFFIX word the numeral is
     describing that suffix -- 'PSM I' is Professional Scrum Master
     level I -- so the run continues through it, period included, an

@@ -1438,8 +1438,8 @@ def test_the_right_hand_test_reads_the_peel_not_the_suffix_piece(
 ) -> None:
     # the arm that forces trailing_start rather than is_suffix_piece:
     # a ONE-CHARACTER suffix word is initial-shaped, so the
-    # suffix-piece test refuses it (rules/S2's initial veto) while
-    # assign's trailing peel takes it. Spelled with the piece test
+    # suffix-piece test refuses it (the initial veto,
+    # `_vocab.is_initial`) while assign's trailing peel takes it. Spelled with the piece test
     # alone, the link would swallow the generation here.
     lex = _LINK_LEX.add(suffix_words={"v"})
     out = _grouped("Josep Lluis Carod i V", lexicon=lex)
