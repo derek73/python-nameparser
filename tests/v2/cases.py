@@ -3962,16 +3962,17 @@ CASES: tuple[Case, ...] = (
                "own reading of 'V.' and not the credential class's"),
     Case("strict_comma_reads_the_bare_numeral_into_the_run",
          "Smith V, Ma",
-         {"given": "Smith", "suffix": "V, Ma"},
+         {"given": "Smith", "family": "V", "suffix": "Ma"},
          policy=Policy(lenient_comma_suffixes=False),
-         ambiguities=("suffix-or-name", "suffix-or-name",
-                      "given-or-family"),
+         ambiguities=("suffix-or-name",), classification="fix(#718)",
          notes="the period is the whole difference from the row "
                "above: bare 'V' is still initial-shaped and still "
                "counts as a name word here, so the structure flips "
-               "the same way -- but the trailing peel then takes it "
-               "as the roman numeral, leaving 'Smith' the only name "
-               "word and reporting all three forks"),
+               "the same way. Until #718 the trailing peel then took "
+               "it as the roman numeral, leaving 'Smith' the only "
+               "name word and reporting all three forks; a one-letter "
+               "numeral now needs words to spare (S10, the trailing roman numeral), so 'V' "
+               "is the family, as 1.4.0 read it"),
     Case("caps_run_declines_a_bound_given_head", "John Smith, ABDUL AP",
          {"given": "ABDUL AP", "family": "John Smith"},
          policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
@@ -5469,8 +5470,9 @@ CASES: tuple[Case, ...] = (
                "behind it still leaves the clause. 2.3.0 read maiden 'Smith V "
                "Prof.', suffix 'PhD', with no title at all"),
     Case("the_bound_given_join_is_the_given_slots_alone",
-         "abdul nee Smith V",
-         {"given": "abdul", "suffix": "V", "maiden": "Smith"},
+         "abdul Doe nee Smith V",
+         {"given": "abdul", "family": "Doe", "suffix": "V",
+          "maiden": "Smith"},
          ambiguities=("suffix-or-name",),
          notes="P5's bound-given join is LENIENT only after a family "
                "comma; before one the STRICT reserve declines a join "
@@ -5479,7 +5481,17 @@ CASES: tuple[Case, ...] = (
                "(The contrast this note drew, 'Berg, abdul nee Smith "
                "V', has made no clause since #601: a marker after a "
                "family comma is an ordinary word.) Unchanged from "
-               "2.3.0"),
+               "2.3.0. 'Doe' since #718, which made the 'V' of "
+               "'abdul nee Smith V' a name word (the next row)"),
+    Case("a_numeral_with_no_word_to_spare_stays_in_the_clause",
+         "abdul nee Smith V",
+         {"given": "abdul", "maiden": "Smith V"},
+         classification="fix(#718)",
+         notes="the row above without its family word: read without "
+               "the clause the name is 'abdul V', and a one-letter "
+               "numeral needs words to spare (S10, the trailing roman numeral), so 'V' is "
+               "no suffix and the clause keeps it as it keeps any "
+               "name word, by M2 (the maiden-marker rule)"),
     Case("a_title_released_from_the_bound_given_pair",
          "abdul nee Smith Dr.",
          {"title": "Dr.", "family": "abdul", "maiden": "Smith"},
@@ -7413,6 +7425,51 @@ CASES: tuple[Case, ...] = (
          notes="a trailing single letter is a name part unless it is a "
                "roman numeral; V/X/I are also ordinary middle initials, "
                "so the reading is reported"),
+    Case("a_lone_numeral_with_no_word_to_spare_is_the_family",
+         "John V", {"given": "John", "family": "V"},
+         classification="fix(#718)",
+         notes="S10 (the trailing roman numeral): a one-letter numeral needs words to spare, "
+               "as a bare ambiguous acronym does, and 'John' is the "
+               "only other word -- the contrast with 'John Smith V' "
+               "above is the count. 2.0.0 to 2.4.2 read suffix 'V' "
+               "with no family; 1.4.0 read last 'V'"),
+    Case("a_lone_shape_numeral_with_no_word_to_spare_is_the_family",
+         "Malcolm X", {"given": "Malcolm", "family": "X"},
+         classification="fix(#718)",
+         notes="the shape-only spelling of the row above: 'x' is in "
+               "no vocabulary and reaches the fork by its shape"),
+    Case("a_lone_numeral_in_a_one_case_name_is_counted",
+         "JOHN V", {"given": "JOHN", "family": "V"},
+         classification="fix(#718)",
+         notes="a name written in one case says nothing about the "
+               "letter, so the count decides as it does for 'John V'"),
+    Case("a_title_is_no_word_to_spare_for_a_lone_numeral",
+         "Dr Smith V", {"title": "Dr", "given": "Smith", "family": "V"},
+         classification="fix(#718)",
+         notes="S10's title clause (the trailing roman numeral); 1.4.0 read first 'Smith', "
+               "last 'V' too"),
+    Case("a_multi_letter_numeral_needs_no_word_to_spare",
+         "John III", {"given": "John", "suffix": "III"},
+         ambiguities=("given-or-family",),
+         notes="the boundary of the count: a listed numeral of two "
+               "letters is not initial-shaped and reads as any suffix "
+               "word, so the lone 'John' is what is reported (O5)"),
+    Case("a_lowercase_numeral_in_a_mixed_case_name_reports_nothing",
+         "John Smith vi", {"given": "John", "family": "Smith",
+                           "suffix": "vi"},
+         classification="fix(#718)",
+         notes="S10 (the trailing roman numeral): nobody writes an initial in lower case "
+               "beside capitals, so the writing settles the fork. It "
+               "reported until #718, the shape fork reporting all it "
+               "took, while the listed 'John Smith v' never did"),
+    Case("a_lowercase_numeral_in_a_one_case_name_still_reports",
+         "john smith i", {"given": "john", "family": "smith",
+                          "suffix": "i"},
+         ambiguities=("suffix-or-name",),
+         notes="the contrast that makes the silence above a decision "
+               "about case: written wholly in lower case the letter "
+               "could be an initial, and the fork reports (Derek, "
+               "#718)"),
     Case("initial_not_suffix", "John V. Smith",
          {"given": "John", "middle": "V.", "family": "Smith"},
          notes="shape 1's Middle slot filled by an initial-shaped "
@@ -8655,29 +8712,45 @@ CASES: tuple[Case, ...] = (
                "silences O5's report and not H4's. 1.4.0 had no maiden "
                "SUPPORT and read title 'Lord Chancellor', first 'née', "
                "last 'Jones'"),
-    Case("comma_path_title_decides_the_lone_word", "John V, Dr.",
-         {"title": "Dr.", "family": "John", "suffix": "V"},
-         ambiguities=("suffix-or-name",), classification="fix(#296)",
+    Case("comma_path_title_decides_the_lone_word", "John III, Dr.",
+         {"title": "Dr.", "family": "John", "suffix": "III"},
+         classification="fix(#296)",
          notes="a comma with no name word after it hands segment 0 "
                "back to the positional read, and the title deciding "
                "the field stands in the OTHER segment where the "
                "leading-title peel cannot count it -- so the read is "
                "told (`titled`) and O5 stays silent, where it named "
                "`given` for a word H1 then wrote to `family` (#449 "
-               "review round). The roman numeral still reports, that "
-               "fork being untouched. 1.4.0 read first 'John', last "
-               "'V', suffix 'Dr.', 'dr' having been suffix vocabulary "
-               "before the audit"),
+               "review round). 'John III' since #718, which made the "
+               "'V' of 'John V, Dr.' a name word (the next row) and "
+               "left no lone word to decide"),
+    Case("a_lone_numeral_before_a_suffix_comma_is_the_family",
+         "John V, Dr.",
+         {"title": "Dr.", "given": "John", "family": "V"},
+         classification="fix(#718)",
+         notes="the part before a suffix comma reads as the comma-less "
+               "name, and 'John V' has no word to spare for a "
+               "one-letter numeral (S10, the trailing roman numeral). 1.4.0 read first "
+               "'John', last 'V', suffix 'Dr.', 'dr' having been "
+               "suffix vocabulary before the audit"),
     Case("comma_path_given_name_title_decides_the_lone_word",
+         "John III, Sir",
+         {"title": "Sir", "family": "John", "suffix": "III"},
+         classification="fix(#296)",
+         notes="the title row above with a GIVEN-NAME title. O5 is "
+               "silenced all the same: what the report is about is a "
+               "field NOTHING decided, and this one a title decided. "
+               "Written 'John V, Sir' until #718, which made the 'V' "
+               "a name word (the next row); with 'III' the word lands "
+               "in `family`, as it does on master before #718, where "
+               "'V' had left it in `given`"),
+    Case("a_lone_numeral_before_a_given_name_title_comma",
          "John V, Sir",
-         {"title": "Sir", "given": "John", "suffix": "V"},
-         ambiguities=("suffix-or-name",), classification="fix(#296)",
-         notes="the row above with a GIVEN-NAME title, which leaves "
-               "the word in `given` -- the field O5 would have named. "
-               "Silenced all the same: what the report is about is a "
-               "field NOTHING decided, and this one a title decided, "
-               "so the two agreeing is not the report being right. "
-               "1.4.0 read title 'Sir', last 'John V'"),
+         {"title": "Sir", "given": "John", "family": "V"},
+         classification="fix(#718)",
+         notes="the row above with a one-letter numeral, which has no "
+               "word to spare (S10, the trailing roman numeral). 1.4.0 read title 'Sir', "
+               "last 'John V'"),
     Case("marker_led_clause_in_a_quote_pair",
          'Jane Smith "née Jones"',
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},

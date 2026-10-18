@@ -958,11 +958,17 @@ def test_the_maiden_walk_stops_before_the_numeral_too() -> None:
     # Since #601 the take consumes the numeral it ends at, already a
     # suffix -- and finds it by the fork's SHAPE test, which asks no
     # vocabulary: this module's lexicon lists no 'v' at all.
-    out = _grouped("John née Jones Smith V")
+    # 'Jane Doe' rather than 'John' since #718: a one-letter numeral
+    # needs words to spare (rules/S10), and 'John V' has none, so
+    # there the V is no suffix and the clause keeps it (rules/M2).
+    out = _grouped("Jane Doe née Jones Smith V")
     assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
         ["Jones", "Smith"]
     assert [t.text for t in out.tokens if t.role is Role.SUFFIX] == ["V"]
-    assert _piece_texts(out) == [["John"]]
+    assert _piece_texts(out) == [["Jane", "Doe"]]
+    out = _grouped("John née Jones Smith V")
+    assert [t.text for t in out.tokens if t.role is Role.MAIDEN] == \
+        ["Jones", "Smith", "V"]
 
 
 def test_the_maiden_walk_keeps_the_acronym_its_writing_declines(

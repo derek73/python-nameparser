@@ -88,7 +88,8 @@ from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    effective_script, is_suffix_lenient, resolve_script_set,
+    effective_script, is_suffix_lenient, numeral_settled_by_case,
+    resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
@@ -404,7 +405,10 @@ def _assign_main(seg_idx: int, state: ParseState,
         _set_roles(tokens, pieces[piece_idx], Role.TITLE)
     for piece in peeled.absorbed:
         ambiguities.append(_absorbed(piece, tokens))
-    if peeled.numeral is not None:
+    # rules/S10: "a numeral written in lower case in a name of mixed
+    # case is the generation and reports nothing"
+    if peeled.numeral is not None and not numeral_settled_by_case(
+            tokens[peeled.numeral[0]].text, state.one_case):
         # a trailing single letter is a name part unless it happens
         # to be a roman numeral -- and V/X/I are ordinary middle
         # initials, so taking it as a suffix is a call, not a fact

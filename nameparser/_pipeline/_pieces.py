@@ -63,7 +63,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
-    is_single_letter_numeral, is_trailing_numeral_suffix, tag_marker_runs,
+    is_single_letter_numeral, is_trailing_numeral_suffix,
+    numeral_settled_by_case, tag_marker_runs,
 )
 
 
@@ -1137,13 +1138,18 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         if is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
             k -= 1
             continue
-        # a final single letter that is a roman numeral, after a piece
+        # a final single token that is a roman numeral, after a piece
         # that is not initial-shaped; the predicate's docstring carries
-        # the is_initial_shaped reasoning (#320)
+        # the is_initial_shaped reasoning (#320). rules/S10: "A numeral
+        # of one letter needs words to spare, as a bare ambiguous
+        # acronym does" -- the acronym fork's own count,
+        # below, so 'John V' keeps family 'V' (#718)
         if (k == len(rest) and k >= 2 and len(piece) == 1
                 and is_trailing_numeral_suffix(
-                    tokens[piece[0]].text,
-                    tokens[pieces[rest[k - 2]][0]].text)):
+                    text := tokens[piece[0]].text,
+                    tokens[pieces[rest[k - 2]][0]].text)
+                and (len(text) > 1 or k - 2 >= second
+                     or numeral_settled_by_case(text, one_case))):
             numeral = tuple(piece)
             k -= 1
             continue

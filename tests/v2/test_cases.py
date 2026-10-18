@@ -183,9 +183,12 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # given-or-family claim under each order); 1162 -> 1171 on
     # 2026-10-17: three #701 rows reporting suffix-or-name, under each
     # order; 1171 -> 1174 on 2026-10-17: the エリザベス二世 row (#707,
-    # one given-or-family claim under each order).
-    assert claims == 1174, (
-        f"the field sweep checks {claims} claims, recorded as 1174 on "
+    # one given-or-family claim under each order); 1174 -> 1172 on
+    # 2026-10-17: #718's re-pinned and added numeral rows (the lone
+    # numeral rows lose their given-or-family claims; 'John III' and
+    # 'Malcolm X' rows bring some back).
+    assert claims == 1172, (
+        f"the field sweep checks {claims} claims, recorded as 1172 on "
         f"2026-10-17")
 
 

@@ -252,10 +252,11 @@ def is_initial_shaped(text: str) -> bool:
 _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 
 
-# rules/S2: "a trailing word of the suffix vocabulary reads as a
-# suffix" -- the roman-numeral half of that rule, which the initial
-# veto would otherwise take: V, I and X are suffix vocabulary AND bare
-# capitals, and a bare capital inside a name is a middle initial.
+# rules/S10: "A roman numeral ending a name written without a comma
+# reads as the generation" -- which the initial veto would otherwise
+# take: V, I and X are suffix vocabulary AND bare capitals, and a bare
+# capital inside a name is a middle initial. Whether a one-letter
+# numeral has the words to spare is the caller's count (`peel_trailing`).
 def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
     """assign's roman-numeral fork, shared with group's bound-given
     reserve (#401): a FINAL single-token piece that is a roman numeral
@@ -271,6 +272,18 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
     suppressing the fork and cost 'John 씨. V' its family name."""
     return (_ROMAN.match(text) is not None
             and not is_initial_shaped(preceding))
+
+
+# rules/S10: "a numeral written in lower case in a name of mixed case is
+# the generation and reports nothing" -- the one writing that settles
+# the fork, since nobody writes an initial in lower case beside
+# capitals. Asked by the walk, which then needs no words to spare, and
+# by assign, which then reports nothing, so the two cannot drift.
+def numeral_settled_by_case(text: str, one_case: bool | None) -> bool:
+    """Whether a numeral the trailing fork reads is lower case in a
+    name written in more than one case. `one_case` is
+    ParseState.one_case; None (nobody asked) settles nothing."""
+    return one_case is False and text.islower()
 
 
 # #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,

@@ -1261,9 +1261,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         == [tuple(pieces[j]) for j in rest[before.names:]])
                     chained = fk + 1 in chain_took
                     names_after = after.names
-                # rules/P5: "a trailing roman numeral, or a bare
-                # acronym the run takes, or a trailing title word the
-                # run takes, is no word to spare" -- and the join joins
+                # rules/P5: "a trailing roman numeral the run takes
+                # (S10), or a bare acronym it takes, or a trailing title
+                # word the run takes, is no word to spare" -- and the join joins
                 # two NAME words, so a piece the chain takes is no more
                 # joinable than a marker or a suffix piece is: 'Sir
                 # abdul Prof.' reads title 'Sir Prof.', given 'abdul'.
