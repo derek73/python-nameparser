@@ -8739,17 +8739,20 @@ CASES: tuple[Case, ...] = (
                "numeral). 1.4.0 read first 'John', last 'V', suffix "
                "'Dr.', 'dr' having been "
                "suffix vocabulary before the audit"),
-    Case("comma_path_given_name_title_decides_the_lone_word",
+    Case("comma_path_given_name_title_behind_a_listed_numeral",
          "John III, Sir",
          {"title": "Sir", "family": "John", "suffix": "III"},
          classification="fix(#296)",
          notes="the title row above with a GIVEN-NAME title. O5 is "
                "silenced all the same: what the report is about is a "
                "field NOTHING decided, and this one a title decided. "
-               "Written 'John V, Sir' until #718, which made the 'V' "
-               "a name word (the next row); with 'III' the word lands "
-               "in `family`, as it does on master before #718, where "
-               "'V' had left it in `given`"),
+               "The word lands in `family`, AGAINST H1's given-name "
+               "title clause, as it did before #718 ('John Jr., Sir' "
+               "and 'John PhD, Sir' too). Until #718 this row was "
+               "'comma_path_given_name_title_decides_the_lone_word' on "
+               "'John V, Sir', the one spelling that read H1's given "
+               "name, and #718 made that 'V' a name word (the next "
+               "row), so nothing pins H1's reading behind a comma now"),
     Case("a_lone_numeral_before_a_given_name_title_comma",
          "John V, Sir",
          {"title": "Sir", "given": "John", "family": "V"},

@@ -423,8 +423,9 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     # bare initial-shaped numeral, so 'Dr King V' keeps the whole run
     # as the title and reads the numeral as the name -- given 'V',
     # 'king' being a given-name title and the run's last word, where
-    # 'Dr Smith V' reads suffix 'V'. That numeral fork is outside this
-    # floor (decisions/H3).
+    # 'Dr Smith V' reads family 'V' (a title being no word to spare
+    # for a one-letter numeral, #718). That numeral fork is outside
+    # this floor (decisions/H3).
     #
     # The two inline tag reads are the cheapest NECESSARY condition for
     # the piece behind the run to be a suffix piece at all --

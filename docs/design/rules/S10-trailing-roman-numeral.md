@@ -42,11 +42,14 @@ S10. Rationale: a roman numeral ending a name is its generation,
       "John Smith V."             →  family="V."  · boundary
       "John J. V"                 →  family="V"  · boundary
       "John Smith XI"             →  family="XI"  · boundary
-    Accepted: a one-letter numeral the vocabulary lists, written in
-    lower case in a name written wholly in lower case, is read as
-    the vocabulary reads it, words to spare or not, where the same
-    letter in capitals is counted.
+    Accepted: a lower-case `v` in a name written wholly in lower
+    case is read as the suffix word the vocabulary lists, words to
+    spare or not, and reports nothing, where the same letter in
+    capitals is counted and reported; `i`, which is also a
+    connective, is read as an initial there (P3) and counted.
       "john v"                    →  family=""
+      "john smith v"              →  ambiguities=()
+      "john i"                    →  family="i"
     Accepted: a numeral with another suffix word behind it is not
     the last word of the name and is read as any word there is, so a
     one-letter numeral before a credential is the family name.
