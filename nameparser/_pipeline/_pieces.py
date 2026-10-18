@@ -1127,6 +1127,10 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     weighing it is a name word the walk stops at. The numeral fork still reads the piece in front of the
     numeral as written: an initial there keeps it a name word whatever
     unit the initial is in ('John van der J. V', rules/P2).
+
+    `count_numeral` False takes a one-letter numeral without asking
+    for words to spare: the given part after a family comma is read
+    without the count, and its chain bound must not ask it (#718).
     """
     picks: list[tuple[int, ...]] = []
     numeral: tuple[int, ...] | None = None
@@ -1643,6 +1647,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     spliced pieces. The fuzz that checked this against the
     re-peeling loop, the three conditions each shown load-bearing by
     a weakened copy failing it, is recorded on the PR closing #558.
+    `count_numeral` is `peel_trailing`'s, passed to every pass.
     The splice itself is never materialized in between: the runs are
     collected back to front and joined once.
     """
