@@ -3356,6 +3356,7 @@
 {"name": "ina binti navalamar", "given": "ina", "family": "binti navalamar", "initials": "i. n."}
 {"name": "j.-e.-p. dupont", "given": "j.-e.-p.", "family": "dupont", "initials": "j. d."}
 {"name": "jack ma", "given": "jack", "family": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. m."}
+{"name": "jacobus henricus van 't hoff", "given": "jacobus", "middle": "henricus", "family": "van 't hoff", "ambiguities": ["UNBALANCED_DELIMITER"], "initials": "j. h. h."}
 {"name": "jane doe nee smith ma", "given": "jane", "family": "doe", "suffix": "ma", "maiden": "smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. d."}
 {"name": "jenap Atajan Saparowiç Gurdow magistr, ylymlaryň kandidaty", "given": "ylymlaryň", "middle": "kandidaty", "family": "jenap Atajan Saparowiç Gurdow magistr", "initials": "y. k. j. A. S. G. m."}
 {"name": "joao da silva do amaral de souza", "given": "joao", "middle": "da silva do amaral", "family": "de souza", "initials": "j. s. a. s."}

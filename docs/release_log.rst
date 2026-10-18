@@ -12,6 +12,7 @@ Release Log
     - **Add the Akan and Indonesian salutations owura and bapak as titles.** ``Bapak Dwi Putro`` gives title ``Bapak``, first ``Dwi``, last ``Putro``, where 1.4.0 through 2.4.2 gave first ``Bapak``, middle ``Dwi``. :issue:`662`
     - **Fix a title written before a family comma reading as part of the family name.** ``Dr. Smith, John`` gives title ``Dr.``, last ``Smith``, where 1.4.0 through 2.4.2 gave last ``Dr. Smith``. Only listed titles are read there, so ``Xyz. Smith, John`` keeps its family, and a title that is also a surname particle, such as ``St`` or ``Freiherr``, stays in the surname. :issue:`701`
     - **Fix a surname particle such as d' or al- reading as a middle name when a listing puts it after the given name.** ``Ivoi, Paul d'`` gives last ``d' Ivoi``, where 1.4.0 through 2.4.2 gave middle ``d'``; ``Zaʿīm, Ḥusnī az-`` gives last ``az- Zaʿīm``, and the Arabic article reads the same in its other assimilated spellings. A particle written joined to the surname, as in ``Paul d'Ivoi``, is unchanged. :issue:`700`
+    - **Fix case repair capitalizing the Dutch particle 't.** ``jacobus henricus van 't hoff`` repairs to ``Jacobus Henricus van 't Hoff``, where 1.4.0 through 2.4.2 gave ``van 'T Hoff``. :issue:`700`
     - **Add Gov as a title.** ``Gov Smith`` gives title ``Gov``, last ``Smith``, where 1.4.0 through 2.4.2 gave first ``Gov``, and ``Lt. Gov. Smith, John`` gives title ``Lt. Gov.`` with the change above. :issue:`701`
 
 * 2.4.2 - October 13, 2026

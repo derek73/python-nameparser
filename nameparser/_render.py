@@ -337,6 +337,22 @@ def _apply_mask(word: str, mask: str) -> str | None:
     return "".join(out)
 
 
+def _lowers_as_particle(normalized: str, word: str, role: Role,
+                        tags: frozenset[str], lex: Lexicon) -> bool:
+    """_cap_word's particle arm: `word` (folded to `normalized`) is a
+    particle doing a particle's work, so it is written in lowercase.
+    Shared with _cap_text, which asks it of a whole marked token
+    before splitting the token into words (#700)."""
+    return (normalized in lex.particles
+            and not _spells_an_initial(normalized, word)
+            and role in (Role.MIDDLE, Role.FAMILY)
+            and UNJOINED_TAG not in tags
+            # rules.md#R4: "a particle the vocabulary records a
+            # casing for takes that casing" -- the mask below
+            # outranks the particle's lowercase (#604)
+            and normalized not in lex.capitalization_exceptions_map)
+
+
 def _cap_word(word: str, role: Role, tags: frozenset[str],
               lex: Lexicon) -> str:
     # Clause order: the particle/connective arm, then the exceptions
@@ -441,14 +457,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # the same words parsed gave 'E-F' (#463 review).
     generation = role is Role.SUFFIX and "vocab:suffix" in tags
     if not generation and (
-            (normalized in lex.particles
-             and not _spells_an_initial(normalized, word)
-             and role in (Role.MIDDLE, Role.FAMILY)
-             and UNJOINED_TAG not in tags
-             # rules.md#R4: "a particle the vocabulary records a
-             # casing for takes that casing" -- the mask below
-             # outranks the particle's lowercase (#604)
-             and normalized not in lex.capitalization_exceptions_map)
+            _lowers_as_particle(normalized, word, role, tags, lex)
             or "conjunction" in tags
             or (UNCLASSIFIED_TAG in tags
                 and _reads_as_conjunction(word, lex))):
@@ -554,14 +563,16 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     def cap(word: str) -> str:
         return _cap_word(word, role, tags, lex)
 
-    # A particle written with its mark ("d'", "az-", #700) is one
+    # A particle written with a mark ("d'", "az-", "'t", #700) is one
     # vocabulary word that the per-word walk below would split at the
-    # mark, asking the particle test of its stem ('d', 'az') instead --
-    # so rules.md#R4's "a particle is written in lowercase" is asked of
-    # the whole token first. _cap_word's particle arm keeps every gate
-    # it has; where one declines, the word repairs as the walk's would.
-    if _normalize(text) in lex.particles:
-        return cap(text)
+    # mark, asking the particle test of its stem ('d', 'az', 't')
+    # instead -- so rules.md#R4's "a particle is written in lowercase"
+    # is asked of the whole token first. Only the lowercase is taken
+    # here; wherever the arm declines (an all-particle part, the given
+    # or suffix role, a recorded casing) the token goes to the walk
+    # exactly as before.
+    if _lowers_as_particle(_normalize(text), text, role, tags, lex):
+        return text.lower()
     if "-" not in text:
         return _sub_words(cap, text)
     parts = text.split("-")

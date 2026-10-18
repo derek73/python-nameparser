@@ -2875,6 +2875,7 @@ R4. Rationale: case repair is a display concern, applied only on
       "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
       "IVOI, PAUL D'"             →  capitalized="Paul d' Ivoi"
       "zaʿīm, ḥusnī az-"          →  capitalized="Ḥusnī az- Zaʿīm"
+      "jacobus henricus van 't hoff"  →  capitalized="Jacobus Henricus van 't Hoff"
       "ina binti navalamar"       →  capitalized="Ina binti Navalamar"  · boundary
       "john smith phd"            →  capitalized="John Smith PhD"
       "john smith ph.d."          →  capitalized="John Smith Ph.D."
