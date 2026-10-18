@@ -436,7 +436,8 @@ class AmbiguityKind(StrEnum):
     #: family name remains; "JACK MA", written wholly in one case, keeps
     #: it as the name because none would, while in a mixed-case name
     #: the capitals decide outright -- "Jack MA" is the credential and
-    #: "Jack Ma" the name, rules/S6) and a trailing roman numeral, which is a suffix where any
+    #: "Jack Ma" the name, rules/S4 and rules/S6) and a trailing roman
+    #: numeral, which is a suffix where any
     #: other single letter would be a name ("John Smith V" vs "John
     #: Smith B"). It also covers a family-comma listing, where a
     #: trailing abbreviation that is both a post-nominal and a surname

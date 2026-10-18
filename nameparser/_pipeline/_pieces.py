@@ -595,8 +595,8 @@ def _anchors(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
 
 # rules/S7: "Only a credential in FRONT speaks; one behind the
 # member says nothing about it." #544: an ambiguous member standing
-# BEHIND an unambiguous credential in one run is described by that credential's company, not by its
-# own writing -- 'PhD MEng' is a list of degrees whatever case 'MEng'
+# BEHIND an unambiguous credential in one run is described by that
+# credential's company, not by its own writing -- 'PhD MEng' is a list of degrees whatever case 'MEng'
 # is written in. ONE forward pass per question, so a run of members
 # is read in linear time: a look-behind per member is quadratic in
 # the run, which test_benchmark's frame-ratio guard is built to catch.

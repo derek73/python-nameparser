@@ -655,7 +655,7 @@ def test_a_suffix_written_in_more_than_one_case_is_kept_as_written(
 
 def test_the_gate_and_the_parser_read_a_cased_suffix_differently() -> None:
     """decisions/R5's split: the parser's own one-case readings
-    (rules/P3, rules/S6) still count a cased suffix, while R5's gate
+    (rules/P3, decisions/S6) still count a cased suffix, while R5's gate
     leaves it out. So 'john e jones III' is MIXED to the parser, which
     reads its 'e' as a connective, and one-case to the gate, which
     repairs it -- keeping the connective lowercase -- where the one-case

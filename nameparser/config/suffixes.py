@@ -342,7 +342,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # written in capitals inside a mixed-case name; inside a
     # mixed-case name any other cased form that is not wholly lower
     # ('Ma', 'MEng') reads as the name even with words to spare --
-    # rules/S6. The parse reports the fork where it decides one,
+    # rules/S4 and rules/S6. The parse reports the fork where it decides one,
     # so 'Jack Ma' keeps its family name.
     #
     # The other half of the criterion, added 2026-09-07 with #342.
