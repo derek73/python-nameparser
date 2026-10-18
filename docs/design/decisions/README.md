@@ -2,7 +2,7 @@
 
 The why behind the rules: a lightweight ADR log, keyed by rule ID (`P2 — <short name>`), by mechanism slug, or by a short slug for cross-cutting and tooling decisions. Each key is one file, named for its key and name and listed in the index below, so every `decisions/P2` reference in code or in the rules resolves to one file. A new entry under an existing key goes in that key's file; a new key is a new file and an index line.
 
-The gitignored planning specs are the working medium and die with their branches; this file is the record. A landing design PR distills its spec's durable residue here (the checklist is AGENTS.md's "Landing a design").
+The gitignored planning specs are the working medium and die with their branches; this folder is the record. A landing design PR distills its spec's durable residue into its entry files (the checklist is AGENTS.md's "Landing a design").
 
 Entry conventions:
 
@@ -10,7 +10,7 @@ Entry conventions:
 - **Harvested entries** (content landed from a session's report) keep their provenance: a "measurements are that session's, spot-checked at landing" framing line, the contributor's measured-vs-remembered markings where they matter, and — the hard-won one — a flagged uncertainty is resolved by reading the source artifact, never by inference from the neighboring argument.
 - **`Declined:`** — proposals rejected WITH the evidence that killed them. Resolved-as-no is a decision; without a home for it, the next person re-derives the rejected proposal and its measurement.
 - **`Excluded:`** — standing prohibitions with indefinite lifetime, keyed by vocabulary set: entries that must stay OUT of a wordlist, each with its reason. Distinct from Declined because the failure mode differs — nobody re-derives a rejected proposal, but someone sweeping a wordlist ships the excluded entry as a bug.
-- **`Open:`** — unresolved questions as issue links with one-line handles. The ISSUE is canonical; this block never restates it. Two keyings: under a rule ID for questions about the rule, and — like `Excluded:` — keyed to a VOCABULARY SET for contested memberships, the category neither `deviates:` nor `Excluded:` covers: the rule is right and a word's set membership is the question (the shape: `rai` in the suffix acronyms and `swami` absent from the given-name titles, both since answered — see #suffix-acronym-collisions and #indic-honorifics). Place the block beside the set's `Excluded:` entries so a wordlist editor meets both.
+- **`Open:`** — unresolved questions as issue links with one-line handles. The ISSUE is canonical; this block never restates it. Two keyings: under a rule ID for questions about the rule, and — like `Excluded:` — keyed to a VOCABULARY SET for contested memberships, the category neither `deviates:` nor `Excluded:` covers: the rule is right and a word's set membership is the question (the shape: `rai` in the suffix acronyms and `swami` absent from the given-name titles, both since answered — see decisions/suffix-acronym-collisions and decisions/indic-honorifics). Place the block beside the set's `Excluded:` entries so a wordlist editor meets both.
 - **Weighing entries** for contested questions: the options considered, each option's intended effect, and the accepted costs of the option chosen. The costs accepted here are the artifacts the rule lists under its `Accepted:` consequences; the two link by rule ID.
 
 ## Index
