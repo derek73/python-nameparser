@@ -258,8 +258,9 @@ _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 # all three are bare capitals, which inside a name are middle initials.
 def is_trailing_numeral_suffix(text: str, preceding: str,
                                one_case: bool | None = None) -> bool:
-    """assign's roman-numeral fork, shared with group's bound-given
-    reserve (#401): a FINAL single-token piece that is a roman numeral
+    """The trailing walk's roman-numeral fork, shared with
+    `trailing_candidates`' superset view and assign's report on a
+    numeral before a credential (#721): a FINAL single-token piece that is a roman numeral
     reads as the suffix when the piece before it does not look like
     part of an initial run -- for a one-letter numeral a necessary
     condition only, the caller's words-to-spare count deciding
@@ -274,14 +275,15 @@ def is_trailing_numeral_suffix(text: str, preceding: str,
     suppressing the fork and cost 'John 씨. V' its family name.
 
     `one_case` is ParseState.one_case: in a name written in one case
-    a bare cased letter in front is initial-shaped as its capital is
-    (rules/S10, #721's review: 'john j v' reads as 'JOHN J V'). A
-    caller passing None, the bound-given reserve's superset, gets the
+    the word in front is read as its capital would be, so a bare 'j'
+    is initial-shaped as 'J' is (rules/S10, #721's review: 'john j v'
+    reads as 'JOHN J V'), while 'é', 'ж' or an uncased word, whose
+    capitals are not, stay as they were. A caller passing None,
+    `trailing_candidates`' superset for the maiden take, gets the
     shape test alone, which admits more and so stays a superset."""
     return (_ROMAN.match(text) is not None
             and not is_initial_shaped(preceding)
-            and not (one_case and len(preceding) == 1
-                     and preceding.upper() != preceding.lower()))
+            and not (one_case and is_initial_shaped(preceding.upper())))
 
 
 # rules/S10: "a numeral written in lower case in a name of mixed case is

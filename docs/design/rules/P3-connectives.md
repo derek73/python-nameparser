@@ -17,11 +17,12 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     marks as reading both ways.
     A letter the vocabulary marks as reading both ways, read as an
     initial in a name written wholly in one case, is a call that could
-    have gone the other way, and is reported — unless nothing of its
-    part stands to its right, where it connects nothing and there is
+    have gone the other way, and is reported — unless no name word
+    of its part stands to its right, nothing at all or only
+    post-nominals and titles, where it connects nothing and there is
     no other way for the call to go: it is read as an initial and
-    not reported, and where it is a roman numeral S10's fork reports
-    it instead.
+    not reported, and where it is a roman numeral ending the name
+    S10 reports it instead.
     The joined part is ONE name word wherever another rule counts
     them, so a rule taking "one name word" takes the whole join and
     never half of it — except C1's count of the words before a comma,
@@ -79,6 +80,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "John Quincy Smith i"       →  suffix="i"
       "Carod i"                   →  suffix="i"
       "carod i"                   →  ambiguities=("suffix-or-name",)  · boundary
+      "jose e phd"                →  ambiguities=()  · boundary
       "Josep Lluis Carod i III"   →  suffix="i III"
       "Carod y de Rovira i"       →  middle="y"
       "John й Smith"              →  middle="й"
@@ -154,5 +156,5 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, C1, S6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, C1, S6, S10 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

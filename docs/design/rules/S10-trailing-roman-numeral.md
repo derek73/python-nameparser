@@ -18,8 +18,7 @@ S10. Rationale: a roman numeral ending a name is its generation,
     shape alone reports too; a numeral the vocabulary lists in two
     or more letters is not in question and reports nothing, and a
     letter already reported as read as an initial reports nothing
-    new: where a title stands after a marked letter (P3), P3's
-    report is the one. Written case
+    new. Written case
     settles the fork in one way only: a numeral written in lower
     case in a name of mixed case is the generation and reports
     nothing, since nobody writes an initial that way. A name written
@@ -30,6 +29,8 @@ S10. Rationale: a roman numeral ending a name is its generation,
       "John Smith V"              →  suffix="V"
       "John Smith V"              →  ambiguities=("suffix-or-name",)
       "John W. Ingram V"          →  suffix="V"
+      "John W Ingram V"           →  suffix="V"
+      "John Ingram V"             →  suffix="V"
       "John Smith VI"             →  suffix="VI"
       "John Smith VI"             →  ambiguities=("suffix-or-name",)
       "John Smith III"            →  ambiguities=()
@@ -49,10 +50,13 @@ S10. Rationale: a roman numeral ending a name is its generation,
       "john smith v"              →  ambiguities=("suffix-or-name",)
       "john i"                    →  family="i"
       "john i"                    →  ambiguities=("suffix-or-name",)
-      "john i dr."                →  ambiguities=("conjunction-or-initial",)
+      "john i dr."                →  ambiguities=("suffix-or-name",)
       "john j v"                  →  family="v"
     Accepted: a numeral with another suffix word behind it is not
     the last word of the name and is read as any word there is, so a
-    one-letter numeral before a credential is the family name.
+    one-letter numeral before a credential is the family name, and
+    the reading is reported, as either reading of the fork is.
       "John Smith V PhD"          →  family="V"
+      "John Smith V PhD"          →  ambiguities=("suffix-or-name",)
+      "john i phd"                →  ambiguities=("suffix-or-name",)
     history: decisions/S10 · interacts: S2, S4, S7, C1, P2, P3, M2, H1, H3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

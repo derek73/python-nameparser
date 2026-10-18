@@ -644,8 +644,10 @@ class Lexicon:
     #: decided by the writing instead and never consults this set, and
     #: neither does a caseless letter (Arabic و), which has no case to
     #: read. A member additionally reports
-    #: :attr:`~nameparser.AmbiguityKind.CONJUNCTION_OR_INITIAL`; a
-    #: non-member reports nothing, its reading not being in doubt.
+    #: :attr:`~nameparser.AmbiguityKind.CONJUNCTION_OR_INITIAL` where a
+    #: name word of its part follows it (with none, it connects
+    #: nothing); a non-member reports nothing, its reading not being in
+    #: doubt.
     #: Full default list:
     #: :data:`~nameparser.config.conjunctions.CONJUNCTIONS_AMBIGUOUS`.
     #: Entries need not also be in ``conjunctions``; one that is not is

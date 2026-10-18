@@ -56,7 +56,9 @@ CONJUNCTIONS_AMBIGUOUS = frozenset({
     # 'i' (Catalan/Polish) ships here beside 'e' for the same reason
     # (#397): a bare I initial is as common as a bare E, so a name
     # written wholly in one case reads the letter as an initial and
-    # reports the fork rather than joining in silence.
+    # reports the fork rather than joining in silence -- where a name
+    # word follows it in its part, there being nothing to join
+    # otherwise (#721).
     #
     # A caller edits the vocabulary rather than a switch: remove 'e' to
     # restore joining for Portuguese data, remove 'i' for Catalan or

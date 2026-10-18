@@ -3344,7 +3344,7 @@ def test_every_one_letter_particle_veto_is_load_bearing(
 # after it -- with the numerals a listed and a shape-only spelling of
 # each length, three heads (one Catalan, one holding an ambiguous
 # acronym) and all three orders:
-# 1,575 pairs, about 3,150 parses, 0.24s on py3.11 (2026-10-18).
+# 1,872 pairs, about 3,750 parses, 0.29s on py3.11 (2026-10-18).
 _ONE_CASE_SHAPES = (
     "{a} {n}", "{a} {b} {n}", "{a} {n}, phd", "{a} {b} {n}, phd",
     "{a} {n}, jr.", "{b}, {a} {n}", ", {a} {n}", "{a} nee {b} {n}",
@@ -3354,16 +3354,18 @@ _ONE_CASE_SHAPES = (
     # #721's review: a bare letter in front, a trailing title, a
     # doubled numeral and a trailing period
     "{a} b {n}", "{a} e {n}", "{a} {n} prof.", "{a} {b} {n} prof.",
-    "{a} {b} {n} {n}", "{a} {b} {n}.")
-_ONE_CASE_NUMERALS = ("v", "i", "x", "vi", "iii", "ii", "iv")
+    "{a} {b} {n} {n}", "{a} {b} {n}.",
+    # a non-ASCII letter in front, whose capital is no initial
+    "{a} é {n}")
+_ONE_CASE_NUMERALS = ("v", "i", "x", "vi", "iii", "ii", "iv", "vii")
 _ONE_CASE_HEADS = (("john", "smith", "jones"), ("carod", "puig", "rovira"),
                    ("mary", "ma", "lee"))
 #: the negative controls, measured 2026-10-18 on this grid, which
-#: master (2bfa9533) disagreed on 288 of: with classify's one-case
+#: master (2bfa9533) disagreed on 315 of: with classify's one-case
 #: numeral initial taken out, and with the numeral fork's one-case
 #: letter in front taken out -- each guard seen on its own
-_ONE_CASE_UNGUARDED = 216
-_ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 99
+_ONE_CASE_UNGUARDED = 225
+_ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 117
 
 
 def _one_case_disagreements() -> list[str]:

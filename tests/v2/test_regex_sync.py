@@ -144,6 +144,9 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     ("_pieces", "_ROMAN"): "roman_numeral",
     # SAME object, imported for the one-case numeral initial (#721)
     ("_classify", "_ROMAN"): "roman_numeral",
+    # SAME object, imported for the report on a numeral before a
+    # credential (#721)
+    ("_assign", "_ROMAN"): "roman_numeral",
     ("_post_rules", "_EAST_SLAVIC"): "east_slavic_patronymic",
     ("_post_rules", "_EAST_SLAVIC_CYR"): "east_slavic_patronymic_cyrillic",
     ("_post_rules", "_TURKIC"): "turkic_patronymic_marker",

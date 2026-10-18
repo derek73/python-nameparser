@@ -1050,17 +1050,16 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
         assert str(built) == restored_cap
 
 
-def test_the_v1_off_switch_restores_the_pre_397_fields() -> None:
+def test_the_v1_off_switch_unjoins_the_link_only() -> None:
     """decisions/P3's off switch on the V1 SURFACE (#397 second
-    review). The bullet says deleting `i` from `C.conjunctions`
-    restores the parent's readings; the core-side switch is pinned by
-    the off-switch grid in tests/v2/test_properties.py and this is the
-    facade half, which has no `Lexicon` of its own to remove from.
+    review; named for what it restored, the pre-#397 fields, until
+    #721). The core-side switch is pinned by the off-switch grid in
+    tests/v2/test_properties.py and this is the facade half, which
+    has no `Lexicon` of its own to remove from.
 
     The three role movers of decisions/P3's one-case paragraph are
-    the rows, because they are the ones whose FIELDS move: every
-    value on the right below was what the released 2.3.0 wheel gives,
-    measured 2026-09-20 -- until #721, which made a one-case
+    the rows: the switch restored their 2.3.0 fields, measured
+    2026-09-20 -- until #721, which made a one-case
     one-letter numeral the initial its capital is (rules/S10), so with
     `i` out of the conjunctions the letter now reads as 'I' does in
     each, switch on or off. What the switch still moves is the join,

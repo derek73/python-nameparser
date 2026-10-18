@@ -163,10 +163,13 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # the Spanish conjunction 'e'
         # rules/S10: "A name written wholly in one case says nothing
         # about any letter in it" -- so a one-letter roman numeral
-        # there is the initial its capital is, and every reader that
-        # vetoes 'V' vetoes 'v' too (#721). The NAME-level fact, as
-        # #516's caps branch reads it: a capital 'V' in a maiden clause
-        # is an initial, so a one-case 'v' there is one too. One
+        # there is the initial its capital is, and every reader of the
+        # tag after classify vetoes 'v' as it vetoes 'V' (#721) -- not
+        # the honorific peel upstream, which asks the shape itself
+        # ('田中さん v' still reads otherwise than '田中さん V').
+        # `one_case` is the fact about the name's own words, applied to
+        # a clause's words too, as #516's caps branch applies it, since
+        # a capital 'V' in a clause is an initial as well. One
         # character already, so `_ROMAN` alone asks what
         # `is_single_letter_numeral` would, at C level: no frame per
         # one-letter word
@@ -349,10 +352,11 @@ def classify(state: ParseState) -> ParseState:
         # LOWERCASE letter is tagged "initial" only by the fork's
         # branch ("jose e maria santos" tags a lowercase e), for a
         # conjunctions_ambiguous member, or by the one-case numeral
-        # (#721), which is no connective and fails `conjunctions`
-        # below unless the caller made it one. So for a letter of
-        # EITHER case in `conjunctions`, "initial" plus len 1 implies
-        # membership. It is
+        # (#721) -- which an own word reaches only when it is no
+        # single-letter connective, that taking the fork's branch
+        # first, while a clause word fails `i < clause_at` below. So
+        # for a letter of EITHER case in `conjunctions`, "initial" plus
+        # len 1 implies membership. It is
         # kept only because `_tags_for` starts from `set(token.tags)`, so
         # this clause is what keeps the emitter honest if a runner ever
         # hands classify tokens it did not build; no such path exists

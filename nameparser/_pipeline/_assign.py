@@ -89,7 +89,8 @@ from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    effective_script, is_suffix_lenient, resolve_script_set,
+    _ROMAN, effective_script, is_suffix_lenient, is_trailing_numeral_suffix,
+    numeral_settled_by_case, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
@@ -308,8 +309,13 @@ def _placed(read: TailRead, rest: list[int],
 
 # rules/S10: "a letter already reported as read as an initial reports
 # nothing new" -- asked only by the numeral fork's declined pick
-# (#718). The maiden clause's report on the numeral it keeps cannot
-# meet the case: classify reads no connective inside a clause
+# (#718). Defensive since #721: classify withdraws its report on a
+# letter ending its part, and the check below on the part's last name
+# word withdraws it before a trailing run, so no input reached it on
+# #721's final tree (its full suite and a 1,680-parse trailing-title
+# sweep fail and pass alike without it). The maiden clause's report
+# on the numeral it keeps cannot meet the case: classify reads no
+# connective inside a clause
 def _reported_as_initial(ambiguities: Sequence[PendingAmbiguity],
                          index: int) -> bool:
     """Whether classify's connective-or-initial fork already reported
@@ -540,6 +546,37 @@ def _assign_main(seg_idx: int, state: ParseState,
                     f"decides it; read as ", tuple(head),
                     field_tail=" by convention, which follows the read "
                                "order"))
+    # rules/P3: "unless no name word of its part stands to its right"
+    # and rules/S10: "a one-letter numeral before a credential is the
+    # family name, and the reading is reported" -- the part's last name
+    # word with nothing but the trailing run behind it (#721, Derek:
+    # 'john i phd' reports as 'john i, phd' does). Decided here, where
+    # the trailing read has said what that run is; classify's own
+    # end-of-part test covers a letter with nothing at all behind it
+    if name_pieces and (suffix_pieces or titled_tail):
+        last = pieces[name_pieces[-1]]
+        word = tokens[last[0]].text
+        if len(last) == 1:
+            # a connective with only post-nominals or titles to its
+            # right connects nothing; reported only in a one-case name
+            if state.one_case:
+                ambiguities[:] = [
+                    a for a in ambiguities
+                    if a.kind is not AmbiguityKind.CONJUNCTION_OR_INITIAL
+                    or a.indices != (last[0],)]
+            # `_ROMAN` first, C-level, so an ordinary name word pays
+            # no frame for the rest
+            if (_ROMAN.match(word) is not None and len(name_pieces) >= 2
+                    and tuple(last) not in peeled.picks
+                    and is_trailing_numeral_suffix(
+                        word, tokens[pieces[name_pieces[-2]][0]].text,
+                        state.one_case)
+                    and not numeral_settled_by_case(word, state.one_case)):
+                ambiguities.append(PendingAmbiguity(
+                    AmbiguityKind.SUFFIX_OR_NAME,
+                    f"{word!r} is a roman numeral, but a post-nominal or "
+                    f"title follows it; read as ", tuple(last),
+                    field_tail=" rather than a generational suffix"))
     for piece in peeled.picks:
         # every pick is in rest, so the loops above just gave it a
         # role; whether it was read as a suffix or a name settles what
