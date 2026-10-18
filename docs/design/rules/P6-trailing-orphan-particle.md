@@ -17,7 +17,7 @@ P6. Rationale: a particle ending the name has nothing to link
     ending the name attaches to that family name and is written
     before it — provided at least one given word remains, so that a
     name whose only given word is the particle keeps it (the
-    words-to-spare test S2 applies to ambiguous suffixes). A
+    words-to-spare test S4 applies to ambiguous suffixes). A
     post-nominal is written BEHIND the particle in this listing, so
     it does not end the name for this purpose: the run is found by
     looking past trailing words that hold no name — unless such a
@@ -32,9 +32,9 @@ P6. Rationale: a particle ending the name has nothing to link
     than one case, reads as the credential and this attachment stands
     down — unless a particle stands immediately in front of it, the
     two being one particle run by then, which this rule takes whole.
-    The second is S2's company: such a word standing behind an
+    The second is S7's company: such a word standing behind an
     unambiguous credential in one run of suffix words reads as the
-    credential in any spelling and any case, reported as S2's
+    credential in any spelling and any case, reported as S4's
     credential fork. The third is a lone word of both the particle and
     the UNAMBIGUOUS suffix vocabulary standing INSIDE a run read as
     post-nominals — one in front of it and another behind, a
@@ -43,12 +43,12 @@ P6. Rationale: a particle ending the name has nothing to link
     tussenvoegsel stands right behind the given name, so a
     post-nominal between them says the word is not one. It does not
     end the name, and keeps the
-    post-nominal reading in any case, reported as S2's credential
+    post-nominal reading in any case, reported as S4's credential
     fork. With nothing behind it, it ends the name and attaches, and
     two such words side by side are one particle run, which this rule
     takes whole. Every other spelling of such a word attaches as
     it did before, and the kind rule below gives it this rule's
-    particle fork rather than S2's credential one. In a name written
+    particle fork rather than S4's credential one. In a name written
     wholly in one case, with nothing in front of the word to speak
     for it, the two readings cannot be told apart and the particle
     keeps it, which is right about a Portuguese record and wrong
@@ -166,7 +166,7 @@ P6. Rationale: a particle ending the name has nothing to link
     and so does "Smith vd". The comma is the contrast, and it is
     where the precedence stated above acts, "Berg, Jan vd" reading
     family "vd Berg". `do` follows `de` rather than `mc`, sitting
-    in the AMBIGUOUS acronym half, where S2's words-to-spare test
+    in the AMBIGUOUS acronym half, where S4's words-to-spare test
     leaves a two-word name its family.
       "Jong Anke de"              →  family="de"
     Accepted: the precedence over S2 is stated for the shape, so it
@@ -196,5 +196,5 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    history: decisions/P6 · interacts: A1, C1, H5, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P6 · interacts: A1, C1, H5, P1, S2, P5, M2, S4, S7 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

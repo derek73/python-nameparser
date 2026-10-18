@@ -462,7 +462,7 @@ def test_where_the_marker_lands_when_the_consumer_declines() -> None:
     # any other to the bound-given join (P5 declines a marker "standing
     # as a word of its own", and this one is not) -- but since #602 the
     # 'Jr' behind it starts a credential run to the end of the part
-    # (rules/S2), so the reserve finds no name word to spare and the
+    # (rules/S8), so the reserve finds no name word to spare and the
     # join declines for that reason instead
     assert _piece_texts(_grouped("abdul van der Berg née Jr Jones")) == [
         ["abdul", "van der Berg née", "Jr", "Jones"]]
@@ -795,7 +795,7 @@ _AMBIGUOUS_LEX = _LEX.add(suffix_acronyms={"ma"},
 
 
 def test_the_reserve_mirrors_the_bare_acronym_fork() -> None:
-    # S2's other positional fork: a bare ambiguous acronym is peeled
+    # S4's other positional fork: a bare ambiguous acronym is peeled
     # only with a given AND a family left. Read over the joined view
     # 'abdul Smith Jr Ma' is three pieces, so assign peels the acronym,
     # then the suffix, and one piece remains -- no family. The reserve
@@ -823,7 +823,7 @@ def test_the_join_never_turns_a_suffix_into_a_name() -> None:
     # MOVED by #289, not deleted: 'Ma' now leans SURNAME (Title case,
     # mixed-case name) on BOTH sides of the join, so the two views'
     # suffix readings still agree and the join stands -- 'abdul Smith'
-    # given, 'Ma' family (decisions/S2's corpus row).
+    # given, 'Ma' family (decisions/S6's corpus row).
     out = _grouped("abdul Smith Ma", lexicon=_AMBIGUOUS_LEX)
     assert _piece_texts(out) == [["abdul Smith", "Ma"]]
     out = _grouped("abdul Smith Berg Ma", lexicon=_AMBIGUOUS_LEX)
@@ -921,7 +921,7 @@ def test_the_chain_keeps_an_acronym_assign_will_not_peel() -> None:
     # as a credential); now 'Ma' leans SURNAME (Title case, mixed-case
     # name) and the peel declines it regardless of the count, so the
     # second re-ask absorbs it into the particle run too
-    # (decisions/S2).
+    # (decisions/S6).
     out = _grouped("St John van Berg Ma", lexicon=lex)
     assert _piece_texts(out) == [["St", "John", "van Berg Ma"]]
 
@@ -938,14 +938,14 @@ def test_the_chain_keeps_a_numeral_the_peel_does_not_take() -> None:
 
 
 def test_the_chain_stops_before_a_bare_acronym_with_words_to_spare() -> None:
-    # S2's other fork, the same way: 'John Smith Ma' peels the acronym
+    # S4's other fork, the same way: 'John Smith Ma' peels the acronym
     # as a credential, so 'John van der Berg Ma' does too -- 1.4.0 read
     # suffix 'Ma' there, and 2.0 had let the chain take it.
     #
     # MOVED by #289, not deleted: 'Ma' is Title-case in a mixed-case
     # name, so it now leans SURNAME and the chain's re-ask no longer
     # stops before it -- 'Ma' joins the particle run instead
-    # (decisions/S2's corpus row).
+    # (decisions/S6's corpus row).
     out = _grouped("John van der Berg Ma", lexicon=_AMBIGUOUS_LEX)
     assert _piece_texts(out) == [["John", "van der Berg Ma"]]
 

@@ -260,11 +260,11 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: contrast in the string, so the clause hides it. `own_words` stops
 #: at the maiden marker (rules/P3), so a member inside the clause
 #: cannot contribute the case contrast `one_case` is computed from --
-#: which is decisions/S2's own "THE PREDICATE KEEPS THE JUDGED
+#: which is decisions/S6's own "THE PREDICATE KEEPS THE JUDGED
 #: TOKEN IN THE SPAN" (the 2026-09-14 #289/#516 entry) failing
 #: structurally, the judged token never being in the span at this
 #: slot. Accepted by Derek 2026-09-19 and recorded in
-#: decisions/S2 as the M2 instance of #492's deferred question.
+#: decisions/S4 as the M2 instance of #492's deferred question.
 #: The class is asserted beside the count because a structural
 #: allowlist cannot notice a new member of it, and a COUNT cannot
 #: notice a swap -- one pair leaving and another arriving keeps the
@@ -315,7 +315,7 @@ def _one_case(text: str) -> bool | None:
 
 def _qualifying_front(toks: list[tuple[Token, tuple[int, int]]], i: int,
                       original: str) -> tuple[Token, int] | None:
-    """rules/S2's company clause: walk back from `toks[i]` (a
+    """rules/S7's company clause: walk back from `toks[i]` (a
     member of the ambiguous class) through lone members to the piece
     that would speak for their company, and return it -- with its OWN
     index, which a caller's role question needs -- if it structurally
@@ -385,7 +385,7 @@ def _reserve_kept(toks: list[tuple[Token, tuple[int, int]]], j: int,
 
 
 def _outside_its_company(name: ParsedName) -> list[str]:
-    """rules/S2's company clause, read off a finished parse (#544):
+    """rules/S7's company clause, read off a finished parse (#544):
     a LISTED member of the ambiguous class written behind an
     unambiguous credential -- with nothing but listed members between
     them, in the same comma part and on the same side of a maiden
@@ -421,8 +421,8 @@ def _outside_its_company(name: ParsedName) -> list[str]:
     ('Smith, PhD Ma') -- every head either has no comma at all or
     already carries a given name across it. That comma-side shape is
     pinned separately: `tests/v2/cases.py`'s `family_comma_lone_degree`
-    and `family_comma_two_credentials` rows, and rules/S2's
-    'Smith, PhD' boundary example.
+    and `family_comma_two_credentials` rows, and rules/S7's
+    'Smith, PhD Ma' example.
 
     DELIBERATELY A SECOND IMPLEMENTATION of `_pieces.credential_anchors`,
     over the finished parse's tokens, tags and roles rather than over
@@ -467,7 +467,7 @@ def _credential_without_suffix_role(name: ParsedName) -> list[str]:
     outside both TITLE and SUFFIX. Every other member is decided by
     role tests alone.
 
-    Skips a member whose OWN case-based lean (rules/S2, #289 -- an
+    Skips a member whose OWN case-based lean (rules/S6, #289 -- an
     ALL-CAPS member of a mixed-case name) already reads it as a
     credential with no company at all: that class predates #544 and
     reaches the very same H4 carve-out on its own ('PhD MA' -> given
@@ -521,7 +521,7 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
 
     #544 joins this walk rather than opening a grid: every parse it
     takes is also asked `_outside_its_company` and
-    `_credential_without_suffix_role` (rules/S2's company clause,
+    `_credential_without_suffix_role` (rules/S7's company clause,
     both directions), and the two heads ending in 'PhD' were added so
     that the given slot holds members behind a credential beside the
     comma-less trailing slot 'Jane Doe Jr.' already held. A third
@@ -2434,7 +2434,7 @@ def _a_case_reading_the_docs_already_own(
     e i' against 'CAROD E I' are the same pair.
 
     TWO: a member of the AMBIGUOUS credential class reading
-    differently in the two spellings. That is decisions/S2's own
+    differently in the two spellings. That is decisions/S6's own
     lean -- an ALL-CAPS bare member of the class reads as the
     credential and a lower-case one as a name word -- and it decides
     the COMMA STRUCTURE, so its effect reaches every token of the

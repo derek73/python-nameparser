@@ -257,7 +257,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
       name reads as if the clause were not written, and always the
       first word after it. The run is read over the VIEW -- the head
       plus the vocabulary-shaped tail, and anything from the first
-      credential that starts a run (S2, #602) -- by `tail_reading`, so
+      credential that starts a run (S8, #602) -- by `tail_reading`, so
       the count of words to spare is the clause-free name's. Before a
       family comma no trailing rule reads the part, and the family
       part takes a suffix word from anywhere in it: the clause stops
@@ -1029,7 +1029,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                             f"following name piece; it is also a given "
                             f"name in other names",
                             (i,)))
-                # rules/S2: "A BARE ambiguous acronym is consumed
+                # rules/S4: "A BARE ambiguous acronym is consumed
                 # only when the name has words to spare — as the second
                 # of two words it stays the family name — and at the
                 # slots that report, either reading carries the

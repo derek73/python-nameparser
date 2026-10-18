@@ -599,7 +599,7 @@ class Lexicon:
     #: outright; written bare, capitals decide in a mixed-case name
     #: ("Jack MA" is the credential, "Jack Ma" keeps his family name)
     #: and otherwise the word counts as a suffix only where a name
-    #: word is left beside it ("John Smith ma"), rules/S2. Full
+    #: word is left beside it ("John Smith ma"), rules/S6 and rules/S4. Full
     #: default list:
     #: :data:`~nameparser.config.suffixes.SUFFIX_ACRONYMS_AMBIGUOUS`.
     suffix_acronyms_ambiguous: frozenset[str] = frozenset()

@@ -442,7 +442,7 @@ CASES: tuple[Case, ...] = (
     # MOVED by #289, not deleted: 'MA' is written in capitals inside a
     # mixed-case name, so it now leans CREDENTIAL and is taken with no
     # words to spare -- the reserve/count this row used to pin no
-    # longer decides here, the written case does (decisions/S2).
+    # longer decides here, the written case does (decisions/S6).
     Case("ambiguous_surname_acronyms", "Jack MA",
          {"given": "Jack", "suffix": "MA"},
          classification="fix(#289)",
@@ -456,7 +456,7 @@ CASES: tuple[Case, ...] = (
                "what turns on GIVEN_OR_FAMILY. 1.4.0 read LAST 'MA' "
                "here (family 'MA'), so this row BREAKS 1.4.0 parity "
                "deliberately, in the direction the East Asian surname "
-               "wants (decisions/S2) -- corrected 2026-09-17, F3 "
+               "wants (decisions/S6) -- corrected 2026-09-17, F3 "
                "review finding: an earlier version of this note "
                "wrongly claimed the opposite"),
     Case("ambiguous_surname_acronym_with_suffix", "Jack MA Jr",
@@ -466,7 +466,7 @@ CASES: tuple[Case, ...] = (
          notes="'Jr' peels first as unambiguous vocabulary; 'MA' is "
                "then the last piece, and the caps lean takes it with "
                "no words to spare rather than leaving it the family "
-               "the old reserve kept (decisions/S2) -- both suffix "
+               "the old reserve kept (decisions/S6) -- both suffix "
                "words render as one run"),
     Case("ambiguous_acronym_is_a_suffix_when_a_family_name_remains",
          "John Smith MA",
@@ -515,7 +515,7 @@ CASES: tuple[Case, ...] = (
          notes="with 'cha' gone from the vocabulary (#342) the word is "
                "unlisted, and since #564 an unlisted all-caps word "
                "after a comma behind two name words is a credential by "
-               "default (rules/C1, S2), so the comma is a suffix "
+               "default (rules/C1, S9), so the comma is a suffix "
                "comma again and reports the call. 2.3.0 read given "
                "'CHA', family 'Ahmad Jayadi'; 'John Smith, RAI' moves "
                "with it"),
@@ -567,14 +567,14 @@ CASES: tuple[Case, ...] = (
     # common credential and Ba a real surname (Vietnamese; Senegalese
     # Fula), which is the ma/Ma shape exactly, so it takes the
     # marking rather than the removal. Two rows, the two halves of
-    # S2's words-to-spare guard; the release note names both texts.
+    # S4's words-to-spare guard; the release note names both texts.
     Case("bare_ba_is_a_surname", "Anna Ba",
          {"given": "Anna", "family": "Ba"},
          ambiguities=("suffix-or-name",),
          classification="parity",
          notes="the marking's point: with only two pieces, 'one of "
                "them is a credential' is the less likely reading, so "
-               "S2's words-to-spare guard keeps the family name and "
+               "S4's words-to-spare guard keeps the family name and "
                "the parse reports which reading it took. 2.0.0 "
                "through 2.2.0 read suffix 'Ba' with no family name; "
                "1.4.0 read family 'Ba' unflagged, so this row "
@@ -583,14 +583,14 @@ CASES: tuple[Case, ...] = (
     # mixed-case name, so it now leans CREDENTIAL and the post-comma
     # slot takes it with one word to spare where the count alone would
     # not -- back to what 2.0.0 through 2.2.0 read, though for a
-    # different reason (decisions/S2, Derek's own #289 comment:
+    # different reason (decisions/S6, Derek's own #289 comment:
     # positive evidence outranks position here).
     Case("comma_ambiguous_acronym_ba", "Smith, BA",
          {"family": "Smith", "suffix": "BA"},
          classification="fix(#289)",
          ambiguities=("suffix-or-name",),
          notes="the marking's comma cost, and it is 'Smith, Ed' "
-               "arriving for a second word: with 'ba' ambiguous, S2 "
+               "arriving for a second word: with 'ba' ambiguous, S4 "
                "declines the post-comma credential and C1 reads it as "
                "the given name. 2.0.0 through 2.2.0 read family "
                "'Smith', suffix 'BA'; 1.4.0 read given 'BA'. #289 moves "
@@ -610,7 +610,7 @@ CASES: tuple[Case, ...] = (
     # Lac a Vietnamese given name (the trailing word in native order,
     # Nguyen Van Lac) and a French surname, and both stand in the one
     # slot the suffix vocabulary claims, the last word of a name. No rule
-    # moves: these rows are rules/S2's forks read through two more
+    # moves: these rows are rules/S4's forks read through two more
     # members, written all-lower so the count decides unless the
     # writing says otherwise, and shape-tagged so the snapshot sees
     # them -- no corpus name had either word.
@@ -618,7 +618,7 @@ CASES: tuple[Case, ...] = (
          {"given": "wang", "family": "meng"},
          ambiguities=("suffix-or-name",),
          notes="#540's subject: with only two pieces the credential "
-               "reading would leave no family name, so S2's "
+               "reading would leave no family name, so S4's "
                "words-to-spare guard keeps it and reports the fork. "
                "2.0.0 through 2.3.0 read suffix 'meng' with no family "
                "(2.3.0 reporting given-or-family, the one-word-name "
@@ -664,11 +664,11 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="the marking's accepted cost, stated rather than "
                "discovered: in a name written in more than one case, "
-               "S2 reads a member written neither in capitals nor all "
+               "S6 reads a member written neither in capitals nor all "
                "lower as the name even with words to spare, and MEng "
                "is conventionally written exactly that way. Every "
                "release from 1.4.0 read suffix 'MEng'. The twin of "
-               "S2's 'John Smith Ma'; 'John Smith MENG' keeps the "
+               "S6's 'John Smith Ma'; 'John Smith MENG' keeps the "
                "credential on the capitals lean",
          shape=1),
     Case("comma_mixed_case_meng_reads_as_a_middle_name",
@@ -676,7 +676,7 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "middle": "MEng", "family": "Smith"},
          classification="fix(#540)",
          ambiguities=("suffix-or-name",),
-         notes="the marking's comma cost: it is the same S2 case "
+         notes="the marking's comma cost: it is the same S6 case "
                "reading the row above pins, arriving after a family "
                "comma, where C1 has already settled the word count "
                "and the writing is the only evidence left. Every "
@@ -688,7 +688,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="the marking's one-word-before-the-comma path, the "
                "reading 'Smith, Ma' gets, arriving for another "
-               "member: with the word ambiguous, S2 declines the "
+               "member: with the word ambiguous, S4 declines the "
                "post-comma credential and, with the count leaving it "
                "a name, C1 reads it as the given name. 2.0.0 through "
                "2.3.0 read "
@@ -737,7 +737,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#540)",
          ambiguities=("suffix-or-name",),
          notes="the mixed-case name's Title-case member leans "
-               "'name' with words to spare (S2), the gain for a "
+               "'name' with words to spare (S6), the gain for a "
                "Vietnamese name; every release from 1.4.0 read "
                "family 'Van', suffix 'Lac'",
          shape=1),
@@ -770,13 +770,13 @@ CASES: tuple[Case, ...] = (
          shape=1),
     Case("leading_meng_is_a_given_name", "meng li",
          {"given": "meng", "family": "li"},
-         notes="the control: the marking acts only at the slots S2 "
+         notes="the control: the marking acts only at the slots S4 "
                "reports from, and a leading word is none of them. No "
                "report, and every release read it this way",
          shape=1),
     # ---- #544: a credential run keeps its ambiguous members ---------
     # C1's name-word count reads a RUN after the comma as it reads one
-    # word, and S2's company clause lets an unambiguous credential IN
+    # word, and S7's company clause lets an unambiguous credential IN
     # FRONT of a member speak for it at every trailing slot. The rows
     # below are the issue's names and the boundaries each half keeps.
     Case("comma_run_of_title_case_members_is_the_credential_run",
@@ -884,7 +884,7 @@ CASES: tuple[Case, ...] = (
          "John Smith, PhD DO",
          {"given": "John", "family": "Smith", "suffix": "PhD DO"},
          notes="#562's boundary: one 'DO' beside no other particle "
-               "is left to its capitals (S2), so the run stays settled "
+               "is left to its capitals (S6), so the run stays settled "
                "and silent, as 'John Smith, PhD MA' is. Untagged: every "
                "2.x release misread it, and its fix is #289's (#530), "
                "not #562's"),
@@ -894,7 +894,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#544)",
          ambiguities=("suffix-or-name",),
          notes="the lean that lets a settled run stand down is the "
-               "LISTED set's alone (S2): 'X.Y.Z.' joins the class by "
+               "LISTED set's alone (S6): 'X.Y.Z.' joins the class by "
                "shape and carries no writing to read, so the run is "
                "the count's and flips though both words are in "
                "capitals. 1.4.0 read given 'X.Y.Z.', family 'John "
@@ -905,7 +905,7 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "PhD MEng"},
          classification="fix(#436/#437)",
          ambiguities=("suffix-or-name",),
-         notes="S2's company clause: 'MEng' is written the way the "
+         notes="S7's company clause: 'MEng' is written the way the "
                "name lean reads, but the unambiguous 'PhD' in front "
                "of it anchors it, so the peel takes both and reports "
                "the member it picked. The roles are 1.4.0's and "
@@ -960,7 +960,7 @@ CASES: tuple[Case, ...] = (
           "suffix": "PhD Ma"},
          classification="fix(#602)",
          ambiguities=("suffix-or-name",),
-         notes="rules/S2 (#602): the credential after two name words "
+         notes="rules/S8 (#602): the credential after two name words "
                "starts a run to the end of the part, the title inside it "
                "reads as a title, and the member is in the run. The id "
                "names the reading #544 pinned (middle 'Smith PhD Prof.', "
@@ -973,7 +973,7 @@ CASES: tuple[Case, ...] = (
           "suffix": "Ph. D."},
          classification="fix(#540)",
          ambiguities=("suffix-or-name",),
-         notes="rules/S2's Accepted limit: the merged 'Ph. D.' is "
+         notes="rules/S7's Accepted limit: the merged 'Ph. D.' is "
                "read as a suffix at any position and so is not in the "
                "no-comma walk the company is read over, and the "
                "member's writing decides. The comma and given-slot "
@@ -985,13 +985,13 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "Smith", "suffix": "PhD Do Do"},
          classification="fix(#602)",
          ambiguities=("suffix-or-name",),
-         notes="rules/S2 (#602): the credential starts the run and "
+         notes="rules/S8 (#602): the credential starts the run and "
                "P2's chain stops where it starts, so the 'Do Do' the "
                "chain joined is absorbed and reported. The id names "
                "#544's Accepted limit, which #602 retires; 1.4.0 and "
                "2.3.0 read middle 'Smith PhD', family 'Do Do'"),
     # #602: a credential after the name core starts a run to the end of
-    # its part (rules/S2). The movers, then the exclusions that keep
+    # its part (rules/S8). The movers, then the exclusions that keep
     # a run from starting -- each a negative control for the movers.
     Case("a_credential_starts_a_run_to_the_end_of_the_part",
          "John Smith PhD Jones",
@@ -1120,7 +1120,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Jan", "family": "vd Ma"},
          classification="fix(#289)",
          ambiguities=("suffix-or-name",),
-         notes="S2's company clause: 'vd' is particle AND suffix "
+         notes="S7's company clause: 'vd' is particle AND suffix "
                "vocabulary, and a particle is the head of the family "
                "name behind it rather than a credential that could "
                "speak for 'Ma', so the Title-case member's own writing "
@@ -1145,7 +1145,7 @@ CASES: tuple[Case, ...] = (
          notes="#602: the credential starts the given part's run, so "
                "'vd' and 'Ma' are in it, the member reported. Before "
                "#602, and the reading the id names: "
-               "S2: a particle in front of a member takes it out of "
+               "S5: a particle in front of a member takes it out of "
                "the given part's trailing slot, and where the word "
                "behind reads as a name the two are one name, asked "
                "nothing and reporting nothing -- 'vd' reads as 'van' "
@@ -1252,7 +1252,7 @@ CASES: tuple[Case, ...] = (
          {"family": "Smith de", "suffix": "MA"},
          classification="fix(comma-precomma-family)",
          ambiguities=("suffix-or-name",),
-         notes="S2: in a mixed-case name the capitals speak even with "
+         notes="S6: in a mixed-case name the capitals speak even with "
                "no words to spare, so the never-given lead does not "
                "take 'MA' -- 'Smith, de Ma' does take it"),
     Case("an_ambiguous_particle_after_a_comma_keeps_the_given_name",
@@ -1443,7 +1443,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#544)",
          ambiguities=("suffix-or-name",),
          notes="the part is read wholly as credentials because 'PhD' "
-               "speaks for the Title-case 'Ma' (S2's company), and the "
+               "speaks for the Title-case 'Ma' (S7's company), and the "
                "pick is reported where the anchor made it. 2.2.0 "
                "and 2.3.0 read given 'PhD', middle 'Ma'; 1.4.0 through "
                "2.1.0 title 'PhD', first 'Ma'. 'Smith, PhD MA' reads the "
@@ -2044,7 +2044,7 @@ CASES: tuple[Case, ...] = (
          "Smith, John PhD de",
          {"given": "John", "family": "de Smith", "suffix": "PhD"},
          classification="fix(#379)",
-         notes="P6 over S2's given-part run (#602): a wholly-"
+         notes="P6 over S8's given-part run (#602): a wholly-"
                "particle piece is left to the walk and P6 attaches it, "
                "so neither stage reports. The run had absorbed 'de' and "
                "reported it, and P6 then reported the attachment as a "
@@ -2056,7 +2056,7 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "de Smith", "suffix": "PhD, Jr."},
          classification="fix(#379)",
          notes="P6: the run it looks past the post-nominal to "
-               "find is the same wholly-particle piece, so S2's run "
+               "find is the same wholly-particle piece, so S8's run "
                "leaves it alone wherever it stands. 2.3.0 read this "
                "way; 1.4.0 middle 'de'"),
     Case("a_particle_p6_does_not_attach_stays_in_the_run",
@@ -2529,7 +2529,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="the one-case control for 'Jack MA': all-caps against "
                "all-caps is no contrast at all, so nothing leans and "
-               "rules/S2's words-to-spare count decides alone -- "
+               "rules/S4's words-to-spare count decides alone -- "
                "two pieces, so the acronym stays the family name",
          shape=1),
     Case("one_case_lower_ambiguous_takes_the_count", "jack ma",
@@ -2550,7 +2550,7 @@ CASES: tuple[Case, ...] = (
                "word beside 'John Smith' is how a surname is written. "
                "1.4.0 read suffix 'Ma', so this is a deliberate "
                "parity break in the direction the East Asian surname "
-               "wants (decisions/S2)",
+               "wants (decisions/S6)",
          shape=1),
     Case("one_case_upper_ambiguous_with_words_to_spare",
          "JOHN SMITH MA",
@@ -2588,7 +2588,7 @@ CASES: tuple[Case, ...] = (
          notes="the floor the lean does not move, measured "
                "2026-09-15: the trailing peel's walk starts after the "
                "leading title run, so one piece is all it sees and "
-               "rules/S2's two-piece floor refuses it. A lean that "
+               "rules/S4's two-piece floor refuses it. A lean that "
                "reached below the floor would read this as a title "
                "with a credential and no name at all -- and nothing "
                "is reported, because no fork was taken",
@@ -2626,7 +2626,7 @@ CASES: tuple[Case, ...] = (
                "Counting tokens read it as given 'Smith' with suffix "
                "'Jr., MA' -- no reading of this string puts the "
                "family anywhere but where this row does "
-               "(decisions/S2)",
+               "(decisions/S6)",
          shape=2),
     Case("the_by_shape_class_never_reaches_is_wholly_suffix",
          "Smith Jr., A.B.",
@@ -2669,7 +2669,7 @@ CASES: tuple[Case, ...] = (
                "count of name words before the comma decides, and two "
                "of them make it a credential. 1.4.0 read suffix 'Ed' "
                "too, so this restores parity rather than opening "
-               "distance from it (decisions/S2, 2026-09-15)",
+               "distance from it (decisions/S4, 2026-09-15)",
          shape=3),
     Case("the_comma_count_reaches_the_listed_set_lower",
          "john smith, ma",
@@ -2697,7 +2697,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#289)",
          ambiguities=("suffix-or-name",),
          notes="the two-word twin of 'Royce, Ed' below, and the case "
-               "row item 5 of decisions/S2 turns on -- no corpus "
+               "row item 5 of decisions/S4 turns on -- no corpus "
                "name has this shape, so this row carries the whole "
                "weight of that decision",
          shape=3),
@@ -2946,7 +2946,7 @@ CASES: tuple[Case, ...] = (
          "De La Cruz, M.J. PhD",
          {"given": "M.J.", "family": "De La Cruz", "suffix": "PhD"},
          ambiguities=("suffix-or-name",),
-         notes="#563, S2's company rule: only a credential IN FRONT "
+         notes="#563, S7's company rule: only a credential IN FRONT "
                "speaks for a word, so the degree behind the initials "
                "leaves them the given name. Every release reads it "
                "this way; the report is new",
@@ -2965,7 +2965,7 @@ CASES: tuple[Case, ...] = (
          {"title": "Ms", "given": "G.J.", "family": "García Márquez"},
          notes="#563 review round: 'Ms' is both title and suffix "
                "vocabulary, and in front of paired initials it is the "
-               "title of the given part they open (rules/C1, as S2 "
+               "title of the given part they open (rules/C1, as S7 "
                "reads a dual in that part's title run). The first fix "
                "let it speak and split the surname in silence. Every "
                "release reads it this way",
@@ -3007,7 +3007,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#516)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="#563 second review round: 'Ed' is a listed ambiguous "
-               "member, and S2's company lets only an unambiguous "
+               "member, and S7's company lets only an unambiguous "
                "credential speak, so the comma keeps the family. 'G.J.' "
                "then ends the given part, the slot #563 left alone, "
                "where the dotted shape reads a credential as in 'Doe, "
@@ -3062,7 +3062,7 @@ CASES: tuple[Case, ...] = (
                "and this real credential is not handed to the shape "
                "class. The WIDE retirement -- any chunk match yielding "
                "to the shape -- would have read 'Msc.Ed.' as a middle "
-               "name, which is what rejected it (decisions/S2)",
+               "name, which is what rejected it (decisions/S3)",
          shape=2),
     Case("a_glued_honorific_chunk_is_not_ascii", "J.씨",
          {"given": "J.", "suffix": "씨"},
@@ -3149,7 +3149,7 @@ CASES: tuple[Case, ...] = (
          {"given": "John", "family": "van der Berg Ma"},
          classification="fix(#289)",
          ambiguities=("suffix-or-name",),
-         notes="rules/S2 says either reading carries the flag, and "
+         notes="rules/S4 says either reading carries the flag, and "
                "this reading carried none. assign reports from the "
                "peel's picks and a pick reaches it only as a LONE "
                "piece, so once the prefix chain merged 'Ma' into the "
@@ -3378,7 +3378,7 @@ CASES: tuple[Case, ...] = (
                "without meeting it: three name words, so the count "
                "reads the capitalised surname as a credential and the "
                "family becomes 'Pierre'. This row is the argument for "
-               "the default being off (decisions/S2)"),
+               "the default being off (decisions/S9)"),
     # #516 review round (quality-review finding): the TWO-word shape
     # ('Jean DUPONT') is the row `_policy.py`'s own docstring needed
     # and did not have -- turning the switch on reports a genuine
@@ -3435,7 +3435,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="the all-caps SURNAME convention never writes the "
                "capitals after a comma behind a full name, so the "
-               "default reads the comma position (rules/C1, S2). "
+               "default reads the comma position (rules/C1, S9). "
                "2.3.0 read given 'XYZ', family 'John Smith'"),
     Case("the_comma_caps_reading_can_be_switched_off",
          "John Smith, XYZ",
@@ -3654,7 +3654,7 @@ CASES: tuple[Case, ...] = (
     # the switch on -- the caps branch must never ride SHAPE_ACRONYM_
     # TAG beside a listed member's own membership tag, which is what
     # silenced `listed_lean` for these before the fix (F1, decided by
-    # the reviewer; decisions/S2). Both rows are byte-identical to
+    # the reviewer; decisions/S9). Both rows are byte-identical to
     # their DEFAULT-policy siblings above (`caps_ambiguous_leans_
     # credential`, `the_lean_reaches_the_post_comma_slot`) and carry
     # no `shape=` tag for the same reason every other policy-on row
@@ -3677,7 +3677,7 @@ CASES: tuple[Case, ...] = (
     # #516 review round: UNLISTED means in no wordlist at all, not
     # merely "no whole-token suffix vocabulary" -- a capitalized
     # particle or particle phrase must not join the class either
-    # (F1b, decided by the reviewer; decisions/S2's amendment).
+    # (F1b, decided by the reviewer; decisions/S9's amendment).
     Case("caps_switch_does_not_claim_a_capitalized_particle",
          "John Smith DE",
          {"given": "John", "middle": "Smith", "family": "DE"},
@@ -3941,7 +3941,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Ma", "family": "Smith", "suffix": "Jr"},
          ambiguities=("suffix-or-name",),
          notes="the SUFFIX arm of the same count, and the shape "
-               "decisions/S2 names: 'Smith Jr., MA' is two tokens "
+               "decisions/S6 names: 'Smith Jr., MA' is two tokens "
                "and one name. The Title-case spelling declines where "
                "the all-caps one flips, which is the pair rules/C1 "
                "states"),
@@ -3951,7 +3951,7 @@ CASES: tuple[Case, ...] = (
          policy=Policy(lenient_comma_suffixes=False),
          ambiguities=("suffix-or-name",),
          notes="MEASURED, and a known rough edge recorded rather than "
-               "repaired (decisions/S2, 2026-09-18). Under strict "
+               "repaired (decisions/S4, 2026-09-18). Under strict "
                "the initial-shaped 'V.' fails the suffix test, so "
                "name_word_count sees TWO name words before the comma, "
                "flips the structure, and the positional read of "
@@ -4030,7 +4030,7 @@ CASES: tuple[Case, ...] = (
          "John Smith 1.4.2",
          {"given": "John", "middle": "Smith", "family": "1.4.2"},
          classification="fix(#516)",
-         notes="ACCEPTED and SILENT, recorded at decisions/S2. "
+         notes="ACCEPTED and SILENT, recorded at decisions/S3. "
                "rules/S3's narrow retirement drops a dotted token "
                "whose every matched chunk is a single ASCII "
                "character, and the vocabulary's lone digit '2' is one "
@@ -4669,7 +4669,7 @@ CASES: tuple[Case, ...] = (
                "construction and the positional reading at this slot "
                "IS the credential. Same answer as the comma-less "
                "'John Doe MA', which is the whole point "
-               "(decisions/S2)",
+               "(decisions/S5)",
          shape=2),
     Case("the_given_parts_trailing_dotted_slot_reads_the_credential",
          "Doe, John X.Y.Z.",
@@ -4684,7 +4684,7 @@ CASES: tuple[Case, ...] = (
                "at this slot is the credential -- matching the "
                "comma-less 'John Doe X.Y.Z.' and the 2.4 shape rule "
                "rather than v1. One name, one new divergence, accepted "
-               "(decisions/S2)",
+               "(decisions/S5)",
          shape=2),
     Case("the_given_parts_trailing_slot_in_all_caps",
          "DOE, JOHN MA",
@@ -4840,7 +4840,7 @@ CASES: tuple[Case, ...] = (
                "the walk stops at the declined pick rather than "
                "continuing past it -- so the all-caps 'MA' in front "
                "is never asked and never reports. ONE report, for "
-               "'Ma'. Identical in shape to rules/S2's accepted "
+               "'Ma'. Identical in shape to rules/S7's accepted "
                "'Jack Wei Ma' clause",
          shape=2),
     Case("a_taken_member_behind_a_declined_one_still_reports",
@@ -5792,7 +5792,7 @@ CASES: tuple[Case, ...] = (
                "'Doe', suffix 'DO', maiden 'Smith'. As pinned then: the same "
                "word where the capitals speak: a positive credential lean is "
                "the one spelling that outranks P6's attachment "
-               "(decisions/S2, 2026-09-18), so the clause gives the word "
+               "(decisions/S5, 2026-09-18), so the clause gives the word "
                "up. 1.4.0 read suffix 'DO'"),
     Case("the_no_comma_do_reads_by_the_count_instead",
          "Jane Doe nee Smith do",
@@ -5831,7 +5831,7 @@ CASES: tuple[Case, ...] = (
                "'MA' as a MIDDLE name -- releasing it from the clause would "
                "move a word from one person's name into another's. With the "
                "floor the clause keeps 'MA do' whole, and reports the 'do' it "
-               "kept. rules/S2's own 'Doe, John MA do' clause is the "
+               "kept. rules/S5's own 'Doe, John MA do' clause is the "
                "reading this rests on"),
     Case("the_clamp_never_takes_the_first_word_after_the_marker",
          "Doe, J. nee MA ba",
@@ -6495,7 +6495,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Ma", "middle": "Jones", "family": "John Smith"},
          ambiguities=("suffix-or-name",),
          notes="the boundary of #603's opened part (rules/C1): only "
-               "a word that starts S2's run opens it, and a member of "
+               "a word that starts S8's run opens it, and a member of "
                "the ambiguous credential class does not, so the part "
                "keeps the listing form's given name and the first "
                "post-comma piece reports the fork it read (#289)"),
@@ -6900,7 +6900,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          classification="fix(#603)",
          notes="decisions/C1's accepted cost: a generational word "
-               "starts S2's run, so it opens the part and 'John' is "
+               "starts S8's run, so it opens the part and 'John' is "
                "absorbed, one word before the comma reading the whole "
                "part as suffixes (Derek). 2.3.0 read title 'Jr.', given "
                "'John'"),
@@ -9059,7 +9059,7 @@ CASES: tuple[Case, ...] = (
     # 'Ed' is Title-case in a mixed-case name, so it leans SURNAME and
     # the post-comma slot declines it exactly as before -- but the
     # decision is now reported, both directions of the fork being
-    # worth telling the caller about (decisions/S2).
+    # worth telling the caller about (decisions/S4).
     Case("comma_ambiguous_acronym", "Smith, Ed",
          {"given": "Ed", "family": "Smith"},
          ambiguities=("suffix-or-name",)),
@@ -9365,7 +9365,7 @@ CASES: tuple[Case, ...] = (
     # MOVED by #289, not deleted: 'DO' is written in capitals inside a
     # mixed-case name, so it now leans CREDENTIAL and the post-comma
     # slot takes it with one word to spare rather than falling to the
-    # given position (decisions/S2).
+    # given position (decisions/S6).
     Case("audit_bare_caps_do_after_comma_is_a_credential", "Smith, DO",
          {"family": "Smith", "suffix": "DO"},
          classification="fix(#289)",
@@ -9827,7 +9827,7 @@ CASES: tuple[Case, ...] = (
     # MOVED by #289, not deleted: spliced, this is 'John MA' plus a
     # title, and 'MA' is written in capitals inside a mixed-case name
     # -- the caps lean now takes it with no words to spare where the
-    # old reserve kept it the family (decisions/S2).
+    # old reserve kept it the family (decisions/S6).
     Case("title_word_trailing_run_is_read_to_a_fixed_point",
          "John Prof. MA Prof.",
          {"title": "Prof. Prof.", "family": "John", "suffix": "MA"},
@@ -9846,7 +9846,7 @@ CASES: tuple[Case, ...] = (
                "break either way and the round decided only which "
                "reading it is. #289 moves it again: the caps lean "
                "takes 'MA' as a credential rather than the family "
-               "(decisions/S2)"),
+               "(decisions/S6)"),
     Case("title_word_trailing_reads_as_the_leading_title_does",
          "John Prof. MA",
          {"title": "Prof.", "family": "John", "suffix": "MA"},
@@ -9857,13 +9857,13 @@ CASES: tuple[Case, ...] = (
                "row: 'MA' is written in capitals inside a mixed-case "
                "name, so the caps lean takes it with no words to "
                "spare, so this spelling no longer shows the reserve at "
-               "work. The one-case row below does (decisions/S2)"),
+               "work. The one-case row below does (decisions/S6)"),
     Case("title_word_trailing_keeps_the_bare_acronym_reserve",
          "JOHN PROF. MA",
          {"title": "PROF.", "given": "JOHN", "family": "MA"},
          ambiguities=("suffix-or-name",), classification="fix(#316)",
          notes="the row above in one case, where the capitals say "
-               "nothing and S2's reserve still decides: read as "
+               "nothing and S4's reserve still decides: read as "
                "'PROF. JOHN MA' is, 'MA' stays the family because "
                "taking it would leave none. 1.4.0 read last 'PROF.', "
                "suffix 'MA'"),
@@ -10030,7 +10030,7 @@ CASES: tuple[Case, ...] = (
          {"title": "Prof.", "given": "abdul", "family": "rahman",
           "suffix": "MA"}, ambiguities=("suffix-or-name",),
          classification="fix(#316)",
-         notes="the row above's shape at S2's bare-ambiguous reserve, "
+         notes="the row above's shape at S4's bare-ambiguous reserve, "
                "which is the one place the reserve's own model of "
                "assign's reading and assign's reading disagreed. This "
                "is 'abdul rahman MA' plus a title, and that reads "
@@ -10268,7 +10268,7 @@ CASES: tuple[Case, ...] = (
           "suffix": "MD van Jones"},
          ambiguities=("suffix-or-name", "suffix-or-name"),
          classification="fix(#602)",
-         notes="rules/S2 (#602): inside the run a title word reads as "
+         notes="rules/S8 (#602): inside the run a title word reads as "
                "a title. #614's read merged 'van Secretary' into one "
                "piece and the title went into the suffix (its second "
                "review); since #620 the read counts the chain's units "

@@ -16,7 +16,7 @@ H2. Rationale: before a name, an abbreviation is almost always a
     Greek or Cyrillic letter written as a base letter plus a
     combining mark (NFD) is the same letter as the composed one,
     for this shape and for the dotted and all-caps credential
-    shapes C1, S2 and S3 read (#652), so such a name parses the
+    shapes C1, S9 and S3 read (#652), so such a name parses the
     same in either encoding and the output keeps the one written.
       "Rev. John Smith"           →  title="Rev."
       "Xyz. John Smith"           →  title="Xyz."
@@ -55,5 +55,5 @@ H2. Rationale: before a name, an abbreviation is almost always a
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions/H2 · interacts: C1, S2, S3, P4, H5, H6, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions/H2 · interacts: C1, S3, P4, H5, H6, W3, W4, S9 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 

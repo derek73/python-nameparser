@@ -29,7 +29,7 @@ SECTION_ORDER = "HPSNMCOWTARD"
 # A citation: the folder and the key, or mechanisms.md and its slug. A
 # key is not followed by a word character, nor by a hyphen and another
 # word, which is how a file path in the rules folder (a stem like
-# S2-case-signal-at-the-suffix-slot) is told from a citation, and a `.md`
+# S6-case-signal-at-the-suffix-slot) is told from a citation, and a `.md`
 # after it marks a file name (the README); a sentence's full stop is
 # allowed, and so is a hyphen ending the line, where a comment wraps a
 # long key. A decisions key starting with a
@@ -50,7 +50,7 @@ _ARTICLE_RE = re.compile(r"^(?:a|an|the)\s+", re.IGNORECASE)
 @dataclass(frozen=True)
 class IndexEntry:
     key: str
-    title: str      # the link text, "S2 — the case signal at the suffix slot"
+    title: str      # the link text, "S6 — the case signal at the suffix slot"
     path: Path
 
 

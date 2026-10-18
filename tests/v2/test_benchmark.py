@@ -259,7 +259,7 @@ def test_a_thousand_names_still_parse_in_reasonable_time(
 #                             frozen loop declines it on the tag
 #                             ('i und ' reaches nothing, 'i Und '
 #                             reaches everything)
-#   S2 ANCHOR pass            credential_run ONLY -- a Title-case
+#   S7 ANCHOR pass            credential_run ONLY -- a Title-case
 #                             member in a mixed-case name declines on
 #                             its writing, so the peel asks
 #                             `credential_anchors` (#544), and every
@@ -284,7 +284,7 @@ _SHAPES = {
     "bound_given": "abdul ",        # group: the P5 reserve over every piece
     "maiden_clause": "nee MA ",     # group: M2's view over the segment
     "link_run": "i Und ",           # group: P3's both-sides walk (#397)
-    "credential_run": "PhD Ma ",    # pieces: S2's anchor pass (#544)
+    "credential_run": "PhD Ma ",    # pieces: S7's anchor pass (#544)
 }
 
 _BASE = 800
@@ -1124,7 +1124,7 @@ def test_a_link_costs_what_it_is_pinned_at() -> None:
 
 
 def test_a_member_opening_a_comma_part_asks_no_anchor_pass() -> None:
-    """rules/S2's company clause speaks only for a member with a
+    """rules/S7's company clause speaks only for a member with a
     credential in FRONT of it, so a member opening the part after a
     one-word family comma ('Smith, Ed') is never anchored, and
     `segment_suffix_reading` builds no `credential_anchors` pass for

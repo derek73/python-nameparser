@@ -460,7 +460,7 @@ def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
     return "vocab:suffix" in tags and "initial" not in tags
 
 
-# rules/S2: "A title word never starts the run, and neither does a
+# rules/S8: "A title word never starts the run, and neither does a
 # member of the ambiguous class, a single letter, a connective" -- what
 # starts #602's credential run, one predicate for the trailing peel and
 # the given-part walk (mechanisms.md#ONE-PREDICATE-PER-QUESTION)
@@ -477,7 +477,7 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     than a numeral, and carries no `initial` tag), a connective, a
     word that is also bound given-name or particle vocabulary (`abd`
     heads `Abd Allah`; `vd`, `mc`). No script is refused: an honorific
-    starts the run as a credential does (#679, decisions/S2), so
+    starts the run as a credential does (#679, decisions/S8), so
     `Ана Хорват старији Џонс` reads as `Ana Horvat stariji Jones` does.
 
     The split credential group merges ('Ph. D.', the one piece carrying
@@ -593,9 +593,10 @@ def _anchors(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
             and not is_single_letter_numeral(tok.text))
 
 
-# #544: an ambiguous member standing BEHIND an unambiguous credential
-# in one run is described by that credential's company, not by its
-# own writing -- 'PhD MEng' is a list of degrees whatever case 'MEng'
+# rules/S7: "Only a credential in FRONT speaks; one behind the
+# member says nothing about it." #544: an ambiguous member standing
+# BEHIND an unambiguous credential in one run is described by that
+# credential's company, not by its own writing -- 'PhD MEng' is a list of degrees whatever case 'MEng'
 # is written in. ONE forward pass per question, so a run of members
 # is read in linear time: a look-behind per member is quadratic in
 # the run, which test_benchmark's frame-ratio guard is built to catch.
@@ -866,7 +867,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
         # A word rules/C1's count licenses as a credential: the
         # caller (`_comma.decide`) counted two name words before the
         # comma and found the part a credential run, which settles the
-        # ambiguous word here before S2's anchors are asked (#613)
+        # ambiguous word here before S7's anchors are asked (#613)
         if len(piece) == 1 and piece[0] in licensed:
             leading = False
             out.append(True)
@@ -1098,7 +1099,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 
     `one_case` is ParseState.one_case, the recorded fact: None means
     nobody asked, which is every caller that has no state to ask with,
-    and reads as "no lean" -- rules/S2's count alone, the behavior
+    and reads as "no lean" -- rules/S4's count alone, the behavior
     of every release before this one.
 
     `start` and `anchors` resume a walk rather than begin one: the
@@ -1177,7 +1178,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # ("Jack MA"), a Title-case one is declined with plenty
         # ("John Smith Ma"). The lean is the LISTED set's alone: a
         # token admitted to this class by SHAPE carries no writing
-        # convention to read, so it takes the count (decisions/S2).
+        # convention to read, so it takes the count (decisions/S6).
         #
         # k < 2 means it is the only piece left, which is not the fork
         # this reports -- and not a floor the lean moves: the walk
@@ -1223,7 +1224,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     return Peel(k, numeral, tuple(picks), anchors)
 
 
-# rules/S2: "A credential after the name core starts a run to the
+# rules/S8: "A credential after the name core starts a run to the
 # end of its part" -- applied to a finished peel (#602), so every
 # reader of the trailing run (assign, P5's reserve, P2's chain stop,
 # the maiden take) sees one answer.
@@ -1572,7 +1573,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     segment, the one read group takes between P3's joins and the
     particle chain (`read_trailing_run`), which assign and the reserve
     take their answer from instead. Deriving that agreement twice is what left the two
-    disagreeing at S2's bare-ambiguous reserve: 'abdul rahman MA'
+    disagreeing at S4's bare-ambiguous reserve: 'abdul rahman MA'
     declined the join and 'abdul rahman MA Prof.' took it
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION).
 

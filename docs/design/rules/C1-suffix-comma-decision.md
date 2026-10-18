@@ -42,7 +42,7 @@ C1. Rationale: a credential run after the comma means the name is in
     credential run however that part is written, and only where the
     count leaves the word a name — one name word before the comma —
     is the case read, capitals in a mixed-case name making it the
-    credential there too (S2). Paired initials are the exception to
+    credential there too (S6). Paired initials are the exception to
     the count: two single letters joined by a period, with or without
     a period after the second ('M.J.', 'M.J'), the one dotted shape a
     person's own initials are written in, read as the given name
@@ -52,10 +52,10 @@ C1. Rationale: a credential run after the comma means the name is in
     unambiguous suffix word in front of them that is not also title
     vocabulary, or another word the class admits by its dotted shape
     standing in the same part, makes them the credential run. A word
-    of this class in front of them speaks for nothing, as S2's
+    of this class in front of them speaks for nothing, as S7's
     company has it, and where nothing but words of both the suffix
     and the title vocabulary stands in front of them, those are the
-    titles of the given part the initials open, as S2 reads them
+    titles of the given part the initials open, as S7 reads them
     there. Behind two or more name words, paired initials that are
     not the only shape word in the part are a credential however
     little else speaks for them, since no one writes a person's
@@ -88,8 +88,8 @@ C1. Rationale: a credential run after the comma means the name is in
     particle reading does not take it out of the run: a word of both
     the particle and the unambiguous suffix vocabulary is a suffix
     word there too ('John Smith, vd Ma'). Run membership asks what
-    the word is, and S2's company asks whether it speaks for the word
-    behind it, which a particle never does; the run S2 says such a
+    the word is, and S7's company asks whether it speaks for the word
+    behind it, which a particle never does; the run S7 says such a
     word ends is the company's, not this count's. A word of both the
     title and the suffix vocabulary opening a part the count reads as
     a run counts as a suffix word there, the name before the comma
@@ -97,7 +97,7 @@ C1. Rationale: a credential run after the comma means the name is in
     Where every word
     of this class in the part is a LISTED word written in capitals in
     a mixed-case name, the writing has already made each of them the
-    credential (S2), and the part reads as the credential run on that
+    credential (S6), and the part reads as the credential run on that
     evidence rather than on the count; a word of the class by shape
     alone carries no such lean, so a part holding one is read by the
     count. A part read as postnominal — the credential run, titles
@@ -121,7 +121,7 @@ C1. Rationale: a credential run after the comma means the name is in
     initials the comma keeps as the given name report where they open
     the part; behind a title they do not, the comma's report reaching
     only the first word after it ('Smith, Ms G.J.'). A run the
-    count leaves in the listing form reports as S2 reads the words
+    count leaves in the listing form reports as S7 reads the words
     in it: a word of this class read as the credential because a
     credential in front speaks for it reports, and one its own
     capitals made the credential does not unless it opens the part,
@@ -132,7 +132,7 @@ C1. Rationale: a credential run after the comma means the name is in
     'Smith, PhD MA'), as does a part read as titles before a lone
     given name ('Smith, Ms MD Ma'). It is one
     of TWO places the comma's own decision is reported, the other being the word trailing the given part after
-    it (S2), which is a second decision about a second word and never
+    it (S5), which is a second decision about a second word and never
     the same fork twice; an attachment decided after a family comma
     (P6) reports on its own. C2's comma-structure flag reports what the
     parse could not recognize, not a fork it called.
@@ -151,7 +151,7 @@ C1. Rationale: a credential run after the comma means the name is in
     credential opens the part. A credential opening the part makes it
     the postnominal part however it goes on: where the first suffix
     word of the part, with only titles in front of it, is one that
-    starts S2's run, which S2 bounds (the split 'Ph. D.' among them),
+    starts S8's run, which S8 bounds (the split 'Ph. D.' among them),
     every word after it reads as that run reads, a title word as a
     title and any other word as a suffix, under strict mode too,
     whose veto refuses a word the suffix reading and not the run
@@ -348,5 +348,5 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions/C1 · interacts: H1, H2, H6, P1, P2, P3, P5, P6, W3, S2, S3, M2 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions/C1 · interacts: H1, H2, H6, P1, P2, P3, P5, P6, W3, S3, M2, S5, S6, S7, S8 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 

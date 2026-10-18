@@ -406,7 +406,8 @@ def decide(state: ParseState) -> ParseState:
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{tokens[i].text!r} after the comma is also an ordinary name "
             f"word; read as a credential", (i,)))
-    # rules/S2's company, reported where it decided: a member the
+    # rules/S7: "A member the company decides reports the fork as a
+    # counted pick does" -- reported where it decided: a member the
     # anchor read as a credential after its own writing declined (#544)
     for k in anchored:
         i = p1[k][0]

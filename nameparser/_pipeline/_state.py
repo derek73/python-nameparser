@@ -250,7 +250,7 @@ class ParseState:
     #: reading, the prefix chain's own tail measure (_group) and the
     #: glued-honorific peel's decline of a post-comma run
     #: (_script_segment) all consult it and must not disagree
-    #: (#289/#516, decisions/S2). Five stages read it in all --
+    #: (#289/#516, decisions/S6). Five stages read it in all --
     #: segment, script_segment, classify, group and assign -- plus the
     #: two predicate layers they read it through (_pieces, _vocab).
     #: A fact segment records SURVIVES script_segment, the one stage
