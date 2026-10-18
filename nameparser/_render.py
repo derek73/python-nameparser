@@ -571,8 +571,12 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     # is asked of the whole token first. Only the lowercase is taken
     # here; wherever the arm declines (an all-particle part, a role
     # other than middle or family, an initial's spelling, a recorded
-    # casing) the token goes to the walk exactly as before.
-    if _lowers_as_particle(_normalize(text), text, role, tags, lex):
+    # casing) the token goes to the walk exactly as before. A wholly
+    # alphabetic token is one word to the walk, which asks _cap_word this
+    # same arm of it, so only a token the walk could split pays here.
+    if (not text.isalpha()
+            and _lowers_as_particle(_normalize(text), text, role, tags,
+                                    lex)):
         return text.lower()
     if "-" not in text:
         return _sub_words(cap, text)
