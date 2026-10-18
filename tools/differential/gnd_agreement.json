@@ -1,19 +1,4 @@
 {
- "101063857/particle-elided/sorting": {
-  "family": {
-   "expected": "Arenberg d'",
-   "got": "Arenberg"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Auguste Marie Raymond",
-   "got": "Auguste Marie Raymond d'"
-  },
-  "text": "Arenberg, Auguste Marie Raymond d'"
- },
  "1012101827/direct-is/givenFirst": {
   "family": {
    "expected": "",
@@ -57,21 +42,6 @@
    "got": "Konráð"
   },
   "text": "Konráð Gíslason"
- },
- "1017076367/particle-elided/sorting": {
-  "family": {
-   "expected": "Orléans-Longueville d'",
-   "got": "Orléans-Longueville"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Jean Louis Charles",
-   "got": "Jean Louis Charles d'"
-  },
-  "text": "Orléans-Longueville, Jean Louis Charles d'"
  },
  "1017511667/regnal/givenFirst": {
   "family": {
@@ -128,36 +98,6 @@
   },
   "text": "Christian Ulrich II."
  },
- "1019736747/particle-elided/sorting": {
-  "family": {
-   "expected": "Estrées d'",
-   "got": "Estrées"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Victor-Marie",
-   "got": "Victor-Marie d'"
-  },
-  "text": "Estrées, Victor-Marie d'"
- },
- "1020770929/particle-arab/sorting": {
-  "family": {
-   "expected": "Ǧaʿfarī al-",
-   "got": "Ǧaʿfarī"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ibrāhīm",
-   "got": "Ibrāhīm al-"
-  },
-  "text": "Ǧaʿfarī, Ibrāhīm al-"
- },
  "1021332496/direct-ir-af/givenFirst": {
   "family": {
    "expected": "",
@@ -179,36 +119,6 @@
    "got": ""
   },
   "text": "Karl I."
- },
- "102371512/particle-arab/sorting": {
-  "family": {
-   "expected": "Maqrīzī al-",
-   "got": "Maqrīzī"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Aḥmad Ibn-ʿAlī",
-   "got": "Aḥmad Ibn-ʿAlī al-"
-  },
-  "text": "Maqrīzī, Aḥmad Ibn-ʿAlī al-"
- },
- "1025906977/particle-elided/sorting": {
-  "family": {
-   "expected": "Alzon d'",
-   "got": "Alzon"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Emmanuel",
-   "got": "Emmanuel d'"
-  },
-  "text": "Alzon, Emmanuel d'"
  },
  "1026632668/direct-et-mm/givenFirst": {
   "family": {
@@ -529,21 +439,6 @@
   },
   "text": "Simkoyê Şikak"
  },
- "1081737697/particle-elided/sorting": {
-  "family": {
-   "expected": "Annebault d'",
-   "got": "Annebault"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Claude",
-   "got": "Claude d'"
-  },
-  "text": "Annebault, Claude d'"
- },
  "1083655477/compound-latam/givenFirst": {
   "family": {
    "expected": "Málaga de Prado",
@@ -576,36 +471,6 @@
    "got": "Malik"
   },
   "text": "Malik Ambar"
- },
- "1112629513/particle-arab/sorting": {
-  "family": {
-   "expected": "Zaʿīm az-",
-   "got": "Zaʿīm"
-  },
-  "family_particles": {
-   "expected": "az-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ḥusnī",
-   "got": "Ḥusnī az-"
-  },
-  "text": "Zaʿīm, Ḥusnī az-"
- },
- "111277957/particle-fr/sorting": {
-  "family": {
-   "expected": "Ivoi d'",
-   "got": "Ivoi"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Paul",
-   "got": "Paul d'"
-  },
-  "text": "Ivoi, Paul d'"
  },
  "1115673882/direct-arab/givenFirst": {
   "family": {
@@ -673,21 +538,6 @@
   },
   "text": "Magnús Eiríksson"
  },
- "1139846442/particle-arab/sorting": {
-  "family": {
-   "expected": "Rikābī ar-",
-   "got": "Rikābī"
-  },
-  "family_particles": {
-   "expected": "ar-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Fuʾād",
-   "got": "Fuʾād ar-"
-  },
-  "text": "Rikābī, Fuʾād ar-"
- },
  "1143145518/direct-arab/givenFirst": {
   "family": {
    "expected": "",
@@ -721,21 +571,6 @@
   },
   "text": "Tadsch ad-Din al-Hasani"
  },
- "1147042357/particle-elided/sorting": {
-  "family": {
-   "expected": "Hooghvorst d'",
-   "got": "Hooghvorst"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Emmanuel",
-   "got": "Emmanuel d'"
-  },
-  "text": "Hooghvorst, Emmanuel d'"
- },
  "1147649030/direct-my-id/givenFirst": {
   "family": {
    "expected": "",
@@ -746,21 +581,6 @@
    "got": "Mohamed Khir"
   },
   "text": "Mohamed Khir Johari"
- },
- "1155661249/particle-arab/sorting": {
-  "family": {
-   "expected": "Saad es-",
-   "got": "Saad"
-  },
-  "family_particles": {
-   "expected": "es-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Habib Pacha",
-   "got": "Habib Pacha es-"
-  },
-  "text": "Saad, Habib Pacha es-"
  },
  "1155767624/direct-ir-af/givenFirst": {
   "family": {
@@ -894,36 +714,6 @@
   },
   "text": "Hussein Kamil"
  },
- "117606227/particle-it/sorting": {
-  "family": {
-   "expected": "Orsi d'",
-   "got": "Orsi"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Achille",
-   "got": "Achille d'"
-  },
-  "text": "Orsi, Achille d'"
- },
- "117763497/particle-it/sorting": {
-  "family": {
-   "expected": "Arco d'",
-   "got": "Arco"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Giovanni Battista Gherardo",
-   "got": "Giovanni Battista Gherardo d'"
-  },
-  "text": "Arco, Giovanni Battista Gherardo d'"
- },
  "118049062/direct-is/givenFirst": {
   "family": {
    "expected": "",
@@ -946,21 +736,6 @@
   },
   "text": "Abu-'l-Fidāʾ Ismāʿīl Ibn-ʿAlī"
  },
- "118501437/particle-elided/sorting": {
-  "family": {
-   "expected": "Albert d'",
-   "got": "Albert"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Eugen",
-   "got": "Eugen d'"
-  },
-  "text": "Albert, Eugen d'"
- },
  "118513257/regnal/givenFirst": {
   "family": {
    "expected": "",
@@ -982,21 +757,6 @@
    "got": ""
   },
   "text": "Eduard V."
- },
- "118531107/particle-elided/sorting": {
-  "family": {
-   "expected": "Escoto d'",
-   "got": "Escoto"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Miguel",
-   "got": "Miguel d'"
-  },
-  "text": "Escoto, Miguel d'"
  },
  "118534947/regnal/givenFirst": {
   "family": {
@@ -1031,21 +791,6 @@
   },
   "text": "José Luis Martín Descalzo"
  },
- "1185824316/particle-arab/sorting": {
-  "family": {
-   "expected": "Faḥḥām al-",
-   "got": "Faḥḥām"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Šākir",
-   "got": "Šākir al-"
-  },
-  "text": "Faḥḥām, Šākir al-"
- },
  "118587587/direct-eu/givenFirst": {
   "family": {
    "expected": "",
@@ -1057,21 +802,6 @@
   },
   "text": "Ngugi wa Thiong'o"
  },
- "118604740/particle-arab/sorting": {
-  "family": {
-   "expected": "Sādāt as-",
-   "got": "Sādāt"
-  },
-  "family_particles": {
-   "expected": "as-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ǧīhān",
-   "got": "Ǧīhān as-"
-  },
-  "text": "Sādāt, Ǧīhān as-"
- },
  "118624571/direct-et-mm/givenFirst": {
   "family": {
    "expected": "",
@@ -1082,21 +812,6 @@
    "got": "Gudina"
   },
   "text": "Gudina Tumsa"
- },
- "118650947/particle-fr/sorting": {
-  "family": {
-   "expected": "Aubigné d'",
-   "got": "Aubigné"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Théodore Agrippa",
-   "got": "Théodore Agrippa d'"
-  },
-  "text": "Aubigné, Théodore Agrippa d'"
  },
  "118668757/compound-iberia/givenFirst": {
   "family": {
@@ -1186,21 +901,6 @@
   },
   "text": "Ṯābit Ibn-Qurra"
  },
- "118848062/particle-arab/sorting": {
-  "family": {
-   "expected": "Assad al-",
-   "got": "Assad"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Hafis",
-   "got": "Hafis al-"
-  },
-  "text": "Assad, Hafis al-"
- },
  "118850555/direct-ir-af/givenFirst": {
   "family": {
    "expected": "",
@@ -1211,21 +911,6 @@
    "got": "Ṣafī-ad-Dīn"
   },
   "text": "Ṣafī-ad-Dīn Ardabīlī"
- },
- "118857770/particle-arab/sorting": {
-  "family": {
-   "expected": "Buḥturī al-",
-   "got": "Buḥturī"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "al-Walīd Ibn-ʿUbaid",
-   "got": "al-Walīd Ibn-ʿUbaid al-"
-  },
-  "text": "Buḥturī, al-Walīd Ibn-ʿUbaid al-"
  },
  "1188659936/direct-ir-af/givenFirst": {
   "family": {
@@ -1314,21 +999,6 @@
    "got": "Manuel Marulanda"
   },
   "text": "Manuel Marulanda Vélez"
- },
- "119007703/particle-arab/sorting": {
-  "family": {
-   "expected": "Ġazālī al-",
-   "got": "Ġazālī"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Zainab",
-   "got": "Zainab al-"
-  },
-  "text": "Ġazālī, Zainab al-"
  },
  "119022397/regnal/givenFirst": {
   "family": {
@@ -1452,36 +1122,6 @@
   },
   "text": "Zarea Yaeqob"
  },
- "119177447/particle-elided/sorting": {
-  "family": {
-   "expected": "Orléans d'",
-   "got": "Orléans"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ferdinand-Philippe",
-   "got": "Ferdinand-Philippe d'"
-  },
-  "text": "Orléans, Ferdinand-Philippe d'"
- },
- "119192047/particle-iberia/sorting": {
-  "family": {
-   "expected": "Maǧrīṭī al-",
-   "got": "Maǧrīṭī"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Abu-'l-Qāsim Maslama Ibn-Aḥmad",
-   "got": "Abu-'l-Qāsim Maslama Ibn-Aḥmad al-"
-  },
-  "text": "Maǧrīṭī, Abu-'l-Qāsim Maslama Ibn-Aḥmad al-"
- },
  "119196824/direct-ir-af/givenFirst": {
   "family": {
    "expected": "",
@@ -1548,21 +1188,6 @@
   },
   "text": "Eitel Friedrich II."
  },
- "119272911/particle-arab/sorting": {
-  "family": {
-   "expected": "Ḥakīm al-",
-   "got": "Ḥakīm"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Taufīq",
-   "got": "Taufīq al-"
-  },
-  "text": "Ḥakīm, Taufīq al-"
- },
  "119288109/direct-et-mm/givenFirst": {
   "family": {
    "expected": "",
@@ -1606,36 +1231,6 @@
    "got": "Shemuʾel ben"
   },
   "text": "Shemuʾel ben Ḥofni"
- },
- "119418029/particle-arab/sorting": {
-  "family": {
-   "expected": "Zaiyāt az-",
-   "got": "Zaiyāt"
-  },
-  "family_particles": {
-   "expected": "az-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Laṭīfa",
-   "got": "Laṭīfa az-"
-  },
-  "text": "Zaiyāt, Laṭīfa az-"
- },
- "119426838/particle-arab/sorting": {
-  "family": {
-   "expected": "Ḫarrāṭ al-",
-   "got": "Ḫarrāṭ"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Idwār",
-   "got": "Idwār al-"
-  },
-  "text": "Ḫarrāṭ, Idwār al-"
  },
  "119436167/particle-it/sorting": {
   "family": {
@@ -1710,36 +1305,6 @@
    "got": ""
   },
   "text": "Werner I."
- },
- "1199143707/particle-elided/sorting": {
-  "family": {
-   "expected": "Orville d'",
-   "got": "Orville"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Johann Friedrich",
-   "got": "Johann Friedrich d'"
-  },
-  "text": "Orville, Johann Friedrich d'"
- },
- "120010887/particle-elided/sorting": {
-  "family": {
-   "expected": "Angoulême d'",
-   "got": "Angoulême"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Louis Antoine d'Artois",
-   "got": "Louis Antoine d'Artois d'"
-  },
-  "text": "Angoulême, Louis Antoine d'Artois d'"
  },
  "1200607953/direct-et-mm/givenFirst": {
   "family": {
@@ -1921,21 +1486,6 @@
   },
   "text": "Sarkīs ar-Rizzī"
  },
- "123439647/particle-elided/sorting": {
-  "family": {
-   "expected": "Alquen d'",
-   "got": "Alquen"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Gunter",
-   "got": "Gunter d'"
-  },
-  "text": "Alquen, Gunter d'"
- },
  "123505585/direct-my-id/givenFirst": {
   "family": {
    "expected": "",
@@ -1980,36 +1530,6 @@
   },
   "text": "Diego Carrillo de Mendoza y Pimentel"
  },
- "123907373/particle-arab/sorting": {
-  "family": {
-   "expected": "Šiblī aš-",
-   "got": "Šiblī"
-  },
-  "family_particles": {
-   "expected": "aš-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Abū-Bakr",
-   "got": "Abū-Bakr aš-"
-  },
-  "text": "Šiblī, Abū-Bakr aš-"
- },
- "124211917/particle-fr/sorting": {
-  "family": {
-   "expected": "Auxiron d'",
-   "got": "Auxiron"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Claude François Joseph",
-   "got": "Claude François Joseph d'"
-  },
-  "text": "Auxiron, Claude François Joseph d'"
- },
  "124714617/direct-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2020,21 +1540,6 @@
    "got": "Svavar"
   },
   "text": "Svavar Guðnason"
- },
- "124788165/particle-arab/sorting": {
-  "family": {
-   "expected": "Yāzīǧī al-",
-   "got": "Yāzīǧī"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Ibrāhīm",
-   "got": "Ibrāhīm al-"
-  },
-  "text": "Yāzīǧī, Ibrāhīm al-"
  },
  "124955487/compound-latam/givenFirst": {
   "family": {
@@ -2150,21 +1655,6 @@
   },
   "text": "Shahnon Ahmad"
  },
- "128897732/particle-arab/sorting": {
-  "family": {
-   "expected": "Ḥāǧǧ al-",
-   "got": "Ḥāǧǧ"
-  },
-  "family_particles": {
-   "expected": "al-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Kamāl Yūsuf",
-   "got": "Kamāl Yūsuf al-"
-  },
-  "text": "Ḥāǧǧ, Kamāl Yūsuf al-"
- },
  "129229970/direct-is/givenFirst": {
   "family": {
    "expected": "",
@@ -2209,21 +1699,6 @@
   },
   "text": "Anan ben David"
  },
- "129765767/particle-nl-be/sorting": {
-  "family": {
-   "expected": "Outrein d'",
-   "got": "Outrein"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Johannes",
-   "got": "Johannes d'"
-  },
-  "text": "Outrein, Johannes d'"
- },
  "1298312620/direct-my-id/givenFirst": {
   "family": {
    "expected": "",
@@ -2246,21 +1721,6 @@
   },
   "text": "Charles Claude de La Billarderie d'Angiviller"
  },
- "129854697/particle-elided/sorting": {
-  "family": {
-   "expected": "Angiviller d'",
-   "got": "Angiviller"
-  },
-  "family_particles": {
-   "expected": "d'",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Charles Claude de La Billarderie",
-   "got": "Charles Claude de La Billarderie d'"
-  },
-  "text": "Angiviller, Charles Claude de La Billarderie d'"
- },
  "130656097/direct-my-id/givenFirst": {
   "family": {
    "expected": "",
@@ -2271,21 +1731,6 @@
    "got": "Abdullah"
   },
   "text": "Abdullah bin Haji Ahmad Badawi"
- },
- "130897035/particle-arab/sorting": {
-  "family": {
-   "expected": "Ṭihrānī aṭ-",
-   "got": "Ṭihrānī"
-  },
-  "family_particles": {
-   "expected": "aṭ-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Āqā Buzurg",
-   "got": "Āqā Buzurg aṭ-"
-  },
-  "text": "Ṭihrānī, Āqā Buzurg aṭ-"
  },
  "131443097/compound-iberia/givenFirst": {
   "family": {
@@ -2565,21 +2010,6 @@
    "got": "ʿAbdallāh"
   },
   "text": "ʿAbdallāh Ibn-ʿAbdalqādir"
- },
- "151529558/particle-arab/sorting": {
-  "family": {
-   "expected": "Šaʿrāwī aš-",
-   "got": "Šaʿrāwī"
-  },
-  "family_particles": {
-   "expected": "aš-",
-   "got": ""
-  },
-  "given_names": {
-   "expected": "Hudā",
-   "got": "Hudā aš-"
-  },
-  "text": "Šaʿrāwī, Hudā aš-"
  },
  "170741427/compound-iberia/givenFirst": {
   "family": {

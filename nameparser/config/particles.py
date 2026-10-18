@@ -69,6 +69,29 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
                # Odia surname -- trailing, so it never reaches this rule.
                # The case that forced C-i's positional qualifier.
     "de'",     # Italian elided "dei" ("de' Medici")
+    'de’',     # the same, typographic apostrophe: nothing folds U+2019
+               # to U+0027, so each elided entry is listed in both (#700)
+    "d'",      # French/Italian elided "de" ("Ivoi, Paul d'"). Written
+    'd’',      # apart only where an index form moves it behind the
+               # given name; glued ("d'Ivoi") it stays one word (#700)
+    "dell'",   # Italian elided "dello"/"della" ("dell'Acqua")
+    'dell’',
+    "l'",      # French/Italian elided article ("L'Enfant")
+    'l’',
+    # #700: the Arabic article as an index form writes it, hyphen
+    # attached and set behind the given name ("Rashid, Harun al-",
+    # "Zaʿīm, Ḥusnī az-"), in its assimilated spellings: 'al-' before a
+    # moon letter, assimilated to each of the fourteen sun letters
+    # (DMG's ṯ ḏ š ṣ ḍ ṭ ẓ beside the ASCII digraphs), and the Egyptian
+    # 'el-' and its assimilations. The trailing hyphen is the license:
+    # written apart, the word is the article and nothing else, so these
+    # are never-given where the bare 'al' (Al Gore) is AMBIGUOUS. A
+    # closed list rather than a shape rule, by decision on #700. ASCII
+    # hyphen-minus only.
+    'al-', 'ul-',
+    'at-', 'aṯ-', 'ath-', 'ad-', 'aḏ-', 'adh-', 'ar-', 'az-', 'as-',
+    'aš-', 'ash-', 'aṣ-', 'aḍ-', 'aṭ-', 'aẓ-', 'an-',
+    'el-', 'et-', 'ed-', 'er-', 'ez-', 'es-', 'en-',
     'degli',   # Italian "of the", masc. pl.
     'dei',     # Italian "of the", masc. pl.
     'delle',   # Italian "of the", fem. pl.

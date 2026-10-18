@@ -1938,6 +1938,59 @@ CASES: tuple[Case, ...] = (
                "one report covers the whole run, named for 'van', the "
                "word that is ambiguous vocabulary ('der' is never a "
                "given name)"),
+    # #700: the two written forms P6 had no vocabulary for -- the
+    # elided particle and the hyphen-attached Arabic article -- as
+    # library catalogs file them, behind the given name.
+    Case("an_elided_particle_after_a_family_comma", "Ivoi, Paul d'",
+         {"given": "Paul", "family": "d' Ivoi"},
+         classification="fix(#700)",
+         notes="1.4.0 and 2.4 gave middle \"d'\". A never-given "
+               "particle, so the attachment reports nothing, as "
+               "'Jong, Anke de' does. The family renders with a space, "
+               "as every particle joins; the glued 'd'Ivoi' is one word "
+               "and out of #700's scope"),
+    Case("an_elided_particle_in_its_typographic_spelling",
+         "Ivoi, Paul d’",
+         {"given": "Paul", "family": "d’ Ivoi"},
+         classification="fix(#700)",
+         notes="U+2019 is not folded to the ASCII apostrophe anywhere, "
+               "so each elided entry is listed in both spellings. "
+               "1.4.0 middle 'd’'"),
+    Case("an_elided_particle_beside_a_suffix", "Ivoi, Paul d', Jr.",
+         {"given": "Paul", "family": "d' Ivoi", "suffix": "Jr."},
+         classification="fix(#700)",
+         notes="AGENTS.md's comma sweep: a suffix in its own part leaves "
+               "the given part's attachment alone. 1.4.0 middle \"d'\""),
+    Case("an_elided_particle_alone_after_a_family_comma", "Ivoi, d'",
+         {"family": "Ivoi d'"},
+         notes="boundary: no given word remains to spare, so P6 does not "
+               "attach -- the part reads as 'Jong, de' does, family "
+               "'Jong de'"),
+    Case("the_arabic_article_after_a_family_comma", "Rashid, Harun al-",
+         {"given": "Harun", "family": "al- Rashid"},
+         classification="fix(#700)",
+         notes="1.4.0 and 2.4 gave middle 'al-'. The hyphen is what makes "
+               "'al-' never-given where the bare 'al' (Al Gore) is "
+               "ambiguous, so no fork is reported"),
+    Case("an_assimilated_arabic_article_after_a_family_comma",
+         "Zaʿīm, Ḥusnī az-",
+         {"given": "Ḥusnī", "family": "az- Zaʿīm"},
+         classification="fix(#700)",
+         notes="the article before a sun letter, in DMG spelling as GND "
+               "writes it. 1.4.0 middle 'az-'"),
+    Case("an_elided_particle_ending_a_family_first_name", "Ivoi Paul d'",
+         {"given": "Paul", "family": "d' Ivoi"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         classification="fix(#700)",
+         notes="P6's family-first site reads the same vocabulary as its "
+               "comma site, so the comma-less writing parses alike"),
+    Case("an_elided_particle_written_apart_before_the_family",
+         "Paul d' Ivoi",
+         {"given": "Paul", "family": "d' Ivoi"},
+         classification="fix(#700)",
+         notes="not #700's index form but the same vocabulary: the "
+               "particle chains forward as 'de' does. 1.4.0 middle "
+               "\"d'\""),
     Case("tussenvoegsel_outranks_the_suffix_reading", "Berg, Jan vd",
          {"given": "Jan", "family": "vd Berg"},
          classification="fix(#380)",
