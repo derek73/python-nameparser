@@ -952,7 +952,8 @@ P6. Rationale: a particle ending the name has nothing to link
     A particle an index form writes apart with its elision or its
     hyphen still on it is a particle like any other here, where the
     vocabulary lists that spelling — the elided "d'" and the Arabic
-    article in its assimilated spellings, "al-" among them — and of
+    article in its plain and assimilated spellings, "al-" among them
+    — and of
     the never-given kind, since written apart the word is the article
     and nothing else. It joins with a space like every particle;
     written glued to the family ("d'Ivoi") it is one word and this

@@ -56,6 +56,7 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
     # A BARE entry, here or in PARTICLES below, means nobody has examined
     # it. Absence of a comment is the audit record.
     "'t",      # Dutch contraction of 'het' ("'t Hooft"): the article itself
+    '’t',      # the same, typographic apostrophe (#700)
     'af',      # Danish/Norwegian nobiliary "of"
     'auf',     # German "upon" ("auf der Heide")
     'av',      # Swedish/Norwegian "of"
@@ -72,7 +73,7 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
     'de’',     # the same, typographic apostrophe: nothing folds U+2019
                # to U+0027, so each elided entry is listed in both (#700)
     "d'",      # French/Italian elided "de" ("Ivoi, Paul d'"). Written
-    'd’',      # apart only where an index form moves it behind the
+    'd’',      # apart mostly where an index form moves it behind the
                # given name; glued ("d'Ivoi") it stays one word (#700)
     "dell'",   # Italian elided "dello"/"della" ("dell'Acqua")
     'dell’',
@@ -82,8 +83,9 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
     # attached and set behind the given name ("Rashid, Harun al-",
     # "Zaʿīm, Ḥusnī az-"), in its assimilated spellings: 'al-' before a
     # moon letter, assimilated to each of the fourteen sun letters
-    # (DMG's ṯ ḏ š ṣ ḍ ṭ ẓ beside the ASCII digraphs), and the Egyptian
-    # 'el-' and its assimilations. The trailing hyphen is the license:
+    # (lām's being 'al-' itself; DMG's ṯ ḏ š ṣ ḍ ṭ ẓ beside the ASCII
+    # digraphs), and the Egyptian 'el-' and its assimilations, in ASCII
+    # spellings only. The trailing hyphen is the license:
     # written apart, the word is the article and nothing else, so these
     # are never-given where the bare 'al' (Al Gore) is AMBIGUOUS. A
     # closed list rather than a shape rule, by decision on #700. ASCII
@@ -313,6 +315,11 @@ assert NON_GIVEN_NAME_PARTICLES <= PARTICLES, \
 assert not (NON_GIVEN_NAME_PARTICLES & BOUND_GIVEN_NAMES), \
     "NON_GIVEN_NAME_PARTICLES must stay disjoint from BOUND_GIVEN_NAMES"
 assert_normalized("PARTICLES", PARTICLES)
+# Nothing folds U+2019 to U+0027, so an elided entry spelled with one
+# apostrophe and not the other reads only half its spellings (#700).
+assert {w.replace("’", "'") for w in PARTICLES if "’" in w} \
+    == {w for w in PARTICLES if "'" in w}, \
+    "every elided particle needs its ASCII and its U+2019 spelling"
 
 # Star imports read __all__ and never the module __getattr__ -- see the
 # note in prefixes.py. This module has no retired name of its own to

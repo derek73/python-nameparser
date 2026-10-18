@@ -1961,11 +1961,40 @@ CASES: tuple[Case, ...] = (
          classification="fix(#700)",
          notes="AGENTS.md's comma sweep: a suffix in its own part leaves "
                "the given part's attachment alone. 1.4.0 middle \"d'\""),
+    Case("an_elided_particle_beside_a_glued_comma",
+         "Ivoi, Paul d',Jr.",
+         {"given": "Paul", "family": "d' Ivoi", "suffix": "Jr."},
+         classification="fix(#700)",
+         notes="AGENTS.md's separator spacing: the comma glued to the "
+               "apostrophe still ends the particle's token. 1.4.0 "
+               "through 2.4.2 middle \"d'\""),
+    Case("an_elided_particle_after_a_particle_surname",
+         "van Ivoi, Paul d'",
+         {"given": "Paul", "family": "d' van Ivoi"},
+         classification="fix(#700)",
+         notes="a full name with its own particle before the comma; the "
+               "attachment writes the trailing one in front of it. 1.4.0 "
+               "through 2.4.2 middle \"d'\""),
+    Case("an_elided_particle_after_an_empty_head", ", Paul d'",
+         {"given": "Paul", "family": "d'"},
+         classification="fix(#700)",
+         notes="nothing before the comma names a family, so P6's "
+               "attachment has nothing to join and the particle is the "
+               "family by position, as ', Paul de' reads. 1.4.0 through "
+               "2.4.2 middle \"d'\" with no family"),
+    Case("an_elided_particle_in_its_typographic_spelling_t",
+         "Hooft, Gerard ’t",
+         {"given": "Gerard", "family": "’t Hooft"},
+         classification="fix(#700)",
+         notes="the U+2019 twin of the Dutch 't, listed with the other "
+               "elided twins. 1.4.0 through 2.4.2 middle '’t'"),
     Case("an_elided_particle_alone_after_a_family_comma", "Ivoi, d'",
          {"family": "Ivoi d'"},
+         classification="fix(#700)",
          notes="boundary: no given word remains to spare, so P6 does not "
-               "attach -- the part reads as 'Jong, de' does, family "
-               "'Jong de'"),
+               "attach; 'd'' being never-given now, the part reads as "
+               "'Jong, de' has since 2.0, family 'Jong de'. 1.4.0 through "
+               "2.4.2 gave given \"d'\", the word being no particle there"),
     Case("the_arabic_article_after_a_family_comma", "Rashid, Harun al-",
          {"given": "Harun", "family": "al- Rashid"},
          classification="fix(#700)",
