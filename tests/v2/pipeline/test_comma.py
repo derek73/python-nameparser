@@ -128,7 +128,7 @@ def test_paired_initials_need_a_word_to_speak_for_them() -> None:
                           ("John Smith, X.Y. MA", "John Smith, X.Y. P.Q."),
                           ("García Márquez, G.J.", "García Márquez, Jr G.J."),
                           # a class member in front speaks for nothing,
-                          # as S2's company has it; an unambiguous one does
+                          # as S7's company has it; an unambiguous one does
                           ("García Márquez, Ma G.J.", "García Márquez, PhD G.J.")):
         assert _decided(alone).structure is Structure.FAMILY_COMMA, alone
         assert _decided(spoken).structure is Structure.SUFFIX_COMMA, spoken
@@ -204,7 +204,7 @@ def test_the_name_word_count_reads_a_run_as_it_reads_one_word() -> None:
 
 def test_a_run_the_writing_settles_raises_no_flip_report() -> None:
     # every member written in capitals in a mixed-case name leans
-    # credential (S2), so the part is the credential run on that
+    # credential (S6), so the part is the credential run on that
     # evidence rather than the count's: a suffix comma, and no flip
     # report. (Before #613 segment left this part to the listing form,
     # whose reading of a no-name part reached the same fields.)

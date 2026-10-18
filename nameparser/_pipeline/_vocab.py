@@ -357,14 +357,15 @@ def is_one_case(texts: Sequence[str]) -> bool:
 Lean = Literal["credential", "name"]
 
 
-# #289's credential lean: rules/S2 records the words-to-spare count
-# today; this predicate is the WRITING evidence that decides ahead of
-# it, in a mixed-case name only (history: decisions/S2).
+# #289's credential lean, rules/S6: "Written case is evidence beside
+# the count (S4), and it speaks only in a name written in more than
+# one case" -- the WRITING evidence that decides ahead of the
+# words-to-spare count (history: decisions/S2).
 def ambiguous_lean(text: str, one_case: bool) -> Lean | None:
     """Which way the WRITING leans for a member of the ambiguous
     credential set: "credential", "name", or None for no lean at all.
 
-    None is the fall-through to rules/S2's count, and it is the
+    None is the fall-through to rules/S4's count, and it is the
     answer for three inputs. A name written wholly in one case says
     nothing about any word in it. A member written wholly in lower
     case says nothing either -- lower is how most of a mixed-case

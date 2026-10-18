@@ -348,7 +348,7 @@ def test_peel_trailing_takes_the_three_lean_outcomes() -> None:
     # #289 at the trailing slot, the three outcomes against the peel's
     # three: a CREDENTIAL lean consumes with no words to spare, a NAME
     # lean declines WITH words to spare, and no lean at all leaves
-    # rules/S2's count deciding exactly as it did.
+    # rules/S4's count deciding exactly as it did.
     # Every case still REPORTS: the pick is appended either way, which
     # is what the fork's report is built from.
     for text, one_case, names, picked in (
@@ -853,7 +853,7 @@ def test_a_title_the_fixed_point_splices_out_keeps_no_peel_pick() -> None:
     assert name.ambiguities == ()
 
 
-# rules/S2 (#602): a credential after the name core starts a run to
+# rules/S8 (#602): a credential after the name core starts a run to
 # the end of its part. The exclusion tests pass before the change too:
 # they are the negative controls that make the first two meaningful.
 def test_a_credential_after_two_name_words_starts_the_run() -> None:

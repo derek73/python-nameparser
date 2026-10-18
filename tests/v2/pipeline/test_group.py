@@ -462,7 +462,7 @@ def test_where_the_marker_lands_when_the_consumer_declines() -> None:
     # any other to the bound-given join (P5 declines a marker "standing
     # as a word of its own", and this one is not) -- but since #602 the
     # 'Jr' behind it starts a credential run to the end of the part
-    # (rules/S2), so the reserve finds no name word to spare and the
+    # (rules/S8), so the reserve finds no name word to spare and the
     # join declines for that reason instead
     assert _piece_texts(_grouped("abdul van der Berg née Jr Jones")) == [
         ["abdul", "van der Berg née", "Jr", "Jones"]]
@@ -795,7 +795,7 @@ _AMBIGUOUS_LEX = _LEX.add(suffix_acronyms={"ma"},
 
 
 def test_the_reserve_mirrors_the_bare_acronym_fork() -> None:
-    # S2's other positional fork: a bare ambiguous acronym is peeled
+    # S4's other positional fork: a bare ambiguous acronym is peeled
     # only with a given AND a family left. Read over the joined view
     # 'abdul Smith Jr Ma' is three pieces, so assign peels the acronym,
     # then the suffix, and one piece remains -- no family. The reserve
@@ -938,7 +938,7 @@ def test_the_chain_keeps_a_numeral_the_peel_does_not_take() -> None:
 
 
 def test_the_chain_stops_before_a_bare_acronym_with_words_to_spare() -> None:
-    # S2's other fork, the same way: 'John Smith Ma' peels the acronym
+    # S4's other fork, the same way: 'John Smith Ma' peels the acronym
     # as a credential, so 'John van der Berg Ma' does too -- 1.4.0 read
     # suffix 'Ma' there, and 2.0 had let the chain take it.
     #

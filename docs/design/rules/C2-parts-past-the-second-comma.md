@@ -20,14 +20,14 @@ C2. Rationale: text beyond the recognized comma parts should be
     A part the parse reads as a credential run by some route other
     than the suffix vocabulary is recognized and is not flagged: a
     run of ambiguous acronyms whose written case leans credential
-    (S2), and a run every word of which is an unlisted DOTTED word
+    (S6), and a run every word of which is an unlisted DOTTED word
     the position reads as a credential (S3). This is the one place
     the ambiguous class QUIETS a report rather than adding one, and
     it is narrow in two ways that the examples below pin. A member
     whose written case does not lean CREDENTIAL keeps the flag,
     whether the name is written in one case so that nothing leans at
     all, or the member is written the way a name is written. And
-    S2's other by-shape half, the unlisted all-caps word, does not
+    S9's other by-shape half, the unlisted all-caps word, does not
     reach here in any setting: the shape a tail segment is
     recognized by is the dotted one alone.
     A part the parse consumes wholly as suffixes raises no report
@@ -39,7 +39,7 @@ C2. Rationale: text beyond the recognized comma parts should be
     the part reports neither a particle chained onto a name word nor
     an acronym taken into the name. What such a part reports is its
     own — C1's report of the decision at its comma (the flip, or the
-    first word after the comma), S2's report on each word a credential
+    first word after the comma), S8's report on each word a credential
     in front of it reads as a suffix although it may be a name word (a
     name word the run absorbs, a member the company decides), and this
     rule's flag.
@@ -72,5 +72,5 @@ C2. Rationale: text beyond the recognized comma parts should be
     reports on outside a tail:
     the_chain_reports_the_acronym_it_takes and
     titled_particle_chain_survives_a_title_that_is_also_a_particle.
-    history: decisions/C1, decisions/S2 · interacts: C1, H5, P2, P5, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions/C1, decisions/S2 · interacts: C1, H5, P2, P5, S3, S6, S8, S9 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 

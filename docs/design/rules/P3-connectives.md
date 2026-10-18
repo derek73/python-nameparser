@@ -53,7 +53,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     marker the pass declines and leaves as a word (M2) is a word, and
     counts toward the three — but its case is still not asked.
     That span is not this rule's alone: wherever another rule asks
-    the case question — the suffix slot (S2) and the post-comma slot
+    the case question — the suffix slot (S6) and the post-comma slot
     (C1) — it is asked of these same words, so the answer is taken
     once and read where each of them stands.
       "Juan y Eva Garcia"         →  given="Juan y Eva"
@@ -149,5 +149,5 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, S2, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, C1, S6 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

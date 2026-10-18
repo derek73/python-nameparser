@@ -29,7 +29,7 @@ _LEX = Lexicon(
     particles=frozenset({"de", "der", "ibn", "la", "van", "vd"}),
     particles_ambiguous=frozenset({"la", "van"}),
     # `씨` is a ONE-LETTER suffix word, which starts no credential run
-    # (rules/S2's two-letter minimum -- any longer suffix word would,
+    # (rules/S8's two-letter minimum -- any longer suffix word would,
     # an honorific included since #679), the filler a test needs where
     # a credential would now take the rest of the part
     suffix_words=frozenset({"jr", "씨"}),
@@ -832,7 +832,7 @@ def test_a_suffix_word_mid_run_ends_the_chain(
     # orders are pinned apart at a count other than two. The suffix word
     # is one letter because a longer one -- a credential, or since #679
     # an honorific -- would start #602's run and take `Juan` with it
-    # (rules/S2); it was `MD` until #602.
+    # (rules/S8); it was `MD` until #602.
     out = _parsed("de Mesnil van Berg 씨 Juan", policy)
     assert _by_role(out, Role.FAMILY) == "de Mesnil"
     assert _by_role(out, Role.GIVEN) == given
@@ -1067,7 +1067,7 @@ def test_a_surviving_name_word_parts_two_entries() -> None:
     test alone cannot reach: a name word standing between two
     post-nominals parts their entries. `abd` is suffix vocabulary that
     starts no credential run (it is bound given-name vocabulary too,
-    rules/S2), so `Jones` behind it survives as a name word before
+    rules/S8), so `Jones` behind it survives as a name word before
     the credential. Drop the conjunct and this renders 'abd PhD'.
 
     The fixture was 'Smith, MD - PhD - FACS' until #602, whose dashes

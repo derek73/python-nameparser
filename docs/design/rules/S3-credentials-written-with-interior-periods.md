@@ -11,9 +11,9 @@ S3. Rationale: credentials are often written run together with
     which are about generations rather than credentials.
     A word of two or more period-separated chunks that no
     vocabulary claims is read by POSITION instead, as a bare
-    ambiguous acronym is (S2): a credential where the name has words
+    ambiguous acronym is (S4): a credential where the name has words
     to spare, a name word where it does not, either reading
-    reported at the slots S2 reports at, and the same at a comma —
+    reported at the slots S4 reports at, and the same at a comma —
     which means the FIRST piece after a family comma, the word
     trailing the given part after one, the word ending a maiden
     marker's clause (M2), and the part before a SUFFIX
@@ -57,5 +57,5 @@ S3. Rationale: credentials are often written run together with
     the CJK assertions in tests/v2/pipeline/test_vocab.py's
     test_period_joined_vocab_retires_the_single_character_chunk.
     W3 states the same precedence for the same reason.
-    history: decisions/S2 · interacts: S2, C1, H2, W3 · implemented: nameparser/_pipeline/_vocab.py
+    history: decisions/S2 · interacts: C1, H2, W3, S4 · implemented: nameparser/_pipeline/_vocab.py
 

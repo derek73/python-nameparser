@@ -327,7 +327,7 @@ as address terms, and only their -님 forms ship.
 SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # Suffix acronyms that also commonly work as given-name nicknames on
     # their own (e.g. "Ed", "JD"). Read wherever the pipeline decides an
-    # acronym's bare reading (rules/S2) and by the delimited-content
+    # acronym's bare reading (rules/S4) and by the delimited-content
     # escape (content matching one of these stays a nickname, the more
     # common reading in ambiguous, delimiter-only context). _classify
     # also tags membership as "vocab:suffix-ambiguous".
@@ -342,7 +342,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # written in capitals inside a mixed-case name; inside a
     # mixed-case name any other cased form that is not wholly lower
     # ('Ma', 'MEng') reads as the name even with words to spare --
-    # rules/S2. The parse reports the fork where it decides one,
+    # rules/S6. The parse reports the fork where it decides one,
     # so 'Jack Ma' keeps its family name.
     #
     # The other half of the criterion, added 2026-09-07 with #342.
@@ -418,7 +418,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
 Acronym suffixes from SUFFIX_ACRONYMS that also plausibly collide with a
 word borne as a name -- a given name, nickname or surname. Not a
 partition of SUFFIX_ACRONYMS -- a small, standalone exception list, read
-wherever the pipeline decides an acronym's bare reading (rules/S2).
+wherever the pipeline decides an acronym's bare reading (rules/S4).
 
 """
 SUFFIX_ACRONYMS = frozenset({

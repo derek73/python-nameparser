@@ -112,7 +112,7 @@ def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
 
 def _absorbed(piece: Sequence[int],
               tokens: Sequence[WorkToken]) -> PendingAmbiguity:
-    """rules/S2's report for a name word #602's run absorbs, one
+    """rules/S8's report for a name word #602's run absorbs, one
     spelling for the no-comma and the given-part run."""
     text = " ".join(tokens[i].text for i in piece)
     return PendingAmbiguity(
@@ -397,7 +397,7 @@ def _assign_main(seg_idx: int, state: ParseState,
                                                  state.one_case)
     for piece_idx in titled_tail:
         _set_roles(tokens, pieces[piece_idx], Role.TITLE)
-    # rules/S2: "except a title word, which reads as a title" -- the
+    # rules/S8: "except a title word, which reads as a title" -- the
     # credential run (#602) is placed here, so a name word it absorbed
     # is reported here too
     for piece_idx in peeled.run_titles:
@@ -531,7 +531,8 @@ def _assign_main(seg_idx: int, state: ParseState,
         assert token.role is not None
         declined = ("a name part" if token.role is Role.SUFFIX
                     else "a post-nominal")
-        # A word in the class by SHAPE (rules/S2, #S3) is in no
+        # rules/S9: "An unlisted word joins the ambiguous class (S4) by
+        # SHAPE" (and rules/S3); such a word is in no
         # wordlist and may be written with its periods, so the listed
         # member's wording would misdescribe it on both counts (#563)
         what = ("is shaped like a post-nominal but listed in no "
@@ -612,7 +613,7 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
     JANE PHD VD MA' does. (Behind it no title is skipped: a title
     there leaves the word a name in assign, so nothing reaches here.)
 
-    The test is the ROLES assign gave, not S2's company query: the
+    The test is the ROLES assign gave, not S7's company query: the
     question is whether assign read the run whole, and a member in
     front that the writing or a count made the credential ('DOE, JANE
     MA VD PHD') says so as plainly as a degree does. So does a
@@ -622,7 +623,7 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
     role is what keeps a plain particle out ('Doe, Jane PhD de PhD',
     whose 'de' is a name word, not a post-nominal), and the given
     name in front is what keeps 'Doe, Jane vd PhD' attaching.
-    Reported as S2's credential fork, at the site that declines the
+    Reported as S4's credential fork, at the site that declines the
     attachment."""
     def suffix_read(q: int) -> bool:
         return all(tokens[i].role is Role.SUFFIX for i in seg[q])
@@ -848,7 +849,7 @@ def assign(state: ParseState) -> ParseState:
         # keeps as a name stops that run, which is why
         # 'Doe, John MA Ma' reports once and for 'Ma' alone -- 'MA'
         # then has a name word behind it and is never asked
-        # (rules/S2).
+        # (rules/S5).
         if state.pieces[1] and len(state.pieces[1][0]) == 1:
             i = state.pieces[1][0][0]
             if not tokens[i].tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
@@ -957,7 +958,7 @@ def assign(state: ParseState) -> ParseState:
                 down as `m` needs it: `m >= trailing_floor(m, titled)`
                 is exactly "every kept piece behind `m` reads as a
                 suffix", which is what ENDING the given part means
-                (rules/S2, #531).
+                (rules/S5, #531).
 
                 ONE walk per `titled` value, shared by the predicate
                 below and by that rule's report at the foot of this
@@ -1030,7 +1031,7 @@ def assign(state: ParseState) -> ParseState:
                 member's writing says nothing: capitals in a mixed-case
                 name still make it the credential ('Smith, de MA'
                 keeps suffix 'MA'), as they do with no words to spare
-                anywhere (rules/S2). Asked only of a class member
+                anywhere (rules/S5). Asked only of a class member
                 the slot would otherwise take."""
                 if not is_lone_never_given_particle(pieces[n], tokens):
                     return False
@@ -1077,7 +1078,9 @@ def assign(state: ParseState) -> ParseState:
                 """
                 if is_suffix_piece(pieces[m], ptags[m], tokens):
                     return True
-                # rules/S2, the given part's trailing slot (#531).
+                # rules/S5: "a word that ENDS that part reads as the credential
+                # unless its WRITING says otherwise" -- the given part's
+                # trailing slot (#531).
                 # INLINE, and that is the frame budget talking rather
                 # than taste: the candidates pass asks this closure once
                 # per piece of every family-comma segment, so a helper
@@ -1102,7 +1105,7 @@ def assign(state: ParseState) -> ParseState:
                 #
                 # The comma has already named the family and the first
                 # piece after it is the given name, so the words to
-                # spare S2's count asks about are there by
+                # spare S4's count asks about are there by
                 # construction and the count says nothing at this
                 # slot. What is left is the writing, which is the same
                 # evidence the comma-less spelling of the same name
@@ -1248,7 +1251,7 @@ def assign(state: ParseState) -> ParseState:
             # memo, not a second spelling of the question, and it
             # cannot have gone stale because nothing the chain does
             # moved the end of the name.
-            # rules/S2: "or after the given word in the part after a
+            # rules/S8: "or after the given word in the part after a
             # family comma" -- the given part's own credential run
             # (#602), the comma having fixed the family. The tag tests are inline ahead of the
             # predicate, as in `_pieces.credential_run`, so a name word

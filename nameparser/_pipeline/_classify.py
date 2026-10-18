@@ -39,8 +39,8 @@ asking "where does it end" walks the continuations.
 suffix vocabulary, or an ambiguous acronym written with periods --
 at the TAG level 'M.A.' gets "vocab:suffix" while 'Ma' gets only
 "vocab:suffix-ambiguous"; what assign then does with a trailing
-ambiguous tag is the rest of rule S2's statement (the
-words-to-spare guard) and its Accepted consequences.
+ambiguous tag is rules S4 to S7 (the words-to-spare guard, the
+case, the company) and their Accepted consequences.
 The initial veto is assign's job, not classify's: 'V' carries both
 "vocab:suffix" and "initial".
 "shape:acronym" is the one tag in the shape: namespace and it records
@@ -178,7 +178,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     # title as a whole ('Lt.Gov.', and by the ANY rule 'Mr.Smith');
     # else ANY suffix chunk makes it a suffix ('JD.CPA'). Title wins
     # (v1's continue). The third and fourth are 2.4's by-shape halves
-    # (#516) and reach only a token NO vocabulary claimed: a dotted
+    # (#516; rules/S9: "An unlisted word joins the ambiguous class
+    # (S4) by SHAPE where the caller asks for it") and reach only a token NO vocabulary claimed: a dotted
     # token of two or more alphabetic chunks, and -- where its switch
     # is on -- an unlisted all-caps word. They are an `elif` chain
     # with the dotted one first, so a dotted token never reaches the

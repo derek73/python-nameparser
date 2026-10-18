@@ -57,7 +57,7 @@ R4. Rationale: case repair is a display concern, applied only on
     does not carry is an initialism, so a single-case word the parse
     put in the suffix role from the acronym vocabulary, or read as a
     credential by its dotted shape alone (S3) or by its capitals
-    (S2), repairs to its all-caps spelling rather than a title-cased
+    (S6), repairs to its all-caps spelling rather than a title-cased
     one, and that repair
     outranks the Mac/Mc convention where a word fits both (MCSE, not
     McSe). A roman numeral the parse put in the suffix role is
@@ -186,5 +186,5 @@ R4. Rationale: case repair is a display concern, applied only on
     both of the parsed name's views: a middle revised to "e-f"
     repairs to "E-F" as the parsed name does, where splicing the same
     text in gives "e-F".
-    history: decisions/R4 · interacts: P3, R2, R3, R5, S3 · implemented: nameparser/_render.py, nameparser/_lexicon.py
+    history: decisions/R4 · interacts: P3, R2, R3, R5, S3, S6 · implemented: nameparser/_render.py, nameparser/_lexicon.py
 

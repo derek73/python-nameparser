@@ -14,7 +14,7 @@ P2. Rationale: a particle is written as part of the surname it
     acronym written Title-case in a mixed-case name ends nothing and
     joins the chain as any name word does, words to spare or not,
     and the fork the chain called is reported there exactly as it is
-    where no particle stands (S2) —
+    where no particle stands (S4) —
     a maiden
     marker takes the
     words after it (M2), or the name ends. The final group reads as
@@ -58,14 +58,14 @@ P2. Rationale: a particle is written as part of the surname it
     word, and the peel takes it; where it continues a prefix run,
     the run takes it as a particle, as P6 reads it after a comma —
     and there the chain reports nothing, the particle reading being
-    P6's fork rather than S2's.
+    P6's fork rather than S4's.
     The same carve-out covers `do`, the one word that is both a
     particle and an AMBIGUOUS credential acronym: where a particle
     run takes it, the word is the run's and the chain reports
     nothing, whatever case it is written in — so `Anh van Do` is
     silent where `Anh Do`, with no particle standing, reports.
     A word that is both belongs to the particle run and to P6's
-    fork, not to S2's.
+    fork, not to S4's.
       "John Smith Mc V"           →  suffix="Mc V"
       "John van Mc"               →  family="van Mc"
       "anh van do"                →  family="van do"  · boundary
@@ -76,5 +76,5 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions/P2 · interacts: P1, P4, H5, M2, S2, C2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P2 · interacts: P1, P4, H5, M2, S2, C2, S4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

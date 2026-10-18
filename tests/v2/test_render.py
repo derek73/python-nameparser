@@ -661,7 +661,7 @@ def test_the_gate_and_the_parser_read_a_cased_suffix_differently() -> None:
     repairs it -- keeping the connective lowercase -- where the one-case
     'john e jones iii' reads 'e' as an initial. The gate follows the
     parse's suffix call, the ambiguous credential class included, so
-    'jack MA' (S2's lean read MA as the credential) and 'MD, PhD'
+    'jack MA' (S6's lean read MA as the credential) and 'MD, PhD'
     (family MD, suffix PhD) repair on the default path too."""
     mixed = parse("john e jones III")
     one_case = parse("john e jones iii")
@@ -1680,7 +1680,7 @@ def test_initials_separator_is_honored_on_the_live_token_path() -> None:
 
 def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
 ) -> None:
-    # A credential read by its capitals (S2) repairs to its all-caps
+    # A credential read by its capitals (S6) repairs to its all-caps
     # spelling (rules/R4). #564 made the comma reading a default
     # decided in `segment` from the text, and classify's shape tag --
     # what repair reads -- has to follow it there too, or the default

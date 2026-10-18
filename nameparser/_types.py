@@ -436,7 +436,7 @@ class AmbiguityKind(StrEnum):
     #: family name remains; "JACK MA", written wholly in one case, keeps
     #: it as the name because none would, while in a mixed-case name
     #: the capitals decide outright -- "Jack MA" is the credential and
-    #: "Jack Ma" the name, rules/S2) and a trailing roman numeral, which is a suffix where any
+    #: "Jack Ma" the name, rules/S6) and a trailing roman numeral, which is a suffix where any
     #: other single letter would be a name ("John Smith V" vs "John
     #: Smith B"). It also covers a family-comma listing, where a
     #: trailing abbreviation that is both a post-nominal and a surname
@@ -467,7 +467,7 @@ class AmbiguityKind(StrEnum):
     #: Since #544 C1's name-word count reports its flip once over a
     #: whole RUN after the comma ("John Smith, Ed Ma" reads suffix
     #: ``Ed Ma``), and a member an unambiguous credential in front of
-    #: it speaks for (rules/S2) is a pick like a counted one,
+    #: it speaks for (rules/S7) is a pick like a counted one,
     #: reported where it was decided: by the peel, by the given part's
     #: trailing slot, or by the reading of a part after a family comma
     #: that the company leaves holding no name word ("John Smith PhD

@@ -29,7 +29,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     the clause ends at the first suffix word, and the words from it
     on read as that part reads them.
     Where a trailing rule reads the part, a member of the ambiguous
-    class (S2) that ends the maiden name is reported where the clause
+    class (S4) that ends the maiden name is reported where the clause
     keeps it, and one in the run is reported where the run is read,
     so no word is reported twice and none goes unreported. Before a
     family comma no rule reads it, and the member the clause keeps
@@ -140,7 +140,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     it.
       "Jane Doe (nee Smith Prof.)"  →  title="Prof."
     Accepted: a marker behind a credential is an ordinary word, and
-    the credential's run (S2) takes it in with everything after it.
+    the credential's run (S8) takes it in with everything after it.
       "Jane Doe Jr. nee Smith"      →  suffix="Jr. nee Smith"  · boundary
-    history: decisions/M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5, C1 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
+    history: decisions/M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5, C1, S4, S8 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
 
