@@ -2697,7 +2697,8 @@ CASES: tuple[Case, ...] = (
          classification="fix(#289)",
          ambiguities=("suffix-or-name",),
          notes="the two-word twin of 'Royce, Ed' below, and the case "
-               "row item 5 of decisions/S4 turns on -- no corpus "
+               "row decisions/S4's 2026-09-15 entry (THE COUNT "
+               "REACHES THE LISTED SET TOO) turns on -- no corpus "
                "name has this shape, so this row carries the whole "
                "weight of that decision",
          shape=3),
@@ -4265,8 +4266,8 @@ CASES: tuple[Case, ...] = (
          notes="why the condition asks assign's TRAILING-RUN walk "
                "rather than the suffix-piece test: a bare 'V' is "
                "suffix vocabulary written like an initial, so "
-               "is_suffix_piece refuses it (rules/S2's initial "
-               "veto) and a class test spelled with that predicate "
+               "is_suffix_piece refuses it (the initial veto, "
+               "_vocab.is_initial) and a class test spelled with that predicate "
                "alone would let the link swallow it. The peel takes "
                "it, so trailing_start puts it outside the name's own "
                "words and the link stays the generation -- carrying "

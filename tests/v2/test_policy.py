@@ -886,7 +886,8 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     assert default.parse("John Smith XYZ").ambiguities == ()
     # the boundaries: one case, one letter, a digit, and vocabulary.
     # 'John Smith X' is NOT the single-letter control -- 'X' is a bare
-    # roman numeral (rules/S2's numeral fork) and reads as suffix
+    # roman numeral (the trailing numeral fork,
+    # `_vocab.is_trailing_numeral_suffix`) and reads as suffix
     # 'X' with the switch either way, unrelated to this one; 'Z' is
     # not vocabulary at all and stays unaffected by the switch, which
     # is the actual boundary (a single capital never satisfies the
