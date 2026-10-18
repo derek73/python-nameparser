@@ -1,4 +1,4 @@
-"""Not a stage: rules.md#C1's decision, made by group at its head.
+"""Not a stage: rules/C1's decision, made by group at its head.
 
 The comma's structure is decided ONCE, after classify has tagged every
 word and before group joins any of them (#613): the part after the
@@ -76,7 +76,7 @@ def _reading_pieces(part: Sequence[int], tokens: Sequence[WorkToken],
     can hold."""
     pieces, ptags = _pieces(part, tokens)
     # The one join a postnominal part can hold, made here so the reading
-    # sees it: rules.md#P3's connective joining its neighbours where the
+    # sees it: rules/P3's connective joining its neighbours where the
     # neighbour it takes its kind from is a title, which makes the
     # joined part a title ('Mr. and Mrs.', 'Secretary of State', 'Dr.
     # and'), a run of connectives merging first as it does in the name
@@ -90,7 +90,7 @@ def _reading_pieces(part: Sequence[int], tokens: Sequence[WorkToken],
     # Dr.'). Group's own joins, the one loop since #617: its copy here
     # merged no run and joined 'Minister of the' alone.
     #
-    # rules.md#P3: "A connective that is also generational vocabulary
+    # rules/P3: "A connective that is also generational vocabulary
     # joins only where a name word stands on each side of it" -- and in
     # a part read for credentials none does, so every such connective
     # is frozen here, where group freezes only the ones it finds without
@@ -147,7 +147,7 @@ def _name_contrast(state: ParseState, seg0: Sequence[int]) -> bool:
 
 
 def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
-    """rules.md#C1's count before the comma for an unambiguous
+    """rules/C1's count before the comma for an unambiguous
     credential, read off classify's tags (the ambiguous class's count
     of NAME words, which leaves titles out, is
     `_vocab.name_word_count`'s, asked in `decide`): two or more units (a particle run and
@@ -191,7 +191,7 @@ def decide(state: ParseState) -> ParseState:
         return state
     tokens = list(state.tokens)
     lex, pol = state.lexicon, state.policy
-    # rules.md#C1: "A delimiter the policy declares parts a trailing
+    # rules/C1: "A delimiter the policy declares parts a trailing
     # suffix part as a comma would" -- behind a whole name its cores are
     # no word of the reading, and leave as group drops them in a tail;
     # behind one name word the core is a word, v1 having applied the
@@ -246,7 +246,7 @@ def decide(state: ParseState) -> ParseState:
     if maybe:
         names = name_word_count([tokens[i].text for i in seg0], lex, pol)
     if names >= 2:
-        # rules.md#C1: "An unlisted all-caps word joins the class in such
+        # rules/C1: "An unlisted all-caps word joins the class in such
         # a part only where the name carries the contrast"
         contrast: bool | None = None
         for i in maybe:
@@ -267,7 +267,7 @@ def decide(state: ParseState) -> ParseState:
                 # for, a lone one included ('John Smith, XY')
                 if contrast:
                     caps.add(i)
-        # rules.md#C1: "The same count reads a part of two or more words
+        # rules/C1: "The same count reads a part of two or more words
         # as the credential run when every word of it is a suffix word
         # or a word of this class", none of them a single-letter numeral.
         # the words not of the class are asked as C1's suffix test asks
@@ -290,7 +290,7 @@ def decide(state: ParseState) -> ParseState:
         if not run:
             licensed.clear()
         else:
-            # rules.md#C1: "Paired initials are the exception to the
+            # rules/C1: "Paired initials are the exception to the
             # count" -- "Only an unambiguous suffix word in front of
             # them that is not also title vocabulary, or another word
             # the class admits by its dotted shape standing in the same
@@ -333,7 +333,7 @@ def decide(state: ParseState) -> ParseState:
             anchored, absorbed, licensed)
     if whole is None:
         whole = _whole_name(seg0, tokens)
-    # rules.md#C1: "By default a recognized suffix word counts even
+    # rules/C1: "By default a recognized suffix word counts even
     # written like an initial" -- behind a whole name ('John Smith, V.')
     if reading is None and whole and is_wholly_suffix(
             [tokens[i].text for i in part], lex, pol, one_case=None):
@@ -350,10 +350,10 @@ def decide(state: ParseState) -> ParseState:
             tags = tokens[i].tags
             if i in caps:
                 # #564: the caps shape's marks, as classify writes them
-                # EVERYWHERE, so case repair keeps 'XYZ' (rules.md#R4)
+                # EVERYWHERE, so case repair keeps 'XYZ' (rules/R4)
                 tags = tags | {SHAPE_ACRONYM_TAG, AMBIGUOUS_ACRONYM_TAG}
             tokens[i] = copy_with(tokens[i], role=role, tags=tags)
-    # rules.md#C1: "A decision either way at this comma is reported;
+    # rules/C1: "A decision either way at this comma is reported;
     # for a run of words the decision is the flip to the credential
     # run, reported once over the whole part. A flip in which no listed
     # word of this class takes part is the exception and is made in
@@ -406,7 +406,7 @@ def decide(state: ParseState) -> ParseState:
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{tokens[i].text!r} after the comma is also an ordinary name "
             f"word; read as a credential", (i,)))
-    # rules.md#S2's company, reported where it decided: a member the
+    # rules/S2's company, reported where it decided: a member the
     # anchor read as a credential after its own writing declined (#544)
     for k in anchored:
         i = p1[k][0]
@@ -414,7 +414,7 @@ def decide(state: ParseState) -> ParseState:
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{tokens[i].text!r} behind a credential after the comma is "
             f"also an ordinary name word; read as a credential", (i,)))
-    # rules.md#C1: "A credential opening the part makes it the
+    # rules/C1: "A credential opening the part makes it the
     # postnominal part however it goes on" -- each word it takes that
     # would have made it the given part, as #602's run reports them
     for k in absorbed:

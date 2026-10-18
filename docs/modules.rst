@@ -52,7 +52,7 @@ Results
    ``conjunction`` (a joining word, "and"/"y"), ``initial`` (a word
    READ as an initial — initial-shaped in a script that HAS initials,
    "J." or "А.", never "씨.", or a marked single-letter connective in
-   a name written in one case, rules.md#P3), and ``joined`` (a
+   a name written in one case, rules/P3), and ``joined`` (a
    continuation of the token before it
    — within one merged piece the tag is role-blind and every view
    joins the pair with a space, so it renders "Ph. D." as one

@@ -12,7 +12,7 @@ were off by 2x, none of it visible without the harness.
 
 docs/design/AGENTS.md already asks for this: "Where an entry quotes
 something that drifts, give the one-liner that recomputes it." This is
-that one-liner. Every number in decisions.md#parse-cost comes from a
+that one-liner. Every number in decisions/parse-cost comes from a
 mode of this script, named beside it.
 
     uv run python tools/perf/call_count.py                 # both entry points

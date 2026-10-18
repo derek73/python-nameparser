@@ -1,9 +1,9 @@
-"""Unit tests for the rules.md example-line grammar parser.
+"""Unit tests for the rules example-line grammar parser.
 
 DOC below is a SYNTHETIC fixture: it exists only to exercise the
 grammar and is never executed against the parser. Its rule IDs and
 content are illustrative (they echo the spec's worked examples for
-readability) and deliberately do NOT track docs/design/rules.md —
+readability) and deliberately do NOT track docs/design/rules/ —
 do not "fix" this fixture when the real doc changes.
 """
 from __future__ import annotations
@@ -13,7 +13,7 @@ import pytest
 from tests.v2.rules_doc import Example, parse_rules_doc
 
 DOC = '''\
-# Parsing rules (synthetic grammar fixture -- not the real rules.md)
+# Parsing rules (synthetic grammar fixture -- not the real rules)
 
 ## Particles
 
@@ -26,7 +26,7 @@ P2. Rationale: particles cannot themselves be a given name.
       "Mesnil de"  family-first   →  family="Mesnil de"
       "de"                        →  given="de"  · boundary
     Accepted: a bare "de" keeps given="de".
-    history: decisions.md#P2 · interacts: H1 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions/P2 · interacts: H1 · implemented: nameparser/_pipeline/_post_rules.py
 
 P3. Statement with a tracked gap.
       "Swami Vivekananda"         →  family=""  deviates: #346 (today: family="Vivekananda")

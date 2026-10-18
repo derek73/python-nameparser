@@ -191,7 +191,7 @@ invocation shows it.
 | `corpus_wikidata.jsonl` | Wikidata, real public figures (deceased, or with at least 10 sitelinks) whose item states a second surname (P1950: Spain, Mexico, Colombia) or a patronymic (P5056: Russia, the Soviet Union, the Russian Empire, Iceland, Malaysia): each P1559 native-language name and own-language label whose every word aligns with exactly one stated part, via `build_wikidata_corpus.py` (2026-10-16); CC0, credit in `wikidata_LICENSE` | everything the strict alignment drops: short display forms without the second surname, nicknames, and names with an unrecorded part, so tidy names are over-represented; only those eight citizenships; no titles, credentials or suffixes |
 | `corpus_wikidata_native.jsonl` | Wikidata, real public figures (deceased, or with at least 10 sitelinks) with a name written in their own script: Hangul, Han and kana, Arabic (Syria, Egypt, Saudi Arabia, Iran), Hebrew, Georgian, Armenian, Greek, Cyrillic beyond Russian (Serbia, Bulgaria, Ukraine, Kazakhstan), Bengali, Devanagari and Thai, 20 strata sampled by country and language. Each person's first P1559 or own-language label whose every word, or every character in unspaced text, aligns with exactly one stated part, via `build_wikidata_native_corpus.py` (2026-10-16). CC0, credit in `wikidata_native_LICENSE` | everything the strict alignment drops, which in these scripts is most names: Arabic nasab chains (`بن` is no connective in Arabic script), `آل` family names and kunyas (most Arabic items state no family name), Chinese names whose given name has no item (most), Japanese names whose given-name item holds only a kana reading, and names whose parts are labelled only in Latin script (most Devanagari, Bengali and Thai items, so those strata are 10–25 names); transcriptions with the 间隔号; Urdu and Marathi entirely; no titles, credentials or suffixes |
 | `corpus_conventions.jsonl` | invented names patterned on naming conventions the other corpora barely cover -- no family name, religious names, positional patronymics, honorifics after the name -- from the hand-written table in `conventions.py`, via `build_conventions_corpus.py` (#686) | real names, and every convention nobody has written a row for: about one row per convention, so it shows that a convention moved, not how often |
-| `corpus_rules.jsonl` | every example in `docs/design/rules.md`, via `build_rules_corpus.py` (#414) | anything the rules doc has no example for |
+| `corpus_rules.jsonl` | every example in `docs/design/rules/`, via `build_rules_corpus.py` (#414) | anything the rules doc has no example for |
 | `corpus_shapes.jsonl` | shape-tagged rows of `tests/v2/cases.py`, via `build_shapes_corpus.py` (#468) | anything no one has tagged a row for |
 
 Each covers a blind spot of the others. `corpus.jsonl` is reproducible
@@ -306,7 +306,7 @@ Every distinct CJK-bearing `text` in `tests/v2/cases.py`, `tolerated`
 rows included. The generated corpora (`corpus_cjk`,
 `corpus_conventions`, `corpus_rules`, `corpus_shapes`) are each pinned
 by `tests/v2/test_corpora.py` against their generator's selection, so a
-case row, a rules.md example or a `conventions.py` row added without
+case row, a rules example or a `conventions.py` row added without
 regenerating fails the suite instead of silently narrowing what the
 snapshot watches.
 
@@ -398,7 +398,7 @@ So what is opt-in is neither the marker words nor the delimited path
 as a whole: it is the delimited path for content that does not
 announce itself. Since #335 a clause holding a word past its marker
 reads as the maiden name whichever bucket its pair sits in
-(`rules.md#M3`), so `Jane Smith (née Jones)` needs no configuration
+(`rules/M3`), so `Jane Smith (née Jones)` needs no configuration
 either. A word past the MARKER, not a second word in the clause: since
 #434 a marker may be a phrase, and `Maria Kowalska (z domu)` is a
 two-word clause that stays a nickname because both its words are the

@@ -8,10 +8,10 @@ there is never a token, one inside an extracted region is word text),
 interpunct_offsets (间隔号 transcription markers, #298; never tokens).
 Reads: Policy.strip_emoji, Policy.strip_bidi.
 
-Implements rules T1, T2 and T3 of docs/design/rules.md, cited at
+Implements rules T1, T2 and T3 of docs/design/rules/, cited at
 their code below. There is NO text-rewriting normalize stage: all
 three are character-classification rules, so spans always index the
-original exactly as given (v1 contrast: decisions.md#T1).
+original exactly as given (v1 contrast: decisions/T1).
 """
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ _EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
                  (0x2600, 0x26FF), (0x2700, 0x27BF))
 _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 
-# rules.md#T2: "the katakana middle dot and its halfwidth twin divide
+# rules/T2: "the katakana middle dot and its halfwidth twin divide
 # a name like whitespace, always." They record no offset: the
 # nakaguro also divides kanji roster pairs (高橋・一郎, read
 # family-first by the script license, #272), so it is not a
@@ -43,9 +43,9 @@ _BIDI = re.compile('[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]+')
 _NAME_DOT_SEPARATORS = frozenset({"\u30FB", "\uFF65"})
 
 _INTERPUNCT = "\u00B7"
-# rules.md#T3: "the interpunct divides a name only between two
+# rules/T3: "the interpunct divides a name only between two
 # characters of a classified East Asian script; anywhere else it is
-# part of the word" (history: decisions.md#T3). Per-CHAR classifier
+# part of the word" (history: decisions/T3). Per-CHAR classifier
 # for the flank guard: a one-char string is wholly-classified iff the
 # character is. Context-sensitivity is why this lives in
 # _tokenize_region (where the index exists) and not in _ignorable.
@@ -57,8 +57,8 @@ def _is_emoji(ch: str) -> bool:
     return any(lo <= cp <= hi for lo, hi in _EMOJI_RANGES)
 
 
-# rules.md#T1: "an ignorable character separates its neighbors and
-# never joins them" (v1 contrast: decisions.md#T1)
+# rules/T1: "an ignorable character separates its neighbors and
+# never joins them" (v1 contrast: decisions/T1)
 def _stripped(ch: str, policy: Policy) -> bool:
     """True when the strip policy removes `ch` from the token stream.
     The ONE definition of that set, shared by _ignorable and _flank: a
@@ -111,7 +111,7 @@ def _tokenize_region(state: ParseState, start: int, end: int,
     tok_start: int | None = None
     for i in range(start, end):
         ch = text[i]
-        # rules.md#N1: "a comma inside it kept as written — the comma
+        # rules/N1: "a comma inside it kept as written — the comma
         # divides nothing there" -- a comma separates only where it
         # records a segmentation offset, the main stream; inside an
         # extracted region it is the clause's text, like ';' (#653)

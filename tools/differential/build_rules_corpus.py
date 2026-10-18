@@ -1,4 +1,4 @@
-"""Regenerate corpus_rules.jsonl from the examples in docs/design/rules.md.
+"""Regenerate corpus_rules.jsonl from the examples in docs/design/rules/.
 
 A corpus with its own provenance (#414). Each corpus covers a blind
 spot the others have -- the roster, with each file's source and the
@@ -44,7 +44,7 @@ move.
 
 The one example form that carries no name is skipped. A `[subject]`
 example names a policy or locale rather than a name string, so its
-`text` is empty -- rules.md has three, and without the filter all
+`text` is empty -- the rules have three, and without the filter all
 three collapse into a single "" that the doc never wrote. Skipping
 them is also why the promise above is honest: an example enters the
 corpus by being written down, and a form with nothing to enter is
@@ -57,7 +57,7 @@ diff. They are more concentrated here than elsewhere because the doc
 argues its edges explicitly, which is a reason to keep them rather
 than to drop them.
 
-Regenerate after editing rules.md examples:
+Regenerate after editing rules examples:
 
     uv run python tools/differential/build_rules_corpus.py
 
@@ -75,16 +75,16 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT))
 
+from tests.v2.design_docs import read_rules_text  # noqa: E402
 from tests.v2.rules_doc import parse_rules_doc  # noqa: E402
 
 OUT = HERE / "corpus_rules.jsonl"
-RULES_DOC = ROOT / "docs" / "design" / "rules.md"
 
 
 def selected_names() -> list[str]:
     """Every distinct example text in the rules doc, sorted for a
     deterministic file."""
-    rules = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
+    rules = parse_rules_doc(read_rules_text())
     return sorted({example.text
                    for rule in rules
                    for example in rule.examples

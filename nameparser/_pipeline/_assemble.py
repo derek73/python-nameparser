@@ -26,10 +26,10 @@ from nameparser._types import (
 )
 
 
-# rules.md#A2: "a name with no name content parses to the empty
+# rules/A2: "a name with no name content parses to the empty
 # name — every field empty, false as a boolean — while ambiguities
 # born from its punctuation survive on the empty result"
-# (history: decisions.md#A2)
+# (history: decisions/A2)
 def assemble(state: ParseState) -> ParsedName:
     dropped = set(state.dropped)
     final: dict[int, Token] = {}
@@ -85,7 +85,7 @@ def assemble(state: ParseState) -> ParsedName:
             # referents did not lose a contest, they were discarded
             # wholesale, and the report still describes the input.
             continue
-        # rules.md#A1: "a report names the reading the parse took, so
+        # rules/A1: "a report names the reading the parse took, so
         # a report whose fork the rest of the parse then resolved to
         # NEITHER branch is withdrawn rather than carried beside a
         # reading it contradicts". classify's connective-or-initial

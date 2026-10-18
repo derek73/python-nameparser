@@ -101,7 +101,7 @@ class TitleTestCase(HumanNameTestBase):
         # v1 aspired to read the whole string as one title, and shipped this
         # as an xfail.
         # NOT FIXED, decided 2026-09-01 (v1-xfail triage,
-        # decisions.md#v1-xfail-triage): this is a name parser, not a title
+        # decisions/v1-xfail-triage): this is a name parser, not a title
         # parser. Handed an input that is all titles, it assumes the last
         # title-word is the name, so 'Division' becomes the family. Accepted
         # convention rather than a defect; #491 tracks reporting the guess.
@@ -201,10 +201,10 @@ class TitleTestCase(HumanNameTestBase):
         # v1 aspired to read 'ben' as a particle joining the family
         # ("ben Husain"), and shipped this as an xfail.
         # NOT FIXED, decided 2026-09-01 (v1-xfail triage,
-        # decisions.md#v1-xfail-triage): the question was already settled in
+        # decisions/v1-xfail-triage): the question was already settled in
         # v0.2.5, when 'ben' was removed from the prefixes. 'ben' collides with
         # the given name Ben, which is the same criterion
-        # (decisions.md#vocabulary-collisions) that keeps it out today.
+        # (decisions/vocabulary-collisions) that keeps it out today.
         # test_ben_as_first_name below is the collision it protects.
         hn = HumanName("Ahmad ben Husain")
         self.m(hn.title, "", hn)

@@ -1109,7 +1109,7 @@ class Constants:
         # tests/v2/test_config_shim.py::test_snapshot_field_translation)
         # A capitalization_exceptions value that does not spell its key
         # is the one DECIDED exception to this method's never-raise
-        # rule (#459, decisions.md#R4 and #3-0-reevaluations).
+        # rule (#459, decisions/R4 and #3-0-reevaluations).
         # _normpairs raises _MaskValueError for exactly that shape, and
         # the except clause re-spells its offered fix for a v1 caller.
         # Caught by TYPE, so every other Lexicon error passes through

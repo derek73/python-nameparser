@@ -185,9 +185,9 @@ def test_a_leading_ambiguous_particle_is_reported_once_and_only_once(
 #: with the rule that owns each one: a fourth exception fails, which is
 #: the whole point of carrying them by name rather than by count.
 _COMMA_AGREEMENT_EXCEPTIONS = {
-    "John Doe do": "rules.md#P6 attaches the lower-case particle member",
-    "John Q. Doe do": "rules.md#P6 attaches the lower-case particle member",
-    "Mary Jo Doe do": "rules.md#P6 attaches the lower-case particle member",
+    "John Doe do": "rules/P6 attaches the lower-case particle member",
+    "John Q. Doe do": "rules/P6 attaches the lower-case particle member",
+    "Mary Jo Doe do": "rules/P6 attaches the lower-case particle member",
 }
 
 
@@ -258,13 +258,13 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: Structural rather than a name list: a name whose OWN words are
 #: written in one case, where the member's own writing is the only
 #: contrast in the string, so the clause hides it. `own_words` stops
-#: at the maiden marker (rules.md#P3), so a member inside the clause
+#: at the maiden marker (rules/P3), so a member inside the clause
 #: cannot contribute the case contrast `one_case` is computed from --
-#: which is decisions.md#S2's own "THE PREDICATE KEEPS THE JUDGED
+#: which is decisions/S2's own "THE PREDICATE KEEPS THE JUDGED
 #: TOKEN IN THE SPAN" (the 2026-09-14 #289/#516 entry) failing
 #: structurally, the judged token never being in the span at this
 #: slot. Accepted by Derek 2026-09-19 and recorded in
-#: decisions.md#S2 as the M2 instance of #492's deferred question.
+#: decisions/S2 as the M2 instance of #492's deferred question.
 #: The class is asserted beside the count because a structural
 #: allowlist cannot notice a new member of it, and a COUNT cannot
 #: notice a swap -- one pair leaving and another arriving keeps the
@@ -279,7 +279,7 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #:
 #: The ANCHORED-HEAD class beside it (#544), pinned the same way: a
 #: head ending in an unambiguous credential anchors a member written
-#: straight after it and not one written after a clause (rules.md#M2's
+#: straight after it and not one written after a clause (rules/M2's
 #: boundary). Recorded 2026-09-27 on the #544 tree: 810 of the 20,412
 #: pairs, 270 for each head ending in a credential ('Jane Doe Jr.',
 #: 'Jane Doe PhD', 'Doe, Jane PhD') and every one a Title-case member
@@ -294,7 +294,7 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: credential heads, 108 each, which the head's credential run (#602)
 #: took in. Then EMPTIED the same day by #601, and kept at 0 rather
 #: than deleted, so a member arriving fails here: a marker behind a
-#: credential is an ordinary word now (rules.md#M2), the credential's
+#: credential is an ordinary word now (rules/M2), the credential's
 #: run takes the whole clause in, and the clause form reads the member
 #: as a credential exactly as the plain form does.
 _MAIDEN_ANCHORED_HEAD_EXCEPTIONS = 0
@@ -315,7 +315,7 @@ def _one_case(text: str) -> bool | None:
 
 def _qualifying_front(toks: list[tuple[Token, tuple[int, int]]], i: int,
                       original: str) -> tuple[Token, int] | None:
-    """rules.md#S2's company clause: walk back from `toks[i]` (a
+    """rules/S2's company clause: walk back from `toks[i]` (a
     member of the ambiguous class) through lone members to the piece
     that would speak for their company, and return it -- with its OWN
     index, which a caller's role question needs -- if it structurally
@@ -323,7 +323,7 @@ def _qualifying_front(toks: list[tuple[Token, tuple[int, int]]], i: int,
     not a connective, not a particle, not a single-letter roman
     numeral, and neither a comma nor a maiden marker stands between it
     and `toks[i]` (the company is read within one comma part, and does
-    not reach across a clause, rules.md#M2). None if no such piece exists or it fails one
+    not reach across a clause, rules/M2). None if no such piece exists or it fails one
     of those tests.
 
     Says NOTHING about either token's ROLE -- not `toks[i]`'s, and not
@@ -355,7 +355,7 @@ def _qualifying_front(toks: list[tuple[Token, tuple[int, int]]], i: int,
 
 def _reserve_kept(toks: list[tuple[Token, tuple[int, int]]], j: int,
                   original: str) -> bool:
-    """Whether `toks[j]` is the reserve rules.md#H4's no-comma
+    """Whether `toks[j]` is the reserve rules/H4's no-comma
     carve-out keeps regardless of its own vocabulary: the name's
     first non-TITLE piece, in a name with NO COMMA anywhere before
     it, and no GIVEN/MIDDLE/FAMILY token before it either. 'PhD Ma'
@@ -385,7 +385,7 @@ def _reserve_kept(toks: list[tuple[Token, tuple[int, int]]], j: int,
 
 
 def _outside_its_company(name: ParsedName) -> list[str]:
-    """rules.md#S2's company clause, read off a finished parse (#544):
+    """rules/S2's company clause, read off a finished parse (#544):
     a LISTED member of the ambiguous class written behind an
     unambiguous credential -- with nothing but listed members between
     them, in the same comma part and on the same side of a maiden
@@ -421,7 +421,7 @@ def _outside_its_company(name: ParsedName) -> list[str]:
     ('Smith, PhD Ma') -- every head either has no comma at all or
     already carries a given name across it. That comma-side shape is
     pinned separately: `tests/v2/cases.py`'s `family_comma_lone_degree`
-    and `family_comma_two_credentials` rows, and rules.md#S2's
+    and `family_comma_two_credentials` rows, and rules/S2's
     'Smith, PhD' boundary example.
 
     DELIBERATELY A SECOND IMPLEMENTATION of `_pieces.credential_anchors`,
@@ -467,7 +467,7 @@ def _credential_without_suffix_role(name: ParsedName) -> list[str]:
     outside both TITLE and SUFFIX. Every other member is decided by
     role tests alone.
 
-    Skips a member whose OWN case-based lean (rules.md#S2, #289 -- an
+    Skips a member whose OWN case-based lean (rules/S2, #289 -- an
     ALL-CAPS member of a mixed-case name) already reads it as a
     credential with no company at all: that class predates #544 and
     reaches the very same H4 carve-out on its own ('PhD MA' -> given
@@ -521,7 +521,7 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
 
     #544 joins this walk rather than opening a grid: every parse it
     takes is also asked `_outside_its_company` and
-    `_credential_without_suffix_role` (rules.md#S2's company clause,
+    `_credential_without_suffix_role` (rules/S2's company clause,
     both directions), and the two heads ending in 'PhD' were added so
     that the given slot holds members behind a credential beside the
     comma-less trailing slot 'Jane Doe Jr.' already held. A third
@@ -589,7 +589,7 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
     # after it ('Jane Doe Jr. Ma' reads suffix 'Jr. Ma'), while the
     # clause puts its name words between the two ('Jane Doe Jr. nee
     # Smith Ma'), and the anchor never reaches across a clause
-    # (rules.md#M2, decided, a boundary). So the pair differs by
+    # (rules/M2, decided, a boundary). So the pair differs by
     # construction, and in ONE direction only: the clause reads a name,
     # the plain form a credential. Admitted only where the parser
     # itself gives the head's last token the suffix role and the pair
@@ -683,7 +683,7 @@ def test_a_maiden_clause_does_not_change_how_a_trailing_word_reads(
 #: The tags that make a token a member of the ambiguous credential
 #: class as the reader sees it -- the listed one and the by-shape one
 #: a 2.4 switch writes. Spelled here rather than imported so the
-#: property is stated in the terms rules.md#M2 states it in, and so a
+#: property is stated in the terms rules/M2 states it in, and so a
 #: rename in the pipeline cannot quietly narrow what this checks.
 _CLASS_TAGS = frozenset({"vocab:suffix-ambiguous", "shape:acronym"})
 
@@ -697,7 +697,7 @@ _TAILS = ("Ma JD", "MA JD", "MA Ma")
 def _maiden_clause_grid() -> list[tuple[str, Parser, str]]:
     """(name, parser, policy label) for the M2 release grid.
 
-    Heads where a marker counts (rules.md#M2, #601): particle heads, a
+    Heads where a marker counts (rules/M2, #601): particle heads, a
     bound-given head and pair, a title-led head, a lone name word and a
     Vietnamese head whose surname is particle vocabulary, with by-shape
     and caps-on members, two adjacent particle members, mixed/ALL-CAPS/
@@ -737,7 +737,7 @@ def _maiden_clause_grid() -> list[tuple[str, Parser, str]]:
 
 
 def _released_but_not_suffix(text: str, parser: Parser) -> list[str]:
-    """Words rules.md#M2 says must be SUFFIX-roled and are not.
+    """Words rules/M2 says must be SUFFIX-roled and are not.
 
     The clause's parent-style reach is everything from the marker to
     the first CERTAIN suffix word -- suffix vocabulary that is not
@@ -770,7 +770,7 @@ _MARKER_RE = re.compile(
 
 
 def test_a_word_the_clause_gives_up_lands_in_suffix() -> None:
-    """rules.md#M2's invariant, over the whole release grid.
+    """rules/M2's invariant, over the whole release grid.
 
     The clause may hand a word to the trailing rule that reads it as
     a credential, and it may keep the word. There is no third answer:
@@ -815,7 +815,7 @@ def test_a_word_the_clause_gives_up_lands_in_suffix() -> None:
 
 
 def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
-    """rules.md#H5's transparency, asked where #535 found it broken:
+    """rules/H5's transparency, asked where #535 found it broken:
     a maiden clause ending '<run> Prof.' and one ending 'Prof. <run>'
     must read alike in every field but the order of the title words,
     wherever a trailing rule reads the clause -- no comma, the part
@@ -830,7 +830,7 @@ def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
     in or ahead of the clause would take the title they differ too
     ('Jane van der Berg nee Smith PhD Prof.' against '... Prof. PhD',
     'Jane Doe nee Smith do MA Prof.' against '... do Prof. MA') --
-    rules.md#M2's Accepted pairs, which are examples rather than a
+    rules/M2's Accepted pairs, which are examples rather than a
     complete list. No head or run below has a particle, a bound given
     name or an empty name in or ahead of the clause.
 
@@ -866,7 +866,7 @@ def test_a_trailing_title_is_transparent_to_the_maiden_clause() -> None:
 
 
 def test_a_title_the_clause_gives_up_lands_in_title() -> None:
-    """rules.md#M2's invariant for a title in the run (#535, #601): a
+    """rules/M2's invariant for a title in the run (#535, #601): a
     period-marked title word written after the marker ends the parse
     in the maiden name or in the title field, never in a name part.
 
@@ -905,7 +905,7 @@ def test_a_title_the_clause_gives_up_lands_in_title() -> None:
 
 
 def test_a_title_first_word_counts_as_a_word() -> None:
-    """rules.md#M2's first-word floor, over two INPUTS: the floor is
+    """rules/M2's first-word floor, over two INPUTS: the floor is
     the title chain's own (`trailing_titles` takes it), so whether the
     first word after the marker IS title vocabulary ('King.') or not
     ('Smith') must not change what a trailing credential behind it
@@ -1424,7 +1424,7 @@ def test_any_valid_config_still_parses_totally(
     assert isinstance(str(parsed), str)
     assert isinstance(parsed.capitalized().given, str)
     assert isinstance(parsed.initials(), str)
-    # rules.md#R4 under configuration: what this buys is COVERAGE of
+    # rules/R4 under configuration: what this buys is COVERAGE of
     # the non-mask clauses (shape-acronym, numeral, plain word) across
     # drawn vocabularies and policies -- it falsifies on e.g. a clause
     # that strips a period -- not DETECTION of a mask substitution.
@@ -1639,7 +1639,7 @@ def _dropped_rows(texts: list[str], lexicons: _Variants) -> list[
 
 @functools.cache
 def _class_letters(lexicon: Lexicon) -> frozenset[str]:
-    """The class rules.md#P3's both-sides condition is about: a
+    """The class rules/P3's both-sides condition is about: a
     connective that is ALSO generational vocabulary.
 
     NO LENGTH TEST, matching the rule's own scope and the stage's
@@ -1708,7 +1708,7 @@ def _readmitted(tok: Token) -> bool:
 
 
 def _has_something_to_join(tok: Token, part: tuple[Token, ...]) -> bool:
-    """rules.md#R3's question, asked of the WHOLE PART.
+    """rules/R3's question, asked of the WHOLE PART.
 
     Working particles are set aside -- a particle the unjoined mark
     has NOT readmitted is doing a particle's work and is no name word
@@ -1745,7 +1745,7 @@ def _record_contradicting_reports(name: ParsedName, label: str, text: str,
     """INV10 (#397 second review). Two statements of one rule, the
     second wider than the first and both about the same defect.
 
-    rules.md#A1's own sentence, that a report names the reading the
+    rules/A1's own sentence, that a report names the reading the
     parse took. The
     connective-or-initial fork offers a connective and an initial and
     says which it took, so a token the parse roles SUFFIX or TITLE
@@ -2244,7 +2244,7 @@ def _initial_spans(name: ParsedName,
 def _initial_reading_moved(on: ParsedName, off: ParsedName,
                            letters: frozenset[str]) -> bool:
     """Whether the two parses disagree about a class letter being an
-    INITIAL -- rules.md#P3's marked-subset clause rather than its
+    INITIAL -- rules/P3's marked-subset clause rather than its
     both-sides one, and the one thing an off-switch comparison cannot
     hold fixed: taking the word out of the connectives decides that
     question too, in either direction. A marked letter in a one-case
@@ -2303,7 +2303,7 @@ def _off_switch_findings() -> dict[str, list[str]]:
             continue
         on = parser.parse(text)
         # INV6b's rows, and its scope: the MARKED subset. Its claim
-        # is decisions.md#P3's own -- a one-case name reads the
+        # is decisions/P3's own -- a one-case name reads the
         # marked letter as an initial and so reads as its ALL-CAPS
         # twin already did -- and a class letter the caller's lexicon
         # leaves UNMARKED is the shape P3's Accepted block records
@@ -2434,7 +2434,7 @@ def _a_case_reading_the_docs_already_own(
     e i' against 'CAROD E I' are the same pair.
 
     TWO: a member of the AMBIGUOUS credential class reading
-    differently in the two spellings. That is decisions.md#S2's own
+    differently in the two spellings. That is decisions/S2's own
     lean -- an ALL-CAPS bare member of the class reads as the
     credential and a lower-case one as a name word -- and it decides
     the COMMA STRUCTURE, so its effect reaches every token of the
@@ -2546,7 +2546,7 @@ def test_a_trailing_credential_never_joins_into_a_name_part() -> None:
 def _placed_as_a_connective(on: ParsedName,
                             letters: frozenset[str]) -> bool:
     """Whether the parse put a class letter among the NAME words as a
-    connective -- rules.md#R4's own reading, and the one thing an
+    connective -- rules/R4's own reading, and the one thing an
     off-switch comparison of case repair cannot hold fixed: a
     connective keeps its lowercase there and the off-switch parse,
     where the letter is no connective at all, capitalizes it. Asked
@@ -2586,7 +2586,7 @@ def test_a_letter_that_did_not_join_repairs_as_the_off_switch_does() -> None:
     Three exemptions. The first two are INV6's -- a name whose FIELDS
     moved is a name the join changed, and a letter the two parses
     disagree about being an INITIAL is the marked-subset clause. The
-    third is rules.md#R4's own sentence: a connective the parse
+    third is rules/R4's own sentence: a connective the parse
     placed among the name words keeps its lowercase there, which the
     off-switch parse cannot agree with, since for it the letter is
     not a connective at all. What is left is the generation, and the
@@ -2610,7 +2610,7 @@ def test_a_letter_that_did_not_join_repairs_as_the_off_switch_does() -> None:
 
 
 def test_a_one_case_name_reads_the_same_in_either_case() -> None:
-    """INV6b (#397 second review). decisions.md#P3 states in prose
+    """INV6b (#397 second review). decisions/P3 states in prose
     that a name written wholly in lower case now reads as its
     ALL-CAPS twin already did, and INV6 cannot hold it: the
     `_initial_reading_moved` exemption there swallows the one-case
@@ -2663,7 +2663,7 @@ def test_a_one_case_name_reads_the_same_in_either_case() -> None:
 # any of these names, so removing `i` from the connectives changes
 # nothing and the comparison would be vacuous -- the silence a
 # reachability probe exists to catch. The oracle is the RULE instead,
-# the RULE instead, rules.md#R4 read in its own words: a suffix-roled
+# the RULE instead, rules/R4 read in its own words: a suffix-roled
 # connective that the suffix vocabulary does NOT hold was read as no
 # generation and keeps its lowercase.
 # The literal strings the released wheels give are pinned separately,
@@ -2827,14 +2827,14 @@ _MAIDEN_LINK_GRID = _rows(
 
 def _link_joins_inside_the_clause(maiden: str) -> bool:
     """Whether the ORACLE parse put a link inside the birth name with
-    a birth-name word on each side of it -- rules.md#P3's both-sides
+    a birth-name word on each side of it -- rules/P3's both-sides
     condition, read off the `y` spelling's own maiden field.
 
     The guard, and it is narrower than "the twin keeps the link" for
     a measured reason: 'Jane Doe nee Puig y' keeps its `y` in maiden
     'Puig y', and 'Jane Doe nee Puig i' reads maiden 'Puig' with
     suffix 'i' -- deliberately, the link there joining nothing and
-    being the generation it also spells (rules.md#M2). So a guard
+    being the generation it also spells (rules/M2). So a guard
     asking only whether the twin kept the letter would demand the two
     agree where the rules say they must not. `Puig y III` and `y
     Soler` are the same shape from the other two sides.
@@ -2905,7 +2905,7 @@ def test_a_clause_link_reads_as_its_y_twin_does() -> None:
     the one the maiden walk was never able to get wrong; `i` is that
     same connective AND the roman numeral, and the walk used to end
     the birth name at it. The pair is the whole statement of
-    rules.md#M2's link clause, and it needs no expected values of its
+    rules/M2's link clause, and it needs no expected values of its
     own.
 
     Mutation-checked, 2026-09-20: it fails on all 10,540 guarded rows
@@ -3004,7 +3004,7 @@ def _case_only_violations() -> list[str]:
 
 
 def test_case_repair_changes_case_and_nothing_else() -> None:
-    """rules.md#R4 read as an invariant: a repaired token equals its
+    """rules/R4 read as an invariant: a repaired token equals its
     input under str.casefold(), on both surfaces, plain and forced,
     under the shipped lexicon and under one whose exceptions map is
     empty. casefold(), not a character-for-character check, is the
@@ -3016,7 +3016,7 @@ def test_case_repair_changes_case_and_nothing_else() -> None:
     shape under re.I admits the dotless 'ı', which upper()s to 'I',
     and 'I' does NOT fold back to 'ı', so a name spelling a numeral
     with it would fail this walk; none in the walk does. Both cases
-    are decisions.md#R4's Unicode boundary.
+    are decisions/R4's Unicode boundary.
 
     Recorded negative control, measured 2026-09-23 over this walk: at
     the parent 4d0680e6, where the exceptions map SUBSTITUTED its
@@ -3113,7 +3113,7 @@ def _nfd_twin_findings() -> tuple[list[str], list[str], int]:
 
 
 def test_a_decomposed_name_renders_as_its_composed_twin() -> None:
-    """rules.md#R3 and #R4 read as an invariant over encodings: a
+    """rules/R3 and #R4 read as an invariant over encodings: a
     letter written as a base letter and its combining accent initials
     (#585) and repairs (#542) as the letter written whole does. Core
     and facade; repair plain and forced. The output is compared
@@ -3202,7 +3202,7 @@ def _comma_twin_findings(parser: Parser) -> tuple[list[str], int]:
 
 
 def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
-    """rules.md's C1: "a delimiter the policy declares parts a trailing
+    """rules/C1's statement: "a delimiter the policy declares parts a trailing
     suffix part as a comma would" (#549). Every role field of a name
     with a declared core standing in a part after the suffix comma, and
     every kind it reports but `comma-structure` (`_twin_record`),
@@ -3226,7 +3226,7 @@ def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
 
 
 # A one-letter word written with its period is an initial and not a
-# particle (rules.md#P7), so a name holding 'Ó.' must read exactly as
+# particle (rules/P7), so a name holding 'Ó.' must read exactly as
 # the same name holding any other initial does. Two INPUTS,
 # not two views of one parse (docs/design/AGENTS.md axis 11): the rule
 # is not consulted, so the test can find the rule wrong as well as the
@@ -3303,7 +3303,7 @@ def test_a_one_letter_particle_with_its_period_reads_as_any_initial() -> None:
 #: some, so none is decoration. _render's is measured without the
 #: particle case masks, as for a caller's one-letter particle that has
 #: none: with the shipped 'ó' mask the repair takes the mask before
-#: the particle arm is asked (rules.md#R4), so the default vocabulary
+#: the particle arm is asked (rules/R4), so the default vocabulary
 #: alone cannot see that veto.
 _P7_SITE_EFFECT = {
     "nameparser._pipeline._classify": 404,

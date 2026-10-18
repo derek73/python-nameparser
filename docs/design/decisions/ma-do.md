@@ -1,0 +1,7 @@
+# ma-do — ambiguous acronyms by decision
+
+- 2026-07-17 (M12, Derek-approved) — ma and do joined the ambiguous acronym set because both are common surnames; the two-word "Jack Ma" is kept intact by S2's words-to-spare guard, while the periods gate governs the dotted spellings ("M.A." counts unambiguously). Documented side effect: parenthesized bare
+  "(MA)"/"(DO)" no longer escape to suffix as in 1.x.
+- 2026-09-15 #289 — AMENDS the sentence above for one spelling and leaves it standing for the other. "The two-word 'Jack Ma' is kept intact by S2's words-to-spare guard" is still true of `Jack Ma`, and false of `Jack MA`: an all-caps member of the ambiguous set inside a mixed-case name is now read as a credential with nothing to spare, so `Jack MA` gives given 'Jack', suffix 'MA' — v1's reading was last 'MA', so this is a deliberate parity break and not a restoration. The periods gate is untouched and still governs the dotted spellings. The two ledger comments that quote this sentence carry the same amendment. See #S2.
+- 2026-09-18 #531 — AND `do` IS NOW SPELLING-DEPENDENT AFTER A FAMILY COMMA, which neither sentence above anticipated: it is the one member of this set that is also particle vocabulary, so `Doe, John DO` reads suffix `DO` (capitals, mixed-case name) while every other spelling attaches to the family under rules/P6. The pairing and its accepted cost are in #S2's 2026-09-18 `do` bullet.
+

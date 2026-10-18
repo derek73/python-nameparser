@@ -44,7 +44,7 @@ class InitialsTestCase(HumanNameTestBase):
         # "Nguyen, Van Le" parses with middle name "Le", every word of
         # which is particle vocabulary. A particle standing alone in a
         # name part is not doing a particle's work there, so it
-        # initials as an ordinary name word (rules.md#R2/#R3) rather
+        # initials as an ordinary name word (rules/R2/#R3) rather
         # than being dropped -- this read "V. N." until #404, losing
         # the middle name entirely.
         hn = HumanName("Nguyen, Van Le")
@@ -279,15 +279,15 @@ class InitialsTestCase(HumanNameTestBase):
         # #528 made this view read the parse's tags instead of
         # re-deriving from vocabulary and shape. The core's
         # parse(...).initials() has given 'j. e. s.' since #383/#479
-        # and the two agree now; decisions.md#P3 and decisions.md#R3
+        # and the two agree now; decisions/P3 and decisions/R3
         # carry the split and its closing.
         hn = HumanName("john e smith")
         self.m(hn.initials(), "j. e. s.", hn)
         # 'maria y lopez' moved with #461, not with the one-case fork:
         # its 'y' holds the middle part alone, so there is nothing
         # there for it to join and it initials like any other name
-        # word, agreeing with the parse's own view. rules.md#R3 states
-        # the rule for all three groups and decisions.md#R3 records
+        # word, agreeing with the parse's own view. rules/R3 states
+        # the rule for all three groups and decisions/R3 records
         # what it costs. The letter's TAG is unchanged -- a lowercase
         # 'y' outside the marked set is still the connective.
         hn = HumanName("maria y lopez")

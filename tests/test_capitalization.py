@@ -19,7 +19,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # A known failure since 2012 (the Google Code tracker's issue 22)
     # until #492: the one-case gate read the SUFFIX as evidence that
     # the writer cased the whole name, so 'III' held the lowercase
-    # name back. The gate now leaves the suffixes out (rules.md#R5):
+    # name back. The gate now leaves the suffixes out (rules/R5):
     # a generation written the way one is written says nothing about
     # how the name was cased. The name words still count, and so
     # does a title -- the two boundary rows.
@@ -168,7 +168,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # key's own letters recased -- so a v1 Constants carrying any other
     # value raises at the first parse, where the snapshot builds the
     # Lexicon. A DECIDED exception to the shim's never-raise rule
-    # (decisions.md#R4, and #3-0-reevaluations): 1.4.0 substituted
+    # (decisions/R4, and #3-0-reevaluations): 1.4.0 substituted
     # such a value for the word, repair now only recases, and no such
     # value was found in the tracker, the docs or any test. The raise
     # carries a v1-spelled hint: the 2.0 message's own offer
@@ -203,7 +203,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'John Smith JR', hn)
 
-    # rules.md#R5 (#492): a suffix ASSIGNED to the facade after
+    # rules/R5 (#492): a suffix ASSIGNED to the facade after
     # construction carries UNCLASSIFIED_TAG (no `vocab:suffix` tag, no
     # roman-numeral shape read from a parse) and is still excluded from
     # the one-case gate -- the gate reads the ROLE, not the tag.
@@ -265,13 +265,13 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'Van Nguyen', hn)
 
-    # #407, rules.md#R4. The family is one word and that word is
+    # #407, rules/R4. The family is one word and that word is
     # particle vocabulary, so nothing joins it to a name and it is not
     # doing a particle's work: family_base and initials have read it as
     # an ordinary name word since #404, and case repair now agrees.
     # Deliberately the v1 facade, and deliberately single-case input --
     # this MOVES v1-visible behavior (1.4.0 returns 'Anh do'), and the
-    # mixed-case gate would return the input untouched (rules.md#R5).
+    # mixed-case gate would return the input untouched (rules/R5).
     def test_capitalize_all_particle_family_is_a_name_word(self) -> None:
         hn = HumanName('ANH DO')
         hn.capitalize()
@@ -316,7 +316,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # an all-particle family whose `y` carries the mark, giving
     # 'Anh y Van' where gating the conjunct too would give
     # 'Anh Y Van'. So the ungated conjunct decides something: it is
-    # rules.md#R4's stated carve-out, matching R3's for initials,
+    # rules/R4's stated carve-out, matching R3's for initials,
     # rather than a no-op. The `y` here is a GIVEN-part word besides,
     # not a word of the all-particle family.
     def test_capitalize_all_particle_family_beside_a_conjunction(self) -> None:
@@ -324,7 +324,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(str(hn), 'y Van Der', hn)
 
-    # rules.md#R5's override, stated as a property rather than a
+    # rules/R5's override, stated as a property rather than a
     # single row: mixed case is the writer making an explicit choice
     # and repair defers to it, so asking for repair REGARDLESS should
     # ignore the input's case entirely -- one name, one repaired
@@ -341,7 +341,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # only 25 move a role, and the other 37 parse byte-identically and
     # differ inside the repair itself. Through the v2 core --
     # `parse(n).capitalized(force=True)`, rendering all seven roles
-    # -- the counts are 63 and 38, which is what decisions.md#R5
+    # -- the counts are 63 and 38, which is what decisions/R5
     # states. The one name the facade cannot see is
     # `Jane van der Berg nee y Jones`, whose conjunction sits in the
     # MAIDEN name: `str(HumanName)` renders the default spec, and
@@ -353,7 +353,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # count collapses and the direction flips, uppercase now differing
     # on fewer names than lowercase rather than more. The dated
     # re-measurement and its recipe (with the actual counts) live
-    # under decisions.md#R5.
+    # under decisions/R5.
     #
     # THROUGH 2.3.0 the mechanism was v1's initial carve-out, taken in
     # the PARSE since #458 and read off the tag by the repair: a word
@@ -363,9 +363,9 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # conjunction became an initial; lowercase one and a middle
     # initial `E` became the Italian conjunction. `Velasquez y Garcia,
     # Dr. Juan Q.` forced kept `y`; uppercased then repaired gave `Y`
-    # (decisions.md#R5).
+    # (decisions/R5).
     #
-    # #383/#479 (rules.md#P3, decisions.md#P3) removed "one CAPITAL
+    # #383/#479 (rules/P3, decisions/P3) removed "one CAPITAL
     # letter" as the whole test: a name written wholly in one case
     # carries no case evidence, so the vocabulary decides instead of
     # the shape. Only the letters `Lexicon.conjunctions_ambiguous`
@@ -381,7 +381,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # giving `Dr. Juan Q. Velasquez y Garcia`; the lowercase half is
     # shown instead by `john e smith`
     # (tests/v2/test_render.py::test_capitalized_one_case_connective_that_reads_as_an_initial).
-    # decisions.md#R5 carries the dated amendment for this. So the
+    # decisions/R5 carries the dated amendment for this. So the
     # property is pinned over names
     # carrying no single-letter word whose class case decides, and the
     # `conjunctions_ambiguous` exception is pinned beside it as data
@@ -401,13 +401,13 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
 
     # This WAS the recorded exception to the property above through
     # 2.3, and the reason it was scoped rather than universal. The
-    # #383/#479 fork (rules.md#P3, decisions.md#P3) reads a bare
+    # #383/#479 fork (rules/P3, decisions/P3) reads a bare
     # capital single-letter conjunction in a one-case name as the
     # connective -- no case evidence says otherwise -- so
     # 'JUAN Y GARCIA' and 'juan y garcia' now repair to the same
     # string and the property above holds for them too. 1.4.0's
     # 'Juan Y Garcia' (measured on the released wheel) is the parity
-    # break decisions.md#R5's 2026-09-13 amendment records; no ledger
+    # break decisions/R5's 2026-09-13 amendment records; no ledger
     # compares case repair, which is why this test is the pin.
     #
     # The name is kept for the blame trail even though it now
@@ -426,7 +426,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         # 'Y' carries no case evidence -- 'y' is not in
         # conjunctions_ambiguous, so it reads as the connective rather
         # than as an initial, and R4's carve-out lowercases it exactly
-        # as it lowercases the all-lower spelling above (decisions.md#P3)
+        # as it lowercases the all-lower spelling above (decisions/P3)
         self.m(str(uppered), 'Juan y Garcia', uppered)
         # mixed-case control: here the capital IS evidence, so 'Y'
         # reads as an initial exactly as it always has and repair
@@ -482,7 +482,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # #478: Ortega y Gasset is routinely hyphenated in catalogues, and
     # inside one hyphenated word a connective with a part on each side
     # keeps its lowercase -- the hyphens are the writer joining the name
-    # around it, as the spaced connective does (rules.md#R4). This
+    # around it, as the spaced connective does (rules/R4). This
     # reverses #458's answer for the INTERIOR position ('Jose
     # Ortega-Y-Gasset' at 2.2.0 and 2.3.0) and keeps it at the edges,
     # where a part has a neighbour on one side only and is ordinary

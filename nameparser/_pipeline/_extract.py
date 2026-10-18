@@ -17,7 +17,7 @@ Lexicon.maiden_markers, and
 Lexicon.suffix_words / suffix_acronyms / suffix_acronyms_ambiguous
 through _suffix_shaped.
 
-Implements rules N1, N2, S1, M1 and M3 of docs/design/rules.md (the #273
+Implements rules N1, N2, S1, M1 and M3 of docs/design/rules/ (the #273
 matching mechanism); each is cited at its code below. One scan
 mechanic worth stating up front: matching is one left-to-right pass,
 no nesting, and delimiter characters inside a matched region are
@@ -44,7 +44,7 @@ from nameparser._pipeline._vocab import (
 from nameparser._types import AmbiguityKind, Role, Span
 
 
-# rules.md#S1: "a bracketed clause whose content is suffix-shaped is
+# rules/S1: "a bracketed clause whose content is suffix-shaped is
 # not a nickname: the brackets are dropped and the content reads
 # exactly as if written bare"
 def _suffix_shaped(content: str, lexicon: Lexicon) -> bool:
@@ -60,7 +60,7 @@ def _suffix_shaped(content: str, lexicon: Lexicon) -> bool:
             or content.endswith("."))
 
 
-# rules.md#M3: "a bracketed clause whose content opens with a
+# rules/M3: "a bracketed clause whose content opens with a
 # recognized marker and carries a word after it reads as the
 # maiden name, whichever bucket the enclosing pair sits in"
 def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
@@ -80,7 +80,7 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
     WHITESPACE, so a marker the writer glued to punctuation is not one
     here ('née,') -- nor to classify, since #653 keeps a clause's comma
     on its word. A nakaguro still divides the two: the tokenizer splits
-    '旧姓・田中' at it (rules.md#T2) and classify tags '旧姓', which is
+    '旧姓・田中' at it (rules/T2) and classify tags '旧姓', which is
     what keeps _group's Role.MAIDEN filter reachable (cases.py's
     marker_divided_by_a_nakaguro_keeps_the_clause_a_nickname). Sharing
     the PREDICATE does not merge the two
@@ -97,7 +97,7 @@ def _maiden_marked(content: str, lexicon: Lexicon) -> bool:
             and not comma_follows_marker(words[run]))
 
 
-# rules.md#N2: "a quote whose open and close are the same character
+# rules/N2: "a quote whose open and close are the same character
 # opens only at a word start and closes only at a word end, so an
 # apostrophe inside or at the end of a word is literal"
 def _open_ok(text: str, i: int) -> bool:
@@ -169,11 +169,11 @@ def _unmatched(open_: str, offset: int) -> tuple[int, PendingAmbiguity]:
     ))
 
 
-# rules.md#N1: "a clause enclosed by a configured nickname delimiter
+# rules/N1: "a clause enclosed by a configured nickname delimiter
 # pair reads as the nickname and is lifted out of the name" (its
 # punctuation is tokenize's half of the rule)
-# rules.md#M1: "with a delimiter pair configured for maiden names, its
-# enclosed clause reads as the maiden name" (history: decisions.md#M1)
+# rules/M1: "with a delimiter pair configured for maiden names, its
+# enclosed clause reads as the maiden name" (history: decisions/M1)
 def extract_delimited(state: ParseState) -> ParseState:
     text = state.original
     policy = state.policy

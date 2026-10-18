@@ -45,9 +45,9 @@ bare core the half that flips "田中さん, /").
 
 Implements rules W1 (the vocabulary/segmenter division), W2 (the
 glued-honorific peel) and W3 (the writer's divisions are respected)
-of docs/design/rules.md, cited at their code below; the decision
+of docs/design/rules/, cited at their code below; the decision
 chain (#308, #312, #319, the vetting bars, the measured
-spaced-honorific trade) is decisions.md#W1, #W2 and #W3. Both splits
+spaced-honorific trade) is decisions/W1, #W2 and #W3. Both splits
 make sub-slices of one token, rewriting nothing -- spans still index
 the original exactly, so the anti-#100 invariant holds by
 construction. Both also match on the token's CORE, its
@@ -245,10 +245,10 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
     return is_suffix_strict(state.tokens[i].text, state.lexicon)
 
 
-# rules.md#W2: "A part that is not name text — a post-nominal word
+# rules/W2: "A part that is not name text — a post-nominal word
 # standing on its own — is never the name's end: the split-off steps
 # past it to the name word behind, and never dissects it." (history:
-# decisions.md#W2)
+# decisions/W2)
 # The scan-back below is that clause, and it needs no punctuation to
 # fire. '김민준 박사님' steps past 박사님 to 김민준, finds no listed
 # tail there and returns None -- so 박사님 is left whole for suffix
@@ -256,7 +256,7 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
 # same input gives when the step is removed. '선생님' is post-nominal
 # entire with no name word behind it, so the scan yields no site at
 # all and the token stays whole. Both are corpus names and
-# rules.md#W2 example lines; decisions.md#cjk-comma-demotion
+# rules/W2 example lines; decisions/cjk-comma-demotion
 # carries the forced-predicate measurement behind them.
 def _peel_site(state: ParseState, flat: Sequence[int],
                tails: frozenset[str]) -> tuple[int, int] | None:
@@ -315,15 +315,15 @@ def _peel_site(state: ParseState, flat: Sequence[int],
     return None
 
 
-# rules.md#W2: "a listed honorific glued to the end of the name's
+# rules/W2: "a listed honorific glued to the end of the name's
 # last name word splits off once and reads as a suffix." (history:
-# decisions.md#W2)
+# decisions/W2)
 # That the peel also reaches ACROSS a family comma is stated at
-# rules.md#W3 instead, which is a tolerated rule since the
+# rules/W3 instead, which is a tolerated rule since the
 # 2026-09-01 comma demotion -- the crossing is what the parser does
 # today, not something W2 promises. W3 also carries the reading of a
-# period a listing leaves behind (decisions.md#cjk-comma-demotion,
-# amended by decisions.md#cjk-full-stops): a period on a SEPARATE
+# period a listing leaves behind (decisions/cjk-comma-demotion,
+# amended by decisions/cjk-full-stops): a period on a SEPARATE
 # post-nominal word rides into the suffix and moves nothing ('様.'
 # is post-nominal-strict and the scan steps past it as it steps past
 # '様'), and since #323 a period glued to the honorific's OWN token
@@ -348,7 +348,7 @@ def _one_case(state: ParseState) -> bool:
 def _postnominal_behind_a_whole_name(state: ParseState) -> bool:
     """Whether the part after the comma is the postnominal part of a
     whole name, so the part before it is a name and not a surname --
-    rules.md#C1's question, which group decides once the words are
+    rules/C1's question, which group decides once the words are
     tagged (#613). This stage runs first, so it asks THAT decision, on
     the name as written: `_comma.decide` over a classified copy of the
     state, which is the one implementation of the question. A hand copy
@@ -646,7 +646,7 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # entry's stored form is its NFC composition with no case or
     # edge-stop change (#322) -- so an entry AUTHORED in NFD is
     # composed on the way in, raw NFD input matches nothing here, and
-    # the name goes unsplit, which is the no-split rules.md#W1 already
+    # the name goes unsplit, which is the no-split rules/W1 already
     # accepts for NFD text. An empty vocabulary skips the match rather
     # than bailing the stage (_longest_entry's max() has nothing to
     # take): a surname-less lexicon declines every token, which is
@@ -714,7 +714,7 @@ def _split_surname_site(state: ParseState) -> ParseState:
            and _PEELED_TAG not in state.tokens[j].tags
            for j in state.segments[0]):
         return state
-    # No try/except around the call: rules.md#A1's Accepted clause
+    # No try/except around the call: rules/A1's Accepted clause
     # ("a user-supplied segmenter's own error, which propagates"). The
     # two checks below are that same doctrine, curated, and they are
     # where the line this module draws is easiest to state:
@@ -770,13 +770,13 @@ def _split_surname_site(state: ParseState) -> ParseState:
     return _split(state, i, answer.splits, detail)
 
 
-# rules.md#W1: "an undivided word in the family position of a name
+# rules/W1: "an undivided word in the family position of a name
 # written in an activated script divides after a recognized surname,
 # the longest recognized surname first; where the vocabulary
 # recognizes nothing, an optional segmenter may divide instead"
-# rules.md#W3: "under a family comma the pre-comma text is the
+# rules/W3: "under a family comma the pre-comma text is the
 # family by declaration and never divides, and the post-comma side
-# is given text with no family to find" (history: decisions.md#W3)
+# is given text with no family to find" (history: decisions/W3)
 def script_segment(state: ParseState) -> ParseState:
     if state.original.isascii():
         # spans index the original exactly (the anti-#100 invariant),

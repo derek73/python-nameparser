@@ -1,6 +1,6 @@
 ---
 name: design-docs-reviewer
-description: Reviews changes to docs/design/ (rules.md, decisions.md, mechanisms.md, and AGENTS.md itself, which carries the conventions the other three rest on) for the failure modes that this doc system's own tests cannot catch — unreproducible measurements, rules that contradict the decision entries they rest on, statements that contradict their own examples, and prose edits that change what the doc parsers see. Use before merging any PR that touches docs/design/, and after distilling a design session into those files.
+description: Reviews changes to docs/design/ (rules/, decisions/, mechanisms.md, and AGENTS.md itself, which carries the conventions the other three rest on) for the failure modes that this doc system's own tests cannot catch — unreproducible measurements, rules that contradict the decision entries they rest on, statements that contradict their own examples, and prose edits that change what the doc parsers see. Use before merging any PR that touches docs/design/, and after distilling a design session into those files.
 tools: Bash, Read, Grep, Glob
 ---
 
@@ -26,7 +26,7 @@ It is the only copy on purpose. This agent used to restate the axes
 and drifted three ways against it — a missing axis, a narrowed one,
 and a corpus count whose correction was recorded there and never
 reached the copy here (#473,
-decisions.md#review-agent-single-source). Do not reintroduce a
+decisions/review-agent-single-source). Do not reintroduce a
 summary.
 
 ## How to run

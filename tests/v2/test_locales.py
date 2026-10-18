@@ -220,7 +220,7 @@ def test_ja_pack_contents() -> None:
     assert locales.JA.code == "ja"
     # segmentation activation ONLY: no vocabulary (no list settles a
     # kanji name) and no order (the kana license already reads
-    # Japanese family-first by default, decisions.md#W4)
+    # Japanese family-first by default, decisions/W4)
     assert locales.JA.policy.segment_scripts == frozenset(
         {Script.HAN, Script.HIRAGANA})
     assert locales.JA.policy.name_order is UNSET
@@ -755,8 +755,8 @@ def test_the_rotation_stands_down_under_a_declared_family_first_order(
     The family-first listing reads the same either way, and the
     natural-order name reads as the caller declared it -- family
     'Иван' -- which is what #384 measured, Accepted in
-    docs/design/decisions.md#O1 rather than treated as a defect.
-    rules.md#O1 states it in prose because an example line there
+    docs/design/decisions/O1 rather than treated as a defect.
+    rules/O1 states it in prose because an example line there
     takes ONE annotation, a pack or an order, never both.
     """
     ff = parser_for(locales.RU,
@@ -779,7 +779,7 @@ def test_the_rotation_stands_down_under_a_declared_family_first_order(
 
 def test_the_turkic_marker_lands_in_a_name_field_under_both_orders(
         ) -> None:
-    """Pins the prose decisions.md#O1's 2026-09-07 entry states for O2.
+    """Pins the prose decisions/O1's 2026-09-07 entry states for O2.
 
     Gate-independent: `Ali Ahmad Vali oglu` is natural-order input,
     so the rotation would not fire on it under the default order
@@ -789,7 +789,7 @@ def test_the_turkic_marker_lands_in_a_name_field_under_both_orders(
     Under FAMILY_FIRST that costs nothing visible, the family being
     the word the rotation would have chosen anyway; under
     FAMILY_FIRST_GIVEN_LAST the marker becomes the GIVEN name, which
-    is the reading rules.md#O2 carries as Accepted.
+    is the reading rules/O2 carries as Accepted.
     """
     ff = parser_for(locales.TR_AZ, base=Parser(
         policy=Policy(name_order=FAMILY_FIRST)))
@@ -923,7 +923,7 @@ _ROTATORS["zh"] = [
 # ja has no marker regexes and no vocabulary either: its rotators cover
 # the shapes only the pack PLUS its segmenter changes. Every row is
 # UNSPACED on purpose -- a spaced kana-licensed name (高橋 みなみ) now
-# reads family-first by DEFAULT (decisions.md#W4), so it would
+# reads family-first by DEFAULT (decisions/W4), so it would
 # not deviate and would fail the must-deviate assertion below.
 _ROTATORS["ja"] = [
     "山田太郎",      # 2-kanji family + 2-kanji given, the common shape
@@ -1089,7 +1089,7 @@ def test_non_interference_all_packs_combined() -> None:
 # The Devanagari block grew and a Bengali one opened on 2026-09-06
 # with the Indic honorific bundle (#346/#344/#343); those rows were confirmed the
 # same way, live against a runtime-augmented Lexicon.default() before
-# the data landed. See decisions.md#indic-honorifics.
+# the data landed. See decisions/indic-honorifics.
 @pytest.mark.parametrize("name, field, expected", [
     # Cyrillic (ru/uk) titles.
     ("г-н Иван Петров", "title", "г-н"),
@@ -1184,7 +1184,7 @@ def test_non_interference_all_packs_combined() -> None:
     ("الحاج عبد الرحمن السيد", "given", "عبد الرحمن"),
     ("الحاج عبد الرحمن السيد", "family", "السيد"),
     # a given-name title plus the bound pair ALONE: the licence
-    # (rules.md#P5, #369) lifts the family reserve, so the pair is the
+    # (rules/P5, #369) lifts the family reserve, so the pair is the
     # given name and, as for "Sir John", there is no family. Thirteen
     # of the given-name titles are this script's, so this is where
     # the licence mostly fires.
@@ -1264,7 +1264,7 @@ def test_non_interference_all_packs_combined() -> None:
     # বাবু is TRAILING in Bengali where Devanagari बाबू is LEADING.
     # Different codepoints, so the two cannot interact -- and a sweep
     # "harmonizing" them changes four parses and, without these rows,
-    # reddens nothing (decisions.md#indic-honorifics).
+    # reddens nothing (decisions/indic-honorifics).
     ("অমল বাবু", "suffix", "বাবু"),
     ("অমল বাবু", "given", "অমল"),
     ("बाबू अमल", "title", "बाबू"),
@@ -1328,7 +1328,8 @@ def test_non_interference_all_packs_combined() -> None:
     ("মি. রহমান", "title", "মি."),
     ("মি. রহমান", "family", "রহমান"),
     # The exclusion holds: ঠাকুর is Tagore, a surname, and is
-    # deliberately not a title (decisions.md's Excluded (TITLES)).
+    # deliberately not a title (decisions/vocabulary-exclusions,
+    # Excluded (TITLES)).
     # LEADING position is where the exclusion is load-bearing --
     # TITLES is leading-only, so the trailing spelling reads the same
     # whether or not the word ships and cannot guard anything.

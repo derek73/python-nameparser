@@ -23,7 +23,7 @@ compatibility failure.
 # above no longer says "this package is deleted in 3.0". The 3.0
 # removal schedule names "nameparser.config in its entirety" while
 # actually enumerating only the five shim exports re-exported below;
-# that gap is recorded in docs/design/decisions.md#3-0-reevaluations
+# that gap is recorded in docs/design/decisions/3-0-reevaluations
 # rather than left to a section number of an uncommitted document.
 # Whether the DATA modules keep this package as their
 # home in 3.0 or move under the core is an open decision, not something

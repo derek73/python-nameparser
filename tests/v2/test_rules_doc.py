@@ -1,4 +1,4 @@
-"""Executes every example line in docs/design/rules.md.
+"""Executes every example line in docs/design/rules/.
 
 Wrong-on-arrival defense: each example runs against the live parser.
 ``deviates:`` examples assert TODAY's output (strict, like an xfail)
@@ -15,14 +15,15 @@ import pytest
 from nameparser import Parser, parse, parser_for
 from nameparser import locales
 from nameparser._policy import Policy
+from tests.v2.design_docs import read_rules_text
 from tests.v2.rules_doc import (
-    RULES_DOC, Example, Rule, parse_rules_doc, resolve_annotation)
+    Example, Rule, parse_rules_doc, resolve_annotation)
 
-RULES = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
+RULES = parse_rules_doc(read_rules_text())
 
 
 def test_doc_has_rules() -> None:
-    assert RULES, "rules.md holds no rules yet -- extraction not started"
+    assert RULES, "docs/design/rules/ holds no rules"
 
 
 @pytest.mark.parametrize("rule", RULES, ids=lambda r: r.rule_id)
@@ -152,15 +153,13 @@ def test_example(rule: Rule, example: Example) -> None:
     "김. 민준",  # H2's script veto on hangul typed as jamo (#665)
 ])
 def test_the_nfd_examples_are_still_decomposed(decomposed: str) -> None:
-    """The decomposed example lines in rules.md are the only executable
+    """The decomposed example lines in the rules are the only executable
     witnesses of its encoding clauses (H2, P3), and an editor or
     formatter that NFC-normalizes the file turns each into the
     composed case, which always worked and still passes. Each entry
     here is typed decomposed, which the first assert checks so that
     normalizing this file cannot hollow the test out either."""
     import unicodedata
-    from pathlib import Path
     assert not unicodedata.is_normalized("NFC", decomposed)
-    text = (Path(__file__).parents[2] / "docs" / "design" / "rules.md"
-            ).read_text(encoding="utf-8")
+    text = read_rules_text()
     assert decomposed in text, f"the NFD example {decomposed!r} was recomposed"

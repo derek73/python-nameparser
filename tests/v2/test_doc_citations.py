@@ -20,32 +20,40 @@ citation forms out of the committed tree.
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 from typing import NamedTuple
 
-from tests.v2.rules_doc import (
-    _POINTER_RE, _RULE_RE, RULES_DOC, parse_rules_doc)
+from tests.v2.design_docs import (
+    DECISIONS_DIR, MECHANISMS_DOC, MENTION_RE, RULES_DIR,
+    read_decision_files, read_rules_text)
+from tests.v2.rules_doc import _POINTER_RE, _RULE_RE, parse_rules_doc
 
 REPO = Path(__file__).resolve().parents[2]
-MECH_DOC = REPO / "docs" / "design" / "mechanisms.md"
+MECH_DOC = MECHANISMS_DOC
 SWEEP_DIRS = ("nameparser", "tests", "tools")
 ENFORCE_NO_LEGACY = True    # armed 2026-08-15, the rewrite complete
 _LEGACY_RES = (re.compile(r"§"), re.compile(r"superpowers"),
                re.compile(r"plan[\s#]+deviation"),
                re.compile(r"spec\s+[S§]?\d"))
 
-# A reference to a design doc: the doc and the ID or entry key. A
-# decisions.md key may be a lowercase slug ('suffix-acronym-collisions').
-_MENTION_RE = re.compile(
-    r"(?P<doc>rules|mechanisms|decisions)\.md#"
-    r"(?P<cid>[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*)")
+# A reference to a design doc: the doc and the ID or entry key
+# (design_docs.MENTION_RE). A decisions key may be a lowercase slug
+# ('suffix-acronym-collisions').
+_MENTION_RE = MENTION_RE
+# The same reference in the docs themselves, where a key starting with a
+# digit (decisions/3-0-reevaluations) is checked too.
+_DOC_ANCHOR_RE = re.compile(MENTION_RE.pattern.replace(
+    "[A-Za-z][A-Za-z0-9_]*", "[A-Za-z0-9][A-Za-z0-9_]*", 1))
+assert _DOC_ANCHOR_RE.pattern != MENTION_RE.pattern, (
+    "MENTION_RE was reworded; widen its key's first character here again")
 # A reference is a CITATION when a quote follows it in one of the
-# shapes the tree writes: the colon form (`rules.md#S2: "..."`, where
+# shapes the tree writes: the colon form (`rules/S2: "..."`, where
 # prose may stand before the quote), or the ID, an optional "'s", up
 # to four words and optionally a dash, colon, comma or parenthesis,
 # then the
-# quote (`rules.md#P5 -- "..."`, `rules.md#M2's Accepted clause
-# ("...")`, `rules.md#S2 consumes "..."`, `rules.md#M2 -- the
+# quote (`rules/P5 -- "..."`, `rules/M2's Accepted clause
+# ("...")`, `rules/S2 consumes "..."`, `rules/M2 -- the
 # numeral is taken "..."`). Any other reference is a
 # pointer, which must still name something that exists.
 _COLON_RE = re.compile(r"\s*:")
@@ -59,7 +67,6 @@ _CHAIN_RE = re.compile(r'\s*,?\s*(?:and\s+|--\s*|—\s*)?(?=")')
 # An excerpt may elide with "[...]": each fragment must then be
 # verbatim, non-empty, and in order.
 _ELISION = "[...]"
-DEC_DOC = REPO / "docs" / "design" / "decisions.md"
 
 
 class Citation(NamedTuple):
@@ -70,6 +77,10 @@ class Citation(NamedTuple):
     excerpts: tuple[str, ...]   # normalized; () for a pointer
     colon: bool                 # written in the colon form
     lead: str                   # the text between the ID and its quote
+
+
+def _cite(doc: str, cid: str) -> str:
+    return f"{doc}.md#{cid}" if doc == "mechanisms" else f"{doc}/{cid}"
 
 
 def _norm(s: str) -> str:
@@ -85,14 +96,14 @@ def _statements() -> dict[str, str]:
     """What a citation may quote: for a rule, its prose -- the
     statement and its Accepted: clauses, everything in the block but
     example, pointer and marker lines; for a section letter
-    (`rules.md#H Background`), the section's Background paragraph; for
+    (`rules/H Background`), the section's Background paragraph; for
     a mechanism, its Contract statement."""
     out: dict[str, list[str]] = {}
     current: list[str] | None = None
     background: list[str] | None = None
     section = None
     marker = False          # inside a wrapped no-boundary: marker
-    for line in RULES_DOC.read_text(encoding="utf-8").splitlines():
+    for line in read_rules_text().splitlines():
         m = _RULE_RE.match(line)
         hm = re.match(r"## .*\(([A-Z])\)\s*$", line)
         if background is not None:
@@ -137,18 +148,12 @@ def _statements() -> dict[str, str]:
 
 
 def _decision_entries() -> dict[str, str]:
-    """decisions.md entry bodies keyed by their ### key. An entry is a
-    dated record rather than a statement, so a citation of one need
-    not quote it; but what it does quote must be verbatim. An arc
-    spread over several headings ('### differential-ledger, the ...
-    arc') answers to its key with all of them."""
-    out: dict[str, str] = {}
-    text = DEC_DOC.read_text(encoding="utf-8")
-    for sec in re.split(r"^(?=#{2,3} )", text, flags=re.M):
-        hm = re.match(r"### ([^\s—,]+)", sec)
-        if hm:
-            out[hm.group(1)] = out.get(hm.group(1), "") + " " + _norm(sec)
-    return out
+    """decisions entry bodies keyed by their key, one file each. An
+    entry is a dated record rather than a statement, so a citation of
+    one need not quote it; but what it does quote must be verbatim. An
+    arc spread over several headings (the differential-ledger arcs)
+    answers to its key with all of them."""
+    return {key: _norm(text) for key, text in read_decision_files().items()}
 
 
 def _is_excerpt(excerpt: str, body: str) -> bool:
@@ -165,9 +170,12 @@ def _is_excerpt(excerpt: str, body: str) -> bool:
 
 
 def _swept_files() -> list[Path]:
-    # this module's own comments show citation shapes, citing nothing
+    # this module's own comments show citation shapes, citing nothing,
+    # and so do test_design_docs.py's fixtures for the citation pattern
+    shapes = {Path(__file__).resolve(),
+              REPO / "tests" / "v2" / "test_design_docs.py"}
     files = [p for d in SWEEP_DIRS for p in sorted((REPO / d).rglob("*.py"))
-             if p != Path(__file__).resolve()]
+             if p not in shapes]
     return files
 
 
@@ -212,7 +220,7 @@ def _citations() -> list[Citation]:
                 if nxt:
                     text = text[:nxt.start()]
                 colon = bool(_COLON_RE.match(text))
-                doc = m.group("doc")
+                doc = m.group("doc") or m.group("mdoc")
                 if colon and doc != "decisions":
                     # the colon form's quote may follow a paraphrase
                     q = text.find('"')
@@ -233,7 +241,7 @@ def test_citations_are_verbatim_excerpts() -> None:
         where = f"{c.path.relative_to(REPO)}:{c.line}"
         known = entries if c.doc == "decisions" else statements
         if c.cid not in known:
-            problems.append(f"{where}: {c.doc}.md#{c.cid} names nothing")
+            problems.append(f"{where}: {_cite(c.doc, c.cid)} names nothing")
             continue
         if c.colon and c.doc != "decisions" and not c.excerpts:
             problems.append(
@@ -242,7 +250,7 @@ def test_citations_are_verbatim_excerpts() -> None:
             if not _is_excerpt(excerpt, known[c.cid]):
                 problems.append(
                     f"{where}: not a verbatim excerpt of "
-                    f"{c.doc}.md#{c.cid}: {excerpt[:60]!r}")
+                    f"{_cite(c.doc, c.cid)}: {excerpt[:60]!r}")
     assert not problems, "\n".join(problems)
 
 
@@ -252,8 +260,8 @@ def test_the_sweep_reaches_every_citation_shape() -> None:
     # nothing would let the excerpt test pass on what is left.
     cites = _citations()
     leads = [c.lead for c in cites if c.excerpts and not c.colon]
-    # The possessive lead (`rules.md#X's Accepted clause ("...")`), the
-    # dash lead (`rules.md#X -- "..."`) and the "[...]" elision had
+    # The possessive lead (`rules/X's Accepted clause ("...")`), the
+    # dash lead (`rules/X -- "..."`) and the "[...]" elision had
     # their only witnesses in the differential ledgers' comments,
     # deleted with them (#664). The grammar still reads both leads, and
     # test_an_elided_excerpt_must_keep_its_order holds the elision.
@@ -264,6 +272,18 @@ def test_the_sweep_reaches_every_citation_shape() -> None:
     assert any(re.fullmatch(r"(?:\s+[A-Za-z]+)+\s*", ld) for ld in leads)
     assert any(c.excerpts and c.doc == "decisions" for c in cites)
     assert any(len(c.excerpts) > 1 for c in cites)
+
+
+def test_the_sweep_finds_the_tree_s_citations() -> None:
+    # A change to the citation pattern can narrow what it reads without
+    # failing anything: #713's first pattern dropped three keys wrapped
+    # at a hyphen, found only by diffing citation sets (that shape is
+    # pinned by test_mention_re_reads_a_key_wrapped_at_its_hyphen).
+    # 1,010 references, pointers included, on 2026-10-17 (#713): the
+    # floor catches a pattern that stops reading a large shape -- the
+    # mechanisms.md form, slug keys, hyphenated keys -- and not a small
+    # one, nor a lead change that turns citations into pointers.
+    assert len(_citations()) >= 1000
 
 
 def test_an_elided_excerpt_must_keep_its_order() -> None:
@@ -318,7 +338,7 @@ def test_implemented_matches_citing_modules() -> None:
             continue
         citing.setdefault(c.cid, set()).add(str(c.path.relative_to(REPO)))
     problems = []
-    for rule in parse_rules_doc(RULES_DOC.read_text(encoding="utf-8")):
+    for rule in parse_rules_doc(read_rules_text()):
         actual = citing.get(rule.rule_id, set())
         if rule.implemented:
             declared = set(rule.implemented)
@@ -340,7 +360,7 @@ def test_implemented_matches_citing_modules() -> None:
 
 
 def test_interacts_ids_exist() -> None:
-    rules = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
+    rules = parse_rules_doc(read_rules_text())
     ids = {r.rule_id for r in rules}
     missing = [f"{r.rule_id} -> {t}" for r in rules
                for t in r.interacts if t not in ids]
@@ -348,28 +368,28 @@ def test_interacts_ids_exist() -> None:
 
 
 def test_doc_internal_anchors_resolve() -> None:
-    """Every rules.md#X / decisions.md#Y / mechanisms.md#Z reference
+    """Every rules/X / decisions/Y / mechanisms.md#Z reference
     INSIDE the three docs points at a real rule ID, ### key, or
     entry heading (## or ###). The code-side citations are covered
     above; this closes the doc-to-doc half."""
-    docs = {name: (REPO / "docs" / "design" / f"{name}.md")
-            .read_text(encoding="utf-8")
-            for name in ("rules", "decisions", "mechanisms")}
-    rule_ids = set(re.findall(r"^([A-Z]\d+)\.\s", docs["rules"], re.M))
-    dec_keys = set(re.findall(r"^### ([^\s—]+)", docs["decisions"], re.M))
+    paths = [*sorted(RULES_DIR.glob("*.md")),
+             *sorted(DECISIONS_DIR.glob("*.md")), MECH_DOC]
+    docs = {str(p.relative_to(REPO)): p.read_text(encoding="utf-8")
+            for p in paths}
+    rule_ids = set(re.findall(r"^([A-Z]\d+)\.\s", read_rules_text(), re.M))
+    dec_keys = set(read_decision_files())
     mech_slugs = set(re.findall(r"^#{2,3} ([A-Z][A-Z0-9_-]+)",
-                                docs["mechanisms"], re.M))
+                                docs[str(MECH_DOC.relative_to(REPO))], re.M))
     problems = []
     for name, text in docs.items():
-        for m in re.finditer(
-                r"(rules|decisions|mechanisms)\.md#([A-Za-z0-9_-]+)", text):
-            doc, anchor = m.group(1), m.group(2)
+        for m in _DOC_ANCHOR_RE.finditer(text):
+            doc, anchor = m.group("doc") or m.group("mdoc"), m.group("cid")
             ok = (anchor in rule_ids if doc == "rules"
                   else anchor in dec_keys if doc == "decisions"
                   else anchor in mech_slugs)
             if not ok:
                 line = text[:m.start()].count("\n") + 1
-                problems.append(f"{name}.md:{line} -> {doc}.md#{anchor}")
+                problems.append(f"{name}:{line} -> {_cite(doc, anchor)}")
     assert not problems, "\n".join(problems)
 
 
@@ -391,3 +411,29 @@ def test_no_legacy_citations() -> None:
                     problems.append(
                         f"{path}: matches {pat.pattern!r}")
     assert not problems, "\n".join(problems)
+
+
+_OLD_ANCHOR_RE = re.compile(r"\b(rules|decisions)\.md#")
+
+
+def test_no_old_design_doc_anchors() -> None:
+    """rules.md and decisions.md are folders since #713, cited as
+    rules/S2 and decisions/key. An old-form citation written from habit
+    would not be read by the citation check at all, so its quote would
+    go unchecked; this keeps the form out of every tracked file."""
+    tracked = subprocess.run(["git", "ls-files"], cwd=REPO, check=True,
+                             capture_output=True, text=True).stdout.split()
+    problems = []
+    for rel in tracked:
+        if not rel.endswith((".py", ".md", ".rst")):
+            continue
+        path = REPO / rel
+        if not path.exists():
+            continue
+        for i, line in enumerate(
+                path.read_text(encoding="utf-8").splitlines(), 1):
+            if _OLD_ANCHOR_RE.search(line):
+                problems.append(f"{rel}:{i}: {line.strip()[:80]}")
+    assert not problems, (
+        f"{len(problems)} old-form citations; write rules/ID or "
+        "decisions/key:\n" + "\n".join(problems[:40]))

@@ -32,7 +32,7 @@ BOUND_GIVEN_NAMES: frozenset[str] = frozenset({
     # credential -- but not everywhere: in the given slot of a
     # family-comma name the credential still wins, so "Smith, Abd"
     # reports suffix 'Abd' and no given name, where "Smith, Abdul"
-    # reports the given name. Recorded at decisions.md#P5.
+    # reports the given name. Recorded at decisions/P5.
     'abd',
     'abu',
     'abou',

@@ -41,7 +41,7 @@ class Parser:
     vocabulary DECLINES, so a locale pack's surnames always win where
     they match; returning None declines in turn and the token stays
     whole. Two promises narrow when one is supplied (the first is
-    rules.md#A1's Accepted clause):
+    rules/A1's Accepted clause):
     parse-totality gains its one exception -- an exception raised by
     the segmenter propagates, because a user-supplied callable's own
     error is a user-code error, not a content error -- and this Parser
@@ -220,7 +220,7 @@ class Parser:
             # tags are KEPT, "joined" included: a within-piece mark
             # (the Ph. D. merge) is role-blind and right for every
             # role, and a clear was measured and backed out --
-            # decisions.md#C1 (2026-09-06 #511) carries the rest: the
+            # decisions/C1 (2026-09-06 #511) carries the rest: the
             # between-piece mark that rides onto a non-suffix role, and
             # which views read it. Dropped tokens keep their role: the
             # pass filters them by index and assemble omits them.
@@ -228,7 +228,7 @@ class Parser:
                 tok if i in dropped
                 else dataclasses.replace(tok, role=role)
                 for i, tok in enumerate(state.tokens))
-            # rules.md#R1: "a run of post-nominals written with spaces
+            # rules/R1: "a run of post-nominals written with spaces
             # renders with spaces, and one written with commas keeps
             # them" -- the same pass post_rules runs last, over the
             # value's own comma offsets, so the harvest carries exactly
@@ -346,13 +346,13 @@ def parser_for(*locales: Locale, base: Parser | None = None,
             # a subclass with extra mandatory args would break this rewrap
             raise type(exc)(
                 f"while applying locale {loc.code!r}: {exc}") from exc
-    # rules.md#D1: "constructing a parser that activates division for
+    # rules/D1: "constructing a parser that activates division for
     # scripts with no covering surnames and no segmenter warns at
     # construction, naming the dead scripts and each way out"
-    # (history: decisions.md#D1)
-    # rules.md#D2: "applying a locale pack wraps any such error with
+    # (history: decisions/D1)
+    # rules/D2: "applying a locale pack wraps any such error with
     # the locale's code, so a stacked configuration names which layer
-    # broke" (history: decisions.md#D2)
+    # broke" (history: decisions/D2)
     # Construction warnings (the segmenterless-activation check in
     # Parser.__post_init__) re-emit from THIS frame: its stacklevel is
     # sized for direct Parser(...) construction, and through this

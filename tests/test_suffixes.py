@@ -22,7 +22,7 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.first, "Kenneth", hn)
         self.m(hn.last, "Clarke", hn)
         # The writer spaced "QC MP", so #436 renders it as written
-        # (rules.md#R1). A deliberate deviation from 1.4.0, which added a
+        # (rules/R1). A deliberate deviation from 1.4.0, which added a
         # comma the original format did not have.
         self.m(hn.suffix, "QC MP", hn)
 
@@ -31,7 +31,7 @@ class SuffixesTestCase(HumanNameTestBase):
         self.m(hn.first, "Franklin", hn)
         self.m(hn.last, "Washington", hn)
         # The writer spaced "Jr. MD", so #436 renders it as written
-        # (rules.md#R1). This name HAS a writer's comma, but it stands
+        # (rules/R1). This name HAS a writer's comma, but it stands
         # between MD and Franklin -- it parts the family from the run, not
         # the run from itself. A deliberate deviation from 1.4.0, which
         # added a comma the original format did not have.
@@ -148,16 +148,16 @@ class SuffixesTestCase(HumanNameTestBase):
         # v1 aspired to read "Dr King Jr" as title 'Dr', family 'King',
         # suffix 'Jr', and shipped this as an xfail.
         # Two halves, and this pin means different things about each.
-        # DECIDED 2026-09-01 (v1-xfail triage, decisions.md#v1-xfail-triage):
+        # DECIDED 2026-09-01 (v1-xfail triage, decisions/v1-xfail-triage):
         # 'king' stays in the titles vocabulary, because removing it breaks
         # the addressing forms it is there for ("King Charles").
-        # decisions.md#vocabulary-collisions cuts toward keeping it, so the
+        # decisions/vocabulary-collisions cuts toward keeping it, so the
         # title chain reaches 'King' at all. The comma format reads the
         # surname without any of that, and is pinned below as the contrast.
         # WHAT BECOMES OF THE LEFTOVER 'Jr': the improvement this pin
-        # anticipated, taken 2026-09-08 (#489, decisions.md#H3). The title
+        # anticipated, taken 2026-09-08 (#489, decisions/H3). The title
         # chain used to eat two words and leave 'Jr' to be the name, against
-        # rules.md#S2, which reads a trailing suffix-vocabulary word as a
+        # rules/S2, which reads a trailing suffix-vocabulary word as a
         # suffix -- and against 'Dr Smith Jr', which reads family 'Smith',
         # suffix 'Jr' exactly as S2 states. The leading peel now leaves a
         # name word a suffix cannot be: everything behind the run is a
@@ -238,16 +238,16 @@ class SuffixesTestCase(HumanNameTestBase):
         # v1 aspired to read the trailing 'I' as an ordinal joining the explicit
         # suffix ("I, Jr."), and shipped this as an xfail.
         # NOT FIXED, decided 2026-09-01 (v1-xfail triage,
-        # decisions.md#v1-xfail-triage): a middle initial 'I' is far more common
+        # decisions/v1-xfail-triage): a middle initial 'I' is far more common
         # than an ordinal I borne without a Sr./Jr.-style companion, so when an
         # explicit suffix comma has already named the suffix, the trailing 'I'
         # stays a middle initial. The commonality reasoning is the
-        # vocabulary-collision criterion (decisions.md#vocabulary-collisions)
+        # vocabulary-collision criterion (decisions/vocabulary-collisions)
         # applied to a shape rather than to a word.
         # Contrast test_roman_numeral_i_after_single_initial_lastname_comma_format
         # above, where no explicit suffix comma is present and the 'I' does go to
         # suffix.
-        # rules.md#C1 gained a qualifier with this triage: where a further
+        # rules/C1 gained a qualifier with this triage: where a further
         # comma has already named the suffix, the trailing single letter has
         # no generation left to be. C1 carries no example line for it (see the
         # Accepted note there), so this pair of tests is its witness.
@@ -305,7 +305,7 @@ class SuffixesTestCase(HumanNameTestBase):
         # Through 2.3 (and in v1) that broke parsing -- first 'RN', last
         # 'Steven Hardman', suffix 'CRNA' -- and this test pinned the
         # limitation. Since #603 a credential opening the part after the
-        # comma makes it the suffix part (rules.md#C1), so the undeclared
+        # comma makes it the suffix part (rules/C1), so the undeclared
         # delimiter is one more word of that part and the name parses;
         # the name of the test keeps the history.
         hn = HumanName("Steven Hardman, RN - CRNA")

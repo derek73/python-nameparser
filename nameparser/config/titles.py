@@ -6,7 +6,7 @@ GIVEN_NAME_TITLES = frozenset({
     # #346: the renunciate class -- 'baba' here, and 'guru', 'lama',
     # 'swami' in their own alphabetical places below. All four were in
     # the TITLES-only block until 2026-09-06. Two separate criteria
-    # both say yes (rules.md#H Background): the title addresses by the
+    # both say yes (rules/H Background): the title addresses by the
     # GIVEN name, which is what membership here means, and the
     # traditions renounce the surname, which is what makes the empty
     # family the right output for "Swami Vivekananda". 'rabbi' and
@@ -30,7 +30,7 @@ GIVEN_NAME_TITLES = frozenset({
     'pope',
     # #519: prince and princess address by the GIVEN name ("Prince
     # Harry", "Princess Anne"), which is what membership here means
-    # (rules.md#H Background); both were in the TITLES-only block
+    # (rules/H Background); both were in the TITLES-only block
     # until 2026-09-10. 'lord' and 'lady' stay there, decided rather
     # than deferred: both split by the bearer's rank, which the text
     # does not carry -- the given-name form is a courtesy style for
@@ -97,7 +97,7 @@ GIVEN_NAME_TITLES = frozenset({
     'संत',         # Sant
 
     # #343: Bengali renunciate titles. Same two criteria as the Latin
-    # and Devanagari sets (rules.md#H Background), and no NEW Latin
+    # and Devanagari sets (rules/H Background), and no NEW Latin
     # transliterations -- srila has none; baba/guru/swami already ship
     # above. শ্রীল is the Vaishnava honorific (শ্রীল প্রভুপাদ);
     # unprefixed শ্রী is civil and sits in TITLES below.
@@ -770,17 +770,17 @@ TITLES = GIVEN_NAME_TITLES | {
     # had none for, so "Herra Väinö Johansson" stops reading given
     # 'Herra'. TITLES has no ambiguous subset, so a word ships only if
     # it is borne as no name in the LEADING position
-    # (decisions.md#vocabulary-collisions C-i) -- with one recorded
+    # (decisions/vocabulary-collisions C-i) -- with one recorded
     # exception. Those marked "borne" are names somewhere, but rarely
     # the FIRST word of one, mostly surnames written last, and ship
     # anyway on the 'graf' precedent above, paying the cost "Graf
     # Steffi" already pays: a name that begins with one gives it to
-    # the title (rules.md#H1). That is a judgment on each word's
+    # the title (rules/H1). That is a judgment on each word's
     # counts, scoped to these words, not a rule to sweep with. Counts
     # and sources are in
-    # decisions.md#salutation-titles, and so are the words that failed:
+    # decisions/salutation-titles, and so are the words that failed:
     # among them Vietnamese ông/bà, Tamil thiru and pl/cs pan, all in
-    # its Excluded (TITLES) block.
+    # decisions/vocabulary-exclusions, Excluded (TITLES).
     # English offices, completing runs like "Police Commissioner".
     # 'marshal' and 'justice' stay out: both are given names.
     'administrator',
@@ -843,7 +843,7 @@ TITLES = GIVEN_NAME_TITLES | {
 
     # #662: Akan and Indonesian Mr.; under 100 census bearers each and
     # none found on Wikidata. Hausa malam and Turkish bay are excluded
-    # (decisions.md, Excluded (TITLES)).
+    # (decisions/vocabulary-exclusions, Excluded (TITLES)).
     'owura',
     'bapak',
 
@@ -912,7 +912,7 @@ TITLES = GIVEN_NAME_TITLES | {
     # Excluded under the collision rule and recorded here so a sweep
     # does not ship them -- ठाकुर (Tagore, the surname), कुमारी, बेगम,
     # शेख, आचार्य, राजा/रानी are all borne as ordinary names. Full
-    # argument: decisions.md Excluded (TITLES).
+    # argument: decisions/vocabulary-exclusions, Excluded (TITLES).
     'डॉक्टर',      # Doctor, full form
     'डा',          # Dr. -- the डा. abbreviation (Nepali and older Hindi),
                    # edge-period normalized
@@ -941,7 +941,7 @@ TITLES = GIVEN_NAME_TITLES | {
     # collide with real given names where the native script cannot.
     # No NEW Latin transliterations here (sri, mst); Latin md already
     # ships, and for the medical degree
-    # (decisions.md#indic-honorifics). Doctor abbreviations
+    # (decisions/indic-honorifics). Doctor abbreviations
     # split by profession: ড./ডঃ is the PhD's, ডাঃ/ডা. the Bangladeshi
     # physician's. Abbreviation marks are spelled as written -- the
     # visarga ঃ (U+0983) is a spacing combining mark, and the lookup
@@ -953,7 +953,7 @@ TITLES = GIVEN_NAME_TITLES | {
     # Excluded under the collision rule and recorded here so a sweep
     # does not ship them -- ঠাকুর (Tagore, the surname), কুমারী, বেগম
     # and শেখ are all borne as ordinary names. Full argument:
-    # decisions.md Excluded (TITLES).
+    # decisions/vocabulary-exclusions, Excluded (TITLES).
     'ড',           # Dr. abbreviation (PhD)
     'ডঃ',          # Dr. abbreviation, visarga spelling
     'ডক্টর',       # Doctor, full form
@@ -976,7 +976,7 @@ TITLES = GIVEN_NAME_TITLES | {
     'মোঃ',         # Md. (Mohammad) -- a name PREFIX, not a title
                    # semantically; TITLES is the functional home
                    # because `given` must stay the name the person is
-                   # addressed by (decisions.md#indic-honorifics)
+                   # addressed by (decisions/indic-honorifics)
     'মো',          # the same, period spelling মো.
     'মোসাঃ',       # Mst. (Mosammat), the women's counterpart
     'মোসা',        # the same, period spelling মোসা.

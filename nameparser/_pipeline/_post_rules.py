@@ -16,9 +16,9 @@ Policy.extra_suffix_delimiters (R1's entry pass, for the delimiter
 cores group drops); Lexicon.given_name_titles.
 
 Implements rules H1, M4, P1, P6 (its no-comma site, and after a comma
-naming no family), O1, O2, O3 and R1 of docs/design/rules.md;
+naming no family), O1, O2, O3 and R1 of docs/design/rules/;
 each is cited at its code below, and H1/P1/O1/O2's history lives in
-docs/design/decisions.md. `suffix_entries` is the R1 entry pass as a
+docs/design/decisions/. `suffix_entries` is the R1 entry pass as a
 state-in/state-out function, for Parser.revise to run over a
 forced-role sub-parse (#511); `post_rules` runs the same worker last.
 """
@@ -70,10 +70,10 @@ _RENDERS_ELSEWHERE = frozenset({Role.TITLE, Role.NICKNAME, Role.MAIDEN})
 
 def _rotations_apply(state: ParseState) -> bool:
     # Both patronymic rotations RESTORE the given-first reading a
-    # family-first listing hides, so rules.md#O1's scope clause holds
+    # family-first listing hides, so rules/O1's scope clause holds
     # them to the default order: a caller who declared family-first has
     # already said what the rotation would infer, and position decides
-    # (decisions.md#O1, the 2026-09-07 entry on #384). `state.order`,
+    # (decisions/O1, the 2026-09-07 entry on #384). `state.order`,
     # not policy.name_order, for the reason the P1 fold gives -- a
     # script_orders entry can override the policy, and the roles the
     # rotations read are the ones assign actually made. None means
@@ -98,7 +98,7 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # Reads dropped, comma_offsets and the policy off `state`, which
     # post_rules does not change, so the un-rebuilt state is current.
     #
-    # rules.md#R1: "a run of post-nominals written with spaces renders
+    # rules/R1: "a run of post-nominals written with spaces renders
     # with spaces, and one written with commas keeps them"
     #
     # The entry boundary, read off the text the writer typed rather
@@ -141,7 +141,7 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # policy's own declaration deciding it: the writer's configuration
     # named that text a separator, so the run parts there.
     #
-    # Four shapes were declined, recorded in decisions.md#C1 by the
+    # Four shapes were declined, recorded in decisions/C1 by the
     # bundle that landed this pass: marking the boundary at the
     # core-drop site (`dropped` already holds the fact with its
     # span, so a second recording of it is the duplication
@@ -205,7 +205,7 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
 
 
 def suffix_entries(state: ParseState) -> ParseState:
-    """rules.md#R1's entry pass over a whole state, wrapping
+    """rules/R1's entry pass over a whole state, wrapping
     _mark_suffix_entries: tag a SUFFIX token "joined" when it
     continues the entry of the SUFFIX token before it. post_rules runs
     the worker last, over the roles assign settled; this wrapper exists
@@ -214,7 +214,7 @@ def suffix_entries(state: ParseState) -> ParseState:
     role, so a suffix value derives its entries from its own commas by
     the rule a whole name uses. The pass ADDS the tag and never removes
     one; a caller forcing roles keeps what the sub-parse marked, a
-    within-piece mark being role-blind (decisions.md#C1, the #436
+    within-piece mark being role-blind (decisions/C1, the #436
     DECLINED list) and every between-piece mark on a suffix value
     being one this pass sets again. Reads comma_offsets, dropped and
     Policy.extra_suffix_delimiters; writes the "joined" tag and
@@ -257,12 +257,12 @@ def _retag(tokens: list[WorkToken], i: int, role: Role) -> None:
     tokens[i] = copy_with(tokens[i], role=role)
 
 
-# rules.md#P2: "a particle joins the words after it into one name
+# rules/P2: "a particle joins the words after it into one name
 # part, the join running until the next particle starts a group of
 # its own, a trailing suffix begins"
-# rules.md#P3: "the joined part is ONE name word wherever another
+# rules/P3: "the joined part is ONE name word wherever another
 # rule counts them"
-# rules.md#P5: "a recognized bound given-name word joins the word
+# rules/P5: "a recognized bound given-name word joins the word
 # after it into one given name"
 def _units(tokens: list[WorkToken], idx: list[int]) -> list[list[int]]:
     """`idx` split into the units other rules COUNT: one name word
@@ -311,7 +311,7 @@ def _fold_reach(tokens: list[WorkToken], name_idx: list[int]) -> int:
 
 def _addressing_run(titles: list[int], name_word: int) -> list[int]:
     """The title run H1 asks about: the LEADING one where one stands,
-    else the whole (trailing) run -- rules.md#H1 -- the run standing
+    else the whole (trailing) run -- rules/H1 -- the run standing
     BEFORE the one name word being the run that addresses, and a run
     standing behind it deciding that word's field only when none
     stands before.
@@ -319,7 +319,7 @@ def _addressing_run(titles: list[int], name_word: int) -> list[int]:
     Every title token is in the TITLE role by the time this runs, both
     ends of `Sir John Prof.` among them, so `titles` is not a run --
     keeping the two ends apart is what makes a trailing title
-    TRANSPARENT (rules.md#H5): `Sir John Prof.` is `Sir John` plus a
+    TRANSPARENT (rules/H5): `Sir John Prof.` is `Sir John` plus a
     title, and reading both ends as one run keyed 'sir prof' made
     adding the title flip the name word's field (#489, #316).
 
@@ -349,16 +349,16 @@ def post_rules(state: ParseState) -> ParseState:
     middles = _idx(tokens, Role.MIDDLE)
     families = _idx(tokens, Role.FAMILY)
 
-    # rules.md#H1: "a title followed by exactly one name word makes
+    # rules/H1: "a title followed by exactly one name word makes
     # that word the family name, whatever suffix, nickname or maiden
     # name stands beside it, unless the title is a given-name title,
     # which keeps it the given name; a run of several titles addresses
     # as its last title does" -- counting suffix, nickname and maiden
     # as further name words is what emptied the family (#410)
     # (known gap: the guard tests which roles are unoccupied, it does
-    # not count units -- decisions.md#H1) (v1 handle_firstnames)
+    # not count units -- decisions/H1) (v1 handle_firstnames)
     #
-    # rules.md#H1: "a run of several titles addresses as its last
+    # rules/H1: "a run of several titles addresses as its last
     # title does, and where a run stands BEFORE the one name word it
     # is the run that addresses, a run standing behind it deciding
     # that word's field only when none stands before" -- #489. WHICH
@@ -378,7 +378,7 @@ def post_rules(state: ParseState) -> ParseState:
         middles = _idx(tokens, Role.MIDDLE)
         families = _idx(tokens, Role.FAMILY)
 
-    # rules.md#M4: "a maiden name standing beside exactly one name
+    # rules/M4: "a maiden name standing beside exactly one name
     # word makes that word the family name, whatever suffix or
     # nickname stands beside it" (#445) -- the MAIDEN role, not a
     # marker: M1's configured pair produces one with no marker
@@ -398,11 +398,11 @@ def post_rules(state: ParseState) -> ParseState:
     # name word another rule joined counts as several here and the
     # rule declines -- `Dr. Dean of Chemistry` reads family, while
     # `Dean of Chemistry née Jones` keeps given 'Dean of Chemistry'.
-    # rules.md#P3 says a joined part is one name word wherever
+    # rules/P3 says a joined part is one name word wherever
     # another rule counts them, so the two disagree; widening moves
     # no corpus name and is not this change's to make
-    # (decisions.md#M4).
-    # rules.md#M4: "a word the vocabulary has claimed as a given name
+    # (decisions/M4).
+    # rules/M4: "a word the vocabulary has claimed as a given name
     # keeps that reading, and so does a word read as an initial"
     # -- read off the tags classify already recorded rather than a
     # predicate of this rule's own, because this rule changes what
@@ -418,12 +418,12 @@ def post_rules(state: ParseState) -> ParseState:
         middles = _idx(tokens, Role.MIDDLE)
         families = _idx(tokens, Role.FAMILY)
 
-    # rules.md#P1: "A never-given particle opening the name marks the
+    # rules/P1: "A never-given particle opening the name marks the
     # name as surname-only: the particle run and the name words it
     # attaches to are the family." (v1 handle_non_first_name_prefix;
-    # history: decisions.md#P1)
+    # history: decisions/P1)
     # How far the fold reaches depends on the order the name was READ
-    # under (#395; decisions.md#P1, 2026-08-17): declaring a
+    # under (#395; decisions/P1, 2026-08-17): declaring a
     # family-first order asserts that what follows the family is not
     # more surname, which is the very question of where the run stops.
     # Under that declaration the run takes its own particles and ONE
@@ -483,10 +483,10 @@ def post_rules(state: ParseState) -> ParseState:
     # patronymics first, then handle_middle_name_as_last)
     rules = state.policy.patronymic_rules
     rotations_apply = _rotations_apply(state)
-    # rules.md#O1: "a name of exactly three name words — titles,
+    # rules/O1: "a name of exactly three name words — titles,
     # suffixes and nicknames aside — whose last name word carries a
     # patronymic ending and whose middle name word does not reads as
-    # family-first" (history: decisions.md#O1)
+    # family-first" (history: decisions/O1)
     if rotations_apply and PatronymicRule.EAST_SLAVIC in rules and \
             len(givens) == 1 and len(middles) == 1 and len(families) == 1:
         tail = tokens[families[0]].text
@@ -498,10 +498,10 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, m, Role.GIVEN)
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
-    # rules.md#O2: "a name of exactly four name words — titles,
+    # rules/O2: "a name of exactly four name words — titles,
     # suffixes and nicknames aside — ending in a standalone
     # patronymic marker reads family-first: the first name word is
-    # the family name" (history: decisions.md#O2)
+    # the family name" (history: decisions/O2)
     if rotations_apply and PatronymicRule.TURKIC in rules and \
             len(givens) == 1 and len(middles) == 2 and len(families) == 1:
         tail = tokens[families[0]].text
@@ -511,7 +511,7 @@ def post_rules(state: ParseState) -> ParseState:
             _retag(tokens, m2, Role.MIDDLE)
             _retag(tokens, f, Role.MIDDLE)
             _retag(tokens, g, Role.FAMILY)
-    # rules.md#P6: "a particle ending the name attaches to that family
+    # rules/P6: "a particle ending the name attaches to that family
     # name and is written before it" -- the no-comma site (#467).
     # A comma is not the only thing that names the family; a declared
     # family-first order does too, and the same listing is written
@@ -535,7 +535,7 @@ def post_rules(state: ParseState) -> ParseState:
     # FAMILY_FIRST_GIVEN_LAST keeps given "Van" though the same word
     # is in the same set. (Under the WRONG order each loses: the
     # Vietnamese name read as FAMILY_FIRST gives family "Van Nguyen".
-    # rules.md#P6 records that as accepted -- it is one order, not
+    # rules/P6 records that as accepted -- it is one order, not
     # both.) A never-given test here would have excluded every
     # ambiguous particle -- von, di, da, del, le and `van` itself,
     # the flagship word of the listing this rule is named for.
@@ -595,7 +595,7 @@ def post_rules(state: ParseState) -> ParseState:
                             for j in families):
             # mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE: "Emit at
             # the site that takes the branch, not where an ambiguous
-            # tag sits". decisions.md#P6 (#405) settled that this
+            # tag sits". decisions/P6 (#405) settled that this
             # attachment reports the fork it decides, and the state it
             # fixed is the one this site would otherwise recreate --
             # `Beethoven, Ludwig van` reporting while `Beethoven Ludwig
@@ -626,7 +626,7 @@ def post_rules(state: ParseState) -> ParseState:
             middles = _idx(tokens, Role.MIDDLE)
             families = _idx(tokens, Role.FAMILY)
 
-    # rules.md#P6: "a particle ending the name attaches to that family
+    # rules/P6: "a particle ending the name attaches to that family
     # name" -- after a family comma with NOTHING before it. assign takes
     # the attachment wherever the comma names a family (#613); where it
     # names none, H1 and M4 above may make the given word the family
@@ -646,7 +646,7 @@ def post_rules(state: ParseState) -> ParseState:
             _attach_particle_tail(seg, tokens, given_at, k, end,
                                   ambiguities)
 
-    # rules.md#O3: "every middle word joins the family name and is
+    # rules/O3: "every middle word joins the family name and is
     # rendered before it" (v1 handle_middle_name_as_last). v1
     # PREPENDED middle_list to last_list; mechanisms.md#FOLDED_TAG:
     # "tokens never move: a rule that needs different rendering order
@@ -656,7 +656,7 @@ def post_rules(state: ParseState) -> ParseState:
             tokens[i] = copy_with(
                 tokens[i], role=Role.FAMILY,
                 tags=tokens[i].tags | {FOLDED_TAG})
-    # rules.md#R2: "a name part whose every word is particle
+    # rules/R2: "a name part whose every word is particle
     # vocabulary is a part where none of them is doing a particle's
     # work — nothing joins them to a name — so they read as ordinary
     # name words"
@@ -675,7 +675,7 @@ def post_rules(state: ParseState) -> ParseState:
     # and FAMILY moves 0 of 4,506 parses. The GIVEN arm is marked so a
     # future view reading the mark gets a consistent answer.
     #
-    # rules.md#R3: "A part holding nothing else is a part where it is
+    # rules/R3: "A part holding nothing else is a part where it is
     # joining nothing, and there it initials like any other name word"
     # -- #461's mark, decided HERE for the same reason R2's is: the
     # question is about the PART, and a view that re-derives a

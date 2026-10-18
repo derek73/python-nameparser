@@ -154,7 +154,7 @@ def test_initials_skips_tagged_particles_outside_given() -> None:
 
 
 def test_repair_keeps_a_conjunction_lowercase_in_a_particle_part() -> None:
-    """rules.md#R4's conjunction carve-out, which no shipped name reaches.
+    """rules/R4's conjunction carve-out, which no shipped name reaches.
 
     The unjoined mark makes the words of an all-particle part
     ordinary name words, since none of them is acting as a particle
@@ -163,7 +163,7 @@ def test_repair_keeps_a_conjunction_lowercase_in_a_particle_part() -> None:
     a part". Witnessing it needs a word in `particles` AND
     `conjunctions`; the shipped sets are disjoint, in the default
     vocabulary and in every locale pack, so no input string can
-    witness it and rules.md can carry no example line for it. Gating
+    witness it and the rules can carry no example line for it. Gating
     the conjunct on the mark passed the entire suite until this test
     existed.
 
@@ -187,7 +187,7 @@ def test_repair_keeps_a_conjunction_lowercase_in_a_particle_part() -> None:
 
 
 def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
-    """rules.md#R3, settled (#461).
+    """rules/R3, settled (#461).
 
     This pinned TODAY's output on an open question so that settling it
     would fail the suite until the pin moved with it. It fired, and
@@ -197,14 +197,14 @@ def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
     base. The all-particle rows below are unchanged, because R2's mark
     already readmitted the word there; what moved is everything under
     the default vocabulary, where a lone connective now initials too.
-    decisions.md#R3 records the rule and what it costs.
+    decisions/R3 records the rule and what it costs.
 
-    Still not a `deviates:` marker and still not a rules.md example
+    Still not a `deviates:` marker and still not a rules example
     line: markers hang on example lines and every line there names an
     input parsed with the DEFAULT vocabulary, over which `particles`
     and `conjunctions` are disjoint, so no string reaches the
     all-particle-with-a-connective shape. It is also what keeps the
-    values quoted in prose by decisions.md, mechanisms.md and
+    values quoted in prose by decisions/, mechanisms.md and
     `_render.py` from going stale unnoticed.
     """
     assert "y" in Lexicon.default().conjunctions, (
@@ -244,7 +244,7 @@ def test_initials_readmits_a_conjunction_in_a_particle_part() -> None:
 
 def test_repair_keeps_a_lone_connective_lowercase_where_it_initials(
 ) -> None:
-    """rules.md#R4's own reading, and the view split it accepts.
+    """rules/R4's own reading, and the view split it accepts.
 
     A connective that initials BECAUSE it joins nothing is still not
     written the way a name is written, so case repair leaves it
@@ -252,7 +252,7 @@ def test_repair_keeps_a_lone_connective_lowercase_where_it_initials(
     rather than a borrowing from R3 -- the two rules answer different
     questions about the same token and this is the row where their
     answers part. mechanisms.md#RENDER-HONORS-THE-PARSE records the
-    shape; decisions.md#R4 records the split.
+    shape; decisions/R4 records the split.
     """
     assert parse("Juan de y").initials() == "J. y."
     assert parse("Juan de y").capitalized().family == "de y"
@@ -262,7 +262,7 @@ def test_repair_keeps_a_lone_connective_lowercase_where_it_initials(
 
 def test_repair_capitalizes_a_generation_the_connective_also_spells(
 ) -> None:
-    """rules.md#R4's other half (#397 review), and the row that made
+    """rules/R4's other half (#397 review), and the row that made
     the sentence need two clauses.
 
     A word can be the connective and the generation at once -- 'i' is
@@ -300,7 +300,7 @@ def test_repair_capitalizes_a_generation_the_connective_also_spells(
 
 def test_repair_keeps_a_plain_connective_the_suffix_field_holds_lower(
 ) -> None:
-    """rules.md#R4, the GENERATION half read narrowly (#397 second
+    """rules/R4, the GENERATION half read narrowly (#397 second
     review). The clause turns on the generation and not on the field:
     the test is the suffix ROLE **and** the suffix VOCABULARY, and a
     role test alone capitalized every plain connective that merely
@@ -557,7 +557,7 @@ def test_capitalized_preserves_mixed_case_unless_forced() -> None:
 
 
 def test_the_gate_leaves_the_suffixes_out() -> None:
-    """rules.md#R5 (#492): a credential or a generation written the
+    """rules/R5 (#492): a credential or a generation written the
     way one is written ('III', 'PhD', 'Jr.') is no evidence about how
     the NAME was cased, so the one-case test reads every token but
     the SUFFIX-roled ones. Titles stay in -- a cased title still holds
@@ -604,7 +604,7 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
     assert str(parse("김민준 Phd").capitalized()) == "민준 김 Phd"
     assert str(parse("김민준 PHD").capitalized()) == "민준 김 PhD"
     # no non-suffix token at all -- a synthetic name only, since every
-    # parse names somebody (rules.md#H4): the empty text is one-case
+    # parse names somebody (rules/H4): the empty text is one-case
     only_suffixes = _pn("phd md", [
         Token("phd", Span(0, 3), Role.SUFFIX),
         Token("md", Span(4, 6), Role.SUFFIX),
@@ -615,7 +615,7 @@ def test_the_gate_leaves_the_suffixes_out() -> None:
 
 def test_a_suffix_written_in_more_than_one_case_is_kept_as_written(
 ) -> None:
-    """rules.md#R5 (decided 2026-09-24): the gate leaves the suffixes
+    """rules/R5 (decided 2026-09-24): the gate leaves the suffixes
     out because a cased suffix says nothing about the NAME, and read
     to its end that also means repair has no business re-spelling
     one. So where repair was not forced, a SUFFIX token written in
@@ -654,8 +654,8 @@ def test_a_suffix_written_in_more_than_one_case_is_kept_as_written(
 
 
 def test_the_gate_and_the_parser_read_a_cased_suffix_differently() -> None:
-    """decisions.md#R5's split: the parser's own one-case readings
-    (rules.md#P3, #S2) still count a cased suffix, while R5's gate
+    """decisions/R5's split: the parser's own one-case readings
+    (rules/P3, #S2) still count a cased suffix, while R5's gate
     leaves it out. So 'john e jones III' is MIXED to the parser, which
     reads its 'e' as a connective, and one-case to the gate, which
     repairs it -- keeping the connective lowercase -- where the one-case
@@ -697,7 +697,7 @@ def _repaired_under(pairs: tuple[tuple[str, str], ...], text: str, *,
 
 
 def test_a_mask_recases_the_word_as_the_writer_punctuated_it() -> None:
-    """rules.md#R4's mask (#459): an exceptions-map value is its key's
+    """rules/R4's mask (#459): an exceptions-map value is its key's
     letters in the case each takes, laid over the word as written --
     one entry covers every punctuation of the word, and repair adds
     and removes nothing."""
@@ -740,7 +740,7 @@ def test_a_word_that_left_the_map_repairs_by_the_role_it_took() -> None:
     and numeral clauses write them in capitals -- keeping whatever
     punctuation the writer used, which the map's substitution did
     not. A word the parse put in a NAME role is repaired as a name
-    word whatever vocabulary holds it (decisions.md#R4's given-role
+    word whatever vocabulary holds it (decisions/R4's given-role
     half), which is also how the abbreviated Mohammed is written."""
     assert str(parse("john smith md").capitalized()) == "John Smith MD"
     assert str(parse("john smith m.d.").capitalized()) == "John Smith M.D."
@@ -758,7 +758,7 @@ def test_a_word_that_left_the_map_repairs_by_the_role_it_took() -> None:
 
 
 def test_a_credential_read_by_its_shape_repairs_to_capitals() -> None:
-    """rules.md#R4, #516's by-shape half (#459): a suffix classify
+    """rules/R4, #516's by-shape half (#459): a suffix classify
     admitted to the credential class by its dotted shape alone
     carries SHAPE_ACRONYM_TAG and no vocabulary entry, and repairs as
     a listed acronym does."""
@@ -784,7 +784,7 @@ def test_a_credential_read_by_its_shape_repairs_to_capitals() -> None:
 
 
 def test_a_suffix_numeral_repairs_to_capitals_by_its_shape() -> None:
-    """rules.md#R4 (#459): vi through x carry no vocabulary tag and
+    """rules/R4 (#459): vi through x carry no vocabulary tag and
     title-cased to 'Vi'/'Ix'; the numeral clause reads the roman
     shape of a SUFFIX-roled word. xi and up are no suffix to the
     parse (its roman shape stops at x), and a numeral after a family
@@ -837,7 +837,7 @@ def test_the_mask_keeps_every_non_letter_and_declines_a_miscount() -> None:
 
 def test_a_split_initial_is_capitalized_only_where_the_mask_keeps_it_joined(
 ) -> None:
-    """rules.md#R4 (#459 review, narrowed): a letter written alone
+    """rules/R4 (#459 review, narrowed): a letter written alone
     beside a full stop is an initial ONLY where the MASK writes that
     same letter inside a run of two or more letters. Where the mask
     spells it alone too, the mask's own case stands ('h.c' on 'h.c.'
@@ -1028,7 +1028,7 @@ def test_a_mark_with_no_letter_before_it_heads_no_word() -> None:
 
 
 def test_a_masks_upper_fallback_can_lengthen_a_word_through_ss() -> None:
-    """decisions.md#R4 (2026-09-24 review): where the whole-word
+    """decisions/R4 (2026-09-24 review): where the whole-word
     upper-casing does not keep the word's length, _apply_mask falls
     back to a per-character `c.upper()`, which lengthens 'ß' to 'SS'
     as the acronym/numeral clauses' `word.upper()` does -- whether
@@ -1044,7 +1044,7 @@ def test_a_masks_upper_fallback_can_lengthen_a_word_through_ss() -> None:
 
 def test_a_lengthening_mask_is_not_a_fixpoint_under_a_second_forced_pass(
 ) -> None:
-    """decisions.md#R4 (2026-09-24 review, sub-clause (a)): capitalized()'s
+    """decisions/R4 (2026-09-24 review, sub-clause (a)): capitalized()'s
     own docstring claims every clause is a fixpoint, so a repaired name
     comes back unchanged if repaired again -- true everywhere except
     this one boundary. The FIRST forced pass over 'a.ß' under the
@@ -1199,7 +1199,7 @@ def test_capitalized_lowers_the_words_the_parse_tagged_conjunction() -> None:
 
 
 def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
-    """rules.md#R4 (#478): inside one hyphenated word, a part that is
+    """rules/R4 (#478): inside one hyphenated word, a part that is
     connective vocabulary with a worded part on each side of it keeps
     its lowercase, in every role. At either END it is ordinary name
     text -- #458's answer, kept -- and a word outside the connective
@@ -1249,7 +1249,7 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
     mixed = parse("Jose Ortega-Y-Gasset")
     assert mixed.capitalized() == mixed
     assert str(mixed.capitalized(force=True)) == "Jose Ortega-y-Gasset"
-    # not connective vocabulary, so not reached (decisions.md#R4)
+    # not connective vocabulary, so not reached (decisions/R4)
     assert "a" not in Lexicon.default().conjunctions
     assert str(parse("Te Awanui-a-Rangi Black").capitalized(
         force=True)) == "Te Awanui-A-Rangi Black"
@@ -1272,8 +1272,8 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
 
 
 def test_the_hyphen_is_the_writers_join_even_in_a_one_case_name() -> None:
-    """rules.md#R4's hyphen clause against rules.md#P3's one-case fork,
-    a split DECIDED 2026-09-24 (decisions.md#R4): spaced, a marked
+    """rules/R4's hyphen clause against rules/P3's one-case fork,
+    a split DECIDED 2026-09-24 (decisions/R4): spaced, a marked
     letter in a name written in one case reads as an initial and
     repairs to a capital; hyphenated, the writer joined the surname on
     purpose, so the interior word is the connective whatever case the
@@ -1303,7 +1303,7 @@ def test_the_hyphen_is_the_writers_join_even_in_a_one_case_name() -> None:
 
 
 def test_a_shipped_mask_spells_its_suffix_in_either_single_case() -> None:
-    """#459 (decisions.md#R4, 2026-09-24): the PROPERTY every shipped
+    """#459 (decisions/R4, 2026-09-24): the PROPERTY every shipped
     mask pair serves, derived from the pairs rather than restating
     them -- `john smith <key>` puts the key in the suffix role, and
     repair spells it as the mask whether it was written all lower or
@@ -1327,7 +1327,7 @@ def test_a_shipped_mask_spells_its_suffix_in_either_single_case() -> None:
 
 
 def test_a_shipped_particle_mask_outranks_the_particle_lowercase() -> None:
-    """rules.md#R4, #604: case repair writes a particle in lowercase
+    """rules/R4, #604: case repair writes a particle in lowercase
     ('de la Vega') unless the vocabulary records a casing for it, as it
     does for the Irish particles. The property every shipped particle
     mask serves, derived from the pairs: `john <key> smith` puts the
@@ -1349,7 +1349,7 @@ def test_a_shipped_particle_mask_outranks_the_particle_lowercase() -> None:
 
 
 def test_a_caller_particle_mask_outranks_the_particle_lowercase() -> None:
-    """rules.md#R4, #604, decided for CALLER maps too (decisions.md#R4,
+    """rules/R4, #604, decided for CALLER maps too (decisions/R4,
     2026-10-04): 1.4.0 through 2.3.0 kept a particle lowercase whatever
     the map held. The control is the same name with no entry. Both
     surfaces."""
@@ -1367,7 +1367,7 @@ def test_a_caller_particle_mask_outranks_the_particle_lowercase() -> None:
 
 
 def test_a_listed_acronym_that_is_a_name_word_gets_no_mask() -> None:
-    """decisions.md#R4's Excluded block for CAPITALIZATION_EXCEPTIONS
+    """decisions/vocabulary-exclusions, the CAPITALIZATION_EXCEPTIONS block
     (meng, edd, lac, ded): a mask applies in every role, so an acronym
     that is also a name word must not carry one. The fork it protects:
     in a NAME role the word repairs as a title-cased name word, and in
@@ -1377,7 +1377,7 @@ def test_a_listed_acronym_that_is_a_name_word_gets_no_mask() -> None:
 
     Since #540 `meng` and `lac` are ambiguous acronyms, so a bare
     trailing one after a lone given name is the FAMILY name
-    (decisions.md#suffix-acronym-collisions): `wang meng` repairs to
+    (decisions/suffix-acronym-collisions): `wang meng` repairs to
     `Wang Meng`, where the credential reading gave `Wang MENG`. With
     words to spare the credential reading, and its capitals, stay.
     That puts the trailing slot on both sides of the fork, and the
@@ -1584,10 +1584,10 @@ def test_render_malformed_specs_surface_raw_format_errors() -> None:
 
 
 def test_capitalized_one_case_connective_that_reads_as_an_initial() -> None:
-    """#383/#479, the half no differential gate can see (decisions.md#R4).
+    """#383/#479, the half no differential gate can see (decisions/R4).
 
     Repair lowercases a CONJUNCTION even inside a part it otherwise
-    capitalizes (rules.md#R4's carve-out). Once a marked single letter
+    capitalizes (rules/R4's carve-out). Once a marked single letter
     in a one-case name is read as an INITIAL instead, that carve-out no
     longer reaches it and the letter capitalizes like any name word.
     The 'y' line is the control: it stays the connective, so it stays
@@ -1608,11 +1608,11 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
 
     The core's initials() follows the parse's tags: in a name written
     wholly in one case an 'e' is an INITIAL and a 'y' is the connective
-    (rules.md#P3), so R3's "each given, middle, and base family word"
+    (rules/P3), so R3's "each given, middle, and base family word"
     reaches the first and not the second. Until #528 HumanName.initials()
     re-derived that from the lexicon and the part's raw shape instead,
     and kept 1.4.0's answer on both letters; it now reads the same tags,
-    so the two views of one parse agree. decisions.md#R3 records it.
+    so the two views of one parse agree. decisions/R3 records it.
     """
     assert parse("john e smith").initials() == "j. e. s."
     assert HumanName("john e smith").initials() == "j. e. s."
@@ -1629,12 +1629,12 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
     assert HumanName("John E Smith").initials() == "J. E. S."
     assert HumanName("Juan Y. Garcia").initials() == "J. Y. G."
     # 'maria y lopez' is a ONE-CASE control, not a mixed-case one: written
-    # wholly in lowercase, its 'y' is outside the marked set (rules.md#P3),
+    # wholly in lowercase, its 'y' is outside the marked set (rules/P3),
     # so it stays the CONNECTIVE on both surfaces rather than reading as
     # an initial the way 'e' does. What it no longer
     # witnesses is the DROP: #461 gave the letter its initial back here,
     # because it holds the middle part alone and so joins nothing
-    # (decisions.md#R3). The joining one-case control below is where
+    # (decisions/R3). The joining one-case control below is where
     # a lowercase 'y' still drops, which is what keeps this row's point
     # -- the tag, not the value -- observable.
     assert HumanName("maria y lopez").initials() == "m. y. l."
@@ -1656,7 +1656,7 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
     # The one corpus name where the two views still differ, and it is
     # not this rule's: the facade merges 'Ph.' + 'D.' into one list
     # element and renders it with no inner delimiter
-    # (fix(initials-per-word) the Ph. D. merge, decisions.md#phd-merge)
+    # (fix(initials-per-word) the Ph. D. merge, decisions/phd-merge)
     assert HumanName("Ph. D., John").initials() == "J. P D."
     assert parse("Ph. D., John").initials() == "J. P. D."
 
@@ -1681,7 +1681,7 @@ def test_initials_separator_is_honored_on_the_live_token_path() -> None:
 def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
 ) -> None:
     # A credential read by its capitals (S2) repairs to its all-caps
-    # spelling (R4 in rules.md). #564 made the comma reading a default
+    # spelling (rules/R4). #564 made the comma reading a default
     # decided in `segment` from the text, and classify's shape tag --
     # what repair reads -- has to follow it there too, or the default
     # title-cases a credential EVERYWHERE keeps: the first draft gave
@@ -1698,7 +1698,7 @@ def test_a_caps_credential_after_a_comma_keeps_its_capitals_in_every_setting(
 
 def test_a_marked_particle_lowercases_only_where_the_particle_arm_would(
 ) -> None:
-    """rules.md#R4, #700: a particle written with its mark ("d'",
+    """rules/R4, #700: a particle written with its mark ("d'",
     "al-", "'t") is asked the particle arm's question as a whole token,
     since the per-word walk splits it at the mark and asks the stem.
     Only the arm's lowercase is taken whole; wherever the arm declines,

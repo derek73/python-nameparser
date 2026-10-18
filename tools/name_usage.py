@@ -1,10 +1,10 @@
 """How often is a word borne as a given name, and as a family name?
 
 WHY THIS IS IN THE TREE. Vocabulary claims are weighed by
-decisions.md#vocabulary-collisions: a word the parser claims by
+decisions/vocabulary-collisions: a word the parser claims by
 position (titles, never-given particles) is safe to claim outright only
 if it is not borne as a name IN THE POSITION THE CLAIM ACTS ON (C-i;
-decisions.md#salutation-titles records the one TITLES-only exception,
+decisions/salutation-titles records the one TITLES-only exception,
 decided on counts). That check was often run from memory, which misses
 what the data shows at once: `shehu`, a title until #660, is also an
 Albanian and Nigerian surname, with 561 bearers in the 2010 US Census.

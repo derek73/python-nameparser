@@ -99,7 +99,7 @@ AMBIGUOUS_ACRONYM_TAG = "vocab:suffix-ambiguous"
 _AMBIGUOUS_CREDENTIAL_TAGS = frozenset(
     {AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
 
-#: The roles that make a piece a name word (rules.md#P6's walk), and
+#: The roles that make a piece a name word (rules/P6's walk), and
 #: the roles of a word not yet read as one: a suffix, or nothing yet
 #: -- what `_pieces.particle_tail` reads, asked by assign's given-part
 #: walk when it reaches the credential run, whose words are unread.
@@ -118,7 +118,7 @@ class Structure(Enum):
 
 
 @dataclass(frozen=True, slots=True)
-# rules.md#A1: "parsing never fails on any input: where the text's
+# rules/A1: "parsing never fails on any input: where the text's
 # structure or a word's reading is genuinely uncertain, the parse
 # completes on the best reading and carries an ambiguity report
 # naming the doubt"
@@ -215,7 +215,7 @@ class ParseState:
     pieces: tuple[tuple[tuple[int, ...], ...], ...] = ()
     piece_tags: tuple[tuple[frozenset[str], ...], ...] = ()
     dropped: tuple[int, ...] = ()   # structural tokens (maiden markers)
-    #: rules.md#S2's trailing run per segment, as group read it ONCE
+    #: rules/S2's trailing run per segment, as group read it ONCE
     #: after P3's joins and before the particle chain (#614), for
     #: assign to place and report
     #: rather than peel again; None where group read none -- a family
@@ -239,7 +239,7 @@ class ParseState:
     order: tuple[Role, Role, Role] | None = None
     #: Whether the name's OWN words are written wholly in one case --
     #: all upper or all lower alike -- and so carry no case EVIDENCE
-    #: about any word in them (rules.md#P3's own-words span,
+    #: about any word in them (rules/P3's own-words span,
     #: _pieces.own_words). None means NOT ASKED YET: the fact is
     #: computed by whichever of segment and classify needs it first,
     #: segment only when C2's flag on a part past the second comma asks
@@ -250,7 +250,7 @@ class ParseState:
     #: reading, the prefix chain's own tail measure (_group) and the
     #: glued-honorific peel's decline of a post-comma run
     #: (_script_segment) all consult it and must not disagree
-    #: (#289/#516, decisions.md#S2). Five stages read it in all --
+    #: (#289/#516, decisions/S2). Five stages read it in all --
     #: segment, script_segment, classify, group and assign -- plus the
     #: two predicate layers they read it through (_pieces, _vocab).
     #: A fact segment records SURVIVES script_segment, the one stage
@@ -342,7 +342,7 @@ else:
         """`dataclasses.replace` for the pipeline's own dataclasses,
         without its per-call cost: a direct field copy, which for the
         classes in `_COPY_FIELDS` builds the same object
-        (decisions.md#parse-cost has the measurement)."""
+        (decisions/parse-cost has the measurement)."""
         cls = type(obj)
         names = _COPY_FIELDS.get(cls)
         if names is None:

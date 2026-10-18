@@ -135,7 +135,7 @@ def test_ambiguity_with_all_indices_dropped_is_omitted() -> None:
 
 def test_a_connective_or_initial_report_is_withdrawn_where_the_role_is_a_suffix(
 ) -> None:
-    """rules.md#A1, the withdrawal (#397 second review).
+    """rules/A1, the withdrawal (#397 second review).
 
     classify's connective-or-initial fork offers a connective and an
     initial and its detail says which it took. A generation is

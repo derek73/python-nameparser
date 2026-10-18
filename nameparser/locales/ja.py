@@ -15,7 +15,7 @@ Unlike zh, this pack ships NO vocabulary and NO order:
   why this pack alone is inert: it activates a stage that then has
   nothing to segment with.
 * No order, because a kana-bearing Japanese name already reads
-  family-first by default (decisions.md#W4, the kana license:
+  family-first by default (decisions/W4, the kana license:
   hiragana identifies
   native Japanese as certainly as hangul identifies Korean), and wholly
   Han names have read family-first since the 2026-07-27 amendment.
@@ -46,7 +46,7 @@ caller of this module can put it to. Those terms bind only the opt-in
 ``ja_segmenter(gbdt=True)`` path, which is what loads that file; the
 default BasicNameDivider reads namedivider's own bundled kanji.csv and
 never touches it. Its BERT model for katakana division is CC-BY-SA and
-is NOT used (katakana division is out of scope; decisions.md#W1's
+is NOT used (katakana division is out of scope; decisions/W1's
 kana-gating bullet).
 
 Declared deviations (mechanisms.md#LOCALE-PACKS-PURE-DATA): the

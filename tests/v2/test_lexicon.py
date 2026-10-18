@@ -31,7 +31,7 @@ def test_default_sources_v1_vocabulary() -> None:
     # flipped model: 'dos' is never-given in v1, so NOT ambiguous here
     assert "dos" in lex.particles and "dos" not in lex.particles_ambiguous
     assert "van" in lex.particles_ambiguous
-    # the policy is 'e' and not 'y' (decisions.md#P3): a bare E initial is
+    # the policy is 'e' and not 'y' (decisions/P3): a bare E initial is
     # common, where 'y' between two surnames is the commonest Hispanic compound
     assert "e" in lex.conjunctions_ambiguous and "y" not in lex.conjunctions_ambiguous
     # CAPITALIZATION_EXCEPTIONS maps 'phd' -> 'PhD', a case mask since
@@ -425,7 +425,7 @@ def test_the_shipped_suffix_sets_are_disjoint() -> None:
     # periods, the acronym test strips all of them -- so a word in both
     # is matched by two rules and which one fired is unreadable from
     # outside. The last overlap, 'esq', left the acronyms 2026-09-08
-    # (decisions.md#suffix-acronym-collisions).
+    # (decisions/suffix-acronym-collisions).
     #
     # The SHIPPED sets only: Lexicon has no such invariant, and a
     # caller who wants the overlap in their own vocabulary keeps it.
@@ -604,7 +604,7 @@ def test_removing_a_conjunction_leaves_its_ambiguous_marker_alone() -> None:
     # conjunctions_ambiguous is the same shape as given_name_titles: not
     # in _SUBSET_FIELDS, so an orphan is inert rather than rejected --
     # the marker is never consulted once its base entry is gone
-    # (decisions.md#P3).
+    # (decisions/P3).
     lean = Lexicon.default().remove(conjunctions={"e"})
     assert "e" not in lean.conjunctions
     assert "e" in lean.conjunctions_ambiguous
@@ -675,7 +675,7 @@ def test_an_nfd_authored_entry_is_stored_composed() -> None:
     # the storage fold composes NFC (#322), so a caller who authors a
     # surname in NFD gets the NFC entry -- and raw NFD input, which
     # segmentation matches without folding, then finds no entry and
-    # goes unsplit (rules.md#W1's accepted degradation). Pinned
+    # goes unsplit (rules/W1's accepted degradation). Pinned
     # because the surname site's comment relies on it.
     nfd = unicodedata.normalize("NFD", "김")
     lex = Lexicon(surnames=frozenset({nfd}))

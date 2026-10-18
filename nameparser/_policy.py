@@ -132,14 +132,14 @@ class Script(StrEnum):
 # personal name uses them. Halfwidth kana (U+FF65-U+FF9F, #594) IS
 # katakana here: legacy bank, payroll and CSV data written for JIS X
 # 0201 systems spells names in it, and 山田 ﾀﾛｳ must read as 山田 タロウ
-# does. Classifying it is a range, not a fold. rules.md's T Background
+# does. Classifying it is a range, not a fold. rules/T's Background
 # says "nothing rewrites the text before parsing", which rules out a
 # fold at tokenize, and an NFKC fold at classification would reach far
 # past the kana (fullwidth Latin, ㈱), and when #594 decided it a
 # voicing mark with no precomposed form to join (ｱﾞ) folded to the
 # combining U+3099, which is in the HIRAGANA block -- so the folded
 # token took the kana license and a wholly-katakana name turned
-# family-first (decisions.md#W4; #596 has since given every voicing
+# family-first (decisions/W4; #596 has since given every voicing
 # mark after a kana its base's script, see below). The span takes
 # in the halfwidth nakaguro U+FF65, which tokenize turns into a separator,
 # on the same direct-call grounds as U+30FB below, and the voicing
@@ -732,7 +732,7 @@ class Policy:
     #: and a single trailing period is not this shape ("John Smith
     #: Xyz." keeps family ``Xyz.``). ``False`` reads such a token as
     #: name material everywhere, as 2.3 did for a token no chunk
-    #: claimed; the roman-chunk retirement (rules.md#S3) is not
+    #: claimed; the roman-chunk retirement (rules/S3) is not
     #: behind this switch, and still reports the fork.
     unlisted_dotted_suffixes: bool = True
     #: Where an UNLISTED all-caps word of two or more letters, with no
@@ -774,7 +774,7 @@ class Policy:
     __getstate__ = _guarded_getstate
     __setstate__ = _guarded_setstate
 
-    # rules.md#D2: "configuration validation raises at construction
+    # rules/D2: "configuration validation raises at construction
     # with the offending field and value named"
     def __post_init__(self) -> None:
         object.__setattr__(

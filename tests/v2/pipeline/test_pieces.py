@@ -348,7 +348,7 @@ def test_peel_trailing_takes_the_three_lean_outcomes() -> None:
     # #289 at the trailing slot, the three outcomes against the peel's
     # three: a CREDENTIAL lean consumes with no words to spare, a NAME
     # lean declines WITH words to spare, and no lean at all leaves
-    # rules.md#S2's count deciding exactly as it did.
+    # rules/S2's count deciding exactly as it did.
     # Every case still REPORTS: the pick is appended either way, which
     # is what the fork's report is built from.
     for text, one_case, names, picked in (
@@ -380,7 +380,7 @@ def test_peel_trailing_keeps_its_two_piece_floor_under_a_lean() -> None:
 
 def test_peel_trailing_takes_a_declined_pick_an_anchor_stands_before(
 ) -> None:
-    # #544 reverses the cost decisions.md#S2 had accepted: the surname
+    # #544 reverses the cost decisions/S2 had accepted: the surname
     # lean declines 'Ma', but the unambiguous 'Jr' IN FRONT of it
     # anchors it, so the walk takes it and reaches 'Jr' too -- and the
     # member is still a pick, reported as a counted one is.
@@ -427,7 +427,7 @@ def test_the_walks_own_leading_piece_never_anchors_what_follows_it(
 
 def test_a_reserve_kept_leading_piece_beside_a_genuine_family_loss(
 ) -> None:
-    # rules.md#S2's Accepted clause ("an unambiguous suffix is
+    # rules/S2's Accepted clause ("an unambiguous suffix is
     # consumed even when that leaves no family name at all", 'Smith
     # Jr.' -> family='') applies just the same when the LEADING piece
     # is itself listed suffix vocabulary rather than an ordinary name:
@@ -476,7 +476,7 @@ def test_credential_anchors_stops_at_a_numeral_or_a_name_word() -> None:
 
 def test_a_connective_or_a_numeral_suffix_word_anchors_nothing() -> None:
     # the generational 'i' is also Catalan's conjunction, and between
-    # two name words it is a link (rules.md#P3); a single-letter roman
+    # two name words it is a link (rules/P3); a single-letter roman
     # numeral, in any case, is ONE LETTER, the shape a middle initial
     # is written in -- not excluded for being "no credential", since a
     # multi-letter numeral ('III') anchors like any other suffix word
@@ -633,7 +633,7 @@ def test_a_by_shape_token_takes_the_count_and_never_a_lean() -> None:
 
 
 @pytest.mark.parametrize("text, expected", [
-    ("Xyz.", True),        # H2 (rules.md): an unlisted Latin abbreviation
+    ("Xyz.", True),        # rules/H2 -- an unlisted Latin abbreviation
     ("김민준.", False),     # #323: hangul has no period abbreviations
     ("田中.", False),       # nor Han
     ("たなか.", False),     # nor kana
@@ -672,7 +672,7 @@ def test_is_title_shaped_and_is_leading_title_agree(text: str) -> None:
 
 
 def test_own_words_is_the_name_s_own_span_and_its_clause_cut() -> None:
-    # rules.md#P3 says the case question is asked of the name's OWN
+    # rules/P3 says the case question is asked of the name's OWN
     # words. This helper is that span, taken off the token stream so
     # both the site that runs before classify and classify itself ask
     # one function (#289/#516).
@@ -853,7 +853,7 @@ def test_a_title_the_fixed_point_splices_out_keeps_no_peel_pick() -> None:
     assert name.ambiguities == ()
 
 
-# rules.md#S2 (#602): a credential after the name core starts a run to
+# rules/S2 (#602): a credential after the name core starts a run to
 # the end of its part. The exclusion tests pass before the change too:
 # they are the negative controls that make the first two meaningful.
 def test_a_credential_after_two_name_words_starts_the_run() -> None:
@@ -1004,7 +1004,7 @@ def _joined(text: str, *, letter_stays: bool, titles_only: bool,
 
 
 def test_a_connective_run_merges_before_it_joins_in_both_modes() -> None:
-    """rules.md#P3's "connective runs included", for both callers: the
+    """rules/P3's "connective runs included", for both callers: the
     run joins as one link, so a title before it takes the word after it
     too. The comma decision's copy of the loop merged no run and joined
     'Minister of the' alone (#617)."""

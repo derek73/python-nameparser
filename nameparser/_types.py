@@ -88,7 +88,7 @@ class Span(NamedTuple):
 #: word READ as an initial -- initial-shaped in a script that HAS
 #: initials ("J." or "А.", never "씨.", #320), or a marked
 #: single-letter connective in a name written in one case
-#: (rules.md#P3, see CONJUNCTION_OR_INITIAL);
+#: (rules/P3, see CONJUNCTION_OR_INITIAL);
 #: "joined" a continuation of the token before it -- within one
 #: merged piece the tag is role-blind and every view joins the pair
 #: with a space ("Ph." + "D."; 'Ph. D., Jr.' gives last_list
@@ -107,7 +107,7 @@ STABLE_TAGS = frozenset({"particle", "conjunction", "initial", "joined"})
 #: where none of them is doing a particle's work -- nothing joins them
 #: to a name -- so FOUR views read them as ordinary name words: they
 #: anchor `family_base`, drop out of `family_particles`, contribute
-#: initials (rules.md#R2), and capitalize like any other name word
+#: initials (rules/R2), and capitalize like any other name word
 #: rather than being lowercased as particles (#407).
 #: MARKED rather than untagged: `particle` is stable API and says the
 #: word IS particle vocabulary wherever it lands, which stays true, and
@@ -117,7 +117,7 @@ UNJOINED_TAG = "vocab:unjoined-particle"
 #: A name part holding no word a connective could join -- once the
 #: part's WORKING particles are set aside -- is a part where the
 #: connective is not doing a connective's work, so it initials like an
-#: ordinary name word, agreeing with `family_base` (rules.md#R3,
+#: ordinary name word, agreeing with `family_base` (rules/R3,
 #: #461). The twin of UNJOINED_TAG above, computed in the same pass
 #: and for the same reason: the fact is about a PART, so it is decided
 #: once where the parts are settled rather than re-derived by each
@@ -436,7 +436,7 @@ class AmbiguityKind(StrEnum):
     #: family name remains; "JACK MA", written wholly in one case, keeps
     #: it as the name because none would, while in a mixed-case name
     #: the capitals decide outright -- "Jack MA" is the credential and
-    #: "Jack Ma" the name, rules.md#S2) and a trailing roman numeral, which is a suffix where any
+    #: "Jack Ma" the name, rules/S2) and a trailing roman numeral, which is a suffix where any
     #: other single letter would be a name ("John Smith V" vs "John
     #: Smith B"). It also covers a family-comma listing, where a
     #: trailing abbreviation that is both a post-nominal and a surname
@@ -455,7 +455,7 @@ class AmbiguityKind(StrEnum):
     #: trailing slot of that listing's GIVEN part, and the trailing
     #: slot of a maiden marker's clause. A part beyond the second
     #: comma is not among them, so "Smith, John, MA" is silent; what
-    #: such a part does report is rules.md#C2's to say.
+    #: such a part does report is rules/C2's to say.
     #: Since 2.4 the given part's trailing slot reports whichever way
     #: it read the word: "Doe, John MA" reads suffix ``MA`` and says
     #: so, "Doe, John Ma" keeps middle ``Ma`` and says so too. Not in
@@ -467,7 +467,7 @@ class AmbiguityKind(StrEnum):
     #: Since #544 C1's name-word count reports its flip once over a
     #: whole RUN after the comma ("John Smith, Ed Ma" reads suffix
     #: ``Ed Ma``), and a member an unambiguous credential in front of
-    #: it speaks for (rules.md#S2) is a pick like a counted one,
+    #: it speaks for (rules/S2) is a pick like a counted one,
     #: reported where it was decided: by the peel, by the given part's
     #: trailing slot, or by the reading of a part after a family comma
     #: that the company leaves holding no name word ("John Smith PhD
@@ -485,7 +485,7 @@ class AmbiguityKind(StrEnum):
     #: reports: a clause in the FAMILY segment of a comma listing
     #: ("Smith nee Jones MA, Jane" keeps maiden ``Jones MA``) is
     #: silent. After any other comma a marker is an ordinary word and
-    #: makes no clause at all (rules.md#M2).
+    #: makes no clause at all (rules/M2).
     #: FOUR positions stay silent, and all four are boundaries rather
     #: than omissions. The NO-READER clause just named is the first of
     #: them, and the three that follow are about the member's own
@@ -513,7 +513,7 @@ class AmbiguityKind(StrEnum):
     #: "Doe, MA Smith" reports its ``MA``, and "Doe, Dr. MA Smith" --
     #: the same member, one title in front of it -- reads given ``MA``
     #: in silence. A maiden marker cannot reach this position: after
-    #: a family comma it is an ordinary word (rules.md#M2), so "Doe,
+    #: a family comma it is an ordinary word (rules/M2), so "Doe,
     #: Dr. nee Smith MA" reads given ``nee``, middle ``Smith`` and
     #: suffix ``MA`` -- and reports, the ``MA`` ending a given part
     #: like any other.
@@ -621,7 +621,7 @@ class AmbiguityKind(StrEnum):
     #: MULTI-letter connective ("and", "та", "και") or a symbol ("&") is
     #: no initial's shape at any casing. And a letter inside a maiden or
     #: delimited clause never reaches the fork either (the own-words
-    #: doctrine, rules.md#P3): appending " née Jones" or a nickname
+    #: doctrine, rules/P3): appending " née Jones" or a nickname
     #: changes no report, because the clause's words were never
     #: eligible for it.
     #: ``detail`` names the token, the kind naming neither the field nor
@@ -948,7 +948,7 @@ class ParsedName:
         return self._text_for(Role.MIDDLE)
 
     @property
-    # rules.md#R1: "every field is a view computed from the parsed
+    # rules/R1: "every field is a view computed from the parsed
     # words at read time, joining its words in written order — except
     # folded family words" (O3's fold and P6's tussenvoegsel, which
     # render before the rest of the family)
@@ -970,7 +970,7 @@ class ParsedName:
     # -- derived views (filters over roles + STABLE tags only) ----------
 
     @property
-    # rules.md#R2: "the family name splits into further views: the
+    # rules/R2: "the family name splits into further views: the
     # base (the family without its leading particles) and the
     # particles themselves"
     def family_particles(self) -> str:
@@ -1135,6 +1135,6 @@ class ParsedName:
         outside the suffix are written in more than one case, and in a
         name it does repair keeps a suffix written in more than one
         case as written ('EdD'), repairing only one written in a
-        single case (rules.md#R5). Idempotent."""
+        single case (rules/R5). Idempotent."""
         import nameparser._render as _render
         return _render.capitalized(self, lexicon, force=force)

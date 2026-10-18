@@ -462,7 +462,7 @@ def test_where_the_marker_lands_when_the_consumer_declines() -> None:
     # any other to the bound-given join (P5 declines a marker "standing
     # as a word of its own", and this one is not) -- but since #602 the
     # 'Jr' behind it starts a credential run to the end of the part
-    # (rules.md#S2), so the reserve finds no name word to spare and the
+    # (rules/S2), so the reserve finds no name word to spare and the
     # join declines for that reason instead
     assert _piece_texts(_grouped("abdul van der Berg née Jr Jones")) == [
         ["abdul", "van der Berg née", "Jr", "Jones"]]
@@ -514,7 +514,7 @@ def test_a_delimiter_core_in_a_suffix_tail_is_not_maiden_text() -> None:
 
 def test_a_marker_in_a_suffix_part_is_a_word() -> None:
     # A marker counts only in the part holding the family name
-    # (rules.md#M2, #601), so in a tail part it takes nothing, core or
+    # (rules/M2, #601), so in a tail part it takes nothing, core or
     # no core. This was the #549 test that a trailing core is cut
     # before the walk, and the walk no longer runs in a tail part.
     out = _grouped("Smith, John, PhD née Jones V -", policy=_DASH)
@@ -602,7 +602,7 @@ _GIVEN_NAME_TITLE_LEX = dataclasses.replace(
 
 
 def test_a_given_name_title_licenses_the_bound_join_with_one_word_to_spare() -> None:
-    # rules.md#P5 (#369): a given-name title asserts that a given name
+    # rules/P5 (#369): a given-name title asserts that a given name
     # follows -- the same assertion H1 reads when it keeps "Sir John" a
     # given name -- so behind one the reserve is the post-comma one,
     # and two name words join where STRICT keeps the second back as
@@ -646,7 +646,7 @@ def test_the_licence_joins_a_word_not_a_particle_chain() -> None:
     # it is the family name P2 built -- so behind a given-name title
     # the bound word must not absorb it: untitled, "abdul van der
     # Berg" keeps the chain as its family, and the title cannot make
-    # the surname vanish. Found in review; the rules.md example carries
+    # the surname vanish. Found in review; the rules example carries
     # the shape into the rules corpus, so the snapshot watches it too.
     out = _grouped("sir abdul van der Berg", lexicon=_GIVEN_NAME_TITLE_LEX)
     assert _piece_texts(out) == [["sir", "abdul", "van der Berg"]]
@@ -686,7 +686,7 @@ def test_the_licence_still_declines_a_lone_marker() -> None:
 
 
 def test_the_reserve_counts_a_trailing_numeral_as_the_suffix_assign_reads() -> None:
-    # rules.md#P5 says the reserve "needs a name word to spare". A bare
+    # rules/P5 says the reserve "needs a name word to spare". A bare
     # 'V' carries both vocab:suffix and the initial tag, so the
     # suffix-piece test vetoes it -- right for assign's middle-initial
     # question, wrong here: assign reads a FINAL roman numeral after a
@@ -725,7 +725,7 @@ def test_the_reserve_counts_the_names_the_read_left_before_a_numeral() -> None:
     # Since #614 the reserve reads no view: S2's run is read once
     # before the join, and here it takes nothing -- the initial-shaped
     # 'J.' suppresses the fork -- so three name words stand and the
-    # join leaves two, which the reserve allows (decisions.md#P5,
+    # join leaves two, which the reserve allows (decisions/P5,
     # 2026-10-07). The join no longer re-reads the fork it would move.
     out = _grouped("abdul J. V")
     assert _piece_texts(out) == [["abdul J.", "V"]]
@@ -757,7 +757,7 @@ def test_the_numeral_fork_is_not_mirrored_after_a_family_comma() -> None:
 
 
 def test_the_join_never_absorbs_a_suffix_piece() -> None:
-    # rules.md#P5 says the join takes "the word after it"; a suffix is
+    # rules/P5 says the join takes "the word after it"; a suffix is
     # not a name word -- the same decline the join already makes for a
     # marker. The reserve counted only non-suffix pieces, so 'abdul jr
     # Jones' declined, but with a word to spare the join took the
@@ -780,7 +780,7 @@ def test_the_join_never_absorbs_a_split_credential() -> None:
 
 
 def test_the_join_declines_a_suffix_after_a_family_comma_too() -> None:
-    # The post-comma LENIENT reserve is the path decisions.md#P5 first
+    # The post-comma LENIENT reserve is the path decisions/P5 first
     # recorded the absorb-a-suffix shape on ('Berg, abdul jr Smith'
     # read given 'abdul jr'); the decline is the join's, so it holds
     # under every reserve.
@@ -823,7 +823,7 @@ def test_the_join_never_turns_a_suffix_into_a_name() -> None:
     # MOVED by #289, not deleted: 'Ma' now leans SURNAME (Title case,
     # mixed-case name) on BOTH sides of the join, so the two views'
     # suffix readings still agree and the join stands -- 'abdul Smith'
-    # given, 'Ma' family (decisions.md#S2's corpus row).
+    # given, 'Ma' family (decisions/S2's corpus row).
     out = _grouped("abdul Smith Ma", lexicon=_AMBIGUOUS_LEX)
     assert _piece_texts(out) == [["abdul Smith", "Ma"]]
     out = _grouped("abdul Smith Berg Ma", lexicon=_AMBIGUOUS_LEX)
@@ -878,7 +878,7 @@ def test_the_licence_joins_where_the_read_took_nothing() -> None:
     # there is no joined view to compare: the run, read once before
     # the join, takes nothing, and the join stands, as for 'abdul J.
     # V' (test_the_reserve_counts_the_names_the_read_left_before_a_
-    # numeral, decisions.md#P5 2026-10-07).
+    # numeral, decisions/P5 2026-10-07).
     out = _grouped("sir abdul J. V", lexicon=_GIVEN_NAME_TITLE_LEX)
     assert _piece_texts(out) == [["sir", "abdul J.", "V"]]
 
@@ -921,7 +921,7 @@ def test_the_chain_keeps_an_acronym_assign_will_not_peel() -> None:
     # as a credential); now 'Ma' leans SURNAME (Title case, mixed-case
     # name) and the peel declines it regardless of the count, so the
     # second re-ask absorbs it into the particle run too
-    # (decisions.md#S2).
+    # (decisions/S2).
     out = _grouped("St John van Berg Ma", lexicon=lex)
     assert _piece_texts(out) == [["St", "John", "van Berg Ma"]]
 
@@ -945,7 +945,7 @@ def test_the_chain_stops_before_a_bare_acronym_with_words_to_spare() -> None:
     # MOVED by #289, not deleted: 'Ma' is Title-case in a mixed-case
     # name, so it now leans SURNAME and the chain's re-ask no longer
     # stops before it -- 'Ma' joins the particle run instead
-    # (decisions.md#S2's corpus row).
+    # (decisions/S2's corpus row).
     out = _grouped("John van der Berg Ma", lexicon=_AMBIGUOUS_LEX)
     assert _piece_texts(out) == [["John", "van der Berg Ma"]]
 
@@ -1394,7 +1394,7 @@ _PLAIN_LEX = _LEX.add(conjunctions={"i"})
 
 
 def test_a_connective_piece_counts_toward_the_carve_outs_total() -> None:
-    # rules.md#P3's count (#397). Four words, one of them the link,
+    # rules/P3's count (#397). Four words, one of them the link,
     # and the link is suffix vocabulary -- so the total reaches four
     # only because a connective counts ITSELF. Without the count arm
     # the total is three, the carve-out declines, and the link stays
@@ -1438,7 +1438,7 @@ def test_the_right_hand_test_reads_the_peel_not_the_suffix_piece(
 ) -> None:
     # the arm that forces trailing_start rather than is_suffix_piece:
     # a ONE-CHARACTER suffix word is initial-shaped, so the
-    # suffix-piece test refuses it (rules.md#S2's initial veto) while
+    # suffix-piece test refuses it (rules/S2's initial veto) while
     # assign's trailing peel takes it. Spelled with the piece test
     # alone, the link would swallow the generation here.
     lex = _LINK_LEX.add(suffix_words={"v"})
@@ -1468,7 +1468,7 @@ def test_a_leading_title_on_the_left_is_no_name_word() -> None:
 def test_an_unlisted_leading_abbreviation_is_no_name_word_either(
 ) -> None:
     # and THIS is the `lo` bound's own row, the listed spelling above
-    # being caught by the title-piece test as well. rules.md#H2 reads
+    # being caught by the title-piece test as well. rules/H2 reads
     # an unlisted abbreviation opening a name as a title by SHAPE, so
     # the vocabulary says nothing about 'Xyz.' and only the bound
     # assign's own title run draws keeps the link from joining it.
@@ -1613,7 +1613,7 @@ def test_a_one_case_letter_is_an_initial_and_never_counts() -> None:
 
 
 def test_the_class_reaches_a_callers_own_connective() -> None:
-    # rules.md#P3 is keyed on the class throughout: a caller who adds
+    # rules/P3 is keyed on the class throughout: a caller who adds
     # 'v' to their connectives gets the Catalan link's behavior for
     # it, because 'v' is generational vocabulary the way 'i' is.
     p = Parser(lexicon=Lexicon.default().add(conjunctions={"v"}))
@@ -1650,12 +1650,12 @@ def test_the_count_reaches_a_connective_that_is_particle_vocabulary(
     # the cost that comes with it, pinned rather than hidden:
     # family_base drops a particle wherever it stands and not only
     # leading, so the joined run loses the letter here. A standing
-    # rules.md#R2 limit this row surfaces, not one it creates.
+    # rules/R2 limit this row surfaces, not one it creates.
     assert out.family_base == "Velasquez Garcia"
 
 
 # --- #397 review: the link inside a MAIDEN CLAUSE -------------------
-# rules.md#M2's link clause. The walk ends the birth name at the first
+# rules/M2's link clause. The walk ends the birth name at the first
 # suffix WORD after the marker, and the link is one -- so it ended the
 # clause there, and what #397 added was to JOIN the words it left
 # standing into the current surname. Each branch below has the same
@@ -1755,7 +1755,7 @@ def test_the_marker_is_not_the_name_word_on_the_links_left() -> None:
     # carries: the marker announces the name and is no word of it, so
     # a link standing first inside the clause joins nothing there. The
     # walk then stops at its very first piece and the pass declines
-    # altogether, leaving the marker an ordinary word (rules.md#M2).
+    # altogether, leaving the marker an ordinary word (rules/M2).
     out = _grouped("Jane Doe née i Soler", lexicon=_LINK_LEX)
     assert _maiden_texts(out) == []
     assert _piece_texts(out) == [["Jane", "Doe", "née i Soler"]]
@@ -1804,7 +1804,7 @@ def test_a_marker_with_nothing_after_it_declines_before_the_bound(
 
 def test_a_trailing_title_does_not_hide_the_suffix_run_from_the_join(
 ) -> None:
-    # rules.md#H5 read where the JOIN asks its question (#397 second
+    # rules/H5 read where the JOIN asks its question (#397 second
     # review). `trailing_start` reads the peel over the pieces as
     # WRITTEN, so a title standing behind the suffix run makes the
     # peel take nothing and the answer is `len(pieces)` -- and a
@@ -1846,7 +1846,7 @@ def test_a_trailing_title_does_not_hide_the_suffix_run_from_the_join(
     assert lower_title.suffix == "i MA"
     # the ONE-CASE spellings never reached the defect and are pinned
     # as the control: written wholly in one case the letter reads as
-    # an initial (rules.md#P3's marked subset), no join is attempted
+    # an initial (rules/P3's marked subset), no join is attempted
     # at all, and both spellings already agreed with each other and
     # with the untitled name at dc3bdf9c -- which is what says the
     # bound and not the marking is what this row is about.
@@ -1859,7 +1859,7 @@ def test_a_trailing_title_does_not_hide_the_suffix_run_from_the_join(
 
 def test_a_multi_letter_link_of_the_suffix_vocabulary_joins_by_the_same_rule(
 ) -> None:
-    # rules.md#P3's both-sides clause names a CLASS -- "a connective
+    # rules/P3's both-sides clause names a CLASS -- "a connective
     # that is also generational vocabulary" -- and says nothing about
     # how the word is spelled (#397 second review). A `len(text) != 1`
     # filter stood in the stage and narrowed the clause to one-letter
@@ -1918,7 +1918,7 @@ def test_the_first_word_floor_holds_a_title_out_of_the_chain() -> None:
 
 
 def test_the_floor_keeps_the_first_word_in_the_chains_count() -> None:
-    """rules.md#M2 (#535 review): the floor lives in the chain now,
+    """rules/M2 (#535 review): the floor lives in the chain now,
     not in a clamp read after the fact -- the chain may not take the
     first word after the marker, so the re-peel's count still holds
     it and a trailing suffix behind a chained title reads as

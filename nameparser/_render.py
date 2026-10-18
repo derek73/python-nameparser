@@ -41,13 +41,13 @@ _INITIALS_KEYS = (Role.GIVEN.value, Role.MIDDLE.value, Role.FAMILY.value)
 #: Tags whose tokens contribute no initial outside the given group --
 #: unless the token also carries UNJOINED_TAG, i.e. the whole part is
 #: particles, in which case they are the part's only words and do
-#: contribute (rules.md#R3, #404). The mark readmits a token carrying
+#: contribute (rules/R3, #404). The mark readmits a token carrying
 #: EITHER tag: a conjunction with nothing to join is not acting as a
 #: conjunction any more than a particle with nothing to join is acting
 #: as a particle, so it is a name word of the part like the rest.
 #: Not STABLE_TAGS -- that also contains "initial", which must contribute.
 _SKIP_TAGS = frozenset({"particle", "conjunction"})
-#: The given group's own skip set (rules.md#R3, #461): a connective
+#: The given group's own skip set (rules/R3, #461): a connective
 #: contributes no initial in ANY group where it is joining words, so
 #: the given group no longer exempts it -- "one rule for every group".
 #: The particle exemption stays: a given-group particle is a name word
@@ -127,7 +127,7 @@ def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
     from the word alone, the initial carve-out included ('E.' assigned
     to middle is an initial, not the Italian conjunction). What it
     cannot give is an answer the parse reached by looking at the whole
-    NAME -- rules.md#P3's one-case fork is the live example -- which
+    NAME -- rules/P3's one-case fork is the live example -- which
     is why it is the fallback and the tags are the rule.
     """
     # the shape on the composed spelling, as _normalize composes the
@@ -175,7 +175,7 @@ def render(name: ParsedName, spec: str) -> str:
     return _format_spec(spec, values, "render", _RENDER_KEYS)
 
 
-# rules.md#R3: "initials take the first letter of each given, middle,
+# rules/R3: "initials take the first letter of each given, middle,
 # and base family word; titles, suffixes, particles and nicknames
 # contribute nothing"
 def _first_letter(text: str) -> str:
@@ -228,8 +228,8 @@ def initials(name: ParsedName, spec: str, delimiter: str, separator: str) -> str
     This view takes NO lexicon, so it has none to fall back to for
     that text: `replace(family='de la vega')` initials every word of
     that field where the same name parsed gives 'j. v.'
-    (rules.md#R3's Accepted
-    clause, and decisions.md#R4 for why the fallback was tried
+    (rules/R3's Accepted
+    clause, and decisions/R4 for why the fallback was tried
     and dropped -- #464 is the crossing that would make it
     answerable). Valid spec keys: given, middle, family."""
     if not isinstance(delimiter, str):
@@ -289,10 +289,10 @@ def _letter_run_ge2(text: str) -> list[bool]:
             for i, c in enumerate(text) if c.isalnum()]
 
 
-# rules.md#R4: "the writer split a chunk the mask keeps together, so
+# rules/R4: "the writer split a chunk the mask keeps together, so
 # the split-off letter is an initial" -- the one override below.
 def _apply_mask(word: str, mask: str) -> str | None:
-    """rules.md#R4's mask: `word` with each letter or digit recased to
+    """rules/R4's mask: `word` with each letter or digit recased to
     the case of the mask's alphanumeric in the same position, every
     other character kept where the writer put it ('ph.d.' under 'PhD'
     is 'Ph.D.'). None where the two alphanumeric counts differ --
@@ -348,7 +348,7 @@ def _lowers_as_particle(normalized: str, word: str, role: Role,
             and not _spells_an_initial(normalized, word)
             and role in (Role.MIDDLE, Role.FAMILY)
             and UNJOINED_TAG not in tags
-            # rules.md#R4: "a particle the vocabulary records a
+            # rules/R4: "a particle the vocabulary records a
             # casing for takes that casing" -- the mask below
             # outranks the particle's lowercase (#604)
             and normalized not in lex.capitalization_exceptions_map)
@@ -363,11 +363,11 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # the mask ahead of the acronym clause is what gives bsc 'BSc'
     # though bsc is a listed acronym too.
     normalized = _normalize(word)
-    # rules.md#R4: "a part whose every word is particle vocabulary is
+    # rules/R4: "a part whose every word is particle vocabulary is
     # repaired as ordinary name words, since none of them is doing a
     # particle's work there" -- UNJOINED_TAG is that mark (#407).
     # Only the PARTICLE conjunct is gated on it, and that is the rule
-    # rather than an omission -- rules.md#R4: "A CONNECTIVE the parse
+    # rather than an omission -- rules/R4: "A CONNECTIVE the parse
     # placed among the name words keeps its lowercase wherever it
     # stands there, including inside a part whose other words the
     # unjoined mark has turned into ordinary name words" -- so a
@@ -469,7 +469,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # word as the writer punctuated it, so 'Ph.D.' under 'PhD' stays
     # 'Ph.D.' and 'phd' becomes 'PhD'. v1 substituted the value, which
     # is how 'md' became 'M.D.' and 'iii.' lost its period;
-    # rules.md#R4: "Repair changes case and nothing else". Role-free,
+    # rules/R4: "Repair changes case and nothing else". Role-free,
     # as the map always was: an entry is the caller saying how a word
     # is written wherever it stands.
     undotted = normalized.replace(".", "")
@@ -484,7 +484,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
     # not a word to title-case: a one-case name repairs to the
     # acronym's caps instead of 'Mba' (#459). So is a word classify
     # admitted to the credential class by its dotted SHAPE alone
-    # (SHAPE_ACRONYM_TAG; rules.md#S3's unlisted 'x.y.z.'), which has
+    # (SHAPE_ACRONYM_TAG; rules/S3's unlisted 'x.y.z.'), which has
     # no vocabulary entry to be listed in. The mask above is asked
     # first, which is what keeps a conventionally mixed-case acronym as
     # it is written (bsc -> BSc) though it is listed here too. Gated
@@ -496,7 +496,7 @@ def _cap_word(word: str, role: Role, tags: frozenset[str],
             undotted in lex.suffix_acronyms
             or SHAPE_ACRONYM_TAG in tags):
         return word.upper()
-    # rules.md#R4: "A roman numeral the parse put in the suffix role is
+    # rules/R4: "A roman numeral the parse put in the suffix role is
     # written in capitals" whether or not the vocabulary lists it: 'vi'
     # through 'x' carry no vocabulary tag and title-cased to 'Vi'/'Ix'
     # until #459, while 'ii'/'iii'/'iv' rode the exceptions map, which is
@@ -567,7 +567,7 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     # A particle written with a mark ("d'", "az-", "'t", #700) is one
     # vocabulary word that the per-word walk below would split at the
     # mark, asking the particle test of its stem ('d', 'az', 't')
-    # instead -- so rules.md#R4's "a particle is written in lowercase"
+    # instead -- so rules/R4's "a particle is written in lowercase"
     # is asked of the whole token first. Only the lowercase is taken
     # here; wherever the arm declines (an all-particle part, a role
     # other than middle or family, an initial's spelling, a recorded
@@ -590,7 +590,7 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
              if any(c.isalnum() for c in part)]
     if len(named) < 3:
         return _sub_words(cap, text)
-    # rules.md#R4: "Inside a hyphenated word, a part that is
+    # rules/R4: "Inside a hyphenated word, a part that is
     # connective vocabulary with a worded part on each side of it
     # keeps its lowercase" (#478). Decided here, not in _cap_word,
     # whose word has lost its neighbours. Only a part holding an
@@ -619,7 +619,7 @@ def _in_one_case(text: str) -> bool:
     return text in (text.upper(), text.lower())
 
 
-# rules.md#R4: "case repair returns a repaired copy and never mutates
+# rules/R4: "case repair returns a repaired copy and never mutates
 # the parse"
 def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
                 force: bool) -> ParsedName:
@@ -633,7 +633,7 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     than one case is kept as written -- 'EdD', 'B.Tech.', and the
     garbled 'Iii' alike -- while one written in a single case is
     repaired like any other token.
-    Repair changes case and nothing else (see the rules.md#R4 citation
+    Repair changes case and nothing else (see the rules/R4 citation
     in _cap_word): an exceptions-map value is a mask recasing the word
     as written (#459), never a replacement.
     The repair reads token TAGS as well as texts: a part whose every
@@ -649,14 +649,14 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
     'de la' where the same words parsed give 'De La'; one set to
     'de y' keeps the 'y' lowercase, as the parse does and as 1.4.0
     did. Parser.revise() is the edit that classifies the value, and
-    gives 'De La' (rules.md#R4's Accepted boundary).
+    gives 'De La' (rules/R4's Accepted boundary).
     Idempotent: every _cap_word rule, and the hyphen rule in
     _cap_text, is a fixpoint on its own output, so a repaired name
     comes back unchanged whether or not the gate admits it again
     (a name whose non-suffix words are caseless, 'Kim Minjun' in
     hangul with a 'phd', is admitted every time) -- except where a
     LETTER'S OWN CASE MAPPING changes its length
-    (decisions.md#R4's Unicode boundary; 'ß' recasing to 'SS' through
+    (decisions/R4's Unicode boundary; 'ß' recasing to 'SS' through
     a mask is one example, not the only one). Lengthening: a mask's
     own per-character casing fallback can turn one letter into a
     different LETTER SEQUENCE ('ß' upper is 'SS', not one recased
@@ -681,18 +681,18 @@ def capitalized(name: ParsedName, lexicon: Lexicon | None, *,
         # silent no-op on mixed-case input or a deep AttributeError
         raise TypeError(f"lexicon must be a Lexicon or None, got {lexicon!r}")
     lex = Lexicon.default() if lexicon is None else lexicon
-    # rules.md#R5: "case repair acts only on a name written entirely
+    # rules/R5: "case repair acts only on a name written entirely
     # in one case" -- and "the suffixes are left out of that test": a
     # credential or a generation written the way one is written
     # ('III', 'PhD', 'Jr.') says nothing about how the writer cased
     # the NAME (#492). Titles stay in because title repair is not yet
-    # trusted to act on a cased title (decisions.md#R5 names the three
+    # trusted to act on a cased title (decisions/R5 names the three
     # titles that showed why).
     gate = " ".join(t.text for t in name.tokens
                      if t.role is not Role.SUFFIX)
     if not force and not _in_one_case(gate):
         return name
-    # rules.md#R5: "a suffix written in more than one case is the
+    # rules/R5: "a suffix written in more than one case is the
     # writer's spelling and is kept as written where repair was not
     # forced" -- the gate's own test, asked of each suffix token. The
     # gate leaves the suffixes out because a cased one says nothing

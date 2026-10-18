@@ -16,13 +16,13 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: opening *piece*, not the first word of the string: a particle that has
 #: already chained onto the word behind it is part of that piece rather
 #: than standing alone.
-#: OPENING the name is the whole of that rule's subject (rules.md#P1;
+#: OPENING the name is the whole of that rule's subject (rules/P1;
 #: the pre-2.2 docstrings called it rule 1b). A member standing alone
 #: where a declared order puts the GIVEN name was a second site until
 #: #467, and is not one now: that slot holds what the caller declared,
 #: so ``Policy(name_order=FAMILY_FIRST)`` reads "Mesnil de" as family
 #: "Mesnil", given "de". A member ENDING the name under a family-first
-#: order is rules.md#P6's, which joins it to the family. A bare "de" stays as it is. Where a chain is
+#: order is rules/P6's, which joins it to the family. A bare "de" stays as it is. Where a chain is
 #: reported as the given name anyway it is because the member is no
 #: longer standing alone: under ``Policy(name_order=FAMILY_FIRST)`` the
 #: given position of "Juan de la Vega" holds the whole three-token
@@ -46,7 +46,7 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
     # the AMBIGUOUS side; no amount of searching settles absence, so what
     # is recorded is what the word IS rather than a failed search.
     #
-    # The test is POSITIONAL (decisions.md#vocabulary-collisions C-i,
+    # The test is POSITIONAL (decisions/vocabulary-collisions C-i,
     # corrected 2026-08-17): membership asks whether the word is borne as
     # a name in the position this rule ACTS on -- leading, or alone in the
     # given role -- not whether a bearer exists anywhere. 'de' is why the
@@ -125,7 +125,7 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
                # name (#604). The one ONE-LETTER particle, so the letter
                # written with its period is still the initial it
                # spells -- 'Juan Ó. Pérez' is Óscar, not a surname
-               # (rules.md#P7). Unaccented 'o' is EXCLUDED: bare 'O' is
+               # (rules/P7). Unaccented 'o' is EXCLUDED: bare 'O' is
                # a common periodless initial, and the anglicized form
                # is glued ("O'Neil") anyway.
     'ste',     # Contraction of 'Sainte'; has a vowel, which is why the
@@ -137,7 +137,7 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
     'vd',      # Dutch abbreviation of "van der". Also the British
                # Volunteer Decoration, a suffix acronym: two non-name
                # readings, so C-ii decides it on frequency and the Dutch
-               # one wins (decisions.md#vocabulary-collisions).
+               # one wins (decisions/vocabulary-collisions).
     'vom',     # German "from the"
     'zu',      # German "at/to", nobiliary ("zu Guttenberg")
 
@@ -214,7 +214,7 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: with no drift -- mirroring ``TITLES = GIVEN_NAME_TITLES | {...}`` in
 #: :py:mod:`nameparser.config.titles`.
 # The AMBIGUOUS half: words that are also borne as names in the position
-# the leading-particle rule acts on (decisions.md#vocabulary-collisions
+# the leading-particle rule acts on (decisions/vocabulary-collisions
 # C-i). A commented entry has been examined; a BARE one is sitting on the
 # conservative default and nobody has looked at it. #360 examined the 12
 # that appear leading in tools/differential's corpora plus a few more,
@@ -253,7 +253,7 @@ PARTICLES = NON_GIVEN_NAME_PARTICLES | {
               # particle (DiCaprio)
     'dí',
     'do',     # Vietnamese Đỗ leads a great many surnames. Also in
-              # TITLES -- decisions.md records TITLES n ambiguous ==
+              # TITLES -- the decisions record TITLES n ambiguous ==
               # {do, freiherr, st} as load-bearing for the emitter
     'du',     # Du is a Chinese surname (Du Fu), leading under a
               # family-first reading
