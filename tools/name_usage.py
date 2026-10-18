@@ -66,6 +66,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import http.client
 import io
 import json
@@ -454,7 +455,7 @@ def wikidata_usage(word: str, top: int) -> Usage:
             _bindings(_sparql(wikidata_countries_query(forms))), top)
     except (OSError, ValueError, KeyError, http.client.HTTPException) as exc:
         return Usage("Wikidata people", status="failed", lower_bound=True,
-                     note=f"query failed: {type(exc).__name__}: {exc}")
+                     note=_failure(exc))
     zero = "a zero proves nothing" if not (usage.given or usage.family) else ""
     usage.note = _join("matched as " + ", ".join(forms), zero)
     return usage
@@ -576,10 +577,11 @@ NAME_CLASSES: dict[str, Role] = {
 assert set(NAME_CLASSES.values()) == {"given", "family"}, NAME_CLASSES
 
 INDEX_DIR = "wikidata_cjk_names"
-#: Bumped whenever what the index holds changes (version 2 widened the
-#: character class to supplementary-plane Han); a cache built by another
-#: version is rebuilt rather than trusted.
-INDEX_VERSION = 2
+#: Bumped whenever what the index holds changes (2 widened the character
+#: class to supplementary-plane Han, 3 to Extension H and keyed each batch
+#: by its whole membership); a cache built by another version is rebuilt
+#: rather than trusted.
+INDEX_VERSION = 3
 #: Items per label query. Measured 2026-10-17 on family-name items not
 #: queried before: 1,000 took 2.2-2.4s and 2,000 took 24s.
 INDEX_BATCH = 1000
@@ -591,14 +593,15 @@ ITEM_CHUNK = 500
 ENDS_WITH_SOURCE = "Wikidata people, name ends with"
 
 #: The iteration mark 々 and 〇, kana, the CJK ideograph blocks (Extension
-#: A, the unified block, compatibility, and Extensions B onward in the
-#: supplementary planes, where rare surname characters live), hangul
-#: syllables, and halfwidth katakana. The Yijing hexagrams between
-#: Extension A and the unified block are left out. One such letter makes
-#: a label or a word CJK; the query and is_cjk share the class.
-_CJK_CHARS = ("々〇぀-ヿ㐀-䶿一-鿿"
-              "가-힯豈-﫿･-ﾟ"
-              "\U00020000-\U0003134f\U0002f800-\U0002fa1f")
+#: A, the unified block, compatibility, and the supplementary planes from
+#: Extension B through Extension H as of Unicode 15, where rare surname
+#: characters live), hangul syllables, and halfwidth katakana. The Yijing
+#: hexagrams between Extension A and the unified block are left out. One
+#: such letter makes a label or a word CJK; the query and is_cjk share
+#: the class, so widening it is an INDEX_VERSION bump.
+_CJK_CHARS = ("\u3005\u3007\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff"
+              "\uac00-\ud7af\uf900-\ufaff\uff65-\uff9f"
+              "\U00020000-\U000323af")
 _CJK = re.compile(f"[{_CJK_CHARS}]")
 
 
@@ -777,16 +780,22 @@ def _class_ids(cls: str, fetch: bool) -> list[str]:
     return ids
 
 
-def _cached_batch(path: Path, span: list[str],
+def _batch_digest(qids: list[str]) -> str:
+    """What a batch file is keyed by: its whole membership, since batches
+    are named by position and, after a class is listed again, the same
+    position can hold other items -- at either end or in between."""
+    return hashlib.sha256(" ".join(qids).encode()).hexdigest()
+
+
+def _cached_batch(path: Path, digest: str,
                   ids: list[str]) -> tuple[str, list[list[str]]] | None:
-    """A batch file's date and rows, or None when it was built against
-    another listing: batches are named by position, so after a class is
-    listed again the same position can hold other items."""
+    """A batch file's date and rows, or None when it was built for other
+    items."""
     data = _read_json(path)
     if not (isinstance(data, dict) and isinstance(data.get("fetched"), str)
             and isinstance(data.get("rows"), list)):
-        raise _unusable(path, "not a batch: needs fetched, span and rows")
-    if data.get("span") != span:
+        raise _unusable(path, "not a batch: needs fetched, digest and rows")
+    if data.get("digest") != digest:
         return None
     rows = data["rows"]
     batch = set(ids)
@@ -807,20 +816,23 @@ def _fetch_batch(cls: str, ids: list[str], start: int, end: int, fetch: bool,
     base = cache_dir() / INDEX_DIR / f"{cls}-{start}-{end}"
     done, halved = base.with_suffix(".json"), base.with_suffix(".halved")
     batch = ids[start:end]
-    span = [batch[0], batch[-1]]
+    middle = (start + end) // 2
+    # The marker is read first: a whole batch's file from an earlier
+    # listing must not shadow the halves this one was cached as. A marker
+    # left by an earlier listing only splits the batch, which costs a
+    # query and loses nothing, since each half is checked by itself.
+    if halved.exists():
+        first = _fetch_batch(cls, ids, start, middle, fetch, out, dates)
+        second = _fetch_batch(cls, ids, middle, end, fetch, out, dates)
+        return first or second
+    digest = _batch_digest(batch)
     if done.exists():
-        cached = _cached_batch(done, span, batch)
+        cached = _cached_batch(done, digest, batch)
         if cached is not None:
             dates.add(cached[0])
             out.extend(IndexEntry(q, NAME_CLASSES[cls], label)
                        for q, label in cached[1])
             return False
-        halved.unlink(missing_ok=True)  # it was halved for other items
-    elif halved.exists():
-        middle = (start + end) // 2
-        first = _fetch_batch(cls, ids, start, middle, fetch, out, dates)
-        second = _fetch_batch(cls, ids, middle, end, fetch, out, dates)
-        return first or second
     if not fetch:
         raise _Missing(done.name)
     try:
@@ -830,14 +842,14 @@ def _fetch_batch(cls: str, ids: list[str], start: int, end: int, fetch: bool,
         if end - start <= INDEX_MIN_BATCH:
             raise ValueError(f"wd:{cls} items {start}-{end} still "
                              f"overran ({exc})") from exc
+        done.unlink(missing_ok=True)
         halved.parent.mkdir(parents=True, exist_ok=True)
         halved.touch()
-        middle = (start + end) // 2
         _fetch_batch(cls, ids, start, middle, fetch, out, dates)
         _fetch_batch(cls, ids, middle, end, fetch, out, dates)
         return True
     today = date.today().isoformat()
-    _write(done, {"fetched": today, "span": span, "rows": rows})
+    _write(done, {"fetched": today, "digest": digest, "rows": rows})
     dates.add(today)
     out.extend(IndexEntry(q, NAME_CLASSES[cls], label) for q, label in rows)
     return True
@@ -920,6 +932,15 @@ SELECT DISTINCT ?p WHERE {{
 _QUERY_ERRORS = (OSError, ValueError, KeyError, http.client.HTTPException)
 
 
+def _failure(exc: BaseException) -> str:
+    """The note for a query that failed. An HTTPError holds its response
+    open, and since 3.14 one collected unclosed warns, so it is closed
+    here, where the report lets go of it."""
+    if isinstance(exc, urllib.error.HTTPError):
+        exc.close()
+    return f"query failed: {type(exc).__name__}: {exc}"
+
+
 def ends_with_usage(word: str, index: NameIndex, top: int) -> Usage:
     """Bearers of the indexed name items whose label ends in the word,
     and of the family/given pairs that end in it together. A failed
@@ -949,14 +970,14 @@ def ends_with_usage(word: str, index: NameIndex, top: int) -> Usage:
                                      about))
     except _QUERY_ERRORS as exc:
         return Usage(ENDS_WITH_SOURCE, status="failed", lower_bound=True,
-                     note=f"query failed: {type(exc).__name__}: {exc}")
+                     note=_failure(exc))
     usage.source = ENDS_WITH_SOURCE
     usage.splits = index.boundaries(word)
     for split in usage.splits:
         try:
             _count_split(split)
         except _QUERY_ERRORS as exc:
-            split.error = f"query failed: {type(exc).__name__}: {exc}"
+            split.error = _failure(exc)
     return usage
 
 
@@ -970,6 +991,8 @@ def _attempt(load: Callable[[], T | None]) -> tuple[T | None, str]:
     try:
         return load(), ""
     except (OSError, ValueError, http.client.HTTPException) as exc:
+        if isinstance(exc, urllib.error.HTTPError):
+            exc.close()
         return None, f"{type(exc).__name__}: {exc}"
 
 
@@ -1064,6 +1087,11 @@ def main(argv: list[str] | None = None) -> int:
         print("\n" + ssa_missing_message(), file=sys.stderr)
     failed = any(u.status == "failed" or any(s.error for s in u.splits)
                  for us in report.values() for u in us)
+    if args.refresh_index and index_error:
+        # A Latin word has no ends-with row to carry this, and the refresh
+        # has already deleted the old index.
+        print(f"CJK name index: {index_error}", file=sys.stderr)
+        failed = True
     return 2 if failed else 0
 
 
