@@ -101,7 +101,7 @@
 {"name": "Albert Bonet Marrugat", "given": "Albert", "middle": "Bonet", "family": "Marrugat", "initials": "A. B. M."}
 {"name": "Albert Guðmundsson", "given": "Albert", "family": "Guðmundsson", "initials": "A. G."}
 {"name": "Albert Lederle", "given": "Albert", "family": "Lederle", "initials": "A. L."}
-{"name": "Albert, Eugen d'", "given": "Eugen", "middle": "d'", "family": "Albert", "initials": "E. d. A."}
+{"name": "Albert, Eugen d'", "given": "Eugen", "family": "d' Albert", "initials": "E. A."}
 {"name": "Albertino della Piazza", "given": "Albertino", "family": "della Piazza", "initials": "A. P."}
 {"name": "Alberto Abello Vives", "given": "Alberto", "middle": "Abello", "family": "Vives", "initials": "A. A. V."}
 {"name": "Alberto García Ulecia", "given": "Alberto", "middle": "García", "family": "Ulecia", "initials": "A. G. U."}
@@ -134,9 +134,9 @@
 {"name": "Alois von und zu Liechtenstein", "given": "Alois", "family": "von und zu Liechtenstein", "initials": "A. L."}
 {"name": "Alois von und zu und von Liechtenstein", "given": "Alois", "family": "von und zu und von Liechtenstein", "initials": "A. L."}
 {"name": "Alonso de Cardenas", "given": "Alonso", "family": "de Cardenas", "initials": "A. C."}
-{"name": "Alquen, Gunter d'", "given": "Gunter", "middle": "d'", "family": "Alquen", "initials": "G. d. A."}
+{"name": "Alquen, Gunter d'", "given": "Gunter", "family": "d' Alquen", "initials": "G. A."}
 {"name": "Alvensleben, Albrecht von", "given": "Albrecht", "family": "von Alvensleben", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "A. A."}
-{"name": "Alzon, Emmanuel d'", "given": "Emmanuel", "middle": "d'", "family": "Alzon", "initials": "E. d. A."}
+{"name": "Alzon, Emmanuel d'", "given": "Emmanuel", "family": "d' Alzon", "initials": "E. A."}
 {"name": "Amadi John Chinedu", "order": "FAMILY_FIRST", "given": "John", "middle": "Chinedu", "family": "Amadi", "initials": "J. C. A."}
 {"name": "Amadi Maazị Christopher Chukwudike Jr, MP", "order": "FAMILY_FIRST", "given": "Maazị", "middle": "Christopher Chukwudike", "family": "Amadi", "suffix": "Jr, MP", "initials": "M. C. C. A."}
 {"name": "Amadi, Christopher Chukwudike", "given": "Christopher", "middle": "Chukwudike", "family": "Amadi", "initials": "C. C. A."}
@@ -179,8 +179,8 @@
 {"name": "Andrews, M.D.", "family": "Andrews", "suffix": "M.D.", "initials": "A."}
 {"name": "Andrés David Padilla Mejía", "given": "Andrés", "middle": "David Padilla", "family": "Mejía", "initials": "A. D. P. M."}
 {"name": "Ane Miren Urrestaratzu", "given": "Ane", "middle": "Miren", "family": "Urrestaratzu", "initials": "A. M. U."}
-{"name": "Angiviller, Charles Claude de La Billarderie d'", "given": "Charles", "middle": "Claude de La Billarderie d'", "family": "Angiviller", "initials": "C. C. B. d. A."}
-{"name": "Angoulême, Louis Antoine d'Artois d'", "given": "Louis", "middle": "Antoine d'Artois d'", "family": "Angoulême", "initials": "L. A. d. d. A."}
+{"name": "Angiviller, Charles Claude de La Billarderie d'", "given": "Charles", "middle": "Claude de La Billarderie", "family": "d' Angiviller", "initials": "C. C. B. A."}
+{"name": "Angoulême, Louis Antoine d'Artois d'", "given": "Louis", "middle": "Antoine d'Artois", "family": "d' Angoulême", "initials": "L. A. d. A."}
 {"name": "Anh", "given": "Anh", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "A."}
 {"name": "Anh", "order": "FAMILY_FIRST", "family": "Anh", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "A."}
 {"name": "Anh Do", "given": "Anh", "family": "Do", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. D."}
@@ -204,7 +204,7 @@
 {"name": "Anne Sepp", "given": "Anne", "family": "Sepp", "initials": "A. S."}
 {"name": "Anne Sofie Holm Hansen", "given": "Anne", "middle": "Sofie Holm", "family": "Hansen", "initials": "A. S. H. H."}
 {"name": "Anne-Pierre de Montesquiou-Fézensac", "given": "Anne-Pierre", "family": "de Montesquiou-Fézensac", "initials": "A. M."}
-{"name": "Annebault, Claude d'", "given": "Claude", "middle": "d'", "family": "Annebault", "initials": "C. d. A."}
+{"name": "Annebault, Claude d'", "given": "Claude", "family": "d' Annebault", "initials": "C. A."}
 {"name": "Annelise Weber", "given": "Annelise", "family": "Weber", "initials": "A. W."}
 {"name": "Annette Charlotte Freiherrin von und zu der Tann-Rathsamhausen", "given": "Annette", "middle": "Charlotte", "family": "Freiherrin von und zu der Tann-Rathsamhausen", "initials": "A. C. T."}
 {"name": "Antico", "given": "Antico", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "A."}
@@ -228,10 +228,10 @@
 {"name": "Anuar bin Malek", "given": "Anuar", "family": "bin Malek", "initials": "A. M."}
 {"name": "Anwar Ibrahim", "given": "Anwar", "family": "Ibrahim", "initials": "A. I."}
 {"name": "Arcadio Poveda Ricalde", "given": "Arcadio", "middle": "Poveda", "family": "Ricalde", "initials": "A. P. R."}
-{"name": "Arco, Giovanni Battista Gherardo d'", "given": "Giovanni", "middle": "Battista Gherardo d'", "family": "Arco", "initials": "G. B. G. d. A."}
+{"name": "Arco, Giovanni Battista Gherardo d'", "given": "Giovanni", "middle": "Battista Gherardo", "family": "d' Arco", "initials": "G. B. G. A."}
 {"name": "Ardelean, Daniel Ionescu Dragoș Ioan", "given": "Daniel", "middle": "Ionescu Dragoș Ioan", "family": "Ardelean", "initials": "D. I. D. I. A."}
 {"name": "Arenas Betancourt, Rodrigo", "given": "Rodrigo", "family": "Arenas Betancourt", "initials": "R. A. B."}
-{"name": "Arenberg, Auguste Marie Raymond d'", "given": "Auguste", "middle": "Marie Raymond d'", "family": "Arenberg", "initials": "A. M. R. d. A."}
+{"name": "Arenberg, Auguste Marie Raymond d'", "given": "Auguste", "middle": "Marie Raymond", "family": "d' Arenberg", "initials": "A. M. R. A."}
 {"name": "Arend, Arie den", "given": "Arie", "family": "den Arend", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "A. A."}
 {"name": "Arie den Arend", "given": "Arie", "family": "den Arend", "initials": "A. A."}
 {"name": "Armando Domínguez Borrás", "given": "Armando", "middle": "Domínguez", "family": "Borrás", "initials": "A. D. B."}
@@ -244,20 +244,20 @@
 {"name": "Asas Manterola, Benita", "given": "Benita", "family": "Asas Manterola", "initials": "B. A. M."}
 {"name": "Asmar", "given": "Asmar", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "A."}
 {"name": "Asmar", "order": "FAMILY_FIRST", "family": "Asmar", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "A."}
-{"name": "Assad, Hafis al-", "given": "Hafis", "middle": "al-", "family": "Assad", "initials": "H. a. A."}
+{"name": "Assad, Hafis al-", "given": "Hafis", "family": "al- Assad", "initials": "H. A."}
 {"name": "Assoc Dean", "title": "Assoc", "family": "Dean", "initials": "D."}
 {"name": "Assoc Dean of Chemistry Robert Johns", "title": "Assoc", "given": "Dean of Chemistry", "middle": "Robert", "family": "Johns", "initials": "D. C. R. J."}
 {"name": "Asst. Vice Chancellor John Smith", "title": "Asst. Vice Chancellor", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Ataíde, Luís de", "given": "Luís", "family": "de Ataíde", "initials": "L. A."}
 {"name": "Attorney General of Minnesota", "title": "Attorney", "family": "General of Minnesota", "ambiguities": ["TITLE_OR_NAME"], "initials": "G. M."}
-{"name": "Aubigné, Théodore Agrippa d'", "given": "Théodore", "middle": "Agrippa d'", "family": "Aubigné", "initials": "T. A. d. A."}
+{"name": "Aubigné, Théodore Agrippa d'", "given": "Théodore", "middle": "Agrippa", "family": "d' Aubigné", "initials": "T. A. A."}
 {"name": "August von Cetto", "given": "August", "family": "von Cetto", "initials": "A. C."}
 {"name": "Auguste Marie Raymond d'Arenberg", "given": "Auguste", "middle": "Marie Raymond", "family": "d'Arenberg", "initials": "A. M. R. d."}
 {"name": "Augustus P. Gardner", "given": "Augustus", "middle": "P.", "family": "Gardner", "initials": "A. P. G."}
 {"name": "Augustus Seymour Porter", "given": "Augustus", "middle": "Seymour", "family": "Porter", "initials": "A. S. P."}
 {"name": "Aung San", "given": "Aung", "family": "San", "initials": "A. S."}
 {"name": "Aurelio García Lesmes", "given": "Aurelio", "middle": "García", "family": "Lesmes", "initials": "A. G. L."}
-{"name": "Auxiron, Claude François Joseph d'", "given": "Claude", "middle": "François Joseph d'", "family": "Auxiron", "initials": "C. F. J. d. A."}
+{"name": "Auxiron, Claude François Joseph d'", "given": "Claude", "middle": "François Joseph", "family": "d' Auxiron", "initials": "C. F. J. A."}
 {"name": "Avraham ben Mosheh ben Maimon", "given": "Avraham", "middle": "ben Mosheh ben", "family": "Maimon", "initials": "A. b. M. b. M."}
 {"name": "Awa Isseu", "order": "FAMILY_FIRST", "given": "Isseu", "family": "Awa", "initials": "I. A."}
 {"name": "Ayala Pérez, Daniel", "given": "Daniel", "family": "Ayala Pérez", "initials": "D. A. P."}
@@ -399,7 +399,7 @@
 {"name": "Bunn, Teddy", "given": "Teddy", "family": "Bunn", "initials": "T. B."}
 {"name": "Bunsen, Frances von", "given": "Frances", "family": "von Bunsen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "F. B."}
 {"name": "Bustamante y Rivero, José Luis", "given": "José", "middle": "Luis", "family": "Bustamante y Rivero", "initials": "J. L. B. R."}
-{"name": "Buḥturī, al-Walīd Ibn-ʿUbaid al-", "given": "al-Walīd", "middle": "Ibn-ʿUbaid al-", "family": "Buḥturī", "initials": "a. I. a. B."}
+{"name": "Buḥturī, al-Walīd Ibn-ʿUbaid al-", "given": "al-Walīd", "middle": "Ibn-ʿUbaid", "family": "al- Buḥturī", "initials": "a. I. B."}
 {"name": "Bw. Adam Juma Agape Shukurani Masalu MB", "title": "Bw.", "given": "Adam", "middle": "Juma Agape Shukurani Masalu", "family": "MB", "initials": "A. J. A. S. M. M."}
 {"name": "Bābak Yaḥyā Ibn-Muʿāḏ al-Ḫurramī", "given": "Bābak", "middle": "Yaḥyā Ibn-Muʿāḏ", "family": "al-Ḫurramī", "initials": "B. Y. I. a."}
 {"name": "Bāqir Ḫān", "given": "Bāqir", "family": "Ḫān", "initials": "B. Ḫ."}
@@ -828,13 +828,13 @@
 {"name": "Eric H. Holder, Jr., Secretary of State", "title": "Secretary of State", "given": "Eric", "middle": "H.", "family": "Holder", "suffix": "Jr.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "E. H. H."}
 {"name": "Eric de Bisschop", "given": "Eric", "family": "de Bisschop", "initials": "E. B."}
 {"name": "Ernst von Wildenbruch", "given": "Ernst", "family": "von Wildenbruch", "initials": "E. W."}
-{"name": "Escoto, Miguel d'", "given": "Miguel", "middle": "d'", "family": "Escoto", "initials": "M. d. E."}
+{"name": "Escoto, Miguel d'", "given": "Miguel", "family": "d' Escoto", "initials": "M. E."}
 {"name": "Esq Jane Smith", "given": "Esq", "middle": "Jane", "family": "Smith", "initials": "E. J. S."}
 {"name": "Esq Smith", "given": "Esq", "family": "Smith", "initials": "E. S."}
 {"name": "Esq. Smith", "title": "Esq.", "family": "Smith", "initials": "S."}
 {"name": "Esq. van Gogh", "title": "Esq.", "given": "van", "family": "Gogh", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. G."}
 {"name": "Esteva a Alsina, Maurus Daniel", "given": "Maurus", "middle": "Daniel", "family": "Esteva a Alsina", "initials": "M. D. E. a. A."}
-{"name": "Estrées, Victor-Marie d'", "given": "Victor-Marie", "middle": "d'", "family": "Estrées", "initials": "V. d. E."}
+{"name": "Estrées, Victor-Marie d'", "given": "Victor-Marie", "family": "d' Estrées", "initials": "V. E."}
 {"name": "Etiemble", "given": "Etiemble", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "E."}
 {"name": "Eugen d'Albert", "given": "Eugen", "family": "d'Albert", "initials": "E. d."}
 {"name": "Eugeni Aguiló i Pérez", "given": "Eugeni", "family": "Aguiló i Pérez", "initials": "E. A. P."}
@@ -863,7 +863,7 @@
 {"name": "Fatima Amina Umar", "given": "Fatima", "middle": "Amina", "family": "Umar", "initials": "F. A. U."}
 {"name": "Fatimah", "given": "Fatimah", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "F."}
 {"name": "Fauveau, Félicie de", "given": "Félicie", "family": "de Fauveau", "initials": "F. F."}
-{"name": "Faḥḥām, Šākir al-", "given": "Šākir", "middle": "al-", "family": "Faḥḥām", "initials": "Š. a. F."}
+{"name": "Faḥḥām, Šākir al-", "given": "Šākir", "family": "al- Faḥḥām", "initials": "Š. F."}
 {"name": "Federico Sánchez Bedoya", "given": "Federico", "middle": "Sánchez", "family": "Bedoya", "initials": "F. S. B."}
 {"name": "Feijoo y Montenegro, Benito Jerónimo", "given": "Benito", "middle": "Jerónimo", "family": "Feijoo y Montenegro", "initials": "B. J. F. M."}
 {"name": "Felip Lorda i Alaiz", "given": "Felip", "family": "Lorda i Alaiz", "initials": "F. L. A."}
@@ -1158,7 +1158,7 @@
 {"name": "Honorable Judge W. Harold Albritton, III", "title": "Honorable Judge", "given": "W.", "middle": "Harold", "family": "Albritton", "suffix": "III", "initials": "W. H. A."}
 {"name": "Honorable Terry F. Moorer", "title": "Honorable", "given": "Terry", "middle": "F.", "family": "Moorer", "initials": "T. F. M."}
 {"name": "Honorable W. Harold Albritton, III", "title": "Honorable", "given": "W.", "middle": "Harold", "family": "Albritton", "suffix": "III", "initials": "W. H. A."}
-{"name": "Hooghvorst, Emmanuel d'", "given": "Emmanuel", "middle": "d'", "family": "Hooghvorst", "initials": "E. d. H."}
+{"name": "Hooghvorst, Emmanuel d'", "given": "Emmanuel", "family": "d' Hooghvorst", "initials": "E. H."}
 {"name": "Horacio Gómez Bolaños", "given": "Horacio", "middle": "Gómez", "family": "Bolaños", "initials": "H. G. B."}
 {"name": "Horst, Jakob", "given": "Jakob", "family": "Horst", "initials": "J. H."}
 {"name": "Horvat, Irena", "given": "Irena", "family": "Horvat", "initials": "I. H."}
@@ -1178,6 +1178,7 @@
 {"name": "I don", "given": "I", "family": "don", "initials": "I. d."}
 {"name": "II Van Johnson", "given": "II", "family": "Van Johnson", "initials": "I. J."}
 {"name": "III van Gogh", "given": "III", "family": "van Gogh", "initials": "I. G."}
+{"name": "IVOI, PAUL D'", "given": "PAUL", "family": "D' IVOI", "initials": "P. I."}
 {"name": "Ibn-Ṭufail, Muḥammad Ibn-ʿAbd-al-Malik", "given": "Muḥammad", "middle": "Ibn-ʿAbd-al-Malik", "family": "Ibn-Ṭufail", "initials": "M. I. I."}
 {"name": "Ibrāhīm Ibn-Sinān", "given": "Ibrāhīm", "family": "Ibn-Sinān", "initials": "I. I."}
 {"name": "Ibrāhīm al-Yāzīǧī", "given": "Ibrāhīm", "family": "al-Yāzīǧī", "initials": "I. a."}
@@ -1229,7 +1230,7 @@
 {"name": "Ivan Tham Jun Hoe", "given": "Ivan", "middle": "Tham Jun", "family": "Hoe", "initials": "I. T. J. H."}
 {"name": "Ivanov Ivan", "given": "Ivanov", "family": "Ivan", "initials": "I. I."}
 {"name": "Ivanov Ivan Ivanovich", "given": "Ivanov", "middle": "Ivan", "family": "Ivanovich", "initials": "I. I. I."}
-{"name": "Ivoi, Paul d'", "given": "Paul", "middle": "d'", "family": "Ivoi", "initials": "P. d. I."}
+{"name": "Ivoi, Paul d'", "given": "Paul", "family": "d' Ivoi", "initials": "P. I."}
 {"name": "Iván Duque Márquez", "given": "Iván", "middle": "Duque", "family": "Márquez", "initials": "I. D. M."}
 {"name": "Iñaki", "given": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "I."}
 {"name": "Iñaki", "order": "FAMILY_FIRST", "family": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "I."}
@@ -2092,7 +2093,7 @@
 {"name": "Manuel Velasco y Martínez", "given": "Manuel", "family": "Velasco y Martínez", "initials": "M. V. M."}
 {"name": "Manuela Lema Villar", "given": "Manuela", "middle": "Lema", "family": "Villar", "initials": "M. L. V."}
 {"name": "Mané Katy", "order": "FAMILY_FIRST", "given": "Katy", "family": "Mané", "initials": "K. M."}
-{"name": "Maqrīzī, Aḥmad Ibn-ʿAlī al-", "given": "Aḥmad", "middle": "Ibn-ʿAlī al-", "family": "Maqrīzī", "initials": "A. I. a. M."}
+{"name": "Maqrīzī, Aḥmad Ibn-ʿAlī al-", "given": "Aḥmad", "middle": "Ibn-ʿAlī", "family": "al- Maqrīzī", "initials": "A. I. M."}
 {"name": "Mar, Fien de la", "given": "Fien", "family": "de la Mar", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "F. M."}
 {"name": "Marc de Joybert", "given": "Marc", "family": "de Joybert", "initials": "M. J."}
 {"name": "Marco Antonio Flores", "given": "Marco", "middle": "Antonio", "family": "Flores", "initials": "M. A. F."}
@@ -2185,7 +2186,7 @@
 {"name": "Max Born", "given": "Max", "family": "Born", "initials": "M. B."}
 {"name": "Mayo", "given": "Mayo", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "M."}
 {"name": "Mañé i Miravet, Teresa", "given": "Teresa", "family": "Mañé i Miravet", "initials": "T. M. M."}
-{"name": "Maǧrīṭī, Abu-'l-Qāsim Maslama Ibn-Aḥmad al-", "given": "Abu-'l-Qāsim", "middle": "Maslama Ibn-Aḥmad al-", "family": "Maǧrīṭī", "initials": "A. M. I. a. M."}
+{"name": "Maǧrīṭī, Abu-'l-Qāsim Maslama Ibn-Aḥmad al-", "given": "Abu-'l-Qāsim", "middle": "Maslama Ibn-Aḥmad", "family": "al- Maǧrīṭī", "initials": "A. M. I. M."}
 {"name": "Mc Donald", "family": "Mc Donald", "initials": "D."}
 {"name": "Md Abdul Karim", "title": "Md", "given": "Abdul", "family": "Karim", "initials": "A. K."}
 {"name": "Md,, Phd", "family": "Md", "suffix": "Phd", "initials": "M."}
@@ -2393,17 +2394,17 @@
 {"name": "Orel, Irena", "given": "Irena", "family": "Orel", "initials": "I. O."}
 {"name": "Oren ben Horin", "given": "Oren", "middle": "ben", "family": "Horin", "initials": "O. b. H."}
 {"name": "Orlando Arvizu Lara", "given": "Orlando", "middle": "Arvizu", "family": "Lara", "initials": "O. A. L."}
-{"name": "Orléans, Ferdinand-Philippe d'", "given": "Ferdinand-Philippe", "middle": "d'", "family": "Orléans", "initials": "F. d. O."}
-{"name": "Orléans-Longueville, Jean Louis Charles d'", "given": "Jean", "middle": "Louis Charles d'", "family": "Orléans-Longueville", "initials": "J. L. C. d. O."}
-{"name": "Orsi, Achille d'", "given": "Achille", "middle": "d'", "family": "Orsi", "initials": "A. d. O."}
+{"name": "Orléans, Ferdinand-Philippe d'", "given": "Ferdinand-Philippe", "family": "d' Orléans", "initials": "F. O."}
+{"name": "Orléans-Longueville, Jean Louis Charles d'", "given": "Jean", "middle": "Louis Charles", "family": "d' Orléans-Longueville", "initials": "J. L. C. O."}
+{"name": "Orsi, Achille d'", "given": "Achille", "family": "d' Orsi", "initials": "A. O."}
 {"name": "Ortega y Gasset, Dr.", "title": "Dr.", "given": "Ortega", "middle": "y", "family": "Gasset", "initials": "O. y. G."}
 {"name": "Ortega y Gasset, Ed", "given": "Ortega", "middle": "y", "family": "Gasset", "suffix": "Ed", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "O. y. G."}
 {"name": "Orueta y Duarte, Ricardo de", "given": "Ricardo", "family": "de Orueta y Duarte", "initials": "R. O. D."}
-{"name": "Orval, Pierre d'", "given": "Pierre", "middle": "d'", "family": "Orval", "initials": "P. d. O."}
-{"name": "Orville, Johann Friedrich d'", "given": "Johann", "middle": "Friedrich d'", "family": "Orville", "initials": "J. F. d. O."}
+{"name": "Orval, Pierre d'", "given": "Pierre", "family": "d' Orval", "initials": "P. O."}
+{"name": "Orville, Johann Friedrich d'", "given": "Johann", "middle": "Friedrich", "family": "d' Orville", "initials": "J. F. O."}
 {"name": "Ospina Pérez, Mariano", "given": "Mariano", "family": "Ospina Pérez", "initials": "M. O. P."}
 {"name": "Otto III.", "given": "Otto", "suffix": "III.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "O."}
-{"name": "Outrein, Johannes d'", "given": "Johannes", "middle": "d'", "family": "Outrein", "initials": "J. d. O."}
+{"name": "Outrein, Johannes d'", "given": "Johannes", "family": "d' Outrein", "initials": "J. O."}
 {"name": "Owura Bertram Wilberforce Henry Robert Wooster MP", "title": "Owura", "given": "Bertram", "middle": "Wilberforce Henry Robert", "family": "Wooster", "suffix": "MP", "initials": "B. W. H. R. W."}
 {"name": "Ozaki, Shirō", "given": "Shirō", "family": "Ozaki", "initials": "S. O."}
 {"name": "Ozawa, Seiji", "given": "Seiji", "family": "Ozawa", "initials": "S. O."}
@@ -2558,6 +2559,7 @@
 {"name": "Ramón Arellano Félix", "given": "Ramón", "middle": "Arellano", "family": "Félix", "initials": "R. A. F."}
 {"name": "Rascón Navarro Seña y Redondo, Juan Antonio", "given": "Juan", "middle": "Antonio", "family": "Rascón Navarro Seña y Redondo", "initials": "J. A. R. N. S. R."}
 {"name": "Rashid Maidin", "given": "Rashid", "family": "Maidin", "initials": "R. M."}
+{"name": "Rashid, Harun al-", "given": "Harun", "family": "al- Rashid", "initials": "H. R."}
 {"name": "Razija Mujanović", "given": "Razija", "family": "Mujanović", "initials": "R. M."}
 {"name": "Reem Al-Bahrani, CPA", "given": "Reem", "family": "Al-Bahrani", "suffix": "CPA", "initials": "R. A."}
 {"name": "Reis, Maria Firmina dos", "given": "Maria", "middle": "Firmina", "family": "dos Reis", "initials": "M. F. R."}
@@ -2579,7 +2581,7 @@
 {"name": "Richard von Süßkind-Schwendi", "given": "Richard", "family": "von Süßkind-Schwendi", "initials": "R. S."}
 {"name": "Ridout, Alan", "given": "Alan", "family": "Ridout", "initials": "A. R."}
 {"name": "Riksdagsledamot Lars-Åke Karl Hermansson", "given": "Riksdagsledamot", "middle": "Lars-Åke Karl", "family": "Hermansson", "initials": "R. L. K. H."}
-{"name": "Rikābī, Fuʾād ar-", "given": "Fuʾād", "middle": "ar-", "family": "Rikābī", "initials": "F. a. R."}
+{"name": "Rikābī, Fuʾād ar-", "given": "Fuʾād", "family": "ar- Rikābī", "initials": "F. R."}
 {"name": "Rinpoche", "given": "Rinpoche", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "R."}
 {"name": "Rob And Beth Edmunds", "given": "Rob And Beth", "family": "Edmunds", "initials": "R. B. E."}
 {"name": "Rob Edmunds", "given": "Rob", "family": "Edmunds", "initials": "R. E."}
@@ -2637,7 +2639,7 @@
 {"name": "SMITH, VD DE LA MA", "family": "SMITH VD DE LA MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S. M."}
 {"name": "SMITH, VD MA", "family": "SMITH VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S. M."}
 {"name": "STEVEN HARDMAN, MD, DO, DDS", "given": "STEVEN", "family": "HARDMAN", "suffix": "MD, DO, DDS", "ambiguities": ["COMMA_STRUCTURE"], "initials": "S. H."}
-{"name": "Saad, Habib Pacha es-", "given": "Habib", "middle": "Pacha es-", "family": "Saad", "initials": "H. P. e. S."}
+{"name": "Saad, Habib Pacha es-", "given": "Habib", "middle": "Pacha", "family": "es- Saad", "initials": "H. P. S."}
 {"name": "Saar Samira Ahmet", "order": "FAMILY_FIRST", "given": "Samira", "middle": "Ahmet", "family": "Saar", "initials": "S. A. S."}
 {"name": "Sahagún, Bernardino de", "given": "Bernardino", "family": "de Sahagún", "initials": "B. S."}
 {"name": "Said oglu", "given": "Said", "family": "oglu", "initials": "S. o."}
@@ -2974,7 +2976,7 @@
 {"name": "Sölvi Ottesen", "given": "Sölvi", "family": "Ottesen", "initials": "S. O."}
 {"name": "Süßkind-Schwendi, Richard von", "given": "Richard", "family": "von Süßkind-Schwendi", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "R. S."}
 {"name": "Sābūr Ibn-Sahl", "given": "Sābūr", "family": "Ibn-Sahl", "initials": "S. I."}
-{"name": "Sādāt, Ǧīhān as-", "given": "Ǧīhān", "middle": "as-", "family": "Sādāt", "initials": "Ǧ. a. S."}
+{"name": "Sādāt, Ǧīhān as-", "given": "Ǧīhān", "family": "as- Sādāt", "initials": "Ǧ. S."}
 {"name": "Tadsch ad-Din al-Hasani", "given": "Tadsch", "middle": "ad-Din", "family": "al-Hasani", "initials": "T. a. a."}
 {"name": "Tahir Jalaluddin", "given": "Tahir", "family": "Jalaluddin", "initials": "T. J."}
 {"name": "Takamatsu, Jirō", "given": "Jirō", "family": "Takamatsu", "initials": "J. T."}
@@ -3196,7 +3198,7 @@
 {"name": "Yin a Le", "given": "Yin", "middle": "a", "family": "Le", "initials": "Y. a. L."}
 {"name": "Yoshi Emomoto", "given": "Yoshi", "family": "Emomoto", "initials": "Y. E."}
 {"name": "Yrsa Sigurðardóttir", "given": "Yrsa", "family": "Sigurðardóttir", "initials": "Y. S."}
-{"name": "Yāzīǧī, Ibrāhīm al-", "given": "Ibrāhīm", "middle": "al-", "family": "Yāzīǧī", "initials": "I. a. Y."}
+{"name": "Yāzīǧī, Ibrāhīm al-", "given": "Ibrāhīm", "family": "al- Yāzīǧī", "initials": "I. Y."}
 {"name": "Yıldırım, Fatma Su", "given": "Fatma", "middle": "Su", "family": "Yıldırım", "initials": "F. S. Y."}
 {"name": "Yılmaz Irmak", "order": "FAMILY_FIRST", "given": "Irmak", "family": "Yılmaz", "initials": "I. Y."}
 {"name": "Yılmaz, Irmak", "given": "Irmak", "family": "Yılmaz", "initials": "I. Y."}
@@ -3210,7 +3212,7 @@
 {"name": "Zaharias, Babe D.", "given": "Babe", "middle": "D.", "family": "Zaharias", "initials": "B. D. Z."}
 {"name": "Zaid Ibn-Ḥārīṯa", "given": "Zaid", "family": "Ibn-Ḥārīṯa", "initials": "Z. I."}
 {"name": "Zainab al-Ġazālī", "given": "Zainab", "family": "al-Ġazālī", "initials": "Z. a."}
-{"name": "Zaiyāt, Laṭīfa az-", "given": "Laṭīfa", "middle": "az-", "family": "Zaiyāt", "initials": "L. a. Z."}
+{"name": "Zaiyāt, Laṭīfa az-", "given": "Laṭīfa", "family": "az- Zaiyāt", "initials": "L. Z."}
 {"name": "Zalka, Máté", "given": "Máté", "family": "Zalka", "initials": "M. Z."}
 {"name": "Zamara Imani Bukenya", "given": "Zamara", "middle": "Imani", "family": "Bukenya", "initials": "Z. I. B."}
 {"name": "Zarathustra", "given": "Zarathustra", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "Z."}
@@ -3218,7 +3220,7 @@
 {"name": "Zazilia Hamish Stober", "given": "Zazilia", "middle": "Hamish", "family": "Stober", "initials": "Z. H. S."}
 {"name": "Zazilia Hamiş Ştöber", "given": "Zazilia", "middle": "Hamiş", "family": "Ştöber", "initials": "Z. H. Ş."}
 {"name": "Zaziliya Hemish Shtober", "given": "Zaziliya", "middle": "Hemish", "family": "Shtober", "initials": "Z. H. S."}
-{"name": "Zaʿīm, Ḥusnī az-", "given": "Ḥusnī", "middle": "az-", "family": "Zaʿīm", "initials": "Ḥ. a. Z."}
+{"name": "Zaʿīm, Ḥusnī az-", "given": "Ḥusnī", "family": "az- Zaʿīm", "initials": "Ḥ. Z."}
 {"name": "Zein El Dine", "given": "Zein", "middle": "El", "family": "Dine", "initials": "Z. E. D."}
 {"name": "Zelda Hamish Støver", "given": "Zelda", "middle": "Hamish", "family": "Støver", "initials": "Z. H. S."}
 {"name": "Zelda Herman Stander", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
@@ -3354,6 +3356,7 @@
 {"name": "ina binti navalamar", "given": "ina", "family": "binti navalamar", "initials": "i. n."}
 {"name": "j.-e.-p. dupont", "given": "j.-e.-p.", "family": "dupont", "initials": "j. d."}
 {"name": "jack ma", "given": "jack", "family": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. m."}
+{"name": "jacobus henricus van 't hoff", "given": "jacobus", "middle": "henricus", "family": "van 't hoff", "ambiguities": ["UNBALANCED_DELIMITER"], "initials": "j. h. h."}
 {"name": "jane doe nee smith ma", "given": "jane", "family": "doe", "suffix": "ma", "maiden": "smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. d."}
 {"name": "jenap Atajan Saparowiç Gurdow magistr, ylymlaryň kandidaty", "given": "ylymlaryň", "middle": "kandidaty", "family": "jenap Atajan Saparowiç Gurdow magistr", "initials": "y. k. j. A. S. G. m."}
 {"name": "joao da silva do amaral de souza", "given": "joao", "middle": "da silva do amaral", "family": "de souza", "initials": "j. s. a. s."}
@@ -3545,6 +3548,7 @@
 {"name": "won Baar Dominique Goudiaby, Prof. Dr. Adama Coulibaly Camara Massamba MD DDS", "title": "Prof. Dr.", "given": "Adama", "middle": "Coulibaly Camara Massamba", "family": "won Baar Dominique Goudiaby", "suffix": "MD DDS", "initials": "A. C. C. M. w. B. D. G."}
 {"name": "xyz. John Smith", "title": "xyz.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "ylymlaryň doktory, professor Ada Kornelia Sezar Martin fon Brül Gonzales Domingo, hirurg-stomatolog lukman", "title": "professor", "given": "Ada", "middle": "Kornelia Sezar Martin fon Brül Gonzales Domingo", "family": "ylymlaryň doktory", "suffix": "hirurg-stomatolog lukman", "ambiguities": ["COMMA_STRUCTURE"], "initials": "A. K. S. M. f. B. G. D. y. d."}
+{"name": "zaʿīm, ḥusnī az-", "given": "ḥusnī", "family": "az- zaʿīm", "initials": "ḥ. z."}
 {"name": "Ábrányi, Emil", "given": "Emil", "family": "Ábrányi", "initials": "E. Á."}
 {"name": "Ábrányi, Emil von", "given": "Emil", "family": "von Ábrányi", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "E. Á."}
 {"name": "Álvaro Londoño Aristizábal", "given": "Álvaro", "middle": "Londoño", "family": "Aristizábal", "initials": "Á. L. A."}
@@ -3575,14 +3579,14 @@
 {"name": "Āqā Buzurg aṭ-Ṭihrānī", "given": "Āqā", "middle": "Buzurg", "family": "aṭ-Ṭihrānī", "initials": "Ā. B. a."}
 {"name": "ĐBQH Nguyễn Văn Anh", "order": "FAMILY_FIRST", "given": "Nguyễn", "middle": "Văn Anh", "family": "ĐBQH", "initials": "N. V. A. Đ."}
 {"name": "Ğawīdān _ Hānum", "given": "Ğawīdān", "middle": "_", "family": "Hānum", "initials": "Ğ. _. H."}
-{"name": "Ġazālī, Zainab al-", "given": "Zainab", "middle": "al-", "family": "Ġazālī", "initials": "Z. a. Ġ."}
+{"name": "Ġazālī, Zainab al-", "given": "Zainab", "family": "al- Ġazālī", "initials": "Z. Ġ."}
 {"name": "İren Adler", "given": "İren", "family": "Adler", "initials": "İ. A."}
 {"name": "Ōtani, Kōzui", "given": "Kōzui", "family": "Ōtani", "initials": "K. Ō."}
 {"name": "Ştöber Zazilia Hamiş", "order": "FAMILY_FIRST", "given": "Zazilia", "middle": "Hamiş", "family": "Ştöber", "initials": "Z. H. Ş."}
-{"name": "Šaʿrāwī, Hudā aš-", "given": "Hudā", "middle": "aš-", "family": "Šaʿrāwī", "initials": "H. a. Š."}
+{"name": "Šaʿrāwī, Hudā aš-", "given": "Hudā", "family": "aš- Šaʿrāwī", "initials": "H. Š."}
 {"name": "Šejc, Jan Měto", "given": "Jan", "middle": "Měto", "family": "Šejc", "initials": "J. M. Š."}
 {"name": "Šejc, Jan Měto", "order": "FAMILY_FIRST", "given": "Jan", "middle": "Měto", "family": "Šejc", "initials": "J. M. Š."}
-{"name": "Šiblī, Abū-Bakr aš-", "given": "Abū-Bakr", "middle": "aš-", "family": "Šiblī", "initials": "A. a. Š."}
+{"name": "Šiblī, Abū-Bakr aš-", "given": "Abū-Bakr", "family": "aš- Šiblī", "initials": "A. Š."}
 {"name": "Šihāb-ad-Dīn Muḥammad Ġūrī", "given": "Šihāb-ad-Dīn", "middle": "Muḥammad", "family": "Ġūrī", "initials": "Š. M. Ġ."}
 {"name": "Šołćina, Hanka", "given": "Hanka", "family": "Šołćina", "initials": "H. Š."}
 {"name": "Šołćina, Hanka", "order": "FAMILY_FIRST", "given": "Hanka", "family": "Šołćina", "initials": "H. Š."}
@@ -3590,7 +3594,7 @@
 {"name": "Šteber, Cecilija Hemiš", "given": "Cecilija", "middle": "Hemiš", "family": "Šteber", "initials": "C. H. Š."}
 {"name": "Šākir al-Faḥḥām", "given": "Šākir", "family": "al-Faḥḥām", "initials": "Š. a."}
 {"name": "Ǧalāl-ad-Dīn Rūmī", "given": "Ǧalāl-ad-Dīn", "family": "Rūmī", "initials": "Ǧ. R."}
-{"name": "Ǧaʿfarī, Ibrāhīm al-", "given": "Ibrāhīm", "middle": "al-", "family": "Ǧaʿfarī", "initials": "I. a. Ǧ."}
+{"name": "Ǧaʿfarī, Ibrāhīm al-", "given": "Ibrāhīm", "family": "al- Ǧaʿfarī", "initials": "I. Ǧ."}
 {"name": "Ǧīhān as-Sādāt", "given": "Ǧīhān", "family": "as-Sādāt", "initials": "Ǧ. a."}
 {"name": "ʊŋono Alaaji KALAM Alɛ Mustafa", "order": "FAMILY_FIRST", "given": "Alaaji", "middle": "KALAM Alɛ Mustafa", "family": "ʊŋono", "initials": "A. K. A. M. ʊ."}
 {"name": "ʊŋono Alaaji Mustafa KALAM Alɛ", "given": "ʊŋono", "middle": "Alaaji Mustafa KALAM", "family": "Alɛ", "initials": "ʊ. A. M. K. A."}
@@ -5343,14 +5347,14 @@
 {"name": "ស្តូបើ, ហ្សាហ្សីលៀ ហេមីស", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "ហ្សាហ្សីលៀ ហេមីស ស្តូបើ", "given": "ហ្សាហ្សីលៀ", "middle": "ហេមីស", "family": "ស្តូបើ", "initials": "ហ. ហ. ស."}
 {"name": "Ḥabīballāh Kalakānī", "given": "Ḥabīballāh", "family": "Kalakānī", "initials": "Ḥ. K."}
-{"name": "Ḥakīm, Taufīq al-", "given": "Taufīq", "middle": "al-", "family": "Ḥakīm", "initials": "T. a. Ḥ."}
+{"name": "Ḥakīm, Taufīq al-", "given": "Taufīq", "family": "al- Ḥakīm", "initials": "T. Ḥ."}
 {"name": "Ḥamza Fanṣūrī", "given": "Ḥamza", "family": "Fanṣūrī", "initials": "Ḥ. F."}
 {"name": "Ḥusain Ṯanāʾī Mašhadī", "given": "Ḥusain", "middle": "Ṯanāʾī", "family": "Mašhadī", "initials": "Ḥ. Ṯ. M."}
 {"name": "Ḥusnī az-Zaʿīm", "given": "Ḥusnī", "family": "az-Zaʿīm", "initials": "Ḥ. a."}
-{"name": "Ḥāǧǧ, Kamāl Yūsuf al-", "given": "Kamāl", "middle": "Yūsuf al-", "family": "Ḥāǧǧ", "initials": "K. Y. a. Ḥ."}
-{"name": "Ḫarrāṭ, Idwār al-", "given": "Idwār", "middle": "al-", "family": "Ḫarrāṭ", "initials": "I. a. Ḫ."}
+{"name": "Ḥāǧǧ, Kamāl Yūsuf al-", "given": "Kamāl", "middle": "Yūsuf", "family": "al- Ḥāǧǧ", "initials": "K. Y. Ḥ."}
+{"name": "Ḫarrāṭ, Idwār al-", "given": "Idwār", "family": "al- Ḫarrāṭ", "initials": "I. Ḫ."}
 {"name": "Ṣafī-ad-Dīn Ardabīlī", "given": "Ṣafī-ad-Dīn", "family": "Ardabīlī", "initials": "Ṣ. A."}
-{"name": "Ṭihrānī, Āqā Buzurg aṭ-", "given": "Āqā", "middle": "Buzurg aṭ-", "family": "Ṭihrānī", "initials": "Ā. B. a. Ṭ."}
+{"name": "Ṭihrānī, Āqā Buzurg aṭ-", "given": "Āqā", "middle": "Buzurg", "family": "aṭ- Ṭihrānī", "initials": "Ā. B. Ṭ."}
 {"name": "Ṯābit Ibn-Qurra", "given": "Ṯābit", "family": "Ibn-Qurra", "initials": "Ṯ. I."}
 {"name": "‏John‏ Smith", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "‏محمد بن سلمان‏", "given": "محمد", "family": "بن سلمان", "initials": "م. س."}
