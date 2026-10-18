@@ -183,10 +183,17 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # given-or-family claim under each order); 1162 -> 1171 on
     # 2026-10-17: three #701 rows reporting suffix-or-name, under each
     # order; 1171 -> 1174 on 2026-10-17: the エリザベス二世 row (#707,
-    # one given-or-family claim under each order).
-    assert claims == 1174, (
-        f"the field sweep checks {claims} claims, recorded as 1174 on "
-        f"2026-10-17")
+    # one given-or-family claim under each order); 1174 -> 1172 on
+    # 2026-10-17: #718's re-pinned and added numeral rows (the lone
+    # numeral rows lose their given-or-family claims; the 'John III'
+    # row brings some back); 1172 -> 1191 on 2026-10-18:
+    # #718's declined-numeral report, which names the field the letter
+    # was read into, on those rows under each order; 1191 -> 1210 the
+    # same day: the PR review's rows (the chain-taken, family-first,
+    # lowercase and maiden-clause numerals).
+    assert claims == 1210, (
+        f"the field sweep checks {claims} claims, recorded as 1210 on "
+        f"2026-10-18")
 
 
 #: Case.__post_init__'s shape checks, each probed for the message that

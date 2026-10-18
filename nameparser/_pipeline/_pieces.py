@@ -63,7 +63,8 @@ from nameparser._pipeline._state import (
 )
 from nameparser._pipeline._vocab import (
     _PERIOD_ABBREV, _ROMAN, Lean, ambiguous_lean, in_initialless_script,
-    is_single_letter_numeral, is_trailing_numeral_suffix, tag_marker_runs,
+    is_single_letter_numeral, is_trailing_numeral_suffix,
+    numeral_settled_by_case, tag_marker_runs,
 )
 
 
@@ -422,8 +423,9 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     # bare initial-shaped numeral, so 'Dr King V' keeps the whole run
     # as the title and reads the numeral as the name -- given 'V',
     # 'king' being a given-name title and the run's last word, where
-    # 'Dr Smith V' reads suffix 'V'. That numeral fork is outside this
-    # floor (decisions/H3).
+    # 'Dr Smith V' reads family 'V' (a title being no word to spare
+    # for a one-letter numeral, #718). That numeral fork is outside
+    # this floor (decisions/H3).
     #
     # The two inline tag reads are the cheapest NECESSARY condition for
     # the piece behind the run to be a suffix piece at all --
@@ -916,9 +918,13 @@ class Peel(NamedTuple):
     pieces and rest[names:] the suffixes. The other two are pieces --
     token-index tuples, as PendingAmbiguity wants them -- and each is
     one token long: `numeral` is the piece the roman-numeral fork
-    took (None when it did not fire; always the walk's last piece),
+    took as a call, which is reported (None when it did not fire, and
+    for a numeral its lower case settled, which is taken unrecorded;
+    always the walk's last piece),
     `picks` the bare ambiguous acronyms the peel had to resolve, in
-    peel order, either way (the last may sit at rest[names - 1]).
+    peel order, either way (the last may sit at rest[names - 1]), and
+    a one-letter numeral the fork declined for want of words to spare
+    (#718), always the walk's last piece and a name.
     `anchors` is `peel_trailing`'s working state for `tail_reading`
     alone -- the walk's `credential_anchors` pass over `rest` where a
     member needed one, handed to the next pass of the fixed point
@@ -1090,7 +1096,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    start: int | None = None,
                    anchors: list[bool] | None = None,
                    units: Sequence[int] | None = None,
-                   second: int = 1) -> Peel:
+                   second: int = 1,
+                   count_numeral: bool = True) -> Peel:
     """The S2 trailing peel over `rest`, a peel_walk list. In the
     piece layer rather than in assign because group's bound-given
     reserve asks the same question of the view the join would leave
@@ -1122,6 +1129,10 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     weighing it is a name word the walk stops at. The numeral fork still reads the piece in front of the
     numeral as written: an initial there keeps it a name word whatever
     unit the initial is in ('John van der J. V', rules/P2).
+
+    `count_numeral` False takes a one-letter numeral without asking
+    for words to spare: the given part after a family comma is read
+    without the count, and its chain bound must not ask it (#718).
     """
     picks: list[tuple[int, ...]] = []
     numeral: tuple[int, ...] | None = None
@@ -1137,16 +1148,32 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         if is_suffix_piece(piece, ptags[rest[k - 1]], tokens):
             k -= 1
             continue
-        # a final single letter that is a roman numeral, after a piece
+        # a final single token that is a roman numeral, after a piece
         # that is not initial-shaped; the predicate's docstring carries
-        # the is_initial_shaped reasoning (#320)
+        # the is_initial_shaped reasoning (#320). rules/S10: "A numeral
+        # of one letter needs words to spare, as a bare ambiguous
+        # acronym does" -- the acronym fork's own count,
+        # below, so 'John V' keeps family 'V' (#718). Declined, it is a
+        # pick, since "either reading is reported", and no branch below
+        # can take a numeral
         if (k == len(rest) and k >= 2 and len(piece) == 1
                 and is_trailing_numeral_suffix(
-                    tokens[piece[0]].text,
+                    text := tokens[piece[0]].text,
                     tokens[pieces[rest[k - 2]][0]].text)):
-            numeral = tuple(piece)
-            k -= 1
-            continue
+            # rules/S10: "a numeral written in lower case in a name of
+            # mixed case is the generation and reports nothing" --
+            # decided here once: taken as any suffix word is, and not
+            # recorded as the fork's call, so no reporter meets it
+            if numeral_settled_by_case(text, one_case):
+                k -= 1
+                continue
+            if (not is_single_letter_numeral(text) or not count_numeral
+                    or k - 2 >= second):
+                numeral = tuple(piece)
+                k -= 1
+                continue
+            picks.append(tuple(piece))
+            break
         # A bare ambiguous acronym ("MA", not "M.A.") is a credential
         # only when peeling it still leaves a given AND a family name.
         # With two pieces, "one of them is a credential" is the less
@@ -1345,6 +1372,7 @@ def particle_tail(seg: Sequence[Sequence[int]],
     return lo, hi
 
 
+
 def has_name_content(piece: Sequence[int],
                      tokens: Sequence[WorkToken]) -> bool:
     """Whether a piece holds a letter or digit: a piece with none is
@@ -1538,6 +1566,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   tokens: Sequence[WorkToken],
                   one_case: bool | None,
                   units: Sequence[int] | None = None,
+                  count_numeral: bool = True,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what
@@ -1612,6 +1641,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     spliced pieces. The fuzz that checked this against the
     re-peeling loop, the three conditions each shown load-bearing by
     a weakened copy failing it, is recorded on the PR closing #558.
+    `count_numeral` is `peel_trailing`'s, passed to every pass.
     The splice itself is never materialized in between: the runs are
     collected back to front and joined once.
     """
@@ -1622,7 +1652,8 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     # /simplify, 'Freiherr von Berg Berg ... MA Dr. MA Dr. ...')
     second = 1 if units is None else second_unit(rest, units)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
-                           units=units, second=second)
+                           units=units, second=second,
+                           count_numeral=count_numeral)
     kept = trailing_titles(rest, pieces, ptags, tokens,
                            end=peeled.names)
     if kept == peeled.names:
@@ -1659,7 +1690,8 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
         if kept >= 2 and behind_count >= 2:
             peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
                                    start=hi, anchors=peeled.anchors,
-                                   units=units, second=second)
+                                   units=units, second=second,
+                                   count_numeral=count_numeral)
             picks.extend(peeled.picks)
         else:
             rest = rest[:hi] + [j for run in reversed(behind) for j in run]
@@ -1668,7 +1700,8 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
             hi = len(rest)
             behind, behind_count = [], 0
             peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
-                                   units=units, second=second)
+                                   units=units, second=second,
+                                   count_numeral=count_numeral)
             picks = list(peeled.picks)
             numeral = peeled.numeral
         kept = trailing_titles(rest, pieces, ptags, tokens,
@@ -1919,8 +1952,14 @@ def trailing_run_start(start: int, pieces: Sequence[Sequence[int]],
     suffixes, as assign's walk does in the given part after a family
     comma (#623), where `trailing_start` sees only the suffixes and
     `trailing_start_past_titles` leaves the titles inside the bound."""
+    # rules/S4: "the given part's trailing slot after a family comma is
+    # read without it (S5)" -- the numeral half of the count, which
+    # assign's walk there never asks either, so the chain this bounds
+    # stops where that walk will read the suffix (#718's review); the
+    # acronym half is still counted here, as before #718
     rest, titled, peel = tail_reading(peel_walk(start, ptags), pieces,
-                                      ptags, tokens, one_case)
+                                      ptags, tokens, one_case,
+                                      count_numeral=False)
     first = len(pieces)
     for k in rest[peel.names:]:
         first = min(first, k)

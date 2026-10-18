@@ -9,7 +9,10 @@ Produces: structure -- its head decides a comma form once the words
 are tagged (rules/C1, #613, `_comma.decide`), binding the SUFFIX and
 TITLE roles of a postnominal part after the comma, emptying its
 segment and dropping its delimiter cores before any join, plus the SUFFIX_OR_NAME
-ambiguities that decision reports and the caps shape's acronym tags on
+ambiguities that decision reports, those the particle chain and a
+maiden clause report on a trailing member they take into the name
+(an ambiguous acronym, or since #718 a declined numeral), and the
+caps shape's acronym tags on
 a bound all-caps word (#564); pieces + piece_tags per segment
 (runs of token indices -- tokens are NEVER joined into strings: the
 anti-#100 invariant); maiden tail tokens get role=MAIDEN, and the
@@ -303,6 +306,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
     c = trailing_candidates(lo, pieces, ptags, tokens)
     end = len(pieces)
     released: list[tuple[int, Role]] = []
+    # the view's picks, for the kept member below (#718)
+    picked: tuple[tuple[int, ...], ...] = ()
     # nothing behind the clause that a trailing rule could take: the
     # view would be the head alone, and the whole rest is the clause
     if c < len(pieces):
@@ -312,6 +317,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
         vrest, vchained, vpeel = tail_reading(
             peel_walk(leading_titles(view, vtags, tokens), vtags),
             view, vtags, tokens, one_case)
+        picked = vpeel.picks
         titles = set(vchained) | set(vpeel.run_titles)
         in_run = titles | set(vrest[vpeel.names:]) | {
             q for q in range(m, len(view)) if "suffix" in vtags[q]}
@@ -345,6 +351,15 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"{word.text!r} ending the maiden name is also a "
             f"post-nominal; the maiden marker's clause keeps it rather "
             f"than reading it as one", tuple(last)))
+    elif tuple(last) in picked:
+        # rules/S10: "either reading is reported" -- a numeral the read
+        # declined for want of words to spare, which the clause keeps
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{word.text!r} ending the maiden name is a roman numeral, "
+            f"but the name has no other word to spare for it; the "
+            f"maiden marker's clause keeps it rather than reading it as "
+            f"a generational suffix", tuple(last)))
     return (list(range(m, lo)),
             [(j, Role.MAIDEN) for j in range(lo, end)] + released)
 
@@ -1098,6 +1113,11 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # the given role the fold then moves ('Freiherr von
                 # Berg Ma' was told 'given name').
                 last = pieces[j - 1]
+                # A numeral S2's read declined (rules/S10, #718) is not
+                # reported here: it stays one of the read's picks, and
+                # assign words it from the role it ends in ('Freiherr
+                # von Richthofen V', 'a family name'), the chain taking
+                # nothing the read had not already given up
                 if (j > k + 1 and len(last) == 1
                         and not tokens[last[0]].tags.isdisjoint(
                             _AMBIGUOUS_CREDENTIAL_TAGS)
@@ -1238,9 +1258,10 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # before #614: the join tried on the pieces as it would
                 # leave them, the reading assign runs over each (the
                 # ONE function, _pieces.tail_reading), the suffixes
-                # compared as the peeled pieces themselves -- 'abdul V'
-                # peels the V unjoined and nothing joined, 'abdul Smith
-                # Ma' peels the acronym unjoined and keeps it joined.
+                # compared as the peeled pieces themselves -- 'abdul
+                # Smith V' peels the V unjoined and nothing joined (no
+                # word to spare there, rules/S10), 'abdul Smith Ma'
+                # peels the acronym unjoined and keeps it joined.
                 if read is not None:
                     same_suffixes = True
                     chained = False
@@ -1261,9 +1282,9 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                         == [tuple(pieces[j]) for j in rest[before.names:]])
                     chained = fk + 1 in chain_took
                     names_after = after.names
-                # rules/P5: "a trailing roman numeral, or a bare
-                # acronym the run takes, or a trailing title word the
-                # run takes, is no word to spare" -- and the join joins
+                # rules/P5: "a trailing roman numeral the run takes
+                # (S10), or a bare acronym it takes, or a trailing title
+                # word the run takes, is no word to spare" -- and the join joins
                 # two NAME words, so a piece the chain takes is no more
                 # joinable than a marker or a suffix piece is: 'Sir
                 # abdul Prof.' reads title 'Sir Prof.', given 'abdul'.

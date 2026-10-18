@@ -43,6 +43,7 @@ Entry conventions:
 - [S7 — the company of an unambiguous credential](S7-company-of-an-unambiguous-credential.md)
 - [S8 — the credential's trailing run](S8-credentials-trailing-run.md)
 - [S9 — unlisted words that join the ambiguous class by shape](S9-unlisted-words-that-join-the-ambiguous-class-by-shape.md)
+- [S10 — the trailing roman numeral](S10-trailing-roman-numeral.md)
 
 ## Nicknames & quoted names (N)
 

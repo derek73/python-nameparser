@@ -73,6 +73,9 @@ _TRANSLATED = frozenset({
 #: to the unsubtracted default pushes every parenthesis-maiden row
 #: into this set and turns nothing red.
 _CORE_ONLY_IDS = frozenset({
+    # #718: S10's count under a declared family-first order, which v1
+    # cannot express
+    "a_lone_numeral_counts_in_units_under_family_first",
     # #701: H6's peel under a declared family-first order, which v1
     # cannot express
     "a_title_before_a_family_comma_reads_the_same_family_first",

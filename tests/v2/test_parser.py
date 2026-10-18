@@ -559,9 +559,12 @@ def test_the_bound_given_reserve_spares_the_family_assign_will_keep() -> None:
     n = parse("abdul Smith V")
     assert (n.given, n.family, n.suffix) == ("abdul", "Smith", "V")
     assert [a.kind for a in n.ambiguities] == [AmbiguityKind.SUFFIX_OR_NAME]
+    # Since #718 a one-letter numeral needs words to spare (rules/S10)
+    # and a title is none, so 'V' is a name word there, and the
+    # licence joins it into the given pair as it would any word
     licensed = parse("Sir abdul V")
     assert (licensed.given, licensed.family, licensed.suffix) == \
-        ("abdul", "", "V")
+        ("abdul V", "", "")
 
 
 def test_the_bound_given_join_leaves_a_suffix_where_it_stands() -> None:
@@ -698,7 +701,7 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
             ("John van der Berg Ma", "van der Berg Ma", "")):
         n = parse(text)
         assert (n.family, n.suffix) == (family, suffix), text
-    n = parse("John née Jones Smith V")
+    n = parse("Jane Doe née Jones Smith V")
     assert (n.maiden, n.suffix) == ("Jones Smith", "V")
     n = parse("Jane Smith née Jones V")
     assert (n.family, n.maiden, n.suffix) == ("Smith", "Jones", "V")
@@ -730,11 +733,14 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
     n = parse("Freiherr von Berg MA")
     assert (n.title, n.family, n.suffix) == ("Freiherr", "von Berg", "MA")
     # the numeral keeps its three pieces behind the same word, and the
-    # chain, now the one name piece, reads as 'Dr. Smith V' reads
+    # chain is the one name piece. Since #718 a one-letter numeral
+    # needs words to spare (rules/S10) and a title is none, so behind
+    # one name word the V is a name word: the chain takes it as P2
+    # takes any, where 'Dr. Smith V' gives it the family
     n = parse("Freiherr von Richthofen V")
-    assert (n.given, n.family, n.suffix) == ("", "von Richthofen", "V")
+    assert (n.given, n.family, n.suffix) == ("", "von Richthofen V", "")
     n = parse("Dr. Smith V")
-    assert (n.given, n.family, n.suffix) == ("", "Smith", "V")
+    assert (n.given, n.family, n.suffix) == ("Smith", "V", "")
     # both stops read the TRAILING word, so an acronym with the
     # numeral behind it is not the word either fork asks about and
     # stays maiden text -- and so does a numeral with an acronym

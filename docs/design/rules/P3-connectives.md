@@ -38,7 +38,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     connectives standing between. A connective with nothing to its right is connecting
     nothing, and a word of that vocabulary ending a name, or standing
     before the credential a name ends with, is the generation it also
-    spells.
+    spells wherever S10 reads one there.
     A separator the caller declared, standing in a trailing suffix
     part, ends the search there as a comma would, so a connective
     never joins across it (C1); anywhere else it is a word.

@@ -7,9 +7,9 @@ P2. Rationale: a particle is written as part of the surname it
     a trailing suffix begins — the trailing run S2 reads, once,
     before the chain is made and counting the chain's own run as the
     one name word it will be, so the chain cannot change what it
-    counts: a trailing roman numeral, or a
-    bare acronym with words to spare, ends the chain as a suffix word
-    does, and so does a bare ambiguous acronym written in capitals in
+    counts: a trailing roman numeral S10 reads as the generation, or
+    a bare acronym with words to spare, ends the chain as a suffix
+    word does, and so does a bare ambiguous acronym written in capitals in
     a mixed-case name, which needs no words to spare; the same
     acronym written Title-case in a mixed-case name ends nothing and
     joins the chain as any name word does, words to spare or not,
@@ -48,7 +48,7 @@ P2. Rationale: a particle is written as part of the surname it
       "John van der J. V"         →  family="van der J. V"  · boundary
       "Freiherr von Berg MA"      →  family="von Berg"
       "Freiherr von Berg MA"      →  suffix="MA"
-      "Freiherr von Richthofen V" →  suffix="V"  · boundary
+      "Freiherr von Richthofen V" →  family="von Richthofen V"  · boundary
       "SMITH VD MA, JOHN"         →  family="SMITH VD MA"
       "SMITH VD, JOHN"            →  suffix="VD"  · boundary
       "John van der Berg née Jones"  →  family="van der Berg"
@@ -76,5 +76,5 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions/P2 · interacts: P1, P4, H5, M2, S2, C2, S4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P2 · interacts: P1, P4, H5, M2, S2, C2, S4, S10 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

@@ -44,7 +44,7 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     each read over what the other leaves until neither takes
     anything more, are read once, before the join is tried, and the
     name words they leave are the words to spare. A trailing
-    roman numeral, or a bare acronym the run takes, or a trailing
+    roman numeral the run takes (S10), or a bare acronym it takes, or a trailing
     title word the run takes, is no
     word to spare. The join joins two name words into one and, read
     after the trailing run, changes no suffix reading: a word the

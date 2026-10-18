@@ -154,7 +154,7 @@ def test_a_connective_or_initial_report_is_withdrawn_where_the_role_is_a_suffix(
         "JOHN QUINCY SMITH I": ["suffix-or-name"],
         "john smith i": ["suffix-or-name"],
         "SMITH, JOHN I": [],
-        "HENRY I": ["suffix-or-name", "given-or-family"],
+        "HENRY SMITH I": ["suffix-or-name"],
     }
     for text, kinds in withdrawn.items():
         name = parse(text)
@@ -164,8 +164,10 @@ def test_a_connective_or_initial_report_is_withdrawn_where_the_role_is_a_suffix(
     # the contrast that keeps the withdrawal honest: where the parse
     # roles the same letter a NAME word the fork DID resolve to one
     # of its branches, and the report stands
+    # -- 'HENRY I' among them since #718: with no word to spare the
+    # letter is the family name (rules/S10), where it was the suffix
     for text in ("JOSEP CAROD I ROVIRA", "josep carod i rovira",
-                 "JOHN I SMITH", "JOSEP CAROD I ROVIRA III"):
+                 "JOHN I SMITH", "JOSEP CAROD I ROVIRA III", "HENRY I"):
         name = parse(text)
         assert "conjunction-or-initial" in [
             a.kind.value for a in name.ambiguities], text

@@ -63,8 +63,9 @@ M2. Rationale: a maiden marker announces that what follows it is the
       "Jane Smith née Jones"        →  maiden="Jones"
       "Maria López née García Pérez"  →  maiden="García Pérez"
       "Jane Smith née Jones PhD"    →  suffix="PhD"
-      "John née Jones Smith V"      →  maiden="Jones Smith"
-      "John née Jones Smith V"      →  suffix="V"
+      "Jane Doe née Jones Smith V"  →  maiden="Jones Smith"
+      "Jane Doe née Jones Smith V"  →  suffix="V"
+      "John née Jones Smith V"      →  maiden="Jones Smith V"  · boundary
       "Doe nee Smith, Jane"         →  maiden="Smith"
       "Doe, Jane nee Smith"         →  maiden=""
       "Doe, Jane nee Smith"         →  middle="nee Smith"

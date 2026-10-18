@@ -31,7 +31,7 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
     nothing after it names no family and silences nothing, so
     `سلمان،` and `Smith,` report where `Smith, Andrew` does not. A
     comma with only a TITLE after it names no family either, but the
-    title still decides the field wherever it stands, so `John V, Dr.`
+    title still decides the field wherever it stands, so `John III, Dr.`
     is silent for H1's reason and not the comma's. A word with no
     letter or digit in it is no name word and
     reports nothing (A2). Where the one name unit carries title

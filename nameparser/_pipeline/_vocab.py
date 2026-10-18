@@ -252,15 +252,17 @@ def is_initial_shaped(text: str) -> bool:
 _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 
 
-# rules/S2: "a trailing word of the suffix vocabulary reads as a
-# suffix" -- the roman-numeral half of that rule, which the initial
-# veto would otherwise take: V, I and X are suffix vocabulary AND bare
-# capitals, and a bare capital inside a name is a middle initial.
+# rules/S10: "A roman numeral ending a name written without a comma
+# reads as the generation" -- which the initial veto would otherwise
+# take: V and I are suffix vocabulary, X a numeral by shape alone, and
+# all three are bare capitals, which inside a name are middle initials.
 def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
     """assign's roman-numeral fork, shared with group's bound-given
     reserve (#401): a FINAL single-token piece that is a roman numeral
     reads as the suffix when the piece before it does not look like
-    part of an initial run. `preceding` is that piece's first token;
+    part of an initial run -- for a one-letter numeral a necessary
+    condition only, the caller's words-to-spare count deciding
+    (rules/S10, #718). `preceding` is that piece's first token;
     the callers establish that `text` is last and that a name piece
     precedes it.
 
@@ -271,6 +273,18 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
     suppressing the fork and cost 'John 씨. V' its family name."""
     return (_ROMAN.match(text) is not None
             and not is_initial_shaped(preceding))
+
+
+# rules/S10: "a numeral written in lower case in a name of mixed case is
+# the generation and reports nothing" -- the one writing that settles
+# the fork, since nobody writes an initial in lower case beside
+# capitals. Asked by the walk alone, which takes such a numeral as any
+# suffix word and records no call for a reporter to report.
+def numeral_settled_by_case(text: str, one_case: bool | None) -> bool:
+    """Whether a numeral the trailing fork reads is lower case in a
+    name written in more than one case. `one_case` is
+    ParseState.one_case; None (nobody asked) settles nothing."""
+    return one_case is False and text.islower()
 
 
 # #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,
