@@ -5366,6 +5366,7 @@
 {"name": "ア゛イ タロウ", "given": "ア゛イ", "family": "タロウ", "initials": "ア. タ."}
 {"name": "アインシュタイン・アルベルト", "order": "FAMILY_FIRST", "given": "アルベルト", "family": "アインシュタイン", "initials": "ア. ア."}
 {"name": "アルベルト・アインシュタイン", "given": "アルベルト", "family": "アインシュタイン", "initials": "ア. ア."}
+{"name": "エリザベス二世", "given": "エリザベス", "suffix": "二世", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "エ."}
 {"name": "ジェニファー・ソフィア・フォン・スミス・ジュニア博士", "given": "ソフィア", "middle": "フォン スミス ジュニア博士", "family": "ジェニファー", "initials": "ソ. フ. ス. ジ. ジ."}
 {"name": "セシリア・ローズ・ブラウン", "given": "セシリア", "middle": "ローズ", "family": "ブラウン", "initials": "セ. ロ. ブ."}
 {"name": "フォン・スミス・ソフィア・ジェニファー", "order": "FAMILY_FIRST", "given": "スミス", "middle": "ソフィア ジェニファー", "family": "フォン", "initials": "ス. ソ. ジ. フ."}
@@ -5395,6 +5396,7 @@
 {"name": "佐藤グレース恵子", "order": "FAMILY_FIRST", "family": "佐藤グレース恵子", "initials": "佐."}
 {"name": "佐藤グレース恵子さん", "order": "FAMILY_FIRST", "family": "佐藤グレース恵子", "suffix": "さん", "initials": "佐."}
 {"name": "佐藤恵子 国会議員", "family": "佐藤恵子", "suffix": "国会議員", "initials": "佐."}
+{"name": "佐藤恵子国会議員", "family": "佐藤恵子", "suffix": "国会議員", "initials": "佐."}
 {"name": "何炅", "family": "何炅", "initials": "何."}
 {"name": "何瑞麟", "family": "何瑞麟", "initials": "何."}
 {"name": "俊年杰思陈", "family": "俊年杰思陈", "initials": "俊."}
@@ -5560,7 +5562,7 @@
 {"name": "王鑫", "family": "王鑫", "initials": "王."}
 {"name": "王镇", "family": "王镇", "initials": "王."}
 {"name": "王雅婷婷婷", "order": "FAMILY_FIRST", "family": "王雅婷婷婷", "initials": "王."}
-{"name": "王雅婷婷婷二世議員", "order": "FAMILY_FIRST", "family": "王雅婷婷婷二世議員", "initials": "王."}
+{"name": "王雅婷婷婷二世議員", "order": "FAMILY_FIRST", "family": "王雅婷婷婷二世", "suffix": "議員", "initials": "王."}
 {"name": "王雅婷，議員", "family": "王雅婷", "suffix": "議員", "initials": "王."}
 {"name": "王雪莹", "family": "王雪莹", "initials": "王."}
 {"name": "田中 さん", "family": "田中", "suffix": "さん", "initials": "田."}
@@ -5587,7 +5589,9 @@
 {"name": "田中さん, 様.", "family": "田中", "suffix": "さん, 様.", "initials": "田."}
 {"name": "田中さん.", "family": "田中", "suffix": "さん.", "initials": "田."}
 {"name": "田中さん., V.", "given": "V.", "family": "田中", "suffix": "さん.", "initials": "V. 田."}
+{"name": "田中医学博士", "family": "田中", "suffix": "医学博士", "initials": "田."}
 {"name": "田中博士", "family": "田中博士", "initials": "田."}
+{"name": "田中社長", "family": "田中", "suffix": "社長", "initials": "田."}
 {"name": "田中部長", "family": "田中部長", "initials": "田."}
 {"name": "白文正", "family": "白文正", "initials": "白."}
 {"name": "石智勇", "family": "石智勇", "initials": "石."}
@@ -5633,7 +5637,7 @@
 {"name": "陈·陈·怡君·教授，小·达印·博士", "order": "FAMILY_FIRST", "given": "小", "middle": "达印", "family": "陈 陈 怡君", "suffix": "教授, 博士", "initials": "小. 达. 陈. 陈. 怡."}
 {"name": "陈俊年杰思", "order": "FAMILY_FIRST", "family": "陈俊年杰思", "initials": "陈."}
 {"name": "陈凯歌", "family": "陈凯歌", "initials": "陈."}
-{"name": "陈子媚先生，小惠仪太平绅士", "order": "FAMILY_FIRST", "given": "小惠仪太平绅士", "family": "陈子媚先生", "initials": "小. 陈."}
+{"name": "陈子媚先生，小惠仪太平绅士", "order": "FAMILY_FIRST", "given": "小惠仪", "family": "陈子媚先生", "suffix": "太平绅士", "initials": "小. 陈."}
 {"name": "陈子媚惠仪", "order": "FAMILY_FIRST", "family": "陈子媚惠仪", "initials": "陈."}
 {"name": "陈静", "family": "陈静", "initials": "陈."}
 {"name": "陳·怡君·達印", "order": "FAMILY_FIRST", "given": "怡君", "middle": "達印", "family": "陳", "initials": "怡. 達. 陳."}
@@ -5641,10 +5645,10 @@
 {"name": "陳俊傑", "family": "陳俊傑", "initials": "陳."}
 {"name": "陳婷", "family": "陳婷", "initials": "陳."}
 {"name": "陳子媚 二世", "family": "陳子媚", "suffix": "二世", "initials": "陳."}
-{"name": "陳子媚先生，小惠儀太平紳士", "order": "FAMILY_FIRST", "given": "小惠儀太平紳士", "family": "陳子媚先生", "initials": "小. 陳."}
+{"name": "陳子媚先生，小惠儀太平紳士", "order": "FAMILY_FIRST", "given": "小惠儀", "family": "陳子媚先生", "suffix": "太平紳士", "initials": "小. 陳."}
 {"name": "陳子媚惠儀", "order": "FAMILY_FIRST", "family": "陳子媚惠儀", "initials": "陳."}
 {"name": "陳怡君 二世", "family": "陳怡君", "suffix": "二世", "initials": "陳."}
-{"name": "陳怡君二世", "family": "陳怡君二世", "initials": "陳."}
+{"name": "陳怡君二世", "family": "陳怡君", "suffix": "二世", "initials": "陳."}
 {"name": "陳怡君，醫學博士", "family": "陳怡君", "suffix": "醫學博士", "initials": "陳."}
 {"name": "陳明忠", "family": "陳明忠", "initials": "陳."}
 {"name": "雅婷", "family": "雅婷", "initials": "雅."}
@@ -5658,7 +5662,7 @@
 {"name": "韩旭", "family": "韩旭", "initials": "韩."}
 {"name": "韩红", "family": "韩红", "initials": "韩."}
 {"name": "馮·陳·怡君·達印", "order": "FAMILY_FIRST", "given": "陳", "middle": "怡君 達印", "family": "馮", "initials": "陳. 怡. 達. 馮."}
-{"name": "馮·陳·怡君·達印·二世醫學博士", "order": "FAMILY_FIRST", "given": "陳", "middle": "怡君 達印 二世醫學博士", "family": "馮", "initials": "陳. 怡. 達. 二. 馮."}
+{"name": "馮·陳·怡君·達印·二世醫學博士", "order": "FAMILY_FIRST", "given": "陳", "middle": "怡君 達印", "family": "馮", "suffix": "二世 醫學博士", "initials": "陳. 怡. 達. 馮."}
 {"name": "馮定國", "family": "馮定國", "initials": "馮."}
 {"name": "駒井玲子", "family": "駒井玲子", "initials": "駒."}
 {"name": "马丁·路德·金", "given": "马丁", "middle": "路德", "family": "金", "initials": "马. 路. 金."}

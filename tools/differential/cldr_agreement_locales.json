@@ -640,11 +640,11 @@
   },
   "given_names": {
    "expected": "子媚 惠儀",
-   "got": "小惠儀太平紳士"
+   "got": "小惠儀"
   },
   "suffix": {
    "expected": "小 太平紳士",
-   "got": ""
+   "got": "太平紳士"
   },
   "text": "陳子媚先生，小惠儀太平紳士",
   "title": {
@@ -839,11 +839,11 @@
   },
   "given_names": {
    "expected": "子媚 惠仪",
-   "got": "小惠仪太平绅士"
+   "got": "小惠仪"
   },
   "suffix": {
    "expected": "小 太平绅士",
-   "got": ""
+   "got": "太平绅士"
   },
   "text": "陈子媚先生，小惠仪太平绅士",
   "title": {
@@ -1170,11 +1170,7 @@
   },
   "given_names": {
    "expected": "怡君 達印",
-   "got": "陳 怡君 達印 二世醫學博士"
-  },
-  "suffix": {
-   "expected": "二世 醫學博士",
-   "got": ""
+   "got": "陳 怡君 達印"
   },
   "text": "馮·陳·怡君·達印·二世醫學博士",
   "title": {
@@ -1263,11 +1259,11 @@
  "zh_Hant/nativeFull/surnameFirst": {
   "given_names": {
    "expected": "雅婷 婷婷",
-   "got": "雅婷婷婷二世議員"
+   "got": "雅婷婷婷二世"
   },
   "suffix": {
    "expected": "二世 議員",
-   "got": ""
+   "got": "議員"
   },
   "text": "王雅婷婷婷二世議員"
  },

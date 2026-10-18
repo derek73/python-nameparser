@@ -165,16 +165,14 @@ SUFFIX_WORDS = frozenset({
     'さま',      # ja the kana spelling of 様
     'くん',      # ja the kana spelling of 君
     'ちゃん',    # ja familiar/diminutive
-    # #671: CJK credential, office and generational words. SPACED
-    # (and after-comma) ONLY -- none is in GLUED_HONORIFICS below.
-    # The spaced position is a token boundary the writer drew, so
-    # the vetting bar is just "is a word standing alone ever a
-    # name?"; the glued bar ("can it END a name?") needs real-name
-    # data this set was not measured against (decisions.md#W2, #671),
-    # so no peel splits them off a glued name (陳怡君二世, 田中社長
-    # keep the word) and glued peeling is a separate question (#707).
-    # The Chinese pack's SEGMENTER is not a peel and still exposes
-    # them after a listed surname: 王二世 and 李部長 divide at the
+    # #671: CJK credential, office and generational words. The
+    # spaced position is a token boundary the writer drew, so the
+    # vetting bar there is just "is a word standing alone ever a
+    # name?". The glued bar ("can it END a name?") was measured
+    # separately in #707 (decisions.md#W2), and every entry but
+    # 部長/部长 passed it and is in GLUED_HONORIFICS below. The
+    # Chinese pack's SEGMENTER is not a peel and exposes them after a
+    # listed surname regardless: 王二世 and 李部長 divide at the
     # surname and the split-off word is then a whole-token suffix
     # word, as 王博士 already reads.
     # - 二世: Japanese/Chinese "II" (the generational numeral).
@@ -187,8 +185,9 @@ SUFFIX_WORDS = frozenset({
     #   department head, section chief; Chinese society head,
     #   minister, section chief. The simplified 长 never occurs in
     #   Japanese text, so those entries touch no Japanese name.
-    #   部長 is the reason glued is out: 長 alone is a borne given
-    #   name (阿部長 = 阿部 + 長).
+    #   部長/部长 stay spaced-only: 長 alone is a borne given name,
+    #   so 阿部長 can be 阿部 + 長 (#707 declined it on that argument
+    #   though Wikidata held no such bearer).
     '二世',
     '議員', '议员', '国会議員', '國會議員',
     '太平紳士', '太平绅士',
@@ -281,6 +280,18 @@ GLUED_HONORIFICS = frozenset({
     # its Han twin 博士 is not: that collision is Japanese (博士 =
     # ひろし) and the hangul spelling carries none of it.
     '씨', '님', '선생님', '교수님', '박사', '박사님',
+    # #707: the #671 credential, office and generational words. Vetted
+    # with tools/name_usage.py's ends-with row on 2026-10-17: no
+    # Wikidata name item with a CJK label ends in any of them (二世's
+    # one hit, 厄德二世, is the given name Odo with a regnal numeral in
+    # its label), and no person bears a family name and a given name
+    # that end in one together. 部長/部长 are absent on the 阿部 + 長
+    # argument (above), which a lower-bound zero does not refute.
+    '二世',
+    '議員', '议员', '国会議員', '國會議員',
+    '太平紳士', '太平绅士',
+    '医学博士', '醫學博士',
+    '社長', '課長', '社长', '课长',
 })
 """
 

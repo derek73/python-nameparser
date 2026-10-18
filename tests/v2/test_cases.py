@@ -182,9 +182,10 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # 1162 on 2026-10-14: the Агриппина Младшая row (#661, one
     # given-or-family claim under each order); 1162 -> 1171 on
     # 2026-10-17: three #701 rows reporting suffix-or-name, under each
-    # order.
-    assert claims == 1171, (
-        f"the field sweep checks {claims} claims, recorded as 1171 on "
+    # order; 1171 -> 1174 on 2026-10-17: the エリザベス二世 row (#707,
+    # one given-or-family claim under each order).
+    assert claims == 1174, (
+        f"the field sweep checks {claims} claims, recorded as 1174 on "
         f"2026-10-17")
 
 
