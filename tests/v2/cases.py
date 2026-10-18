@@ -11667,9 +11667,9 @@ CASES: tuple[Case, ...] = (
     Case("ja_spaced_diet_member_is_a_suffix", "佐藤恵子 国会議員",
          {"family": "佐藤恵子", "suffix": "国会議員"},
          classification="fix(#671)",
-         notes="2.4.2 read given '国会議員'. The unspaced twin "
-               "佐藤恵子国会議員 is unchanged (glued, nothing peels it); "
-               "family-first comes from the wholly-Han script order"),
+         notes="2.4.2 read given '国会議員'; family-first comes from "
+               "the wholly-Han script order. The unspaced twin peels "
+               "too since #707 (ja_glued_diet_member_peels)"),
     Case("zh_comma_legislator_is_a_suffix", "王雅婷，議員",
          {"family": "王雅婷", "suffix": "議員"},
          classification="fix(#671)", tolerated=True,
@@ -11695,9 +11695,10 @@ CASES: tuple[Case, ...] = (
          {"family": "田中部長"},
          classification="fix(#271)",
          notes="the glued bar is unmet: 長 alone is a borne given "
-               "name (阿部長 = 阿部 + 長), so 部長 is spaced-only. "
-               "Unchanged from 2.4.2, pinned so GLUED_HONORIFICS "
-               "cannot gain it unseen"),
+               "name (阿部長 = 阿部 + 長), so 部長 is spaced-only -- "
+               "#707 declined it on that argument while peeling its "
+               "neighbours (ja_glued_job_title_peels). Unchanged from "
+               "2.4.2, pinned so GLUED_HONORIFICS cannot gain it unseen"),
     Case("zh_listed_surname_then_new_word_divides", "李部長",
          {"family": "李", "suffix": "部長"},
          locale="zh", classification="fix(#671)",
@@ -11705,15 +11706,38 @@ CASES: tuple[Case, ...] = (
                "split-off word is a whole-token suffix word, as 王博士 "
                "already reads; 2.4.2 read given '部長'. 阿部長 stays "
                "whole because 阿 is no listed surname"),
-    Case("zh_glued_generational_two_is_not_peeled", "陳怡君二世",
-         {"family": "陳", "given": "怡君二世"},
-         locale="zh", classification="fix(#271)",
-         notes="the glued form #671 left open: no peel reads it, "
-               "and 二世 is not vetted against real names. The "
-               "SEGMENTER's division is another matter: after a "
-               "listed surname the pack reads 王二世 as family 王, "
-               "suffix 二世, and 李部長 likewise, because the "
-               "split-off piece is a whole-token suffix word"),
+    Case("zh_glued_generational_two_peels", "陳怡君二世",
+         {"family": "陳", "given": "怡君", "suffix": "二世"},
+         locale="zh", classification="fix(#707)",
+         notes="the glued form #671 left open, vetted in #707: no "
+               "Wikidata name item ends in 二世 bar a mislabel, so it "
+               "joined GLUED_HONORIFICS; 2.4.2 read given '怡君二世'. "
+               "After a listed surname the segmenter already divided "
+               "it (王二世, family 王, suffix 二世) before any peel"),
+    Case("ja_glued_diet_member_peels", "佐藤恵子国会議員",
+         {"family": "佐藤恵子", "suffix": "国会議員"},
+         classification="fix(#707)",
+         notes="2.4.2 read family '佐藤恵子国会議員'. Longest-first: "
+               "国会議員 peels whole rather than leaving 国会 behind "
+               "for 議員 to peel off"),
+    Case("ja_glued_degree_word_peels", "田中医学博士",
+         {"family": "田中", "suffix": "医学博士"},
+         classification="fix(#707)",
+         notes="2.4.2 read family '田中医学博士'. The four-character "
+               "word peels where its tail 博士 cannot (ja_glued_degree_"
+               "stays): 医学博士 ends no name, 博士 is ひろし"),
+    Case("ja_glued_job_title_peels", "田中社長",
+         {"family": "田中", "suffix": "社長"},
+         classification="fix(#707)",
+         notes="2.4.2 read family '田中社長'. Unlike 部長, no given "
+               "name 長 follows a family name ending in 社 in "
+               "Wikidata, and none is plausible"),
+    Case("ja_glued_generational_after_katakana_peels", "エリザベス二世",
+         {"given": "エリザベス", "suffix": "二世"},
+         classification="fix(#707)", ambiguities=("given-or-family",),
+         notes="Elizabeth II as Japanese writes it. 2.4.2 read family "
+               "'エリザベス二世'; the peeled katakana name keeps the "
+               "positional default, a lone word read as given"),
     Case("zh_glued_jun_stays", "王君",
          {"family": "王君"},
          classification="fix(#271)",

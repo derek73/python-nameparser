@@ -590,18 +590,20 @@ honorifics rather than parts: ``김민준박사님`` gives up 박사님 entire,
 not 님 with 박사 left behind.
 
 Credential and office words (議員 legislator, 医学博士 doctor of
-medicine, 社長 company president, 二世 the second) are recognized in the
-spaced form and after a comma only, and are not peeled when glued,
-unlike さん. Nobody has checked them against names that end in them, so
-the glued form is left whole:
+medicine, 社長 company president, 二世 the second) peel when glued as
+well: they are not known to end a name. A longer office word that
+ends in one of them is split at it, so 田中 副社長 (vice-president)
+gives the given name 副 and the suffix 社長. 部長 (department head) is
+the exception and is not peeled when glued, because 長 alone is a
+given name, so 阿部長 can be the surname 阿部 and the given name 長:
 
 .. doctest::
 
-    >>> shacho = parse("田中 社長")
+    >>> shacho = parse("田中社長")
     >>> shacho.family, shacho.suffix
     ('田中', '社長')
-    >>> parse("田中社長").family
-    '田中社長'
+    >>> parse("田中部長").family
+    '田中部長'
 
 When a division was a judgment call
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

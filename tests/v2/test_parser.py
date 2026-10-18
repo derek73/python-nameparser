@@ -2106,14 +2106,16 @@ def test_a_decomposed_dotted_letter_is_dotted() -> None:
 
 
 # #671: the credential, office and generational words, one spelling each
-# per distinct entry. They are spaced / after-comma vocabulary only; the
-# glued bar was not met (#707 revisits it), so none may become a glued
-# honorific without this list being edited on purpose.
-_CJK_SPACED_WORDS = (
+# per distinct entry, all spaced / after-comma vocabulary. #707 vetted
+# the glued bar ("can it END a name?") and every word passed but
+# 部長/部长, so the two lists below partition this one: a word moves
+# between them only on purpose.
+_CJK_GLUED_WORDS = (
     "議員", "议员", "国会議員", "國會議員", "太平紳士", "太平绅士",
-    "医学博士", "醫學博士", "二世", "社長", "部長", "課長",
-    "社长", "部长", "课长",
+    "医学博士", "醫學博士", "二世", "社長", "課長", "社长", "课长",
 )
+_CJK_SPACED_ONLY_WORDS = ("部長", "部长")
+_CJK_SPACED_WORDS = _CJK_GLUED_WORDS + _CJK_SPACED_ONLY_WORDS
 
 
 @pytest.mark.parametrize("word", _CJK_SPACED_WORDS)
@@ -2129,8 +2131,16 @@ def test_a_cjk_credential_word_is_a_suffix_spaced_and_after_a_comma(
     assert parser.parse(f", {word}").suffix == word
 
 
-@pytest.mark.parametrize("word", _CJK_SPACED_WORDS)
-def test_a_cjk_credential_word_does_not_peel_off_a_glued_name(
+@pytest.mark.parametrize("word", _CJK_GLUED_WORDS)
+def test_a_vetted_cjk_credential_word_peels_off_a_glued_name(
         word: str) -> None:
+    parsed = Parser().parse(f"田中{word}")
+    assert (parsed.family, parsed.suffix) == ("田中", word)
+
+
+@pytest.mark.parametrize("word", _CJK_SPACED_ONLY_WORDS)
+def test_a_declined_cjk_credential_word_does_not_peel_off_a_glued_name(
+        word: str) -> None:
+    # 長 alone is a borne given name, so 阿部長 can be 阿部 + 長 (#707).
     assert word not in Parser().lexicon.honorific_tails
     assert Parser().parse(f"田中{word}").suffix == ""
