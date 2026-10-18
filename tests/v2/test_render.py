@@ -1367,7 +1367,7 @@ def test_a_caller_particle_mask_outranks_the_particle_lowercase() -> None:
 
 
 def test_a_listed_acronym_that_is_a_name_word_gets_no_mask() -> None:
-    """decisions/R4's Excluded block for CAPITALIZATION_EXCEPTIONS
+    """decisions/vocabulary-exclusions, the CAPITALIZATION_EXCEPTIONS block
     (meng, edd, lac, ded): a mask applies in every role, so an acronym
     that is also a name word must not carry one. The fork it protects:
     in a NAME role the word repairs as a title-cased name word, and in

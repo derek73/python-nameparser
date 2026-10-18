@@ -843,7 +843,7 @@ TITLES = GIVEN_NAME_TITLES | {
 
     # #662: Akan and Indonesian Mr.; under 100 census bearers each and
     # none found on Wikidata. Hausa malam and Turkish bay are excluded
-    # (decisions, Excluded (TITLES)).
+    # (decisions/vocabulary-exclusions, Excluded (TITLES)).
     'owura',
     'bapak',
 
@@ -912,7 +912,7 @@ TITLES = GIVEN_NAME_TITLES | {
     # Excluded under the collision rule and recorded here so a sweep
     # does not ship them -- ठाकुर (Tagore, the surname), कुमारी, बेगम,
     # शेख, आचार्य, राजा/रानी are all borne as ordinary names. Full
-    # argument: the decisions' Excluded (TITLES).
+    # argument: decisions/vocabulary-exclusions, Excluded (TITLES).
     'डॉक्टर',      # Doctor, full form
     'डा',          # Dr. -- the डा. abbreviation (Nepali and older Hindi),
                    # edge-period normalized
@@ -953,7 +953,7 @@ TITLES = GIVEN_NAME_TITLES | {
     # Excluded under the collision rule and recorded here so a sweep
     # does not ship them -- ঠাকুর (Tagore, the surname), কুমারী, বেগম
     # and শেখ are all borne as ordinary names. Full argument:
-    # the decisions' Excluded (TITLES).
+    # decisions/vocabulary-exclusions, Excluded (TITLES).
     'ড',           # Dr. abbreviation (PhD)
     'ডঃ',          # Dr. abbreviation, visarga spelling
     'ডক্টর',       # Doctor, full form

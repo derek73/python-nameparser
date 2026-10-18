@@ -102,7 +102,7 @@ set: with it shipped, "Rosalind Roz Smith" read maiden "Smith" and NO
 family name at all. The collision is in the position the claim acts
 on, which is the test decisions/vocabulary-collisions states, and
 this set has no ambiguous subset to express a partial answer in — see
-the decisions' Excluded (MAIDEN_MARKERS) block. The full participle
+decisions/vocabulary-exclusions, Excluded (MAIDEN_MARKERS). The full participle
 rozená stays, being unambiguous; a caller who needs the abbreviation
 adds it to their own Lexicon.
 """

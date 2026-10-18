@@ -62,17 +62,3 @@
 - 2026-10-07 #614 — CROSS-REFERENCE: P3's joins are made before S2's trailing run is read, so the run counts a joined part as one name word, as this rule says every count does (`Juan y Garcia X.Y.Z.` keeps family 'X.Y.Z.'), and a salutation keeps its connective (`Mr. and Mrs.` reads title 'Mr. and Mrs.'). #614's first design read before these joins too and broke both; #614's review reversed it (decisions/S2, this date).
 
 - Provenance: the single-letter-connective guard is v1's fix for Google Code issue 11 ("john e smith", 2013, commit 33676c9) — the "#11" citations that circulated pointed at a GitHub accident, not the real source. Recorded so the archaeology stays done.
-
-Excluded (Lexicon.conjunctions_ambiguous, the marked half of nameparser/config/conjunctions.py — an entry here reads as an INITIAL in a name written wholly in one case):
-
-- `y` — the commonest Hispanic double-surname link and this library's oldest fixture ("Velasquez y Garcia"); marking it would read the surname link of every lowercase Hispanic record as a middle initial. A caller who wants the Dutch reading adds it (2026-09-13, #383/#479).
-- Cyrillic `и`, `і`, `й` — #267 blessed their joining and this change narrows nothing about it; marking one would break the reading #267 adjudicated, in the one-case spellings where nothing else decides (2026-09-13, #383/#479).
-- `و` and any other caseless letter — inert rather than harmful, and excluded so nobody adds one believing it does something: the fork requires a token whose `upper()` and `lower()` differ, so a caseless member is never consulted (2026-09-13).
-- Multi-letter entries (`and`, `та`, `και`) and `&` — the fork tests a single CHARACTER, so an entry longer than one letter is silently inert. `nameparser/config/conjunctions.py` asserts against it at import (2026-09-13).
-
-Excluded (Lexicon.conjunctions — nameparser/config/conjunctions.py):
-
-- `a` — the Māori link in `Te Awanui-a-Rangi` is the one hyphen-interior connective the #478 rule (rules/R4) leaves capitalized under force, `Te Awanui-A-Rangi Black`, and it must not be fixed by adding `a` here: a spaced `a` is an initial (`John A Smith`) or a name word elsewhere, and a connective entry would join or lowercase it in every one of those names. The non-reach is recorded under R4 with that name as its witness (2026-09-23, #478).
-
-Open (Lexicon.conjunctions — contested membership; the issue is canonical): none. The block held one entry, [#397](https://github.com/derek73/python-nameparser/issues/397) — whether Catalan `i` belongs in the conjunctions at all — answered 2026-09-20 by the bullet of that date above: it does, and it joins `conjunctions_ambiguous` in the same change, which was never the contested half. The heading stays with nothing under it on purpose, the same reason an empty ledger roster section is a statement and a missing one is nobody having looked.
-

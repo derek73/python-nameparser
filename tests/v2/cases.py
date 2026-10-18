@@ -405,7 +405,8 @@ CASES: tuple[Case, ...] = (
                "positional read, family 'Ph.', where every release since "
                "1.4.0 read suffix. Same criterion as the esq rows above, "
                "asked of the machinery: the entry described the merge, "
-               "not a word. decisions, Excluded (SUFFIX_ACRONYMS -- ph)",
+               "not a word. decisions/vocabulary-exclusions, Excluded "
+               "(SUFFIX_ACRONYMS -- ph)",
          shape=1),
     Case("suffix_word_esq_still_reads_as_a_suffix", "John Smith Esq",
          {"given": "John", "family": "Smith", "suffix": "Esq"},

@@ -8,8 +8,8 @@ CAPITALIZATION_EXCEPTIONS = {
     # (#459): without a mask the acronym repair writes each in
     # capitals. A mask applies wherever its word stands, so a word
     # borne as a name must not get one -- meng and edd are listed
-    # acronyms that are, and stay out on purpose (decisions/R4's
-    # Excluded block).
+    # acronyms that are, and stay out on purpose (the
+    # CAPITALIZATION_EXCEPTIONS block in decisions/vocabulary-exclusions).
     'bt': 'Bt',
     'chfc': 'ChFC',
     'cpht': 'CPhT',
@@ -55,8 +55,8 @@ whose conventional spelling is NOT all capitals (``DSc``, ``PsyD``,
 ``PharmD``), so ``psyd`` repairs to ``PsyD`` rather than ``PSYD``.
 The exception is an acronym that is also a name word (``meng``,
 ``edd``): a mask applies in every role, so it gets none, and
-``john smith edd`` repairs to ``EDD`` (decisions/R4's Excluded
-block for CAPITALIZATION_EXCEPTIONS -- meng, edd, lac, ded). A
+``john smith edd`` repairs to ``EDD`` (decisions/vocabulary-exclusions,
+CAPITALIZATION_EXCEPTIONS -- meng, edd, lac, ded). A
 suffix the writer spelled in more than one case (``EdD``) needs no
 entry either: repair keeps it as written unless forced. A caller's
 OWN acronym -- one absent from ``suffix_acronyms`` -- depends on how
