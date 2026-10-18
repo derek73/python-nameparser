@@ -1,12 +1,15 @@
 """The design docs' folder layout: names, the index, citations."""
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
 
 from tests.v2.design_docs import (
-    MENTION_RE, read_index, resolve, slugify, stem_for)
+    DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
+    read_rules_text, resolve, slugify, stem_for)
+from tests.v2.rules_doc import parse_rules_doc
 
 _FIXTURE_FILES = ("S-suffixes.md", "S1-x.md",
                   "S2-case-signal-at-the-suffix-slot.md",
@@ -96,3 +99,42 @@ def test_resolve_section_letter_is_not_a_rule(folder: Path) -> None:
     assert name("README") is None
     assert resolve("decisions", "vocabulary-collisions", folder) == (
         folder / "vocabulary-collisions.md")
+
+
+# -- the real tree ---------------------------------------------------------
+
+@pytest.mark.parametrize("folder", [RULES_DIR, DECISIONS_DIR],
+                         ids=["rules", "decisions"])
+def test_every_entry_file_is_indexed_once(folder: Path) -> None:
+    indexed = [e.path for e in read_index(folder)]
+    assert len(indexed) == len(set(indexed)), "an index lists a file twice"
+    on_disk = {p for p in folder.glob("*.md") if p.name != "README.md"}
+    assert set(indexed) == on_disk
+
+
+@pytest.mark.parametrize("folder", [RULES_DIR, DECISIONS_DIR],
+                         ids=["rules", "decisions"])
+def test_index_title_matches_heading_and_file_name(folder: Path) -> None:
+    for e in read_index(folder):
+        first = e.path.read_text(encoding="utf-8").split("\n", 1)[0]
+        if len(e.key) == 1:     # a section keeps its rules.md heading
+            assert first == "## " + e.title, e.path.name
+            name = e.title.rsplit(" (", 1)[0]
+        else:
+            assert first == "# " + e.title, e.path.name
+            name = e.title.split(" — ", 1)[1] if " — " in e.title else ""
+        assert e.path.stem == stem_for(e.key, name), e.path.name
+
+
+def test_each_citation_key_resolves_to_one_file() -> None:
+    for doc, folder in (("rules", RULES_DIR), ("decisions", DECISIONS_DIR)):
+        for e in read_index(folder):
+            assert resolve(doc, e.key) == e.path, (doc, e.key)
+
+
+def test_the_folders_are_not_empty() -> None:
+    rule_files = [p for p in RULES_DIR.glob("*.md")
+                  if re.match(r"[A-Z]\d+-", p.name)]
+    rules = parse_rules_doc(read_rules_text())
+    assert len(rules) == len(rule_files) >= 46
+    assert len(read_decision_files()) >= 60

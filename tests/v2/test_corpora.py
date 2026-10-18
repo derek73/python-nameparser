@@ -87,10 +87,9 @@ def test_rules_corpus_matches_the_rules_doc() -> None:
     # regenerating then agrees with the degraded selection. A rule
     # whose ID line stops matching, or that gains a heading mid-block,
     # loses its examples to the previous rule or to nothing.
+    from .design_docs import read_rules_text
     from .rules_doc import parse_rules_doc
-    rules = parse_rules_doc(
-        (_TOOLS.parents[1] / "docs" / "design" / "rules.md")
-        .read_text(encoding="utf-8"))
+    rules = parse_rules_doc(read_rules_text())
     assert len(rules) >= 38, (
         f"rules.md parsed to {len(rules)} rules, fewer than the 38 this "
         f"corpus was built from. A rule block that stops parsing hands "

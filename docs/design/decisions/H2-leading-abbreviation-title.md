@@ -1,0 +1,10 @@
+# H2 — the leading-abbreviation title
+
+- 2026-06-30 (leading-period-title design; v2 core, PR #288) — the shape test is v1 parity (period_abbreviation): two-plus letters then a period, bare initials exempt. Its site is the head of the part CARRYING THE GIVEN NAME — the whole name, or the post-comma part under a family comma — not "the head of the name"; that scope correction is PR #315 (2026-08-01, docs-only), verified against 1.4.0 from PyPI, so the parity claim is real and the narrower description never was. The extraction litmus (2026-08-15): the spec drafted this rule as
+  "recognized by vocabulary, not by written shape" and the live
+  parser falsified that framing — the shape heuristic is real, and what the abugida gap (#343/#344) shows is its LIMIT, not its absence. Recorded as the rule's Accepted consequence — and the 2026-08-15 landing initially re-narrowed the scope to "name- opening", correcting one error while preserving another; the eighth review round fixed it.
+
+Decided 2026-09-08 (was Open: [#316](https://github.com/derek73/python-nameparser/issues/316), what a trailing title-vocabulary word should do while the comma paths disagreed): the trailing slot reads VOCABULARY, not shape (#H5), and the leading inference here stays unconditional — #316's open question 2, a symmetric leading rule that would read "Esq. Smith" as a suffix, is DECLINED. #109 shipped the leading inference on purpose, the family comma already carries the credential case ("Smith, Esq." → suffix, this rule's own Accepted clause), and reversing S2's "a suffix never opens the string" for period-marked words for the sake of one word is the wrong trade. The two comma paths agree now: "John Smith Prof." and "Smith, Prof." both read title Prof. See #H5.
+
+- 2026-09-10 — the shape declines a word carrying a script with no initials (#323); the argument, the halfwidth-kana limit and the measurements are in #cjk-full-stops. That limit was closed on 2026-10-03 by #594, which classifies halfwidth katakana (decisions.md#W4).
+

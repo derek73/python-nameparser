@@ -38,9 +38,7 @@ from __future__ import annotations
 import ast
 import re
 from dataclasses import dataclass, field as dc_field
-from pathlib import Path
 
-RULES_DOC = Path(__file__).resolve().parents[2] / "docs" / "design" / "rules.md"
 
 _RULE_RE = re.compile(r"^([A-Z])(\d+)\.\s")
 _VALUE = r"\"[^\"]*\"|\([^)]*\)|\[(?:[^\[\]]|\[[^\]]*\])*\]"

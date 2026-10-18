@@ -1,0 +1,70 @@
+# H1 — a title and one name word
+
+H1. Rationale: a title normally addresses by surname, so a title
+    followed by a single name word usually names the family; but a
+    given-name title addresses by given name. Several titles written
+    together are one form of address, and the one that does the
+    addressing is the last — the words in front of it rank the
+    person rather than name them. What stands beside the name word —
+    a suffix, a nickname, a maiden name — does not make the name any
+    longer, so it does not decide this reading. And a run written
+    BEHIND the one name word is the same form of address written on
+    the other side of it, so where no title run stands in front of
+    that word it decides the same reading. Where one does stand in
+    front, that run addresses: a title written behind the name is
+    the name plus that title (H5), and adding it cannot change how
+    the words in front of the name are read. Which side a title is
+    on is decided by the NAME WORD and by nothing else standing
+    beside it, so a run written around a nickname is one run: the
+    name Dr. 'Smitty' Sir John reads as Dr. Sir John does.
+    A title followed by exactly one name word makes that word the
+    family name, whatever suffix, nickname or maiden name stands
+    beside it, unless the title is a given-name title, which keeps
+    it the given name; a run of several titles addresses as its last
+    title does, and where a run stands BEFORE the one name word it
+    is the run that addresses, a run standing behind it deciding
+    that word's field only when none stands before.
+      "Mr. Johnson"               →  family="Johnson"
+      "Mrs. Garcia"               →  family="Garcia"
+      "Dr. Smith née Jones"       →  family="Smith"
+      "Her Majesty Queen Elizabeth"  →  given="Elizabeth"
+      "Dr. Sir John"              →  given="John"
+      "Smith Sir."                →  given="Smith"
+      "Sir John Prof."            →  given="John"
+      "Dr. Smith Sir."            →  family="Smith"
+      "His Excellency Lord Duncan"  →  family="Duncan"
+      "Her Royal Highness Princess Anne"  →  given="Anne"
+      "Sir John"                  →  given="John"  · boundary
+    Accepted: a given-name title plus one name word leaves the
+    family empty — the input names no family, and inventing one
+    would be worse. A run whose last title is a given-name title
+    reads the same way, `queen` doing the addressing where `her
+    majesty` only ranks.
+      "Sir John"                  →  family=""
+      "Her Majesty Queen Elizabeth"  →  family=""
+      "Smith Sir."                →  family=""
+    Accepted: a title word in the run that no vocabulary knows does
+    not change what the run addresses by, the last word being the
+    one asked — `His Excellency Lord Duncan` reads family `Duncan`
+    because `lord` is not a given-name title, not because the run is
+    long. `lord` and `lady` stay out of that list by decision
+    (#519): each addresses by given name only as a courtesy style for
+    children of the senior ranks (`Lord Peter`, `Lady Diana`) and by
+    title or surname for every peer and every wife (`Lord Byron`,
+    `Lady Thatcher`), and the text does not say which the bearer is,
+    which the list cannot express; `prince` and `princess` are in it.
+    Accepted: a title word that is also borne as a name, though
+    rarely as the first word of one (`graf`, `greve`, `herra`), is
+    the title in front of a name, so a name that BEGINS with it -- a
+    surname written first without a comma, or a given name -- gives
+    that word to the title, under a declared family-first order too.
+    Written last without a period, or alone before a family comma,
+    it is the name; a period behind it makes it the title by H5, as
+    for `Mary Jane King.` (#606), and a name word behind it before
+    a family comma makes it the title by H6.
+      "Greve Smith, Anna"         →  title="Greve"
+      "Greve Anna"                →  family="Anna"
+      "Anna Greve"                →  family="Greve"
+      "Greve, Anna"               →  family="Greve"
+    history: decisions.md#H1 · interacts: H3, H5, H6, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
+

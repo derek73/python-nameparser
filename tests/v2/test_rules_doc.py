@@ -15,10 +15,11 @@ import pytest
 from nameparser import Parser, parse, parser_for
 from nameparser import locales
 from nameparser._policy import Policy
+from tests.v2.design_docs import read_rules_text
 from tests.v2.rules_doc import (
-    RULES_DOC, Example, Rule, parse_rules_doc, resolve_annotation)
+    Example, Rule, parse_rules_doc, resolve_annotation)
 
-RULES = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
+RULES = parse_rules_doc(read_rules_text())
 
 
 def test_doc_has_rules() -> None:
@@ -159,8 +160,6 @@ def test_the_nfd_examples_are_still_decomposed(decomposed: str) -> None:
     here is typed decomposed, which the first assert checks so that
     normalizing this file cannot hollow the test out either."""
     import unicodedata
-    from pathlib import Path
     assert not unicodedata.is_normalized("NFC", decomposed)
-    text = (Path(__file__).parents[2] / "docs" / "design" / "rules.md"
-            ).read_text(encoding="utf-8")
+    text = read_rules_text()
     assert decomposed in text, f"the NFD example {decomposed!r} was recomposed"

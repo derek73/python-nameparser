@@ -23,11 +23,13 @@ import re
 from pathlib import Path
 from typing import NamedTuple
 
-from tests.v2.rules_doc import (
-    _POINTER_RE, _RULE_RE, RULES_DOC, parse_rules_doc)
+from tests.v2.design_docs import (
+    DECISIONS_DIR, MECHANISMS_DOC, RULES_DIR, read_decision_files,
+    read_rules_text)
+from tests.v2.rules_doc import _POINTER_RE, _RULE_RE, parse_rules_doc
 
 REPO = Path(__file__).resolve().parents[2]
-MECH_DOC = REPO / "docs" / "design" / "mechanisms.md"
+MECH_DOC = MECHANISMS_DOC
 SWEEP_DIRS = ("nameparser", "tests", "tools")
 ENFORCE_NO_LEGACY = True    # armed 2026-08-15, the rewrite complete
 _LEGACY_RES = (re.compile(r"§"), re.compile(r"superpowers"),
@@ -59,7 +61,6 @@ _CHAIN_RE = re.compile(r'\s*,?\s*(?:and\s+|--\s*|—\s*)?(?=")')
 # An excerpt may elide with "[...]": each fragment must then be
 # verbatim, non-empty, and in order.
 _ELISION = "[...]"
-DEC_DOC = REPO / "docs" / "design" / "decisions.md"
 
 
 class Citation(NamedTuple):
@@ -92,7 +93,7 @@ def _statements() -> dict[str, str]:
     background: list[str] | None = None
     section = None
     marker = False          # inside a wrapped no-boundary: marker
-    for line in RULES_DOC.read_text(encoding="utf-8").splitlines():
+    for line in read_rules_text().splitlines():
         m = _RULE_RE.match(line)
         hm = re.match(r"## .*\(([A-Z])\)\s*$", line)
         if background is not None:
@@ -142,13 +143,7 @@ def _decision_entries() -> dict[str, str]:
     not quote it; but what it does quote must be verbatim. An arc
     spread over several headings ('### differential-ledger, the ...
     arc') answers to its key with all of them."""
-    out: dict[str, str] = {}
-    text = DEC_DOC.read_text(encoding="utf-8")
-    for sec in re.split(r"^(?=#{2,3} )", text, flags=re.M):
-        hm = re.match(r"### ([^\s—,]+)", sec)
-        if hm:
-            out[hm.group(1)] = out.get(hm.group(1), "") + " " + _norm(sec)
-    return out
+    return {key: _norm(text) for key, text in read_decision_files().items()}
 
 
 def _is_excerpt(excerpt: str, body: str) -> bool:
@@ -164,10 +159,16 @@ def _is_excerpt(excerpt: str, body: str) -> bool:
     return True
 
 
+# The #713 migration script and its test spell old-form citations as
+# fixtures; they are deleted once the split lands.
+_MIGRATION = (REPO / "tools" / "split_design_docs.py",
+              REPO / "tests" / "v2" / "test_split_design_docs.py")
+
+
 def _swept_files() -> list[Path]:
     # this module's own comments show citation shapes, citing nothing
     files = [p for d in SWEEP_DIRS for p in sorted((REPO / d).rglob("*.py"))
-             if p != Path(__file__).resolve()]
+             if p != Path(__file__).resolve() and p not in _MIGRATION]
     return files
 
 
@@ -318,7 +319,7 @@ def test_implemented_matches_citing_modules() -> None:
             continue
         citing.setdefault(c.cid, set()).add(str(c.path.relative_to(REPO)))
     problems = []
-    for rule in parse_rules_doc(RULES_DOC.read_text(encoding="utf-8")):
+    for rule in parse_rules_doc(read_rules_text()):
         actual = citing.get(rule.rule_id, set())
         if rule.implemented:
             declared = set(rule.implemented)
@@ -340,7 +341,7 @@ def test_implemented_matches_citing_modules() -> None:
 
 
 def test_interacts_ids_exist() -> None:
-    rules = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
+    rules = parse_rules_doc(read_rules_text())
     ids = {r.rule_id for r in rules}
     missing = [f"{r.rule_id} -> {t}" for r in rules
                for t in r.interacts if t not in ids]
@@ -352,13 +353,14 @@ def test_doc_internal_anchors_resolve() -> None:
     INSIDE the three docs points at a real rule ID, ### key, or
     entry heading (## or ###). The code-side citations are covered
     above; this closes the doc-to-doc half."""
-    docs = {name: (REPO / "docs" / "design" / f"{name}.md")
-            .read_text(encoding="utf-8")
-            for name in ("rules", "decisions", "mechanisms")}
-    rule_ids = set(re.findall(r"^([A-Z]\d+)\.\s", docs["rules"], re.M))
-    dec_keys = set(re.findall(r"^### ([^\s—]+)", docs["decisions"], re.M))
+    paths = [*sorted(RULES_DIR.glob("*.md")),
+             *sorted(DECISIONS_DIR.glob("*.md")), MECH_DOC]
+    docs = {str(p.relative_to(REPO)): p.read_text(encoding="utf-8")
+            for p in paths}
+    rule_ids = set(re.findall(r"^([A-Z]\d+)\.\s", read_rules_text(), re.M))
+    dec_keys = set(read_decision_files())
     mech_slugs = set(re.findall(r"^#{2,3} ([A-Z][A-Z0-9_-]+)",
-                                docs["mechanisms"], re.M))
+                                docs[str(MECH_DOC.relative_to(REPO))], re.M))
     problems = []
     for name, text in docs.items():
         for m in re.finditer(
@@ -369,7 +371,7 @@ def test_doc_internal_anchors_resolve() -> None:
                   else anchor in mech_slugs)
             if not ok:
                 line = text[:m.start()].count("\n") + 1
-                problems.append(f"{name}.md:{line} -> {doc}.md#{anchor}")
+                problems.append(f"{name}:{line} -> {doc}.md#{anchor}")
     assert not problems, "\n".join(problems)
 
 

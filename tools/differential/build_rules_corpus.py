@@ -75,16 +75,16 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT))
 
+from tests.v2.design_docs import read_rules_text  # noqa: E402
 from tests.v2.rules_doc import parse_rules_doc  # noqa: E402
 
 OUT = HERE / "corpus_rules.jsonl"
-RULES_DOC = ROOT / "docs" / "design" / "rules.md"
 
 
 def selected_names() -> list[str]:
     """Every distinct example text in the rules doc, sorted for a
     deterministic file."""
-    rules = parse_rules_doc(RULES_DOC.read_text(encoding="utf-8"))
+    rules = parse_rules_doc(read_rules_text())
     return sorted({example.text
                    for rule in rules
                    for example in rule.examples
