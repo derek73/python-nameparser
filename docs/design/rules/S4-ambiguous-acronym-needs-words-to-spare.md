@@ -1,9 +1,9 @@
 # S4 — the ambiguous acronym needs words to spare
 
 S4. Rationale: an acronym that is also an ordinary name (MA, Ma)
-    can be given up to the credential reading only where the name
-    keeps a word for its family; a name of two words has none to
-    spare.
+    is given up to the credential reading by position only where
+    the name keeps a word for its family; a name of two words has
+    none to spare.
     A BARE ambiguous acronym is consumed only
     when the name has words to spare — as the second of two words it
     stays the family name — and at the slots that report, either
@@ -19,8 +19,9 @@ S4. Rationale: an acronym that is also an ordinary name (MA, Ma)
     states the case where a clause does it. The count is one piece
     of evidence among several: the given part's trailing slot after
     a family comma is read without it (S5), written case outranks it
-    in a mixed-case name (S6), and an unambiguous credential in
-    front outranks both (S7).
+    in a mixed-case name everywhere but the first slot after a
+    comma, where the count decides first (S6, C1), and an
+    unambiguous credential in front outranks both (S7).
       "John Ma"                   →  family="Ma"  · boundary
       "wang meng"                 →  family="meng"  · boundary
       "tran lac"                  →  family="lac"
