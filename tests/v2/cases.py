@@ -7628,6 +7628,21 @@ CASES: tuple[Case, ...] = (
          notes="hangul has no capital, so the one-case test of the word "
                "in front does not make it an initial; the count reads "
                "the numeral as it reads '김 V'"),
+    Case("a_non_ascii_capital_in_front_is_no_initial", "IVAN Ж V",
+         {"given": "IVAN", "family": "Ж", "suffix": "V"},
+         ambiguities=("suffix-or-name",),
+         notes="the one-case test of the word in front asks whether its "
+               "CAPITAL is initial-shaped, and 'Ж' is not (an initial is "
+               "a Latin capital), so this reads as 'Ivan Ж V' does. "
+               "#721's first form took any cased letter and read middle "
+               "'Ж', family 'V'"),
+    Case("a_non_ascii_lowercase_letter_in_front_is_no_initial",
+         "josé é v",
+         {"given": "josé", "family": "é", "suffix": "v"},
+         ambiguities=("suffix-or-name",),
+         notes="the lowercase twin of the row above, and the one whose "
+               "decomposed spelling had read otherwise under #721's "
+               "first form"),
     Case("a_lowercase_numeral_in_a_one_case_name_still_reports",
          "john smith i", {"given": "john", "family": "smith",
                           "suffix": "i"},
