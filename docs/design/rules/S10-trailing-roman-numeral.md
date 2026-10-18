@@ -51,6 +51,11 @@ S10. Rationale: a roman numeral ending a name is its generation,
       "john v"                    →  family=""
       "john smith v"              →  ambiguities=()
       "john i"                    →  family="i"
+      "john i"                    →  ambiguities=("conjunction-or-initial",)
+    Accepted: inside a maiden marker's clause the connective is not
+    read (M2), so a one-case `i` there is the suffix word the
+    vocabulary lists, as `v` is.
+      "john nee smith i"          →  suffix="i"
     Accepted: a numeral with another suffix word behind it is not
     the last word of the name and is read as any word there is, so a
     one-letter numeral before a credential is the family name.

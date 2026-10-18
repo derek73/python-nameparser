@@ -59,7 +59,8 @@ and since #367 "Dr. Van Johnson" too, a title no longer displacing the
 particle out of that position) -- whatever role name_order assigns --
 and, since #613, at P6's attachment after a family comma where the run
 holds an ambiguous particle ("Beethoven, Ludwig van").
-Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, each
+Emits SUFFIX_OR_NAME at these sites: the trailing roman numeral, taken
+or (since #718) declined for want of words to spare, each
 ambiguous acronym the trailing peel had to resolve, the bare-suffix
 carve-out where an input that is nothing but post-nominal vocabulary
 gets its first word made into the name (H4's suffix half, #491),
@@ -371,8 +372,9 @@ def _assign_main(seg_idx: int, state: ParseState,
     # rather than overwrites. Deferred to after assignment because what
     # a pick is declined as depends on the role it took, and which role
     # "not peeled" means depends on name_order; the field itself is
-    # worded by assemble (#626). (The roman-numeral fork needs no such
-    # deferral and is reported here.)
+    # worded by assemble (#626). (The roman-numeral fork's TAKEN branch
+    # needs no such deferral and is reported here; its declined branch
+    # is a pick, #718, and is reported with the others.)
     #
     # Read once in group, after P3's connective joins and ahead of the
     # particle chain, on a main segment of three or more pieces whose

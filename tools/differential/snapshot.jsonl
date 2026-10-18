@@ -3380,6 +3380,7 @@
 {"name": "john e smith", "given": "john", "middle": "e", "family": "smith", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "j. e. s."}
 {"name": "john e. smith", "given": "john", "middle": "e.", "family": "smith", "initials": "j. e. s."}
 {"name": "john i", "given": "john", "family": "i", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "j. i."}
+{"name": "john nee smith i", "family": "john", "suffix": "i", "maiden": "smith", "initials": "j."}
 {"name": "john smith", "given": "john", "family": "smith", "initials": "j. s."}
 {"name": "john smith EdD", "given": "john", "family": "smith", "suffix": "EdD", "initials": "j. s."}
 {"name": "john smith MA", "given": "john", "family": "smith", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}

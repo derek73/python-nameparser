@@ -3965,7 +3965,6 @@ CASES: tuple[Case, ...] = (
          {"given": "Smith", "family": "V", "suffix": "Ma"},
          policy=Policy(lenient_comma_suffixes=False),
          ambiguities=("suffix-or-name", "suffix-or-name"),
-         classification="fix(#718)",
          notes="the period is the whole difference from the row "
                "above: bare 'V' is still initial-shaped and still "
                "counts as a name word here, so the structure flips "
@@ -3973,8 +3972,9 @@ CASES: tuple[Case, ...] = (
                "it as the roman numeral, leaving 'Smith' the only "
                "name word and reporting all three forks; a one-letter "
                "numeral now needs words to spare (S10, the trailing "
-               "roman numeral), so 'V' is the family, as 1.4.0 read "
-               "it, and both forks, 'V' and 'Ma', report"),
+               "roman numeral), so 'V' is the family -- 1.4.0's "
+               "reading field for field, which #718 restored -- and "
+               "both forks, 'V' and 'Ma', report"),
     Case("caps_run_declines_a_bound_given_head", "John Smith, ABDUL AP",
          {"given": "ABDUL AP", "family": "John Smith"},
          policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
@@ -5475,7 +5475,7 @@ CASES: tuple[Case, ...] = (
          "abdul Doe nee Smith V",
          {"given": "abdul", "family": "Doe", "suffix": "V",
           "maiden": "Smith"},
-         ambiguities=("suffix-or-name",),
+         ambiguities=("suffix-or-name",), classification="fix(#274)",
          notes="P5's bound-given join is LENIENT only after a family "
                "comma; before one the STRICT reserve declines a join "
                "that would change a suffix reading, so the release "
@@ -5484,7 +5484,9 @@ CASES: tuple[Case, ...] = (
                "V', has made no clause since #601: a marker after a "
                "family comma is an ordinary word.) Unchanged from "
                "2.3.0. 'Doe' since #718, which made the 'V' of "
-               "'abdul nee Smith V' a name word (the next row)"),
+               "'abdul nee Smith V' a name word (the next row); 1.4.0 "
+               "read first 'abdul Doe', middle 'nee', having no "
+               "maiden markers"),
     Case("a_numeral_with_no_word_to_spare_stays_in_the_clause",
          "abdul nee Smith V",
          {"given": "abdul", "maiden": "Smith V"},
@@ -7430,7 +7432,7 @@ CASES: tuple[Case, ...] = (
                "so the reading is reported"),
     Case("a_lone_numeral_with_no_word_to_spare_is_the_family",
          "John V", {"given": "John", "family": "V"},
-         ambiguities=("suffix-or-name",), classification="fix(#718)",
+         ambiguities=("suffix-or-name",),
          notes="S10 (the trailing roman numeral): a one-letter "
                "numeral needs words to spare, as a bare ambiguous "
                "acronym does, and 'John' is the only other word -- the "
@@ -7439,29 +7441,30 @@ CASES: tuple[Case, ...] = (
                "'V' with no family; 1.4.0 read last 'V'"),
     Case("a_lone_shape_numeral_with_no_word_to_spare_is_the_family",
          "Malcolm X", {"given": "Malcolm", "family": "X"},
-         ambiguities=("suffix-or-name",), classification="fix(#718)",
+         ambiguities=("suffix-or-name",),
          notes="the shape-only spelling of the row above: 'x' is in "
                "no vocabulary and reaches the fork by its shape"),
     Case("a_lone_numeral_in_a_one_case_name_is_counted",
          "JOHN V", {"given": "JOHN", "family": "V"},
-         ambiguities=("suffix-or-name",), classification="fix(#718)",
+         ambiguities=("suffix-or-name",),
          notes="a name written in one case says nothing about the "
                "letter, so the count decides as it does for 'John V'"),
     Case("a_title_is_no_word_to_spare_for_a_lone_numeral",
          "Dr Smith V", {"title": "Dr", "given": "Smith", "family": "V"},
-         ambiguities=("suffix-or-name",), classification="fix(#718)",
+         ambiguities=("suffix-or-name",),
          notes="S10's title clause (the trailing roman numeral); "
                "1.4.0 read first 'Smith', last 'V' too"),
     Case("a_multi_letter_numeral_needs_no_word_to_spare",
          "John III", {"given": "John", "suffix": "III"},
          ambiguities=("given-or-family",),
-         notes="the boundary of the count: a listed numeral of two "
-               "letters is not initial-shaped and reads as any suffix "
-               "word, so the lone 'John' is what is reported (O5)"),
+         classification="fix(suffix-routing)",
+         notes="the boundary of the count: a listed numeral of two or "
+               "more letters is not initial-shaped and reads as any suffix "
+               "word, so the lone 'John' is what is reported (O5). "
+               "1.4.0 read last 'III', as it read 'Johnson PhD'"),
     Case("a_lowercase_numeral_in_a_mixed_case_name_reports_nothing",
          "John Smith vi", {"given": "John", "family": "Smith",
                            "suffix": "vi"},
-         classification="fix(#718)",
          notes="S10 (the trailing roman numeral): nobody writes an "
                "initial in lower case beside capitals, so the writing "
                "settles the fork. It "
@@ -7486,6 +7489,72 @@ CASES: tuple[Case, ...] = (
          notes="the empty-head shape of the row above, which #718's "
                "first form read family 'von V'; 1.4.0 read last "
                "'von V'"),
+    Case("a_shape_numeral_with_no_word_to_spare_is_still_counted",
+         "John VI", {"given": "John", "suffix": "VI"},
+         ambiguities=("suffix-or-name", "given-or-family"),
+         classification="fix(suffix-routing)",
+         notes="the count's other boundary: a numeral of two letters "
+               "read by its shape alone takes no count and still "
+               "reports (S10), so 'John VI' keeps the generation where "
+               "'John V' gives it up. 1.4.0 read last 'VI'"),
+    Case("a_lone_numeral_counts_in_units_under_family_first",
+         "John V", {"given": "V", "family": "John"},
+         policy=Policy(name_order=FAMILY_FIRST),
+         ambiguities=("suffix-or-name",), classification="fix(#718)",
+         notes="the count is the same under a family-first order: "
+               "'John' is the only other word, so the letter is a name "
+               "word, and the order lays it out as the given name"),
+    Case("a_lone_numeral_the_chain_takes_reports",
+         "Freiherr von Richthofen V",
+         {"title": "Freiherr", "family": "von Richthofen V"},
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         notes="behind a title the chain is one name word, so the V "
+               "has none to spare and the chain takes it (P2); the "
+               "declined numeral is still the read's pick, reported "
+               "from the role it ends in. 2.2.0 to 2.4.2 read suffix "
+               "'V'; 1.4.0 read last 'von Richthofen V'"),
+    Case("a_lone_numeral_the_chain_takes_already_an_initial",
+         "FREIHERR VON RICHTHOFEN I",
+         {"title": "FREIHERR", "family": "VON RICHTHOFEN I"},
+         ambiguities=("conjunction-or-initial", "particle-or-given"),
+         notes="the row above in one case with the connective 'I', "
+               "which classify has already reported as an initial: the "
+               "declined numeral reports nothing new (S10)"),
+    Case("a_lowercase_shape_numeral_in_a_mixed_case_name_is_settled",
+         "John x", {"given": "John", "suffix": "x"},
+         ambiguities=("given-or-family",), classification="fix(#718)",
+         notes="lower case beside capitals settles the fork with no "
+               "count (S10): the generation, unreported, though no "
+               "word is spared -- the one shape that path reaches, "
+               "'v' and 'i' being listed suffix words. 1.4.0 read last "
+               "'x'"),
+    Case("a_lowercase_shape_numeral_in_a_one_case_name_is_counted",
+         "john x", {"given": "john", "family": "x"},
+         ambiguities=("suffix-or-name",),
+         notes="the row above written wholly in lower case: the case "
+               "says nothing, so the count decides and reports"),
+    Case("a_lowercase_numeral_after_a_maiden_clause_reports_nothing",
+         "Jane Doe nee Smith vi",
+         {"given": "Jane", "family": "Doe", "suffix": "vi",
+          "maiden": "Smith"},
+         classification="fix(#274)",
+         notes="the clause's take reports the numeral it gives up, and "
+               "asks the case as assign does: lower case in a mixed-"
+               "case name reports nothing (S10, #718's review). 1.4.0 "
+               "had no maiden markers"),
+    Case("a_lowercase_shape_numeral_after_a_maiden_clause_reports_nothing",
+         "Jane Doe nee Smith x",
+         {"given": "Jane", "family": "Doe", "suffix": "x",
+          "maiden": "Smith"},
+         classification="fix(#274)",
+         notes="the unlisted spelling of the row above"),
+    Case("a_capital_numeral_after_a_maiden_clause_still_reports",
+         "Jane Doe nee Smith VI",
+         {"given": "Jane", "family": "Doe", "suffix": "VI",
+          "maiden": "Smith"},
+         ambiguities=("suffix-or-name",), classification="fix(#274)",
+         notes="the contrast that makes the silence above a decision "
+               "about case"),
     Case("a_lowercase_numeral_in_a_one_case_name_still_reports",
          "john smith i", {"given": "john", "family": "smith",
                           "suffix": "i"},
@@ -8761,7 +8830,6 @@ CASES: tuple[Case, ...] = (
     Case("comma_path_given_name_title_behind_a_listed_numeral",
          "John III, Sir",
          {"title": "Sir", "family": "John", "suffix": "III"},
-         classification="fix(#296)",
          notes="the title row above with a GIVEN-NAME title. O5 is "
                "silenced all the same: what the report is about is a "
                "field NOTHING decided, and this one a title decided. "

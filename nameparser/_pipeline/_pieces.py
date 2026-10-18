@@ -1364,9 +1364,10 @@ def particle_tail(seg: Sequence[Sequence[int]],
 
 
 # rules/S10: "a letter already reported as read as an initial reports
-# nothing new" -- the one question the numeral fork's three declined-
-# pick emitters (assign's, the particle chain's and the maiden
-# clause's, #718) all ask, so it has one answer
+# nothing new" -- asked by assign's report of the numeral fork's
+# declined pick (#718). The maiden clause's report on the numeral it
+# keeps cannot meet the case: classify reads no connective inside a
+# clause, so a clause word never carries that report
 def reported_as_initial(ambiguities: Iterable[PendingAmbiguity],
                         index: int) -> bool:
     """Whether classify's connective-or-initial fork already reported

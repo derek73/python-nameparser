@@ -254,14 +254,16 @@ _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 
 # rules/S10: "A roman numeral ending a name written without a comma
 # reads as the generation" -- which the initial veto would otherwise
-# take: V, I and X are suffix vocabulary AND bare capitals, and a bare
-# capital inside a name is a middle initial. Whether a one-letter
+# take: V and I are suffix vocabulary, X a numeral by shape alone, and
+# all three are bare capitals, which inside a name are middle initials. Whether a one-letter
 # numeral has the words to spare is the caller's count (`peel_trailing`).
 def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
     """assign's roman-numeral fork, shared with group's bound-given
     reserve (#401): a FINAL single-token piece that is a roman numeral
     reads as the suffix when the piece before it does not look like
-    part of an initial run. `preceding` is that piece's first token;
+    part of an initial run -- for a one-letter numeral a necessary
+    condition only, the caller's words-to-spare count deciding
+    (rules/S10, #718). `preceding` is that piece's first token;
     the callers establish that `text` is last and that a name piece
     precedes it.
 
