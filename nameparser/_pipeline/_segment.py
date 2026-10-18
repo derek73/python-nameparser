@@ -74,7 +74,7 @@ def segment(state: ParseState) -> ParseState:
     # The case fact, asked LAZILY: here only C2's flag on a part past
     # the second comma turns on it. A name that never asks pays nothing;
     # classify asks for itself later where this did not
-    # (decisions/S2, and #429's precedent for paying a predicate
+    # (decisions/S6, and #429's precedent for paying a predicate
     # twice rather than plumbing a field two sites would not otherwise
     # share).
     one_case = state.one_case

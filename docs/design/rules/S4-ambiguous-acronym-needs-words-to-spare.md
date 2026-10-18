@@ -27,4 +27,4 @@ S4. Rationale: an acronym that is also an ordinary name (MA, Ma)
       "john smith meng"           →  suffix="meng"
       "JOHN SMITH MA"             →  suffix="MA"
       "Nguyen Van Lac"            →  family="Van Lac"
-    history: decisions/S2 · interacts: C1, C2, M2, S2, S3, S5, S6, S7, S9 · implemented: nameparser/_pipeline/_group.py
+    history: decisions/S4 · interacts: C1, C2, M2, S2, S3, S5, S6, S7, S9 · implemented: nameparser/_pipeline/_group.py

@@ -400,7 +400,7 @@ def test_the_trailing_title_is_transparent_to_the_suffix_peel() -> None:
     # 'Jack MA' shape -- an ALL-CAPS ambiguous acronym in a mixed-case
     # name leans credential and is taken with no words to spare, so
     # the reserve that used to keep it the family now takes it as the
-    # suffix instead (decisions/S2).
+    # suffix instead (decisions/S6).
     out = _assigned("John Mr. MA", lexicon=lex)
     assert _by_role(out, Role.TITLE) == "Mr."
     assert _by_role(out, Role.GIVEN) == "John"

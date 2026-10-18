@@ -1178,7 +1178,7 @@ def test_p6_still_claims_an_unambiguous_suffix_particle() -> None:
 def test_p6_keeps_every_non_capital_spelling_of_the_particle_member(
 ) -> None:
     """Capitals decide; the particle rule keeps the rest, and each
-    reports P6's own kind ONCE (decisions/S2, 2026-09-18)."""
+    reports P6's own kind ONCE (decisions/S5, 2026-09-18)."""
     for text, family in (("Doe, John do", "do Doe"),
                          ("Doe, John Do", "Do Doe"),
                          ("DOE, JOHN DO", "DO DOE"),

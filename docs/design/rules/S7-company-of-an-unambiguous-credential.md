@@ -64,4 +64,4 @@ S7. Rationale: post-nominals are written as a run, and an
       "Jack Wei Ma"               →  family="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "abdul Smith Jr Ma"         →  suffix="Jr Ma"
-    history: decisions/S2 · interacts: C1, M2, P2, P3, P6, S4, S5, S6, S8 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_pieces.py
+    history: decisions/S7 · interacts: C1, M2, P2, P3, P6, S4, S5, S6, S8 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_pieces.py

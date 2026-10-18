@@ -32,4 +32,4 @@ S6. Rationale: in a name written in more than one case, the
       "john smith MEng"           →  family="MEng"
       "Smith, MA"                 →  suffix="MA"
       "Smith, Ma"                 →  given="Ma"
-    history: decisions/S2 · interacts: C1, S4, S5, S7 · implemented: nameparser/_pipeline/_vocab.py
+    history: decisions/S6 · interacts: C1, S4, S5, S7 · implemented: nameparser/_pipeline/_vocab.py

@@ -45,4 +45,4 @@ S8. Rationale: a credential is the writer's mark that the
       "राम शर्मा साहब मोहन"          →  suffix="साहब मोहन"
       "राम शर्मा साहब मोहन"          →  ambiguities=("suffix-or-name",)
       "John PhD Smith"            →  family="Smith"  · boundary
-    history: decisions/S2 · interacts: H5, M2, P2, P3, P5, P6, S2, S4, S7, C1 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
+    history: decisions/S8 · interacts: H5, M2, P2, P3, P5, P6, S2, S4, S7, C1 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py

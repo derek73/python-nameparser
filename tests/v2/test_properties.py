@@ -260,11 +260,11 @@ def test_the_comma_agreement_exceptions_are_all_still_exceptions(
 #: contrast in the string, so the clause hides it. `own_words` stops
 #: at the maiden marker (rules/P3), so a member inside the clause
 #: cannot contribute the case contrast `one_case` is computed from --
-#: which is decisions/S2's own "THE PREDICATE KEEPS THE JUDGED
+#: which is decisions/S6's own "THE PREDICATE KEEPS THE JUDGED
 #: TOKEN IN THE SPAN" (the 2026-09-14 #289/#516 entry) failing
 #: structurally, the judged token never being in the span at this
 #: slot. Accepted by Derek 2026-09-19 and recorded in
-#: decisions/S2 as the M2 instance of #492's deferred question.
+#: decisions/S4 as the M2 instance of #492's deferred question.
 #: The class is asserted beside the count because a structural
 #: allowlist cannot notice a new member of it, and a COUNT cannot
 #: notice a swap -- one pair leaving and another arriving keeps the
@@ -2434,7 +2434,7 @@ def _a_case_reading_the_docs_already_own(
     e i' against 'CAROD E I' are the same pair.
 
     TWO: a member of the AMBIGUOUS credential class reading
-    differently in the two spellings. That is decisions/S2's own
+    differently in the two spellings. That is decisions/S6's own
     lean -- an ALL-CAPS bare member of the class reads as the
     credential and a lower-case one as a name word -- and it decides
     the COMMA STRUCTURE, so its effect reaches every token of the

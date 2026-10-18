@@ -282,7 +282,7 @@ def classify(state: ParseState) -> ParseState:
     # ONE fact per parse, and it is recorded now (ParseState.one_case):
     # segment writes it first where C2's flag on a tail part asks, and
     # a fact two stages decide apart is what recording it prevents
-    # (decisions/S2).
+    # (decisions/S6).
     one_case = state.one_case
     if one_case is None:
         one_case = is_one_case(own)

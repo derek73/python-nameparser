@@ -380,7 +380,7 @@ def test_peel_trailing_keeps_its_two_piece_floor_under_a_lean() -> None:
 
 def test_peel_trailing_takes_a_declined_pick_an_anchor_stands_before(
 ) -> None:
-    # #544 reverses the cost decisions/S2 had accepted: the surname
+    # #544 reverses the cost decisions/S6 had accepted: the surname
     # lean declines 'Ma', but the unambiguous 'Jr' IN FRONT of it
     # anchors it, so the walk takes it and reaches 'Jr' too -- and the
     # member is still a pick, reported as a counted one is.

@@ -31,4 +31,4 @@ S9. Rationale: no wordlist holds every credential, and a word's
       "Jean DUPONT"  unlisted_caps_suffixes-everywhere  →  family="DUPONT"  · boundary
       "Jean Pierre DUPONT"  unlisted_caps_suffixes-everywhere  →  suffix="DUPONT"
       "Jean Pierre DUPONT"  unlisted_caps_suffixes-everywhere  →  family="Pierre"
-    history: decisions/S2 · interacts: C1, S3, S4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py
+    history: decisions/S9 · interacts: C1, S3, S4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py

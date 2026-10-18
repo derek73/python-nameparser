@@ -360,7 +360,7 @@ Lean = Literal["credential", "name"]
 # #289's credential lean, rules/S6: "Written case is evidence beside
 # the count (S4), and it speaks only in a name written in more than
 # one case" -- the WRITING evidence that decides ahead of the
-# words-to-spare count (history: decisions/S2).
+# words-to-spare count (history: decisions/S6).
 def ambiguous_lean(text: str, one_case: bool) -> Lean | None:
     """Which way the WRITING leans for a member of the ambiguous
     credential set: "credential", "name", or None for no lean at all.
@@ -538,7 +538,7 @@ def period_joined_vocab(
     any chunk match yields to the shape, was measured and rejected: it
     costs 'Doe, John Msc.Ed.' a real credential and re-routes the
     honorific peel of '김민준씨, J.씨' for nothing this design wants
-    (decisions/S2).
+    (decisions/S3).
 
     The ALPHABETIC requirement is a SEPARATE, narrower gate on the
     shape verdict alone (#516 review round, decided by the
@@ -782,7 +782,7 @@ def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:
 
 
 # The candidate test for a comma part read before classify
-# (rules/C1, decisions/S2): segment's C2 flag on a tail part.
+# (rules/C1, decisions/S9): segment's C2 flag on a tail part.
 def ambiguous_class_candidate(text: str, lexicon: Lexicon,
                               policy: Policy) -> bool:
     """Whether TEXT is a CANDIDATE for the ambiguous credential class
@@ -999,7 +999,7 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     rather than of words because 'Smith Jr., MA' is two tokens and one
     name: counting tokens there flips the structure and hands the
     family to `given`, which no reading of that string wants
-    (decisions/S2). The suffix half asks the POLICY-selected
+    (decisions/S6). The suffix half asks the POLICY-selected
     predicate, the same one is_wholly_suffix asks, so the two agree
     about what a suffix word is; the title half asks BOTH the listed
     lookup and H2's shape test (`is_title_shaped`) -- a bare

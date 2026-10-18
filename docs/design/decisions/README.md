@@ -35,7 +35,14 @@ Entry conventions:
 
 ## Suffixes: generational & credentials (S)
 
-- [S2 — the case signal at the suffix slot](S2-case-signal-at-the-suffix-slot.md)
+- [S2 — a suffix word ends a name and never opens the string](S2-suffix-word-ends-a-name-and-never-opens-the-string.md)
+- [S3 — credentials written with interior periods](S3-credentials-written-with-interior-periods.md)
+- [S4 — the ambiguous acronym needs words to spare](S4-ambiguous-acronym-needs-words-to-spare.md)
+- [S5 — the given part's trailing slot after a family comma](S5-given-parts-trailing-slot-after-a-family-comma.md)
+- [S6 — the case signal at the suffix slot](S6-case-signal-at-the-suffix-slot.md)
+- [S7 — the company of an unambiguous credential](S7-company-of-an-unambiguous-credential.md)
+- [S8 — the credential's trailing run](S8-credentials-trailing-run.md)
+- [S9 — unlisted words that join the ambiguous class by shape](S9-unlisted-words-that-join-the-ambiguous-class-by-shape.md)
 
 ## Nicknames & quoted names (N)
 

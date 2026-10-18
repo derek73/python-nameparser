@@ -57,5 +57,5 @@ S3. Rationale: credentials are often written run together with
     the CJK assertions in tests/v2/pipeline/test_vocab.py's
     test_period_joined_vocab_retires_the_single_character_chunk.
     W3 states the same precedence for the same reason.
-    history: decisions/S2 · interacts: C1, H2, W3, S4 · implemented: nameparser/_pipeline/_vocab.py
+    history: decisions/S3 · interacts: C1, H2, W3, S4 · implemented: nameparser/_pipeline/_vocab.py
 

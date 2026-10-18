@@ -206,7 +206,7 @@ def test_ambiguous_acronym_reports_the_reading_it_took() -> None:
     # MOVED by #289, not deleted: 'MA' is written in capitals inside a
     # mixed-case name, so it now leans CREDENTIAL and is taken with no
     # words to spare -- 'Jack' is the only name word left, which is
-    # what also turns on the GIVEN_OR_FAMILY fork (decisions/S2).
+    # what also turns on the GIVEN_OR_FAMILY fork (decisions/S6).
     took_family = parse("Jack MA")
     assert took_family.suffix == "MA"
     assert not took_family.family
@@ -631,7 +631,7 @@ def test_the_reserve_spares_the_family_the_acronym_fork_would_take() -> None:
     #
     # MOVED by #289, not deleted: 'Ma' is Title-case in a mixed-case
     # name, so it leans SURNAME on both sides of the join and stays a
-    # name word instead of a credential (decisions/S2).
+    # name word instead of a credential (decisions/S6).
     n, m = parse("abdul Smith Ma"), parse("John Smith Ma")
     assert (n.family, n.suffix) == (m.family, m.suffix) == ("Ma", "")
 
@@ -694,7 +694,7 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
             # mixed-case name, so it now leans SURNAME, the
             # run's read leaves it a name word (S2's read ahead of the
             # chain since #614, its re-ask before that), so the chain
-            # takes it into the particle run (decisions/S2).
+            # takes it into the particle run (decisions/S6).
             ("John van der Berg Ma", "van der Berg Ma", "")):
         n = parse(text)
         assert (n.family, n.suffix) == (family, suffix), text
@@ -721,7 +721,7 @@ def test_the_chain_and_the_walk_stop_where_the_peel_begins() -> None:
     # word (#367), and the acronym it leaves has no words to spare for
     # assign: the chain keeps it rather than leave it as the family
     #
-    # MOVED by #289, ACCEPTED COST (decisions/S2): 'MA' is written
+    # MOVED by #289, ACCEPTED COST (decisions/S6): 'MA' is written
     # in capitals inside a mixed-case name, so it now leans CREDENTIAL
     # and the caps lean makes it reachable where the count alone was
     # not -- the lean ends the chain's re-ask with no words to spare,

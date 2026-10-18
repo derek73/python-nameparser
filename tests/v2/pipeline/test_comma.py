@@ -83,7 +83,7 @@ def test_structure_flips_for_the_ambiguous_class_on_a_name_word_count() -> None:
     # before the comma read the part after it as the credential run.
     # 'John Smith, MA' flips; 'Smith Jr., MA' does not, having two
     # TOKENS and one name word -- which is what keeps Smith in the
-    # family (#289, decisions/S2).
+    # family (#289, decisions/S6).
     assert _decided("John Smith, MA").structure is Structure.SUFFIX_COMMA
     assert _decided("Smith Jr., MA").structure is Structure.FAMILY_COMMA
     assert _decided("Smith, MA").structure is Structure.FAMILY_COMMA

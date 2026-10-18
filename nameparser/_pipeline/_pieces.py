@@ -477,7 +477,7 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     than a numeral, and carries no `initial` tag), a connective, a
     word that is also bound given-name or particle vocabulary (`abd`
     heads `Abd Allah`; `vd`, `mc`). No script is refused: an honorific
-    starts the run as a credential does (#679, decisions/S2), so
+    starts the run as a credential does (#679, decisions/S8), so
     `Ана Хорват старији Џонс` reads as `Ana Horvat stariji Jones` does.
 
     The split credential group merges ('Ph. D.', the one piece carrying
@@ -1178,7 +1178,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # ("Jack MA"), a Title-case one is declined with plenty
         # ("John Smith Ma"). The lean is the LISTED set's alone: a
         # token admitted to this class by SHAPE carries no writing
-        # convention to read, so it takes the count (decisions/S2).
+        # convention to read, so it takes the count (decisions/S6).
         #
         # k < 2 means it is the only piece left, which is not the fork
         # this reports -- and not a floor the lean moves: the walk

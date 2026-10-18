@@ -1138,7 +1138,7 @@ def assign(state: ParseState) -> ParseState:
                             # leans nothing, so the positional reading
                             # would take it -- the wrong answer there,
                             # not merely a stray report
-                            # (decisions/S2, 2026-09-18).
+                            # (decisions/S5, 2026-09-18).
                             #
                             # A FUNCTION since #533 rather than a
                             # condition written here (mechanisms.md

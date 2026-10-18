@@ -823,7 +823,7 @@ def test_the_join_never_turns_a_suffix_into_a_name() -> None:
     # MOVED by #289, not deleted: 'Ma' now leans SURNAME (Title case,
     # mixed-case name) on BOTH sides of the join, so the two views'
     # suffix readings still agree and the join stands -- 'abdul Smith'
-    # given, 'Ma' family (decisions/S2's corpus row).
+    # given, 'Ma' family (decisions/S6's corpus row).
     out = _grouped("abdul Smith Ma", lexicon=_AMBIGUOUS_LEX)
     assert _piece_texts(out) == [["abdul Smith", "Ma"]]
     out = _grouped("abdul Smith Berg Ma", lexicon=_AMBIGUOUS_LEX)
@@ -921,7 +921,7 @@ def test_the_chain_keeps_an_acronym_assign_will_not_peel() -> None:
     # as a credential); now 'Ma' leans SURNAME (Title case, mixed-case
     # name) and the peel declines it regardless of the count, so the
     # second re-ask absorbs it into the particle run too
-    # (decisions/S2).
+    # (decisions/S6).
     out = _grouped("St John van Berg Ma", lexicon=lex)
     assert _piece_texts(out) == [["St", "John", "van Berg Ma"]]
 
@@ -945,7 +945,7 @@ def test_the_chain_stops_before_a_bare_acronym_with_words_to_spare() -> None:
     # MOVED by #289, not deleted: 'Ma' is Title-case in a mixed-case
     # name, so it now leans SURNAME and the chain's re-ask no longer
     # stops before it -- 'Ma' joins the particle run instead
-    # (decisions/S2's corpus row).
+    # (decisions/S6's corpus row).
     out = _grouped("John van der Berg Ma", lexicon=_AMBIGUOUS_LEX)
     assert _piece_texts(out) == [["John", "van der Berg Ma"]]
 

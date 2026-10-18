@@ -226,7 +226,7 @@ which fails this lookup too: an interior-period token that no whole-token
 set claims goes to ``period_joined_vocab``, which splits it on its periods
 and, no chunk being a title, calls the whole thing a suffix if ANY chunk is
 suffix vocabulary -- except where every chunk it matches is a SINGLE ASCII
-CHARACTER, which since 2.4 retires rather than claims (decisions/S2): the
+CHARACTER, which since 2.4 retires rather than claims (decisions/S3): the
 one-character suffix vocabulary is the Roman numerals and the digit "2" --
 ASCII is load-bearing there, since the seven single-character CJK
 honorifics in THIS set (様, 殿, 氏, 군, 님, 씨, 양 -- three of them also
