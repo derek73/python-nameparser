@@ -106,10 +106,6 @@ from nameparser._pipeline._state import (
 from nameparser._policy import Policy, Script
 from nameparser._types import FOLDED_TAG, SHAPE_ACRONYM_TAG, AmbiguityKind, Role
 
-#: either tag marks a pick of the ambiguous-acronym fork; a pick with
-#: neither is the numeral fork's (#718)
-_ACRONYM_TAGS = frozenset({AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG})
-
 def _set_roles(tokens: list[WorkToken], piece: tuple[int, ...],
                role: Role) -> None:
     for i in piece:
@@ -539,9 +535,9 @@ def _assign_main(seg_idx: int, state: ParseState,
         token = tokens[piece[0]]
         assert token.role is not None
         # rules/S10: "either reading is reported" -- the numeral fork's
-        # declined pick (#718), which carries neither acronym tag and
-        # is never a suffix
-        if token.tags.isdisjoint(_ACRONYM_TAGS):
+        # declined pick (#718), which carries neither credential tag
+        # (the acronym fork's picks carry one) and is never a suffix
+        if token.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
             if reported_as_initial(ambiguities, piece[0]):
                 continue
             ambiguities.append(PendingAmbiguity(

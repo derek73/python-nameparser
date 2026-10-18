@@ -1094,7 +1094,8 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                    start: int | None = None,
                    anchors: list[bool] | None = None,
                    units: Sequence[int] | None = None,
-                   second: int = 1) -> Peel:
+                   second: int = 1,
+                   count_numeral: bool = True) -> Peel:
     """The S2 trailing peel over `rest`, a peel_walk list. In the
     piece layer rather than in assign because group's bound-given
     reserve asks the same question of the view the join would leave
@@ -1153,7 +1154,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
                 and is_trailing_numeral_suffix(
                     text := tokens[piece[0]].text,
                     tokens[pieces[rest[k - 2]][0]].text)):
-            if (len(text) > 1 or k - 2 >= second
+            if (len(text) > 1 or not count_numeral or k - 2 >= second
                     or numeral_settled_by_case(text, one_case)):
                 numeral = tuple(piece)
                 k -= 1
@@ -1567,6 +1568,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
                   tokens: Sequence[WorkToken],
                   one_case: bool | None,
                   units: Sequence[int] | None = None,
+                  count_numeral: bool = True,
                   ) -> tuple[list[int], tuple[int, ...], Peel]:
     """The S2 peel and the H5 chain read together to a FIXED POINT:
     peel, chain, splice the chained pieces out, peel again over what
@@ -1651,7 +1653,8 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     # /simplify, 'Freiherr von Berg Berg ... MA Dr. MA Dr. ...')
     second = 1 if units is None else second_unit(rest, units)
     peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
-                           units=units, second=second)
+                           units=units, second=second,
+                           count_numeral=count_numeral)
     kept = trailing_titles(rest, pieces, ptags, tokens,
                            end=peeled.names)
     if kept == peeled.names:
@@ -1688,7 +1691,8 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
         if kept >= 2 and behind_count >= 2:
             peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
                                    start=hi, anchors=peeled.anchors,
-                                   units=units, second=second)
+                                   units=units, second=second,
+                                   count_numeral=count_numeral)
             picks.extend(peeled.picks)
         else:
             rest = rest[:hi] + [j for run in reversed(behind) for j in run]
@@ -1697,7 +1701,8 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
             hi = len(rest)
             behind, behind_count = [], 0
             peeled = peel_trailing(rest, pieces, ptags, tokens, one_case,
-                                   units=units, second=second)
+                                   units=units, second=second,
+                                   count_numeral=count_numeral)
             picks = list(peeled.picks)
             numeral = peeled.numeral
         kept = trailing_titles(rest, pieces, ptags, tokens,
@@ -1948,8 +1953,13 @@ def trailing_run_start(start: int, pieces: Sequence[Sequence[int]],
     suffixes, as assign's walk does in the given part after a family
     comma (#623), where `trailing_start` sees only the suffixes and
     `trailing_start_past_titles` leaves the titles inside the bound."""
+    # rules/S4: "the given part's trailing slot after a family comma is
+    # read without it (S5)" -- the count, which assign's walk there
+    # never asks of the numeral either, so the chain this bounds stops
+    # where that walk will read the suffix (#718's review)
     rest, titled, peel = tail_reading(peel_walk(start, ptags), pieces,
-                                      ptags, tokens, one_case)
+                                      ptags, tokens, one_case,
+                                      count_numeral=False)
     first = len(pieces)
     for k in rest[peel.names:]:
         first = min(first, k)

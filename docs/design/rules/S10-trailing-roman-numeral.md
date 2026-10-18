@@ -23,7 +23,8 @@ S10. Rationale: a roman numeral ending a name is its generation,
     nothing, since nobody writes an initial that way. A name written
     wholly in one case says nothing about any letter in it. The part
     before a suffix comma is read as the same name written without
-    the comma (C1).
+    the comma (C1); the given part after a family comma is not
+    counted, the comma having settled the count there (S5).
       "John Smith V"              →  suffix="V"
       "John Smith V"              →  ambiguities=("suffix-or-name",)
       "John W. Ingram V"          →  suffix="V"

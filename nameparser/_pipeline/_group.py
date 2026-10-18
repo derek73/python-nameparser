@@ -9,7 +9,10 @@ Produces: structure -- its head decides a comma form once the words
 are tagged (rules/C1, #613, `_comma.decide`), binding the SUFFIX and
 TITLE roles of a postnominal part after the comma, emptying its
 segment and dropping its delimiter cores before any join, plus the SUFFIX_OR_NAME
-ambiguities that decision reports and the caps shape's acronym tags on
+ambiguities that decision reports, those the particle chain and a
+maiden clause report on a trailing member they take into the name
+(an ambiguous acronym, or since #718 a declined numeral), and the
+caps shape's acronym tags on
 a bound all-caps word (#564); pieces + piece_tags per segment
 (runs of token indices -- tokens are NEVER joined into strings: the
 anti-#100 invariant); maiden tail tokens get role=MAIDEN, and the

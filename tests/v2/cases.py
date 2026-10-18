@@ -7467,6 +7467,25 @@ CASES: tuple[Case, ...] = (
                "settles the fork. It "
                "reported until #718, the shape fork reporting all it "
                "took, while the listed 'John Smith v' never did"),
+    Case("the_given_part_after_a_family_comma_does_not_count_a_numeral",
+         "Smith, Freiherr von Berg V",
+         {"title": "Freiherr", "given": "von Berg", "family": "Smith",
+          "suffix": "V"},
+         classification="fix(#424)",
+         notes="S4: the given part's trailing slot after a family comma "
+               "is read without the count, so the one-letter numeral "
+               "S10 counts in a comma-less name is the suffix here "
+               "behind a title-particle's chain, as 'Smith, von V' "
+               "reads. #718's first form asked the count through the "
+               "chain's bound and read given 'von Berg V', unreported; "
+               "review found it. 1.4.0 read first 'von Berg V'"),
+    Case("an_empty_head_comma_does_not_count_a_numeral_either",
+         ", Freiherr von V",
+         {"title": "Freiherr", "family": "von", "suffix": "V"},
+         classification="fix(#424)",
+         notes="the empty-head shape of the row above, which #718's "
+               "first form read family 'von V'; 1.4.0 read last "
+               "'von V'"),
     Case("a_lowercase_numeral_in_a_one_case_name_still_reports",
          "john smith i", {"given": "john", "family": "smith",
                           "suffix": "i"},
