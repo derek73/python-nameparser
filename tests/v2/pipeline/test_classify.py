@@ -153,7 +153,7 @@ def test_bare_ambiguous_acronym_in_acronyms_is_not_suffix() -> None:
 
 
 def test_one_case_subset_member_is_an_initial_and_reports() -> None:
-    # rules.md#P3 says a one-case name carries no case evidence, so
+    # rules/P3 says a one-case name carries no case evidence, so
     # the vocabulary decides, and 'e' is marked as reading both ways.
     # (No colon after the rule id on purpose: tests/ is swept by
     # test_doc_citations.py, and the colon form must quote the rule
@@ -219,7 +219,7 @@ def test_the_catalan_link_reads_as_an_initial_in_a_one_case_name(
     # #397's letter through #527's fork, and the reason it ships
     # marked: a bare I initial is as common as a bare E, so a name
     # with no case evidence reads the letter as an initial and says
-    # so. rules.md#P3 says the marked set is where that answer lives.
+    # so. rules/P3 says the marked set is where that answer lives.
     for text in ("josep carod i rovira", "JOSEP CAROD I ROVIRA"):
         out = _classified(text)
         letter = "i" if text.islower() else "I"
@@ -257,7 +257,7 @@ def test_removing_the_link_from_the_subset_restores_joining() -> None:
 
 def test_an_orphan_marker_is_inert_even_in_the_emitter() -> None:
     # 'e' left in conjunctions_ambiguous but removed from conjunctions
-    # -- legal since the pair is not in _SUBSET_FIELDS (decisions.md#P3)
+    # -- legal since the pair is not in _SUBSET_FIELDS (decisions/P3)
     # -- never takes the fork, so 'E' in an all-upper name falls to the
     # else branch and is tagged "initial" by is_initial() alone, same as
     # any bare capital. Without the emitter's base-vocabulary gate this
@@ -303,7 +303,7 @@ def test_a_dotted_letter_is_an_initial_by_shape_in_any_case_class() -> None:
 
 
 def test_a_maiden_clause_does_not_count_toward_the_case_class() -> None:
-    # rules.md#P3 says a maiden marker, taken as one, and the words it
+    # rules/P3 says a maiden marker, taken as one, and the words it
     # takes, are not among the name's own words -- so appending
     # ' née Jones' must not flip 'Y' back to an initial: the name's own
     # words ("JUAN GARCIA Y LOPEZ") are still all-upper on their own,
@@ -373,7 +373,7 @@ def test_a_clauses_own_marker_word_does_not_truncate_the_own_words() -> None:
     # must not move clause_at. Before the fix, "NEE"'s match truncated
     # "own" at its own index, excluding the trailing "GARCIA Y LOPEZ"
     # from the case class and misreading 'Y' as an initial instead of
-    # joining the family (rules.md#P4).
+    # joining the family (rules/P4).
     out = _classified("JUAN (NEE JONES) GARCIA Y LOPEZ")
     nee = next(t for t in out.tokens if t.text == "NEE")
     # the parenthesised clause opens as Role.NICKNAME (parens are a
@@ -454,7 +454,7 @@ def test_classify_records_the_one_case_fact_on_the_state() -> None:
     # a caseless script has only one case, and answers True harmlessly
     assert _classified("毛泽东").one_case is True
     # the span is the name's OWN words: a maiden clause beside a
-    # one-case name does not make it mixed (rules.md#P3)
+    # one-case name does not make it mixed (rules/P3)
     assert _classified("JUAN GARCIA Y LOPEZ née Jones").one_case is True
 
 
@@ -751,7 +751,7 @@ def _surname_unit_sweep() -> list[str]:
         for w in getattr(lex, field):
             if " " not in w:
                 words |= {w, w.title(), w.upper()}
-    # rules.md#P7's spelling: a one-letter particle written with its
+    # rules/P7's spelling: a one-letter particle written with its
     # period is an initial, and both copies must say so (#604)
     words |= {w + "." for w in set(words)
               if len(w) == 1 and w.lower() in lex.particles}
@@ -782,7 +782,7 @@ _SURNAME_UNIT_CONTROL = ["JD.CPA", "Msc.Ed."]
 
 
 def test_surname_unit_tags_agree_with_classify() -> None:
-    # #575: rules.md#C1's count before the comma reads two facts per
+    # #575: rules/C1's count before the comma reads two facts per
     # token -- particle, suffix -- and `segment` must build them from
     # the vocabulary (`_vocab.surname_unit_tags`), since it runs before
     # classify has tagged anything, while assign derives them from
@@ -809,7 +809,7 @@ def test_the_surname_unit_agreement_test_sees_the_initial_veto(
     # The same guard over the other half of the mirror: with
     # `surname_unit_tags`' one-letter-initial veto switched off, the
     # period-written particle reads as a particle there and not in
-    # classify (#604, rules.md#P7).
+    # classify (#604, rules/P7).
     monkeypatch.setattr(_vocab, "_spells_an_initial",
                         lambda n, text: False)
     assert _surname_unit_disagreements() == ["Ó.", "ó."]

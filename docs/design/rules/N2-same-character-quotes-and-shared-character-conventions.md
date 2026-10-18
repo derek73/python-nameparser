@@ -13,5 +13,5 @@ N2. Rationale: only a mark standing at word boundaries is quoting;
       "Sean O'Connor"             →  family="O'Connor"
       "Hans „Erster“ und “Zweiter” Müller"  →  nickname="Erster Zweiter"
       "Mari' Aube'"               →  family="Aube'"  · boundary
-    history: decisions.md#N2 · implemented: nameparser/_pipeline/_extract.py
+    history: decisions/N2 · implemented: nameparser/_pipeline/_extract.py
 

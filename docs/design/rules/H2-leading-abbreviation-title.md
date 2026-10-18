@@ -37,7 +37,7 @@ H2. Rationale: before a name, an abbreviation is almost always a
     marked opening word carrying a Han, kana or hangul character —
     as the script table classifies them, halfwidth katakana
     included since #594 — is a name word and never a
-    title by shape (#323; decisions.md#cjk-full-stops) — the same
+    title by shape (#323; decisions/cjk-full-stops) — the same
     veto that keeps 씨. from reading as an initial. The Latin
     reading is unchanged, and W3's example block carries the CJK
     reading this clause vetoes into. The veto reads the composed
@@ -55,5 +55,5 @@ H2. Rationale: before a name, an abbreviation is almost always a
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions.md#H2 · interacts: C1, S2, S3, P4, H5, H6, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions/H2 · interacts: C1, S2, S3, P4, H5, H6, W3, W4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 

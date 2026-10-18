@@ -13,7 +13,7 @@ W1. Rationale: hangul is monoglot Korean and its surnames are a
     spacing but not the interpunct (the Accepted below) — is
     consulted only for a name whose written form is wholly
     undivided, a spaced honorific counting as a written division
-    (decisions.md#W3 records what that trade keeps and costs).
+    (decisions/W3 records what that trade keeps and costs).
       "김민준"                    →  family="김"
       "남궁민수"                  →  family="남궁"
       "남궁민수 지훈"             →  family="남궁"
@@ -22,7 +22,7 @@ W1. Rationale: hangul is monoglot Korean and its surnames are a
       "高橋一郎"  [zh]            →  family="高"
     Accepted: a name the interpunct divides is already divided in
     the sense that matters — division stands down entirely there,
-    vocabulary and segmenter alike (#298; decisions.md#T3).
+    vocabulary and segmenter alike (#298; decisions/T3).
       "安东尼·陈志明"  [zh]        →  family="陈志明"
-    history: decisions.md#W1 · interacts: W3 · implemented: nameparser/_pipeline/_script_segment.py
+    history: decisions/W1 · interacts: W3 · implemented: nameparser/_pipeline/_script_segment.py
 

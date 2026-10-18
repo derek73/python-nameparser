@@ -129,7 +129,7 @@ _PHRASE_FIELDS = ("given_name_titles", "maiden_markers")
 #: it is roman five -- suffix -- where 'V.' stays a middle
 #: initial through that same carve-out; 'Jr。' simply reaches its
 #: entry, and 'Dr。' its title.
-#: decisions.md#cjk-full-stops carries the measurements.
+#: decisions/cjk-full-stops carries the measurements.
 FULL_STOPS = ".．。｡"
 
 
@@ -152,7 +152,7 @@ def _normalize(word: str) -> str:
 
     NFC, since #322, and only for a non-ASCII word (ASCII is already
     NFC, and this runs per token on the parse path --
-    decisions.md#parse-cost). NFD hangul decomposes to jamo and missed
+    decisions/parse-cost). NFD hangul decomposes to jamo and missed
     every vocabulary entry; composing at lookup AND at storage keeps
     the two symmetric, and no shipped entry changes under it (measured
     2026-09-09: fold every string member of every Lexicon.default()
@@ -175,7 +175,7 @@ def _normalize(word: str) -> str:
         word = stripped
 
 
-# rules.md#P7: "A one-letter word written with its period is an
+# rules/P7: "A one-letter word written with its period is an
 # initial and not a particle"
 def _spells_an_initial(n: str, text: str) -> bool:
     """Whether `text` is ONE letter written with its period ('Ó.',
@@ -195,7 +195,7 @@ def _spells_an_initial(n: str, text: str) -> bool:
     -- its script table is _policy's, which this module may not import
     -- so a caller's one-character particle in such a script, written
     with a period, is vetoed where is_initial would call it no initial
-    (decisions.md#P7). No shipped particle is one character of those
+    (decisions/P7). No shipped particle is one character of those
     scripts."""
     return len(n) == 1 and text[-1] == "."
 
@@ -224,7 +224,7 @@ def _fold_words(words: Iterable[str]) -> list[str]:
 
     map/filter rather than a comprehension: both are C calls where a
     comprehension is a Python frame on 3.11, and this runs on the parse
-    path for every name carrying a title run (decisions.md#parse-cost).
+    path for every name carrying a title run (decisions/parse-cost).
     """
     return list(filter(None, map(_normalize, words)))
 
@@ -247,7 +247,7 @@ def _run_addresses_by_given(words: Iterable[str],
 
     Two sites ask it and they must agree -- post_rules for H1, group
     for the P5 licence -- because a run read two ways is a rule
-    contradicting itself (decisions.md#P5, the 2026-08-22 #369 entry).
+    contradicting itself (decisions/P5, the 2026-08-22 #369 entry).
     One predicate, so they cannot drift.
 
     The WHOLE run's key, or that key's LAST word (#489): a run is
@@ -542,7 +542,7 @@ def _normpairs(
         # punctuation marks which letters are joined into one run
         # (_render._apply_mask reads that) and is never written into
         # the word. A raise, not a warning: a mismatched value used to
-        # be SUBSTITUTED for the word, and rules.md#R4: "Repair
+        # be SUBSTITUTED for the word, and rules/R4: "Repair
         # changes case and nothing else", so there is no reading of
         # one that repair can honor.
         if _alnum(_normalize(v)) != _alnum(normalized_key):
@@ -599,7 +599,7 @@ class Lexicon:
     #: outright; written bare, capitals decide in a mixed-case name
     #: ("Jack MA" is the credential, "Jack Ma" keeps his family name)
     #: and otherwise the word counts as a suffix only where a name
-    #: word is left beside it ("John Smith ma"), rules.md#S2. Full
+    #: word is left beside it ("John Smith ma"), rules/S2. Full
     #: default list:
     #: :data:`~nameparser.config.suffixes.SUFFIX_ACRONYMS_AMBIGUOUS`.
     suffix_acronyms_ambiguous: frozenset[str] = frozenset()

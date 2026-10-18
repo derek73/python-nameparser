@@ -34,5 +34,5 @@ R5. Rationale: mixed case is evidence that the writer cased the name
       "john smith EdD"            →  capitalized="John Smith EdD"
       "juan garcia Iii"           →  capitalized="Juan Garcia Iii"  · boundary
       "john smith EdD"            →  capitalized_forced="John Smith EDD"
-    history: decisions.md#R5 · interacts: R4, P3, S2 · implemented: nameparser/_render.py
+    history: decisions/R5 · interacts: R4, P3, S2 · implemented: nameparser/_render.py
 

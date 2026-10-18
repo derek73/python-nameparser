@@ -57,7 +57,7 @@ from nameparser._policy import Policy
 #: reason beside it. A DROP is a signal too, and trips the same test.
 #:
 #: Raising or lowering a row is a decision to record in
-#: decisions.md#parse-cost, not a maintenance chore. Recompute with
+#: decisions/parse-cost, not a maintenance chore. Recompute with
 #: `uv run python tools/perf/call_count.py`, which is the harness every
 #: number in that entry comes from.
 #:
@@ -67,7 +67,7 @@ from nameparser._policy import Policy
 #: the first green run -- a wrong seed fails with the real number.
 #:
 #: Lowered 2026-09-26 when the stages stopped copying state through
-#: dataclasses.replace (decisions.md#parse-cost). All five rows were
+#: dataclasses.replace (decisions/parse-cost). All five rows were
 #: re-measured with that harness, each on its own interpreter.
 #:
 #: Lowered 2026-10-06 (#617) when P3's connective joins left group's
@@ -77,18 +77,18 @@ from nameparser._policy import Policy
 #: +4/+5 inside the old 370/407 and 348/385). Then 39 more on every
 #: row, in #617's /simplify, when group stopped running the rootname
 #: count and the shared loop over segments with no connective left
-#: free to join (decisions.md#parse-cost).
+#: free to join (decisions/parse-cost).
 #:
 #: Lowered 2026-10-07 by 8 on every row when `_group_segment`'s last
 #: three predicate closures (`prefix`, `suffix`, `marker`) were
 #: inlined: the reference name asked `prefix` 7 times and `suffix`
-#: once, each a frame of its own (decisions.md#parse-cost). And 9 on
+#: once, each a frame of its own (decisions/parse-cost). And 9 on
 #: 3.11, 6 on 3.12-3.15, in #614, when S2's trailing run came to be
 #: read once, between P3's joins and the particle chain, rather than
 #: re-asked by the chain and the reserve and read again by assign
-#: (decisions.md#parse-cost). The 3.12-3.15 rows read 289/326 from
+#: (decisions/parse-cost). The 3.12-3.15 rows read 289/326 from
 #: #614's /simplify on and were corrected in #620, which moved no row
-#: (decisions.md#parse-cost).
+#: (decisions/parse-cost).
 _CALL_BASELINE = {
     (3, 11): {"parse": 307, "facade": 344},
     (3, 12): {"parse": 288, "facade": 325},
@@ -140,7 +140,7 @@ def _check_budget(kind: str, fn: Callable[[str], object]) -> None:
     Skips rather than clobbers when something else owns the profile
     slot: `sys.setprofile(None)` in the helper CLEARS the hook, and a
     maintainer profiling the parser -- the very workflow that produced
-    decisions.md#parse-cost -- would otherwise get silently truncated
+    decisions/parse-cost -- would otherwise get silently truncated
     data. Restoring is not an option: `sys.getprofile()` hands back a
     `Profile` object that `sys.setprofile()` then refuses.
     """
@@ -152,7 +152,7 @@ def _check_budget(kind: str, fn: Callable[[str], object]) -> None:
         pytest.fail(
             f"no call baseline for Python {version[0]}.{version[1]}; "
             f"{kind} measures {actual:.1f} here. Add the row to "
-            f"_CALL_BASELINE and record it in decisions.md#parse-cost")
+            f"_CALL_BASELINE and record it in decisions/parse-cost")
     baseline = _CALL_BASELINE[version][kind]
     actual = _calls_per_parse(fn)
     low, high = baseline * (1 - _BAND), baseline * (1 + _BAND)
@@ -162,7 +162,7 @@ def _check_budget(kind: str, fn: Callable[[str], object]) -> None:
         f"baseline of {baseline}. Growth and shrinkage are both signals: "
         f"recompute with tools/perf/call_count.py, then either make it "
         f"cheaper or move the baseline deliberately -- see "
-        f"decisions.md#parse-cost")
+        f"decisions/parse-cost")
 
 
 def test_parse_cost_stays_within_its_band() -> None:
@@ -741,7 +741,7 @@ def _clause_run(members: int) -> str:
     """A maiden clause whose birth name is a RUN of links.
 
     Mixed case on purpose: written wholly in one case the letter reads
-    as an initial (rules.md#P3's marked subset). Since #601 the clause
+    as an initial (rules/P3's marked subset). Since #601 the clause
     keeps the run because nothing in it ends the clause, so this
     measures the take's walk over a long clause; until then it measured
     the clause's link exception, which #601 retired.
@@ -813,7 +813,7 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
     large_text = "John Smith, " + "MD " * _PAIR_SCAN_LARGE + "G.J. " * _PAIR_SCAN_LARGE
     # REACHABILITY: the flip REPORTS only where the scan ran and found
     # nothing but titles in front of the first pair, every shape word
-    # being a pair (rules.md#C1's "nothing but other paired initials").
+    # being a pair (rules/C1's "nothing but other paired initials").
     # A change that stopped the scan being asked -- 'MD' leaving the
     # titles, the pair test moving -- loses the report and fails here
     # rather than leaving this guard measuring nothing.
@@ -1061,7 +1061,7 @@ def test_a_fixed_point_does_not_reread_what_it_has_read(
 # interpreter gets a row the same way: run it there, then add it.
 #
 # Lowered 2026-09-26 from 2587 with `_CALL_BASELINE` above, for the
-# same reason (decisions.md#parse-cost). 2,678 from 2026-10-04, the
+# same reason (decisions/parse-cost). 2,678 from 2026-10-04, the
 # re-pointed name-level shape (above), measured on py3.11. 2,479
 # from 2026-10-06 (#617), 199 below 83f4e914's 2,678, for two
 # reasons, counted per function: P3's joins call the piece
@@ -1124,7 +1124,7 @@ def test_a_link_costs_what_it_is_pinned_at() -> None:
 
 
 def test_a_member_opening_a_comma_part_asks_no_anchor_pass() -> None:
-    """rules.md#S2's company clause speaks only for a member with a
+    """rules/S2's company clause speaks only for a member with a
     credential in FRONT of it, so a member opening the part after a
     one-word family comma ('Smith, Ed') is never anchored, and
     `segment_suffix_reading` builds no `credential_anchors` pass for

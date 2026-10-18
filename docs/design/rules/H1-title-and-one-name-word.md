@@ -66,5 +66,5 @@ H1. Rationale: a title normally addresses by surname, so a title
       "Greve Anna"                →  family="Anna"
       "Anna Greve"                →  family="Greve"
       "Greve, Anna"               →  family="Greve"
-    history: decisions.md#H1 · interacts: H3, H5, H6, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions/H1 · interacts: H3, H5, H6, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 

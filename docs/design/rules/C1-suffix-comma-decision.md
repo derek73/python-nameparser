@@ -348,5 +348,5 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions.md#C1 · interacts: H1, H2, H6, P1, P2, P3, P5, P6, W3, S2, S3, M2 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions/C1 · interacts: H1, H2, H6, P1, P2, P3, P5, P6, W3, S2, S3, M2 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 

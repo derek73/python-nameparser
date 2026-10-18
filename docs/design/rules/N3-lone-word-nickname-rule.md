@@ -28,5 +28,5 @@ N3. Rationale: a person set down as a nickname plus one name word is
     nickname-plus-word-plus-suffix name as given with no family, and
     the same name carrying a maiden clause reads family instead.
       "Smith (née Jones)"         →  family="Smith"
-    history: decisions.md#N3 · interacts: H1, M3, M4 · implemented: nameparser/_pipeline/_assign.py
+    history: decisions/N3 · interacts: H1, M3, M4 · implemented: nameparser/_pipeline/_assign.py
 

@@ -164,7 +164,7 @@ def in_initialless_script(text: str) -> bool:
 # divergence before the move: 'Dr. Smith, Ed' (LISTED title 'Dr.') and
 # 'Xyz. Smith, Ed' (UNLISTED, H2-shaped) both read family 'Dr.
 # Smith'/'Xyz. Smith', given 'Ed' at the peel (since #701 the listed
-# 'Dr.' then peels into the title, rules.md#H6), because is_leading_title
+# 'Dr.' then peels into the title, rules/H6), because is_leading_title
 # reads H2's shape and a bare `folded in lexicon.titles` lookup does
 # not -- but name_word_count's OWN count disagreed: 'Xyz.' counted as
 # a name word where 'Dr.' did not, so 'Xyz. Smith, Ed' alone flipped
@@ -186,16 +186,16 @@ def in_initialless_script(text: str) -> bool:
 # it at the z. `_MARKS` is the general combining blocks -- what NFD of
 # a Latin, Greek or Cyrillic letter produces -- and not the marks that
 # only some scripts write (Indic vowel signs, Arabic and Hebrew
-# points); rules.md#H2's Accepted clause owns that limit.
+# points); rules/H2's Accepted clause owns that limit.
 _MARKS = '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]'
 _LETTER = r'[^\W\d_]' + _MARKS + '*'
 _PERIOD_ABBREV = re.compile(r'^(?:' + _LETTER + r'){2,}\.$')
 
 
-# rules.md#H2: "an abbreviation opening the part of the name that
+# rules/H2: "an abbreviation opening the part of the name that
 # carries the given name — the whole name, or the part after a
 # family comma — reads as a title even when unlisted"
-# (history: decisions.md#H2)
+# (history: decisions/H2)
 def is_title_shaped(text: str) -> bool:
     """Whether TEXT wears H2's shape alone -- vocabulary-free, the
     LISTED half being a separate lookup at each caller's own site
@@ -252,7 +252,7 @@ def is_initial_shaped(text: str) -> bool:
 _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 
 
-# rules.md#S2: "a trailing word of the suffix vocabulary reads as a
+# rules/S2: "a trailing word of the suffix vocabulary reads as a
 # suffix" -- the roman-numeral half of that rule, which the initial
 # veto would otherwise take: V, I and X are suffix vocabulary AND bare
 # capitals, and a bare capital inside a name is a middle initial.
@@ -275,7 +275,7 @@ def is_trailing_numeral_suffix(text: str, preceding: str) -> bool:
 
 # #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,
 # is excluded for its SHAPE -- one letter is how a middle initial is
-# written, and rules.md#S3 retires single-character matches for the
+# written, and rules/S3 retires single-character matches for the
 # same reason -- not for being a generation: a multi-letter suffix
 # word ('III', 'Jr') anchors and runs like any other. So it neither
 # anchors an ambiguous member behind it nor counts toward C1's
@@ -303,7 +303,7 @@ def is_initial(text: str) -> bool:
 def is_one_case(texts: Sequence[str]) -> bool:
     """Whether a name is written wholly in ONE case -- all upper or all
     lower alike -- and so carries no case EVIDENCE about any letter in
-    it (rules.md#P3, #383/#479). The caller passes the name's OWN
+    it (rules/P3, #383/#479). The caller passes the name's OWN
     words: a maiden marker's clause and any delimited (nickname)
     content are not among them, and appending one must not flip the
     reading of words that did not change.
@@ -311,14 +311,14 @@ def is_one_case(texts: Sequence[str]) -> bool:
     Mirrors the SHAPE of the comparison the R5 gate in
     `_render.capitalized` makes, not its SPAN: R5 joins every token but
     the suffixes, nickname and maiden content included, while
-    classify's caller hands in only the name's own words (rules.md#P3's
+    classify's caller hands in only the name's own words (rules/P3's
     own-words doctrine, see above) -- so a clause-bearing name can be
     one-case to this function and mixed to R5 (measured:
     `'JUAN GARCIA Y LOPEZ née Jones'` is one case here, mixed there),
     and a name with a cased suffix mixed here and one-case there
     (`'john e jones III'`). Not shared by import today -- render is a
     layer this module does not reach into -- and #492 left the two
-    spans apart by decision (decisions.md#R5, "THE R5 / PARSER SPLIT").
+    spans apart by decision (decisions/R5, "THE R5 / PARSER SPLIT").
 
     `Sequence`, not `Iterable`: the caller passes a list it already
     built rather than a fresh generator, so `is_one_case` costs one
@@ -357,14 +357,14 @@ def is_one_case(texts: Sequence[str]) -> bool:
 Lean = Literal["credential", "name"]
 
 
-# #289's credential lean: rules.md#S2 records the words-to-spare count
+# #289's credential lean: rules/S2 records the words-to-spare count
 # today; this predicate is the WRITING evidence that decides ahead of
-# it, in a mixed-case name only (history: decisions.md#S2).
+# it, in a mixed-case name only (history: decisions/S2).
 def ambiguous_lean(text: str, one_case: bool) -> Lean | None:
     """Which way the WRITING leans for a member of the ambiguous
     credential set: "credential", "name", or None for no lean at all.
 
-    None is the fall-through to rules.md#S2's count, and it is the
+    None is the fall-through to rules/S2's count, and it is the
     answer for three inputs. A name written wholly in one case says
     nothing about any word in it. A member written wholly in lower
     case says nothing either -- lower is how most of a mixed-case
@@ -412,7 +412,7 @@ def _dotted(text: str) -> bool:
     spelling a member with a lower-case tail is written in. A single
     trailing period ('Ma.', 'Ed.', 'Ms.') is the abbreviation shape any
     word can wear -- the honorific's, a name's -- and is not the gate's
-    "written with periods" (rules.md#S2). Until #296's review the gate
+    "written with periods" (rules/S2). Until #296's review the gate
     was "any period", and 'Smith, Ms.' passed it as the degree."""
     return (_DOTTED.fullmatch(text) is not None
             or _CHUNKED.fullmatch(text) is not None)
@@ -429,7 +429,7 @@ def is_paired_initials(text: str) -> bool:
     """Two single letters run together with periods ('M.J.'): the one
     unlisted dotted shape a person's own initials take, so after a
     comma it is a name until something in front of it, or another
-    dotted word beside it, says it is a credential (rules.md#C1).
+    dotted word beside it, says it is a credential (rules/C1).
     Three or more letters ('X.Y.Z.') and any longer chunk ('B.Tech.')
     are outside it."""
     return _PAIRED_INITIALS.fullmatch(text) is not None
@@ -506,7 +506,7 @@ def splits_into_suffixes(text: str, cores: frozenset[str],
     return False
 
 
-# rules.md#S3: "a word with interior periods reads as a suffix when
+# rules/S3: "a word with interior periods reads as a suffix when
 # any of its period-separated chunks is suffix vocabulary — except
 # where every chunk the vocabulary matches is a single ASCII
 # character, the roman numerals and the lone digit the vocabulary
@@ -537,7 +537,7 @@ def period_joined_vocab(
     any chunk match yields to the shape, was measured and rejected: it
     costs 'Doe, John Msc.Ed.' a real credential and re-routes the
     honorific peel of '김민준씨, J.씨' for nothing this design wants
-    (decisions.md#S2).
+    (decisions/S2).
 
     The ALPHABETIC requirement is a SEPARATE, narrower gate on the
     shape verdict alone (#516 review round, decided by the
@@ -781,7 +781,7 @@ def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:
 
 
 # The candidate test for a comma part read before classify
-# (rules.md#C1, decisions.md#S2): segment's C2 flag on a tail part.
+# (rules/C1, decisions/S2): segment's C2 flag on a tail part.
 def ambiguous_class_candidate(text: str, lexicon: Lexicon,
                               policy: Policy) -> bool:
     """Whether TEXT is a CANDIDATE for the ambiguous credential class
@@ -876,7 +876,7 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
     particle run and every word after it up to the next stop ("van der
     Berg Smith" is one unit). False is P1's fold reach: the particle
     run and the ONE unit it attaches to, so "de Mesnil Jean" is two --
-    the count rules.md#C1 needs before a comma, where under a
+    the count rules/C1 needs before a comma, where under a
     family-first order that part is family 'de Mesnil', given 'Jean'
     (#575).
 
@@ -927,11 +927,11 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
     return ends
 
 
-#: The facts rules.md#C1's count before a comma reads (#575): a
+#: The facts rules/C1's count before a comma reads (#575): a
 #: particle starts a surname unit, and a suffix word stops it. A word
 #: that is ALSO title vocabulary ('Freiherr', 'St') LEADING the part is
 #: not a particle here: in front of a name it reads as the title it
-#: also is (rules.md#H1), so 'Freiherr von Berg, PhD' keeps its title,
+#: also is (rules/H1), so 'Freiherr von Berg, PhD' keeps its title,
 #: while inside a surname it chains as P1 and P2 chain it ('de St
 #: Pierre' is one surname). A bound given-name head that is also a
 #: particle ('Abu') stays a particle: 'Abu Bakar, Ed' is a surname
@@ -994,11 +994,11 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     """How many of these texts are NAME words -- not suffix
     vocabulary, not title vocabulary.
 
-    rules.md#C1's count for the ambiguous class, and it is of names
+    rules/C1's count for the ambiguous class, and it is of names
     rather than of words because 'Smith Jr., MA' is two tokens and one
     name: counting tokens there flips the structure and hands the
     family to `given`, which no reading of that string wants
-    (decisions.md#S2). The suffix half asks the POLICY-selected
+    (decisions/S2). The suffix half asks the POLICY-selected
     predicate, the same one is_wholly_suffix asks, so the two agree
     about what a suffix word is; the title half asks BOTH the listed
     lookup and H2's shape test (`is_title_shaped`) -- a bare
@@ -1223,7 +1223,7 @@ def maiden_marker_run(words: Sequence[str], markers: frozenset[str]) -> int:
 
 
 
-# rules.md#M3: "a marker followed by a comma is no marker"
+# rules/M3: "a marker followed by a comma is no marker"
 def comma_follows_marker(word: str) -> bool:
     """Whether `word`, the one standing after a marker run inside a
     delimited clause, opens with a comma -- standing alone (' , ') or
@@ -1426,7 +1426,7 @@ def _normalized_for_script(text: str) -> str | None:
     same way), so an NFD suffix word reaches its NFC entry. What stays
     raw is SEGMENTATION -- the surname site's direct membership test
     and the peel's tail slice index the token's own text -- where NFD
-    degrades to no-split, never to a wrong split (decisions.md#W1,
+    degrades to no-split, never to a wrong split (decisions/W1,
     the 2026-07-29 ja amendment).
     """
     text = text.rstrip(FULL_STOPS)

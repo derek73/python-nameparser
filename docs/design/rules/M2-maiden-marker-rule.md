@@ -132,7 +132,7 @@ M2. Rationale: a maiden marker announces that what follows it is the
     whatever it is unless it is a suffix word, and a lone roman
     numeral is not one — it is shaped like an initial — so it is the
     maiden name where the clause-free name would read it as the
-    suffix. Decided with #601 (decisions.md#M2, 2026-10-04).
+    suffix. Decided with #601 (decisions/M2, 2026-10-04).
       "Jane Smith née V"            →  maiden="V"  · boundary
     Accepted: bracket content ending in a period is suffix-shaped
     (M3), so the brackets are dropped (S1) and the clause is read as
@@ -142,5 +142,5 @@ M2. Rationale: a maiden marker announces that what follows it is the
     Accepted: a marker behind a credential is an ordinary word, and
     the credential's run (S2) takes it in with everything after it.
       "Jane Doe Jr. nee Smith"      →  suffix="Jr. nee Smith"  · boundary
-    history: decisions.md#M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5, C1 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
+    history: decisions/M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, H1, H5, C1 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
 

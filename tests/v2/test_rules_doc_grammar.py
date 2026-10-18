@@ -26,7 +26,7 @@ P2. Rationale: particles cannot themselves be a given name.
       "Mesnil de"  family-first   →  family="Mesnil de"
       "de"                        →  given="de"  · boundary
     Accepted: a bare "de" keeps given="de".
-    history: decisions.md#P2 · interacts: H1 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions/P2 · interacts: H1 · implemented: nameparser/_pipeline/_post_rules.py
 
 P3. Statement with a tracked gap.
       "Swami Vivekananda"         →  family=""  deviates: #346 (today: family="Vivekananda")

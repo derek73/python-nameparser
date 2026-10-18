@@ -21,5 +21,5 @@ O2. Rationale: a Turkic patronymic marker is a separate word that
     FAMILY_FIRST_GIVEN_LAST declared, Ali Ahmad Vali oglu reads
     given oglu, the marker standing in a name field because the
     declaration put the name's last word there (#384).
-    history: decisions.md#O2 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions/O2 · implemented: nameparser/_pipeline/_post_rules.py
 

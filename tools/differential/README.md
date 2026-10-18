@@ -398,7 +398,7 @@ So what is opt-in is neither the marker words nor the delimited path
 as a whole: it is the delimited path for content that does not
 announce itself. Since #335 a clause holding a word past its marker
 reads as the maiden name whichever bucket its pair sits in
-(`rules.md#M3`), so `Jane Smith (née Jones)` needs no configuration
+(`rules/M3`), so `Jane Smith (née Jones)` needs no configuration
 either. A word past the MARKER, not a second word in the clause: since
 #434 a marker may be a phrase, and `Maria Kowalska (z domu)` is a
 two-word clause that stays a nickname because both its words are the

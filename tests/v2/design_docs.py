@@ -27,16 +27,18 @@ MECHANISMS_DOC = DESIGN_DIR / "mechanisms.md"
 SECTION_ORDER = "HPSNMCOWTARD"
 
 # A citation: the folder and the key, or mechanisms.md and its slug. A
-# key is not followed by a word character or a hyphen, which is how a
-# file path (`rules/S2-case-signal-at-the-suffix-slot.md`) is told from
-# a citation, and a `.md` after it marks a file name (`rules/README.md`);
-# a sentence's full stop is allowed. A decisions key starting with a
+# key is not followed by a word character, nor by a hyphen and another
+# word, which is how a file path in the rules folder (a stem like
+# S2-case-signal-at-the-suffix-slot) is told from a citation, and a `.md`
+# after it marks a file name (the README); a sentence's full stop is
+# allowed, and so is a hyphen ending the line, where a comment wraps a
+# long key. A decisions key starting with a
 # digit (`3-0-reevaluations`) is not matched, as it was not before the
 # split.
 MENTION_RE = re.compile(
     r"(?:(?P<doc>rules|decisions)/|(?P<mdoc>mechanisms)\.md#)"
     r"(?P<cid>[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*)"
-    r"(?![A-Za-z0-9_-])(?!\.md\b)")
+    r"(?![A-Za-z0-9_]|-[A-Za-z0-9_])(?!\.md\b)")
 
 _LINK_RE = re.compile(r"\[(?P<title>[^\]]+)\]\((?P<file>[^)/]+\.md)\)")
 _KEY_RE = re.compile(r"[^\s—,]+")

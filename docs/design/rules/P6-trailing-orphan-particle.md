@@ -174,7 +174,7 @@ P6. Rationale: a particle ending the name has nothing to link
     vocabulary — today vd, do and mc. Only vd's reading was
     weighed; mc inherits it, which is the shape's cost and was
     decided rather than tracked — #454 closed by design 2026-09-07
-    (decisions.md#suffix-acronym-collisions). `do` sits in the
+    (decisions/suffix-acronym-collisions). `do` sits in the
     AMBIGUOUS acronym half and was already read as a name word
     there, so the precedence decides nothing for it — and because
     the report names the reading OVERRIDDEN, `do` reports
@@ -196,5 +196,5 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    history: decisions.md#P6 · interacts: A1, C1, H5, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P6 · interacts: A1, C1, H5, P1, S2, P5, M2 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

@@ -11,5 +11,5 @@ D1. Rationale: a parser whose activated scripts nothing can divide
     segmenter, or deactivation silences it — the default parser and
     the zh pack never warn, which every other example in this
     document exercises.
-    history: decisions.md#D1 · implemented: nameparser/_parser.py
+    history: decisions/D1 · implemented: nameparser/_parser.py
 

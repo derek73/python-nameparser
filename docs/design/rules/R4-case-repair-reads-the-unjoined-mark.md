@@ -186,5 +186,5 @@ R4. Rationale: case repair is a display concern, applied only on
     both of the parsed name's views: a middle revised to "e-f"
     repairs to "E-F" as the parsed name does, where splicing the same
     text in gives "e-F".
-    history: decisions.md#R4 · interacts: P3, R2, R3, R5, S3 · implemented: nameparser/_render.py, nameparser/_lexicon.py
+    history: decisions/R4 · interacts: P3, R2, R3, R5, S3 · implemented: nameparser/_render.py, nameparser/_lexicon.py
 

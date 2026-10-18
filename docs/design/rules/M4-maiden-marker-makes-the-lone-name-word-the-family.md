@@ -36,5 +36,5 @@ M4. Rationale: a maiden name is a FORMER family name, and a former
       "Smith née Jones PhD"       →  family="Smith"
       "abd née Jones"             →  given="abd"  · boundary
       "J. née Jones Smith V"      →  given="J."  · boundary
-    history: decisions.md#M4 · interacts: M1, M2, M3, H1, N3, O5 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions/M4 · interacts: M1, M2, M3, H1, N3, O5 · implemented: nameparser/_pipeline/_post_rules.py
 

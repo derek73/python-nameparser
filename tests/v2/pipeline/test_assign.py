@@ -400,7 +400,7 @@ def test_the_trailing_title_is_transparent_to_the_suffix_peel() -> None:
     # 'Jack MA' shape -- an ALL-CAPS ambiguous acronym in a mixed-case
     # name leans credential and is taken with no words to spare, so
     # the reserve that used to keep it the family now takes it as the
-    # suffix instead (decisions.md#S2).
+    # suffix instead (decisions/S2).
     out = _assigned("John Mr. MA", lexicon=lex)
     assert _by_role(out, Role.TITLE) == "Mr."
     assert _by_role(out, Role.GIVEN) == "John"
@@ -840,7 +840,7 @@ def test_the_trailing_given_slot_ignores_the_two_segment_floor() -> None:
     credential reading likelier rather than less."""
     out = _assigned("Doe, John MA, PhD", lexicon=Lexicon.default())
     # _by_role space-joins by role; the written comma is preserved by
-    # post_rules' entry pass (#436/#437, rules.md#R1), a later stage
+    # post_rules' entry pass (#436/#437, rules/R1), a later stage
     # this assign-only helper does not run -- the full-pipeline case
     # row `the_trailing_slot_survives_a_third_comma_part` pins the
     # comma-rendered "MA, PhD". What this unit test checks is the role

@@ -85,5 +85,5 @@ P1. Rationale: a particle OPENING a name has the whole rest of the
     the bare particle reading as a given name, not any name part
     that begins with one.
       "Juan de la Vega"  family-first  →  family="Juan"
-    history: decisions.md#P1 · interacts: O3, O4, P2, P3, P4, P5, P6 · implemented: nameparser/_pipeline/_post_rules.py
+    history: decisions/P1 · interacts: O3, O4, P2, P3, P4, P5, P6 · implemented: nameparser/_pipeline/_post_rules.py
 

@@ -271,7 +271,7 @@ class HumanName:
         """Re-capitalize the current parse against the bound lexicon.
         force=None reads the bound Constants' render default
         (force_mixed_case_capitalization); the core's capitalized()
-        implements the one-case gate (rules.md#R5, suffixes left out
+        implements the one-case gate (rules/R5, suffixes left out
         since #492) -- not
         re-implemented here."""
         self._resolve()
@@ -511,7 +511,7 @@ class HumanName:
         # answers -- the same fallback _render._cap_word takes for the
         # same tokens and through the same helper, which is why the
         # helper is imported rather than the predicate rewritten
-        # (decisions.md#R4 for why one question and not two: whether a
+        # (decisions/R4 for why one question and not two: whether a
         # word is a connective is a fact the word can answer alone,
         # whether a particle is acting as one is a fact about the part).
         #
@@ -533,7 +533,7 @@ class HumanName:
                 and UNJOINED_CONJUNCTION_TAG not in tok.tags)
 
     def _split_last(self) -> tuple[list[str], list[str]]:
-        # rules.md#R2: "a name part whose every word is particle
+        # rules/R2: "a name part whose every word is particle
         # vocabulary is a part where none of them is doing a
         # particle's work" -- the all-particle guard
         # below is this rule, and predates its statement: v1 assumed a
@@ -617,7 +617,7 @@ class HumanName:
         #
         # Particles are NOT decided per token: _is_particle stays a
         # live vocabulary lookup, as _render._cap_word keeps it --
-        # rules.md#R4 draws this boundary per question, not per field.
+        # rules/R4 draws this boundary per question, not per field.
         self._resolve()
         if tokens is None:
             # STRING PATH. split() rather than split(" ") because
@@ -700,7 +700,7 @@ class HumanName:
             if got or not words or not all(self._is_particle(w)
                                            for w in words):
                 return got
-            # rules.md#R3: "except the particles of a part whose every
+            # rules/R3: "except the particles of a part whose every
             # word is one, which are not acting as particles there"
             # -- nothing survived
             # the filter, so the whole group is particles. The

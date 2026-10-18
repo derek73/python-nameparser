@@ -74,7 +74,7 @@ H4. Rationale: this is a name parser, not a title parser. Handed a
     misfire — a second surname that is also title vocabulary is
     exactly the doubt the kind names, and those words stay in the
     vocabulary for the addressing forms, which is
-    decisions.md#vocabulary-collisions' call.
+    decisions/vocabulary-collisions' call.
     A join OPENING the name with a title word is a title run (H3)
     instead. Behind a peeled title the join is not: a title needs a
     following piece and the join is the last one, so `Attorney General
@@ -86,5 +86,5 @@ H4. Rationale: this is a name parser, not a title parser. Handed a
     which FIELD the unit takes and none of them whether the word
     inside it is a title. The other measured inputs are pinned in the
     case table rather than here.
-    history: decisions.md#H4 · interacts: H1, H2, H3, H5, S2, O5 · implemented: nameparser/_pipeline/_assign.py
+    history: decisions/H4 · interacts: H1, H2, H3, H5, S2, O5 · implemented: nameparser/_pipeline/_assign.py
 

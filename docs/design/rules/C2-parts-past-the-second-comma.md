@@ -72,5 +72,5 @@ C2. Rationale: text beyond the recognized comma parts should be
     reports on outside a tail:
     the_chain_reports_the_acronym_it_takes and
     titled_particle_chain_survives_a_title_that_is_also_a_particle.
-    history: decisions.md#C1, decisions.md#S2 · interacts: C1, H5, P2, P5, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions/C1, decisions/S2 · interacts: C1, H5, P2, P5, S2, S3 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 

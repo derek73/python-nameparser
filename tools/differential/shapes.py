@@ -23,7 +23,7 @@ source-order transcription listing. Both carry `order=None` -- not
 because they are order-less, but because the family-first (resp.
 source-order) reading is SCRIPT-carried rather than declared: a pure
 shape 6/7 string parses correctly under the DEFAULT policy already
-(rules.md#W4, T2/T3), the same way DEFAULT_SCRIPT_ORDERS routes Han/
+(rules/W4, T2/T3), the same way DEFAULT_SCRIPT_ORDERS routes Han/
 Hangul/Hiragana to family-first without a Policy saying so. A shape
 whose reading depends on the string's own script has nothing for
 `order` to name.

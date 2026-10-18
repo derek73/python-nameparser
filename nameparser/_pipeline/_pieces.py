@@ -67,11 +67,11 @@ from nameparser._pipeline._vocab import (
 )
 
 
-# rules.md#P3: "both questions this rule asks of a name — how many
+# rules/P3: "both questions this rule asks of a name — how many
 # words it has, and whether it is written in one case — are asked of
 # the name's OWN words: a maiden marker taken as one, and the words it
 # takes (M2), are not among them, and neither is a delimited clause
-# (N1, M1)" (history: decisions.md#P3)
+# (N1, M1)" (history: decisions/P3)
 def own_words(tokens: Sequence[WorkToken], comma_offsets: Sequence[int],
               markers: frozenset[str],
               marker_tags: Mapping[int, str] | None = None,
@@ -95,7 +95,7 @@ def own_words(tokens: Sequence[WorkToken], comma_offsets: Sequence[int],
     could disagree with on a name where a marker's head opens an entry
     but no run completes ('z' of 'z domu'): measured, 'ANNA z Nowak,
     MD' flipped the recorded one-case verdict under that approximation
-    (decisions.md#P3). Sharing the exact function instead makes the
+    (decisions/P3). Sharing the exact function instead makes the
     two paths agree by construction, not by corpus luck.
 
     Takes tokens/comma_offsets/markers rather than a whole ParseState:
@@ -131,7 +131,7 @@ def own_words(tokens: Sequence[WorkToken], comma_offsets: Sequence[int],
             clause_at)
 
 
-# rules.md#H3: "successive title words at the start of the part
+# rules/H3: "successive title words at the start of the part
 # carrying the given name chain into one title; a title word
 # elsewhere in the name does not"
 def is_title_piece(piece: Sequence[int], ptags: Set[str],
@@ -141,7 +141,7 @@ def is_title_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "vocab:title" in tokens[piece[0]].tags
 
 
-# rules.md#P4: "a particle in the name's leading position chains
+# rules/P4: "a particle in the name's leading position chains
 # nothing" -- WHERE that position is, asked once, by group's chain and
 # the trailing read's unit count (#624)
 def chain_lead(pieces: Sequence[Sequence[int]], ptags: Sequence[Set[str]],
@@ -190,11 +190,11 @@ def is_prefix_piece(piece: Sequence[int], ptags: Set[str],
     return len(piece) == 1 and "particle" in tokens[piece[0]].tags
 
 
-# rules.md#P3: "a recognized connective joins its neighbors into one
+# rules/P3: "a recognized connective joins its neighbors into one
 # name part, connective runs included — except a single-letter
 # connective in a three-word name, which stays a name word, and a
 # single-letter connective that reads as an initial instead, which
-# never joins" (history: decisions.md#P3)
+# never joins" (history: decisions/P3)
 def is_conj_piece(piece: Sequence[int], ptags: Set[str],
                   tokens: Sequence[WorkToken]) -> bool:
     if "conjunction" in ptags:
@@ -254,7 +254,7 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
                      tokens: Sequence[WorkToken], *,
                      letter_stays: bool, titles_only: bool,
                      frozen: Set[int] = frozenset()) -> None:
-    """rules.md#P3's connective joins, for both parts that make them:
+    """rules/P3's connective joins, for both parts that make them:
     group's name segments, and the part after a comma, which
     `_comma.decide` reads before group joins anything (#617, where the
     two had been copies that differed). Contiguous connectives merge
@@ -300,7 +300,7 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
             merge_pieces(pieces, ptags, k, k + 2, add={"conjunction"})
         else:
             k += 1
-    # each conjunction joins its neighbors, rules.md#P3: "except a
+    # each conjunction joins its neighbors, rules/P3: "except a
     # single-letter connective in a three-word name, which stays a
     # name word" (v1's Google Code issue 11 carve-out, the
     # "john e smith" bug).
@@ -351,10 +351,10 @@ def join_connectives(pieces: list[list[int]], ptags: list[set[str]],
 # trailing-run walk must start where assign starts.
 
 
-# rules.md#H2: "an abbreviation opening the part of the name that
+# rules/H2: "an abbreviation opening the part of the name that
 # carries the given name — the whole name, or the part after a
 # family comma — reads as a title even when unlisted"
-# (history: decisions.md#H2)
+# (history: decisions/H2)
 def is_leading_title(piece: Sequence[int], ptags: Set[str],
                       tokens: Sequence[WorkToken]) -> bool:
     if is_title_piece(piece, ptags, tokens):
@@ -393,7 +393,7 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     piece when that piece is a name candidate: where everything behind
     the run is suffix pieces, the run gives back its last piece, when
     that piece is one word and is not itself suffix vocabulary
-    (rules.md#H3, decisions.md#H3 -- the block at the floor below
+    (rules/H3, decisions/H3 -- the block at the floor below
     carries the examples of each half, and the ordering its two inline
     tag reads were measured on).
     One definition, read by assign (which sets the roles), by the
@@ -407,7 +407,7 @@ def leading_titles(pieces: Sequence[Sequence[int]],
             n += 1
             continue
         break
-    # rules.md#H3: "where everything behind the run is post-nominal,
+    # rules/H3: "where everything behind the run is post-nominal,
     # the run gives its last word back to the name, provided that word
     # stands alone and is not itself suffix vocabulary"
     #
@@ -423,7 +423,7 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     # as the title and reads the numeral as the name -- given 'V',
     # 'king' being a given-name title and the run's last word, where
     # 'Dr Smith V' reads suffix 'V'. That numeral fork is outside this
-    # floor (decisions.md#H3).
+    # floor (decisions/H3).
     #
     # The two inline tag reads are the cheapest NECESSARY condition for
     # the piece behind the run to be a suffix piece at all --
@@ -433,7 +433,7 @@ def leading_titles(pieces: Sequence[Sequence[int]],
     # plan's ordering rather than the shape below: asking the
     # authoritative predicate first cost 8 calls per parse of the
     # reference name (leading_titles runs four times), against a band
-    # with room for two (decisions.md#parse-cost). is_suffix_piece
+    # with room for two (decisions/parse-cost). is_suffix_piece
     # stays the predicate that ANSWERS, here and in the walk.
     if (n and n < len(pieces)
             and ("suffix" in ptags[n]
@@ -460,7 +460,7 @@ def is_suffix_piece(piece: Sequence[int], ptags: Set[str],
     return "vocab:suffix" in tags and "initial" not in tags
 
 
-# rules.md#S2: "A title word never starts the run, and neither does a
+# rules/S2: "A title word never starts the run, and neither does a
 # member of the ambiguous class, a single letter, a connective" -- what
 # starts #602's credential run, one predicate for the trailing peel and
 # the given-part walk (mechanisms.md#ONE-PREDICATE-PER-QUESTION)
@@ -477,7 +477,7 @@ def starts_a_credential_run(piece: Sequence[int], ptags: Set[str],
     than a numeral, and carries no `initial` tag), a connective, a
     word that is also bound given-name or particle vocabulary (`abd`
     heads `Abd Allah`; `vd`, `mc`). No script is refused: an honorific
-    starts the run as a credential does (#679, decisions.md#S2), so
+    starts the run as a credential does (#679, decisions/S2), so
     `Ана Хорват старији Џонс` reads as `Ana Horvat stariji Jones` does.
 
     The split credential group merges ('Ph. D.', the one piece carrying
@@ -514,7 +514,7 @@ _NOT_A_RUN_START = frozenset({"conjunction", "particle",
 
 def is_lone_never_given_particle(piece: Sequence[int],
                                  tokens: Sequence[WorkToken]) -> bool:
-    """A piece that is one never-given particle (rules.md#P1's fold
+    """A piece that is one never-given particle (rules/P1's fold
     site). One predicate, asked by the fold in post_rules and by two
     sites in assign that predict the fold will take the particle
     forward: the given slot, which then leaves no given name in front
@@ -559,10 +559,10 @@ def _anchors(piece: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     roman numeral.
 
     A connective anchors nothing because between two name words it is
-    a link -- the generational 'i' is also Catalan's 'i' (rules.md#P3)
+    a link -- the generational 'i' is also Catalan's 'i' (rules/P3)
     -- and 'Jane Doe nee Puig i Ma' must keep its clause. A particle
     anchors nothing for the same reason from the other side: it joins
-    the name word behind it (rules.md#P2), so a word that is both
+    the name word behind it (rules/P2), so a word that is both
     particle and suffix vocabulary ('vd', 'mc') standing in front of
     a member is the head of a family name, not a credential list --
     'Smith vd Ma, John' keeps family 'Smith vd Ma' and 'Jan vd Ma'
@@ -759,12 +759,12 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION); it answered for a
     third until #436, group's one-entry join.
 
-    `licensed` holds the pieces rules.md#C1's count has licensed as
+    `licensed` holds the pieces rules/C1's count has licensed as
     credentials -- ambiguous-class words in a credential run behind
     two name words -- and each reads as a suffix whatever its writing
     or company.
 
-    rules.md#S2's initial veto keeps a roman numeral out of a suffix
+    rules/S2's initial veto keeps a roman numeral out of a suffix
     reading, which is right after a NAME word: 'Smith, John V.' is a
     middle initial (#432). After a SUFFIX word the numeral is
     describing that suffix -- 'PSM I' is Professional Scrum Master
@@ -773,7 +773,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     that: what follows a bare title is not continuing a credential.
 
     A part OPENED by a credential is the postnominal part however it
-    goes on (#603, rules.md#C1): where an unambiguous suffix word that
+    goes on (#603, rules/C1): where an unambiguous suffix word that
     starts #602's run (`starts_a_credential_run`) is the first suffix
     word of the part, with only titles in front of it (a title/suffix
     dual among them ends the chance: a credential behind one opens
@@ -863,7 +863,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
             leading = False
             out.append(True)
             continue
-        # A word rules.md#C1's count licenses as a credential: the
+        # A word rules/C1's count licenses as a credential: the
         # caller (`_comma.decide`) counted two name words before the
         # comma and found the part a credential run, which settles the
         # ambiguous word here before S2's anchors are asked (#613)
@@ -934,7 +934,7 @@ class Peel(NamedTuple):
     absorbed: tuple[tuple[int, ...], ...] = ()
 
 
-# rules.md#S2: "a trailing word of the suffix vocabulary reads as a
+# rules/S2: "a trailing word of the suffix vocabulary reads as a
 # suffix — generational forms and credential acronyms alike, and an
 # ambiguous acronym written with its periods, one after each letter or
 # one after each of two or more letter chunks, counts unambiguously; a
@@ -1098,7 +1098,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
 
     `one_case` is ParseState.one_case, the recorded fact: None means
     nobody asked, which is every caller that has no state to ask with,
-    and reads as "no lean" -- rules.md#S2's count alone, the behavior
+    and reads as "no lean" -- rules/S2's count alone, the behavior
     of every release before this one.
 
     `start` and `anchors` resume a walk rather than begin one: the
@@ -1119,7 +1119,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     it, and a word the chain joins to a run without the reading
     weighing it is a name word the walk stops at. The numeral fork still reads the piece in front of the
     numeral as written: an initial there keeps it a name word whatever
-    unit the initial is in ('John van der J. V', rules.md#P2).
+    unit the initial is in ('John van der J. V', rules/P2).
     """
     picks: list[tuple[int, ...]] = []
     numeral: tuple[int, ...] | None = None
@@ -1177,7 +1177,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
         # ("Jack MA"), a Title-case one is declined with plenty
         # ("John Smith Ma"). The lean is the LISTED set's alone: a
         # token admitted to this class by SHAPE carries no writing
-        # convention to read, so it takes the count (decisions.md#S2).
+        # convention to read, so it takes the count (decisions/S2).
         #
         # k < 2 means it is the only piece left, which is not the fork
         # this reports -- and not a floor the lean moves: the walk
@@ -1223,7 +1223,7 @@ def peel_trailing(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     return Peel(k, numeral, tuple(picks), anchors)
 
 
-# rules.md#S2: "A credential after the name core starts a run to the
+# rules/S2: "A credential after the name core starts a run to the
 # end of its part" -- applied to a finished peel (#602), so every
 # reader of the trailing run (assign, P5's reserve, P2's chain stop,
 # the maiden take) sees one answer.
@@ -1245,7 +1245,7 @@ def run_start(rest: Sequence[int], names: int,
     every piece of an ordinary name -- and a connective or particle
     never pay the predicate's frame: this runs on every parse, once
     per piece, and a clause holding a run of links ('Puig i i i ...
-    Soler') otherwise paid two frames per link (decisions.md#parse-cost).
+    Soler') otherwise paid two frames per link (decisions/parse-cost).
     The predicate repeats the refusal; the inline copy is only the
     cheap half of the same question. Under three names no run can
     start, two core pieces having to stand in front of it.
@@ -1280,7 +1280,7 @@ def run_start(rest: Sequence[int], names: int,
     return names
 
 
-# rules.md#P6: "a particle ending the name attaches to that family
+# rules/P6: "a particle ending the name attaches to that family
 # name" -- WHICH particles, asked once, by assign's given-part walk,
 # which both leaves them out of #602's run and attaches them (#613;
 # #610 had first made the run and post_rules' attachment one walk)
@@ -1346,7 +1346,7 @@ def particle_tail(seg: Sequence[Sequence[int]],
 def has_name_content(piece: Sequence[int],
                      tokens: Sequence[WorkToken]) -> bool:
     """Whether a piece holds a letter or digit: a piece with none is
-    no name word (rules.md#A2), so a run that takes it in absorbs no
+    no name word (rules/A2), so a run that takes it in absorbs no
     name and reports nothing. C-level, no frame per character."""
     return any(map(str.isalnum, "".join([tokens[i].text for i in piece])))
 
@@ -1381,13 +1381,13 @@ def credential_run(rest: Sequence[int], peel: Peel, p: int,
                 tuple(run_titles), tuple(absorbed))
 
 
-# rules.md#H5: "only a word the vocabulary knows as a title is one,
+# rules/H5: "only a word the vocabulary knows as a title is one,
 # and a bare title word is a name word"
 # -- the trailing run's own predicate. NOT is_leading_title:
 # that predicate carries H2's unlisted-abbreviation inference, which is
 # the LEADING slot's shape rule and has no trailing counterpart, so
 # with it 'John Smith Xyz.' would lose its family name to a title
-# (decisions.md#H5). The vocabulary read is is_title_piece's, shared
+# (decisions/H5). The vocabulary read is is_title_piece's, shared
 # with the leading run so the two cannot disagree about what a title
 # WORD is while disagreeing, deliberately, about what a title SHAPE is.
 def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
@@ -1426,7 +1426,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     is a compiled regex (a C call, no Python frame) where
     is_title_piece is a call, and almost no name ends in a
     period-marked word, so the ordinary parse pays the one match and
-    stops (decisions.md#parse-cost).
+    stops (decisions/parse-cost).
     """
     k = len(rest) if end is None else end
     while k > 1:
@@ -1445,7 +1445,7 @@ def trailing_titles(rest: Sequence[int], pieces: Sequence[Sequence[int]],
     return k
 
 
-# rules.md#H5: "successive single words that wear the abbreviation
+# rules/H5: "successive single words that wear the abbreviation
 # shape and are title vocabulary chain into the title from the end"
 # -- one word's half of that, for a caller asking it of a piece the
 # chain did not walk to: the maiden take, choosing the words the
@@ -1470,7 +1470,7 @@ _TRAILING_WORD_TAGS = frozenset({AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG,
                                  "vocab:suffix"})
 
 
-# rules.md#M2: "It takes them up to the trailing run of post-nominals
+# rules/M2: "It takes them up to the trailing run of post-nominals
 # and titles that the end of the name reads as if the clause were not
 # written" -- which words of a clause might be in that run, written
 # beside the peel and the chain whose admissions it has to cover (#610)
@@ -1527,7 +1527,7 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
                 c)
 
 
-# rules.md#H5: "the title is TRANSPARENT to the suffix reading: where
+# rules/H5: "the title is TRANSPARENT to the suffix reading: where
 # two or more name words stand, what stands once the chain is taken
 # reads exactly as it would read written without the title, plus the
 # title"
@@ -1552,7 +1552,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
     `rest[:peel.names]` the name pieces, `rest[peel.names:]` the
     suffixes. A bare tuple rather than a named one because a
     NamedTuple's __new__ is a frame of its own on every parse
-    (decisions.md#parse-cost), and `_group_segment` returns its three
+    (decisions/parse-cost), and `_group_segment` returns its three
     the same way.
 
     Transparency is what the fixed point buys: 'X Prof. Y' reads
@@ -1567,7 +1567,7 @@ def tail_reading(rest: list[int], pieces: Sequence[Sequence[int]],
 
     One function for assign's placement, group's bound-given reserve
     (P5), which must count the name words assign will leave, and the
-    maiden take (rules.md#M2), which must end the clause where the
+    maiden take (rules/M2), which must end the clause where the
     reading of the name will begin -- and since #614, for a main
     segment, the one read group takes between P3's joins and the
     particle chain (`read_trailing_run`), which assign and the reserve
@@ -1700,7 +1700,7 @@ class TailRead(NamedTuple):
     peel: Peel
 
 
-# rules.md#P2: "A particle joins the words after it into one name part,
+# rules/P2: "A particle joins the words after it into one name part,
 # the join running until the next particle starts a group of its own"
 # -- how far, asked by the chain and by S2's read alike (#620), so the
 # units the read counts are the ones the chain then builds
@@ -1729,7 +1729,7 @@ def chain_run_end(k: int, pieces: Sequence[Sequence[int]],
     return j
 
 
-# rules.md#P2: "A particle joins the words after it into one name part"
+# rules/P2: "A particle joins the words after it into one name part"
 # -- the particles straight behind it first, merged ahead of S2's read
 # so the read counts and absorbs the run as the one piece the chain
 # makes of it (#625)
@@ -1858,7 +1858,7 @@ def read_trailing_run(pieces: Sequence[Sequence[int]],
                       lead: int | None = None,
                       ) -> tuple[TailRead, int] | None:
     """`tail_reading` read once over a segment's pieces as group holds
-    them after rules.md#P3's connective joins and before the particle
+    them after rules/P3's connective joins and before the particle
     chain (#614), counting name words by the units the chain will make
     (`_chain_units`, #620): a `TailRead`, and the index in `pieces` of
     the first piece of the run, which runs to the end. None where there
@@ -1927,7 +1927,7 @@ def trailing_run_start(start: int, pieces: Sequence[Sequence[int]],
     return first
 
 
-# rules.md#H5: "the title is TRANSPARENT to the suffix reading: where
+# rules/H5: "the title is TRANSPARENT to the suffix reading: where
 # two or more name words stand, what stands once the chain is taken
 # reads exactly as it would read written without the title, plus the
 # title"

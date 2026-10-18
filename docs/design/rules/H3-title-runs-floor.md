@@ -35,5 +35,5 @@ H3. Rationale: compound titles are written as a run of title words,
     the name and the parse reports the doubt (H4).
       "Dr Jr"                     →  given="Dr"
       "Dr Jr"                     →  ambiguities=("title-or-name",)
-    history: decisions.md#H3 · interacts: C1, H1, H4, H5, H6, S2 · implemented: nameparser/_pipeline/_pieces.py
+    history: decisions/H3 · interacts: C1, H1, H4, H5, H6, S2 · implemented: nameparser/_pipeline/_pieces.py
 

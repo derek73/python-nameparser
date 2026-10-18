@@ -18,7 +18,7 @@ to the table widens the harvest on the next regeneration, and a case
 row added for new CJK work enters the corpus by being written down in
 the table everyone already reviews (#298's 间隔号 forms arrived
 exactly this way). Rows marked `tolerated` (the 2026-09-01 CJK
-demotion, rules.md#W3) are harvested like any other: the flag says
+demotion, rules/W3) are harvested like any other: the flag says
 the reading is best-effort, not that nobody should see it move.
 
 Regenerate after editing CJK case rows:

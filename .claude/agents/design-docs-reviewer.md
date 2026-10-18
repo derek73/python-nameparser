@@ -26,7 +26,7 @@ It is the only copy on purpose. This agent used to restate the axes
 and drifted three ways against it — a missing axis, a narrowed one,
 and a corpus count whose correction was recorded there and never
 reached the copy here (#473,
-decisions.md#review-agent-single-source). Do not reintroduce a
+decisions/review-agent-single-source). Do not reintroduce a
 summary.
 
 ## How to run

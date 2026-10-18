@@ -12,5 +12,5 @@ N1. Rationale: a quoted or bracketed clause beside a name is an
       "Jean 'JD' Smith"           →  nickname="JD"
       "Anna () Smith"             →  nickname=""  · boundary
       "John ｢Jack｣ Smith"         →  nickname="Jack"
-    history: decisions.md#N1 · interacts: T2, T3 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_tokenize.py
+    history: decisions/N1 · interacts: T2, T3 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_tokenize.py
 

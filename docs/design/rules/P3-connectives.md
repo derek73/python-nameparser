@@ -108,7 +108,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     contributing no initial (R3) and keeping its lowercase (R4),
     where an initial does neither. The v1 facade's initials() reads
     the same parse, so HumanName("john e smith").initials() is
-    also "j. e. s."; #528 closed the split and decisions.md#P3
+    also "j. e. s."; #528 closed the split and decisions/P3
     records it.
     Accepted: two 1.4.0 parity breaks, one in each direction. A bare
     capital in a name written wholly in upper case no longer reads as
@@ -149,5 +149,5 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions.md#P3 · interacts: H1, P1, M2, R1, R3, R4, S2, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, S2, C1 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

@@ -51,7 +51,7 @@ def test_excess_non_suffix_segment_flags_comma_structure() -> None:
 
 def test_the_comma_structure_report_names_no_field() -> None:
     # #629: a title word past the second comma reads as a title
-    # (rules.md#C2, #603), so the part can land in two fields; the
+    # (rules/C2, #603), so the part can land in two fields; the
     # report says the part was not recognized and leaves where each
     # word went to the fields. 2.3.0 said 'consumed as suffix'.
     out = _segmented("John Smith, Jr., Dr. Bart")
@@ -93,7 +93,7 @@ def test_leading_comma_yields_empty_first_segment() -> None:
 def test_a_tail_segment_of_leaning_credentials_is_not_flagged() -> None:
     # The third reading site, and the one place this design QUIETS a
     # report: 'DO' leans credential in a mixed-case name, so the third
-    # segment is a credential run and rules.md#C2's flag stops firing.
+    # segment is a credential run and rules/C2's flag stops firing.
     state = _segmented("Steven Hardman, MD, DO, DDS")
     assert not [a for a in state.ambiguities
                 if a.kind is AmbiguityKind.COMMA_STRUCTURE]

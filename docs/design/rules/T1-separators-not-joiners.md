@@ -8,5 +8,5 @@ T1. Rationale: a character that carries no name content (emoji, an
     separates its neighbors and never joins them.
       "John😀Smith"                →  family="Smith"
       "John😀Smith"  keep-emoji    →  given="John😀Smith"  · boundary
-    history: decisions.md#T1 · implemented: nameparser/_pipeline/_tokenize.py
+    history: decisions/T1 · implemented: nameparser/_pipeline/_tokenize.py
 

@@ -29,7 +29,7 @@ _LEX = Lexicon(
     particles=frozenset({"de", "der", "ibn", "la", "van", "vd"}),
     particles_ambiguous=frozenset({"la", "van"}),
     # `씨` is a ONE-LETTER suffix word, which starts no credential run
-    # (rules.md#S2's two-letter minimum -- any longer suffix word would,
+    # (rules/S2's two-letter minimum -- any longer suffix word would,
     # an honorific included since #679), the filler a test needs where
     # a credential would now take the rest of the part
     suffix_words=frozenset({"jr", "씨"}),
@@ -199,7 +199,7 @@ def test_east_slavic_skips_when_middle_is_also_patronymic() -> None:
 @pytest.mark.parametrize("text,title", [
     ("Мицкевич Адам Юзеф", ""),
     # a peeled title must not move the shape the gate is claimed of:
-    # rules.md#O1 counts name words "titles, suffixes and nicknames
+    # rules/O1 counts name words "titles, suffixes and nicknames
     # aside", so the rotation still reaches this input pre-gate
     # (_PRE_GATE_FAMILY records the same family as the bare form) and
     # the title has to survive the stand-down
@@ -208,7 +208,7 @@ def test_east_slavic_skips_when_middle_is_also_patronymic() -> None:
 @pytest.mark.parametrize("order", _FAMILY_FIRST)
 def test_east_slavic_stands_down_under_a_declared_family_first_order(
         order: Policy, text: str, title: str) -> None:
-    # rules.md#O1's scope clause (decisions.md#O1, 2026-09-07, #384):
+    # rules/O1's scope clause (decisions/O1, 2026-09-07, #384):
     # the rotation RESTORES the default reading a family-first listing
     # hides, so a declared family-first order supplies that reading and
     # the rotation stands down. The gate is on the order assign READ,
@@ -238,7 +238,7 @@ def test_turkic_rotation() -> None:
 @pytest.mark.parametrize("order", _FAMILY_FIRST)
 def test_turkic_stands_down_under_a_declared_family_first_order(
         order: Policy) -> None:
-    # The other pack, gated by the same read: rules.md#O2 is the same
+    # The other pack, gated by the same read: rules/O2 is the same
     # restoration of a hidden given-first reading, and the gate is one
     # condition covering both rotations -- so pinning only the East
     # Slavic half would leave half the gate free to come back out.
@@ -342,7 +342,7 @@ def test_leading_piece_scan_skips_pieces_that_hold_no_name(
     # non-name piece, which no fixture in this module produces.
     #
     # The title is deliberately UNDOTTED: a period makes any opening
-    # abbreviation a title by shape (rules.md#H2), so a dotted one
+    # abbreviation a title by shape (rules/H2), so a dotted one
     # would pass this test with the title vocabulary empty.
     out = _parsed("Mr de MD Mesnil", policy)
     assert _by_role(out, Role.TITLE) == "Mr"
@@ -547,7 +547,7 @@ def test_the_run_must_end_the_name() -> None:
 
 
 def test_the_site_reports_the_fork_it_decides() -> None:
-    # decisions.md#P6 (#405): the attachment reports the fork it
+    # decisions/P6 (#405): the attachment reports the fork it
     # decides. The state that decision fixed is the one this site
     # would otherwise recreate -- the comma writing reporting while
     # the comma-less writing decides the identical fork in silence.
@@ -685,17 +685,17 @@ def test_family_first_run_stops_at_the_first_name_word(
 
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)
 @pytest.mark.parametrize("text,family,rest", [
-    # the conjunction join is ONE name word (rules.md#P3), so the run
+    # the conjunction join is ONE name word (rules/P3), so the run
     # takes 'Vega y Santos' whole rather than stopping inside it
     ("de la Vega y Santos Juan", "de la Vega y Santos", "Juan"),
     # ... and the same clause applies to what is LEFT: 'Juan y Eva' is
     # one unit, so it lands in one field rather than being split
     ("de la Cruz Juan y Eva", "de la Cruz", "Juan y Eva"),
     # a bound given-name word and the word it completes are one unit
-    # (rules.md#P5), so the fold cannot leave half of the pair behind
+    # (rules/P5), so the fold cannot leave half of the pair behind
     ("ibn Awf abdul Rahman", "ibn Awf", "abdul Rahman"),
     # a particle in what is LEFT chains forward the same way it would
-    # if the fold had never run (rules.md#P2). Handing its words out
+    # if the fold had never run (rules/P2). Handing its words out
     # separately would report given='van' -- a bare particle as the
     # given name, which is the reading P1 exists to forbid -- and
     # would disagree with the same tail parsed alone: 'Mesnil van
@@ -832,7 +832,7 @@ def test_a_suffix_word_mid_run_ends_the_chain(
     # orders are pinned apart at a count other than two. The suffix word
     # is one letter because a longer one -- a credential, or since #679
     # an honorific -- would start #602's run and take `Juan` with it
-    # (rules.md#S2); it was `MD` until #602.
+    # (rules/S2); it was `MD` until #602.
     out = _parsed("de Mesnil van Berg 씨 Juan", policy)
     assert _by_role(out, Role.FAMILY) == "de Mesnil"
     assert _by_role(out, Role.GIVEN) == given
@@ -842,7 +842,7 @@ def test_a_suffix_word_mid_run_ends_the_chain(
 @pytest.mark.parametrize("policy", _FAMILY_FIRST)
 def test_a_bound_pair_survives_the_leading_particle_stop(
         policy: Policy) -> None:
-    # The stop leaves the bound pair whole (rules.md#P5 via _units).
+    # The stop leaves the bound pair whole (rules/P5 via _units).
     # Asserted under a family-first order deliberately: in the DEFAULT
     # order the fold takes the whole name into the family, so the join
     # is invisible there and the assertion would pass with the join
@@ -862,7 +862,7 @@ def test_a_dual_membership_word_decides_rather_than_raising() -> None:
     # sets, and neither is ambiguous particle vocabulary, so no shipped
     # input reaches both arms. A caller's Lexicon can put one word in
     # both, and an `assert` written on that premise DID fire here
-    # before this test existed -- rules.md#A1 says parsing never fails
+    # before this test existed -- rules/A1 says parsing never fails
     # on any input, and an AssertionError out of a stage is exactly the
     # failure it forbids.
     #
@@ -952,7 +952,7 @@ def _entry_tags(text: str, policy: Policy | None = None) -> list[tuple[str, bool
 
 
 def test_a_space_separated_run_is_one_entry() -> None:
-    """rules.md#R1's no-comma path, which is the whole of #436."""
+    """rules/R1's no-comma path, which is the whole of #436."""
     assert _entry_tags("John Smith MD PhD") == [("MD", False), ("PhD", True)]
 
 
@@ -1067,7 +1067,7 @@ def test_a_surviving_name_word_parts_two_entries() -> None:
     test alone cannot reach: a name word standing between two
     post-nominals parts their entries. `abd` is suffix vocabulary that
     starts no credential run (it is bound given-name vocabulary too,
-    rules.md#S2), so `Jones` behind it survives as a name word before
+    rules/S2), so `Jones` behind it survives as a name word before
     the credential. Drop the conjunct and this renders 'abd PhD'.
 
     The fixture was 'Smith, MD - PhD - FACS' until #602, whose dashes
@@ -1178,7 +1178,7 @@ def test_p6_still_claims_an_unambiguous_suffix_particle() -> None:
 def test_p6_keeps_every_non_capital_spelling_of_the_particle_member(
 ) -> None:
     """Capitals decide; the particle rule keeps the rest, and each
-    reports P6's own kind ONCE (decisions.md#S2, 2026-09-18)."""
+    reports P6's own kind ONCE (decisions/S2, 2026-09-18)."""
     for text, family in (("Doe, John do", "do Doe"),
                          ("Doe, John Do", "Do Doe"),
                          ("DOE, JOHN DO", "DO DOE"),
@@ -1190,7 +1190,7 @@ def test_p6_keeps_every_non_capital_spelling_of_the_particle_member(
 
 
 def test_a_lone_connective_is_marked_as_joining_nothing() -> None:
-    # rules.md#R3's mark (#461), decided where the parts are settled.
+    # rules/R3's mark (#461), decided where the parts are settled.
     r = parse("Juan de y")
     y = [t for t in r.tokens if t.text == "y"][0]
     assert UNJOINED_CONJUNCTION_TAG in y.tags

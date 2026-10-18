@@ -23,7 +23,7 @@ _vocab.period_joined_vocab for a period-joined title, for a part of
 titles and suffixes (#603).
 
 Implements rule C2 of docs/design/rules.md, and C1's segmentation;
-C1's decision is `_comma.decide`'s. History in decisions.md#C1.
+C1's decision is `_comma.decide`'s. History in decisions/C1.
 """
 from __future__ import annotations
 
@@ -74,7 +74,7 @@ def segment(state: ParseState) -> ParseState:
     # The case fact, asked LAZILY: here only C2's flag on a part past
     # the second comma turns on it. A name that never asks pays nothing;
     # classify asks for itself later where this did not
-    # (decisions.md#S2, and #429's precedent for paying a predicate
+    # (decisions/S2, and #429's precedent for paying a predicate
     # twice rather than plumbing a field two sites would not otherwise
     # share).
     one_case = state.one_case
@@ -113,7 +113,7 @@ def segment(state: ParseState) -> ParseState:
         # whether the parse says it did not RECOGNIZE the segment -- and
         # a run the parse itself reads as a credential run by shape is
         # recognized. Without it, the narrow roman retirement
-        # (rules.md#S3) moved 'R.A.I.', 'X.Y.I.' and 'J.u.n.i.o.r.' out
+        # (rules/S3) moved 'R.A.I.', 'X.Y.I.' and 'J.u.n.i.o.r.' out
         # of the vocabulary verdict and into the shape class, and every
         # one of them gained a COMMA_STRUCTURE flag in a third segment
         # that 2.3 did not raise -- a report about the parser's own new
@@ -138,7 +138,7 @@ def segment(state: ParseState) -> ParseState:
                    for i in seg)
 
     def titles_and_suffixes(seg: tuple[int, ...]) -> bool:
-        # rules.md#C2: "a word of the title vocabulary there that is not
+        # rules/C2: "a word of the title vocabulary there that is not
         # also suffix vocabulary is a title" -- at least one title
         # word, and every other word a suffix word
         # period_joined_vocab for 'Lt.Gov.', one token that classify
@@ -152,7 +152,7 @@ def segment(state: ParseState) -> ParseState:
                            != "title")])
         return len(rest) < len(seg) and (not rest or suffixy(rest))
 
-    # rules.md#C1's decision is not this stage's since #613: every comma
+    # rules/C1's decision is not this stage's since #613: every comma
     # form leaves here as the FAMILY comma -- the listing form, what a
     # comma means until the part after it has been read -- and group
     # decides at its head, once classify has tagged every word, whether
@@ -162,7 +162,7 @@ def segment(state: ParseState) -> ParseState:
     # second count in assign besides. What stays here is the
     # segmentation and C2's flag on a part past the second comma.
     ambiguities = list(state.ambiguities)
-    # rules.md#C2: "a non-empty extra part that is not entirely suffix
+    # rules/C2: "a non-empty extra part that is not entirely suffix
     # words is flagged as a structural ambiguity rather than rejected"
     # -- parts[2:] are consumed as suffixes either way, their title
     # words as titles (#603), so a tail segment that is neither all

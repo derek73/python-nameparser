@@ -1,6 +1,6 @@
 # Decisions
 
-The why behind the rules: a lightweight ADR log, keyed by rule ID (`### P2 — <short name>`), by mechanism slug, or by a short slug for cross-cutting and tooling decisions. Section headings carry the key, so every `decisions.md#P2` reference in code or rules.md is a live anchor.
+The why behind the rules: a lightweight ADR log, keyed by rule ID (`### P2 — <short name>`), by mechanism slug, or by a short slug for cross-cutting and tooling decisions. Section headings carry the key, so every `decisions/P2` reference in code or rules.md is a live anchor.
 
 The gitignored planning specs are the working medium and die with their branches; this file is the record. A landing design PR distills its spec's durable residue here (the checklist is AGENTS.md's "Landing a design").
 

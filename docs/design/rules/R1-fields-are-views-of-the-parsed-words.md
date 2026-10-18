@@ -27,7 +27,7 @@ R1. Rationale: a field is a way of reading the parse, not a stored
     revises back to itself wherever the value's words read as the
     whole name read them — a glued CJK honorific peels off an initial
     in a bare value where the whole name kept it glued, one corpus
-    name of the 372 with a suffix (decisions.md#C1, 2026-09-06, which
+    name of the 372 with a suffix (decisions/C1, 2026-09-06, which
     counted 368 of 1117 then; re-measured 2026-09-10 with this
     bundle's rows in the corpora, 372 of 1156 distinct names and the
     same single failure). A delimiter the configuration names parts a
@@ -38,5 +38,5 @@ R1. Rationale: a field is a way of reading the parse, not a stored
     instead. Stated without an example line because every line here
     names an input string, and this shape needs a field revised after
     the parse.
-    history: decisions.md#C1 · interacts: O3, P3, P6, R3, M2 · implemented: nameparser/_parser.py, nameparser/_pipeline/_post_rules.py, nameparser/_types.py
+    history: decisions/C1 · interacts: O3, P3, P6, R3, M2 · implemented: nameparser/_parser.py, nameparser/_pipeline/_post_rules.py, nameparser/_types.py
 

@@ -6,5 +6,5 @@
 
 Decided 2026-09-08 (was Open: [#316](https://github.com/derek73/python-nameparser/issues/316), what a trailing title-vocabulary word should do while the comma paths disagreed): the trailing slot reads VOCABULARY, not shape (#H5), and the leading inference here stays unconditional — #316's open question 2, a symmetric leading rule that would read "Esq. Smith" as a suffix, is DECLINED. #109 shipped the leading inference on purpose, the family comma already carries the credential case ("Smith, Esq." → suffix, this rule's own Accepted clause), and reversing S2's "a suffix never opens the string" for period-marked words for the sake of one word is the wrong trade. The two comma paths agree now: "John Smith Prof." and "Smith, Prof." both read title Prof. See #H5.
 
-- 2026-09-10 — the shape declines a word carrying a script with no initials (#323); the argument, the halfwidth-kana limit and the measurements are in #cjk-full-stops. That limit was closed on 2026-10-03 by #594, which classifies halfwidth katakana (decisions.md#W4).
+- 2026-09-10 — the shape declines a word carrying a script with no initials (#323); the argument, the halfwidth-kana limit and the measurements are in #cjk-full-stops. That limit was closed on 2026-10-03 by #594, which classifies halfwidth katakana (decisions/W4).
 

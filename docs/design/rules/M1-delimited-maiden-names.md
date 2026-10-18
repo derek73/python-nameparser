@@ -24,5 +24,5 @@ M1. Rationale: an enclosure the caller has declared to mean maiden
       "Andrew Perkins (MBA)"  maiden-parens  →  suffix="MBA"  · boundary
       "Maria Kowalska (z domu)"  maiden-parens  →  maiden="z domu"  · boundary
       "Maria Kowalska (z, domu Nowak)"  maiden-parens  →  maiden="z, domu Nowak"  · boundary
-    history: decisions.md#M1 · interacts: S1, M2, M3, M4 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
+    history: decisions/M1 · interacts: S1, M2, M3, M4 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py
 

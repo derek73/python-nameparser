@@ -79,6 +79,16 @@ def test_mention_re_reads_each_shape(text: str, doc: str, cid: str) -> None:
     assert (m.group("doc") or m.group("mdoc"), m.group("cid")) == (doc, cid)
 
 
+def test_mention_re_reads_a_key_wrapped_at_its_hyphen() -> None:
+    # a comment wraps a long key at a hyphen; the checker joins the
+    # next line's half on, so the first half must still match
+    for text in ("mechanisms.md#ONE-PREDICATE-PER-",
+                 "decisions/two-input-'"):
+        m = MENTION_RE.search(text)
+        assert m is not None, text
+        assert m.group("cid") in ("ONE-PREDICATE-PER", "two-input")
+
+
 @pytest.mark.parametrize("text", [
     "docs/design/rules/S2-case-signal-at-the-suffix-slot.md",
     "decisions/README.md",

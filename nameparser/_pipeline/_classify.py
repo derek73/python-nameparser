@@ -70,7 +70,7 @@ from nameparser._pipeline._pieces import own_words
 
 
 
-# rules.md#S2: "a trailing word of the suffix vocabulary reads as a
+# rules/S2: "a trailing word of the suffix vocabulary reads as a
 # suffix — generational forms and credential acronyms alike, and an
 # ambiguous acronym written with its periods, one after each
 # letter or one after each of two or more letter chunks, counts
@@ -90,7 +90,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     `one_case_own` is true when the name's OWN words are written in one
     case AND this token is one of the name's own words -- a maiden clause
     and any delimited (nickname) content are not, so the fork never
-    reads them either (rules.md#P3): a clause's words are not the
+    reads them either (rules/P3): a clause's words are not the
     name's own words, and appending one must not change how THIS token
     reads.
 
@@ -121,19 +121,19 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("vocab:suffix-word")
     if n in lex.suffix_acronyms_ambiguous:
         tags.add(AMBIGUOUS_ACRONYM_TAG)
-    # rules.md#P7: "A one-letter word written with its period is an
+    # rules/P7: "A one-letter word written with its period is an
     # initial and not a particle" -- both particle tags, so 'Ó.' is
     # neither half of the vocabulary
     if n in lex.particles and not _spells_an_initial(n, token.text):
         tags.add("particle")
         if n in lex.particles_ambiguous:
             tags.add("vocab:particle-ambiguous")
-    # rules.md#P3: "a single-letter connective reads as an initial
+    # rules/P3: "a single-letter connective reads as an initial
     # where the writing says so: written as a bare Latin capital in a
     # name that is not written wholly in one case, or — in a name
     # written wholly in one case, where nothing says so — where the
     # letter is one the vocabulary marks as reading both ways"
-    # (#383/#479; history: decisions.md#P3)
+    # (#383/#479; history: decisions/P3)
     # one letter as the writer sees it: a decomposed 'й' is two code
     # points (#665), so non-ASCII text is counted composed, after the
     # C-level tests have declined everything else
@@ -246,7 +246,7 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
             # tags there when it binds the part (#564, #613), so the
             # reading carries the same marks under either setting --
             # case repair keeps 'XYZ' in 'John Smith, XYZ'
-            # (rules.md#R4) rather than title-casing a credential the
+            # (rules/R4) rather than title-casing a credential the
             # default admitted.
             # The setting comes FIRST, then C-level checks of what the
             # predicate would decline, so the default never calls it
@@ -268,7 +268,7 @@ def classify(state: ParseState) -> ParseState:
     folded = [_normalize(t.text) for t in state.tokens]
     marker_tags = tag_marker_runs(state.tokens, state.comma_offsets,
                                   state.lexicon.maiden_markers, folded)
-    # rules.md#P3 says a maiden marker, taken as one, and the words it
+    # rules/P3 says a maiden marker, taken as one, and the words it
     # takes, are not among the name's own words -- so the span and its
     # clause cut are _pieces.own_words', shared with the site that
     # needs the same answer two stages earlier (#289/#516). The marker
@@ -281,7 +281,7 @@ def classify(state: ParseState) -> ParseState:
     # ONE fact per parse, and it is recorded now (ParseState.one_case):
     # segment writes it first where C2's flag on a tail part asks, and
     # a fact two stages decide apart is what recording it prevents
-    # (decisions.md#S2).
+    # (decisions/S2).
     one_case = state.one_case
     if one_case is None:
         one_case = is_one_case(own)
@@ -331,9 +331,9 @@ def classify(state: ParseState) -> ParseState:
         # hands classify tokens it did not build; no such path exists
         # today. `conjunctions` is the clause doing real work: it keeps
         # an orphan marker (a conjunctions_ambiguous entry no longer in
-        # conjunctions) inert rather than reported (decisions.md#P3).
+        # conjunctions) inert rather than reported (decisions/P3).
         # `i < clause_at and token.role is None` mirrors the fork's own
-        # "own words" test above, for the same reason (rules.md#P3): a
+        # "own words" test above, for the same reason (rules/P3): a
         # clause's words were never eligible for the fork, so they must
         # never be eligible to report either. Emitted at the decision
         # site (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE), per

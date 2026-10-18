@@ -698,7 +698,7 @@ def test_token_is_conjunction_reads_the_tag_then_the_vocabulary() -> None:
     # #528, the two-way decision. A token the parser classified answers
     # from its tags -- the source the core's initials() reads
     # (mechanisms.md#RENDER-HONORS-THE-PARSE) -- so a one-case 'e' that
-    # rules.md#P3 tagged `initial` is a name word and a bare capital 'Y'
+    # rules/P3 tagged `initial` is a name word and a bare capital 'Y'
     # that P3 tagged `conjunction` is not, which is the reverse of what
     # the vocabulary-and-shape test said about either.
     parsed = HumanName("JUAN Y GARCIA")
@@ -720,7 +720,7 @@ def test_token_is_conjunction_reads_the_tag_then_the_vocabulary() -> None:
 
     # A field spliced in as raw text was read by no parse, so there is
     # no tag to honor and the vocabulary answers -- the same fallback
-    # rules.md#R4's case repair takes, through the same helper.
+    # rules/R4's case repair takes, through the same helper.
     spliced = HumanName("john smith")
     spliced.middle = "e"
     lower = spliced._parsed.tokens_for(Role.MIDDLE)[0]
@@ -773,7 +773,7 @@ def test_process_initial_with_tokens_reads_the_parse() -> None:
     # which is what the bare-string path above already said about the
     # same text. The flip the first half pinned is re-pinned below on
     # a 'Y' that IS joining, where the two paths still disagree;
-    # rules.md#R3 states the rule and decisions.md#R3 records it.
+    # rules/R3 states the rule and decisions/R3 records it.
     hn = HumanName("JUAN Y GARCIA")
     middle = hn._list_tokens_for("middle")[0]
     assert hn._process_initial("", firstname=False, tokens=middle) == "Y"
@@ -821,14 +821,14 @@ def test_an_override_that_forwards_tokens_keeps_working() -> None:
     # PRE-#528 answer, computed from the vocabulary fallback rather
     # than the parse. "john e smith" is where the two views disagree
     # -- the parse TAGS the middle "e" an initial
-    # (test_process_initial_with_tokens_reads_the_parse); rules.md#P3's
+    # (test_process_initial_with_tokens_reads_the_parse); rules/P3's
     # one-case fork reads it from the vocabulary, not from its shape,
     # which is exactly why the bare-word vocabulary fallback below
     # reads it the other way -- "e" is not initial-SHAPED by any
     # pattern over the bare word, so a fallback with no parse behind it
     # reads lowercase "e" as the
     # without #528's fix. Accepting AND FORWARDING `tokens` is still
-    # the only way to receive the fix. decisions.md#R3's 2026-09-13
+    # the only way to receive the fix. decisions/R3's 2026-09-13
     # entry (amended 2026-09-14) and the 2.4.0 release note both
     # state this.
     class Forwards(HumanName):
@@ -946,7 +946,7 @@ def test_initials_of_a_spliced_field_ask_the_vocabulary() -> None:
     # nothing rather than read and found plain. There is no tag to
     # honor, so this view falls back to the vocabulary for the one
     # question a word can answer alone -- the same fallback and the
-    # same helper as rules.md#R4's case repair. The lowercase spelling
+    # same helper as rules/R4's case repair. The lowercase spelling
     # reads as the connective and drops; the capital is initial-shaped
     # and stays, keeping the letter's case as every initial does.
     lower = HumanName("john smith")
@@ -969,7 +969,7 @@ def test_initials_freeze_the_connective_answer_at_parse_time() -> None:
     # ability to WITNESS the freeze: its 'y' holds the middle part
     # alone, so it initials as a marked connective and would initial
     # again as a plain name word, and all three readings below are now
-    # the same string (rules.md#R3, decisions.md#R3). The name is kept
+    # the same string (rules/R3, decisions/R3). The name is kept
     # for its moved value and for the capitalize() precedent; the
     # freeze itself is re-pinned under it on a name where the
     # connective is JOINING, which is where a vocabulary edit still
@@ -1000,10 +1000,10 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
     # v1 pickle carries the *_list STRINGS and no tags, so a restored
     # name is spliced text throughout and takes the fallback above.
     # That makes it disagree with a live parse of the same string on
-    # the two names rules.md#P3's one-case fork moved -- which
+    # the two names rules/P3's one-case fork moved -- which
     # capitalize() has done since the tag was introduced, for the same
     # reason and through the same helper. Pinned rather than left to
-    # prose; decisions.md#R3 records it.
+    # prose; decisions/R3 records it.
     #
     # copy.copy and copy.deepcopy go through the same __getstate__/
     # __setstate__ hooks as pickle -- HumanName's own pair, defined
@@ -1019,8 +1019,8 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
     # only the missing parse explains the difference.
     # 'JUAN Y GARCIA' no longer contrasts on INITIALS: #461 gave the
     # live parse the restored answer, both views now saying 'J. Y. G.'
-    # because the 'Y' holds its part alone (rules.md#R3,
-    # decisions.md#R3). Kept for its CAPITALIZE half, which still
+    # because the 'Y' holds its part alone (rules/R3,
+    # decisions/R3). Kept for its CAPITALIZE half, which still
     # differs, and replaced on the initials side by
     # 'JUAN GARCIA Y LOPEZ', where the letter IS joining and the live
     # parse still drops it. 'john e smith' is untouched throughout.
@@ -1051,13 +1051,13 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
 
 
 def test_the_v1_off_switch_restores_the_pre_397_fields() -> None:
-    """decisions.md#P3's off switch on the V1 SURFACE (#397 second
+    """decisions/P3's off switch on the V1 SURFACE (#397 second
     review). The bullet says deleting `i` from `C.conjunctions`
     restores the parent's readings; the core-side switch is pinned by
     the off-switch grid in tests/v2/test_properties.py and this is the
     facade half, which has no `Lexicon` of its own to remove from.
 
-    The three role movers of decisions.md#P3's one-case paragraph are
+    The three role movers of decisions/P3's one-case paragraph are
     the rows, because they are the ones whose FIELDS move: every
     value on the right below is what the released 2.3.0 wheel gives,
     measured 2026-09-20.

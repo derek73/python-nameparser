@@ -71,7 +71,7 @@ def _swept(case_id: str,
 @pytest.mark.parametrize("case,order", _SWEPT_ROWS, ids=_SWEPT_IDS)
 def test_the_family_partitions_into_particles_and_base(
         case: Case, order: tuple[Role, Role, Role] | None) -> None:
-    """rules.md#R2's invariant: a particle needs a base to attach to,
+    """rules/R2's invariant: a particle needs a base to attach to,
     so a family made only of particles is a family whose words are not
     acting as particles -- and therefore a non-empty family always has
     a non-empty base.
@@ -315,7 +315,7 @@ def test_case_construction_rejects_a_bad_shape_tag(
 #: The constructions the battery above proves nothing rejects: a pure
 #: shape-6 row, a Han shape-6 row divided by a nakaguro that does NOT
 #: mark it as source order (U+30FB is not a divider outside katakana
-#: -- decisions.md#T3; this is family-first per
+#: -- decisions/T3; this is family-first per
 #: ja_nakaguro_han_takes_the_han_order), an interpunct-divided shape-7
 #: row, a SPACED wholly-katakana shape-7 row (the subtler admission --
 #: a transcription with no U+00B7 at all is still a shape, not a

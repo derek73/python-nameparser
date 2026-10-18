@@ -57,7 +57,7 @@ W3. Rationale: a family name declared by a comma is the writer's
     rest of this block. All three are case rows now, tolerated, and
     the sentence reports them rather than promising them, even by
     this rule's standard.
-    decisions.md#cjk-comma-demotion carries the parses.
+    decisions/cjk-comma-demotion carries the parses.
       "남궁민수"                  →  family="남궁"
       "지훈, 남궁민수"            →  given="남궁민수"
       "남궁민수, 지훈"            →  family="남궁민수"  · boundary
@@ -68,5 +68,5 @@ W3. Rationale: a family name declared by a comma is the writer's
       "김민준씨."                 →  suffix="씨."
       "田中. 太郎"                →  family="田中."
     tolerated: native CJK writing has neither a family-comma convention nor an edge full stop of any width on a name word, so the five comma lines above and the three period lines under them illustrate current behavior — changeable without notice — rather than promise it; the line carrying neither, beside them, is W1's claim, which is normative. All eight stay watched by the snapshot (tools/differential/snapshot.jsonl, over corpus_rules.jsonl and corpus_cjk.jsonl), and the `tolerated` rows of tests/v2/cases.py pin them at HEAD.
-    history: decisions.md#W3 · interacts: W1, W2, C1, H2, H6 · implemented: nameparser/_pipeline/_script_segment.py
+    history: decisions/W3 · interacts: W1, W2, C1, H2, H6 · implemented: nameparser/_pipeline/_script_segment.py
 

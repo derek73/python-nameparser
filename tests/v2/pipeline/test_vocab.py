@@ -463,7 +463,7 @@ def test_is_title_shaped_is_h2_s_shape_alone() -> None:
 
 
 def test_name_word_count_counts_names_not_tokens() -> None:
-    # rules.md#C1's count for the ambiguous class: 'Smith Jr.' is two
+    # rules/C1's count for the ambiguous class: 'Smith Jr.' is two
     # tokens and ONE name word, which is what keeps its family where a
     # token count would hand it to `given`.
     lex, pol = Lexicon.default(), Policy()
@@ -663,7 +663,7 @@ def test_script_classification_ignores_edge_full_stops() -> None:
     # and a configured segmenter is then handed the raw token and can
     # answer offset 1 -- '.' as the given name, the name as the family.
     # No script means no site, which is the pre-#323 reading and the
-    # no-split rules.md#W1 already accepts.
+    # no-split rules/W1 already accepts.
     assert effective_script(".양") is None
     assert effective_script("．양") is None
     assert effective_script("。양") is None
@@ -786,7 +786,7 @@ def test_is_one_case() -> None:
     assert not is_one_case(["john", "e", "jones", "III"])
     # a caseless script is "one case" harmlessly: the fork that reads
     # this ALSO requires a cased token, so a caseless letter never
-    # enters it (rules.md#P3, decisions.md#P3)
+    # enters it (rules/P3, decisions/P3)
     assert is_one_case(["محمد", "و", "علي"])
     assert is_one_case(["山田", "太郎"])
     # the empty and single-token edges

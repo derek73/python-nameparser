@@ -800,7 +800,7 @@ def test_unlisted_dotted_suffixes_is_a_validated_bool_defaulting_on() -> None:
 def test_unlisted_dotted_suffixes_off_reads_name_material() -> None:
     # The switch's whole behavior, both directions, on one name --
     # "name material" for a token no chunk claims; the roman-chunk
-    # retirement (rules.md#S3) and real chunk-level vocabulary
+    # retirement (rules/S3) and real chunk-level vocabulary
     # ('Msc.Ed.', 'JD.CPA') are not behind this switch either way.
     from nameparser import Parser
 
@@ -871,7 +871,7 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     # assertions are about the TRAILING slot EVERYWHERE adds. Default
     # costs, same harness against master: 'Smith, John' 183 -> 183,
     # 'Smith, XYZ' 182 -> 182 (the comma test needs two words before
-    # the comma), 'John Smith, XYZ' 251 -> 266 (decisions.md#S2).
+    # the comma), 'John Smith, XYZ' 251 -> 266 (decisions/S2).
     from nameparser import Parser
 
     on = Parser(policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE))
@@ -886,7 +886,7 @@ def test_unlisted_caps_suffixes_on_reads_an_all_caps_word() -> None:
     assert default.parse("John Smith XYZ").ambiguities == ()
     # the boundaries: one case, one letter, a digit, and vocabulary.
     # 'John Smith X' is NOT the single-letter control -- 'X' is a bare
-    # roman numeral (rules.md#S2's numeral fork) and reads as suffix
+    # roman numeral (rules/S2's numeral fork) and reads as suffix
     # 'X' with the switch either way, unrelated to this one; 'Z' is
     # not vocabulary at all and stays unaffected by the switch, which
     # is the actual boundary (a single capital never satisfies the

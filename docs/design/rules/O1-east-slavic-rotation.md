@@ -29,6 +29,6 @@ O1. Rationale: an East Slavic name written family-first still shows
     they said was written family-first, not a defect (#384). No
     registered example annotation combines a pack with an order, so
     the parse is pinned in tests/v2/test_locales.py instead, and
-    decisions.md#O1 records why options 2 and 3 were declined.
-    history: decisions.md#O1 · implemented: nameparser/_pipeline/_post_rules.py
+    decisions/O1 records why options 2 and 3 were declined.
+    history: decisions/O1 · implemented: nameparser/_pipeline/_post_rules.py
 
