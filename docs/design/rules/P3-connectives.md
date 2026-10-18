@@ -17,7 +17,9 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     marks as reading both ways.
     A letter the vocabulary marks as reading both ways, read as an
     initial in a name written wholly in one case, is a call that could
-    have gone the other way, and is reported.
+    have gone the other way, and is reported — unless nothing of its
+    part stands to its right, where it connects nothing and there is
+    no other way for the call to go; S10 reads such a letter.
     The joined part is ONE name word wherever another rule counts
     them, so a rule taking "one name word" takes the whole join and
     never half of it — except C1's count of the words before a comma,
@@ -74,6 +76,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
       "Josep i Rovira"            →  middle="i"
       "John Quincy Smith i"       →  suffix="i"
       "Carod i"                   →  suffix="i"
+      "carod i"                   →  ambiguities=("suffix-or-name",)  · boundary
       "Josep Lluis Carod i III"   →  suffix="i III"
       "Carod y de Rovira i"       →  middle="y"
       "John й Smith"              →  middle="й"

@@ -1059,8 +1059,12 @@ def test_the_v1_off_switch_restores_the_pre_397_fields() -> None:
 
     The three role movers of decisions/P3's one-case paragraph are
     the rows, because they are the ones whose FIELDS move: every
-    value on the right below is what the released 2.3.0 wheel gives,
-    measured 2026-09-20.
+    value on the right below was what the released 2.3.0 wheel gives,
+    measured 2026-09-20 -- until #721, which made a one-case
+    one-letter numeral the initial its capital is (rules/S10), so with
+    `i` out of the conjunctions the letter now reads as 'I' does in
+    each, switch on or off. What the switch still moves is the join,
+    below.
 
     A local `Constants`, never the shared `CONSTANTS`: a removal on
     the singleton would leak into every later test in the process.
@@ -1070,17 +1074,17 @@ def test_the_v1_off_switch_restores_the_pre_397_fields() -> None:
     for text, on_fields, off_fields in (
             ("rovira, i",
              {"first": "i", "last": "rovira", "suffix": ""},
-             {"first": "", "last": "rovira", "suffix": "i"}),
+             {"first": "i", "last": "rovira", "suffix": ""}),
             ("john smith i jr",
              {"first": "john", "middle": "smith", "last": "i",
               "suffix": "jr"},
-             {"first": "john", "middle": "", "last": "smith",
-              "suffix": "i jr"}),
+             {"first": "john", "middle": "smith", "last": "i",
+              "suffix": "jr"}),
             ("maier, amy i, jr.",
              {"first": "amy", "middle": "i", "last": "maier",
               "suffix": "jr."},
-             {"first": "amy", "middle": "", "last": "maier",
-              "suffix": "i, jr."})):
+             {"first": "amy", "middle": "i", "last": "maier",
+              "suffix": "jr."})):
         on = HumanName(text)
         off = HumanName(text, constants)
         for field, value in on_fields.items():

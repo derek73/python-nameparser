@@ -306,21 +306,6 @@ def _placed(read: TailRead, rest: list[int],
         peel.absorbed)
 
 
-# rules/S10: "a letter already reported as read as an initial reports
-# nothing new" -- asked only by the numeral fork's declined pick
-# (#718). The maiden clause's report on the numeral it keeps cannot
-# meet the case: classify reads no connective inside a clause
-def _reported_as_initial(ambiguities: Sequence[PendingAmbiguity],
-                         index: int) -> bool:
-    """Whether classify's connective-or-initial fork already reported
-    the token at `index`, reading it as an initial. Declining the
-    numeral reads the letter as that same name word, so a second
-    report would name one reading twice. A rare shape, so the scan
-    costs ordinary names nothing."""
-    return any(a.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
-               and index in a.indices for a in ambiguities)
-
-
 def _assign_main(seg_idx: int, state: ParseState,
                  tokens: list[WorkToken],
                  ambiguities: list[PendingAmbiguity],
@@ -550,12 +535,11 @@ def _assign_main(seg_idx: int, state: ParseState,
         # declined pick (#718), which carries neither credential tag
         # (the acronym fork's picks carry one) and is never a suffix
         if token.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
-            if not _reported_as_initial(ambiguities, piece[0]):
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.SUFFIX_OR_NAME,
-                    f"{token.text!r} is a roman numeral, but the name "
-                    f"has no other word to spare for it; read as ", piece,
-                    field_tail=" rather than a generational suffix"))
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.SUFFIX_OR_NAME,
+                f"{token.text!r} is a roman numeral, but the name has "
+                f"no other word to spare for it; read as ", piece,
+                field_tail=" rather than a generational suffix"))
             continue
         declined = ("a name part" if token.role is Role.SUFFIX
                     else "a post-nominal")

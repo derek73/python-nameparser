@@ -1574,7 +1574,8 @@ CASES: tuple[Case, ...] = (
                "read middle 'ed'"),
     Case("an_anchored_particle_member_outranks_p6",
          "doe, jane v phd do",
-         {"given": "jane", "family": "doe", "suffix": "v phd do"},
+         {"given": "jane", "middle": "v", "family": "doe",
+          "suffix": "phd do"},
          classification="fix(#436/#437)",
          ambiguities=("suffix-or-name",),
          notes="'do' is a member AND a particle, and written in one "
@@ -1583,7 +1584,9 @@ CASES: tuple[Case, ...] = (
                "in front outranks the attachment as the capitals do "
                "(Derek, 2026-09-27). The roles are 1.4.0's; 2.3.0 "
                "read family 'do doe', and 1.4.0 wrote the suffix "
-               "'v, phd, do'",
+               "'v, phd, do'. The 'v' is the one-case initial its "
+               "capital is since #721, as 'DOE, JANE V PHD DO' reads "
+               "middle 'V' (rules/S10)",
          shape=2),
     Case("by_design_trailing_mc_reads_as_a_credential", "Donald Mc",
          {"given": "Donald", "suffix": "Mc"},
@@ -4499,7 +4502,6 @@ CASES: tuple[Case, ...] = (
          "rovira, i",
          {"given": "i", "family": "rovira"},
          classification="fix(#397)",
-         ambiguities=("conjunction-or-initial",),
          notes="written wholly in lower case, so the letter reads as "
                "an INITIAL and takes the given slot the comma leaves "
                "for it. 2.3.0 read family 'rovira' with suffix 'i'; "
@@ -4532,7 +4534,6 @@ CASES: tuple[Case, ...] = (
          {"given": "amy", "middle": "i", "family": "maier",
           "suffix": "jr."},
          classification="fix(#397)",
-         ambiguities=("conjunction-or-initial",),
          notes="the third comma shape, and the one whose MIXED-CASE "
                "twin is already in this table: 'Maier, Amy I, Jr.' "
                "reads middle 'I' and does not move, the writing "
@@ -7513,13 +7514,14 @@ CASES: tuple[Case, ...] = (
                "declined numeral is still the read's pick, reported "
                "from the role it ends in. 2.2.0 to 2.4.2 read suffix "
                "'V'; 1.4.0 read last 'von Richthofen V'"),
-    Case("a_lone_numeral_the_chain_takes_already_an_initial",
+    Case("a_lone_one_case_connective_numeral_the_chain_takes_reports",
          "FREIHERR VON RICHTHOFEN I",
          {"title": "FREIHERR", "family": "VON RICHTHOFEN I"},
-         ambiguities=("conjunction-or-initial", "particle-or-given"),
-         notes="the row above in one case with the connective 'I', "
-               "which classify has already reported as an initial: the "
-               "declined numeral reports nothing new (S10)"),
+         ambiguities=("particle-or-given", "suffix-or-name"),
+         notes="the row above in one case with the connective 'I'. "
+               "Ending the name it connects nothing, so classify does "
+               "not report it (P3, #721), and the declined numeral is "
+               "what reports, as for 'V'"),
     Case("a_lowercase_shape_numeral_in_a_mixed_case_name_is_settled",
          "John x", {"given": "John", "suffix": "x"},
          ambiguities=("given-or-family",), classification="fix(#718)",

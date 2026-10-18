@@ -1,6 +1,7 @@
 """Stage: classify.
 
-Consumes: tokens, comma_offsets (with token roles, the two halves of
+Consumes: tokens, segments (where a part ends, for the connective
+fork's report, #721), comma_offsets (with token roles, the two halves of
 the structural-boundary test the marker pass applies -- see
 _vocab.tag_marker_runs), and one_case where an earlier stage recorded
 it -- segment writes it lazily where C2's flag on a part past the
@@ -63,6 +64,7 @@ from nameparser._pipeline._state import (
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
     caps_shape_candidate, composed_len, is_initial, is_one_case,
+    is_single_letter_numeral,
     period_joined_vocab, suffix_as_written, tag_marker_runs,
 )
 from nameparser._pipeline._pieces import own_words
@@ -106,7 +108,8 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     clause cut, never from the name's own writing (#516 review round,
     a second reviewer's finding). `single_letter_connective` below
     keeps `one_case_own`: that fork is genuinely about the OWN-WORDS
-    span, and reads a clause's word as no evidence on purpose."""
+    span, and reads a clause's word as no evidence on purpose. The
+    one-case numeral initial reads `one_case` too (#721)."""
     lex = state.lexicon
     tags = set(token.tags)
     if marker_tag is not None:
@@ -159,7 +162,17 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # the mixed-case rule, unchanged. v1's is_conjunction excludes
         # initials: 'e.' in 'john e. smith' is a middle initial, not
         # the Spanish conjunction 'e'
-        initial = is_initial(token.text)
+        # rules/S10: "A name written wholly in one case says nothing
+        # about any letter in it" -- so a one-letter roman numeral
+        # there is the initial its capital is, and every reader that
+        # vetoes 'V' vetoes 'v' too (#721). The NAME-level fact, as
+        # #516's caps branch reads it: a capital 'V' in a maiden clause
+        # is an initial, so a one-case 'v' there is one too. `len`
+        # first, C-level, so only one-character words of a one-case
+        # name pay the call
+        initial = is_initial(token.text) or (
+            one_case and len(token.text) == 1
+            and is_single_letter_numeral(token.text))
         if n in lex.conjunctions and not initial:
             tags.add("conjunction")
         if initial:
@@ -305,6 +318,17 @@ def classify(state: ParseState) -> ParseState:
     # rather than at the escape itself, which runs before tokenize and
     # so has no token index to point at.
     ambiguities = list(state.ambiguities)
+    # rules/P3: "A connective with nothing to its right is connecting
+    # nothing" -- so a letter ending its part (the last own word before
+    # a comma, a marker's clause or the end of the name) offers the
+    # fork no connective reading, and it is not reported here (#721);
+    # the numeral fork reads such a letter instead (rules/S10). Built
+    # only for a one-case name, the one the emitter below can reach.
+    ends = frozenset(
+        own_seg[-1] for seg in state.segments
+        if (own_seg := [j for j in seg
+                        if j < clause_at and tokens[j].role is None])
+    ) if one_case else frozenset()
     for i, token in enumerate(tokens):
         if (token.role is Role.NICKNAME
                 and AMBIGUOUS_ACRONYM_TAG in token.tags):
@@ -339,11 +363,13 @@ def classify(state: ParseState) -> ParseState:
         # clause's words were never eligible for the fork, so they must
         # never be eligible to report either. Emitted at the decision
         # site (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE), per
-        # token -- 'e and e' reports twice.
+        # token -- 'e and e e' reports twice, the last 'e' connecting
+        # nothing (#721).
         if (one_case and "initial" in token.tags
                 and folded[i] in state.lexicon.conjunctions_ambiguous
                 and folded[i] in state.lexicon.conjunctions
                 and i < clause_at and token.role is None
+                and i not in ends
                 and (len(token.text) == 1
                      or not token.text.isascii()
                      and composed_len(token.text) == 1)):

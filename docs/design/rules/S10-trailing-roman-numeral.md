@@ -15,9 +15,7 @@ S10. Rationale: a roman numeral ending a name is its generation,
     being no word to spare, and either reading is reported, as
     either reading of an ambiguous acronym is. A numeral read by its
     shape alone reports too; a numeral the vocabulary lists in two
-    or more letters is not in question and reports nothing, and a
-    letter already reported as read as an initial reports nothing
-    new. Written case
+    or more letters is not in question and reports nothing. Written case
     settles the fork in one way only: a numeral written in lower
     case in a name of mixed case is the generation and reports
     nothing, since nobody writes an initial that way. A name written
@@ -43,21 +41,12 @@ S10. Rationale: a roman numeral ending a name is its generation,
       "John Smith V."             →  family="V."  · boundary
       "John J. V"                 →  family="V"  · boundary
       "John Smith XI"             →  family="XI"  · boundary
-    Accepted: a lower-case `v` in a name written wholly in lower
-    case is read as the suffix word the vocabulary lists, words to
-    spare or not, and reports nothing, where the same letter in
-    capitals is counted and reported; `i`, which is also a
-    connective, is read as an initial there (P3) and counted.
-      "john v"                    →  family=""
-      "john smith v"              →  ambiguities=()
+      "john v"                    →  family="v"
+      "john smith v"              →  ambiguities=("suffix-or-name",)
       "john i"                    →  family="i"
-      "john i"                    →  ambiguities=("conjunction-or-initial",)
-    Accepted: inside a maiden marker's clause the connective is not
-    read (M2), so a one-case `i` there is the suffix word the
-    vocabulary lists, as `v` is.
-      "john nee smith i"          →  suffix="i"
+      "john i"                    →  ambiguities=("suffix-or-name",)
     Accepted: a numeral with another suffix word behind it is not
     the last word of the name and is read as any word there is, so a
     one-letter numeral before a credential is the family name.
       "John Smith V PhD"          →  family="V"
-    history: decisions/S10 · interacts: S2, S4, S7, C1, P2, P3, M2, H1, H3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions/S10 · interacts: S2, S4, S7, C1, P2, P3, M2, H1, H3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
