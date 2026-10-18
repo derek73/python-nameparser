@@ -554,6 +554,14 @@ def _cap_text(text: str, role: Role, tags: frozenset[str],
     def cap(word: str) -> str:
         return _cap_word(word, role, tags, lex)
 
+    # A particle written with its mark ("d'", "az-", #700) is one
+    # vocabulary word that the per-word walk below would split at the
+    # mark, asking the particle test of its stem ('d', 'az') instead --
+    # so rules.md#R4's "a particle is written in lowercase" is asked of
+    # the whole token first. _cap_word's particle arm keeps every gate
+    # it has; where one declines, the word repairs as the walk's would.
+    if _normalize(text) in lex.particles:
+        return cap(text)
     if "-" not in text:
         return _sub_words(cap, text)
     parts = text.split("-")

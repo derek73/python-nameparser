@@ -91,7 +91,7 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
     'al-', 'ul-',
     'at-', 'aṯ-', 'ath-', 'ad-', 'aḏ-', 'adh-', 'ar-', 'az-', 'as-',
     'aš-', 'ash-', 'aṣ-', 'aḍ-', 'aṭ-', 'aẓ-', 'an-',
-    'el-', 'et-', 'ed-', 'er-', 'ez-', 'es-', 'en-',
+    'el-', 'et-', 'eth-', 'ed-', 'edh-', 'er-', 'ez-', 'es-', 'esh-', 'en-',
     'degli',   # Italian "of the", masc. pl.
     'dei',     # Italian "of the", masc. pl.
     'delle',   # Italian "of the", fem. pl.

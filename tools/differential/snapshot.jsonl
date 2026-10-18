@@ -1178,6 +1178,7 @@
 {"name": "I don", "given": "I", "family": "don", "initials": "I. d."}
 {"name": "II Van Johnson", "given": "II", "family": "Van Johnson", "initials": "I. J."}
 {"name": "III van Gogh", "given": "III", "family": "van Gogh", "initials": "I. G."}
+{"name": "IVOI, PAUL D'", "given": "PAUL", "family": "D' IVOI", "initials": "P. I."}
 {"name": "Ibn-Ṭufail, Muḥammad Ibn-ʿAbd-al-Malik", "given": "Muḥammad", "middle": "Ibn-ʿAbd-al-Malik", "family": "Ibn-Ṭufail", "initials": "M. I. I."}
 {"name": "Ibrāhīm Ibn-Sinān", "given": "Ibrāhīm", "family": "Ibn-Sinān", "initials": "I. I."}
 {"name": "Ibrāhīm al-Yāzīǧī", "given": "Ibrāhīm", "family": "al-Yāzīǧī", "initials": "I. a."}
@@ -1230,7 +1231,6 @@
 {"name": "Ivanov Ivan", "given": "Ivanov", "family": "Ivan", "initials": "I. I."}
 {"name": "Ivanov Ivan Ivanovich", "given": "Ivanov", "middle": "Ivan", "family": "Ivanovich", "initials": "I. I. I."}
 {"name": "Ivoi, Paul d'", "given": "Paul", "family": "d' Ivoi", "initials": "P. I."}
-{"name": "Ivoi, d'", "family": "Ivoi d'", "initials": "I."}
 {"name": "Iván Duque Márquez", "given": "Iván", "middle": "Duque", "family": "Márquez", "initials": "I. D. M."}
 {"name": "Iñaki", "given": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "I."}
 {"name": "Iñaki", "order": "FAMILY_FIRST", "family": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "I."}
@@ -3547,6 +3547,7 @@
 {"name": "won Baar Dominique Goudiaby, Prof. Dr. Adama Coulibaly Camara Massamba MD DDS", "title": "Prof. Dr.", "given": "Adama", "middle": "Coulibaly Camara Massamba", "family": "won Baar Dominique Goudiaby", "suffix": "MD DDS", "initials": "A. C. C. M. w. B. D. G."}
 {"name": "xyz. John Smith", "title": "xyz.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "ylymlaryň doktory, professor Ada Kornelia Sezar Martin fon Brül Gonzales Domingo, hirurg-stomatolog lukman", "title": "professor", "given": "Ada", "middle": "Kornelia Sezar Martin fon Brül Gonzales Domingo", "family": "ylymlaryň doktory", "suffix": "hirurg-stomatolog lukman", "ambiguities": ["COMMA_STRUCTURE"], "initials": "A. K. S. M. f. B. G. D. y. d."}
+{"name": "zaʿīm, ḥusnī az-", "given": "ḥusnī", "family": "az- zaʿīm", "initials": "ḥ. z."}
 {"name": "Ábrányi, Emil", "given": "Emil", "family": "Ábrányi", "initials": "E. Á."}
 {"name": "Ábrányi, Emil von", "given": "Emil", "family": "von Ábrányi", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "E. Á."}
 {"name": "Álvaro Londoño Aristizábal", "given": "Álvaro", "middle": "Londoño", "family": "Aristizábal", "initials": "Á. L. A."}

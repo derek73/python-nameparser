@@ -950,16 +950,16 @@ P6. Rationale: a particle ending the name has nothing to link
       "DOE, JANE PHD VD"          →  family="VD DOE"  · boundary
       "DOE, JANE MA VD PHD"       →  suffix="MA VD PHD"
     A particle an index form writes apart with its elision or its
-    hyphen still on it — the elided "d'" and the Arabic article in
-    its assimilated spellings, "al-" — is a particle like any other
-    here, and never a given name: written apart, the word is the
-    article and nothing else. It joins with a space like every
-    particle; written glued to the family ("d'Ivoi") it is one word
-    and this rule never sees it.
+    hyphen still on it is a particle like any other here, where the
+    vocabulary lists that spelling — the elided "d'" and the Arabic
+    article in its assimilated spellings, "al-" among them — and of
+    the never-given kind, since written apart the word is the article
+    and nothing else. It joins with a space like every particle;
+    written glued to the family ("d'Ivoi") it is one word and this
+    rule never sees it.
       "Ivoi, Paul d'"             →  family="d' Ivoi"
       "Rashid, Harun al-"         →  family="al- Rashid"
       "Zaʿīm, Ḥusnī az-"          →  family="az- Zaʿīm"
-      "Ivoi, d'"                  →  family="Ivoi d'"  · boundary
     Without a comma, a declared family-first order has named the
     family in the same way and the attachment fires there too — but
     only where the run ENDS the name and stands in a MIDDLE — the one
@@ -2873,6 +2873,8 @@ R4. Rationale: case repair is a display concern, applied only on
       "ANH DO"                    →  capitalized="Anh Do"
       "anh van do"                →  capitalized="Anh Van Do"
       "SEÁN Ó MURCHÚ"             →  capitalized="Seán Ó Murchú"
+      "IVOI, PAUL D'"             →  capitalized="Paul d' Ivoi"
+      "zaʿīm, ḥusnī az-"          →  capitalized="Ḥusnī az- Zaʿīm"
       "ina binti navalamar"       →  capitalized="Ina binti Navalamar"  · boundary
       "john smith phd"            →  capitalized="John Smith PhD"
       "john smith ph.d."          →  capitalized="John Smith Ph.D."
