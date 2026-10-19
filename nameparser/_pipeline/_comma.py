@@ -196,7 +196,8 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     """rules/C12's reading of the part after the comma, or None where
     the listing form stands: behind a whole name ending in a suffix
     word, or in a numeral the trailing fork reads as the generation,
-    the part is the credential run unless a word of it is
+    the part is the credential run, its titles (a word or a run a
+    connective joins) reading as titles, unless a word of it is
     written as a name. The caller has tested the tag, or the numeral
     shape with `ROMAN`, as a cheap filter. The part's veto is asked
     first, being the cheap question and the one a listing with a given
@@ -209,10 +210,11 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     lex = state.lexicon
     reading: list[bool] = []
     for p, pt in zip(p1, pt1):
-        # a title reads as a title, a word or a run P3 joins ('Mr. and
-        # Mrs.'); a dual of the title and the suffix vocabulary is the
-        # suffix here, the slot being postnominal ('John Smith Jr., AD
-        # MD'): C8's two predicates, asked in C8's order
+        # a title reads as a title, a word or a run a connective joins
+        # ('Mr. and Mrs.', a dual inside it included); a lone dual of
+        # the title and the suffix vocabulary is the suffix here, the
+        # slot being postnominal ('John Smith Jr., AD MD'): C8's two
+        # predicates, asked in C8's order
         title = (not is_suffix_piece(p, pt, tokens)
                  and is_title_piece(p, pt, tokens))
         for i in p:
@@ -441,7 +443,8 @@ def decide(state: ParseState) -> ParseState:
                 letters_one_case=state.one_case):
             reading = (True,) * len(p1)
     # the words of the part C12 reads as suffixes, which its report
-    # names: a title word in the part is no credential it took
+    # names: a title in the part, a word or a joined run, is no
+    # credential it took
     taken: list[int] = []
     if reading is None and generation:
         reading = _behind_a_generation(state, seg0, p1, pt1, tokens,
