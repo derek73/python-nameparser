@@ -60,6 +60,10 @@ class Row:
     prop: str | None
     props: dict[str, Any]
 
+    def __post_init__(self) -> None:
+        # a reading refuses no property
+        assert self.excluded or self.prop is None, self
+
     @property
     def label(self) -> str:
         """How the row prints; select reads the fields, never this."""

@@ -30,10 +30,11 @@ at fault:
 1. `schema` present and supported, no unknown key anywhere (a name a
    later phase will use says so), the file name a BCP 47 tag, at least
    one entry in the file;
-2. `text` normalized, non-empty, once per file, and a text some token
-   can equal: no comma or other character the tokenizer divides at, no
-   invisible format character but the two joiners, each word of a
-   phrase normalized on its own;
+2. `text` normalized, non-empty, once per file, each word of a phrase
+   normalized on its own, and a text some token can equal: no comma or
+   nakaguro, no character the tokenizer strips by default (an emoji),
+   no interpunct between two East Asian characters, no invisible
+   character but the two joiners;
 3. every kind registered, every property allowed on its kind with an
    allowed value (a date, never a date-time; `as_of` only beside a
    count), an acronym's text free of periods (it is matched with them
@@ -52,6 +53,10 @@ at fault:
 8. a phrase only as a birth_marker or an addresses = "given" title, and
    never with a `cased`, which is looked up per word;
 9. a bound given name that is also a particle has may_be_given;
+
+numbered by subject, not by when they run: 1-3, 8 and 7's case mask
+run per entry as each file loads, and 4-7 and 9 over the whole pool in
+check_pool, 6 first;
 
 plus the data invariants that were asserts: may_be_initial only on a
 cased single letter, and an elided particle in both apostrophes (#700).
@@ -220,6 +225,10 @@ class Reading:
         credential."""
         return bool(self.props.get("acronym", self.kind == "credential"))
 
+    def flag(self, prop: str) -> bool:
+        """A `may_be_*` flag: unwritten, false."""
+        return bool(self.props.get(prop, False))
+
     @property
     def addresses(self) -> object:
         """Which name a title addresses: unwritten, the family name. An
@@ -241,12 +250,18 @@ class Exclusion:
     """A refused reading (`prop` None: `kind` is a kind or a category) or
     a refused property of the `kind` reading the word keeps. Built by
     _exclusion only once its table is valid, so `props["reason"]` is
-    always a non-empty string."""
+    always a non-empty string; __post_init__ refuses any other."""
     file: str
     text: str
     kind: str
     prop: str | None
     props: dict[str, Any]  # the value's table: reason, issue, decided, note
+
+    def __post_init__(self) -> None:
+        reason = self.props.get("reason")
+        if not isinstance(reason, str) or not reason:
+            raise VocabError(f"{self.where()}: an exclusion needs a reason, as a "
+                             f"string or a table with `reason`")
 
     @property
     def reason(self) -> str:
@@ -283,11 +298,9 @@ def _exclusion(file: str, text: str, kind: str, prop: str | None,
             if k not in EXCLUSION_KEYS:
                 raise _reserved_or_unknown(where, k, EXCLUSION_KEYS)
         _check_descriptive(where, value)
-        reason = value.get("reason")
-        if isinstance(reason, str) and reason:
-            return Exclusion(file, text, kind, prop, value)
-    raise VocabError(f"{where}: an exclusion needs a reason, as a "
-                     f"string or a table with `reason`")
+        return Exclusion(file, text, kind, prop, value)
+    # a bare value that is no reason string: Exclusion's own refusal
+    return Exclusion(file, text, kind, prop, {})
 
 
 def _is_date(value: object) -> bool:
@@ -369,45 +382,78 @@ def load(files: Mapping[str, str]) -> Pool:
     return pool
 
 
-#: Characters the tokenizer divides a name at, so no token ever holds
-#: one: hand copies of nameparser/_pipeline/_state.py's COMMA_CHARS and
-#: _tokenize.py's _NAME_DOT_SEPARATORS (this tool cannot import the
-#: pipeline without the package), held to them by tests/v2/test_vocab.py.
-#: Whitespace is check 2's normalized form; the bidi marks the tokenizer
-#: strips are format characters, refused with the rest below.
+#: Hand copies of what the tokenizer divides or strips at under the
+#: default Policy (this tool cannot import the pipeline without the
+#: package), each held to its source by tests/v2/test_vocab.py, which
+#: also sweeps every codepoint the tokenizer ignores.
+#:
+#: The separators: nameparser/_pipeline/_state.py's COMMA_CHARS and
+#: _tokenize.py's _NAME_DOT_SEPARATORS. The main stream divides at both;
+#: inside a delimited clause a comma is kept as written (rules/N1), and
+#: there rules/M3 reads a marker followed by a comma as no marker, which
+#: holds only while the vocabulary stores no comma.
 DIVIDERS = frozenset({",", "\u060c", "\uff0c", "\u30fb", "\uff65"})
+#: _tokenize.py's _EMOJI_RANGES, stripped under strip_emoji (default on).
+EMOJI_RANGES = ((0x1F300, 0x1F64F), (0x1F680, 0x1F6FF),
+                (0x2600, 0x26FF), (0x2700, 0x27BF))
+#: The spans of nameparser/_policy.py's _SCRIPT_RANGES (Han, Hangul,
+#: hiragana, katakana): an interpunct between two of these characters
+#: divides the name (rules/T3), anywhere else it is part of the word.
+EAST_ASIAN_RANGES = ((0x3005, 0x3006), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
+                     (0xF900, 0xFAFF), (0x20000, 0x323AF), (0xAC00, 0xD7A3),
+                     (0x3040, 0x309F), (0x30A0, 0x30FF), (0xFF65, 0xFF9F))
+INTERPUNCT = "\u00b7"
 #: The format characters a word may hold: the zero-width non-joiner and
 #: joiner are spelling in Persian and the Indic scripts, and a token
 #: keeps them.
 JOINERS = frozenset({"\u200c", "\u200d"})
 
 
+def _in(ch: str, ranges: tuple[tuple[int, int], ...]) -> bool:
+    return any(lo <= ord(ch) <= hi for lo, hi in ranges)
+
+
 def _check_tokenizable(name: str, text: str) -> None:
-    """Build check 2's second half: a text some token can equal. The
-    normalized-form test passes each of these, and each entry would
-    compile and then never match."""
-    for ch in text:
+    """Build check 2's second half. The normalized-form test passes each
+    of these: the first three compile and can never match a token, and
+    the last two are a spelling the file does not show or a second
+    spelling of one key."""
+    for i, ch in enumerate(text):
         if ch in DIVIDERS:
             raise VocabError(
                 f"{name}: {text!r} holds {ch!r} (U+{ord(ch):04X}), which the "
-                f"tokenizer divides a name at, so no token can equal it")
-        if unicodedata.category(ch) == "Cf" and ch not in JOINERS:
-            # a bidi mark is stripped from the input; a zero-width space,
-            # word joiner or BOM is kept but invisible, so the entry reads
-            # as the word without it and matches only text that carries
-            # the same unseen character
+                f"tokenizer divides a name at; no vocabulary word holds one")
+        if _in(ch, EMOJI_RANGES):
             raise VocabError(
-                f"{name}: {text!r} holds the invisible format character "
-                f"U+{ord(ch):04X} ({unicodedata.name(ch, 'unnamed')}); "
+                f"{name}: {text!r} holds U+{ord(ch):04X}, which the tokenizer "
+                f"strips by default, so no token can equal it")
+        if (ch == INTERPUNCT and 0 < i < len(text) - 1
+                and _in(text[i - 1], EAST_ASIAN_RANGES)
+                and _in(text[i + 1], EAST_ASIAN_RANGES)):
+            raise VocabError(
+                f"{name}: {text!r} holds an interpunct between two East Asian "
+                f"characters, where the tokenizer divides the name (rules/T3), "
+                f"so no token can equal it")
+        category = unicodedata.category(ch)
+        if (category == "Cf" and ch not in JOINERS) or category == "Cc":
+            # a bidi mark is stripped by default; a zero-width space, word
+            # joiner, BOM or control character is kept but unseen, so the
+            # entry reads as the word without it and matches only text
+            # carrying the same invisible character
+            raise VocabError(
+                f"{name}: {text!r} holds the invisible character "
+                f"U+{ord(ch):04X} ({unicodedata.name(ch, 'a control character')}); "
                 f"remove it")
     if " " in text:
-        # a phrase is matched by its words, each folded on its own, so a
-        # word with an edge period is a key no run can rebuild
+        # Lexicon folds each word of a phrase on its own (_title_key), so
+        # 'z. domu' is stored and matched as 'z domu': the entry works,
+        # but the compiled set would hold a spelling Lexicon never keeps.
+        # One key, one spelling, as check 2 asks of every text
         words = [_normalize(w) for w in text.split(" ")]
         if " ".join(words) != text:
             raise VocabError(
-                f"{name}: phrase {text!r} is matched word by word, each "
-                f"normalized; write {' '.join(w for w in words if w)!r}")
+                f"{name}: phrase {text!r} is not in normalized form, which "
+                f"folds each word; write {' '.join(w for w in words if w)!r}")
 
 
 def _load_entry(name: str, e: dict[str, Any], seen: set[str], pool: Pool) -> None:
@@ -461,8 +507,11 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             if not isinstance(p[src], int) or isinstance(p[src], bool) or p[src] < 1:
                 raise VocabError(f"{where}: {src} must be a positive count "
                                  f"(absent means below the source's floor)")
-        if COUNT_SOURCES & p.keys() and not _is_date(p.get("as_of")):
+        if COUNT_SOURCES & p.keys() and "as_of" not in p:
             raise VocabError(f"{where}: a count needs `as_of`, a TOML date")
+        if "as_of" in p and not _is_date(p["as_of"]):
+            raise VocabError(f"{where}: as_of must be a TOML date (2026-10-16), "
+                             f"not a string or a date-time")
         if "as_of" in p and not COUNT_SOURCES & p.keys():
             raise VocabError(f"{where}: as_of dates a count, and this reading "
                              f"has none ({', '.join(sorted(COUNT_SOURCES))})")
@@ -518,7 +567,7 @@ def _check_reading(r: Reading, pool: Pool) -> None:
         # silently pick one side of that
         raise VocabError(f"{where}: a particle states may_be_given = true or "
                          f"false; under uncertainty, true (vocabulary-collisions C-i)")
-    if r.category == "conjunction" and p.get("may_be_initial"):
+    if r.category == "conjunction" and r.flag("may_be_initial"):
         if len(r.text) != 1 or r.text.upper() == r.text.lower():
             raise VocabError(
                 f"{where}: may_be_initial needs a CASED single letter; the "
@@ -526,7 +575,7 @@ def _check_reading(r: Reading, pool: Pool) -> None:
     if "cased" in p:
         cased = p["cased"]
         if " " in r.text:
-            # capitalization_exceptions is looked up one token at a time
+            # capitalization_exceptions is looked up one word at a time
             raise VocabError(f"{where}: cased is looked up per word, so a "
                              f"phrase's is never read; put it on each word")
         if not isinstance(cased, str) or _alnum(_normalize(cased)) != _alnum(r.text):
@@ -679,7 +728,7 @@ def check_pool(pool: Pool) -> None:
     for text, rs in by_text.items():
         if any(r.kind == "bound_given" for r in rs):
             for r in rs:
-                if r.category == "particle" and not r.props.get("may_be_given"):
+                if r.category == "particle" and not r.flag("may_be_given"):
                     raise VocabError(f"{r.where()}: also a bound given name, so "
                                      f"the particle needs may_be_given = true")
 
@@ -711,7 +760,9 @@ def _behavior(r: Reading, prop: str) -> object:
     if prop == "attached":
         att = r.props.get("attached")
         return None if att is None else att.get("side")
-    return r.props.get(prop, False if prop.startswith("may_be") else None)
+    if prop.startswith("may_be"):
+        return r.flag(prop)
+    return r.props.get(prop)
 
 
 #: The constants _compiled.py defines, in its order, each with the
@@ -784,7 +835,7 @@ def compile_pool(pool: Pool) -> Compiled:
         elif r.category == "suffix":
             if r.acronym:
                 acronyms.add(t)
-                if p.get("may_be_name"):
+                if r.flag("may_be_name"):
                     ambiguous.add(t)
             else:
                 words.add(t)
@@ -795,11 +846,11 @@ def compile_pool(pool: Pool) -> Compiled:
             # never-given where any reading has may_be_given = false;
             # check 5 makes every reading of one word agree, so "any"
             # is "all"
-            if not p.get("may_be_given"):
+            if not r.flag("may_be_given"):
                 never_given.add(t)
         elif r.category == "conjunction":
             conjunctions.add(t)
-            if p.get("may_be_initial"):
+            if r.flag("may_be_initial"):
                 initial_conjunctions.add(t)
         elif r.category == "bound_given":
             bound.add(t)

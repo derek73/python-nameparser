@@ -163,8 +163,11 @@ MUTATIONS = [
     # file does not show
     ("text-with-a-comma", {"en.toml": _w('[[word]]\ntext = "jr,"\ngeneration = {}')}, "divides a name at"),
     ("text-with-a-nakaguro", {"ja.toml": _w('[[word]]\ntext = "さん・"\nhonorific = {}')}, "divides a name at"),
-    ("text-with-a-bidi-mark", {"he.toml": _w('[[word]]\ntext = "dr\\u200f"\ntitle = {}')}, "invisible format character U\\+200F"),
-    ("text-with-a-zero-width-space", {"en.toml": _w('[[word]]\ntext = "dr\\u200b"\ntitle = {}')}, "invisible format character U\\+200B"),
+    ("text-with-a-bidi-mark", {"he.toml": _w('[[word]]\ntext = "dr\\u200f"\ntitle = {}')}, "invisible character U\\+200F"),
+    ("text-with-a-zero-width-space", {"en.toml": _w('[[word]]\ntext = "dr\\u200b"\ntitle = {}')}, "invisible character U\\+200B"),
+    ("text-with-a-control-character", {"en.toml": _w('[[word]]\ntext = "dr\\u0007"\ntitle = {}')}, "invisible character U\\+0007"),
+    ("text-with-an-emoji", {"en.toml": _w('[[word]]\ntext = "dr★"\ntitle = {}')}, "strips by default"),
+    ("text-with-an-east-asian-interpunct", {"zh.toml": _w('[[word]]\ntext = "先·生"\nhonorific = {}')}, "rules/T3"),
     ("phrase-word-with-an-edge-period", {"de.toml": _w('[[word]]\ntext = "dr. med"\ntitle = { addresses = "given" }')}, "write 'dr med'"),
     ("text-twice-in-a-file", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "jr"\nstatus = {}')}, "listed twice"),
     # 3: kinds, properties and values
@@ -199,7 +202,7 @@ MUTATIONS = [
     ("decided-not-a-date", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = "2026-10-18" }')}, "TOML date"),
     # tomllib reads a date-time as a datetime, which isinstance calls a date
     ("decided-a-date-time", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = 2026-10-18T09:00:00 }')}, "not a string or a date-time"),
-    ("as-of-a-date-time", {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16T00:00:00Z }\nexcluded = { generation = "x" }')}, "needs `as_of`, a TOML date"),
+    ("as-of-a-date-time", {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16T00:00:00Z }\nexcluded = { generation = "x" }')}, "as_of must be a TOML date"),
     ("as-of-without-a-count", {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { as_of = 2026-10-16 }\nexcluded = { generation = "x" }')}, "as_of dates a count"),
     ("gender-out-of-range", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { gender = "male" }')}, "gender must be"),
     ("count-without-as-of", {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767 }\nexcluded = { generation = "x" }')}, "needs `as_of`"),
@@ -225,6 +228,8 @@ MUTATIONS = [
     ("excluded-kind-sidestepped-by-a-sibling-kind", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "en.toml": _w('[[word]]\ntext = "fils"\nstatus = {}')}, "Marie Fils"),
     ("excluded-credential-sidestepped-by-an-acronym", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { credential = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncourtesy = { acronym = true }')}, "a surname"),
     ("excluded-category-in-another-file", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { suffix = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncredential = {}')}, "a surname"),
+    # a reason written as a table reaches the refusal too
+    ("excluded-kind-with-a-table-reason", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = { reason = "TABLE REASON", issue = 684 } }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "TABLE REASON"),
     ("excluded-property-in-another-file", {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false, excluded = { attached = "Hiroshi" } }'), "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false, attached = { side = "after" } }')}, "Hiroshi"),
     # 7: same_as and cased
     ("same-as-missing-target", {"en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "same_as 'jr'"),
@@ -268,6 +273,10 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         # a zero-width joiner or non-joiner is spelling, and a token keeps it
         {"fa.toml": _w('[[word]]\ntext = "ab\\u200ccd"\ntitle = {}\n\n'
                        '[[word]]\ntext = "ef\\u200dgh"\ntitle = {}')},
+        # an interpunct is part of the word except between two East Asian
+        # characters, and an East Asian text may end in one
+        {"ca.toml": _w('[[word]]\ntext = "l·l"\ntitle = {}'),
+         "zh.toml": _w('[[word]]\ntext = "先·"\nhonorific = {}')},
         # a phrase word may hold an interior period; a date is a date
         {"und.toml": _w('[[word]]\ntext = "lt.col and dame"\ntitle = { addresses = "given", decided = 2026-10-18 }')},
         {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16 }\n'
@@ -294,18 +303,29 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         _compile(files)
 
 
-def test_the_dividers_are_the_tokenizers() -> None:
-    # build.DIVIDERS hand-copies the pipeline's separators, and every
-    # bidi mark the tokenizer strips is a format character check 2
-    # refuses: a separator added to the pipeline must reach the build
+def test_every_character_the_tokenizer_ignores_is_refused() -> None:
+    # check 2's hand copies are held to the pipeline, and the sweep is
+    # driven by the tokenizer's own predicate, so a separator or strip
+    # class added there fails here until the build refuses it too
     from nameparser._pipeline import _tokenize
-    from nameparser._pipeline._state import COMMA_CHARS
+    from nameparser._pipeline._state import COMMA_CHARS, ParseState
+    from nameparser._policy import Policy, _SCRIPT_RANGES
     assert build.DIVIDERS == COMMA_CHARS | _tokenize._NAME_DOT_SEPARATORS
-    marks = [chr(c) for c in range(0x10000) if _tokenize._BIDI.match(chr(c))]
-    assert marks
-    for ch in marks:
-        with pytest.raises(build.VocabError, match="invisible format character"):
-            build.load({"und.toml": _w(f'[[word]]\ntext = "dr{ch}"\ntitle = {{}}')})
+    assert build.EMOJI_RANGES == _tokenize._EMOJI_RANGES
+    assert build.EAST_ASIAN_RANGES == tuple(
+        span for spans in _SCRIPT_RANGES.values() for span in spans)
+    assert build.INTERPUNCT == _tokenize._INTERPUNCT
+    state = ParseState(original="", lexicon=Lexicon.default(), policy=Policy(),
+                       segmenter=None)
+    ignored = [chr(c) for c in range(0x110000)
+               if not 0xD800 <= c <= 0xDFFF
+               and (_tokenize._ignorable(chr(c), state) or chr(c) in COMMA_CHARS)]
+    assert len(ignored) > 100, len(ignored)  # whitespace, bidi, emoji, dots, commas
+    for ch in ignored:
+        escaped = f"\\U{ord(ch):08X}"  # a TOML escape: no raw control in the file
+        with pytest.raises(build.VocabError) as e:
+            build.load({"und.toml": _w(f'[[word]]\ntext = "dr{escaped}x"\ntitle = {{}}')})
+        assert "not valid TOML" not in str(e.value), (hex(ord(ch)), e.value)
 
 
 def test_a_name_reading_on_nothing_warns() -> None:
@@ -371,6 +391,7 @@ QUERY_POOL = {
     ({"kind": "suffix"}, ["さん", "殿", "jr"]),       # a category matches its kinds
     ({"kind": "honorific", "excluded": "attached"}, ["殿"]),
     ({"excluded": "suffix"}, ["senior"]),
+    ({"excluded": "attach"}, []),                  # a property by its whole name only
     ({"file": "und.toml"}, ["dr"]),
     ({"word": "jr", "kind": "title"}, []),
 ])
