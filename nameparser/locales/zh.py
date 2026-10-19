@@ -125,7 +125,10 @@ _SINGLE_RANKED = (
 # surname (王李) or a Japanese one -- only where Wikidata or the Taiwan
 # ranking attests a bearer, and only where no Wikidata bearer of its
 # first character alone has a name opening with it (成公 is left out:
-# 成公亮 is 成 + 公亮). A listed compound wins over its first
+# 成公亮 is 成 + 公亮), unless the compound's living bearers in the
+# Taiwan file outnumber those readings by orders of magnitude (張簡:
+# 9,162 bearers against 9 people named 張 + 簡; 东野, with none
+# against 2, is left out). A listed compound wins over its first
 # character in every name that opens with it (张简明 is 张简 + 明, and
 # 张简 alone stays whole); that cost and the measurements are in
 # decisions/W1.
@@ -138,7 +141,7 @@ _COMPOUND = (
     "钟离", "鲜于", "赫连", "贺兰", "相里", "叔孙", "孟孙", "季孙",
     "士孙", "羊舌", "濮阳", "陆费", "梁丘", "公西", "公冶", "乐正",
     "东里", "张简", "范姜", "张廖", "第五", "颛孙", "段干", "闾丘",
-    "左丘", "东野",
+    "左丘",
 )
 # Traditional forms of the compounds where any glyph differs.
 _COMPOUND_TRADITIONAL = (
@@ -147,7 +150,6 @@ _COMPOUND_TRADITIONAL = (
     "萬俟", "夾谷",
     "鍾離", "鮮于", "赫連", "賀蘭", "叔孫", "孟孫", "季孫", "士孫",
     "濮陽", "陸費", "樂正", "東里", "張簡", "張廖", "顓孫", "閭丘",
-    "東野",
 )
 
 # Private: ZH.lexicon.surnames is the supported way to read this, and
