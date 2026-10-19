@@ -449,91 +449,25 @@ def _peel_honorific_tail(state: ParseState,
     tails = state.lexicon.honorific_tails
     if not tails:
         return state
-    # The NAME's runs, which is more than segments[0] but never every
-    # segment. A comma is how a writer says which runs are the name: a
-    # FAMILY comma splits the name itself across two of them ("김,
-    # 민준씨" is (0,) and (1,)), and the honorific is as often glued to
-    # the given name as to the family, so the peel has to cross that
-    # boundary (#312). Every OTHER structure keeps the whole name in
-    # segments[0], so no boundary has to be crossed to find the site
-    # there -- which is why the asymmetry is the point rather than an
-    # accident of two cases. Note that "the rest is post-nominals" is
-    # true of the SUFFIX comma only: under NO_COMMA segment returns
-    # exactly one run and any trailing post-nominal is INSIDE it
-    # ("김민준씨 Jr." is one run of two tokens), which is why the
-    # scan-back above steps over such a token rather than simply never
-    # reaching it.
-    # The structure says nothing about whether the second run is NAME
-    # text: segment hands every comma form over as FAMILY_COMMA (#613),
-    # and even when it decided the comma, a one-word part turned a
-    # wholly suffix-shaped remainder into FAMILY_COMMA anyway ("田中さん,
-    # V." is that input). So ask the run predicate instead of
-    # inferring the answer from the structure (#319).
-    # is_wholly_suffix, NOT the plural of _is_post_nominal: the two
-    # disagree on the initial-shaped suffix words ("V.", "V", "I"),
-    # which is the class #319 was reported about, and on everything
-    # the run predicate's extra routes reach and the token predicate
-    # does not ("Msc.Ed." and "J.씨" by period_joined_vocab, both of
-    # which this change also moves). Reaching into such a
-    # run put the site on "V.", which ends in no listed tail, so the
-    # peel silently abandoned and さん stayed glued to the family --
-    # while "田中さん, PhD" peeled all along, because "PhD" satisfies
-    # the strict test and the scan-back stepped over it. One credential,
-    # two spellings, two answers FROM THE PEEL -- and the peel's answer
-    # is the only one that moved: the peeled remainder is 田中 and lands
-    # in family under every spelling, while where the CREDENTIAL lands
-    # is assign's question and still differs ("PhD" a title, "V." a
-    # given, "Ph. D." a suffix beside さん).
-    # A junk tail is the worse shape of the same reach: in
-    # "김민준씨, J.씨" the site lands on the junk "J.씨", so master
-    # peeled THAT 씨 and left the person's own glued inside family
-    # "김민준씨". Reachable only where the run is genuinely
-    # suffix-shaped, which "J.씨" is by period_joined_vocab; a run of
-    # ordinary name text is scanned on purpose, and a junk tail further
-    # out than the second run is held off by the scope rule instead
-    # ("Dr 김민준씨, Jr., 박씨" is a postnominal part behind a whole
-    # name by `_postnominal_behind_a_whole_name`, so the scan stays in
-    # segments[0] and 박씨 in a third run is never reached).
-    # An EMPTY second run stays in scope and contributes nothing:
-    # is_wholly_suffix is False on it by its own contract (v1 read
-    # "Doe,, Jr." as a family comma), which is the reading this line
-    # wants anyway -- flattening an empty run adds no site.
-    # Policy(lenient_comma_suffixes=False) keeps the old answer for the
-    # INITIAL-shaped suffixes specifically, which is where the
-    # strict/lenient gap lives: the knob drops this call to the strict
-    # predicate too, so is_wholly_suffix(["V."]) is False, the run reads
-    # as name text, it IS scanned, and the peel is abandoned on "V." as
-    # before -- family "田中さん", given "V.". It is not a blanket
-    # freeze of the old behavior, and "田中さん, Ph. D." is the input
-    # that shows the difference: the Ph./D. merge folds that pair to a
-    # form is_suffix_strict accepts, so the run is declined and the peel
-    # fires under the strict knob as well.
-    # Flattening the SEGMENTS rather than state.tokens is load-bearing
-    # too: extracted nickname and maiden content is in tokens but in NO
-    # segment, and scanning tokens would put the peel site on a
-    # nickname ("김민준씨 (Jimmy)" -> the site becomes Jimmy and
-    # nothing peels). ko_honorific_glued_given_nickname pins that.
-    # And declining takes a SECOND condition: segments[0] must hold a
-    # peel site of its own. is_wholly_suffix reaches period_joined_vocab,
-    # which calls a run suffix-shaped when ANY period-chunk is suffix
-    # VOCABULARY -- and every honorific tail is a suffix word by the
-    # Lexicon invariant, so a glued honorific is itself the evidence.
-    # The predicate is circular at THIS call site alone -- not because
-    # `_comma.decide` asks it too (at group's head, after this stage)
-    # but because decide SPENDS the answer differently: it reads the
-    # run's shape and stops, the answer being the structure, while the
-    # peel reads the same shape and then decides whether to go strip
-    # the very honorific that produced it. "이, J.씨" reads as wholly suffix
-    # only because of the 씨 the peel exists to remove, and declining a
-    # run that holds the only site does not fall back to some other
-    # site -- it loses the peel outright, and with it the given name,
-    # which lands in suffix as "J.씨". Asking for a site in segments[0]
-    # keeps the #319 answer wherever the peel has somewhere else to go
-    # ("田中さん, V." still declines, さん is right there) and gives the
-    # circular case back to master's reading. The two-honorific input
-    # "김민준씨, J.씨" is where the choice is visible and deliberate:
-    # both runs offer a site, so the decline stands and the person's own
-    # 씨 is peeled rather than the junk one behind the comma.
+    # The NAME's runs: more than segments[0], never every segment. A
+    # FAMILY comma splits the name across two runs and the honorific
+    # glues to either side (#312); every other structure keeps the
+    # name whole in segments[0], a trailing post-nominal under
+    # NO_COMMA included, which the scan-back steps over. Flattening
+    # SEGMENTS rather than state.tokens keeps the site off extracted
+    # nickname and maiden content.
+    #
+    # rules/W3: "A part that is nothing but suffix words is not the
+    # name's end: it is declined as the site, and the split-off falls
+    # back to the part before the comma and takes the honorific there,
+    # provided that part offers a site of its own."
+    # The structure does not say whether segments[1] is name text, so
+    # the run predicate (`is_wholly_suffix`, not the plural of
+    # `_is_post_nominal`) is asked with the case fact and policy
+    # `_comma.decide` reads it with; an empty run is in
+    # scope and adds no site. The second condition is there because
+    # the predicate is circular at this site alone: a glued honorific
+    # is itself suffix evidence. decisions/W2 (#319).
     site = _peel_site(state, state.segments[0], tails)
     if state.structure is Structure.FAMILY_COMMA:
         # Under a family comma both runs may be scanned. The comma's
