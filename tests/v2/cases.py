@@ -7686,6 +7686,22 @@ CASES: tuple[Case, ...] = (
                "capitals, but the name is not written in one case, so "
                "the lower-case 'y' past the marker is no initial (T4) "
                "and joins (#723's review)"),
+    Case("a_one_case_doubled_numeral_ending_a_clause_stays_in_it",
+         "john smith nee x x",
+         {"given": "john", "family": "smith", "maiden": "x x"},
+         classification="fix(#274)",
+         notes="read as 'JOHN SMITH NEE X X' is (T4): the first 'x' is "
+               "the initial its capital is, so the take's view does "
+               "not cut the second out of the clause and read it as "
+               "the generation; 2.2 through 2.4.2 read suffix 'x', "
+               "maiden 'x', and 2.0 and 2.1 read as here (#731). 1.4.0 "
+               "had no maiden markers"),
+    Case("a_one_case_numeral_behind_a_letter_ending_a_clause",
+         "john smith nee j x",
+         {"given": "john", "family": "smith", "maiden": "j x"},
+         classification="fix(#274)",
+         notes="the row above with a plain letter in front, as 'JOHN "
+               "SMITH NEE J X' reads (#731)"),
     Case("a_lowercase_numeral_after_a_marker_among_capitals_is_no_initial",
          "MARY SMITH NEE v JONES",
          {"given": "MARY", "middle": "SMITH NEE v", "family": "JONES"},

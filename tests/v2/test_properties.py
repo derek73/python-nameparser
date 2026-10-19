@@ -3347,7 +3347,7 @@ def test_every_one_letter_particle_veto_is_load_bearing(
 # again under Policy(lenient_comma_suffixes=False), the one switch
 # whose suffix test vetoes an initial by the word's own shape (#727);
 # trimmed by shape, since the switch reaches only a comma's parts:
-# 4,554 pairs, about 9,100 parses, 0.73s on py3.11 (2026-10-18).
+# 4,752 pairs, about 9,500 parses, 0.75s on py3.11 (2026-10-18).
 _ONE_CASE_SHAPES = (
     "{a} {n}", "{a} {b} {n}", "{a} {n}, phd", "{a} {b} {n}, phd",
     "{a} {n}, jr.", "{b}, {a} {n}", ", {a} {n}", "{a} nee {b} {n}",
@@ -3367,7 +3367,11 @@ _ONE_CASE_SHAPES = (
     # #727: the letter alone after a comma, behind a whole name or in a
     # third part, and opening a credential run; and after a glued CJK
     # honorific, whose peel asks the suffix test by text
-    "{a} {b}, {n}", "{b}, {a}, {n}", "{a} {b}, {n} phd", "田中さん {n}")
+    "{a} {b}, {n}", "{b}, {a}, {n}", "{a} {b}, {n} phd", "田中さん {n}",
+    # #731: the letter doubled, and behind a bare letter, ending a
+    # maiden clause, where the take reads the numeral fork's shape test
+    # to choose the words its clause-free view holds
+    "{a} {b} nee {n} {n}", "{a} {b} nee j {n}")
 #: the one-letter numerals and a listed and a shape-only spelling of
 #: each longer length, then one letter from each other fork a bare
 #: letter meets (#723): no vocabulary, a connective, a marked one
@@ -3376,14 +3380,18 @@ _ONE_CASE_LETTERS = ("v", "i", "x", "vi", "iii", "ii", "iv", "vii",
 _ONE_CASE_HEADS = (("john", "smith", "jones"), ("carod", "puig", "rovira"),
                    ("mary", "ma", "lee"))
 #: the negative controls, measured 2026-10-18 on this grid, which
-#: 2444f847 (before #727) disagreed on 72 of: with classify's one-case
+#: ad486f66 (before #731) disagreed on 36 of: with classify's one-case
 #: letter initial taken out, with the numeral fork's one-case letter
-#: in front taken out, and with the strict suffix test's one-case veto
-#: taken out (#727: the 54 strict comma pairs and the 18 honorific
-#: ones, which are 2444f847's 72) -- each guard seen on its own
-_ONE_CASE_UNGUARDED = 387
-_ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 117
+#: in front taken out (the fork and the maiden take's candidate test
+#: alike, the two sharing the name in `_pieces`), with the strict
+#: suffix test's one-case veto taken out (#727: 54 strict comma pairs
+#: and 18 honorific ones), and with the maiden take's candidate test
+#: alone given no one-case fact (#731: ad486f66's 36) -- each guard
+#: seen on its own
+_ONE_CASE_UNGUARDED = 423
+_ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 153
 _ONE_CASE_STRICT_VETO_UNGUARDED = 72
+_ONE_CASE_MAIDEN_CANDIDATES_UNGUARDED = 36
 
 
 def _one_case_disagreements() -> list[str]:
@@ -3429,6 +3437,76 @@ def test_the_one_case_grid_sees_the_strict_veto(
         lambda n, text, lexicon, one_case=None: real(n, text, lexicon))
     assert (len(_one_case_disagreements())
             == _ONE_CASE_STRICT_VETO_UNGUARDED)
+
+
+# --- #731's review: a clause's letter asks the whole name's case --
+# T4 reads a letter outside the name's own words by the case of the
+# WHOLE name, so a lower-case letter in a maiden clause behind own
+# words in capitals is mixed-case writing and reads as it does behind
+# the same words in Title case. The one-case grid above cannot see
+# this (both spellings of each of its pairs are wholly one case); this
+# pairs capitals against Title case, the clause letters lower-case in
+# both: 396 pairs, about 800 parses, 0.07s on py3.11 (2026-10-18).
+# FIELDS only, and TWO own name words in front only, which is this
+# grid's whole claim: the take's view reads the numeral by the own
+# words' case, so behind capitals a lower-case clause numeral is
+# counted like a capital -- the report differs on 108 of these pairs
+# (on ad486f66 as here), and with ONE own name word, no word to
+# spare, the fields differ too ('SMITH NEE j x' maiden 'j x', 'Smith
+# Nee j x' suffix 'x'). Recorded in decisions/T4's #731 entry with
+# why the view keeps the own words' fact.
+_CLAUSE_CASE_SHAPES = ("{a} {b} nee {n} {n}", "{a} {b} nee j {n}",
+                       "{a} {b} nee {c} j {n}", "{a} {b} nee {c} {n} {n}")
+#: the negative control, measured 2026-10-18: the maiden take's
+#: candidate test given the own-words fact instead (#731's first
+#: version), which disagreed on that many
+_CLAUSE_CASE_OWN_WORDS = 72
+
+
+def _clause_case_disagreements() -> list[str]:
+    def sig(name: ParsedName) -> dict[str, str]:
+        return {k: v.lower() for k, v in name.as_dict().items() if v}
+    out = []
+    for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
+        parser = Parser(policy=Policy(name_order=order))
+        for shape, letter, (a, b, c) in itertools.product(
+                _CLAUSE_CASE_SHAPES, _ONE_CASE_LETTERS, _ONE_CASE_HEADS):
+            caps = shape.format(a=a.upper(), b=b.upper(), c=c.upper(),
+                                n=letter)
+            title = shape.format(a=a.title(), b=b.title(), c=c.title(),
+                                 n=letter)
+            if sig(parser.parse(caps)) != sig(parser.parse(title)):
+                out.append(f"[{order}] {caps!r}")
+    return out
+
+
+def test_a_clause_letter_beside_capitals_reads_as_beside_title_case(
+        ) -> None:
+    failures = _clause_case_disagreements()
+    assert not failures, "\n".join(failures[:10])
+
+
+def test_the_clause_case_grid_sees_the_whole_name_fact(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # the take asks `one_case and is_one_case(<every token>)`; with the
+    # second half always true it is the own-words fact alone, which is
+    # what #731's first version passed
+    monkeypatch.setattr("nameparser._pipeline._group.is_one_case",
+                        lambda texts: True)
+    assert len(_clause_case_disagreements()) == _CLAUSE_CASE_OWN_WORDS
+
+
+def test_the_one_case_grid_sees_the_maiden_candidates(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # the maiden take's candidate test without the one-case fact
+    # (#731): the shape test alone, as before
+    from nameparser._pipeline import _group, _pieces
+    monkeypatch.setattr(
+        _group, "trailing_candidates",
+        lambda lo, pieces, ptags, tokens, one_case:
+            _pieces.trailing_candidates(lo, pieces, ptags, tokens, None))
+    assert (len(_one_case_disagreements())
+            == _ONE_CASE_MAIDEN_CANDIDATES_UNGUARDED)
 
 
 def test_the_one_case_grid_sees_the_letter_in_front(

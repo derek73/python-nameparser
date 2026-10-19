@@ -81,7 +81,8 @@ from nameparser._pipeline._state import (
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import (
-    comma_follows_marker, delimiter_cores, reads_as_a_reported_numeral,
+    comma_follows_marker, delimiter_cores, is_one_case,
+    reads_as_a_reported_numeral,
 )
 from nameparser._types import AmbiguityKind, Role
 
@@ -303,7 +304,15 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                                     for j in range(lo, end)]
     if site is not ClauseSite.TRAILING:
         assert_never(site)
-    c = trailing_candidates(lo, pieces, ptags, tokens)
+    # rules/T4: a letter outside the name's own words "asks the case
+    # of the whole name, the clause included" -- and the word in front
+    # of a candidate numeral is always a clause word, so the candidate
+    # test takes the whole name's fact, not the own words' (#731's
+    # review: 'MARY SMITH NEE j x' is mixed case, and its 'j' no
+    # initial). Asked only where the own words are one case.
+    c = trailing_candidates(
+        lo, pieces, ptags, tokens,
+        one_case and is_one_case([t.text for t in tokens]))
     end = len(pieces)
     released: list[tuple[int, Role]] = []
     # the view's picks, for the kept member below (#718)
