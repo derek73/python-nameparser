@@ -309,7 +309,8 @@ def test_every_character_the_tokenizer_ignores_is_refused() -> None:
     # class added there fails here until the build refuses it too. The
     # interpunct between East Asian characters is divided by context in
     # _tokenize_region, not by _ignorable, so the sweep cannot see it:
-    # only the EAST_ASIAN_RANGES and INTERPUNCT pins hold that check
+    # the MUTATIONS row text-with-an-east-asian-interpunct holds that check,
+    # and the pins below hold only its constants
     from nameparser._pipeline import _tokenize
     from nameparser._pipeline._state import COMMA_CHARS, ParseState
     from nameparser._policy import Policy, _SCRIPT_RANGES
