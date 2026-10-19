@@ -248,9 +248,10 @@ def _exclusion_where(file: str, text: str, kind: str, prop: str | None) -> str:
 @dataclass(frozen=True)
 class Exclusion:
     """A refused reading (`prop` None: `kind` is a kind or a category) or
-    a refused property of the `kind` reading the word keeps. Built by
-    _exclusion only once its table is valid, so `props["reason"]` is
-    always a non-empty string; __post_init__ refuses any other."""
+    a refused property of the `kind` reading the word keeps.
+    `props["reason"]` is always a non-empty string: __post_init__
+    refuses any other, so _exclusion builds one even from a value with
+    no reason and lets the refusal come from here."""
     file: str
     text: str
     kind: str
@@ -415,9 +416,12 @@ def _in(ch: str, ranges: tuple[tuple[int, int], ...]) -> bool:
 
 def _check_tokenizable(name: str, text: str) -> None:
     """Build check 2's second half. The normalized-form test passes each
-    of these: the first three compile and can never match a token, and
-    the last two are a spelling the file does not show or a second
-    spelling of one key."""
+    of these. An emoji and an interpunct between East Asian characters
+    match no token under the default Policy; a comma could only match
+    inside a delimited clause, where rules/M3 needs the vocabulary to
+    hold none; an invisible character is a spelling the file does not
+    show; and a phrase word with an edge period is a second spelling of
+    the key Lexicon folds it to."""
     for i, ch in enumerate(text):
         if ch in DIVIDERS:
             raise VocabError(

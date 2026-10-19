@@ -318,14 +318,19 @@ def test_every_character_the_tokenizer_ignores_is_refused() -> None:
     state = ParseState(original="", lexicon=Lexicon.default(), policy=Policy(),
                        segmenter=None)
     ignored = [chr(c) for c in range(0x110000)
-               if not 0xD800 <= c <= 0xDFFF
+               # a space is the one ignored character a text holds: the
+               # separator between a phrase's words
+               if not 0xD800 <= c <= 0xDFFF and c != 0x20
                and (_tokenize._ignorable(chr(c), state) or chr(c) in COMMA_CHARS)]
     assert len(ignored) > 100, len(ignored)  # whitespace, bidi, emoji, dots, commas
     for ch in ignored:
         escaped = f"\\U{ord(ch):08X}"  # a TOML escape: no raw control in the file
-        with pytest.raises(build.VocabError) as e:
+        # refused by check 2 itself, not by whichever later check happens
+        # to trip, which would leave a new class guarded by accident
+        with pytest.raises(build.VocabError,
+                           match="divides a name|strips by default|rules/T3|"
+                                 "invisible character|not in normalized form"):
             build.load({"und.toml": _w(f'[[word]]\ntext = "dr{escaped}x"\ntitle = {{}}')})
-        assert "not valid TOML" not in str(e.value), (hex(ord(ch)), e.value)
 
 
 def test_a_name_reading_on_nothing_warns() -> None:
