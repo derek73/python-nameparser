@@ -135,6 +135,8 @@ def _alnum(text: str) -> str:
 VOCAB = ROOT / "nameparser" / "vocab"
 OUTPUT = ROOT / "nameparser" / "config" / "_compiled.py"
 REFRESH = "uv run python tools/vocab/build.py"
+#: The folder's reference for editors, the one file read_dir skips by name.
+README = "README.md"
 
 #: The format version this compiler reads. A new kind or property is
 #: additive and does not bump it; a change to what an existing key means
@@ -898,14 +900,15 @@ def compile_pool(pool: Pool) -> Compiled:
 
 def read_dir(path: Path = VOCAB) -> dict[str, str]:
     """Every file in the vocabulary folder, by name. Every entry but a
-    dotfile is read, so a misnamed one (EN.TOML, en.toml.orig) reaches
-    check 1's file-name check instead of being skipped, and a missing or
-    empty folder is an error rather than an empty vocabulary."""
+    dotfile and README.md, the folder's reference, is read, so a
+    misnamed one (EN.TOML, en.toml.orig, readme.md) reaches check 1's
+    file-name check instead of being skipped, and a missing or empty
+    folder is an error rather than an empty vocabulary."""
     if not path.is_dir():
         raise VocabError(f"{path}: no vocabulary folder there")
     files = {}
     for f in sorted(path.iterdir()):
-        if f.name.startswith("."):
+        if f.name.startswith(".") or f.name == README:
             continue
         if f.is_symlink() and not f.exists():
             raise VocabError(f"{f.name}: a link to nothing ({f.readlink()})")

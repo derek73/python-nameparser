@@ -3854,7 +3854,7 @@ text = "do"
 credential = { may_be_name = true, expands = "Doctor of Osteopathic Medicine" }
 [word.particle]
 may_be_given = true
-note = "Vietnamese Đỗ leads a great many surnames. Also in TITLES -- the decisions record TITLES n ambiguous == {do, freiherr, st} as load-bearing for the emitter"
+note = "Vietnamese Đỗ leads a great many surnames"
 
 [[word]]
 text = "du"

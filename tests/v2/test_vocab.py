@@ -18,6 +18,7 @@ its mutation is refused by check 5.
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 import warnings
 from pathlib import Path
@@ -99,7 +100,8 @@ def test_the_toml_ships_as_package_data() -> None:
         (_BUILD.parents[2] / "pyproject.toml").read_text(encoding="utf-8"))
     globs = pyproject["tool"]["setuptools"]["package-data"]["nameparser"]
     assert "vocab/*.toml" in globs
-    assert not [p for p in build.VOCAB.rglob("*") if p.is_file() and p.suffix != ".toml"]
+    assert not [p for p in build.VOCAB.rglob("*")
+                if p.is_file() and p.suffix != ".toml" and p.name != build.README]
 
 
 # --------------------------------------------- controls on the shipped data
@@ -466,6 +468,8 @@ def test_an_empty_word_is_a_usage_error() -> None:
     ({}, "no vocabulary files"),
     ({"EN.TOML": OK}, "BCP 47 tag"),          # misnamed files are read, then refused
     ({"en.toml.orig": OK}, "BCP 47 tag"),
+    ({"readme.md": OK}, "BCP 47 tag"),        # only README.md, by its exact name, is skipped
+    ({"README.md": OK}, "no vocabulary files"),
     ({"sub/en.toml": OK}, "no subfolders"),
     ({"en.toml": "->nowhere.toml"}, "a link to nothing"),
 ])
@@ -544,3 +548,136 @@ def test_a_satisfied_property_exclusion_does_not_claim_the_refusal() -> None:
         _compile(files)
     assert "is excluded" not in str(e.value)
 
+
+
+# ------------------------------------------------- the README's reference
+# nameparser/vocab/README.md documents the kinds and properties for
+# whoever edits the TOML. Its tables are held to the names build.py
+# accepts, each kind's compiled sets and each behavioral property's
+# effect to what the compiler does with a probe reading, and each
+# property's unwritten value to the default the compiler gives it.
+def _readme_table(heading: str) -> list[list[str]]:
+    """The rows of the first table under `heading`, header and divider
+    dropped, each a list of its cells. A cell may hold an escaped pipe
+    (GFM's `\\|`), and every row has as many cells as the header."""
+    lines = (build.VOCAB / build.README).read_text(encoding="utf-8").splitlines()
+    assert heading in lines, f"README.md has no {heading!r} heading"
+    rows: list[list[str]] = []
+    for line in lines[lines.index(heading) + 1:]:
+        if line.startswith("#"):
+            break
+        if line.startswith("|"):
+            line = line.strip()
+            assert line.endswith("|"), f"{heading}: unterminated row {line!r}"
+            rows.append([c.strip() for c in re.split(r"(?<!\\)\|", line[1:-1])])
+        elif rows:
+            break
+    assert len(rows) > 2, f"no table under {heading!r}"
+    for row in rows:
+        assert len(row) == len(rows[0]), f"{heading}: {row} has {len(row)} cells"
+    return rows[2:]
+
+
+def _code(cell: str) -> list[str]:
+    return re.findall(r"`([^`]+)`", cell)
+
+
+def _sets_fed(kind: str, props: str = "{}", text: str = "zzq") -> set[str]:
+    """The compiled constants a one-word file holding a `kind` reading
+    with `props` puts the word into (a particle states may_be_given)."""
+    if kind == "particle" and "may_be_given" not in props:
+        props = "{ may_be_given = true }"
+    files = {"en.toml": _w(f'[[word]]\ntext = "{text}"\n{kind} = {props}')}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", build.VocabWarning)  # a name reading is inert
+        compiled = build.compile_files(files)
+    return {name for name, value in compiled.items() if text in value}
+
+
+#: For each behavioral property, a reading that sets it away from its
+#: unwritten value (kind, props, text): what that changes in the compiled
+#: sets, against the same kind written bare, is the property's effect.
+_PROPERTY_PROBES = {
+    "addresses": ("title", '{ addresses = "given" }', "zzq"),
+    "acronym": ("generation", "{ acronym = true }", "zzq"),
+    "may_be_name": ("credential", "{ may_be_name = true }", "zzq"),
+    "attached": ("honorific", '{ attached = { side = "after" } }', "zzq"),
+    "may_be_given": ("particle", "{ may_be_given = false }", "zzq"),
+    "may_be_initial": ("conjunction", "{ may_be_initial = true }", "q"),
+    "cased": ("title", '{ cased = "ZzQ" }', "zzq"),
+}
+#: The behavioral properties the build refuses to leave unwritten.
+_REQUIRED = {"may_be_given"}
+
+
+def test_the_readme_lists_every_kind_with_its_category_and_set() -> None:
+    rows = _readme_table("## Kinds")
+    assert {_code(r[0])[0]: _code(r[1])[0] for r in rows} == build.CATEGORY
+    assert len(rows) == len(build.CATEGORY)  # a kind listed twice
+    for kind, _, fed in rows:
+        assert set(_code(fed)) == _sets_fed(_code(kind)[0]), kind
+
+
+def test_the_readme_lists_every_property_with_its_type_and_categories() -> None:
+    rows = _readme_table("## Properties")
+    behavioral = {p for ps in build.BEHAVIORAL.values() for p in ps}
+    assert {_code(r[0])[0]: r[1] for r in rows} == (
+        {p: "behavioral" for p in behavioral} | {p: "descriptive" for p in build.DESCRIPTIVE})
+    assert len(rows) == len(behavioral | build.DESCRIPTIVE)
+    for prop, kind_of, applies, *_ in rows:
+        name = _code(prop)[0]
+        if kind_of == "behavioral":
+            assert set(_code(applies)) == {
+                c for c, ps in build.BEHAVIORAL.items() if name in ps}, name
+        else:
+            # a name reading takes only the descriptive keys in NAME_KEYS
+            assert ("but `name`" in applies) == (name not in build.NAME_KEYS), name
+
+
+def test_the_readme_states_each_behavioral_propertys_effect() -> None:
+    rows = {_code(r[0])[0]: r[4] for r in _readme_table("## Properties") if r[1] == "behavioral"}
+    assert set(_PROPERTY_PROBES) == set(rows)
+    for prop, (kind, props, text) in _PROPERTY_PROBES.items():
+        bare = "{ may_be_given = true }" if kind == "particle" else "{}"
+        moved = _sets_fed(kind, props, text) ^ _sets_fed(kind, bare, text)
+        assert moved, prop  # a probe that moves nothing tests nothing
+        assert set(_code(rows[prop])) & {n for n, _ in build.CONSTANTS} == moved, prop
+
+
+def test_the_readme_states_each_behavioral_propertys_unwritten_value() -> None:
+    for row in _readme_table("## Properties"):
+        prop, kind_of, _, unwritten = _code(row[0])[0], row[1], row[2], row[3]
+        if kind_of != "behavioral":
+            continue
+        if prop in _REQUIRED:
+            assert "required" in unwritten, prop
+            continue
+        defaults = {build._behavior(build.Reading("en.toml", "zzq", kind, {}), prop)
+                    for kind, cat in build.CATEGORY.items()
+                    if prop in build.BEHAVIORAL.get(cat, ())}
+        for value in defaults:
+            if isinstance(value, bool):
+                assert ("true" if value else "false") in unwritten, prop
+            elif isinstance(value, str):
+                assert f'"{value}"' in unwritten, prop
+            else:
+                assert value is None and not {"true", "false"} & set(unwritten.split()), prop
+
+
+def test_the_readme_names_every_compiled_constant() -> None:
+    # each constant is reached by a kind or by a behavioral property
+    named = {name for heading in ("## Kinds", "## Properties")
+             for row in _readme_table(heading) for cell in row[1:] for name in _code(cell)}
+    assert {name for name, _ in build.CONSTANTS} <= named
+
+
+def test_the_readme_lists_the_name_reading_keys() -> None:
+    rows = _readme_table("### Name readings")
+    assert {_code(r[0])[0] for r in rows} == build.NAME_KEYS
+    assert len(rows) == len(build.NAME_KEYS)
+
+
+def test_the_readme_lists_the_reserved_names_with_their_phases() -> None:
+    rows = _readme_table("## Names reserved for later phases")
+    assert {_code(r[0])[0]: int(r[1]) for r in rows} == build.RESERVED
+    assert len(rows) == len(build.RESERVED)
