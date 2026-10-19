@@ -51,5 +51,5 @@ T4. Rationale: one letter standing for a name word is how an
     marker, so the shape this reaches is not one names take.
       "john smith nee x x"        →  suffix="x"
       "JOHN SMITH NEE X X"        →  maiden="X X"
-    Signal: a shape: how a one-letter word is marked as an initial, by its period or by its case against the name's own words
+    Signal: a shape: a one-letter word's period + a case contrast: a bare letter's case against the name's own words
     history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P7, P8, S10, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py
