@@ -13,10 +13,11 @@ it away and papers over the typo. Checking at import turns a
 silently-inert entry into an immediate failure.
 
 Deliberately a weaker fold than ``_normalize``, which also NFC-composes
-and strips edge full stops, and this module cannot import ``_lexicon``
-through the package anyway (``_lexicon`` imports the config constants).
-It asserts that an entry is stored lowercase, edge-clean and, where it
-is a phrase, single-spaced.
+and strips edge full stops. Importing ``_lexicon`` here would work (its
+config imports sit inside ``_default_lexicon``), but a data module's
+hygiene should not depend on the parser's own fold. It asserts that an
+entry is stored lowercase, edge-clean and, where it is a phrase,
+single-spaced.
 """
 from __future__ import annotations
 

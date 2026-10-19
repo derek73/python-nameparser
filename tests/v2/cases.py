@@ -12661,8 +12661,8 @@ CASES: tuple[Case, ...] = (
          classification="fix(#307) + fix(#271)",
          notes="the other side of ko_surname_yang_leads: the same "
                "token trailing a name is 'Miss', and that is the whole "
-               "argument shipping it -- its vocabulary note singles 양 out "
-               "as the risk class it takes (군 beside it), a top-tier "
+               "argument shipping it -- the vocabulary names 양 and 군 "
+               "as a risk class (in 님's note), 양 being a top-tier "
                "surname admitted to the vocabulary on the strength of "
                "position alone. Nothing pinned the trailing reading "
                "before this row, so the leading rows carried the pair "

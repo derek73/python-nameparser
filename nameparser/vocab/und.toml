@@ -161,7 +161,7 @@ title = { addresses = "given" }
 # belong here rather than in plain TITLES. Article forms are never
 # given names; the bare doctor/professor/engineer forms are not
 # used as given names either. Deferred under the collision rule
-# (like мл/ст, the junior/senior words, then): bare سيد (Sayyid is a common given
+# (as мл/ст, the junior/senior words, were deferred at the time): bare سيد (Sayyid is a common given
 # name), bare شيخ (Shaikha is a common female given name), أمير
 # and سلطان (Amir/Sultan, common given names), and the 'د.'
 # abbreviation -- edge-period normalization would leave bare 'د',
@@ -4378,7 +4378,7 @@ credential = {}
 # reading only if the exact letter sequence could plausibly be someone's name on its
 # own -- a given name or nickname (e.g. 'jd', 'ed') or a common
 # surname (e.g. 'ma', 'do'). Unambiguous certifications/degrees
-# (e.g. 'mba', 'cpa', 'phd') don't need an entry. In 2.0 this set
+# (e.g. 'mba', 'cpa', 'phd') don't need the flag. In 2.0 the flag
 # also gates bare recognition: a bare ambiguous acronym reads as
 # the credential only with words to spare in front of it, or
 # written in capitals inside a mixed-case name; inside a

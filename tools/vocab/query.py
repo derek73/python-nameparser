@@ -27,8 +27,9 @@ word keeps, with its reason.
   ``dr``); ``--file`` takes a tag (``en``) or a file name (``en.toml``).
 
 ``--count`` prints only the number of matches. Exits 1 when nothing
-matches, and 2 for an unknown kind, property or file, or for vocabulary
-that fails a per-entry check. The query reads the files as loaded, with
+matches, 2 for an unknown kind, property or file, an empty ``--word``,
+or vocabulary that cannot be read or fails a per-entry check, and 3 on
+an internal error. The query reads the files as loaded, with
 the per-entry checks only: it answers over a pool whose cross-file
 checks may fail, so a contributor can look words up in a tree that does
 not compile yet.
@@ -37,6 +38,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import traceback
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -127,18 +129,23 @@ def main(argv: list[str] | None = None) -> int:
     if args.excluded is not None and args.excluded not in KINDS | PROPERTIES:
         ap.error(f"unknown kind or property {args.excluded!r}; known: "
                  f"{', '.join(sorted(KINDS | PROPERTIES))}")
-    files = build.read_dir()
-    file = args.file
-    if file is not None:
-        file = file if file.endswith(".toml") else f"{file}.toml"
-        if file not in files:
-            ap.error(f"no vocabulary file {file!r}")
     word = None if args.word is None else " ".join(build._normalize(args.word).split())
+    if word == "":
+        ap.error(f"--word {args.word!r} normalizes to nothing")
     try:
+        files = build.read_dir()
+        file = args.file
+        if file is not None:
+            file = file if file.endswith(".toml") else f"{file}.toml"
+            if file not in files:
+                ap.error(f"no vocabulary file {file!r}")
         pool = build.load(files)
     except build.VocabError as e:
         print(f"vocabulary error: {e}", file=sys.stderr)
         return 2
+    except Exception:
+        traceback.print_exc()
+        return 3
     found = select(pool, issue=args.issue, kind=args.kind,
                    excluded=args.excluded, word=word, file=file)
     if args.count:

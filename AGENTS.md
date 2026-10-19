@@ -8,7 +8,7 @@ For non-trivial changes, use a feature branch and open a PR. Branch naming: `fix
 
 Before opening the PR, if the change alters parser behavior or internals, *read* the Architecture, Extension Patterns, and Gotchas sections of this file against the change — don't grep for it: AGENTS.md paraphrases behavior in its own words, so text made stale by a code change rarely matches the code's phrasing (a doc-staleness sweep driven by grep terms from the diff will miss it every time). The same applies when scoping a doc-review pass or a subagent prompt: include AGENTS.md in the list of docs to check, or it won't be checked.
 
-After a review round, **review the fix commit too** — second-round passes on #398, #400 and #403 each found defects in the first round's fixes.
+After a review round, **review the fix commit too** — second-round passes on #398, #400, #403 and #737 each found defects in the first round's fixes. The commonest shape is a WIDENED check that quietly narrows somewhere: #737's fix widened a vocabulary exclusion from "the same kind" to "the same set" and stopped refusing the excluded kind itself once a property moved it to the other set, a case no test listed because the old check had made it impossible. When a fix widens a check, keep a test row for every case the narrower form already refused, and run the new rows against the pre-fix code to see each one fail.
 
 **Check whether the PR description still needs updating before merging.** A review that moves behavior or retracts a measurement leaves it stale, and a stale body reads as authoritative.
 

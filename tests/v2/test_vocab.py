@@ -6,7 +6,12 @@ TOML compiles to (the snapshot.jsonl pattern -- a stale module fails with
 the command that refreshes it), and the compiler's build checks pass on
 the shipped files with warnings as errors. Each numbered build check
 then has a mutation below that it must refuse, because a check nothing
-exercises passes the same way a missing one does. compile_pool's final
+exercises passes the same way a missing one does. A check WIDENED to
+refuse more keeps a row for every case its narrower form refused:
+#737's review widened check 6 from "the same kind" to "the same set"
+and the new test quietly stopped refusing the excluded kind itself with
+`acronym` flipped, a case nothing listed because the old test had made
+it impossible. compile_pool's final
 acronym-and-word check is a backstop check 5 always reaches first, so
 its mutation is refused by check 5.
 """
@@ -160,7 +165,8 @@ MUTATIONS = [
     ("addresses-typo", {"und.toml": _w('[[word]]\ntext = "sheikh"\ntitle = { addresses = "givn" }')}, "must be 'family' or 'given'"),
     ("acronym-with-a-period", {"und.toml": _w('[[word]]\ntext = "x.q"\ncredential = {}')}, "matched with every period removed"),
     ("excluded-property-unknown", {"ja.toml": _w('[[word]]\ntext = "殿"\nhonorific = { excluded = { atached = "x" } }')}, "not a behavioral property"),
-    ("excluded-property-with-a-default", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { excluded = { acronym = "x" } }')}, "has a default"),
+    ("excluded-defaulted-property-overridden", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { acronym = false, excluded = { acronym = "x" } }')}, "acronym is excluded"),
+    ("excluded-property-set-in-another-file", {"ja.toml": _w('[[word]]\ntext = "名"\nhonorific = { excluded = { attached = "x" } }'), "zh.toml": _w('[[word]]\ntext = "名"\nhonorific = { attached = { side = "after" } }')}, "attached is excluded"),
     ("addresses-reserved-value", {"und.toml": _w('[[word]]\ntext = "sheikh"\ntitle = { addresses = "any" }')}, "reserved for a later phase"),
     ("attached-on-an-acronym", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { attached = { side = "after" } }')}, "needs a word reading"),
     ("attached-before", {"ja.toml": _w('[[word]]\ntext = "さん"\nhonorific = { attached = { side = "before" } }')}, "side = 'after'"),
@@ -186,6 +192,11 @@ MUTATIONS = [
     ("may-be-name-disagrees-across-files", {"en.toml": _w('[[word]]\ntext = "ma"\ncredential = {}'), "und.toml": _w('[[word]]\ntext = "ma"\ncredential = { may_be_name = true }')}, "may_be_name is"),
     # 6: an exclusion holds across files
     ("excluded-kind-in-another-file", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "Marie Fils"),
+    # the excluded kind ITSELF, with a property moving it to the other
+    # set: the narrower test refused this, so the widened one must too
+    ("excluded-kind-with-acronym-flipped", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = { acronym = true }')}, "Marie Fils"),
+    ("excluded-credential-as-a-word", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { credential = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncredential = { acronym = false }')}, "a surname"),
+    ("excluded-kind-in-the-same-entry", {"en.toml": _w('[[word]]\ntext = "fils"\ngeneration = { acronym = true }\nexcluded = { generation = "Marie Fils" }')}, "Marie Fils"),
     ("excluded-kind-sidestepped-by-the-generic-kind", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "und.toml": _w('[[word]]\ntext = "fils"\nsuffix = {}')}, "Marie Fils"),
     ("excluded-kind-sidestepped-by-a-sibling-kind", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "en.toml": _w('[[word]]\ntext = "fils"\nstatus = {}')}, "Marie Fils"),
     ("excluded-credential-sidestepped-by-an-acronym", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { credential = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncourtesy = { acronym = true }')}, "a surname"),
@@ -230,6 +241,15 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given" }')},
         {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16 }\n'
                        'excluded = { generation = { reason = "Marie Fils", issue = 684 } }')},
+        # the name kinds refuse only themselves: refused as a given name, a
+        # word may still record its surname evidence
+        {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16 }\n'
+                       'excluded = { given = "x", generation = "Marie Fils" }')},
+        # a property exclusion refuses a value other than the default:
+        # writing the default, as a particle must for may_be_given, passes
+        {"und.toml": _w('[[word]]\ntext = "zz"\nparticle = { may_be_given = false, excluded = { may_be_given = "x" } }\n\n'
+                        '[[word]]\ntext = "yy"\ncredential = { may_be_name = false, excluded = { may_be_name = "x" } }\n\n'
+                        '[[word]]\ntext = "xx"\ncredential = { excluded = { acronym = "x" } }')},
         # the defaults agree with the written value across files
         {"und.toml": _w('[[word]]\ntext = "dr"\ntitle = {}'),
          "en.toml": _w('[[word]]\ntext = "dr"\ntitle = { addresses = "family" }')},
@@ -343,4 +363,23 @@ def test_broken_data_exits_2_not_1(monkeypatch: pytest.MonkeyPatch,
     monkeypatch.setattr(build, "read_dir", lambda: {"en.toml": _w('[[word]]\ntext = "jr"')})
     assert build.main(["--check"]) == 2
     assert "inert" in capsys.readouterr().err
+
+
+def test_an_unreadable_file_exits_2(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                    capsys: pytest.CaptureFixture[str]) -> None:
+    # exit 1 means "stale", so a file that is not UTF-8 must not exit 1
+    (tmp_path / "en.toml").write_bytes(b"schema = 1\n\xff\n")
+    with pytest.raises(build.VocabError, match="UTF-8"):
+        build.read_dir(tmp_path)
+    read_dir = build.read_dir
+    monkeypatch.setattr(build, "read_dir", lambda: read_dir(tmp_path))
+    assert build.main(["--check"]) == 2
+    assert "UTF-8" in capsys.readouterr().err
+
+
+def test_an_empty_word_is_a_usage_error() -> None:
+    query = _load_query()
+    with pytest.raises(SystemExit) as e:
+        query.main(["--word", "."])
+    assert e.value.code == 2
 

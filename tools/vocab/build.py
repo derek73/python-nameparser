@@ -5,7 +5,9 @@ Usage::
     uv run python tools/vocab/build.py           # rewrite _compiled.py
     uv run python tools/vocab/build.py --check   # exit 1 if it is stale
 
-Either exits 2, printing the failed check, when the vocabulary fails one.
+Either exits 2, printing the failed check, when the vocabulary fails one
+or a file cannot be read, and 3 on an internal error, so neither is ever
+mistaken for exit 1's "stale".
 
 The vocabulary is written per word, in one TOML file per BCP 47 language
 tag (`und` for words not yet assigned one, `mul` for words shared on
@@ -16,9 +18,10 @@ writes a module of frozenset literals, committed beside the data, and
 tests/v2/test_vocab.py fails when the two disagree.
 
 The build checks replace the import-time asserts the data modules used
-to carry. Lexicon.__post_init__ still runs on the result, and two checks
-repeat one of its own (7's case mask and 9) so the shipped data fails
-here, naming the file and the word, rather than at the first import.
+to carry. Lexicon.__post_init__ still runs on the result, and three
+checks repeat one of its own -- 7's case mask, 9, and through 4 its
+gate-bypass raise -- so the shipped data fails here, naming the file and
+the word, rather than at the first import.
 Each raises VocabError naming the word, and the file where one file is
 at fault:
 
@@ -31,8 +34,9 @@ at fault:
 4. one suffix kind per word, across files;
 5. the same kind of the same word agrees on every behavioral property
    in every file;
-6. an excluded kind or property is absent from every file, and an
-   excluded kind refuses every kind that compiles to the same set;
+6. an excluded kind is absent from every file, along with every other
+   kind that compiles to the same set, and an excluded property never
+   takes a value other than its default;
 7. `same_as` names a word of the same category, `cased` spells its
    word's letters (#459), at most one `cased` per word;
 8. a phrase only as a birth_marker or an addresses = "given" title;
@@ -54,6 +58,7 @@ import datetime
 import re
 import sys
 import tomllib
+import traceback
 import warnings
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
@@ -72,7 +77,9 @@ def _load_lexicon_module() -> ModuleType:
     _compiled.py left broken (merge-conflict markers, or a new constant
     the module does not define yet) would then stop the one tool that
     regenerates it. _lexicon imports nothing internal at module level
-    (tests/v2/test_layering.py), so it loads on its own."""
+    (its config imports sit inside _default_lexicon), so it loads on its
+    own; tests/v2/test_vocab.py's
+    test_the_build_does_not_import_the_package_it_writes holds that."""
     import importlib.util
     path = ROOT / "nameparser" / "_lexicon.py"
     spec = importlib.util.spec_from_file_location("_vocab_build_lexicon", path)
@@ -80,7 +87,11 @@ def _load_lexicon_module() -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     # registered before it runs: its dataclasses look their module up
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    try:
+        spec.loader.exec_module(module)
+    except BaseException:
+        del sys.modules[spec.name]
+        raise
     return module
 
 
@@ -100,8 +111,9 @@ SCHEMA = 1
 #: kind -> category. The category decides which compiled field a reading
 #: feeds. For title, suffix, particle and conjunction, the category's own
 #: name is also a kind (`title = {}`: a title not yet classified), so
-#: classifying a word later moves no set; bound_given, birth_marker and
-#: the name kinds have one kind each. Kind
+#: classifying a word later moves no set. The bound_given, relation
+#: (birth_marker) and name (given, family) categories have no generic
+#: kind. Kind
 #: names are unique across categories; a fine kind arrives with its
 #: category's classification, in a core PR, as one row here.
 CATEGORY: dict[str, str] = {
@@ -133,10 +145,6 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
     "bound_given": frozenset({"cased"}),
     "relation": frozenset({"cased"}),
 }
-#: Behavioral properties with a default value. An exclusion refuses a
-#: property by its PRESENCE, so refusing one of these would constrain
-#: nothing: the default applies whether the key is written or not.
-DEFAULTED = frozenset({"acronym", "addresses"})
 #: Descriptive properties: recorded, validated, compiled to nothing.
 DESCRIPTIVE = frozenset({"note", "issue", "decided", "expands", "same_as",
                          "native", "gender"})
@@ -419,10 +427,7 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             if prop not in BEHAVIORAL[r.category]:
                 raise VocabError(f"{where}: excluded names {prop!r}, which is not "
                                  f"a behavioral property of a {r.category}")
-            if prop in DEFAULTED:
-                raise VocabError(f"{where}: {prop} has a default, so excluding it "
-                                 f"constrains nothing; write the value instead")
-            # a refused property present on this same reading is caught by
+            # a refused property set on this same reading is caught by
             # check 6 with the rest of the pool
             pool.exclusions.append(_exclusion(r.file, r.text, r.kind, prop, why))
     # build check 8: a phrase is matched whole only as a given-addressing
@@ -443,17 +448,33 @@ def _refused_by(r: Reading, excluded: str) -> bool:
     """Whether a word-level exclusion of `excluded` refuses reading r.
 
     A category name refuses every reading of the category (`excluded =
-    { suffix = ... }`). A kind refuses every reading that compiles into the
-    set that kind would, written with its defaults: within a category every
-    kind feeds one field except in the suffix category, where `acronym`
-    splits them. So refusing `generation` refuses a generic `suffix = {}`
-    and a `status = {}` too, either of which would put the word in the very
-    set the recorded reason keeps it out of."""
+    { suffix = ... }`). A kind refuses every reading of that kind, whatever
+    its properties, and also every OTHER kind that compiles into the set
+    the excluded kind would, written with its defaults: refusing
+    `generation` refuses a generic `suffix = {}` and a `status = {}`, either
+    of which would put the word in the very set the recorded reason keeps
+    it out of. In the suffix category `acronym` splits the kinds between
+    two sets. The name kinds compile to nothing and mean opposite things
+    (a word refused as a given name may well be a surname), so there a
+    kind refuses only itself."""
     if excluded in CATEGORIES:
         return r.category == excluded
-    if CATEGORY[excluded] != r.category:
+    if r.kind == excluded:
+        return True
+    if CATEGORY[excluded] != r.category or r.category == "name":
         return False
     return r.category != "suffix" or _acronym(r) == (excluded == "credential")
+
+
+def _overrides(r: Reading, prop: str) -> bool:
+    """Whether r gives a behavioral property a value other than the one it
+    takes when the key is not written -- what a property exclusion
+    refuses. Writing the default (`may_be_name = false`) is the same
+    reading as omitting it, and a particle, which must state
+    may_be_given, can still state it false beside an exclusion of it."""
+    unwritten = Reading(r.file, r.text, r.kind,
+                        {k: v for k, v in r.props.items() if k != prop})
+    return _behavior(r, prop) != _behavior(unwritten, prop)
 
 
 # ------------------------------------------------------------- compiling
@@ -478,7 +499,7 @@ def check_pool(pool: Pool) -> None:
             if x.prop is None and _refused_by(r, x.kind):
                 raise VocabError(f"{r.where()}: {x.kind} is excluded for "
                                  f"{x.text!r} in {x.file}: {x.reason}")
-            if x.prop is not None and r.kind == x.kind and x.prop in r.props:
+            if x.prop is not None and r.kind == x.kind and _overrides(r, x.prop):
                 raise VocabError(f"{r.where()}: {x.prop} is excluded for "
                                  f"{x.text!r} in {x.file}: {x.reason}")
 
@@ -605,15 +626,16 @@ def compile_pool(pool: Pool) -> dict[str, Any]:
             s["BOUND_GIVEN_NAMES"].add(t)
         elif r.category == "relation":
             s["MAIDEN_MARKERS"].add(t)
-    # a particle is never-given where ANY of its readings lacks
-    # may_be_given; check 5 makes every reading of one word agree, so
-    # "any" is "all"
+    # a particle is never-given where any of its readings has
+    # may_be_given = false; check 5 makes every reading of one word
+    # agree, so "any" is "all"
     s["NON_GIVEN_NAME_PARTICLES"] = {
         r.text for r in pool.readings
         if r.category == "particle" and not r.props.get("may_be_given")}
     out: dict[str, Any] = {k: frozenset(v) for k, v in s.items()}
     out["CAPITALIZATION_EXCEPTIONS"] = dict(sorted(cased.items()))
-    assert out.keys() == {name for name, _ in CONSTANTS}, sorted(out)
+    if out.keys() != {name for name, _ in CONSTANTS}:
+        raise RuntimeError(f"compile_pool built {sorted(out)}, not the CONSTANTS roster")
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is
     # matched twice by two rules, and which one fired is unreadable from
@@ -636,7 +658,13 @@ def compile_pool(pool: Pool) -> dict[str, Any]:
 
 
 def read_dir(path: Path = VOCAB) -> dict[str, str]:
-    return {f.name: f.read_text(encoding="utf-8") for f in sorted(path.glob("*.toml"))}
+    files = {}
+    for f in sorted(path.glob("*.toml")):
+        try:
+            files[f.name] = f.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as e:
+            raise VocabError(f"{f.name}: cannot be read as UTF-8 text: {e}") from None
+    return files
 
 
 def compile_files(files: Mapping[str, str]) -> dict[str, Any]:
@@ -676,7 +704,8 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true",
                     help="exit 1 if the committed module is stale "
-                         "(2 if the vocabulary fails a check)")
+                         "(2 if the vocabulary fails a check, 3 on an "
+                         "internal error)")
     args = ap.parse_args(argv)
     try:
         text = render(compile_files(read_dir()))
@@ -684,6 +713,10 @@ def main(argv: list[str] | None = None) -> int:
         # exit 2, not 1: a script must tell broken data from a stale module
         print(f"vocabulary error: {e}", file=sys.stderr)
         return 2
+    except Exception:
+        # a bug in the compiler, not in the data: still never exit 1
+        traceback.print_exc()
+        return 3
     current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
     if args.check:
         if current != text:
