@@ -9,7 +9,7 @@ S10. Rationale: a roman numeral ending a name is its generation,
     up to X it does not, by their shape alone — unless the word in
     front of it is written as an initial, which makes it a name word
     too; in a name written wholly in one case a bare letter in front
-    is written as one (T4). A single letter written with a period is an initial, and a
+    is written as one (T4). A single letter written with a period is an initial (T5), and a
     numeral past X is a name word. A numeral of one letter needs
     words to spare, as a bare ambiguous acronym does (S4): as the
     second of two name words it is the family name, a title in front
@@ -64,5 +64,5 @@ S10. Rationale: a roman numeral ending a name is its generation,
     as one with the numeral in front of it, the run taking both, as
     1.4.0 read it.
       "John Smith V Ph. D."       →  suffix="V Ph. D."
-    Signal: a shape: a roman numeral ending the name, an initial in front of it being where the shape stops deciding
-    history: decisions/S10 · interacts: S2, S4, S7, C1, C9, P2, P3, M2, H1, H3, T4, C12 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    Signal: a shape: a roman numeral ending the name, a one-letter one gated on a word to spare, an initial in front of it being where the shape stops deciding
+    history: decisions/S10 · interacts: S2, S4, S7, C1, C9, P2, P3, M2, H1, H3, T4, T5, C12 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

@@ -328,6 +328,9 @@ def is_single_letter_numeral(text: str) -> bool:
     return len(letters) == 1 and _ROMAN.match(letters) is not None
 
 
+# rules/T5: "A one-letter word written with its period is an initial,
+# in a script that writes initials, and so is a bare unaccented Latin
+# capital, A to Z"
 def is_initial(text: str) -> bool:
     """'A.' / 'j.' / bare capital -- v1's is_an_initial, narrowed to
     scripts that HAVE initials (#320). v1's \\w is Unicode-aware and

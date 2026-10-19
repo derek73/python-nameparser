@@ -6,7 +6,8 @@ P7. Rationale: a one-letter particle is spelled with the same letter
     a whole word and is not. The Irish Ó is never written with a
     period, while Ó. is the initial of Óscar, Ólafur or Ólöf.
     A one-letter word written with its period is an initial and not a
-    particle, whatever particle the same letter spells; written bare,
+    particle, whatever particle the same letter spells, the period
+    being the shape T5 reads as an initial; written bare,
     it is the particle. It is an initial in every position, so it
     neither opens a surname, nor joins a chain, nor attaches to the
     family behind a comma.
@@ -19,6 +20,6 @@ P7. Rationale: a one-letter particle is spelled with the same letter
     the particle. Such initials normally carry the period, and the
     bare letter is exactly how the particle is written.
       "Juan Ó Pérez"              →  middle=""
-    Signal: a shape: the period after a one-letter word the particle vocabulary holds
-    history: decisions/P7 · interacts: P1, P2, P3, P6, R3, R4 · implemented: nameparser/_lexicon.py, nameparser/_pipeline/_classify.py
+    Signal: a shape: a one-letter word the particle vocabulary holds, read by whether T5 makes it an initial
+    history: decisions/P7 · interacts: P1, P2, P3, P6, R3, R4, T5 · implemented: nameparser/_lexicon.py, nameparser/_pipeline/_classify.py
 
