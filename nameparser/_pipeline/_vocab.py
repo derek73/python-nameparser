@@ -278,10 +278,11 @@ def is_trailing_numeral_suffix(text: str, preceding: str,
     is initial-shaped as 'J' is (rules/S10, #721's review: 'john j v'
     reads as 'JOHN J V'), while 'é', 'ж' or an uncased word, whose
     capitals are not, stay as they were. None is the shape test
-    alone. The maiden take's candidate view once passed it as a safe
+    alone. The maiden take's candidate test once passed it as a safe
     superset, but admitting a candidate also cuts it out of the view,
-    changing the word in front of the numeral, so it asks with the
-    fact as the fork does (#731)."""
+    changing the word in front of the numeral, so it passes a fact
+    now: the whole name's, the word in front being a clause word
+    (#731), where the view's own reading keeps the own words'."""
     return (_ROMAN.match(text) is not None
             and not is_initial_shaped(preceding)
             and not (one_case and is_initial_shaped(preceding.upper())))

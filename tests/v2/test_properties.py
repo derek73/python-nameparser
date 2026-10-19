@@ -3447,12 +3447,14 @@ def test_the_one_case_grid_sees_the_strict_veto(
 # this (both spellings of each of its pairs are wholly one case); this
 # pairs capitals against Title case, the clause letters lower-case in
 # both: 396 pairs, about 800 parses, 0.07s on py3.11 (2026-10-18).
-# FIELDS only: the report on a numeral the take reads as a suffix
-# still differs on 108 of these pairs, on ad486f66 as here -- S10's
-# "a numeral written in lower case in a name of mixed case is the
-# generation and reports nothing" is asked of the own words' case
-# there, so behind capitals the lower-case numeral reports. Recorded
-# in decisions/T4's #731 entry, not decided here.
+# FIELDS only, and TWO own name words in front only, which is this
+# grid's whole claim: the take's view reads the numeral by the own
+# words' case, so behind capitals a lower-case clause numeral is
+# counted like a capital -- the report differs on 108 of these pairs
+# (on ad486f66 as here), and with ONE own name word, no word to
+# spare, the fields differ too ('SMITH NEE j x' maiden 'j x', 'Smith
+# Nee j x' suffix 'x'). Recorded in decisions/T4's #731 entry with
+# why the view keeps the own words' fact.
 _CLAUSE_CASE_SHAPES = ("{a} {b} nee {n} {n}", "{a} {b} nee j {n}",
                        "{a} {b} nee {c} j {n}", "{a} {b} nee {c} {n} {n}")
 #: the negative control, measured 2026-10-18: the maiden take's
