@@ -17,4 +17,4 @@ C7. Rationale: the comma's decision reads the part after it once,
       "Smith, Chancellor of the Exchequer MP"  →  suffix="MP"
     no-boundary: the listing form's given part, which keeps every
     join, is what P5's own example parses ('Salam, abd Allah').
-    history: decisions/C7 · interacts: C1, C2, C8, P2, P3, P5, P6 · implemented: nameparser/_pipeline/_comma.py
+    history: decisions/C7 · interacts: C1, C2, C8, C12, P2, P3, P5, P6 · implemented: nameparser/_pipeline/_comma.py
