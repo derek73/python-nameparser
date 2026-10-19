@@ -335,9 +335,10 @@ def _addressing_run(titles: list[int], name_word: int) -> list[int]:
     the first non-title token got both wrong (measured 2026-09-09).
 
     Called only from inside H1's guard, after the role counts have
-    short-circuited, so a name with a family never builds this list;
-    `name_word` is the first GIVEN, which that guard has already
-    proved is the only name word there is."""
+    short-circuited, so a name with both a given and a family never
+    builds this list; `name_word` is the first GIVEN, or the first
+    FAMILY in the direction #720 added, and the guard has already
+    proved it is the only name word there is."""
     return [i for i in titles if i < name_word] or titles
 
 
@@ -376,6 +377,28 @@ def post_rules(state: ParseState) -> ParseState:
         # moved -- a stale index list is the bug shape #359 fixed
         givens = _idx(tokens, Role.GIVEN)
         middles = _idx(tokens, Role.MIDDLE)
+        families = _idx(tokens, Role.FAMILY)
+    # rules/H1: "a comma with no given name after it does not decide
+    # the field, nor does a declared order" -- the other direction, for
+    # the shapes assign reads as the family before H1 can see them
+    # (#720): a family comma with no name word after it and one before
+    # it, and the one name word of a name read family-first. The comma
+    # named no given part, and the order places a word nothing else
+    # decided (O5), so the title decides as it does in 'Sir John'
+    # ('Elizabeth II, Queen' reads as 'Queen Elizabeth II'). A particle
+    # in that word stays the family, which is rules/C3's after a comma
+    # -- "the comma settles P1's fork for a leading particle that could
+    # be a given name" -- and P1's fold's without one.
+    elif (titles and families and not givens and not middles
+            and not any("particle" in tokens[i].tags for i in families)
+            and _run_addresses_by_given(
+                (tokens[i].text
+                 for i in _addressing_run(titles, families[0])),
+                state.lexicon.given_name_titles)):
+        for i in families:
+            _retag(tokens, i, Role.GIVEN)
+        # recomputed for H1's reason, stated above
+        givens = _idx(tokens, Role.GIVEN)
         families = _idx(tokens, Role.FAMILY)
 
     # rules/M4: "a maiden name standing beside exactly one name

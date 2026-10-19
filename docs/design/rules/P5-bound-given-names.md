@@ -95,14 +95,14 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
       "Berg, abdul V"             →  given="abdul V"
       "abdul Ma Smith"            →  given="abdul Ma"
     Accepted: a given-name title plus a bound pair leaves the family
-    empty, as H1 accepts for "Sir John" — the input names no family.
-    Under a family-first order the joined pair is the family and the
-    given name is empty instead, as "Sir John" reads there: the join
-    is order-blind, and H1's exemption never runs under that order.
+    empty, as H1 accepts for "Sir John" — the input names no family —
+    under a family-first order too: the join is order-blind, and H1
+    moves the pair that order placed in the family back to the given
+    name, as it does "Sir John" there.
       "Sheik abdul salam"         →  family=""
-      "Sheik abdul salam"  family-first  →  family="abdul salam"
-      "Sheik abdul salam"  family-first  →  given=""
-      "Sheik abdul salam"  family-first-given-last  →  family="abdul salam"
+      "Sheik abdul salam"  family-first  →  given="abdul salam"
+      "Sheik abdul salam"  family-first  →  family=""
+      "Sheik abdul salam"  family-first-given-last  →  given="abdul salam"
     Accepted: the given part after a family comma reads the words
     behind a title by its own walk, and where that walk reads them
     otherwise than the comma-less name does, the join is declined and

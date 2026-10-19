@@ -203,6 +203,7 @@
 {"name": "Anne Berit Bernhard Nilsen", "given": "Anne", "middle": "Berit Bernhard", "family": "Nilsen", "initials": "A. B. B. N."}
 {"name": "Anne Sepp", "given": "Anne", "family": "Sepp", "initials": "A. S."}
 {"name": "Anne Sofie Holm Hansen", "given": "Anne", "middle": "Sofie Holm", "family": "Hansen", "initials": "A. S. H. H."}
+{"name": "Anne, Princess", "title": "Princess", "given": "Anne", "initials": "A."}
 {"name": "Anne-Pierre de Montesquiou-Fézensac", "given": "Anne-Pierre", "family": "de Montesquiou-Fézensac", "initials": "A. M."}
 {"name": "Annebault, Claude d'", "given": "Claude", "family": "d' Annebault", "initials": "C. A."}
 {"name": "Annelise Weber", "given": "Annelise", "family": "Weber", "initials": "A. W."}
@@ -804,6 +805,7 @@
 {"name": "Elder Soares", "given": "Elder", "family": "Soares", "initials": "E. S."}
 {"name": "Elisa Ruiz Romero", "given": "Elisa", "middle": "Ruiz", "family": "Romero", "initials": "E. R. R."}
 {"name": "Eliseo Jiménez Ruiz", "given": "Eliseo", "middle": "Jiménez", "family": "Ruiz", "initials": "E. J. R."}
+{"name": "Elizabeth II, Queen", "title": "Queen", "given": "Elizabeth", "suffix": "II", "initials": "E."}
 {"name": "Elizabeth Margot Schreiber Castañón", "given": "Elizabeth", "middle": "Margot Schreiber", "family": "Castañón", "initials": "E. M. S. C."}
 {"name": "Elizabeth Windsor Maria Teresa bin Stromae MP", "given": "Elizabeth", "middle": "Windsor Maria Teresa", "family": "bin Stromae", "suffix": "MP", "initials": "E. W. M. T. S."}
 {"name": "Elslande, Renaat van", "given": "Renaat", "family": "van Elslande", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "R. E."}
@@ -1494,6 +1496,8 @@
 {"name": "John Hámish Watson", "given": "John", "middle": "Hámish", "family": "Watson", "initials": "J. H. W."}
 {"name": "John I Smith", "given": "John", "middle": "I", "family": "Smith", "initials": "J. I. S."}
 {"name": "John III", "given": "John", "suffix": "III", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
+{"name": "John III, Dr.", "title": "Dr.", "family": "John", "suffix": "III", "initials": "J."}
+{"name": "John III, Sir", "title": "Sir", "given": "John", "suffix": "III", "initials": "J."}
 {"name": "John Ingram V", "given": "John", "family": "Ingram", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. I."}
 {"name": "John J. V", "given": "John", "middle": "J.", "family": "V", "initials": "J. J. V."}
 {"name": "John Jack Andrew Kennedy", "given": "John", "middle": "Jack Andrew", "family": "Kennedy", "initials": "J. J. A. K."}
@@ -2893,6 +2897,7 @@
 {"name": "Smith, PhD Ma", "family": "Smith", "suffix": "PhD Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S."}
 {"name": "Smith, Prof.", "title": "Prof.", "family": "Smith", "initials": "S."}
 {"name": "Smith, RN - CRNA", "family": "Smith", "suffix": "RN - CRNA", "initials": "S."}
+{"name": "Smith, Sir", "title": "Sir", "given": "Smith", "initials": "S."}
 {"name": "Smith, Sr.", "family": "Smith", "suffix": "Sr.", "initials": "S."}
 {"name": "Smith, XYZ", "given": "XYZ", "family": "Smith", "initials": "X. S."}
 {"name": "Smith, de Mesnil Jean", "family": "Smith de Mesnil Jean", "initials": "S. M. J."}
@@ -3537,6 +3542,7 @@
 {"name": "van den Wolf, prof. dr. Anna Cornelia Eva Sophia jr. m.d. ph.d.", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. m.d. ph.d.", "initials": "A. C. E. S. W."}
 {"name": "van der Berg, MA", "family": "van der Berg", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "B."}
 {"name": "van der Berg, PhD", "family": "van der Berg", "suffix": "PhD", "initials": "B."}
+{"name": "van der Berg, Sir", "title": "Sir", "family": "van der Berg", "initials": "B."}
 {"name": "van ma van", "given": "van", "middle": "ma", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. m. v."}
 {"name": "van nguyen", "given": "van", "family": "nguyen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. n."}
 {"name": "van. den. Wolf Ada Cornelia Eva Sophia M.D. Ph.D.", "order": "FAMILY_FIRST", "title": "van. den.", "given": "Ada", "middle": "Cornelia Eva Sophia", "family": "Wolf", "suffix": "M.D. Ph.D.", "initials": "A. C. E. S. W."}

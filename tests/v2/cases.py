@@ -1789,11 +1789,9 @@ CASES: tuple[Case, ...] = (
          notes="H1's carve-out is untouched by #410: a given-name "
                "title addresses by given name, so the one name word "
                "stays `given` and the family stays empty, exactly as "
-               "'Sir John' reads -- in the DEFAULT order, which is "
-               "what this row pins: under either family-first order "
-               "the same name reads family 'John', H1 being a no-op "
-               "there because assign has already placed the word. "
-               "The boundary of the widening, and "
+               "'Sir John' reads, under either family-first order "
+               "too since #720, H1 moving back a word assign placed "
+               "in the family. The boundary of the widening, and "
                "the row that fails if the retag is made unconditional. "
                "The fix classification is #274's marker consumption, "
                "which is what makes this differ from 1.4.0 (first "
@@ -9028,14 +9026,16 @@ CASES: tuple[Case, ...] = (
                "suffix vocabulary before the audit"),
     Case("comma_path_given_name_title_behind_a_listed_numeral",
          "John III, Sir",
-         {"title": "Sir", "family": "John", "suffix": "III"},
+         {"title": "Sir", "given": "John", "suffix": "III"},
+         classification="fix(#720)",
          notes="the title row above with a GIVEN-NAME title. O5 is "
                "silenced all the same: what the report is about is a "
                "field NOTHING decided, and this one a title decided. "
-               "The word lands in `family`, AGAINST H1's given-name "
-               "title clause ('John Jr., Sir' and 'John PhD, Sir' "
-               "too, #720). 'John V, Sir' read H1's given name until "
-               "#718; nothing pins that reading behind a comma now"),
+               "A comma with no given name after it does not decide "
+               "the field (H1), so the title keeps the word given, as "
+               "the shape-only 'John VI, Sir' always read it. Assign "
+               "writes the family on this path and H1 moves it back. "
+               "1.4.0 read last 'John'"),
     Case("a_lone_numeral_before_a_given_name_title_comma",
          "John V, Sir",
          {"title": "Sir", "given": "John", "family": "V"},
