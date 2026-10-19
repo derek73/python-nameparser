@@ -93,6 +93,10 @@ uv run sphinx-build -b html docs dist/docs
 #    explicitly — every one of them has gone stale at least once.
 #    - docs/*.rst: usage.rst examples and API surface, plus any file listing
 #      config constants or HumanName kwargs
+#    - migrate.rst's "Changed in ..." list: the shapes whose 1.4 reading
+#      moved, each with a doctest. Every release log bullet saying "1.4.0
+#      through" the last release adds one. 2.5.0 nearly shipped with none
+#      of its nine
 #    - README.rst's announcement at the top: it is the PyPI project page
 #      (pyproject's `readme`), so it should lead with the release being
 #      shipped, drawn from the release log's summary. 2.4.0 nearly shipped
