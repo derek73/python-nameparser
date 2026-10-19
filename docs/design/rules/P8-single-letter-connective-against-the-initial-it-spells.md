@@ -18,7 +18,11 @@ P8. Rationale: where a name is written in more than one case, a
     post-nominals and titles, where it connects nothing and there is
     no other way for the call to go: it is not reported, and where
     S10 reads it as a numeral S10's report is the one.
-    Case is asked of the name's own words, the span P3 states.
+    Case is asked of the name's own words, the span P3 states, and
+    not this rule's alone: wherever another rule asks the case
+    question — the suffix slot (S6) and the post-comma slot (C4,
+    C6) — it is asked of these same words, so the answer is taken
+    once and read where each of them stands.
       "Jose E Maria Santos"       →  middle="E Maria"
       "jose e maria santos"       →  middle="e maria"
       "Jose e Maria Santos"       →  given="Jose e Maria"
@@ -86,4 +90,4 @@ P8. Rationale: where a name is written in more than one case, a
     rules.
       "Хосе И Мария Сантос"       →  given="Хосе И Мария"
     Signal: a case contrast: a single-letter connective's case against the name's own words
-    history: decisions/P8 · interacts: P3, T4, M2, M4, R3, R4, S10 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_classify.py
+    history: decisions/P8 · interacts: P3, T4, M2, M4, R3, R4, S10, S6, C4, C6 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_classify.py

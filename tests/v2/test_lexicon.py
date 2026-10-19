@@ -31,7 +31,7 @@ def test_default_sources_v1_vocabulary() -> None:
     # flipped model: 'dos' is never-given in v1, so NOT ambiguous here
     assert "dos" in lex.particles and "dos" not in lex.particles_ambiguous
     assert "van" in lex.particles_ambiguous
-    # the policy is 'e' and not 'y' (decisions/P3): a bare E initial is
+    # the policy is 'e' and not 'y' (decisions/P8): a bare E initial is
     # common, where 'y' between two surnames is the commonest Hispanic compound
     assert "e" in lex.conjunctions_ambiguous and "y" not in lex.conjunctions_ambiguous
     # CAPITALIZATION_EXCEPTIONS maps 'phd' -> 'PhD', a case mask since

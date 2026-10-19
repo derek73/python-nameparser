@@ -41,11 +41,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     inside such a clause is the clause's word, read by T4 and not by
     P8. The two questions part at one point: a
     marker the pass declines and leaves as a word (M2) is a word, and
-    counts toward the three — but its case is still not asked.
-    That span is not this rule's alone: wherever another rule asks
-    the case question — P8, the suffix slot (S6) and the post-comma
-    slot (C4, C6) — it is asked of these same words, so the answer is
-    taken once and read where each of them stands.
+    counts toward the three; whether its case is asked is P8's to say.
       "Juan y Eva Garcia"         →  given="Juan y Eva"
       "Juan y Garcia"             →  middle="y"  · boundary
       "Juan y Garcia née Jones"   →  middle="y"

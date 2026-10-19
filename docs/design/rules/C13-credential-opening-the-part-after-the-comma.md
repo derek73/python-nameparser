@@ -12,10 +12,9 @@ C13. Rationale: a credential is written after the name it belongs
     every word after it reads as that run reads, a title word as a
     title and any other word as a suffix, under strict mode too,
     whose veto refuses a word the suffix reading and not the run
-    ('Smith, PSM I.'). The comma has then fixed nothing, so a part
-    before it holding two or more name words keeps its positional
-    read, and a part holding one is the family ('John Smith, PhD
-    Jones', 'Doe, PhD Jones'). A word of both the title and the
+    ('Smith, PSM I.'). The comma has then fixed nothing, as with a
+    part of no name word (C8), and a part before it holding one name
+    word is the family ('John Smith, PhD Jones', 'Doe, PhD Jones'). A word of both the title and the
     suffix vocabulary opens nothing, and nor does a credential behind
     one: in front of a given name it is the listing form's title
     ('Smith, Ms Jane'), and no count of the words before the comma
