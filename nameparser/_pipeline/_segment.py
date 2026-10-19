@@ -99,9 +99,15 @@ def segment(state: ParseState) -> ParseState:
     # walk below passes `case_class()` for the leaning one. One
     # closure with a default rather than two whose bodies differ only
     # in that argument.
+    # The strict test also reads the case fact, for its initial veto
+    # (rules/T4, #727): asked only under that opt-in policy, so the
+    # default pays nothing for it.
     def suffixy(seg: tuple[int, ...], case: bool | None = None) -> bool:
-        return is_wholly_suffix([state.tokens[i].text for i in seg],
-                                state.lexicon, state.policy, one_case=case)
+        return is_wholly_suffix(
+            [state.tokens[i].text for i in seg], state.lexicon,
+            state.policy, one_case=case,
+            letters_one_case=(None if state.policy.lenient_comma_suffixes
+                              else case_class()))
 
     def class_run(seg: tuple[int, ...]) -> bool:
         # Every token of the run joins the ambiguous credential class

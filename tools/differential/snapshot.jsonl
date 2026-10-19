@@ -5627,6 +5627,7 @@
 {"name": "田中さん", "family": "田中", "suffix": "さん", "initials": "田."}
 {"name": "田中さん II", "family": "田中", "suffix": "さん II", "initials": "田."}
 {"name": "田中さん V.", "given": "田中さん", "family": "V.", "initials": "田. V."}
+{"name": "田中さん v", "given": "田中さん", "family": "v", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "田. v."}
 {"name": "田中さん 様.", "family": "田中", "suffix": "さん 様.", "initials": "田."}
 {"name": "田中さん, Dr.", "title": "Dr.", "family": "田中さん", "initials": "田."}
 {"name": "田中さん, Ph. D.", "family": "田中", "suffix": "さん, Ph. D.", "initials": "田."}

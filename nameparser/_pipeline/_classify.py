@@ -171,12 +171,13 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # nothing about any letter in it, a bare letter is an initial
         # wherever its capital would be" -- so every reader of the tag
         # after classify reads 'j' as it reads 'J' (#723; the roman
-        # numerals first, #721) -- not the honorific peel upstream,
-        # which asks the shape itself ('田中さん v' still reads
-        # otherwise than '田中さん V'). `one_case` is the fact about
-        # the name's own words, applied to a clause's words too, as
-        # #516's caps branch applies it, since a capital 'J' in a
-        # clause is an initial as well. The capital is asked of the
+        # numerals first, #721). Readers that run before the tag
+        # exists, or ask the word's text rather than its tag -- the
+        # strict suffix test, which the honorific peel and
+        # `lenient_comma_suffixes=False` ask -- take the same fact as
+        # an argument (#727). `letter_one_case` is the own-words fact
+        # for an own word and the whole name's for a clause's
+        # (docstring). The capital is asked of the
         # bare pattern at C level, no frame per one-letter word, and
         # needs no script test: no capital `_INITIAL` matches is in a
         # script without initials. 'é' and 'ж' stay as they were,

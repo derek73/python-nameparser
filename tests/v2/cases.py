@@ -3978,6 +3978,24 @@ CASES: tuple[Case, ...] = (
                "roman numeral), so 'V' is the family -- 1.4.0's "
                "reading field for field, which #718 restored -- and "
                "both forks, 'V' and 'Ma', report"),
+    Case("strict_comma_reads_a_one_case_numeral_as_its_capital",
+         "john smith, v",
+         {"given": "v", "family": "john smith"},
+         policy=Policy(lenient_comma_suffixes=False),
+         notes="the strict test vetoes an initial, and in a name "
+               "written in one case a bare 'v' is one (T4), so this "
+               "reads as 'JOHN SMITH, V' does under the same knob: "
+               "the knob's 'V' as a given-name initial (#727; before, "
+               "suffix 'v')"),
+    Case("strict_comma_reports_a_one_case_numeral_in_a_third_part",
+         "smith, john, i",
+         {"given": "john", "family": "smith", "suffix": "i"},
+         policy=Policy(lenient_comma_suffixes=False),
+         ambiguities=("comma-structure",),
+         notes="the third part holds no word the strict test calls a "
+               "suffix, so C2 reads it as suffix material and reports "
+               "the structure, as for 'SMITH, JOHN, I' (#727; before, "
+               "no report)"),
     Case("caps_run_declines_a_bound_given_head", "John Smith, ABDUL AP",
          {"given": "ABDUL AP", "family": "John Smith"},
          policy=Policy(unlisted_caps_suffixes=CapsSuffixes.EVERYWHERE),
@@ -11464,6 +11482,15 @@ CASES: tuple[Case, ...] = (
                "Classification agrees with what classify does with "
                "the same token downstream -- 'V.' is a middle "
                "initial, not a post-nominal",
+         tolerated=True),
+    Case("ja_honorific_glued_before_a_one_case_numeral", "田中さん v",
+         {"given": "田中さん", "family": "v"},
+         ambiguities=("suffix-or-name",),
+         notes="nothing in this name is written in a case, so the bare "
+               "'v' is the initial its capital is (T4): the scan-back "
+               "stops at it as at 'V', and this reads as '田中さん V' "
+               "does -- 1.4.0's reading too (#727; 2.1 through 2.4 "
+               "peeled さん and read suffix 'さん v')",
          tolerated=True),
     Case("ja_honorific_with_a_period_no_comma", "田中さん 様.",
          {"family": "田中", "suffix": "さん 様."},

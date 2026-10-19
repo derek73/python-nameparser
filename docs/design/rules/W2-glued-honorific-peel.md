@@ -41,5 +41,5 @@ W2. Rationale: some East Asian honorifics glue directly onto the end
     more right (#707).
       "田中 副社長"               →  given="副"
       "岸田文雄衆議院議員"        →  family="岸田文雄衆議院"
-    history: decisions/W2 · interacts: W3 · implemented: nameparser/_pipeline/_script_segment.py
+    history: decisions/W2 · interacts: W3, T4 · implemented: nameparser/_pipeline/_script_segment.py
 

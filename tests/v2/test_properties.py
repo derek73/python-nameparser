@@ -3343,8 +3343,11 @@ def test_every_one_letter_particle_veto_is_load_bearing(
 # bound given name, an initial, a nickname and a credential before or
 # after it -- and the shapes any bare letter meets (#723), with the
 # letters below, three heads (one Catalan, one holding an ambiguous
-# acronym) and all three orders:
-# 3,168 pairs, about 6,350 parses, 0.48s on py3.11 (2026-10-18).
+# acronym) and all three orders -- and every shape holding a comma
+# again under Policy(lenient_comma_suffixes=False), the one switch
+# whose suffix test vetoes an initial by the word's own shape (#727);
+# trimmed by shape, since the switch reaches only a comma's parts:
+# 4,554 pairs, about 9,100 parses, 0.73s on py3.11 (2026-10-18).
 _ONE_CASE_SHAPES = (
     "{a} {n}", "{a} {b} {n}", "{a} {n}, phd", "{a} {b} {n}, phd",
     "{a} {n}, jr.", "{b}, {a} {n}", ", {a} {n}", "{a} nee {b} {n}",
@@ -3360,7 +3363,11 @@ _ONE_CASE_SHAPES = (
     # #723: the letter alone, before a maiden marker, before or after a
     # connective, opening the name and after an empty head
     "{n}", "{n} nee {b}", "{a} {n} y {b}", "{b}, {n} y {c}", "{n} {a}",
-    ", {n}")
+    ", {n}",
+    # #727: the letter alone after a comma, behind a whole name or in a
+    # third part, and opening a credential run; and after a glued CJK
+    # honorific, whose peel asks the suffix test by text
+    "{a} {b}, {n}", "{b}, {a}, {n}", "{a} {b}, {n} phd", "田中さん {n}")
 #: the one-letter numerals and a listed and a shape-only spelling of
 #: each longer length, then one letter from each other fork a bare
 #: letter meets (#723): no vocabulary, a connective, a marked one
@@ -3369,12 +3376,14 @@ _ONE_CASE_LETTERS = ("v", "i", "x", "vi", "iii", "ii", "iv", "vii",
 _ONE_CASE_HEADS = (("john", "smith", "jones"), ("carod", "puig", "rovira"),
                    ("mary", "ma", "lee"))
 #: the negative controls, measured 2026-10-18 on this grid, which
-#: 16ee2851 (before #723, its numerals already guarded) disagreed on
-#: 30 of: with classify's one-case letter initial taken out, and with
-#: the numeral fork's one-case letter in front taken out -- each guard
-#: seen on its own
-_ONE_CASE_UNGUARDED = 306
+#: 2444f847 (before #727) disagreed on 72 of: with classify's one-case
+#: letter initial taken out, with the numeral fork's one-case letter
+#: in front taken out, and with the strict suffix test's one-case veto
+#: taken out (#727: the 54 strict comma pairs and the 18 honorific
+#: ones, which are 2444f847's 72) -- each guard seen on its own
+_ONE_CASE_UNGUARDED = 387
 _ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 117
+_ONE_CASE_STRICT_VETO_UNGUARDED = 72
 
 
 def _one_case_disagreements() -> list[str]:
@@ -3382,13 +3391,17 @@ def _one_case_disagreements() -> list[str]:
         return ({k: v.lower() for k, v in name.as_dict().items() if v},
                 tuple(sorted(a.kind.value for a in name.ambiguities)))
     out = []
+    commas = tuple(s for s in _ONE_CASE_SHAPES if "," in s)
     for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
-        parser = Parser(policy=Policy(name_order=order))
-        for shape, letter, (a, b, c) in itertools.product(
-                _ONE_CASE_SHAPES, _ONE_CASE_LETTERS, _ONE_CASE_HEADS):
-            lower = shape.format(a=a, b=b, c=c, n=letter)
-            if sig(parser.parse(lower)) != sig(parser.parse(lower.upper())):
-                out.append(f"[{order}] {lower!r}")
+        for strict, shapes in ((False, _ONE_CASE_SHAPES), (True, commas)):
+            parser = Parser(policy=Policy(
+                name_order=order, lenient_comma_suffixes=not strict))
+            for shape, letter, (a, b, c) in itertools.product(
+                    shapes, _ONE_CASE_LETTERS, _ONE_CASE_HEADS):
+                lower = shape.format(a=a, b=b, c=c, n=letter)
+                if (sig(parser.parse(lower))
+                        != sig(parser.parse(lower.upper()))):
+                    out.append(f"[{order}{' strict' * strict}] {lower!r}")
     return out
 
 
@@ -3403,6 +3416,19 @@ def test_the_one_case_grid_sees_the_letter_initial(
     monkeypatch.setattr("nameparser._pipeline._classify._INITIAL",
                         re.compile(r"(?!)"))
     assert len(_one_case_disagreements()) == _ONE_CASE_UNGUARDED
+
+
+def test_the_one_case_grid_sees_the_strict_veto(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # the strict suffix test without its one-case input (#727): the
+    # veto by the word's own writing alone, as before
+    from nameparser._pipeline import _vocab
+    real = _vocab._is_suffix_strict_n
+    monkeypatch.setattr(
+        _vocab, "_is_suffix_strict_n",
+        lambda n, text, lexicon, one_case=None: real(n, text, lexicon))
+    assert (len(_one_case_disagreements())
+            == _ONE_CASE_STRICT_VETO_UNGUARDED)
 
 
 def test_the_one_case_grid_sees_the_letter_in_front(
