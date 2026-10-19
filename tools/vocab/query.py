@@ -129,24 +129,28 @@ def main(argv: list[str] | None = None) -> int:
     if args.excluded is not None and args.excluded not in KINDS | PROPERTIES:
         ap.error(f"unknown kind or property {args.excluded!r}; known: "
                  f"{', '.join(sorted(KINDS | PROPERTIES))}")
-    word = None if args.word is None else " ".join(build._normalize(args.word).split())
-    if word == "":
-        ap.error(f"--word {args.word!r} normalizes to nothing")
     try:
-        files = build.read_dir()
-        file = args.file
-        if file is not None:
-            file = file if file.endswith(".toml") else f"{file}.toml"
-            if file not in files:
-                ap.error(f"no vocabulary file {file!r}")
-        pool = build.load(files)
+        return _run(ap, args)
     except build.VocabError as e:
         print(f"vocabulary error: {e}", file=sys.stderr)
         return 2
     except Exception:
+        # never exit 1 on an error: 1 means "nothing matches"
         traceback.print_exc()
         return 3
-    found = select(pool, issue=args.issue, kind=args.kind,
+
+
+def _run(ap: argparse.ArgumentParser, args: argparse.Namespace) -> int:
+    word = None if args.word is None else " ".join(build._normalize(args.word).split())
+    if word == "":
+        ap.error(f"--word {args.word!r} normalizes to nothing")
+    files = build.read_dir()
+    file = args.file
+    if file is not None:
+        file = file if file.endswith(".toml") else f"{file}.toml"
+        if file not in files:
+            ap.error(f"no vocabulary file {file!r}")
+    found = select(build.load(files), issue=args.issue, kind=args.kind,
                    excluded=args.excluded, word=word, file=file)
     if args.count:
         print(len(found))

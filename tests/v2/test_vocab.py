@@ -9,9 +9,9 @@ then has a mutation below that it must refuse, because a check nothing
 exercises passes the same way a missing one does. A check WIDENED to
 refuse more keeps a row for every case its narrower form refused:
 #737's review widened check 6 from "the same kind" to "the same set"
-and the new test quietly stopped refusing the excluded kind itself with
-`acronym` flipped, a case nothing listed because the old test had made
-it impossible. compile_pool's final
+and the new check quietly stopped refusing the excluded kind itself
+with `acronym` flipped, a case nothing listed because the old check had
+made it impossible. compile_pool's final
 acronym-and-word check is a backstop check 5 always reaches first, so
 its mutation is refused by check 5.
 """
@@ -165,8 +165,13 @@ MUTATIONS = [
     ("addresses-typo", {"und.toml": _w('[[word]]\ntext = "sheikh"\ntitle = { addresses = "givn" }')}, "must be 'family' or 'given'"),
     ("acronym-with-a-period", {"und.toml": _w('[[word]]\ntext = "x.q"\ncredential = {}')}, "matched with every period removed"),
     ("excluded-property-unknown", {"ja.toml": _w('[[word]]\ntext = "殿"\nhonorific = { excluded = { atached = "x" } }')}, "not a behavioral property"),
-    ("excluded-defaulted-property-overridden", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { acronym = false, excluded = { acronym = "x" } }')}, "acronym is excluded"),
-    ("excluded-property-set-in-another-file", {"ja.toml": _w('[[word]]\ntext = "名"\nhonorific = { excluded = { attached = "x" } }'), "zh.toml": _w('[[word]]\ntext = "名"\nhonorific = { attached = { side = "after" } }')}, "attached is excluded"),
+    ("excluded-defaulted-property-overridden", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { acronym = false, excluded = { acronym = "x" } }')}, "acronym = false is excluded"),
+    ("excluded-property-set-in-another-file", {"ja.toml": _w('[[word]]\ntext = "名"\nhonorific = { excluded = { attached = "x" } }'), "zh.toml": _w('[[word]]\ntext = "名"\nhonorific = { attached = { side = "after" } }')}, "attached = .* is excluded"),
+    # `cased` compiles per word, so its exclusion holds over every kind
+    ("excluded-cased-set-by-another-kind", {"und.toml": _w('[[word]]\ntext = "mc"\ntitle = { excluded = { cased = "keep as written" } }'), "en.toml": _w('[[word]]\ntext = "mc"\nparticle = { may_be_given = true, cased = "MC" }')}, "keep as written"),
+    # the exclusion's reason is shown before check 4's complaint
+    ("excluded-reason-shown-before-one-kind-per-word", {"fr.toml": _w('[[word]]\ntext = "fils"\ncredential = {}\nexcluded = { generation = "RECORDED REASON" }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "RECORDED REASON"),
+    ("excluded-property-reason-shown-before-one-kind-per-word", {"ja.toml": _w('[[word]]\ntext = "名"\nhonorific = { excluded = { attached = "RECORDED REASON" } }'), "zh.toml": _w('[[word]]\ntext = "名"\ncourtesy = { attached = { side = "after" } }')}, "RECORDED REASON"),
     ("addresses-reserved-value", {"und.toml": _w('[[word]]\ntext = "sheikh"\ntitle = { addresses = "any" }')}, "reserved for a later phase"),
     ("attached-on-an-acronym", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { attached = { side = "after" } }')}, "needs a word reading"),
     ("attached-before", {"ja.toml": _w('[[word]]\ntext = "さん"\nhonorific = { attached = { side = "before" } }')}, "side = 'after'"),
@@ -382,4 +387,71 @@ def test_an_empty_word_is_a_usage_error() -> None:
     with pytest.raises(SystemExit) as e:
         query.main(["--word", "."])
     assert e.value.code == 2
+
+
+@pytest.mark.parametrize(("layout", "message"), [
+    ({}, "no vocabulary files"),
+    ({"EN.TOML": OK}, "BCP 47 tag"),          # misnamed files are read, then refused
+    ({"en.toml.orig": OK}, "BCP 47 tag"),
+    ({"sub/en.toml": OK}, "no subfolders"),
+])
+def test_the_folder_is_read_whole(tmp_path: Path, layout: dict[str, str], message: str) -> None:
+    for name, text in layout.items():
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text(text, encoding="utf-8")
+    (tmp_path / ".DS_Store").write_bytes(b"\x00")  # a dotfile is ignored, never read
+    with pytest.raises(build.VocabError, match=message):
+        build.compile_files(build.read_dir(tmp_path))
+    with pytest.raises(build.VocabError, match="no vocabulary folder"):
+        build.read_dir(tmp_path / "missing")
+
+
+def _point_at(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, files: dict[str, str]) -> None:
+    folder = tmp_path / "vocab"
+    folder.mkdir()
+    for name, text in files.items():
+        (folder / name).write_text(text, encoding="utf-8")
+    read_dir = build.read_dir
+    monkeypatch.setattr(build, "read_dir", lambda: read_dir(folder))
+    monkeypatch.setattr(build, "ROOT", tmp_path)
+    monkeypatch.setattr(build, "OUTPUT", tmp_path / "_compiled.py")
+
+
+def test_no_error_exits_1_the_code_for_stale(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                             capsys: pytest.CaptureFixture[str]) -> None:
+    _point_at(monkeypatch, tmp_path, {"en.toml": OK})
+    # an unreadable module is stale: rebuilding replaces it
+    build.OUTPUT.write_bytes(b"\xff")
+    assert build.main(["--check"]) == 1
+    assert "unreadable" in capsys.readouterr().out
+    assert build.main([]) == 0
+    assert build.main(["--check"]) == 0
+    # a module that cannot be written is an internal error, exit 3
+    build.OUTPUT.unlink()
+    build.OUTPUT.mkdir()
+    assert build.main([]) == 3
+
+
+def test_a_warning_raised_as_an_error_exits_2(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # a soft finding raised under -W error is a data error, not a bug
+    _point_at(monkeypatch, tmp_path, {"en.toml": _w('[[word]]\ntext = "smith"\nfamily = {}')})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert build.main(["--check"]) == 2
+
+
+def test_a_broken_lexicon_module_exits_3(monkeypatch: pytest.MonkeyPatch) -> None:
+    def broken() -> ModuleType:
+        raise SyntaxError("conflict markers")
+    monkeypatch.setattr(build, "_LEXICON", [])
+    monkeypatch.setattr(build, "_load_lexicon_module", broken)
+    assert build.main(["--check"]) == 3
+
+
+def test_a_query_error_exits_3_not_1(monkeypatch: pytest.MonkeyPatch) -> None:
+    query = _load_query()
+    def broken(*args: object, **kwargs: object) -> list[object]:
+        raise KeyError("a bug in select")
+    monkeypatch.setattr(query, "select", broken)
+    assert query.main(["--word", "dr"]) == 3
 

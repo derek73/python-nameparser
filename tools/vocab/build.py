@@ -6,8 +6,10 @@ Usage::
     uv run python tools/vocab/build.py --check   # exit 1 if it is stale
 
 Either exits 2, printing the failed check, when the vocabulary fails one
-or a file cannot be read, and 3 on an internal error, so neither is ever
-mistaken for exit 1's "stale".
+or a vocabulary file cannot be read, and 3 on an internal error or a
+module it cannot write, so neither is ever mistaken for exit 1's
+"stale". An unreadable _compiled.py IS stale, rebuilding replacing it,
+and --check reports it so.
 
 The vocabulary is written per word, in one TOML file per BCP 47 language
 tag (`und` for words not yet assigned one, `mul` for words shared on
@@ -19,8 +21,8 @@ tests/v2/test_vocab.py fails when the two disagree.
 
 The build checks replace the import-time asserts the data modules used
 to carry. Lexicon.__post_init__ still runs on the result, and three
-checks repeat one of its own -- 7's case mask, 9, and through 4 its
-gate-bypass raise -- so the shipped data fails here, naming the file and
+checks repeat one of its own -- 7's case mask, 9, and through 4 and 5
+its gate-bypass raise -- so the shipped data fails here, naming the file and
 the word, rather than at the first import.
 Each raises VocabError naming the word, and the file where one file is
 at fault:
@@ -35,8 +37,10 @@ at fault:
 5. the same kind of the same word agrees on every behavioral property
    in every file;
 6. an excluded kind is absent from every file, along with every other
-   kind that compiles to the same set, and an excluded property never
-   takes a value other than its default;
+   kind that compiles to the same set (a name kind refuses only itself),
+   and an excluded property never takes a value other than the one it
+   has unwritten, on any reading of its category (`cased`: of the word);
+   run before 4 and 5, so the recorded reason is what a contributor sees;
 7. `same_as` names a word of the same category, `cased` spells its
    word's letters (#459), at most one `cased` per word;
 8. a phrase only as a birth_marker or an addresses = "given" title;
@@ -60,7 +64,7 @@ import sys
 import tomllib
 import traceback
 import warnings
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import ModuleType
@@ -95,9 +99,25 @@ def _load_lexicon_module() -> ModuleType:
     return module
 
 
-_lexicon = _load_lexicon_module()
-_normalize: Callable[[str], str] = _lexicon._normalize
-_alnum: Callable[[str], str] = _lexicon._alnum
+_LEXICON: list[ModuleType] = []
+
+
+def _lexicon() -> ModuleType:
+    # loaded at first use, inside main's error handling, so a broken
+    # _lexicon.py exits 3 rather than failing the import with exit 1
+    if not _LEXICON:
+        _LEXICON.append(_load_lexicon_module())
+    return _LEXICON[0]
+
+
+def _normalize(word: str) -> str:
+    result: str = _lexicon()._normalize(word)
+    return result
+
+
+def _alnum(text: str) -> str:
+    result: str = _lexicon()._alnum(text)
+    return result
 
 VOCAB = ROOT / "nameparser" / "vocab"
 OUTPUT = ROOT / "nameparser" / "config" / "_compiled.py"
@@ -111,9 +131,9 @@ SCHEMA = 1
 #: kind -> category. The category decides which compiled field a reading
 #: feeds. For title, suffix, particle and conjunction, the category's own
 #: name is also a kind (`title = {}`: a title not yet classified), so
-#: classifying a word later moves no set. The bound_given, relation
-#: (birth_marker) and name (given, family) categories have no generic
-#: kind. Kind
+#: classifying a word later moves no set. bound_given's one kind shares
+#: its category's name; the relation (birth_marker) and name (given,
+#: family) categories have no generic kind. Kind
 #: names are unique across categories; a fine kind arrives with its
 #: category's classification, in a core PR, as one row here.
 CATEGORY: dict[str, str] = {
@@ -466,6 +486,17 @@ def _refused_by(r: Reading, excluded: str) -> bool:
     return r.category != "suffix" or _acronym(r) == (excluded == "credential")
 
 
+def _shown(value: object) -> str:
+    """A property value as TOML writes it, for a refusal message."""
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, str):
+        return f'"{value}"'
+    if isinstance(value, dict):
+        return "{ " + ", ".join(f"{k} = {_shown(v)}" for k, v in value.items()) + " }"
+    return repr(value)
+
+
 def _overrides(r: Reading, prop: str) -> bool:
     """Whether r gives a behavioral property a value other than the one it
     takes when the key is not written -- what a property exclusion
@@ -484,24 +515,31 @@ def check_pool(pool: Pool) -> None:
     for r in pool.readings:
         by_text.setdefault(r.text, []).append(r)
 
+    # 6: an excluded kind is absent from the whole pool, and an excluded
+    # property never takes a value other than the one it has unwritten --
+    # run first, so a contributor adding a refused reading meets the
+    # recorded reason rather than check 4's or 5's complaint about it.
+    # A refused property holds over every kind of its category, the sets
+    # it feeds being sets of WORDS (a second suffix kind would be refused
+    # by check 4 anyway, but without the reason), and `cased`, compiled
+    # once per word whatever the reading, over every reading of the word
+    for x in pool.exclusions:
+        for r in by_text.get(x.text, ()):
+            if x.prop is None and _refused_by(r, x.kind):
+                raise VocabError(f"{r.where()}: {x.kind} is excluded for "
+                                 f"{x.text!r} in {x.file}: {x.reason}")
+            if (x.prop is not None and _overrides(r, x.prop)
+                    and (r.category == CATEGORY[x.kind] or x.prop == "cased")):
+                raise VocabError(
+                    f"{r.where()}: {x.prop} = {_shown(r.props.get(x.prop))} is "
+                    f"excluded for {x.text!r} in {x.file}: {x.reason}")
+
     # 4: one suffix kind per word, across files
     for text, rs in by_text.items():
         kinds = sorted({r.kind for r in rs if r.category == "suffix"})
         if len(kinds) > 1:
             raise VocabError(f"{text!r}: one suffix kind per word, got {kinds} "
                              f"({', '.join(sorted({r.file for r in rs}))})")
-
-    # 6: an excluded kind or property is absent from the whole pool --
-    # run before 5, so a contributor adding a refused reading meets the
-    # recorded reason rather than a disagreement between files
-    for x in pool.exclusions:
-        for r in by_text.get(x.text, ()):
-            if x.prop is None and _refused_by(r, x.kind):
-                raise VocabError(f"{r.where()}: {x.kind} is excluded for "
-                                 f"{x.text!r} in {x.file}: {x.reason}")
-            if x.prop is not None and r.kind == x.kind and _overrides(r, x.prop):
-                raise VocabError(f"{r.where()}: {x.prop} is excluded for "
-                                 f"{x.text!r} in {x.file}: {x.reason}")
 
     # 5: the same kind of the same word agrees on every behavioral
     # property in every file -- the default loads them all, so a word
@@ -658,12 +696,26 @@ def compile_pool(pool: Pool) -> dict[str, Any]:
 
 
 def read_dir(path: Path = VOCAB) -> dict[str, str]:
+    """Every file in the vocabulary folder, by name. Every entry but a
+    dotfile is read, so a misnamed one (EN.TOML, en.toml.orig) reaches
+    check 1's file-name check instead of being skipped, and a missing or
+    empty folder is an error rather than an empty vocabulary."""
+    if not path.is_dir():
+        raise VocabError(f"{path}: no vocabulary folder there")
     files = {}
-    for f in sorted(path.glob("*.toml")):
+    for f in sorted(path.iterdir()):
+        if f.name.startswith("."):
+            continue
+        if not f.is_file():
+            raise VocabError(f"{f.name}: the vocabulary folder holds no subfolders; "
+                             f"a file there would not be read")
         try:
             files[f.name] = f.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError) as e:
             raise VocabError(f"{f.name}: cannot be read as UTF-8 text: {e}") from None
+    if not files:
+        raise VocabError(f"{path}: no vocabulary files; compiling would write an "
+                         f"empty vocabulary")
     return files
 
 
@@ -708,27 +760,40 @@ def main(argv: list[str] | None = None) -> int:
                          "internal error)")
     args = ap.parse_args(argv)
     try:
-        text = render(compile_files(read_dir()))
-    except VocabError as e:
+        return _run(check=args.check)
+    except (VocabError, VocabWarning) as e:
         # exit 2, not 1: a script must tell broken data from a stale module
+        # (a VocabWarning arrives here raised, under -W error)
         print(f"vocabulary error: {e}", file=sys.stderr)
         return 2
     except Exception:
-        # a bug in the compiler, not in the data: still never exit 1
+        # a bug in the compiler, or a module it could not write: still
+        # never exit 1
         traceback.print_exc()
         return 3
-    current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
-    if args.check:
+
+
+def _run(*, check: bool) -> int:
+    text = render(compile_files(read_dir()))
+    try:
+        current: str | None = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
+    except (OSError, UnicodeDecodeError):
+        # an unreadable module is stale in the one sense that matters:
+        # rebuilding replaces it
+        current = None
+    name = OUTPUT.relative_to(ROOT)
+    if check:
         if current != text:
-            print(f"{OUTPUT.relative_to(ROOT)} is stale; run: {REFRESH}")
+            state = "stale" if current is not None else "unreadable"
+            print(f"{name} is {state}; run: {REFRESH}")
             return 1
-        print(f"{OUTPUT.relative_to(ROOT)} is current")
+        print(f"{name} is current")
         return 0
     if current == text:
-        print(f"{OUTPUT.relative_to(ROOT)} is current")
+        print(f"{name} is current")
     else:
         OUTPUT.write_text(text, encoding="utf-8")
-        print(f"wrote {OUTPUT.relative_to(ROOT)}")
+        print(f"wrote {name}")
     return 0
 
 
