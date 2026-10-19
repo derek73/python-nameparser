@@ -114,6 +114,9 @@ def test_resolve_section_letter_is_not_a_rule(folder: Path) -> None:
 _LOG = ("## Log\n\n"
         "- 2026-07 (v2 core, PR #288) — v1 parity.\n"
         "- 2026-10-01 (Derek), #562 — SUPERSEDED by #613. The pair.\n"
+        "- 2026-09-24 — SUPERSEDED IN PART: the mark.\n"
+        "- 2026-10-03 #549 — SUPERSEDED: the skip is reversed.\n"
+        "- 2026-10-04 #611 (in part superseded by #613) — FILED.\n"
         "- 2026-10-06 #613 — DECIDED ONCE.\n")
 
 
@@ -125,8 +128,16 @@ _LOG = ("## Log\n\n"
     ("- Decided once — 2026-10-07 #613.\n", "no entry 2026-10-07 #613"),
     ("- Decided once — 2026-10-06 #61.\n", "no entry 2026-10-06 #61"),
     ("- The pair — 2026-10-01 #562.\n", "superseded entry"),
-    ("\nNot standing: 2026-10-04 #611.\n", "names no entry"),
+    ("- The skip — 2026-10-03 #549.\n", None),
+    ("- The mark — 2026-09-24, in part.\n", None),
+    ("- Decided once — 2026-10-04 #613.\n", "no entry 2026-10-04 #613"),
+    ("- Decided once — 2026-10 #613.\n", "no entry 2026-10 #613"),
+    ("- Decided once — 2026-10-06 #613 and 2026-11-01 #999.\n",
+     "no entry 2026-11-01 #999"),
+    ("\nNot standing: 2026-10-04 #612.\n", "names no entry"),
 ], ids=["clean", "no-pointer", "wrong-date", "number-prefix", "superseded",
+        "announcing-is-live", "date-only", "later-issue-in-a-head",
+        "month-only-date", "second-pointer",
         "not-standing-missing"])
 def test_standing_findings_name_each_broken_pointer(
         standing: str, finding: str | None) -> None:

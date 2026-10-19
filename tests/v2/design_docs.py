@@ -112,12 +112,17 @@ def resolve(doc: str, cid: str, folder: Path | None = None) -> Path | None:
 # bullet ends its claim with the entry that decided it, by date and
 # issue (`— 2026-10-06 #613`); a `Not standing:` line names entries a
 # later one answered. An entry is a log bullet whose head
-# (the text before its first ` — `) opens with that date and holds that
-# issue number; one whose text after the head opens with `SUPERSEDED`
-# is superseded, and a Standing bullet may not rest on it alone.
+# (the text before its first ` — `) opens with exactly that date and
+# whose first issue number is that one -- a head may name a later issue
+# in a partial-supersession note, which must not answer for its own
+# entry -- or, for a date-only pointer, the one entry of that date
+# whose head names no issue; one whose text after the head opens with
+# `SUPERSEDED by` is superseded, and a Standing pointer may not rest on
+# it alone. An entry opening `SUPERSEDED:` or `SUPERSEDED IN PART:`
+# announces what it replaces and is live.
+_DATE = r"\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?"
 _POINTER_RE = re.compile(
-    r"(?P<date>\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?)\b[^—]*?#(?P<num>\d+)")
-_STANDING_POINTER_RE = re.compile(r"— " + _POINTER_RE.pattern)
+    rf"(?P<date>{_DATE})(?![\d/-])(?:[^—#.;]{{0,40}}?#(?P<num>\d+))?")
 
 
 def _entries(log: str) -> list[tuple[str, str]]:
@@ -130,14 +135,18 @@ def _entries(log: str) -> list[tuple[str, str]]:
     return out
 
 
-def _names(head: str, date: str, num: str) -> bool:
-    return (head.startswith(date)
-            and re.search(rf"#{num}(?!\d)", head) is not None)
+def _names(head: str, date: str, num: str | None) -> bool:
+    m = re.match(_DATE, head)
+    first = re.search(r"#(\d+)", head)
+    return (m is not None and m.group(0) == date
+            and (first.group(1) if first else None) == num)
 
 
 def standing_findings(text: str) -> list[str]:
     """What is wrong with a decisions file's Standing block: a bullet
-    with no pointer, a pointer to no entry or to a SUPERSEDED one, a
+    with no `— <date>` pointer, any date-and-issue pointer from there
+    to the line's end naming no entry (dates match exactly) or
+    to one only `SUPERSEDED by` a later entry, a
     Not-standing pointer to no entry, a Standing with no Log. Empty
     for a file with no Standing block."""
     if "## Standing" not in text:
@@ -149,16 +158,18 @@ def standing_findings(text: str) -> list[str]:
     findings = []
     for line in standing.splitlines():
         if line.startswith("- "):
-            m = _STANDING_POINTER_RE.search(line)
-            if not m:
+            dash = re.search(rf"— {_DATE}(?![\d/-])", line)
+            if not dash:
                 findings.append(f"no entry pointer: {line[:60]}")
                 continue
-            hits = [rest for head, rest in entries
-                    if _names(head, m["date"], m["num"])]
-            if not hits:
-                findings.append(f"no entry {m['date']} #{m['num']}")
-            elif all(r.startswith("SUPERSEDED") for r in hits):
-                findings.append(f"superseded entry {m['date']} #{m['num']}")
+            for m in _POINTER_RE.finditer(line, dash.start()):
+                hits = [rest for head, rest in entries
+                        if _names(head, m["date"], m["num"])]
+                if not hits or (m["num"] is None and len(hits) > 1):
+                    findings.append(f"no entry {m['date']} #{m['num']}")
+                elif all(r.startswith("SUPERSEDED by") for r in hits):
+                    findings.append(
+                        f"superseded entry {m['date']} #{m['num']}")
         elif line.startswith("Not standing:"):
             for m in _POINTER_RE.finditer(line):
                 if not any(_names(head, m["date"], m["num"])

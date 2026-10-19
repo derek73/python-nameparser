@@ -9,8 +9,9 @@
 - The comma is decided once, after classify, and a part read as postnominal is bound before any join; a connective surname counts its words, nothing after the decision unsettles what it bound, and a positional read before a suffix comma reports as the comma-less name does — 2026-10-06 #613, decisions (1)–(4) and the costs accepted with them.
 - The CJK stage asks the comma decision itself rather than a copy of it — 2026-10-06 #613, the CJK radar tier.
 - An empty part before the comma is read by the decision, not left to the listing walk — 2026-10-06 #613, the PR review.
+- A bound caps word that carries the name's case contrast keeps its capitals' marks, so case repair leaves it as written (rules/R4) — 2026-10-06 #613, the PR review.
 
-Not standing: 2026-10-04 #611's "the rethinks are filed, not done" — #613 rethought C1 (folding P6 in) and #614 S2, both shipped.
+Not standing: 2026-10-04 #611's "the rethinks are filed, not done" — #613 rethought C1 (folding P6 in) and #614 S2, both shipped in 2.4.0, which overtook its "neither for 2.4".
 
 Open: none in this file.
 
