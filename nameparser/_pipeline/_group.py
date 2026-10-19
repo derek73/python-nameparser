@@ -797,8 +797,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # and is split off already; elsewhere the chain stops where
         # assign's peel begins (`trailing_run_start`, trailing titles
         # included, in the given part after a family comma; else
-        # `trailing_start`; the H5 paragraph below says why the titles).
-        # decisions/P2 (#424).
+        # `trailing_start`; the H5 paragraph below explains the
+        # titles). decisions/P2 (#424).
         # rules/P2: "a particle joins the words after it into one name
         # part, the join running until the next particle starts a group of
         # its own, a trailing suffix begins" -- and on to the maiden marker
@@ -810,12 +810,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # "Leading" is the first piece of the NAME, past assign's own
         # title run (`leading_titles`), unless a word in that run is
         # also a particle: then the last such word leads in the run's
-        # place (`chain_lead`). Computed once, before the loop: every
-        # merge below starts past this index, so none can move it.
-        # Suffix pieces are deliberately not skipped when finding the
-        # leading piece. decisions/P2 (#624). A maiden marker still here
-        # is one the consumer declined, an ordinary word to the chain.
-        # decisions/M2 (#417).
+        # place (`chain_lead`, decisions/P2 (#624)). Computed once,
+        # before the loop: every merge below starts past this index, so
+        # none can move it. Suffix pieces are deliberately not skipped
+        # when finding the leading piece (decisions/P2). A maiden
+        # marker still here is one the consumer declined, an ordinary
+        # word to the chain. decisions/M2 (#417).
         name_start = leading_titles(pieces, ptags, tokens)
         leading = chain_lead(pieces, ptags, tokens, name_start)
         # rules/P2: "a trailing suffix begins" -- where it begins
