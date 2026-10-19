@@ -4,7 +4,7 @@ This folder holds the parser's default vocabulary: the titles, suffixes, particl
 
 The parser never reads these files. `tools/vocab/build.py` compiles them into `nameparser/config/_compiled.py`, a committed module of sorted `frozenset` literals and one `dict` (`CAPITALIZATION_EXCEPTIONS`), and the `nameparser.config` modules re-export them under their public names (`TITLES`, `PARTICLES`, ...). So an edit here does nothing until you rebuild, and `tests/v2/test_vocab.py` fails, naming the command, when the committed module and the files disagree.
 
-Why the model looks this way, and what each decision cost, is recorded in [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md). Where it is going (phases 2 to 4) is outside this file.
+Why the model looks this way, and what each decision cost, is recorded in [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md). Where it is going (phases 2 to 4) is in [the vocabulary model RFC](../../docs/design/vocabulary-model-rfc.md).
 
 ## What a file means
 
