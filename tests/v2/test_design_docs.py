@@ -8,7 +8,7 @@ import pytest
 
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
-    read_rules_text, resolve, slugify, stem_for)
+    read_rules_text, resolve, slugify, standing_findings, stem_for)
 from tests.v2.rules_doc import parse_rules_doc
 
 _FIXTURE_FILES = ("S-suffixes.md", "S1-x.md",
@@ -111,6 +111,50 @@ def test_resolve_section_letter_is_not_a_rule(folder: Path) -> None:
         folder / "vocabulary-collisions.md")
 
 
+_LOG = ("## Log\n\n"
+        "- 2026-07 (v2 core, PR #288) — v1 parity.\n"
+        "- 2026-10-01 (Derek), #562 — SUPERSEDED by #613. The pair.\n"
+        "- 2026-09-24 — SUPERSEDED IN PART: the mark.\n"
+        "- 2026-10-03 #549 — SUPERSEDED: the skip is reversed.\n"
+        "- 2026-10-04 #611 (in part superseded by #613) — FILED.\n"
+        "- 2026-10-06 #613 — DECIDED ONCE.\n")
+
+
+@pytest.mark.parametrize("standing, finding", [
+    ("- Only the second part decides — 2026-07 PR #288.\n"
+     "- Decided once — 2026-10-06 #613, (1)–(4).\n"
+     "\nNot standing: 2026-10-01 #562, answered by #613.\n", None),
+    ("- Decided once.\n", "no entry pointer"),
+    ("- Decided once — 2026-10-07 #613.\n", "no entry 2026-10-07 #613"),
+    ("- Decided once — 2026-10-06 #61.\n", "no entry 2026-10-06 #61"),
+    ("- The pair — 2026-10-01 #562.\n", "superseded entry"),
+    ("- The skip — 2026-10-03 #549.\n", None),
+    ("- The mark — 2026-09-24, in part.\n", None),
+    ("- Decided once — 2026-10-04 #613.\n", "no entry 2026-10-04 #613"),
+    ("- Decided once — 2026-10 #613.\n", "no entry 2026-10 #613"),
+    ("- Decided once — 2026-10-06 #613 and 2026-11-01 #999.\n",
+     "no entry 2026-11-01 #999"),
+    ("\nNot standing: 2026-10-04 #612.\n", "names no entry"),
+], ids=["clean", "no-pointer", "wrong-date", "number-prefix", "superseded",
+        "announcing-is-live", "date-only", "later-issue-in-a-head",
+        "month-only-date", "second-pointer",
+        "not-standing-missing"])
+def test_standing_findings_name_each_broken_pointer(
+        standing: str, finding: str | None) -> None:
+    found = standing_findings(f"# C1 — x\n\n## Standing\n\n{standing}\n"
+                              + _LOG)
+    if finding is None:
+        assert found == []
+    else:
+        assert len(found) == 1 and finding in found[0], found
+
+
+def test_standing_needs_a_log_and_is_optional() -> None:
+    assert standing_findings("# C1 — x\n\n## Standing\n\n- a\n") == [
+        "## Standing without a ## Log after it"]
+    assert standing_findings("# C1 — x\n\n" + _LOG) == []
+
+
 # -- the real tree ---------------------------------------------------------
 
 @pytest.mark.parametrize("folder", [RULES_DIR, DECISIONS_DIR],
@@ -148,3 +192,11 @@ def test_the_folders_are_not_empty() -> None:
     rules = parse_rules_doc(read_rules_text())
     assert len(rules) == len(rule_files) >= 46
     assert len(read_decision_files()) >= 60
+
+
+def test_every_standing_line_points_at_a_live_entry() -> None:
+    files = read_decision_files()
+    with_standing = [k for k, t in files.items() if "## Standing" in t]
+    assert with_standing, "no decisions file has a Standing block"
+    for key in with_standing:
+        assert standing_findings(files[key]) == [], key
