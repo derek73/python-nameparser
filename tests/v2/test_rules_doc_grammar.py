@@ -117,11 +117,10 @@ def test_a_normative_rule_carries_no_tolerated_marker() -> None:
 #: Spellings an author reaching for `tolerated:` can plausibly write,
 #: none of which _TOLERATED_RE accepts. Each is a near miss, and the
 #: point of the parametrization is that every one of them RAISES: the
-#: silent reading leaves the rule normative, which means
-#: build_rules_corpus.py harvests its examples into the contract
-#: corpus and enforces at released baselines exactly the claim the
-#: line was written to withdraw -- with the whole suite green, since
-#: the doc still parses and the examples still pass.
+#: silent reading leaves the rule reading as a promise, exactly the
+#: claim the line was written to withdraw, and files the line as
+#: quotable statement prose -- with the whole suite green, since the
+#: doc still parses and the examples still pass.
 #:
 #: The empty-reason row is a decision, not an oversight: the reason is
 #: unvalidated free text, but a demotion nobody had to justify is the
