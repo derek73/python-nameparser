@@ -342,16 +342,23 @@ def hub_findings(rules: list[Rule], prose: dict[str, list[str]]) -> list[str]:
     signals it combines; each must be another rule, listed in the
     hub's ``interacts:``, and named in ONE sentence of its statement
     (the Accepted clauses aside) -- the one-line map -- so the map
-    cannot leave one out while the rule names it elsewhere (S2's named
-    S4-S8 and not S9, which its interacts: missed too, until the
-    Signal: line landed). ``prose`` is rules_doc.prose_blocks'."""
+    cannot leave one out while the rule names it elsewhere. The map is
+    the sentence naming the most of them, and the check runs both
+    ways: a rule the map names that the Signal: line leaves off is a
+    finding too, which is the half of S2's lost S9 (named in neither
+    its map nor its interacts: before PR #745) the first direction
+    alone would miss. A sentence ends at a full stop, ?, or !, past
+    any closing quote or bracket, before a capital -- an
+    approximation: an abbreviation before a capital ("e.g. C4") splits
+    one, which can only make the check stricter. ``prose`` is
+    rules_doc.prose_blocks'."""
     ids = {r.rule_id for r in rules}
     problems = []
     for r in rules:
         if not r.hub:
             continue
         statement, _ = split_accepted(prose.get(r.rule_id, []))
-        sentences = re.split(r"(?<=\.)\s+(?=[A-Z])",
+        sentences = re.split(r"(?<=[.?!])[\"')\]\u201d\u2019]*\s+(?=[A-Z])",
                              " ".join(" ".join(statement).split()))
         def named(rid: str, text: str) -> bool:
             return re.search(rf"\b{rid}\b", text) is not None
@@ -365,6 +372,10 @@ def hub_findings(rules: list[Rule], prose: dict[str, list[str]]) -> list[str]:
                 problems.append(f"{where}: missing from its interacts:")
             if not named(rid, best):
                 problems.append(f"{where}: its statement's map omits it")
+        for rid in sorted(set(re.findall(r"\b[A-Z]\d+\b", best)) & ids
+                          - set(r.hub) - {r.rule_id}):
+            problems.append(f"{r.rule_id}'s map names {rid}, which its "
+                            f"Signal: hub of ... leaves off")
     return problems
 
 
@@ -380,9 +391,10 @@ def test_a_hub_names_each_rule_its_map_names() -> None:
     ("hub of X9", "X2", "read by X9.", "names no other rule"),
     ("hub of X1", "X1", "read by X1.", "names no other rule"),
     ("hub of X2", "X3", "read by X2.", "missing from its interacts:"),
-    ("hub of X2", "X2", "read by X3.", "its statement's map omits it"),
-    # X2 is not named merely because X20 is
-    ("hub of X2", "X2", "read by X20.", "its statement's map omits it"),
+    ("hub of X2", "X2", "read by nothing.", "its statement's map omits it"),
+    # X2 is not named merely because X21 is (no rule, so no reverse
+    # finding beside it)
+    ("hub of X2", "X2", "read by X21.", "its statement's map omits it"),
     # named, but outside the sentence mapping the others
     ("hub of X2, X3", "X2, X3", "Reads X2 here. Mapped: X3.",
      "its statement's map omits it"),
@@ -390,6 +402,14 @@ def test_a_hub_names_each_rule_its_map_names() -> None:
     ("hub of X2", "X2", "No map.\n    Accepted: X2.",
      "its statement's map omits it"),
     ("a shape: x; hub of X2, X3", "X2, X3", "Read by X2 and X3.", None),
+    # the map is the sentence naming the most, not the first
+    ("hub of X2, X3", "X2, X3", "Reads X2 here. Mapped: X2 and X3.", None),
+    # a sentence ending in a closing bracket still ends
+    ("hub of X2, X3", "X2, X3", "Read by X2 (see X2.) Mapped X3.",
+     "its statement's map omits it"),
+    # the reverse: the map names a rule the Signal: line leaves off
+    ("hub of X2", "X2", "Read by X2 and X3.",
+     "which its Signal: hub of ... leaves off"),
 ])
 def test_hub_findings_catch_each_gap(signal: str, interacts: str,
                                      statement: str,
@@ -401,8 +421,10 @@ def test_hub_findings_catch_each_gap(signal: str, interacts: str,
            f"X2. Other.\nX3. Other.\nX20. Other.\n")
     rules = parse_rules_doc(doc)
     got = hub_findings(rules, prose_blocks(doc))
-    assert got == ([] if finding is None else [got[0]])
-    assert finding is None or finding in got[0]
+    if finding is None:
+        assert got == []
+    else:
+        assert len(got) == 1 and finding in got[0], got
 
 
 def test_doc_internal_anchors_resolve() -> None:

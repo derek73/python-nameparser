@@ -194,31 +194,91 @@ def test_a_rule_without_a_signal_line_has_none() -> None:
     assert parse_rules_doc(_SIGNAL_DOC.format(signal=""))[0].signal is None
 
 
-#: Each raises: a near miss read as prose would leave the rule with no
-#: signal AND put the line into the quotable statement, and a wrapped
-#: or misplaced line would do the second.
-@pytest.mark.parametrize("signal", [
-    pytest.param("    signal: lowercase.\n", id="lowercase"),
-    pytest.param("    Signal : a space before the colon.\n",
+_NEAR = "does not parse"         # the near-miss branch
+_PLACE = "directly above"        # the placement branch
+_HUB = "hub's signal line"       # the malformed-hub branch
+
+
+#: Each raises, and from the branch its id names: a near miss read as
+#: prose would leave the rule with no signal AND put the line into the
+#: quotable statement, a wrapped or misplaced line would do the second,
+#: and a malformed hub would read as a plain signal with its rules
+#: unchecked.
+@pytest.mark.parametrize("signal, branch", [
+    pytest.param("    signal: lowercase.\n", _NEAR, id="lowercase"),
+    pytest.param("    Signal : a space before the colon.\n", _NEAR,
                  id="space-before-the-colon"),
-    pytest.param("    Signal:\n", id="empty"),
-    pytest.param("    Signal: a count: one\n      name word\n",
+    pytest.param("    Signal:\n", _NEAR, id="empty"),
+    pytest.param("    Signals: a count\n", _NEAR, id="plural"),
+    pytest.param("    **Signal:** a count\n", _NEAR, id="bold"),
+    pytest.param("    Signal\uff1a a count\n", _NEAR, id="fullwidth-colon"),
+    pytest.param("    Signal: a count: one\n      name word\n", _PLACE,
                  id="wrapped"),
     pytest.param("    Signal: a count\n    Accepted: a clause after it.\n",
-                 id="not-above-the-pointer"),
-    pytest.param("    Signal: hub of C3 and C4\n", id="malformed-hub"),
-    pytest.param("    Signal: a shape; hub of C3 C4\n",
+                 _PLACE, id="not-above-the-pointer"),
+    pytest.param("    Signal: hub of C3 and C4\n", _HUB, id="malformed-hub"),
+    pytest.param("    Signal: a shape; hub of C3 C4\n", _HUB,
                  id="malformed-hub-after-a-signal"),
-    pytest.param("    Signal: a shape, hub of C3, C4\n",
+    pytest.param("    Signal: a shape, hub of C3, C4\n", _HUB,
                  id="hub-after-a-comma"),
-    pytest.param("    Signal: a shape;hub of C3, C4\n",
+    pytest.param("    Signal: a shape;hub of C3, C4\n", _HUB,
                  id="hub-after-an-unspaced-semicolon"),
-    pytest.param("    Signal: a shape — hub of C3, C4\n",
+    pytest.param("    Signal: a shape — hub of C3, C4\n", _HUB,
                  id="hub-after-a-dash"),
+    pytest.param("    Signal: hubs of C3, C4\n", _HUB, id="plural-hub"),
+    pytest.param("    Signal: Hub of C3, C4\n", _HUB, id="capitalized-hub"),
+    pytest.param("    Signal: hub of C3, C4.\n", _HUB,
+                 id="hub-with-a-full-stop"),
+    pytest.param("    Signal: hub: C3, C4\n", _HUB, id="hub-colon"),
+    # refused by the first form of the check, which raised on the word
+    # anywhere; kept so a narrowing cannot drop it (#737's lesson)
+    pytest.param("    Signal: hub C3, C4\n", _HUB, id="hub-without-of"),
+    pytest.param("    Signal: a shape; hub C3\n", _HUB,
+                 id="hub-without-of-after-a-signal"),
 ])
-def test_a_bad_signal_line_is_an_error(signal: str) -> None:
-    with pytest.raises(ValueError, match="Signal"):
+def test_a_bad_signal_line_is_an_error(signal: str, branch: str) -> None:
+    with pytest.raises(ValueError, match=branch):
         parse_rules_doc(_SIGNAL_DOC.format(signal=signal))
+
+
+def test_a_word_holding_hub_is_a_plain_signal() -> None:
+    # The converse of the hub rows: the near-miss test is not a
+    # substring test.
+    rule = parse_rules_doc(_SIGNAL_DOC.format(
+        signal="    Signal: a shape: Hubert, a hub-like word\n"))[0]
+    assert rule.hub == ()
+
+
+#: Lines a rule block cannot hold. Read as nothing, each fell out of the
+#: statement a citation quotes and the size budget counts in silence.
+@pytest.mark.parametrize("line, match", [
+    pytest.param("      Accepted: indented like an example.\n",
+                 "no line a rule block holds", id="six-space-prose"),
+    pytest.param("\tand a tab-indented clause.\n",
+                 "no line a rule block holds", id="tab"),
+    pytest.param("  and a two-space clause.\n",
+                 "no line a rule block holds", id="two-space"),
+    pytest.param("    Accepted : a space before the colon.\n",
+                 "Accepted clause", id="accepted-space-colon"),
+    pytest.param("    Accepted -- a dash.\n", "Accepted clause",
+                 id="accepted-dash"),
+    pytest.param("    Accepted (2026): a date.\n", "Accepted clause",
+                 id="accepted-bracket"),
+    pytest.param("    accepted: lowercase.\n", "Accepted clause",
+                 id="accepted-lowercase"),
+])
+def test_a_line_no_rule_block_holds_is_an_error(line: str,
+                                                match: str) -> None:
+    doc = 'X1. Statement.\n' + line + '      "a b"  →  family="b"\n'
+    with pytest.raises(ValueError, match=match):
+        parse_rules_doc(doc)
+
+
+def test_accepted_followed_by_a_word_is_prose() -> None:
+    # P3's mid-clause "Accepted rather than repaired:" is the shape.
+    doc = ('X1. Statement.\n    Accepted rather than repaired: prose.\n'
+           '      "a b"  →  family="b"\n')
+    assert parse_rules_doc(doc)[0].rule_id == "X1"
 
 
 def test_a_second_signal_line_is_an_error() -> None:

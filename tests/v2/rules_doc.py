@@ -29,7 +29,9 @@ fails loudly too, rather than leaving the rule normative and its
 examples under contract.
 
 Every rule also states its ``Signal:`` -- what in the written name it
-reads: a count, a case contrast, a shape, a neighbor. The line is one
+reads, for example a count, a case contrast, a shape, a neighbor, a
+position, or ``none in the name: ...`` for a rule reading configuration
+or the parsed words; the kinds are not a closed set. The line is one
 line, never wrapped, and stands directly above the rule's pointer line;
 the parser refuses one that does not, because a wrapped continuation
 would read as statement prose, quotable by a citation. A hub, a rule
@@ -84,15 +86,28 @@ _SIGNAL_RE = re.compile(r"^\s*Signal:\s+(?P<text>\S.*?)\s*$")
 #: included (``signal:``, ``Signal :``, an empty one): a near miss read
 #: as prose would leave the rule with no signal and put the line into
 #: the quotable statement.
-NEAR_SIGNAL_RE = re.compile(r"^\s*signal\s*:", re.IGNORECASE)
+NEAR_SIGNAL_RE = re.compile(r"^\s*[*_]*signals?[*_]*\s*[:\uff1a]",
+                            re.IGNORECASE)
 #: A hub's signal: the rules it maps, after any signal it reads itself.
 _HUB_RE = re.compile(
     r"(?:(?P<own>\S.*?); )?hub of (?P<ids>[A-Z]\d+(?:, [A-Z]\d+)*)")
+#: A signal line meant as a hub's: one that does not fullmatch _HUB_RE
+#: raises rather than reading as a plain signal, which would leave the
+#: hub's rules unchecked. A plain word holding the letters ("Hubert",
+#: "a hub-like word") is not one.
+_NEAR_HUB_RE = re.compile(r"\bhubs?\b(?!-)", re.IGNORECASE)
 #: The line opening an Accepted clause, in either spelling the rules
 #: write ("Accepted:", "Accepted, and the reason ...:"); a line that
 #: merely begins with the word ("Accepted rather than repaired:",
 #: mid-clause in P3) is not one.
 ACCEPTED_RE = re.compile(r"^\s*Accepted[:,]")
+#: A line meant to open an Accepted clause but spelled otherwise
+#: (``Accepted :``, ``Accepted --``, ``Accepted (2026):``, lowercase):
+#: read as statement, its words would land in the wrong measure and a
+#: hub's map sentence could hide in it. "Accepted" followed by a word
+#: is prose and passes.
+_NEAR_ACCEPTED_RE = re.compile(r"^\s*accepted\s*(?:[:,(]|--|—)",
+                               re.IGNORECASE)
 _POINTER_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
 _POINTER_PART_RE = re.compile(
     r"(history|interacts|implemented|tracked):\s*([^·]+)")
@@ -136,8 +151,8 @@ class Rule:
     #: reads. None only where the line is missing, which the doc tests
     #: refuse for the real rules.
     signal: str | None = None
-    #: For a hub (``Signal: hub of C3, C4``), the rules whose signals
-    #: it combines; () for a rule that states a signal of its own.
+    #: For a hub (``Signal: [<own signals>; ]hub of C3, C4``), the
+    #: rules whose signals it combines; () for a rule that is no hub.
     hub: tuple[str, ...] = ()
 
     def has_boundary_or_waiver(self) -> bool:
@@ -231,9 +246,10 @@ def parse_rules_doc(text: str) -> list[Rule]:
     for lineno, line in enumerate(text.splitlines(), 1):
         if signal_at is not None and not _POINTER_RE.match(line):
             raise ValueError(
-                f"line {signal_at}: a `Signal:` line must stand directly "
-                f"above the rule's pointer line, on one line; line "
-                f"{lineno} follows it: {line.strip()!r}")
+                f"{current.rule_id if current else '?'}: line {signal_at}: "
+                f"a `Signal:` line must stand directly above the rule's "
+                f"pointer line, on one line; the next line is "
+                f"{line.strip()!r}")
         signal_at = None
         if line.startswith("#"):        # a heading ends any rule block
             current = None
@@ -248,10 +264,11 @@ def parse_rules_doc(text: str) -> list[Rule]:
             continue
         if current is None:
             if NEAR_SIGNAL_RE.match(line):
+                after = rules[-1].rule_id if rules else "the start"
                 raise ValueError(
-                    f"line {lineno}: a `Signal:` line outside any rule "
-                    f"block; it belongs directly above its rule's "
-                    f"pointer line")
+                    f"line {lineno}, after {after}: a `Signal:` line "
+                    f"outside any rule block; it belongs directly above "
+                    f"its rule's pointer line: {line.strip()!r}")
             continue
         stripped = line.lstrip()
         em = _EXAMPLE_RE.match(line)
@@ -314,8 +331,7 @@ def parse_rules_doc(text: str) -> list[Rule]:
                     f"`Signal:` line; a rule states one")
             current.signal = sig.group("text")
             hub = _HUB_RE.fullmatch(current.signal)
-            if hub is None and re.search(r"(?:^|\W)hub\b",
-                                         current.signal, re.IGNORECASE):
+            if hub is None and _NEAR_HUB_RE.search(current.signal):
                 raise ValueError(
                     f"{current.rule_id}: line {lineno}: a hub's signal "
                     f"line is `Signal: hub of C3, C4`, or `Signal: <its own "
@@ -340,10 +356,26 @@ def parse_rules_doc(text: str) -> list[Rule]:
                     current.implemented = items
                 elif key == "tracked":
                     current.tracked = items
+            continue
+        if _NEAR_ACCEPTED_RE.match(line) and not ACCEPTED_RE.match(line):
+            raise ValueError(
+                f"{current.rule_id}: line {lineno} looks like an Accepted "
+                f"clause but does not open one: {stripped!r}. The "
+                f"spelling is `Accepted:` or `Accepted, and ...:`")
+        if line.strip() and not (line.startswith("    ")
+                                 and line[4] != " "):
+            # Neither example, marker, pointer nor 4-space prose: read
+            # as nothing, it would fall out of the statement a citation
+            # quotes and the size budget counts without a word.
+            raise ValueError(
+                f"{current.rule_id}: line {lineno} is no line a rule block "
+                f"holds -- statement and Accepted prose is indented four "
+                f"spaces, an example six: {line!r}")
     if signal_at is not None:
         raise ValueError(
-            f"line {signal_at}: a `Signal:` line must stand directly "
-            f"above the rule's pointer line; the text ends after it")
+            f"{current.rule_id if current else '?'}: line {signal_at}: a "
+            f"`Signal:` line must stand directly above the rule's pointer "
+            f"line; the text ends after it")
     return rules
 
 
