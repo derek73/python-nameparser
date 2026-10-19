@@ -303,7 +303,7 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
                                     for j in range(lo, end)]
     if site is not ClauseSite.TRAILING:
         assert_never(site)
-    c = trailing_candidates(lo, pieces, ptags, tokens)
+    c = trailing_candidates(lo, pieces, ptags, tokens, one_case)
     end = len(pieces)
     released: list[tuple[int, Role]] = []
     # the view's picks, for the kept member below (#718)
