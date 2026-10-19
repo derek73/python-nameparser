@@ -1,5 +1,21 @@
 # C1 — the suffix-comma decision
 
+## Standing
+
+- Only the part after the first comma decides, and the listing form stands unless more than one word precedes the comma, so `Smith, PhD` keeps it — 2026-07 PR #288. How the words are counted is decisions/C3's; the exception for a suffix word ending the name before the comma is decisions/C12's.
+- The decision consults the suffix vocabulary by definition — 2026-07 plan deviation #3.
+- The lenient token test is the default; `lenient_comma_suffixes=False` restores the strict one — 2026-07-12/13 PR #288.
+- The wholly-suffix predicate lives in the vocabulary layer, shared with the honorific peel's segment test — 2026-08 #319.
+- The comma is decided once, after classify, and a part read as postnominal is bound before any join; a connective surname counts its words, nothing after the decision unsettles what it bound, and a positional read before a suffix comma reports as the comma-less name does — 2026-10-06 #613, decisions (1)–(4) and the costs accepted with them.
+- The CJK stage asks the comma decision itself rather than a copy of it — 2026-10-06 #613, the CJK radar tier.
+- An empty part before the comma is read by the decision, not left to the listing walk — 2026-10-06 #613, the PR review.
+
+Not standing: 2026-10-04 #611's "the rethinks are filed, not done" — #613 rethought C1 (folding P6 in) and #614 S2, both shipped.
+
+Open: none in this file.
+
+## Log
+
 - 2026-07 (v2 core, PR #288) — v1 parity: only the second segment decides (v1 parser.py:1318), and ">1 word before the first comma" is v1's guard, which is why "Smith, PhD" keeps the listing form. The strict/lenient knob's blast radius on default vocabulary is exactly the single-letter Roman numerals i and v — the only initial-shaped members of the shipped suffix words — which is what makes rules/C1's "V." examples the canonical pair.
 - 2026-07 (plan deviation #3, recorded) — the decision is definitionally vocabulary-dependent: there is no way to recognize a credential run without consulting the suffix word lists, so the structural stage reads vocabulary through one predicate.
 - 2026-07-12/13 (v2 Policy work, PR #288) — the lenient token test is the default and `lenient_comma_suffixes=False` restores the strict one. (An earlier entry here credited #291/#296 — git author dates place both the field and its wiring in the Policy commits, and the #291/#296 design doc never mentions the knob.)
