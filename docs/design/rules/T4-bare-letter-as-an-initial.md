@@ -1,14 +1,12 @@
 # T4 — the bare letter as an initial
 
-T4. Rationale: one letter standing for a name word is how an
-    initial is written, and the writing marks it: by a period after
-    the letter, or by a capital among mixed case, since nobody
-    writes an initial in lower case beside capitals. A name written
-    wholly in one case marks nothing, so its two spellings — all
-    lower case and all capitals — are one name, and read alike.
-    A one-letter word written with its period is an initial, in a
-    script that writes initials, and so is a bare unaccented Latin
-    capital, A to Z; in a name written wholly in one case,
+T4. Rationale: a bare letter written in lower case beside capitals
+    is no initial, since nobody writes an initial that way. A name
+    written wholly in one case marks nothing, so its two spellings —
+    all lower case and all capitals — are one name, and read alike.
+    T5 states the shapes an initial is written in; this rule reads
+    a bare lower-case letter by the case the name around it is
+    written in: in a name written wholly in one case,
     which says nothing about any letter in it, a bare letter is an
     initial wherever its capital would be. So every rule that reads
     an initial differently from a name word reads the lower-case
@@ -17,8 +15,8 @@ T4. Rationale: one letter standing for a name word is how an
     count passes over one, S10 reads a numeral written as one
     as the capital numeral it is, and a suffix test that vetoes an
     initial vetoes it — C1's strict mode, and the scan-back of W2's
-    peel. A letter whose capital is not one
-    of those — é, ж — is no initial in either spelling, and in a
+    peel. A letter whose capital is not an initial
+    by T5 — é, ж — is no initial in either spelling, and in a
     name of mixed case a bare lower-case letter is no initial. As
     P8 asks it, the case question is asked of the name's own words,
     so a clause beside the name changes nothing about the name's own
@@ -51,5 +49,5 @@ T4. Rationale: one letter standing for a name word is how an
     marker, so the shape this reaches is not one names take.
       "john smith nee x x"        →  suffix="x"
       "JOHN SMITH NEE X X"        →  maiden="X X"
-    Signal: a shape: a one-letter word's period + a case contrast: a bare letter's case against the name's own words
-    history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P7, P8, S10, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py
+    Signal: a case contrast: a bare letter's case against the name's own words
+    history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P7, P8, S10, T5, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py

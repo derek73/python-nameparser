@@ -1244,6 +1244,7 @@
 {"name": "Iñaki", "order": "FAMILY_FIRST", "family": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "I."}
 {"name": "J A D", "given": "J", "middle": "A", "family": "D", "initials": "J. A. D."}
 {"name": "J NEE SMITH", "given": "J", "maiden": "SMITH", "initials": "J."}
+{"name": "J née Smith", "given": "J", "maiden": "Smith", "initials": "J."}
 {"name": "J-E-P DUPONT", "given": "J-E-P", "family": "DUPONT", "initials": "J. D."}
 {"name": "J. A. D.", "given": "J.", "middle": "A.", "family": "D.", "initials": "J. A. D."}
 {"name": "J. None D.", "given": "J.", "middle": "None", "family": "D.", "initials": "J. N. D."}
@@ -1255,6 +1256,7 @@
 {"name": "J. Smith, PhD", "given": "J.", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
 {"name": "J. V.", "given": "J.", "family": "V.", "initials": "J. V."}
 {"name": "J. née Jones Smith V", "given": "J.", "maiden": "Jones Smith V", "initials": "J."}
+{"name": "J. née Smith", "given": "J.", "maiden": "Smith", "initials": "J."}
 {"name": "J. Ó. Pérez", "given": "J.", "middle": "Ó.", "family": "Pérez", "initials": "J. Ó. P."}
 {"name": "J.A. K.D.", "given": "J.A.", "family": "K.D.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. K."}
 {"name": "J.R. Smith", "given": "J.R.", "family": "Smith", "initials": "J. S."}
@@ -3635,6 +3637,7 @@
 {"name": "Ásgeir Ásgeirsson", "given": "Ásgeir", "family": "Ásgeirsson", "initials": "Á. Á."}
 {"name": "Ásmundur Sveinsson", "given": "Ásmundur", "family": "Sveinsson", "initials": "Á. S."}
 {"name": "Ásta Ragnheiður Jóhannesdóttir", "given": "Ásta", "middle": "Ragnheiður", "family": "Jóhannesdóttir", "initials": "Á. R. J."}
+{"name": "É née Smith", "family": "É", "maiden": "Smith", "initials": "É."}
 {"name": "Étienne Lauréault de Foncemagne", "given": "Étienne", "middle": "Lauréault", "family": "de Foncemagne", "initials": "É. L. F."}
 {"name": "Íris Adólfsdóttir", "given": "Íris", "family": "Adólfsdóttir", "initials": "Í. A."}
 {"name": "Íris Adólfsdóttir", "order": "FAMILY_FIRST", "given": "Adólfsdóttir", "family": "Íris", "initials": "A. Í."}
@@ -3983,6 +3986,8 @@
 {"name": "Едуард Михайлович Москальов", "given": "Едуард", "middle": "Михайлович", "family": "Москальов", "initials": "Е. М. М."}
 {"name": "Елена Вячеславовна Дементьева", "given": "Елена", "middle": "Вячеславовна", "family": "Дементьева", "initials": "Е. В. Д."}
 {"name": "Елена Игоревна Лядова", "given": "Елена", "middle": "Игоревна", "family": "Лядова", "initials": "Е. И. Л."}
+{"name": "Ж née Smith", "family": "Ж", "maiden": "Smith", "initials": "Ж."}
+{"name": "Ж. née Smith", "given": "Ж.", "maiden": "Smith", "initials": "Ж."}
 {"name": "Жанна Трофимовна Прохоренко", "given": "Жанна", "middle": "Трофимовна", "family": "Прохоренко", "initials": "Ж. Т. П."}
 {"name": "Желязко Ангелов", "given": "Желязко", "family": "Ангелов", "initials": "Ж. А."}
 {"name": "Жилинский, Алексей Александрович", "given": "Алексей", "middle": "Александрович", "family": "Жилинский", "initials": "А. А. Ж."}
