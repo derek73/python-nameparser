@@ -20,7 +20,7 @@ Release Log
 
     **Additions**
 
-    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the lists and every parse are unchanged from 2.4.2. :issue:`PRNUM`
+    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the lists and every parse are unchanged from 2.4.2. :issue:`737`
 
 * 2.4.2 - October 13, 2026
 
