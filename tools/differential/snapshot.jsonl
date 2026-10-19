@@ -1505,6 +1505,7 @@
 {"name": "John III, Dr.", "title": "Dr.", "family": "John", "suffix": "III", "initials": "J."}
 {"name": "John III, Sir", "title": "Sir", "given": "John", "suffix": "III", "initials": "J."}
 {"name": "John Ingram V", "given": "John", "family": "Ingram", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. I."}
+{"name": "John J VI, AD", "given": "AD", "family": "John J VI", "initials": "A. J. J. V."}
 {"name": "John J. V", "given": "John", "middle": "J.", "family": "V", "initials": "J. J. V."}
 {"name": "John Jack Andrew Kennedy", "given": "John", "middle": "Jack Andrew", "family": "Kennedy", "initials": "J. J. A. K."}
 {"name": "John Jones (Google Docs)", "given": "John", "family": "Jones", "nickname": "Google Docs", "initials": "J. J."}

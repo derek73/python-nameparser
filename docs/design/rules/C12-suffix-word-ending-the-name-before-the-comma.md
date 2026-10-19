@@ -41,6 +41,7 @@ C12. Rationale: a generation belongs to the name it ends, so a name
       "Smith V, AD"               →  given="AD"  · boundary
       "Dr. Smith V, AD"           →  given="AD"  · boundary
       "VI, AD"                    →  given="AD"  · boundary
+      "John J VI, AD"             →  given="AD"  · boundary
       "John Smith, AD"            →  given="AD"  · boundary
       "JOHN SMITH JR, AD"         →  given="AD"  · boundary
     Accepted: initials written without periods after the generation
