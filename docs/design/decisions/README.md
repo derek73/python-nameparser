@@ -38,6 +38,7 @@ Entry conventions:
 - [P6 — the trailing orphan particle](P6-trailing-orphan-particle.md)
 - [P7 — a one-letter particle against the initial it spells](P7-one-letter-particle-against-the-initial-it-spells.md)
 - [P8 — a single-letter connective against the initial it spells](P8-single-letter-connective-against-the-initial-it-spells.md)
+- [P9 — a particle that is also a suffix word, beside a family comma](P9-particle-that-is-also-a-suffix-word-beside-a-family-comma.md)
 
 ## Suffixes: generational & credentials (S)
 

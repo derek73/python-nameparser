@@ -1159,7 +1159,7 @@ CASES: tuple[Case, ...] = (
          "SMITH VD MA, JOHN",
          {"given": "JOHN", "family": "SMITH VD MA"},
          classification="fix(#573)",
-         notes="P2: in the part before a family comma a particle "
+         notes="P9: in the part before a family comma a particle "
                "that is suffix vocabulary too heads the name word "
                "behind it, so the per-piece read no longer peels 'VD' "
                "from between two family words -- the uniform case had "
@@ -1186,7 +1186,7 @@ CASES: tuple[Case, ...] = (
          {"given": "JANE", "family": "DOE", "suffix": "PHD VD MA"},
          classification="fix(#573)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
-         notes="P6's third exception: 'VD' has a credential in "
+         notes="P9 (P6's third exception): 'VD' has a credential in "
                "front of it and one behind, so it stands inside the "
                "run rather than ending the name, and P6's attachment "
                "stands down. Reports 'VD' (the attachment declined) "
@@ -1198,7 +1198,7 @@ CASES: tuple[Case, ...] = (
          {"given": "JANE", "family": "DOE", "suffix": "MA VD PHD"},
          classification="fix(#573)",
          ambiguities=("suffix-or-name", "suffix-or-name"),
-         notes="P6's third exception asks whether the run was read "
+         notes="P9 (P6's third exception) asks whether the run was read "
                "whole, and 'MA' read as a credential in front says so "
                "as a degree does"),
     Case("a_trailing_title_is_transparent_to_the_run",

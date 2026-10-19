@@ -35,24 +35,17 @@ P6. Rationale: a particle ending the name has nothing to link
     The second is S7's company: such a word standing behind an
     unambiguous credential in one run of suffix words reads as the
     credential in any spelling and any case, reported as S4's
-    credential fork. The third is a lone word of both the particle and
-    the UNAMBIGUOUS suffix vocabulary standing INSIDE a run read as
-    post-nominals — one in front of it and another behind, a
-    credential or a generation, whatever made each one, and a title
-    between it and the one in front transparent (H5): the
-    tussenvoegsel stands right behind the given name, so a
-    post-nominal between them says the word is not one. It does not
-    end the name, and keeps the
-    post-nominal reading in any case, reported as S4's credential
-    fork. With nothing behind it, it ends the name and attaches, and
-    two such words side by side are one particle run, which this rule
-    takes whole. Every other spelling of such a word attaches as
-    it did before, and the kind rule below gives it this rule's
-    particle fork rather than S4's credential one. In a name written
-    wholly in one case, with nothing in front of the word to speak
-    for it, the two readings cannot be told apart and the particle
-    keeps it, which is right about a Portuguese record and wrong
-    about a credential; the report is how a caller finds the second.
+    credential fork. The third is P9's: a lone word of both the
+    particle and the UNAMBIGUOUS suffix vocabulary standing inside a
+    run read as post-nominals keeps that reading, and this
+    attachment stands down. Every other spelling of such a word
+    attaches as it did before, and the kind rule below gives it this
+    rule's particle fork rather than S4's credential one. In a name
+    written wholly in one case, with nothing in front of the word to
+    speak for it, the two readings cannot be told apart and the
+    particle keeps it, which is right about a Portuguese record and
+    wrong about a credential; the report is how a caller finds the
+    second.
       "Jong, Anke de"             →  family="de Jong"
       "Beethoven, Ludwig van"     →  family="van Beethoven"
       "Berg, Jan vd"              →  family="vd Berg"
@@ -65,10 +58,6 @@ P6. Rationale: a particle ending the name has nothing to link
       "Doe, John Do"              →  family="Do Doe"
       "SMITH, JOHN DO"            →  family="DO SMITH"
       "Doe, John van DO"          →  family="van DO Doe"
-      "DOE, JANE PHD VD MA"       →  suffix="PHD VD MA"
-      "doe, jane phd vd ma"       →  suffix="phd vd ma"
-      "DOE, JANE PHD VD"          →  family="VD DOE"  · boundary
-      "DOE, JANE MA VD PHD"       →  suffix="MA VD PHD"
     A particle an index form writes apart with its elision or its
     hyphen still on it is a particle like any other here, where the
     vocabulary lists that spelling — the elided "d'" and the Arabic
@@ -196,6 +185,6 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    Signal: a position: a particle ending the name where a family comma or a family-first reading named the family + a neighbor: post-nominals in front of and behind a word both particle and suffix vocabulary
-    history: decisions/P6 · interacts: A1, C1, C7, C11, H5, P1, S2, P5, M2, S4, S7, S6 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    Signal: a position: a particle ending the name where a family comma or a family-first reading named the family
+    history: decisions/P6 · interacts: A1, C1, C7, C11, H5, P1, S2, P5, M2, S4, S7, S6, P9 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
