@@ -8,16 +8,17 @@ S10. Rationale: a roman numeral ending a name is its generation,
     the generation — the numerals the vocabulary lists, and those
     up to X it does not, by their shape alone — unless the word in
     front of it is written as an initial, which makes it a name word
-    too. A single letter written with a period is an initial, and a
+    too; in a name written wholly in one case a bare letter in front
+    is written as one. A single letter written with a period is an initial, and a
     numeral past X is a name word. A numeral of one letter needs
     words to spare, as a bare ambiguous acronym does (S4): as the
     second of two name words it is the family name, a title in front
     being no word to spare, and either reading is reported, as
     either reading of an ambiguous acronym is. A numeral read by its
     shape alone reports too; a numeral the vocabulary lists in two
-    or more letters is not in question and reports nothing, and a
-    letter already reported as read as an initial reports nothing
-    new. Written case
+    or more letters is not in question and reports nothing; a marked
+    letter (P3) that is such a numeral reports this way and not as a
+    connective. Written case
     settles the fork in one way only: a numeral written in lower
     case in a name of mixed case is the generation and reports
     nothing, since nobody writes an initial that way. A name written
@@ -28,6 +29,8 @@ S10. Rationale: a roman numeral ending a name is its generation,
       "John Smith V"              →  suffix="V"
       "John Smith V"              →  ambiguities=("suffix-or-name",)
       "John W. Ingram V"          →  suffix="V"
+      "John W Ingram V"           →  suffix="V"
+      "John Ingram V"             →  suffix="V"
       "John Smith VI"             →  suffix="VI"
       "John Smith VI"             →  ambiguities=("suffix-or-name",)
       "John Smith III"            →  ambiguities=()
@@ -43,21 +46,22 @@ S10. Rationale: a roman numeral ending a name is its generation,
       "John Smith V."             →  family="V."  · boundary
       "John J. V"                 →  family="V"  · boundary
       "John Smith XI"             →  family="XI"  · boundary
-    Accepted: a lower-case `v` in a name written wholly in lower
-    case is read as the suffix word the vocabulary lists, words to
-    spare or not, and reports nothing, where the same letter in
-    capitals is counted and reported; `i`, which is also a
-    connective, is read as an initial there (P3) and counted.
-      "john v"                    →  family=""
-      "john smith v"              →  ambiguities=()
+      "john v"                    →  family="v"
+      "john smith v"              →  ambiguities=("suffix-or-name",)
       "john i"                    →  family="i"
-      "john i"                    →  ambiguities=("conjunction-or-initial",)
-    Accepted: inside a maiden marker's clause the connective is not
-    read (M2), so a one-case `i` there is the suffix word the
-    vocabulary lists, as `v` is.
-      "john nee smith i"          →  suffix="i"
+      "john i"                    →  ambiguities=("suffix-or-name",)
+      "john i dr."                →  ambiguities=("suffix-or-name",)
+      "john j v"                  →  family="v"
     Accepted: a numeral with another suffix word behind it is not
     the last word of the name and is read as any word there is, so a
-    one-letter numeral before a credential is the family name.
+    one-letter numeral before a credential is the family name, and
+    the reading is reported, as either reading of the fork is.
       "John Smith V PhD"          →  family="V"
-    history: decisions/S10 · interacts: S2, S4, S7, C1, P2, P3, M2, H1, H3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+      "John Smith V PhD"          →  ambiguities=("suffix-or-name",)
+      "john i phd"                →  ambiguities=("suffix-or-name",)
+      "Jane Doe nee Smith V PhD"  →  ambiguities=("suffix-or-name",)
+    Accepted: a credential written split across two words is read
+    as one with the numeral in front of it, the run taking both, as
+    1.4.0 read it.
+      "John Smith V Ph. D."       →  suffix="V Ph. D."
+    history: decisions/S10 · interacts: S2, S4, S7, C1, P2, P3, M2, H1, H3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

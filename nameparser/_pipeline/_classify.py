@@ -62,7 +62,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    caps_shape_candidate, composed_len, is_initial, is_one_case,
+    _ROMAN, caps_shape_candidate, composed_len, is_initial, is_one_case,
     period_joined_vocab, suffix_as_written, tag_marker_runs,
 )
 from nameparser._pipeline._pieces import own_words
@@ -159,7 +159,21 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # the mixed-case rule, unchanged. v1's is_conjunction excludes
         # initials: 'e.' in 'john e. smith' is a middle initial, not
         # the Spanish conjunction 'e'
-        initial = is_initial(token.text)
+        # rules/S10: "A name written wholly in one case says nothing
+        # about any letter in it" -- so a one-letter roman numeral
+        # there is the initial its capital is, and every reader of the
+        # tag after classify vetoes 'v' as it vetoes 'V' (#721) -- not
+        # the honorific peel upstream, which asks the shape itself
+        # ('田中さん v' still reads otherwise than '田中さん V').
+        # `one_case` is the fact about the name's own words, applied to
+        # a clause's words too, as #516's caps branch applies it, since
+        # a capital 'V' in a clause is an initial as well. One
+        # character already, so `_ROMAN` alone asks what
+        # `is_single_letter_numeral` would, at C level: no frame per
+        # one-letter word
+        initial = is_initial(token.text) or (
+            one_case and len(token.text) == 1
+            and _ROMAN.match(token.text) is not None)
         if n in lex.conjunctions and not initial:
             tags.add("conjunction")
         if initial:
@@ -323,12 +337,15 @@ def classify(state: ParseState) -> ParseState:
         # Of the two clauses beside it, one is load-bearing and one is
         # not. `conjunctions_ambiguous` is IMPLIED by the others for a
         # fresh parse -- the contrapositive of what it looks like:
-        # `is_initial` matches an ASCII capital only, so ONLY the
-        # fork's branch can tag a bare LOWERCASE letter "initial"
-        # ("jose e maria santos" tags a lowercase e), and it does so
-        # only for a conjunctions_ambiguous member. So for a letter of
-        # EITHER case, "initial" plus len 1 implies membership. It is
-        # kept only because `_tags_for` starts from `set(token.tags)`, so
+        # `is_initial` matches an ASCII capital only, so a bare
+        # LOWERCASE letter is tagged "initial" only by the fork's
+        # branch ("jose e maria santos" tags a lowercase e), for a
+        # conjunctions_ambiguous member, or by the one-case numeral
+        # (#721), which never tags an own word that is a single-letter
+        # connective (the fork's branch takes those first). So for a
+        # letter of EITHER case in `conjunctions`, "initial" plus len 1
+        # implies membership. It is kept only because `_tags_for`
+        # starts from `set(token.tags)`, so
         # this clause is what keeps the emitter honest if a runner ever
         # hands classify tokens it did not build; no such path exists
         # today. `conjunctions` is the clause doing real work: it keeps
@@ -339,7 +356,8 @@ def classify(state: ParseState) -> ParseState:
         # clause's words were never eligible for the fork, so they must
         # never be eligible to report either. Emitted at the decision
         # site (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE), per
-        # token -- 'e and e' reports twice.
+        # token -- 'e and e e' emits twice; assemble withdraws the
+        # report on a letter no name word follows (rules/P3, #721).
         if (one_case and "initial" in token.tags
                 and folded[i] in state.lexicon.conjunctions_ambiguous
                 and folded[i] in state.lexicon.conjunctions

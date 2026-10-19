@@ -89,7 +89,8 @@ from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    effective_script, is_suffix_lenient, resolve_script_set,
+    _ROMAN, effective_script, is_suffix_lenient,
+    reads_as_a_reported_numeral, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
@@ -304,21 +305,6 @@ def _placed(read: TailRead, rest: list[int],
     return names, tuple(titled), Peel(
         count, peel.numeral, peel.picks, peel.anchors, tuple(run_titles),
         peel.absorbed)
-
-
-# rules/S10: "a letter already reported as read as an initial reports
-# nothing new" -- asked only by the numeral fork's declined pick
-# (#718). The maiden clause's report on the numeral it keeps cannot
-# meet the case: classify reads no connective inside a clause
-def _reported_as_initial(ambiguities: Sequence[PendingAmbiguity],
-                         index: int) -> bool:
-    """Whether classify's connective-or-initial fork already reported
-    the token at `index`, reading it as an initial. Declining the
-    numeral reads the letter as that same name word, so a second
-    report would name one reading twice. A rare shape, so the scan
-    costs ordinary names nothing."""
-    return any(a.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL
-               and index in a.indices for a in ambiguities)
 
 
 def _assign_main(seg_idx: int, state: ParseState,
@@ -540,6 +526,25 @@ def _assign_main(seg_idx: int, state: ParseState,
                     f"decides it; read as ", tuple(head),
                     field_tail=" by convention, which follows the read "
                                "order"))
+    # rules/S10: "a one-letter numeral before a credential is the
+    # family name, and the reading is reported" -- the part's last name
+    # word with nothing but the trailing run behind it (#721, Derek:
+    # 'John Smith V PhD' keeps family 'V' and reports, as 'john i, phd'
+    # does). Decided here, where the trailing read has said what that
+    # run is
+    # `_ROMAN` first, C-level, so an ordinary name word pays no frame
+    if (len(name_pieces) >= 2 and (suffix_pieces or titled_tail)
+            and len(last := pieces[name_pieces[-1]]) == 1
+            and _ROMAN.match(word := tokens[last[0]].text) is not None
+            and tuple(last) not in peeled.picks
+            and reads_as_a_reported_numeral(
+                word, tokens[pieces[name_pieces[-2]][0]].text,
+                state.one_case)):
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{word!r} is a roman numeral, but a post-nominal or title "
+            f"follows it; read as ", tuple(last),
+            field_tail=" rather than a generational suffix"))
     for piece in peeled.picks:
         # every pick is in rest, so the loops above just gave it a
         # role; whether it was read as a suffix or a name settles what
@@ -550,12 +555,11 @@ def _assign_main(seg_idx: int, state: ParseState,
         # declined pick (#718), which carries neither credential tag
         # (the acronym fork's picks carry one) and is never a suffix
         if token.tags.isdisjoint(_AMBIGUOUS_CREDENTIAL_TAGS):
-            if not _reported_as_initial(ambiguities, piece[0]):
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.SUFFIX_OR_NAME,
-                    f"{token.text!r} is a roman numeral, but the name "
-                    f"has no other word to spare for it; read as ", piece,
-                    field_tail=" rather than a generational suffix"))
+            ambiguities.append(PendingAmbiguity(
+                AmbiguityKind.SUFFIX_OR_NAME,
+                f"{token.text!r} is a roman numeral, but the name has "
+                f"no other word to spare for it; read as ", piece,
+                field_tail=" rather than a generational suffix"))
             continue
         declined = ("a name part" if token.role is Role.SUFFIX
                     else "a post-nominal")

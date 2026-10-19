@@ -517,7 +517,7 @@ def test_a_particle_in_suffix_vocabulary_anchors_nothing(
     # MEMBER is still anchored by a credential in front of it.
     n = parse(text)
     assert {k: v for k, v in n.as_dict().items() if v} == fields
-    assert parse("doe, jane v phd do").suffix == "v phd do"
+    assert parse("doe, jane v phd do").suffix == "phd do"
 
 
 def test_anchor_in_reach_is_false_only_where_the_pass_is() -> None:

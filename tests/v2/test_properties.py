@@ -3332,3 +3332,76 @@ def test_every_one_letter_particle_veto_is_load_bearing(
     monkeypatch.setattr(importlib.import_module(module),
                         "_spells_an_initial", lambda n, text: False)
     assert len(_p7_disagreements(lexicon)) == _P7_SITE_EFFECT[module]
+
+
+# --- #721: a name written in one case reads as its capitals ---------
+# S10 (the trailing roman numeral) says a name written wholly in one
+# case says nothing about any letter in it -- so a wholly lower-case
+# name parses exactly as the same name in capitals, fields (compared
+# case-folded) and report kinds alike. The grid crosses the shapes a one-letter numeral meets
+# -- every comma shape, a maiden clause, a title, a particle chain, a
+# bound given name, an initial, a nickname and a credential before or
+# after it -- with the numerals a listed and a shape-only spelling of
+# each length, three heads (one Catalan, one holding an ambiguous
+# acronym) and all three orders:
+# 1,872 pairs, about 3,750 parses, 0.29s on py3.11 (2026-10-18).
+_ONE_CASE_SHAPES = (
+    "{a} {n}", "{a} {b} {n}", "{a} {n}, phd", "{a} {b} {n}, phd",
+    "{a} {n}, jr.", "{b}, {a} {n}", ", {a} {n}", "{a} nee {b} {n}",
+    "{a} {b} nee {c} {n}", "dr {a} {n}", "dr {a} {b} {n}", "sir {a} {n}",
+    "{a} van {b} {n}", "freiherr von {b} {n}", "abdul {a} {n}",
+    "{a} j. {n}", "({c}) {a} {n}", "{a} {b} jr {n}", "{a} {n} phd",
+    # a bare letter in front, a trailing title, a doubled numeral and
+    # a trailing period
+    "{a} b {n}", "{a} e {n}", "{a} {n} prof.", "{a} {b} {n} prof.",
+    "{a} {b} {n} {n}", "{a} {b} {n}.",
+    # a non-ASCII letter in front, whose capital is no initial
+    "{a} é {n}")
+_ONE_CASE_NUMERALS = ("v", "i", "x", "vi", "iii", "ii", "iv", "vii")
+_ONE_CASE_HEADS = (("john", "smith", "jones"), ("carod", "puig", "rovira"),
+                   ("mary", "ma", "lee"))
+#: the negative controls, measured 2026-10-18 on this grid, which
+#: master (2bfa9533) disagreed on 315 of: with classify's one-case
+#: numeral initial taken out, and with the numeral fork's one-case
+#: letter in front taken out -- each guard seen on its own
+_ONE_CASE_UNGUARDED = 225
+_ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 117
+
+
+def _one_case_disagreements() -> list[str]:
+    def sig(name: ParsedName) -> tuple[object, ...]:
+        return ({k: v.lower() for k, v in name.as_dict().items() if v},
+                tuple(sorted(a.kind.value for a in name.ambiguities)))
+    out = []
+    for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
+        parser = Parser(policy=Policy(name_order=order))
+        for shape, numeral, (a, b, c) in itertools.product(
+                _ONE_CASE_SHAPES, _ONE_CASE_NUMERALS, _ONE_CASE_HEADS):
+            lower = shape.format(a=a, b=b, c=c, n=numeral)
+            if sig(parser.parse(lower)) != sig(parser.parse(lower.upper())):
+                out.append(f"[{order}] {lower!r}")
+    return out
+
+
+def test_a_one_case_name_reads_as_its_capitals() -> None:
+    failures = _one_case_disagreements()
+    assert not failures, "\n".join(failures[:10])
+
+
+def test_the_one_case_grid_sees_the_numeral_initial(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # classify's one use of `_ROMAN` is the one-case numeral initial
+    monkeypatch.setattr("nameparser._pipeline._classify._ROMAN",
+                        re.compile(r"(?!)"))
+    assert len(_one_case_disagreements()) == _ONE_CASE_UNGUARDED
+
+
+def test_the_one_case_grid_sees_the_letter_in_front(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    from nameparser._pipeline import _vocab
+    monkeypatch.setattr(
+        "nameparser._pipeline._pieces.is_trailing_numeral_suffix",
+        lambda text, preceding, one_case=None:
+            _vocab.is_trailing_numeral_suffix(text, preceding, None))
+    assert (len(_one_case_disagreements())
+            == _ONE_CASE_LETTER_IN_FRONT_UNGUARDED)

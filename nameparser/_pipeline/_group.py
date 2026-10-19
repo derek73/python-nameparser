@@ -81,7 +81,7 @@ from nameparser._pipeline._state import (
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import (
-    comma_follows_marker, delimiter_cores,
+    comma_follows_marker, delimiter_cores, reads_as_a_reported_numeral,
 )
 from nameparser._types import AmbiguityKind, Role
 
@@ -360,6 +360,19 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"but the name has no other word to spare for it; the "
             f"maiden marker's clause keeps it rather than reading it as "
             f"a generational suffix", tuple(last)))
+    elif (released and len(last) == 1 and end - 2 >= lo
+          and reads_as_a_reported_numeral(
+              word.text, tokens[pieces[end - 2][0]].text, one_case)):
+        # rules/S10: "a one-letter numeral before a credential is the
+        # family name, and the reading is reported" -- the clause's
+        # twin of assign's report (#721's review): the clause keeps the
+        # numeral its released post-nominal stands behind
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{word.text!r} ending the maiden name is a roman numeral, "
+            f"but a post-nominal follows it; the maiden marker's clause "
+            f"keeps it rather than reading it as a generational suffix",
+            tuple(last)))
     return (list(range(m, lo)),
             [(j, Role.MAIDEN) for j in range(lo, end)] + released)
 

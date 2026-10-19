@@ -44,7 +44,7 @@ S7. Rationale: post-nominals are written as a run, and an
       "Smith, PhD Ma"             →  ambiguities=("suffix-or-name",)
       "Smith, MD PhD Ma"          →  given="PhD"  · boundary
       "Doe, Jane PhD MEng"        →  suffix="PhD MEng"
-      "doe, jane v phd do"        →  suffix="v phd do"
+      "doe, jane v phd do"        →  suffix="phd do"
     Accepted: a name-leaning member with nothing in front of it to
     speak for it ends the name, words to spare or not, and whatever
     stands in front of it is name text. Where a credential does
