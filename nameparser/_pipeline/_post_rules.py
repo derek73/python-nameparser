@@ -98,8 +98,9 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # Two consecutive SUFFIX tokens are one entry iff they share a
     # comma bucket and nothing between them parts the run: a name word
     # or a dropped delimiter core parts it; a token whose role is in
-    # _RENDERS_ELSEWHERE, or a dropped token that is not a core (a
-    # bare maiden marker), does not. comma_bucket and delimiter_cores
+    # _RENDERS_ELSEWHERE, or a dropped token that is not a core (the
+    # marker of a bracketed maiden clause, 'Smith, MD (nee Jones)
+    # PhD'), does not. comma_bucket and delimiter_cores
     # are segment's and group's own answers, called rather than copied
     # (mechanisms.md#ONE-PREDICATE-PER-QUESTION). decisions/R1
     # (#436/#437).

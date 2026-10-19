@@ -462,8 +462,9 @@ def _peel_honorific_tail(state: ParseState,
     # back to the part before the comma and takes the honorific there,
     # provided that part offers a site of its own."
     # The structure does not say whether segments[1] is name text, so
-    # the run predicate (`is_wholly_suffix`, not the plural of
-    # `_is_post_nominal`) is asked with the case fact and policy
+    # the run predicate is asked (`is_wholly_suffix`, not the plural of
+    # `_is_post_nominal`, which vetoes an initial-shaped 'V.' and never
+    # sees period_joined_vocab's 'J.씨'), with the case fact and policy
     # `_comma.decide` reads it with; an empty run is in
     # scope and adds no site. The second condition is there because
     # the predicate is circular at this site alone: a glued honorific

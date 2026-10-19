@@ -690,8 +690,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # it may not merge into a run, and it does not count toward
         # the carve-out total. A token index because the joins below
         # move piece indices. A neighbour's join can still absorb it:
-        # `join_connectives` skips a frozen piece only as the join's
-        # subject.
+        # `join_connectives`' neighbour-join loop skips a frozen piece
+        # only as the join's subject.
         #
         # Asked here, of the pieces as classify left them and of the
         # neighbours' class, because after a merge the absorbed suffix
@@ -699,7 +699,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # class, not a spelling, while the three-word carve-out below
         # stays single-letter because its own sentence says so. Only a
         # connective of the suffix vocabulary reaches the body, so a
-        # name with none pays no call. decisions/P3 (#397).
+        # name with none pays no call for this test. decisions/P3.
         frozen: set[int] = set()
         # whether any connective is left free to join: a segment with
         # none skips the rootname count and the shared loop, both of
@@ -797,7 +797,8 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # and is split off already; elsewhere the chain stops where
         # assign's peel begins (`trailing_run_start`, trailing titles
         # included, in the given part after a family comma; else
-        # `trailing_start`). decisions/P2 (#424), decisions/H5 (#623).
+        # `trailing_start`; the H5 paragraph below says why the titles).
+        # decisions/P2 (#424).
         # rules/P2: "a particle joins the words after it into one name
         # part, the join running until the next particle starts a group of
         # its own, a trailing suffix begins" -- and on to the maiden marker
@@ -807,13 +808,14 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # nothing: the words stay separate" (history: decisions/P2)
         #
         # "Leading" is the first piece of the NAME, past assign's own
-        # title run (`leading_titles`, #367/#424), and of two
-        # title-particles in that run the last leads (`chain_lead`,
-        # #624). Computed once, before the loop: every merge below
-        # starts past this index, so none can move it. Suffix pieces
-        # are deliberately not skipped (decisions/P2). A maiden
-        # marker still here is one the consumer declined, an ordinary
-        # word to the chain (decisions/M2, #399/#417).
+        # title run (`leading_titles`), unless a word in that run is
+        # also a particle: then the last such word leads in the run's
+        # place (`chain_lead`). Computed once, before the loop: every
+        # merge below starts past this index, so none can move it.
+        # Suffix pieces are deliberately not skipped when finding the
+        # leading piece. decisions/P2 (#624). A maiden marker still here
+        # is one the consumer declined, an ordinary word to the chain.
+        # decisions/M2 (#417).
         name_start = leading_titles(pieces, ptags, tokens)
         leading = chain_lead(pieces, ptags, tokens, name_start)
         # rules/P2: "a trailing suffix begins" -- where it begins
