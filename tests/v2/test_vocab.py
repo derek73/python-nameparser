@@ -306,7 +306,10 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
 def test_every_character_the_tokenizer_ignores_is_refused() -> None:
     # check 2's hand copies are held to the pipeline, and the sweep is
     # driven by the tokenizer's own predicate, so a separator or strip
-    # class added there fails here until the build refuses it too
+    # class added there fails here until the build refuses it too. The
+    # interpunct between East Asian characters is divided by context in
+    # _tokenize_region, not by _ignorable, so the sweep cannot see it:
+    # only the EAST_ASIAN_RANGES and INTERPUNCT pins hold that check
     from nameparser._pipeline import _tokenize
     from nameparser._pipeline._state import COMMA_CHARS, ParseState
     from nameparser._policy import Policy, _SCRIPT_RANGES
