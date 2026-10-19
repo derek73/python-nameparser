@@ -242,7 +242,13 @@ def _is_post_nominal(state: ParseState, i: int) -> bool:
     not: a title never trails, so widening the peel's scan-back would
     move it off the real last name token. Split the predicate then, not
     before."""
-    return is_suffix_strict(state.tokens[i].text, state.lexicon)
+    # rules/T4, #727: a bare lowercase letter in a name written in one
+    # case is vetoed as its capital is; the case fact is asked only of
+    # such a letter, so a CJK honorific (no case) never asks it
+    text = state.tokens[i].text
+    return is_suffix_strict(text, state.lexicon,
+                            len(text) == 1 and text.islower()
+                            and _one_case(state))
 
 
 # rules/W2: "A part that is not name text — a post-nominal word
@@ -553,10 +559,13 @@ def _peel_honorific_tail(state: ParseState,
             # the site test first: it is the cheaper half, and false
             # for every name whose part before the comma holds no glued
             # honorific, which spares those the case fact
+            # one fact, asked for the lean and for the strict test's
+            # initial veto alike (rules/T4, #727)
             if not (site is not None
                     and is_wholly_suffix(second, state.lexicon,
                                          state.policy,
-                                         one_case=_one_case(state))):
+                                         one_case=(case := _one_case(state)),
+                                         letters_one_case=case)):
                 site = both
     if site is None:
         return state

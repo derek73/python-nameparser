@@ -244,7 +244,8 @@ def decide(state: ParseState) -> ParseState:
     licensed: set[int] = set()
     run = False
     if maybe:
-        names = name_word_count([tokens[i].text for i in seg0], lex, pol)
+        names = name_word_count([tokens[i].text for i in seg0], lex, pol,
+                                letters_one_case=state.one_case)
     if names >= 2:
         # rules/C1: "An unlisted all-caps word joins the class in such
         # a part only where the name carries the contrast"
@@ -283,7 +284,8 @@ def decide(state: ParseState) -> ParseState:
                 for i in p:
                     others.append(tokens[i].text)
         run = (bool(licensed)
-               and (not others or is_wholly_suffix(others, lex, pol))
+               and (not others or is_wholly_suffix(
+                   others, lex, pol, letters_one_case=state.one_case))
                and not any(len(p) == 1
                            and is_single_letter_numeral(tokens[p[0]].text)
                            for p in p1))
@@ -336,7 +338,8 @@ def decide(state: ParseState) -> ParseState:
     # rules/C1: "By default a recognized suffix word counts even
     # written like an initial" -- behind a whole name ('John Smith, V.')
     if reading is None and whole and is_wholly_suffix(
-            [tokens[i].text for i in part], lex, pol, one_case=None):
+            [tokens[i].text for i in part], lex, pol, one_case=None,
+            letters_one_case=state.one_case):
         reading = (True,) * len(p1)
     if reading is None:
         return state

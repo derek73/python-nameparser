@@ -700,8 +700,10 @@ class Policy:
     #: of the default vocabulary that means the roman numerals "I" and
     #: "V"): "John Smith, V" reads as John Smith the fifth when True
     #: (the default, v1 behavior); False reads "V" as a given-name
-    #: initial instead (family "John Smith", given "V"). Multi-letter
-    #: suffixes ("III", "MD") parse the same either way.
+    #: initial instead (family "John Smith", given "V"), and "john
+    #: smith, v" the same way, a name written in one case reading as
+    #: its capitals (rules/T4). Multi-letter suffixes ("III", "MD")
+    #: parse the same either way.
     lenient_comma_suffixes: bool = True
     #: Excludes emoji from tokenization: they appear in no token,
     #: field, or rendered view. The original string keeps them (input

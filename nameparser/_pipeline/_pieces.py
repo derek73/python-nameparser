@@ -800,10 +800,10 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     title to read by).
 
     `lenient` is Policy.lenient_comma_suffixes, and only the numeral
-    continuation consults it. C1: "by default a recognized suffix word
-    counts even written like an initial, while strict mode vetoes
-    initial-shaped words" -- so under strict the veto stands and the
-    run ends where it always did. Reading no policy here silently
+    continuation consults it. C1: "while strict mode vetoes a word read
+    as an initial" -- so under strict the veto stands and the run ends
+    where it always did; the walk reads the token's `initial` tag, so a
+    one-case lowercase letter is vetoed as its capital is (rules/T4). Reading no policy here silently
     overrode the one knob a caller sets to prevent exactly this.
 
     The FAMILY_COMMA rule that segment 0 is the family name rests

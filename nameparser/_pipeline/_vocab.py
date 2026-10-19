@@ -497,18 +497,33 @@ def suffix_as_written(n: str, text: str, lexicon: Lexicon) -> bool:
         or n in lexicon.suffix_words
 
 
-def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon) -> bool:
-    if is_initial(text):
+def _is_suffix_strict_n(n: str, text: str, lexicon: Lexicon,
+                        one_case: bool | None = None) -> bool:
+    # rules/T4: "in a name written wholly in one case, which says
+    # nothing about any letter in it, a bare letter is an initial
+    # wherever its capital would be" -- so the veto takes 'v' where it
+    # takes 'V' (#727). Lower case first, at C level: a capital is
+    # is_initial's already, and only a caller with the fact passes it
+    if is_initial(text) or (
+            one_case and len(text) == 1 and text.islower()
+            and _INITIAL.fullmatch(text.upper()) is not None):
         # period-written ambiguous acronyms are exempt from the veto
         return _dotted(text) and \
             n.replace(".", "") in lexicon.suffix_acronyms_ambiguous
     return suffix_as_written(n, text, lexicon)
 
 
-def is_suffix_strict(text: str, lexicon: Lexicon) -> bool:
+def is_suffix_strict(text: str, lexicon: Lexicon,
+                     one_case: bool | None = None) -> bool:
     """v1's is_suffix: suffix_as_written with the initial veto ('V.' in
-    'John V. Smith' is a middle initial, not roman five)."""
-    return _is_suffix_strict_n(_normalize(text), text, lexicon)
+    'John V. Smith' is a middle initial, not roman five).
+
+    `one_case` is whether the name's own words are written in one
+    case (ParseState.one_case): where they are, a bare lowercase
+    letter is the initial its capital is (rules/T4) and is vetoed as
+    its capital is. None or False is the veto by the writing alone,
+    which is v1's."""
+    return _is_suffix_strict_n(_normalize(text), text, lexicon, one_case)
 
 
 def is_suffix_lenient(text: str, lexicon: Lexicon) -> bool:
@@ -1028,7 +1043,8 @@ def surname_unit_tags(text: str, lexicon: Lexicon,
 
 
 def name_word_count(texts: Sequence[str], lexicon: Lexicon,
-                    policy: Policy) -> int:
+                    policy: Policy, letters_one_case: bool | None = None,
+                    ) -> int:
     """How many of these texts are NAME words -- not suffix
     vocabulary, not title vocabulary.
 
@@ -1050,9 +1066,10 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     family name, so 'De La Cruz' is one name word and 'De La Cruz, Ed'
     reads as 'Royce, Ed' does. Why the other two joins are not read
     here: `SURNAME_UNIT_TAGS`.
+
+    `letters_one_case` is `is_wholly_suffix`'s, for the same reason.
     """
-    predicate = (is_suffix_lenient if policy.lenient_comma_suffixes
-                 else is_suffix_strict)
+    lenient = policy.lenient_comma_suffixes
 
     # One pass: each token's name-word verdict, and whether any token
     # is a particle. With none, every token is a unit of its own and
@@ -1064,7 +1081,9 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
         n = _normalize(text)
         if n in lexicon.particles:
             has_particle = True
-        names.append(not (predicate(text, lexicon) or n in lexicon.titles
+        suffix = (is_suffix_lenient(text, lexicon) if lenient
+                  else is_suffix_strict(text, lexicon, letters_one_case))
+        names.append(not (suffix or n in lexicon.titles
                           or is_title_shaped(text)))
     if not has_particle:
         return sum(names)
@@ -1080,7 +1099,8 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
 
 
 def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
-                     policy: Policy, one_case: bool | None = None) -> bool:
+                     policy: Policy, one_case: bool | None = None,
+                     letters_one_case: bool | None = None) -> bool:
     """Every token in a RUN counts as a suffix -- C1's suffix test of
     a run, shared by `_comma.decide`, segment's C2 flag on a tail part
     and the peel (#319).
@@ -1111,6 +1131,15 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     as no lean and is this predicate's behavior in every release
     before 2.4.
 
+    `letters_one_case` is the same fact asked a different question,
+    and the two are kept apart because a caller that wants no lean
+    still wants the letters read by T4: under
+    `lenient_comma_suffixes=False` the strict test vetoes an
+    initial, and in a name written in one case a bare lowercase
+    letter is one ('john smith, v' reads as 'JOHN SMITH, V', #727).
+    The lenient test takes a suffix word whatever its shape, so the
+    default never reads it.
+
     Neither Policy.unlisted_dotted_suffixes NOR
     Policy.unlisted_caps_suffixes reaches this predicate: admitting a
     by-shape member here unconditionally (an earlier version of this
@@ -1130,8 +1159,7 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
     """
     if not texts:
         return False
-    predicate = (is_suffix_lenient if policy.lenient_comma_suffixes
-                 else is_suffix_strict)
+    lenient = policy.lenient_comma_suffixes
     # v1 expand_suffix_delimiter parity (#206): a configured delimiter
     # is TRANSPARENT in the all-suffix tests -- v1 split the part string
     # on the delimiter before checking, so the delimiter never counted
@@ -1144,7 +1172,8 @@ def is_wholly_suffix(texts: Sequence[str], lexicon: Lexicon,
                 and ambiguous_class_member(text, lexicon)
                 and ambiguous_lean(text, one_case) == "credential"):
             return True
-        return (predicate(text, lexicon)
+        return ((is_suffix_lenient(text, lexicon) if lenient
+                 else is_suffix_strict(text, lexicon, letters_one_case))
                 or period_joined_vocab(text, lexicon) == "suffix"
                 or (bool(cores) and splits_into_suffixes(text, cores, lexicon)))
 

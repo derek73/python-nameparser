@@ -575,8 +575,9 @@ listed below.
      - Reads an initial-shaped suffix word after a comma as a suffix:
        ``"John Smith, V"`` is John Smith the fifth when ``True``
        (default); ``False`` reads ``V`` as a given-name initial
-       instead. Multi-letter suffixes (``III``, ``MD``) are
-       unaffected.
+       instead, and ``"john smith, v"`` the same way, since a name
+       written all in one case reads as its capitals. Multi-letter
+       suffixes (``III``, ``MD``) are unaffected.
    * - ``unlisted_dotted_suffixes``
      - ``bool``
      - Reads an unlisted dotted acronym such as ``X.Y.Z.`` as a

@@ -175,6 +175,8 @@ _CORE_ONLY_IDS = frozenset({
     "caps_switch_leaves_a_capitalized_title_a_title",
     "strict_comma_reads_the_dotted_numeral_as_a_name_word",
     "strict_comma_reads_the_bare_numeral_into_the_run",
+    "strict_comma_reads_a_one_case_numeral_as_its_capital",
+    "strict_comma_reports_a_one_case_numeral_in_a_third_part",
     "the_comma_flip_is_read_under_the_declared_order",
     "two_caps_credentials_peel_as_a_run",
     "the_caps_shape_is_script_agnostic_cyrillic",

@@ -138,7 +138,8 @@ C1. Rationale: a credential run after the comma means the name is in
     parse could not recognize, not a fork it called.
     By default a recognized suffix word counts
     even written like an initial ("V."), while strict mode vetoes
-    initial-shaped words. In the listing form the part after the
+    a word read as an initial — in a name written in one case a
+    bare lower-case letter as well, as its capital is (T4). In the listing form the part after the
     comma is still read for what it is: a part that is nothing but
     suffix words is the credential run and reads as suffixes, whole
     — the slot after a family comma is postnominal position, so the
@@ -195,6 +196,7 @@ C1. Rationale: a credential run after the comma means the name is in
       "John Smith, PhD"           →  suffix="PhD"
       "John Smith, V."            →  suffix="V."
       "John Smith, V."  strict-comma-suffixes  →  family="John Smith"
+      "john smith, v"  strict-comma-suffixes  →  family="john smith"
       "Smith, PhD"                →  family="Smith"  · boundary
       "Smith, PhD"                →  suffix="PhD"
       "Smith, Jr."                →  suffix="Jr."
@@ -348,5 +350,5 @@ C1. Rationale: a credential run after the comma means the name is in
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
-    history: decisions/C1 · interacts: H1, H2, H6, P1, P2, P3, P5, P6, W3, S3, M2, S5, S6, S7, S8 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions/C1 · interacts: H1, H2, H6, P1, P2, P3, P5, P6, W3, S3, M2, S5, S6, S7, S8, T4 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
