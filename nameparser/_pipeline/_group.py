@@ -685,62 +685,21 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # rules/P3: "A connective that is also generational
         # vocabulary joins only where a name word stands on each side
         # of it" (#397). `frozen` holds the TOKEN index of every such
-        # connective missing that name word on one side or the other.
-        # It is joining nothing, so it is the generation it also
-        # spells: no join of its own reaches it, it may not merge into
-        # a run, and it counts toward the carve-out total the way the
-        # generation counted -- not at all, a suffix piece being no
-        # rootname. A TOKEN index for the same reason the chain's
-        # trailing run is a length from the end: the joins below move
-        # piece indices and cannot move this one.
+        # connective missing a name word on one side: it is the
+        # generation it also spells, so no join of its own reaches it,
+        # it may not merge into a run, and it does not count toward
+        # the carve-out total. A token index because the joins below
+        # move piece indices. A neighbour's join can still absorb it:
+        # `join_connectives`' neighbour-join loop skips a frozen piece
+        # only as the join's subject.
         #
-        # "No join of its own" is the whole claim, and a NEIGHBOUR's
-        # join can still absorb it: the two loops of `join_connectives`,
-        # called below, skip a frozen piece as the join's SUBJECT, and
-        # nothing keeps it out of the span another connective's join
-        # takes. 'Josep Carod Rovira
-        # Puig y i' freezes the trailing 'i' -- nothing stands on its
-        # right -- and the 'y' beside it joins across it all the same,
-        # for family 'Puig y i', which is what the parent read there
-        # too. Pinned by test_a_frozen_link_is_still_absorbed_by_a_
-        # neighbours_join.
-        #
-        # Asked HERE, of the pieces as classify left them, and of the
-        # NEIGHBOURS' class rather than of the connective's position:
-        # any piece on each side passes a position test, so a
-        # generational suffix standing behind the link was swallowed
-        # into the name ("Josep Lluis Carod i III" read family 'Carod
-        # i III'). It cannot be re-asked further down either, because
-        # a merge answers it -- in the part a join produced, the
-        # absorbed suffix IS the word standing on the right.
-        #
-        # Nothing but a connective of the suffix vocabulary reaches
-        # the body, so a name that has none pays tag lookups and no
-        # call at all.
-        #
-        # NO LENGTH TEST, which is the rule's own scope rather than an
-        # omission: the clause quoted above names a CLASS and says
-        # nothing about how the word is spelled. Narrowing it to
-        # one-letter connectives was caller-reachable -- under
-        # `Lexicon.default().add(conjunctions={"og"}, suffix_words=
-        # {"og"})`, 'John Quincy Smith og' reads family 'Smith' plus
-        # suffix 'og', the answer the rule states, and read family
-        # 'Smith og' while a `len(tok.text) != 1` stood here (#397
-        # second review). Nothing SHIPPED can witness it, `i` being
-        # the only member of the class in the default vocabulary and
-        # in every locale pack and one letter long -- measured rather
-        # than assumed: byte-identical (fields, reports, `initials()`,
-        # `capitalized()` plain and forced, every token's role) across
-        # 359,053 parses on 2026-09-20, the 351,400-parse review grid
-        # under eight lexicon/policy/locale configurations, the
-        # 2,175-parse sweep of tests/v2/cases.py under three orders
-        # and the 5,478-parse sweep of the differential corpora under
-        # six. Pinned by test_a_multi_letter_link_of_the_suffix_
-        # vocabulary_joins_by_the_same_rule.
-        #
-        # The three-word carve-out below stays single-letter, because
-        # THAT is what its own sentence says ("a single-letter
-        # connective in a three-word name").
+        # Asked here, of the pieces as classify left them and of the
+        # neighbours' class, because after a merge the absorbed suffix
+        # IS the word on the right. No length test: the clause names a
+        # class, not a spelling, while the three-word carve-out below
+        # stays single-letter because its own sentence says so. Only a
+        # connective of the suffix vocabulary reaches the body, so a
+        # name with none pays no call for this test. decisions/P3.
         frozen: set[int] = set()
         # whether any connective is left free to join: a segment with
         # none skips the rootname count and the shared loop, both of
@@ -834,15 +793,12 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 del pieces[start:]
                 del ptags[start:]
         # rules/S2: "a trailing word of the suffix vocabulary reads as a
-        # suffix" -- on a main segment the run read above decides that
-        # and is split off already; elsewhere group does not decide
-        # it, and stops before whatever
-        # trailing_start says the run is (the given part after a family
-        # comma, `trailing_run_start`, its trailing titles included:
-        # #623, below), so the chain ends where assign's peel begins
-        # (#424). The maiden take reads the title-aware
-        # `tail_reading` over the clause-free view instead (#601), so the
-        # clause ends where assign's peel and title chain together begin.
+        # suffix" -- on a main segment the run read above decides it
+        # and is split off already; elsewhere the chain stops where
+        # assign's peel begins (`trailing_run_start`, trailing titles
+        # included, in the given part after a family comma; else
+        # `trailing_start`; the H5 paragraph below explains the
+        # titles). decisions/P2 (#424).
         # rules/P2: "a particle joins the words after it into one name
         # part, the join running until the next particle starts a group of
         # its own, a trailing suffix begins" -- and on to the maiden marker
@@ -851,74 +807,15 @@ def _group_segment(seg: tuple[int, ...], additional: int,
         # rules/P4: "a particle in the name's leading position chains
         # nothing: the words stay separate" (history: decisions/P2)
         #
-        # prefix chains: a non-leading prefix run absorbs everything to
-        # the next prefix or suffix (v1's leading_first_name rule keeps
-        # the first piece a name: "Van Johnson")
-        #
-        # "Leading" means the first piece of the NAME, not of the input
-        # (#367): a title is not part of the name, so it must not decide
-        # whether the name begins with a particle. Keyed on index 0, a
-        # title displaced the particle and the chain fired, so identical
-        # name text parsed two ways ("Van Johnson" -> given Van, family
-        # Johnson; "Dr. Van Johnson" -> family "Van Johnson").
-        #
-        # A word that is BOTH a title and a particle (`st`, `freiherr`)
-        # in the title run leads in the run's place, and the last such
-        # word does (`chain_lead`, #624): a scan stepping over every
-        # title skipped the very piece the exception exists to protect,
-        # and "St John Smith" -- no title in front of it at all --
-        # collapsed from title St, given John, family Smith into one
-        # given "St John Smith"; a scan stopping at the FIRST such word
-        # chained the second, so "Freiherr St John Smith" read family
-        # "St John Smith" while assign read both words as titles.
-        #
-        # Computed once, before the loop: every merge below starts at
-        # some k past this index, so no merge can move it.
-        #
-        # Suffix pieces are deliberately NOT skipped, and the reason is
-        # what skipping them WOULD do rather than what it would cost.
-        # (The "Ph. D. Van Johnson" example that opened this argument
-        # left it with #371: the pair no longer merges at the head of
-        # the input, so there is no suffix-shaped leading piece there
-        # to skip or not. "Dr. Ph. D. Van Johnson" is the replacement
-        # -- family 'Van Johnson' as shipped, family 'Johnson' with
-        # the skip.)
-        # The shapes that decide it are the ones whose leading piece
-        # lands in `given` instead: "Ph.D. Van Johnson", "II Van
-        # Johnson" and "Msc.Ed. Van Johnson" each read given
-        # 'Ph.D.'/'II'/'Msc.Ed.' with family 'Van Johnson', and
-        # skipping the piece moves `Van` out of the family and into the
-        # middle name (given 'Ph.D.', middle 'Van', family 'Johnson')
-        # -- a worse reading, on three shapes, to fix none. "Jr. Van
-        # Johnson", the shape that looks like it needs the skip,
-        # classifies its leading piece as a TITLE and is already
-        # covered here.
-        #
-        # A maiden marker the consumer took is already gone (the pass
-        # above), so the chain cannot carry a maiden name into the
-        # family the way "Ursula von der Leyen geb. Albrecht" once read
-        # family 'von der Leyen geb. Albrecht' (#399). A marker still
-        # here is one the consumer DECLINED -- nothing after it but a
-        # suffix, or nothing at all -- and M2 says that is just a word,
-        # so the chain takes it like any other: "Jane van der Berg née"
-        # reads family 'van der Berg née'. Stopping at it instead
-        # stranded it as a lone trailing piece that took the family
-        # field (#399's review), and a stop gated on "will the consumer
-        # take it" had to restate the consumer's condition and got it
-        # wrong one suffix later (#417).
-        #
-        # The leading position is asked of assign's own title run
-        # (`leading_titles`): `is_title_piece` alone missed H2's
-        # unlisted abbreviations, which assign peels as titles all the
-        # same, so 'Xyz. van Johnson' chained where 'Dr. van Johnson'
-        # did not (#424 found it through the acronym fork: the chain
-        # had swallowed the given word and left assign two pieces where
-        # the fork counted three). And `chain_lead` is the one answer
-        # the trailing read's count takes too: of two titles that are
-        # also particles the second leads (#624), where a scan of this
-        # loop's own had stopped at the first and chained the second,
-        # so 'Freiherr St John Smith' read family 'St John Smith' while
-        # assign read both words as titles.
+        # "Leading" is the first piece of the NAME, past assign's own
+        # title run (`leading_titles`), unless a word in that run is
+        # also a particle: then the last such word leads in the run's
+        # place (`chain_lead`, decisions/P2 (#624)). Computed once,
+        # before the loop: every merge below starts past this index, so
+        # none can move it. Suffix pieces are deliberately not skipped
+        # when finding the leading piece (decisions/P2). A maiden
+        # marker still here is one the consumer declined, an ordinary
+        # word to the chain. decisions/M2 (#417).
         name_start = leading_titles(pieces, ptags, tokens)
         leading = chain_lead(pieces, ptags, tokens, name_start)
         # rules/P2: "a trailing suffix begins" -- where it begins
@@ -1063,68 +960,20 @@ def _group_segment(seg: tuple[int, ...], additional: int,
                 # slots that report, either reading carries the
                 # ambiguity flag"
                 #
-                # The other half of SUFFIX_OR_NAME's declined branch,
-                # and it is here for the reason PARTICLE_OR_GIVEN's
-                # second emitter is: a fork whose branches are taken in
-                # different stages needs an emitter in each
-                # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE).
-                # `assign` reports from `peel_trailing`'s picks, and a
-                # pick reaches it only as a LONE piece -- the peel's own
-                # `len(piece) == 1` test -- so the moment this chain
-                # takes the acronym into the particle run, the token
-                # assign would have reported on no longer exists as a
-                # piece and NOBODY reports. Measured: 'John van der Berg
-                # Ma', 'John de Ma', 'Dr. John van Smith Ma', 'John van
-                # Smith Ma Jr.' and 'John Smith Mc Ma' each lost the
-                # report #289's own lean had just made true of them,
-                # while 'John Smith Ma' -- the same fork with no
-                # particle to chain -- kept it (review round).
-                #
-                # The DECLINED reading is what this reports, because
-                # this branch only runs over pieces the peel left
-                # standing: `tail` is the peel's own answer (with the
-                # trailing titles in the given part after a family
-                # comma, #623), the inner
-                # scan stops at `len(pieces) - tail`, and a piece the
-                # peel TOOK is behind that bound. Where the chain runs
-                # again with a smaller tail (the re-peel below), the
-                # first pass's appends are truncated with the pieces,
-                # so the surviving report is the surviving reading's.
-                #
-                # `j > k + 1` above is this test's floor too: a merge
-                # that folds a piece into itself chained nothing.
-                # Written inline against the tags and with no new walk
-                # -- `pieces[j - 1]` is the last piece the merge is
-                # about to claim, one index and one frozenset test --
-                # so the ordinary chained name ('de la Vega') pays no
-                # frame for it.
-                #
-                # `not is_prefix_piece(last, ...)` is the other floor,
-                # and it names WHICH of the two scans above claimed the
-                # piece. The first extends the PARTICLE run and the
-                # second takes name words up to the trailing suffix;
-                # only the second is taking a word the peel had looked
-                # at. A word in both vocabularies ('do', 'mc', 'vd')
-                # ends a particle run as a particle, which is P4's
-                # reading and P6's fork, not this one -- 'anh van do'
-                # has read family 'van do' silently since 1.4.0 and its
-                # case row says so. It is tested LAST, and measured: it
-                # costs a frame (two until the predicate closures here
-                # were inlined), and asking it ahead of the tag test,
-                # through the closure, moved the reference name from
-                # 412 to 414 -- every chained name in the library
-                # paying for a question only an ambiguous acronym can
-                # make interesting. Behind the `isdisjoint` (a C call,
-                # no frame) almost nothing reaches it.
-                #
-                # Where S2's run was read ahead of the chain (#614), a
-                # member the read picked is reported HERE, as before,
-                # and leaves the read's picks (below the chain's call):
-                # this is the site that knows the chain took the word,
-                # while assign words a pick by the role it holds before
-                # post_rules, which under a leading title-particle is
-                # the given role the fold then moves ('Freiherr von
-                # Berg Ma' was told 'given name').
+                # The chain's half of SUFFIX_OR_NAME: once the chain
+                # takes the acronym, the lone piece assign reports on
+                # is gone, so the fork reports here
+                # (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE). It is
+                # the DECLINED reading: the scan stops at
+                # `len(pieces) - tail`, before every piece the peel
+                # took, and a re-peel truncates the first pass's
+                # appends with the pieces. `j > k + 1` is its floor
+                # too, and `not is_prefix_piece(last, ...)` leaves a
+                # word in both vocabularies ending a PARTICLE run to
+                # P6's fork; it costs a frame, so it is tested last. A
+                # member S2's read picked is reported here and leaves
+                # the read's picks. decisions/S6 (#289), decisions/S2
+                # (#614).
                 last = pieces[j - 1]
                 # A numeral S2's read declined (rules/S10, #718) is not
                 # reported here: it stays one of the read's picks, and
