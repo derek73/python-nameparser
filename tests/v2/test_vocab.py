@@ -169,6 +169,12 @@ MUTATIONS = [
     ("excluded-property-set-in-another-file", {"ja.toml": _w('[[word]]\ntext = "名"\nhonorific = { excluded = { attached = "x" } }'), "zh.toml": _w('[[word]]\ntext = "名"\nhonorific = { attached = { side = "after" } }')}, "attached = .* is excluded"),
     # `cased` compiles per word, so its exclusion holds over every kind
     ("excluded-cased-set-by-another-kind", {"und.toml": _w('[[word]]\ntext = "mc"\ntitle = { excluded = { cased = "keep as written" } }'), "en.toml": _w('[[word]]\ntext = "mc"\nparticle = { may_be_given = true, cased = "MC" }')}, "keep as written"),
+    # a property exclusion's baseline is the EXCLUDING kind's unwritten
+    # value: a credential keeps its acronym unwritten, a generic suffix
+    # does not, so the word reading is the refused one, and says so
+    ("excluded-acronym-sidestepped-by-a-word-kind", {"en.toml": _w('[[word]]\ntext = "xyz"\ncredential = { excluded = { acronym = "keep acronym" } }'), "fr.toml": _w('[[word]]\ntext = "xyz"\nsuffix = {}')}, "acronym = false is excluded.*keep acronym"),
+    # a refused value is shown as TOML writes it, dates included
+    ("refused-value-with-a-date", {"ja.toml": _w('[[word]]\ntext = "名"\nhonorific = { excluded = { attached = "x" } }'), "zh.toml": _w('[[word]]\ntext = "名"\nhonorific = { attached = { side = "after", decided = 2026-10-18 } }')}, "decided = 2026-10-18 }"),
     # the exclusion's reason is shown before check 4's complaint
     ("excluded-reason-shown-before-one-kind-per-word", {"fr.toml": _w('[[word]]\ntext = "fils"\ncredential = {}\nexcluded = { generation = "RECORDED REASON" }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "RECORDED REASON"),
     ("excluded-property-reason-shown-before-one-kind-per-word", {"ja.toml": _w('[[word]]\ntext = "名"\nhonorific = { excluded = { attached = "RECORDED REASON" } }'), "zh.toml": _w('[[word]]\ntext = "名"\ncourtesy = { attached = { side = "after" } }')}, "RECORDED REASON"),
@@ -394,11 +400,15 @@ def test_an_empty_word_is_a_usage_error() -> None:
     ({"EN.TOML": OK}, "BCP 47 tag"),          # misnamed files are read, then refused
     ({"en.toml.orig": OK}, "BCP 47 tag"),
     ({"sub/en.toml": OK}, "no subfolders"),
+    ({"en.toml": "->nowhere.toml"}, "a link to nothing"),
 ])
 def test_the_folder_is_read_whole(tmp_path: Path, layout: dict[str, str], message: str) -> None:
     for name, text in layout.items():
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
-        (tmp_path / name).write_text(text, encoding="utf-8")
+        if text.startswith("->"):
+            (tmp_path / name).symlink_to(tmp_path / text[2:])
+        else:
+            (tmp_path / name).write_text(text, encoding="utf-8")
     (tmp_path / ".DS_Store").write_bytes(b"\x00")  # a dotfile is ignored, never read
     with pytest.raises(build.VocabError, match=message):
         build.compile_files(build.read_dir(tmp_path))
@@ -454,4 +464,16 @@ def test_a_query_error_exits_3_not_1(monkeypatch: pytest.MonkeyPatch) -> None:
         raise KeyError("a bug in select")
     monkeypatch.setattr(query, "select", broken)
     assert query.main(["--word", "dr"]) == 3
+
+
+def test_a_satisfied_property_exclusion_does_not_claim_the_refusal() -> None:
+    # suffix = { acronym = true } is what a credential's acronym exclusion
+    # keeps, so the exclusion has nothing to say; the word is still
+    # refused, by check 4, for having two suffix kinds -- and the message
+    # must not read backwards, calling acronym = true the refused value
+    files = {"en.toml": _w('[[word]]\ntext = "xyz"\ncredential = { excluded = { acronym = "keep acronym" } }'),
+             "fr.toml": _w('[[word]]\ntext = "xyz"\nsuffix = { acronym = true }')}
+    with pytest.raises(build.VocabError, match="one suffix kind per word") as e:
+        _compile(files)
+    assert "is excluded" not in str(e.value)
 

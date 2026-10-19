@@ -39,7 +39,8 @@ at fault:
 6. an excluded kind is absent from every file, along with every other
    kind that compiles to the same set (a name kind refuses only itself),
    and an excluded property never takes a value other than the one it
-   has unwritten, on any reading of its category (`cased`: of the word);
+   has unwritten on a reading of the excluding kind, on any reading of
+   its category (`cased`: of the word);
    run before 4 and 5, so the recorded reason is what a contributor sees;
 7. `same_as` names a word of the same category, `cased` spells its
    word's letters (#459), at most one `cased` per word;
@@ -494,18 +495,25 @@ def _shown(value: object) -> str:
         return f'"{value}"'
     if isinstance(value, dict):
         return "{ " + ", ".join(f"{k} = {_shown(v)}" for k, v in value.items()) + " }"
+    if isinstance(value, datetime.date):
+        return value.isoformat()
     return repr(value)
 
 
-def _overrides(r: Reading, prop: str) -> bool:
-    """Whether r gives a behavioral property a value other than the one it
-    takes when the key is not written -- what a property exclusion
-    refuses. Writing the default (`may_be_name = false`) is the same
-    reading as omitting it, and a particle, which must state
-    may_be_given, can still state it false beside an exclusion of it."""
-    unwritten = Reading(r.file, r.text, r.kind,
-                        {k: v for k, v in r.props.items() if k != prop})
-    return _behavior(r, prop) != _behavior(unwritten, prop)
+def _overrides(r: Reading, x: Exclusion) -> bool:
+    """Whether r gives x's property a value other than the one it takes
+    UNWRITTEN ON A READING OF x's KIND -- what a property exclusion
+    refuses. The baseline is the excluding kind's, not r's: in the suffix
+    category `acronym` is unwritten-true for a credential and
+    unwritten-false for every other kind, so an exclusion of a
+    credential's `acronym` refuses a generic `suffix = {}` (a word, where
+    the exclusion keeps the acronym) and lets `suffix = { acronym = true }`
+    through. Writing the baseline (`may_be_name = false`) is the same as
+    omitting it, so a particle, which must state may_be_given, can still
+    state it false beside an exclusion of it."""
+    assert x.prop is not None
+    baseline = Reading(x.file, x.text, x.kind, {})
+    return _behavior(r, x.prop) != _behavior(baseline, x.prop)
 
 
 # ------------------------------------------------------------- compiling
@@ -516,7 +524,8 @@ def check_pool(pool: Pool) -> None:
         by_text.setdefault(r.text, []).append(r)
 
     # 6: an excluded kind is absent from the whole pool, and an excluded
-    # property never takes a value other than the one it has unwritten --
+    # property never takes a value other than the one it has unwritten on
+    # a reading of the excluding kind (_overrides) --
     # run first, so a contributor adding a refused reading meets the
     # recorded reason rather than check 4's or 5's complaint about it.
     # A refused property holds over every kind of its category, the sets
@@ -528,11 +537,14 @@ def check_pool(pool: Pool) -> None:
             if x.prop is None and _refused_by(r, x.kind):
                 raise VocabError(f"{r.where()}: {x.kind} is excluded for "
                                  f"{x.text!r} in {x.file}: {x.reason}")
-            if (x.prop is not None and _overrides(r, x.prop)
-                    and (r.category == CATEGORY[x.kind] or x.prop == "cased")):
+            if (x.prop is not None
+                    and (r.category == CATEGORY[x.kind] or x.prop == "cased")
+                    and _overrides(r, x)):
+                # the value r actually takes, written or not: the refused one
+                value = r.props[x.prop] if x.prop in r.props else _behavior(r, x.prop)
                 raise VocabError(
-                    f"{r.where()}: {x.prop} = {_shown(r.props.get(x.prop))} is "
-                    f"excluded for {x.text!r} in {x.file}: {x.reason}")
+                    f"{r.where()}: {x.prop} = {_shown(value)} is excluded for "
+                    f"{x.text!r} in {x.file}: {x.reason}")
 
     # 4: one suffix kind per word, across files
     for text, rs in by_text.items():
@@ -706,6 +718,8 @@ def read_dir(path: Path = VOCAB) -> dict[str, str]:
     for f in sorted(path.iterdir()):
         if f.name.startswith("."):
             continue
+        if f.is_symlink() and not f.exists():
+            raise VocabError(f"{f.name}: a link to nothing ({f.readlink()})")
         if not f.is_file():
             raise VocabError(f"{f.name}: the vocabulary folder holds no subfolders; "
                              f"a file there would not be read")
