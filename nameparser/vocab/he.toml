@@ -60,13 +60,12 @@ may_be_given = false
 issue = 269
 expands = "daughter of: bat"
 gender = "f"
-note = "as בן"
+note = "no Latin-script collision, and not a standalone given name in Hebrew usage, as בן"
 
 [[word]]
 text = "bar"
 [word.patronymic]
 may_be_given = true
-issue = 269
 expands = "son of, Aramaic: \"Bar-Lev\""
 gender = "m"
 note = "Bar Refaeli; a common modern Israeli given name. The native-script בר is excluded, in this file"

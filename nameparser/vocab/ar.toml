@@ -264,7 +264,7 @@ may_be_given = false
 issue = 269
 expands = "daughter of: bint"
 gender = "f"
-note = "mirrors Latin 'bint'"
+note = "never a bare given name, like بن; mirrors Latin 'bint'"
 
 [[word]]
 text = "ابن"
@@ -273,7 +273,7 @@ may_be_given = false
 issue = 269
 expands = "son of: ibn, alternate spelling"
 gender = "m"
-note = "mirrors Latin 'ibn'"
+note = "never a bare given name, like بن; mirrors Latin 'ibn'"
 
 [[word]]
 text = "آل"
@@ -281,7 +281,7 @@ text = "آل"
 may_be_given = false
 issue = 269
 expands = "family of: \"Al Saud\""
-note = "Distinct from the article ال, excluded beside it in this file; a clan prefix, never a bare given name."
+note = "Distinct from the article ال, excluded in this file; a clan prefix, never a bare given name."
 
 [[word]]
 text = "abu"
@@ -324,6 +324,7 @@ issue = 269
 expands = "father of: abu, hamza-less spelling"
 same_as = "أبو"
 gender = "m"
+note = "left ambiguous as أبو is, both spellings vetted together (#269)"
 
 [[word]]
 text = "ben"

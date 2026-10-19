@@ -64,4 +64,4 @@ text = "st"
 [word.saint]
 may_be_given = true
 expands = "Saint, abbreviated"
-note = "Also in TITLES and consumed there before particle logic runs, so moving it changes nothing; kept for the load-bearing TITLES intersection"
+note = "Also in TITLES and consumed there before particle logic runs, so moving it between the may-be-given and never-given halves changes nothing; kept for the load-bearing TITLES intersection"

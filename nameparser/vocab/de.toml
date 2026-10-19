@@ -40,7 +40,7 @@ may_be_given = true
 issue = 18
 expands = "baroness"
 gender = "f"
-note = "the feminine of freiherr, as its note"
+note = "the feminine of freiherr, written and chained the same way (see its note); unlike freiherr it is not in TITLES"
 
 [[word]]
 text = "tho"

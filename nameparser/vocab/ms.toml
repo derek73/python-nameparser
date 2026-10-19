@@ -21,7 +21,7 @@ may_be_given = true
 issue = 604
 expands = "daughter of: \"Ina binti Navalamar\""
 gender = "f"
-note = "The female partner of 'bin'. Binti is also a given name (Swahili, \"daughter\"), so ambiguous like 'bin' (#604). The abbreviations 'bt' and 'bte' are excluded, beside it in this file"
+note = "The female partner of 'bin'. Binti is also a given name (Swahili, \"daughter\"), so ambiguous like 'bin' (#604). The abbreviations 'bt' and 'bte' are excluded, in this file"
 
 [[word]]
 text = "bt"

@@ -57,7 +57,11 @@ article = { may_be_given = true, expands = "the: \"van den Berg\"" }
 
 [[word]]
 text = "heer"
-rank = { may_be_given = true, issue = 18, expands = "lord: \"de heer Van Kampen\"" }
+[word.rank]
+may_be_given = true
+issue = 18
+expands = "lord, the nobiliary 'heer van'"
+note = "added from #18's test \"Johan de heer Van Kampen\" (family 'de heer Van Kampen'), where 'de heer' may be the salutation Mr. rather than a part of the name; its reading as a rank is unvetted"
 
 [[word]]
 text = "te"

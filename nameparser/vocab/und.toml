@@ -3410,8 +3410,9 @@ text = "ابو"
 bound_given = { note = "\"abu\", hamza-less spelling" }
 
 # ---- particles of unrecorded origin ----
-# In the 2014 list (1a51555f) with no record of which language's names
-# they come from, so #749 could give them neither a file nor a kind.
+# In the prefix list since the earliest history (bon in the 2011 svn
+# import, 45a15394; dí since fc2ea899, 2012) with no record of which
+# language's names they come from, so #749 could give them neither a file nor a kind.
 
 [[word]]
 text = "bon"

@@ -17,7 +17,7 @@ Two tags are not languages:
 
 The script is read from the word, not from the file: `sr.toml` holds `mlađi` and `млађи` side by side. A script subtag (`zh-Hant`) is for a difference the text cannot show.
 
-The default vocabulary loads every file, so which file a word is in changes nothing about how a name is parsed today. A word may be in more than one file; check 5 of the build makes each kind of it read the same in every file, every behavioral property agreeing.
+The default vocabulary loads every file, so which file a word is in changes nothing about how a name is parsed today. A word may be in more than one file; check 5 of the build makes each category of it read the same in every file, every behavioral property agreeing whatever kind each file gives it.
 
 ## How an entry is built
 
@@ -121,7 +121,7 @@ The particle kinds say what the word does in the names of the file's language:
 - `saint`: "Saint" opening a surname (`san`, `santa`, `st`, `ste`);
 - `alias`: a word joining two surnames of one person (`vel`).
 
-Unlike the suffix kinds, one word may take a different particle kind in each language: `de` is a preposition in `fr.toml` and an article in `nl.toml`. Check 5 holds every particle reading of a word to the same `may_be_given` whatever its kind. On a particle reading, `expands` is the word's meaning in that language, and `note` is reserved for vetting: a word with `may_be_given = true` whose particle readings carry no `note` in any file sits on the conservative default and nobody has examined it. The test is per word, because a word's note sits in one of its files, not in each: `mac` is examined though only `en.toml` holds its note. The notes come from the audits of #360, #604 and #269.
+Unlike the suffix kinds, one word may take a different particle kind in each language: `de` is a preposition in `fr.toml` and an article in `nl.toml`. Check 5 holds every particle reading of a word to the same `may_be_given` whatever its kind. On a particle reading, `expands` is the word's meaning in that language, and `note` is reserved for vetting. A never-given particle may rest on its kind and `expands` alone: one attested bearer settles the may-be-given side, but no amount of searching settles absence, so what is recorded is what the word IS (an article, a preposition) rather than a failed search. And a word with `may_be_given = true` whose particle readings carry no `note` in any file sits on the conservative default and nobody has examined it. The test is per word, because a word's note sits in one of its files, not in each: `mac` is examined though only `en.toml` holds its note.
 
 The `name` kinds compile to nothing. They record that a word is borne as a given or family name, with counts (see [Bearer counts](#bearer-counts)), as evidence for a reading or an exclusion.
 
