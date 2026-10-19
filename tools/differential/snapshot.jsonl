@@ -1270,6 +1270,7 @@
 {"name": "JOHN QUINCY SMITH I", "given": "JOHN", "middle": "QUINCY", "family": "SMITH", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. Q. S."}
 {"name": "JOHN SMITH", "given": "JOHN", "family": "SMITH", "initials": "J. S."}
 {"name": "JOHN SMITH MA", "given": "JOHN", "family": "SMITH", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "JOHN SMITH NEE X X", "given": "JOHN", "family": "SMITH", "maiden": "X X", "initials": "J. S."}
 {"name": "JOHN SMITH PH.D.", "given": "JOHN", "family": "SMITH", "suffix": "PH.D.", "initials": "J. S."}
 {"name": "JOHN SMITH, MA", "given": "JOHN", "family": "SMITH", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "JOHN SMITH, VD MA", "given": "JOHN", "family": "SMITH", "suffix": "VD MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
@@ -3412,7 +3413,7 @@
 {"name": "john smith mcse", "given": "john", "family": "smith", "suffix": "mcse", "initials": "j. s."}
 {"name": "john smith md", "given": "john", "family": "smith", "suffix": "md", "initials": "j. s."}
 {"name": "john smith meng", "given": "john", "family": "smith", "suffix": "meng", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
-{"name": "john smith nee x x", "given": "john", "family": "smith", "maiden": "x x", "initials": "j. s."}
+{"name": "john smith nee x x", "given": "john", "family": "smith", "suffix": "x", "maiden": "x", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. s."}
 {"name": "john smith p.h.d.", "given": "john", "family": "smith", "suffix": "p.h.d.", "initials": "j. s."}
 {"name": "john smith ph. d.", "given": "john", "family": "smith", "suffix": "ph. d.", "initials": "j. s."}
 {"name": "john smith ph.d.", "given": "john", "family": "smith", "suffix": "ph.d.", "initials": "j. s."}
