@@ -18,6 +18,7 @@ its mutation is refused by check 5.
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 import warnings
 from pathlib import Path
@@ -99,7 +100,8 @@ def test_the_toml_ships_as_package_data() -> None:
         (_BUILD.parents[2] / "pyproject.toml").read_text(encoding="utf-8"))
     globs = pyproject["tool"]["setuptools"]["package-data"]["nameparser"]
     assert "vocab/*.toml" in globs
-    assert not [p for p in build.VOCAB.rglob("*") if p.is_file() and p.suffix != ".toml"]
+    assert not [p for p in build.VOCAB.rglob("*")
+                if p.is_file() and p.suffix != ".toml" and p.name != build.README]
 
 
 # --------------------------------------------- controls on the shipped data
@@ -466,6 +468,8 @@ def test_an_empty_word_is_a_usage_error() -> None:
     ({}, "no vocabulary files"),
     ({"EN.TOML": OK}, "BCP 47 tag"),          # misnamed files are read, then refused
     ({"en.toml.orig": OK}, "BCP 47 tag"),
+    ({"readme.md": OK}, "BCP 47 tag"),        # only README.md, by its exact name, is skipped
+    ({"README.md": OK}, "no vocabulary files"),
     ({"sub/en.toml": OK}, "no subfolders"),
     ({"en.toml": "->nowhere.toml"}, "a link to nothing"),
 ])
@@ -544,3 +548,76 @@ def test_a_satisfied_property_exclusion_does_not_claim_the_refusal() -> None:
         _compile(files)
     assert "is excluded" not in str(e.value)
 
+
+
+# ------------------------------------------------- the README's reference
+# nameparser/vocab/README.md documents the kinds and properties for
+# whoever edits the TOML. Its tables are held to the names build.py
+# accepts, and the kinds' compiled sets to what the compiler does with a
+# reading written with its defaults, so the reference cannot drift.
+def _readme_table(heading: str) -> list[list[str]]:
+    """The rows of the first table under `heading`, header and divider
+    dropped, each a list of its cells."""
+    lines = (build.VOCAB / build.README).read_text(encoding="utf-8").splitlines()
+    assert heading in lines, f"README.md has no {heading!r} heading"
+    rows: list[list[str]] = []
+    for line in lines[lines.index(heading) + 1:]:
+        if line.startswith("#"):
+            break
+        if line.startswith("|"):
+            rows.append([c.strip() for c in line.strip("|").split("|")])
+        elif rows:
+            break
+    assert len(rows) > 2, f"no table under {heading!r}"
+    return rows[2:]
+
+
+def _code(cell: str) -> list[str]:
+    return re.findall(r"`([^`]+)`", cell)
+
+
+def _sets_fed(kind: str) -> set[str]:
+    """The compiled constants a reading of `kind`, written with its
+    defaults, puts a word into."""
+    props = "{ may_be_given = true }" if kind == "particle" else "{}"
+    files = {"en.toml": _w(f'[[word]]\ntext = "zzq"\n{kind} = {props}')}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", build.VocabWarning)  # a name reading is inert
+        compiled = build.compile_files(files)
+    return {name for name, value in compiled.items() if "zzq" in value}
+
+
+def test_the_readme_lists_every_kind_with_its_category_and_set() -> None:
+    rows = _readme_table("## Kinds")
+    assert {_code(r[0])[0]: _code(r[1])[0] for r in rows} == build.CATEGORY
+    assert len(rows) == len(build.CATEGORY)  # a kind listed twice
+    for kind, _, fed in rows:
+        assert set(_code(fed)) == _sets_fed(_code(kind)[0]), kind
+
+
+def test_the_readme_lists_every_property_with_its_type_and_categories() -> None:
+    rows = _readme_table("## Properties")
+    behavioral = {p for ps in build.BEHAVIORAL.values() for p in ps}
+    assert {_code(r[0])[0]: r[1] for r in rows} == (
+        {p: "behavioral" for p in behavioral} | {p: "descriptive" for p in build.DESCRIPTIVE})
+    assert len(rows) == len(behavioral | build.DESCRIPTIVE)
+    for prop, kind_of, applies, *_ in rows:
+        if kind_of == "behavioral":
+            assert set(_code(applies)) == {
+                c for c, ps in build.BEHAVIORAL.items() if _code(prop)[0] in ps}, prop
+
+
+def test_the_readme_names_every_compiled_constant() -> None:
+    # each constant is reached by a kind or by a behavioral property
+    named = {name for heading in ("## Kinds", "## Properties")
+             for row in _readme_table(heading) for cell in row[1:] for name in _code(cell)}
+    assert {name for name, _ in build.CONSTANTS} <= named
+
+
+def test_the_readme_lists_the_name_reading_keys() -> None:
+    assert {_code(r[0])[0] for r in _readme_table("### Name readings")} == build.NAME_KEYS
+
+
+def test_the_readme_lists_the_reserved_names_with_their_phases() -> None:
+    assert {_code(r[0])[0]: int(r[1]) for r in _readme_table(
+        "## Names reserved for later phases")} == build.RESERVED
