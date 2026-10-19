@@ -206,7 +206,7 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     # A FLOOR, not a presence check: `assert checked` is satisfied by
     # one surviving constant, so a filter or a path change that quietly
     # dropped twelve of the thirteen would still read as a pass. Thirteen
-    # distinct constants across eight modules (measured 2026-10-18; the
+    # distinct constants across seven modules (measured 2026-10-18; the
     # fourteenth entry before then was particles.BOUND_GIVEN_NAMES, an
     # import for a disjointness assert that became a vocabulary build
     # check). The private _compiled.py they are assigned from is skipped

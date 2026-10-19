@@ -157,6 +157,10 @@ MUTATIONS = [
     ("unregistered-kind", {"hr.toml": _w('[[word]]\ntext = "mlađi"\ngeneraton = {}')}, "unknown key 'generaton'"),
     ("reading-not-a-table", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = true')}, "must be a table"),
     ("inert-entry", {"en.toml": _w('[[word]]\ntext = "jr"')}, "inert"),
+    ("addresses-typo", {"und.toml": _w('[[word]]\ntext = "sheikh"\ntitle = { addresses = "givn" }')}, "must be 'family' or 'given'"),
+    ("acronym-with-a-period", {"und.toml": _w('[[word]]\ntext = "x.q"\ncredential = {}')}, "matched with every period removed"),
+    ("excluded-property-unknown", {"ja.toml": _w('[[word]]\ntext = "殿"\nhonorific = { excluded = { atached = "x" } }')}, "not a behavioral property"),
+    ("excluded-property-with-a-default", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { excluded = { acronym = "x" } }')}, "has a default"),
     ("addresses-reserved-value", {"und.toml": _w('[[word]]\ntext = "sheikh"\ntitle = { addresses = "any" }')}, "reserved for a later phase"),
     ("attached-on-an-acronym", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { attached = { side = "after" } }')}, "needs a word reading"),
     ("attached-before", {"ja.toml": _w('[[word]]\ntext = "さん"\nhonorific = { attached = { side = "before" } }')}, "side = 'after'"),
@@ -177,9 +181,14 @@ MUTATIONS = [
     ("two-suffix-kinds", {"en.toml": OK, "und.toml": _w('[[word]]\ntext = "jr"\nstatus = {}')}, "one suffix kind per word"),
     # 5: one word reads one way in every file
     ("acronym-disagrees-across-files", {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = {}'), "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false }')}, "acronym is"),
+    ("may-be-given-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = true }'), "nl.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = false }')}, "may_be_given is"),
+    ("addresses-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "sir"\ntitle = { addresses = "given" }'), "en.toml": _w('[[word]]\ntext = "sir"\ntitle = {}')}, "addresses is"),
     ("may-be-name-disagrees-across-files", {"en.toml": _w('[[word]]\ntext = "ma"\ncredential = {}'), "und.toml": _w('[[word]]\ntext = "ma"\ncredential = { may_be_name = true }')}, "may_be_name is"),
     # 6: an exclusion holds across files
     ("excluded-kind-in-another-file", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "en.toml": _w('[[word]]\ntext = "fils"\ngeneration = {}')}, "Marie Fils"),
+    ("excluded-kind-sidestepped-by-the-generic-kind", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "und.toml": _w('[[word]]\ntext = "fils"\nsuffix = {}')}, "Marie Fils"),
+    ("excluded-kind-sidestepped-by-a-sibling-kind", {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'), "en.toml": _w('[[word]]\ntext = "fils"\nstatus = {}')}, "Marie Fils"),
+    ("excluded-credential-sidestepped-by-an-acronym", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { credential = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncourtesy = { acronym = true }')}, "a surname"),
     ("excluded-category-in-another-file", {"und.toml": _w('[[word]]\ntext = "rai"\nexcluded = { suffix = "a surname" }'), "en.toml": _w('[[word]]\ntext = "rai"\ncredential = {}')}, "a surname"),
     ("excluded-property-in-another-file", {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false, excluded = { attached = "Hiroshi" } }'), "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false, attached = { side = "after" } }')}, "Hiroshi"),
     # 7: same_as and cased
@@ -221,6 +230,13 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given" }')},
         {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16 }\n'
                        'excluded = { generation = { reason = "Marie Fils", issue = 684 } }')},
+        # the defaults agree with the written value across files
+        {"und.toml": _w('[[word]]\ntext = "dr"\ntitle = {}'),
+         "en.toml": _w('[[word]]\ntext = "dr"\ntitle = { addresses = "family" }')},
+        # an exclusion refuses the set its kind feeds, not every suffix:
+        # refusing the generation word leaves an acronym reading free
+        {"fr.toml": _w('[[word]]\ntext = "fils"\nexcluded = { generation = "Marie Fils" }'),
+         "und.toml": _w('[[word]]\ntext = "fils"\ncredential = {}')},
         {"pt-BR.toml": OK, "zh-Hant.toml": _w('[[word]]\ntext = "社長"\nprofessional_honorific = {}'),
          "es-419.toml": _w('[[word]]\ntext = "sr"\ngeneration = {}')},
     ):
@@ -259,3 +275,72 @@ def test_query_tells_a_refused_reading_from_a_refused_property() -> None:
     assert [r.text for r in query.select(pool, excluded="honorific")] == ["君"]
     assert [r.text for r in query.select(pool, excluded="attached")] == ["殿"]
     assert [r.text for r in query.select(pool, excluded="suffix")] == ["君"]
+
+
+def _load_query() -> ModuleType:
+    spec = importlib.util.spec_from_file_location("vocab_query", _BUILD.with_name("query.py"))
+    assert spec is not None and spec.loader is not None
+    query = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = query
+    spec.loader.exec_module(query)
+    return query
+
+
+QUERY_POOL = {
+    "ja.toml": _w('[[word]]\ntext = "さん"\nhonorific = { issue = 308, attached = { side = "after", issue = 707 } }\n\n'
+                  '[[word]]\ntext = "殿"\nhonorific = { excluded = { attached = { reason = "x", issue = 707 } } }'),
+    "en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { issue = 661 }\n\n'
+                  '[[word]]\ntext = "senior"\nexcluded = { generation = { reason = "a surname", issue = 661 } }'),
+    "und.toml": _w('[[word]]\ntext = "dr"\ntitle = {}'),
+}
+
+
+@pytest.mark.parametrize(("filters", "texts"), [
+    ({"issue": 707}, ["殿", "さん"]),                 # in `attached`, and in an exclusion's table
+    ({"issue": 308}, ["さん"]),
+    ({"issue": 661}, ["jr", "senior"]),               # a reading and an exclusion
+    ({"issue": 661, "kind": "generation"}, ["jr"]),   # --kind alone lists readings
+    ({"kind": "suffix"}, ["さん", "殿", "jr"]),       # a category matches its kinds
+    ({"kind": "honorific", "excluded": "attached"}, ["殿"]),
+    ({"excluded": "suffix"}, ["senior"]),
+    ({"file": "und.toml"}, ["dr"]),
+    ({"word": "jr", "kind": "title"}, []),
+])
+def test_query_filters_combine(filters: dict[str, Any], texts: list[str]) -> None:
+    query = _load_query()
+    pool = query.build.load(QUERY_POOL)
+    assert sorted(r.text for r in query.select(pool, **filters)) == sorted(texts)
+
+
+def test_query_validates_its_arguments_and_reports_no_match(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    query = _load_query()
+    for argv in (["--kind", "honorifc"], ["--excluded", "attachd"], ["--file", "xx"]):
+        with pytest.raises(SystemExit) as e:
+            query.main(argv)
+        assert e.value.code == 2, argv
+    capsys.readouterr()
+    assert query.main(["--word", "Dr.", "--count"]) == 0  # normalized to 'dr'
+    assert capsys.readouterr().out.strip() not in ("", "0")
+    assert query.main(["--word", "zzqnoword"]) == 1
+
+
+def test_the_build_does_not_import_the_package_it_writes() -> None:
+    # a _compiled.py left broken must not stop the tool that rewrites it
+    import subprocess
+    code = (f"import importlib.util, sys; "
+            f"spec = importlib.util.spec_from_file_location('b', {str(_BUILD)!r}); "
+            f"m = importlib.util.module_from_spec(spec); sys.modules['b'] = m; "
+            f"spec.loader.exec_module(m); "
+            f"print(sorted(n for n in sys.modules if n.split('.')[0] == 'nameparser'))")
+    out = subprocess.run([sys.executable, "-I", "-c", code], capture_output=True,
+                         text=True, check=True).stdout
+    assert out.strip() == "[]"
+
+
+def test_broken_data_exits_2_not_1(monkeypatch: pytest.MonkeyPatch,
+                                   capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(build, "read_dir", lambda: {"en.toml": _w('[[word]]\ntext = "jr"')})
+    assert build.main(["--check"]) == 2
+    assert "inert" in capsys.readouterr().err
+

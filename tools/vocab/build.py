@@ -5,6 +5,8 @@ Usage::
     uv run python tools/vocab/build.py           # rewrite _compiled.py
     uv run python tools/vocab/build.py --check   # exit 1 if it is stale
 
+Either exits 2, printing the failed check, when the vocabulary fails one.
+
 The vocabulary is written per word, in one TOML file per BCP 47 language
 tag (`und` for words not yet assigned one, `mul` for words shared on
 purpose). Each word lists its READINGS -- what it can be read as, keyed by
@@ -14,26 +16,32 @@ writes a module of frozenset literals, committed beside the data, and
 tests/v2/test_vocab.py fails when the two disagree.
 
 The build checks replace the import-time asserts the data modules used
-to carry, and duplicate none of Lexicon.__post_init__ (which still runs
-on the result). Each raises VocabError naming the file and the word:
+to carry. Lexicon.__post_init__ still runs on the result, and two checks
+repeat one of its own (7's case mask and 9) so the shipped data fails
+here, naming the file and the word, rather than at the first import.
+Each raises VocabError naming the word, and the file where one file is
+at fault:
 
 1. `schema` present and supported, no unknown key anywhere (a name a
    later phase will use says so), the file name a BCP 47 tag;
 2. `text` normalized, non-empty, once per file;
 3. every kind registered, every property allowed on its kind with an
-   allowed value, and no entry without a reading or an exclusion;
+   allowed value, an acronym's text free of periods (it is matched with
+   them removed), and no entry without a reading or an exclusion;
 4. one suffix kind per word, across files;
 5. the same kind of the same word agrees on every behavioral property
    in every file;
-6. an excluded kind or property is absent from every file;
+6. an excluded kind or property is absent from every file, and an
+   excluded kind refuses every kind that compiles to the same set;
 7. `same_as` names a word of the same category, `cased` spells its
    word's letters (#459), at most one `cased` per word;
 8. a phrase only as a birth_marker or an addresses = "given" title;
 9. a bound given name that is also a particle has may_be_given;
 
 plus the data invariants that were asserts: may_be_initial only on a
-cased single letter, an elided particle in both apostrophes (#700), and
-no post-nominal both an acronym and a word. The subset relations
+cased single letter, and an elided particle in both apostrophes (#700).
+No post-nominal is both an acronym and a word, by checks 4 and 5; a
+final check in compile_pool is the backstop. The subset relations
 (GIVEN_NAME_TITLES in TITLES, each marker set in its base) need no
 check: a flag cannot exist without its reading. The one soft finding, a
 name reading on a word with no vocabulary reading and no exclusion, is
@@ -47,14 +55,39 @@ import re
 import sys
 import tomllib
 import warnings
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
-from nameparser._lexicon import _alnum, _normalize
-
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def _load_lexicon_module() -> ModuleType:
+    """nameparser/_lexicon.py, loaded by path rather than imported.
+
+    Importing it through the package would run nameparser/__init__,
+    which imports the config modules and so _compiled.py itself -- and a
+    _compiled.py left broken (merge-conflict markers, or a new constant
+    the module does not define yet) would then stop the one tool that
+    regenerates it. _lexicon imports nothing internal at module level
+    (tests/v2/test_layering.py), so it loads on its own."""
+    import importlib.util
+    path = ROOT / "nameparser" / "_lexicon.py"
+    spec = importlib.util.spec_from_file_location("_vocab_build_lexicon", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    # registered before it runs: its dataclasses look their module up
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_lexicon = _load_lexicon_module()
+_normalize: Callable[[str], str] = _lexicon._normalize
+_alnum: Callable[[str], str] = _lexicon._alnum
+
 VOCAB = ROOT / "nameparser" / "vocab"
 OUTPUT = ROOT / "nameparser" / "config" / "_compiled.py"
 REFRESH = "uv run python tools/vocab/build.py"
@@ -65,8 +98,10 @@ REFRESH = "uv run python tools/vocab/build.py"
 SCHEMA = 1
 
 #: kind -> category. The category decides which compiled field a reading
-#: feeds. A generic category key is itself a kind (`title = {}`: a title
-#: not yet classified), so classifying a word later moves no set. Kind
+#: feeds. For title, suffix, particle and conjunction, the category's own
+#: name is also a kind (`title = {}`: a title not yet classified), so
+#: classifying a word later moves no set; bound_given, birth_marker and
+#: the name kinds have one kind each. Kind
 #: names are unique across categories; a fine kind arrives with its
 #: category's classification, in a core PR, as one row here.
 CATEGORY: dict[str, str] = {
@@ -98,6 +133,10 @@ BEHAVIORAL: dict[str, frozenset[str]] = {
     "bound_given": frozenset({"cased"}),
     "relation": frozenset({"cased"}),
 }
+#: Behavioral properties with a default value. An exclusion refuses a
+#: property by its PRESENCE, so refusing one of these would constrain
+#: nothing: the default applies whether the key is written or not.
+DEFAULTED = frozenset({"acronym", "addresses"})
 #: Descriptive properties: recorded, validated, compiled to nothing.
 DESCRIPTIVE = frozenset({"note", "issue", "decided", "expands", "same_as",
                          "native", "gender"})
@@ -330,6 +369,14 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             raise VocabError(f"{where}: addresses must be 'family' or 'given'")
     if r.category == "suffix":
         acronym = _acronym(r)
+        if acronym and "." in r.text:
+            # suffix_as_written looks an acronym up with EVERY period
+            # removed, so a dotted entry is never matched -- and it slips
+            # past the per-text checks beside its undotted twin
+            raise VocabError(
+                f"{where}: an acronym is matched with every period removed, "
+                f"so {r.text!r} can never match; write "
+                f"{r.text.replace('.', '')!r} (it reads the dotted spelling too)")
         if "may_be_name" in p and not acronym:
             raise VocabError(f"{where}: may_be_name marks an acronym reading; "
                              f"this reading has acronym = false")
@@ -365,17 +412,19 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             raise VocabError(f"{where}: cased {cased!r} must spell {r.text!r}'s "
                              f"letters and digits, recased (a case mask, #459)")
     if "excluded" in p:
-        ex = p["excluded"]
-        if not isinstance(ex, dict) or not ex:
+        refused = p["excluded"]
+        if not isinstance(refused, dict) or not refused:
             raise VocabError(f"{where}: excluded must be a table of properties")
-        for prop, why in ex.items():
+        for prop, why in refused.items():
             if prop not in BEHAVIORAL[r.category]:
                 raise VocabError(f"{where}: excluded names {prop!r}, which is not "
                                  f"a behavioral property of a {r.category}")
-            ex = _exclusion(r.file, r.text, r.kind, prop, why)
-            if prop in p:
-                raise VocabError(f"{where}: {prop} is excluded: {ex.reason}")
-            pool.exclusions.append(ex)
+            if prop in DEFAULTED:
+                raise VocabError(f"{where}: {prop} has a default, so excluding it "
+                                 f"constrains nothing; write the value instead")
+            # a refused property present on this same reading is caught by
+            # check 6 with the rest of the pool
+            pool.exclusions.append(_exclusion(r.file, r.text, r.kind, prop, why))
     # build check 8: a phrase is matched whole only as a given-addressing
     # title run or a birth marker; anywhere else it can never match
     if " " in r.text and not (r.kind == "birth_marker" or (
@@ -388,6 +437,23 @@ def _check_reading(r: Reading, pool: Pool) -> None:
 
 def _acronym(r: Reading) -> bool:
     return bool(r.props.get("acronym", r.kind == "credential"))
+
+
+def _refused_by(r: Reading, excluded: str) -> bool:
+    """Whether a word-level exclusion of `excluded` refuses reading r.
+
+    A category name refuses every reading of the category (`excluded =
+    { suffix = ... }`). A kind refuses every reading that compiles into the
+    set that kind would, written with its defaults: within a category every
+    kind feeds one field except in the suffix category, where `acronym`
+    splits them. So refusing `generation` refuses a generic `suffix = {}`
+    and a `status = {}` too, either of which would put the word in the very
+    set the recorded reason keeps it out of."""
+    if excluded in CATEGORIES:
+        return r.category == excluded
+    if CATEGORY[excluded] != r.category:
+        return False
+    return r.category != "suffix" or _acronym(r) == (excluded == "credential")
 
 
 # ------------------------------------------------------------- compiling
@@ -409,7 +475,7 @@ def check_pool(pool: Pool) -> None:
     # recorded reason rather than a disagreement between files
     for x in pool.exclusions:
         for r in by_text.get(x.text, ()):
-            if x.prop is None and (r.kind == x.kind or r.category == x.kind):
+            if x.prop is None and _refused_by(r, x.kind):
                 raise VocabError(f"{r.where()}: {x.kind} is excluded for "
                                  f"{x.text!r} in {x.file}: {x.reason}")
             if x.prop is not None and r.kind == x.kind and x.prop in r.props:
@@ -445,7 +511,8 @@ def check_pool(pool: Pool) -> None:
             raise VocabError(f"{text!r}: one cased mask per word, got {sorted(masks)}")
 
     # 9: a bound given name that is also a particle must be one that may
-    # be given -- the bound join reads it as a given name (Lexicon raises)
+    # be given -- the bound join reads it as a given name. Lexicon raises
+    # on the same contradiction; this says which file and word
     for text, rs in by_text.items():
         if any(r.kind == "bound_given" for r in rs):
             for r in rs:
@@ -485,7 +552,8 @@ def _behavior(r: Reading, prop: str) -> object:
 
 
 #: The constants _compiled.py defines, in its order, each with the
-#: nameparser.config module that re-exports it.
+#: nameparser.config module that re-exports it. All are frozensets but
+#: the ones in MAPPINGS.
 CONSTANTS = (
     ("GIVEN_NAME_TITLES", "titles"),
     ("TITLES", "titles"),
@@ -501,12 +569,14 @@ CONSTANTS = (
     ("SUFFIX_ACRONYMS", "suffixes"),
     ("CAPITALIZATION_EXCEPTIONS", "capitalization"),
 )
+MAPPINGS = frozenset({"CAPITALIZATION_EXCEPTIONS"})
 
 
 def compile_pool(pool: Pool) -> dict[str, Any]:
     """Fold the readings into today's constants."""
     check_pool(pool)
-    s: dict[str, set[str]] = {name: set() for name, _ in CONSTANTS[:-1]}
+    s: dict[str, set[str]] = {
+        name: set() for name, _ in CONSTANTS if name not in MAPPINGS}
     cased: dict[str, str] = {}
     for r in pool.readings:
         t, p = r.text, r.props
@@ -535,13 +605,15 @@ def compile_pool(pool: Pool) -> dict[str, Any]:
             s["BOUND_GIVEN_NAMES"].add(t)
         elif r.category == "relation":
             s["MAIDEN_MARKERS"].add(t)
-    # a particle is never-given unless SOME reading says it may be given
-    # (check 5 makes every reading of one word agree, so "some" is "all")
+    # a particle is never-given where ANY of its readings lacks
+    # may_be_given; check 5 makes every reading of one word agree, so
+    # "any" is "all"
     s["NON_GIVEN_NAME_PARTICLES"] = {
         r.text for r in pool.readings
         if r.category == "particle" and not r.props.get("may_be_given")}
     out: dict[str, Any] = {k: frozenset(v) for k, v in s.items()}
     out["CAPITALIZATION_EXCEPTIONS"] = dict(sorted(cased.items()))
+    assert out.keys() == {name for name, _ in CONSTANTS}, sorted(out)
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is
     # matched twice by two rules, and which one fired is unreadable from
@@ -549,11 +621,13 @@ def compile_pool(pool: Pool) -> dict[str, Any]:
     # ORs the two branches, so an ambiguous acronym that were also a word
     # would be claimed through the word and bypass the period gate the
     # marking exists to impose. The single overlap was 'esq', dropped
-    # 2026-09-08 (decisions/suffix-acronym-collisions). This guards the
-    # SHIPPED data only: Lexicon has no matching invariant, so a caller
-    # may still put a word in both. Check 4 makes the overlap unreachable
-    # through kinds; this catches one kind spelled both ways in two files,
-    # which check 5 reports first.
+    # 2026-09-08 (decisions/suffix-acronym-collisions). Lexicon guards
+    # only that ambiguous half (its gate-bypass raise), so a caller may
+    # still put an unambiguous word in both. In the TOML the overlap is
+    # unreachable -- check 4 refuses two suffix kinds on one word, check 5
+    # one kind with `acronym` differing between files, and check 2 a word
+    # twice in one file -- so this is a backstop kept because it costs one
+    # set intersection, not a check any input reaches today.
     both = out["SUFFIX_ACRONYMS"] & out["SUFFIX_WORDS"]
     if both:
         raise VocabError(f"{sorted(both)}: a post-nominal is an acronym or a "
@@ -601,9 +675,15 @@ def render(compiled: Mapping[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true",
-                    help="exit 1 if the committed module is stale")
+                    help="exit 1 if the committed module is stale "
+                         "(2 if the vocabulary fails a check)")
     args = ap.parse_args(argv)
-    text = render(compile_files(read_dir()))
+    try:
+        text = render(compile_files(read_dir()))
+    except VocabError as e:
+        # exit 2, not 1: a script must tell broken data from a stale module
+        print(f"vocabulary error: {e}", file=sys.stderr)
+        return 2
     current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
     if args.check:
         if current != text:

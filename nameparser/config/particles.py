@@ -1,6 +1,6 @@
 # The words, and the vetting notes that stood beside them here, live in
-# nameparser/vocab/*.toml: a particle reading with may_be_given = true is
-# the ambiguous half, one without it the never-given half, so the two
+# nameparser/vocab/*.toml: every particle reading states may_be_given,
+# true for the ambiguous half and false for the never-given half, so the two
 # partition PARTICLES by construction. tools/vocab/build.py compiles them
 # into _compiled.py and runs the checks that were import-time asserts
 # here -- a bound given name that is also a particle must be one that may
@@ -64,8 +64,8 @@ NON_GIVEN_NAME_PARTICLES = _compiled.NON_GIVEN_NAME_PARTICLES
 #: not part of the name, so it is stepped over and "Dr. Van Johnson"
 #: reads as the untitled "Van Johnson" does. One kind of word is not
 #: stepped over, and this is the one place a title's vocabulary and
-#: this one interact -- ``st``, ``do`` and ``freiherr`` are each BOTH
-#: a title and a particle, so any of them could be the name's own
+#: this one interact -- ``st`` and ``freiherr`` are each BOTH a title
+#: and a particle (``do`` was too, until #296), so either could be the name's own
 #: first piece and stops the scan, leaving a particle behind it
 #: non-leading and free to chain ("Freiherr von Richthofen").
 #: Where the pieces then land is again a later
@@ -84,7 +84,7 @@ NON_GIVEN_NAME_PARTICLES = _compiled.NON_GIVEN_NAME_PARTICLES
 #: ambiguity for the reading not taken, and one inside it records none.
 #:
 #: Both sets are compiled from the same particle readings, the never-given
-#: ones being those marked so, which is what guarantees every
+#: ones being those with ``may_be_given = false``, which is what guarantees every
 #: :py:data:`NON_GIVEN_NAME_PARTICLES` member is also a particle (and
 #: still joins forward), with no drift.
 PARTICLES = _compiled.PARTICLES

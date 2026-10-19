@@ -419,9 +419,10 @@ def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:
 
 
 def test_the_shipped_suffix_sets_are_disjoint() -> None:
-    # the vocabulary build refuses the overlap (tools/vocab/build.py),
-    # which runs only when the data changes, so the invariant over the
-    # shipped constants gets a named test as well. The two
+    # the vocabulary build refuses the overlap (tools/vocab/build.py,
+    # run over the shipped files by tests/v2/test_vocab.py), but over the
+    # TOML, not over the constants a running process holds, so the
+    # invariant over the shipped constants gets a named test as well. The two
     # sets normalize differently -- the word test strips only edge
     # periods, the acronym test strips all of them -- so a word in both
     # is matched by two rules and which one fired is unreadable from
