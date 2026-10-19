@@ -5,9 +5,11 @@ H6. Rationale: the listing form moves the surname to the front and
     ahead of the name ends up ahead of the surname — `Dr. Smith,
     John` is `Dr. John Smith` indexed. The comma names the family,
     and a title is no part of it. But the slot in front of a family
-    comma is a surname's slot as well, so only the vocabulary claims
-    a word there, never H2's shape, and a word that is a particle as
-    well as a title opens a surname rather than ranking a person.
+    comma is a surname's slot as well, and a surname can open with
+    an abbreviated word (Sta. Maria, Sto. Domingo), so only the
+    vocabulary claims a word there, never H2's shape, and a word
+    that is a particle as well as a title opens a surname rather
+    than ranking a person.
     A run of title words opening the part before a family comma is
     the title, joining the title field in input order with any title
     after the comma. The run admits a title word only as vocabulary
@@ -28,6 +30,7 @@ H6. Rationale: the listing form moves the surname to the front and
       "Prof. Smith, John, PhD"    →  family="Smith"
       "Dr., John"                 →  family="Dr."  · boundary
       "Dr. King, John"            →  family="King"  · boundary
+      "Sta. Maria, Juan"          →  family="Sta. Maria"  · boundary
       "MD PhD Jr., John"          →  family="MD"  · boundary
       "St Pierre, Ed"             →  family="St Pierre"  · boundary
       "Dr. St. Pierre, Ed"        →  family="St. Pierre"  · boundary
