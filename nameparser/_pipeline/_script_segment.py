@@ -697,7 +697,7 @@ def _split_surname_site(state: ParseState) -> ParseState:
     # boundary its writer drew just as deliberately as a Han one: under
     # the JA pack "山田太郎 マイケル" declines, though katakana is in no
     # activation set. A Latin title or suffix is NOT such a boundary:
-    # it says nothing about where the CJK name splits, so "Dr 阿明日,
+    # it says nothing about where the CJK name splits, so "Dr 小明日,
     # Jr." still reaches the segmenter. Vocabulary keeps its own rule
     # -- a listed surname is a certainty about that exact string,
     # whoever else stands beside it.

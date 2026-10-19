@@ -109,3 +109,8 @@ Excluded (CAPITALIZATION_EXCEPTIONS — meng, edd, lac, ded, left out of the 202
 Excluded (CAPITALIZATION_EXCEPTIONS — md, ii, iii, iv, removed 2026-09-23, #459):
 
 - `md`, `ii`, `iii` and `iv` are OUT of the exceptions map and must not be put back by a sweep that finds one of them title-cased somewhere. As a SUFFIX each is written in capitals with no entry — `md` by the acronym clause, the numerals by the numeral clause — and in any other role each repairs as the parse read it by decision (decisions/R4's item-4 bullet), so an entry would only bring back the role-free capitals that bullet retired: `iv smith` → `IV Smith`, `Md Abdul Karim` → `MD Abdul Karim`. A caller who wants them back adds them to a private lexicon, as masks.
+
+Excluded (locales.ZH surnames, nameparser/locales/zh.py — the two-character entries):
+
+- Married double surnames (王李, 張李, 陳李, 李林, 張陳 and the rest of the Taiwan file's two-character rows that join two single surnames). The longest match runs first, so 李林 would cut 李林伟 into 李林 + 伟, a real Chinese name read wrong where today it reads right (2026-10-18, #695). 張廖, 張簡 and 范姜 are not this class: they are clan compounds borne as one surname, and ship.
+- Japanese surnames and transcriptions in the same file (佐藤, 鈴木, 馬丁). The pack divides Chinese names; a Japanese surname belongs to `locales.JA`'s segmenter (2026-10-18, #695).

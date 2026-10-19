@@ -1601,7 +1601,7 @@ def test_segmenter_exceptions_propagate() -> None:
 
     p = parser_for(locales.get("zh"), base=Parser(segmenter=boom))
     with pytest.raises(RuntimeError, match="segmenter bug"):
-        p.parse("阿明")   # zh pack active, 阿 unmatched by vocabulary ->
+        p.parse("小明")   # zh pack active, 小 unmatched by vocabulary ->
                           # the stage consults the segmenter
 
 
@@ -1615,10 +1615,10 @@ def test_the_segmenter_sees_only_an_undivided_name() -> None:
         return Segmentation((1,), confidence=1.0)
 
     p = parser_for(locales.get("zh"), base=Parser(segmenter=always))
-    assert p.parse("阿明").family == "阿"          # one token: consulted
-    n = p.parse("阿明 日月")                        # already divided
-    assert (n.family, n.given) == ("阿明", "日月")
-    assert p.parse("Dr 阿明").family == "阿"       # a title is not a split
+    assert p.parse("小明").family == "小"          # one token: consulted
+    n = p.parse("小明 日月")                        # already divided
+    assert (n.family, n.given) == ("小明", "日月")
+    assert p.parse("Dr 小明").family == "小"       # a title is not a split
 
 
 def test_a_segmenter_split_reaches_the_fields() -> None:
@@ -1629,8 +1629,8 @@ def test_a_segmenter_split_reaches_the_fields() -> None:
         return Segmentation((1,), confidence=0.5)
 
     p = parser_for(locales.get("zh"), base=Parser(segmenter=two))
-    n = p.parse("阿明")
-    assert (n.family, n.given) == ("阿", "明")
+    n = p.parse("小明")
+    assert (n.family, n.given) == ("小", "明")
     assert [a.kind for a in n.ambiguities] == [AmbiguityKind.SEGMENTATION]
 
     # two cuts, three pieces -- and the token indices the comma
@@ -1639,9 +1639,9 @@ def test_a_segmenter_split_reaches_the_fields() -> None:
         return Segmentation((1, 2))
 
     q = parser_for(locales.get("zh"), base=Parser(segmenter=three))
-    n3 = q.parse("Dr 阿明日, Jr.")
+    n3 = q.parse("Dr 小明日, Jr.")
     assert (n3.title, n3.family, n3.given, n3.middle, n3.suffix) == (
-        "Dr", "阿", "明", "日", "Jr.")
+        "Dr", "小", "明", "日", "Jr.")
 
 
 def _noop_segmenter(text: str) -> None:
