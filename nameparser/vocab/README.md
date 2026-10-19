@@ -1,8 +1,8 @@
 # The vocabulary files
 
-This folder holds the parser's default vocabulary: the titles, suffixes, particles, conjunctions, bound given names and maiden markers it recognizes, written one word at a time. It is the place to edit when a word should be recognized, should stop being recognized, or should be recognized differently.
+This folder holds the parser's default vocabulary: the titles, suffixes, particles, conjunctions, bound given names and maiden markers it recognizes, and the case of the words it capitalizes specially, written one word at a time. It is the place to edit when a word should be recognized, should stop being recognized, or should be recognized differently.
 
-The parser never reads these files. `tools/vocab/build.py` compiles them into `nameparser/config/_compiled.py`, a committed module of sorted `frozenset` literals, and the `nameparser.config` modules re-export those sets under their public names (`TITLES`, `PARTICLES`, ...). So an edit here does nothing until you rebuild, and `tests/v2/test_vocab.py` fails, naming the command, when the committed module and the files disagree.
+The parser never reads these files. `tools/vocab/build.py` compiles them into `nameparser/config/_compiled.py`, a committed module of sorted `frozenset` literals and one `dict` (`CAPITALIZATION_EXCEPTIONS`), and the `nameparser.config` modules re-export them under their public names (`TITLES`, `PARTICLES`, ...). So an edit here does nothing until you rebuild, and `tests/v2/test_vocab.py` fails, naming the command, when the committed module and the files disagree.
 
 Why the model looks this way, and what each decision cost, is recorded in [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md). Where it is going (phases 2 to 4) is outside this file.
 
@@ -17,7 +17,7 @@ Two tags are not languages:
 
 The script is read from the word, not from the file: `sr.toml` holds `mlađi` and `млађи` side by side. A script subtag (`zh-Hant`) is for a difference the text cannot show.
 
-The default vocabulary loads every file, so which file a word is in changes nothing about how a name is parsed today. A word may be in more than one file; check 5 of the build makes its readings agree on every behavioral property.
+The default vocabulary loads every file, so which file a word is in changes nothing about how a name is parsed today. A word may be in more than one file; check 5 of the build makes each kind of it read the same in every file, every behavioral property agreeing.
 
 ## How an entry is built
 
@@ -74,7 +74,7 @@ Two rules about the `text`:
 
 ## Kinds
 
-A reading's key is its **kind**. Each kind belongs to one **category**, and the category decides which compiled set the reading feeds. For title, suffix, particle and conjunction the category's own name is also a kind (`title = {}`: a title not yet classified), so classifying a word later is a data edit that moves no compiled set. Only the suffix category is classified so far; the others carry their generic kind.
+A reading's key is its **kind**. Each kind belongs to one **category**, and the category decides which compiled set the reading feeds. For title, suffix, particle and conjunction the category's own name is also a kind (`title = {}`: a title not yet classified), so classifying a word later is a data edit that moves no compiled set. The one exception: a generic `suffix = {}` classified as `credential` moves from `SUFFIX_WORDS` to `SUFFIX_ACRONYMS`, because a credential's `acronym` is true unwritten; write `acronym = false` to keep it where it was. Only the suffix category is classified so far; the others carry their generic kind.
 
 | Kind | Category | Compiled into |
 |---|---|---|
@@ -110,13 +110,13 @@ A property is **behavioral** when it compiles into a set and so changes how name
 | `may_be_given` | behavioral | `particle` | none: required | `NON_GIVEN_NAME_PARTICLES` when false: a particle opening the name starts the family name ([rules/P1](../../docs/design/rules/P1-lone-particle-fold.md), the lone particle fold) |
 | `may_be_initial` | behavioral | `conjunction` | false | `CONJUNCTIONS_AMBIGUOUS`, on a cased single letter only: read as an initial in a name written in one case, as in `JOHN E SMITH` ([rules/P8](../../docs/design/rules/P8-single-letter-connective-against-the-initial-it-spells.md), a single-letter connective against the initial it spells) |
 | `cased` | behavioral | `title`, `suffix`, `particle`, `conjunction`, `bound_given`, `relation` | the word as written | `CAPITALIZATION_EXCEPTIONS`: the case `capitalized()` gives the word (`PhD`), a mask over its letters and digits, never a replacement (#459) |
-| `note` | descriptive | every category but `name` | | free text: why the reading is as it is |
+| `note` | descriptive | every category, a `name` reading included | | free text: why the reading is as it is |
 | `issue` | descriptive | every category but `name` | | an issue number, or a list of them |
 | `decided` | descriptive | every category but `name` | | a TOML date |
 | `expands` | descriptive | every category but `name` | | the meaning the entry was added for, not every meaning |
 | `same_as` | descriptive | every category but `name` | | another word of the same category that this one is a spelling of (`jnr` is `jr`) |
-| `native` | descriptive | every category but `name` | | a native-script spelling |
-| `gender` | descriptive | every category but `name` | | `"f"`, `"m"` or `"n"`, only where the word gives a definitive clue |
+| `native` | descriptive | every category, a `name` reading included | | a native-script spelling |
+| `gender` | descriptive | every category, a `name` reading included | | `"f"`, `"m"` or `"n"`, only where the word gives a definitive clue |
 
 Two of these need more than their row:
 
@@ -130,7 +130,7 @@ A `given` or `family` reading takes its own keys:
 | Key | Meaning |
 |---|---|
 | `us_census_2010` | bearers as a surname in the 2010 US Census |
-| `us_ssa` | births with this given name in US Social Security data, all years summed |
+| `us_ssa` | births with this given name in US Social Security data, all years summed; say in `note` which sex, or that both are added |
 | `wikidata` | people in Wikidata with this as their given or family name, a lower bound |
 | `as_of` | the date the counts were taken, required beside any count |
 | `native` | a native-script spelling |
@@ -142,15 +142,15 @@ A `given` or `family` reading takes its own keys:
 An exclusion records that a reading was considered and refused, with the reason, so that the next person to propose it meets the reason as a build error instead of rediscovering the evidence.
 
 - **A refused reading** is a word-level table: `[word.excluded.generation]` with a `reason`, or `excluded = { generation = "the reason" }`. It refuses that kind in every file, and also every other kind that compiles into the same set, so a generic `suffix = {}` cannot put back a refused `generation`. A category name refuses the whole category (`excluded = { suffix = "..." }`). A `name` kind refuses only itself.
-- **A refused property** sits on a reading the word keeps: `[word.honorific.excluded]` with `attached = "the reason"`. It refuses any value of that property other than the one it takes unwritten, on any reading of the category.
+- **A refused property** sits on a reading the word keeps: `[word.honorific.excluded]` with `attached = "the reason"`. It refuses any value of that property other than the one it takes unwritten, on any reading of the category; a refused `cased`, which belongs to the word, on any reading of the word.
 
-The value is a reason string, or a table with `reason` and optionally `issue`, `decided` and `note`. The exclusion goes in the file of the language whose reading it refuses. An entry may hold exclusions and no reading at all, as `fils` does; an entry with neither is refused as inert.
+The value is a reason string, or a table with `reason` and optionally `issue`, `decided` and `note`. The exclusion goes in the file of the language whose reading it refuses. An entry may hold exclusions and no vocabulary reading, as `fils` does. An entry with no reading and no exclusion is refused as inert, and one holding only a name reading is a warning, which the test suite makes an error.
 
 To see what has been refused, and why: `uv run python tools/vocab/query.py --excluded generation`.
 
 ## Bearer counts
 
-Counts come from `tools/name_usage.py`, which reports how often a word is borne as a given name and as a family name in three sources: 2010 US Census surnames (listed from 100 bearers), US Social Security given names (a name-sex pair is listed for a year from 5 births) and Wikidata (live, with countries of citizenship, and a lower bound because many people have no name statement). Its docstring says what each number can and cannot show.
+Counts come from `tools/name_usage.py`, which reports how often a word is borne as a given name and as a family name in three sources: 2010 US Census surnames (listed from 100 bearers), US Social Security given names (a name-sex pair is listed for a year from 5 births, reported per sex) and Wikidata (live, with countries of citizenship, and a lower bound because many people have no name statement). For a word holding a Han, kana or hangul letter it adds a fourth row, the Wikidata names that END in the word, which is the question for a glued honorific. Its docstring says what each number can and cannot show.
 
 Record a count on the word as a `given` or `family` reading, with the date you took it in `as_of`. A source's count is left out when it is below that source's floor, never written as 0. Counts are provenance: they are the evidence a decision was made on, and nothing computes a reading from them.
 
@@ -159,14 +159,14 @@ Record a count on the word as a `given` or `family` reading, with the date you t
 1. **Look up the word's other readings.** `uv run python tools/vocab/query.py --word <word>` lists every reading and exclusion of it in every file. An exclusion there is a decision already made; a reading in another category is a clash you are about to create, which is fine when position settles it (`do`) and needs an argument when it does not.
 2. **Check it against real names, not memory.** `uv run python tools/name_usage.py <word>` gives the counts, and [decisions/vocabulary-collisions](../../docs/design/decisions/vocabulary-collisions.md) is the criterion they are read against: a word that is a real name in the position the reading acts on needs the matching flag (`may_be_given`, `may_be_name`) or should stay out. The root `AGENTS.md`'s "Adding a word to the vocabulary" lists the traps that have bitten before.
 3. **Write the entry** in the file of the language whose names it occurs in (`und.toml` when that is not known), with what the check found on it: `note`, `issue`, a dated name reading, or an `excluded` entry if you decided against it.
-4. **Rebuild**: `uv run python tools/vocab/build.py`. It refuses what it can detect, naming the file and the word, and rewrites `nameparser/config/_compiled.py`. Commit both.
+4. **Rebuild**: `uv run python tools/vocab/build.py`. It refuses what it can detect, naming the word and, where one file is at fault, the file, and rewrites `nameparser/config/_compiled.py`. Commit both.
 5. **Run the tests**: `uv run pytest tests/v2/test_vocab.py` for the build, then the full suite, and read what `tests/v2/test_snapshot.py` reports as moved (the root `AGENTS.md`, "Validating a new parsing rule").
 
 `uv run python tools/vocab/build.py --check` exits 1 when the committed module is stale and 2 when a file fails a check. The checks themselves are numbered in `build.py`'s docstring.
 
 ## Names reserved for later phases
 
-These names will mean something in a later phase. Writing one now is a build error naming its phase, so nothing reads as working before it does.
+These names will mean something in a later phase. Writing one now as a key, in a file, an entry or a reading, is a build error naming its phase, so nothing reads as working before it does.
 
 | Name | Phase |
 |---|---|
@@ -179,6 +179,6 @@ These names will mean something in a later phase. Writing one now is a build err
 | `prefer` | 3 |
 | `strict` | 3 |
 
-Two property values are reserved the same way: `addresses = "full"` and `"any"`, and `attached` with a `side` other than `"after"`.
+Two property values are refused for the same reason, with a message saying a later phase: `addresses = "full"` and `"any"`, and `attached` with a `side` other than `"after"`.
 
 The locale packs' vocabulary (`nameparser/locales/`) and the Korean surname list (`nameparser/config/surnames.py`) are not in this folder: the surnames are a segmentation list, outside the per-word model, and the packs move here in phase 3.
