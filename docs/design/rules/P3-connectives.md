@@ -157,5 +157,5 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, C1, S6, S10 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, C1, S6, S10 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

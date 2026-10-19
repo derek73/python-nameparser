@@ -190,12 +190,8 @@ def test_the_field_sweep_sees_the_claims_it_checks() -> None:
     # #718's declined-numeral report, which names the field the letter
     # was read into, on those rows under each order; 1191 -> 1210 the
     # same day: the PR review's rows (the chain-taken, family-first,
-    # lowercase and maiden-clause numerals); 1210 -> 1213 the same day:
-    # #721's one-case lowercase numerals, counted and reported; 1213
-    # -> 1234 the same day: #721's PR-review rows (the numeral before a
-    # credential or title, the real generations, the lone letters);
-    # 1234 -> 1240: the two non-ASCII letter-in-front rows; 1240 ->
-    # 1243: the end-of-stage withdrawal's rows (#722's last review).
+    # lowercase and maiden-clause numerals); 1210 -> 1243 the same day:
+    # #721's rows (#722).
     assert claims == 1243, (
         f"the field sweep checks {claims} claims, recorded as 1243 on "
         f"2026-10-18")

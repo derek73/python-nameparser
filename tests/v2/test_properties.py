@@ -3336,9 +3336,9 @@ def test_every_one_letter_particle_veto_is_load_bearing(
 
 # --- #721: a name written in one case reads as its capitals ---------
 # S10 (the trailing roman numeral) says a name written wholly in one
-# case says nothing about any letter in it -- so a wholly lower-case name parses exactly as the
-# same name in capitals, fields (compared case-folded) and report
-# kinds alike. The grid crosses the shapes a one-letter numeral meets
+# case says nothing about any letter in it -- so a wholly lower-case
+# name parses exactly as the same name in capitals, fields (compared
+# case-folded) and report kinds alike. The grid crosses the shapes a one-letter numeral meets
 # -- every comma shape, a maiden clause, a title, a particle chain, a
 # bound given name, an initial, a nickname and a credential before or
 # after it -- with the numerals a listed and a shape-only spelling of
@@ -3351,8 +3351,8 @@ _ONE_CASE_SHAPES = (
     "{a} {b} nee {c} {n}", "dr {a} {n}", "dr {a} {b} {n}", "sir {a} {n}",
     "{a} van {b} {n}", "freiherr von {b} {n}", "abdul {a} {n}",
     "{a} j. {n}", "({c}) {a} {n}", "{a} {b} jr {n}", "{a} {n} phd",
-    # #721's review: a bare letter in front, a trailing title, a
-    # doubled numeral and a trailing period
+    # a bare letter in front, a trailing title, a doubled numeral and
+    # a trailing period
     "{a} b {n}", "{a} e {n}", "{a} {n} prof.", "{a} {b} {n} prof.",
     "{a} {b} {n} {n}", "{a} {b} {n}.",
     # a non-ASCII letter in front, whose capital is no initial
@@ -3402,6 +3402,6 @@ def test_the_one_case_grid_sees_the_letter_in_front(
     monkeypatch.setattr(
         "nameparser._pipeline._pieces.is_trailing_numeral_suffix",
         lambda text, preceding, one_case=None:
-            _vocab.is_trailing_numeral_suffix(text, preceding))
+            _vocab.is_trailing_numeral_suffix(text, preceding, None))
     assert (len(_one_case_disagreements())
             == _ONE_CASE_LETTER_IN_FRONT_UNGUARDED)

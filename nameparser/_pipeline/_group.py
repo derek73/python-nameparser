@@ -81,8 +81,7 @@ from nameparser._pipeline._state import (
 import nameparser._pipeline._comma as _comma
 from nameparser._pipeline._vocab import D, PH
 from nameparser._pipeline._vocab import (
-    comma_follows_marker, delimiter_cores, is_trailing_numeral_suffix,
-    numeral_settled_by_case,
+    comma_follows_marker, delimiter_cores, reads_as_a_reported_numeral,
 )
 from nameparser._types import AmbiguityKind, Role
 
@@ -362,9 +361,8 @@ def _maiden_take(pieces: Sequence[Sequence[int]],
             f"maiden marker's clause keeps it rather than reading it as "
             f"a generational suffix", tuple(last)))
     elif (released and len(last) == 1 and end - 2 >= lo
-          and is_trailing_numeral_suffix(
-              word.text, tokens[pieces[end - 2][0]].text, one_case)
-          and not numeral_settled_by_case(word.text, one_case)):
+          and reads_as_a_reported_numeral(
+              word.text, tokens[pieces[end - 2][0]].text, one_case)):
         # rules/S10: "a one-letter numeral before a credential is the
         # family name, and the reading is reported" -- the clause's
         # twin of assign's report (#721's review): the clause keeps the

@@ -1052,44 +1052,29 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
 
 def test_the_v1_off_switch_unjoins_the_link_only() -> None:
     """decisions/P3's off switch on the V1 SURFACE (#397 second
-    review; named for what it restored, the pre-#397 fields, until
-    #721). The core-side switch is pinned by the off-switch grid in
+    review). The core-side switch is pinned by the off-switch grid in
     tests/v2/test_properties.py and this is the facade half, which
     has no `Lexicon` of its own to remove from.
 
-    The three role movers of decisions/P3's one-case paragraph are
-    the rows: the switch restored their 2.3.0 fields, measured
-    2026-09-20 -- until #721, which made a one-case
-    one-letter numeral the initial its capital is (rules/S10), so with
-    `i` out of the conjunctions the letter now reads as 'I' does in
-    each, switch on or off. What the switch still moves is the join,
-    below.
+    The switch moves the Catalan join and leaves the three one-case
+    role movers of decisions/P3's paragraph alone: with `i` out of the
+    conjunctions it is a one-letter roman numeral, the initial its
+    capital is (rules/S10), so each reads as with the switch on.
 
     A local `Constants`, never the shared `CONSTANTS`: a removal on
     the singleton would leak into every later test in the process.
     """
     constants = Constants()
     constants.conjunctions.remove("i")
-    for text, on_fields, off_fields in (
-            ("rovira, i",
-             {"first": "i", "last": "rovira", "suffix": ""},
-             {"first": "i", "last": "rovira", "suffix": ""}),
-            ("john smith i jr",
-             {"first": "john", "middle": "smith", "last": "i",
-              "suffix": "jr"},
-             {"first": "john", "middle": "smith", "last": "i",
-              "suffix": "jr"}),
-            ("maier, amy i, jr.",
-             {"first": "amy", "middle": "i", "last": "maier",
-              "suffix": "jr."},
-             {"first": "amy", "middle": "i", "last": "maier",
-              "suffix": "jr."})):
-        on = HumanName(text)
-        off = HumanName(text, constants)
-        for field, value in on_fields.items():
-            assert getattr(on, field) == value, (text, field)
-        for field, value in off_fields.items():
-            assert getattr(off, field) == value, (text, field)
+    for text, fields in (
+            ("rovira, i", {"first": "i", "last": "rovira", "suffix": ""}),
+            ("john smith i jr", {"first": "john", "middle": "smith",
+                                 "last": "i", "suffix": "jr"}),
+            ("maier, amy i, jr.", {"first": "amy", "middle": "i",
+                                   "last": "maier", "suffix": "jr."})):
+        for name in (HumanName(text), HumanName(text, constants)):
+            for field, value in fields.items():
+                assert getattr(name, field) == value, (text, field)
     # and the join itself, the reading the bullet leads with
     joined = HumanName("Josep Carod i Rovira")
     assert joined.last == "Carod i Rovira"

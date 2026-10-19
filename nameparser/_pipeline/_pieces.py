@@ -1541,7 +1541,7 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
                     not tokens[piece[0]].tags.isdisjoint(_TRAILING_WORD_TAGS)
                     or (titles_behind and is_trailing_numeral_suffix(
                         tokens[piece[0]].text,
-                        tokens[pieces[k - 1][0]].text))))):
+                        tokens[pieces[k - 1][0]].text, None))))):
             break
         # a group-flagged suffix piece is outside the peel's walk
         # altogether (`peel_walk` drops it), so it is behind the

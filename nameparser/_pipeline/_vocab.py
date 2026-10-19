@@ -257,10 +257,9 @@ _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
 # take: V and I are suffix vocabulary, X a numeral by shape alone, and
 # all three are bare capitals, which inside a name are middle initials.
 def is_trailing_numeral_suffix(text: str, preceding: str,
-                               one_case: bool | None = None) -> bool:
-    """The trailing walk's roman-numeral fork, shared with
-    `trailing_candidates`' superset view and assign's report on a
-    numeral before a credential (#721): a FINAL single-token piece that is a roman numeral
+                               one_case: bool | None) -> bool:
+    """The trailing walk's roman-numeral fork: a FINAL single-token
+    piece that is a roman numeral
     reads as the suffix when the piece before it does not look like
     part of an initial run -- for a one-letter numeral a necessary
     condition only, the caller's words-to-spare count deciding
@@ -278,9 +277,9 @@ def is_trailing_numeral_suffix(text: str, preceding: str,
     the word in front is read as its capital would be, so a bare 'j'
     is initial-shaped as 'J' is (rules/S10, #721's review: 'john j v'
     reads as 'JOHN J V'), while 'é', 'ж' or an uncased word, whose
-    capitals are not, stay as they were. A caller passing None,
-    `trailing_candidates`' superset for the maiden take, gets the
-    shape test alone, which admits more and so stays a superset."""
+    capitals are not, stay as they were. None (the maiden take's
+    superset view passes it) gets the shape test alone, which admits
+    more and so stays a superset."""
     return (_ROMAN.match(text) is not None
             and not is_initial_shaped(preceding)
             and not (one_case and is_initial_shaped(preceding.upper())))
@@ -289,13 +288,26 @@ def is_trailing_numeral_suffix(text: str, preceding: str,
 # rules/S10: "a numeral written in lower case in a name of mixed case is
 # the generation and reports nothing" -- the one writing that settles
 # the fork, since nobody writes an initial in lower case beside
-# capitals. Asked by the walk alone, which takes such a numeral as any
-# suffix word and records no call for a reporter to report.
+# capitals. Asked by the walk, which takes such a numeral as any suffix
+# word and records no call, and by the report on a numeral before a
+# credential (`reads_as_a_reported_numeral`).
 def numeral_settled_by_case(text: str, one_case: bool | None) -> bool:
     """Whether a numeral the trailing fork reads is lower case in a
     name written in more than one case. `one_case` is
     ParseState.one_case; None (nobody asked) settles nothing."""
     return one_case is False and text.islower()
+
+
+# rules/S10: "either reading is reported" -- the one question the two
+# reports on a numeral a post-nominal follows ask (assign's, and the
+# maiden take's for a numeral its clause keeps): the fork would read
+# this numeral, and its writing does not settle it (#721)
+def reads_as_a_reported_numeral(text: str, preceding: str,
+                                one_case: bool | None) -> bool:
+    """Whether a numeral the walk left a name word, with `preceding`
+    in front of it, is one the fork would weigh and so reports."""
+    return (is_trailing_numeral_suffix(text, preceding, one_case)
+            and not numeral_settled_by_case(text, one_case))
 
 
 # #544: a single-letter roman numeral ('V', 'v', 'I.'), in any case,

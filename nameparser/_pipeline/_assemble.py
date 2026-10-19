@@ -2,7 +2,8 @@
 
 Consumes: tokens (all roles set), dropped, ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
-#626).
+#626), and segments, for the part a withdrawn connective report's
+letter ends (rules/P3, #721).
 Produces: a validated ParsedName -- the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
@@ -20,7 +21,7 @@ tests/v2/pipeline/test_assemble.py.
 """
 from __future__ import annotations
 
-from nameparser._pipeline._state import FIELD_READING, ParseState
+from nameparser._pipeline._state import FIELD_READING, NAME_ROLES, ParseState
 from nameparser._types import (
     Ambiguity, AmbiguityKind, ParsedName, Role, Token,
 )
@@ -74,6 +75,7 @@ def assemble(state: ParseState) -> ParsedName:
     if contentless:
         final = {}
     ambiguities = []
+    segment_of: dict[int, tuple[int, ...]] | None = None
     for pending in state.ambiguities:
         materialized = tuple(final[i] for i in pending.indices
                              if i in final)
@@ -114,6 +116,23 @@ def assemble(state: ParseState) -> ParsedName:
                 and any(t.role in (Role.SUFFIX, Role.TITLE)
                         for t in materialized)):
             continue
+        # rules/P3: "unless no name word of its part stands to its
+        # right" -- nothing after the letter in its segment, or only
+        # suffixes, titles, a maiden clause or a nickname: it connects
+        # nothing, so the report goes (#721). Asked here for the reason
+        # above: the roles are final. Where the letter is also a
+        # numeral the fork read, its own report (rules/S10) is the one
+        # left, so one token never carries both. Built only for a
+        # connective report, so other names pay nothing.
+        if pending.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL:
+            if segment_of is None:
+                segment_of = {j: seg for seg in state.segments
+                              for j in seg}
+            i = pending.indices[0]
+            if not any(j > i and j in final
+                       and final[j].role in NAME_ROLES
+                       for j in segment_of.get(i, ())):
+                continue
         detail = pending.detail
         if pending.field_tail is not None:
             # A report naming a field, in a name emptied above (no

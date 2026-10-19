@@ -7601,8 +7601,7 @@ CASES: tuple[Case, ...] = (
          {"title": "dr.", "given": "john", "family": "i"},
          ambiguities=("suffix-or-name",), classification="fix(#316)",
          notes="the same with a trailing title (H5): one report on "
-               "the letter, the numeral's. #721's first form reported "
-               "both kinds on it. 1.4.0 read suffix 'dr.'"),
+               "the letter, the numeral's. 1.4.0 read suffix 'dr.'"),
     Case("a_one_case_non_numeral_link_before_a_credential_is_silent",
          "jose e phd",
          {"given": "jose", "family": "e", "suffix": "phd"},
@@ -7636,30 +7635,25 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="the one-case test of the word in front asks whether its "
                "CAPITAL is initial-shaped, and 'Ж' is not (an initial is "
-               "a Latin capital), so this reads as 'Ivan Ж V' does. "
-               "#721's first form took any cased letter and read middle "
-               "'Ж', family 'V'"),
+               "a Latin capital), so this reads as 'Ivan Ж V' does"),
     Case("a_non_ascii_lowercase_letter_in_front_is_no_initial",
          "josé é v",
          {"given": "josé", "family": "é", "suffix": "v"},
          ambiguities=("suffix-or-name",),
-         notes="the lowercase twin of the row above, and the one whose "
-               "decomposed spelling had read otherwise under #721's "
-               "first form"),
+         notes="the lowercase twin of the row above; its decomposed "
+               "spelling reads the same (rules/H2's encoding note)"),
     Case("a_one_case_link_ending_a_particle_chain_before_a_credential",
          "john van e phd",
          {"given": "john", "family": "van e", "suffix": "phd"},
          notes="the letter ends the chain the particle made, with only "
                "a credential behind it: it connects nothing (P3), so "
-               "nothing reports. #721's first withdrawal tested a "
-               "one-token piece and missed it"),
+               "nothing reports"),
     Case("a_one_case_link_before_a_credential_after_a_family_comma",
          "smith, john e phd",
          {"given": "john", "middle": "e", "family": "smith",
           "suffix": "phd"},
-         notes="the given part after a family comma: the same rule, "
-               "decided over roles at the end of the stage, so it "
-               "reaches the comma's own walk too"),
+         notes="the given part after a family comma: only a "
+               "credential follows the letter in its part (P3)"),
     Case("a_chained_one_case_numeral_before_a_title_reports_once",
          "freiherr von i dr.",
          {"title": "freiherr dr.", "family": "von i"},
@@ -7667,9 +7661,8 @@ CASES: tuple[Case, ...] = (
          classification="fix(#316)",
          notes="a letter ending a particle chain with only a title "
                "behind it: the numeral's report, the connective's "
-               "withdrawn -- where #718's stand-down had kept the "
-               "connective's and dropped the numeral's. 1.4.0 read "
-               "first 'freiherr von', last 'i', suffix 'dr.'"),
+               "withdrawn (P3). 1.4.0 read first 'freiherr von', last "
+               "'i', suffix 'dr.'"),
     Case("a_numeral_kept_by_a_maiden_clause_before_a_credential_reports",
          "Jane Doe nee Smith V PhD",
          {"given": "Jane", "family": "Doe", "suffix": "PhD",
@@ -7678,6 +7671,19 @@ CASES: tuple[Case, ...] = (
          notes="the clause's twin of 'John Smith V PhD': the clause "
                "keeps the numeral a post-nominal stands behind, and "
                "reports it (S10). 1.4.0 had no maiden markers"),
+    Case("a_one_case_link_before_a_marker_read_as_a_name_reports",
+         "jose e nee",
+         {"given": "jose", "middle": "e", "family": "nee"},
+         ambiguities=("conjunction-or-initial",),
+         notes="no clause forms, so the marker is the family name and a "
+               "name word follows the letter: P3 reports it, as 1.4.0's "
+               "successors did -- the contrast with 'jose e nee smith'"),
+    Case("a_lowercase_shape_numeral_before_a_credential_is_settled",
+         "John x PhD",
+         {"given": "John", "family": "x", "suffix": "PhD"},
+         notes="lower case beside capitals settles the numeral (S10), "
+               "so the report on a numeral a post-nominal follows does "
+               "not fire"),
     Case("a_lowercase_numeral_in_a_one_case_name_still_reports",
          "john smith i", {"given": "john", "family": "smith",
                           "suffix": "i"},

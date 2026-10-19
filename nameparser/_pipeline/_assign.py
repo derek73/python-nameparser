@@ -7,9 +7,7 @@ main segment's placement takes rather than peeling again, save where
 group's joins left no name word in front of it.
 Produces: tokens with roles set on every main-stream token, and the
 folded-middle tag on the particles P6's attachment joins to the family
-after a family comma (#613); its own ambiguities (below), less
-classify's CONJUNCTION_OR_INITIAL on a letter that only suffixes and
-titles follow in its part (#721).
+after a family comma (#613).
 Reads: Policy.name_order (#270), is_suffix_lenient on the trailing
 piece of a two-part comma name, and Policy.script_orders (#271, which
 overrides it when every name piece is written wholly in one script, or
@@ -91,8 +89,8 @@ from typing import NamedTuple
 
 from nameparser._lexicon import Lexicon
 from nameparser._pipeline._vocab import (
-    _ROMAN, effective_script, is_suffix_lenient, is_trailing_numeral_suffix,
-    numeral_settled_by_case, resolve_script_set,
+    _ROMAN, effective_script, is_suffix_lenient,
+    reads_as_a_reported_numeral, resolve_script_set,
 )
 from nameparser._pipeline._pieces import (
     anchor_in_reach, credential_at_the_given_slot, given_slot_anchors,
@@ -102,8 +100,7 @@ from nameparser._pipeline._pieces import (
     tail_reading, trailing_titles,
 )
 from nameparser._pipeline._state import (
-    AMBIGUOUS_ACRONYM_TAG, NAME_ROLES, ParseState, PendingAmbiguity,
-    Structure,
+    AMBIGUOUS_ACRONYM_TAG, ParseState, PendingAmbiguity, Structure,
     WorkToken, _AMBIGUOUS_CREDENTIAL_TAGS, _NEVER_FLIPPED, copy_with,
 )
 from nameparser._policy import Policy, Script
@@ -308,39 +305,6 @@ def _placed(read: TailRead, rest: list[int],
     return names, tuple(titled), Peel(
         count, peel.numeral, peel.picks, peel.anchors, tuple(run_titles),
         peel.absorbed)
-
-
-# rules/P3: "unless no name word of its part stands to its right" --
-# a marked letter whose part holds nothing after it but suffixes and
-# titles connects nothing, so classify's connective-or-initial report
-# on it is withdrawn here, once every segment's roles are known: the
-# no-comma name, a particle chain ending in the letter ('john van e
-# phd') and the given part after a family comma ('smith, john e phd')
-# alike (#721's reviews). A letter with nothing at all after it never
-# carried the report (classify). Where the letter is also a numeral the
-# fork read, its own report (S10) is the one left, so one token never
-# carries both -- which is why #718's stand-down is gone. Called only
-# for a one-case name, the one classify can report on.
-def _withdraw_unjoined_connectives(segments: Sequence[Sequence[int]],
-                                   tokens: Sequence[WorkToken],
-                                   ambiguities: list[PendingAmbiguity],
-                                   ) -> None:
-    unjoined = set()
-    for seg in segments:
-        last, after = None, False
-        for j in seg:
-            role = tokens[j].role
-            if role in NAME_ROLES:
-                last, after = j, False
-            elif role is Role.SUFFIX or role is Role.TITLE:
-                after = after or last is not None
-        if last is not None and after:
-            unjoined.add(last)
-    if unjoined:
-        ambiguities[:] = [
-            a for a in ambiguities
-            if a.kind is not AmbiguityKind.CONJUNCTION_OR_INITIAL
-            or len(a.indices) != 1 or a.indices[0] not in unjoined]
 
 
 def _assign_main(seg_idx: int, state: ParseState,
@@ -568,26 +532,19 @@ def _assign_main(seg_idx: int, state: ParseState,
     # 'John Smith V PhD' keeps family 'V' and reports, as 'john i, phd'
     # does). Decided here, where the trailing read has said what that
     # run is
-    if name_pieces and (suffix_pieces or titled_tail):
-        last = pieces[name_pieces[-1]]
-        word = tokens[last[0]].text
-        if len(last) == 1:
-            # `_ROMAN` first, C-level, so an ordinary name word pays
-            # no frame for the rest; the connective report the letter
-            # may carry is withdrawn at the end of the stage, once
-            # every segment's roles are known
-            # (`_withdraw_unjoined_connectives`)
-            if (_ROMAN.match(word) is not None and len(name_pieces) >= 2
-                    and tuple(last) not in peeled.picks
-                    and is_trailing_numeral_suffix(
-                        word, tokens[pieces[name_pieces[-2]][0]].text,
-                        state.one_case)
-                    and not numeral_settled_by_case(word, state.one_case)):
-                ambiguities.append(PendingAmbiguity(
-                    AmbiguityKind.SUFFIX_OR_NAME,
-                    f"{word!r} is a roman numeral, but a post-nominal or "
-                    f"title follows it; read as ", tuple(last),
-                    field_tail=" rather than a generational suffix"))
+    # `_ROMAN` first, C-level, so an ordinary name word pays no frame
+    if (len(name_pieces) >= 2 and (suffix_pieces or titled_tail)
+            and len(last := pieces[name_pieces[-1]]) == 1
+            and _ROMAN.match(word := tokens[last[0]].text) is not None
+            and tuple(last) not in peeled.picks
+            and reads_as_a_reported_numeral(
+                word, tokens[pieces[name_pieces[-2]][0]].text,
+                state.one_case)):
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{word!r} is a roman numeral, but a post-nominal or title "
+            f"follows it; read as ", tuple(last),
+            field_tail=" rather than a generational suffix"))
     for piece in peeled.picks:
         # every pick is in rest, so the loops above just gave it a
         # role; whether it was read as a suffix or a name settles what
@@ -1582,14 +1539,6 @@ def assign(state: ParseState) -> ParseState:
                            and not any("vocab:suffix" in tokens[i].tags
                                        for i in piece))
                        else Role.SUFFIX)
-    # a plain loop, so a one-case name with no connective report pays
-    # no frame for the pass
-    if state.one_case:
-        for amb in ambiguities:
-            if amb.kind is AmbiguityKind.CONJUNCTION_OR_INITIAL:
-                _withdraw_unjoined_connectives(state.segments, tokens,
-                                               ambiguities)
-                break
     return copy_with(state, tokens=tuple(tokens),
                      order=order,
                      ambiguities=tuple(ambiguities))
