@@ -74,6 +74,7 @@ H1. Rationale: a title normally addresses by surname, so a title
       "Sheik Abu Bakar"  family-first  →  given="Abu Bakar"
       "Sir de Mesnil"  family-first  →  family="de Mesnil"
       "Sir de"  family-first      →  given="de"
+      "St Sir de Mesnil"  family-first  →  given="de Mesnil"
     Accepted: a title word in the run that no vocabulary knows does
     not change what the run addresses by, the last word being the
     one asked — `His Excellency Lord Duncan` reads family `Duncan`
