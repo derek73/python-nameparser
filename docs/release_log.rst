@@ -4,6 +4,10 @@ Release Log
 
     nameparser 2.6 is under development.
 
+    **Additions**
+
+    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the lists and every parse are unchanged from 2.5.0. :issue:`737`
+
 * 2.5.0 - October 19, 2026
 
     nameparser 2.5 reads more of the shapes real listings write. Highlights:
@@ -28,10 +32,6 @@ Release Log
     - **Remove mai from the default post-nominal acronyms, so a trailing Mai keeps the name.** ``Tran Thi Mai`` read in Vietnamese order (``FAMILY_FIRST_GIVEN_LAST``) gives given ``Mai``, middle ``Thi``, family ``Tran``, where 2.0.0 through 2.4.2 gave suffix ``Mai`` and no given name; ``Nguyen Mai`` gives family ``Mai``, as 1.4.0 did. The cost is that ``John Smith MAI`` gives last ``MAI`` instead of suffix; ``Smith, John, MAI`` and ``John Smith M.A.I.`` still read as credentials. A caller who needs it back adds it: ``Lexicon.default().add(suffix_acronyms={"mai"})``. See the ``suffix-acronym-collisions`` entry of ``docs/design/decisions/`` (:issue:`687`)
     - **Add the Akan and Indonesian salutations owura and bapak as titles.** ``Bapak Dwi Putro`` gives title ``Bapak``, first ``Dwi``, last ``Putro``, where 1.4.0 through 2.4.2 gave first ``Bapak``, middle ``Dwi``. :issue:`662`
     - **Fix a single letter in a name written all in lower case reading differently from the same name in capitals.** ``jose j y lopez`` gives first ``jose``, middle ``j y``, last ``lopez``, as ``JOSE J Y LOPEZ`` does, where 1.4.0 through 2.4.2 gave last ``j y lopez``. A lone letter before a maiden marker stays the first name (``j nee smith`` as ``J NEE SMITH``), ``田中さん v`` reads as ``田中さん V`` does, and ``Policy(lenient_comma_suffixes=False)`` reads ``john smith, v`` as it reads ``JOHN SMITH, V``. :issue:`723`, :issue:`727`
-
-    **Additions**
-
-    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the lists and every parse are unchanged from 2.4.2. :issue:`737`
 
 * 2.4.2 - October 13, 2026
 
