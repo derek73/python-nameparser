@@ -15,8 +15,8 @@ that honors it or at the work that will.
 
 A rule may also carry ``tolerated: <reason>``, which takes it out of
 the document's normative reading: its statement DESCRIBES what the
-parser does with input the writing systems it speaks about do not
-produce. The line changes nothing here — the examples parse, and
+parser does with input no writing convention produces (W3: a comma
+between a CJK family name and given name). The line changes nothing here — the examples parse, and
 test_rules_doc.py still executes them — but
 tools/differential/build_rules_corpus.py skips a rule carrying it, so
 a tolerated rule's examples illustrate current behavior without
