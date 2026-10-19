@@ -3,7 +3,7 @@
 The comma's structure is decided ONCE, after classify has tagged every
 word and before group joins any of them (#613): the part after the
 first comma is read by `_pieces.segment_suffix_reading`, the one
-reading a part that holds no name word gets, with the words C1's count
+reading a part that holds no name word gets, with the words C4's count
 licenses as credentials behind a whole name. Where it reads as the
 postnominal part its roles are set here, so no join in group and no
 walk in assign can reach them, and the comma is a suffix comma when
@@ -147,13 +147,15 @@ def _name_contrast(state: ParseState, seg0: Sequence[int]) -> bool:
 
 
 def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
-    """rules/C1's count before the comma for an unambiguous
+    """rules/C3's count before the comma for an unambiguous
     credential, read off classify's tags (the ambiguous class's count
     of NAME words, which leaves titles out, is
     `_vocab.name_word_count`'s, asked in `decide`): two or more units (a particle run and
     the name word it attaches to one unit, a connective join not, #575)
     holding a word that is not a suffix word -- a title counts, being a
     word to the count an unambiguous credential takes."""
+    # rules/C3: "a particle run and the one name word it attaches to are
+    # one word"
     pieces, ptags = _pieces(seg0, tokens)
     named: set[int] = set()
     for piece, tags in zip(pieces, ptags):
@@ -191,11 +193,12 @@ def decide(state: ParseState) -> ParseState:
         return state
     tokens = list(state.tokens)
     lex, pol = state.lexicon, state.policy
-    # rules/C1: "A delimiter the policy declares parts a trailing
+    # rules/C10: "A delimiter the policy declares parts a trailing
     # suffix part as a comma would" -- behind a whole name its cores are
     # no word of the reading, and leave as group drops them in a tail;
     # behind one name word the core is a word, v1 having applied the
-    # delimiter to the suffix-comma form alone (C1's Accepted entry)
+    # delimiter to the suffix-comma form alone (C10's core-is-a-word
+    # Accepted entry)
     cores = delimiter_cores(pol.extra_suffix_delimiters)
     whole: bool | None = None
     core_idx: list[int] = []
@@ -247,8 +250,8 @@ def decide(state: ParseState) -> ParseState:
         names = name_word_count([tokens[i].text for i in seg0], lex, pol,
                                 letters_one_case=state.one_case)
     if names >= 2:
-        # rules/C1: "An unlisted all-caps word joins the class in such
-        # a part only where the name carries the contrast"
+        # rules/C6: "An unlisted all-caps word joins the ambiguous
+        # credential class [...] only where the name carries the contrast"
         contrast: bool | None = None
         for i in maybe:
             text = tokens[i].text
@@ -268,7 +271,7 @@ def decide(state: ParseState) -> ParseState:
                 # for, a lone one included ('John Smith, XY')
                 if contrast:
                     caps.add(i)
-        # rules/C1: "The same count reads a part of two or more words
+        # rules/C4: "The same count reads a part of two or more words
         # as the credential run when every word of it is a suffix word
         # or a word of this class", none of them a single-letter numeral.
         # the words not of the class are asked as C1's suffix test asks
@@ -292,7 +295,7 @@ def decide(state: ParseState) -> ParseState:
         if not run:
             licensed.clear()
         else:
-            # rules/C1: "Paired initials are the exception to the
+            # rules/C5: "Paired initials are the exception to the [...]
             # count" -- "Only an unambiguous suffix word in front of
             # them that is not also title vocabulary, or another word
             # the class admits by its dotted shape standing in the same
@@ -343,9 +346,10 @@ def decide(state: ParseState) -> ParseState:
         reading = (True,) * len(p1)
     if reading is None:
         return state
-    # The part is the postnominal part, bound here whatever stands
-    # before the comma. The comma is a suffix comma behind a whole name;
-    # behind one name word it stays the family comma naming the family.
+    # rules/C7: "that reading is final" -- the part is the postnominal
+    # part, bound here whatever stands before the comma. The comma is a
+    # suffix comma behind a whole name; behind one name word it stays
+    # the family comma naming the family.
     ambiguities = list(state.ambiguities)
     for k, piece in enumerate(p1):
         role = Role.SUFFIX if reading[k] else Role.TITLE
@@ -356,10 +360,10 @@ def decide(state: ParseState) -> ParseState:
                 # EVERYWHERE, so case repair keeps 'XYZ' (rules/R4)
                 tags = tags | {SHAPE_ACRONYM_TAG, AMBIGUOUS_ACRONYM_TAG}
             tokens[i] = copy_with(tokens[i], role=role, tags=tags)
-    # rules/C1: "A decision either way at this comma is reported;
+    # rules/C11: "A decision either way at the comma C1 reads is reported;
     # for a run of words the decision is the flip to the credential
     # run, reported once over the whole part. A flip in which no listed
-    # word of this class takes part is the exception and is made in
+    # word of the ambiguous credential class (C4) takes part is the exception and is made in
     # silence" -- "unless what said so is nothing but other paired
     # initials". A run whose every class word is listed and settled by
     # its capitals is read on that evidence, not flipped by the count.
@@ -418,7 +422,7 @@ def decide(state: ParseState) -> ParseState:
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{tokens[i].text!r} behind a credential after the comma is "
             f"also an ordinary name word; read as a credential", (i,)))
-    # rules/C1: "A credential opening the part makes it the
+    # rules/C8: "A credential opening the part makes it the
     # postnominal part however it goes on" -- each word it takes that
     # would have made it the given part, as #602's run reports them
     for k in absorbed:

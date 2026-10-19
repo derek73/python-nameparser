@@ -24,7 +24,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     S10 reads it as a numeral S10's report is the one.
     The joined part is ONE name word wherever another rule counts
     them, so a rule taking "one name word" takes the whole join and
-    never half of it — except C1's count of the words before a comma,
+    never half of it — except C3's count of the words before a comma,
     which counts particle surnames alone and states why.
     A connective counts as a name word wherever this rule counts them,
     whatever else the vocabulary says the word is, where it is placed
@@ -45,7 +45,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     spells wherever S10 reads one there.
     A separator the caller declared, standing in a trailing suffix
     part, ends the search there as a comma would, so a connective
-    never joins across it (C1); anywhere else it is a word.
+    never joins across it (C10); anywhere else it is a word.
     Both questions this rule asks of a name — how many words it has,
     and whether it is written in one case — are asked of the name's
     OWN words: a maiden marker taken as one, and the words it takes
@@ -58,7 +58,7 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     counts toward the three — but its case is still not asked.
     That span is not this rule's alone: wherever another rule asks
     the case question — the suffix slot (S6) and the post-comma slot
-    (C1) — it is asked of these same words, so the answer is taken
+    (C4, C6) — it is asked of these same words, so the answer is taken
     once and read where each of them stands.
       "Juan y Eva Garcia"         →  given="Juan y Eva"
       "Jose E Maria Santos"       →  middle="E Maria"
@@ -153,5 +153,5 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, C1, S6, S10, T4 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, C3, C4, C6, C7, C10, S6, S10, T4 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

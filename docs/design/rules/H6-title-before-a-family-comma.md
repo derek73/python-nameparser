@@ -42,7 +42,7 @@ H6. Rationale: the listing form moves the surname to the front and
     Accepted: what keeps a word in the family is the particle stop
     and nothing else. 'Freiherr' and 'St' are particles as well as
     titles, so they stay in either spelling, keeping 'St Pierre'
-    whole and 'Freiherr von Berg' as C1 reads it. The other German
+    whole and 'Freiherr von Berg' as C3 reads it. The other German
     ranks are titles only, so they peel, though since 1919 a rank
     is part of the legal surname for all of them alike; that is the
     vocabulary's distinction, not this rule's. A title in front of
@@ -50,5 +50,5 @@ H6. Rationale: the listing form moves the surname to the front and
       "Graf Lambsdorff, Otto"     →  title="Graf"
       "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
       "Dr. Freiherr von Berg, Ed" →  title="Dr."
-    history: decisions/H6 · interacts: C1, H1, H2, H3, M2, P1, P2, P4, S2, W3 · implemented: nameparser/_pipeline/_assign.py
+    history: decisions/H6 · interacts: C1, C3, H1, H2, H3, M2, P1, P2, P4, S2, W3 · implemented: nameparser/_pipeline/_assign.py
 

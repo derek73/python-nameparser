@@ -467,7 +467,7 @@ class AmbiguityKind(StrEnum):
     #: site and this kind stays out of the way -- "Doe, John do" gives
     #: family ``do Doe`` and one ``PARTICLE_OR_GIVEN``, never two
     #: reports of one word.
-    #: Since #544 C1's name-word count reports its flip once over a
+    #: Since #544 C4's name-word count flips, reported once (C11), over a
     #: whole RUN after the comma ("John Smith, Ed Ma" reads suffix
     #: ``Ed Ma``), and a member an unambiguous credential in front of
     #: it speaks for (rules/S7) is a pick like a counted one,

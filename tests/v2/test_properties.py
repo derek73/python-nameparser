@@ -3202,7 +3202,7 @@ def _comma_twin_findings(parser: Parser) -> tuple[list[str], int]:
 
 
 def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
-    """rules/C1's statement: "a delimiter the policy declares parts a trailing
+    """rules/C10's statement: "a delimiter the policy declares parts a trailing
     suffix part as a comma would" (#549). Every role field of a name
     with a declared core standing in a part after the suffix comma, and
     every kind it reports but `comma-structure` (`_twin_record`),
@@ -3210,7 +3210,7 @@ def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
     place -- the maiden clause, the connective join and the entry
     boundary alike. The heads put the core in a TRAILING part only: before the
     first comma, or in the given part of the listing form, the core is
-    a word (C1's Accepted entry), and its comma twin a different
+    a word (C10's core-is-a-word Accepted entry), and its comma twin a different
     structure.
 
     RECORDED NEGATIVE CONTROL: at 061f02da, where the join and the

@@ -621,6 +621,9 @@ def _reads_as_a_trailing_suffix(piece: Sequence[int],
     under decisions/P5 records the same fork declining to transfer
     to this walk under LENIENT.
     """
+    # rules/C9: "behind a name word it is the generation only when
+    # written bare, a period marking it the abbreviation of a name and
+    # so a middle initial"
     text = tokens[piece[0]].text
     if text.endswith(".") and not is_suffix_piece(
             prev_piece, prev_ptags, tokens):
@@ -829,11 +832,11 @@ def assign(state: ParseState) -> ParseState:
         fam_tags = state.piece_tags[0]
         # The part after the comma reaches here as the given part, or
         # bound and with no pieces left: group's `_comma.decide` binds a
-        # postnominal one before any join (#613, rules/C1), so this
+        # postnominal one before any join (#613, rules/C7), so this
         # path is the listing form's, and the positional read #296 gave
         # a comma followed by no name word behind two name words is
         # decide's suffix comma now, read by the NO_COMMA branch above.
-        # rules/C1's exception, scoped to the ambiguous credential
+        # rules/C11's report, scoped to the ambiguous credential
         # class: this is the given-name half of the comma's OWN
         # decision (listing or credential run), where the writing left
         # the fork open. `_comma.decide` reports the credential half,
@@ -1209,7 +1212,7 @@ def assign(state: ParseState) -> ParseState:
             # rules/C1: "anything else after the comma means the
             # listing form" -- and this walk reads it. A segment of no
             # name word never reaches here: it is `_comma.decide`'s, read piece by piece and bound at
-            # group's head (#613, rules/C1), the suffix verdict
+            # group's head (#613, rules/C8), the suffix verdict
             # before the title reading of the same word (#296, #325).
             # A name word in the segment makes it v1's walk ('Smith,
             # John Jr.').
@@ -1520,7 +1523,7 @@ def assign(state: ParseState) -> ParseState:
     # keeps a bare trailing title word from misreading are not there to
     # protect ('Eric H. Holder, Jr., Attorney General'). A
     # piece holding a suffix word stays the postnominal the slot makes
-    # it, a dual alone as after a family comma (C1) and a dual group's
+    # it, a dual alone as after a family comma (C8) and a dual group's
     # connective join took into a title ('PhD - and MD') alike.
     for seg_idx in range(tail, len(state.segments)):
         for piece, ptags_ in zip(state.pieces[seg_idx],

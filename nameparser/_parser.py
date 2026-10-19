@@ -220,7 +220,7 @@ class Parser:
             # tags are KEPT, "joined" included: a within-piece mark
             # (the Ph. D. merge) is role-blind and right for every
             # role, and a clear was measured and backed out --
-            # decisions/C1 (2026-09-06 #511) carries the rest: the
+            # decisions/R1 (2026-09-06 #511) carries the rest: the
             # between-piece mark that rides onto a non-suffix role, and
             # which views read it. Dropped tokens keep their role: the
             # pass filters them by index and assemble omits them.

@@ -187,7 +187,7 @@ def test_one_word_before_the_comma_is_never_suffix_comma() -> None:
 def test_a_listed_ambiguous_credential_behind_two_name_words_divides() -> None:
     # #613 review: `_postnominal_behind_a_whole_name` asks the comma's
     # decision, which licenses a listed member of the ambiguous class
-    # by C1's name-word count, so the name before the comma divides as
+    # by C4's name-word count, so the name before the comma divides as
     # it does before 'PhD'. A name word after the comma and one word
     # before it are the contrasts: neither divides.
     divided = {"family": "김", "given": "민준", "middle": "박"}

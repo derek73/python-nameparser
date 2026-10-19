@@ -623,7 +623,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     #   `a[0] == 0`  the first TOKEN, which is v1's boundary.
     #   seg_idx 0    and not after a family comma: a credential run
     #                legitimately opens segment 1 ("Smith, Ph. D.
-    #                Jr.", C1's listing form), and segment 0 before a
+    #                Jr.", C8's credential run in the listing form), and segment 0 before a
     #                comma is the family the comma named, where v1
     #                merges too ("Ph. D., John" reads last 'Ph. D.').
     #
@@ -1402,7 +1402,7 @@ def group(state: ParseState) -> ParseState:
                     else ClauseSite.FAMILY_PART)
         else:
             site = ClauseSite.TRAILING
-        # rules/C1: "a delimiter the policy declares parts a
+        # rules/C10: "a delimiter the policy declares parts a
         # trailing suffix part as a comma would" (#549): the segment is
         # grouped as the parts between its cores, each read exactly as
         # the comma twin's own segment would be, and the cores are

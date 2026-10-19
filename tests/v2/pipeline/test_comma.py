@@ -79,7 +79,7 @@ def test_the_credential_pair_merges_anywhere_in_the_run() -> None:
 
 
 def test_structure_flips_for_the_ambiguous_class_on_a_name_word_count() -> None:
-    # rules/C1 for the ambiguous class: two or more NAME words
+    # rules/C4 for the ambiguous class: two or more NAME words
     # before the comma read the part after it as the credential run.
     # 'John Smith, MA' flips; 'Smith Jr., MA' does not, having two
     # TOKENS and one name word -- which is what keeps Smith in the
@@ -114,7 +114,7 @@ def test_structure_flips_for_a_by_shape_member_too() -> None:
 
 
 def test_paired_initials_need_a_word_to_speak_for_them() -> None:
-    # rules/C1 (#563): two dotted single letters are how a person's
+    # rules/C5 (#563): two dotted single letters are how a person's
     # own initials are written, and two words before the comma may be
     # one surname, so alone they keep the family comma. Each contrast
     # pair differs in the one thing that speaks: a third letter, a
@@ -135,7 +135,7 @@ def test_paired_initials_need_a_word_to_speak_for_them() -> None:
 
 
 def test_a_flip_no_listed_member_takes_part_in_is_silent() -> None:
-    # rules/C1 (#563): a flip in which no listed member takes part
+    # rules/C11 (#563): a flip in which no listed member takes part
     # is silent, while a LISTED member in the same position still
     # reports the flip -- the control that keeps the silence from
     # being a lost emitter -- and so do paired initials spoken for
@@ -184,7 +184,7 @@ def test_the_structure_flip_report_counts_the_real_pre_comma_words() -> None:
 
 
 def test_the_name_word_count_reads_a_run_as_it_reads_one_word() -> None:
-    # rules/C1 (#544): a part of two or more words, every one of
+    # rules/C4 (#544): a part of two or more words, every one of
     # them suffix vocabulary or a class member and at least one a
     # member, reads by the same NAME-word count as the single token,
     # and the flip reports once, over the whole part.
@@ -237,7 +237,7 @@ def test_the_run_test_reads_a_delimiter_core_transparently() -> None:
 
 
 def test_the_run_test_reads_lenient_comma_suffixes() -> None:
-    # rules/C1's leftovers ask `is_wholly_suffix`'s own POLICY-
+    # rules/C4's leftovers ask `is_wholly_suffix`'s own POLICY-
     # selected predicate (#544): an
     # initial-shaped suffix WORD ('B.') that is not a single-letter
     # roman numeral is a member of neither the ambiguous class nor

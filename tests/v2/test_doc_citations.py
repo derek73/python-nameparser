@@ -318,7 +318,7 @@ _RETIRED_EXCERPTS = (
             "all the same"),
     ("S2", "A suffix never BEGINS a name: position outranks "
             "the vocabulary match"),
-    ("C1", "The part is read as its words stand, before any "
+    ("C7", "The part is read as its words stand, before any "
             "join"),
     ("A1", "a kind is worth adding only if a reader would "
             "hesitate too"),

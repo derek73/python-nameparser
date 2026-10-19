@@ -315,7 +315,7 @@ def reads_as_a_reported_numeral(text: str, preceding: str,
 # written, and rules/S3 retires single-character matches for the
 # same reason -- not for being a generation: a multi-letter suffix
 # word ('III', 'Jr') anchors and runs like any other. So it neither
-# anchors an ambiguous member behind it nor counts toward C1's
+# anchors an ambiguous member behind it nor counts toward C4's
 # multi-word credential run. It still peels exactly as before; this
 # answers only those two questions.
 def is_single_letter_numeral(text: str) -> bool:
@@ -467,7 +467,7 @@ def is_paired_initials(text: str) -> bool:
     """Two single letters run together with periods ('M.J.'): the one
     unlisted dotted shape a person's own initials take, so after a
     comma it is a name until something in front of it, or another
-    dotted word beside it, says it is a credential (rules/C1).
+    dotted word beside it, says it is a credential (rules/C5).
     Three or more letters ('X.Y.Z.') and any longer chunk ('B.Tech.')
     are outside it."""
     return _PAIRED_INITIALS.fullmatch(text) is not None
@@ -834,7 +834,7 @@ def claimed_as_non_name(n: str, lexicon: Lexicon) -> bool:
 
 
 # The candidate test for a comma part read before classify
-# (rules/C1, decisions/S9): segment's C2 flag on a tail part.
+# (rules/C4, decisions/S9): segment's C2 flag on a tail part.
 def ambiguous_class_candidate(text: str, lexicon: Lexicon,
                               policy: Policy) -> bool:
     """Whether TEXT is a CANDIDATE for the ambiguous credential class
@@ -907,7 +907,7 @@ def ambiguous_class_candidate(text: str, lexicon: Lexicon,
 
 
 # mechanisms.md#UNIT-PARTITION: "A rule that counts name words counts
-# those units, and takes each whole or not at all" -- C1's count before
+# those units, and takes each whole or not at all" -- C3's count before
 # a comma being the stated exception (`SURNAME_UNIT_TAGS`). The walk is shared
 # by readers that hold the facts in different forms: post_rules and
 # `_comma._whole_name` read classify's TAGS, while `name_word_count`
@@ -929,7 +929,7 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
     particle run and every word after it up to the next stop ("van der
     Berg Smith" is one unit). False is P1's fold reach: the particle
     run and the ONE unit it attaches to, so "de Mesnil Jean" is two --
-    the count rules/C1 needs before a comma, where under a
+    the count rules/C3 needs before a comma, where under a
     family-first order that part is family 'de Mesnil', given 'Jean'
     (#575).
 
@@ -980,7 +980,7 @@ def unit_ends(tags: Sequence[Set[str]], chain: bool = True) -> list[int]:
     return ends
 
 
-#: The facts rules/C1's count before a comma reads (#575): a
+#: The facts rules/C3's count before a comma reads (#575): a
 #: particle starts a surname unit, and a suffix word stops it. A word
 #: that is ALSO title vocabulary ('Freiherr', 'St') LEADING the part is
 #: not a particle here: in front of a name it reads as the title it
@@ -1048,7 +1048,7 @@ def name_word_count(texts: Sequence[str], lexicon: Lexicon,
     """How many of these texts are NAME words -- not suffix
     vocabulary, not title vocabulary.
 
-    rules/C1's count for the ambiguous class, and it is of names
+    rules/C4's count for the ambiguous class, and it is of names
     rather than of words because 'Smith Jr., MA' is two tokens and one
     name: counting tokens there flips the structure and hands the
     family to `given`, which no reading of that string wants

@@ -805,7 +805,7 @@ _SURNAME_UNIT_CONTROL = ["JD.CPA", "Msc.Ed."]
 
 
 def test_surname_unit_tags_agree_with_classify() -> None:
-    # #575: rules/C1's count before the comma reads two facts per
+    # #575: rules/C3's count before the comma reads two facts per
     # token -- particle, suffix -- and `segment` must build them from
     # the vocabulary (`_vocab.surname_unit_tags`), since it runs before
     # classify has tagged anything, while assign derives them from

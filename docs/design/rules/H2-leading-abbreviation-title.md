@@ -12,11 +12,11 @@ H2. Rationale: before a name, an abbreviation is almost always a
     vocabulary: a period-marked opening word is a title even when
     the word is suffix vocabulary — except after a family comma,
     where a part that is nothing but suffix words is the credential
-    run (C1) and the abbreviation opens nothing. An accented Latin,
+    run (C8) and the abbreviation opens nothing. An accented Latin,
     Greek or Cyrillic letter written as a base letter plus a
     combining mark (NFD) is the same letter as the composed one,
     for this shape and for the dotted and all-caps credential
-    shapes C1, S9 and S3 read (#652), so such a name parses the
+    shapes C5, C6, S9 and S3 read (#652), so such a name parses the
     same in either encoding and the output keeps the one written.
       "Rev. John Smith"           →  title="Rev."
       "Xyz. John Smith"           →  title="Xyz."
@@ -51,9 +51,9 @@ H2. Rationale: before a name, an abbreviation is almost always a
     abbreviation opening that part stays in the family.
       "Xyz. Smith, John"          →  family="Xyz. Smith"
     Accepted: after a family comma a part that is nothing but suffix
-    words is the credential run (C1), which the abbreviation does
+    words is the credential run (C8), which the abbreviation does
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
-    history: decisions/H2 · interacts: C1, S3, P4, H5, H6, W3, W4, S9 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
+    history: decisions/H2 · interacts: C5, C6, C8, S3, P4, H5, H6, W3, W4, S9 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 

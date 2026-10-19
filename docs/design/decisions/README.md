@@ -61,6 +61,15 @@ Entry conventions:
 ## Commas & structure (C)
 
 - [C1 — the suffix-comma decision](C1-suffix-comma-decision.md)
+- [C3 — counting the words before the comma](C3-counting-the-words-before-the-comma.md)
+- [C4 — the ambiguous credential class at the comma](C4-ambiguous-credential-class-at-the-comma.md)
+- [C5 — paired initials after the comma](C5-paired-initials-after-the-comma.md)
+- [C6 — an unlisted all-caps word needs the name's case contrast](C6-unlisted-all-caps-word-needs-the-names-case-contrast.md)
+- [C7 — a postnominal part is read before any join](C7-postnominal-part-is-read-before-any-join.md)
+- [C8 — the listing form's part after the comma](C8-listing-forms-part-after-the-comma.md)
+- [C9 — a one-character suffix word inside a comma part](C9-one-character-suffix-word-inside-a-comma-part.md)
+- [C10 — a declared delimiter parts a trailing suffix part](C10-declared-delimiter-parts-a-trailing-suffix-part.md)
+- [C11 — what the comma decision reports](C11-what-the-comma-decision-reports.md)
 
 ## Name order (O)
 
@@ -89,6 +98,7 @@ Entry conventions:
 
 ## Rendering & views (R)
 
+- [R1 — fields are views of the parsed words](R1-fields-are-views-of-the-parsed-words.md)
 - [R2 — the all-particles family_base divergence](R2-all-particles-family-base-divergence.md)
 - [R3 — initials honor the fold](R3-initials-honor-the-fold.md)
 - [R4 — case repair reads the unjoined mark](R4-case-repair-reads-the-unjoined-mark.md)

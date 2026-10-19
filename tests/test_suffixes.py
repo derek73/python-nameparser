@@ -247,9 +247,9 @@ class SuffixesTestCase(HumanNameTestBase):
         # Contrast test_roman_numeral_i_after_single_initial_lastname_comma_format
         # above, where no explicit suffix comma is present and the 'I' does go to
         # suffix.
-        # rules/C1 gained a qualifier with this triage: where a further
+        # rules/C9 (then part of rules/C1) gained a qualifier with this triage: where a further
         # comma has already named the suffix, the trailing single letter has
-        # no generation left to be. C1 carries no example line for it (see the
+        # no generation left to be. C9 carries no example line for it (see the
         # Accepted note there), so this pair of tests is its witness.
         hn = HumanName("Maier, Amy I, Jr.")
         self.m(hn.first, "Amy", hn)
@@ -305,7 +305,7 @@ class SuffixesTestCase(HumanNameTestBase):
         # Through 2.3 (and in v1) that broke parsing -- first 'RN', last
         # 'Steven Hardman', suffix 'CRNA' -- and this test pinned the
         # limitation. Since #603 a credential opening the part after the
-        # comma makes it the suffix part (rules/C1), so the undeclared
+        # comma makes it the suffix part (rules/C8), so the undeclared
         # delimiter is one more word of that part and the name parses;
         # the name of the test keeps the history.
         hn = HumanName("Steven Hardman, RN - CRNA")

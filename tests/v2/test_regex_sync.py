@@ -134,7 +134,7 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # #544: the chunked sibling of _DOTTED ('M.Eng.'), S2's period gate
     # for a member with a lower-case tail; no config key to mirror
     ("_vocab", "_CHUNKED"): None,
-    # #563: paired initials ('M.J.'), C1's exception to the name-word
+    # #563: paired initials ('M.J.'), C5's exception to C4's name-word
     # count after a comma; no config key to mirror
     ("_vocab", "_PAIRED_INITIALS"): None,
     ("_group", "_PH"): None,

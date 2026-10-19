@@ -38,7 +38,7 @@ C2. Rationale: text beyond the recognized comma parts should be
     word behind a particle run there is a title like any other, and
     the part reports neither a particle chained onto a name word nor
     an acronym taken into the name. What such a part reports is its
-    own — C1's report of the decision at its comma (the flip, or the
+    own — C11's report of the decision at its comma (the flip, or the
     first word after the comma), S8's and S7's reports on each word a credential
     in front of it reads as a suffix although it may be a name word (a
     name word the run absorbs, a member the company decides), and this
@@ -72,5 +72,5 @@ C2. Rationale: text beyond the recognized comma parts should be
     reports on outside a tail:
     the_chain_reports_the_acronym_it_takes and
     titled_particle_chain_survives_a_title_that_is_also_a_particle.
-    history: decisions/C1, decisions/S6, decisions/S9 · interacts: C1, H5, P2, P5, S3, S6, S8, S9 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
+    history: decisions/C7, decisions/C8, decisions/C11, decisions/S6, decisions/S9 · interacts: C1, C7, C8, C11, H5, P2, P5, S3, S6, S8, S9 · implemented: nameparser/_pipeline/_segment.py, nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py
 
