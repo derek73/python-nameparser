@@ -47,6 +47,8 @@ H1. Rationale: a title normally addresses by surname, so a title
       "Sir John"                  →  given="John"  · boundary
       "John III, Dr."             →  family="John"  · boundary
       "van der Berg, Sir"         →  family="van der Berg"  · boundary
+      "van Gogh, Sir"             →  family="van Gogh"  · boundary
+      "Dr. Smith II, Sir"  family-first  →  family="Smith"  · boundary
     Accepted: a given-name title plus one name word leaves the
     family empty — the input names no family, and inventing one
     would be worse. A run whose last title is a given-name title

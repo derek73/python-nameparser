@@ -9033,7 +9033,8 @@ CASES: tuple[Case, ...] = (
                "field NOTHING decided, and this one a title decided. "
                "A comma with no given name after it does not decide "
                "the field (H1), so the title keeps the word given, as "
-               "the shape-only 'John VI, Sir' always read it. Assign "
+               "the shape-only 'John VI, Sir' already read it (2.x; "
+               "1.4.0 read last 'John VI'). Assign "
                "writes the family on this path and H1 moves it back. "
                "1.4.0 read last 'John'"),
     Case("a_lone_numeral_before_a_given_name_title_comma",
@@ -9053,6 +9054,15 @@ CASES: tuple[Case, ...] = (
                "is the whole name in front of the generation, and AD, "
                "not written as a name, is the credential. 1.4.0 "
                "through 2.4.2 read first 'AD', last 'John Smith'"),
+    Case("generation_before_a_comma_holding_a_title_and_a_credential",
+         "John Smith Jr., Sir AD",
+         {"title": "Sir", "given": "John", "family": "Smith",
+          "suffix": "Jr., AD"},
+         ambiguities=("suffix-or-name",), classification="fix(#656)",
+         notes="C12 with a title in the part: the title reads as a "
+               "title and the report names only the credential it "
+               "took, so the field sweep holds it to the suffix. "
+               "2.4.2 read given 'AD', family 'John Smith'"),
     Case("generation_before_a_credential_comma_behind_a_maiden_clause",
          "Jane Doe nee Smith Jr., AD",
          {"given": "Jane", "family": "Doe", "suffix": "Jr., AD",
@@ -9060,8 +9070,8 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",), classification="fix(#656)",
          notes="C12 behind a maiden clause: the clause keeps 'Smith', "
                "the generation stays the suffix, and the part after "
-               "the comma joins it. The parent read given 'AD', family "
-               "'Jane Doe'"),
+               "the comma joins it. 2.4.2 read given 'AD', family "
+               "'Jane Doe' (1.4.0: last 'Jane Doe nee Smith')"),
     Case("marker_led_clause_in_a_quote_pair",
          'Jane Smith "née Jones"',
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},

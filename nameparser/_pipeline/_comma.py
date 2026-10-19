@@ -182,7 +182,8 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
                          ) -> tuple[bool, ...] | None:
     """rules/C12's reading of the part after the comma, or None where
     the listing form stands: behind a whole name ending in a suffix
-    word, the part is the credential run unless a word of it is
+    word, or in a numeral the trailing fork reads as the generation,
+    the part is the credential run unless a word of it is
     written as a name. The caller has tested the tag, or the numeral
     shape with `ROMAN`, as a cheap filter. The part's veto is asked
     first, being the cheap question and the one a listing with a given
@@ -190,7 +191,11 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
     lex = state.lexicon
     reading: list[bool] = []
     for p in p1:
-        title = len(p) == 1 and "vocab:title" in tokens[p[0]].tags
+        # a title word reads as a title; a dual of the title and the
+        # suffix vocabulary is the suffix here, the slot being
+        # postnominal ('John Smith Jr., AD MD', as C8 reads the duals)
+        title = (len(p) == 1 and "vocab:title" in tokens[p[0]].tags
+                 and "vocab:suffix" not in tokens[p[0]].tags)
         for i in p:
             tok = tokens[i]
             # rules/C12: "a word of it written as a name, or an
@@ -222,7 +227,8 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
         return None
     # a one-letter numeral is the generation only where the name has a
     # word to spare for it, a title being none (rules/S10), and is no
-    # evidence where the name reads it as a name word ('Smith V, AD')
+    # evidence where the name reads it as a name word ('Dr. Smith V,
+    # AD', whose title is a word to the count above but none here)
     if is_single_letter_numeral(last) and name_word_count(
             [tokens[i].text for i in front], lex, state.policy,
             letters_one_case=state.one_case) < 2:

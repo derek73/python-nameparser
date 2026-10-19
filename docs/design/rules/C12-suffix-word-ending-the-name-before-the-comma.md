@@ -15,7 +15,8 @@ C12. Rationale: a generation belongs to the name it ends, so a name
     the
     name carries the case contrast C6 asks for, the part after the
     comma is the credential run and the comma a suffix comma, a title
-    word in it reading as a title and any other word as a suffix; a
+    word in it reading as a title and any other word, a title and
+    suffix dual among them, as a suffix; a
     word of it written as a name, or an initial, keeps the listing
     form.
       "John Smith II, AD"         →  given="John"
@@ -24,6 +25,10 @@ C12. Rationale: a generation belongs to the name it ends, so a name
       "John Smith Jr., MBChB PhD" →  suffix="Jr., MBChB PhD"
       "John Smith VI, AD"         →  suffix="VI, AD"
       "John Smith V, AD"          →  suffix="V, AD"
+      "John Smith Jr., AD MD"     →  suffix="Jr., AD MD"
+      "John Smith Jr., Sir AD"    →  title="Sir"
+      "John Smith Jr., Sir AD"    →  suffix="Jr., AD"
+      "John Smith II, AD"         →  capitalized_forced="John Smith II, AD"
       "John Smith II, AD"         →  ambiguities=("suffix-or-name",)
       "Lloret Palol II, Josep Antoni"  →  given="Josep"  · boundary
       "Garcia Lopez Jr., Juan"    →  given="Juan"  · boundary
@@ -34,6 +39,8 @@ C12. Rationale: a generation belongs to the name it ends, so a name
       "Dr. Smith Jr., AD"         →  suffix="Jr., AD"
       "Smith VI, AD"              →  given="AD"  · boundary
       "Smith V, AD"               →  given="AD"  · boundary
+      "Dr. Smith V, AD"           →  given="AD"  · boundary
+      "VI, AD"                    →  given="AD"  · boundary
       "John Smith, AD"            →  given="AD"  · boundary
       "JOHN SMITH JR, AD"         →  given="AD"  · boundary
     Accepted: initials written without periods after the generation

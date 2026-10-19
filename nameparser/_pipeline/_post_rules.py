@@ -396,12 +396,16 @@ def post_rules(state: ParseState) -> ParseState:
     # nothing to fold, is a word the order placed ('Sir Van', 'Sheik
     # Abu Bakar' and 'Sir de' under FAMILY_FIRST).
     elif (titles and families and not givens and not middles
-            and not any(
-                "particle" in tokens[i].tags
-                and (state.structure is Structure.FAMILY_COMMA
-                     or ("vocab:particle-ambiguous" not in tokens[i].tags
-                         and len(families) > 1))
-                for i in families)
+            and not (
+                state.structure is Structure.FAMILY_COMMA
+                and any("particle" in tokens[i].tags for i in families)
+                # P1's fold starts at the opening piece only, so it is
+                # the opener that is asked ('Sir von und zu' reads
+                # given: its never-given 'zu' does not open it)
+                or (len(families) > 1
+                    and "particle" in tokens[families[0]].tags
+                    and "vocab:particle-ambiguous"
+                    not in tokens[families[0]].tags))
             and _run_addresses_by_given(
                 (tokens[i].text
                  for i in _addressing_run(titles, families[0])),
