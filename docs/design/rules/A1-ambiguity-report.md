@@ -22,5 +22,6 @@ A1. Rationale: a caller can only act on doubt that is reported.
     segmenter's own error, which propagates — a user-code error is
     not a content error. (Needs the optional extra to demonstrate,
     so no example line.)
+    Signal: none of its own: the forks the other rules call, and whether the parse kept a reading either offered
     history: decisions/A1 · interacts: H1, O1, O2, O3, P1, P3, P6, S2 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_state.py
 

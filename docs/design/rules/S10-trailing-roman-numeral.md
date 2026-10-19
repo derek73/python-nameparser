@@ -64,4 +64,5 @@ S10. Rationale: a roman numeral ending a name is its generation,
     as one with the numeral in front of it, the run taking both, as
     1.4.0 read it.
       "John Smith V Ph. D."       →  suffix="V Ph. D."
+    Signal: a shape: a roman numeral ending the name + a neighbor: an initial standing in front of it + a case contrast: a lower-case numeral in a name of mixed case
     history: decisions/S10 · interacts: S2, S4, S7, C1, C9, P2, P3, M2, H1, H3, T4, C12 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

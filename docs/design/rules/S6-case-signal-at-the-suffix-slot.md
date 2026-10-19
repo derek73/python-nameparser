@@ -32,4 +32,5 @@ S6. Rationale: in a name written in more than one case, the
       "john smith MEng"           →  family="MEng"
       "Smith, MA"                 →  suffix="MA"
       "Smith, Ma"                 →  given="Ma"
+    Signal: a case contrast: capitals on a word of the ambiguous class in a name written in more than one case
     history: decisions/S6 · interacts: C4, C11, S4, S5, S7 · implemented: nameparser/_pipeline/_vocab.py

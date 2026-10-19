@@ -27,5 +27,6 @@ W1. Rationale: hangul is monoglot Korean and its surnames are a
     the sense that matters — division stands down entirely there,
     vocabulary and segmenter alike (#298; decisions/T3).
       "安东尼·陈志明"  [zh]        →  family="陈志明"
+    Signal: a script: an undivided word in the family position, in a script division is active for
     history: decisions/W1 · interacts: W3 · implemented: nameparser/_pipeline/_script_segment.py
 

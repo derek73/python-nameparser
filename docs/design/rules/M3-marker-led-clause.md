@@ -36,5 +36,6 @@ M3. Rationale: an enclosure says nothing about whether it means
     suffix-shaped, which the trailing period makes true of the one
     and false of the other, so only the V clause reaches this rule.
       "Jane Smith (née V)"        →  maiden="V"
+    Signal: a neighbor: a recognized marker opening a bracketed clause, with a word after it
     history: decisions/M3 · interacts: M1, M2, S1, N1 · implemented: nameparser/_pipeline/_extract.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_vocab.py
 

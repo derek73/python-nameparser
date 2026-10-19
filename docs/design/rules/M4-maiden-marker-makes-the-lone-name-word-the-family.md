@@ -37,5 +37,6 @@ M4. Rationale: a maiden name is a FORMER family name, and a former
       "abd née Jones"             →  given="abd"  · boundary
       "J. née Jones Smith V"      →  given="J."  · boundary
       "j nee smith"               →  given="j"  · boundary
+    Signal: a count: one name word left beside a maiden name
     history: decisions/M4 · interacts: M1, M2, M3, H1, N3, O5, T4 · implemented: nameparser/_pipeline/_post_rules.py
 

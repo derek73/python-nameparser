@@ -98,5 +98,6 @@ H1. Rationale: a title normally addresses by surname, so a title
       "Greve Anna"                →  family="Anna"
       "Anna Greve"                →  family="Greve"
       "Greve, Anna"               →  family="Greve"
+    Signal: a count: exactly one name word beside a title run, read by the run's addressing title
     history: decisions/H1 · interacts: C3, C8, O5, H3, H5, H6, P2, P3, P5, M2, S1, S2, N1, N3 · implemented: nameparser/_pipeline/_post_rules.py
 

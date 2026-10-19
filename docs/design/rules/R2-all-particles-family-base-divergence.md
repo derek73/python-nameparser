@@ -30,5 +30,6 @@ R2. Rationale: callers need the surname with and without its
     trailing particle the name word it was missing.
       "Anh Van Do"  middle_as_family  →  family_base="Van Do"
       "Nguyen, Van Le"  middle_as_family  →  family_particles="Le"
+    Signal: a neighbor: a family part whose every word is particle vocabulary
     history: decisions/R2 · interacts: R3 · implemented: nameparser/_types.py, nameparser/_pipeline/_post_rules.py, nameparser/_facade.py
 

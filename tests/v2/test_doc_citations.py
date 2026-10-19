@@ -24,10 +24,13 @@ import subprocess
 from pathlib import Path
 from typing import NamedTuple
 
+import pytest
+
 from tests.v2.design_docs import (
     DECISIONS_DIR, MECHANISMS_DOC, MENTION_RE, RULES_DIR,
     read_decision_files, read_rules_text)
-from tests.v2.rules_doc import _POINTER_RE, _RULE_RE, parse_rules_doc
+from tests.v2.rules_doc import (
+    Rule, parse_rules_doc, prose_blocks, split_accepted)
 
 REPO = Path(__file__).resolve().parents[2]
 MECH_DOC = MECHANISMS_DOC
@@ -95,43 +98,10 @@ def _norm(s: str) -> str:
 def _statements() -> dict[str, str]:
     """What a citation may quote: for a rule, its prose -- the
     statement and its Accepted: clauses, everything in the block but
-    example, pointer and marker lines; for a section letter
+    example, pointer, marker and Signal: lines; for a section letter
     (`rules/H Background`), the section's Background paragraph; for
     a mechanism, its Contract statement."""
-    out: dict[str, list[str]] = {}
-    current: list[str] | None = None
-    background: list[str] | None = None
-    section = None
-    marker = False          # inside a wrapped no-boundary: marker
-    for line in read_rules_text().splitlines():
-        m = _RULE_RE.match(line)
-        hm = re.match(r"## .*\(([A-Z])\)\s*$", line)
-        if background is not None:
-            if line.strip():
-                background.append(line)
-                continue
-            background = None
-        if hm:
-            section = hm.group(1)
-        elif section and line.startswith("Background:"):
-            background = out[section] = [line]
-            section = None
-            continue
-        if re.match(r"\s*(no-boundary|tolerated):", line):
-            marker = True
-            continue
-        if marker and (_POINTER_RE.match(line) or not line.strip()
-                       or line.startswith("      ") or m):
-            marker = False
-        if m:
-            current = out.setdefault(m.group(1) + m.group(2), [])
-            current.append(line[m.end():])
-        elif line.startswith("#"):
-            current = None
-        elif current is not None and line.startswith("    ") and not (
-                marker or line.startswith("      ")
-                or _POINTER_RE.match(line)):
-            current.append(line)
+    out = prose_blocks(read_rules_text())
     stmts = {rid: _norm(" ".join(body)) for rid, body in out.items()}
     mech = MECH_DOC.read_text(encoding="utf-8")
     # split into sections first so a missing Contract line cannot
@@ -365,6 +335,96 @@ def test_interacts_ids_exist() -> None:
     missing = [f"{r.rule_id} -> {t}" for r in rules
                for t in r.interacts if t not in ids]
     assert not missing, f"advisory interacts: cite unknown IDs: {missing}"
+
+
+def hub_findings(rules: list[Rule], prose: dict[str, list[str]]) -> list[str]:
+    """A hub's ``Signal: ... hub of ...`` names the rules stating the
+    signals it combines; each must be another rule, listed in the
+    hub's ``interacts:``, and named in ONE sentence of its statement
+    (the Accepted clauses aside) -- the one-line map -- so the map
+    cannot leave one out while the rule names it elsewhere. The map is
+    the sentence naming the most of them, and the check runs both
+    ways: a rule the map names that the Signal: line leaves off is a
+    finding too, which is the half of S2's lost S9 (named in neither
+    its map nor its interacts: before PR #745) the first direction
+    alone would miss. A sentence ends at a full stop, ?, or !, past
+    any closing quote or bracket, before a capital -- an
+    approximation: an abbreviation before a capital ("e.g. C4") splits
+    one, which can only make the check stricter. ``prose`` is
+    rules_doc.prose_blocks'."""
+    ids = {r.rule_id for r in rules}
+    problems = []
+    for r in rules:
+        if not r.hub:
+            continue
+        statement, _ = split_accepted(prose.get(r.rule_id, []))
+        sentences = re.split(r"(?<=[.?!])[\"')\]\u201d\u2019]*\s+(?=[A-Z])",
+                             " ".join(" ".join(statement).split()))
+        def named(rid: str, text: str) -> bool:
+            return re.search(rf"\b{rid}\b", text) is not None
+        best = max(sentences, key=lambda t: sum(named(i, t) for i in r.hub))
+        for rid in r.hub:
+            where = f"{r.rule_id}'s Signal: hub of ... {rid}"
+            if rid not in ids or rid == r.rule_id:
+                problems.append(f"{where}: names no other rule")
+                continue
+            if rid not in r.interacts:
+                problems.append(f"{where}: missing from its interacts:")
+            if not named(rid, best):
+                problems.append(f"{where}: its statement's map omits it")
+        for rid in sorted(set(re.findall(r"\b[A-Z]\d+\b", best)) & ids
+                          - set(r.hub) - {r.rule_id}):
+            problems.append(f"{r.rule_id}'s map names {rid}, which its "
+                            f"Signal: hub of ... leaves off")
+    return problems
+
+
+def test_a_hub_names_each_rule_its_map_names() -> None:
+    rules = parse_rules_doc(read_rules_text())
+    assert [r.rule_id for r in rules if r.hub], "no hub to check"
+    problems = hub_findings(rules, prose_blocks(read_rules_text()))
+    assert not problems, "\n".join(problems)
+
+
+@pytest.mark.parametrize("signal, interacts, statement, finding", [
+    ("hub of X2", "X2", "read by X2.", None),
+    ("hub of X9", "X2", "read by X9.", "names no other rule"),
+    ("hub of X1", "X1", "read by X1.", "names no other rule"),
+    ("hub of X2", "X3", "read by X2.", "missing from its interacts:"),
+    ("hub of X2", "X2", "read by nothing.", "its statement's map omits it"),
+    # X2 is not named merely because X21 is (no rule, so no reverse
+    # finding beside it)
+    ("hub of X2", "X2", "read by X21.", "its statement's map omits it"),
+    # named, but outside the sentence mapping the others
+    ("hub of X2, X3", "X2, X3", "Reads X2 here. Mapped: X3.",
+     "its statement's map omits it"),
+    # named only in an Accepted clause
+    ("hub of X2", "X2", "No map.\n    Accepted: X2.",
+     "its statement's map omits it"),
+    ("a shape: x; hub of X2, X3", "X2, X3", "Read by X2 and X3.", None),
+    # the map is the sentence naming the most, not the first
+    ("hub of X2, X3", "X2, X3", "Reads X2 here. Mapped: X2 and X3.", None),
+    # a sentence ending in a closing bracket still ends
+    ("hub of X2, X3", "X2, X3", "Read by X2 (see X2.) Mapped X3.",
+     "its statement's map omits it"),
+    # the reverse: the map names a rule the Signal: line leaves off
+    ("hub of X2", "X2", "Read by X2 and X3.",
+     "which its Signal: hub of ... leaves off"),
+])
+def test_hub_findings_catch_each_gap(signal: str, interacts: str,
+                                     statement: str,
+                                     finding: str | None) -> None:
+    doc = (f"X1. {statement}\n      \"a\"  →  given=\"a\"\n"
+           f"    no-boundary: synthetic.\n    Signal: {signal}\n"
+           f"    interacts: {interacts} · "
+           f"implemented: nameparser/_parser.py\n"
+           f"X2. Other.\nX3. Other.\nX20. Other.\n")
+    rules = parse_rules_doc(doc)
+    got = hub_findings(rules, prose_blocks(doc))
+    if finding is None:
+        assert got == []
+    else:
+        assert len(got) == 1 and finding in got[0], got
 
 
 def test_doc_internal_anchors_resolve() -> None:

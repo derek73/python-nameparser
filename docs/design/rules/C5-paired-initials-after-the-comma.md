@@ -46,4 +46,5 @@ C5. Rationale: two dotted letters are the shape a person's own
     more single letters run together is far likelier a credential than
     a given name and a middle name written as one word.
       "García Márquez, G.J.R."    →  suffix="G.J.R."
+    Signal: a shape: paired initials after the comma, dotted or as two undotted capitals
     history: decisions/C5 · interacts: C4, C6, C11, S3, S7 · implemented: nameparser/_pipeline/_comma.py

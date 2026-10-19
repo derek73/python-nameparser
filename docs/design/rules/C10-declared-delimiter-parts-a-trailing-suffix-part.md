@@ -29,4 +29,5 @@ C10. Rationale: a caller who declares a suffix delimiter means it to
     read given "RN".
       "Smith, RN - CRNA"          →  suffix="RN - CRNA"
       "Smith, RN - CRNA" extra_suffix_delimiters-dash →  suffix="RN - CRNA"  · boundary
+    Signal: a separator: a delimiter the caller declared, inside a trailing suffix part
     history: decisions/C10 · interacts: C1, C2, C8, M2, T1 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py

@@ -30,5 +30,6 @@ O1. Rationale: an East Slavic name written family-first still shows
     registered example annotation combines a pack with an order, so
     the parse is pinned in tests/v2/test_locales.py instead, and
     decisions/O1 records why options 2 and 3 were declined.
+    Signal: a shape: a patronymic ending on the last of exactly three name words, and not on the middle one
     history: decisions/O1 · implemented: nameparser/_pipeline/_post_rules.py
 

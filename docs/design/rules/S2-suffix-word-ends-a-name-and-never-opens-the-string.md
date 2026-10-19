@@ -30,9 +30,12 @@ S2. Rationale: generational suffixes and credentials are recognized
     straight behind a particle among them, while a word the reading
     weighs counts as a word of its own wherever it stands; inside a
     credential run a word stands on its own, a title word there still
-    a title — and neither join reaches a word the run took. A bare
-    ambiguous acronym in that run is read by S4, S5, S6 and S7, and a
-    credential with more name text behind it by S8.
+    a title — and neither join reaches a word the run took. The
+    run's words are read by rules of their own: a word whose
+    period-separated chunks the vocabulary knows, or an unlisted
+    dotted word, by S3, a bare ambiguous acronym by S4, S5, S6 and S7, a
+    word joining that class by its shape by S9, a credential with
+    more name text behind it by S8, and a roman numeral by S10.
       "John Smith Jr."            →  suffix="Jr."
       "Antonio Pavlović mlađi"    →  family="Pavlović"
       "Antonio Pavlović mlađi"    →  suffix="mlađi"
@@ -87,4 +90,5 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions/v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions/S2 · interacts: H1, H2, H3, H4, H5, H6, C1, C8, S3, S4, S5, S6, S7, S8, S10, P2, P3, P4, P5 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
+    Signal: a position: a suffix word opening the string + a shape: an ambiguous acronym written with its periods; hub of S3, S4, S5, S6, S7, S8, S9, S10
+    history: decisions/S2 · interacts: H1, H2, H3, H4, H5, H6, C1, C8, S3, S4, S5, S6, S7, S8, S9, S10, P2, P3, P4, P5 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py

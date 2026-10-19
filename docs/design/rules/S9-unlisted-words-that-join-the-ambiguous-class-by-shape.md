@@ -31,4 +31,5 @@ S9. Rationale: no wordlist holds every credential, and a word's
       "Jean DUPONT"  unlisted_caps_suffixes-everywhere  →  family="DUPONT"  · boundary
       "Jean Pierre DUPONT"  unlisted_caps_suffixes-everywhere  →  suffix="DUPONT"
       "Jean Pierre DUPONT"  unlisted_caps_suffixes-everywhere  →  family="Pierre"
+    Signal: a shape: an unlisted word written in capitals or in dotted chunks, standing in a suffix position
     history: decisions/S9 · interacts: C4, C5, C6, C11, S3, S4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py

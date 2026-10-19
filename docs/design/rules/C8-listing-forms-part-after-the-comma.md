@@ -53,4 +53,5 @@ C8. Rationale: a comma fixes a family boundary only where a name
     duals, and the slot is postnominal.
       "Smith, Ms."                →  suffix="Ms."
       "Smith, Ms. Jane"           →  title="Ms."
+    Signal: a neighbor: whether the part after a family comma holds a name word + a neighbor: a credential opening that part
     history: decisions/C8 · interacts: C1, C7, C9, C11, H1, H2, H6, S8, C12 · implemented: nameparser/_pipeline/_comma.py

@@ -13,5 +13,6 @@ N2. Rationale: only a mark standing at word boundaries is quoting;
       "Sean O'Connor"             →  family="O'Connor"
       "Hans „Erster“ und “Zweiter” Müller"  →  nickname="Erster Zweiter"
       "Mari' Aube'"               →  family="Aube'"  · boundary
+    Signal: a position: where a quote character stands against the word boundaries
     history: decisions/N2 · implemented: nameparser/_pipeline/_extract.py
 

@@ -10,7 +10,7 @@ P2. Rationale: a particle is written as part of the surname it
     counts: a trailing roman numeral S10 reads as the generation, or
     a bare acronym with words to spare, ends the chain as a suffix
     word does, and so does a bare ambiguous acronym written in capitals in
-    a mixed-case name, which needs no words to spare; the same
+    a mixed-case name (S6), which needs no words to spare; the same
     acronym written Title-case in a mixed-case name ends nothing and
     joins the chain as any name word does, words to spare or not,
     and the fork the chain called is reported there exactly as it is
@@ -77,5 +77,6 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    history: decisions/P2 · interacts: P1, P4, H5, M2, S2, C2, S4, S10 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    Signal: a neighbor: the words following a particle, up to the next particle, suffix run or marker + a neighbor: a particle that is also suffix vocabulary before a family comma, and the word behind it
+    history: decisions/P2 · interacts: P1, P4, H5, M2, S2, C2, S4, S10, S6 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

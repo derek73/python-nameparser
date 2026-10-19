@@ -27,5 +27,6 @@ W4. Rationale: Chinese, Japanese and Korean all write the family
       "毛·泽东"                   →  given="毛"
       "威廉·莎士比亚"  family-first  →  family="威廉"
       "威廉・莎士比亚"            →  family="威廉"
+    Signal: a script: a name written wholly in one East Asian script, or in the kana-licensed repertoire
     history: decisions/W4 · interacts: T3 · implemented: nameparser/_pipeline/_assign.py
 

@@ -56,4 +56,5 @@ C12. Rationale: a generation belongs to the name it ends, so a name
     case, has no contrast to read and keeps the listing form, as C6's
     unlisted all-caps word does.
       "Lloret Palol II, JA"       →  suffix="II, JA"
+    Signal: a neighbor: a generation or honorific word ending the part before the comma
     history: decisions/C12 · interacts: C1, C3, C6, C7, C8, C11, P3, S10 · implemented: nameparser/_pipeline/_comma.py

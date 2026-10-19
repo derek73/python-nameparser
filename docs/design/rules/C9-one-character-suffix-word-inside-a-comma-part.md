@@ -9,7 +9,7 @@ C9. Rationale: one letter is the shape a middle initial is written
     run, written with a period or without, an initial being no shape
     anyone writes there; behind a name word it is the generation
     only when written bare, a period marking it the abbreviation of
-    a name and so a middle initial. Both branches then ask that the
+    a name and so a middle initial (T4). Both branches then ask that the
     generation slot still be open: where a further comma has already
     named the suffix, a single letter ending the GIVEN part has no
     generation left to be, and stays a middle initial — with a
@@ -39,4 +39,5 @@ C9. Rationale: one letter is the shape a middle initial is written
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
+    Signal: a neighbor: what stands before a one-character suffix word inside a comma part + a comma: a further comma that has already named the suffix
     history: decisions/C9 · interacts: C1, C8, S5, S10, T4 · implemented: nameparser/_pipeline/_assign.py

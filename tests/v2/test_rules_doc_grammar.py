@@ -117,11 +117,10 @@ def test_a_normative_rule_carries_no_tolerated_marker() -> None:
 #: Spellings an author reaching for `tolerated:` can plausibly write,
 #: none of which _TOLERATED_RE accepts. Each is a near miss, and the
 #: point of the parametrization is that every one of them RAISES: the
-#: silent reading leaves the rule normative, which means
-#: build_rules_corpus.py harvests its examples into the contract
-#: corpus and enforces at released baselines exactly the claim the
-#: line was written to withdraw -- with the whole suite green, since
-#: the doc still parses and the examples still pass.
+#: silent reading leaves the rule reading as a promise, exactly the
+#: claim the line was written to withdraw, and files the line as
+#: quotable statement prose -- with the whole suite green, since the
+#: doc still parses and the examples still pass.
 #:
 #: The empty-reason row is a decision, not an oversight: the reason is
 #: unvalidated free text, but a demotion nobody had to justify is the
@@ -166,3 +165,144 @@ def test_registry_resolves_policies_and_gates() -> None:
     assert kind == "gated_locale" and obj == "ja"
     with pytest.raises(KeyError):
         resolve_annotation("no-such-annotation")
+
+
+_SIGNAL_DOC = ('X1. Statement.\n'
+               '      "a b"  →  family="b"\n'
+               '{signal}'
+               '    implemented: nameparser/_parser.py\n')
+
+
+def test_the_signal_line_is_read_off_a_rule() -> None:
+    rule = parse_rules_doc(_SIGNAL_DOC.format(
+        signal="    Signal: a count: one name word\n"))[0]
+    assert rule.signal == "a count: one name word"
+    assert rule.hub == ()
+    assert rule.implemented == ("nameparser/_parser.py",)
+
+
+def test_a_hub_signal_names_its_rules() -> None:
+    rule = parse_rules_doc(_SIGNAL_DOC.format(
+        signal="    Signal: hub of C3, C4, C12\n"))[0]
+    assert rule.hub == ("C3", "C4", "C12")
+
+
+def test_a_rule_without_a_signal_line_has_none() -> None:
+    # The negative control: the real-doc test's `signal is not None`
+    # is a question the parser can answer no to.
+    assert parse_rules_doc(_SIGNAL_DOC.format(signal=""))[0].signal is None
+
+
+_NEAR = "does not parse"         # the near-miss branch
+_PLACE = "directly above"        # the placement branch
+_HUB = "hub's signal line"       # the malformed-hub branch
+
+
+#: Each raises, and from the branch its id names: a near miss read as
+#: prose would leave the rule with no signal AND put the line into the
+#: quotable statement, a wrapped or misplaced line would do the second,
+#: and a malformed hub would read as a plain signal with its rules
+#: unchecked.
+@pytest.mark.parametrize("signal, branch", [
+    pytest.param("    signal: lowercase.\n", _NEAR, id="lowercase"),
+    pytest.param("    Signal : a space before the colon.\n", _NEAR,
+                 id="space-before-the-colon"),
+    pytest.param("    Signal:\n", _NEAR, id="empty"),
+    pytest.param("    Signals: a count\n", _NEAR, id="plural"),
+    pytest.param("    **Signal:** a count\n", _NEAR, id="bold"),
+    pytest.param("    Signal\uff1a a count\n", _NEAR, id="fullwidth-colon"),
+    pytest.param("    Signal: a count: one\n      name word\n", _PLACE,
+                 id="wrapped"),
+    pytest.param("    Signal: a count\n    Accepted: a clause after it.\n",
+                 _PLACE, id="not-above-the-pointer"),
+    pytest.param("    Signal: hub of C3 and C4\n", _HUB, id="malformed-hub"),
+    pytest.param("    Signal: a shape; hub of C3 C4\n", _HUB,
+                 id="malformed-hub-after-a-signal"),
+    pytest.param("    Signal: a shape, hub of C3, C4\n", _HUB,
+                 id="hub-after-a-comma"),
+    pytest.param("    Signal: a shape;hub of C3, C4\n", _HUB,
+                 id="hub-after-an-unspaced-semicolon"),
+    pytest.param("    Signal: a shape — hub of C3, C4\n", _HUB,
+                 id="hub-after-a-dash"),
+    pytest.param("    Signal: hubs of C3, C4\n", _HUB, id="plural-hub"),
+    pytest.param("    Signal: Hub of C3, C4\n", _HUB, id="capitalized-hub"),
+    pytest.param("    Signal: hub of C3, C4.\n", _HUB,
+                 id="hub-with-a-full-stop"),
+    pytest.param("    Signal: hub: C3, C4\n", _HUB, id="hub-colon"),
+    # refused by the first form of the check, which raised on the word
+    # anywhere; kept so a narrowing cannot drop it (#737's lesson)
+    pytest.param("    Signal: hub C3, C4\n", _HUB, id="hub-without-of"),
+    pytest.param("    Signal: a shape; hub C3\n", _HUB,
+                 id="hub-without-of-after-a-signal"),
+])
+def test_a_bad_signal_line_is_an_error(signal: str, branch: str) -> None:
+    with pytest.raises(ValueError, match=branch):
+        parse_rules_doc(_SIGNAL_DOC.format(signal=signal))
+
+
+def test_a_word_holding_hub_is_a_plain_signal() -> None:
+    # The converse of the hub rows: the near-miss test is not a
+    # substring test.
+    rule = parse_rules_doc(_SIGNAL_DOC.format(
+        signal="    Signal: a shape: Hubert, a hub-like word\n"))[0]
+    assert rule.hub == ()
+
+
+#: Lines a rule block cannot hold. Read as nothing, each fell out of the
+#: statement a citation quotes and the size budget counts in silence.
+@pytest.mark.parametrize("line, match", [
+    pytest.param("      Accepted: indented like an example.\n",
+                 "no line a rule block holds", id="six-space-prose"),
+    pytest.param("\tand a tab-indented clause.\n",
+                 "no line a rule block holds", id="tab"),
+    pytest.param("  and a two-space clause.\n",
+                 "no line a rule block holds", id="two-space"),
+    pytest.param("    Accepted : a space before the colon.\n",
+                 "Accepted clause", id="accepted-space-colon"),
+    pytest.param("    Accepted -- a dash.\n", "Accepted clause",
+                 id="accepted-dash"),
+    pytest.param("    Accepted (2026): a date.\n", "Accepted clause",
+                 id="accepted-bracket"),
+    pytest.param("    accepted: lowercase.\n", "Accepted clause",
+                 id="accepted-lowercase"),
+])
+def test_a_line_no_rule_block_holds_is_an_error(line: str,
+                                                match: str) -> None:
+    doc = 'X1. Statement.\n' + line + '      "a b"  →  family="b"\n'
+    with pytest.raises(ValueError, match=match):
+        parse_rules_doc(doc)
+
+
+def test_accepted_followed_by_a_word_is_prose() -> None:
+    # P3's mid-clause "Accepted rather than repaired:" is the shape.
+    doc = ('X1. Statement.\n    Accepted rather than repaired: prose.\n'
+           '      "a b"  →  family="b"\n')
+    assert parse_rules_doc(doc)[0].rule_id == "X1"
+
+
+def test_a_second_signal_line_is_an_error() -> None:
+    # Each line is well placed, above a pointer line, so this reaches the
+    # one-per-rule branch rather than the placement one.
+    doc = _SIGNAL_DOC.format(
+        signal="    Signal: a count\n    implemented: x.py\n"
+               "    Signal: a shape\n")
+    with pytest.raises(ValueError, match="second"):
+        parse_rules_doc(doc)
+
+
+def test_a_signal_line_outside_a_rule_block_is_an_error() -> None:
+    doc = "## A section (X)\n\n    Signal: stray\n    implemented: y\n"
+    with pytest.raises(ValueError, match="outside any rule block"):
+        parse_rules_doc(doc)
+
+
+def test_a_hub_may_state_its_own_signals_first() -> None:
+    rule = parse_rules_doc(_SIGNAL_DOC.format(
+        signal="    Signal: a position: x + a shape: y; hub of C3, C4\n"))[0]
+    assert rule.hub == ("C3", "C4")
+    assert rule.signal == "a position: x + a shape: y; hub of C3, C4"
+
+
+def test_a_signal_line_ending_the_text_is_an_error() -> None:
+    with pytest.raises(ValueError, match="Signal"):
+        parse_rules_doc('X1. Statement.\n    Signal: a count\n')

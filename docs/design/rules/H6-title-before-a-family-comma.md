@@ -50,5 +50,6 @@ H6. Rationale: the listing form moves the surname to the front and
       "Graf Lambsdorff, Otto"     →  title="Graf"
       "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
       "Dr. Freiherr von Berg, Ed" →  title="Dr."
+    Signal: a neighbor: title vocabulary opening the part before a family comma
     history: decisions/H6 · interacts: C1, C3, H1, H2, H3, M2, P1, P2, P4, S2, W3 · implemented: nameparser/_pipeline/_assign.py
 

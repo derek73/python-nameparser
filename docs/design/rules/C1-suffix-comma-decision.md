@@ -44,4 +44,5 @@ C1. Rationale: a credential run after the comma means the name is in
     here. It is also the one consequence of this question Latin
     script cannot witness, nothing there being glued to the end of a
     name — which is why this clause carries no example of its own.
+    Signal: hub of C3, C4, C5, C6, C7, C8, C9, C10, C11, C12
     history: decisions/C1 · interacts: C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, H6, T4, W3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py

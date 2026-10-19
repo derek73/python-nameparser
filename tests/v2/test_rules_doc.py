@@ -15,7 +15,7 @@ import pytest
 from nameparser import Parser, parse, parser_for
 from nameparser import locales
 from nameparser._policy import Policy
-from tests.v2.design_docs import read_rules_text
+from tests.v2.design_docs import RULES_DIR, read_rules_text
 from tests.v2.rules_doc import (
     Example, Rule, parse_rules_doc, resolve_annotation)
 
@@ -55,6 +55,40 @@ def test_every_rule_points_at_code_or_at_the_work(rule: Rule) -> None:
         f"tracked: once the rule ships")
     bad = [t for t in rule.tracked if not re.fullmatch(r"#\d+", t)]
     assert not bad, f"{rule.rule_id}: tracked: wants #N issue refs, got {bad}"
+
+
+@pytest.mark.parametrize("rule", RULES, ids=lambda r: r.rule_id)
+def test_every_rule_states_its_signal(rule: Rule) -> None:
+    """What in the written name the rule reads, on its ``Signal:`` line
+    (docs/design/AGENTS.md, "One rule per piece of evidence"). A hub
+    also names the rules stating the signals it combines, after any
+    signal it reads itself, which
+    test_doc_citations.py::test_a_hub_names_each_rule_its_map_names
+    holds to its map."""
+    assert rule.signal is not None, (
+        f"{rule.rule_id}: add a `Signal: <what it reads>` line directly "
+        f"above its pointer line -- for example a count, a case "
+        f"contrast, a shape, a neighbor, a position -- or `Signal: hub of "
+        f"X1, X2` (after any signal of its own: `Signal: <its own>; hub "
+        f"of X1, X2`) for a hub")
+
+
+#: The README's recipe for the split candidates, verbatim; in grep's
+#: basic syntax "+" is a literal plus.
+_SPLIT_GREP = "grep -l '^    Signal:.* + ' docs/design/rules/*.md"
+
+
+def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
+    readme = (RULES_DIR / "README.md").read_text(encoding="utf-8")
+    assert f"`{_SPLIT_GREP}`" in readme, (
+        "rules/README.md's split-candidate grep changed; update "
+        "_SPLIT_GREP and the translation below together")
+    listed = {f.name.split("-")[0] for f in RULES_DIR.glob("*.md")
+              if re.search(r"^    Signal:.* \+ ",
+                           f.read_text(encoding="utf-8"), re.M)}
+    assert listed == {r.rule_id for r in RULES
+                      if r.signal and " + " in r.signal}
+    assert listed, "no split candidate: the recipe is untested"
 
 
 def _check_diagnostic(example: Example) -> None:

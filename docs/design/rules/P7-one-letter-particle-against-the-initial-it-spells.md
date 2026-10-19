@@ -19,5 +19,6 @@ P7. Rationale: a one-letter particle is spelled with the same letter
     the particle. Such initials normally carry the period, and the
     bare letter is exactly how the particle is written.
       "Juan Ó Pérez"              →  middle=""
+    Signal: a shape: the period after a one-letter word the particle vocabulary holds
     history: decisions/P7 · interacts: P1, P2, P3, P6, R3, R4 · implemented: nameparser/_lexicon.py, nameparser/_pipeline/_classify.py
 
