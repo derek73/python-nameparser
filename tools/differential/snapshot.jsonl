@@ -3377,6 +3377,7 @@
 {"name": "ibn Awf abdul Rahman", "family": "ibn Awf abdul Rahman", "initials": "A. a. R."}
 {"name": "ina binti navalamar", "given": "ina", "family": "binti navalamar", "initials": "i. n."}
 {"name": "j", "given": "j", "initials": "j."}
+{"name": "j nee Smith", "given": "j", "maiden": "Smith", "initials": "j."}
 {"name": "j nee smith", "given": "j", "maiden": "smith", "initials": "j."}
 {"name": "j.-e.-p. dupont", "given": "j.-e.-p.", "family": "dupont", "initials": "j. d."}
 {"name": "jack ma", "given": "jack", "family": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. m."}

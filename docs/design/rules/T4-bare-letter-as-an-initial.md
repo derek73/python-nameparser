@@ -7,17 +7,21 @@ T4. Rationale: one letter standing for a name word is how an
     wholly in one case marks nothing, so its two spellings — all
     lower case and all capitals — are one name, and read alike.
     A one-letter word written with its period is an initial, in a
-    script that writes initials, and so is a bare Latin capital; in
-    a name written wholly in one case,
+    script that writes initials, and so is a bare unaccented Latin
+    capital, A to Z; in a name written wholly in one case,
     which says nothing about any letter in it, a bare letter is an
     initial wherever its capital would be. So every rule that reads
     an initial differently from a name word reads the lower-case
     spelling as it reads the capitals: M4 leaves an initial its
     given-name reading, O5 reports no convention for one, P3's
     count passes over one, and S10 reads a numeral written as one
-    as the capital numeral it is. A letter whose capital is no bare
-    Latin capital — é, ж — is no initial in either spelling, and in
-    a name of mixed case a bare lower-case letter is no initial. A single-letter connective among the name's own
+    as the capital numeral it is. A letter whose capital is not one
+    of those — é, ж — is no initial in either spelling, and in a
+    name of mixed case a bare lower-case letter is no initial. As
+    P3 asks it, the case question is asked of the name's own words,
+    so a clause beside the name changes nothing about the name's own
+    letters: a lone letter before a maiden name in capitals is still
+    a name written in one case. A single-letter connective among the name's own
     words is P3's question and not this one's: there the vocabulary
     decides, and the letter it does not mark reads as a connective
     in both spellings; a letter outside the name's own words — in
@@ -34,7 +38,8 @@ T4. Rationale: one letter standing for a name word is how an
       "john j v"                  →  family="v"
       "Jose j y Lopez"            →  family="j y Lopez"  · boundary
       "é nee smith"               →  family="é"  · boundary
+      "j nee Smith"               →  given="j"
       "DR. NÉE JUAN y LOPEZ"      →  family="JUAN y LOPEZ"  · boundary
       "jose e lopez"              →  ambiguities=("conjunction-or-initial",)
       "jose y lopez"              →  middle="y"
-    history: decisions/T4 · interacts: M4, O5, P3, P7, S10, R3 · implemented: nameparser/_pipeline/_classify.py
+    history: decisions/T4 · interacts: M4, O5, P2, P3, P7, S10, R3, R4 · implemented: nameparser/_pipeline/_classify.py
