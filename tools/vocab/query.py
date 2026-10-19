@@ -12,8 +12,10 @@ Filters combine (AND). Each match prints as ``file  text  kind`` and the
 reading's properties; an exclusion prints as ``excluded:<kind>``, or
 ``<kind> excluded:<property>`` for a property refused on a reading the
 word keeps, with its reason. ``--kind`` matches a kind or every kind of
-a category (``--kind suffix``); ``--excluded`` matches a kind, a
-category or a refused property (``--excluded attached``). ``--count``
+a category (``--kind suffix``). ``--excluded`` matches a refused
+reading by its kind or category (``--excluded generation``), or a
+property refused on a reading the word keeps by the property's name
+(``--excluded attached``), never both. ``--count``
 prints only the number of matches. Exits 1 when nothing matches.
 """
 from __future__ import annotations
@@ -67,8 +69,14 @@ def select(pool: build.Pool, *, issue: int | None = None, kind: str | None = Non
             continue
         if kind is not None and (row.excluded or not _is(row.kind, kind)):
             continue
+        # a refused reading matches its kind or category; a refused
+        # PROPERTY matches only the property's name, so `--excluded
+        # honorific` is the words refused the honorific reading, not the
+        # honorifics refused the glued peel
+        word_level = row.label.startswith("excluded:")
         if excluded is not None and not (row.excluded and (
-                _is(row.kind, excluded) or row.label.endswith(f":{excluded}"))):
+                (word_level and _is(row.kind, excluded))
+                or (not word_level and row.label.endswith(f":{excluded}")))):
             continue
         if word is not None and row.text != word:
             continue

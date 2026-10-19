@@ -26,4 +26,4 @@ note = "мл.; #679 found nothing it collides with in Cyrillic"
 text = "ст"
 [word.excluded.generation]
 reason = "barely attested after a name, and a plausible false positive among two-letter Cyrillic abbreviations; deferred since #269"
-issue = [269, 679]
+issue = [269, 661, 679]

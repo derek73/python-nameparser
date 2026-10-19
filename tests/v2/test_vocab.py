@@ -4,9 +4,11 @@ The parser reads nameparser/config/_compiled.py, never the TOML, so the
 two halves of the guard are: the committed module is exactly what the
 TOML compiles to (the snapshot.jsonl pattern -- a stale module fails with
 the command that refreshes it), and the compiler's build checks pass on
-the shipped files with warnings as errors. Each build check then has a
-mutation below that it must refuse, because a check nothing exercises
-passes the same way a missing one does.
+the shipped files with warnings as errors. Each numbered build check
+then has a mutation below that it must refuse, because a check nothing
+exercises passes the same way a missing one does. compile_pool's final
+acronym-and-word check is a backstop check 5 always reaches first, so
+its mutation is refused by check 5.
 """
 from __future__ import annotations
 
@@ -240,3 +242,20 @@ def test_a_check_failure_names_the_refresh_command_in_main(
     assert build.main(["--check"]) == 1
     assert build.REFRESH in capsys.readouterr().out
     assert out.read_text(encoding="utf-8") == "stale\n"
+
+
+def test_query_tells_a_refused_reading_from_a_refused_property() -> None:
+    # --excluded <kind> is the words refused that reading; a property
+    # refused on a reading the word keeps answers only to its own name
+    spec = importlib.util.spec_from_file_location("vocab_query", _BUILD.with_name("query.py"))
+    assert spec is not None and spec.loader is not None
+    query = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = query
+    spec.loader.exec_module(query)
+    pool = query.build.load({
+        "ja.toml": _w('[[word]]\ntext = "殿"\nhonorific = { excluded = { attached = "surnames end in it" } }'),
+        "zh.toml": _w('[[word]]\ntext = "君"\nexcluded = { honorific = "王君 is a name" }'),
+    })
+    assert [r.text for r in query.select(pool, excluded="honorific")] == ["君"]
+    assert [r.text for r in query.select(pool, excluded="attached")] == ["殿"]
+    assert [r.text for r in query.select(pool, excluded="suffix")] == ["君"]
