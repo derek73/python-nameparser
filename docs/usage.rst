@@ -40,7 +40,7 @@ Understood by default
 Every piece of each is optional:
 
 1. ``Title Given "Nickname" Middle Middle Family Suffix``
-2. ``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix or Title]``
+2. ``[Title] Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix or Title]``
 3. ``Title Given Middle Family [Suffix], Suffix or Title [, Suffix or Title]``
 
 A title written with a period (``Prof.``) is also read at the end of a

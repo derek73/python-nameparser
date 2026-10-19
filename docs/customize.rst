@@ -616,7 +616,7 @@ Family-first name order
 
 ``name_order`` is the one most likely to matter for data that is not
 in Western order. Positional input is assigned in the order you
-declare — with the two vocabulary exceptions noted under
+declare — with the three vocabulary exceptions noted under
 :ref:`order-vocabulary-first` — so a name written family-first —
 Hungarian, here — parses as written instead of needing to be
 rearranged afterwards:
@@ -683,8 +683,8 @@ The comma and the order are one shape
 
 That pair is not a coincidence but one shape written two ways: form 4
 (``Title Family Given Middle Middle [Particle] [, Suffix]``) is form 2
-(``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [,
-Suffix]``) with the comma removed and the family folded inline —
+(``[Title] Family [Suffix], Title Given (Nickname) Middle Middle[,]
+Suffix [, Suffix]``) with the comma removed and the family folded inline —
 titles included, so a title that form 2 writes after the comma leads
 the name in form 4 instead. If your records are family-first without
 commas, ``Policy(name_order=FAMILY_FIRST)`` reads them the way the
@@ -762,7 +762,7 @@ family-first orders differ from each other:
 Where the vocabulary answers first
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In two places the vocabulary layer answers before ``name_order`` is
+In three places the vocabulary layer answers before ``name_order`` is
 consulted at all:
 
 - **A middle word that is also a shipped particle** is claimed by the
@@ -781,6 +781,10 @@ consulted at all:
   this: ``"van Gogh"`` reads family ``van``, given ``Gogh`` under a
   family-first order, because ``van`` *can* be a given name and so
   leaves a real question to answer.
+- **A lone name word beside a given-name title** is the given name in
+  every ``name_order`` (since 2.5): ``"Sir John"`` reads given ``John``
+  under both family-first orders, as it does by default, while
+  ``"Dr John"`` still reads family ``John`` there.
 
 `Words that are also ordinary names`_ covers dropping a word from a
 vocabulary, or moving one between those two sets.

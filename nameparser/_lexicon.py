@@ -582,8 +582,8 @@ class Lexicon:
     #: Pre-nominal titles ("dr", "sir", "capt", ...). Full default
     #: list: :data:`~nameparser.config.titles.TITLES`.
     titles: frozenset[str] = frozenset()
-    #: Titles whose single following name reads as a GIVEN name
-    #: ("sheikh", "sister", ...) rather than a family name. Full
+    #: Titles whose single name word, before or after them, reads as a
+    #: GIVEN name ("sheikh", "sister", ...) rather than a family name. Full
     #: default list: :data:`~nameparser.config.titles.GIVEN_NAME_TITLES`.
     given_name_titles: frozenset[str] = frozenset()
     #: Post-nominal acronym suffixes, matched with or without periods
@@ -675,8 +675,8 @@ class Lexicon:
     #: (:data:`~nameparser.config.surnames.KOREAN_SURNAMES`); Chinese
     #: surnames ship in locales.ZH because Han segmentation is opt-in.
     surnames: frozenset[str] = frozenset()
-    #: Honorifics that may be peeled off the END of a name token
-    #: (#308), matched longest-first: 田中さん splits into 田中 and さん
+    #: Honorifics, and credential, office and generational words, that
+    #: may be peeled off the END of a name token (#308, #707), matched longest-first: 田中さん splits into 田中 and さん
     #: before the tokens are classified. Every entry must also be a
     #: :attr:`suffix_words` entry -- the peeled tail is claimed by
     #: suffix classification like any other post-nominal. Deliberately

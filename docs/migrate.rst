@@ -648,12 +648,12 @@ in tokenization rather than by policy, so a name written with either
 still divides at the dot, and still renders with a space, whatever
 those two fields are set to.
 
-Changed in 2.3 and 2.4
-~~~~~~~~~~~~~~~~~~~~~~
+Changed in 2.3, 2.4 and 2.5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Later releases moved more 1.4 readings, and these reach ``HumanName``
 as well; 2.1 and 2.2 read every one of them as 1.4 did. The release
-log's 2.3 and 2.4 sections carry the reasoning; these are the shapes to
+log's 2.3, 2.4 and 2.5 sections carry the reasoning; these are the shapes to
 grep your fixtures for, with what 1.4 read:
 
 - ``"Her Majesty Queen Elizabeth"``, ``"Prince Harry"`` (2.3) — a lone
@@ -703,6 +703,24 @@ grep your fixtures for, with what 1.4 read:
   credentials are now written the usual way (``MD``, ``PhD``, ``MBA``).
 - ``initials()`` on ``"john e smith"`` (2.4) — 1.4 gave ``j. s.``; a
   one-letter connective read as an initial now contributes one.
+- ``"Dr. Smith, John"`` (2.5) — a listed title before a family comma is
+  a title: 1.4 read last ``Dr. Smith``. ``"Gov Smith"`` (2.5) — ``Gov``
+  is a title: 1.4 read first ``Gov``.
+- ``"Antonio Pavlović mlađi"`` (2.5) — junior and senior in 45
+  languages are suffixes: 1.4 read middle ``Pavlović``, last ``mlađi``.
+- ``"John Smith II, AD"`` (2.5) — a credential after a generational
+  suffix and a comma: 1.4 read first ``AD``, last ``John Smith``.
+- ``"Elizabeth II, Queen"`` and ``"Smith, Sir"`` (2.5) — the name before
+  a comma and a given-name title is the given name: 1.4 read last
+  ``Elizabeth`` and ``Smith``.
+- ``"Ivoi, Paul d'"`` (2.5) — a particle after the given name joins the
+  surname: 1.4 read middle ``d'``.
+- ``"jose j y lopez"`` (2.5) — a lone letter in a one-case name reads as
+  in capitals: 1.4 read last ``j y lopez``.
+- ``"Bapak Dwi Putro"`` (2.5) — the salutations ``bapak`` and ``owura``
+  are titles: 1.4 read first ``Bapak``, middle ``Dwi``.
+- ``capitalize()`` on ``"jacobus henricus van 't hoff"`` (2.5) — 1.4
+  wrote ``van 'T Hoff``.
 
 .. doctest::
 
@@ -756,3 +774,26 @@ grep your fixtures for, with what 1.4 read:
     'Jane Doe MBA'
     >>> HumanName("john e smith").initials()
     'j. e. s.'
+    >>> dr = HumanName("Dr. Smith, John")
+    >>> dr.title, dr.first, dr.last
+    ('Dr.', 'John', 'Smith')
+    >>> HumanName("Gov Smith").title
+    'Gov'
+    >>> HumanName("Antonio Pavlović mlađi").suffix
+    'mlađi'
+    >>> HumanName("John Smith II, AD").suffix
+    'II, AD'
+    >>> HumanName("Elizabeth II, Queen").first
+    'Elizabeth'
+    >>> HumanName("Smith, Sir").first
+    'Smith'
+    >>> HumanName("Ivoi, Paul d'").last
+    "d' Ivoi"
+    >>> HumanName("jose j y lopez").middle
+    'j y'
+    >>> HumanName("Bapak Dwi Putro").title
+    'Bapak'
+    >>> vant = HumanName("jacobus henricus van 't hoff")
+    >>> vant.capitalize(force=True)
+    >>> str(vant)
+    "Jacobus Henricus van 't Hoff"

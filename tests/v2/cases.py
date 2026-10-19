@@ -9547,7 +9547,8 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_lone_title", "Smith, Dr.",
          {"title": "Dr.", "family": "Smith"},
          classification="fix(comma-family)",
-         notes="pre-comma is definitionally family; v1 put it in first"),
+         notes="pre-comma is family, as Dr. addresses by surname (a "
+               "given-name title reads it as given, #720); v1 put it in first"),
     Case("family_comma_all_title_segment_keeps_split", "John Smith, Mr.",
          {"title": "Mr.", "given": "John", "family": "Smith"},
          classification="fix(comma-family)",
