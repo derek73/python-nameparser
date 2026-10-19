@@ -1236,6 +1236,7 @@
 {"name": "Iñaki", "given": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "I."}
 {"name": "Iñaki", "order": "FAMILY_FIRST", "family": "Iñaki", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "I."}
 {"name": "J A D", "given": "J", "middle": "A", "family": "D", "initials": "J. A. D."}
+{"name": "J NEE SMITH", "given": "J", "maiden": "SMITH", "initials": "J."}
 {"name": "J-E-P DUPONT", "given": "J-E-P", "family": "DUPONT", "initials": "J. D."}
 {"name": "J. A. D.", "given": "J.", "middle": "A.", "family": "D.", "initials": "J. A. D."}
 {"name": "J. None D.", "given": "J.", "middle": "None", "family": "D.", "initials": "J. N. D."}
@@ -1678,6 +1679,7 @@
 {"name": "Jose Ortega-Y-Gasset", "given": "Jose", "family": "Ortega-Y-Gasset", "initials": "J. O."}
 {"name": "Jose e Maria", "given": "Jose", "middle": "e", "family": "Maria", "initials": "J. e. M."}
 {"name": "Jose e Maria Santos", "given": "Jose e Maria", "family": "Santos", "initials": "J. M. S."}
+{"name": "Jose j y Lopez", "given": "Jose", "family": "j y Lopez", "initials": "J. j. L."}
 {"name": "Josef Václav Svoboda", "given": "Josef", "middle": "Václav", "family": "Svoboda", "initials": "J. V. S."}
 {"name": "Josep Balari i Jovany", "given": "Josep", "family": "Balari i Jovany", "initials": "J. B. J."}
 {"name": "Josep Campabadal i Calvet", "given": "Josep", "family": "Campabadal i Calvet", "initials": "J. C. C."}
@@ -3357,6 +3359,7 @@
 {"name": "dr. john p. doe-Ray, CLU, CFP, LUTC", "title": "dr.", "given": "john", "middle": "p.", "family": "doe-Ray", "suffix": "CLU, CFP, LUTC", "ambiguities": ["COMMA_STRUCTURE"], "initials": "j. p. d."}
 {"name": "dr. juan de la vega jr.", "title": "dr.", "given": "juan", "family": "de la vega", "suffix": "jr.", "initials": "j. v."}
 {"name": "dr. juan garcia III", "title": "dr.", "given": "juan", "family": "garcia", "suffix": "III", "initials": "j. g."}
+{"name": "dr. née juan y lopez", "title": "dr.", "given": "née", "middle": "juan y", "family": "lopez", "initials": "n. j. y. l."}
 {"name": "dr. p. Gabrielė Aldona Petraitytė", "title": "dr.", "given": "p.", "middle": "Gabrielė Aldona", "family": "Petraitytė", "initials": "p. G. A. P."}
 {"name": "dr. sc. Branko Hrvoje Marić mlađi, prof.", "title": "dr. sc. prof.", "given": "Branko", "middle": "Hrvoje", "family": "Marić", "suffix": "mlađi", "initials": "B. H. M."}
 {"name": "e and e", "given": "e and e", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "e. e."}
@@ -3372,6 +3375,8 @@
 {"name": "hr. Hans Henrik Sven Åge Møller, MF", "title": "hr.", "given": "MF", "family": "Hans Henrik Sven Åge Møller", "initials": "M. H. H. S. Å. M."}
 {"name": "ibn Awf abdul Rahman", "family": "ibn Awf abdul Rahman", "initials": "A. a. R."}
 {"name": "ina binti navalamar", "given": "ina", "family": "binti navalamar", "initials": "i. n."}
+{"name": "j", "given": "j", "initials": "j."}
+{"name": "j nee smith", "given": "j", "maiden": "smith", "initials": "j."}
 {"name": "j.-e.-p. dupont", "given": "j.-e.-p.", "family": "dupont", "initials": "j. d."}
 {"name": "jack ma", "given": "jack", "family": "ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "j. m."}
 {"name": "jacobus henricus van 't hoff", "given": "jacobus", "middle": "henricus", "family": "van 't hoff", "ambiguities": ["UNBALANCED_DELIMITER"], "initials": "j. h. h."}
@@ -3423,9 +3428,12 @@
 {"name": "john van e phd", "given": "john", "family": "van e", "suffix": "phd", "initials": "j. e."}
 {"name": "johnny y", "given": "johnny", "family": "y", "initials": "j. y."}
 {"name": "jones, john e", "given": "john", "middle": "e", "family": "jones", "initials": "j. e. j."}
+{"name": "jose e lopez", "given": "jose", "middle": "e", "family": "lopez", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "j. e. l."}
 {"name": "jose e maria santos", "given": "jose", "middle": "e maria", "family": "santos", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "j. e. m. s."}
 {"name": "jose e phd", "given": "jose", "family": "e", "suffix": "phd", "initials": "j. e."}
+{"name": "jose j y lopez", "given": "jose", "middle": "j y", "family": "lopez", "initials": "j. j. l."}
 {"name": "jose ortega-y-gasset", "given": "jose", "family": "ortega-y-gasset", "initials": "j. o."}
+{"name": "jose y lopez", "given": "jose", "middle": "y", "family": "lopez", "initials": "j. y. l."}
 {"name": "josep carod i rovira", "given": "josep", "middle": "carod i", "family": "rovira", "ambiguities": ["CONJUNCTION_OR_INITIAL"], "initials": "j. c. i. r."}
 {"name": "josé garcía", "given": "josé", "family": "garcía", "initials": "j. g."}
 {"name": "juan de la vega", "given": "juan", "family": "de la vega", "initials": "j. v."}
@@ -3492,6 +3500,7 @@
 {"name": "scott l. werner", "given": "scott", "middle": "l.", "family": "werner", "initials": "s. l. w."}
 {"name": "señora María García", "title": "señora", "given": "María", "family": "García", "initials": "M. G."}
 {"name": "smith, de ma", "family": "smith de ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "s. m."}
+{"name": "smith, j y lopez", "given": "j", "middle": "y lopez", "family": "smith", "initials": "j. l. s."}
 {"name": "smith, john e phd", "given": "john", "middle": "e", "family": "smith", "suffix": "phd", "initials": "j. e. s."}
 {"name": "st.repr. Gregers Werle Marve Almar von Fleksnes jr.", "title": "st.repr.", "given": "Gregers", "middle": "Werle Marve Almar", "family": "von Fleksnes", "suffix": "jr.", "initials": "G. W. M. A. F."}
 {"name": "st.repr. von Fleksnes Gregers Werle Marve Almar", "order": "FAMILY_FIRST", "title": "st.repr.", "given": "Fleksnes", "middle": "Gregers Werle Marve Almar", "family": "von", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "F. G. W. M. A. v."}
@@ -3604,6 +3613,7 @@
 {"name": "Þorsteinn Sveinsson", "given": "Þorsteinn", "family": "Sveinsson", "initials": "Þ. S."}
 {"name": "Þuríður Pálsdóttir", "given": "Þuríður", "family": "Pálsdóttir", "initials": "Þ. P."}
 {"name": "Þórunn Egilsdóttir", "given": "Þórunn", "family": "Egilsdóttir", "initials": "Þ. E."}
+{"name": "é nee smith", "family": "é", "maiden": "smith", "initials": "é."}
 {"name": "Āqā Buzurg aṭ-Ṭihrānī", "given": "Āqā", "middle": "Buzurg", "family": "aṭ-Ṭihrānī", "initials": "Ā. B. a."}
 {"name": "ĐBQH Nguyễn Văn Anh", "order": "FAMILY_FIRST", "given": "Nguyễn", "middle": "Văn Anh", "family": "ĐBQH", "initials": "N. V. A. Đ."}
 {"name": "Ğawīdān _ Hānum", "given": "Ğawīdān", "middle": "_", "family": "Hānum", "initials": "Ğ. _. H."}

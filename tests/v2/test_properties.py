@@ -3334,17 +3334,17 @@ def test_every_one_letter_particle_veto_is_load_bearing(
     assert len(_p7_disagreements(lexicon)) == _P7_SITE_EFFECT[module]
 
 
-# --- #721: a name written in one case reads as its capitals ---------
-# S10 (the trailing roman numeral) says a name written wholly in one
+# --- #721, #723: a name written in one case reads as its capitals ---
+# T4 (the bare letter as an initial) says a name written wholly in one
 # case says nothing about any letter in it -- so a wholly lower-case
 # name parses exactly as the same name in capitals, fields (compared
 # case-folded) and report kinds alike. The grid crosses the shapes a one-letter numeral meets
 # -- every comma shape, a maiden clause, a title, a particle chain, a
 # bound given name, an initial, a nickname and a credential before or
-# after it -- with the numerals a listed and a shape-only spelling of
-# each length, three heads (one Catalan, one holding an ambiguous
+# after it -- and the shapes any bare letter meets (#723), with the
+# letters below, three heads (one Catalan, one holding an ambiguous
 # acronym) and all three orders:
-# 1,872 pairs, about 3,750 parses, 0.29s on py3.11 (2026-10-18).
+# 3,168 pairs, about 6,350 parses, 0.48s on py3.11 (2026-10-18).
 _ONE_CASE_SHAPES = (
     "{a} {n}", "{a} {b} {n}", "{a} {n}, phd", "{a} {b} {n}, phd",
     "{a} {n}, jr.", "{b}, {a} {n}", ", {a} {n}", "{a} nee {b} {n}",
@@ -3356,15 +3356,24 @@ _ONE_CASE_SHAPES = (
     "{a} b {n}", "{a} e {n}", "{a} {n} prof.", "{a} {b} {n} prof.",
     "{a} {b} {n} {n}", "{a} {b} {n}.",
     # a non-ASCII letter in front, whose capital is no initial
-    "{a} é {n}")
-_ONE_CASE_NUMERALS = ("v", "i", "x", "vi", "iii", "ii", "iv", "vii")
+    "{a} é {n}",
+    # #723: the letter alone, before a maiden marker, before or after a
+    # connective, opening the name and after an empty head
+    "{n}", "{n} nee {b}", "{a} {n} y {b}", "{b}, {n} y {c}", "{n} {a}",
+    ", {n}")
+#: the one-letter numerals and a listed and a shape-only spelling of
+#: each longer length, then one letter from each other fork a bare
+#: letter meets (#723): no vocabulary, a connective, a marked one
+_ONE_CASE_LETTERS = ("v", "i", "x", "vi", "iii", "ii", "iv", "vii",
+                     "j", "y", "e")
 _ONE_CASE_HEADS = (("john", "smith", "jones"), ("carod", "puig", "rovira"),
                    ("mary", "ma", "lee"))
 #: the negative controls, measured 2026-10-18 on this grid, which
-#: master (2bfa9533) disagreed on 315 of: with classify's one-case
-#: numeral initial taken out, and with the numeral fork's one-case
-#: letter in front taken out -- each guard seen on its own
-_ONE_CASE_UNGUARDED = 225
+#: 16ee2851 (before #723, its numerals already guarded) disagreed on
+#: 30 of: with classify's one-case letter initial taken out, and with
+#: the numeral fork's one-case letter in front taken out -- each guard
+#: seen on its own
+_ONE_CASE_UNGUARDED = 306
 _ONE_CASE_LETTER_IN_FRONT_UNGUARDED = 117
 
 
@@ -3375,9 +3384,9 @@ def _one_case_disagreements() -> list[str]:
     out = []
     for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
         parser = Parser(policy=Policy(name_order=order))
-        for shape, numeral, (a, b, c) in itertools.product(
-                _ONE_CASE_SHAPES, _ONE_CASE_NUMERALS, _ONE_CASE_HEADS):
-            lower = shape.format(a=a, b=b, c=c, n=numeral)
+        for shape, letter, (a, b, c) in itertools.product(
+                _ONE_CASE_SHAPES, _ONE_CASE_LETTERS, _ONE_CASE_HEADS):
+            lower = shape.format(a=a, b=b, c=c, n=letter)
             if sig(parser.parse(lower)) != sig(parser.parse(lower.upper())):
                 out.append(f"[{order}] {lower!r}")
     return out
@@ -3388,10 +3397,10 @@ def test_a_one_case_name_reads_as_its_capitals() -> None:
     assert not failures, "\n".join(failures[:10])
 
 
-def test_the_one_case_grid_sees_the_numeral_initial(
+def test_the_one_case_grid_sees_the_letter_initial(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    # classify's one use of `_ROMAN` is the one-case numeral initial
-    monkeypatch.setattr("nameparser._pipeline._classify._ROMAN",
+    # classify's one use of `_INITIAL` is the one-case letter initial
+    monkeypatch.setattr("nameparser._pipeline._classify._INITIAL",
                         re.compile(r"(?!)"))
     assert len(_one_case_disagreements()) == _ONE_CASE_UNGUARDED
 
