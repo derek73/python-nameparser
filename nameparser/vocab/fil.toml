@@ -1,0 +1,8 @@
+schema = 1
+
+[[word]]
+text = "dela"
+[word.preposition]
+may_be_given = true
+expands = "of the, de la contracted: \"Dela Cruz\""
+note = "Dela is a short form of Adela, and an African name meaning saviour/redeemer -- so the Filipino surname particle is not the only reading"

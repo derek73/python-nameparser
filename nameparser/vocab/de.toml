@@ -1,0 +1,54 @@
+schema = 1
+
+[[word]]
+text = "auf"
+preposition = { may_be_given = false, issue = 18, expands = "upon: \"auf der Heide\"" }
+
+[[word]]
+text = "dem"
+article = { may_be_given = false, issue = 18, expands = "the, dative" }
+
+[[word]]
+text = "der"
+article = { may_be_given = false, expands = "the: \"von der Leyen\"" }
+
+[[word]]
+text = "vom"
+preposition = { may_be_given = false, expands = "from the, von dem contracted" }
+
+[[word]]
+text = "zu"
+preposition = { may_be_given = false, expands = "at, to; nobiliary: \"zu Guttenberg\"" }
+
+[[word]]
+text = "den"
+article = { may_be_given = true, expands = "the: \"von den Steinen\"" }
+
+[[word]]
+text = "freiherr"
+[word.rank]
+may_be_given = true
+issue = 18
+expands = "baron"
+gender = "m"
+note = "Since 1919 a former noble title is part of the legal surname, written before the particle (\"Karl-Theodor Freiherr von und zu Guttenberg\"), so it chains like one. Also in TITLES, load-bearing"
+
+[[word]]
+text = "freiherrin"
+[word.rank]
+may_be_given = true
+issue = 18
+expands = "baroness"
+gender = "f"
+note = "the feminine of freiherr, as its note"
+
+[[word]]
+text = "tho"
+preposition = { may_be_given = true, issue = 18, expands = "to, Low German zu" }
+
+[[word]]
+text = "von"
+[word.preposition]
+may_be_given = true
+expands = "of, from"
+note = "Von Miller: a real given name, so this stays ambiguous even though \"von Braun\" is misparsed today. The case that shows a word can look like a pure particle, BE misparsed as one, and still have a bearer"

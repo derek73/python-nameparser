@@ -1,0 +1,94 @@
+schema = 1
+
+[[word]]
+text = "'t"
+article = { may_be_given = false, expands = "het, the: \"'t Hooft\"" }
+
+[[word]]
+text = "’t"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the same, typographic apostrophe"
+same_as = "'t"
+
+[[word]]
+text = "de"
+article = { may_be_given = false, expands = "the: \"de Vries\"" }
+
+[[word]]
+text = "der"
+article = { may_be_given = false, expands = "the: \"van der Berg\"" }
+
+[[word]]
+text = "het"
+article = { may_be_given = false, issue = 18, expands = "the" }
+
+[[word]]
+text = "op"
+preposition = { may_be_given = false, issue = 18, expands = "at, on: \"op den Berg\"" }
+
+[[word]]
+text = "ter"
+preposition = { may_be_given = false, expands = "at the, te der contracted: \"ter Horst\"" }
+
+[[word]]
+text = "vd"
+[word.preposition]
+may_be_given = false
+issue = 18
+expands = "van der, abbreviated"
+note = "Also the British Volunteer Decoration, a suffix acronym: two non-name readings, so C-ii decides it on frequency and the Dutch one wins (decisions/vocabulary-collisions)."
+
+[[word]]
+text = "aan"
+preposition = { may_be_given = true, issue = 18, expands = "on, at: \"aan den Toorn\"" }
+
+[[word]]
+text = "aen"
+[word.preposition]
+may_be_given = true
+issue = 18
+expands = "aan, archaic spelling: \"aen de Landerwer\""
+
+[[word]]
+text = "den"
+article = { may_be_given = true, expands = "the: \"van den Berg\"" }
+
+[[word]]
+text = "heer"
+rank = { may_be_given = true, issue = 18, expands = "lord: \"de heer Van Kampen\"" }
+
+[[word]]
+text = "te"
+[word.preposition]
+may_be_given = true
+issue = 18
+expands = "at: \"te Riele\""
+note = "Te Awanui-a-Rangi: a Māori given-name element, and in the corpus. Looks like the Dutch preposition 'te', which is why attestation rather than etymology decides"
+
+[[word]]
+text = "tho"
+[word.preposition]
+may_be_given = true
+issue = 18
+expands = "to, Low German zu: \"tho Wopenreijss\""
+
+[[word]]
+text = "thoe"
+preposition = { may_be_given = true, issue = 18, expands = "to, archaic: \"thoe Holthues\"" }
+
+[[word]]
+text = "van"
+[word.preposition]
+may_be_given = true
+expands = "of, from"
+note = "Vietnamese Văn, and Van Johnson -- the canonical particle-or-given ambiguity this whole flag exists for"
+
+[[word]]
+text = "vande"
+preposition = { may_be_given = true, issue = 18, expands = "van de contracted: \"Vande Casteele\"" }
+
+[[word]]
+text = "vander"
+preposition = { may_be_given = true, expands = "van der contracted" }

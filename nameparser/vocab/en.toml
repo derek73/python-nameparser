@@ -42,3 +42,26 @@ status = { issue = 111, note = "bare, not '(vet)', for the reason recorded on re
 text = "senior"
 [word.excluded]
 generation = { reason = "Senior is a surname (3,864 US Census bearers)", issue = 679 }
+
+[[word]]
+text = "mc"
+[word.clan]
+may_be_given = false
+issue = 360
+expands = "son of, Mac contracted"
+same_as = "mac"
+note = "Unlike 'mac' (Mac Miller) it is not a standalone given name. Measured misparse: \"Mc Donald\" gave given='Mc'. Also in SUFFIX_ACRONYMS as Master of Ceremonies, but that is trailing position and unaffected -- \"John Smith MC\" still reads suffix (#360)."
+
+[[word]]
+text = "mac"
+[word.clan]
+may_be_given = true
+expands = "son of"
+note = "Mac Miller: a real given name. This is the case that shows #360's vowel heuristic was not the criterion -- 'mac' and 'mc' differ by attestation, not by shape"
+
+[[word]]
+text = "st"
+[word.saint]
+may_be_given = true
+expands = "Saint, abbreviated"
+note = "Also in TITLES and consumed there before particle logic runs, so moving it changes nothing; kept for the load-bearing TITLES intersection"

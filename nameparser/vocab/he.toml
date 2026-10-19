@@ -43,3 +43,40 @@ text = "סניור"
 [word.excluded.generation]
 reason = "borne as a surname in Israel (אלי סניור, בוריס סניור)"
 issue = 679
+
+[[word]]
+text = "בן"
+[word.patronymic]
+may_be_given = false
+issue = 269
+expands = "son of: ben"
+gender = "m"
+note = "No Latin-script collision, and not a standalone given name in Hebrew usage."
+
+[[word]]
+text = "בת"
+[word.patronymic]
+may_be_given = false
+issue = 269
+expands = "daughter of: bat"
+gender = "f"
+note = "as בן"
+
+[[word]]
+text = "bar"
+[word.patronymic]
+may_be_given = true
+issue = 269
+expands = "son of, Aramaic: \"Bar-Lev\""
+gender = "m"
+note = "Bar Refaeli; a common modern Israeli given name. The native-script בר is excluded, in this file"
+
+[[word]]
+text = "bat"
+patronymic = { may_be_given = true, expands = "daughter of; native-script בת", gender = "f" }
+
+[[word]]
+text = "בר"
+[word.excluded.patronymic]
+reason = "Bar is a common modern Israeli given name, and the surname spelling is hyphenated anyway (Bar-Lev)"
+issue = 269

@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "mc"
+clan = { may_be_given = false, issue = 360, expands = "son of, Mac contracted", same_as = "mac" }
+
+[[word]]
+text = "mac"
+clan = { may_be_given = true, expands = "son of" }

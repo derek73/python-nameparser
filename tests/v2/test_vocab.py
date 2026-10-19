@@ -217,6 +217,14 @@ MUTATIONS = [
     # 5: one word reads one way in every file
     ("acronym-disagrees-across-files", {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = {}'), "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false }')}, "acronym is"),
     ("may-be-given-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = true }'), "nl.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = false }')}, "may_be_given is"),
+    # keyed on the category: a word may take another particle kind in
+    # each language, and the kinds must still agree (#749 widened this
+    # from the kind; the narrower test let these two through)
+    ("may-be-given-disagrees-across-particle-kinds", {"fr.toml": _w('[[word]]\ntext = "de"\npreposition = { may_be_given = false }'), "nl.toml": _w('[[word]]\ntext = "de"\narticle = { may_be_given = true }')}, "may_be_given is"),
+    # `cased` too: the narrower check let two kinds through to the
+    # per-word mask check, which refused them with its own message
+    ("cased-disagrees-across-particle-kinds", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\nclan = { may_be_given = false, cased = "ó" }')}, "cased is"),
+    ("may-be-given-disagrees-with-the-generic-kind", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = true }'), "nl.toml": _w('[[word]]\ntext = "van"\npreposition = { may_be_given = false }')}, "may_be_given is"),
     ("addresses-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "sir"\ntitle = { addresses = "given" }'), "en.toml": _w('[[word]]\ntext = "sir"\ntitle = {}')}, "addresses is"),
     ("may-be-name-disagrees-across-files", {"en.toml": _w('[[word]]\ntext = "ma"\ncredential = {}'), "und.toml": _w('[[word]]\ntext = "ma"\ncredential = { may_be_name = true }')}, "may_be_name is"),
     # 6: an exclusion holds across files
@@ -585,7 +593,7 @@ def _code(cell: str) -> list[str]:
 def _sets_fed(kind: str, props: str = "{}", text: str = "zzq") -> set[str]:
     """The compiled constants a one-word file holding a `kind` reading
     with `props` puts the word into (a particle states may_be_given)."""
-    if kind == "particle" and "may_be_given" not in props:
+    if build.CATEGORY.get(kind) == "particle" and "may_be_given" not in props:
         props = "{ may_be_given = true }"
     files = {"en.toml": _w(f'[[word]]\ntext = "{text}"\n{kind} = {props}')}
     with warnings.catch_warnings():
