@@ -209,6 +209,12 @@ def test_a_rule_without_a_signal_line_has_none() -> None:
     pytest.param("    Signal: hub of C3 and C4\n", id="malformed-hub"),
     pytest.param("    Signal: a shape; hub of C3 C4\n",
                  id="malformed-hub-after-a-signal"),
+    pytest.param("    Signal: a shape, hub of C3, C4\n",
+                 id="hub-after-a-comma"),
+    pytest.param("    Signal: a shape;hub of C3, C4\n",
+                 id="hub-after-an-unspaced-semicolon"),
+    pytest.param("    Signal: a shape — hub of C3, C4\n",
+                 id="hub-after-a-dash"),
 ])
 def test_a_bad_signal_line_is_an_error(signal: str) -> None:
     with pytest.raises(ValueError, match="Signal"):

@@ -314,7 +314,7 @@ def parse_rules_doc(text: str) -> list[Rule]:
                     f"`Signal:` line; a rule states one")
             current.signal = sig.group("text")
             hub = _HUB_RE.fullmatch(current.signal)
-            if hub is None and re.search(r"(?:^|; )hub\b",
+            if hub is None and re.search(r"(?:^|\W)hub\b",
                                          current.signal, re.IGNORECASE):
                 raise ValueError(
                     f"{current.rule_id}: line {lineno}: a hub's signal "
