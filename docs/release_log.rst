@@ -1,5 +1,9 @@
 Release Log
 ===========
+* 2.6.0 - Unreleased
+
+    nameparser 2.6 is under development.
+
 * 2.5.0 - October 19, 2026
 
     nameparser 2.5 reads more of the shapes real listings write. Highlights:
