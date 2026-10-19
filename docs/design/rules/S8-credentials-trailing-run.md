@@ -46,4 +46,4 @@ S8. Rationale: a credential is the writer's mark that the
       "राम शर्मा साहब मोहन"          →  ambiguities=("suffix-or-name",)
       "John PhD Smith"            →  family="Smith"  · boundary
     Signal: a neighbor: an unambiguous credential after the name core, and the rest of its part
-    history: decisions/S8 · interacts: H5, M2, P2, P3, P5, P6, S2, S4, S7, C8 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py
+    history: decisions/S8 · interacts: H5, M2, P2, P3, P5, P6, S2, S4, S7, C8, C13 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py

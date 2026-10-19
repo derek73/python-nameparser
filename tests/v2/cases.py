@@ -6523,7 +6523,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Steven", "family": "Hardman", "suffix": "RN - CRNA"},
          classification="fix(#603)",
          notes="a credential opening the part after the comma makes it "
-               "the postnominal part (rules/C8, #603), so the "
+               "the postnominal part (rules/C13, #603), so the "
                "pre-comma name keeps its positional read and the "
                "undeclared delimiter is one more word of the run. v1 and "
                "2.0 through 2.3 read v1's walk order here, the first "
@@ -6535,7 +6535,7 @@ CASES: tuple[Case, ...] = (
          "John Smith, Ma Jones",
          {"given": "Ma", "middle": "Jones", "family": "John Smith"},
          ambiguities=("suffix-or-name",),
-         notes="the boundary of #603's opened part (rules/C8): only "
+         notes="the boundary of #603's opened part (rules/C13): only "
                "a word that starts S8's run opens it, and a member of "
                "the ambiguous credential class does not, so the part "
                "keeps the listing form's given name and the first "
@@ -6543,7 +6543,7 @@ CASES: tuple[Case, ...] = (
     Case("a_dual_opens_no_part_behind_a_two_word_surname",
          "García Márquez, Ms Gabriela",
          {"title": "Ms", "given": "Gabriela", "family": "García Márquez"},
-         notes="#603's boundary for a title/suffix dual (rules/C8): it "
+         notes="#603's boundary for a title/suffix dual (rules/C13): it "
                "opens nothing, being the listing form's title in front "
                "of a given name, and no count before the comma tells a "
                "two-word surname from a given name and a family name. A "
@@ -6568,7 +6568,7 @@ CASES: tuple[Case, ...] = (
           "suffix": "Ph. D. and Mary Jones"},
          ambiguities=("suffix-or-name", "suffix-or-name", "suffix-or-name"),
          classification="fix(#603)",
-         notes="the two spellings agree (rules/C8): since #613 the "
+         notes="the two spellings agree (rules/C13): since #613 the "
                "part after the comma is read before group's connective "
                "join, so 'Ph. D.' opens it as 'PhD' does ('John Smith, "
                "PhD and Mary Jones' reads the same) and the words it takes "
@@ -6931,7 +6931,7 @@ CASES: tuple[Case, ...] = (
          {"given": "MA", "family": "Smith", "suffix": "PhD Jones"},
          ambiguities=("suffix-or-name", "suffix-or-name"),
          notes="#603's opener is the part's FIRST suffix word with only "
-               "titles in front of it (rules/C8): 'MA', a member of "
+               "titles in front of it (rules/C13): 'MA', a member of "
                "the ambiguous class, opens nothing and ends the leading "
                "run, so the 'PhD' behind it opens nothing either and the "
                "part is the walk's. Letting a later credential open it "
@@ -6940,7 +6940,7 @@ CASES: tuple[Case, ...] = (
          {"family": "Smith", "suffix": "Jr. John"},
          ambiguities=("suffix-or-name",),
          classification="fix(#603)",
-         notes="decisions/C8's accepted cost: a generational word "
+         notes="decisions/C13's accepted cost: a generational word "
                "starts S8's run, so it opens the part and 'John' is "
                "absorbed, one word before the comma reading the whole "
                "part as suffixes (Derek). 2.3.0 read title 'Jr.', given "
@@ -9994,7 +9994,7 @@ CASES: tuple[Case, ...] = (
                "suffix 'MD I'. Spelled with the dual 'MD' since #603: "
                "'Smith, PSM Dr. I', this row until then, is a part the "
                "credential 'PSM' OPENS, which reads as #602's run reads "
-               "whatever stands behind it (rules/C8) -- title 'Dr.', "
+               "whatever stands behind it (rules/C13) -- title 'Dr.', "
                "suffix 'PSM I' -- so the reset no longer decides it. A "
                "dual opens nothing, and the reset is what is left "
                "deciding this spelling. 1.4.0 read the "
@@ -10031,7 +10031,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          policy=Policy(lenient_comma_suffixes=False),
          classification="fix(#603)",
-         notes="C1's strict knob (C8 for the opened run) still vetoes initial-shaped words as "
+         notes="C1's strict knob (C13 for the opened run) still vetoes initial-shaped words as "
                "SUFFIX words, so the numeral does not continue the run "
                "as a suffix word (#430's first draft read no policy at "
                "all and silently overrode the knob; "

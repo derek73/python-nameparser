@@ -16,7 +16,8 @@ C1. Rationale: a credential run after the comma means the name is in
     counted by name words (C4), with paired initials (C5) and an
     unlisted all-caps word (C6) read there by rules of their own; a
     part read as postnominal, read before any join (C7); the listing
-    form's part after the comma, still read for what it is (C8); a
+    form's part after the comma, still read for what it is (C8),
+    and a credential opening it (C13); a
     one-character suffix word inside a comma part (C9); a declared
     delimiter, which parts a trailing suffix part as a comma would
     (C10); what the decision reports (C11); and a suffix word ending
@@ -44,5 +45,5 @@ C1. Rationale: a credential run after the comma means the name is in
     here. It is also the one consequence of this question Latin
     script cannot witness, nothing there being glued to the end of a
     name — which is why this clause carries no example of its own.
-    Signal: hub of C3, C4, C5, C6, C7, C8, C9, C10, C11, C12
-    history: decisions/C1 · interacts: C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, H6, T4, W3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py
+    Signal: hub of C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13
+    history: decisions/C1 · interacts: C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, H6, T4, W3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py

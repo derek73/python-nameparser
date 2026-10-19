@@ -777,7 +777,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     that: what follows a bare title is not continuing a credential.
 
     A part OPENED by a credential is the postnominal part however it
-    goes on (#603, rules/C8): where an unambiguous suffix word that
+    goes on (#603, rules/C13): where an unambiguous suffix word that
     starts #602's run (`starts_a_credential_run`) is the first suffix
     word of the part, with only titles in front of it (a title/suffix
     dual among them ends the chance: a credential behind one opens
