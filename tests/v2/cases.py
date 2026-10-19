@@ -2607,7 +2607,7 @@ CASES: tuple[Case, ...] = (
                "decision rides with it -- C2's structural flag already "
                "reports on the comma path, but reports what the parse "
                "could not recognize, not a fork it called "
-               "(rules/C11's exception, scoped to this class; P6's "
+               "(rules/C11's report, scoped to this class; P6's "
                "attachment fork has reported on a family-comma path "
                "since 2.3, e.g. 'Berg, Jan vd')",
          shape=2),
@@ -2989,7 +2989,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          notes="nobody writes initials as two dotted groups, so a "
                "second by-shape word makes the part the credential "
-               "run (rules/C5) -- reported, since here the pairs "
+               "run (rules/C5) -- reported (C11), since here the pairs "
                "speak only for each other and each is a word a reader "
                "takes for a name. 1.4.0 read given 'X.Y.', middle "
                "'P.Q.'",
@@ -7320,7 +7320,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("comma-structure",),
          notes="the marker ends its part with nothing behind it, as it "
                "does before a typed comma, so it takes no clause "
-               "(rules/C10's Accepted entry, #549). 2.0.0 through "
+               "(rules/C10's maiden-marker Accepted entry, #549). 2.0.0 through "
                "2.3.0 read maiden 'Jones', stepping past the core"),
     Case("suffix_delimiter_core_that_survives_is_a_boundary_too",
          "Smith, MD - PhD - FACS",
@@ -10001,7 +10001,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          policy=Policy(lenient_comma_suffixes=False),
          classification="fix(#603)",
-         notes="C1's strict knob still vetoes initial-shaped words as "
+         notes="C1's strict knob (C8 for the opened run) still vetoes initial-shaped words as "
                "SUFFIX words, so the numeral does not continue the run "
                "as a suffix word (#430's first draft read no policy at "
                "all and silently overrode the knob; "
@@ -12055,7 +12055,7 @@ CASES: tuple[Case, ...] = (
          {"family": "王雅婷", "suffix": "議員"},
          classification="fix(#671)", tolerated=True,
          notes="the fullwidth comma is a listing convention (W3, "
-               "best-effort); the word is vocabulary, so C1 reads the "
+               "best-effort); the word is vocabulary, so C8 reads the "
                "part after the comma as a credential run rather than "
                "reversing the name -- 2.4.2 gave it as the given name"),
     Case("zh_comma_degree_is_a_suffix", "陳怡君，醫學博士",

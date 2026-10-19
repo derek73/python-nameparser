@@ -3210,7 +3210,7 @@ def test_a_delimiter_core_in_a_tail_reads_as_its_comma_twin() -> None:
     place -- the maiden clause, the connective join and the entry
     boundary alike. The heads put the core in a TRAILING part only: before the
     first comma, or in the given part of the listing form, the core is
-    a word (C10's Accepted entry), and its comma twin a different
+    a word (C10's core-is-a-word Accepted entry), and its comma twin a different
     structure.
 
     RECORDED NEGATIVE CONTROL: at 061f02da, where the join and the

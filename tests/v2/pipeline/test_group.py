@@ -150,7 +150,7 @@ def test_the_phd_merge_declines_at_the_head_of_a_name() -> None:
     # A suffix never begins a name (S2, and #371). The merge is what
     # made a leading "Ph." "D." a credential at all, and it emptied the
     # family doing it. Segment 0 only: after a family comma the run
-    # legitimately opens its segment, which C1 reads as a listing.
+    # legitimately opens its segment, which C8 reads as a listing's credential run.
     assert _piece_texts(_grouped("Ph. D. Van Johnson")) == \
         [["Ph.", "D.", "Van Johnson"]]
     # the part after the comma is bound by group's head (#613), which

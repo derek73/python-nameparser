@@ -623,7 +623,7 @@ def _group_segment(seg: tuple[int, ...], additional: int,
     #   `a[0] == 0`  the first TOKEN, which is v1's boundary.
     #   seg_idx 0    and not after a family comma: a credential run
     #                legitimately opens segment 1 ("Smith, Ph. D.
-    #                Jr.", C1's listing form), and segment 0 before a
+    #                Jr.", C8's credential run in the listing form), and segment 0 before a
     #                comma is the family the comma named, where v1
     #                merges too ("Ph. D., John" reads last 'Ph. D.').
     #

@@ -197,7 +197,8 @@ def decide(state: ParseState) -> ParseState:
     # suffix part as a comma would" -- behind a whole name its cores are
     # no word of the reading, and leave as group drops them in a tail;
     # behind one name word the core is a word, v1 having applied the
-    # delimiter to the suffix-comma form alone (C10's Accepted entry)
+    # delimiter to the suffix-comma form alone (C10's core-is-a-word
+    # Accepted entry)
     cores = delimiter_cores(pol.extra_suffix_delimiters)
     whole: bool | None = None
     core_idx: list[int] = []
