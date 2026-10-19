@@ -105,3 +105,65 @@ def resolve(doc: str, cid: str, folder: Path | None = None) -> Path | None:
     hits = [p for p in folder.glob("*.md") if p.name != "README.md"
             and (p.stem == cid or p.stem.startswith(cid + "-"))]
     return hits[0] if len(hits) == 1 else None
+
+
+# A decisions file may open with `## Standing`, an index of the
+# decisions in force, before its entries under `## Log`. Each Standing
+# bullet ends its claim with the entry that decided it, by date and
+# issue (`— 2026-10-06 #613`); a `Not standing:` line names entries a
+# later one answered. An entry is a log bullet whose head
+# (the text before its first ` — `) opens with that date and holds that
+# issue number; one whose text after the head opens with `SUPERSEDED`
+# is superseded, and a Standing bullet may not rest on it alone.
+_POINTER_RE = re.compile(
+    r"(?P<date>\d{4}-\d\d(?:-\d\d)?(?:/\d\d)?)\b[^—]*?#(?P<num>\d+)")
+_STANDING_POINTER_RE = re.compile(r"— " + _POINTER_RE.pattern)
+
+
+def _entries(log: str) -> list[tuple[str, str]]:
+    """Each log bullet as its head and the text after it."""
+    out = []
+    for line in log.splitlines():
+        if re.match(r"- \d{4}-\d\d", line):
+            head, _, rest = line[2:].partition(" — ")
+            out.append((head, rest))
+    return out
+
+
+def _names(head: str, date: str, num: str) -> bool:
+    return (head.startswith(date)
+            and re.search(rf"#{num}(?!\d)", head) is not None)
+
+
+def standing_findings(text: str) -> list[str]:
+    """What is wrong with a decisions file's Standing block: a bullet
+    with no pointer, a pointer to no entry or to a SUPERSEDED one, a
+    Not-standing pointer to no entry, a Standing with no Log. Empty
+    for a file with no Standing block."""
+    if "## Standing" not in text:
+        return []
+    if "\n## Log\n" not in text:
+        return ["## Standing without a ## Log after it"]
+    standing, log = text.split("## Standing", 1)[1].split("\n## Log\n", 1)
+    entries = _entries(log)
+    findings = []
+    for line in standing.splitlines():
+        if line.startswith("- "):
+            m = _STANDING_POINTER_RE.search(line)
+            if not m:
+                findings.append(f"no entry pointer: {line[:60]}")
+                continue
+            hits = [rest for head, rest in entries
+                    if _names(head, m["date"], m["num"])]
+            if not hits:
+                findings.append(f"no entry {m['date']} #{m['num']}")
+            elif all(r.startswith("SUPERSEDED") for r in hits):
+                findings.append(f"superseded entry {m['date']} #{m['num']}")
+        elif line.startswith("Not standing:"):
+            for m in _POINTER_RE.finditer(line):
+                if not any(_names(head, m["date"], m["num"])
+                           for head, _ in entries):
+                    findings.append(
+                        f"not-standing names no entry {m['date']} "
+                        f"#{m['num']}")
+    return findings
