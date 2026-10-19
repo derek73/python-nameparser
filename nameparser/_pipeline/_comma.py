@@ -419,9 +419,7 @@ def decide(state: ParseState) -> ParseState:
                     speaker = next(
                         (j for j in range(len(p1))
                          if is_suffix_piece(p1[j], pt1[j], tokens)
-                         and not (len(p1[j]) == 1
-                                  and "vocab:title"
-                                  in tokens[p1[j][0]].tags)),
+                         and not is_title_piece(p1[j], pt1[j], tokens)),
                         len(p1))
                 # another shape word than this one: no set built per
                 # pair (a copy of `shape` each time was quadratic in C)
@@ -513,9 +511,8 @@ def decide(state: ParseState) -> ParseState:
         # only titles among the other words in front of the first
         pair_only = (len(pairs) >= 2 and len(pairs) == len(members)
                      and all(p[0] in member_set
-                             or (len(p) == 1
-                                 and "vocab:title" in tokens[p[0]].tags)
-                             for p in p1[:pairs[0]]))
+                             or is_title_piece(p, pt, tokens)
+                             for p, pt in zip(p1[:pairs[0]], pt1)))
     if behind_generation:
         # rules/C11: "A decision either way at the comma C1 reads is
         # reported" -- here the suffix word before the comma decided it,
