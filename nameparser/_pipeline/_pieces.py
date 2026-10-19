@@ -1512,6 +1512,9 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
     into the trailing run: `pieces[c:]`, a SUPERSET of what it takes,
     for the maiden take to build its clause-free view over and let
     `tail_reading` decide. `pieces[lo]` itself is never a candidate.
+    One exception, on purpose: a numeral whose word in front reads as
+    an initial is refused even where a view without that word would
+    read it, since the clause keeps the word (#731, below).
 
     Back from the end over every piece the peel or the chain admits on
     its own terms -- a suffix piece, a member of the ambiguous class,
@@ -1521,8 +1524,10 @@ def trailing_candidates(lo: int, pieces: Sequence[Sequence[int]],
     but such title words and group-flagged suffix pieces: the chain
     takes the titles first and the walk never holds the flagged pieces
     ('Ph. D.'), so either way the numeral is the walk's last piece and
-    the fork reads it. The shape test is asked with the name's
-    one-case fact, as the fork asks it: a candidate is not only
+    the fork reads it. The shape test is asked with a one-case fact,
+    as the fork asks it -- the WHOLE name's, which the caller passes,
+    since the word in front is a clause word (rules/T4): a candidate
+    is not only
     admitted but cut out of the view, so the view puts a different
     word in front of it, and a numeral the fork would refuse for the
     letter in front is a numeral the view reads. A bare lowercase

@@ -7693,8 +7693,9 @@ CASES: tuple[Case, ...] = (
          notes="read as 'JOHN SMITH NEE X X' is (T4): the first 'x' is "
                "the initial its capital is, so the take's view does "
                "not cut the second out of the clause and read it as "
-               "the generation; 2.3 through 2.4.2 read suffix 'x', "
-               "maiden 'x' (#731). 1.4.0 had no maiden markers"),
+               "the generation; 2.2 through 2.4.2 read suffix 'x', "
+               "maiden 'x', and 2.0 and 2.1 read as here (#731). 1.4.0 "
+               "had no maiden markers"),
     Case("a_one_case_numeral_behind_a_letter_ending_a_clause",
          "john smith nee j x",
          {"given": "john", "family": "smith", "maiden": "j x"},

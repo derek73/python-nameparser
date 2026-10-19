@@ -46,4 +46,4 @@ T4. Rationale: one letter standing for a name word is how an
       "DR. NÉE JUAN y LOPEZ"      →  family="JUAN y LOPEZ"  · boundary
       "jose e lopez"              →  ambiguities=("conjunction-or-initial",)
       "jose y lopez"              →  middle="y"
-    history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P7, S10, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py
+    history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P7, S10, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_vocab.py

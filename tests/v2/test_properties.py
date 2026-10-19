@@ -3439,6 +3439,61 @@ def test_the_one_case_grid_sees_the_strict_veto(
             == _ONE_CASE_STRICT_VETO_UNGUARDED)
 
 
+# --- #731's review: a clause's letter asks the whole name's case --
+# T4 reads a letter outside the name's own words by the case of the
+# WHOLE name, so a lower-case letter in a maiden clause behind own
+# words in capitals is mixed-case writing and reads as it does behind
+# the same words in Title case. The one-case grid above cannot see
+# this (both spellings of each of its pairs are wholly one case); this
+# pairs capitals against Title case, the clause letters lower-case in
+# both: 396 pairs, about 800 parses, 0.07s on py3.11 (2026-10-18).
+# FIELDS only: the report on a numeral the take reads as a suffix
+# still differs on 108 of these pairs, on ad486f66 as here -- S10's
+# "a numeral written in lower case in a name of mixed case is the
+# generation and reports nothing" is asked of the own words' case
+# there, so behind capitals the lower-case numeral reports. Recorded
+# in decisions/T4's #731 entry, not decided here.
+_CLAUSE_CASE_SHAPES = ("{a} {b} nee {n} {n}", "{a} {b} nee j {n}",
+                       "{a} {b} nee {c} j {n}", "{a} {b} nee {c} {n} {n}")
+#: the negative control, measured 2026-10-18: the maiden take's
+#: candidate test given the own-words fact instead (#731's first
+#: version), which disagreed on that many
+_CLAUSE_CASE_OWN_WORDS = 72
+
+
+def _clause_case_disagreements() -> list[str]:
+    def sig(name: ParsedName) -> dict[str, str]:
+        return {k: v.lower() for k, v in name.as_dict().items() if v}
+    out = []
+    for order in (GIVEN_FIRST, FAMILY_FIRST, FAMILY_FIRST_GIVEN_LAST):
+        parser = Parser(policy=Policy(name_order=order))
+        for shape, letter, (a, b, c) in itertools.product(
+                _CLAUSE_CASE_SHAPES, _ONE_CASE_LETTERS, _ONE_CASE_HEADS):
+            caps = shape.format(a=a.upper(), b=b.upper(), c=c.upper(),
+                                n=letter)
+            title = shape.format(a=a.title(), b=b.title(), c=c.title(),
+                                 n=letter)
+            if sig(parser.parse(caps)) != sig(parser.parse(title)):
+                out.append(f"[{order}] {caps!r}")
+    return out
+
+
+def test_a_clause_letter_beside_capitals_reads_as_beside_title_case(
+        ) -> None:
+    failures = _clause_case_disagreements()
+    assert not failures, "\n".join(failures[:10])
+
+
+def test_the_clause_case_grid_sees_the_whole_name_fact(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # the take asks `one_case and is_one_case(<every token>)`; with the
+    # second half always true it is the own-words fact alone, which is
+    # what #731's first version passed
+    monkeypatch.setattr("nameparser._pipeline._group.is_one_case",
+                        lambda texts: True)
+    assert len(_clause_case_disagreements()) == _CLAUSE_CASE_OWN_WORDS
+
+
 def test_the_one_case_grid_sees_the_maiden_candidates(
         monkeypatch: pytest.MonkeyPatch) -> None:
     # the maiden take's candidate test without the one-case fact
