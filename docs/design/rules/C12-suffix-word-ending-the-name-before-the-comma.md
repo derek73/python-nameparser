@@ -2,13 +2,17 @@
 
 C12. Rationale: a generation belongs to the name it ends, so a name
     written in natural order carries it before the comma and its
-    credentials after ('John J Ingram III, MD'); a listing whose
-    surname takes a generation puts it there too, but a given name
-    follows it, and a given name is written as a name.
+    credentials after ('John J Ingram III, MD'), as it does Esq. or a
+    post-nominal honorific; a listing whose surname takes a
+    generation puts it there too, but a given name follows it, and a
+    given name is written as a name.
     Where the part before the first comma ends in a suffix word — a
-    generation such as Jr. or II, or Esq., not an acronym — or in a
-    roman numeral the trailing fork reads as the generation (S10),
-    the words in front of it are a whole name (C3's count), and the
+    generation such as Jr. or II, Esq., or an honorific such as
+    Rinpoche, not an acronym — or in a roman numeral the trailing
+    fork reads as the generation (S10), the words in front of it are
+    a whole name (C3's count, in which a title in front is a word,
+    but for a one-letter numeral, which S10 counts without it), and
+    the
     name carries the case contrast C6 asks for, the part after the
     comma is the credential run and the comma a suffix comma, a title
     word in it reading as a title and any other word as a suffix; a
@@ -25,13 +29,17 @@ C12. Rationale: a generation belongs to the name it ends, so a name
       "Garcia Lopez Jr., Juan"    →  given="Juan"  · boundary
       "John Smith Jr., J."        →  given="J."  · boundary
       "Smith Jr., John"           →  given="John"  · boundary
+      "Jane nee Smith Jr., AD"    →  given="AD"  · boundary
+      "Smith Jones Jr., J.A."     →  given="J.A."  · boundary
+      "Dr. Smith Jr., AD"         →  suffix="Jr., AD"
       "Smith VI, AD"              →  given="AD"  · boundary
       "Smith V, AD"               →  given="AD"  · boundary
       "John Smith, AD"            →  given="AD"  · boundary
       "JOHN SMITH JR, AD"         →  given="AD"  · boundary
     Accepted: initials written without periods after the generation
     read as the credential they look like, a word of two capitals
-    being both. A name written in one case, or in a script without
+    being both; written with them they are initials, as C5 reads
+    them. A name written in one case, or in a script without
     case, has no contrast to read and keeps the listing form, as C6's
     unlisted all-caps word does.
       "Lloret Palol II, JA"       →  suffix="II, JA"

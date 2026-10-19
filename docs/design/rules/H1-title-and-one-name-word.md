@@ -61,9 +61,15 @@ H1. Rationale: a title normally addresses by surname, so a title
     family empty, as `Sir Smith` does: the input names one word and
     one title, and the title is the only evidence there is. A
     particle surname before the comma stays the family, the comma
-    being the evidence that the part is a surname (C3). 1.4.0 read
-    the word before the comma as the last name in every such row.
+    being the evidence that the part is a surname (C3), and so does a
+    never-given particle without one (P1); an ambiguous particle no
+    comma settled is a word the order placed, and reads given. 1.4.0
+    read the word before the comma as the last name in these rows
+    (`Elizabeth II, Queen`, `John III, Sir`, `Smith, Sir`) but for
+    `Anne, Princess`, which it read as first `Anne`.
       "Smith, Sir"                →  family=""
+      "Sheik Abu Bakar"  family-first  →  given="Abu Bakar"
+      "Sir de Mesnil"  family-first  →  family="de Mesnil"
     Accepted: a title word in the run that no vocabulary knows does
     not change what the run addresses by, the last word being the
     one asked — `His Excellency Lord Duncan` reads family `Duncan`

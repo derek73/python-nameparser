@@ -64,7 +64,7 @@ given-then-family:
     >>> parse("John Doe, Jr.").family                    # form 3
     'Doe'
 
-A suffix ending a name of two or more words before the comma reads as
+A suffix ending a name of two or more words (a title counts) before the comma reads as
 form 3 even when what follows is a credential the vocabulary does not
 know, since a generation is written there in natural order. A word
 after the comma written as a name, or an initial, keeps form 2 (since

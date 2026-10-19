@@ -337,8 +337,10 @@ def _addressing_run(titles: list[int], name_word: int) -> list[int]:
     Called only from inside H1's guard, after the role counts have
     short-circuited, so a name with both a given and a family never
     builds this list; `name_word` is the first GIVEN, or the first
-    FAMILY in the direction #720 added, and the guard has already
-    proved it is the only name word there is."""
+    FAMILY in the direction #720 added. The given guard has proved it
+    is the only name word there is; the family guard proves only that
+    no given or middle stands beside it, which is where a comma or a
+    declared order leaves one name word."""
     return [i for i in titles if i < name_word] or titles
 
 
@@ -386,11 +388,18 @@ def post_rules(state: ParseState) -> ParseState:
     # named no given part, and the order places a word nothing else
     # decided (O5), so the title decides as it does in 'Sir John'
     # ('Elizabeth II, Queen' reads as 'Queen Elizabeth II'). A particle
-    # in that word stays the family, which is rules/C3's after a comma
-    # -- "the comma settles P1's fork for a leading particle that could
-    # be a given name" -- and P1's fold's without one.
+    # in that word stays the family where something settled it: after a
+    # comma, rules/C3's "the comma settles P1's fork for a leading
+    # particle that could be a given name"; without one, a never-given
+    # particle, which P1's fold below takes ('Sir de Mesnil'). An
+    # ambiguous one nothing settled is a word the order placed ('Sir
+    # Van', 'Sheik Abu Bakar' under FAMILY_FIRST).
     elif (titles and families and not givens and not middles
-            and not any("particle" in tokens[i].tags for i in families)
+            and not any(
+                "particle" in tokens[i].tags
+                and (state.structure is Structure.FAMILY_COMMA
+                     or "vocab:particle-ambiguous" not in tokens[i].tags)
+                for i in families)
             and _run_addresses_by_given(
                 (tokens[i].text
                  for i in _addressing_run(titles, families[0])),
