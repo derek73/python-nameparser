@@ -391,14 +391,16 @@ def post_rules(state: ParseState) -> ParseState:
     # in that word stays the family where something settled it: after a
     # comma, rules/C3's "the comma settles P1's fork for a leading
     # particle that could be a given name"; without one, a never-given
-    # particle, which P1's fold below takes ('Sir de Mesnil'). An
-    # ambiguous one nothing settled is a word the order placed ('Sir
-    # Van', 'Sheik Abu Bakar' under FAMILY_FIRST).
+    # particle with a word behind it, which P1's fold below takes ('Sir
+    # de Mesnil'). An ambiguous one nothing settled, or a bare one with
+    # nothing to fold, is a word the order placed ('Sir Van', 'Sheik
+    # Abu Bakar' and 'Sir de' under FAMILY_FIRST).
     elif (titles and families and not givens and not middles
             and not any(
                 "particle" in tokens[i].tags
                 and (state.structure is Structure.FAMILY_COMMA
-                     or "vocab:particle-ambiguous" not in tokens[i].tags)
+                     or ("vocab:particle-ambiguous" not in tokens[i].tags
+                         and len(families) > 1))
                 for i in families)
             and _run_addresses_by_given(
                 (tokens[i].text

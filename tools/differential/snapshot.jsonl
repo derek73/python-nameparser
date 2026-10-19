@@ -2810,6 +2810,7 @@
 {"name": "Sir Smith, John", "title": "Sir", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Sir Van Johnson", "title": "Sir", "given": "Van", "family": "Johnson", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "V. J."}
 {"name": "Sir abdul van der Berg", "title": "Sir", "given": "abdul", "family": "van der Berg", "initials": "a. B."}
+{"name": "Sir de", "title": "Sir", "given": "de", "initials": "d."}
 {"name": "Sir de Mesnil", "title": "Sir", "family": "de Mesnil", "initials": "M."}
 {"name": "Sirius", "given": "Sirius", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
 {"name": "Sister Mary", "title": "Sister", "given": "Mary", "initials": "M."}
