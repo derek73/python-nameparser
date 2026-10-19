@@ -2853,194 +2853,194 @@ title = {}
 # 'marshal' and 'justice' stay out: both are given names.
 [[word]]
 text = "administrator"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "commissioner"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "counsel"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 # Finnish: Mr, Mrs, Miss, Count.
 [[word]]
 text = "herra"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 [[word]]
 text = "rouva"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "neiti"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "kreivi"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 # Estonian: Mr, Mrs, Miss, Count.
 [[word]]
 text = "härra"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "proua"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "preili"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "krahv"
-title = {}
+title = { issue = 606 }
 
 # Romanian: Mr, Mrs (with and without the breve), Miss.
 [[word]]
 text = "domnul"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "doamna"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "doamnă"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "domnișoara"
-title = {}
+title = { issue = 606 }
 
 # Croatian/Serbian/Bosnian, Latin script: Mr, Mrs, Miss.
 [[word]]
 text = "gospodin"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "gospođa"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "gospođica"
-title = {}
+title = { issue = 606 }
 
 # Icelandic: Mrs, Miss, Count ('herra', Mr, is the Finnish entry).
 [[word]]
 text = "frú"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "ungfrú"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "greifi"
-title = {}
+title = { issue = 606 }
 
 # Dutch: Mr, Miss, Count ('mevrouw' is above).
 [[word]]
 text = "meneer"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "juffrouw"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "graaf"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 # Scandinavian Count ('fru' and 'herr' are above), Swedish Miss.
 [[word]]
 text = "greve"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 [[word]]
 text = "fröken"
-title = {}
+title = { issue = 606 }
 
 # Czech: Mrs, Miss. Mr is 'pan', the Chinese surname Pan, so out;
 # 'paní' keeps its accent, so the Indian name Pani is untouched.
 [[word]]
 text = "paní"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "slečna"
-title = {}
+title = { issue = 606 }
 
 # Polish: Count.
 [[word]]
 text = "hrabia"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 # Lithuanian: Mr, Mrs, Count.
 [[word]]
 text = "ponas"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 [[word]]
 text = "ponia"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 [[word]]
 text = "grafas"
-title = {}
+title = { issue = 606 }
 
 # Malay: Mr. Mrs is 'puan', a given name (Puan Maharani), so out.
 [[word]]
 text = "encik"
-title = {}
+title = { issue = 606 }
 
 # Filipino: Mr, Mrs, Miss.
 [[word]]
 text = "ginoo"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 [[word]]
 text = "ginang"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 [[word]]
 text = "binibini"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 # Georgian, Latin script: Mr, Mrs, Count.
 [[word]]
 text = "batoni"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 [[word]]
 text = "kalbatoni"
-title = {}
+title = { issue = 606 }
 
 [[word]]
 text = "grafi"
-title = {}
+title = { issue = 606 }
 
 # Danish/Norwegian/German "Familie Hansen", the family addressed.
 [[word]]
 text = "familie"
-title = {}
+title = { issue = 606 }
 
 # English Knight, the rank the post-nominal 'knt' names.
 [[word]]
 text = "knight"
-title = { note = "borne" }
+title = { issue = 606, note = "borne" }
 
 # #662: Akan and Indonesian Mr.; under 100 census bearers each and
 # none found on Wikidata. Hausa malam and Turkish bay are excluded
 # (decisions/vocabulary-exclusions, Excluded (TITLES)).
 [[word]]
 text = "owura"
-title = {}
+title = { issue = 662 }
 
 [[word]]
 text = "bapak"
-title = {}
+title = { issue = 662 }
 
 # #269: Cyrillic (ru/uk) -- mr/mrs/dr/prof/academician/pan(i)
 # honorifics, same title-then-family convention as 'mr'/'dr'/'prof'
@@ -3400,71 +3400,75 @@ title = { note = "the same, period spelling মোছা." }
 # it. Absence of a comment is the audit record.
 [[word]]
 text = "'t"
-particle = { note = "Dutch contraction of 'het' (\"'t Hooft\"): the article itself" }
+particle = { may_be_given = false, note = "Dutch contraction of 'het' (\"'t Hooft\"): the article itself" }
 
 [[word]]
 text = "’t"
-particle = { note = "the same, typographic apostrophe (#700)" }
+particle = { may_be_given = false, note = "the same, typographic apostrophe (#700)" }
 
 [[word]]
 text = "af"
-particle = { note = "Danish/Norwegian nobiliary \"of\"" }
+particle = { may_be_given = false, note = "Danish/Norwegian nobiliary \"of\"" }
 
 [[word]]
 text = "auf"
-particle = { note = "German \"upon\" (\"auf der Heide\")" }
+particle = { may_be_given = false, note = "German \"upon\" (\"auf der Heide\")" }
 
 [[word]]
 text = "av"
-particle = { note = "Swedish/Norwegian \"of\"" }
+particle = { may_be_given = false, note = "Swedish/Norwegian \"of\"" }
 
 [[word]]
 text = "bint"
-particle = { note = "Arabic \"daughter of\"; native-script بنت below" }
+particle = { may_be_given = false, note = "Arabic \"daughter of\"; native-script بنت below" }
 
 [[word]]
 text = "das"
 [word.particle]
+may_be_given = false
 note = "Portuguese/German \"of the\", fem. pl. Added #360: its own plural partner 'dos' was already here. \"Das\" IS a common Bengali surname, but a TRAILING one -- measured, \"Anjali Das\" and \"Bimal Das\" are untouched, while \"Maria das Neves\" gains the particle it loses today."
 
 [[word]]
 text = "de"
 [word.particle]
+may_be_given = false
 note = "French/Iberian/Italian \"of\". \"De\" IS a borne Bengali and Odia surname -- trailing, so it never reaches this rule. The case that forced C-i's positional qualifier."
 
 [[word]]
 text = "de'"
-particle = { note = "Italian elided \"dei\" (\"de' Medici\")" }
+particle = { may_be_given = false, note = "Italian elided \"dei\" (\"de' Medici\")" }
 
 [[word]]
 text = "de’"
 [word.particle]
+may_be_given = false
 note = "the same, typographic apostrophe: nothing folds U+2019 to U+0027, so each elided entry is listed in both (#700)"
 
 [[word]]
 text = "d'"
-particle = { note = "French/Italian elided \"de\" (\"Ivoi, Paul d'\"). Written" }
+particle = { may_be_given = false, note = "French/Italian elided \"de\" (\"Ivoi, Paul d'\"). Written" }
 
 [[word]]
 text = "d’"
 [word.particle]
+may_be_given = false
 note = "apart mostly where an index form moves it behind the given name; glued (\"d'Ivoi\") it stays one word (#700)"
 
 [[word]]
 text = "dell'"
-particle = { note = "Italian elided \"dello\"/\"della\" (\"dell'Acqua\")" }
+particle = { may_be_given = false, note = "Italian elided \"dello\"/\"della\" (\"dell'Acqua\")" }
 
 [[word]]
 text = "dell’"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "l'"
-particle = { note = "French/Italian elided article (\"L'Enfant\")" }
+particle = { may_be_given = false, note = "French/Italian elided article (\"L'Enfant\")" }
 
 [[word]]
 text = "l’"
-particle = {}
+particle = { may_be_given = false }
 
 # #700: the Arabic article as an index form writes it, hyphen
 # attached and set behind the given name ("Rashid, Harun al-",
@@ -3479,169 +3483,172 @@ particle = {}
 # hyphen-minus only.
 [[word]]
 text = "al-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "ul-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "at-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "aṯ-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "ath-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "ad-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "aḏ-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "adh-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "ar-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "az-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "as-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "aš-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "ash-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "aṣ-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "aḍ-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "aṭ-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "aẓ-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "an-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "el-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "et-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "eth-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "ed-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "edh-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "er-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "ez-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "es-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "esh-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "en-"
-particle = {}
+particle = { may_be_given = false }
 
 [[word]]
 text = "degli"
-particle = { note = "Italian \"of the\", masc. pl." }
+particle = { may_be_given = false, note = "Italian \"of the\", masc. pl." }
 
 [[word]]
 text = "dei"
-particle = { note = "Italian \"of the\", masc. pl." }
+particle = { may_be_given = false, note = "Italian \"of the\", masc. pl." }
 
 [[word]]
 text = "delle"
-particle = { note = "Italian \"of the\", fem. pl." }
+particle = { may_be_given = false, note = "Italian \"of the\", fem. pl." }
 
 [[word]]
 text = "delli"
-particle = { note = "Italian \"of the\", regional variant of 'dei'" }
+particle = { may_be_given = false, note = "Italian \"of the\", regional variant of 'dei'" }
 
 [[word]]
 text = "dello"
-particle = { note = "Italian \"of the\", masc. sg." }
+particle = { may_be_given = false, note = "Italian \"of the\", masc. sg." }
 
 [[word]]
 text = "dem"
-particle = { note = "German dative article" }
+particle = { may_be_given = false, note = "German dative article" }
 
 [[word]]
 text = "der"
-particle = { note = "German article (\"von der Leyen\")" }
+particle = { may_be_given = false, note = "German article (\"von der Leyen\")" }
 
 [[word]]
 text = "dos"
-particle = { note = "Portuguese \"of the\", masc. pl." }
+particle = { may_be_given = false, note = "Portuguese \"of the\", masc. pl." }
 
 [[word]]
 text = "het"
-particle = { note = "Dutch definite article" }
+particle = { may_be_given = false, note = "Dutch definite article" }
 
 [[word]]
 text = "ibn"
-particle = { note = "Arabic \"son of\"; native-script ابن below" }
+particle = { may_be_given = false, note = "Arabic \"son of\"; native-script ابن below" }
 
 [[word]]
 text = "las"
 [word.particle]
+may_be_given = false
 note = "Spanish \"the\", fem. pl. Added #360: 'la' was here as AMBIGUOUS (La Shawn, La Toya) but the plurals are not name elements -- no bearer in any position."
 
 [[word]]
 text = "los"
 [word.particle]
+may_be_given = false
 note = "Spanish \"the\", masc. pl. Same as 'las' -- and the pair is why the #390 fold narrowing regressed \"de los Santos\" to given='Santos', family='de los'."
 
 [[word]]
 text = "mc"
 [word.particle]
+may_be_given = false
 note = "Contraction of 'Mac'; unlike 'mac' (Mac Miller) it is not a standalone given name. Measured misparse: \"Mc Donald\" gave given='Mc'. Also in SUFFIX_ACRONYMS as Master of Ceremonies, but that is trailing position and unaffected -- \"John Smith MC\" still reads suffix (#360)."
 [word.credential]
 note = "NOT may_be_name though also a particle: #454 closed by design, neither mc nor vd is a borne name (rules/P6's Accepted clause)"
@@ -3657,42 +3664,46 @@ note = "NOT may_be_name though also a particle: #454 closed by design, neither m
 [[word]]
 text = "ní"
 [word.particle]
+may_be_given = false
 note = "Irish \"daughter of\" (\"Sinéad Ní Mhurchú\"), the female patronymic beside 'ó'; never a given name (#604). Its sibling 'nic' is EXCLUDED: an abbreviation of Nicolas and Nicole and a given name of its own (Nic Cage), so it belongs in an opt-in Irish pack, not the defaults."
 cased = "Ní"
 
 [[word]]
 text = "op"
-particle = { note = "Dutch \"at/on\" (\"op den Berg\")" }
+particle = { may_be_given = false, note = "Dutch \"at/on\" (\"op den Berg\")" }
 
 [[word]]
 text = "ó"
 [word.particle]
+may_be_given = false
 note = "Irish \"descendant of\" (\"Liam Ó Murchú\"); never a given name (#604). The one ONE-LETTER particle, so the letter written with its period is still the initial it spells -- 'Juan Ó. Pérez' is Óscar, not a surname (rules/P7). Unaccented 'o' is EXCLUDED: bare 'O' is a common periodless initial, and the anglicized form is glued (\"O'Neil\") anyway."
 cased = "Ó"
 
 [[word]]
 text = "ste"
 [word.particle]
+may_be_given = false
 note = "Contraction of 'Sainte'; has a vowel, which is why the criterion is \"abbreviation of a word that is never itself a name\" rather than the vowel shape #360 first proposed. Measured misparse: \"Ste Marie\" gave given='Ste'."
 
 [[word]]
 text = "ter"
-particle = { note = "Dutch \"at the\" (\"ter Horst\")" }
+particle = { may_be_given = false, note = "Dutch \"at the\" (\"ter Horst\")" }
 
 [[word]]
 text = "vd"
 [word.particle]
+may_be_given = false
 note = "Dutch abbreviation of \"van der\". Also the British Volunteer Decoration, a suffix acronym: two non-name readings, so C-ii decides it on frequency and the Dutch one wins (decisions/vocabulary-collisions)."
 [word.credential]
 note = "NOT may_be_name though also a particle: #454 closed by design, neither mc nor vd is a borne name (rules/P6's Accepted clause)"
 
 [[word]]
 text = "vom"
-particle = { note = "German \"from the\"" }
+particle = { may_be_given = false, note = "German \"from the\"" }
 
 [[word]]
 text = "zu"
-particle = { note = "German \"at/to\", nobiliary (\"zu Guttenberg\")" }
+particle = { may_be_given = false, note = "German \"at/to\", nobiliary (\"zu Guttenberg\")" }
 
 # #269: Arabic native-script patronymic/clan particles. Unlike their
 # Latin transliterations, these live in a script namespace with no
@@ -3701,20 +3712,23 @@ particle = { note = "German \"at/to\", nobiliary (\"zu Guttenberg\")" }
 [[word]]
 text = "بن"
 [word.particle]
+may_be_given = false
 note = "\"bin\"/\"ibn\" (son of) -- never a bare given name. Latin 'bin' is in PARTICLES but not in this set; that judgment is unchanged by adding the Arabic-script form."
 
 [[word]]
 text = "بنت"
-particle = { note = "\"bint\" (daughter of) -- mirrors Latin 'bint' above." }
+particle = { may_be_given = false, note = "\"bint\" (daughter of) -- mirrors Latin 'bint' above." }
 
 [[word]]
 text = "ابن"
 [word.particle]
+may_be_given = false
 note = "\"ibn\" (son of, alternate spelling) -- mirrors Latin 'ibn' above."
 
 [[word]]
 text = "آل"
 [word.particle]
+may_be_given = false
 note = "\"aal\" (family/clan of, e.g. \"Al Saud\") -- distinct from the excluded definite article \"ال\" (#269 explicitly excludes standalone \"ال\"); a clan prefix, never a bare given name."
 
 # #269: Hebrew native-script patronymic particles -- same
@@ -3725,11 +3739,11 @@ note = "\"aal\" (family/clan of, e.g. \"Al Saud\") -- distinct from the excluded
 # surname spelling is hyphenated anyway.
 [[word]]
 text = "בן"
-particle = { note = "\"ben\" (son of)" }
+particle = { may_be_given = false, note = "\"ben\" (son of)" }
 
 [[word]]
 text = "בת"
-particle = { note = "\"bat\" (daughter of)" }
+particle = { may_be_given = false, note = "\"bat\" (daughter of)" }
 
 # ---- particles also borne as given names (may_be_given) ----
 #
@@ -6647,17 +6661,17 @@ credential = {}
 [[word]]
 text = "rai"
 [word.excluded.credential]
-reason = "far more common as a surname (Hindi- and Bengali-speaking regions) than RAI is as a credential (RETA Authorized Instructor)"
+reason = "Rai, a common surname across Hindi- and Bengali-speaking regions, dominates RAI (RETA Authorized Instructor): removed 2026-09-07 by the relative-frequency criterion (decisions/suffix-acronym-collisions)"
 issue = 342
 
 [[word]]
 text = "cha"
 [word.excluded.credential]
-reason = "far more common as a surname (the Korean 차) than CHA is as a credential (Certified Hotel Administrator)"
+reason = "Cha, the Korean 차, dominates CHA (Certified Hotel Administrator): removed 2026-09-07 by the relative-frequency criterion (decisions/suffix-acronym-collisions)"
 issue = 342
 
 [[word]]
 text = "mai"
 [word.excluded.credential]
-reason = "borne as a name more than written as a credential"
+reason = "Mai, a Vietnamese given and family name, a Chinese surname (麥) and a Japanese given name, dominates MAI (Member, Appraisal Institute): removed 2026-10-16 by the relative-frequency criterion (decisions/suffix-acronym-collisions)"
 issue = 687

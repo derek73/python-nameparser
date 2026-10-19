@@ -7,3 +7,9 @@ generation = { issue = 679 }
 [[word]]
 text = "постариот"
 generation = { issue = 679 }
+
+[[word]]
+text = "јуниор"
+[word.excluded.generation]
+reason = "a given name or a club name there; помладиот ships"
+issue = 679

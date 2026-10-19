@@ -1,0 +1,7 @@
+schema = 1
+
+[[word]]
+text = "जेआर"
+[word.excluded.generation]
+reason = "rare, and also JR"
+issue = 679

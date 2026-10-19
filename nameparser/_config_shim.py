@@ -1160,8 +1160,8 @@ class Constants:
                 particles=particles,
                 # complement translation: v1 marks the never-given subset;
                 # v2 marks the may-be-given subset. The trailing union keeps
-                # a config v1 accepted: particles.py asserts its own data has
-                # no word in both NON_GIVEN_NAME_PARTICLES and
+                # a config v1 accepted: the vocabulary build refuses a
+                # shipped word in both NON_GIVEN_NAME_PARTICLES and
                 # BOUND_GIVEN_NAMES, but nothing stops a caller adding one at
                 # runtime, and v1 then lets the bound rule win (leading "dos
                 # Santos Silva" parses first="dos Santos"). Treating such a

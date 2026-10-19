@@ -161,6 +161,7 @@ MUTATIONS = [
     ("may-be-name-on-a-word", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { may_be_name = true }')}, "may_be_name marks an acronym"),
     ("may-be-initial-on-a-word", {"und.toml": _w('[[word]]\ntext = "and"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
     ("may-be-initial-caseless", {"ar.toml": _w('[[word]]\ntext = "و"\nconjunction = { may_be_initial = true }')}, "CASED single letter"),
+    ("particle-without-may-be-given", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = {}')}, "states may_be_given"),
     ("flag-not-a-bool", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = "yes" }')}, "true or false"),
     ("issue-not-a-number", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { issue = "661" }')}, "issue number"),
     ("decided-not-a-date", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = "2026-10-18" }')}, "TOML date"),
@@ -183,15 +184,15 @@ MUTATIONS = [
     ("same-as-missing-target", {"en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "same_as 'jr'"),
     ("same-as-other-category", {"en.toml": _w('[[word]]\ntext = "jr"\ntitle = {}\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "no suffix reading"),
     ("cased-spells-other-letters", {"und.toml": _w('[[word]]\ntext = "phd"\ncredential = { cased = "PhDr" }')}, "case mask"),
-    ("two-cased-values", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\ntitle = { cased = "ó" }')}, "one cased mask per word"),
-    ("cased-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\nparticle = { cased = "ó" }')}, "cased is"),
+    ("two-cased-values", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\ntitle = { cased = "ó" }')}, "one cased mask per word"),
+    ("cased-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "ó" }')}, "cased is"),
     # 8: phrases
     ("phrase-title-addressing-the-family", {"und.toml": _w('[[word]]\ntext = "deputy secretary"\ntitle = {}')}, "phrase can never match"),
-    ("phrase-particle", {"und.toml": _w('[[word]]\ntext = "de la"\nparticle = {}')}, "phrase can never match"),
+    ("phrase-particle", {"und.toml": _w('[[word]]\ntext = "de la"\nparticle = { may_be_given = false }')}, "phrase can never match"),
     # 9: a bound given name that is a particle may be given
-    ("bound-given-particle-never-given", {"und.toml": _w('[[word]]\ntext = "abu"\nparticle = {}\nbound_given = {}')}, "may_be_given = true"),
+    ("bound-given-particle-never-given", {"und.toml": _w('[[word]]\ntext = "abu"\nparticle = { may_be_given = false }\nbound_given = {}')}, "may_be_given = true"),
     # the data invariants that were import-time asserts
-    ("elided-particle-without-its-twin", {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = {}')}, "U\\+2019 spelling"),
+    ("elided-particle-without-its-twin", {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = { may_be_given = false }')}, "U\\+2019 spelling"),
     ("one-kind-acronym-and-word", {"en.toml": _w('[[word]]\ntext = "abc"\ncourtesy = {}'), "und.toml": _w('[[word]]\ntext = "abc"\ncourtesy = { acronym = true }')}, "acronym is"),
 ]
 
@@ -213,7 +214,8 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n'
                        '[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')},
         {"und.toml": _w('[[word]]\ntext = "abu"\nparticle = { may_be_given = true }\nbound_given = {}')},
-        {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = {}\n\n[[word]]\ntext = "d’"\nparticle = {}')},
+        {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = { may_be_given = false }\n\n'
+                        '[[word]]\ntext = "d’"\nparticle = { may_be_given = false }')},
         {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given" }')},
         {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16 }\n'
                        'excluded = { generation = { reason = "Marie Fils", issue = 684 } }')},

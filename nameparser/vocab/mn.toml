@@ -1,0 +1,7 @@
+schema = 1
+
+[[word]]
+text = "жр"
+[word.excluded.generation]
+reason = "the initials ЖР"
+issue = 679

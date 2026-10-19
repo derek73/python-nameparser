@@ -83,10 +83,10 @@ NON_GIVEN_NAME_PARTICLES = _compiled.NON_GIVEN_NAME_PARTICLES
 #: :py:data:`NON_GIVEN_NAME_PARTICLES` records a particle-or-given
 #: ambiguity for the reading not taken, and one inside it records none.
 #:
-#: Defined as a static union so every :py:data:`NON_GIVEN_NAME_PARTICLES`
-#: member is guaranteed to also be a particle (and still join forward),
-#: with no drift -- mirroring ``TITLES = GIVEN_NAME_TITLES | {...}`` in
-#: :py:mod:`nameparser.config.titles`.
+#: Both sets are compiled from the same particle readings, the never-given
+#: ones being those marked so, which is what guarantees every
+#: :py:data:`NON_GIVEN_NAME_PARTICLES` member is also a particle (and
+#: still joins forward), with no drift.
 PARTICLES = _compiled.PARTICLES
 
 # Star imports read __all__ and never the module __getattr__ -- see the

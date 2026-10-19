@@ -15,3 +15,9 @@ generation = { issue = 679 }
 [[word]]
 text = "старэйшая"
 generation = { issue = 679 }
+
+[[word]]
+text = "мал"
+[word.excluded.generation]
+reason = "мал. is also \"figure\""
+issue = 679

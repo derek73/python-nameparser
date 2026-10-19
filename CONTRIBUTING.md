@@ -43,6 +43,21 @@ You can also pass a name string to see how it will be parsed:
 
 CI runs tests against every supported Python version (see the matrix in `.github/workflows/python-package.yml`) via GitHub Actions on every push and pull request.
 
+Changing the Word Lists
+-------------------------
+
+The default vocabulary (titles, suffixes, particles and the rest) lives in
+`nameparser/vocab/*.toml`, one file per language tag and one entry per word,
+listing what the word can be read as. The parser reads a module compiled from
+those files, so after editing one, rebuild it:
+
+    uv run python tools/vocab/build.py
+
+The build checks the files and refuses, with a message, a mistake it can
+detect: a typo in a kind or property, an unnormalized spelling, a reading a
+word is recorded as refused. `tools/vocab/query.py` looks words up
+(`--word`, `--kind`, `--issue`, `--excluded`).
+
 Writing Tests
 ----------------
 

@@ -18,6 +18,10 @@ Release Log
     - **Fix a capital V, I or X after a lone first name being read as a generational suffix, leaving no last name.** ``John V`` gives first ``John``, last ``V``, and ``Malcolm X`` last ``X``, where 2.0.0 through 2.4.2 gave suffix ``V`` and ``X`` with no last name, restoring 1.4.0's reading. A title is no word to spare, so ``Dr. Smith V`` gives first ``Smith``, last ``V`` (1.4.0's reading too) where 2.0.0 through 2.4.2 gave last ``Smith``, suffix ``V``; a name with a word to spare keeps the suffix, and ``John Smith V`` still gives suffix ``V``. A name written all in lower case reads the same way (``john v`` gives last ``v``). :issue:`718`, :issue:`721`
     - **Fix a single letter in a name written all in lower case reading differently from the same name in capitals.** ``jose j y lopez`` gives first ``jose``, middle ``j y``, last ``lopez``, as ``JOSE J Y LOPEZ`` does, where 1.4.0 through 2.4.2 gave last ``j y lopez``. A lone letter before a maiden marker stays the first name (``j nee smith`` as ``J NEE SMITH``), ``田中さん v`` reads as ``田中さん V`` does, and ``Policy(lenient_comma_suffixes=False)`` reads ``john smith, v`` as it reads ``JOHN SMITH, V``. :issue:`723`, :issue:`727`
 
+    **Additions**
+
+    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the lists and every parse are unchanged from 2.4.2. :issue:`PRNUM`
+
 * 2.4.2 - October 13, 2026
 
     nameparser 2.4.2 fixes two readings: a name typed with decomposed accents or hangul, and the Hausa given name Shehu.

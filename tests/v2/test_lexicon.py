@@ -419,8 +419,9 @@ def test_suffix_ambiguous_must_be_subset_of_acronyms() -> None:
 
 
 def test_the_shipped_suffix_sets_are_disjoint() -> None:
-    # suffixes.py asserts this at import; the assert is stripped under
-    # `python -O`, so the invariant gets a named test as well. The two
+    # the vocabulary build refuses the overlap (tools/vocab/build.py),
+    # which runs only when the data changes, so the invariant over the
+    # shipped constants gets a named test as well. The two
     # sets normalize differently -- the word test strips only edge
     # periods, the acronym test strips all of them -- so a word in both
     # is matched by two rules and which one fired is unreadable from
@@ -562,7 +563,7 @@ def test_subset_error_names_the_fix(
 
 
 def test_bound_given_name_that_is_a_particle_must_be_ambiguous() -> None:
-    # nameparser/config/particles.py asserts this on its own data:
+    # the vocabulary build checks this on the shipped data (check 9):
     # NON_GIVEN_NAME_PARTICLES stays disjoint from BOUND_GIVEN_NAMES. In
     # 2.0's complement model that reads as bound_given_names & particles
     # <= particles_ambiguous. A particle declared never-to-start-a-given-

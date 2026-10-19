@@ -494,7 +494,7 @@ def test_bound_never_given_prefix_deviates_on_two_pieces() -> None:
 
 
 def test_snapshot_keeps_a_bound_never_given_prefix_parseable() -> None:
-    # particles.py asserts its own data has no word in both
+    # the vocabulary build refuses a shipped word in both
     # NON_GIVEN_NAME_PARTICLES and BOUND_GIVEN_NAMES, so the defaults
     # behind non_first_name_prefixes and bound_first_names never
     # collide; nothing stops a v1 caller adding one at runtime, and 1.4

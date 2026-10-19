@@ -11,3 +11,9 @@ generation = { issue = 679 }
 [[word]]
 text = "জুনিয়ৰ"
 generation = { issue = 679 }
+
+[[word]]
+text = "ক"
+[word.excluded.generation]
+reason = "the abbreviation ক. is the single-letter initial shape"
+issue = 679

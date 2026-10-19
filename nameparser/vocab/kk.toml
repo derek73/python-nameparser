@@ -1,0 +1,7 @@
+schema = 1
+
+[[word]]
+text = "джуниор"
+[word.excluded.generation]
+reason = "a given name or a club name there"
+issue = 679

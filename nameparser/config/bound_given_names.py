@@ -18,7 +18,7 @@ from nameparser.config import _compiled
 #: is already fixed ("salam, abdul rahman" → given "abdul rahman").
 #: Mirrors :py:data:`~nameparser.config.particles.PARTICLES`, which
 #: chains onto the piece that follows it.
-BOUND_GIVEN_NAMES = _compiled.BOUND_GIVEN_NAMES
+BOUND_GIVEN_NAMES: frozenset[str] = _compiled.BOUND_GIVEN_NAMES
 
 # Star imports read __all__ and never the module __getattr__ -- see the
 # note in prefixes.py. Without it `_compiled`, imported only to re-export

@@ -7,3 +7,15 @@ generation = { issue = 679 }
 [[word]]
 text = "سینیور"
 generation = { issue = 679 }
+
+[[word]]
+text = "پدر"
+[word.excluded.generation]
+reason = "\"father\" without the article that marks ar الابن and he הבן as never a name"
+issue = 679
+
+[[word]]
+text = "پسر"
+[word.excluded.generation]
+reason = "\"son\" without the article that marks ar الابن and he הבן as never a name"
+issue = 679

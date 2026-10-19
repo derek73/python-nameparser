@@ -347,6 +347,13 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                 raise VocabError(f"{where}: attached needs a word reading "
                                  f"(acronym = false); the peel splits word tails")
             _check_descriptive(f"{where} attached", att)
+    if r.category == "particle" and "may_be_given" not in p:
+        # stated, never defaulted: the old encoding listed the never-given
+        # particles, so a new one was ambiguous unless argued otherwise
+        # (decisions/vocabulary-collisions C-i), and a default here would
+        # silently pick one side of that
+        raise VocabError(f"{where}: a particle states may_be_given = true or "
+                         f"false; under uncertainty, true (vocabulary-collisions C-i)")
     if r.category == "conjunction" and p.get("may_be_initial"):
         if len(r.text) != 1 or r.text.upper() == r.text.lower():
             raise VocabError(
