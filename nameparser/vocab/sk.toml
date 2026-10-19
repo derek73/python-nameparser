@@ -1,0 +1,17 @@
+schema = 1
+
+[[word]]
+text = "mladší"
+generation = { issue = 661 }
+
+[[word]]
+text = "starší"
+generation = { issue = 661 }
+
+[[word]]
+text = "mladšia"
+generation = { issue = 679 }
+
+[[word]]
+text = "staršia"
+generation = { issue = 679 }

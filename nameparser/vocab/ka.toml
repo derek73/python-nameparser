@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "უმცროსი"
+generation = { issue = 679 }
+
+[[word]]
+text = "უფროსი"
+generation = { issue = 679 }

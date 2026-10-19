@@ -1,0 +1,13 @@
+schema = 1
+
+[[word]]
+text = "kıdemli"
+[word.excluded.generation]
+reason = "a rank word (Kıdemli onbaşı); Turkish writes Jr. or a parenthesis, (oğul)"
+issue = 661
+
+[[word]]
+text = "baba"
+[word.excluded.generation]
+reason = "collides inside Turkish (a given name and a title), and Turkish puts the junior word before the name"
+issue = 679

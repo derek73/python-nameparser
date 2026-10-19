@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "yngri"
+generation = { issue = 679 }
+
+[[word]]
+text = "eldri"
+generation = { issue = 679 }

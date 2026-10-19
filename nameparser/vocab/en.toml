@@ -1,0 +1,44 @@
+schema = 1
+
+[[word]]
+text = "esq"
+courtesy = {}
+
+[[word]]
+text = "esquire"
+courtesy = { same_as = "esq" }
+
+[[word]]
+text = "jr"
+generation = {}
+
+[[word]]
+text = "jnr"
+generation = { same_as = "jr" }
+
+[[word]]
+text = "junior"
+generation = { same_as = "jr" }
+
+[[word]]
+text = "sr"
+generation = {}
+
+[[word]]
+text = "snr"
+generation = { same_as = "sr" }
+
+[[word]]
+text = "ret"
+[word.status]
+issue = 111
+note = "bare, not '(ret)': a parenthesized entry would match literally instead of going through nickname/suffix disambiguation, the #111 bug"
+
+[[word]]
+text = "vet"
+status = { issue = 111, note = "bare, not '(vet)', for the reason recorded on ret" }
+
+[[word]]
+text = "senior"
+[word.excluded]
+generation = { reason = "Senior is a surname (3,864 US Census bearers)", issue = 679 }

@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "rinpoche"
+[word.courtesy]
+issue = [346, 344, 343]
+note = "postpositional (Sogyal Rinpoche, Lama Zopa Rinpoche)"
+[word.courtesy.excluded]
+attached = "spaced-only for the reason the Indic trailing set is (decisions/indic-honorifics)"

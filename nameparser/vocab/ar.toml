@@ -1,0 +1,21 @@
+schema = 1
+
+[[word]]
+text = "الابن"
+generation = { issue = 679, note = "the son" }
+
+[[word]]
+text = "الإبن"
+generation = { issue = 679, note = "the son" }
+
+[[word]]
+text = "الأب"
+generation = { issue = 679, note = "the father" }
+
+[[word]]
+text = "جونيور"
+generation = { issue = 679 }
+
+[[word]]
+text = "سينيور"
+generation = { issue = 679 }

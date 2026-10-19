@@ -1,0 +1,17 @@
+schema = 1
+
+[[word]]
+text = "mlajši"
+generation = { issue = 679 }
+
+[[word]]
+text = "mlajša"
+generation = { issue = 679 }
+
+[[word]]
+text = "starejši"
+generation = { issue = 679 }
+
+[[word]]
+text = "starejša"
+generation = { issue = 679 }

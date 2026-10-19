@@ -1,0 +1,21 @@
+schema = 1
+
+[[word]]
+text = "جونیئر"
+generation = { issue = 679 }
+
+[[word]]
+text = "جونيئر"
+generation = { issue = 679 }
+
+[[word]]
+text = "جونئیر"
+generation = { issue = 679 }
+
+[[word]]
+text = "سینئر"
+generation = { issue = 679 }
+
+[[word]]
+text = "سینیئر"
+generation = { issue = 679 }

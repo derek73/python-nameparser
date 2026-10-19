@@ -1,0 +1,6 @@
+schema = 1
+
+[[word]]
+text = "isizukulwane"
+[word.excluded]
+generation = { reason = "CLDR label translation: it means 'generation'", issue = 661 }

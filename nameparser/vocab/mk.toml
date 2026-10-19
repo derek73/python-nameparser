@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "помладиот"
+generation = { issue = 679 }
+
+[[word]]
+text = "постариот"
+generation = { issue = 679 }
