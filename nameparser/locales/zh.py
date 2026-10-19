@@ -125,9 +125,10 @@ _SINGLE_RANKED = (
 # surname (王李) or a Japanese one -- only where Wikidata or the Taiwan
 # ranking attests a bearer, and only where no Wikidata bearer of its
 # first character alone has a name opening with it (成公 is left out:
-# 成公亮 is 成 + 公亮). A listed compound reads a two-character name
-# that spells it whole (张简 is a family name, not 张 + 简); that cost
-# and the measurements are in decisions/W1.
+# 成公亮 is 成 + 公亮). A listed compound wins over its first
+# character in every name that opens with it (张简明 is 张简 + 明, and
+# 张简 alone stays whole); that cost and the measurements are in
+# decisions/W1.
 _COMPOUND = (
     "欧阳", "司马", "诸葛", "上官", "夏侯", "皇甫", "尉迟", "公孙",
     "长孙", "慕容", "司徒", "司空", "令狐", "宇文", "东方", "独孤",

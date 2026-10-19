@@ -96,6 +96,17 @@ def test_one_surname_in_two_sources_is_one_entry_with_both_ranks() -> None:
     assert (surname.moi_rank, surname.wikidata_rank) == (1, 1)
 
 
+def test_an_item_bridging_two_entries_merges_them_keeping_the_best_ranks() -> None:
+    # Two ranked rows that are one surname in two scripts become one
+    # entry once an item labelled with both joins them, keeping the
+    # better rank of each source.
+    items = tool.read_wikidata(_item("Q1", 5, "卫", "衛"))
+    surnames = tool.select(["陳", "衛", "卫"], items, {}, top=10)
+    (merged,) = [s for s in surnames if "衛" in s.forms]
+    assert len(surnames) == 2 and merged.forms == {"卫", "衛"}
+    assert (merged.moi_rank, merged.wikidata_rank) == (2, 1)
+
+
 def test_a_traditional_form_gains_its_one_simplified_variant() -> None:
     assert _forms(tool.select(["關"], [], {"關": {"关"}})) == [{"關", "关"}]
 

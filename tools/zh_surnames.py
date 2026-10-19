@@ -210,7 +210,9 @@ def select(moi: list[str], items: list[Item],
     for surname in list(surnames):
         for form in list(surname.forms):
             # Unihan also names supplementary-plane forms only GB 18030
-            # extensions spell (蘭 → 兰 or 𬞕); a name is typed in the BMP.
+            # extensions spell (蘭 → 兰 or 𬞕), an alternative to the BMP
+            # spelling a name is typed with. A surname whose ONLY
+            # spelling is supplementary (Taiwan's 𡍼) ships as ranked.
             variants = {v for v in simplified.get(form, ()) if ord(v) < 0x10000}
             if len(variants) == 1 and not variants <= surname.forms:
                 add(variants | {form})
