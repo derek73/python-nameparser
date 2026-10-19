@@ -70,6 +70,7 @@ Entry conventions:
 - [C9 — a one-character suffix word inside a comma part](C9-one-character-suffix-word-inside-a-comma-part.md)
 - [C10 — a declared delimiter parts a trailing suffix part](C10-declared-delimiter-parts-a-trailing-suffix-part.md)
 - [C11 — what the comma decision reports](C11-what-the-comma-decision-reports.md)
+- [C12 — a suffix word ending the name before the comma](C12-suffix-word-ending-the-name-before-the-comma.md)
 
 ## Name order (O)
 

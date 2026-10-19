@@ -47,4 +47,4 @@ C3. Rationale: the listing form puts a surname before the comma,
     words keep the title apart ('Freiherr von Berg, PhD'), that count
     taking the title as a word; both are readings of one name.
       "Freiherr von Berg, Ed"     →  family="Freiherr von Berg"
-    history: decisions/C3 · interacts: C1, C4, C5, H1, H6, P1, P2, P3, P5 · implemented: nameparser/_pipeline/_comma.py
+    history: decisions/C3 · interacts: C1, C4, C5, H1, H6, P1, P2, P3, P5, C12 · implemented: nameparser/_pipeline/_comma.py

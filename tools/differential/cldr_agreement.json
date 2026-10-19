@@ -1,23 +1,4 @@
 {
- "af/foreignFull/givenFirst": {
-  "family": {
-   "expected": "van den Berg",
-   "got": "Cornelia Margarita Sofia Aletta van den Berg"
-  },
-  "family_base": {
-   "expected": "Berg",
-   "got": "Cornelia Margarita Sofia Aletta Berg"
-  },
-  "given_names": {
-   "expected": "Cornelia Margarita Sofia Aletta",
-   "got": "MBChB"
-  },
-  "suffix": {
-   "expected": "jnr. MBChB PhD",
-   "got": "jnr., PhD"
-  },
-  "text": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD"
- },
  "af/foreignFull/surnameFirst": {
   "family": {
    "expected": "van den Berg",
@@ -4215,29 +4196,6 @@
   },
   "text": "Lalit"
  },
- "hr/foreignFull/givenFirst": {
-  "family": {
-   "expected": "von Brühl",
-   "got": "Ada Cornelia César Martín von Brühl"
-  },
-  "family_base": {
-   "expected": "Brühl",
-   "got": "Ada Cornelia César Martín Brühl"
-  },
-  "given_names": {
-   "expected": "Ada Cornelia César Martín",
-   "got": "bacc"
-  },
-  "suffix": {
-   "expected": "Jr univ. bacc",
-   "got": "Jr"
-  },
-  "text": "prof. dr. Ada Cornelia César Martín von Brühl Jr, univ. bacc",
-  "title": {
-   "expected": "prof. dr.",
-   "got": "prof. dr. univ."
-  }
- },
  "hr/foreignG/sorting": {
   "family": {
    "expected": "",
@@ -4867,21 +4825,9 @@
   "text": "Geir Jón Magnús Brynjar Skeggjason"
  },
  "is/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "Skeggjason",
-   "got": "Skeggjason Hr. Geir Jón Magnús Brynjar"
-  },
-  "family_base": {
-   "expected": "Skeggjason",
-   "got": "Skeggjason Hr. Geir Jón Magnús Brynjar"
-  },
   "given_names": {
    "expected": "Geir Jón Magnús Brynjar",
-   "got": "þingmaður"
-  },
-  "suffix": {
-   "expected": "yngri þingmaður",
-   "got": "yngri"
+   "got": "Hr. Geir Jón Magnús Brynjar"
   },
   "text": "Skeggjason Hr. Geir Jón Magnús Brynjar yngri, þingmaður",
   "title": {
@@ -4973,52 +4919,6 @@
    "got": ""
   },
   "text": "Sinbad"
- },
- "it/nativeFull/givenFirst": {
-  "family": {
-   "expected": "Martini",
-   "got": "Sig. Fabio Massimo Carlo Alberto Martini"
-  },
-  "family_base": {
-   "expected": "Martini",
-   "got": "Sig. Fabio Massimo Carlo Alberto Martini"
-  },
-  "given_names": {
-   "expected": "Fabio Massimo Carlo Alberto",
-   "got": "AD"
-  },
-  "suffix": {
-   "expected": "II AD",
-   "got": "II"
-  },
-  "text": "Sig. Fabio Massimo Carlo Alberto Martini II, AD",
-  "title": {
-   "expected": "Sig.",
-   "got": ""
-  }
- },
- "it/nativeFull/surnameFirst": {
-  "family": {
-   "expected": "Martini",
-   "got": "Sig. Martini Fabio Massimo Carlo Alberto"
-  },
-  "family_base": {
-   "expected": "Martini",
-   "got": "Sig. Martini Fabio Massimo Carlo Alberto"
-  },
-  "given_names": {
-   "expected": "Fabio Massimo Carlo Alberto",
-   "got": "AD"
-  },
-  "suffix": {
-   "expected": "II AD",
-   "got": "II"
-  },
-  "text": "Sig. Martini Fabio Massimo Carlo Alberto II, AD",
-  "title": {
-   "expected": "Sig.",
-   "got": ""
-  }
  },
  "it/nativeG/sorting": {
   "family": {

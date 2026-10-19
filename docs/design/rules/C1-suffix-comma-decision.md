@@ -9,7 +9,8 @@ C1. Rationale: a credential run after the comma means the name is in
     listing form, the part before the comma being the family name,
     less a title run opening it (H6), unless the part after it fixes
     no family boundary (C8). Only
-    the part after the first comma decides. The rules after this one
+    the part after the first comma decides, but for a suffix word
+    ending a whole name before it (C12). The rules after this one
     say how the decision reads what it reads: how the words before
     the comma are counted (C3); the ambiguous credential class,
     counted by name words (C4), with paired initials (C5) and an
@@ -18,7 +19,8 @@ C1. Rationale: a credential run after the comma means the name is in
     form's part after the comma, still read for what it is (C8); a
     one-character suffix word inside a comma part (C9); a declared
     delimiter, which parts a trailing suffix part as a comma would
-    (C10); and what the decision reports (C11).
+    (C10); what the decision reports (C11); and a suffix word ending
+    the name before the comma (C12).
     By default a recognized suffix word counts
     even written like an initial ("V."), while strict mode vetoes
     a word read as an initial — in a name written in one case a
@@ -42,4 +44,4 @@ C1. Rationale: a credential run after the comma means the name is in
     here. It is also the one consequence of this question Latin
     script cannot witness, nothing there being glued to the end of a
     name — which is why this clause carries no example of its own.
-    history: decisions/C1 · interacts: C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, H6, T4, W3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py
+    history: decisions/C1 · interacts: C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, H6, T4, W3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py
