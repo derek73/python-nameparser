@@ -344,6 +344,25 @@ def _addressing_run(titles: list[int], name_word: int) -> list[int]:
     return [i for i in titles if i < name_word] or titles
 
 
+def _family_settled(state: ParseState, tokens: list[WorkToken],
+                    families: list[int]) -> bool:
+    """Whether something other than the order placed this lone family
+    word, so H1's family -> given direction leaves it (#720). After a
+    comma a particle in it is settled -- rules/C3's "the comma settles
+    P1's fork for a leading particle that could be a given name"
+    ('van Gogh, Sir'); without one, P1's fold below takes a never-given
+    particle opening the name with a word behind it ('Sir de Mesnil'),
+    asked by the fold's own predicate on the same piece. An ambiguous
+    particle nothing settled, or a bare one with nothing to fold, is a
+    word the order placed ('Sir Van', 'Sheik Abu Bakar' and 'Sir de'
+    under FAMILY_FIRST; 'Sir von und zu', whose never-given 'zu' does
+    not open it)."""
+    if state.structure is Structure.FAMILY_COMMA:
+        return any("particle" in tokens[i].tags for i in families)
+    return len(families) > 1 and is_lone_never_given_particle(
+        _leading_name_piece(state, tokens), tokens)
+
+
 def post_rules(state: ParseState) -> ParseState:
     tokens = list(state.tokens)
     ambiguities = list(state.ambiguities)
@@ -387,25 +406,10 @@ def post_rules(state: ParseState) -> ParseState:
     # it, and the one name word of a name read family-first. The comma
     # named no given part, and the order places a word nothing else
     # decided (O5), so the title decides as it does in 'Sir John'
-    # ('Elizabeth II, Queen' reads as 'Queen Elizabeth II'). A particle
-    # in that word stays the family where something settled it: after a
-    # comma, rules/C3's "the comma settles P1's fork for a leading
-    # particle that could be a given name"; without one, a never-given
-    # particle with a word behind it, which P1's fold below takes ('Sir
-    # de Mesnil'). An ambiguous one nothing settled, or a bare one with
-    # nothing to fold, is a word the order placed ('Sir Van', 'Sheik
-    # Abu Bakar' and 'Sir de' under FAMILY_FIRST).
+    # ('Elizabeth II, Queen' reads as 'Queen Elizabeth II'), unless
+    # something else settled the word (_family_settled).
     elif (titles and families and not givens and not middles
-            and not (
-                state.structure is Structure.FAMILY_COMMA
-                and any("particle" in tokens[i].tags for i in families)
-                # P1's fold starts at the opening piece only, so it is
-                # the opener that is asked ('Sir von und zu' reads
-                # given: its never-given 'zu' does not open it)
-                or (len(families) > 1
-                    and "particle" in tokens[families[0]].tags
-                    and "vocab:particle-ambiguous"
-                    not in tokens[families[0]].tags))
+            and not _family_settled(state, tokens, families)
             and _run_addresses_by_given(
                 (tokens[i].text
                  for i in _addressing_run(titles, families[0])),
@@ -485,8 +489,10 @@ def post_rules(state: ParseState) -> ParseState:
     # particle only where it landed in a MIDDLE, which means nothing.
     # Code-local: a lone PIECE is the test, so a particle group
     # already chained forward is not a lone particle, and rule H1
-    # above cannot be what produces the fold's family reading -- H1 is
-    # gated on `not families`.
+    # above cannot be what produces the fold's family reading -- its
+    # given -> family branch is gated on `not families`, and its family
+    # -> given branch leaves the word this fold takes, asking the same
+    # predicate (_family_settled).
     lead = _leading_name_piece(state, tokens)
     lead_fires = is_lone_never_given_particle(lead, tokens)
     if len(givens) + len(middles) + len(families) > 1 and lead_fires:
