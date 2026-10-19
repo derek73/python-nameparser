@@ -77,5 +77,6 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
+    Signal: a neighbor: the words following a particle, up to the next particle, suffix run or marker + a neighbor: a particle that is also suffix vocabulary before a family comma, and the word behind it
     history: decisions/P2 · interacts: P1, P4, H5, M2, S2, C2, S4, S10 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

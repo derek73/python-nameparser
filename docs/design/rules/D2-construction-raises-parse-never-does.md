@@ -10,4 +10,5 @@ D2. Rationale: whatever a name contains, parsing answers; only a
       [bad-order-none]  →  raises="name_order must be an iterable"
     no-boundary: the non-raising side is every other rule's
     examples; parse() itself is total (A1).
+    Signal: none in the name: the configuration's values, at construction
     history: decisions/D2 · implemented: nameparser/_policy.py, nameparser/_parser.py

@@ -24,4 +24,5 @@ C6. Rationale: capitals are a credential's writing only against a
       "Smith, XYZ"                →  given="XYZ"  · boundary
       "MÜLLER WEIß, HANS"         →  given="HANS"  · boundary
       "John Smith, PhD XYZ"       →  suffix="PhD XYZ"
+    Signal: a case contrast: a word before the comma written in mixed case the way a name is
     history: decisions/C6 · interacts: C4, C5, S6, S9, C12 · implemented: nameparser/_pipeline/_comma.py

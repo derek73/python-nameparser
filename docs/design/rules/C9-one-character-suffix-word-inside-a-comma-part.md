@@ -39,4 +39,5 @@ C9. Rationale: one letter is the shape a middle initial is written
     V` reads the suffix and `Smith, John PhD I.` continues the run,
     while adding a suffix comma after either turns that same letter
     into the middle initial.
+    Signal: a neighbor: what stands before a one-character suffix word inside a comma part
     history: decisions/C9 · interacts: C1, C8, S5, S10, T4 · implemented: nameparser/_pipeline/_assign.py

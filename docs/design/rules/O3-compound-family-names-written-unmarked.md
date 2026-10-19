@@ -8,5 +8,6 @@ O3. Rationale: several traditions write compound family names
     name.
       "Hassan Mohamad Ali"  middle_as_family  →  family="Mohamad Ali"
       "Hassan Mohamad Ali"                    →  family="Ali"  · boundary
+    Signal: none in the name: a caller switch, which joins every middle word to the family
     implemented: nameparser/_pipeline/_post_rules.py
 

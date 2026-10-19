@@ -111,5 +111,6 @@ P5. Rationale: some given-name words are incomplete alone — "abdul"
     is also a particle is attached by P6 (`Berg, abdul Prof. VI`
     reads middle 'Prof. VI'; `Berg, abdul St.` reads family 'St.
     Berg'), each as the same name with an ordinary given word reads.
+    Signal: a neighbor: a bound given-name word and the name word after it, with a word to spare
     history: decisions/P5 · interacts: C2, S2, M2, H1, H5, P2, P4, P6 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_post_rules.py
 

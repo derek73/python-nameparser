@@ -143,5 +143,6 @@ M2. Rationale: a maiden marker announces that what follows it is the
     Accepted: a marker behind a credential is an ordinary word, and
     the credential's run (S8) takes it in with everything after it.
       "Jane Doe Jr. nee Smith"      →  suffix="Jr. nee Smith"  · boundary
+    Signal: a neighbor: a maiden marker with a name word straight before it, in the part holding the family
     history: decisions/M2 · interacts: P2, P3, P5, P6, R1, R2, M1, S1, S2, S10, H1, H5, C1, C10, S4, S8, T4 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
 

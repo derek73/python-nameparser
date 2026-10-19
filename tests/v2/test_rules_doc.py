@@ -57,6 +57,19 @@ def test_every_rule_points_at_code_or_at_the_work(rule: Rule) -> None:
     assert not bad, f"{rule.rule_id}: tracked: wants #N issue refs, got {bad}"
 
 
+@pytest.mark.parametrize("rule", RULES, ids=lambda r: r.rule_id)
+def test_every_rule_states_its_signal(rule: Rule) -> None:
+    """What in the written name the rule reads, on its ``Signal:`` line
+    (docs/design/AGENTS.md, "One rule per piece of evidence"). A hub
+    names the rules stating its signals instead, which
+    test_doc_citations.py::test_a_hub_names_each_rule_its_map_names
+    holds to its map."""
+    assert rule.signal is not None, (
+        f"{rule.rule_id}: add a `Signal: <what it reads>` line directly "
+        f"above its pointer line -- a count, a case contrast, a shape, "
+        f"a neighbor -- or `Signal: hub of X1, X2` for a hub")
+
+
 def _check_diagnostic(example: Example) -> None:
     import re as _re
     from collections.abc import Callable

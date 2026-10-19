@@ -28,6 +28,20 @@ spelling — ``Tolerated:``, ``tolerated :``, a bare ``tolerated:`` —
 fails loudly too, rather than leaving the rule normative and its
 examples under contract.
 
+Every rule also states its ``Signal:`` -- what in the written name it
+reads: a count, a case contrast, a shape, a neighbor. The line is one
+line, never wrapped, and stands directly above the rule's pointer line;
+the parser refuses one that does not, because a wrapped continuation
+would read as statement prose, quotable by a citation. A hub, a rule
+deciding by several signals each stated by a rule of its own, writes
+``Signal: hub of C3, C4, ...`` instead, naming those rules; the doc
+tests hold each to the hub's ``interacts:`` and to its statement, so
+the hub's map cannot leave one out. A plain signal line naming two
+signals joins them with `` + ``, which marks the rule a split
+candidate (docs/design/AGENTS.md, "One rule per piece of evidence").
+The line is metadata, not statement prose: a citation cannot quote it
+and the size budget (tests/v2/rules_budget.py) does not count it.
+
 Inside a rule block, any line whose first non-space character is a
 double quote (or an opening bracket, the D-section subject form) is an
 example line and MUST parse — a silent skip would un-execute a claim,
@@ -61,6 +75,13 @@ _TOLERATED_RE = re.compile(r"^\s*tolerated:\s+(?P<reason>\S.*)$")
 #: shouting the word is making the same mistake as one capitalizing
 #: it, and no line in a rule block legitimately opens with it.
 _NEAR_TOLERATED_RE = re.compile(r"^\s*tolerated\b", re.IGNORECASE)
+_SIGNAL_RE = re.compile(r"^\s*Signal:\s+(?P<text>\S.*?)\s*$")
+#: Any line meant to be the signal line, the strict form's near misses
+#: included (``signal:``, ``Signal :``, an empty one): a near miss read
+#: as prose would leave the rule with no signal and put the line into
+#: the quotable statement.
+NEAR_SIGNAL_RE = re.compile(r"^\s*signal\s*:", re.IGNORECASE)
+_HUB_RE = re.compile(r"hub of (?P<ids>[A-Z]\d+(?:, [A-Z]\d+)*)")
 _POINTER_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
 _POINTER_PART_RE = re.compile(
     r"(history|interacts|implemented|tracked):\s*([^·]+)")
@@ -100,6 +121,13 @@ class Rule:
     #: rule carrying it -- a tolerated rule's examples illustrate what
     #: the parser does today, they do not promise it.
     tolerated: str | None = None
+    #: The ``Signal:`` line's text: what in the written name the rule
+    #: reads. None only where the line is missing, which the doc tests
+    #: refuse for the real rules.
+    signal: str | None = None
+    #: For a hub (``Signal: hub of C3, C4``), the rules whose signals
+    #: it combines; () for a rule that states a signal of its own.
+    hub: tuple[str, ...] = ()
 
     def has_boundary_or_waiver(self) -> bool:
         return self.no_boundary is not None or any(
@@ -188,7 +216,14 @@ def _literal(tok: str) -> object:
 def parse_rules_doc(text: str) -> list[Rule]:
     rules: list[Rule] = []
     current: Rule | None = None
+    signal_at: int | None = None    # the line a pointer must follow
     for lineno, line in enumerate(text.splitlines(), 1):
+        if signal_at is not None and not _POINTER_RE.match(line):
+            raise ValueError(
+                f"line {signal_at}: a `Signal:` line must stand directly "
+                f"above the rule's pointer line, on one line; line "
+                f"{lineno} follows it: {line.strip()!r}")
+        signal_at = None
         if line.startswith("#"):        # a heading ends any rule block
             current = None
             continue
@@ -255,6 +290,29 @@ def parse_rules_doc(text: str) -> list[Rule]:
                 f"reason is unvalidated free text but required, because "
                 f"a demotion nobody had to justify is the one nobody "
                 f"reviews")
+        sig = _SIGNAL_RE.match(line)
+        if sig:
+            if current.signal is not None:
+                raise ValueError(
+                    f"{current.rule_id}: line {lineno}: a second "
+                    f"`Signal:` line; a rule states one")
+            current.signal = sig.group("text")
+            hub = _HUB_RE.fullmatch(current.signal)
+            if hub is None and current.signal.lower().startswith("hub"):
+                raise ValueError(
+                    f"{current.rule_id}: line {lineno}: a hub's signal "
+                    f"line is `Signal: hub of C3, C4` -- rule IDs joined "
+                    f"by a comma and a space; read as a plain signal, "
+                    f"its rules would go unchecked: {stripped!r}")
+            current.hub = tuple(hub.group("ids").split(", ")) if hub else ()
+            signal_at = lineno
+            continue
+        if NEAR_SIGNAL_RE.match(line):
+            raise ValueError(
+                f"{current.rule_id}: line {lineno} looks like a `Signal:` "
+                f"line but does not parse: {stripped!r}. The spelling is "
+                f"`Signal: <what the rule reads>` -- capitalized, no "
+                f"space before the colon, and not empty")
         if _POINTER_RE.match(line):
             for key, val in _POINTER_PART_RE.findall(line):
                 items = tuple(v.strip() for v in val.split(",") if v.strip())
@@ -264,4 +322,56 @@ def parse_rules_doc(text: str) -> list[Rule]:
                     current.implemented = items
                 elif key == "tracked":
                     current.tracked = items
+    if signal_at is not None:
+        raise ValueError(
+            f"line {signal_at}: a `Signal:` line must stand directly "
+            f"above the rule's pointer line; the text ends after it")
     return rules
+
+
+def prose_blocks(text: str) -> dict[str, list[str]]:
+    """The prose lines of each rule and section Background, unjoined:
+    for a rule, its statement and Accepted: clauses -- everything in
+    the block but example, pointer, marker and Signal: lines, the
+    rule's ID stripped from its first line; for a section letter, its
+    Background paragraph. What a citation may quote
+    (test_doc_citations.py) and what the size budget counts
+    (rules_budget.py), read by one function so the two cannot
+    disagree about where a statement ends."""
+    out: dict[str, list[str]] = {}
+    current: list[str] | None = None
+    background: list[str] | None = None
+    section = None
+    marker = False          # inside a wrapped no-boundary: marker
+    for line in text.splitlines():
+        m = _RULE_RE.match(line)
+        hm = re.match(r"## .*\(([A-Z])\)\s*$", line)
+        if background is not None:
+            if line.strip():
+                background.append(line)
+                continue
+            background = None
+        if hm:
+            section = hm.group(1)
+        elif section and line.startswith("Background:"):
+            background = out[section] = [line]
+            section = None
+            continue
+        if NEAR_SIGNAL_RE.match(line):  # metadata: not quotable
+            continue
+        if re.match(r"\s*(no-boundary|tolerated):", line):
+            marker = True
+            continue
+        if marker and (_POINTER_RE.match(line) or not line.strip()
+                       or line.startswith("      ") or m):
+            marker = False
+        if m:
+            current = out.setdefault(m.group(1) + m.group(2), [])
+            current.append(line[m.end():])
+        elif line.startswith("#"):
+            current = None
+        elif current is not None and line.startswith("    ") and not (
+                marker or line.startswith("      ")
+                or _POINTER_RE.match(line)):
+            current.append(line)
+    return out

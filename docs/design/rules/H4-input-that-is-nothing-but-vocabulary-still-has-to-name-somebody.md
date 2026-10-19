@@ -86,5 +86,6 @@ H4. Rationale: this is a name parser, not a title parser. Handed a
     which FIELD the unit takes and none of them whether the word
     inside it is a title. The other measured inputs are pinned in the
     case table rather than here.
+    Signal: a count: no name word left but vocabulary, title or post-nominal
     history: decisions/H4 · interacts: H1, H2, H3, H5, S2, O5 · implemented: nameparser/_pipeline/_assign.py
 

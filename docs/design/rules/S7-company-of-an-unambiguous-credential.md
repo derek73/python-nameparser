@@ -64,4 +64,5 @@ S7. Rationale: post-nominals are written as a run, and an
       "Jack Wei Ma"               →  family="Ma"
       "Jack Wei Ma"               →  ambiguities=("suffix-or-name",)
       "abdul Smith Jr Ma"         →  suffix="Jr Ma"
+    Signal: a neighbor: an unambiguous credential in front, in one run of suffix words
     history: decisions/S7 · interacts: C4, C5, C11, M2, P2, P3, P6, S4, S5, S6, S8 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_pieces.py

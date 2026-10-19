@@ -8,5 +8,6 @@ T2. Rationale: the katakana middle dot exists to divide name parts
       "高橋・一郎"                 →  family="高橋"
     no-boundary: the separation is unconditional; the
     context-sensitive interpunct is T3's subject.
+    Signal: a character: the katakana middle dot or its halfwidth twin
     implemented: nameparser/_pipeline/_tokenize.py
 

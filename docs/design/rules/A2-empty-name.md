@@ -8,5 +8,6 @@ A2. Rationale: an input with no name content names nobody, and
       ".,"                        →  family=""
       "("                         →  ambiguities=("unbalanced-delimiter",)
       "John . Smith"              →  family="Smith"  · boundary
+    Signal: a count: no name content, no letter or digit, in the input
     history: decisions/A2 · implemented: nameparser/_pipeline/_assemble.py
 

@@ -66,4 +66,5 @@ S5. Rationale: a family comma has already named the family and the
       "Doe, John van Ma"          →  ambiguities=()  · boundary
       "Doe, John DO Ed"           →  middle="DO Ed"  · boundary
       "Doe, John DO Ed"           →  ambiguities=()  · boundary
+    Signal: a position: the word ending the given part after a family comma
     history: decisions/S5 · interacts: C1, C11, H5, P1, P6, S4, S6, S7 · implemented: nameparser/_pipeline/_assign.py

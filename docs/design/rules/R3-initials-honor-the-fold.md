@@ -92,5 +92,6 @@ R3. Rationale: initials abbreviate the person's name words; titles,
     views, which is 1.4.0's own answer restored. The rule is one
     sentence for all three groups, and taking it is what made the
     four candidate answers this group once had into one.
+    Signal: none in the name: the parsed given, middle and base family words, and the connectives joining them
     history: decisions/R3 · interacts: O3, P3, P6, R1, R2, R4 · implemented: nameparser/_render.py, nameparser/_facade.py, nameparser/_pipeline/_post_rules.py
 

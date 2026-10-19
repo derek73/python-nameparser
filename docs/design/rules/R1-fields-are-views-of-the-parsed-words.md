@@ -38,5 +38,6 @@ R1. Rationale: a field is a way of reading the parse, not a stored
     instead. Stated without an example line because every line here
     names an input string, and this shape needs a field revised after
     the parse.
+    Signal: none in the name: the parsed words, their roles and the separators the writer typed between them
     history: decisions/R1 · interacts: O3, P3, P6, R3, M2 · implemented: nameparser/_parser.py, nameparser/_pipeline/_post_rules.py, nameparser/_types.py
 

@@ -13,5 +13,6 @@ O4. Rationale: what no vocabulary claims can only be read by where
       "Nguyễn Thị Minh Khai"  family-first-given-last  →  given="Khai"
     no-boundary: this is the default reading every other rule carves
     exceptions from; its boundaries are the other rules.
+    Signal: a position: where a word no vocabulary claimed stands, under the declared order
     implemented: nameparser/_pipeline/_assign.py
 

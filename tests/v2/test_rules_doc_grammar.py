@@ -166,3 +166,55 @@ def test_registry_resolves_policies_and_gates() -> None:
     assert kind == "gated_locale" and obj == "ja"
     with pytest.raises(KeyError):
         resolve_annotation("no-such-annotation")
+
+
+_SIGNAL_DOC = ('X1. Statement.\n'
+               '      "a b"  →  family="b"\n'
+               '{signal}'
+               '    implemented: nameparser/_parser.py\n')
+
+
+def test_the_signal_line_is_read_off_a_rule() -> None:
+    rule = parse_rules_doc(_SIGNAL_DOC.format(
+        signal="    Signal: a count: one name word\n"))[0]
+    assert rule.signal == "a count: one name word"
+    assert rule.hub == ()
+    assert rule.implemented == ("nameparser/_parser.py",)
+
+
+def test_a_hub_signal_names_its_rules() -> None:
+    rule = parse_rules_doc(_SIGNAL_DOC.format(
+        signal="    Signal: hub of C3, C4, C12\n"))[0]
+    assert rule.hub == ("C3", "C4", "C12")
+
+
+def test_a_rule_without_a_signal_line_has_none() -> None:
+    # The negative control: the real-doc test's `signal is not None`
+    # is a question the parser can answer no to.
+    assert parse_rules_doc(_SIGNAL_DOC.format(signal=""))[0].signal is None
+
+
+#: Each raises: a near miss read as prose would leave the rule with no
+#: signal AND put the line into the quotable statement, and a wrapped
+#: or misplaced line would do the second.
+@pytest.mark.parametrize("signal", [
+    pytest.param("    signal: lowercase.\n", id="lowercase"),
+    pytest.param("    Signal : a space before the colon.\n",
+                 id="space-before-the-colon"),
+    pytest.param("    Signal:\n", id="empty"),
+    pytest.param("    Signal: a count: one\n      name word\n",
+                 id="wrapped"),
+    pytest.param("    Signal: a count\n    Accepted: a clause after it.\n",
+                 id="not-above-the-pointer"),
+    pytest.param("    Signal: a count\n    Signal: a shape\n",
+                 id="two-signal-lines"),
+    pytest.param("    Signal: hub of C3 and C4\n", id="malformed-hub"),
+])
+def test_a_bad_signal_line_is_an_error(signal: str) -> None:
+    with pytest.raises(ValueError, match="Signal"):
+        parse_rules_doc(_SIGNAL_DOC.format(signal=signal))
+
+
+def test_a_signal_line_ending_the_text_is_an_error() -> None:
+    with pytest.raises(ValueError, match="Signal"):
+        parse_rules_doc('X1. Statement.\n    Signal: a count\n')

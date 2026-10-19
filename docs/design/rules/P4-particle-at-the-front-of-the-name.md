@@ -22,5 +22,6 @@ P4. Rationale: a particle links forward from inside a name; at the
       "John van der Berg"         →  pieces=[["John"], ["van", "der", "Berg"]]  · boundary
       "Freiherr St John Smith"    →  title="Freiherr St"
       "Freiherr St John Smith"    →  given="John"
+    Signal: a position: a particle in the name's leading position
     history: decisions/P2 · interacts: P1, P5, H2, H3 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
 

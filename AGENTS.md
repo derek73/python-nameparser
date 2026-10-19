@@ -18,7 +18,7 @@ After a review round, **review the fix commit too** — second-round passes on #
 
 ## Rules documentation (docs/design/)
 
-Three committed contributor docs carry the parser's normative rules and their reasons, enforced by the doc tests in tests/v2/ (design_docs.py, rules_doc.py and the test_doc_*/test_rules_doc*/test_design_docs modules). Before proposing a design or a fix that touches parser behavior, read docs/design/mechanisms.md and the relevant docs/design/rules/ sections — the catalog is keyed by problem shape, and the pattern you are about to invent is often already there.
+Three committed contributor docs carry the parser's normative rules and their reasons, enforced by the doc tests in tests/v2/ (design_docs.py, rules_doc.py, rules_budget.py and the test_doc_*/test_rules_*/test_design_docs modules). Before proposing a design or a fix that touches parser behavior, read docs/design/mechanisms.md and the relevant docs/design/rules/ sections — the catalog is keyed by problem shape, and the pattern you are about to invent is often already there.
 
 - **rules/** — NORMATIVE rules (intended behavior, domain-topic sections, executable examples; `deviates:` markers track known parser gaps), one file per rule and per section Background. Cite as `rules/P1`; code comments quote a verbatim excerpt in double quotes, checked by tests/v2/test_doc_citations.py.
 - **decisions/** — the ADR-style record, one file per key: dated entries, Declined: (rejected WITH evidence), Excluded: (what must stay out of a wordlist and why), Open: (issue links, never restated; also keyed to a vocabulary set for contested memberships — the right-rule-wrong-set class), 3-0-reevaluations (append whenever a design cites 1.4 parity as load-bearing).

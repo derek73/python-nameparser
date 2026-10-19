@@ -60,4 +60,5 @@ C4. Rationale: two name words before the comma are read as a
       "JOHN SMITH, VD MA"         →  suffix="VD MA"
       "John Smith, X.Y.Z."        →  suffix="X.Y.Z."
       "John Smith, X.Y.Z."  unlisted_dotted_suffixes-off  →  given="X.Y.Z."
+    Signal: a count: name words before the comma, for a word of the ambiguous class after it
     history: decisions/C4 · interacts: C1, C3, C5, C6, C11, S3, S4, S6, S7, S9 · implemented: nameparser/_pipeline/_comma.py

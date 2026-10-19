@@ -55,5 +55,6 @@ H2. Rationale: before a name, an abbreviation is almost always a
     not open: the vocabulary decides, and "Esq." is the postnominal
     it is.
       "Smith, Esq."               →  suffix="Esq."
+    Signal: a shape: an unlisted word of two or more letters ending in its one period, opening the given-name part
     history: decisions/H2 · interacts: C5, C6, C8, S3, P4, H5, H6, W3, W4, S9 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 

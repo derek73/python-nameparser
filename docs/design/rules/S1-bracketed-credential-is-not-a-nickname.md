@@ -8,5 +8,6 @@ S1. Rationale: brackets set off more than nicknames — credentials
     as if written bare.
       "Andrew Perkins (MBA)"      →  suffix="MBA"
       "Andrew Perkins (Andy)"     →  nickname="Andy"  · boundary
+    Signal: a shape: suffix-shaped content inside brackets
     interacts: M2 · implemented: nameparser/_pipeline/_extract.py
 

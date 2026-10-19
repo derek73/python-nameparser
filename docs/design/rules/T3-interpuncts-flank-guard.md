@@ -8,5 +8,6 @@ T3. Rationale: U+00B7 is two marks in one codepoint — the Chinese
     word.
       "威廉·莎士比亚"              →  family="莎士比亚"
       "Gal·la Serra"              →  given="Gal·la"  · boundary
+    Signal: a neighbor: the characters flanking an interpunct
     history: decisions/T3 · implemented: nameparser/_pipeline/_tokenize.py
 
