@@ -203,6 +203,7 @@
 {"name": "Anne Berit Bernhard Nilsen", "given": "Anne", "middle": "Berit Bernhard", "family": "Nilsen", "initials": "A. B. B. N."}
 {"name": "Anne Sepp", "given": "Anne", "family": "Sepp", "initials": "A. S."}
 {"name": "Anne Sofie Holm Hansen", "given": "Anne", "middle": "Sofie Holm", "family": "Hansen", "initials": "A. S. H. H."}
+{"name": "Anne, Princess", "title": "Princess", "given": "Anne", "initials": "A."}
 {"name": "Anne-Pierre de Montesquiou-Fézensac", "given": "Anne-Pierre", "family": "de Montesquiou-Fézensac", "initials": "A. M."}
 {"name": "Annebault, Claude d'", "given": "Claude", "family": "d' Annebault", "initials": "C. A."}
 {"name": "Annelise Weber", "given": "Annelise", "family": "Weber", "initials": "A. W."}
@@ -736,7 +737,10 @@
 {"name": "Dr. Paul Vinzent von Fischer jr. MdB", "title": "Dr.", "given": "Paul", "middle": "Vinzent", "family": "von Fischer", "suffix": "jr. MdB", "initials": "P. V. F."}
 {"name": "Dr. Sir John", "title": "Dr. Sir", "given": "John", "initials": "J."}
 {"name": "Dr. Smith", "title": "Dr.", "family": "Smith", "initials": "S."}
+{"name": "Dr. Smith II, Sir", "title": "Dr. Sir", "family": "Smith", "suffix": "II", "initials": "S."}
+{"name": "Dr. Smith Jr., AD", "title": "Dr.", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S."}
 {"name": "Dr. Smith Sir.", "title": "Dr. Sir.", "family": "Smith", "initials": "S."}
+{"name": "Dr. Smith V, AD", "title": "Dr.", "given": "AD", "family": "Smith V", "initials": "A. S. V."}
 {"name": "Dr. Smith née Jones", "title": "Dr.", "family": "Smith", "maiden": "Jones", "initials": "S."}
 {"name": "Dr. Smith, John", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Dr. St. Pierre, Ed", "title": "Dr.", "given": "Ed", "family": "St. Pierre", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. P."}
@@ -804,6 +808,7 @@
 {"name": "Elder Soares", "given": "Elder", "family": "Soares", "initials": "E. S."}
 {"name": "Elisa Ruiz Romero", "given": "Elisa", "middle": "Ruiz", "family": "Romero", "initials": "E. R. R."}
 {"name": "Eliseo Jiménez Ruiz", "given": "Eliseo", "middle": "Jiménez", "family": "Ruiz", "initials": "E. J. R."}
+{"name": "Elizabeth II, Queen", "title": "Queen", "given": "Elizabeth", "suffix": "II", "initials": "E."}
 {"name": "Elizabeth Margot Schreiber Castañón", "given": "Elizabeth", "middle": "Margot Schreiber", "family": "Castañón", "initials": "E. M. S. C."}
 {"name": "Elizabeth Windsor Maria Teresa bin Stromae MP", "given": "Elizabeth", "middle": "Windsor Maria Teresa", "family": "bin Stromae", "suffix": "MP", "initials": "E. W. M. T. S."}
 {"name": "Elslande, Renaat van", "given": "Renaat", "family": "van Elslande", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "R. E."}
@@ -972,6 +977,7 @@
 {"name": "Garaikoetxea Urriza, Juan C.", "given": "Juan", "middle": "C.", "family": "Garaikoetxea Urriza", "initials": "J. C. G. U."}
 {"name": "Garcia", "given": "Garcia", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "G."}
 {"name": "Garcia Juan Carlos", "given": "Garcia", "middle": "Juan", "family": "Carlos", "initials": "G. J. C."}
+{"name": "Garcia Lopez Jr., Juan", "given": "Juan", "family": "Garcia Lopez", "suffix": "Jr.", "initials": "J. G. L."}
 {"name": "Garcia de Jalon", "given": "Garcia", "family": "de Jalon", "initials": "G. J."}
 {"name": "Garcia y Lopez", "given": "Garcia", "middle": "y", "family": "Lopez", "initials": "G. y. L."}
 {"name": "Garcia-Roza, Luiz Alfredo", "given": "Luiz", "middle": "Alfredo", "family": "Garcia-Roza", "initials": "L. A. G."}
@@ -1269,6 +1275,7 @@
 {"name": "JOHN PROF. MA", "title": "PROF.", "given": "JOHN", "family": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. M."}
 {"name": "JOHN QUINCY SMITH I", "given": "JOHN", "middle": "QUINCY", "family": "SMITH", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. Q. S."}
 {"name": "JOHN SMITH", "given": "JOHN", "family": "SMITH", "initials": "J. S."}
+{"name": "JOHN SMITH JR, AD", "given": "AD", "family": "JOHN SMITH", "suffix": "JR", "initials": "A. J. S."}
 {"name": "JOHN SMITH MA", "given": "JOHN", "family": "SMITH", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "JOHN SMITH NEE X X", "given": "JOHN", "family": "SMITH", "maiden": "X X", "initials": "J. S."}
 {"name": "JOHN SMITH PH.D.", "given": "JOHN", "family": "SMITH", "suffix": "PH.D.", "initials": "J. S."}
@@ -1384,6 +1391,7 @@
 {"name": "Jane Smith, née Jones", "given": "née", "middle": "Jones", "family": "Jane Smith", "initials": "n. J. J. S."}
 {"name": "Jane and née Jones", "given": "Jane and née", "family": "Jones", "initials": "J. n. J."}
 {"name": "Jane de la née Jones", "given": "Jane", "family": "de la", "maiden": "Jones", "initials": "J. d. l."}
+{"name": "Jane nee Smith Jr., AD", "given": "AD", "family": "Jane", "suffix": "Jr.", "maiden": "Smith", "initials": "A. J."}
 {"name": "Jane née Jones Smith", "family": "Jane", "maiden": "Jones Smith", "initials": "J."}
 {"name": "Jane née Jr y Jones", "given": "Jane", "middle": "née", "family": "Jr y Jones", "initials": "J. n. J. J."}
 {"name": "Jane née and Jones Smith", "family": "Jane", "maiden": "and Jones Smith", "initials": "J."}
@@ -1494,7 +1502,10 @@
 {"name": "John Hámish Watson", "given": "John", "middle": "Hámish", "family": "Watson", "initials": "J. H. W."}
 {"name": "John I Smith", "given": "John", "middle": "I", "family": "Smith", "initials": "J. I. S."}
 {"name": "John III", "given": "John", "suffix": "III", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "J."}
+{"name": "John III, Dr.", "title": "Dr.", "family": "John", "suffix": "III", "initials": "J."}
+{"name": "John III, Sir", "title": "Sir", "given": "John", "suffix": "III", "initials": "J."}
 {"name": "John Ingram V", "given": "John", "family": "Ingram", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. I."}
+{"name": "John J VI, AD", "given": "AD", "family": "John J VI", "initials": "A. J. J. V."}
 {"name": "John J. V", "given": "John", "middle": "J.", "family": "V", "initials": "J. J. V."}
 {"name": "John Jack Andrew Kennedy", "given": "John", "middle": "Jack Andrew", "family": "Kennedy", "initials": "J. J. A. K."}
 {"name": "John Jones (Google Docs)", "given": "John", "family": "Jones", "nickname": "Google Docs", "initials": "J. J."}
@@ -1520,12 +1531,20 @@
 {"name": "John Smith Esq.", "given": "John", "family": "Smith", "suffix": "Esq.", "initials": "J. S."}
 {"name": "John Smith Esquire", "given": "John", "family": "Smith", "suffix": "Esquire", "initials": "J. S."}
 {"name": "John Smith I", "given": "John", "family": "Smith", "suffix": "I", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith II, AD", "given": "John", "family": "Smith", "suffix": "II, AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith III", "given": "John", "family": "Smith", "suffix": "III", "initials": "J. S."}
 {"name": "John Smith J.u.n.i.o.r.", "given": "John", "family": "Smith", "suffix": "J.u.n.i.o.r.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith Jr", "given": "John", "family": "Smith", "suffix": "Jr", "initials": "J. S."}
 {"name": "John Smith Jr.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S."}
 {"name": "John Smith Jr. Prof.", "title": "Prof.", "given": "John", "family": "Smith", "suffix": "Jr.", "initials": "J. S."}
+{"name": "John Smith Jr., AD MD", "given": "John", "family": "Smith", "suffix": "Jr., AD MD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith Jr., AD Sr. and Mr.", "title": "Sr. and Mr.", "given": "John", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith Jr., J.", "given": "J.", "family": "John Smith", "suffix": "Jr.", "initials": "J. J. S."}
+{"name": "John Smith Jr., MBChB PhD", "given": "John", "family": "Smith", "suffix": "Jr., MBChB PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith Jr., Mr. and Mrs. AD", "title": "Mr. and Mrs.", "given": "John", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith Jr., PhD", "given": "John", "family": "Smith", "suffix": "Jr., PhD", "initials": "J. S."}
+{"name": "John Smith Jr., Sir AD", "title": "Sir", "given": "John", "family": "Smith", "suffix": "Jr., AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith Jr., þingmaður", "given": "John", "family": "Smith", "suffix": "Jr., þingmaður", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith M.A.", "given": "John", "family": "Smith", "suffix": "M.A.", "initials": "J. S."}
 {"name": "John Smith MA", "given": "John", "family": "Smith", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith MC", "given": "John", "family": "Smith", "suffix": "MC", "initials": "J. S."}
@@ -1554,8 +1573,10 @@
 {"name": "John Smith V", "given": "John", "family": "Smith", "suffix": "V", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith V Ph. D.", "given": "John", "family": "Smith", "suffix": "V Ph. D.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith V PhD", "given": "John", "middle": "Smith", "family": "V", "suffix": "PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S. V."}
+{"name": "John Smith V, AD", "given": "John", "family": "Smith", "suffix": "V, AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith V.", "given": "John", "middle": "Smith", "family": "V.", "initials": "J. S. V."}
 {"name": "John Smith VI", "given": "John", "family": "Smith", "suffix": "VI", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
+{"name": "John Smith VI, AD", "given": "John", "family": "Smith", "suffix": "VI, AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith X.Y.Z.", "given": "John", "family": "Smith", "suffix": "X.Y.Z.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "John Smith XI", "given": "John", "middle": "Smith", "family": "XI", "initials": "J. S. X."}
 {"name": "John Smith XYZ", "given": "John", "middle": "Smith", "family": "XYZ", "initials": "J. S. X."}
@@ -1566,6 +1587,7 @@
 {"name": "John Smith, 1.4", "given": "1.4", "family": "John Smith", "initials": "1. J. S."}
 {"name": "John Smith, A.B.", "given": "A.B.", "family": "John Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. J. S."}
 {"name": "John Smith, A.B. Ph.D.", "given": "A.B.", "family": "John Smith", "suffix": "Ph.D.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. J. S."}
+{"name": "John Smith, AD", "given": "AD", "family": "John Smith", "initials": "A. J. S."}
 {"name": "John Smith, Dr.", "title": "Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "John Smith, Dr.", "order": "FAMILY_FIRST", "title": "Dr.", "given": "Smith", "family": "John", "initials": "S. J."}
 {"name": "John Smith, Dr. J.씨", "title": "Dr.", "given": "John", "family": "Smith", "suffix": "J.씨", "initials": "J. S."}
@@ -1987,6 +2009,8 @@
 {"name": "Lisandro Leyva Mazuera", "given": "Lisandro", "middle": "Leyva", "family": "Mazuera", "initials": "L. L. M."}
 {"name": "Livraga Rizzi, Jorge A.", "given": "Jorge", "middle": "A.", "family": "Livraga Rizzi", "initials": "J. A. L. R."}
 {"name": "Llorenç Ferrer Martí", "given": "Llorenç", "middle": "Ferrer", "family": "Martí", "initials": "L. F. M."}
+{"name": "Lloret Palol II, JA", "given": "Lloret", "family": "Palol", "suffix": "II, JA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "L. P."}
+{"name": "Lloret Palol II, Josep Antoni", "given": "Josep", "middle": "Antoni", "family": "Lloret Palol", "suffix": "II", "initials": "J. A. L. P."}
 {"name": "Lloret Palol, Josep Antoni Carles Joan", "given": "Josep", "middle": "Antoni Carles Joan", "family": "Lloret Palol", "initials": "J. A. C. J. L. P."}
 {"name": "Lluis Carod i", "given": "Lluis", "family": "Carod", "suffix": "i", "initials": "L. C."}
 {"name": "Lockroy", "given": "Lockroy", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "L."}
@@ -2538,7 +2562,7 @@
 {"name": "Prof. Dr. von Brühl Plácido Domingo Ada Cornelia César Martín, MD DDS", "order": "FAMILY_FIRST", "title": "Prof. Dr.", "given": "Brühl", "middle": "Plácido Domingo Ada Cornelia César Martín", "family": "von", "suffix": "MD DDS", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. P. D. A. C. C. M. v."}
 {"name": "Prof. Smith, Dr. John", "title": "Prof. Dr.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Prof. Smith, John, PhD", "title": "Prof.", "given": "John", "family": "Smith", "suffix": "PhD", "initials": "J. S."}
-{"name": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD", "title": "Prof. dr.", "given": "MBChB", "family": "Cornelia Margarita Sofia Aletta van den Berg", "suffix": "jnr., PhD", "initials": "M. C. M. S. A. B."}
+{"name": "Prof. dr. Cornelia Margarita Sofia Aletta van den Berg jnr., MBChB PhD", "title": "Prof. dr.", "given": "Cornelia", "middle": "Margarita Sofia Aletta", "family": "van den Berg", "suffix": "jnr., MBChB PhD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "C. M. S. A. B."}
 {"name": "Prof. dr. MD Chirurgie dentară Eva-Eleonora Karl Hans von der Ruhr Jr.", "title": "Prof. dr. MD", "given": "Chirurgie", "middle": "dentară Eva-Eleonora Karl Hans", "family": "von der Ruhr", "suffix": "Jr.", "initials": "C. d. E. K. H. R."}
 {"name": "Prof. Ɖr. MƉ Samʊwɛl fan ƉAM Fostɛɛŋ", "title": "Prof. Ɖr.", "given": "MƉ", "middle": "Samʊwɛl fan ƉAM", "family": "Fostɛɛŋ", "initials": "M. S. f. Ɖ. F."}
 {"name": "Prof. Ɖr. MƉ fan ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "order": "FAMILY_FIRST", "title": "Prof. Ɖr.", "given": "fan", "middle": "ƉAM ƉOMIŊGO Fostɛɛŋ Samʊwɛl", "family": "MƉ", "initials": "f. Ɖ. Ɖ. F. S. M."}
@@ -2750,8 +2774,8 @@
 {"name": "Shtober Zaziliya Hemish", "order": "FAMILY_FIRST", "given": "Zaziliya", "middle": "Hemish", "family": "Shtober", "initials": "Z. H. S."}
 {"name": "Shtober, Zaziliya Hemish", "given": "Zaziliya", "middle": "Hemish", "family": "Shtober", "initials": "Z. H. S."}
 {"name": "Sidorov Ivan Petrovich Jr.", "given": "Sidorov", "middle": "Ivan", "family": "Petrovich", "suffix": "Jr.", "initials": "S. I. P."}
-{"name": "Sig. Fabio Massimo Carlo Alberto Martini II, AD", "given": "AD", "family": "Sig. Fabio Massimo Carlo Alberto Martini", "suffix": "II", "initials": "A. S. F. M. C. A. M."}
-{"name": "Sig. Martini Fabio Massimo Carlo Alberto II, AD", "order": "FAMILY_FIRST", "given": "AD", "family": "Sig. Martini Fabio Massimo Carlo Alberto", "suffix": "II", "initials": "A. S. M. F. M. C. A."}
+{"name": "Sig. Fabio Massimo Carlo Alberto Martini II, AD", "title": "Sig.", "given": "Fabio", "middle": "Massimo Carlo Alberto", "family": "Martini", "suffix": "II, AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "F. M. C. A. M."}
+{"name": "Sig. Martini Fabio Massimo Carlo Alberto II, AD", "order": "FAMILY_FIRST", "title": "Sig.", "given": "Fabio", "middle": "Massimo Carlo Alberto", "family": "Martini", "suffix": "II, AD", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "F. M. C. A. M."}
 {"name": "Sigfús Einarsson", "given": "Sigfús", "family": "Einarsson", "initials": "S. E."}
 {"name": "Sighvatur Þórðarson", "given": "Sighvatur", "family": "Þórðarson", "initials": "S. Þ."}
 {"name": "Signor Marco Rossi", "title": "Signor", "given": "Marco", "family": "Rossi", "initials": "M. R."}
@@ -2793,13 +2817,14 @@
 {"name": "Sir Smith, John", "title": "Sir", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Sir Van Johnson", "title": "Sir", "given": "Van", "family": "Johnson", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "V. J."}
 {"name": "Sir abdul van der Berg", "title": "Sir", "given": "abdul", "family": "van der Berg", "initials": "a. B."}
+{"name": "Sir de", "title": "Sir", "given": "de", "initials": "d."}
 {"name": "Sir de Mesnil", "title": "Sir", "family": "de Mesnil", "initials": "M."}
 {"name": "Sirius", "given": "Sirius", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
 {"name": "Sister Mary", "title": "Sister", "given": "Mary", "initials": "M."}
 {"name": "Sister Souljah", "title": "Sister", "given": "Souljah", "initials": "S."}
 {"name": "Siv Friðleifsdóttir", "given": "Siv", "family": "Friðleifsdóttir", "initials": "S. F."}
 {"name": "Skapti Ólafsson", "given": "Skapti", "family": "Ólafsson", "initials": "S. Ó."}
-{"name": "Skeggjason Hr. Geir Jón Magnús Brynjar yngri, þingmaður", "order": "FAMILY_FIRST", "given": "þingmaður", "family": "Skeggjason Hr. Geir Jón Magnús Brynjar", "suffix": "yngri", "initials": "þ. S. H. G. J. M. B."}
+{"name": "Skeggjason Hr. Geir Jón Magnús Brynjar yngri, þingmaður", "order": "FAMILY_FIRST", "given": "Hr.", "middle": "Geir Jón Magnús Brynjar", "family": "Skeggjason", "suffix": "yngri, þingmaður", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "H. G. J. M. B. S."}
 {"name": "Slovák Ján Matej", "order": "FAMILY_FIRST", "given": "Ján", "middle": "Matej", "family": "Slovák", "initials": "J. M. S."}
 {"name": "Slovák, Ján Matej", "given": "Ján", "middle": "Matej", "family": "Slovák", "initials": "J. M. S."}
 {"name": "Smith", "given": "Smith", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
@@ -2808,6 +2833,7 @@
 {"name": "Smith , John", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith Cecilia Angela", "order": "FAMILY_FIRST", "given": "Cecilia", "middle": "Angela", "family": "Smith", "initials": "C. A. S."}
 {"name": "Smith Dr", "given": "Smith", "family": "Dr", "initials": "S. D."}
+{"name": "Smith Jones Jr., J.A.", "given": "J.A.", "family": "Smith Jones", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S. J."}
 {"name": "Smith Jones, Ph. D. Jr.", "given": "Smith", "family": "Jones", "suffix": "Ph. D. Jr.", "initials": "S. J."}
 {"name": "Smith Jr.", "given": "Smith", "suffix": "Jr.", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "S."}
 {"name": "Smith Jr., A.B.", "given": "A.B.", "family": "Smith", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. S."}
@@ -2818,6 +2844,8 @@
 {"name": "Smith Juan Vega", "given": "Smith", "middle": "Juan", "family": "Vega", "initials": "S. J. V."}
 {"name": "Smith Prof.", "title": "Prof.", "family": "Smith", "initials": "S."}
 {"name": "Smith Sir.", "title": "Sir.", "given": "Smith", "initials": "S."}
+{"name": "Smith V, AD", "given": "AD", "family": "Smith V", "initials": "A. S. V."}
+{"name": "Smith VI, AD", "given": "AD", "family": "Smith VI", "initials": "A. S. V."}
 {"name": "Smith born", "given": "Smith", "family": "born", "initials": "S. b."}
 {"name": "Smith nee Jones, Jane MA", "given": "Jane", "family": "Smith", "suffix": "MA", "maiden": "Jones", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "Smith née", "given": "Smith", "family": "née", "initials": "S. n."}
@@ -2893,6 +2921,7 @@
 {"name": "Smith, PhD Ma", "family": "Smith", "suffix": "PhD Ma", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S."}
 {"name": "Smith, Prof.", "title": "Prof.", "family": "Smith", "initials": "S."}
 {"name": "Smith, RN - CRNA", "family": "Smith", "suffix": "RN - CRNA", "initials": "S."}
+{"name": "Smith, Sir", "title": "Sir", "given": "Smith", "initials": "S."}
 {"name": "Smith, Sr.", "family": "Smith", "suffix": "Sr.", "initials": "S."}
 {"name": "Smith, XYZ", "given": "XYZ", "family": "Smith", "initials": "X. S."}
 {"name": "Smith, de Mesnil Jean", "family": "Smith de Mesnil Jean", "initials": "S. M. J."}
@@ -2922,6 +2951,7 @@
 {"name": "Srta. Andréia da Silva", "title": "Srta.", "given": "Andréia", "family": "da Silva", "initials": "A. S."}
 {"name": "St Clair", "title": "St", "family": "Clair", "initials": "C."}
 {"name": "St Pierre, Ed", "given": "Ed", "family": "St Pierre", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. P."}
+{"name": "St Sir de Mesnil", "title": "St Sir", "given": "de Mesnil", "initials": "d. M."}
 {"name": "Sta. Maria, Juan", "given": "Juan", "family": "Sta. Maria", "initials": "J. S. M."}
 {"name": "Stander Zelda Herman", "order": "FAMILY_FIRST", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
 {"name": "Stander, Zelda Herman", "given": "Zelda", "middle": "Herman", "family": "Stander", "initials": "Z. H. S."}
@@ -3079,6 +3109,7 @@
 {"name": "Ursula von der Leyen geb. Albrecht", "given": "Ursula", "family": "von der Leyen", "maiden": "Albrecht", "initials": "U. L."}
 {"name": "Uxía", "given": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "U."}
 {"name": "Uxía", "order": "FAMILY_FIRST", "family": "Uxía", "ambiguities": ["GIVEN_OR_FAMILY"], "initials": "U."}
+{"name": "VI, AD", "given": "AD", "family": "VI", "initials": "A. V."}
 {"name": "VINCENT VAN GOGH", "given": "VINCENT", "family": "VAN GOGH", "initials": "V. G."}
 {"name": "Va'apu'u Vitale", "given": "Va'apu'u", "family": "Vitale", "initials": "V. V."}
 {"name": "Valderrama Fernández, Ricardo", "given": "Ricardo", "family": "Valderrama Fernández", "initials": "R. V. F."}
@@ -3485,7 +3516,7 @@
 {"name": "prof. dr Ada Cornelia von Brühl", "title": "prof. dr", "given": "Ada", "middle": "Cornelia", "family": "von Brühl", "initials": "A. C. B."}
 {"name": "prof. dr Aleksandra Eva Sara van den Volf Petrović Jugović dipl. inž.", "title": "prof. dr", "given": "Aleksandra", "middle": "Eva Sara", "family": "van den Volf Petrović Jugović dipl. inž.", "initials": "A. E. S. V. P. J. d. i."}
 {"name": "prof. dr von Brühl Ada Cornelia César Martín", "order": "FAMILY_FIRST", "title": "prof. dr", "given": "Brühl", "middle": "Ada Cornelia César Martín", "family": "von", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "B. A. C. C. M. v."}
-{"name": "prof. dr. Ada Cornelia César Martín von Brühl Jr, univ. bacc", "title": "prof. dr. univ.", "given": "bacc", "family": "Ada Cornelia César Martín von Brühl", "suffix": "Jr", "initials": "b. A. C. C. M. B."}
+{"name": "prof. dr. Ada Cornelia César Martín von Brühl Jr, univ. bacc", "title": "prof. dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl", "suffix": "Jr, univ. bacc", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "A. C. C. M. B."}
 {"name": "prof. dr. Ada Cornelia César Martín von Brühl ml., dr. med., dr. dent. med.", "title": "prof. dr. dr. med. dr.", "given": "Ada", "middle": "Cornelia César Martín", "family": "von Brühl ml.", "suffix": "dent. med.", "ambiguities": ["COMMA_STRUCTURE"], "initials": "A. C. C. M. B. m."}
 {"name": "prof. dr. Anna Cornelia Eva Sophia van den Wolf jr. m.d. ph.d.", "title": "prof. dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. m.d. ph.d.", "initials": "A. C. E. S. W."}
 {"name": "prof. dr. Gentiana van den Popa, dr. shk. mjek.", "title": "prof. dr. dr. shk. mjek.", "given": "Gentiana", "family": "van den Popa", "initials": "G. P."}
@@ -3524,6 +3555,7 @@
 {"name": "vai la", "given": "vai", "family": "la", "initials": "v. l."}
 {"name": "van Berg Jan de", "given": "van", "middle": "Berg Jan", "family": "de", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. B. J. d."}
 {"name": "van Gogh", "given": "van", "family": "Gogh", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. G."}
+{"name": "van Gogh, Sir", "title": "Sir", "family": "van Gogh", "initials": "G."}
 {"name": "van den Berg Cornelia Margarita Sofia Aletta MBChB PhD", "order": "FAMILY_FIRST", "given": "den Berg Cornelia Margarita Sofia Aletta MBChB", "family": "van", "suffix": "PhD", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. B. C. M. S. A. M. v."}
 {"name": "van den Volf Ada Kornelia Sezar Martin M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "den Volf Ada Kornelia Sezar Martin", "family": "van", "suffix": "M.D. Ph.D.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. A. K. S. M. v."}
 {"name": "van den Volf Ada Kornelia Yeva Sofiya M.D. Ph.D.", "order": "FAMILY_FIRST", "given": "den Volf Ada Kornelia Yeva Sofiya", "family": "van", "suffix": "M.D. Ph.D.", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "d. V. A. K. Y. S. v."}
@@ -3537,6 +3569,7 @@
 {"name": "van den Wolf, prof. dr. Anna Cornelia Eva Sophia jr. m.d. ph.d.", "order": "FAMILY_FIRST", "title": "prof. dr.", "given": "Anna", "middle": "Cornelia Eva Sophia", "family": "van den Wolf", "suffix": "jr. m.d. ph.d.", "initials": "A. C. E. S. W."}
 {"name": "van der Berg, MA", "family": "van der Berg", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "B."}
 {"name": "van der Berg, PhD", "family": "van der Berg", "suffix": "PhD", "initials": "B."}
+{"name": "van der Berg, Sir", "title": "Sir", "family": "van der Berg", "initials": "B."}
 {"name": "van ma van", "given": "van", "middle": "ma", "family": "van", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. m. v."}
 {"name": "van nguyen", "given": "van", "family": "nguyen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "v. n."}
 {"name": "van. den. Wolf Ada Cornelia Eva Sophia M.D. Ph.D.", "order": "FAMILY_FIRST", "title": "van. den.", "given": "Ada", "middle": "Cornelia Eva Sophia", "family": "Wolf", "suffix": "M.D. Ph.D.", "initials": "A. C. E. S. W."}

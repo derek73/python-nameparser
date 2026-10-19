@@ -250,6 +250,9 @@ def is_initial_shaped(text: str) -> bool:
 
 # v1 regexes.py "roman_numeral", pinned by tests/v2/test_regex_sync.py.
 _ROMAN = re.compile(r'^(X|IX|IV|V?I{0,3})$', re.I)
+#: The same pattern, shared rather than copied: `_comma` filters on
+#: it before asking `is_trailing_numeral_suffix` (rules/C12).
+ROMAN = _ROMAN
 
 
 # rules/S10: "A roman numeral ending a name written without a comma

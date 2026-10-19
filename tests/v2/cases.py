@@ -1789,11 +1789,9 @@ CASES: tuple[Case, ...] = (
          notes="H1's carve-out is untouched by #410: a given-name "
                "title addresses by given name, so the one name word "
                "stays `given` and the family stays empty, exactly as "
-               "'Sir John' reads -- in the DEFAULT order, which is "
-               "what this row pins: under either family-first order "
-               "the same name reads family 'John', H1 being a no-op "
-               "there because assign has already placed the word. "
-               "The boundary of the widening, and "
+               "'Sir John' reads, under either family-first order "
+               "too since #720, H1 moving back a word assign placed "
+               "in the family. The boundary of the widening, and "
                "the row that fails if the retag is made unconditional. "
                "The fix classification is #274's marker consumption, "
                "which is what makes this differ from 1.4.0 (first "
@@ -9028,14 +9026,17 @@ CASES: tuple[Case, ...] = (
                "suffix vocabulary before the audit"),
     Case("comma_path_given_name_title_behind_a_listed_numeral",
          "John III, Sir",
-         {"title": "Sir", "family": "John", "suffix": "III"},
+         {"title": "Sir", "given": "John", "suffix": "III"},
+         classification="fix(#720)",
          notes="the title row above with a GIVEN-NAME title. O5 is "
                "silenced all the same: what the report is about is a "
                "field NOTHING decided, and this one a title decided. "
-               "The word lands in `family`, AGAINST H1's given-name "
-               "title clause ('John Jr., Sir' and 'John PhD, Sir' "
-               "too, #720). 'John V, Sir' read H1's given name until "
-               "#718; nothing pins that reading behind a comma now"),
+               "A comma with no given name after it does not decide "
+               "the field (H1), so the title keeps the word given, as "
+               "the shape-only 'John VI, Sir' already read it (2.x; "
+               "1.4.0 read last 'John VI'). Assign "
+               "writes the family on this path and H1 moves it back. "
+               "1.4.0 read last 'John'"),
     Case("a_lone_numeral_before_a_given_name_title_comma",
          "John V, Sir",
          {"title": "Sir", "given": "John", "family": "V"},
@@ -9043,6 +9044,34 @@ CASES: tuple[Case, ...] = (
          notes="the row above with a one-letter numeral, which has no "
                "word to spare (S10, the trailing roman numeral). "
                "1.4.0 read title 'Sir', last 'John V'"),
+    Case("generation_before_a_credential_comma_behind_a_nickname",
+         "John 'Jack' Smith II, AD",
+         {"given": "John", "family": "Smith", "suffix": "II, AD",
+          "nickname": "Jack"},
+         ambiguities=("suffix-or-name",), classification="fix(#656)",
+         notes="C12 (a suffix word ending the name before the comma): "
+               "the nickname is no word of the count, so 'John Smith' "
+               "is the whole name in front of the generation, and AD, "
+               "not written as a name, is the credential. 1.4.0 "
+               "through 2.4.2 read first 'AD', last 'John Smith'"),
+    Case("generation_before_a_comma_holding_a_title_and_a_credential",
+         "John Smith Jr., Sir AD",
+         {"title": "Sir", "given": "John", "family": "Smith",
+          "suffix": "Jr., AD"},
+         ambiguities=("suffix-or-name",), classification="fix(#656)",
+         notes="C12 with a title in the part: the title reads as a "
+               "title and the report names only the credential it "
+               "took, so the field sweep holds it to the suffix. "
+               "2.4.2 read given 'AD', family 'John Smith'"),
+    Case("generation_before_a_credential_comma_behind_a_maiden_clause",
+         "Jane Doe nee Smith Jr., AD",
+         {"given": "Jane", "family": "Doe", "suffix": "Jr., AD",
+          "maiden": "Smith"},
+         ambiguities=("suffix-or-name",), classification="fix(#656)",
+         notes="C12 behind a maiden clause: the clause keeps 'Smith', "
+               "the generation stays the suffix, and the part after "
+               "the comma joins it. 2.4.2 read given 'AD', family "
+               "'Jane Doe' (1.4.0: last 'Jane Doe nee Smith')"),
     Case("marker_led_clause_in_a_quote_pair",
          'Jane Smith "née Jones"',
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
@@ -9518,7 +9547,8 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_lone_title", "Smith, Dr.",
          {"title": "Dr.", "family": "Smith"},
          classification="fix(comma-family)",
-         notes="pre-comma is definitionally family; v1 put it in first"),
+         notes="pre-comma is family, as Dr. addresses by surname (a "
+               "given-name title reads it as given, #720); v1 put it in first"),
     Case("family_comma_all_title_segment_keeps_split", "John Smith, Mr.",
          {"title": "Mr.", "given": "John", "family": "Smith"},
          classification="fix(comma-family)",

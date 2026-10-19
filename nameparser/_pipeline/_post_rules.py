@@ -335,10 +335,32 @@ def _addressing_run(titles: list[int], name_word: int) -> list[int]:
     the first non-title token got both wrong (measured 2026-09-09).
 
     Called only from inside H1's guard, after the role counts have
-    short-circuited, so a name with a family never builds this list;
-    `name_word` is the first GIVEN, which that guard has already
-    proved is the only name word there is."""
+    short-circuited, so a name with both a given and a family never
+    builds this list; `name_word` is the first GIVEN, or the first
+    FAMILY in the direction #720 added. The given guard has proved it
+    is the only name word there is; the family guard proves only that
+    no given or middle stands beside it, which is where a comma or a
+    declared order leaves one name word."""
     return [i for i in titles if i < name_word] or titles
+
+
+def _family_settled(state: ParseState, tokens: list[WorkToken],
+                    families: list[int]) -> bool:
+    """Whether something other than the order placed this lone family
+    word, so H1's family -> given direction leaves it (#720). After a
+    comma a particle in it is settled -- rules/C3's "the comma settles
+    P1's fork for a leading particle that could be a given name"
+    ('van Gogh, Sir'); without one, P1's fold below takes a never-given
+    particle opening the name with a word behind it ('Sir de Mesnil'),
+    asked by the fold's own predicate on the same piece. An ambiguous
+    particle nothing settled, or a bare one with nothing to fold, is a
+    word the order placed ('Sir Van', 'Sheik Abu Bakar' and 'Sir de'
+    under FAMILY_FIRST; 'Sir von und zu', whose never-given 'zu' does
+    not open it)."""
+    if state.structure is Structure.FAMILY_COMMA:
+        return any("particle" in tokens[i].tags for i in families)
+    return len(families) > 1 and is_lone_never_given_particle(
+        _leading_name_piece(state, tokens), tokens)
 
 
 def post_rules(state: ParseState) -> ParseState:
@@ -376,6 +398,26 @@ def post_rules(state: ParseState) -> ParseState:
         # moved -- a stale index list is the bug shape #359 fixed
         givens = _idx(tokens, Role.GIVEN)
         middles = _idx(tokens, Role.MIDDLE)
+        families = _idx(tokens, Role.FAMILY)
+    # rules/H1: "a comma with no given name after it does not decide
+    # the field, nor does a declared order" -- the other direction, for
+    # the shapes assign reads as the family before H1 can see them
+    # (#720): a family comma with no name word after it and one before
+    # it, and the one name word of a name read family-first. The comma
+    # named no given part, and the order places a word nothing else
+    # decided (O5), so the title decides as it does in 'Sir John'
+    # ('Elizabeth II, Queen' reads as 'Queen Elizabeth II'), unless
+    # something else settled the word (_family_settled).
+    elif (titles and families and not givens and not middles
+            and not _family_settled(state, tokens, families)
+            and _run_addresses_by_given(
+                (tokens[i].text
+                 for i in _addressing_run(titles, families[0])),
+                state.lexicon.given_name_titles)):
+        for i in families:
+            _retag(tokens, i, Role.GIVEN)
+        # recomputed for H1's reason, stated above
+        givens = _idx(tokens, Role.GIVEN)
         families = _idx(tokens, Role.FAMILY)
 
     # rules/M4: "a maiden name standing beside exactly one name
@@ -447,8 +489,10 @@ def post_rules(state: ParseState) -> ParseState:
     # particle only where it landed in a MIDDLE, which means nothing.
     # Code-local: a lone PIECE is the test, so a particle group
     # already chained forward is not a lone particle, and rule H1
-    # above cannot be what produces the fold's family reading -- H1 is
-    # gated on `not families`.
+    # above cannot be what produces the fold's family reading -- its
+    # given -> family branch is gated on `not families`, and its family
+    # -> given branch leaves the word this fold takes, asking the same
+    # predicate (_family_settled).
     lead = _leading_name_piece(state, tokens)
     lead_fires = is_lone_never_given_particle(lead, tokens)
     if len(givens) + len(middles) + len(families) > 1 and lead_fires:

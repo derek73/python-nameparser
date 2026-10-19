@@ -40,7 +40,7 @@ Understood by default
 Every piece of each is optional:
 
 1. ``Title Given "Nickname" Middle Middle Family Suffix``
-2. ``Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix or Title]``
+2. ``[Title] Family [Suffix], Title Given (Nickname) Middle Middle[,] Suffix [, Suffix or Title]``
 3. ``Title Given Middle Family [Suffix], Suffix or Title [, Suffix or Title]``
 
 A title written with a period (``Prof.``) is also read at the end of a
@@ -63,6 +63,19 @@ given-then-family:
     'Jr.'
     >>> parse("John Doe, Jr.").family                    # form 3
     'Doe'
+
+A suffix ending a name of two or more words (a title counts) before the comma reads as
+form 3 even when what follows is a credential the vocabulary does not
+know, since a generation is written there in natural order. A word
+after the comma written as a name, or an initial, keeps form 2 (since
+2.5):
+
+.. doctest::
+
+    >>> parse("John Smith II, AD").suffix
+    'II, AD'
+    >>> parse("Garcia Lopez Jr., Juan").given
+    'Juan'
 
 A part after the comma in form 3, or after a further comma in either
 form, holds suffixes and titles, a word there that is a title rather
