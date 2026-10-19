@@ -14,7 +14,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     says "opening" and does not mean what P4 and the H Background
     mean by it. A family comma is the other boundary: the comma has
     already named the family, so a credential run may open the part
-    after it (C1), and the part before it is that family, less a
+    after it (C8), and the part before it is that family, less a
     title run opening it (H6).
     A trailing word of the suffix vocabulary reads as a suffix —
     generational forms and credential acronyms alike, and an
@@ -87,4 +87,4 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions/v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    history: decisions/S2 · interacts: H1, H2, H3, H4, H5, H6, C1, S3, S4, S5, S6, S7, S8, S10, P2, P3, P4, P5 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
+    history: decisions/S2 · interacts: H1, H2, H3, H4, H5, H6, C1, C8, S3, S4, S5, S6, S7, S8, S10, P2, P3, P4, P5 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py

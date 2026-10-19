@@ -18,12 +18,12 @@ S3. Rationale: credentials are often written run together with
     trailing the given part after one, the word ending a maiden
     marker's clause (M2), and the part before a SUFFIX
     comma. The part before a FAMILY comma never reports, the comma
-    having already named it the family. C1 states two exceptions at
-    the first slot after a comma: paired initials ('M.J.') read as
-    the given name unless something in the part speaks for them, and
-    a flip to the credential run in which no listed member of the
-    class takes part is not reported, unless paired initials speak
-    only for each other. Case says nothing here — the
+    having already named it the family. Two exceptions hold at the
+    first slot after a comma: paired initials ('M.J.') read as the
+    given name unless something in the part speaks for them (C5),
+    and a flip to the credential run in which no listed member of
+    the class takes part is not reported, unless paired initials
+    speak only for each other (C11). Case says nothing here — the
     periods are the evidence — and three shapes are outside it: a
     single trailing period is not this shape at all, a chunk that is
     not wholly alphabetic is no acronym letter, and a word carrying
@@ -57,5 +57,5 @@ S3. Rationale: credentials are often written run together with
     the CJK assertions in tests/v2/pipeline/test_vocab.py's
     test_period_joined_vocab_retires_the_single_character_chunk.
     W3 states the same precedence for the same reason.
-    history: decisions/S3 · interacts: C1, H2, W3, S4 · implemented: nameparser/_pipeline/_vocab.py
+    history: decisions/S3 · interacts: C4, C5, C11, H2, W3, S4 · implemented: nameparser/_pipeline/_vocab.py
 

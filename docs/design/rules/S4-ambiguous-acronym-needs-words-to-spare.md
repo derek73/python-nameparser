@@ -20,7 +20,7 @@ S4. Rationale: an acronym that is also an ordinary name (MA, Ma)
     of evidence among several: the given part's trailing slot after
     a family comma is read without it (S5), written case outranks it
     in a mixed-case name everywhere but the first slot after a
-    comma, where the count decides first (S6, C1), and an
+    comma, where the count decides first (S6, C4), and an
     unambiguous credential in front outranks both (S7).
       "John Ma"                   →  family="Ma"  · boundary
       "wang meng"                 →  family="meng"  · boundary
@@ -28,4 +28,4 @@ S4. Rationale: an acronym that is also an ordinary name (MA, Ma)
       "john smith meng"           →  suffix="meng"
       "JOHN SMITH MA"             →  suffix="MA"
       "Nguyen Van Lac"            →  family="Van Lac"
-    history: decisions/S4 · interacts: C1, C2, M2, S2, S3, S5, S6, S7, S9 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
+    history: decisions/S4 · interacts: C1, C2, C4, M2, S2, S3, S5, S6, S7, S9 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py

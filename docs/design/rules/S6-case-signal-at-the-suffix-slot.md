@@ -13,8 +13,8 @@ S6. Rationale: in a name written in more than one case, the
     any word in it, and the count decides alone; so does a script
     with no case to write in. After a family comma this evidence is
     SECOND at the FIRST slot after it: the count of name words
-    before the comma decides there first (C1), and the case is read
-    only where that count leaves the word a name. C1 states the one
+    before the comma decides there first (C4), and the case is read
+    only where that count leaves the word a name. C4 states the one
     exception: a part of two or more suffix words and words of this
     class, every word of the class listed and written in capitals in
     a mixed-case name, is read on its capitals before the count is
@@ -32,4 +32,4 @@ S6. Rationale: in a name written in more than one case, the
       "john smith MEng"           →  family="MEng"
       "Smith, MA"                 →  suffix="MA"
       "Smith, Ma"                 →  given="Ma"
-    history: decisions/S6 · interacts: C1, S4, S5, S7 · implemented: nameparser/_pipeline/_vocab.py
+    history: decisions/S6 · interacts: C4, C11, S4, S5, S7 · implemented: nameparser/_pipeline/_vocab.py

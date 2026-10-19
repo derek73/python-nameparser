@@ -813,7 +813,7 @@ def test_the_paired_initials_title_scan_does_not_cost_quadratically() -> None:
     large_text = "John Smith, " + "MD " * _PAIR_SCAN_LARGE + "G.J. " * _PAIR_SCAN_LARGE
     # REACHABILITY: the flip REPORTS only where the scan ran and found
     # nothing but titles in front of the first pair, every shape word
-    # being a pair (rules/C1's "nothing but other paired initials").
+    # being a pair (rules/C11's "nothing but other paired initials").
     # A change that stopped the scan being asked -- 'MD' leaving the
     # titles, the pair test moving -- loses the report and fails here
     # rather than leaving this guard measuring nothing.

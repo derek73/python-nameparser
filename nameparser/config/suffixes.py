@@ -392,7 +392,7 @@ SUFFIX_ACRONYMS_AMBIGUOUS = frozenset({
     # title 'MS', and 'Smith, Ms.' passed the gate on its one period
     # and read as a credential anyway. Both words are genuine duals --
     # title and unambiguous suffix -- and position decides, as for
-    # 'sr' and 'lt' (decisions/C1).
+    # 'sr' and 'lt' (decisions/C8).
     #
     # NOT 'se' or 'om' either, weighed 2026-09-07 with #342 and left
     # alone: no surname evidence worth standing behind, and OM is the

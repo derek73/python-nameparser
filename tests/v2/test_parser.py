@@ -1318,7 +1318,7 @@ def test_a_rendered_suffix_revises_back_to_itself(name: str) -> None:
 def test_revise_keeps_the_sub_parses_within_piece_mark() -> None:
     # The forcing keeps the sub-parse's tags: a "joined" made WITHIN a
     # piece (the Ph. D. merge, mid-value where the head rule lets it
-    # fire) is role-blind and right for every role (decisions/C1's
+    # fire) is role-blind and right for every role (decisions/R1's
     # #436 DECLINED list), and a draft that cleared it with the role
     # lost it on every non-suffix value. For a suffix value the pass
     # writes the marks itself ('Ph. D. MD' sub-parses with none), so
@@ -1945,7 +1945,7 @@ _NFD_ROWS = [
     # the comma shapes AGENTS.md asks of every comma grid
     ", inž.",
     "(Bob), inž.",
-    # paired initials (rules/C1)
+    # paired initials (rules/C5)
     "Janez Novak, Ž.Š.",
     "Janez Novak, Ž.Š., Jr.",
     # the all-caps credential shape: default policy reads it in the

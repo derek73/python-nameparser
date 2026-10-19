@@ -11,7 +11,7 @@ S9. Rationale: no wordlist holds every credential, and a word's
     position of a mixed-case name and belonging to no wordlist, is
     the other. By default that second shape is admitted in one
     position only, the part after a comma with two or more name
-    words before it (C1): French and Korean records write the
+    words before it (C6): French and Korean records write the
     SURNAME in capitals, and that convention puts the capitals at
     the end of a name or before a comma, never after a comma behind
     a full name. Everywhere else it is admitted only under the
@@ -21,14 +21,14 @@ S9. Rationale: no wordlist holds every credential, and a word's
     family name to the acronym, while a two-word name keeps it —
     there are no words to spare there, so the class is considered
     and declined and only the fork is reported. The dotted shape does not take every promise of the
-    class with it: at the first slot after a comma, C1 reads paired
-    initials as the given name unless something speaks for them, and
-    makes a flip to the credential run in which no listed member takes
-    part in silence, unless paired initials speak only for each
-    other.
+    class with it: at the first slot after a comma, the comma's
+    decision reads paired initials as the given name unless
+    something speaks for them (C5), and makes a flip to the
+    credential run in which no listed member takes part in silence,
+    unless paired initials speak only for each other (C11).
       "John Smith XYZ"            →  family="XYZ"  · boundary
       "John Smith XYZ"  unlisted_caps_suffixes-everywhere  →  suffix="XYZ"
       "Jean DUPONT"  unlisted_caps_suffixes-everywhere  →  family="DUPONT"  · boundary
       "Jean Pierre DUPONT"  unlisted_caps_suffixes-everywhere  →  suffix="DUPONT"
       "Jean Pierre DUPONT"  unlisted_caps_suffixes-everywhere  →  family="Pierre"
-    history: decisions/S9 · interacts: C1, S3, S4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py
+    history: decisions/S9 · interacts: C4, C5, C6, C11, S3, S4 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_classify.py

@@ -463,7 +463,7 @@ def test_is_title_shaped_is_h2_s_shape_alone() -> None:
 
 
 def test_name_word_count_counts_names_not_tokens() -> None:
-    # rules/C1's count for the ambiguous class: 'Smith Jr.' is two
+    # rules/C4's count for the ambiguous class: 'Smith Jr.' is two
     # tokens and ONE name word, which is what keeps its family where a
     # token count would hand it to `given`.
     lex, pol = Lexicon.default(), Policy()
@@ -840,7 +840,7 @@ def test_a_listed_member_written_in_period_closed_chunks_is_dotted(
 
 
 def test_is_single_letter_numeral() -> None:
-    """#544: the one-letter shape C1's run and the anchor both leave
+    """#544: the one-letter shape C4's run and the anchor both leave
     out -- one letter, periods allowed, that is a roman numeral."""
     for text in ("V", "v", "I", "I.", "x", "X."):
         assert is_single_letter_numeral(text), text

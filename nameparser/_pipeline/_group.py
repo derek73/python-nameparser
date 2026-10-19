@@ -1402,7 +1402,7 @@ def group(state: ParseState) -> ParseState:
                     else ClauseSite.FAMILY_PART)
         else:
             site = ClauseSite.TRAILING
-        # rules/C1: "a delimiter the policy declares parts a
+        # rules/C10: "a delimiter the policy declares parts a
         # trailing suffix part as a comma would" (#549): the segment is
         # grouped as the parts between its cores, each read exactly as
         # the comma twin's own segment would be, and the cores are

@@ -762,13 +762,13 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     (mechanisms.md#ONE-PREDICATE-PER-QUESTION); it answered for a
     third until #436, group's one-entry join.
 
-    `licensed` holds the pieces rules/C1's count has licensed as
+    `licensed` holds the pieces rules/C4's count has licensed as
     credentials -- ambiguous-class words in a credential run behind
     two name words -- and each reads as a suffix whatever its writing
     or company.
 
     The initial veto (`_vocab.is_initial`) keeps a roman numeral out
-    of a suffix reading, which is right after a NAME word (rules/C1's
+    of a suffix reading, which is right after a NAME word (rules/C9's
     one-character suffix word, read by what stands before it): 'Smith, John V.' is a
     middle initial (#432). After a SUFFIX word the numeral is
     describing that suffix -- 'PSM I' is Professional Scrum Master
@@ -777,7 +777,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     that: what follows a bare title is not continuing a credential.
 
     A part OPENED by a credential is the postnominal part however it
-    goes on (#603, rules/C1): where an unambiguous suffix word that
+    goes on (#603, rules/C8): where an unambiguous suffix word that
     starts #602's run (`starts_a_credential_run`) is the first suffix
     word of the part, with only titles in front of it (a title/suffix
     dual among them ends the chance: a credential behind one opens
@@ -867,7 +867,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
             leading = False
             out.append(True)
             continue
-        # A word rules/C1's count licenses as a credential: the
+        # A word rules/C4's count licenses as a credential: the
         # caller (`_comma.decide`) counted two name words before the
         # comma and found the part a credential run, which settles the
         # ambiguous word here before S7's anchors are asked (#613)

@@ -141,7 +141,7 @@ def _mark_suffix_entries(tokens: list[WorkToken], state: ParseState) -> None:
     # policy's own declaration deciding it: the writer's configuration
     # named that text a separator, so the run parts there.
     #
-    # Four shapes were declined, recorded in decisions/C1 by the
+    # Four shapes were declined, recorded in decisions/R1 by the
     # bundle that landed this pass: marking the boundary at the
     # core-drop site (`dropped` already holds the fact with its
     # span, so a second recording of it is the duplication
@@ -214,7 +214,7 @@ def suffix_entries(state: ParseState) -> ParseState:
     role, so a suffix value derives its entries from its own commas by
     the rule a whole name uses. The pass ADDS the tag and never removes
     one; a caller forcing roles keeps what the sub-parse marked, a
-    within-piece mark being role-blind (decisions/C1, the #436
+    within-piece mark being role-blind (decisions/R1, the #436
     DECLINED list) and every between-piece mark on a suffix value
     being one this pass sets again. Reads comma_offsets, dropped and
     Policy.extra_suffix_delimiters; writes the "joined" tag and

@@ -196,5 +196,5 @@ P6. Rationale: a particle ending the name has nothing to link
     negative-control sweep pinning the disagreeing set the precedence
     bullet above names. A change that breaks one side of that pair
     should expect that test, not this file, to say so first.
-    history: decisions/P6 · interacts: A1, C1, H5, P1, S2, P5, M2, S4, S7 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P6 · interacts: A1, C1, C7, C11, H5, P1, S2, P5, M2, S4, S7 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 
