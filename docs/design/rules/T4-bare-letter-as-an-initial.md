@@ -50,4 +50,4 @@ T4. Rationale: a bare letter written in lower case beside capitals
       "john smith nee x x"        →  suffix="x"
       "JOHN SMITH NEE X X"        →  maiden="X X"
     Signal: a case contrast: a bare letter's case against the name's own words
-    history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P7, P8, S10, T5, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py
+    history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P8, S10, T5, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py

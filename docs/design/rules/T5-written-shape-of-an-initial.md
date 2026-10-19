@@ -16,5 +16,10 @@ T5. Rationale: one letter standing for a name word is how an
       "Ж. née Smith"              →  given="Ж."
       "Ж née Smith"               →  family="Ж"  · boundary
       "É née Smith"               →  family="É"  · boundary
+    Accepted: the period test reads one word character rather than
+    one letter, as v1's did, so a digit written with its period is an
+    initial too. Nobody writes a digit as an initial, so the shape it
+    reaches is not one names take.
+      "1. née Smith"              →  given="1."
     Signal: a shape: a one-letter word's period, or a bare unaccented Latin capital
     history: decisions/T5 · interacts: T4, M4, O5, P7, C9, S10, H2 · implemented: nameparser/_pipeline/_vocab.py
