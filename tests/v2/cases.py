@@ -7668,6 +7668,14 @@ CASES: tuple[Case, ...] = (
                "capitals, but the name is not written in one case, so "
                "the lower-case 'y' past the marker is no initial (T4) "
                "and joins (#723's review)"),
+    Case("a_lowercase_numeral_after_a_marker_among_capitals_is_no_initial",
+         "MARY SMITH NEE v JONES",
+         {"given": "MARY", "middle": "SMITH NEE v", "family": "JONES"},
+         notes="the name is not written in one case, so the lower-case "
+               "'v' is no initial (T4) and the marker reads as "
+               "'Mary Smith nee v Jones' does, as 1.4.0 and 2.4.2 read "
+               "it; its capital twin 'NEE V JONES' keeps maiden 'V "
+               "JONES'"),
     Case("an_uncased_word_in_front_is_no_initial",
          "김 v", {"given": "김", "family": "v"},
          ambiguities=("suffix-or-name",),
