@@ -13,10 +13,31 @@ kind -- and the compiler folds them into the sets the parser reads
 writes a module of frozenset literals, committed beside the data, and
 tests/v2/test_vocab.py fails when the two disagree.
 
-The build checks below replace the import-time asserts the data modules
-used to carry. Each raises VocabError naming the file and the word; the
-one soft finding (a name reading on a word with no vocabulary reading)
-is a VocabWarning, which the shipped-data test turns into an error.
+The build checks replace the import-time asserts the data modules used
+to carry, and duplicate none of Lexicon.__post_init__ (which still runs
+on the result). Each raises VocabError naming the file and the word:
+
+1. `schema` present and supported, no unknown key anywhere (a name a
+   later phase will use says so), the file name a BCP 47 tag;
+2. `text` normalized, non-empty, once per file;
+3. every kind registered, every property allowed on its kind with an
+   allowed value, and no entry without a reading or an exclusion;
+4. one suffix kind per word, across files;
+5. the same kind of the same word agrees on every behavioral property
+   in every file;
+6. an excluded kind or property is absent from every file;
+7. `same_as` names a word of the same category, `cased` spells its
+   word's letters (#459), at most one `cased` per word;
+8. a phrase only as a birth_marker or an addresses = "given" title;
+9. a bound given name that is also a particle has may_be_given;
+
+plus the data invariants that were asserts: may_be_initial only on a
+cased single letter, an elided particle in both apostrophes (#700), and
+no post-nominal both an acronym and a word. The subset relations
+(GIVEN_NAME_TITLES in TITLES, each marker set in its base) need no
+check: a flag cannot exist without its reading. The one soft finding, a
+name reading on a word with no vocabulary reading and no exclusion, is
+a VocabWarning, which the shipped-data test turns into an error.
 """
 from __future__ import annotations
 
@@ -195,19 +216,15 @@ def _check_descriptive(where: str, props: Mapping[str, Any]) -> None:
 
 def check_file_names(names: Iterable[str]) -> None:
     """Build check 1, the file half: each name a BCP 47 tag in canonical
-    case, and no two differing only by case (a macOS or Windows checkout
-    cannot hold both)."""
-    seen: dict[str, str] = {}
+    case. Canonical case is also what keeps two names from differing only
+    by case, which a macOS or Windows checkout cannot hold: of any two
+    such names, at most one is canonical."""
     for name in names:
         if not name.endswith(".toml") or not _TAG.fullmatch(name[:-5]):
             raise VocabError(
                 f"{name}: a vocabulary file is named for a BCP 47 tag in "
                 f"canonical case (pt.toml, pt-BR.toml, zh-Hant.toml), or "
                 f"und.toml / mul.toml")
-        fold = name.lower()
-        if fold in seen:
-            raise VocabError(f"{name} and {seen[fold]} differ only by case")
-        seen[fold] = name
 
 
 def load(files: Mapping[str, str]) -> Pool:
@@ -380,6 +397,18 @@ def check_pool(pool: Pool) -> None:
             raise VocabError(f"{text!r}: one suffix kind per word, got {kinds} "
                              f"({', '.join(sorted({r.file for r in rs}))})")
 
+    # 6: an excluded kind or property is absent from the whole pool --
+    # run before 5, so a contributor adding a refused reading meets the
+    # recorded reason rather than a disagreement between files
+    for x in pool.exclusions:
+        for r in by_text.get(x.text, ()):
+            if x.prop is None and (r.kind == x.kind or r.category == x.kind):
+                raise VocabError(f"{r.where()}: {x.kind} is excluded for "
+                                 f"{x.text!r} in {x.file}: {x.reason}")
+            if x.prop is not None and r.kind == x.kind and x.prop in r.props:
+                raise VocabError(f"{r.where()}: {x.prop} is excluded for "
+                                 f"{x.text!r} in {x.file}: {x.reason}")
+
     # 5: the same kind of the same word agrees on every behavioral
     # property in every file -- the default loads them all, so a word
     # cannot read two ways (per-language behavior is phase 3's)
@@ -395,16 +424,6 @@ def check_pool(pool: Pool) -> None:
                     raise VocabError(
                         f"{text!r} {r.kind}: {prop} is {a!r} in {seen.file} "
                         f"but {b!r} in {r.file}; one word reads one way")
-
-    # 6: an excluded kind or property is absent from the whole pool
-    for x in pool.exclusions:
-        for r in by_text.get(x.text, ()):
-            if x.prop is None and (r.kind == x.kind or r.category == x.kind):
-                raise VocabError(f"{r.where()}: {x.kind} is excluded for "
-                                 f"{x.text!r} in {x.file}: {x.reason}")
-            if x.prop is not None and r.kind == x.kind and x.prop in r.props:
-                raise VocabError(f"{r.where()}: {x.prop} is excluded for "
-                                 f"{x.text!r} in {x.file}: {x.reason}")
 
     # 7: same_as names a word of the same category; one cased per word
     for r in pool.readings:
