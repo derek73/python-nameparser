@@ -166,7 +166,7 @@ def test_a_connective_or_initial_report_is_withdrawn_where_the_role_is_a_suffix(
     # of its branches, and the report stands
     # -- each with a word to the letter's right: ending its part, as
     # in 'HENRY I', the letter connects nothing and classify reports
-    # nothing (rules/P3, #721)
+    # nothing (rules/P8, #721)
     for text in ("JOSEP CAROD I ROVIRA", "josep carod i rovira",
                  "JOHN I SMITH", "JOSEP CAROD I ROVIRA III"):
         name = parse(text)

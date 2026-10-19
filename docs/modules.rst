@@ -52,7 +52,7 @@ Results
    ``conjunction`` (a joining word, "and"/"y"), ``initial`` (a word
    READ as an initial — initial-shaped in a script that HAS initials,
    "J." or "А.", never "씨.", a marked single-letter connective in a
-   name written in one case, rules/P3, or any other bare letter in a
+   name written in one case, rules/P8, or any other bare letter in a
    name written in one case where its capital would be one, "j" as
    "J", rules/T4), and ``joined`` (a
    continuation of the token before it

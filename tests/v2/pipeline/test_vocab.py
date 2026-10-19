@@ -313,7 +313,7 @@ def test_ambiguous_class_member_is_the_comma_form_s_candidate() -> None:
     # whole-token vocabulary wins over any shape reading
     assert not ambiguous_class_member("M.A.", lex)
     # a period ANYWHERE excludes membership here, deliberately
-    # stricter than S2's own dotted-form test: the trailing-period
+    # stricter than S3's own dotted-form test: the trailing-period
     # spelling still leans (ambiguous_lean('MA.', ...) reads as 'MA'
     # does) but reaches the comma slot through the TAG path, not this
     # predicate, which only the comma-form's own candidate check and
@@ -786,7 +786,7 @@ def test_is_one_case() -> None:
     assert not is_one_case(["john", "e", "jones", "III"])
     # a caseless script is "one case" harmlessly: the fork that reads
     # this ALSO requires a cased token, so a caseless letter never
-    # enters it (rules/P3, decisions/P3)
+    # enters it (rules/P8, decisions/P8)
     assert is_one_case(["محمد", "و", "علي"])
     assert is_one_case(["山田", "太郎"])
     # the empty and single-token edges
@@ -821,7 +821,7 @@ def test_ambiguous_lean_reads_the_written_case() -> None:
 
 def test_a_listed_member_written_in_period_closed_chunks_is_dotted(
 ) -> None:
-    """#544: S2's period gate counts a listed member written in two or
+    """#544: S3's period gate counts a listed member written in two or
     more letter chunks, each closed by a period ('M.Eng.'), as it
     counts one written with a period after each letter ('M.A.'). One
     chunk is the single trailing period any word can wear and stays

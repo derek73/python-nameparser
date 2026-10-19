@@ -343,7 +343,7 @@ def is_initial(text: str) -> bool:
 def is_one_case(texts: Sequence[str]) -> bool:
     """Whether a name is written wholly in ONE case -- all upper or all
     lower alike -- and so carries no case EVIDENCE about any letter in
-    it (rules/P3, #383/#479). The caller passes the name's OWN
+    it (rules/P8, #383/#479). The caller passes the name's OWN
     words: a maiden marker's clause and any delimited (nickname)
     content are not among them, and appending one must not flip the
     reading of words that did not change.
@@ -453,7 +453,7 @@ def _dotted(text: str) -> bool:
     spelling a member with a lower-case tail is written in. A single
     trailing period ('Ma.', 'Ed.', 'Ms.') is the abbreviation shape any
     word can wear -- the honorific's, a name's -- and is not the gate's
-    "written with periods" (rules/S2). Until #296's review the gate
+    "written with periods" (rules/S3). Until #296's review the gate
     was "any period", and 'Smith, Ms.' passed it as the degree."""
     return (_DOTTED.fullmatch(text) is not None
             or _CHUNKED.fullmatch(text) is not None)

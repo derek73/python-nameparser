@@ -68,11 +68,11 @@ from nameparser._pipeline._vocab import (
 )
 
 
-# rules/P3: "both questions this rule asks of a name — how many
-# words it has, and whether it is written in one case — are asked of
-# the name's OWN words: a maiden marker taken as one, and the words it
-# takes (M2), are not among them, and neither is a delimited clause
-# (N1, M1)" (history: decisions/P3)
+# rules/P3: "both questions asked of a name here and in P8 — how
+# many words it has, and whether it is written in one case — are
+# asked of the name's OWN words: a maiden marker taken as one, and the
+# words it takes (M2), are not among them, and neither is a delimited
+# clause (N1, M1)" (history: decisions/P3)
 def own_words(tokens: Sequence[WorkToken], comma_offsets: Sequence[int],
               markers: frozenset[str],
               marker_tags: Mapping[int, str] | None = None,
@@ -194,8 +194,8 @@ def is_prefix_piece(piece: Sequence[int], ptags: Set[str],
 # rules/P3: "a recognized connective joins its neighbors into one
 # name part, connective runs included — except a single-letter
 # connective in a three-word name, which stays a name word, and a
-# single-letter connective that reads as an initial instead, which
-# never joins" (history: decisions/P3)
+# single-letter connective that reads as an initial instead (P8),
+# which never joins" (history: decisions/P3)
 def is_conj_piece(piece: Sequence[int], ptags: Set[str],
                   tokens: Sequence[WorkToken]) -> bool:
     if "conjunction" in ptags:
@@ -777,7 +777,7 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     that: what follows a bare title is not continuing a credential.
 
     A part OPENED by a credential is the postnominal part however it
-    goes on (#603, rules/C8): where an unambiguous suffix word that
+    goes on (#603, rules/C13): where an unambiguous suffix word that
     starts #602's run (`starts_a_credential_run`) is the first suffix
     word of the part, with only titles in front of it (a title/suffix
     dual among them ends the chance: a credential behind one opens
@@ -943,11 +943,11 @@ class Peel(NamedTuple):
 
 
 # rules/S2: "a trailing word of the suffix vocabulary reads as a
-# suffix — generational forms and credential acronyms alike, and an
-# ambiguous acronym written with its periods, one after each letter or
-# one after each of two or more letter chunks, counts unambiguously; a
-# single trailing period is the abbreviation shape any word can wear
-# and does not" -- and: "a BARE ambiguous acronym is consumed only when
+# suffix — generational forms and credential acronyms alike" -- and
+# rules/S3: "an ambiguous acronym written with its periods, one after
+# each letter or one after each of two or more letter chunks, counts
+# unambiguously; a single trailing period is the abbreviation shape
+# any word can wear and does not" -- and rules/S4: "a BARE ambiguous acronym is consumed only when
 # the name has words to spare"
 # (v1's are_suffixes tail rule, with the roman-numeral special)
 def peel_walk(start: int, ptags: Sequence[Set[str]]) -> list[int]:

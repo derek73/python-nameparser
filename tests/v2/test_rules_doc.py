@@ -88,7 +88,21 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
                            f.read_text(encoding="utf-8"), re.M)}
     assert listed == {r.rule_id for r in RULES
                       if r.signal and " + " in r.signal}
-    assert listed, "no split candidate: the recipe is untested"
+    # The tree may come to hold no candidate (T4 is the only one since
+    # the 2026-10-19 splits), which would leave the comparison above
+    # true of an empty set
+    # however the recipe reads, so the two halves are also held to a
+    # synthetic rule of each kind.
+    for signal, candidate in (("a shape: x + a count: y", True),
+                              ("a shape: x", False)):
+        doc = ("X1. Rationale: r.\n    Statement.\n"
+               '      "A B"                       →  given="A"  · boundary\n'
+               f"    Signal: {signal}\n"
+               "    history: decisions/P2 · implemented: nameparser/_parser.py\n")
+        (rule,) = parse_rules_doc(doc)
+        assert rule.signal == signal
+        assert (" + " in rule.signal) is candidate
+        assert bool(re.search(r"^    Signal:.* \+ ", doc, re.M)) is candidate
 
 
 def _check_diagnostic(example: Example) -> None:

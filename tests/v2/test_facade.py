@@ -698,8 +698,8 @@ def test_token_is_conjunction_reads_the_tag_then_the_vocabulary() -> None:
     # #528, the two-way decision. A token the parser classified answers
     # from its tags -- the source the core's initials() reads
     # (mechanisms.md#RENDER-HONORS-THE-PARSE) -- so a one-case 'e' that
-    # rules/P3 tagged `initial` is a name word and a bare capital 'Y'
-    # that P3 tagged `conjunction` is not, which is the reverse of what
+    # rules/P8 tagged `initial` is a name word and a bare capital 'Y'
+    # that P8 tagged `conjunction` is not, which is the reverse of what
     # the vocabulary-and-shape test said about either.
     parsed = HumanName("JUAN Y GARCIA")
     tags = {t.text: t for t in parsed._parsed.tokens}
@@ -821,7 +821,7 @@ def test_an_override_that_forwards_tokens_keeps_working() -> None:
     # PRE-#528 answer, computed from the vocabulary fallback rather
     # than the parse. "john e smith" is where the two views disagree
     # -- the parse TAGS the middle "e" an initial
-    # (test_process_initial_with_tokens_reads_the_parse); rules/P3's
+    # (test_process_initial_with_tokens_reads_the_parse); rules/P8's
     # one-case fork reads it from the vocabulary, not from its shape,
     # which is exactly why the bare-word vocabulary fallback below
     # reads it the other way -- "e" is not initial-SHAPED by any
@@ -1000,7 +1000,7 @@ def test_initials_of_an_unpickled_or_copied_name_ask_the_vocabulary_too() -> Non
     # v1 pickle carries the *_list STRINGS and no tags, so a restored
     # name is spliced text throughout and takes the fallback above.
     # That makes it disagree with a live parse of the same string on
-    # the two names rules/P3's one-case fork moved -- which
+    # the two names rules/P8's one-case fork moved -- which
     # capitalize() has done since the tag was introduced, for the same
     # reason and through the same helper. Pinned rather than left to
     # prose; decisions/R3 records it.

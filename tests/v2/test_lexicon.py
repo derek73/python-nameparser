@@ -31,7 +31,7 @@ def test_default_sources_v1_vocabulary() -> None:
     # flipped model: 'dos' is never-given in v1, so NOT ambiguous here
     assert "dos" in lex.particles and "dos" not in lex.particles_ambiguous
     assert "van" in lex.particles_ambiguous
-    # the policy is 'e' and not 'y' (decisions/P3): a bare E initial is
+    # the policy is 'e' and not 'y' (decisions/P8): a bare E initial is
     # common, where 'y' between two surnames is the commonest Hispanic compound
     assert "e" in lex.conjunctions_ambiguous and "y" not in lex.conjunctions_ambiguous
     # CAPITALIZATION_EXCEPTIONS maps 'phd' -> 'PhD', a case mask since
@@ -606,7 +606,7 @@ def test_removing_a_conjunction_leaves_its_ambiguous_marker_alone() -> None:
     # conjunctions_ambiguous is the same shape as given_name_titles: not
     # in _SUBSET_FIELDS, so an orphan is inert rather than rejected --
     # the marker is never consulted once its base entry is gone
-    # (decisions/P3).
+    # (decisions/P8).
     lean = Lexicon.default().remove(conjunctions={"e"})
     assert "e" not in lean.conjunctions
     assert "e" in lean.conjunctions_ambiguous

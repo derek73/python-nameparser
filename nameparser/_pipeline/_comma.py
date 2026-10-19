@@ -82,7 +82,7 @@ def _reading_pieces(part: Sequence[int], tokens: Sequence[WorkToken],
     # joined part a title ('Mr. and Mrs.', 'Secretary of State', 'Dr.
     # and'), a run of connectives merging first as it does in the name
     # ('Minister of the Interior'). A LONE single-letter connective is
-    # left as it stands, P3 reading it as a name word or an initial in
+    # left as it stands, P3 or P8 reading it as a name word or an initial in
     # short names; one beside another connective is a member of their
     # run and joins with it ('Mr. y and Mrs.'). Any other join is not
     # made here: where no credential opens the part, a name word in it
@@ -213,8 +213,8 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
         # a title reads as a title, a word or a run a connective joins
         # ('Mr. and Mrs.', a dual inside it included); a lone dual of
         # the title and the suffix vocabulary is the suffix here, the
-        # slot being postnominal ('John Smith Jr., AD MD'): C8's two
-        # predicates, asked in C8's order
+        # slot being postnominal ('John Smith Jr., AD MD'): C13's two
+        # predicates, asked in C13's order
         title = (not is_suffix_piece(p, pt, tokens)
                  and is_title_piece(p, pt, tokens))
         for i in p:
@@ -313,6 +313,8 @@ def decide(state: ParseState) -> ParseState:
                            or not unicodedata.is_normalized(
                                "NFC", tokens[p[0]].text)
                            and is_caps_word(tokens[p[0]].text))))]
+    # rules/C8: "a part that is nothing but suffix words is the
+    # credential run and reads as suffixes, whole" -- the reading below.
     # The part is read ONCE: here where it holds no word of the class,
     # after the count below where it does, with the words the count
     # licensed (a read here and a second after licensing threw the first
@@ -549,8 +551,8 @@ def decide(state: ParseState) -> ParseState:
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{tokens[i].text!r} behind a credential after the comma is "
             f"also an ordinary name word; read as a credential", (i,)))
-    # rules/C8: "A credential opening the part makes it the
-    # postnominal part however it goes on" -- each word it takes that
+    # rules/C13: "A credential opening the part after a family comma
+    # makes it the postnominal part however it goes on" -- each word it takes that
     # would have made it the given part, as #602's run reports them
     for k in absorbed:
         if has_name_content(p1[k], tokens):

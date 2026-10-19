@@ -655,7 +655,7 @@ def test_a_suffix_written_in_more_than_one_case_is_kept_as_written(
 
 def test_the_gate_and_the_parser_read_a_cased_suffix_differently() -> None:
     """decisions/R5's split: the parser's own one-case readings
-    (rules/P3, decisions/S6) still count a cased suffix, while R5's gate
+    (rules/P8, decisions/S6) still count a cased suffix, while R5's gate
     leaves it out. So 'john e jones III' is MIXED to the parser, which
     reads its 'e' as a connective, and one-case to the gate, which
     repairs it -- keeping the connective lowercase -- where the one-case
@@ -1272,7 +1272,7 @@ def test_a_link_inside_a_hyphenated_word_keeps_its_lowercase() -> None:
 
 
 def test_the_hyphen_is_the_writers_join_even_in_a_one_case_name() -> None:
-    """rules/R4's hyphen clause against rules/P3's one-case fork,
+    """rules/R4's hyphen clause against rules/P8's one-case fork,
     a split DECIDED 2026-09-24 (decisions/R4): spaced, a marked
     letter in a name written in one case reads as an initial and
     repairs to a capital; hyphenated, the writer joined the surname on
@@ -1280,7 +1280,7 @@ def test_the_hyphen_is_the_writers_join_even_in_a_one_case_name() -> None:
     name is in. The cost is a one-case name whose hyphenated bare
     initials spell a connective -- 'J-E-P DUPONT' repairs to
     'J-e-P Dupont', where 1.4.0 and the parent gave 'J-E-P'. And
-    conjunctions_ambiguous, P3's knob, does not reach a hyphenated
+    conjunctions_ambiguous, P8's knob, does not reach a hyphenated
     word: marking 'y' moves the spaced spelling only."""
     for text, repaired in (("J-E-P DUPONT", "J-e-P Dupont"),
                            ("JOHN A-Y-B SMITH", "John A-y-B Smith"),
@@ -1608,7 +1608,7 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
 
     The core's initials() follows the parse's tags: in a name written
     wholly in one case an 'e' is an INITIAL and a 'y' is the connective
-    (rules/P3), so R3's "each given, middle, and base family word"
+    (rules/P8), so R3's "each given, middle, and base family word"
     reaches the first and not the second. Until #528 HumanName.initials()
     re-derived that from the lexicon and the part's raw shape instead,
     and kept 1.4.0's answer on both letters; it now reads the same tags,
@@ -1629,7 +1629,7 @@ def test_facade_initials_follow_the_one_case_fork() -> None:
     assert HumanName("John E Smith").initials() == "J. E. S."
     assert HumanName("Juan Y. Garcia").initials() == "J. Y. G."
     # 'maria y lopez' is a ONE-CASE control, not a mixed-case one: written
-    # wholly in lowercase, its 'y' is outside the marked set (rules/P3),
+    # wholly in lowercase, its 'y' is outside the marked set (rules/P8),
     # so it stays the CONNECTIVE on both surfaces rather than reading as
     # an initial the way 'e' does. What it no longer
     # witnesses is the DROP: #461 gave the letter its initial back here,

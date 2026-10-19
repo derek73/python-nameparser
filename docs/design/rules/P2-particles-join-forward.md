@@ -24,16 +24,6 @@ P2. Rationale: a particle is written as part of the surname it
     Where P1's fold has claimed the opening, the fold decides the
     family instead — and may take only PART of the final group,
     since it counts name words and the group is one part.
-    In the part before a family comma, which the comma named the
-    family, a particle that is also suffix vocabulary heads the name
-    word behind it, whatever case the name is written in, and is not
-    read as a suffix standing between two family words; with a suffix
-    word or nothing behind it, it reads as the suffix it is there. A
-    lone letter behind it reads as it does in the same part without
-    the particle: a capital is a name word ('SMITH VD V, JOHN' as
-    'SMITH V, JOHN'), a lowercase letter in a name of mixed case the
-    numeral ('Smith vd v, John' as 'Smith v, John'), and a name
-    written in one case reads as its capitals (T4).
       "John van der Berg"         →  family="van der Berg"
       "John van der Berg Smith"   →  family="van der Berg Smith"
       "Vincent van Gogh van Beethoven"  →  middle="van Gogh"
@@ -50,8 +40,6 @@ P2. Rationale: a particle is written as part of the surname it
       "Freiherr von Berg MA"      →  family="von Berg"
       "Freiherr von Berg MA"      →  suffix="MA"
       "Freiherr von Richthofen V" →  family="von Richthofen V"  · boundary
-      "SMITH VD MA, JOHN"         →  family="SMITH VD MA"
-      "SMITH VD, JOHN"            →  suffix="VD"  · boundary
       "John van der Berg née Jones"  →  family="van der Berg"
     Accepted: a particle of the unambiguous suffix vocabulary too
     (vd, mc) is a suffix piece to the peel, so where it opens the
@@ -77,6 +65,6 @@ P2. Rationale: a particle is written as part of the surname it
     (#132's ask) has it as the surnames view rather than the
     family field.
       "Vincent van Gogh van Beethoven"  →  surnames="van Gogh van Beethoven"
-    Signal: a neighbor: the words following a particle, up to the next particle, suffix run or marker + a neighbor: a particle that is also suffix vocabulary before a family comma, and the word behind it
-    history: decisions/P2 · interacts: P1, P4, H5, M2, S2, C2, S4, S10, S6 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    Signal: a neighbor: the words following a particle, up to the next particle, suffix run or marker
+    history: decisions/P2 · interacts: P1, P4, H5, M2, S2, C2, S4, S10, S6, P9 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

@@ -35,5 +35,5 @@ R5. Rationale: mixed case is evidence that the writer cased the name
       "juan garcia Iii"           →  capitalized="Juan Garcia Iii"  · boundary
       "john smith EdD"            →  capitalized_forced="John Smith EDD"
     Signal: a case contrast: whether the words outside the suffix are written in one case
-    history: decisions/R5 · interacts: R4, P3, S6 · implemented: nameparser/_render.py
+    history: decisions/R5 · interacts: R4, P8, S6 · implemented: nameparser/_render.py
 

@@ -635,7 +635,7 @@ def _inside_a_credential_run(seg: Sequence[Sequence[int]],
                              tokens: list[WorkToken], given_at: int,
                              k: int, end: int,
                              ambiguities: list[PendingAmbiguity]) -> bool:
-    """rules/P6's third exception for the run `seg[k:end]`: a
+    """rules/P9 (P6's third exception) for the run `seg[k:end]`: a
     run assign read as post-nominals, with a credential read in
     front of it and another behind, stands INSIDE the credential run
     assign read whole rather than ending the name, so it keeps that
@@ -1487,10 +1487,10 @@ def assign(state: ParseState) -> ParseState:
                    and "particle" not in tokens[fam_pieces[lead][0]].tags):
                 _set_roles(tokens, fam_pieces[lead], Role.TITLE)
                 lead += 1
-        # rules/P2: a particle "joins the words after it into one
-        # name part" -- so a particle that is suffix vocabulary too
-        # (vd, mc) with a name piece behind it in this part heads
-        # that name, and is not peeled from between two family words
+        # rules/P9: "a particle that is also suffix vocabulary heads
+        # the name word behind it" -- with a name piece behind it in
+        # this part (vd, mc), it heads that name, as P2's join does,
+        # and is not peeled from between two family words
         # (#573: 'SMITH VD MA, JOHN', where the uniform case left the
         # chain stopped before VD; 'SMITH VD JR, JOHN', a suffix word
         # behind it, keeps suffix 'VD JR'). Read here because only

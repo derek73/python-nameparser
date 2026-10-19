@@ -305,7 +305,7 @@ class SuffixesTestCase(HumanNameTestBase):
         # Through 2.3 (and in v1) that broke parsing -- first 'RN', last
         # 'Steven Hardman', suffix 'CRNA' -- and this test pinned the
         # limitation. Since #603 a credential opening the part after the
-        # comma makes it the suffix part (rules/C8), so the undeclared
+        # comma makes it the suffix part (rules/C13), so the undeclared
         # delimiter is one more word of that part and the name parses;
         # the name of the test keeps the history.
         hn = HumanName("Steven Hardman, RN - CRNA")

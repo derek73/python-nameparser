@@ -9,7 +9,7 @@ S10. Rationale: a roman numeral ending a name is its generation,
     up to X it does not, by their shape alone — unless the word in
     front of it is written as an initial, which makes it a name word
     too; in a name written wholly in one case a bare letter in front
-    is written as one. A single letter written with a period is an initial, and a
+    is written as one (T4). A single letter written with a period is an initial, and a
     numeral past X is a name word. A numeral of one letter needs
     words to spare, as a bare ambiguous acronym does (S4): as the
     second of two name words it is the family name, a title in front
@@ -17,12 +17,12 @@ S10. Rationale: a roman numeral ending a name is its generation,
     either reading of an ambiguous acronym is. A numeral read by its
     shape alone reports too; a numeral the vocabulary lists in two
     or more letters is not in question and reports nothing; a marked
-    letter (P3) that is such a numeral reports this way and not as a
+    letter (P8) that is such a numeral reports this way and not as a
     connective. Written case
     settles the fork in one way only: a numeral written in lower
     case in a name of mixed case is the generation and reports
-    nothing, since nobody writes an initial that way. A name written
-    wholly in one case says nothing about any letter in it. The part
+    nothing, being no initial there (T4). A name written
+    wholly in one case says nothing about any letter in it (T4). The part
     before a suffix comma is read as the same name written without
     the comma (C1); the given part after a family comma is not
     counted, the comma having settled the count there (S5).
@@ -64,5 +64,5 @@ S10. Rationale: a roman numeral ending a name is its generation,
     as one with the numeral in front of it, the run taking both, as
     1.4.0 read it.
       "John Smith V Ph. D."       →  suffix="V Ph. D."
-    Signal: a shape: a roman numeral ending the name + a neighbor: an initial standing in front of it + a case contrast: a lower-case numeral in a name of mixed case
+    Signal: a shape: a roman numeral ending the name, an initial in front of it being where the shape stops deciding
     history: decisions/S10 · interacts: S2, S4, S7, C1, C9, P2, P3, M2, H1, H3, T4, C12 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py

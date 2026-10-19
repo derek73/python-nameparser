@@ -29,4 +29,4 @@ S4. Rationale: an acronym that is also an ordinary name (MA, Ma)
       "JOHN SMITH MA"             →  suffix="MA"
       "Nguyen Van Lac"            →  family="Van Lac"
     Signal: a count: name words to spare beside a bare ambiguous acronym
-    history: decisions/S4 · interacts: C1, C2, C4, M2, S2, S3, S5, S6, S7, S9 · implemented: nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
+    history: decisions/S4 · interacts: C1, C2, C4, M2, S2, S3, S5, S6, S7, S9 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py

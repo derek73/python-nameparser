@@ -741,7 +741,7 @@ def _clause_run(members: int) -> str:
     """A maiden clause whose birth name is a RUN of links.
 
     Mixed case on purpose: written wholly in one case the letter reads
-    as an initial (rules/P3's marked subset). Since #601 the clause
+    as an initial (rules/P8's marked subset). Since #601 the clause
     keeps the run because nothing in it ends the clause, so this
     measures the take's walk over a long clause; until then it measured
     the clause's link exception, which #601 retired.
