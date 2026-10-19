@@ -3732,6 +3732,13 @@ text = "בת"
 particle = { note = "\"bat\" (daughter of)" }
 
 # ---- particles also borne as given names (may_be_given) ----
+#
+# Words also borne as names in the position the leading-particle rule
+# acts on (decisions/vocabulary-collisions C-i). An entry with a note has
+# been examined; a BARE one is sitting on the conservative default and
+# nobody has looked at it. #360 examined the 12 that appear leading in
+# tools/differential's corpora plus a few more, and left the rest bare
+# rather than record an absence of knowledge as a judgment.
 
 [[word]]
 text = "aan"

@@ -1,4 +1,9 @@
-"""Import-time hygiene checks shared by the vocabulary data modules.
+"""Import-time hygiene checks for the vocabulary data written in Python.
+
+Since the vocabulary moved to nameparser/vocab/*.toml, whose compiler
+(tools/vocab/build.py) checks normalization itself, the one constant
+still written here is ``surnames.KOREAN_SURNAMES``, a segmentation list
+outside the per-word model.
 
 Every constant here is looked up in normalized form, so a stray capital
 or a surrounding space makes an entry unreachable by a direct membership

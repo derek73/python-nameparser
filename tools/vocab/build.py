@@ -120,13 +120,26 @@ class Reading:
 
 
 @dataclass
+class Exclusion:
+    """A refused reading (`prop` None: `kind` is a kind or a category) or
+    a refused property of the `kind` reading the word keeps."""
+    file: str
+    text: str
+    kind: str
+    prop: str | None
+    reason: str
+    props: dict[str, Any]  # the value's table: reason, issue, decided, note
+
+    def where(self) -> str:
+        what = f"excluded {self.kind}" if self.prop is None else f"{self.kind} excluded {self.prop}"
+        return f"{self.file}: {self.text!r} {what}"
+
+
+@dataclass
 class Pool:
     """Every reading and exclusion in the files, in file order."""
     readings: list[Reading] = field(default_factory=list)
-    # (file, text, kind-or-category, reason)
-    word_exclusions: list[tuple[str, str, str, str]] = field(default_factory=list)
-    # (file, text, kind, property, reason)
-    property_exclusions: list[tuple[str, str, str, str, str]] = field(default_factory=list)
+    exclusions: list[Exclusion] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------- loading
@@ -137,20 +150,24 @@ def _reserved_or_unknown(where: str, key: str, allowed: Iterable[str]) -> VocabE
     return VocabError(f"{where}: unknown key {key!r}; allowed: {sorted(allowed)}")
 
 
-def _reason(where: str, value: object) -> str:
-    """The reason of an `excluded` value: a string, or a table with one."""
+def _exclusion(file: str, text: str, kind: str, prop: str | None,
+               value: object) -> Exclusion:
+    """An `excluded` value: a reason string, or a table with `reason`."""
+    ex = Exclusion(file, text, kind, prop, "", {})
     if isinstance(value, str) and value:
-        return value
+        ex.reason, ex.props = value, {"reason": value}
+        return ex
     if isinstance(value, dict):
         for k in value:
             if k not in EXCLUSION_KEYS:
-                raise _reserved_or_unknown(where, k, EXCLUSION_KEYS)
-        _check_descriptive(where, value)
+                raise _reserved_or_unknown(ex.where(), k, EXCLUSION_KEYS)
+        _check_descriptive(ex.where(), value)
         reason = value.get("reason")
         if isinstance(reason, str) and reason:
-            return reason
-    raise VocabError(f"{where}: an exclusion needs a reason, as a string or "
-                     f"a table with `reason`")
+            ex.reason, ex.props = reason, value
+            return ex
+    raise VocabError(f"{ex.where()}: an exclusion needs a reason, as a "
+                     f"string or a table with `reason`")
 
 
 def _check_descriptive(where: str, props: Mapping[str, Any]) -> None:
@@ -217,8 +234,10 @@ def load(files: Mapping[str, str]) -> Pool:
         if not isinstance(words, list):
             raise VocabError(f"{name}: `word` must be an array of tables ([[word]])")
         seen: set[str] = set()
-        for e in words:
-            _load_entry(name, e, seen, pool)
+        for entry in words:
+            if not isinstance(entry, dict):
+                raise VocabError(f"{name}: `word` must be an array of tables ([[word]])")
+            _load_entry(name, entry, seen, pool)
     return pool
 
 
@@ -245,8 +264,7 @@ def _load_entry(name: str, e: dict[str, Any], seen: set[str], pool: Pool) -> Non
             for kind, why in value.items():
                 if kind not in CATEGORY and kind not in CATEGORIES:
                     raise VocabError(f"{where}: excluded names unknown kind {kind!r}")
-                pool.word_exclusions.append(
-                    (name, text, kind, _reason(f"{where} excluded.{kind}", why)))
+                pool.exclusions.append(_exclusion(name, text, kind, None, why))
             continue
         if key not in CATEGORY:
             if key in DESCRIPTIVE:
@@ -257,8 +275,8 @@ def _load_entry(name: str, e: dict[str, Any], seen: set[str], pool: Pool) -> Non
                              f"({key} = {{}}), never a bare value")
         has_reading = True
         _check_reading(Reading(name, text, key, value), pool)
-    if not has_reading and not any(x[1] == text and x[0] == name
-                                   for x in pool.word_exclusions):
+    if not has_reading and not any(x.text == text and x.file == name
+                                   for x in pool.exclusions):
         raise VocabError(f"{where}: an entry with no reading and no exclusion is inert")
 
 
@@ -330,11 +348,10 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             if prop not in BEHAVIORAL[r.category]:
                 raise VocabError(f"{where}: excluded names {prop!r}, which is not "
                                  f"a behavioral property of a {r.category}")
+            ex = _exclusion(r.file, r.text, r.kind, prop, why)
             if prop in p:
-                raise VocabError(f"{where}: {prop} is excluded: "
-                                 f"{_reason(where, why)}")
-            pool.property_exclusions.append(
-                (r.file, r.text, r.kind, prop, _reason(f"{where} excluded.{prop}", why)))
+                raise VocabError(f"{where}: {prop} is excluded: {ex.reason}")
+            pool.exclusions.append(ex)
     # build check 8: a phrase is matched whole only as a given-addressing
     # title run or a birth marker; anywhere else it can never match
     if " " in r.text and not (r.kind == "birth_marker" or (
@@ -380,16 +397,14 @@ def check_pool(pool: Pool) -> None:
                         f"but {b!r} in {r.file}; one word reads one way")
 
     # 6: an excluded kind or property is absent from the whole pool
-    for file, text, kind, reason in pool.word_exclusions:
-        for r in by_text.get(text, ()):
-            if r.kind == kind or r.category == kind:
-                raise VocabError(f"{r.where()}: {kind} is excluded for "
-                                 f"{text!r} in {file}: {reason}")
-    for file, text, kind, prop, reason in pool.property_exclusions:
-        for r in by_text.get(text, ()):
-            if r.kind == kind and prop in r.props:
-                raise VocabError(f"{r.where()}: {prop} is excluded for "
-                                 f"{text!r} in {file}: {reason}")
+    for x in pool.exclusions:
+        for r in by_text.get(x.text, ()):
+            if x.prop is None and (r.kind == x.kind or r.category == x.kind):
+                raise VocabError(f"{r.where()}: {x.kind} is excluded for "
+                                 f"{x.text!r} in {x.file}: {x.reason}")
+            if x.prop is not None and r.kind == x.kind and x.prop in r.props:
+                raise VocabError(f"{r.where()}: {x.prop} is excluded for "
+                                 f"{x.text!r} in {x.file}: {x.reason}")
 
     # 7: same_as names a word of the same category; one cased per word
     for r in pool.readings:
@@ -425,7 +440,7 @@ def check_pool(pool: Pool) -> None:
     # soft: a name reading compiles to nothing, so one on a word with no
     # vocabulary reading and no exclusion anywhere -- an exclusion's
     # evidence is what a name reading usually is -- informs nothing
-    excluded_texts = {x[1] for x in pool.word_exclusions}
+    excluded_texts = {x.text for x in pool.exclusions if x.prop is None}
     for text, rs in by_text.items():
         if all(r.category == "name" for r in rs) and text not in excluded_texts:
             warnings.warn(f"{rs[0].where()}: a name reading on a word with no "
@@ -503,9 +518,16 @@ def compile_pool(pool: Pool) -> dict[str, Any]:
     out["CAPITALIZATION_EXCEPTIONS"] = dict(sorted(cased.items()))
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is
-    # matched by two rules -- and the word branch would bypass an
-    # ambiguous acronym's period gate. Check 4 makes this unreachable
-    # through kinds; this catches one kind spelled both ways in two files.
+    # matched twice by two rules, and which one fired is unreadable from
+    # outside. The sharper stake is the ambiguous set's: suffix_as_written
+    # ORs the two branches, so an ambiguous acronym that were also a word
+    # would be claimed through the word and bypass the period gate the
+    # marking exists to impose. The single overlap was 'esq', dropped
+    # 2026-09-08 (decisions/suffix-acronym-collisions). This guards the
+    # SHIPPED data only: Lexicon has no matching invariant, so a caller
+    # may still put a word in both. Check 4 makes the overlap unreachable
+    # through kinds; this catches one kind spelled both ways in two files,
+    # which check 5 reports first.
     both = out["SUFFIX_ACRONYMS"] & out["SUFFIX_WORDS"]
     if both:
         raise VocabError(f"{sorted(both)}: a post-nominal is an acronym or a "

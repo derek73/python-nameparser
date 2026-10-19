@@ -9,5 +9,5 @@ issue = 661
 [[word]]
 text = "baba"
 [word.excluded.generation]
-reason = "collides inside Turkish (a given name and a title), and Turkish puts the junior word before the name"
+reason = "collides inside Turkish, and Turkish puts the junior word before the name"
 issue = 679

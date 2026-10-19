@@ -1,24 +1,10 @@
-from nameparser.config._invariants import assert_normalized
+# The words live in nameparser/vocab/*.toml, each with a birth_marker
+# reading -- one of the two kinds that may be a phrase ("z domu").
+# tools/vocab/build.py compiles them into _compiled.py and runs the checks
+# that were import-time asserts here (decisions/vocabulary-model).
+from nameparser.config import _compiled
 
-MAIDEN_MARKERS = frozenset({
-    'née',
-    'né',
-    'nee',
-    'geb',
-    'geborene',
-    'geboren',
-    'rozená',
-    'født',
-    'fødd',
-    'född',
-    'урожд',
-    'урождённая',
-    'урожденная',
-    'урождённый',
-    'урожденный',
-    'z domu',
-    '旧姓',
-})
+MAIDEN_MARKERS = _compiled.MAIDEN_MARKERS
 """
 Markers that introduce a birth surname, e.g. "Jane Smith née Jones"
 (#274). French née/né/nee, German geb./geborene, Dutch geboren,
@@ -106,6 +92,3 @@ decisions/vocabulary-exclusions, Excluded (MAIDEN_MARKERS). The full participle
 rozená stays, being unambiguous; a caller who needs the abbreviation
 adds it to their own Lexicon.
 """
-
-
-assert_normalized("MAIDEN_MARKERS", MAIDEN_MARKERS)
