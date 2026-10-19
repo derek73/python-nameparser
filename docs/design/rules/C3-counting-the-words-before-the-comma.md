@@ -1,7 +1,7 @@
 # C3 — counting the words before the comma
 
 C3. Rationale: the listing form puts a surname before the comma,
-    and a surname written in several words is one surname.
+    and a particle surname is one surname.
     Wherever the comma's decision (C1) counts the words before the
     comma, a particle
     run and the one name word it attaches to are one word, the reach

@@ -28,5 +28,5 @@ C10. Rationale: a caller who declares a suffix delimiter means it to
     part reads suffix "RN - CRNA" where 2.0 through 2.3, like v1,
     read given "RN".
       "Smith, RN - CRNA"          →  suffix="RN - CRNA"
-      "Steven Hardman, RN - CRNA" →  given="Steven"  · boundary
+      "Smith, RN - CRNA" extra_suffix_delimiters-dash →  suffix="RN - CRNA"  · boundary
     history: decisions/C10 · interacts: C1, C2, C8, M2, T1 · implemented: nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py

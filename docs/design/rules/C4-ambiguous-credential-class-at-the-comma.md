@@ -1,8 +1,8 @@
 # C4 — the ambiguous credential class at the comma
 
-C4. Rationale: two name words before the comma are a whole name,
-    and they leave the part after it nothing to be but credentials,
-    however that part is written.
+C4. Rationale: two name words before the comma are read as a
+    whole name, so for a word that is both a credential and a name
+    the count decides before the writing does.
     For the ambiguous credential class — a bare acronym the
     vocabulary marks as also an ordinary name, and a word admitted
     to the class by shape, which S3 defines and bounds — the

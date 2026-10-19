@@ -22,7 +22,7 @@ S6. Rationale: in a name written in more than one case, the
     ('Smith, MA MA' reads suffix 'MA MA'), and only a word of the
     class opening the part reports, as the first word after the
     comma ('John Smith, MA MA' reports on the first 'MA' alone,
-    where a counted flip reports over the whole part). At the
+    where a counted flip reports over the whole part; the reports are C11's). At the
     trailing slot of the given part the comma has already settled
     the count, so the writing is the only evidence there is (S5).
       "Jack MA"                   →  suffix="MA"

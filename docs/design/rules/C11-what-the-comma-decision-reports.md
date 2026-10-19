@@ -32,6 +32,7 @@ C11. Rationale: the comma's reading is a call the parse made, and
     (P6) reports on its own. C2's comma-structure flag reports what the
     parse could not recognize, not a fork it called.
       "Doe, MA PhD"               →  ambiguities=("suffix-or-name",)
+      "John Smith, PhD Jones"     →  ambiguities=("suffix-or-name",)
       "John Smith, PhD DO DO"     →  ambiguities=()  · boundary
       "JOHN SMITH, VD MA"         →  ambiguities=("suffix-or-name",)
       "John Smith, Jr vd"         →  ambiguities=()

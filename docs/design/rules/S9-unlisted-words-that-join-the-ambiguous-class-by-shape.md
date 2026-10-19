@@ -11,7 +11,7 @@ S9. Rationale: no wordlist holds every credential, and a word's
     position of a mixed-case name and belonging to no wordlist, is
     the other. By default that second shape is admitted in one
     position only, the part after a comma with two or more name
-    words before it (C6): French and Korean records write the
+    words before it (C4, C6): French and Korean records write the
     SURNAME in capitals, and that convention puts the capitals at
     the end of a name or before a comma, never after a comma behind
     a full name. Everywhere else it is admitted only under the

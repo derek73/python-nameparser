@@ -38,9 +38,9 @@ C8. Rationale: a comma fixes a family boundary only where a name
       "Smith, Dr. Jr."            →  suffix="Jr."
       "John Smith, PhD Jones"     →  given="John"
       "John Smith, PhD Jones"     →  suffix="PhD Jones"
-      "John Smith, PhD Jones"     →  ambiguities=("suffix-or-name",)
       "Doe, PhD Jones"            →  suffix="PhD Jones"
       "John Smith, Ph. D. Jones"  →  suffix="Ph. D. Jones"
+      "Steven Hardman, RN - CRNA" →  given="Steven"
       "John Smith, MD Jones"      →  given="Jones"  · boundary
       "Smith, Ms Jane"            →  title="Ms"  · boundary
       "John Smith, Mr."           →  given="John"
@@ -53,4 +53,4 @@ C8. Rationale: a comma fixes a family boundary only where a name
     duals, and the slot is postnominal.
       "Smith, Ms."                →  suffix="Ms."
       "Smith, Ms. Jane"           →  title="Ms."
-    history: decisions/C8 · interacts: C1, C7, C9, C11, H1, H6, S8 · implemented: nameparser/_pipeline/_comma.py
+    history: decisions/C8 · interacts: C1, C7, C9, C11, H1, H2, H6, S8 · implemented: nameparser/_pipeline/_comma.py

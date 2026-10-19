@@ -3633,7 +3633,7 @@ CASES: tuple[Case, ...] = (
                "all-caps words, and every token in the run must be a "
                "candidate for the run itself to be one. Since #564 the "
                "DEFAULT reads it the same way, the comma position being "
-               "on by default, and rules/C1's `deviates: #291` "
+               "on by default, and rules/C1's (now rules/C6's) `deviates: #291` "
                "marker came off with that change"),
     Case("the_caps_comma_multi_word_run_declines_at_one_word",
          "Smith, LEED AP",
