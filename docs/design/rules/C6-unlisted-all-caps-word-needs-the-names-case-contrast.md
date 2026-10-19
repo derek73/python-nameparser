@@ -24,4 +24,4 @@ C6. Rationale: capitals are a credential's writing only against a
       "Smith, XYZ"                →  given="XYZ"  · boundary
       "MÜLLER WEIß, HANS"         →  given="HANS"  · boundary
       "John Smith, PhD XYZ"       →  suffix="PhD XYZ"
-    history: decisions/C6 · interacts: C4, C5, S6, S9 · implemented: nameparser/_pipeline/_comma.py
+    history: decisions/C6 · interacts: C4, C5, S6, S9, C12 · implemented: nameparser/_pipeline/_comma.py

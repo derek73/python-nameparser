@@ -64,6 +64,19 @@ given-then-family:
     >>> parse("John Doe, Jr.").family                    # form 3
     'Doe'
 
+A suffix ending a name of two or more words before the comma reads as
+form 3 even when what follows is a credential the vocabulary does not
+know, since a generation is written there in natural order. A word
+after the comma written as a name, or an initial, keeps form 2 (since
+2.5):
+
+.. doctest::
+
+    >>> parse("John Smith II, AD").suffix
+    'II, AD'
+    >>> parse("Garcia Lopez Jr., Juan").given
+    'Juan'
+
 A part after the comma in form 3, or after a further comma in either
 form, holds suffixes and titles, a word there that is a title rather
 than a suffix being read as the title (after a further comma, since

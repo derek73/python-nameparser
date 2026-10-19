@@ -40,9 +40,10 @@ from nameparser._pipeline._state import (
     Structure, WorkToken, copy_with,
 )
 from nameparser._pipeline._vocab import (
-    D, PH, caps_shape_candidate, claimed_as_non_name, delimiter_cores,
+    D, PH, ROMAN, caps_shape_candidate, claimed_as_non_name, delimiter_cores,
     composed_len, is_caps_word, is_paired_initials, is_single_letter_numeral,
-    is_wholly_suffix, name_word_count, surname_unit_facts, unit_ends, written_as_a_name,
+    is_trailing_numeral_suffix, is_wholly_suffix, name_word_count,
+    surname_unit_facts, unit_ends, written_as_a_name,
 )
 from nameparser._policy import CapsSuffixes
 from nameparser._types import AmbiguityKind, Role
@@ -176,6 +177,51 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
     return False
 
 
+def _behind_a_generation(state: ParseState, seg0: Sequence[int],
+                         p1: Sequence[list[int]], tokens: Sequence[WorkToken],
+                         ) -> tuple[bool, ...] | None:
+    """rules/C12's reading of the part after the comma, or None where
+    the listing form stands: behind a whole name ending in a suffix
+    word, the part is the credential run unless a word of it is
+    written as a name. The caller has tested the tag, or the numeral
+    shape with `ROMAN`, as a cheap filter."""
+    # the generation set aside, the words in front of it are a whole
+    # name: 'Smith VI' is one word and a numeral, as 'Smith III' is
+    if (not _whole_name(seg0[:-1], tokens)
+            or not _name_contrast(state, seg0)):
+        return None
+    lex = state.lexicon
+    last = tokens[seg0[-1]].text
+    # a numeral by shape alone (VI to X) is the generation the trailing
+    # fork reads, as the listed ones are (#610's class: 'VI' beside 'V'
+    # and 'III')
+    if ("vocab:suffix-word" not in tokens[seg0[-1]].tags
+            and not (len(seg0) > 1 and is_trailing_numeral_suffix(
+                last, tokens[seg0[-2]].text, state.one_case))):
+        return None
+    # a one-letter numeral is the generation only where the name has a
+    # word to spare for it, a title being none (rules/S10), and is no
+    # evidence where the name reads it as a name word ('Smith V, AD')
+    if is_single_letter_numeral(last) and name_word_count(
+            [tokens[i].text for i in seg0[:-1]], lex, state.policy,
+            letters_one_case=state.one_case) < 2:
+        return None
+    reading: list[bool] = []
+    for p in p1:
+        title = len(p) == 1 and "vocab:title" in tokens[p[0]].tags
+        for i in p:
+            tok = tokens[i]
+            # rules/C12: "a word of it written as a name, or an
+            # initial, keeps the listing form" -- unlisted, and a word
+            # with a period is an abbreviation, as for the contrast
+            if "initial" in tok.tags or (
+                    "." not in tok.text and written_as_a_name(tok.text)
+                    and not claimed_as_non_name(_normalize(tok.text), lex)):
+                return None
+        reading.append(not title)
+    return tuple(reading)
+
+
 def decide(state: ParseState) -> ParseState:
     """The structure of a comma form, and the postnominal part bound.
     Returns `state` unchanged where the listing form stands."""
@@ -234,11 +280,17 @@ def decide(state: ParseState) -> ParseState:
     # listing form stands. (a declared delimiter's core may sit inside a
     # word, 'RN/CRNA', which only the lenient fallback below reads)
     reading: tuple[bool, ...] | None = None
+    # rules/C12's evidence, filtered by the tag and a C-level match so
+    # the listing form pays no frame for it ('Smith, John' never calls
+    # the helper)
+    generation = bool(seg0) and (
+        "vocab:suffix-word" in tokens[seg0[-1]].tags
+        or ROMAN.match(tokens[seg0[-1]].text) is not None)
     if not maybe:
         reading = segment_suffix_reading(
             p1, pt1, tokens, pol.lenient_comma_suffixes, state.one_case,
             anchored, absorbed)
-        if reading is None and not cores and not all(
+        if reading is None and not cores and not generation and not all(
                 "suffix" in t or "vocab:suffix" in tokens[p[0]].tags
                 for p, t in zip(p1, pt1)):
             return state
@@ -344,6 +396,17 @@ def decide(state: ParseState) -> ParseState:
             [tokens[i].text for i in part], lex, pol, one_case=None,
             letters_one_case=state.one_case):
         reading = (True,) * len(p1)
+    behind_generation = False
+    if reading is None and generation:
+        reading = _behind_a_generation(state, seg0, p1, tokens)
+        if reading is not None:
+            behind_generation = whole = True
+            # #564's marks on an unlisted all-caps word, as the caps
+            # shape writes them, so case repair keeps 'AD' (rules/R4)
+            for i in part:
+                if ("vocab:suffix" not in tokens[i].tags
+                        and is_caps_word(tokens[i].text)):
+                    caps.add(i)
     if reading is None:
         return state
     # rules/C7: "that reading is final" -- the part is the postnominal
@@ -406,6 +469,14 @@ def decide(state: ParseState) -> ParseState:
             AmbiguityKind.SUFFIX_OR_NAME,
             f"{what}; the part before the comma holds {names} name words, "
             f"so it is read as a credential run", tuple(part)))
+    elif behind_generation:
+        # rules/C11: "A decision either way at the comma C1 reads is
+        # reported" -- here the suffix word before the comma decided it
+        ambiguities.append(PendingAmbiguity(
+            AmbiguityKind.SUFFIX_OR_NAME,
+            f"{' '.join(tokens[i].text for i in part)!r} after the comma "
+            f"follows {tokens[seg0[-1]].text!r}, so it is read as a "
+            f"credential run; it may be a name", tuple(part)))
     elif len(p1[0]) == 1 and p1[0][0] in listed:
         # the first word after the comma reports as it always does
         i = p1[0][0]

@@ -41,4 +41,4 @@ C11. Rationale: the comma's reading is a call the parse made, and
       "John Smith, XYZ"           →  ambiguities=("suffix-or-name",)
       "John Smith, A.B."          →  ambiguities=("suffix-or-name",)
       "De La Cruz, M.J. K.L."     →  ambiguities=("suffix-or-name", "suffix-or-name")
-    history: decisions/C11 · interacts: A1, C1, C2, C4, C5, P6, S5, S6, S7 · implemented: nameparser/_pipeline/_comma.py
+    history: decisions/C11 · interacts: A1, C1, C2, C4, C5, P6, S5, S6, S7, C12 · implemented: nameparser/_pipeline/_comma.py

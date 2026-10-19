@@ -9043,6 +9043,25 @@ CASES: tuple[Case, ...] = (
          notes="the row above with a one-letter numeral, which has no "
                "word to spare (S10, the trailing roman numeral). "
                "1.4.0 read title 'Sir', last 'John V'"),
+    Case("generation_before_a_credential_comma_behind_a_nickname",
+         "John 'Jack' Smith II, AD",
+         {"given": "John", "family": "Smith", "suffix": "II, AD",
+          "nickname": "Jack"},
+         ambiguities=("suffix-or-name",), classification="fix(#656)",
+         notes="C12 (a suffix word ending the name before the comma): "
+               "the nickname is no word of the count, so 'John Smith' "
+               "is the whole name in front of the generation, and AD, "
+               "not written as a name, is the credential. 1.4.0 "
+               "through 2.4.2 read first 'AD', last 'John Smith'"),
+    Case("generation_before_a_credential_comma_behind_a_maiden_clause",
+         "Jane Doe nee Smith Jr., AD",
+         {"given": "Jane", "family": "Doe", "suffix": "Jr., AD",
+          "maiden": "Smith"},
+         ambiguities=("suffix-or-name",), classification="fix(#656)",
+         notes="C12 behind a maiden clause: the clause keeps 'Smith', "
+               "the generation stays the suffix, and the part after "
+               "the comma joins it. The parent read given 'AD', family "
+               "'Jane Doe'"),
     Case("marker_led_clause_in_a_quote_pair",
          'Jane Smith "née Jones"',
          {"given": "Jane", "family": "Smith", "maiden": "Jones"},
