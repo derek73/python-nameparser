@@ -52,8 +52,8 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     (M2), are not among them, and neither is a delimited clause (N1,
     M1). So a clause beside the name changes neither whether the
     connective joins nor how a letter in the name reads, and a letter
-    inside such a clause is the clause's word, read as it always was
-    and not by this rule. The two questions part at one point: a
+    inside such a clause is the clause's word, read by T4 and not by
+    this rule. The two questions part at one point: a
     marker the pass declines and leaves as a word (M2) is a word, and
     counts toward the three — but its case is still not asked.
     That span is not this rule's alone: wherever another rule asks
@@ -137,17 +137,13 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     class, which shows when it is the only differently-cased token,
     so "JUAN Y GARCIA née" joins where "JUAN Y GARCIA née Jones"
     keeps "Y" a name word. And it leaves any connective standing
-    after it to the mixed-case rule rather than to the one-case fork,
-    so a bare Latin capital there reads as an initial while its
-    lowercase spelling joins — the one shape in which the name's OWN
-    words read differently in its two one-case spellings. So "DR.
-    NÉE JUAN Y LOPEZ" reads middle "JUAN Y" with its "Y" an initial,
-    while "dr. née juan y lopez" reads family "juan y lopez" with its
-    own "y" joined. A clause's words are read as they always were,
-    and that is not an exception to this: such a letter still takes
-    a different tag in the two spellings, so its case repair can
-    differ between them, which is a repair difference and not a
-    reading of the name's own words.
+    after it to T4 rather than to the one-case fork, so a letter
+    there reads as the initial its capital is, in both spellings,
+    where the fork would have joined it: both "DR. NÉE JUAN Y LOPEZ"
+    and "dr. née juan y lopez" read middle "JUAN Y" with the letter
+    an initial. A clause's words are
+    read by T4 the same way, so such a letter takes the same tag in
+    the two spellings.
     Accepted rather than repaired: classify cannot know what group
     will decline, and a clause's words are read by the clause's own
     rules.
@@ -157,5 +153,5 @@ P3. Rationale: connective words ("y", "of the") bind name words into
     same two words unjoined are two name words and H1 does not fire.
     P1's leading run is the second (#395, landed): its run takes
     the "Vega y Santos" join whole or stops before it.
-    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, C1, S6, S10 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
+    history: decisions/P3 · interacts: H1, P1, M2, R1, R3, R4, C1, S6, S10, T4 · implemented: nameparser/_pipeline/_assemble.py, nameparser/_pipeline/_classify.py, nameparser/_pipeline/_comma.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_post_rules.py
 

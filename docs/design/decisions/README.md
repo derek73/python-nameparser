@@ -80,6 +80,7 @@ Entry conventions:
 
 - [T1 — separators, not joiners](T1-separators-not-joiners.md)
 - [T3 — the interpunct's flank guard](T3-interpuncts-flank-guard.md)
+- [T4 — the bare letter as an initial](T4-bare-letter-as-an-initial.md)
 
 ## Ambiguity & tie-breaking (A)
 

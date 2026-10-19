@@ -354,15 +354,37 @@ def test_the_fork_itself_never_reads_a_delimited_clauses_tokens() -> None:
     assert e.ambiguities == ()
 
 
-def test_a_word_after_the_maiden_marker_reads_as_plain_vocabulary() -> None:
+@pytest.mark.parametrize("letter", ["e", "y"])
+def test_a_letter_after_the_maiden_marker_reads_as_its_capital(
+        letter: str) -> None:
     # symmetric with the delimited-clause case: a word inside the
     # maiden clause itself is not one of the name's own words either,
-    # so it never enters the fork -- 'e' after 'née' is bare vocabulary
-    # membership, the same reading it had before this PR.
-    out = _classified("juan garcia lopez née e")
-    assert "conjunction" in _tags(out, "e")
-    assert "initial" not in _tags(out, "e")
-    assert out.ambiguities == ()
+    # so it never enters P3's fork, which would read the marked 'e' as
+    # an initial WITH a report and the unmarked 'y' as a connective.
+    # It is read as its capital in the clause is (rules/T4, #723): an
+    # initial, reported by nobody.
+    lower = _classified(f"juan garcia lopez née {letter}")
+    upper = _classified(f"JUAN GARCIA LOPEZ NÉE {letter.upper()}")
+    assert "initial" in _tags(lower, letter)
+    assert "conjunction" not in _tags(lower, letter)
+    assert _tags(lower, letter) == _tags(upper, letter.upper())
+    assert lower.ambiguities == upper.ambiguities == ()
+
+
+@pytest.mark.parametrize("text", [
+    "MARIA GARCIA NEE LOPEZ y FERNANDEZ",
+    "MARIA GARCIA (LOPEZ y FERNANDEZ)",
+    "DR. NÉE JUAN y LOPEZ",
+])
+def test_a_lowercase_clause_letter_among_capitals_is_no_initial(
+        text: str) -> None:
+    # #723's review: the own words are capitals, but the clause beside
+    # them is not, so the name is written in more than one case and a
+    # bare lower-case letter there is no initial (rules/T4) -- the
+    # own-words fact alone would have tagged it one
+    out = _classified(text)
+    assert "initial" not in _tags(out, "y")
+    assert "conjunction" in _tags(out, "y")
 
 
 def test_a_clauses_own_marker_word_does_not_truncate_the_own_words() -> None:
@@ -681,9 +703,10 @@ def test_the_caps_branch_reads_the_name_level_case_not_the_own_span(
 
     def reverted(token: WorkToken, n: str, state: ParseState,
                  marker_tag: str | None, one_case_own: bool,
-                 one_case: bool) -> frozenset[str]:
+                 one_case: bool, letter_one_case: bool) -> frozenset[str]:
         return real(token, n, state, marker_tag,
-                    one_case_own=one_case_own, one_case=one_case_own)
+                    one_case_own=one_case_own, one_case=one_case_own,
+                    letter_one_case=letter_one_case)
 
     monkeypatch.setattr(_classify_module, "_tags_for", reverted)
     broken = Parser(policy=on).parse("née JONES XYZ")

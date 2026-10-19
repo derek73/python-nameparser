@@ -142,8 +142,6 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # SAME object, imported for the trailing read's weighed-word test
     # (#620), as _PERIOD_ABBREV is above
     ("_pieces", "_ROMAN"): "roman_numeral",
-    # SAME object, imported for the one-case numeral initial (#721)
-    ("_classify", "_ROMAN"): "roman_numeral",
     # SAME object, imported for the report on a numeral before a
     # credential (#721)
     ("_assign", "_ROMAN"): "roman_numeral",
@@ -163,6 +161,8 @@ _SOURCES: dict[tuple[str, str], str | None] = {
     # above, which assert the documented RELATIONSHIP instead:
     ("_render", "_INITIAL"): None,      # config's pattern minus one "?"
     ("_vocab", "_INITIAL"): None,       # same
+    # SAME object, imported for the one-case letter initial (#723)
+    ("_classify", "_INITIAL"): None,
     ("_render", "_DOTTED_INITIAL"): None,  # _INITIAL's period alternative
     # #542: the name run after a Mac/Mc prefix, read on the word as
     # written once _MAC has matched its composed spelling; no config

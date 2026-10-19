@@ -62,7 +62,7 @@ from nameparser._pipeline._state import (
 )
 from nameparser._types import AmbiguityKind, Role
 from nameparser._pipeline._vocab import (
-    _ROMAN, caps_shape_candidate, composed_len, is_initial, is_one_case,
+    _INITIAL, caps_shape_candidate, composed_len, is_initial, is_one_case,
     period_joined_vocab, suffix_as_written, tag_marker_runs,
 )
 from nameparser._pipeline._pieces import own_words
@@ -80,7 +80,7 @@ from nameparser._pipeline._pieces import own_words
 # spare"
 def _tags_for(token: WorkToken, n: str, state: ParseState,
               marker_tag: str | None, one_case_own: bool,
-              one_case: bool) -> frozenset[str]:
+              one_case: bool, letter_one_case: bool) -> frozenset[str]:
     """`n` is _normalize(token.text), folded once by the caller and
     shared with the marker pass; `marker_tag` is what that pass decided
     for this token, or None. The marker DECISION is entirely
@@ -106,7 +106,15 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
     clause cut, never from the name's own writing (#516 review round,
     a second reviewer's finding). `single_letter_connective` below
     keeps `one_case_own`: that fork is genuinely about the OWN-WORDS
-    span, and reads a clause's word as no evidence on purpose."""
+    span, and reads a clause's word as no evidence on purpose.
+
+    `letter_one_case` is rules/T4's question for THIS token: the
+    own-words fact for one of the name's own words, and for a word
+    outside them -- a clause's, or past a declined marker -- the fact
+    about the WHOLE name, since the own words' case says nothing
+    about how the clause beside them was written: 'y' in 'MARIA
+    GARCIA NEE LOPEZ y FERNANDEZ' is a lower-case letter among
+    capitals, which T4 reads as no initial (#723's review)."""
     lex = state.lexicon
     tags = set(token.tags)
     if marker_tag is not None:
@@ -159,21 +167,24 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         # the mixed-case rule, unchanged. v1's is_conjunction excludes
         # initials: 'e.' in 'john e. smith' is a middle initial, not
         # the Spanish conjunction 'e'
-        # rules/S10: "A name written wholly in one case says nothing
-        # about any letter in it" -- so a one-letter roman numeral
-        # there is the initial its capital is, and every reader of the
-        # tag after classify vetoes 'v' as it vetoes 'V' (#721) -- not
-        # the honorific peel upstream, which asks the shape itself
-        # ('田中さん v' still reads otherwise than '田中さん V').
-        # `one_case` is the fact about the name's own words, applied to
-        # a clause's words too, as #516's caps branch applies it, since
-        # a capital 'V' in a clause is an initial as well. One
-        # character already, so `_ROMAN` alone asks what
-        # `is_single_letter_numeral` would, at C level: no frame per
-        # one-letter word
+        # rules/T4: "in a name written wholly in one case, which says
+        # nothing about any letter in it, a bare letter is an initial
+        # wherever its capital would be" -- so every reader of the tag
+        # after classify reads 'j' as it reads 'J' (#723; the roman
+        # numerals first, #721) -- not the honorific peel upstream,
+        # which asks the shape itself ('田中さん v' still reads
+        # otherwise than '田中さん V'). `one_case` is the fact about
+        # the name's own words, applied to a clause's words too, as
+        # #516's caps branch applies it, since a capital 'J' in a
+        # clause is an initial as well. The capital is asked of the
+        # bare pattern at C level, no frame per one-letter word, and
+        # needs no script test: no capital `_INITIAL` matches is in a
+        # script without initials. 'é' and 'ж' stay as they were,
+        # their capitals being no initial either. A clause's letter
+        # asks the whole name's case (`letter_one_case`, docstring)
         initial = is_initial(token.text) or (
-            one_case and len(token.text) == 1
-            and _ROMAN.match(token.text) is not None)
+            letter_one_case and len(token.text) == 1
+            and _INITIAL.fullmatch(token.text.upper()) is not None)
         if n in lex.conjunctions and not initial:
             tags.add("conjunction")
         if initial:
@@ -306,11 +317,21 @@ def classify(state: ParseState) -> ParseState:
     # per token, and the fork and its emitter then agree with the case
     # class they consult. No extra frame -- it is one more boolean in a
     # comprehension that already walks every token.
+    # rules/T4 asks a word outside the own words about the WHOLE
+    # name's case (`_tags_for`'s `letter_one_case`). Where every token
+    # is an own word the two facts are one, so only a name with a
+    # clause pays the second test's frame.
+    whole_one_case = one_case and (
+        len(own) == len(state.tokens)
+        or is_one_case([t.text for t in state.tokens]))
     tokens = tuple(
         copy_with(
             t, tags=_tags_for(t, folded[i], state, marker_tags.get(i),
                               one_case_own=one_case and i < clause_at
-                              and t.role is None, one_case=one_case))
+                              and t.role is None, one_case=one_case,
+                              letter_one_case=whole_one_case or (
+                                  one_case and i < clause_at
+                                  and t.role is None)))
         for i, t in enumerate(state.tokens))
     # Delimited content whose vocabulary cannot settle it: extract's
     # escape sends an UNambiguous suffix straight through ("(MBA)" ->
@@ -340,11 +361,11 @@ def classify(state: ParseState) -> ParseState:
         # `is_initial` matches an ASCII capital only, so a bare
         # LOWERCASE letter is tagged "initial" only by the fork's
         # branch ("jose e maria santos" tags a lowercase e), for a
-        # conjunctions_ambiguous member, or by the one-case numeral
-        # (#721), which never tags an own word that is a single-letter
-        # connective (the fork's branch takes those first). So for a
-        # letter of EITHER case in `conjunctions`, "initial" plus len 1
-        # implies membership. It is kept only because `_tags_for`
+        # conjunctions_ambiguous member, or by the one-case letter
+        # (#721, #723), which never tags an own word that is a
+        # single-letter connective (the fork's branch takes those
+        # first). So for a letter of EITHER case in `conjunctions`,
+        # "initial" plus len 1 implies membership. It is kept only because `_tags_for`
         # starts from `set(token.tags)`, so
         # this clause is what keeps the emitter honest if a runner ever
         # hands classify tokens it did not build; no such path exists

@@ -7624,6 +7624,58 @@ CASES: tuple[Case, ...] = (
          notes="read as 'JOHN J V' is: in a one-case name the bare 'j' "
                "in front is the initial its capital is (S10). 1.4.0 "
                "read last 'j', suffix 'v'"),
+    Case("a_one_case_lone_letter_is_an_initial_and_unreported",
+         "j", {"given": "j"},
+         notes="read as 'J' is (T4): an initial claims the word, so "
+               "O5's convention is not reported, where before #723 the "
+               "lowercase letter reported given-or-family"),
+    Case("a_one_case_letter_before_a_maiden_marker_stays_given",
+         "j nee smith", {"given": "j", "maiden": "smith"},
+         classification="fix(#274)",
+         notes="read as 'J NEE SMITH' is (T4): M4 does not make an "
+               "initial the family name, where before #723 the "
+               "lowercase letter read family 'j'; 1.4.0 had no maiden "
+               "markers"),
+    Case("a_one_case_letter_before_a_link_does_not_join",
+         "jose j y lopez",
+         {"given": "jose", "middle": "j y", "family": "lopez"},
+         classification="fix(#723)",
+         notes="read as 'JOSE J Y LOPEZ' is, in 1.4.0 too (T4): the "
+               "initial is no name word to P3's count, so the "
+               "single-letter link is in a three-word name and stays a "
+               "name word; 1.4.0 and 2.0-2.4 read the lowercase "
+               "spelling family 'j y lopez'"),
+    Case("a_one_case_letter_before_a_link_after_a_family_comma",
+         "smith, j y lopez",
+         {"given": "j", "middle": "y lopez", "family": "smith"},
+         classification="fix(#723)",
+         notes="read as 'SMITH, J Y LOPEZ' is, in 1.4.0 too (T4), "
+               "for the row above's reason; 1.4.0 and 2.0-2.4 read the "
+               "lowercase spelling given 'j y lopez'"),
+    Case("a_one_case_letter_past_a_declined_marker_reads_as_its_capital",
+         "dr. née juan y lopez",
+         {"title": "dr.", "given": "née", "middle": "juan y",
+          "family": "lopez"},
+         classification="fix(#723)",
+         notes="the declined marker leaves 'y' outside the name's own "
+               "words, so P3's one-case fork does not read it and T4 "
+               "does: the initial its capital is, as in 'DR. NÉE JUAN "
+               "Y LOPEZ'. 1.4.0 and 2.0-2.4 read family 'juan y lopez'"),
+    Case("a_lowercase_letter_past_a_declined_marker_among_capitals_joins",
+         "DR. NÉE JUAN y LOPEZ",
+         {"title": "DR.", "given": "NÉE", "family": "JUAN y LOPEZ"},
+         notes="the row above's mixed-case twin: the own words are "
+               "capitals, but the name is not written in one case, so "
+               "the lower-case 'y' past the marker is no initial (T4) "
+               "and joins (#723's review)"),
+    Case("a_lowercase_numeral_after_a_marker_among_capitals_is_no_initial",
+         "MARY SMITH NEE v JONES",
+         {"given": "MARY", "middle": "SMITH NEE v", "family": "JONES"},
+         notes="the name is not written in one case, so the lower-case "
+               "'v' is no initial (T4) and the marker reads as "
+               "'Mary Smith nee v Jones' does, as 1.4.0 and 2.4.2 read "
+               "it; its capital twin 'NEE V JONES' keeps maiden 'V "
+               "JONES'"),
     Case("an_uncased_word_in_front_is_no_initial",
          "김 v", {"given": "김", "family": "v"},
          ambiguities=("suffix-or-name",),

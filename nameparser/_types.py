@@ -88,9 +88,9 @@ class Span(NamedTuple):
 #: word READ as an initial -- initial-shaped in a script that HAS
 #: initials ("J." or "А.", never "씨.", #320), or a marked
 #: single-letter connective in a name written in one case
-#: (rules/P3, see CONJUNCTION_OR_INITIAL), or a one-letter roman
-#: numeral in a name whose own words are written in one case, as its
-#: capital is (rules/S10);
+#: (rules/P3, see CONJUNCTION_OR_INITIAL), or any other bare letter
+#: in a name whose own words are written in one case, where its
+#: capital would be one ("j" as "J", never "é", rules/T4);
 #: "joined" a continuation of the token before it -- within one
 #: merged piece the tag is role-blind and every view joins the pair
 #: with a space ("Ph." + "D."; 'Ph. D., Jr.' gives last_list

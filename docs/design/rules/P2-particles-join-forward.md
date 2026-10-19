@@ -31,8 +31,9 @@ P2. Rationale: a particle is written as part of the surname it
     word or nothing behind it, it reads as the suffix it is there. A
     lone letter behind it reads as it does in the same part without
     the particle: a capital is a name word ('SMITH VD V, JOHN' as
-    'SMITH V, JOHN'), a lowercase letter the numeral ('smith vd v,
-    john' as 'smith v, john').
+    'SMITH V, JOHN'), a lowercase letter in a name of mixed case the
+    numeral ('Smith vd v, John' as 'Smith v, John'), and a name
+    written in one case reads as its capitals (T4).
       "John van der Berg"         →  family="van der Berg"
       "John van der Berg Smith"   →  family="van der Berg Smith"
       "Vincent van Gogh van Beethoven"  →  middle="van Gogh"
