@@ -11489,8 +11489,9 @@ CASES: tuple[Case, ...] = (
          notes="nothing in this name is written in a case, so the bare "
                "'v' is the initial its capital is (T4): the scan-back "
                "stops at it as at 'V', and this reads as '田中さん V' "
-               "does -- 1.4.0's reading too (#727; 2.1 through 2.4 "
-               "peeled さん and read suffix 'さん v')",
+               "does -- 1.4.0's reading too (#727; 2.1 through 2.4.2 "
+               "peeled さん, reading suffix 'さん, v' in 2.1 and 2.2 "
+               "and 'さん v' from 2.3)",
          tolerated=True),
     Case("ja_honorific_with_a_period_no_comma", "田中さん 様.",
          {"family": "田中", "suffix": "さん 様."},
