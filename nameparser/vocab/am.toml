@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "ጁንየር"
+generation = { issue = 679 }
+
+[[word]]
+text = "ጁኒየር"
+generation = { issue = 679 }

@@ -1,42 +1,12 @@
-from nameparser.config._invariants import assert_normalized
+# The words, and the vetting notes that stood beside them here, live in
+# nameparser/vocab/*.toml: a mask is the
+# `cased` property of the word's reading, one per word, and
+# tools/vocab/build.py refuses one that does not spell its word's letters
+# and digits (#459) before Lexicon ever sees it. Still a plain dict, the
+# one vocabulary constant not frozen (AGENTS.md, "Configuration layer").
+from nameparser.config import _compiled
 
-CAPITALIZATION_EXCEPTIONS = {
-    'bsc': 'BSc',
-    'msc': 'MSc',
-    'phd': 'PhD',
-    # Listed post-nominals whose conventional spelling is mixed case
-    # (#459): without a mask the acronym repair writes each in
-    # capitals. A mask applies wherever its word stands, so a word
-    # borne as a name must not get one -- meng and edd are listed
-    # acronyms that are, and stay out on purpose (the meng/edd/lac/ded
-    # CAPITALIZATION_EXCEPTIONS block in decisions/vocabulary-exclusions).
-    'bt': 'Bt',
-    'chfc': 'ChFC',
-    'cpht': 'CPhT',
-    'diplac': 'DiplAc',
-    'dmin': 'DMin',
-    'drph': 'DrPH',
-    'dsc': 'DSc',
-    'knt': 'Knt',
-    'kt': 'Kt',
-    'mdiv': 'MDiv',
-    'pharmd': 'PharmD',
-    'phc': 'PhC',
-    'psyd': 'PsyD',
-    'rph': 'RPh',
-    'thd': 'ThD',
-    'thm': 'ThM',
-    # Irish patronymic particles (#604). Case repair writes a particle
-    # in lowercase ('de la Vega'), but Irish writes these capitalized
-    # ('Liam Ó Murchú', 'Sinéad Ní Mhurchú'), and a mask outranks the
-    # particle lowercase (rules/R4). Each mask is the word's own
-    # title case, so a bare word in any other role repairs as it would
-    # anyway; the dotted 'u.a.' and 'n.í.' now repair to 'U.A.' and
-    # 'N.Í.' (were 'U.a.' and 'N.í.').
-    'ní': 'Ní',
-    'ua': 'Ua',
-    'ó': 'Ó',
-}
+CAPITALIZATION_EXCEPTIONS = _compiled.CAPITALIZATION_EXCEPTIONS
 """
 Words whose case ``str.capitalize()`` gets wrong, each mapped to a
 case MASK: the key's own letters and digits, each in the case it
@@ -68,9 +38,8 @@ as a listed acronym does (``D.PHIL.``). Either way, a caller who
 wants a specific spelling needs a ``suffix_acronyms`` entry
 (``Lexicon.add(suffix_acronyms={...})`` in the 2.0 API,
 ``constants.suffix_acronyms.add(...)`` in the v1 one) or a mask of
-its own.
+its own. The map also carries the Irish patronymic particles ``ó``,
+``ní`` and ``ua`` (#604): case repair writes a particle in lowercase
+(``de la Vega``), Irish writes these capitalized (``Liam Ó Murchú``),
+and a mask outranks the particle lowercase (rules/R4).
 """
-
-
-# Keys only -- the values are case masks, cased on purpose.
-assert_normalized("CAPITALIZATION_EXCEPTIONS", CAPITALIZATION_EXCEPTIONS)

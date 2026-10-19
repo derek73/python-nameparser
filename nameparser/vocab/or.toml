@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "ଜୁନିଅର"
+generation = { issue = 679 }
+
+[[word]]
+text = "ଜୁନିୟର୍"
+generation = { issue = 679 }

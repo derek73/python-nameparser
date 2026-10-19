@@ -1,37 +1,23 @@
-"""Import-time hygiene checks shared by the vocabulary data modules.
+"""Import-time hygiene checks for vocabulary data still written in Python.
 
-Every constant here is looked up in normalized form, so a stray capital
-or a surrounding space makes an entry unreachable by a direct membership
-test -- ``'actor ' in TITLES`` is False -- even though the parser's own
-ingest (:func:`nameparser._lexicon._normalize`) normalizes it away and
-papers over the typo. Checking at import turns a silently-inert entry
-into an immediate failure.
+Since the word lists moved to nameparser/vocab/*.toml, whose compiler
+(tools/vocab/build.py) refuses an unnormalized spelling itself, the one
+constant this module still checks is ``surnames.KOREAN_SURNAMES``, a
+segmentation list outside the per-word model.
 
-Deliberately a weaker fold than ``_normalize``, which also
-NFC-composes and strips edge full stops: entries like ``'esq.'`` are
-legitimate data here, and this module cannot import ``_lexicon``
-anyway (``_lexicon`` imports these constants). The relationship checks
-between constants stay in the modules that own them -- those encode
-facts about the data, not hygiene.
+A constant is looked up in normalized form, so a stray capital or a
+surrounding space makes an entry unreachable by a direct membership
+test -- ``'김 ' in KOREAN_SURNAMES`` would be False -- even though the
+parser's own ingest (:func:`nameparser._lexicon._normalize`) normalizes
+it away and papers over the typo. Checking at import turns a
+silently-inert entry into an immediate failure.
 
-Interior whitespace is checked but not forbidden. A PHRASE entry is
-legitimate in the two fields ``_lexicon._PHRASE_FIELDS`` names, and
-``MAIDEN_MARKERS``'s ``'z domu'`` is the first one shipped; what this
-asserts of one is that it is stored as the single-spaced, lowercase,
-edge-clean form, so ``'z  domu'`` and ``'Z domu '`` fail here rather
-than becoming entries nothing can match. The remaining half of a
-phrase's storage rule -- that each WORD is separately stripped of its
-periods, so ``'z. domu'`` is stored ``'z domu'`` -- is
-``_lexicon._title_key``'s and is deliberately NOT checked here. The
-reason is altitude, not layering: importing ``_lexicon`` from here
-would in fact work (its config imports are all inside
-``_default_lexicon()``, nothing at module scope), but a data module
-asserting things with the parser's own fold makes the constant's
-hygiene depend on the parser, and the question worth asking is not
-"is this entry pre-folded" but "does ``Lexicon`` store it unchanged".
-That is one assertion over ``_PHRASE_FIELDS`` in
-``tests/v2/test_lexicon.py``, and it is where an entry written
-``'z. domu'`` is caught.
+Deliberately a weaker fold than ``_normalize``, which also NFC-composes
+and strips edge full stops. Importing ``_lexicon`` here would work (its
+config imports sit inside ``_default_lexicon``), but a data module's
+hygiene should not depend on the parser's own fold. It asserts that an
+entry is stored lowercase, edge-clean and, where it is a phrase,
+single-spaced.
 """
 from __future__ import annotations
 

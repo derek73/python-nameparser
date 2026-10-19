@@ -1,0 +1,27 @@
+# Words deliberately shared across languages.
+
+schema = 1
+
+[[word]]
+text = "2"
+generation = {}
+
+[[word]]
+text = "i"
+generation = {}
+
+[[word]]
+text = "ii"
+generation = {}
+
+[[word]]
+text = "iii"
+generation = {}
+
+[[word]]
+text = "iv"
+generation = {}
+
+[[word]]
+text = "v"
+generation = {}

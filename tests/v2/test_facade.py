@@ -41,7 +41,7 @@ def test_full_name_assignment_reparses() -> None:
 
 def test_private_constants_mutation_honored_lazily() -> None:
     # NB: the task spec's example used "dame" as a marker not in the
-    # default titles, but nameparser/config/titles.py already lists
+    # default titles, but the shipped vocabulary already lists
     # "dame" -- swapped in a nonsense marker to keep the test's premise
     # (mutate a private Constants, next parse sees the change) true.
     c = Constants()

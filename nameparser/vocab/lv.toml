@@ -1,0 +1,17 @@
+schema = 1
+
+[[word]]
+text = "jaunākais"
+generation = { issue = 679 }
+
+[[word]]
+text = "jaunākā"
+generation = { issue = 679 }
+
+[[word]]
+text = "vecākais"
+generation = { issue = 679 }
+
+[[word]]
+text = "vecākā"
+generation = { issue = 679 }

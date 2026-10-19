@@ -1,0 +1,9 @@
+schema = 1
+
+[[word]]
+text = "nuorempi"
+generation = { issue = 661 }
+
+[[word]]
+text = "vanhempi"
+generation = { issue = 661 }

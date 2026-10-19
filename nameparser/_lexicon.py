@@ -55,13 +55,10 @@ _VOCAB_FIELDS = (
 #:   as a tail would peel a period-gated word off a real name), and
 #:   nothing needs the acronym half: the shipped tails are CJK
 #:   honorifics, which are words.
-#:   The same relation is asserted a second time in config/suffixes.py,
-#:   over the raw GLUED_HONORIFICS/SUFFIX_WORDS constants at
-#:   import. The two are not redundant in the way they look: that one
-#:   is an `assert`, stripped under `python -O`, while the check here
-#:   raises unconditionally -- so under -O this is what still holds the
-#:   SHIPPED vocabulary to the invariant, as it is the only thing that
-#:   ever held a caller's own.
+#:   The shipped vocabulary holds the relation by construction: its
+#:   build puts a word in GLUED_HONORIFICS only through an `attached`
+#:   property on a word reading (tools/vocab/build.py). The check here
+#:   is the only thing that holds a caller's own.
 #:
 #: Two fields are deliberately NOT here and have no check of their own.
 #: given_name_titles -- see the note in __post_init__ for why every
@@ -582,8 +579,8 @@ class Lexicon:
     #: Pre-nominal titles ("dr", "sir", "capt", ...). Full default
     #: list: :data:`~nameparser.config.titles.TITLES`.
     titles: frozenset[str] = frozenset()
-    #: Titles whose single following name reads as a GIVEN name
-    #: ("sheikh", "sister", ...) rather than a family name. Full
+    #: Titles whose single name word, before or after them, reads as a
+    #: GIVEN name ("sheikh", "sister", ...) rather than a family name. Full
     #: default list: :data:`~nameparser.config.titles.GIVEN_NAME_TITLES`.
     given_name_titles: frozenset[str] = frozenset()
     #: Post-nominal acronym suffixes, matched with or without periods
@@ -675,8 +672,8 @@ class Lexicon:
     #: (:data:`~nameparser.config.surnames.KOREAN_SURNAMES`); Chinese
     #: surnames ship in locales.ZH because Han segmentation is opt-in.
     surnames: frozenset[str] = frozenset()
-    #: Honorifics that may be peeled off the END of a name token
-    #: (#308), matched longest-first: 田中さん splits into 田中 and さん
+    #: Honorifics, and credential, office and generational words, that
+    #: may be peeled off the END of a name token (#308, #707), matched longest-first: 田中さん splits into 田中 and さん
     #: before the tokens are classified. Every entry must also be a
     #: :attr:`suffix_words` entry -- the peeled tail is claimed by
     #: suffix classification like any other post-nominal. Deliberately
@@ -739,9 +736,10 @@ class Lexicon:
         # the expensive one -- three working configurations broken
         # across two attempts. Do not add a third.
         #
-        # The v2 form of particles.py's NON_GIVEN_NAME_PARTICLES-disjoint-
-        # from-BOUND_GIVEN_NAMES assertion. That module guards its own
-        # data at import; this guards vocabulary a caller supplies.
+        # The v2 form of the vocabulary build's check that a bound given
+        # name which is also a particle may be given (tools/vocab/build.py,
+        # check 9). The build guards the shipped data; this guards
+        # vocabulary a caller supplies.
         contradictory = (
             self.bound_given_names & self.particles) - self.particles_ambiguous
         if contradictory:

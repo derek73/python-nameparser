@@ -9547,7 +9547,8 @@ CASES: tuple[Case, ...] = (
     Case("family_comma_lone_title", "Smith, Dr.",
          {"title": "Dr.", "family": "Smith"},
          classification="fix(comma-family)",
-         notes="pre-comma is definitionally family; v1 put it in first"),
+         notes="pre-comma is family, as Dr. addresses by surname (a "
+               "given-name title reads it as given, #720); v1 put it in first"),
     Case("family_comma_all_title_segment_keeps_split", "John Smith, Mr.",
          {"title": "Mr.", "given": "John", "family": "Smith"},
          classification="fix(comma-family)",
@@ -12690,8 +12691,8 @@ CASES: tuple[Case, ...] = (
          classification="fix(#307) + fix(#271)",
          notes="the other side of ko_surname_yang_leads: the same "
                "token trailing a name is 'Miss', and that is the whole "
-               "argument shipping it -- suffixes.py singles 양 out "
-               "(with 군) as the risk class it takes, a top-tier "
+               "argument shipping it -- the vocabulary names 양 and 군 "
+               "as a risk class (in 님's note), 양 being a top-tier "
                "surname admitted to the vocabulary on the strength of "
                "position alone. Nothing pinned the trailing reading "
                "before this row, so the leading rows carried the pair "

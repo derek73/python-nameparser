@@ -1,5 +1,12 @@
-from nameparser.config._invariants import assert_normalized
-from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
+# The words, and the vetting notes that stood beside them here, live in
+# nameparser/vocab/*.toml: every particle reading states may_be_given,
+# true for the ambiguous half and false for the never-given half, so the two
+# partition PARTICLES by construction. tools/vocab/build.py compiles them
+# into _compiled.py and runs the checks that were import-time asserts
+# here -- a bound given name that is also a particle must be one that may
+# be given, and an elided particle ships in both apostrophes (#700)
+# (decisions/vocabulary-model).
+from nameparser.config import _compiled
 
 #: The sub-set of :py:data:`PARTICLES` that no culture uses as a standalone
 #: given name. Where one of these stands ALONE as the piece opening a name, that
@@ -39,141 +46,8 @@ from nameparser.config.bound_given_names import BOUND_GIVEN_NAMES
 #: auto-fixed, whereas a wrong member misparses a real person. Must stay a
 #: subset of :py:data:`PARTICLES` and disjoint from
 #: :py:data:`~nameparser.config.bound_given_names.BOUND_GIVEN_NAMES`.
-NON_GIVEN_NAME_PARTICLES = frozenset({
-    # Latin-script members. Every entry here is a grammatical particle --
-    # an article, a preposition, or a patronymic marker -- and that is the
-    # form a never-given record has to take. One attested bearer settles
-    # the AMBIGUOUS side; no amount of searching settles absence, so what
-    # is recorded is what the word IS rather than a failed search.
-    #
-    # The test is POSITIONAL (decisions/vocabulary-collisions C-i,
-    # corrected 2026-08-17): membership asks whether the word is borne as
-    # a name in the position this rule ACTS on -- leading, or alone in the
-    # given role -- not whether a bearer exists anywhere. 'de' is why the
-    # qualifier is needed: "De" is a borne Bengali/Odia surname, but a
-    # TRAILING one, so it never meets the rule.
-    #
-    # A BARE entry, here or in PARTICLES below, means nobody has examined
-    # it. Absence of a comment is the audit record.
-    "'t",      # Dutch contraction of 'het' ("'t Hooft"): the article itself
-    '’t',      # the same, typographic apostrophe (#700)
-    'af',      # Danish/Norwegian nobiliary "of"
-    'auf',     # German "upon" ("auf der Heide")
-    'av',      # Swedish/Norwegian "of"
-    'bint',    # Arabic "daughter of"; native-script بنت below
-    'das',     # Portuguese/German "of the", fem. pl. Added #360: its
-               # own plural partner 'dos' was already here. "Das" IS a
-               # common Bengali surname, but a TRAILING one -- measured,
-               # "Anjali Das" and "Bimal Das" are untouched, while
-               # "Maria das Neves" gains the particle it loses today.
-    'de',      # French/Iberian/Italian "of". "De" IS a borne Bengali and
-               # Odia surname -- trailing, so it never reaches this rule.
-               # The case that forced C-i's positional qualifier.
-    "de'",     # Italian elided "dei" ("de' Medici")
-    'de’',     # the same, typographic apostrophe: nothing folds U+2019
-               # to U+0027, so each elided entry is listed in both (#700)
-    "d'",      # French/Italian elided "de" ("Ivoi, Paul d'"). Written
-    'd’',      # apart mostly where an index form moves it behind the
-               # given name; glued ("d'Ivoi") it stays one word (#700)
-    "dell'",   # Italian elided "dello"/"della" ("dell'Acqua")
-    'dell’',
-    "l'",      # French/Italian elided article ("L'Enfant")
-    'l’',
-    # #700: the Arabic article as an index form writes it, hyphen
-    # attached and set behind the given name ("Rashid, Harun al-",
-    # "Zaʿīm, Ḥusnī az-"), in its assimilated spellings: 'al-' before a
-    # moon letter, assimilated to each of the fourteen sun letters
-    # (lām's being 'al-' itself; DMG's ṯ ḏ š ṣ ḍ ṭ ẓ beside the ASCII
-    # digraphs), and the Egyptian 'el-' and its assimilations, in ASCII
-    # spellings only. The trailing hyphen is the license:
-    # written apart, the word is the article and nothing else, so these
-    # are never-given where the bare 'al' (Al Gore) is AMBIGUOUS. A
-    # closed list rather than a shape rule, by decision on #700. ASCII
-    # hyphen-minus only.
-    'al-', 'ul-',
-    'at-', 'aṯ-', 'ath-', 'ad-', 'aḏ-', 'adh-', 'ar-', 'az-', 'as-',
-    'aš-', 'ash-', 'aṣ-', 'aḍ-', 'aṭ-', 'aẓ-', 'an-',
-    'el-', 'et-', 'eth-', 'ed-', 'edh-', 'er-', 'ez-', 'es-', 'esh-', 'en-',
-    'degli',   # Italian "of the", masc. pl.
-    'dei',     # Italian "of the", masc. pl.
-    'delle',   # Italian "of the", fem. pl.
-    'delli',   # Italian "of the", regional variant of 'dei'
-    'dello',   # Italian "of the", masc. sg.
-    'dem',     # German dative article
-    'der',     # German article ("von der Leyen")
-    'dos',     # Portuguese "of the", masc. pl.
-    'het',     # Dutch definite article
-    'ibn',     # Arabic "son of"; native-script ابن below
-    'las',     # Spanish "the", fem. pl. Added #360: 'la' was here as
-               # AMBIGUOUS (La Shawn, La Toya) but the plurals are not
-               # name elements -- no bearer in any position.
-    'los',     # Spanish "the", masc. pl. Same as 'las' -- and the pair
-               # is why the #390 fold narrowing regressed
-               # "de los Santos" to given='Santos', family='de los'.
-    'mc',      # Contraction of 'Mac'; unlike 'mac' (Mac Miller) it is
-               # not a standalone given name. Measured misparse: "Mc
-               # Donald" gave given='Mc'. Also in SUFFIX_ACRONYMS as
-               # Master of Ceremonies, but that is trailing position and
-               # unaffected -- "John Smith MC" still reads suffix (#360).
-    'ní',      # Irish "daughter of" ("Sinéad Ní Mhurchú"), the female
-               # patronymic beside 'ó'; never a given name (#604). Its
-               # sibling 'nic' is EXCLUDED: an abbreviation of Nicolas and
-               # Nicole and a given name of its own (Nic Cage), so it
-               # belongs in an opt-in Irish pack, not the defaults.
-    'op',      # Dutch "at/on" ("op den Berg")
-    'ó',       # Irish "descendant of" ("Liam Ó Murchú"); never a given
-               # name (#604). The one ONE-LETTER particle, so the letter
-               # written with its period is still the initial it
-               # spells -- 'Juan Ó. Pérez' is Óscar, not a surname
-               # (rules/P7). Unaccented 'o' is EXCLUDED: bare 'O' is
-               # a common periodless initial, and the anglicized form
-               # is glued ("O'Neil") anyway.
-    'ste',     # Contraction of 'Sainte'; has a vowel, which is why the
-               # criterion is "abbreviation of a word that is never
-               # itself a name" rather than the vowel shape #360 first
-               # proposed. Measured misparse: "Ste Marie" gave
-               # given='Ste'.
-    'ter',     # Dutch "at the" ("ter Horst")
-    'vd',      # Dutch abbreviation of "van der". Also the British
-               # Volunteer Decoration, a suffix acronym: two non-name
-               # readings, so C-ii decides it on frequency and the Dutch
-               # one wins (decisions/vocabulary-collisions).
-    'vom',     # German "from the"
-    'zu',      # German "at/to", nobiliary ("zu Guttenberg")
+NON_GIVEN_NAME_PARTICLES = _compiled.NON_GIVEN_NAME_PARTICLES
 
-    # #269: Arabic native-script patronymic/clan particles. Unlike their
-    # Latin transliterations, these live in a script namespace with no
-    # collision against an unrelated Latin given name, so each is judged
-    # on its own semantics rather than mirrored blindly:
-    'بن',     # "bin"/"ibn" (son of) -- never a bare given name. Latin
-              # 'bin' is in PARTICLES but not in this set; that judgment
-              # is unchanged by adding the Arabic-script form.
-    'بنت',    # "bint" (daughter of) -- mirrors Latin 'bint' above.
-    'ابن',    # "ibn" (son of, alternate spelling) -- mirrors Latin
-              # 'ibn' above.
-    'آل',     # "aal" (family/clan of, e.g. "Al Saud") -- distinct from
-              # the excluded definite article "ال" (#269 explicitly
-              # excludes standalone "ال"); a clan prefix, never a bare
-              # given name.
-
-    # #269: Hebrew native-script patronymic particles -- same
-    # reasoning as the Arabic ones above: no Latin-script collision,
-    # and neither functions as a standalone given name in Hebrew usage.
-    # Deferred under the collision rule: 'בר' (Aramaic son-of, as in
-    # Bar-Lev) -- Bar is a common modern Israeli given name, and the
-    # surname spelling is hyphenated anyway.
-    'בן',     # "ben" (son of)
-    'בת',     # "bat" (daughter of)
-})
-
-# Maintainer note, deliberately a plain comment ABOVE the `#:` run
-# rather than inside it: `#:` would publish it into the API reference,
-# where it is advice to nobody, and a plain comment placed *within* the
-# run splits it -- autodoc then renders only the fragment below the
-# split and silently drops everything above it. Frozen by construction
-# (#293) -- `frozenset | set` returns a frozenset, the LEFT operand's
-# type wins, so keep the frozenset first. Flipped, this silently yields
-# a plain set again and unfreezes the constant.
 #: Family-name particles: a particle joins to the piece that follows it
 #: to make one new piece, and particles chain, e.g. "von der" and
 #: "de la". A particle in a non-leading position also pulls the pieces
@@ -190,8 +64,8 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: not part of the name, so it is stepped over and "Dr. Van Johnson"
 #: reads as the untitled "Van Johnson" does. One kind of word is not
 #: stepped over, and this is the one place a title's vocabulary and
-#: this one interact -- ``st``, ``do`` and ``freiherr`` are each BOTH
-#: a title and a particle, so any of them could be the name's own
+#: this one interact -- ``st`` and ``freiherr`` are each BOTH a title
+#: and a particle (``do`` was too, until #296), so either could be the name's own
 #: first piece and stops the scan, leaving a particle behind it
 #: non-leading and free to chain ("Freiherr von Richthofen").
 #: Where the pieces then land is again a later
@@ -209,125 +83,19 @@ NON_GIVEN_NAME_PARTICLES = frozenset({
 #: :py:data:`NON_GIVEN_NAME_PARTICLES` records a particle-or-given
 #: ambiguity for the reading not taken, and one inside it records none.
 #:
-#: Defined as a static union so every :py:data:`NON_GIVEN_NAME_PARTICLES`
-#: member is guaranteed to also be a particle (and still join forward),
-#: with no drift -- mirroring ``TITLES = GIVEN_NAME_TITLES | {...}`` in
-#: :py:mod:`nameparser.config.titles`.
-# The AMBIGUOUS half: words that are also borne as names in the position
-# the leading-particle rule acts on (decisions/vocabulary-collisions
-# C-i). A commented entry has been examined; a BARE one is sitting on the
-# conservative default and nobody has looked at it. #360 examined the 12
-# that appear leading in tools/differential's corpora plus a few more,
-# and left the rest bare rather than record an absence of knowledge as a
-# judgment.
-PARTICLES = NON_GIVEN_NAME_PARTICLES | {
-    'aan',
-    'aen',
-    'abu',    # "Abu Bakr" -- Abu reads as the given name; also a bound
-              # given-name word, so it joins forward (#269, P5)
-    'al',     # Al Gore: 'Al' is an ordinary English given name. Also the
-              # Arabic definite article, which is the particle reading
-    'bar',    # Bar Refaeli; a common modern Israeli given name. Aramaic
-              # "son of" is the particle reading (#269 excludes bare בר)
-    'bat',
-    'bin',    # Arabic "son of", but kept ambiguous deliberately: #269
-              # judged the Latin transliteration separately from the
-              # native-script بن, which IS never-given
-    'binte',  # Singapore spelling of 'binti', kept beside it (#604)
-    'binti',  # Malay "daughter of" ("Ina binti Navalamar"), the
-              # female partner of 'bin'. Binti is also a given name
-              # (Swahili, "daughter"), so ambiguous like 'bin' (#604).
-              # The abbreviations 'bt'/'bte' are left out: two- and
-              # three-letter words nobody has reviewed
-    'bon',
-    'da',
-    'dal',
-    'del',    # BOTH readings attested: Del Shannon (given name) and
-              # del Toro (particle). The ambiguity flag is the answer
-    'dela',   # Dela is a short form of Adela, and an African name
-              # meaning saviour/redeemer -- so the Filipino surname
-              # particle ("Dela Cruz") is not the only reading
-    'della',  # Della Reese: an ordinary given name
-    'den',
-    'di',     # BOTH: Di as a short form of Diana, and the Italian
-              # particle (DiCaprio)
-    'dí',
-    'do',     # Vietnamese Đỗ leads a great many surnames. Also in
-              # TITLES -- the decisions record TITLES n ambiguous ==
-              # {do, freiherr, st} as load-bearing for the emitter
-    'du',     # Du is a Chinese surname (Du Fu), leading under a
-              # family-first reading
-    'freiherr',    # German rank; since 1919 a former noble title is part
-                   # of the legal surname, written before the particle
-                   # ("Karl-Theodor Freiherr von und zu Guttenberg"), so
-                   # it chains like one. Also in TITLES, load-bearing
-    'freiherrin',  # as above
-    'heer',
-    'la',     # La Shawn, La Toya: a given-name element. The Romance
-              # article is the particle reading; its PLURALS ('las',
-              # 'los') are never-given, being no one's name
-    'le',     # Lê is among the most common Vietnamese surnames and
-              # leads under a family-first reading
-    'mac',    # Mac Miller: a real given name. This is the case that
-              # shows #360's vowel heuristic was not the criterion --
-              # 'mac' and 'mc' differ by attestation, not by shape
-    'san',    # San San Chiou: a given-name element in Burmese and
-              # Chinese naming
-    'santa',
-    'st',     # Also in TITLES and consumed there before particle logic
-              # runs, so moving it changes nothing; kept for the
-              # load-bearing TITLES intersection above
-    'te',     # Te Awanui-a-Rangi: a Māori given-name element, and in
-              # the corpus. Looks like the Dutch preposition 'te', which
-              # is why attestation rather than etymology decides
-    'tho',
-    'thoe',
-    'ua',     # Irish "descendant of", the older spelling of 'ó'
-              # ("Seán Ua Buachalla"). No given-name use found, but
-              # searched less thoroughly than 'ó' and 'ní', and C-i
-              # defaults to AMBIGUOUS under uncertainty -- so the
-              # leading "Ua Buachalla" keeps the given reading and
-              # reports it, while mid-name the chain is the same
-              # either way (#604)
-    'van',    # Vietnamese Văn, and Van Johnson -- the canonical
-              # particle-or-given ambiguity this whole flag exists for
-    'vande',
-    'vander',
-    'vel',
-    'von',    # Von Miller: a real given name, so this stays ambiguous
-              # even though "von Braun" is misparsed today. The case
-              # that shows a word can look like a pure particle, BE
-              # misparsed as one, and still have a bearer
-
-    # #269: Arabic "abu" (father of), left ambiguous like its Latin
-    # transliteration 'abu' above (both spellings): "Abu Bakr" reads
-    # "Abu" as a given name, so this stays a PARTICLES-only member, not
-    # NON_GIVEN_NAME_PARTICLES.
-    'أبو',
-    'ابو',
-}
-
-# Guard the two invariants the docstring above promises, so a future edit that
-# breaks them fails at import time instead of silently drifting until a test
-# happens to catch it.
-assert NON_GIVEN_NAME_PARTICLES <= PARTICLES, \
-    "NON_GIVEN_NAME_PARTICLES must stay a subset of PARTICLES"
-assert not (NON_GIVEN_NAME_PARTICLES & BOUND_GIVEN_NAMES), \
-    "NON_GIVEN_NAME_PARTICLES must stay disjoint from BOUND_GIVEN_NAMES"
-assert_normalized("PARTICLES", PARTICLES)
-# Nothing folds U+2019 to U+0027, so an elided entry spelled with one
-# apostrophe and not the other reads only half its spellings (#700).
-assert {w.replace("’", "'") for w in PARTICLES if "’" in w} \
-    == {w for w in PARTICLES if "'" in w}, \
-    "every elided particle needs its ASCII and its U+2019 spelling"
+#: Both sets are compiled from the same particle readings, the never-given
+#: ones being those with ``may_be_given = false``, which is what guarantees every
+#: :py:data:`NON_GIVEN_NAME_PARTICLES` member is also a particle (and
+#: still joins forward), with no drift.
+PARTICLES = _compiled.PARTICLES
 
 # Star imports read __all__ and never the module __getattr__ -- see the
 # note in prefixes.py. This module has no retired name of its own to
 # serve; what __all__ buys here is the other half of that note's point,
 # which the shim modules got in #354 and the destinations did not:
-# without it a star import binds every module-level name, so
-# `assert_normalized` and BOUND_GIVEN_NAMES -- imported only for the
-# invariants below, and owned by another module -- landed in the
-# caller's namespace as though they were vocabulary (#356).
+# without it a star import binds every module-level name, so a helper
+# imported here lands in the caller's namespace as though it were
+# vocabulary (#356) -- `_compiled` now, as `assert_normalized` and
+# BOUND_GIVEN_NAMES did before the vocabulary moved to TOML.
 # Source order, not alphabetical -- see the note in suffixes.py.
 __all__ = ["NON_GIVEN_NAME_PARTICLES", "PARTICLES"]

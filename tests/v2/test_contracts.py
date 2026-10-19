@@ -81,10 +81,13 @@ def test_every_stable_tag_has_a_trigger(tag: str) -> None:
 def test_every_guarded_config_module_is_imported() -> None:
     """Import-time asserts only run if the module is imported.
 
-    ``maiden_markers`` and ``surnames`` are lazy (imported inside
-    ``_snapshot``/``_default_lexicon``), so their guards fire only
-    incidentally, whenever some other test happens to build a default
-    Lexicon. Importing them all here makes every guard unconditional.
+    Since the vocabulary moved to nameparser/vocab/*.toml, whose
+    compiler checks it (tests/v2/test_vocab.py), the asserts left are
+    on data still written in Python -- ``surnames`` today, which is
+    lazy (imported inside ``_snapshot``/``_default_lexicon``), so its
+    guard fires only incidentally, whenever some other test happens to
+    build a default Lexicon. Importing them all here makes every guard
+    unconditional.
 
     The roster is DERIVED from the source tree, not listed: a
     hand-written tuple fails open, silently skipping the next guarded
@@ -127,8 +130,8 @@ def test_every_vocabulary_constant_is_frozen() -> None:
     wrap every constant in ``frozenset(...)`` on the way into the
     ``Lexicon``; #293 dropped the wraps because the sources are frozen,
     which makes this test the only thing anywhere that checks they
-    still are. The import-time ``assert``\\ s in the config modules
-    check normalization and subset relations, never mutability.
+    still are. The vocabulary build's checks (tools/vocab/build.py)
+    cover normalization and subset relations, never mutability.
 
     The roster is DERIVED from the source tree for the same reason the
     guarded-module roster above is: a hand-written list fails open on
@@ -202,11 +205,12 @@ def test_every_vocabulary_constant_is_frozen() -> None:
         f"next mutable mapping that inherits the name")
     # A FLOOR, not a presence check: `assert checked` is satisfied by
     # one surviving constant, so a filter or a path change that quietly
-    # dropped twelve of the thirteen would still read as a pass. Twelve
-    # distinct constants across seven modules, plus the thirteenth entry
-    # -- particles.BOUND_GIVEN_NAMES, the same object as
-    # bound_given_names.BOUND_GIVEN_NAMES, imported there for the
-    # disjointness assert and counted once per module it appears in.
+    # dropped twelve of the thirteen would still read as a pass. Thirteen
+    # distinct constants across seven modules (measured 2026-10-18; the
+    # fourteenth entry before then was particles.BOUND_GIVEN_NAMES, an
+    # import for a disjointness assert that became a vocabulary build
+    # check). The private _compiled.py they are assigned from is skipped
+    # with the other private modules: its objects are the same ones.
     # Raise this when a constant is added; a drop is the regression.
     assert len(checked) >= 13, (
         f"only {len(checked)} vocabulary set constants found under "

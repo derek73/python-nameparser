@@ -1,0 +1,13 @@
+schema = 1
+
+[[word]]
+text = "sóisearach"
+[word.excluded.generation]
+reason = "a rank word, not a generation; Irish writes Óg and Mór"
+issue = 661
+
+[[word]]
+text = "sinsearach"
+[word.excluded.generation]
+reason = "a rank word, not a generation; Irish writes Óg and Mór"
+issue = 661

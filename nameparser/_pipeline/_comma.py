@@ -32,8 +32,8 @@ from collections.abc import Sequence
 
 from nameparser._lexicon import Lexicon, _normalize
 from nameparser._pipeline._pieces import (
-    has_name_content, is_suffix_piece, join_connectives, listed_lean,
-    own_words, segment_suffix_reading,
+    has_name_content, is_suffix_piece, is_title_piece, join_connectives,
+    listed_lean, own_words, segment_suffix_reading,
 )
 from nameparser._pipeline._state import (
     AMBIGUOUS_ACRONYM_TAG, SHAPE_ACRONYM_TAG, ParseState, PendingAmbiguity,
@@ -190,13 +190,14 @@ def _whole_name(seg0: Sequence[int], tokens: Sequence[WorkToken]) -> bool:
 
 
 def _behind_a_generation(state: ParseState, seg0: Sequence[int],
-                         p1: Sequence[list[int]], tokens: Sequence[WorkToken],
-                         contrast: bool | None,
+                         p1: Sequence[list[int]], pt1: Sequence[set[str]],
+                         tokens: Sequence[WorkToken], contrast: bool | None,
                          ) -> tuple[bool, ...] | None:
     """rules/C12's reading of the part after the comma, or None where
     the listing form stands: behind a whole name ending in a suffix
     word, or in a numeral the trailing fork reads as the generation,
-    the part is the credential run unless a word of it is
+    the part is the credential run, its titles (a word or a run a
+    connective joins) reading as titles, unless a word of it is
     written as a name. The caller has tested the tag, or the numeral
     shape with `ROMAN`, as a cheap filter. The part's veto is asked
     first, being the cheap question and the one a listing with a given
@@ -208,12 +209,14 @@ def _behind_a_generation(state: ParseState, seg0: Sequence[int],
         return None
     lex = state.lexicon
     reading: list[bool] = []
-    for p in p1:
-        # a title word reads as a title; a dual of the title and the
-        # suffix vocabulary is the suffix here, the slot being
-        # postnominal ('John Smith Jr., AD MD', as C8 reads the duals)
-        title = (len(p) == 1 and "vocab:title" in tokens[p[0]].tags
-                 and "vocab:suffix" not in tokens[p[0]].tags)
+    for p, pt in zip(p1, pt1):
+        # a title reads as a title, a word or a run a connective joins
+        # ('Mr. and Mrs.', a dual inside it included); a lone dual of
+        # the title and the suffix vocabulary is the suffix here, the
+        # slot being postnominal ('John Smith Jr., AD MD'): C8's two
+        # predicates, asked in C8's order
+        title = (not is_suffix_piece(p, pt, tokens)
+                 and is_title_piece(p, pt, tokens))
         for i in p:
             tok = tokens[i]
             # rules/C12: "a word of it written as a name, or an
@@ -416,9 +419,7 @@ def decide(state: ParseState) -> ParseState:
                     speaker = next(
                         (j for j in range(len(p1))
                          if is_suffix_piece(p1[j], pt1[j], tokens)
-                         and not (len(p1[j]) == 1
-                                  and "vocab:title"
-                                  in tokens[p1[j][0]].tags)),
+                         and not is_title_piece(p1[j], pt1[j], tokens)),
                         len(p1))
                 # another shape word than this one: no set built per
                 # pair (a copy of `shape` each time was quadratic in C)
@@ -440,10 +441,12 @@ def decide(state: ParseState) -> ParseState:
                 letters_one_case=state.one_case):
             reading = (True,) * len(p1)
     # the words of the part C12 reads as suffixes, which its report
-    # names: a title word in the part is no credential it took
+    # names: a title in the part, a word or a joined run, is no
+    # credential it took
     taken: list[int] = []
     if reading is None and generation:
-        reading = _behind_a_generation(state, seg0, p1, tokens, contrast)
+        reading = _behind_a_generation(state, seg0, p1, pt1, tokens,
+                                       contrast)
         if reading is not None:
             behind_generation = True
             for p, suffix in zip(p1, reading):
@@ -508,9 +511,8 @@ def decide(state: ParseState) -> ParseState:
         # only titles among the other words in front of the first
         pair_only = (len(pairs) >= 2 and len(pairs) == len(members)
                      and all(p[0] in member_set
-                             or (len(p) == 1
-                                 and "vocab:title" in tokens[p[0]].tags)
-                             for p in p1[:pairs[0]]))
+                             or is_title_piece(p, pt, tokens)
+                             for p, pt in zip(p1[:pairs[0]], pt1)))
     if behind_generation:
         # rules/C11: "A decision either way at the comma C1 reads is
         # reported" -- here the suffix word before the comma decided it,

@@ -15,8 +15,10 @@ C12. Rationale: a generation belongs to the name it ends, so a name
     the
     name carries the case contrast C6 asks for, the part after the
     comma is the credential run and the comma a suffix comma, a title
-    word in it reading as a title and any other word, a title and
-    suffix dual among them, as a suffix; a
+    in it reading as a title, whether one word or a run of title words
+    a connective joins (P3, C7), a dual inside such a run included,
+    and any other word, a title and suffix dual among them, as a
+    suffix; a
     word of it written as a name, or an initial, keeps the listing
     form.
       "John Smith II, AD"         →  given="John"
@@ -28,6 +30,9 @@ C12. Rationale: a generation belongs to the name it ends, so a name
       "John Smith Jr., AD MD"     →  suffix="Jr., AD MD"
       "John Smith Jr., Sir AD"    →  title="Sir"
       "John Smith Jr., Sir AD"    →  suffix="Jr., AD"
+      "John Smith Jr., Mr. and Mrs. AD"  →  title="Mr. and Mrs."
+      "John Smith Jr., Mr. and Mrs. AD"  →  suffix="Jr., AD"
+      "John Smith Jr., AD Sr. and Mr."   →  title="Sr. and Mr."
       "John Smith II, AD"         →  capitalized_forced="John Smith II, AD"
       "John Smith II, AD"         →  ambiguities=("suffix-or-name",)
       "Lloret Palol II, Josep Antoni"  →  given="Josep"  · boundary
@@ -51,4 +56,4 @@ C12. Rationale: a generation belongs to the name it ends, so a name
     case, has no contrast to read and keeps the listing form, as C6's
     unlisted all-caps word does.
       "Lloret Palol II, JA"       →  suffix="II, JA"
-    history: decisions/C12 · interacts: C1, C3, C6, C8, C11, S10 · implemented: nameparser/_pipeline/_comma.py
+    history: decisions/C12 · interacts: C1, C3, C6, C7, C8, C11, P3, S10 · implemented: nameparser/_pipeline/_comma.py
