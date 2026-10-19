@@ -180,7 +180,11 @@ Shipped packs
        surname and given name (``毛泽东`` → family ``毛``, given
        ``泽东``) against the surname list the pack ships. It sets no
        name order: native-script Han already reads family-first
-       without a pack.
+       without a pack. The list holds the commonest surnames of the
+       mainland and Taiwan, in both scripts, and the compound surnames
+       still borne; a name whose surname is not on it stays whole. A
+       Japanese name read with it can split after its first character
+       (``安藤一郎`` → family ``安``), so use ``ja`` for Japanese data.
 
 ``ja``, ``ru`` and ``tr_az`` are policy-only — they carry no vocabulary
 of their own. ``zh`` is both halves at once: a surname list, plus the
