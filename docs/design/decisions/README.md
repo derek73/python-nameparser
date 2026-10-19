@@ -37,6 +37,7 @@ Entry conventions:
 - [P5 — bound given names](P5-bound-given-names.md)
 - [P6 — the trailing orphan particle](P6-trailing-orphan-particle.md)
 - [P7 — a one-letter particle against the initial it spells](P7-one-letter-particle-against-the-initial-it-spells.md)
+- [P8 — a single-letter connective against the initial it spells](P8-single-letter-connective-against-the-initial-it-spells.md)
 
 ## Suffixes: generational & credentials (S)
 

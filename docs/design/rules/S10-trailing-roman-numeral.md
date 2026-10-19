@@ -17,7 +17,7 @@ S10. Rationale: a roman numeral ending a name is its generation,
     either reading of an ambiguous acronym is. A numeral read by its
     shape alone reports too; a numeral the vocabulary lists in two
     or more letters is not in question and reports nothing; a marked
-    letter (P3) that is such a numeral reports this way and not as a
+    letter (P8) that is such a numeral reports this way and not as a
     connective. Written case
     settles the fork in one way only: a numeral written in lower
     case in a name of mixed case is the generation and reports

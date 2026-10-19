@@ -365,7 +365,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
     # Dr. Juan Q.` forced kept `y`; uppercased then repaired gave `Y`
     # (decisions/R5).
     #
-    # #383/#479 (rules/P3, decisions/P3) removed "one CAPITAL
+    # #383/#479 (rules/P8, decisions/P8) removed "one CAPITAL
     # letter" as the whole test: a name written wholly in one case
     # carries no case evidence, so the vocabulary decides instead of
     # the shape. Only the letters `Lexicon.conjunctions_ambiguous`
@@ -401,7 +401,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
 
     # This WAS the recorded exception to the property above through
     # 2.3, and the reason it was scoped rather than universal. The
-    # #383/#479 fork (rules/P3, decisions/P3) reads a bare
+    # #383/#479 fork (rules/P8, decisions/P8) reads a bare
     # capital single-letter conjunction in a one-case name as the
     # connective -- no case evidence says otherwise -- so
     # 'JUAN Y GARCIA' and 'juan y garcia' now repair to the same
@@ -426,7 +426,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         # 'Y' carries no case evidence -- 'y' is not in
         # conjunctions_ambiguous, so it reads as the connective rather
         # than as an initial, and R4's carve-out lowercases it exactly
-        # as it lowercases the all-lower spelling above (decisions/P3)
+        # as it lowercases the all-lower spelling above (decisions/P8)
         self.m(str(uppered), 'Juan y Garcia', uppered)
         # mixed-case control: here the capital IS evidence, so 'Y'
         # reads as an initial exactly as it always has and repair

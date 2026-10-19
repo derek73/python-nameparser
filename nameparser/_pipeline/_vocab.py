@@ -343,7 +343,7 @@ def is_initial(text: str) -> bool:
 def is_one_case(texts: Sequence[str]) -> bool:
     """Whether a name is written wholly in ONE case -- all upper or all
     lower alike -- and so carries no case EVIDENCE about any letter in
-    it (rules/P3, #383/#479). The caller passes the name's OWN
+    it (rules/P8, #383/#479). The caller passes the name's OWN
     words: a maiden marker's clause and any delimited (nickname)
     content are not among them, and appending one must not flip the
     reading of words that did not change.

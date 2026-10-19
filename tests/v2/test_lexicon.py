@@ -606,7 +606,7 @@ def test_removing_a_conjunction_leaves_its_ambiguous_marker_alone() -> None:
     # conjunctions_ambiguous is the same shape as given_name_titles: not
     # in _SUBSET_FIELDS, so an orphan is inert rather than rejected --
     # the marker is never consulted once its base entry is gone
-    # (decisions/P3).
+    # (decisions/P8).
     lean = Lexicon.default().remove(conjunctions={"e"})
     assert "e" not in lean.conjunctions
     assert "e" in lean.conjunctions_ambiguous

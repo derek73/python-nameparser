@@ -786,7 +786,7 @@ def test_is_one_case() -> None:
     assert not is_one_case(["john", "e", "jones", "III"])
     # a caseless script is "one case" harmlessly: the fork that reads
     # this ALSO requires a cased token, so a caseless letter never
-    # enters it (rules/P3, decisions/P3)
+    # enters it (rules/P8, decisions/P8)
     assert is_one_case(["محمد", "و", "علي"])
     assert is_one_case(["山田", "太郎"])
     # the empty and single-token edges

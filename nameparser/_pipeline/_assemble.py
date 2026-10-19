@@ -3,7 +3,7 @@
 Consumes: tokens (all roles set), dropped, ambiguities (by index;
 one carrying ``field_tail`` is worded from its word's final role,
 #626), and segments, for the part a withdrawn connective report's
-letter ends (rules/P3, #721).
+letter ends (rules/P8, #721).
 Produces: a validated ParsedName -- the constructor re-checks every
 invariant (span order/bounds, ambiguity subset), so a pipeline bug
 that would produce an invalid result dies HERE, not in a renderer
@@ -116,7 +116,7 @@ def assemble(state: ParseState) -> ParsedName:
                 and any(t.role in (Role.SUFFIX, Role.TITLE)
                         for t in materialized)):
             continue
-        # rules/P3: "unless no name word of its part stands to its
+        # rules/P8: "unless no name word of its part stands to its
         # right" -- nothing after the letter in its segment, or only
         # suffixes, titles, a maiden clause or a nickname: it connects
         # nothing, so the report goes (#721). Asked here for the reason

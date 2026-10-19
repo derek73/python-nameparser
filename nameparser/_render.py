@@ -127,7 +127,7 @@ def _reads_as_conjunction(word: str, lex: Lexicon) -> bool:
     from the word alone, the initial carve-out included ('E.' assigned
     to middle is an initial, not the Italian conjunction). What it
     cannot give is an answer the parse reached by looking at the whole
-    NAME -- rules/P3's one-case fork is the live example -- which
+    NAME -- rules/P8's one-case fork is the live example -- which
     is why it is the fallback and the tags are the rule.
     """
     # the shape on the composed spelling, as _normalize composes the

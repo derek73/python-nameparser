@@ -79,7 +79,7 @@ R4. Rationale: case repair is a display concern, applied only on
     writer's join, so the interior connective is read as one even in
     a name written wholly in one case, where the same letter spaced
     reads as an initial if the vocabulary marks it as reading both
-    ways (P3).
+    ways (P8).
       "juan mcdonald"             →  capitalized="Juan McDonald"
       "Juan McDonald"             →  capitalized_forced="Juan McDonald"
       "ANH DO"                    →  capitalized="Anh Do"
@@ -187,5 +187,5 @@ R4. Rationale: case repair is a display concern, applied only on
     repairs to "E-F" as the parsed name does, where splicing the same
     text in gives "e-F".
     Signal: a word's own spelling: its recorded casing, the Mac/Mc convention and its punctuation
-    history: decisions/R4 · interacts: P3, R2, R3, R5, S3, S9 · implemented: nameparser/_render.py, nameparser/_lexicon.py
+    history: decisions/R4 · interacts: P3, P8, R2, R3, R5, S3, S9 · implemented: nameparser/_render.py, nameparser/_lexicon.py
 

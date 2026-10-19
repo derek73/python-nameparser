@@ -4546,7 +4546,7 @@ CASES: tuple[Case, ...] = (
                "again the reading this row now gives. No shape "
                "tag, for the reason the row above gives. Since #721 "
                "the letter, with only 'jr' behind it, connects nothing "
-               "(P3, the connectives rule), so the report is the "
+               "(P8, the single-letter connective rule), so the report is the "
                "numeral's"),
     Case("a_one_case_link_in_a_comma_suffix_run_is_a_middle_initial",
          "maier, amy i, jr.",
@@ -4672,7 +4672,7 @@ CASES: tuple[Case, ...] = (
                "connective has given names on both sides of it, so it "
                "joins. 'Х. И. М. С.' becomes 'Х. М. С.'. A Cyrillic "
                "capital is not the shape an initial is written in "
-               "(rules/P3), so the letter is the connective in "
+               "(rules/P8), so the letter is the connective in "
                "every spelling of this name",
          shape=1),
     # ---- #531: the given part's trailing slot ----------------------
@@ -7542,7 +7542,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("particle-or-given", "suffix-or-name"),
          notes="the row above in one case with the connective 'I'. "
                "Ending the name it connects nothing, so classify does "
-               "not report it (P3, #721), and the declined numeral is "
+               "not report it (P8, #721), and the declined numeral is "
                "what reports, as for 'V'"),
     Case("a_lowercase_shape_numeral_in_a_mixed_case_name_is_settled",
          "John x", {"given": "John", "suffix": "x"},
@@ -7610,7 +7610,7 @@ CASES: tuple[Case, ...] = (
          {"given": "john", "family": "i", "suffix": "phd"},
          ambiguities=("suffix-or-name",),
          notes="the letter has only a credential behind it, so it "
-               "connects nothing (P3) and the numeral is what reports, "
+               "connects nothing (P8) and the numeral is what reports, "
                "as for 'john i, phd' (Derek, #721)"),
     Case("a_one_case_link_before_a_title_reports_the_numeral",
          "john i dr.",
@@ -7627,7 +7627,7 @@ CASES: tuple[Case, ...] = (
          {"given": "jose", "family": "e", "maiden": "smith"},
          classification="fix(#274)",
          notes="the clause is one of the ends of a part, so the letter "
-               "before the marker connects nothing (P3, #721); 1.4.0 "
+               "before the marker connects nothing (P8, #721); 1.4.0 "
                "had no maiden markers"),
     Case("a_one_case_letter_ending_a_comma_part_is_silent",
          "jones, john e",
@@ -7674,7 +7674,7 @@ CASES: tuple[Case, ...] = (
           "family": "lopez"},
          classification="fix(#723)",
          notes="the declined marker leaves 'y' outside the name's own "
-               "words, so P3's one-case fork does not read it and T4 "
+               "words, so P8's one-case fork does not read it and T4 "
                "does: the initial its capital is, as in 'DR. NÉE JUAN "
                "Y LOPEZ'. 1.4.0 and 2.0-2.4 read family 'juan y lopez'"),
     Case("a_lowercase_letter_past_a_declined_marker_among_capitals_joins",
@@ -7714,14 +7714,14 @@ CASES: tuple[Case, ...] = (
          "john van e phd",
          {"given": "john", "family": "van e", "suffix": "phd"},
          notes="the letter ends the chain the particle made, with only "
-               "a credential behind it: it connects nothing (P3), so "
+               "a credential behind it: it connects nothing (P8), so "
                "nothing reports"),
     Case("a_one_case_link_before_a_credential_after_a_family_comma",
          "smith, john e phd",
          {"given": "john", "middle": "e", "family": "smith",
           "suffix": "phd"},
          notes="the given part after a family comma: only a "
-               "credential follows the letter in its part (P3)"),
+               "credential follows the letter in its part (P8)"),
     Case("a_chained_one_case_numeral_before_a_title_reports_once",
          "freiherr von i dr.",
          {"title": "freiherr dr.", "family": "von i"},
@@ -7729,7 +7729,7 @@ CASES: tuple[Case, ...] = (
          classification="fix(#316)",
          notes="a letter ending a particle chain with only a title "
                "behind it: the numeral's report, the connective's "
-               "withdrawn (P3). 1.4.0 read first 'freiherr von', last "
+               "withdrawn (P8). 1.4.0 read first 'freiherr von', last "
                "'i', suffix 'dr.'"),
     Case("a_numeral_kept_by_a_maiden_clause_before_a_credential_reports",
          "Jane Doe nee Smith V PhD",
@@ -7744,7 +7744,7 @@ CASES: tuple[Case, ...] = (
          {"given": "jose", "middle": "e", "family": "nee"},
          ambiguities=("conjunction-or-initial",),
          notes="no clause forms, so the marker is the family name and a "
-               "name word follows the letter: P3 reports it, as 1.4.0's "
+               "name word follows the letter: P8 reports it, as 1.4.0's "
                "successors did -- the contrast with 'jose e nee smith'"),
     Case("a_lowercase_shape_numeral_before_a_credential_is_settled",
          "John x PhD",

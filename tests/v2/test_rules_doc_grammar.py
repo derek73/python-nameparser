@@ -274,7 +274,7 @@ def test_a_line_no_rule_block_holds_is_an_error(line: str,
 
 
 def test_accepted_followed_by_a_word_is_prose() -> None:
-    # P3's mid-clause "Accepted rather than repaired:" is the shape.
+    # P8's mid-clause "Accepted rather than repaired:" is the shape.
     doc = ('X1. Statement.\n    Accepted rather than repaired: prose.\n'
            '      "a b"  →  family="b"\n')
     assert parse_rules_doc(doc)[0].rule_id == "X1"

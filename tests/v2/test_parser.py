@@ -1903,7 +1903,7 @@ def test_a_phrase_marker_outranks_the_word_it_starts_with() -> None:
 
 
 def test_the_catalan_recipe_unmarks_the_link_for_one_case_names() -> None:
-    """rules/P3's per-caller answer for Catalan and Polish data
+    """rules/P8's per-caller answer for Catalan and Polish data
     (#397 second review), pinned rather than described.
 
     `i` ships in the MARKED subset, so a name written wholly in one
@@ -2065,7 +2065,7 @@ def test_a_decomposed_abbreviation_reads_as_its_composed_twin(
 
 def test_a_decomposed_conjunction_reports_as_its_composed_twin() -> None:
     """#665: the one-case report on a letter that is both a connective
-    and an initial (rules/P3) counted code points, so it is reached
+    and an initial (rules/P8) counted code points, so it is reached
     by `й` only once a caller marks it ambiguous -- no default entry is
     decomposable."""
     parser = Parser(lexicon=Lexicon.default().add(

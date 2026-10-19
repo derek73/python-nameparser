@@ -279,7 +279,7 @@ class InitialsTestCase(HumanNameTestBase):
         # #528 made this view read the parse's tags instead of
         # re-deriving from vocabulary and shape. The core's
         # parse(...).initials() has given 'j. e. s.' since #383/#479
-        # and the two agree now; decisions/P3 and decisions/R3
+        # and the two agree now; decisions/P8 and decisions/R3
         # carry the split and its closing.
         hn = HumanName("john e smith")
         self.m(hn.initials(), "j. e. s.", hn)

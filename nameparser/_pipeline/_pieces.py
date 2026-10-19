@@ -68,11 +68,11 @@ from nameparser._pipeline._vocab import (
 )
 
 
-# rules/P3: "both questions this rule asks of a name — how many
-# words it has, and whether it is written in one case — are asked of
-# the name's OWN words: a maiden marker taken as one, and the words it
-# takes (M2), are not among them, and neither is a delimited clause
-# (N1, M1)" (history: decisions/P3)
+# rules/P3: "both questions asked of a name here and in P8 — how
+# many words it has, and whether it is written in one case — are
+# asked of the name's OWN words: a maiden marker taken as one, and the
+# words it takes (M2), are not among them, and neither is a delimited
+# clause (N1, M1)" (history: decisions/P3)
 def own_words(tokens: Sequence[WorkToken], comma_offsets: Sequence[int],
               markers: frozenset[str],
               marker_tags: Mapping[int, str] | None = None,
@@ -194,8 +194,8 @@ def is_prefix_piece(piece: Sequence[int], ptags: Set[str],
 # rules/P3: "a recognized connective joins its neighbors into one
 # name part, connective runs included — except a single-letter
 # connective in a three-word name, which stays a name word, and a
-# single-letter connective that reads as an initial instead, which
-# never joins" (history: decisions/P3)
+# single-letter connective that reads as an initial instead (P8),
+# which never joins" (history: decisions/P3)
 def is_conj_piece(piece: Sequence[int], ptags: Set[str],
                   tokens: Sequence[WorkToken]) -> bool:
     if "conjunction" in ptags:

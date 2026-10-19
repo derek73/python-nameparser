@@ -100,7 +100,7 @@ _NEAR_HUB_RE = re.compile(r"\bhubs?\b(?!-)", re.IGNORECASE)
 #: The line opening an Accepted clause, in either spelling the rules
 #: write ("Accepted:", "Accepted, and the reason ...:"); a line that
 #: merely begins with the word ("Accepted rather than repaired:",
-#: mid-clause in P3) is not one.
+#: mid-clause in P8) is not one.
 ACCEPTED_RE = re.compile(r"^\s*Accepted[:,]")
 #: A line meant to open an Accepted clause but spelled otherwise
 #: (``Accepted :``, ``Accepted --``, ``Accepted (2026):``, lowercase):

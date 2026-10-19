@@ -136,12 +136,12 @@ def _tags_for(token: WorkToken, n: str, state: ParseState,
         tags.add("particle")
         if n in lex.particles_ambiguous:
             tags.add("vocab:particle-ambiguous")
-    # rules/P3: "a single-letter connective reads as an initial
+    # rules/P8: "a single-letter connective reads as an initial
     # where the writing says so: written as a bare Latin capital in a
     # name that is not written wholly in one case, or — in a name
     # written wholly in one case, where nothing says so — where the
     # letter is one the vocabulary marks as reading both ways"
-    # (#383/#479; history: decisions/P3)
+    # (#383/#479; history: decisions/P8)
     # one letter as the writer sees it: a decomposed 'й' is two code
     # points (#665), so non-ASCII text is counted composed, after the
     # C-level tests have declined everything else
@@ -372,14 +372,14 @@ def classify(state: ParseState) -> ParseState:
         # hands classify tokens it did not build; no such path exists
         # today. `conjunctions` is the clause doing real work: it keeps
         # an orphan marker (a conjunctions_ambiguous entry no longer in
-        # conjunctions) inert rather than reported (decisions/P3).
+        # conjunctions) inert rather than reported (decisions/P8).
         # `i < clause_at and token.role is None` mirrors the fork's own
         # "own words" test above, for the same reason (rules/P3): a
         # clause's words were never eligible for the fork, so they must
         # never be eligible to report either. Emitted at the decision
         # site (mechanisms.md#AMBIGUITY-AT-THE-DECISION-SITE), per
         # token -- 'e and e e' emits twice; assemble withdraws the
-        # report on a letter no name word follows (rules/P3, #721).
+        # report on a letter no name word follows (rules/P8, #721).
         if (one_case and "initial" in token.tags
                 and folded[i] in state.lexicon.conjunctions_ambiguous
                 and folded[i] in state.lexicon.conjunctions

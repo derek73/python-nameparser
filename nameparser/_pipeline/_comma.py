@@ -82,7 +82,7 @@ def _reading_pieces(part: Sequence[int], tokens: Sequence[WorkToken],
     # joined part a title ('Mr. and Mrs.', 'Secretary of State', 'Dr.
     # and'), a run of connectives merging first as it does in the name
     # ('Minister of the Interior'). A LONE single-letter connective is
-    # left as it stands, P3 reading it as a name word or an initial in
+    # left as it stands, P3 or P8 reading it as a name word or an initial in
     # short names; one beside another connective is a member of their
     # run and joins with it ('Mr. y and Mrs.'). Any other join is not
     # made here: where no credential opens the part, a name word in it

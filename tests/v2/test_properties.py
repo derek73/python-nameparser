@@ -2244,7 +2244,7 @@ def _initial_spans(name: ParsedName,
 def _initial_reading_moved(on: ParsedName, off: ParsedName,
                            letters: frozenset[str]) -> bool:
     """Whether the two parses disagree about a class letter being an
-    INITIAL -- rules/P3's marked-subset clause rather than its
+    INITIAL -- rules/P8's marked-subset clause rather than P3's
     both-sides one, and the one thing an off-switch comparison cannot
     hold fixed: taking the word out of the connectives decides that
     question too, in either direction. A marked letter in a one-case
@@ -2306,7 +2306,7 @@ def _off_switch_findings() -> dict[str, list[str]]:
         # is decisions/P3's own -- a one-case name reads the
         # marked letter as an initial and so reads as its ALL-CAPS
         # twin already did -- and a class letter the caller's lexicon
-        # leaves UNMARKED is the shape P3's Accepted block records
+        # leaves UNMARKED is the shape P8's Accepted block records
         # instead, where a bare Latin capital and its lowercase
         # spelling genuinely part. The `conj+v` variant is exactly
         # that caller: it adds 'v' to the connectives and not to the

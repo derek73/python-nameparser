@@ -7,7 +7,7 @@
 # guards the SHIPPED data only: the pair is deliberately absent from
 # Lexicon's subset checks, so a CALLER'S orphan is never rejected -- it
 # is inert instead, the classify fork and its emitter both requiring the
-# base entry before they read the marker (see decisions/P3, the
+# base entry before they read the marker (see decisions/P8, the
 # 2026-09-13 entries).
 from nameparser.config import _compiled
 
