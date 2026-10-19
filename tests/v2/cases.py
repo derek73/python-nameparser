@@ -7661,6 +7661,13 @@ CASES: tuple[Case, ...] = (
                "words, so P3's one-case fork does not read it and T4 "
                "does: the initial its capital is, as in 'DR. NÉE JUAN "
                "Y LOPEZ'. 1.4.0 and 2.0-2.4 read family 'juan y lopez'"),
+    Case("a_lowercase_letter_past_a_declined_marker_among_capitals_joins",
+         "DR. NÉE JUAN y LOPEZ",
+         {"title": "DR.", "given": "NÉE", "family": "JUAN y LOPEZ"},
+         notes="the row above's mixed-case twin: the own words are "
+               "capitals, but the name is not written in one case, so "
+               "the lower-case 'y' past the marker is no initial (T4) "
+               "and joins (#723's review)"),
     Case("an_uncased_word_in_front_is_no_initial",
          "김 v", {"given": "김", "family": "v"},
          ambiguities=("suffix-or-name",),

@@ -22,7 +22,9 @@ T4. Rationale: one letter standing for a name word is how an
     decides, and the letter it does not mark reads as a connective
     in both spellings; a letter outside the name's own words — in
     a maiden clause, or past a marker the pass declines (M2) — is
-    this rule's.
+    this rule's, and asks the case of the whole name, the clause
+    included, since the own words' case says nothing of how the
+    clause beside them was written.
       "J NEE SMITH"               →  given="J"
       "j nee smith"               →  given="j"
       "j"                         →  ambiguities=()
@@ -32,6 +34,7 @@ T4. Rationale: one letter standing for a name word is how an
       "john j v"                  →  family="v"
       "Jose j y Lopez"            →  family="j y Lopez"  · boundary
       "é nee smith"               →  family="é"  · boundary
+      "DR. NÉE JUAN y LOPEZ"      →  family="JUAN y LOPEZ"  · boundary
       "jose e lopez"              →  ambiguities=("conjunction-or-initial",)
       "jose y lopez"              →  middle="y"
     history: decisions/T4 · interacts: M4, O5, P3, P7, S10, R3 · implemented: nameparser/_pipeline/_classify.py

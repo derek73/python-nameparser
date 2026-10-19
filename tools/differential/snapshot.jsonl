@@ -526,6 +526,7 @@
 {"name": "DOE, JOHN MA", "given": "JOHN", "family": "DOE", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. D."}
 {"name": "DOE, MARY JO MA", "given": "MARY", "middle": "JO", "family": "DOE", "suffix": "MA", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. J. D."}
 {"name": "DR DOE", "title": "DR", "family": "DOE", "initials": "D."}
+{"name": "DR. NÉE JUAN y LOPEZ", "title": "DR.", "given": "NÉE", "family": "JUAN y LOPEZ", "initials": "N. J. L."}
 {"name": "Dale, Antonius van", "given": "Antonius", "family": "van Dale", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "A. D."}
 {"name": "Dalen, Cornelis van", "given": "Cornelis", "family": "van Dalen", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "C. D."}
 {"name": "Dame Mary", "title": "Dame", "given": "Mary", "initials": "M."}
