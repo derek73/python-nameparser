@@ -943,11 +943,11 @@ class Peel(NamedTuple):
 
 
 # rules/S2: "a trailing word of the suffix vocabulary reads as a
-# suffix — generational forms and credential acronyms alike, and an
-# ambiguous acronym written with its periods, one after each letter or
-# one after each of two or more letter chunks, counts unambiguously; a
-# single trailing period is the abbreviation shape any word can wear
-# and does not" -- and: "a BARE ambiguous acronym is consumed only when
+# suffix — generational forms and credential acronyms alike" -- and
+# rules/S3: "an ambiguous acronym written with its periods, one after
+# each letter or one after each of two or more letter chunks, counts
+# unambiguously; a single trailing period is the abbreviation shape
+# any word can wear and does not" -- and rules/S4: "a BARE ambiguous acronym is consumed only when
 # the name has words to spare"
 # (v1's are_suffixes tail rule, with the roman-numeral special)
 def peel_walk(start: int, ptags: Sequence[Set[str]]) -> list[int]:

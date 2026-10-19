@@ -453,7 +453,7 @@ def _dotted(text: str) -> bool:
     spelling a member with a lower-case tail is written in. A single
     trailing period ('Ma.', 'Ed.', 'Ms.') is the abbreviation shape any
     word can wear -- the honorific's, a name's -- and is not the gate's
-    "written with periods" (rules/S2). Until #296's review the gate
+    "written with periods" (rules/S3). Until #296's review the gate
     was "any period", and 'Smith, Ms.' passed it as the degree."""
     return (_DOTTED.fullmatch(text) is not None
             or _CHUNKED.fullmatch(text) is not None)

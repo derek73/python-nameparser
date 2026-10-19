@@ -757,7 +757,7 @@ CASES: tuple[Case, ...] = (
          {"given": "Wang", "suffix": "M.Eng."},
          classification="fix(#544)",
          ambiguities=("given-or-family",),
-         notes="S2's period gate counts a listed member written in "
+         notes="S3's period gate counts a listed member written in "
                "two or more letter chunks, each closed by a period, "
                "as it counts one written with a period after each "
                "letter: 'M.Eng.' reads as 'M.A.' does, a suffix even "

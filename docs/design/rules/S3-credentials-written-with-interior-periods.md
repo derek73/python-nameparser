@@ -2,13 +2,21 @@
 
 S3. Rationale: credentials are often written run together with
     periods; the chunks between the periods are what carry the
-    vocabulary, and a word of several chunks that no vocabulary
-    knows is still written the way a credential is written.
+    vocabulary, a word of several chunks that no vocabulary knows is
+    still written the way a credential is written, and an acronym
+    that is also an ordinary name is unmistakably a credential when
+    its periods are written.
     A word with interior periods reads as a suffix when any of its
     period-separated chunks is suffix vocabulary — except where
     every chunk the vocabulary matches is a single ASCII character,
     the roman numerals and the lone digit the vocabulary lists,
-    which are about generations rather than credentials.
+    which are about generations rather than credentials. An
+    ambiguous acronym written with its periods, one after each
+    letter or one after each of two or more letter chunks, counts
+    unambiguously; a single trailing period is the abbreviation
+    shape any word can wear and does not. Written so, it is not the
+    bare acronym S4 counts words to spare for: the periods are how a
+    credential is written and a name is not.
     A word of two or more period-separated chunks that no
     vocabulary claims is read by POSITION instead, as a bare
     ambiguous acronym is (S4): a credential where the name has words
@@ -33,6 +41,9 @@ S3. Rationale: credentials are often written run together with
     the example lines name it; turned off, such a word is name
     material and the chunk rule above still decides the rest.
       "John Smith Msc.Ed."        →  suffix="Msc.Ed."
+      "John Smith M.A."           →  suffix="M.A."
+      "Wang M.Eng."               →  suffix="M.Eng."
+      "Jack Ma."                  →  family="Ma."  · boundary
       "John Smith Msc.Ed."  unlisted_dotted_suffixes-off  →  suffix="Msc.Ed."
       "Doe, John Msc.Ed."         →  suffix="Msc.Ed."
       "John Smith J.u.n.i.o.r."   →  suffix="J.u.n.i.o.r."
@@ -57,6 +68,6 @@ S3. Rationale: credentials are often written run together with
     the CJK assertions in tests/v2/pipeline/test_vocab.py's
     test_period_joined_vocab_retires_the_single_character_chunk.
     W3 states the same precedence for the same reason.
-    Signal: a shape: a word with interior periods, read by its chunks
-    history: decisions/S3 · interacts: C4, C5, C11, H2, W3, S4 · implemented: nameparser/_pipeline/_vocab.py
+    Signal: a shape: a word with interior periods, read by its chunks or as the acronym its letters spell
+    history: decisions/S3 · interacts: C4, C5, C11, H2, W3, S2, S4 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_pieces.py, nameparser/_pipeline/_vocab.py
 

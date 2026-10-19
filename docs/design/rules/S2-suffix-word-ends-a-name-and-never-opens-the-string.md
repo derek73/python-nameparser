@@ -1,8 +1,7 @@
 # S2 — a suffix word ends a name and never opens the string
 
 S2. Rationale: generational suffixes and credentials are recognized
-    by vocabulary; an acronym that is also an ordinary name is only
-    unmistakably a credential when its periods are written.
+    by vocabulary, and are written after the name they belong to.
     A suffix never OPENS THE STRING: position outranks the
     vocabulary match, so a suffix-shaped word written before anything
     else reads as whatever its position and shape make it — a title
@@ -17,11 +16,7 @@ S2. Rationale: generational suffixes and credentials are recognized
     after it (C13), and the part before it is that family, less a
     title run opening it (H6).
     A trailing word of the suffix vocabulary reads as a suffix —
-    generational forms and credential acronyms alike, and an
-    ambiguous acronym written with its periods, one after each
-    letter or one after each of two or more letter chunks, counts
-    unambiguously; a single trailing period is the abbreviation
-    shape any word can wear and does not. The run at a name's
+    generational forms and credential acronyms alike. The run at a name's
     trailing slot is read ONCE, once the connectives have joined (P3)
     and before the particle chain (P2) and the bound given-name join
     (P5) are made, counting a particle run and the name words the
@@ -32,8 +27,9 @@ S2. Rationale: generational suffixes and credentials are recognized
     credential run a word stands on its own, a title word there still
     a title — and neither join reaches a word the run took. The
     run's words are read by rules of their own: a word whose
-    period-separated chunks the vocabulary knows, or an unlisted
-    dotted word, by S3, a bare ambiguous acronym by S4, S5, S6 and S7, a
+    period-separated chunks the vocabulary knows, an ambiguous
+    acronym written with its periods, or an unlisted dotted word, by
+    S3, a bare ambiguous acronym by S4, S5, S6 and S7, a
     word joining that class by its shape by S9, a credential with
     more name text behind it by S8, and a roman numeral by S10.
       "John Smith Jr."            →  suffix="Jr."
@@ -49,10 +45,7 @@ S2. Rationale: generational suffixes and credentials are recognized
       "Jiří Dienstbier ml."       →  family="ml."  · boundary
       "Pavlović, Antonio mlađi"   →  suffix="mlađi"
       "Stariji Bruegel"           →  given="Stariji"  · boundary
-      "John Smith M.A."           →  suffix="M.A."
-      "Wang M.Eng."               →  suffix="M.Eng."
       "John Smith PhD"            →  suffix="PhD"
-      "Jack Ma."                  →  family="Ma."  · boundary
       "Ph. D. Van Johnson"        →  family="Van Johnson"
       "Ph. D. Van Johnson"        →  title="Ph."
       "Smith, Ph. D. Jr."         →  suffix="Ph. D. Jr."
@@ -90,5 +83,5 @@ S2. Rationale: generational suffixes and credentials are recognized
     and unchanged (decisions/v1-xfail-triage: `king` stays a
     title, for the addressing forms).
       "Dr Jr"                     →  suffix="Jr"
-    Signal: a position: a suffix word opening the string + a shape: an ambiguous acronym written with its periods; hub of S3, S4, S5, S6, S7, S8, S9, S10
+    Signal: a position: a suffix word ending the name, never opening the string; hub of S3, S4, S5, S6, S7, S8, S9, S10
     history: decisions/S2 · interacts: H1, H2, H3, H4, H5, H6, C1, C8, C13, S3, S4, S5, S6, S7, S8, S9, S10, P2, P3, P4, P5 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_pieces.py
