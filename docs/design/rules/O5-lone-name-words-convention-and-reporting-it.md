@@ -27,7 +27,7 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
     where it fires, a family comma — a comma with a name segment
     after it — silences it, a script whose own convention settles
     the order (W4) silences it, and so does the word's own claim — a
-    particle, a bound given name, an initial (T4). A comma with
+    particle, a bound given name, an initial (T5, T4). A comma with
     nothing after it names no family and silences nothing, so
     `سلمان،` and `Smith,` report where `Smith, Andrew` does not. A
     comma with only a TITLE after it names no family either, but the
@@ -58,5 +58,5 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
       "abd née Jones"             →  ambiguities=()
       "j"                         →  ambiguities=()
     Signal: a count: one name word that nothing else decided
-    history: decisions/O5 · interacts: O4, H1, N3, M4, H4, W4, P3, A2, T4 · implemented: nameparser/_pipeline/_assign.py
+    history: decisions/O5 · interacts: O4, H1, N3, M4, H4, W4, P3, A2, T4, T5 · implemented: nameparser/_pipeline/_assign.py
 
