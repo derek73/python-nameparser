@@ -206,13 +206,36 @@ def test_a_rule_without_a_signal_line_has_none() -> None:
                  id="wrapped"),
     pytest.param("    Signal: a count\n    Accepted: a clause after it.\n",
                  id="not-above-the-pointer"),
-    pytest.param("    Signal: a count\n    Signal: a shape\n",
-                 id="two-signal-lines"),
     pytest.param("    Signal: hub of C3 and C4\n", id="malformed-hub"),
+    pytest.param("    Signal: a shape; hub of C3 C4\n",
+                 id="malformed-hub-after-a-signal"),
 ])
 def test_a_bad_signal_line_is_an_error(signal: str) -> None:
     with pytest.raises(ValueError, match="Signal"):
         parse_rules_doc(_SIGNAL_DOC.format(signal=signal))
+
+
+def test_a_second_signal_line_is_an_error() -> None:
+    # Each line is well placed, above a pointer line, so this reaches the
+    # one-per-rule branch rather than the placement one.
+    doc = _SIGNAL_DOC.format(
+        signal="    Signal: a count\n    implemented: x.py\n"
+               "    Signal: a shape\n")
+    with pytest.raises(ValueError, match="second"):
+        parse_rules_doc(doc)
+
+
+def test_a_signal_line_outside_a_rule_block_is_an_error() -> None:
+    doc = "## A section (X)\n\n    Signal: stray\n    implemented: y\n"
+    with pytest.raises(ValueError, match="outside any rule block"):
+        parse_rules_doc(doc)
+
+
+def test_a_hub_may_state_its_own_signals_first() -> None:
+    rule = parse_rules_doc(_SIGNAL_DOC.format(
+        signal="    Signal: a position: x + a shape: y; hub of C3, C4\n"))[0]
+    assert rule.hub == ("C3", "C4")
+    assert rule.signal == "a position: x + a shape: y; hub of C3, C4"
 
 
 def test_a_signal_line_ending_the_text_is_an_error() -> None:

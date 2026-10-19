@@ -34,11 +34,15 @@ line, never wrapped, and stands directly above the rule's pointer line;
 the parser refuses one that does not, because a wrapped continuation
 would read as statement prose, quotable by a citation. A hub, a rule
 deciding by several signals each stated by a rule of its own, writes
-``Signal: hub of C3, C4, ...`` instead, naming those rules; the doc
-tests hold each to the hub's ``interacts:`` and to its statement, so
-the hub's map cannot leave one out. A plain signal line naming two
-signals joins them with `` + ``, which marks the rule a split
-candidate (docs/design/AGENTS.md, "One rule per piece of evidence").
+``Signal: hub of C3, C4, ...``, naming those rules, after any signal
+it reads itself (``Signal: <own signals>; hub of C3, C4``); the doc
+tests hold each named rule to the hub's ``interacts:`` and to one
+sentence of its statement, so the hub's map cannot leave one out. A
+line naming two signals joins them with `` + ``, which marks the rule
+a split candidate (docs/design/AGENTS.md, "One rule per piece of
+evidence"). A condition the rule cites to the rule stating it stays
+off the line, and a gate on the name's size ("exactly three name
+words", "a word to spare") is part of the signal it gates.
 The line is metadata, not statement prose: a citation cannot quote it
 and the size budget (tests/v2/rules_budget.py) does not count it.
 
@@ -81,7 +85,14 @@ _SIGNAL_RE = re.compile(r"^\s*Signal:\s+(?P<text>\S.*?)\s*$")
 #: as prose would leave the rule with no signal and put the line into
 #: the quotable statement.
 NEAR_SIGNAL_RE = re.compile(r"^\s*signal\s*:", re.IGNORECASE)
-_HUB_RE = re.compile(r"hub of (?P<ids>[A-Z]\d+(?:, [A-Z]\d+)*)")
+#: A hub's signal: the rules it maps, after any signal it reads itself.
+_HUB_RE = re.compile(
+    r"(?:(?P<own>\S.*?); )?hub of (?P<ids>[A-Z]\d+(?:, [A-Z]\d+)*)")
+#: The line opening an Accepted clause, in either spelling the rules
+#: write ("Accepted:", "Accepted, and the reason ...:"); a line that
+#: merely begins with the word ("Accepted rather than repaired:",
+#: mid-clause in P3) is not one.
+ACCEPTED_RE = re.compile(r"^\s*Accepted[:,]")
 _POINTER_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
 _POINTER_PART_RE = re.compile(
     r"(history|interacts|implemented|tracked):\s*([^·]+)")
@@ -236,6 +247,11 @@ def parse_rules_doc(text: str) -> list[Rule]:
             rules.append(current)
             continue
         if current is None:
+            if NEAR_SIGNAL_RE.match(line):
+                raise ValueError(
+                    f"line {lineno}: a `Signal:` line outside any rule "
+                    f"block; it belongs directly above its rule's "
+                    f"pointer line")
             continue
         stripped = line.lstrip()
         em = _EXAMPLE_RE.match(line)
@@ -298,11 +314,13 @@ def parse_rules_doc(text: str) -> list[Rule]:
                     f"`Signal:` line; a rule states one")
             current.signal = sig.group("text")
             hub = _HUB_RE.fullmatch(current.signal)
-            if hub is None and current.signal.lower().startswith("hub"):
+            if hub is None and re.search(r"(?:^|; )hub\b",
+                                         current.signal, re.IGNORECASE):
                 raise ValueError(
                     f"{current.rule_id}: line {lineno}: a hub's signal "
-                    f"line is `Signal: hub of C3, C4` -- rule IDs joined "
-                    f"by a comma and a space; read as a plain signal, "
+                    f"line is `Signal: hub of C3, C4`, or `Signal: <its own "
+                    f"signals>; hub of C3, C4` -- rule IDs joined by a "
+                    f"comma and a space; read as a plain signal, "
                     f"its rules would go unchecked: {stripped!r}")
             current.hub = tuple(hub.group("ids").split(", ")) if hub else ()
             signal_at = lineno
@@ -375,3 +393,15 @@ def prose_blocks(text: str) -> dict[str, list[str]]:
                 or _POINTER_RE.match(line)):
             current.append(line)
     return out
+
+
+def split_accepted(lines: list[str]) -> tuple[list[str], list[list[str]]]:
+    """A rule's prose lines (prose_blocks) as its statement -- the
+    Rationale included -- and its Accepted clauses, each clause running
+    to the next."""
+    starts = [i for i, ln in enumerate(lines) if ACCEPTED_RE.match(ln)]
+    if not starts:
+        return list(lines), []
+    bounds = [*starts, len(lines)]
+    return (lines[:starts[0]],
+            [lines[a:b] for a, b in zip(bounds, bounds[1:])])

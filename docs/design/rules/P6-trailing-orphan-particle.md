@@ -29,7 +29,7 @@ P6. Rationale: a particle ending the name has nothing to link
     often than the decoration it collides with. Three exceptions. The
     first is where the capitals speak: a word of the AMBIGUOUS
     credential class, written in capitals in a name written in more
-    than one case, reads as the credential and this attachment stands
+    than one case, reads as the credential (S6) and this attachment stands
     down — unless a particle stands immediately in front of it, the
     two being one particle run by then, which this rule takes whole.
     The second is S7's company: such a word standing behind an

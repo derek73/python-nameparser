@@ -14,7 +14,7 @@ and says so in the PR, where axis 12 (docs/design/AGENTS.md) asks what
 the new words read. A rule that shrinks fails too, so the record
 follows it down and the words cannot come back unseen.
 
-Three measures, all over the statement prose a citation may quote
+Four measures, all over the statement prose a citation may quote
 (rules_doc.prose_blocks, so the Signal:, example, pointer and marker
 lines are not counted):
 
@@ -23,7 +23,10 @@ lines are not counted):
 - ``exceptions``: the statement's ``except`` and ``unless`` -- a proxy
   for the clauses that carve a case out of the rule, which is the way
   the split rules grew;
-- ``accepted``: the number of Accepted: clauses.
+- ``accepted``: the number of Accepted clauses (``Accepted:`` or
+  ``Accepted, and ...:``, rules_doc.ACCEPTED_RE);
+- ``accepted_words``: their words, so a sentence added inside an
+  existing Accepted clause moves the record too.
 """
 from __future__ import annotations
 
@@ -33,14 +36,13 @@ import re
 from pathlib import Path
 
 from tests.v2.design_docs import read_rules_text
-from tests.v2.rules_doc import prose_blocks
+from tests.v2.rules_doc import prose_blocks, split_accepted
 
 RECORD = Path(__file__).with_name("rules_budget.json")
 RECORD_COMMAND = "uv run python -m tests.v2.rules_budget --record"
-MEASURES = ("words", "exceptions", "accepted")
+MEASURES = ("words", "exceptions", "accepted", "accepted_words")
 
 _RULE_ID_RE = re.compile(r"[A-Z]\d+")
-_ACCEPTED_RE = re.compile(r"^\s*Accepted:")
 _EXCEPTION_RE = re.compile(r"\b(?:except|unless)\b", re.IGNORECASE)
 
 
@@ -50,12 +52,13 @@ def measure(text: str) -> dict[str, dict[str, int]]:
     for rid, lines in prose_blocks(text).items():
         if not _RULE_ID_RE.fullmatch(rid):
             continue                # a section's Background
-        accepted = [i for i, ln in enumerate(lines) if _ACCEPTED_RE.match(ln)]
-        statement = " ".join(lines[:accepted[0]] if accepted else lines)
+        stmt_lines, clauses = split_accepted(lines)
+        statement = " ".join(stmt_lines)
         out[rid] = {
             "words": len(statement.split()),
             "exceptions": len(_EXCEPTION_RE.findall(statement)),
-            "accepted": len(accepted),
+            "accepted": len(clauses),
+            "accepted_words": sum(len(" ".join(c).split()) for c in clauses),
         }
     return dict(sorted(out.items(),
                        key=lambda kv: (kv[0][0], int(kv[0][1:]))))

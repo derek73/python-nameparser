@@ -30,7 +30,7 @@ from tests.v2.design_docs import (
     DECISIONS_DIR, MECHANISMS_DOC, MENTION_RE, RULES_DIR,
     read_decision_files, read_rules_text)
 from tests.v2.rules_doc import (
-    Rule, parse_rules_doc, prose_blocks)
+    Rule, parse_rules_doc, prose_blocks, split_accepted)
 
 REPO = Path(__file__).resolve().parents[2]
 MECH_DOC = MECHANISMS_DOC
@@ -337,15 +337,25 @@ def test_interacts_ids_exist() -> None:
     assert not missing, f"advisory interacts: cite unknown IDs: {missing}"
 
 
-def hub_findings(rules: list[Rule], statements: dict[str, str]) -> list[str]:
-    """A hub's ``Signal: hub of ...`` names the rules stating the
+def hub_findings(rules: list[Rule], prose: dict[str, list[str]]) -> list[str]:
+    """A hub's ``Signal: ... hub of ...`` names the rules stating the
     signals it combines; each must be another rule, listed in the
-    hub's ``interacts:``, and named in its statement, so the one-line
-    map there cannot leave one out (S2's named S4-S8 and not S9,
-    which its interacts: missed too, until the Signal: line landed)."""
+    hub's ``interacts:``, and named in ONE sentence of its statement
+    (the Accepted clauses aside) -- the one-line map -- so the map
+    cannot leave one out while the rule names it elsewhere (S2's named
+    S4-S8 and not S9, which its interacts: missed too, until the
+    Signal: line landed). ``prose`` is rules_doc.prose_blocks'."""
     ids = {r.rule_id for r in rules}
     problems = []
     for r in rules:
+        if not r.hub:
+            continue
+        statement, _ = split_accepted(prose.get(r.rule_id, []))
+        sentences = re.split(r"(?<=\.)\s+(?=[A-Z])",
+                             " ".join(" ".join(statement).split()))
+        def named(rid: str, text: str) -> bool:
+            return re.search(rf"\b{rid}\b", text) is not None
+        best = max(sentences, key=lambda t: sum(named(i, t) for i in r.hub))
         for rid in r.hub:
             where = f"{r.rule_id}'s Signal: hub of ... {rid}"
             if rid not in ids or rid == r.rule_id:
@@ -353,8 +363,7 @@ def hub_findings(rules: list[Rule], statements: dict[str, str]) -> list[str]:
                 continue
             if rid not in r.interacts:
                 problems.append(f"{where}: missing from its interacts:")
-            if not re.search(rf"\b{rid.lower()}\b",
-                             statements.get(r.rule_id, "")):
+            if not named(rid, best):
                 problems.append(f"{where}: its statement's map omits it")
     return problems
 
@@ -362,7 +371,7 @@ def hub_findings(rules: list[Rule], statements: dict[str, str]) -> list[str]:
 def test_a_hub_names_each_rule_its_map_names() -> None:
     rules = parse_rules_doc(read_rules_text())
     assert [r.rule_id for r in rules if r.hub], "no hub to check"
-    problems = hub_findings(rules, _statements())
+    problems = hub_findings(rules, prose_blocks(read_rules_text()))
     assert not problems, "\n".join(problems)
 
 
@@ -374,6 +383,13 @@ def test_a_hub_names_each_rule_its_map_names() -> None:
     ("hub of X2", "X2", "read by X3.", "its statement's map omits it"),
     # X2 is not named merely because X20 is
     ("hub of X2", "X2", "read by X20.", "its statement's map omits it"),
+    # named, but outside the sentence mapping the others
+    ("hub of X2, X3", "X2, X3", "Reads X2 here. Mapped: X3.",
+     "its statement's map omits it"),
+    # named only in an Accepted clause
+    ("hub of X2", "X2", "No map.\n    Accepted: X2.",
+     "its statement's map omits it"),
+    ("a shape: x; hub of X2, X3", "X2, X3", "Read by X2 and X3.", None),
 ])
 def test_hub_findings_catch_each_gap(signal: str, interacts: str,
                                      statement: str,
@@ -384,7 +400,7 @@ def test_hub_findings_catch_each_gap(signal: str, interacts: str,
            f"implemented: nameparser/_parser.py\n"
            f"X2. Other.\nX3. Other.\nX20. Other.\n")
     rules = parse_rules_doc(doc)
-    got = hub_findings(rules, {"X1": statement.lower()})
+    got = hub_findings(rules, prose_blocks(doc))
     assert got == ([] if finding is None else [got[0]])
     assert finding is None or finding in got[0]
 

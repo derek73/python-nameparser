@@ -10,7 +10,7 @@ P2. Rationale: a particle is written as part of the surname it
     counts: a trailing roman numeral S10 reads as the generation, or
     a bare acronym with words to spare, ends the chain as a suffix
     word does, and so does a bare ambiguous acronym written in capitals in
-    a mixed-case name, which needs no words to spare; the same
+    a mixed-case name (S6), which needs no words to spare; the same
     acronym written Title-case in a mixed-case name ends nothing and
     joins the chain as any name word does, words to spare or not,
     and the fork the chain called is reported there exactly as it is
