@@ -77,10 +77,11 @@ order: a name wholly in Han or hangul, or a Japanese name in kanji and
 kana — any of them, hiragana alone included — unless it is katakana
 alone, which is how a foreign name is transcribed. The Chinese
 interpunct ``·`` dividing such a name walks that back, marking a
-transcription that follows ``name_order`` like any other name. Two rules can still
-override the arrangement: a particle that can never be a given name,
+transcription that follows ``name_order`` like any other name. Three rules can still
+override the arrangement: a lone name word beside a given-name title
+such as ``Sir`` is the given name under every order, a particle that can never be a given name,
 opening the name, opens the surname under every order rather than
-becoming the given name (:ref:`order-vocabulary-first`), and the
+becoming the given name (both in :ref:`order-vocabulary-first`), and the
 opt-in ``patronymic_rules`` reorder, under the default order, a name
 whose patronymic marks its parts.
 
