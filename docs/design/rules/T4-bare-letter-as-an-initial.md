@@ -17,7 +17,8 @@ T4. Rationale: one letter standing for a name word is how an
     count passes over one, S10 reads a numeral written as one
     as the capital numeral it is, and a suffix test that vetoes an
     initial vetoes it — C1's strict mode, and the scan-back of W2's
-    peel. A letter whose capital is not one
+    peel — and M2's take keeps a numeral its clause ends with where
+    the letter in front is one. A letter whose capital is not one
     of those — é, ж — is no initial in either spelling, and in a
     name of mixed case a bare lower-case letter is no initial. As
     P3 asks it, the case question is asked of the name's own words,
@@ -38,10 +39,11 @@ T4. Rationale: one letter standing for a name word is how an
       "smith, j y lopez"          →  given="j"
       "dr. née juan y lopez"      →  middle="juan y"
       "john j v"                  →  family="v"
+      "john smith nee x x"        →  maiden="x x"
       "Jose j y Lopez"            →  family="j y Lopez"  · boundary
       "é nee smith"               →  family="é"  · boundary
       "j nee Smith"               →  given="j"
       "DR. NÉE JUAN y LOPEZ"      →  family="JUAN y LOPEZ"  · boundary
       "jose e lopez"              →  ambiguities=("conjunction-or-initial",)
       "jose y lopez"              →  middle="y"
-    history: decisions/T4 · interacts: M4, O5, P2, P3, P7, S10, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py
+    history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P7, S10, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_group.py, nameparser/_pipeline/_vocab.py

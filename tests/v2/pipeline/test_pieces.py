@@ -921,8 +921,8 @@ def _candidate_misses(monkeypatch: pytest.MonkeyPatch,
 
     def cut(lo: int, pieces: Sequence[Sequence[int]],
             ptags: Sequence[Set[str]],
-            tokens: Sequence[WorkToken]) -> int:
-        c = candidates(lo, pieces, ptags, tokens)
+            tokens: Sequence[WorkToken], one_case: bool | None) -> int:
+        c = candidates(lo, pieces, ptags, tokens, one_case)
         seen.append((lo, c))
         return c
 
