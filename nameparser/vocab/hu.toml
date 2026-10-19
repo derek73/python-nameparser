@@ -1,0 +1,13 @@
+schema = 1
+
+[[word]]
+text = "ifj"
+[word.excluded.generation]
+reason = "written BEFORE the name (ifj. Kovács János), which H2's shape rule already reads as a title"
+issue = 661
+
+[[word]]
+text = "id"
+[word.excluded.generation]
+reason = "written before the name, and a bare id would make any trailing ID a suffix"
+issue = 661

@@ -1,0 +1,33 @@
+schema = 1
+
+[[word]]
+text = "জুনিয়র"
+generation = { issue = 679 }
+
+[[word]]
+text = "সিনিয়র"
+generation = { issue = 679 }
+
+[[word]]
+text = "সাহেব"
+[word.honorific]
+issue = [346, 344, 343]
+note = "Saheb (রহমান সাহেব)"
+[word.honorific.excluded]
+attached = "जी ends बनर्जी, मुखर्जी, चटर्जी, so a glued peel would strand a bare virama (बनर् + जी); the 殿 criterion in a non-CJK script (decisions/indic-honorifics)"
+
+[[word]]
+text = "বাবু"
+[word.honorific]
+issue = [346, 344, 343]
+note = "Babu, TRAILING (অমল বাবু), while Devanagari बाबू is a LEADING title (#344); the split is real and must not be harmonized"
+[word.honorific.excluded]
+attached = "जी ends बनर्जी, मुखर्जी, चटर्जी, so a glued peel would strand a bare virama (बनर् + जी); the 殿 criterion in a non-CJK script (decisions/indic-honorifics)"
+
+[[word]]
+text = "মহারাজ"
+[word.courtesy]
+issue = [346, 344, 343]
+note = "Maharaj"
+[word.courtesy.excluded]
+attached = "जी ends बनर्जी, मुखर्जी, चटर्जी, so a glued peel would strand a bare virama (बनर् + जी); the 殿 criterion in a non-CJK script (decisions/indic-honorifics)"

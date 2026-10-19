@@ -1,0 +1,7 @@
+schema = 1
+
+[[word]]
+text = "ajala"
+[word.excluded.generation]
+reason = "a Yoruba surname"
+issue = 679

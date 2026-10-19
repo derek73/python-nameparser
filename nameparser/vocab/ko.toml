@@ -1,0 +1,88 @@
+schema = 1
+
+[[word]]
+text = "주니어"
+generation = { issue = 679 }
+
+[[word]]
+text = "시니어"
+generation = { issue = 679 }
+
+[[word]]
+text = "씨"
+[word.honorific]
+issue = [307, 308]
+note = "Mr./Ms.; standardly spaced in Korean orthography"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "박사"
+[word.credential]
+acronym = false
+issue = [307, 308]
+note = "doctorate holder (\"Dr.\"); ships bare as well as with -님 because it names a degree rather than a role"
+[word.credential.attached]
+side = "after"
+issue = 308
+note = "safe glued where its Han twin 博士 is not: that collision is Japanese (博士 = ひろし)"
+
+[[word]]
+text = "박사님"
+[word.professional_honorific]
+issue = [307, 308]
+note = "the same, honorific form; 선생님, 교수님 and 박사님 are the standard professional honorifics and ship together"
+[word.professional_honorific.attached]
+side = "after"
+issue = 308
+note = "peels off 김민준박사님 whole rather than stranding 박사 in the given name"
+
+[[word]]
+text = "선생님"
+[word.professional_honorific]
+issue = [307, 308]
+note = "teacher/respected elder"
+[word.professional_honorific.attached]
+side = "after"
+issue = 308
+note = "longest-first peels 선생님 off 김선생님 whole, rather than leaving 김선생 to segment into family 김 and given 선생"
+
+[[word]]
+text = "교수님"
+[word.professional_honorific]
+issue = [307, 308]
+note = "professor (honorific form)"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "군"
+[word.honorific]
+issue = [307, 308]
+note = "young man (\"Master\"); as a single-syllable given name in final position vanishingly rare"
+excluded = { attached = "김지군 is a given name ending in it" }
+
+[[word]]
+text = "양"
+[word.honorific]
+issue = [307, 308]
+note = "young woman (\"Miss\"); also a top-tier surname (Yang), but a surname LEADS, so the trailing-only suffix gate never sees it there (양 미선 keeps family 양)"
+[word.honorific.excluded]
+attached = "김지양 is a given name ending in it, and 양 is a top-tier surname besides"
+
+[[word]]
+text = "님"
+[word.honorific]
+issue = [307, 308]
+note = "the bare honorific of online/formal address; a single hangul syllable, the 양/군 risk class, but with no hanja reading it cannot sit inside a Sino-Korean given name"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "선생"
+[word.excluded.honorific]
+reason = "reads as a common noun as readily as an address term; 선생님 ships"
+issue = 308
+
+[[word]]
+text = "교수"
+[word.excluded.honorific]
+reason = "reads as a common noun as readily as an address term; 교수님 ships"
+issue = 308

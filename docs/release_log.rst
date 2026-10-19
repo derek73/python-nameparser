@@ -4,6 +4,10 @@ Release Log
 
     nameparser 2.6 is under development.
 
+    **Additions**
+
+    - **Ship the default vocabulary as per-word data files.** The word lists in ``nameparser.config`` are now compiled from ``nameparser/vocab/*.toml``, one file per language, which record what each word can be read as and why a word was left out; the lists and every parse are unchanged from 2.5.0. :issue:`737`
+
 * 2.5.0 - October 19, 2026
 
     nameparser 2.5 reads more of the shapes real listings write. Highlights:

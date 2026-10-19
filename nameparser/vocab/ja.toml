@@ -1,0 +1,138 @@
+schema = 1
+
+[[word]]
+text = "ジュニア"
+generation = { issue = 679 }
+
+[[word]]
+text = "先生"
+[word.professional_honorific]
+issue = [307, 308]
+note = "zh Mr. / ja teacher-master, an honorific in both"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "博士"
+[word.credential]
+acronym = false
+issue = [307, 308]
+note = "doctorate holder, shared Han; an attested Japanese given name (ひろし, Hiroshi), but the doctorate reading vastly dominates the spaced trailing position"
+excluded = { attached = "glued 田中博士 IS Tanaka Hiroshi, an attested given name" }
+
+[[word]]
+text = "教授"
+[word.professional_honorific]
+issue = [307, 308]
+note = "professor, shared Han"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "様"
+[word.honorific]
+issue = [307, 308]
+note = "formal Mr./Ms. (the mail-addressing honorific)"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "氏"
+[word.honorific]
+issue = [307, 308]
+note = "news-style Mr. (田中氏); a rare Japanese surname reading exists, but a 氏-surnamed person writes it FIRST"
+excluded = { attached = "王氏 is a historical name form (\"the Wang woman\")" }
+
+[[word]]
+text = "殿"
+[word.honorific]
+issue = [307, 308]
+note = "formal, official/rank-flavored; spaced is safe because a 殿-surnamed person's name LEADS and the suffix gate is trailing-only"
+[word.honorific.excluded]
+attached = "some ninety Japanese surnames end in it, 鵜殿 (Udono) and 真殿 (Madono) with four-figure populations, so a peel would cut a family name in two"
+
+[[word]]
+text = "さん"
+[word.honorific]
+issue = [307, 308]
+note = "the everyday honorific, kana"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "さま"
+[word.honorific]
+issue = [307, 308]
+note = "the kana spelling of 様"
+same_as = "様"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "くん"
+[word.honorific]
+issue = [307, 308]
+note = "the kana spelling of 君, which ships where 君 cannot: 王君 is a complete Chinese name, while hiragana is unavailable to Chinese"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "ちゃん"
+[word.honorific]
+issue = [307, 308]
+note = "familiar/diminutive"
+attached = { side = "after", issue = 308 }
+
+[[word]]
+text = "二世"
+[word.generation]
+issue = 671
+note = "the generational numeral \"II\""
+[word.generation.attached]
+side = "after"
+issue = 707
+note = "#707's one ends-with hit, 厄德二世, is the given name Odo with a regnal numeral in its label"
+
+[[word]]
+text = "議員"
+[word.professional_honorific]
+issue = 671
+note = "legislator"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "国会議員"
+[word.professional_honorific]
+issue = 671
+note = "Diet member"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "医学博士"
+[word.credential]
+acronym = false
+issue = 671
+note = "Doctor of Medicine"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "社長"
+[word.professional_honorific]
+issue = 671
+note = "president (ja), society head (zh); a job title used as a form of address after a name, the same slot as 先生"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "部長"
+[word.professional_honorific]
+issue = 671
+note = "department head (ja), minister (zh); a form of address after a name"
+[word.professional_honorific.excluded]
+attached = "長 alone is a borne given name, so 阿部長 can be 阿部 + 長 (#707). The measurement found no such bearer, as it found none for the words that shipped; the refusal rests on the argument, which a lower-bound zero does not refute, so a re-measure that again comes back zero is no reason to lift it"
+
+[[word]]
+text = "課長"
+[word.professional_honorific]
+issue = 671
+note = "section chief; a form of address after a name"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "シニア"
+[word.excluded.generation]
+reason = "left out (Derek, 2026-10-14) beside its Hebrew twin; its only count is Wikidata's Senior surname label, 96 bearers, which measures the English surname"
+issue = 679

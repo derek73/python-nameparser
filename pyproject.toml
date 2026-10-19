@@ -40,7 +40,9 @@ build-backend = "setuptools.build_meta"
 version = {attr = "nameparser._version.__version__"}
 
 [tool.setuptools.package-data]
-nameparser = ["py.typed"]
+# The per-word vocabulary ships as data for tools and later phases to
+# read; the parser itself reads the compiled module, never the TOML.
+nameparser = ["py.typed", "vocab/*.toml"]
 
 [dependency-groups]
 dev = [

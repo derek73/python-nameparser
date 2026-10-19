@@ -168,8 +168,9 @@ class ParticlesTestCase(HumanNameTestBase):
         self.m(hn.suffix, "III", hn)
 
     # The subset-of-PARTICLES and disjoint-from-BOUND_GIVEN_NAMES invariants
-    # are enforced by import-time asserts in nameparser/config/particles.py,
-    # so they are not repeated as tests here.
+    # hold by construction or by the vocabulary build's checks
+    # (tools/vocab/build.py, tests/v2/test_vocab.py), so they are not
+    # repeated as tests here.
 
     def test_non_given_name_particles_expected_members(self) -> None:
         # 'abu' is in PARTICLES but excluded (it is a bound_first_name);

@@ -1,0 +1,6680 @@
+# Words not yet assigned a language. Every category but the suffix
+# words was converted here mechanically from nameparser/config/*.py,
+# in source order -- with generic kinds, except the credential
+# acronyms, which already have their classified kind -- and the
+# comments above an entry are the vetting notes that stood above it
+# there. A comment headed by a constant's name in parentheses, as
+# "# (SUFFIX_ACRONYMS_AMBIGUOUS)", came from that constant's block,
+# where the entry's own reading came from another. Moving a word to a
+# language file changes no compiled set.
+
+schema = 1
+
+# ---- titles addressing by the given name (addresses = "given") ----
+
+[[word]]
+text = "aunt"
+title = { addresses = "given" }
+
+[[word]]
+text = "auntie"
+title = { addresses = "given" }
+
+# #346: the renunciate class -- 'baba' here, and 'guru', 'lama',
+# 'swami' in their own alphabetical places below. All four were in
+# the TITLES-only block until 2026-09-06. Two separate criteria
+# both say yes (rules/H Background): the title addresses by the
+# GIVEN name, which is what membership here means, and the
+# traditions renounce the surname, which is what makes the empty
+# family the right output for "Swami Vivekananda". 'rabbi' and
+# 'imam' address by TITLE rather than by given name ('Rabbi
+# Cohen'), so they fail the first criterion and stay out, and the
+# second agrees, those traditions keeping surnames;
+# 'venerable' stays in TITLES only, because the traditions using it
+# split on surname retention (Buddhist monastics drop the family
+# name, Anglican archdeacons keep it) and this set has no way to
+# say "sometimes".
+[[word]]
+text = "baba"
+title = { addresses = "given" }
+
+[[word]]
+text = "brother"
+title = { addresses = "given" }
+
+[[word]]
+text = "dame"
+title = { addresses = "given" }
+
+[[word]]
+text = "father"
+title = { addresses = "given" }
+
+[[word]]
+text = "guru"
+title = { addresses = "given" }
+
+[[word]]
+text = "king"
+title = { addresses = "given" }
+
+[[word]]
+text = "lama"
+title = { addresses = "given" }
+
+[[word]]
+text = "maid"
+title = { addresses = "given" }
+
+[[word]]
+text = "master"
+title = { addresses = "given" }
+
+[[word]]
+text = "mother"
+title = { addresses = "given" }
+
+[[word]]
+text = "pope"
+title = { addresses = "given" }
+
+# #519: prince and princess address by the GIVEN name ("Prince
+# Harry", "Princess Anne"), which is what membership here means
+# (rules/H Background); both were in the TITLES-only block
+# until 2026-09-10. 'lord' and 'lady' stay there, decided rather
+# than deferred: both split by the bearer's rank, which the text
+# does not carry -- the given-name form is a courtesy style for
+# children of the senior ranks alone ("Lord Peter", "Lady Diana"),
+# and every peer and every wife takes the title or surname ("Lord
+# Byron", "Lady Thatcher") -- and this set has no way to say
+# "sometimes" (the 'venerable' reasoning above). Membership decides only which field the one word
+# behind the title takes: "Prince Fielder" is #348's collision
+# either way.
+[[word]]
+text = "prince"
+title = { addresses = "given" }
+
+[[word]]
+text = "princess"
+title = { addresses = "given" }
+
+[[word]]
+text = "queen"
+title = { addresses = "given" }
+
+[[word]]
+text = "sir"
+title = { addresses = "given" }
+
+[[word]]
+text = "sister"
+title = { addresses = "given" }
+
+[[word]]
+text = "swami"
+title = { addresses = "given" }
+
+[[word]]
+text = "uncle"
+title = { addresses = "given" }
+
+[[word]]
+text = "sheikh"
+title = { addresses = "given" }
+
+[[word]]
+text = "sheik"
+title = { addresses = "given" }
+
+[[word]]
+text = "shaik"
+title = { addresses = "given" }
+
+[[word]]
+text = "shayk"
+title = { addresses = "given" }
+
+[[word]]
+text = "shaykh"
+title = { addresses = "given" }
+
+[[word]]
+text = "shaikh"
+title = { addresses = "given" }
+
+[[word]]
+text = "cheikh"
+title = { addresses = "given" }
+
+[[word]]
+text = "shekh"
+title = { addresses = "given" }
+
+# #269: Arabic -- "الشيخ" ("the sheikh") is the native-script form of
+# the transliterated sheikh/sheik/... cluster above; same
+# single-first-name-follows convention ("Sheikh Mohammed").
+[[word]]
+text = "الشيخ"
+title = { addresses = "given" }
+
+# #269 follow-up: Arabic honorifics precede the GIVEN name, so all
+# belong here rather than in plain TITLES. Article forms are never
+# given names; the bare doctor/professor/engineer forms are not
+# used as given names either. Deferred under the collision rule
+# (as мл/ст, the junior/senior words, were deferred at the time): bare سيد (Sayyid is a common given
+# name), bare شيخ (Shaikha is a common female given name), أمير
+# and سلطان (Amir/Sultan, common given names), and the 'د.'
+# abbreviation -- edge-period normalization would leave bare 'د',
+# which swallows single-letter initials (the bare-κ trap above).
+[[word]]
+text = "الدكتور"
+title = { addresses = "given", note = "\"the doctor\" (m)" }
+
+[[word]]
+text = "الدكتورة"
+title = { addresses = "given", note = "\"the doctor\" (f)" }
+
+[[word]]
+text = "دكتور"
+title = { addresses = "given", note = "doctor (m), article-less" }
+
+[[word]]
+text = "دكتورة"
+title = { addresses = "given", note = "doctor (f), article-less" }
+
+[[word]]
+text = "الأستاذ"
+title = { addresses = "given", note = "\"the professor\"/Mr. honorific (m)" }
+
+[[word]]
+text = "الأستاذة"
+title = { addresses = "given", note = "professor/Mrs. honorific (f)" }
+
+[[word]]
+text = "أستاذ"
+title = { addresses = "given", note = "professor (m), article-less" }
+
+[[word]]
+text = "أستاذة"
+title = { addresses = "given", note = "professor (f), article-less" }
+
+[[word]]
+text = "الحاج"
+title = { addresses = "given", note = "hajj honorific (m)" }
+
+[[word]]
+text = "الحاجة"
+title = { addresses = "given", note = "hajj honorific (f)" }
+
+[[word]]
+text = "الشيخة"
+title = { addresses = "given", note = "female counterpart of الشيخ" }
+
+[[word]]
+text = "مهندس"
+title = { addresses = "given", note = "engineer (a genuine title in Egyptian usage)" }
+
+# #344: Devanagari renunciate titles, the native-script twins of
+# baba/guru/swami above. NO Latin twins for संत on purpose. No NEW
+# Latin transliterations here: Sri and Sant collide with real
+# given names (and Pandit, in the civil block below, with a
+# surname) where the native script cannot (the sri/shri
+# precedent in the TITLES block below); baba/guru/swami/lama are
+# the pre-existing Latin entries above. A title reading with
+# addresses = "given" puts a word in both GIVEN_NAME_TITLES and TITLES,
+# which is what makes them titles at all -- Lexicon does not validate
+# one set against the other.
+[[word]]
+text = "स्वामी"
+title = { addresses = "given", note = "Swami" }
+
+[[word]]
+text = "गुरु"
+title = { addresses = "given", note = "Guru" }
+
+[[word]]
+text = "बाबा"
+title = { addresses = "given", note = "Baba" }
+
+[[word]]
+text = "संत"
+title = { addresses = "given", note = "Sant" }
+
+# #343: Bengali renunciate titles. Same two criteria as the Latin
+# and Devanagari sets (rules/H Background), and no NEW Latin
+# transliterations -- srila has none; baba/guru/swami already ship
+# above. শ্রীল is the Vaishnava honorific (শ্রীল প্রভুপাদ);
+# unprefixed শ্রী is civil and sits in TITLES below.
+[[word]]
+text = "স্বামী"
+title = { addresses = "given", note = "Swami" }
+
+[[word]]
+text = "শ্রীল"
+title = { addresses = "given", note = "Srila" }
+
+[[word]]
+text = "গুরু"
+title = { addresses = "given", note = "Guru" }
+
+[[word]]
+text = "বাবা"
+title = { addresses = "given", note = "Baba" }
+
+# ---- titles ----
+
+[[word]]
+text = "attaché"
+title = {}
+
+[[word]]
+text = "chargé"
+title = {}
+
+[[word]]
+text = "d'affaires"
+title = {}
+
+[[word]]
+text = "king's"
+title = {}
+
+[[word]]
+text = "marchioness"
+title = {}
+
+[[word]]
+text = "marquess"
+title = {}
+
+[[word]]
+text = "marquis"
+title = {}
+
+[[word]]
+text = "marquise"
+title = {}
+
+[[word]]
+text = "queen's"
+title = {}
+
+[[word]]
+text = "10th"
+title = {}
+
+[[word]]
+text = "1lt"
+title = {}
+
+[[word]]
+text = "1sgt"
+title = {}
+
+[[word]]
+text = "1st"
+title = {}
+
+[[word]]
+text = "1stlt"
+title = {}
+
+[[word]]
+text = "1stsgt"
+title = {}
+
+[[word]]
+text = "2lt"
+title = {}
+
+[[word]]
+text = "2nd"
+title = {}
+
+[[word]]
+text = "2ndlt"
+title = {}
+
+[[word]]
+text = "3rd"
+title = {}
+
+[[word]]
+text = "4th"
+title = {}
+
+[[word]]
+text = "5th"
+title = {}
+
+[[word]]
+text = "6th"
+title = {}
+
+[[word]]
+text = "7th"
+title = {}
+
+[[word]]
+text = "8th"
+title = {}
+
+[[word]]
+text = "9th"
+title = {}
+
+[[word]]
+text = "a1c"
+title = {}
+
+[[word]]
+text = "ab"
+title = {}
+
+[[word]]
+text = "abbess"
+title = {}
+
+[[word]]
+text = "abbot"
+title = {}
+
+[[word]]
+text = "abolitionist"
+title = {}
+
+[[word]]
+text = "academic"
+title = {}
+
+[[word]]
+text = "acolyte"
+title = {}
+
+[[word]]
+text = "activist"
+title = {}
+
+[[word]]
+text = "actor"
+title = {}
+
+[[word]]
+text = "actress"
+title = {}
+
+[[word]]
+text = "adept"
+title = {}
+
+[[word]]
+text = "adjutant"
+title = {}
+
+[[word]]
+text = "adm"
+title = {}
+
+[[word]]
+text = "admiral"
+title = {}
+
+[[word]]
+text = "advertising"
+title = {}
+
+[[word]]
+text = "adviser"
+title = {}
+
+[[word]]
+text = "advocate"
+title = {}
+
+[[word]]
+text = "air"
+title = {}
+
+[[word]]
+text = "akhoond"
+title = {}
+
+[[word]]
+text = "alderman"
+title = {}
+
+[[word]]
+text = "almoner"
+title = {}
+
+[[word]]
+text = "ambassador"
+title = {}
+
+[[word]]
+text = "amn"
+title = {}
+
+[[word]]
+text = "analytics"
+title = {}
+
+[[word]]
+text = "anarchist"
+title = {}
+
+[[word]]
+text = "animator"
+title = {}
+
+[[word]]
+text = "anthropologist"
+title = {}
+
+[[word]]
+text = "appellate"
+title = {}
+
+[[word]]
+text = "apprentice"
+title = {}
+
+[[word]]
+text = "arbitrator"
+title = {}
+
+[[word]]
+text = "archbishop"
+title = {}
+
+[[word]]
+text = "archdeacon"
+title = {}
+
+[[word]]
+text = "archdruid"
+title = {}
+
+[[word]]
+text = "archduchess"
+title = {}
+
+[[word]]
+text = "archduke"
+title = {}
+
+[[word]]
+text = "archeologist"
+title = {}
+
+[[word]]
+text = "architect"
+title = {}
+
+[[word]]
+text = "arhat"
+title = {}
+
+[[word]]
+text = "army"
+title = {}
+
+[[word]]
+text = "arranger"
+title = {}
+
+[[word]]
+text = "assistant"
+title = {}
+
+[[word]]
+text = "assoc"
+title = {}
+
+[[word]]
+text = "associate"
+title = {}
+
+[[word]]
+text = "asst"
+title = {}
+
+[[word]]
+text = "astronomer"
+title = {}
+
+[[word]]
+text = "attache"
+title = {}
+
+[[word]]
+text = "attorney"
+title = {}
+
+[[word]]
+text = "author"
+title = {}
+
+[[word]]
+text = "award-winning"
+title = {}
+
+[[word]]
+text = "ayatollah"
+title = {}
+
+[[word]]
+text = "bailiff"
+title = {}
+
+[[word]]
+text = "ballet"
+title = {}
+
+[[word]]
+text = "bandleader"
+title = {}
+
+[[word]]
+text = "banker"
+title = {}
+
+[[word]]
+text = "banner"
+title = {}
+
+[[word]]
+text = "bard"
+title = {}
+
+[[word]]
+text = "baron"
+title = {}
+
+[[word]]
+text = "baroness"
+title = {}
+
+[[word]]
+text = "barrister"
+title = {}
+
+[[word]]
+text = "baseball"
+title = {}
+
+[[word]]
+text = "bearer"
+title = {}
+
+[[word]]
+text = "behavioral"
+title = {}
+
+[[word]]
+text = "bench"
+title = {}
+
+[[word]]
+text = "bg"
+title = {}
+
+[[word]]
+text = "bgen"
+title = {}
+
+[[word]]
+text = "biblical"
+title = {}
+
+[[word]]
+text = "bibliographer"
+title = {}
+
+[[word]]
+text = "biochemist"
+title = {}
+
+[[word]]
+text = "biographer"
+title = {}
+
+[[word]]
+text = "biologist"
+title = {}
+
+[[word]]
+text = "bishop"
+title = {}
+
+[[word]]
+text = "blessed"
+title = {}
+
+[[word]]
+text = "blogger"
+title = {}
+
+[[word]]
+text = "blues"
+title = {}
+
+[[word]]
+text = "bodhisattva"
+title = {}
+
+[[word]]
+text = "bookseller"
+title = {}
+
+[[word]]
+text = "botanist"
+title = {}
+
+[[word]]
+text = "bp"
+title = {}
+
+[[word]]
+text = "brigadier"
+title = {}
+
+[[word]]
+text = "briggen"
+title = {}
+
+[[word]]
+text = "british"
+title = {}
+
+[[word]]
+text = "broadcaster"
+title = {}
+
+[[word]]
+text = "buddha"
+title = {}
+
+[[word]]
+text = "burgess"
+title = {}
+
+[[word]]
+text = "burlesque"
+title = {}
+
+[[word]]
+text = "business"
+title = {}
+
+[[word]]
+text = "businessman"
+title = {}
+
+[[word]]
+text = "businesswoman"
+title = {}
+
+[[word]]
+text = "bwana"
+title = {}
+
+[[word]]
+text = "canon"
+title = {}
+
+[[word]]
+text = "capt"
+title = {}
+
+[[word]]
+text = "captain"
+title = {}
+
+[[word]]
+text = "cardinal"
+title = {}
+
+[[word]]
+text = "cartographer"
+title = {}
+
+[[word]]
+text = "cartoonist"
+title = {}
+
+[[word]]
+text = "catholicos"
+title = {}
+
+[[word]]
+text = "ccmsgt"
+title = {}
+
+[[word]]
+text = "cdr"
+title = {}
+
+[[word]]
+text = "celebrity"
+title = {}
+
+[[word]]
+text = "ceo"
+title = {}
+
+[[word]]
+text = "cfo"
+title = {}
+
+[[word]]
+text = "chair"
+title = {}
+
+[[word]]
+text = "chairs"
+title = {}
+
+[[word]]
+text = "chancellor"
+title = {}
+
+[[word]]
+text = "chaplain"
+title = {}
+
+[[word]]
+text = "charge"
+title = { note = "unaccented 'chargé', like attaché/'attache'" }
+
+[[word]]
+text = "chef"
+title = {}
+
+[[word]]
+text = "chemist"
+title = {}
+
+[[word]]
+text = "chief"
+title = {}
+
+[[word]]
+text = "chieftain"
+title = {}
+
+[[word]]
+text = "choreographer"
+title = {}
+
+[[word]]
+text = "civil"
+title = {}
+
+[[word]]
+text = "classical"
+title = {}
+
+[[word]]
+text = "clergyman"
+title = {}
+
+[[word]]
+text = "clerk"
+title = {}
+
+[[word]]
+text = "cmsaf"
+title = {}
+
+[[word]]
+text = "cmsgt"
+title = {}
+
+[[word]]
+text = "co-chair"
+title = {}
+
+[[word]]
+text = "co-chairs"
+title = {}
+
+[[word]]
+text = "co-founder"
+title = {}
+
+[[word]]
+text = "coach"
+title = {}
+
+[[word]]
+text = "col"
+title = {}
+
+[[word]]
+text = "collector"
+title = {}
+
+[[word]]
+text = "colonel"
+title = {}
+
+[[word]]
+text = "comedian"
+title = {}
+
+[[word]]
+text = "comedienne"
+title = {}
+
+[[word]]
+text = "comic"
+title = {}
+
+[[word]]
+text = "commander"
+title = {}
+
+[[word]]
+text = "commander-in-chief"
+title = {}
+
+[[word]]
+text = "commodore"
+title = {}
+
+[[word]]
+text = "composer"
+title = {}
+
+[[word]]
+text = "compositeur"
+title = {}
+
+[[word]]
+text = "comptroller"
+title = {}
+
+[[word]]
+text = "computer"
+title = {}
+
+[[word]]
+text = "comtesse"
+title = {}
+
+[[word]]
+text = "conductor"
+title = {}
+
+[[word]]
+text = "consultant"
+title = {}
+
+[[word]]
+text = "controller"
+title = {}
+
+[[word]]
+text = "corporal"
+title = {}
+
+[[word]]
+text = "corporate"
+title = {}
+
+[[word]]
+text = "correspondent"
+title = {}
+
+[[word]]
+text = "councillor"
+title = {}
+
+[[word]]
+text = "counselor"
+title = {}
+
+[[word]]
+text = "count"
+title = {}
+
+[[word]]
+text = "countess"
+title = {}
+
+[[word]]
+text = "courtier"
+title = {}
+
+[[word]]
+text = "cpl"
+title = {}
+credential = {}
+
+[[word]]
+text = "cpo"
+title = {}
+credential = {}
+
+[[word]]
+text = "cpt"
+title = {}
+credential = {}
+
+[[word]]
+text = "credit"
+title = {}
+
+[[word]]
+text = "criminal"
+title = {}
+
+[[word]]
+text = "criminologist"
+title = {}
+
+[[word]]
+text = "critic"
+title = {}
+
+[[word]]
+text = "csm"
+title = {}
+credential = {}
+
+[[word]]
+text = "curator"
+title = {}
+
+[[word]]
+text = "customs"
+title = {}
+
+[[word]]
+text = "cwo-2"
+title = {}
+
+[[word]]
+text = "cwo-3"
+title = {}
+
+[[word]]
+text = "cwo-4"
+title = {}
+
+[[word]]
+text = "cwo-5"
+title = {}
+
+[[word]]
+text = "cwo2"
+title = {}
+
+[[word]]
+text = "cwo3"
+title = {}
+
+[[word]]
+text = "cwo4"
+title = {}
+
+[[word]]
+text = "cwo5"
+title = {}
+
+[[word]]
+text = "cyclist"
+title = {}
+
+[[word]]
+text = "dancer"
+title = {}
+
+[[word]]
+text = "dcn"
+title = {}
+
+[[word]]
+text = "deacon"
+title = {}
+
+[[word]]
+text = "delegate"
+title = {}
+
+[[word]]
+text = "deputy"
+title = {}
+
+[[word]]
+text = "designated"
+title = {}
+
+[[word]]
+text = "designer"
+title = {}
+
+[[word]]
+text = "detective"
+title = {}
+
+[[word]]
+text = "developer"
+title = {}
+
+[[word]]
+text = "dhr"
+title = {}
+
+[[word]]
+text = "dipl.-ing"
+title = {}
+
+[[word]]
+text = "diplomat"
+title = {}
+
+[[word]]
+text = "dir"
+title = {}
+
+[[word]]
+text = "director"
+title = {}
+
+[[word]]
+text = "discovery"
+title = {}
+
+[[word]]
+text = "dissident"
+title = {}
+
+[[word]]
+text = "district"
+title = {}
+
+[[word]]
+text = "division"
+title = {}
+
+[[word]]
+text = "docent"
+title = {}
+
+[[word]]
+text = "docket"
+title = {}
+
+[[word]]
+text = "doctor"
+title = {}
+
+[[word]]
+text = "doyen"
+title = {}
+
+[[word]]
+text = "dpty"
+title = {}
+
+[[word]]
+text = "dr"
+title = {}
+
+[[word]]
+text = "dra"
+title = {}
+
+[[word]]
+text = "dramatist"
+title = {}
+
+[[word]]
+text = "druid"
+title = {}
+
+[[word]]
+text = "drummer"
+title = {}
+
+[[word]]
+text = "duchesse"
+title = {}
+
+# 'duke', # a common first name
+[[word]]
+text = "dutchess"
+title = {}
+
+[[word]]
+text = "ecologist"
+title = {}
+
+[[word]]
+text = "economist"
+title = {}
+
+[[word]]
+text = "editor"
+title = {}
+
+[[word]]
+text = "edler"
+title = {}
+
+[[word]]
+text = "edmi"
+title = {}
+
+[[word]]
+text = "edohen"
+title = {}
+
+[[word]]
+text = "educator"
+title = {}
+
+[[word]]
+text = "effendi"
+title = {}
+
+[[word]]
+text = "ekegbian"
+title = {}
+
+[[word]]
+text = "elerunwon"
+title = {}
+
+[[word]]
+text = "eminence"
+title = {}
+
+[[word]]
+text = "emperor"
+title = {}
+
+[[word]]
+text = "empress"
+title = {}
+
+[[word]]
+text = "engineer"
+title = {}
+
+[[word]]
+text = "english"
+title = {}
+
+[[word]]
+text = "ens"
+title = {}
+
+[[word]]
+text = "entertainer"
+title = {}
+
+[[word]]
+text = "entrepreneur"
+title = {}
+
+[[word]]
+text = "envoy"
+title = {}
+
+[[word]]
+text = "erzbischof"
+title = {}
+
+[[word]]
+text = "essayist"
+title = {}
+
+[[word]]
+text = "evangelist"
+title = {}
+
+[[word]]
+text = "excellency"
+title = {}
+
+[[word]]
+text = "excellent"
+title = {}
+
+[[word]]
+text = "exec"
+title = {}
+
+[[word]]
+text = "executive"
+title = {}
+
+[[word]]
+text = "expert"
+title = {}
+
+[[word]]
+text = "fadm"
+title = {}
+
+[[word]]
+text = "family"
+title = {}
+
+[[word]]
+text = "federal"
+title = {}
+
+[[word]]
+text = "fh-prof"
+title = {}
+
+[[word]]
+text = "field"
+title = {}
+
+[[word]]
+text = "film"
+title = {}
+
+[[word]]
+text = "financial"
+title = {}
+
+[[word]]
+text = "first"
+title = {}
+
+[[word]]
+text = "flag"
+title = {}
+
+[[word]]
+text = "flying"
+title = {}
+
+[[word]]
+text = "foreign"
+title = {}
+
+[[word]]
+text = "forester"
+title = {}
+
+[[word]]
+text = "founder"
+title = {}
+
+[[word]]
+text = "fr"
+title = {}
+
+[[word]]
+text = "frau"
+title = {}
+
+[[word]]
+text = "fräulein"
+title = {}
+
+[[word]]
+text = "freifrau"
+title = {}
+
+[[word]]
+text = "freiherr"
+title = {}
+[word.particle]
+may_be_given = true
+note = "German rank; since 1919 a former noble title is part of the legal surname, written before the particle (\"Karl-Theodor Freiherr von und zu Guttenberg\"), so it chains like one. Also in TITLES, load-bearing"
+
+[[word]]
+text = "friar"
+title = {}
+
+[[word]]
+text = "frk"
+title = {}
+
+[[word]]
+text = "frøken"
+title = {}
+
+[[word]]
+text = "fru"
+title = {}
+
+[[word]]
+text = "fürst"
+title = {}
+
+[[word]]
+text = "fürsterzbischof"
+title = {}
+
+[[word]]
+text = "gaf"
+title = {}
+
+[[word]]
+text = "gen"
+title = {}
+
+[[word]]
+text = "general"
+title = {}
+
+[[word]]
+text = "generalissimo"
+title = {}
+
+[[word]]
+text = "gentiluomo"
+title = {}
+
+[[word]]
+text = "giani"
+title = {}
+
+[[word]]
+text = "goodman"
+title = {}
+
+[[word]]
+text = "goodwife"
+title = {}
+
+[[word]]
+text = "gov"
+title = {}
+
+[[word]]
+text = "governor"
+title = {}
+
+[[word]]
+text = "graf"
+title = {}
+
+[[word]]
+text = "gräfin"
+title = {}
+
+[[word]]
+text = "grand"
+title = {}
+
+[[word]]
+text = "großfürst"
+title = {}
+
+[[word]]
+text = "group"
+title = {}
+
+[[word]]
+text = "guitarist"
+title = {}
+
+[[word]]
+text = "gyani"
+title = {}
+
+[[word]]
+text = "gysgt"
+title = {}
+
+[[word]]
+text = "hajji"
+title = {}
+
+[[word]]
+text = "headman"
+title = {}
+
+[[word]]
+text = "heir"
+title = {}
+
+[[word]]
+text = "heiress"
+title = {}
+
+[[word]]
+text = "her"
+title = {}
+
+[[word]]
+text = "hereditary"
+title = {}
+
+[[word]]
+text = "heren"
+title = {}
+
+[[word]]
+text = "herr"
+title = {}
+
+[[word]]
+text = "herzog"
+title = {}
+
+[[word]]
+text = "herren"
+title = {}
+
+[[word]]
+text = "herrn"
+title = {}
+
+[[word]]
+text = "high"
+title = {}
+
+[[word]]
+text = "highness"
+title = {}
+
+[[word]]
+text = "his"
+title = {}
+
+[[word]]
+text = "historian"
+title = {}
+
+[[word]]
+text = "historicus"
+title = {}
+
+[[word]]
+text = "historien"
+title = {}
+
+[[word]]
+text = "holiness"
+title = {}
+
+[[word]]
+text = "hon"
+title = { note = "sorry Hon Solo, but judges seem more common." }
+
+[[word]]
+text = "honorable"
+title = {}
+
+[[word]]
+text = "honourable"
+title = {}
+
+[[word]]
+text = "host"
+title = {}
+
+[[word]]
+text = "hr"
+title = {}
+
+[[word]]
+text = "illustrator"
+title = {}
+
+[[word]]
+text = "imam"
+title = {}
+
+[[word]]
+text = "industrialist"
+title = {}
+
+[[word]]
+text = "information"
+title = {}
+
+[[word]]
+text = "instructor"
+title = {}
+
+[[word]]
+text = "intelligence"
+title = {}
+
+[[word]]
+text = "intendant"
+title = {}
+
+[[word]]
+text = "inventor"
+title = {}
+
+[[word]]
+text = "investigator"
+title = {}
+
+[[word]]
+text = "investor"
+title = {}
+
+[[word]]
+text = "journalist"
+title = {}
+
+[[word]]
+text = "journeyman"
+title = {}
+
+[[word]]
+text = "judge"
+title = {}
+
+[[word]]
+text = "judicial"
+title = {}
+
+[[word]]
+text = "jurist"
+title = {}
+
+[[word]]
+text = "keyboardist"
+title = {}
+
+[[word]]
+text = "kingdom"
+title = {}
+
+[[word]]
+text = "knowledge"
+title = {}
+
+[[word]]
+text = "lady"
+title = {}
+
+[[word]]
+text = "lamido"
+title = {}
+
+[[word]]
+text = "law"
+title = {}
+
+[[word]]
+text = "lawyer"
+title = {}
+
+[[word]]
+text = "lcdr"
+title = {}
+
+[[word]]
+text = "lcpl"
+title = {}
+
+[[word]]
+text = "leader"
+title = {}
+
+[[word]]
+text = "lecturer"
+title = {}
+
+[[word]]
+text = "legal"
+title = {}
+
+[[word]]
+text = "librarian"
+title = {}
+
+[[word]]
+text = "lieutenant"
+title = {}
+
+[[word]]
+text = "linguist"
+title = {}
+
+[[word]]
+text = "literary"
+title = {}
+
+[[word]]
+text = "lord"
+title = {}
+
+[[word]]
+text = "lt"
+title = {}
+credential = {}
+
+[[word]]
+text = "ltc"
+title = {}
+
+[[word]]
+text = "ltcol"
+title = {}
+
+[[word]]
+text = "ltg"
+title = {}
+
+[[word]]
+text = "ltgen"
+title = {}
+
+[[word]]
+text = "ltjg"
+title = {}
+
+[[word]]
+text = "lyricist"
+title = {}
+
+[[word]]
+text = "madam"
+title = {}
+
+[[word]]
+text = "madame"
+title = {}
+
+[[word]]
+text = "mademoiselle"
+title = {}
+
+[[word]]
+text = "mag"
+title = {}
+
+[[word]]
+text = "mag-judge"
+title = {}
+
+[[word]]
+text = "mag/judge"
+title = {}
+
+[[word]]
+text = "magistrate"
+title = {}
+
+[[word]]
+text = "magistrate-judge"
+title = {}
+
+[[word]]
+text = "magnate"
+title = {}
+
+[[word]]
+text = "maharajah"
+title = {}
+
+[[word]]
+text = "maharani"
+title = {}
+
+[[word]]
+text = "mahdi"
+title = {}
+
+[[word]]
+text = "maj"
+title = {}
+
+[[word]]
+text = "majesty"
+title = {}
+
+[[word]]
+text = "majgen"
+title = {}
+
+[[word]]
+text = "manager"
+title = {}
+
+[[word]]
+text = "marcher"
+title = {}
+
+[[word]]
+text = "marchess"
+title = {}
+
+[[word]]
+text = "marketing"
+title = {}
+
+[[word]]
+text = "mathematician"
+title = {}
+
+[[word]]
+text = "mathematics"
+title = {}
+
+[[word]]
+text = "matriarch"
+title = {}
+
+[[word]]
+text = "mayor"
+title = {}
+
+[[word]]
+text = "mcpo"
+title = {}
+
+[[word]]
+text = "mcpoc"
+title = {}
+
+[[word]]
+text = "mcpon"
+title = {}
+
+[[word]]
+text = "md"
+title = {}
+credential = {}
+
+[[word]]
+text = "me"
+title = {}
+
+[[word]]
+text = "member"
+title = {}
+
+[[word]]
+text = "memoirist"
+title = {}
+
+[[word]]
+text = "merchant"
+title = {}
+
+[[word]]
+text = "met"
+title = {}
+
+[[word]]
+text = "metropolitan"
+title = {}
+
+[[word]]
+text = "mevr"
+title = {}
+
+[[word]]
+text = "mevrouw"
+title = {}
+
+[[word]]
+text = "mevrouwe"
+title = {}
+
+[[word]]
+text = "mg"
+title = {}
+
+[[word]]
+text = "mgr"
+title = {}
+
+[[word]]
+text = "mgysgt"
+title = {}
+
+[[word]]
+text = "military"
+title = {}
+
+[[word]]
+text = "minister"
+title = {}
+
+[[word]]
+text = "miss"
+title = {}
+
+[[word]]
+text = "misses"
+title = {}
+
+[[word]]
+text = "missionary"
+title = {}
+
+[[word]]
+text = "mister"
+title = {}
+
+[[word]]
+text = "mlle"
+title = {}
+
+[[word]]
+text = "mme"
+title = {}
+
+[[word]]
+text = "mobster"
+title = {}
+
+[[word]]
+text = "model"
+title = {}
+
+[[word]]
+text = "monk"
+title = {}
+
+[[word]]
+text = "monseigneur"
+title = {}
+
+[[word]]
+text = "monsieur"
+title = {}
+
+[[word]]
+text = "monsignor"
+title = {}
+
+[[word]]
+text = "most"
+title = {}
+
+[[word]]
+text = "mountaineer"
+title = {}
+
+[[word]]
+text = "mpco-cg"
+title = {}
+
+[[word]]
+text = "mr"
+title = {}
+
+[[word]]
+text = "mrs"
+title = {}
+
+[[word]]
+text = "ms"
+title = {}
+[word.credential]
+note = "NOT may_be_name, though #296's audit table put it there for the leading-title collision: the gate is position-blind and the collision is not (gated, 'John Smith, MS' read title 'MS'); a title/credential dual that position decides (decisions/C8)"
+
+[[word]]
+text = "msg"
+title = {}
+
+[[word]]
+text = "msgt"
+title = {}
+
+[[word]]
+text = "mufti"
+title = {}
+
+[[word]]
+text = "mullah"
+title = {}
+
+[[word]]
+text = "municipal"
+title = {}
+
+[[word]]
+text = "murshid"
+title = {}
+
+[[word]]
+text = "musician"
+title = {}
+
+[[word]]
+text = "musicologist"
+title = {}
+
+[[word]]
+text = "mx"
+title = {}
+
+[[word]]
+text = "mystery"
+title = {}
+
+[[word]]
+text = "nanny"
+title = {}
+
+[[word]]
+text = "narrator"
+title = {}
+
+[[word]]
+text = "national"
+title = {}
+
+[[word]]
+text = "naturalist"
+title = {}
+
+[[word]]
+text = "navy"
+title = {}
+
+[[word]]
+text = "neuroscientist"
+title = {}
+
+[[word]]
+text = "novelist"
+title = {}
+
+[[word]]
+text = "nurse"
+title = {}
+
+[[word]]
+text = "obstetritian"
+title = {}
+
+[[word]]
+text = "officer"
+title = {}
+
+[[word]]
+text = "opera"
+title = {}
+
+[[word]]
+text = "operating"
+title = {}
+
+[[word]]
+text = "ornithologist"
+title = {}
+
+[[word]]
+text = "painter"
+title = {}
+
+[[word]]
+text = "paleontologist"
+title = {}
+
+[[word]]
+text = "pastor"
+title = {}
+
+[[word]]
+text = "patriarch"
+title = {}
+
+[[word]]
+text = "pd"
+title = {}
+
+[[word]]
+text = "pediatrician"
+title = {}
+
+[[word]]
+text = "personality"
+title = {}
+
+[[word]]
+text = "petty"
+title = {}
+
+[[word]]
+text = "pfc"
+title = {}
+
+[[word]]
+text = "pharaoh"
+title = {}
+
+[[word]]
+text = "philantropist"
+title = {}
+
+[[word]]
+text = "philosopher"
+title = {}
+
+[[word]]
+text = "photographer"
+title = {}
+
+[[word]]
+text = "physician"
+title = {}
+
+[[word]]
+text = "physicist"
+title = {}
+
+[[word]]
+text = "pianist"
+title = {}
+
+[[word]]
+text = "pilot"
+title = {}
+
+[[word]]
+text = "pioneer"
+title = {}
+
+[[word]]
+text = "pir"
+title = {}
+
+[[word]]
+text = "player"
+title = {}
+
+[[word]]
+text = "playwright"
+title = {}
+
+[[word]]
+text = "po1"
+title = {}
+
+[[word]]
+text = "po2"
+title = {}
+
+[[word]]
+text = "po3"
+title = {}
+
+[[word]]
+text = "poet"
+title = {}
+
+[[word]]
+text = "police"
+title = {}
+
+[[word]]
+text = "political"
+title = {}
+
+[[word]]
+text = "politician"
+title = {}
+
+[[word]]
+text = "prefect"
+title = {}
+
+[[word]]
+text = "prelate"
+title = {}
+
+[[word]]
+text = "premier"
+title = {}
+
+[[word]]
+text = "pres"
+title = {}
+
+[[word]]
+text = "presbyter"
+title = {}
+
+[[word]]
+text = "president"
+title = {}
+
+[[word]]
+text = "presiding"
+title = {}
+
+[[word]]
+text = "priest"
+title = {}
+
+[[word]]
+text = "priestess"
+title = {}
+
+[[word]]
+text = "primate"
+title = {}
+
+[[word]]
+text = "prime"
+title = {}
+
+[[word]]
+text = "prin"
+title = {}
+
+[[word]]
+text = "principal"
+title = {}
+
+[[word]]
+text = "printer"
+title = {}
+
+[[word]]
+text = "printmaker"
+title = {}
+
+[[word]]
+text = "prinz"
+title = {}
+
+[[word]]
+text = "priv.-doz"
+title = {}
+
+[[word]]
+text = "prior"
+title = {}
+
+[[word]]
+text = "private"
+title = {}
+
+[[word]]
+text = "pro"
+title = {}
+
+[[word]]
+text = "producer"
+title = {}
+
+[[word]]
+text = "prof"
+title = {}
+
+[[word]]
+text = "professor"
+title = {}
+
+[[word]]
+text = "provost"
+title = {}
+
+[[word]]
+text = "pslc"
+title = {}
+
+[[word]]
+text = "psychiatrist"
+title = {}
+
+[[word]]
+text = "psychologist"
+title = {}
+
+[[word]]
+text = "publisher"
+title = {}
+
+[[word]]
+text = "pursuivant"
+title = {}
+
+[[word]]
+text = "pv2"
+title = {}
+
+[[word]]
+text = "pvt"
+title = {}
+
+[[word]]
+text = "ra"
+title = {}
+credential = {}
+
+[[word]]
+text = "rabbi"
+title = {}
+
+[[word]]
+text = "radio"
+title = {}
+
+[[word]]
+text = "radm"
+title = {}
+
+[[word]]
+text = "rangatira"
+title = {}
+
+[[word]]
+text = "ranger"
+title = {}
+
+[[word]]
+text = "rdml"
+title = {}
+
+[[word]]
+text = "rear"
+title = {}
+
+[[word]]
+text = "rebbe"
+title = {}
+
+[[word]]
+text = "reichsgraf"
+title = {}
+
+[[word]]
+text = "registrar"
+title = {}
+
+[[word]]
+text = "rep"
+title = {}
+
+[[word]]
+text = "representative"
+title = {}
+
+[[word]]
+text = "researcher"
+title = {}
+
+[[word]]
+text = "resident"
+title = {}
+
+[[word]]
+text = "rev"
+title = {}
+
+[[word]]
+text = "revenue"
+title = {}
+
+[[word]]
+text = "reverend"
+title = {}
+
+[[word]]
+text = "right"
+title = {}
+
+[[word]]
+text = "risk"
+title = {}
+
+[[word]]
+text = "ritter"
+title = {}
+
+[[word]]
+text = "rock"
+title = {}
+
+[[word]]
+text = "royal"
+title = {}
+
+[[word]]
+text = "rt"
+title = {}
+
+[[word]]
+text = "sa"
+title = {}
+credential = { note = "NOT may_be_name, for the reason recorded on ms (decisions/C8)" }
+
+[[word]]
+text = "sailor"
+title = {}
+
+[[word]]
+text = "saint"
+title = {}
+
+[[word]]
+text = "sainte"
+title = {}
+
+[[word]]
+text = "saoshyant"
+title = {}
+
+[[word]]
+text = "satirist"
+title = {}
+
+[[word]]
+text = "scholar"
+title = {}
+
+[[word]]
+text = "schoolmaster"
+title = {}
+
+[[word]]
+text = "scientist"
+title = {}
+
+[[word]]
+text = "scpo"
+title = {}
+
+[[word]]
+text = "screenwriter"
+title = {}
+
+[[word]]
+text = "secretary"
+title = {}
+
+[[word]]
+text = "security"
+title = {}
+
+[[word]]
+text = "seigneur"
+title = {}
+
+[[word]]
+text = "senator"
+title = {}
+
+[[word]]
+text = "senhor"
+title = {}
+
+[[word]]
+text = "senhora"
+title = {}
+
+[[word]]
+text = "senhorita"
+title = {}
+
+[[word]]
+text = "senior"
+title = {}
+
+[[word]]
+text = "señor"
+title = {}
+
+[[word]]
+text = "señora"
+title = {}
+
+[[word]]
+text = "señores"
+title = {}
+
+[[word]]
+text = "señorita"
+title = {}
+
+[[word]]
+text = "señoritas"
+title = {}
+
+[[word]]
+text = "senior-judge"
+title = {}
+
+[[word]]
+text = "sergeant"
+title = {}
+
+[[word]]
+text = "servant"
+title = {}
+
+[[word]]
+text = "sfc"
+title = {}
+
+[[word]]
+text = "sgm"
+title = {}
+credential = {}
+
+[[word]]
+text = "sgt"
+title = {}
+
+[[word]]
+text = "sgtmaj"
+title = {}
+
+[[word]]
+text = "sgtmajmc"
+title = {}
+
+[[word]]
+text = "sheriff"
+title = {}
+
+[[word]]
+text = "siddha"
+title = {}
+
+[[word]]
+text = "signor"
+title = {}
+
+[[word]]
+text = "signora"
+title = {}
+
+[[word]]
+text = "signore"
+title = {}
+
+[[word]]
+text = "signorina"
+title = {}
+
+[[word]]
+text = "singer"
+title = {}
+
+[[word]]
+text = "singer-songwriter"
+title = {}
+
+[[word]]
+text = "sma"
+title = {}
+
+[[word]]
+text = "smsgt"
+title = {}
+
+[[word]]
+text = "sn"
+title = {}
+
+[[word]]
+text = "soccer"
+title = {}
+
+[[word]]
+text = "social"
+title = {}
+
+[[word]]
+text = "sociologist"
+title = {}
+
+[[word]]
+text = "software"
+title = {}
+
+[[word]]
+text = "soldier"
+title = {}
+
+[[word]]
+text = "solicitor"
+title = {}
+
+[[word]]
+text = "soprano"
+title = {}
+
+[[word]]
+text = "spc"
+title = {}
+
+[[word]]
+text = "speaker"
+title = {}
+
+[[word]]
+text = "special"
+title = {}
+
+[[word]]
+text = "sr"
+title = {}
+
+[[word]]
+text = "sra"
+title = {}
+
+[[word]]
+text = "srta"
+title = {}
+
+[[word]]
+text = "srtas"
+title = {}
+
+[[word]]
+text = "sres"
+title = {}
+
+[[word]]
+text = "ssg"
+title = {}
+
+[[word]]
+text = "ssgt"
+title = {}
+
+[[word]]
+text = "st"
+title = {}
+[word.particle]
+may_be_given = true
+note = "Also in TITLES and consumed there before particle logic runs, so moving it changes nothing; kept for the load-bearing TITLES intersection above"
+
+[[word]]
+text = "staff"
+title = {}
+
+[[word]]
+text = "state"
+title = {}
+
+[[word]]
+text = "states"
+title = {}
+
+[[word]]
+text = "strategy"
+title = {}
+
+[[word]]
+text = "subaltern"
+title = {}
+
+[[word]]
+text = "subedar"
+title = {}
+
+[[word]]
+text = "suffragist"
+title = {}
+
+[[word]]
+text = "sultan"
+title = {}
+
+[[word]]
+text = "sultana"
+title = {}
+
+[[word]]
+text = "superior"
+title = {}
+
+[[word]]
+text = "supreme"
+title = {}
+
+[[word]]
+text = "surgeon"
+title = {}
+
+[[word]]
+text = "swordbearer"
+title = {}
+
+[[word]]
+text = "sysselmann"
+title = {}
+
+[[word]]
+text = "tax"
+title = {}
+
+[[word]]
+text = "teacher"
+title = {}
+
+[[word]]
+text = "technical"
+title = {}
+
+[[word]]
+text = "technologist"
+title = {}
+
+[[word]]
+text = "television"
+title = {}
+
+[[word]]
+text = "tenor"
+title = {}
+
+[[word]]
+text = "theater"
+title = {}
+
+[[word]]
+text = "theatre"
+title = {}
+
+[[word]]
+text = "theologian"
+title = {}
+
+[[word]]
+text = "theorist"
+title = {}
+
+[[word]]
+text = "timi"
+title = {}
+
+[[word]]
+text = "tirthankar"
+title = {}
+
+[[word]]
+text = "translator"
+title = {}
+
+[[word]]
+text = "travel"
+title = {}
+
+[[word]]
+text = "treasurer"
+title = {}
+
+[[word]]
+text = "tsar"
+title = {}
+
+[[word]]
+text = "tsarina"
+title = {}
+
+[[word]]
+text = "tsgt"
+title = {}
+
+[[word]]
+text = "uk"
+title = {}
+
+[[word]]
+text = "united"
+title = {}
+
+[[word]]
+text = "univ.prof"
+title = {}
+
+[[word]]
+text = "us"
+title = {}
+
+[[word]]
+text = "vadm"
+title = {}
+
+[[word]]
+text = "vardapet"
+title = {}
+
+[[word]]
+text = "vc"
+title = {}
+credential = {}
+
+[[word]]
+text = "venerable"
+title = {}
+
+[[word]]
+text = "verderer"
+title = {}
+
+[[word]]
+text = "vicar"
+title = {}
+
+[[word]]
+text = "vice"
+title = {}
+
+[[word]]
+text = "viscount"
+title = {}
+
+[[word]]
+text = "vizier"
+title = {}
+
+[[word]]
+text = "vocalist"
+title = {}
+
+[[word]]
+text = "voice"
+title = {}
+
+[[word]]
+text = "vrouwe"
+title = {}
+
+[[word]]
+text = "warden"
+title = {}
+
+[[word]]
+text = "warrant"
+title = {}
+
+[[word]]
+text = "wing"
+title = {}
+
+[[word]]
+text = "wm"
+title = {}
+
+[[word]]
+text = "wp"
+title = {}
+
+[[word]]
+text = "wo-1"
+title = {}
+
+[[word]]
+text = "wo1"
+title = {}
+
+[[word]]
+text = "wo2"
+title = {}
+
+[[word]]
+text = "wo3"
+title = {}
+
+[[word]]
+text = "wo4"
+title = {}
+
+[[word]]
+text = "wo5"
+title = {}
+
+[[word]]
+text = "woodman"
+title = {}
+
+[[word]]
+text = "writer"
+title = {}
+
+[[word]]
+text = "zoologist"
+title = {}
+
+# #606: salutations and offices for the languages the block above
+# had none for, so "Herra Väinö Johansson" stops reading given
+# 'Herra'. TITLES has no ambiguous subset, so a word ships only if
+# it is borne as no name in the LEADING position
+# (decisions/vocabulary-collisions C-i) -- with one recorded
+# exception. Those marked "borne" are names somewhere, but rarely
+# the FIRST word of one, mostly surnames written last, and ship
+# anyway on the 'graf' precedent above, paying the cost "Graf
+# Steffi" already pays: a name that begins with one gives it to
+# the title (rules/H1). That is a judgment on each word's
+# counts, scoped to these words, not a rule to sweep with. Counts
+# and sources are in
+# decisions/salutation-titles, and so are the words that failed:
+# among them Vietnamese ông/bà, Tamil thiru and pl/cs pan, all in
+# decisions/vocabulary-exclusions, Excluded (TITLES).
+# English offices, completing runs like "Police Commissioner".
+# 'marshal' and 'justice' stay out: both are given names.
+[[word]]
+text = "administrator"
+title = { issue = 606 }
+
+[[word]]
+text = "commissioner"
+title = { issue = 606 }
+
+[[word]]
+text = "counsel"
+title = { issue = 606, note = "borne" }
+
+# Finnish: Mr, Mrs, Miss, Count.
+[[word]]
+text = "herra"
+title = { issue = 606, note = "borne" }
+
+[[word]]
+text = "rouva"
+title = { issue = 606 }
+
+[[word]]
+text = "neiti"
+title = { issue = 606 }
+
+[[word]]
+text = "kreivi"
+title = { issue = 606, note = "borne" }
+
+# Estonian: Mr, Mrs, Miss, Count.
+[[word]]
+text = "härra"
+title = { issue = 606 }
+
+[[word]]
+text = "proua"
+title = { issue = 606 }
+
+[[word]]
+text = "preili"
+title = { issue = 606 }
+
+[[word]]
+text = "krahv"
+title = { issue = 606 }
+
+# Romanian: Mr, Mrs (with and without the breve), Miss.
+[[word]]
+text = "domnul"
+title = { issue = 606 }
+
+[[word]]
+text = "doamna"
+title = { issue = 606 }
+
+[[word]]
+text = "doamnă"
+title = { issue = 606 }
+
+[[word]]
+text = "domnișoara"
+title = { issue = 606 }
+
+# Croatian/Serbian/Bosnian, Latin script: Mr, Mrs, Miss.
+[[word]]
+text = "gospodin"
+title = { issue = 606 }
+
+[[word]]
+text = "gospođa"
+title = { issue = 606 }
+
+[[word]]
+text = "gospođica"
+title = { issue = 606 }
+
+# Icelandic: Mrs, Miss, Count ('herra', Mr, is the Finnish entry).
+[[word]]
+text = "frú"
+title = { issue = 606 }
+
+[[word]]
+text = "ungfrú"
+title = { issue = 606 }
+
+[[word]]
+text = "greifi"
+title = { issue = 606 }
+
+# Dutch: Mr, Miss, Count ('mevrouw' is above).
+[[word]]
+text = "meneer"
+title = { issue = 606 }
+
+[[word]]
+text = "juffrouw"
+title = { issue = 606 }
+
+[[word]]
+text = "graaf"
+title = { issue = 606, note = "borne" }
+
+# Scandinavian Count ('fru' and 'herr' are above), Swedish Miss.
+[[word]]
+text = "greve"
+title = { issue = 606, note = "borne" }
+
+[[word]]
+text = "fröken"
+title = { issue = 606 }
+
+# Czech: Mrs, Miss. Mr is 'pan', the Chinese surname Pan, so out;
+# 'paní' keeps its accent, so the Indian name Pani is untouched.
+[[word]]
+text = "paní"
+title = { issue = 606 }
+
+[[word]]
+text = "slečna"
+title = { issue = 606 }
+
+# Polish: Count.
+[[word]]
+text = "hrabia"
+title = { issue = 606, note = "borne" }
+
+# Lithuanian: Mr, Mrs, Count.
+[[word]]
+text = "ponas"
+title = { issue = 606, note = "borne" }
+
+[[word]]
+text = "ponia"
+title = { issue = 606, note = "borne" }
+
+[[word]]
+text = "grafas"
+title = { issue = 606 }
+
+# Malay: Mr. Mrs is 'puan', a given name (Puan Maharani), so out.
+[[word]]
+text = "encik"
+title = { issue = 606 }
+
+# Filipino: Mr, Mrs, Miss.
+[[word]]
+text = "ginoo"
+title = { issue = 606, note = "borne" }
+
+[[word]]
+text = "ginang"
+title = { issue = 606, note = "borne" }
+
+[[word]]
+text = "binibini"
+title = { issue = 606, note = "borne" }
+
+# Georgian, Latin script: Mr, Mrs, Count.
+[[word]]
+text = "batoni"
+title = { issue = 606, note = "borne" }
+
+[[word]]
+text = "kalbatoni"
+title = { issue = 606 }
+
+[[word]]
+text = "grafi"
+title = { issue = 606 }
+
+# Danish/Norwegian/German "Familie Hansen", the family addressed.
+[[word]]
+text = "familie"
+title = { issue = 606 }
+
+# English Knight, the rank the post-nominal 'knt' names.
+[[word]]
+text = "knight"
+title = { issue = 606, note = "borne" }
+
+# #662: Akan and Indonesian Mr.; under 100 census bearers each and
+# none found on Wikidata. Hausa malam and Turkish bay are excluded
+# (decisions/vocabulary-exclusions, Excluded (TITLES)).
+[[word]]
+text = "owura"
+title = { issue = 662 }
+
+[[word]]
+text = "bapak"
+title = { issue = 662 }
+
+# #269: Cyrillic (ru/uk) -- mr/mrs/dr/prof/academician/pan(i)
+# honorifics, same title-then-family convention as 'mr'/'dr'/'prof'
+# above (not GIVEN_NAME_TITLES: "г-н Петров" families the surname
+# just like "Mr. Smith" does).
+[[word]]
+text = "г-н"
+title = {}
+
+[[word]]
+text = "г-жа"
+title = {}
+
+[[word]]
+text = "д-р"
+title = {}
+
+[[word]]
+text = "проф"
+title = {}
+
+[[word]]
+text = "акад"
+title = {}
+
+[[word]]
+text = "пан"
+title = {}
+
+[[word]]
+text = "пані"
+title = {}
+
+# #269: Greek -- kyria/kyrios(abbr)/doctor/professor abbreviations;
+# same plain-title convention as above.
+# #269: bare κ deferred -- collides with the initial+surname shape
+# ('Κ. Παπαδόπουλος' would parse as title 'Κ.' with an empty given;
+# _normalize strips the edge period, so the entry matches the
+# initial). Latin TITLES deliberately has no bare single-letter
+# entries for the same reason.
+[[word]]
+text = "κα"
+title = {}
+
+[[word]]
+text = "κος"
+title = {}
+
+[[word]]
+text = "δρ"
+title = {}
+
+[[word]]
+text = "καθ"
+title = {}
+
+# #269: Hebrew -- "מר" ("Mr."), plain title like its Latin analog.
+# Geresh/gershayim forms of "doctor"/"Mrs." -- both the ASCII-quote
+# spelling ('ד"ר', "גב'") and the typographic Unicode spelling
+# ('ד״ר' U+05F4 gershayim, 'גב׳' U+05F3 geresh) ship: probed live
+# against extract_delimited's _open_ok/_close_ok boundary rules
+# (2026-07-17) -- the quote chars sit mid-word (no preceding
+# whitespace before the internal quote and, for the closing "'" one,
+# no following boundary), so both fail the open/close boundary test
+# and are left untouched as literal text. Extraction is provably
+# inert on these two ASCII spellings; no delimiter-interaction risk.
+[[word]]
+text = "מר"
+title = {}
+
+[[word]]
+text = "ד\"ר"
+title = {}
+
+[[word]]
+text = "גב'"
+title = {}
+
+[[word]]
+text = "ד״ר"
+title = {}
+
+[[word]]
+text = "גב׳"
+title = {}
+
+# #269 follow-up: the rest of the common Israeli honorifics, same
+# plain-title bucket (family follows) and the same dual geresh/
+# gershayim spelling rule as above. Deferred under the collision
+# rule: bare 'רב' (also the ordinary word "many"). The 'בר'
+# particle deferral is recorded with the other particle decisions,
+# above the never-given particles' Hebrew entries below.
+[[word]]
+text = "גברת"
+title = { note = "Mrs./Ms., full form" }
+
+[[word]]
+text = "פרופ'"
+title = { note = "professor abbreviation, ASCII apostrophe" }
+
+[[word]]
+text = "פרופ׳"
+title = { note = "professor abbreviation, U+05F3 geresh" }
+
+[[word]]
+text = "פרופסור"
+title = { note = "professor, full form" }
+
+[[word]]
+text = "עו\"ד"
+title = { note = "advocate/lawyer, ASCII quote" }
+
+[[word]]
+text = "עו״ד"
+title = { note = "advocate/lawyer, U+05F4 gershayim" }
+
+[[word]]
+text = "הרב"
+title = { note = "\"the rabbi\" (article form; bare רב deferred)" }
+
+# #269 follow-up: Devanagari (hi/mr). NO Latin twins on purpose:
+# transliterated sri/shri collide with real given names (Sri
+# Mulyani); the native-script forms cannot. "डॉ." matches via the
+# edge-period normalization, like Latin "Dr.".
+[[word]]
+text = "श्री"
+title = { note = "Shri (Mr.)" }
+
+[[word]]
+text = "श्रीमती"
+title = { note = "Shrimati (Mrs.)" }
+
+[[word]]
+text = "डॉ"
+title = { note = "Dr. abbreviation" }
+
+# #344: the civil set, same no-NEW-Latin-transliterations rule as
+# the three above.
+# Excluded under the collision rule and recorded here so a sweep
+# does not ship them -- ठाकुर (Tagore, the surname), कुमारी, बेगम,
+# शेख, आचार्य, राजा/रानी are all borne as ordinary names. Full
+# argument: decisions/vocabulary-exclusions, Excluded (TITLES).
+[[word]]
+text = "डॉक्टर"
+title = { note = "Doctor, full form" }
+
+[[word]]
+text = "डा"
+[word.title]
+note = "Dr. -- the डा. abbreviation (Nepali and older Hindi), edge-period normalized"
+
+[[word]]
+text = "प्रो"
+title = { note = "Prof. abbreviation" }
+
+[[word]]
+text = "प्रोफेसर"
+title = { note = "Professor, full form" }
+
+[[word]]
+text = "प्राध्यापक"
+title = { note = "Professor (the Sanskritic form)" }
+
+[[word]]
+text = "प्रा"
+title = { note = "Prof. abbreviation, Marathi" }
+
+[[word]]
+text = "पंडित"
+title = { note = "Pandit" }
+
+[[word]]
+text = "पं"
+title = { note = "Pandit abbreviation" }
+
+[[word]]
+text = "सरदार"
+title = { note = "Sardar" }
+
+[[word]]
+text = "सुश्री"
+title = { note = "Ms." }
+
+[[word]]
+text = "श्रीयुत"
+title = { note = "Shriyut (Mr.)" }
+
+[[word]]
+text = "श्रीमान"
+title = { note = "Shriman (Mr.)" }
+
+[[word]]
+text = "सौ"
+title = { note = "Marathi Sau. (Mrs.)" }
+
+[[word]]
+text = "बाबू"
+[word.title]
+note = "Babu -- LEADING in Hindi; Bengali বাবু is trailing, a suffix word in bn.toml. Different codepoints."
+
+[[word]]
+text = "महात्मा"
+[word.title]
+note = "Mahatma -- civil, not renunciate: it addresses by surname (\"महात्मा गांधी\"), so TITLES only"
+
+[[word]]
+text = "न्यायमूर्ति"
+title = { note = "Justice" }
+
+[[word]]
+text = "मौलाना"
+title = { note = "Maulana" }
+
+[[word]]
+text = "जनाब"
+title = { note = "Janab (Mr.)" }
+
+[[word]]
+text = "महाराजा"
+title = { note = "Maharaja, LEADING (trailing महाराज is a suffix word)" }
+
+# #343: Bengali (bn). NO Latin twins, for the reason the
+# Devanagari block above gives -- transliterated Sri/Md/Mst
+# collide with real given names where the native script cannot.
+# No NEW Latin transliterations here (sri, mst); Latin md already
+# ships, and for the medical degree
+# (decisions/indic-honorifics). Doctor abbreviations
+# split by profession: ড./ডঃ is the PhD's, ডাঃ/ডা. the Bangladeshi
+# physician's. Abbreviation marks are spelled as written -- the
+# visarga ঃ (U+0983) is a spacing combining mark, and the lookup
+# fold strips only edge periods and whitespace, so it reaches the
+# lexicon intact -- while period spellings (মো., ডা.) match the
+# bare stem through the edge-period normalization, which is why
+# each stem is listed once and the dotted form is not listed at
+# all.
+# Excluded under the collision rule and recorded here so a sweep
+# does not ship them -- ঠাকুর (Tagore, the surname), কুমারী, বেগম
+# and শেখ are all borne as ordinary names. Full argument:
+# decisions/vocabulary-exclusions, Excluded (TITLES).
+[[word]]
+text = "ড"
+title = { note = "Dr. abbreviation (PhD)" }
+
+[[word]]
+text = "ডঃ"
+title = { note = "Dr. abbreviation, visarga spelling" }
+
+[[word]]
+text = "ডক্টর"
+title = { note = "Doctor, full form" }
+
+[[word]]
+text = "ডাঃ"
+title = { note = "Dr. abbreviation (physician), visarga spelling" }
+
+[[word]]
+text = "ডা"
+title = { note = "Dr. abbreviation (physician)" }
+
+[[word]]
+text = "ডাক্তার"
+title = { note = "Doctor, full form (physician)" }
+
+[[word]]
+text = "শ্রী"
+title = { note = "Shri (Mr.)" }
+
+[[word]]
+text = "শ্রীমতী"
+title = { note = "Shrimati (Mrs.)" }
+
+[[word]]
+text = "জনাব"
+title = { note = "Janab (Mr.)" }
+
+[[word]]
+text = "অধ্যাপক"
+title = { note = "Professor" }
+
+[[word]]
+text = "প্রফেসর"
+title = { note = "Professor, borrowed form" }
+
+[[word]]
+text = "বিচারপতি"
+title = { note = "Justice" }
+
+[[word]]
+text = "মাওলানা"
+title = { note = "Maulana" }
+
+[[word]]
+text = "মুফতি"
+title = { note = "Mufti (Latin mufti ships too)" }
+
+[[word]]
+text = "আলহাজ্ব"
+title = { note = "Alhaj" }
+
+[[word]]
+text = "আলহাজ"
+title = { note = "Alhaj, the spelling without the ব-phala" }
+
+[[word]]
+text = "মিঃ"
+title = { note = "Mr., borrowed" }
+
+[[word]]
+text = "মি"
+title = { note = "the same, period spelling মি." }
+
+[[word]]
+text = "মিসেস"
+title = { note = "Mrs., borrowed" }
+
+[[word]]
+text = "মোঃ"
+[word.title]
+note = "Md. (Mohammad) -- a name PREFIX, not a title semantically; TITLES is the functional home because `given` must stay the name the person is addressed by (decisions/indic-honorifics)"
+
+[[word]]
+text = "মো"
+title = { note = "the same, period spelling মো." }
+
+[[word]]
+text = "মোসাঃ"
+title = { note = "Mst. (Mosammat), the women's counterpart" }
+
+[[word]]
+text = "মোসা"
+title = { note = "the same, period spelling মোসা." }
+
+[[word]]
+text = "মোছাঃ"
+title = { note = "the same, ছ spelling" }
+
+[[word]]
+text = "মোছা"
+title = { note = "the same, period spelling মোছা." }
+
+# ---- particles never borne as a standalone given name ----
+
+# Latin-script members. Every entry here is a grammatical particle --
+# an article, a preposition, or a patronymic marker -- and that is the
+# form a never-given record has to take. One attested bearer settles
+# the AMBIGUOUS side; no amount of searching settles absence, so what
+# is recorded is what the word IS rather than a failed search.
+#
+# The test is POSITIONAL (decisions/vocabulary-collisions C-i,
+# corrected 2026-08-17): membership asks whether the word is borne as
+# a name in the position this rule ACTS on -- leading, or alone in the
+# given role -- not whether a bearer exists anywhere. 'de' is why the
+# qualifier is needed: "De" is a borne Bengali/Odia surname, but a
+# TRAILING one, so it never meets the rule.
+#
+# A BARE entry, here or in PARTICLES below, means nobody has examined
+# it. Absence of a comment is the audit record.
+[[word]]
+text = "'t"
+particle = { may_be_given = false, note = "Dutch contraction of 'het' (\"'t Hooft\"): the article itself" }
+
+[[word]]
+text = "’t"
+particle = { may_be_given = false, note = "the same, typographic apostrophe (#700)" }
+
+[[word]]
+text = "af"
+particle = { may_be_given = false, note = "Danish/Norwegian nobiliary \"of\"" }
+
+[[word]]
+text = "auf"
+particle = { may_be_given = false, note = "German \"upon\" (\"auf der Heide\")" }
+
+[[word]]
+text = "av"
+particle = { may_be_given = false, note = "Swedish/Norwegian \"of\"" }
+
+[[word]]
+text = "bint"
+particle = { may_be_given = false, note = "Arabic \"daughter of\"; native-script بنت below" }
+
+[[word]]
+text = "das"
+[word.particle]
+may_be_given = false
+note = "Portuguese/German \"of the\", fem. pl. Added #360: its own plural partner 'dos' was already here. \"Das\" IS a common Bengali surname, but a TRAILING one -- measured, \"Anjali Das\" and \"Bimal Das\" are untouched, while \"Maria das Neves\" gains the particle it loses today."
+
+[[word]]
+text = "de"
+[word.particle]
+may_be_given = false
+note = "French/Iberian/Italian \"of\". \"De\" IS a borne Bengali and Odia surname -- trailing, so it never reaches this rule. The case that forced C-i's positional qualifier."
+
+[[word]]
+text = "de'"
+particle = { may_be_given = false, note = "Italian elided \"dei\" (\"de' Medici\")" }
+
+[[word]]
+text = "de’"
+[word.particle]
+may_be_given = false
+note = "the same, typographic apostrophe: nothing folds U+2019 to U+0027, so each elided entry is listed in both (#700)"
+
+[[word]]
+text = "d'"
+particle = { may_be_given = false, note = "French/Italian elided \"de\" (\"Ivoi, Paul d'\"). Written" }
+
+[[word]]
+text = "d’"
+[word.particle]
+may_be_given = false
+note = "apart mostly where an index form moves it behind the given name; glued (\"d'Ivoi\") it stays one word (#700)"
+
+[[word]]
+text = "dell'"
+particle = { may_be_given = false, note = "Italian elided \"dello\"/\"della\" (\"dell'Acqua\")" }
+
+[[word]]
+text = "dell’"
+particle = { may_be_given = false }
+
+[[word]]
+text = "l'"
+particle = { may_be_given = false, note = "French/Italian elided article (\"L'Enfant\")" }
+
+[[word]]
+text = "l’"
+particle = { may_be_given = false }
+
+# #700: the Arabic article as an index form writes it, hyphen
+# attached and set behind the given name ("Rashid, Harun al-",
+# "Zaʿīm, Ḥusnī az-"), in its assimilated spellings: 'al-' before a
+# moon letter, assimilated to each of the fourteen sun letters
+# (lām's being 'al-' itself; DMG's ṯ ḏ š ṣ ḍ ṭ ẓ beside the ASCII
+# digraphs), and the Egyptian 'el-' and its assimilations, in ASCII
+# spellings only. The trailing hyphen is the license:
+# written apart, the word is the article and nothing else, so these
+# are never-given where the bare 'al' (Al Gore) is AMBIGUOUS. A
+# closed list rather than a shape rule, by decision on #700. ASCII
+# hyphen-minus only.
+[[word]]
+text = "al-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "ul-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "at-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "aṯ-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "ath-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "ad-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "aḏ-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "adh-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "ar-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "az-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "as-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "aš-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "ash-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "aṣ-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "aḍ-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "aṭ-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "aẓ-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "an-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "el-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "et-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "eth-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "ed-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "edh-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "er-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "ez-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "es-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "esh-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "en-"
+particle = { may_be_given = false }
+
+[[word]]
+text = "degli"
+particle = { may_be_given = false, note = "Italian \"of the\", masc. pl." }
+
+[[word]]
+text = "dei"
+particle = { may_be_given = false, note = "Italian \"of the\", masc. pl." }
+
+[[word]]
+text = "delle"
+particle = { may_be_given = false, note = "Italian \"of the\", fem. pl." }
+
+[[word]]
+text = "delli"
+particle = { may_be_given = false, note = "Italian \"of the\", regional variant of 'dei'" }
+
+[[word]]
+text = "dello"
+particle = { may_be_given = false, note = "Italian \"of the\", masc. sg." }
+
+[[word]]
+text = "dem"
+particle = { may_be_given = false, note = "German dative article" }
+
+[[word]]
+text = "der"
+particle = { may_be_given = false, note = "German article (\"von der Leyen\")" }
+
+[[word]]
+text = "dos"
+particle = { may_be_given = false, note = "Portuguese \"of the\", masc. pl." }
+
+[[word]]
+text = "het"
+particle = { may_be_given = false, note = "Dutch definite article" }
+
+[[word]]
+text = "ibn"
+particle = { may_be_given = false, note = "Arabic \"son of\"; native-script ابن below" }
+
+[[word]]
+text = "las"
+[word.particle]
+may_be_given = false
+note = "Spanish \"the\", fem. pl. Added #360: 'la' was here as AMBIGUOUS (La Shawn, La Toya) but the plurals are not name elements -- no bearer in any position."
+
+[[word]]
+text = "los"
+[word.particle]
+may_be_given = false
+note = "Spanish \"the\", masc. pl. Same as 'las' -- and the pair is why the #390 fold narrowing regressed \"de los Santos\" to given='Santos', family='de los'."
+
+[[word]]
+text = "mc"
+[word.particle]
+may_be_given = false
+note = "Contraction of 'Mac'; unlike 'mac' (Mac Miller) it is not a standalone given name. Measured misparse: \"Mc Donald\" gave given='Mc'. Also in SUFFIX_ACRONYMS as Master of Ceremonies, but that is trailing position and unaffected -- \"John Smith MC\" still reads suffix (#360)."
+[word.credential]
+note = "NOT may_be_name though also a particle: #454 closed by design, neither mc nor vd is a borne name (rules/P6's Accepted clause)"
+
+# (CAPITALIZATION_EXCEPTIONS)
+# Irish patronymic particles (#604). Case repair writes a particle
+# in lowercase ('de la Vega'), but Irish writes these capitalized
+# ('Liam Ó Murchú', 'Sinéad Ní Mhurchú'), and a mask outranks the
+# particle lowercase (rules/R4). Each mask is the word's own
+# title case, so a bare word in any other role repairs as it would
+# anyway; the dotted 'u.a.' and 'n.í.' now repair to 'U.A.' and
+# 'N.Í.' (were 'U.a.' and 'N.í.').
+[[word]]
+text = "ní"
+[word.particle]
+may_be_given = false
+note = "Irish \"daughter of\" (\"Sinéad Ní Mhurchú\"), the female patronymic beside 'ó'; never a given name (#604). Its sibling 'nic' is EXCLUDED: an abbreviation of Nicolas and Nicole and a given name of its own (Nic Cage), so it belongs in an opt-in Irish pack, not the defaults."
+cased = "Ní"
+
+[[word]]
+text = "op"
+particle = { may_be_given = false, note = "Dutch \"at/on\" (\"op den Berg\")" }
+
+[[word]]
+text = "ó"
+[word.particle]
+may_be_given = false
+note = "Irish \"descendant of\" (\"Liam Ó Murchú\"); never a given name (#604). The one ONE-LETTER particle, so the letter written with its period is still the initial it spells -- 'Juan Ó. Pérez' is Óscar, not a surname (rules/P7). Unaccented 'o' is EXCLUDED: bare 'O' is a common periodless initial, and the anglicized form is glued (\"O'Neil\") anyway."
+cased = "Ó"
+
+[[word]]
+text = "ste"
+[word.particle]
+may_be_given = false
+note = "Contraction of 'Sainte'; has a vowel, which is why the criterion is \"abbreviation of a word that is never itself a name\" rather than the vowel shape #360 first proposed. Measured misparse: \"Ste Marie\" gave given='Ste'."
+
+[[word]]
+text = "ter"
+particle = { may_be_given = false, note = "Dutch \"at the\" (\"ter Horst\")" }
+
+[[word]]
+text = "vd"
+[word.particle]
+may_be_given = false
+note = "Dutch abbreviation of \"van der\". Also the British Volunteer Decoration, a suffix acronym: two non-name readings, so C-ii decides it on frequency and the Dutch one wins (decisions/vocabulary-collisions)."
+[word.credential]
+note = "NOT may_be_name though also a particle: #454 closed by design, neither mc nor vd is a borne name (rules/P6's Accepted clause)"
+
+[[word]]
+text = "vom"
+particle = { may_be_given = false, note = "German \"from the\"" }
+
+[[word]]
+text = "zu"
+particle = { may_be_given = false, note = "German \"at/to\", nobiliary (\"zu Guttenberg\")" }
+
+# #269: Arabic native-script patronymic/clan particles. Unlike their
+# Latin transliterations, these live in a script namespace with no
+# collision against an unrelated Latin given name, so each is judged
+# on its own semantics rather than mirrored blindly:
+[[word]]
+text = "بن"
+[word.particle]
+may_be_given = false
+note = "\"bin\"/\"ibn\" (son of) -- never a bare given name. Latin 'bin' is in PARTICLES but not in this set; that judgment is unchanged by adding the Arabic-script form."
+
+[[word]]
+text = "بنت"
+particle = { may_be_given = false, note = "\"bint\" (daughter of) -- mirrors Latin 'bint' above." }
+
+[[word]]
+text = "ابن"
+[word.particle]
+may_be_given = false
+note = "\"ibn\" (son of, alternate spelling) -- mirrors Latin 'ibn' above."
+
+[[word]]
+text = "آل"
+[word.particle]
+may_be_given = false
+note = "\"aal\" (family/clan of, e.g. \"Al Saud\") -- distinct from the excluded definite article \"ال\" (#269 explicitly excludes standalone \"ال\"); a clan prefix, never a bare given name."
+
+# #269: Hebrew native-script patronymic particles -- same
+# reasoning as the Arabic ones above: no Latin-script collision,
+# and neither functions as a standalone given name in Hebrew usage.
+# Deferred under the collision rule: 'בר' (Aramaic son-of, as in
+# Bar-Lev) -- Bar is a common modern Israeli given name, and the
+# surname spelling is hyphenated anyway.
+[[word]]
+text = "בן"
+particle = { may_be_given = false, note = "\"ben\" (son of)" }
+
+[[word]]
+text = "בת"
+particle = { may_be_given = false, note = "\"bat\" (daughter of)" }
+
+# ---- particles also borne as given names (may_be_given) ----
+#
+# Words also borne as names in the position the leading-particle rule
+# acts on (decisions/vocabulary-collisions C-i). An entry with a note has
+# been examined; a BARE one is sitting on the conservative default and
+# nobody has looked at it. #360 examined the 12 that appear leading in
+# tools/differential's corpora plus a few more, and left the rest bare
+# rather than record an absence of knowledge as a judgment.
+
+[[word]]
+text = "aan"
+particle = { may_be_given = true }
+
+[[word]]
+text = "aen"
+particle = { may_be_given = true }
+
+[[word]]
+text = "abu"
+bound_given = {}
+[word.particle]
+may_be_given = true
+note = "\"Abu Bakr\" -- Abu reads as the given name; also a bound given-name word, so it joins forward (#269, P5)"
+
+[[word]]
+text = "al"
+[word.particle]
+may_be_given = true
+note = "Al Gore: 'Al' is an ordinary English given name. Also the Arabic definite article, which is the particle reading"
+
+[[word]]
+text = "bar"
+[word.particle]
+may_be_given = true
+note = "Bar Refaeli; a common modern Israeli given name. Aramaic \"son of\" is the particle reading (#269 excludes bare בר)"
+
+[[word]]
+text = "bat"
+particle = { may_be_given = true }
+
+[[word]]
+text = "bin"
+[word.particle]
+may_be_given = true
+note = "Arabic \"son of\", but kept ambiguous deliberately: #269 judged the Latin transliteration separately from the native-script بن, which IS never-given"
+
+[[word]]
+text = "binte"
+[word.particle]
+may_be_given = true
+note = "Singapore spelling of 'binti', kept beside it (#604)"
+
+[[word]]
+text = "binti"
+[word.particle]
+may_be_given = true
+note = "Malay \"daughter of\" (\"Ina binti Navalamar\"), the female partner of 'bin'. Binti is also a given name (Swahili, \"daughter\"), so ambiguous like 'bin' (#604). The abbreviations 'bt'/'bte' are left out: two- and three-letter words nobody has reviewed"
+
+[[word]]
+text = "bon"
+particle = { may_be_given = true }
+
+[[word]]
+text = "da"
+particle = { may_be_given = true }
+
+[[word]]
+text = "dal"
+particle = { may_be_given = true }
+
+[[word]]
+text = "del"
+[word.particle]
+may_be_given = true
+note = "BOTH readings attested: Del Shannon (given name) and del Toro (particle). The ambiguity flag is the answer"
+
+[[word]]
+text = "dela"
+[word.particle]
+may_be_given = true
+note = "Dela is a short form of Adela, and an African name meaning saviour/redeemer -- so the Filipino surname particle (\"Dela Cruz\") is not the only reading"
+
+[[word]]
+text = "della"
+particle = { may_be_given = true, note = "Della Reese: an ordinary given name" }
+
+[[word]]
+text = "den"
+particle = { may_be_given = true }
+
+[[word]]
+text = "di"
+[word.particle]
+may_be_given = true
+note = "BOTH: Di as a short form of Diana, and the Italian particle (DiCaprio)"
+
+[[word]]
+text = "dí"
+particle = { may_be_given = true }
+
+[[word]]
+text = "do"
+credential = { may_be_name = true, expands = "Doctor of Osteopathic Medicine" }
+[word.particle]
+may_be_given = true
+note = "Vietnamese Đỗ leads a great many surnames. Also in TITLES -- the decisions record TITLES n ambiguous == {do, freiherr, st} as load-bearing for the emitter"
+
+[[word]]
+text = "du"
+[word.particle]
+may_be_given = true
+note = "Du is a Chinese surname (Du Fu), leading under a family-first reading"
+
+[[word]]
+text = "freiherrin"
+particle = { may_be_given = true, note = "as above" }
+
+[[word]]
+text = "heer"
+particle = { may_be_given = true }
+
+[[word]]
+text = "la"
+[word.particle]
+may_be_given = true
+note = "La Shawn, La Toya: a given-name element. The Romance article is the particle reading; its PLURALS ('las', 'los') are never-given, being no one's name"
+
+[[word]]
+text = "le"
+[word.particle]
+may_be_given = true
+note = "Lê is among the most common Vietnamese surnames and leads under a family-first reading"
+
+[[word]]
+text = "mac"
+[word.particle]
+may_be_given = true
+note = "Mac Miller: a real given name. This is the case that shows #360's vowel heuristic was not the criterion -- 'mac' and 'mc' differ by attestation, not by shape"
+
+[[word]]
+text = "san"
+[word.particle]
+may_be_given = true
+note = "San San Chiou: a given-name element in Burmese and Chinese naming"
+
+[[word]]
+text = "santa"
+particle = { may_be_given = true }
+
+[[word]]
+text = "te"
+[word.particle]
+may_be_given = true
+note = "Te Awanui-a-Rangi: a Māori given-name element, and in the corpus. Looks like the Dutch preposition 'te', which is why attestation rather than etymology decides"
+
+[[word]]
+text = "tho"
+particle = { may_be_given = true }
+
+[[word]]
+text = "thoe"
+particle = { may_be_given = true }
+
+[[word]]
+text = "ua"
+[word.particle]
+may_be_given = true
+note = "Irish \"descendant of\", the older spelling of 'ó' (\"Seán Ua Buachalla\"). No given-name use found, but searched less thoroughly than 'ó' and 'ní', and C-i defaults to AMBIGUOUS under uncertainty -- so the leading \"Ua Buachalla\" keeps the given reading and reports it, while mid-name the chain is the same either way (#604)"
+cased = "Ua"
+
+[[word]]
+text = "van"
+[word.particle]
+may_be_given = true
+note = "Vietnamese Văn, and Van Johnson -- the canonical particle-or-given ambiguity this whole flag exists for"
+
+[[word]]
+text = "vande"
+particle = { may_be_given = true }
+
+[[word]]
+text = "vander"
+particle = { may_be_given = true }
+
+[[word]]
+text = "vel"
+particle = { may_be_given = true }
+
+[[word]]
+text = "von"
+[word.particle]
+may_be_given = true
+note = "Von Miller: a real given name, so this stays ambiguous even though \"von Braun\" is misparsed today. The case that shows a word can look like a pure particle, BE misparsed as one, and still have a bearer"
+
+# #269: Arabic "abu" (father of), left ambiguous like its Latin
+# transliteration 'abu' above (both spellings): "Abu Bakr" reads
+# "Abu" as a given name, so this stays a PARTICLES-only member, not
+# NON_GIVEN_NAME_PARTICLES.
+[[word]]
+text = "أبو"
+particle = { may_be_given = true }
+bound_given = { note = "\"abu\" (father of), hamza spelling" }
+
+[[word]]
+text = "ابو"
+particle = { may_be_given = true }
+bound_given = { note = "\"abu\", hamza-less spelling" }
+
+# ---- conjunctions ----
+
+[[word]]
+text = "&"
+conjunction = {}
+
+[[word]]
+text = "and"
+conjunction = {}
+
+[[word]]
+text = "et"
+conjunction = {}
+
+# (CONJUNCTIONS_AMBIGUOUS)
+# #383/#479: single letters that read as an INITIAL rather than a
+# connective when the input carries no case evidence -- a name
+# written wholly in one case, upper or lower alike. A letter
+# outside this set joins there, bare capital included.
+#
+# 'e' and not 'y', measured: a bare E initial is common (Edward,
+# Elizabeth) and an 'e' between two surnames is rare outside couple
+# listings; a bare Y initial is rare and 'y' between two surnames is
+# the commonest Hispanic compound and this library's oldest fixture
+# ('Velasquez y Garcia'). Cyrillic и/і/й follow y, not e: #267
+# blessed their joining and nothing here narrows it.
+#
+# 'i' (Catalan/Polish) ships here beside 'e' for the same reason
+# (#397): a bare I initial is as common as a bare E, so a name
+# written wholly in one case reads the letter as an initial and
+# reports the fork rather than joining in silence -- where a name
+# word follows it in its part, there being nothing to join
+# otherwise (#721).
+#
+# A caller edits the vocabulary rather than a switch: remove 'e' to
+# restore joining for Portuguese data, remove 'i' for Catalan or
+# Polish data, add 'y' for a Dutch-style "every single letter is an
+# initial".
+[[word]]
+text = "e"
+conjunction = { may_be_initial = true }
+
+[[word]]
+text = "of"
+conjunction = {}
+
+[[word]]
+text = "the"
+conjunction = {}
+
+[[word]]
+text = "und"
+conjunction = {}
+
+[[word]]
+text = "y"
+conjunction = {}
+
+# #397: the Catalan/Polish surname link ("Carod i Rovira",
+# "Kowalski i Nowak"). Single-letter like 'y'/'и'/'e', and the one
+# entry that is ALSO generational vocabulary -- 'i' is the roman
+# numeral I, a bare entry of SUFFIX_WORDS -- so the carve-out
+# counts it as a name word for its own sake and it joins only
+# with a name word on each side (rules/P3).
+[[word]]
+text = "i"
+conjunction = { may_be_initial = true }
+
+# #269: Cyrillic (ru/uk/bg) "and": и, і, та. Ukrainian writes і and
+# й for the same conjunction, alternating on the surrounding
+# vowel/consonant for euphony ("Олесь і Олена", "Марія й Петро"),
+# so real data carries both spellings and neither alone suffices.
+[[word]]
+text = "и"
+conjunction = {}
+
+[[word]]
+text = "і"
+conjunction = {}
+
+[[word]]
+text = "й"
+conjunction = {}
+
+[[word]]
+text = "та"
+conjunction = {}
+
+# #269: Greek "and": και.
+[[word]]
+text = "και"
+conjunction = {}
+
+# #269 follow-up: Arabic "and". Formal script attaches و to the
+# following word (وفاطمة), so a standalone و token appears only in
+# informal spacing -- common in real data. Single-character like
+# 'y'/'и': the single-letter carve-out (Google Code issue 11,
+# the "john e smith" bug) protects short names (joins
+# only with enough rootname pieces).
+[[word]]
+text = "و"
+conjunction = {}
+
+# ---- bound given-name prefixes ----
+
+[[word]]
+text = "abdul"
+bound_given = {}
+
+[[word]]
+text = "abdel"
+bound_given = {}
+
+[[word]]
+text = "abdal"
+bound_given = {}
+
+# The bare transliteration, which abdul/abdel/abdal do not match:
+# "abd Allah Smith" -> given "abd Allah", and "Abd al-Rahman
+# Smith" likewise, al-Rahman being ONE token. The three-token
+# spelling "abd al rahman smith" is still not joined -- `al` is a
+# particle and chains forward -- and stays deferred, as it was
+# when this word was excluded. Same word as عبد below, which has
+# covered the Arabic-script side since #269 (shipped in 2.0).
+#
+# Collides with the postnominal ABD ("All But Dissertation"),
+# which stays in SUFFIX_ACRONYMS. Position decides at the two ends
+# -- a leading `abd` reads as a name, a trailing one as the
+# credential -- but not everywhere: in the given slot of a
+# family-comma name the credential still wins, so "Smith, Abd"
+# reports suffix 'Abd' and no given name, where "Smith, Abdul"
+# reports the given name. Recorded at decisions/P5.
+# (SUFFIX_ACRONYMS)
+# "All But Dissertation". Also the Latin transliteration of the
+# Arabic bound given-name word in BOUND_GIVEN_NAMES (whose
+# Arabic-script counterpart عبد is in that set only) -- the one
+# word in both sets, kept in both deliberately. Position decides
+# at the two ends but not in a family comma's given slot; see
+# decisions/P5.
+[[word]]
+text = "abd"
+bound_given = {}
+credential = {}
+
+[[word]]
+text = "abou"
+bound_given = {}
+
+[[word]]
+text = "umm"
+bound_given = {}
+
+# #269 follow-up: the Arabic-script originals of the entries above.
+# Script writes "Abdul Rahman" as two words (عبد + الرحمن -- the
+# article attaches to the following word), so عبد alone covers the
+# abdul/abdel/abdal variants. Both kunya spellings ship, matching
+# the أبو/ابو prefix pair.
+[[word]]
+text = "عبد"
+bound_given = { note = "\"abd\" (servant of) -- عبد الرحمن -> given \"عبد الرحمن\"" }
+
+[[word]]
+text = "أم"
+bound_given = { note = "\"umm\" (mother of), hamza spelling" }
+
+[[word]]
+text = "ام"
+bound_given = { note = "\"umm\", hamza-less spelling" }
+
+# ---- birth-name markers ----
+
+[[word]]
+text = "née"
+birth_marker = {}
+
+[[word]]
+text = "né"
+birth_marker = {}
+
+[[word]]
+text = "nee"
+birth_marker = {}
+
+[[word]]
+text = "geb"
+birth_marker = {}
+
+[[word]]
+text = "geborene"
+birth_marker = {}
+
+[[word]]
+text = "geboren"
+birth_marker = {}
+
+[[word]]
+text = "rozená"
+birth_marker = {}
+
+[[word]]
+text = "født"
+birth_marker = {}
+
+[[word]]
+text = "fødd"
+birth_marker = {}
+
+[[word]]
+text = "född"
+birth_marker = {}
+
+[[word]]
+text = "урожд"
+birth_marker = {}
+
+[[word]]
+text = "урождённая"
+birth_marker = {}
+
+[[word]]
+text = "урожденная"
+birth_marker = {}
+
+[[word]]
+text = "урождённый"
+birth_marker = {}
+
+[[word]]
+text = "урожденный"
+birth_marker = {}
+
+[[word]]
+text = "z domu"
+birth_marker = {}
+
+[[word]]
+text = "旧姓"
+birth_marker = {}
+
+# ---- credential acronyms ----
+
+[[word]]
+text = "8-vsb"
+credential = {}
+
+[[word]]
+text = "aas"
+credential = {}
+
+[[word]]
+text = "aba"
+credential = {}
+
+[[word]]
+text = "abc"
+credential = {}
+
+[[word]]
+text = "abpp"
+credential = {}
+
+[[word]]
+text = "abr"
+credential = {}
+
+[[word]]
+text = "aca"
+credential = {}
+
+[[word]]
+text = "acas"
+credential = {}
+
+[[word]]
+text = "ace"
+credential = {}
+
+[[word]]
+text = "acha"
+credential = {}
+
+[[word]]
+text = "acp"
+credential = {}
+
+[[word]]
+text = "ae"
+credential = {}
+
+[[word]]
+text = "aem"
+credential = {}
+
+[[word]]
+text = "afasma"
+credential = {}
+
+[[word]]
+text = "afc"
+credential = {}
+
+[[word]]
+text = "afm"
+credential = {}
+
+[[word]]
+text = "agsf"
+credential = {}
+
+[[word]]
+text = "aia"
+credential = {}
+
+[[word]]
+text = "aicp"
+credential = {}
+
+[[word]]
+text = "ala"
+credential = {}
+
+[[word]]
+text = "alc"
+credential = {}
+
+[[word]]
+text = "alp"
+credential = {}
+
+[[word]]
+text = "am"
+credential = {}
+
+[[word]]
+text = "amd"
+credential = {}
+
+[[word]]
+text = "ame"
+credential = {}
+
+[[word]]
+text = "amieee"
+credential = {}
+
+[[word]]
+text = "ams"
+credential = {}
+
+[[word]]
+text = "aphr"
+credential = {}
+
+[[word]]
+text = "apn"
+credential = {}
+
+[[word]]
+text = "aprn"
+credential = {}
+
+[[word]]
+text = "apr"
+credential = {}
+
+[[word]]
+text = "apss"
+credential = {}
+
+[[word]]
+text = "aqp"
+credential = {}
+
+[[word]]
+text = "arm"
+credential = {}
+
+[[word]]
+text = "arrc"
+credential = {}
+
+[[word]]
+text = "asa"
+credential = {}
+
+[[word]]
+text = "asc"
+credential = {}
+
+[[word]]
+text = "asid"
+credential = {}
+
+[[word]]
+text = "asla"
+credential = {}
+
+[[word]]
+text = "asp"
+credential = {}
+
+[[word]]
+text = "atc"
+credential = {}
+
+[[word]]
+text = "awb"
+credential = {}
+
+# (SUFFIX_ACRONYMS_AMBIGUOUS)
+# Suffix acronyms that also commonly work as given-name nicknames on
+# their own (e.g. "Ed", "JD"). Read wherever the pipeline decides an
+# acronym's bare reading (rules/S4) and by the delimited-content
+# escape (content matching one of these stays a nickname, the more
+# common reading in ambiguous, delimiter-only context). _classify
+# also tags membership as "vocab:suffix-ambiguous".
+#
+# When adding a credential acronym, set may_be_name = true on its
+# reading only if the exact letter sequence could plausibly be someone's name on its
+# own -- a given name or nickname (e.g. 'jd', 'ed') or a common
+# surname (e.g. 'ma', 'do'). Unambiguous certifications/degrees
+# (e.g. 'mba', 'cpa', 'phd') don't need the flag. In 2.0 the flag
+# also gates bare recognition: a bare ambiguous acronym reads as
+# the credential only with words to spare in front of it, or
+# written in capitals inside a mixed-case name; inside a
+# mixed-case name any other cased form that is not wholly lower
+# ('Ma', 'MEng') reads as the name even with words to spare --
+# rules/S4 and rules/S6. The parse reports the fork where it decides one,
+# so 'Jack Ma' keeps its family name.
+#
+# The other half of the criterion, added 2026-09-07 with #342.
+# Being borne at all is only the entry ticket; what decides among
+# the three answers is a comparison of FREQUENCIES -- how common
+# the word is as a borne name in the TRAILING position against how
+# common it is as a credential. Roughly balanced earns the marking
+# here, and the parse reports the fork: 'ba' is the entry that
+# earned it that day, BA being a common credential and Ba a real
+# surname (Vietnamese; Senegalese Fula) about as common as the
+# credential, which is the ma/Ma shape exactly. Where the NAME
+# reading dominates, the entry is REMOVED from SUFFIX_ACRONYMS
+# instead of marked: 'rai' and 'cha' left the set that day, both
+# far more common as surnames than their credentials are as
+# credentials (RAI is "RETA Authorized Instructor", CHA is
+# Certified Hotel Administrator or Certified Healthcare Auditor,
+# both tenuous or specialized; Rai is a common surname across
+# Hindi- and Bengali-speaking regions and Cha the Korean 차).
+# Where the CREDENTIAL dominates, the entry stays unambiguous.
+# LENGTH is a correlate and not the test -- a short acronym is
+# more often a common credential AND more often a name -- so do
+# not read the letter counts here as a rule. #540 (2026-09-25)
+# marked 'lac' and 'meng', the first entries here longer than
+# two letters: MEng and LAc are credentials people write after
+# their names, and Meng and Lac are borne in the trailing slot
+# by real people, and neither reading is rare enough to give the
+# word to the other -- so the marking, whatever the letter
+# count.
+#
+# Removal does not take the DOTTED spelling with it: since 2.4 an
+# unlisted word of two or more period-separated chunks is a suffix
+# by position, with words to spare in front (rules/S3,
+# Policy.unlisted_dotted_suffixes, default on), so "John Smith
+# R.A.I.", "John Smith R.A.X." and "John Smith C.H.A." all read
+# suffix, the vocabulary playing no part (checked 2026-10-19). A caller who needs an entry back
+# adds it -- Lexicon.default().add(suffix_acronyms={"cha"}) --
+# which is the answer this library gives for every
+# locale-specific vocabulary. The cost is stated and accepted:
+# with the entry gone, "John Smith RAI" reads family 'RAI'. See
+# decisions/suffix-acronym-collisions.
+#
+# NOT 'ms' or 'sa', though #296's audit table put them here for the
+# leading-title collision (bare "Ms" the honorific, "M.S." the
+# degree): the gate is position-blind and the collision is not.
+# Gated, 'John Smith, MS' lost its suffix-comma route and read
+# title 'MS', and 'Smith, Ms.' passed the gate on its one period
+# and read as a credential anyway. Both words are genuine duals --
+# title and unambiguous suffix -- and position decides, as for
+# 'sr' and 'lt' (decisions/C8).
+#
+# NOT 'se' or 'om' either, weighed 2026-09-07 with #342 and left
+# alone: no surname evidence worth standing behind, and OM is the
+# Order of Merit. And NOT 'mc' or 'vd', which are also PARTICLES:
+# #454 closed by design -- neither is a borne name, so a bare
+# trailing one is the decoration, and rules/P6's Accepted
+# clause names them as the two words whose positional reading
+# does not hold.
+[[word]]
+text = "ba"
+credential = { may_be_name = true, expands = "Bachelor of Arts", issue = 342 }
+
+[[word]]
+text = "bca"
+credential = {}
+
+[[word]]
+text = "bcl"
+credential = {}
+
+[[word]]
+text = "bcss"
+credential = {}
+
+[[word]]
+text = "bds"
+credential = {}
+
+[[word]]
+text = "bem"
+credential = {}
+
+[[word]]
+text = "bls-i"
+credential = {}
+
+[[word]]
+text = "bn"
+credential = {}
+
+[[word]]
+text = "bpe"
+credential = {}
+
+[[word]]
+text = "bpi"
+credential = {}
+
+[[word]]
+text = "bpt"
+credential = {}
+
+[[word]]
+text = "bsc"
+credential = { cased = "BSc" }
+
+# (CAPITALIZATION_EXCEPTIONS)
+# Listed post-nominals whose conventional spelling is mixed case
+# (#459): without a mask the acronym repair writes each in
+# capitals. A mask applies wherever its word stands, so a word
+# borne as a name must not get one -- meng and edd are listed
+# acronyms that are, and stay out on purpose (the meng/edd/lac/ded
+# CAPITALIZATION_EXCEPTIONS block in decisions/vocabulary-exclusions).
+[[word]]
+text = "bt"
+credential = { cased = "Bt" }
+
+[[word]]
+text = "btcs"
+credential = {}
+
+[[word]]
+text = "bts"
+credential = {}
+
+[[word]]
+text = "cacts"
+credential = {}
+
+[[word]]
+text = "cae"
+credential = {}
+
+[[word]]
+text = "caha"
+credential = {}
+
+[[word]]
+text = "caia"
+credential = {}
+
+[[word]]
+text = "cams"
+credential = {}
+
+[[word]]
+text = "cap"
+credential = {}
+
+[[word]]
+text = "capa"
+credential = {}
+
+[[word]]
+text = "capm"
+credential = {}
+
+[[word]]
+text = "capp"
+credential = {}
+
+[[word]]
+text = "caps"
+credential = {}
+
+[[word]]
+text = "caro"
+credential = {}
+
+[[word]]
+text = "cas"
+credential = {}
+
+[[word]]
+text = "casp"
+credential = {}
+
+[[word]]
+text = "cb"
+credential = {}
+
+[[word]]
+text = "cbe"
+credential = {}
+
+[[word]]
+text = "cbm"
+credential = {}
+
+[[word]]
+text = "cbne"
+credential = {}
+
+[[word]]
+text = "cbnt"
+credential = {}
+
+[[word]]
+text = "cbp"
+credential = {}
+
+[[word]]
+text = "cbrte"
+credential = {}
+
+[[word]]
+text = "cbs"
+credential = {}
+
+[[word]]
+text = "cbsp"
+credential = {}
+
+[[word]]
+text = "cbt"
+credential = {}
+
+[[word]]
+text = "cbte"
+credential = {}
+
+[[word]]
+text = "cbv"
+credential = {}
+
+[[word]]
+text = "cca"
+credential = {}
+
+[[word]]
+text = "ccc"
+credential = {}
+
+[[word]]
+text = "ccca"
+credential = {}
+
+[[word]]
+text = "cccm"
+credential = {}
+
+[[word]]
+text = "cce"
+credential = {}
+
+[[word]]
+text = "cchp"
+credential = {}
+
+[[word]]
+text = "ccie"
+credential = {}
+
+[[word]]
+text = "ccim"
+credential = {}
+
+[[word]]
+text = "cciso"
+credential = {}
+
+[[word]]
+text = "ccm"
+credential = {}
+
+[[word]]
+text = "ccmt"
+credential = {}
+
+[[word]]
+text = "ccna"
+credential = {}
+
+[[word]]
+text = "ccnp"
+credential = {}
+
+[[word]]
+text = "ccp"
+credential = {}
+
+[[word]]
+text = "ccp-c"
+credential = {}
+
+[[word]]
+text = "ccpr"
+credential = {}
+
+[[word]]
+text = "ccs"
+credential = {}
+
+[[word]]
+text = "ccufc"
+credential = {}
+
+[[word]]
+text = "cd"
+credential = {}
+
+[[word]]
+text = "cdal"
+credential = {}
+
+[[word]]
+text = "cdfm"
+credential = {}
+
+[[word]]
+text = "cdmp"
+credential = {}
+
+[[word]]
+text = "cds"
+credential = {}
+
+[[word]]
+text = "cdt"
+credential = {}
+
+[[word]]
+text = "cea"
+credential = {}
+
+[[word]]
+text = "ceas"
+credential = {}
+
+[[word]]
+text = "cebs"
+credential = {}
+
+[[word]]
+text = "ceds"
+credential = {}
+
+[[word]]
+text = "ceh"
+credential = {}
+
+[[word]]
+text = "cela"
+credential = {}
+
+[[word]]
+text = "cem"
+credential = {}
+
+[[word]]
+text = "cep"
+credential = {}
+
+[[word]]
+text = "cera"
+credential = {}
+
+[[word]]
+text = "cet"
+credential = {}
+
+[[word]]
+text = "cfa"
+credential = {}
+
+[[word]]
+text = "cfc"
+credential = {}
+
+[[word]]
+text = "cfcc"
+credential = {}
+
+[[word]]
+text = "cfce"
+credential = {}
+
+[[word]]
+text = "cfcm"
+credential = {}
+
+[[word]]
+text = "cfe"
+credential = {}
+
+[[word]]
+text = "cfeds"
+credential = {}
+
+[[word]]
+text = "cfi"
+credential = {}
+
+[[word]]
+text = "cfm"
+credential = {}
+
+[[word]]
+text = "cfp"
+credential = {}
+
+[[word]]
+text = "cfps"
+credential = {}
+
+[[word]]
+text = "cfr"
+credential = {}
+
+[[word]]
+text = "cfre"
+credential = {}
+
+[[word]]
+text = "cga"
+credential = {}
+
+[[word]]
+text = "cgap"
+credential = {}
+
+[[word]]
+text = "cgb"
+credential = {}
+
+[[word]]
+text = "cgc"
+credential = {}
+
+[[word]]
+text = "cgfm"
+credential = {}
+
+[[word]]
+text = "cgfo"
+credential = {}
+
+[[word]]
+text = "cgm"
+credential = {}
+
+[[word]]
+text = "cgma"
+credential = {}
+
+[[word]]
+text = "cgp"
+credential = {}
+
+[[word]]
+text = "cgr"
+credential = {}
+
+[[word]]
+text = "cgsp"
+credential = {}
+
+[[word]]
+text = "ch"
+credential = {}
+
+[[word]]
+text = "chba"
+credential = {}
+
+[[word]]
+text = "chdm"
+credential = {}
+
+[[word]]
+text = "che"
+credential = {}
+
+[[word]]
+text = "ches"
+credential = {}
+
+[[word]]
+text = "chfc"
+credential = { cased = "ChFC" }
+
+[[word]]
+text = "chi"
+credential = {}
+
+[[word]]
+text = "chmc"
+credential = {}
+
+[[word]]
+text = "chmm"
+credential = {}
+
+[[word]]
+text = "chp"
+credential = {}
+
+[[word]]
+text = "chpa"
+credential = {}
+
+[[word]]
+text = "chpe"
+credential = {}
+
+[[word]]
+text = "chpln"
+credential = {}
+
+[[word]]
+text = "chpse"
+credential = {}
+
+[[word]]
+text = "chrm"
+credential = {}
+
+[[word]]
+text = "chsc"
+credential = {}
+
+[[word]]
+text = "chse"
+credential = {}
+
+[[word]]
+text = "chse-a"
+credential = {}
+
+[[word]]
+text = "chsos"
+credential = {}
+
+[[word]]
+text = "chss"
+credential = {}
+
+[[word]]
+text = "cht"
+credential = {}
+
+[[word]]
+text = "cia"
+credential = {}
+
+[[word]]
+text = "cic"
+credential = {}
+
+[[word]]
+text = "cie"
+credential = {}
+
+[[word]]
+text = "cig"
+credential = {}
+
+[[word]]
+text = "cip"
+credential = {}
+
+[[word]]
+text = "cipm"
+credential = {}
+
+[[word]]
+text = "cips"
+credential = {}
+
+[[word]]
+text = "ciro"
+credential = {}
+
+[[word]]
+text = "cisa"
+credential = {}
+
+[[word]]
+text = "cism"
+credential = {}
+
+[[word]]
+text = "cissp"
+credential = {}
+
+[[word]]
+text = "cla"
+credential = {}
+
+[[word]]
+text = "clsd"
+credential = {}
+
+[[word]]
+text = "cltd"
+credential = {}
+
+[[word]]
+text = "clu"
+credential = {}
+
+[[word]]
+text = "cm"
+credential = {}
+
+[[word]]
+text = "cma"
+credential = {}
+
+[[word]]
+text = "cmas"
+credential = {}
+
+[[word]]
+text = "cmc"
+credential = {}
+
+[[word]]
+text = "cmfo"
+credential = {}
+
+[[word]]
+text = "cmg"
+credential = {}
+
+[[word]]
+text = "cmp"
+credential = {}
+
+[[word]]
+text = "cms"
+credential = {}
+
+[[word]]
+text = "cmsp"
+credential = {}
+
+[[word]]
+text = "cmt"
+credential = {}
+
+[[word]]
+text = "cna"
+credential = {}
+
+[[word]]
+text = "cnm"
+credential = {}
+
+[[word]]
+text = "cnp"
+credential = {}
+
+[[word]]
+text = "cp"
+credential = {}
+
+[[word]]
+text = "cp-c"
+credential = {}
+
+[[word]]
+text = "cpa"
+credential = {}
+
+[[word]]
+text = "cpacc"
+credential = {}
+
+[[word]]
+text = "cpbe"
+credential = {}
+
+[[word]]
+text = "cpcm"
+credential = {}
+
+[[word]]
+text = "cpcu"
+credential = {}
+
+[[word]]
+text = "cpe"
+credential = {}
+
+[[word]]
+text = "cpfa"
+credential = {}
+
+[[word]]
+text = "cpfo"
+credential = {}
+
+[[word]]
+text = "cpg"
+credential = {}
+
+[[word]]
+text = "cph"
+credential = {}
+
+[[word]]
+text = "cpht"
+credential = { cased = "CPhT" }
+
+[[word]]
+text = "cpim"
+credential = {}
+
+[[word]]
+text = "cplp"
+credential = {}
+
+[[word]]
+text = "cpm"
+credential = {}
+
+[[word]]
+text = "cpp"
+credential = {}
+
+[[word]]
+text = "cppm"
+credential = {}
+
+[[word]]
+text = "cprc"
+credential = {}
+
+[[word]]
+text = "cpre"
+credential = {}
+
+[[word]]
+text = "cprp"
+credential = {}
+
+[[word]]
+text = "cpsc"
+credential = {}
+
+[[word]]
+text = "cpsi"
+credential = {}
+
+[[word]]
+text = "cpss"
+credential = {}
+
+[[word]]
+text = "cpwa"
+credential = {}
+
+[[word]]
+text = "crde"
+credential = {}
+
+[[word]]
+text = "crisc"
+credential = {}
+
+[[word]]
+text = "crma"
+credential = {}
+
+[[word]]
+text = "crme"
+credential = {}
+
+[[word]]
+text = "crna"
+credential = {}
+
+[[word]]
+text = "cro"
+credential = {}
+
+[[word]]
+text = "crp"
+credential = {}
+
+[[word]]
+text = "crt"
+credential = {}
+
+[[word]]
+text = "crtt"
+credential = {}
+
+[[word]]
+text = "csa"
+credential = {}
+
+[[word]]
+text = "csbe"
+credential = {}
+
+[[word]]
+text = "csc"
+credential = {}
+
+[[word]]
+text = "cscp"
+credential = {}
+
+[[word]]
+text = "cscu"
+credential = {}
+
+[[word]]
+text = "csep"
+credential = {}
+
+[[word]]
+text = "csi"
+credential = {}
+
+[[word]]
+text = "csp"
+credential = {}
+
+[[word]]
+text = "cspo"
+credential = {}
+
+[[word]]
+text = "csre"
+credential = {}
+
+[[word]]
+text = "csrte"
+credential = {}
+
+[[word]]
+text = "csslp"
+credential = {}
+
+[[word]]
+text = "cssm"
+credential = {}
+
+[[word]]
+text = "cst"
+credential = {}
+
+[[word]]
+text = "cste"
+credential = {}
+
+[[word]]
+text = "ctbs"
+credential = {}
+
+[[word]]
+text = "ctfa"
+credential = {}
+
+[[word]]
+text = "cto"
+credential = {}
+
+[[word]]
+text = "ctp"
+credential = {}
+
+[[word]]
+text = "cts"
+credential = {}
+
+[[word]]
+text = "cua"
+credential = {}
+
+[[word]]
+text = "cusp"
+credential = {}
+
+[[word]]
+text = "cva"
+credential = {}
+
+[[word]]
+text = "cvo"
+credential = {}
+
+[[word]]
+text = "cvp"
+credential = {}
+
+[[word]]
+text = "cvrs"
+credential = {}
+
+[[word]]
+text = "cwap"
+credential = {}
+
+[[word]]
+text = "cwb"
+credential = {}
+
+[[word]]
+text = "cwdp"
+credential = {}
+
+[[word]]
+text = "cwep"
+credential = {}
+
+[[word]]
+text = "cwna"
+credential = {}
+
+[[word]]
+text = "cwne"
+credential = {}
+
+[[word]]
+text = "cwp"
+credential = {}
+
+[[word]]
+text = "cwsp"
+credential = {}
+
+[[word]]
+text = "cxa"
+credential = {}
+
+[[word]]
+text = "cyds"
+credential = {}
+
+[[word]]
+text = "cysa"
+credential = {}
+
+[[word]]
+text = "dabfm"
+credential = {}
+
+[[word]]
+text = "dabvlm"
+credential = {}
+
+[[word]]
+text = "dacvim"
+credential = {}
+
+[[word]]
+text = "dbe"
+credential = {}
+
+[[word]]
+text = "dc"
+credential = {}
+
+[[word]]
+text = "dcb"
+credential = {}
+
+[[word]]
+text = "dcm"
+credential = {}
+
+[[word]]
+text = "dcmg"
+credential = {}
+
+[[word]]
+text = "dcvo"
+credential = {}
+
+[[word]]
+text = "dd"
+credential = {}
+
+[[word]]
+text = "dds"
+credential = {}
+
+[[word]]
+text = "ded"
+credential = {}
+
+[[word]]
+text = "dep"
+credential = {}
+
+[[word]]
+text = "dfc"
+credential = {}
+
+[[word]]
+text = "dfm"
+credential = {}
+
+[[word]]
+text = "diplac"
+credential = { cased = "DiplAc" }
+
+[[word]]
+text = "diplom"
+credential = {}
+
+[[word]]
+text = "djur"
+credential = {}
+
+[[word]]
+text = "dma"
+credential = {}
+
+[[word]]
+text = "dmd"
+credential = {}
+
+[[word]]
+text = "dmin"
+credential = { cased = "DMin" }
+
+[[word]]
+text = "dnp"
+credential = {}
+
+[[word]]
+text = "dpm"
+credential = {}
+
+[[word]]
+text = "dpt"
+credential = {}
+
+[[word]]
+text = "drb"
+credential = {}
+
+[[word]]
+text = "drmp"
+credential = {}
+
+[[word]]
+text = "drph"
+credential = { cased = "DrPH" }
+
+[[word]]
+text = "dsc"
+credential = { cased = "DSc" }
+
+[[word]]
+text = "dsm"
+credential = {}
+
+[[word]]
+text = "dso"
+credential = {}
+
+[[word]]
+text = "dss"
+credential = {}
+
+[[word]]
+text = "dtr"
+credential = {}
+
+[[word]]
+text = "dvep"
+credential = {}
+
+[[word]]
+text = "dvm"
+credential = {}
+
+[[word]]
+text = "ea"
+credential = {}
+
+[[word]]
+text = "ed"
+credential = { may_be_name = true, expands = "Doctor of Education" }
+
+[[word]]
+text = "edd"
+credential = {}
+
+[[word]]
+text = "ei"
+credential = {}
+
+[[word]]
+text = "eit"
+credential = {}
+
+[[word]]
+text = "els"
+credential = {}
+
+[[word]]
+text = "emd"
+credential = {}
+
+[[word]]
+text = "emt-b"
+credential = {}
+
+[[word]]
+text = "emt-i/85"
+credential = {}
+
+[[word]]
+text = "emt-i/99"
+credential = {}
+
+[[word]]
+text = "emt-p"
+credential = {}
+
+[[word]]
+text = "enp"
+credential = {}
+
+[[word]]
+text = "erd"
+credential = {}
+
+[[word]]
+text = "evp"
+credential = {}
+
+[[word]]
+text = "faafp"
+credential = {}
+
+[[word]]
+text = "faan"
+credential = {}
+
+[[word]]
+text = "faap"
+credential = {}
+
+[[word]]
+text = "fac-c"
+credential = {}
+
+[[word]]
+text = "facc"
+credential = {}
+
+[[word]]
+text = "facd"
+credential = {}
+
+[[word]]
+text = "facem"
+credential = {}
+
+[[word]]
+text = "facep"
+credential = {}
+
+[[word]]
+text = "facha"
+credential = {}
+
+[[word]]
+text = "facofp"
+credential = {}
+
+[[word]]
+text = "facog"
+credential = {}
+
+[[word]]
+text = "facp"
+credential = {}
+
+[[word]]
+text = "facph"
+credential = {}
+
+[[word]]
+text = "facs"
+credential = {}
+
+[[word]]
+text = "faia"
+credential = {}
+
+[[word]]
+text = "faicp"
+credential = {}
+
+[[word]]
+text = "fala"
+credential = {}
+
+[[word]]
+text = "fashp"
+credential = {}
+
+[[word]]
+text = "fasid"
+credential = {}
+
+[[word]]
+text = "fasla"
+credential = {}
+
+[[word]]
+text = "fasma"
+credential = {}
+
+[[word]]
+text = "faspen"
+credential = {}
+
+[[word]]
+text = "fca"
+credential = {}
+
+[[word]]
+text = "fcas"
+credential = {}
+
+[[word]]
+text = "fcela"
+credential = {}
+
+[[word]]
+text = "fd"
+credential = {}
+
+[[word]]
+text = "fec"
+credential = {}
+
+[[word]]
+text = "fhames"
+credential = {}
+
+[[word]]
+text = "fic"
+credential = {}
+
+[[word]]
+text = "ficf"
+credential = {}
+
+[[word]]
+text = "fieee"
+credential = {}
+
+[[word]]
+text = "fmp"
+credential = {}
+
+[[word]]
+text = "fmva"
+credential = {}
+
+[[word]]
+text = "fnss"
+credential = {}
+
+[[word]]
+text = "fp&a"
+credential = {}
+
+[[word]]
+text = "fp-c"
+credential = {}
+
+[[word]]
+text = "fpc"
+credential = {}
+
+[[word]]
+text = "frm"
+credential = {}
+
+[[word]]
+text = "fsa"
+credential = {}
+
+[[word]]
+text = "fsdp"
+credential = {}
+
+[[word]]
+text = "fws"
+credential = {}
+
+[[word]]
+text = "gba"
+credential = {}
+
+[[word]]
+text = "gbe"
+credential = {}
+
+[[word]]
+text = "gc"
+credential = {}
+
+[[word]]
+text = "gcb"
+credential = {}
+
+[[word]]
+text = "gchs"
+credential = {}
+
+[[word]]
+text = "gcie"
+credential = {}
+
+[[word]]
+text = "gcmg"
+credential = {}
+
+[[word]]
+text = "gcsi"
+credential = {}
+
+[[word]]
+text = "gcvo"
+credential = {}
+
+[[word]]
+text = "gisp"
+credential = {}
+
+[[word]]
+text = "git"
+credential = {}
+
+[[word]]
+text = "gm"
+credential = {}
+
+[[word]]
+text = "gmb"
+credential = {}
+
+[[word]]
+text = "gmr"
+credential = {}
+
+[[word]]
+text = "gphr"
+credential = {}
+
+[[word]]
+text = "gri"
+credential = {}
+
+[[word]]
+text = "grp"
+credential = {}
+
+[[word]]
+text = "gsmieee"
+credential = {}
+
+[[word]]
+text = "hccp"
+credential = {}
+
+[[word]]
+text = "hrs"
+credential = {}
+
+[[word]]
+text = "iaccp"
+credential = {}
+
+[[word]]
+text = "iaee"
+credential = {}
+
+[[word]]
+text = "iccm-d"
+credential = {}
+
+[[word]]
+text = "iccm-f"
+credential = {}
+
+[[word]]
+text = "idsm"
+credential = {}
+
+[[word]]
+text = "ifgict"
+credential = {}
+
+[[word]]
+text = "iom"
+credential = {}
+
+[[word]]
+text = "ipep"
+credential = {}
+
+[[word]]
+text = "ipm"
+credential = {}
+
+[[word]]
+text = "iso"
+credential = {}
+
+[[word]]
+text = "issp-csp"
+credential = {}
+
+[[word]]
+text = "issp-sa"
+credential = {}
+
+[[word]]
+text = "itil"
+credential = {}
+
+[[word]]
+text = "jd"
+credential = { may_be_name = true, expands = "Juris Doctor" }
+
+[[word]]
+text = "jp"
+credential = {}
+
+[[word]]
+text = "kbe"
+credential = {}
+
+[[word]]
+text = "kcb"
+credential = {}
+
+[[word]]
+text = "kchs/dchs"
+credential = {}
+
+[[word]]
+text = "kcie"
+credential = {}
+
+[[word]]
+text = "kcmg"
+credential = {}
+
+[[word]]
+text = "kcsi"
+credential = {}
+
+[[word]]
+text = "kcvo"
+credential = {}
+
+[[word]]
+text = "kg"
+credential = {}
+
+[[word]]
+text = "khs/dhs"
+credential = {}
+
+[[word]]
+text = "knt"
+[word.credential]
+expands = "Knight"
+issue = 606
+note = "the older spelling of kt"
+cased = "Knt"
+
+[[word]]
+text = "kp"
+credential = {}
+
+[[word]]
+text = "kt"
+credential = { cased = "Kt" }
+
+# (SUFFIX_ACRONYMS_AMBIGUOUS)
+# #540: LAc, Licensed Acupuncturist; Lac is a Vietnamese given name
+# (the trailing word in native order, Nguyen Van Lac) and a French
+# surname
+[[word]]
+text = "lac"
+[word.credential]
+may_be_name = true
+expands = "Licensed Acupuncturist"
+issue = 540
+note = "Lac is a Vietnamese given name (the trailing word in native order, Nguyen Van Lac) and a French surname"
+
+[[word]]
+text = "lcmt"
+credential = {}
+
+[[word]]
+text = "lcpc"
+credential = {}
+
+[[word]]
+text = "lcsw"
+credential = {}
+
+[[word]]
+text = "lg"
+credential = {}
+
+[[word]]
+text = "litk"
+credential = {}
+
+[[word]]
+text = "litl"
+credential = {}
+
+[[word]]
+text = "litp"
+credential = {}
+
+[[word]]
+text = "llm"
+credential = {}
+
+[[word]]
+text = "lm"
+credential = {}
+
+[[word]]
+text = "lmsw"
+credential = {}
+
+[[word]]
+text = "lmt"
+credential = {}
+
+[[word]]
+text = "lp"
+credential = {}
+
+[[word]]
+text = "lpa"
+credential = {}
+
+[[word]]
+text = "lpc"
+credential = {}
+
+[[word]]
+text = "lpn"
+credential = {}
+
+[[word]]
+text = "lpss"
+credential = {}
+
+[[word]]
+text = "lsi"
+credential = {}
+
+[[word]]
+text = "lsit"
+credential = {}
+
+[[word]]
+text = "lvn"
+credential = {}
+
+[[word]]
+text = "lvo"
+credential = {}
+
+[[word]]
+text = "lvt"
+credential = {}
+
+[[word]]
+text = "ma"
+credential = { may_be_name = true, expands = "Master of Arts" }
+
+[[word]]
+text = "maaa"
+credential = {}
+
+[[word]]
+text = "mba"
+credential = {}
+
+[[word]]
+text = "mbe"
+credential = {}
+
+[[word]]
+text = "mbs"
+credential = {}
+
+[[word]]
+text = "mcct"
+credential = {}
+
+[[word]]
+text = "mcdba"
+credential = {}
+
+[[word]]
+text = "mches"
+credential = {}
+
+[[word]]
+text = "mcm"
+credential = {}
+
+[[word]]
+text = "mcp"
+credential = {}
+
+[[word]]
+text = "mcpd"
+credential = {}
+
+[[word]]
+text = "mcsa"
+credential = {}
+
+[[word]]
+text = "mcsd"
+credential = {}
+
+[[word]]
+text = "mcse"
+credential = {}
+
+[[word]]
+text = "mct"
+credential = {}
+
+[[word]]
+text = "mda"
+credential = {}
+
+[[word]]
+text = "mdb"
+credential = {}
+
+[[word]]
+text = "mdbb"
+credential = {}
+
+[[word]]
+text = "mdep"
+credential = {}
+
+[[word]]
+text = "mdhb"
+credential = {}
+
+[[word]]
+text = "mdiv"
+credential = { cased = "MDiv" }
+
+[[word]]
+text = "mdl"
+credential = {}
+
+[[word]]
+text = "mem"
+credential = {}
+
+# (SUFFIX_ACRONYMS_AMBIGUOUS)
+# #540: MEng, Master of Engineering; Meng, a Chinese surname and given name
+[[word]]
+text = "meng"
+[word.credential]
+may_be_name = true
+expands = "Master of Engineering"
+issue = 540
+note = "Meng is a Chinese surname and given name"
+
+[[word]]
+text = "mfa"
+credential = {}
+
+[[word]]
+text = "micp"
+credential = {}
+
+[[word]]
+text = "mieee"
+credential = {}
+
+[[word]]
+text = "mirm"
+credential = {}
+
+[[word]]
+text = "mle"
+credential = {}
+
+[[word]]
+text = "mls"
+credential = {}
+
+[[word]]
+text = "mlse"
+credential = {}
+
+[[word]]
+text = "mlt"
+credential = {}
+
+[[word]]
+text = "mm"
+credential = {}
+
+[[word]]
+text = "mmad"
+credential = {}
+
+[[word]]
+text = "mmas"
+credential = {}
+
+[[word]]
+text = "mnaa"
+credential = {}
+
+[[word]]
+text = "mnae"
+credential = {}
+
+[[word]]
+text = "mp"
+credential = {}
+
+[[word]]
+text = "mpa"
+credential = {}
+
+[[word]]
+text = "mph"
+credential = {}
+
+[[word]]
+text = "mpse"
+credential = {}
+
+[[word]]
+text = "mra"
+credential = {}
+
+[[word]]
+text = "msa"
+credential = {}
+
+[[word]]
+text = "msc"
+credential = { cased = "MSc" }
+
+[[word]]
+text = "mscmsm"
+credential = {}
+
+[[word]]
+text = "msm"
+credential = {}
+
+[[word]]
+text = "mt"
+credential = {}
+
+[[word]]
+text = "mts"
+credential = {}
+
+[[word]]
+text = "mvo"
+credential = {}
+
+[[word]]
+text = "nbc-his"
+credential = {}
+
+[[word]]
+text = "nbcch"
+credential = {}
+
+[[word]]
+text = "nbcch-ps"
+credential = {}
+
+[[word]]
+text = "nbcdch"
+credential = {}
+
+[[word]]
+text = "nbcdch-ps"
+credential = {}
+
+[[word]]
+text = "nbcfch"
+credential = {}
+
+[[word]]
+text = "nbcfch-ps"
+credential = {}
+
+[[word]]
+text = "nbct"
+credential = {}
+
+[[word]]
+text = "ncarb"
+credential = {}
+
+[[word]]
+text = "nccp"
+credential = {}
+
+[[word]]
+text = "ncidq"
+credential = {}
+
+[[word]]
+text = "ncps"
+credential = {}
+
+[[word]]
+text = "ncso"
+credential = {}
+
+[[word]]
+text = "ncto"
+credential = {}
+
+[[word]]
+text = "nd"
+credential = {}
+
+[[word]]
+text = "ndtr"
+credential = {}
+
+[[word]]
+text = "nmd"
+credential = {}
+
+[[word]]
+text = "np"
+credential = {}
+
+[[word]]
+text = "nraemt"
+credential = {}
+
+[[word]]
+text = "nremr"
+credential = {}
+
+[[word]]
+text = "nremt"
+credential = {}
+
+[[word]]
+text = "nrp"
+credential = {}
+
+[[word]]
+text = "obe"
+credential = {}
+
+[[word]]
+text = "obi"
+credential = {}
+
+[[word]]
+text = "oca"
+credential = {}
+
+[[word]]
+text = "ocm"
+credential = {}
+
+[[word]]
+text = "ocp"
+credential = {}
+
+[[word]]
+text = "od"
+credential = {}
+
+[[word]]
+text = "om"
+[word.credential]
+note = "NOT may_be_name: weighed 2026-09-07 with #342, no surname evidence worth standing behind, and OM is the Order of Merit"
+
+[[word]]
+text = "oscp"
+credential = {}
+
+[[word]]
+text = "ot"
+credential = {}
+
+[[word]]
+text = "pa-c"
+credential = {}
+
+[[word]]
+text = "pcc"
+credential = {}
+
+[[word]]
+text = "pci"
+credential = {}
+
+[[word]]
+text = "pe"
+credential = {}
+
+[[word]]
+text = "pfmp"
+credential = {}
+
+[[word]]
+text = "pg"
+credential = {}
+
+[[word]]
+text = "pgmp"
+credential = {}
+
+[[word]]
+text = "pharmd"
+credential = { cased = "PharmD" }
+
+[[word]]
+text = "phc"
+credential = { cased = "PhC" }
+
+[[word]]
+text = "phd"
+credential = { expands = "Doctor of Philosophy", cased = "PhD" }
+
+[[word]]
+text = "phr"
+credential = {}
+
+[[word]]
+text = "phrca"
+credential = {}
+
+[[word]]
+text = "pla"
+credential = {}
+
+[[word]]
+text = "pls"
+credential = {}
+
+[[word]]
+text = "pmc"
+credential = {}
+
+[[word]]
+text = "pmi-acp"
+credential = {}
+
+[[word]]
+text = "pmp"
+credential = {}
+
+[[word]]
+text = "pp"
+credential = {}
+
+[[word]]
+text = "pps"
+credential = {}
+
+[[word]]
+text = "prm"
+credential = {}
+
+[[word]]
+text = "psm"
+credential = {}
+
+[[word]]
+text = "psp"
+credential = {}
+
+[[word]]
+text = "psyd"
+credential = { cased = "PsyD" }
+
+[[word]]
+text = "pt"
+credential = {}
+
+[[word]]
+text = "pta"
+credential = {}
+
+[[word]]
+text = "qam"
+credential = {}
+
+[[word]]
+text = "qc"
+credential = {}
+
+[[word]]
+text = "qcsw"
+credential = {}
+
+[[word]]
+text = "qfsm"
+credential = {}
+
+[[word]]
+text = "qgm"
+credential = {}
+
+[[word]]
+text = "qpm"
+credential = {}
+
+[[word]]
+text = "qsd"
+credential = {}
+
+[[word]]
+text = "qsp"
+credential = {}
+
+[[word]]
+text = "rba"
+credential = {}
+
+[[word]]
+text = "rci"
+credential = {}
+
+[[word]]
+text = "rcp"
+credential = {}
+
+[[word]]
+text = "rd"
+credential = {}
+
+[[word]]
+text = "rdcs"
+credential = {}
+
+[[word]]
+text = "rdh"
+credential = {}
+
+[[word]]
+text = "rdms"
+credential = {}
+
+[[word]]
+text = "rdn"
+credential = {}
+
+[[word]]
+text = "res"
+credential = {}
+
+[[word]]
+text = "rfp"
+credential = {}
+
+[[word]]
+text = "rhca"
+credential = {}
+
+[[word]]
+text = "rid"
+credential = {}
+
+[[word]]
+text = "rls"
+credential = {}
+
+[[word]]
+text = "rmsks"
+credential = {}
+
+[[word]]
+text = "rn"
+credential = {}
+
+[[word]]
+text = "rp"
+credential = {}
+
+[[word]]
+text = "rpa"
+credential = {}
+
+[[word]]
+text = "rph"
+credential = { cased = "RPh" }
+
+[[word]]
+text = "rpl"
+credential = {}
+
+[[word]]
+text = "rrc"
+credential = {}
+
+[[word]]
+text = "rrt"
+credential = {}
+
+[[word]]
+text = "rrt-accs"
+credential = {}
+
+[[word]]
+text = "rrt-nps"
+credential = {}
+
+[[word]]
+text = "rrt-sds"
+credential = {}
+
+[[word]]
+text = "rtrp"
+credential = {}
+
+[[word]]
+text = "rvm"
+credential = {}
+
+[[word]]
+text = "rvt"
+credential = {}
+
+[[word]]
+text = "same"
+credential = {}
+
+[[word]]
+text = "sasm"
+credential = {}
+
+[[word]]
+text = "sccp"
+credential = {}
+
+[[word]]
+text = "scmp"
+credential = {}
+
+[[word]]
+text = "se"
+[word.credential]
+note = "NOT may_be_name: weighed 2026-09-07 with #342, no surname evidence worth standing behind"
+
+[[word]]
+text = "secb"
+credential = {}
+
+[[word]]
+text = "sfp"
+credential = {}
+
+[[word]]
+text = "shrm-cp"
+credential = {}
+
+[[word]]
+text = "shrm-scp"
+credential = {}
+
+[[word]]
+text = "si"
+credential = {}
+
+[[word]]
+text = "siie"
+credential = {}
+
+[[word]]
+text = "smieee"
+credential = {}
+
+[[word]]
+text = "sphr"
+credential = {}
+
+[[word]]
+text = "sscp"
+credential = {}
+
+[[word]]
+text = "stb"
+credential = {}
+
+[[word]]
+text = "stmieee"
+credential = {}
+
+[[word]]
+text = "tbr-ct"
+credential = {}
+
+[[word]]
+text = "td"
+credential = {}
+
+[[word]]
+text = "thd"
+credential = { cased = "ThD" }
+
+[[word]]
+text = "thm"
+credential = { cased = "ThM" }
+
+[[word]]
+text = "ud"
+credential = {}
+
+[[word]]
+text = "usa"
+credential = {}
+
+[[word]]
+text = "usaf"
+credential = {}
+
+[[word]]
+text = "usar"
+credential = {}
+
+[[word]]
+text = "uscg"
+credential = {}
+
+[[word]]
+text = "usmc"
+credential = {}
+
+[[word]]
+text = "usn"
+credential = {}
+
+[[word]]
+text = "usnr"
+credential = {}
+
+[[word]]
+text = "uxc"
+credential = {}
+
+[[word]]
+text = "uxmc"
+credential = {}
+
+[[word]]
+text = "vcp"
+credential = {}
+
+[[word]]
+text = "vrd"
+credential = {}
+
+[[word]]
+text = "rai"
+[word.excluded.credential]
+reason = "Rai, a common surname across Hindi- and Bengali-speaking regions, dominates RAI (RETA Authorized Instructor): removed 2026-09-07 by the relative-frequency criterion (decisions/suffix-acronym-collisions)"
+issue = 342
+
+[[word]]
+text = "cha"
+[word.excluded.credential]
+reason = "Cha, the Korean 차, dominates CHA (Certified Hotel Administrator): removed 2026-09-07 by the relative-frequency criterion (decisions/suffix-acronym-collisions)"
+issue = 342
+
+[[word]]
+text = "mai"
+[word.excluded.credential]
+reason = "Mai, a Vietnamese given and family name, a Chinese surname (麥) and a Japanese given name, dominates MAI (Member, Appraisal Institute): removed 2026-10-16 by the relative-frequency criterion (decisions/suffix-acronym-collisions)"
+issue = 687
