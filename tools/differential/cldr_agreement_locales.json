@@ -655,33 +655,33 @@
  "yue/nativeG/givenFirst": {
   "family": {
    "expected": "",
-   "got": "文傑"
+   "got": "文"
   },
   "given_names": {
    "expected": "文傑",
-   "got": ""
+   "got": "傑"
   },
   "text": "文傑"
  },
  "yue/nativeG/sorting": {
   "family": {
    "expected": "",
-   "got": "文傑"
+   "got": "文"
   },
   "given_names": {
    "expected": "文傑",
-   "got": ""
+   "got": "傑"
   },
   "text": "文傑"
  },
  "yue/nativeG/surnameFirst": {
   "family": {
    "expected": "",
-   "got": "文傑"
+   "got": "文"
   },
   "given_names": {
    "expected": "文傑",
-   "got": ""
+   "got": "傑"
   },
   "text": "文傑"
  },
@@ -854,33 +854,33 @@
  "yue_Hans/nativeG/givenFirst": {
   "family": {
    "expected": "",
-   "got": "文杰"
+   "got": "文"
   },
   "given_names": {
    "expected": "文杰",
-   "got": ""
+   "got": "杰"
   },
   "text": "文杰"
  },
  "yue_Hans/nativeG/sorting": {
   "family": {
    "expected": "",
-   "got": "文杰"
+   "got": "文"
   },
   "given_names": {
    "expected": "文杰",
-   "got": ""
+   "got": "杰"
   },
   "text": "文杰"
  },
  "yue_Hans/nativeG/surnameFirst": {
   "family": {
    "expected": "",
-   "got": "文杰"
+   "got": "文"
   },
   "given_names": {
    "expected": "文杰",
-   "got": ""
+   "got": "杰"
   },
   "text": "文杰"
  },
@@ -978,33 +978,33 @@
  "zh/foreignG/givenFirst": {
   "family": {
    "expected": "",
-   "got": "辛巴达"
+   "got": "辛"
   },
   "given_names": {
    "expected": "辛巴达",
-   "got": ""
+   "got": "巴达"
   },
   "text": "辛巴达"
  },
  "zh/foreignG/sorting": {
   "family": {
    "expected": "",
-   "got": "辛巴达"
+   "got": "辛"
   },
   "given_names": {
    "expected": "辛巴达",
-   "got": ""
+   "got": "巴达"
   },
   "text": "辛巴达"
  },
  "zh/foreignG/surnameFirst": {
   "family": {
    "expected": "",
-   "got": "辛巴达"
+   "got": "辛"
   },
   "given_names": {
    "expected": "辛巴达",
-   "got": ""
+   "got": "巴达"
   },
   "text": "辛巴达"
  },
@@ -1101,11 +1101,11 @@
  "zh/nativeGS/givenFirst": {
   "family": {
    "expected": "张",
-   "got": "安怡张"
+   "got": "安"
   },
   "given_names": {
    "expected": "安怡",
-   "got": ""
+   "got": "怡张"
   },
   "text": "安怡张"
  },
@@ -1270,33 +1270,33 @@
  "zh_Hant/nativeG/givenFirst": {
   "family": {
    "expected": "",
-   "got": "文傑"
+   "got": "文"
   },
   "given_names": {
    "expected": "文傑",
-   "got": ""
+   "got": "傑"
   },
   "text": "文傑"
  },
  "zh_Hant/nativeG/sorting": {
   "family": {
    "expected": "",
-   "got": "文傑"
+   "got": "文"
   },
   "given_names": {
    "expected": "文傑",
-   "got": ""
+   "got": "傑"
   },
   "text": "文傑"
  },
  "zh_Hant/nativeG/surnameFirst": {
   "family": {
    "expected": "",
-   "got": "文傑"
+   "got": "文"
   },
   "given_names": {
    "expected": "文傑",
-   "got": ""
+   "got": "傑"
   },
   "text": "文傑"
  },

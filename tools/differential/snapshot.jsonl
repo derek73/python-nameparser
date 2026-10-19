@@ -5487,6 +5487,7 @@
 {"name": "小冯·布鲁赫·艾达·科妮莉亚·塞萨尔·马丁·博士教授", "order": "FAMILY_FIRST", "given": "布鲁赫", "middle": "艾达 科妮莉亚 塞萨尔 马丁", "family": "小冯", "suffix": "博士 教授", "initials": "布. 艾. 科. 塞. 马. 小."}
 {"name": "小彭德威东升议员先生", "order": "FAMILY_FIRST", "family": "小彭德威东升议员", "suffix": "先生", "initials": "小."}
 {"name": "小德威东升彭议员先生", "family": "小德威东升彭议员", "suffix": "先生", "initials": "小."}
+{"name": "小明", "family": "小明", "initials": "小."}
 {"name": "小杉 啓太", "given": "啓太", "family": "小杉", "initials": "啓. 小."}
 {"name": "小林宏", "family": "小林宏", "initials": "小."}
 {"name": "小林由佳", "family": "小林由佳", "initials": "小."}
@@ -5518,6 +5519,7 @@
 {"name": "引地良一", "family": "引地良一", "initials": "引."}
 {"name": "张伟", "family": "张伟", "initials": "张."}
 {"name": "张安怡", "order": "FAMILY_FIRST", "family": "张安怡", "initials": "张."}
+{"name": "张简", "family": "张简", "initials": "张."}
 {"name": "张翰", "family": "张翰", "initials": "张."}
 {"name": "张雅婷", "order": "FAMILY_FIRST", "family": "张雅婷", "initials": "张."}
 {"name": "張瑞", "family": "張瑞", "initials": "張."}
@@ -5667,7 +5669,7 @@
 {"name": "郭靜", "family": "郭靜", "initials": "郭."}
 {"name": "鈴木亀蔵", "family": "鈴木亀蔵", "initials": "鈴."}
 {"name": "鎌田 弥彦", "given": "弥彦", "family": "鎌田", "initials": "弥. 鎌."}
-{"name": "阿明", "family": "阿明", "initials": "阿."}
+{"name": "钟离小凤", "family": "钟离小凤", "initials": "钟."}
 {"name": "陈·怡君·达印", "order": "FAMILY_FIRST", "given": "怡君", "middle": "达印", "family": "陈", "initials": "怡. 达. 陈."}
 {"name": "陈·陈·怡君·教授，小·达印·博士", "order": "FAMILY_FIRST", "given": "小", "middle": "达印", "family": "陈 陈 怡君", "suffix": "教授, 博士", "initials": "小. 达. 陈. 陈. 怡."}
 {"name": "陈俊年杰思", "order": "FAMILY_FIRST", "family": "陈俊年杰思", "initials": "陈."}

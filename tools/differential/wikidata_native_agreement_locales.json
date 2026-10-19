@@ -1,15 +1,4 @@
 {
- "Q103785817/zh-tw/surnameFirst": {
-  "family": {
-   "expected": "詹",
-   "got": "詹桓"
-  },
-  "given_names": {
-   "expected": "桓",
-   "got": ""
-  },
-  "text": "詹桓"
- },
  "Q111081424/ja-jp/surnameFirst": {
   "family": {
    "expected": "安達",
@@ -20,60 +9,5 @@
    "got": "達禎"
   },
   "text": "安達禎"
- },
- "Q127605824/zh-tw/surnameFirst": {
-  "family": {
-   "expected": "卫",
-   "got": "卫惠林"
-  },
-  "given_names": {
-   "expected": "惠林",
-   "got": ""
-  },
-  "text": "卫惠林"
- },
- "Q16262307/zh-cn/surnameFirst": {
-  "family": {
-   "expected": "柯",
-   "got": "柯洁"
-  },
-  "given_names": {
-   "expected": "洁",
-   "got": ""
-  },
-  "text": "柯洁"
- },
- "Q19825302/zh-cn/surnameFirst": {
-  "family": {
-   "expected": "茅",
-   "got": "茅祖權"
-  },
-  "given_names": {
-   "expected": "祖權",
-   "got": ""
-  },
-  "text": "茅祖權"
- },
- "Q39040747/zh-cn/surnameFirst": {
-  "family": {
-   "expected": "华",
-   "got": "华楠"
-  },
-  "given_names": {
-   "expected": "楠",
-   "got": ""
-  },
-  "text": "华楠"
- },
- "Q7927961/zh-cn/surnameFirst": {
-  "family": {
-   "expected": "文",
-   "got": "文强"
-  },
-  "given_names": {
-   "expected": "强",
-   "got": ""
-  },
-  "text": "文强"
  }
 }

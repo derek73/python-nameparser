@@ -11040,16 +11040,20 @@ CASES: tuple[Case, ...] = (
          locale="zh", classification="fix(#271)",
          ambiguities=("segmentation",),
          notes="夏 (rank 65) is itself listed, so longest-first "
-               "decides a real fork here and records it; most "
-               "compounds' first chars are NOT listed"),
+               "decides a real fork here and records it"),
     Case("zh_compound_two_char_given", "司马相如",
          {"family": "司马", "given": "相如"},
-         locale="zh", classification="fix(#271)"),
+         locale="zh", classification="fix(#271)",
+         ambiguities=("segmentation",),
+         notes="司 is listed since #695's ranked surnames, so the "
+               "compound wins a fork, as 夏侯 does"),
     Case("zh_traditional_compound", "諸葛亮",
          {"family": "諸葛", "given": "亮"},
-         locale="zh", classification="fix(#271)"),
-    Case("zh_no_surname_match", "阿明",
-         {"family": "阿明"},
+         locale="zh", classification="fix(#271)",
+         ambiguities=("segmentation",),
+         notes="諸 is listed since #695's ranked surnames"),
+    Case("zh_no_surname_match", "小明",
+         {"family": "小明"},
          locale="zh", classification="fix(#271)",
          notes="no surname prefix in the vocabulary: the token stays "
                "whole and takes the script order's first role"),

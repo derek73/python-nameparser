@@ -20,6 +20,9 @@ W1. Rationale: hangul is monoglot Korean and its surnames are a
       "毛泽东"                    →  family="毛泽东"  · boundary
       "毛泽东"  [zh]              →  family="毛"
       "高橋一郎"  [zh]            →  family="高"
+      "柯洁"  [zh]                →  family="柯"
+      "钟离小凤"  [zh]            →  family="钟离"
+      "张简"  [zh]                →  family="张简"
     Accepted: a name the interpunct divides is already divided in
     the sense that matters — division stands down entirely there,
     vocabulary and segmenter alike (#298; decisions/T3).
