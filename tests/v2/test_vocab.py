@@ -149,6 +149,7 @@ MUTATIONS = [
     ("reserved-top-level-key", {"und.toml": "default = false\n" + OK}, "reserved for phase 3"),
     ("file-name-not-a-tag", {"english.toml": OK}, "BCP 47 tag"),
     ("file-name-not-canonical-case", {"pt-br.toml": OK}, "BCP 47 tag"),
+    ("file-with-no-entries", {"en.toml": OK, "und.toml": "schema = 1\n"}, "no \\[\\[word\\]\\] entries"),
     ("reserved-reading-property", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { bare_only = true }')}, "reserved for phase 2"),
     ("unknown-reading-property", {"und.toml": _w('[[word]]\ntext = "mba"\ncredential = { acronymm = true }')}, "unknown key 'acronymm'"),
     ("unknown-word-key", {"und.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\nlang = "en"')}, "unknown key 'lang'"),
@@ -157,6 +158,14 @@ MUTATIONS = [
     ("text-not-normalized", {"en.toml": _w('[[word]]\ntext = "Jnr."\ngeneration = {}')}, "normalized form"),
     ("text-double-spaced", {"und.toml": _w('[[word]]\ntext = "z  domu"\nbirth_marker = {}')}, "normalized form"),
     ("text-missing", {"und.toml": _w("[[word]]\ngeneration = {}")}, "non-empty `text`"),
+    # a text no token can equal: the tokenizer divides at a comma and a
+    # nakaguro, strips a bidi mark, and keeps an invisible character the
+    # file does not show
+    ("text-with-a-comma", {"en.toml": _w('[[word]]\ntext = "jr,"\ngeneration = {}')}, "divides a name at"),
+    ("text-with-a-nakaguro", {"ja.toml": _w('[[word]]\ntext = "さん・"\nhonorific = {}')}, "divides a name at"),
+    ("text-with-a-bidi-mark", {"he.toml": _w('[[word]]\ntext = "dr\\u200f"\ntitle = {}')}, "invisible format character U\\+200F"),
+    ("text-with-a-zero-width-space", {"en.toml": _w('[[word]]\ntext = "dr\\u200b"\ntitle = {}')}, "invisible format character U\\+200B"),
+    ("phrase-word-with-an-edge-period", {"de.toml": _w('[[word]]\ntext = "dr. med"\ntitle = { addresses = "given" }')}, "write 'dr med'"),
     ("text-twice-in-a-file", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "jr"\nstatus = {}')}, "listed twice"),
     # 3: kinds, properties and values
     ("unregistered-kind", {"hr.toml": _w('[[word]]\ntext = "mlađi"\ngeneraton = {}')}, "unknown key 'generaton'"),
@@ -188,6 +197,10 @@ MUTATIONS = [
     ("flag-not-a-bool", {"und.toml": _w('[[word]]\ntext = "van"\nparticle = { may_be_given = "yes" }')}, "true or false"),
     ("issue-not-a-number", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { issue = "661" }')}, "issue number"),
     ("decided-not-a-date", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = "2026-10-18" }')}, "TOML date"),
+    # tomllib reads a date-time as a datetime, which isinstance calls a date
+    ("decided-a-date-time", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { decided = 2026-10-18T09:00:00 }')}, "not a string or a date-time"),
+    ("as-of-a-date-time", {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16T00:00:00Z }\nexcluded = { generation = "x" }')}, "needs `as_of`, a TOML date"),
+    ("as-of-without-a-count", {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { as_of = 2026-10-16 }\nexcluded = { generation = "x" }')}, "as_of dates a count"),
     ("gender-out-of-range", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { gender = "male" }')}, "gender must be"),
     ("count-without-as-of", {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767 }\nexcluded = { generation = "x" }')}, "needs `as_of`"),
     ("count-source-typo", {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census = 767, as_of = 2026-10-16 }\nexcluded = { generation = "x" }')}, "unknown key 'us_census'"),
@@ -215,12 +228,14 @@ MUTATIONS = [
     ("excluded-property-in-another-file", {"ja.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false, excluded = { attached = "Hiroshi" } }'), "zh.toml": _w('[[word]]\ntext = "博士"\ncredential = { acronym = false, attached = { side = "after" } }')}, "Hiroshi"),
     # 7: same_as and cased
     ("same-as-missing-target", {"en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "same_as 'jr'"),
+    ("same-as-its-own-word", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jr" }')}, "names the word itself"),
     ("same-as-other-category", {"en.toml": _w('[[word]]\ntext = "jr"\ntitle = {}\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "no suffix reading"),
     ("cased-spells-other-letters", {"und.toml": _w('[[word]]\ntext = "phd"\ncredential = { cased = "PhDr" }')}, "case mask"),
     ("two-cased-values", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\ntitle = { cased = "ó" }')}, "one cased mask per word"),
     ("cased-disagrees-across-files", {"und.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "Ó" }'), "ga.toml": _w('[[word]]\ntext = "ó"\nparticle = { may_be_given = false, cased = "ó" }')}, "cased is"),
     # 8: phrases
     ("phrase-title-addressing-the-family", {"und.toml": _w('[[word]]\ntext = "deputy secretary"\ntitle = {}')}, "phrase can never match"),
+    ("phrase-with-cased", {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given", cased = "Sir and Dame" }')}, "looked up per word"),
     ("phrase-particle", {"und.toml": _w('[[word]]\ntext = "de la"\nparticle = { may_be_given = false }')}, "phrase can never match"),
     # 9: a bound given name that is a particle may be given
     ("bound-given-particle-never-given", {"und.toml": _w('[[word]]\ntext = "abu"\nparticle = { may_be_given = false }\nbound_given = {}')}, "may_be_given = true"),
@@ -250,6 +265,11 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
         {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = { may_be_given = false }\n\n'
                         '[[word]]\ntext = "d’"\nparticle = { may_be_given = false }')},
         {"und.toml": _w('[[word]]\ntext = "sir and dame"\ntitle = { addresses = "given" }')},
+        # a zero-width joiner or non-joiner is spelling, and a token keeps it
+        {"fa.toml": _w('[[word]]\ntext = "ab\\u200ccd"\ntitle = {}\n\n'
+                       '[[word]]\ntext = "ef\\u200dgh"\ntitle = {}')},
+        # a phrase word may hold an interior period; a date is a date
+        {"und.toml": _w('[[word]]\ntext = "lt.col and dame"\ntitle = { addresses = "given", decided = 2026-10-18 }')},
         {"fr.toml": _w('[[word]]\ntext = "fils"\nfamily = { us_census_2010 = 767, as_of = 2026-10-16 }\n'
                        'excluded = { generation = { reason = "Marie Fils", issue = 684 } }')},
         # the name kinds refuse only themselves: refused as a given name, a
@@ -272,6 +292,20 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
          "es-419.toml": _w('[[word]]\ntext = "sr"\ngeneration = {}')},
     ):
         _compile(files)
+
+
+def test_the_dividers_are_the_tokenizers() -> None:
+    # build.DIVIDERS hand-copies the pipeline's separators, and every
+    # bidi mark the tokenizer strips is a format character check 2
+    # refuses: a separator added to the pipeline must reach the build
+    from nameparser._pipeline import _tokenize
+    from nameparser._pipeline._state import COMMA_CHARS
+    assert build.DIVIDERS == COMMA_CHARS | _tokenize._NAME_DOT_SEPARATORS
+    marks = [chr(c) for c in range(0x10000) if _tokenize._BIDI.match(chr(c))]
+    assert marks
+    for ch in marks:
+        with pytest.raises(build.VocabError, match="invisible format character"):
+            build.load({"und.toml": _w(f'[[word]]\ntext = "dr{ch}"\ntitle = {{}}')})
 
 
 def test_a_name_reading_on_nothing_warns() -> None:
@@ -306,6 +340,9 @@ def test_query_tells_a_refused_reading_from_a_refused_property() -> None:
     assert [r.text for r in query.select(pool, excluded="honorific")] == ["君"]
     assert [r.text for r in query.select(pool, excluded="attached")] == ["殿"]
     assert [r.text for r in query.select(pool, excluded="suffix")] == ["君"]
+    # the label is for display only, built from the same fields
+    assert sorted(r.label for r in query.rows(pool)) == [
+        "excluded:honorific", "honorific", "honorific excluded:attached"]
 
 
 def _load_query() -> ModuleType:

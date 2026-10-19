@@ -28,11 +28,16 @@ Each raises VocabError naming the word, and the file where one file is
 at fault:
 
 1. `schema` present and supported, no unknown key anywhere (a name a
-   later phase will use says so), the file name a BCP 47 tag;
-2. `text` normalized, non-empty, once per file;
+   later phase will use says so), the file name a BCP 47 tag, at least
+   one entry in the file;
+2. `text` normalized, non-empty, once per file, and a text some token
+   can equal: no comma or other character the tokenizer divides at, no
+   invisible format character but the two joiners, each word of a
+   phrase normalized on its own;
 3. every kind registered, every property allowed on its kind with an
-   allowed value, an acronym's text free of periods (it is matched with
-   them removed), and no entry without a reading or an exclusion;
+   allowed value (a date, never a date-time; `as_of` only beside a
+   count), an acronym's text free of periods (it is matched with them
+   removed), and no entry without a reading or an exclusion;
 4. one suffix kind per word, across files;
 5. the same kind of the same word agrees on every behavioral property
    in every file;
@@ -42,9 +47,10 @@ at fault:
    has unwritten on a reading of the excluding kind, on any reading of
    its category (`cased`: of the word);
    run before 4 and 5, so the recorded reason is what a contributor sees;
-7. `same_as` names a word of the same category, `cased` spells its
-   word's letters (#459), at most one `cased` per word;
-8. a phrase only as a birth_marker or an addresses = "given" title;
+7. `same_as` names another word of the same category, `cased` spells
+   its word's letters (#459), at most one `cased` per word;
+8. a phrase only as a birth_marker or an addresses = "given" title, and
+   never with a `cased`, which is looked up per word;
 9. a bound given name that is also a particle has may_be_given;
 
 plus the data invariants that were asserts: may_be_initial only on a
@@ -64,12 +70,13 @@ import re
 import sys
 import tomllib
 import traceback
+import unicodedata
 import warnings
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, TypedDict
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -193,7 +200,7 @@ class VocabWarning(UserWarning):
     """A finding that compiles but is probably a mistake."""
 
 
-@dataclass
+@dataclass(frozen=True)
 class Reading:
     file: str
     text: str
@@ -204,24 +211,50 @@ class Reading:
     def category(self) -> str:
         return CATEGORY[self.kind]
 
+    # the defaults of the two behavioral properties whose unwritten value
+    # is not false, each defined once: checks, compile_pool and
+    # _behavior all read them here
+    @property
+    def acronym(self) -> bool:
+        """Matched with its periods removed: unwritten, true only for a
+        credential."""
+        return bool(self.props.get("acronym", self.kind == "credential"))
+
+    @property
+    def addresses(self) -> object:
+        """Which name a title addresses: unwritten, the family name. An
+        object, not a str, because it is read before check 3 has
+        refused a value that is not one of the allowed strings."""
+        return self.props.get("addresses", "family")
+
     def where(self) -> str:
         return f"{self.file}: {self.text!r} {self.kind}"
 
 
-@dataclass
+def _exclusion_where(file: str, text: str, kind: str, prop: str | None) -> str:
+    what = f"excluded {kind}" if prop is None else f"{kind} excluded {prop}"
+    return f"{file}: {text!r} {what}"
+
+
+@dataclass(frozen=True)
 class Exclusion:
     """A refused reading (`prop` None: `kind` is a kind or a category) or
-    a refused property of the `kind` reading the word keeps."""
+    a refused property of the `kind` reading the word keeps. Built by
+    _exclusion only once its table is valid, so `props["reason"]` is
+    always a non-empty string."""
     file: str
     text: str
     kind: str
     prop: str | None
-    reason: str
     props: dict[str, Any]  # the value's table: reason, issue, decided, note
 
+    @property
+    def reason(self) -> str:
+        reason: str = self.props["reason"]
+        return reason
+
     def where(self) -> str:
-        what = f"excluded {self.kind}" if self.prop is None else f"{self.kind} excluded {self.prop}"
-        return f"{self.file}: {self.text!r} {what}"
+        return _exclusion_where(self.file, self.text, self.kind, self.prop)
 
 
 @dataclass
@@ -242,21 +275,25 @@ def _reserved_or_unknown(where: str, key: str, allowed: Iterable[str]) -> VocabE
 def _exclusion(file: str, text: str, kind: str, prop: str | None,
                value: object) -> Exclusion:
     """An `excluded` value: a reason string, or a table with `reason`."""
-    ex = Exclusion(file, text, kind, prop, "", {})
+    where = _exclusion_where(file, text, kind, prop)
     if isinstance(value, str) and value:
-        ex.reason, ex.props = value, {"reason": value}
-        return ex
+        return Exclusion(file, text, kind, prop, {"reason": value})
     if isinstance(value, dict):
         for k in value:
             if k not in EXCLUSION_KEYS:
-                raise _reserved_or_unknown(ex.where(), k, EXCLUSION_KEYS)
-        _check_descriptive(ex.where(), value)
+                raise _reserved_or_unknown(where, k, EXCLUSION_KEYS)
+        _check_descriptive(where, value)
         reason = value.get("reason")
         if isinstance(reason, str) and reason:
-            ex.reason, ex.props = reason, value
-            return ex
-    raise VocabError(f"{ex.where()}: an exclusion needs a reason, as a "
+            return Exclusion(file, text, kind, prop, value)
+    raise VocabError(f"{where}: an exclusion needs a reason, as a "
                      f"string or a table with `reason`")
+
+
+def _is_date(value: object) -> bool:
+    # tomllib reads a TOML date-time as a datetime, which IS a date to
+    # isinstance: a recorded day must not carry an hour it never had
+    return isinstance(value, datetime.date) and not isinstance(value, datetime.datetime)
 
 
 def _check_descriptive(where: str, props: Mapping[str, Any]) -> None:
@@ -269,8 +306,9 @@ def _check_descriptive(where: str, props: Mapping[str, Any]) -> None:
         if not vs or not all(isinstance(i, int) and not isinstance(i, bool) and i > 0
                              for i in vs):
             raise VocabError(f"{where}: issue must be an issue number or a list of them")
-    if "decided" in props and not isinstance(props["decided"], datetime.date):
-        raise VocabError(f"{where}: decided must be a TOML date (2026-10-18), not a string")
+    if "decided" in props and not _is_date(props["decided"]):
+        raise VocabError(f"{where}: decided must be a TOML date (2026-10-18), "
+                         f"not a string or a date-time")
     if "expands" in props:
         v = props["expands"]
         vs = v if isinstance(v, list) else [v]
@@ -318,12 +356,58 @@ def load(files: Mapping[str, str]) -> Pool:
         words = data.get("word", [])
         if not isinstance(words, list):
             raise VocabError(f"{name}: `word` must be an array of tables ([[word]])")
+        if not words:
+            # a file with the header and nothing else -- a botched move,
+            # every entry cut and none pasted -- compiles to nothing
+            raise VocabError(f"{name}: no [[word]] entries; delete the file "
+                             f"or add its words")
         seen: set[str] = set()
         for entry in words:
             if not isinstance(entry, dict):
                 raise VocabError(f"{name}: `word` must be an array of tables ([[word]])")
             _load_entry(name, entry, seen, pool)
     return pool
+
+
+#: Characters the tokenizer divides a name at, so no token ever holds
+#: one: hand copies of nameparser/_pipeline/_state.py's COMMA_CHARS and
+#: _tokenize.py's _NAME_DOT_SEPARATORS (this tool cannot import the
+#: pipeline without the package), held to them by tests/v2/test_vocab.py.
+#: Whitespace is check 2's normalized form; the bidi marks the tokenizer
+#: strips are format characters, refused with the rest below.
+DIVIDERS = frozenset({",", "\u060c", "\uff0c", "\u30fb", "\uff65"})
+#: The format characters a word may hold: the zero-width non-joiner and
+#: joiner are spelling in Persian and the Indic scripts, and a token
+#: keeps them.
+JOINERS = frozenset({"\u200c", "\u200d"})
+
+
+def _check_tokenizable(name: str, text: str) -> None:
+    """Build check 2's second half: a text some token can equal. The
+    normalized-form test passes each of these, and each entry would
+    compile and then never match."""
+    for ch in text:
+        if ch in DIVIDERS:
+            raise VocabError(
+                f"{name}: {text!r} holds {ch!r} (U+{ord(ch):04X}), which the "
+                f"tokenizer divides a name at, so no token can equal it")
+        if unicodedata.category(ch) == "Cf" and ch not in JOINERS:
+            # a bidi mark is stripped from the input; a zero-width space,
+            # word joiner or BOM is kept but invisible, so the entry reads
+            # as the word without it and matches only text that carries
+            # the same unseen character
+            raise VocabError(
+                f"{name}: {text!r} holds the invisible format character "
+                f"U+{ord(ch):04X} ({unicodedata.name(ch, 'unnamed')}); "
+                f"remove it")
+    if " " in text:
+        # a phrase is matched by its words, each folded on its own, so a
+        # word with an edge period is a key no run can rebuild
+        words = [_normalize(w) for w in text.split(" ")]
+        if " ".join(words) != text:
+            raise VocabError(
+                f"{name}: phrase {text!r} is matched word by word, each "
+                f"normalized; write {' '.join(w for w in words if w)!r}")
 
 
 def _load_entry(name: str, e: dict[str, Any], seen: set[str], pool: Pool) -> None:
@@ -335,6 +419,7 @@ def _load_entry(name: str, e: dict[str, Any], seen: set[str], pool: Pool) -> Non
             f"{name}: text {text!r} is not in normalized form; write "
             f"{' '.join(_normalize(text).split())!r} (lowercase, NFC, no edge "
             f"periods, single-spaced)")
+    _check_tokenizable(name, text)
     if text in seen:
         raise VocabError(f"{name}: {text!r} is listed twice in one file")
     seen.add(text)
@@ -376,8 +461,11 @@ def _check_reading(r: Reading, pool: Pool) -> None:
             if not isinstance(p[src], int) or isinstance(p[src], bool) or p[src] < 1:
                 raise VocabError(f"{where}: {src} must be a positive count "
                                  f"(absent means below the source's floor)")
-        if COUNT_SOURCES & p.keys() and not isinstance(p.get("as_of"), datetime.date):
+        if COUNT_SOURCES & p.keys() and not _is_date(p.get("as_of")):
             raise VocabError(f"{where}: a count needs `as_of`, a TOML date")
+        if "as_of" in p and not COUNT_SOURCES & p.keys():
+            raise VocabError(f"{where}: as_of dates a count, and this reading "
+                             f"has none ({', '.join(sorted(COUNT_SOURCES))})")
         _check_descriptive(where, p)
         pool.readings.append(r)
         return
@@ -390,14 +478,14 @@ def _check_reading(r: Reading, pool: Pool) -> None:
         if flag in p and not isinstance(p[flag], bool):
             raise VocabError(f"{where}: {flag} must be true or false")
     if r.category == "title":
-        addresses = p.get("addresses", "family")
+        addresses = r.addresses
         if addresses in ("full", "any"):
             raise VocabError(f"{where}: addresses = {addresses!r} is reserved "
                              f"for a later phase; phase 1 has 'family' and 'given'")
         if addresses not in ("family", "given"):
             raise VocabError(f"{where}: addresses must be 'family' or 'given'")
     if r.category == "suffix":
-        acronym = _acronym(r)
+        acronym = r.acronym
         if acronym and "." in r.text:
             # suffix_as_written looks an acronym up with EVERY period
             # removed, so a dotted entry is never matched -- and it slips
@@ -437,6 +525,10 @@ def _check_reading(r: Reading, pool: Pool) -> None:
                 f"fork reads only a cased one-letter token, so this is inert")
     if "cased" in p:
         cased = p["cased"]
+        if " " in r.text:
+            # capitalization_exceptions is looked up one token at a time
+            raise VocabError(f"{where}: cased is looked up per word, so a "
+                             f"phrase's is never read; put it on each word")
         if not isinstance(cased, str) or _alnum(_normalize(cased)) != _alnum(r.text):
             raise VocabError(f"{where}: cased {cased!r} must spell {r.text!r}'s "
                              f"letters and digits, recased (a case mask, #459)")
@@ -454,15 +546,11 @@ def _check_reading(r: Reading, pool: Pool) -> None:
     # build check 8: a phrase is matched whole only as a given-addressing
     # title run or a birth marker; anywhere else it can never match
     if " " in r.text and not (r.kind == "birth_marker" or (
-            r.category == "title" and p.get("addresses") == "given")):
+            r.category == "title" and r.addresses == "given")):
         raise VocabError(f"{where}: a phrase can never match as a {r.kind}; "
                          f"only birth_marker and addresses = 'given' titles are "
                          f"matched as a whole run")
     pool.readings.append(r)
-
-
-def _acronym(r: Reading) -> bool:
-    return bool(r.props.get("acronym", r.kind == "credential"))
 
 
 def _refused_by(r: Reading, excluded: str) -> bool:
@@ -484,7 +572,7 @@ def _refused_by(r: Reading, excluded: str) -> bool:
         return True
     if CATEGORY[excluded] != r.category or r.category == "name":
         return False
-    return r.category != "suffix" or _acronym(r) == (excluded == "credential")
+    return r.category != "suffix" or r.acronym == (excluded == "credential")
 
 
 def _shown(value: object) -> str:
@@ -569,9 +657,13 @@ def check_pool(pool: Pool) -> None:
                         f"{text!r} {r.kind}: {prop} is {a!r} in {seen.file} "
                         f"but {b!r} in {r.file}; one word reads one way")
 
-    # 7: same_as names a word of the same category; one cased per word
+    # 7: same_as names another word of the same category; one cased
+    # per word
     for r in pool.readings:
         target = r.props.get("same_as")
+        if target == r.text:
+            raise VocabError(f"{r.where()}: same_as names the word itself; it "
+                             f"names the word this one is a spelling of")
         if target is not None and not any(
                 t.category == r.category for t in by_text.get(target, ())):
             raise VocabError(f"{r.where()}: same_as {target!r} has no "
@@ -613,9 +705,9 @@ def check_pool(pool: Pool) -> None:
 
 def _behavior(r: Reading, prop: str) -> object:
     if prop == "acronym":
-        return _acronym(r)
+        return r.acronym
     if prop == "addresses":
-        return r.props.get("addresses", "family")
+        return r.addresses
     if prop == "attached":
         att = r.props.get("attached")
         return None if att is None else att.get("side")
@@ -623,8 +715,7 @@ def _behavior(r: Reading, prop: str) -> object:
 
 
 #: The constants _compiled.py defines, in its order, each with the
-#: nameparser.config module that re-exports it. All are frozensets but
-#: the ones in MAPPINGS.
+#: nameparser.config module that re-exports it.
 CONSTANTS = (
     ("GIVEN_NAME_TITLES", "titles"),
     ("TITLES", "titles"),
@@ -640,52 +731,95 @@ CONSTANTS = (
     ("SUFFIX_ACRONYMS", "suffixes"),
     ("CAPITALIZATION_EXCEPTIONS", "capitalization"),
 )
-MAPPINGS = frozenset({"CAPITALIZATION_EXCEPTIONS"})
 
 
-def compile_pool(pool: Pool) -> dict[str, Any]:
+class Compiled(TypedDict):
+    """What compile_pool returns: one key per constant, in CONSTANTS
+    order, typed as _compiled.py declares it."""
+    GIVEN_NAME_TITLES: frozenset[str]
+    TITLES: frozenset[str]
+    NON_GIVEN_NAME_PARTICLES: frozenset[str]
+    PARTICLES: frozenset[str]
+    CONJUNCTIONS: frozenset[str]
+    CONJUNCTIONS_AMBIGUOUS: frozenset[str]
+    BOUND_GIVEN_NAMES: frozenset[str]
+    MAIDEN_MARKERS: frozenset[str]
+    SUFFIX_WORDS: frozenset[str]
+    GLUED_HONORIFICS: frozenset[str]
+    SUFFIX_ACRONYMS_AMBIGUOUS: frozenset[str]
+    SUFFIX_ACRONYMS: frozenset[str]
+    CAPITALIZATION_EXCEPTIONS: dict[str, str]
+
+
+# the one tie between the two: mypy holds compile_pool to Compiled's
+# keys, and this holds Compiled's keys to the roster render writes
+assert tuple(Compiled.__annotations__) == tuple(name for name, _ in CONSTANTS), (
+    "Compiled and CONSTANTS list different constants")
+
+
+def compile_pool(pool: Pool) -> Compiled:
     """Fold the readings into today's constants."""
     check_pool(pool)
-    s: dict[str, set[str]] = {
-        name: set() for name, _ in CONSTANTS if name not in MAPPINGS}
+    titles: set[str] = set()
+    given_titles: set[str] = set()
+    particles: set[str] = set()
+    never_given: set[str] = set()
+    conjunctions: set[str] = set()
+    initial_conjunctions: set[str] = set()
+    bound: set[str] = set()
+    markers: set[str] = set()
+    words: set[str] = set()
+    glued: set[str] = set()
+    ambiguous: set[str] = set()
+    acronyms: set[str] = set()
     cased: dict[str, str] = {}
     for r in pool.readings:
         t, p = r.text, r.props
         if "cased" in p:
             cased[t] = p["cased"]
         if r.category == "title":
-            s["TITLES"].add(t)
-            if p.get("addresses") == "given":
-                s["GIVEN_NAME_TITLES"].add(t)
+            titles.add(t)
+            if r.addresses == "given":
+                given_titles.add(t)
         elif r.category == "suffix":
-            if _acronym(r):
-                s["SUFFIX_ACRONYMS"].add(t)
+            if r.acronym:
+                acronyms.add(t)
                 if p.get("may_be_name"):
-                    s["SUFFIX_ACRONYMS_AMBIGUOUS"].add(t)
+                    ambiguous.add(t)
             else:
-                s["SUFFIX_WORDS"].add(t)
+                words.add(t)
                 if "attached" in p:
-                    s["GLUED_HONORIFICS"].add(t)
+                    glued.add(t)
         elif r.category == "particle":
-            s["PARTICLES"].add(t)
+            particles.add(t)
+            # never-given where any reading has may_be_given = false;
+            # check 5 makes every reading of one word agree, so "any"
+            # is "all"
+            if not p.get("may_be_given"):
+                never_given.add(t)
         elif r.category == "conjunction":
-            s["CONJUNCTIONS"].add(t)
+            conjunctions.add(t)
             if p.get("may_be_initial"):
-                s["CONJUNCTIONS_AMBIGUOUS"].add(t)
+                initial_conjunctions.add(t)
         elif r.category == "bound_given":
-            s["BOUND_GIVEN_NAMES"].add(t)
+            bound.add(t)
         elif r.category == "relation":
-            s["MAIDEN_MARKERS"].add(t)
-    # a particle is never-given where any of its readings has
-    # may_be_given = false; check 5 makes every reading of one word
-    # agree, so "any" is "all"
-    s["NON_GIVEN_NAME_PARTICLES"] = {
-        r.text for r in pool.readings
-        if r.category == "particle" and not r.props.get("may_be_given")}
-    out: dict[str, Any] = {k: frozenset(v) for k, v in s.items()}
-    out["CAPITALIZATION_EXCEPTIONS"] = dict(sorted(cased.items()))
-    if out.keys() != {name for name, _ in CONSTANTS}:
-        raise RuntimeError(f"compile_pool built {sorted(out)}, not the CONSTANTS roster")
+            markers.add(t)
+    out = Compiled(
+        GIVEN_NAME_TITLES=frozenset(given_titles),
+        TITLES=frozenset(titles),
+        NON_GIVEN_NAME_PARTICLES=frozenset(never_given),
+        PARTICLES=frozenset(particles),
+        CONJUNCTIONS=frozenset(conjunctions),
+        CONJUNCTIONS_AMBIGUOUS=frozenset(initial_conjunctions),
+        BOUND_GIVEN_NAMES=frozenset(bound),
+        MAIDEN_MARKERS=frozenset(markers),
+        SUFFIX_WORDS=frozenset(words),
+        GLUED_HONORIFICS=frozenset(glued),
+        SUFFIX_ACRONYMS_AMBIGUOUS=frozenset(ambiguous),
+        SUFFIX_ACRONYMS=frozenset(acronyms),
+        CAPITALIZATION_EXCEPTIONS=dict(sorted(cased.items())),
+    )
     # One form per post-nominal: the word test strips only edge periods
     # and the acronym test strips all of them, so a word in both is
     # matched twice by two rules, and which one fired is unreadable from
@@ -733,7 +867,7 @@ def read_dir(path: Path = VOCAB) -> dict[str, str]:
     return files
 
 
-def compile_files(files: Mapping[str, str]) -> dict[str, Any]:
+def compile_files(files: Mapping[str, str]) -> Compiled:
     return compile_pool(load(files))
 
 
@@ -749,17 +883,21 @@ nameparser.config modules (titles, particles, suffixes, ...).
 '''
 
 
-def render(compiled: Mapping[str, Any]) -> str:
+def render(compiled: Compiled) -> str:
     """One sorted entry per line, so a one-word change is a one-line diff."""
     out = [HEADER]
+    # a TypedDict is read by literal key; the roster loop reads it as
+    # the Mapping it also is
+    values: Mapping[str, object] = compiled
     for name, _ in CONSTANTS:
-        v = compiled[name]
+        v = values[name]
         out.append("")
         if isinstance(v, dict):
             out.append(f"{name}: dict[str, str] = {{")
             out += [f"    {k!r}: {v[k]!r}," for k in sorted(v)]
             out.append("}")
         else:
+            assert isinstance(v, frozenset), (name, type(v))
             out.append(f"{name}: frozenset[str] = frozenset({{")
             out += [f"    {w!r}," for w in sorted(v)]
             out.append("})")

@@ -49,14 +49,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build  # noqa: E402
 
 
-@dataclass
+@dataclass(frozen=True)
 class Row:
+    """A reading, or an exclusion: of a reading (`prop` None) or of a
+    property of the `kind` reading the word keeps."""
     file: str
     text: str
-    label: str
     kind: str
     excluded: bool
+    prop: str | None
     props: dict[str, Any]
+
+    @property
+    def label(self) -> str:
+        """How the row prints; select reads the fields, never this."""
+        if not self.excluded:
+            return self.kind
+        if self.prop is None:
+            return f"excluded:{self.kind}"
+        return f"{self.kind} excluded:{self.prop}"
 
     def issues(self) -> set[int]:
         found: set[int] = set()
@@ -68,10 +79,8 @@ class Row:
 
 
 def rows(pool: build.Pool) -> list[Row]:
-    out = [Row(r.file, r.text, r.kind, r.kind, False, r.props) for r in pool.readings]
-    for x in pool.exclusions:
-        label = f"excluded:{x.kind}" if x.prop is None else f"{x.kind} excluded:{x.prop}"
-        out.append(Row(x.file, x.text, label, x.kind, True, x.props))
+    out = [Row(r.file, r.text, r.kind, False, None, r.props) for r in pool.readings]
+    out += [Row(x.file, x.text, x.kind, True, x.prop, x.props) for x in pool.exclusions]
     return out
 
 
@@ -96,10 +105,9 @@ def select(pool: build.Pool, *, issue: int | None = None, kind: str | None = Non
         # PROPERTY matches only the property's name, so `--excluded
         # honorific` is the words refused the honorific reading, not the
         # honorifics refused the glued peel
-        word_level = row.label.startswith("excluded:")
         if excluded is not None and not (row.excluded and (
-                (word_level and _is(row.kind, excluded))
-                or (not word_level and row.label.endswith(f":{excluded}")))):
+                (row.prop is None and _is(row.kind, excluded))
+                or row.prop == excluded)):
             continue
         if word is not None and row.text != word:
             continue
