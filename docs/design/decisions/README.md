@@ -28,6 +28,7 @@ Entry conventions:
 - [H4 — an input that is nothing but vocabulary still has to name somebody](H4-input-that-is-nothing-but-vocabulary-still-has-to-name-somebody.md)
 - [H5 — the trailing title run](H5-trailing-title-run.md)
 - [H6 — a title before a family comma](H6-title-before-a-family-comma.md)
+- [H7 — a joined name unit carrying title vocabulary](H7-joined-name-unit-carrying-title-vocabulary.md)
 
 ## Particles & surname prefixes (P)
 

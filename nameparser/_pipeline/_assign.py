@@ -15,7 +15,7 @@ in the Han/Hiragana/Katakana repertoire the #272 kana license shares
 across pieces); token/piece tags; Lexicon only through tags already
 applied by classify (plus the leading-title period rule).
 
-Implements rules H2, H4, H5, H6, N3, O4, O5, S10, W4, and P6 after a family comma,
+Implements rules H2, H4, H5, H6, H7, N3, O4, O5, S10, W4, and P6 after a family comma,
 of docs/design/rules/,
 each cited at its code below. Ports v1's assignment loops.
 NO_COMMA (per name_order):
@@ -78,8 +78,8 @@ group's head: the comma's own decision, #544's anchored members and
 not counted here. And
 at the one site that places a LONE name word, GIVEN_OR_FAMILY for the
 field the convention picked (O5, #449) and TITLE_OR_NAME for the two
-shapes where the doubt is whether a word is a title instead (H4,
-#491): the peel leaving one title-vocabulary word standing, and a
+shapes where the doubt is whether a word is a title instead (H4 and
+H7, #491): the peel leaving one title-vocabulary word standing, and a
 joined unit carrying title vocabulary.
 """
 from __future__ import annotations
@@ -478,18 +478,20 @@ def _assign_main(seg_idx: int, state: ParseState,
         # Jr.' and "'Smitty' Jones Jr." ARE this convention -- and the
         # count comes off the peel rather than off name_pieces, which
         # is what keeps the carve-out above out of these branches.
-        # Title vocabulary in the unit makes the doubt H4's (is the
-        # WORD a title), anything else O5's (which FIELD it took), so
-        # only the second reads `field_undecided`.
+        # Title vocabulary in the unit makes the doubt H4's or H7's (is
+        # the WORD a title), anything else O5's (which FIELD it took),
+        # so only the second reads `field_undecided`.
         if peeled.names == 1 and not resolved.by_script:
             # rules/H4: "an input whose only remaining name word
             # after the title peel is itself title vocabulary reads
             # that word as the name by convention and reports
-            # `title-or-name`" (history: decisions/H4), and H4's
-            # join clause, stated at rules/O5 as its exception --
-            # one branch, its detail naming a field only in the join
-            # shape ('John of Prince', 'Attorney General of
-            # Minnesota'), where the unit is more than the title word.
+            # `title-or-name`" (history: decisions/H4), and
+            # rules/H7: "one name UNIT of more than one word carrying
+            # title vocabulary reports `title-or-name`" (history:
+            # decisions/H7, decisions/H4 #518) -- one branch, its detail
+            # naming a field only in H7's shape ('John of Prince',
+            # 'Attorney General of Minnesota'), where the unit is more
+            # than the title word.
             # A LONE title word never reaches here ('Dr.', 'Prince of
             # Wales'): the leading-title peel took the whole name.
             if any("vocab:title" in tokens[i].tags for i in head):

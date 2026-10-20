@@ -37,7 +37,7 @@ O5. Rationale: O4 reads a name by comparing where its words stand,
     reports nothing (A2). Where the one name unit carries title
     vocabulary in a word beside the one it places, or is itself title
     vocabulary left standing by the title peel, the doubt reported is `title-or-name`
-    instead, which H4 states — so a title silences THIS kind, not
+    instead, which H4 and H7 state — so a title silences THIS kind, not
     every report at the site.
       "Smith"                     →  given="Smith"
       "Garcia"  family-first      →  family="Garcia"
