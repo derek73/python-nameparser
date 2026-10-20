@@ -14,7 +14,7 @@ and says so in the PR, where axis 12 (docs/design/AGENTS.md) asks what
 the new words read. A rule that shrinks fails too, so the record
 follows it down and the words cannot come back unseen.
 
-Four measures, all over the statement prose a citation may quote
+Four measures for a block-format rule, all over the statement prose a citation may quote
 (rules_doc.prose_blocks, so the Signal:, example, pointer and marker
 lines are not counted):
 
@@ -28,6 +28,13 @@ lines are not counted):
   write the second as ``Accepted, and ...:``);
 - ``accepted_words``: their words, so a sentence added inside an
   existing Accepted clause moves the record too.
+
+A skeleton-format rule (#761, rules_skeleton.py) has its own six,
+read from the parsed fields rather than counted over prose:
+``then_words`` (Then and its bullets), ``because_sentences``,
+``except``, ``precedence`` and ``accepted`` (bullet counts) and
+``accepted_words`` (the Accepted bullets' words). A rule that changes
+format shows as one ``format changed`` line, not a line per measure.
 """
 from __future__ import annotations
 
@@ -37,14 +44,32 @@ import re
 from pathlib import Path
 
 from tests.v2.design_docs import read_rules_text
-from tests.v2.rules_doc import parse_rules_doc, prose_blocks, split_accepted
+from tests.v2.rules_doc import (
+    Rule, parse_rules_doc, prose_blocks, split_accepted)
+from tests.v2.rules_skeleton import count_sentences
 
 RECORD = Path(__file__).with_name("rules_budget.json")
 RECORD_COMMAND = "uv run python -m tests.v2.rules_budget --record"
-MEASURES = ("words", "exceptions", "accepted", "accepted_words")
+BLOCK_MEASURES = ("words", "exceptions", "accepted", "accepted_words")
+SKELETON_MEASURES = ("then_words", "because_sentences", "except",
+                     "precedence", "accepted", "accepted_words")
 
 _RULE_ID_RE = re.compile(r"[A-Z]\d+")
 _EXCEPTION_RE = re.compile(r"\b(?:except|unless)\b", re.IGNORECASE)
+
+
+def _skeleton_row(rule: Rule) -> dict[str, int]:
+    sk = rule.skeleton
+    assert sk is not None
+    return {
+        "then_words": len(" ".join(
+            [sk.then, *(b.text for b in sk.then_bullets)]).split()),
+        "because_sentences": count_sentences(sk.because),
+        "except": len(sk.excepts),
+        "precedence": len(sk.precedence),
+        "accepted": len(sk.accepted),
+        "accepted_words": sum(len(b.text.split()) for b in sk.accepted),
+    }
 
 
 def measure(text: str) -> dict[str, dict[str, int]]:
@@ -52,11 +77,16 @@ def measure(text: str) -> dict[str, dict[str, int]]:
     parsed first, so a rules text the doc tests reject raises here
     rather than being measured, and the rules measured are exactly the
     rules parsed."""
-    rule_ids = {r.rule_id for r in parse_rules_doc(text)}
+    rules = parse_rules_doc(text)
+    rule_ids = {r.rule_id for r in rules}
+    skeletons = {r.rule_id: r for r in rules if r.skeleton is not None}
     out = {}
     for rid, lines in prose_blocks(text).items():
         if not _RULE_ID_RE.fullmatch(rid):
             continue                # a section's Background
+        if rid in skeletons:
+            out[rid] = _skeleton_row(skeletons[rid])
+            continue
         stmt_lines, clauses = split_accepted(lines)
         statement = " ".join(stmt_lines)
         out[rid] = {
@@ -113,12 +143,20 @@ def changes(record: dict[str, dict[str, int]],
         if rid not in now:
             out.append(f"{rid}: recorded, but no rule has that ID")
             continue
-        for key in MEASURES:
-            old, new = record[rid].get(key), now[rid][key]
+        old_row, new_row = record[rid], now[rid]
+        formats = (set(BLOCK_MEASURES), set(SKELETON_MEASURES))
+        if (set(old_row) != set(new_row) and set(old_row) in formats
+                and set(new_row) in formats):
+            out.append(f"{rid}: format changed: {old_row} -> {new_row}")
+            continue
+        measures = (SKELETON_MEASURES if set(new_row) == set(SKELETON_MEASURES)
+                    else BLOCK_MEASURES)
+        for key in measures:
+            old, new = old_row.get(key), new_row[key]
             if old != new:
                 way = "grew" if old is None or new > old else "shrank"
                 out.append(f"{rid}: {key} {way}, {old} -> {new}")
-        for key in sorted(set(record[rid]) - set(MEASURES)):
+        for key in sorted(set(old_row) - set(measures)):
             out.append(f"{rid}: recorded {key!r}, which is no longer "
                        f"measured")
     return out

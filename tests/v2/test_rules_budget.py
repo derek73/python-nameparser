@@ -127,3 +127,63 @@ def test_the_command_the_failure_message_offers_runs(
     record.write_text(record.read_text().replace(
         '"words": ', '"words": 1', 1))
     assert rules_budget.main([]) == 1
+
+
+_SKELETON_DOC = """\
+# X1 — one
+
+**When:** a name ends in a thing.
+
+**Then:** one two three four five six.
+
+- seven eight nine ten.
+
+**Because:** Because one. Because two.
+
+```
+"John Smith III"  →  suffix="III"
+```
+
+**Except:**
+
+- **First.**
+  ```
+  "John V"  →  family="V"  · boundary
+  ```
+- **Second.**
+  ```
+  "John W"  →  family="W"  · boundary
+  ```
+
+**Precedence:**
+
+- **Before a comma**: C1 decides.
+
+**Accepted:**
+
+- one two three four five.
+
+---
+
+**Signal:** a shape
+**history:** decisions/P2 · **implemented:** nameparser/_parser.py
+"""
+
+
+def test_the_measure_reads_a_skeleton_rule() -> None:
+    assert rules_budget.measure(_SKELETON_DOC) == {
+        "X1": {"then_words": 10, "because_sentences": 2, "except": 2,
+               "precedence": 1, "accepted": 1, "accepted_words": 5}}
+
+
+def test_a_format_change_is_one_line() -> None:
+    block_row = {"words": 9, "exceptions": 1, "accepted": 2,
+                 "accepted_words": 19}
+    skeleton_row = {"then_words": 10, "because_sentences": 2, "except": 2,
+                    "precedence": 1, "accepted": 1, "accepted_words": 5}
+    expected = [f"X1: format changed: {block_row} -> {skeleton_row}"]
+    assert rules_budget.changes(
+        {"X1": block_row}, {"X1": skeleton_row}) == expected
+    assert rules_budget.changes(
+        {"X1": skeleton_row}, {"X1": block_row}) == [
+        f"X1: format changed: {skeleton_row} -> {block_row}"]

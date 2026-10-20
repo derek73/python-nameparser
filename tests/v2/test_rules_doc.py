@@ -75,7 +75,12 @@ def test_every_rule_states_its_signal(rule: Rule) -> None:
 
 #: The README's recipe for the split candidates, verbatim; in grep's
 #: basic syntax "+" is a literal plus.
-_SPLIT_GREP = "grep -l '^    Signal:.* + ' docs/design/rules/*.md"
+_SPLIT_GREP = (
+    r"grep -lE '^(    Signal:|\*\*Signal:\*\*).* \+ ' docs/design/rules/*.md")
+
+
+#: _SPLIT_GREP's pattern in Python's syntax: either format's Signal line.
+_SPLIT_PATTERN = r"^(    Signal:|\*\*Signal:\*\*).* \+ "
 
 
 def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
@@ -84,7 +89,7 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
         "rules/README.md's split-candidate grep changed; update "
         "_SPLIT_GREP and the translation below together")
     listed = {f.name.split("-")[0] for f in RULES_DIR.glob("*.md")
-              if re.search(r"^    Signal:.* \+ ",
+              if re.search(_SPLIT_PATTERN,
                            f.read_text(encoding="utf-8"), re.M)}
     assert listed == {r.rule_id for r in RULES
                       if r.signal and " + " in r.signal}
@@ -101,7 +106,15 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
         (rule,) = parse_rules_doc(doc)
         assert rule.signal == signal
         assert (" + " in rule.signal) is candidate
-        assert bool(re.search(r"^    Signal:.* \+ ", doc, re.M)) is candidate
+        assert bool(re.search(_SPLIT_PATTERN, doc, re.M)) is candidate
+        skeleton = ("# X1 — one\n\n**When:** w.\n\n**Then:** t.\n\n"
+                    "**Because:** b.\n\n---\n"
+                    f"**Signal:** {signal}\n"
+                    "**history:** decisions/P2 · **implemented:** "
+                    "nameparser/_parser.py\n")
+        (rule,) = parse_rules_doc(skeleton)
+        assert rule.signal == signal
+        assert bool(re.search(_SPLIT_PATTERN, skeleton, re.M)) is candidate
 
 
 def _check_diagnostic(example: Example) -> None:

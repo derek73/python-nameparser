@@ -329,12 +329,102 @@ def test_implemented_matches_citing_modules() -> None:
     assert not problems, "\n".join(problems)
 
 
-def test_interacts_ids_exist() -> None:
-    rules = parse_rules_doc(read_rules_text())
+_ID_RE = re.compile(r"\b[A-Z]\d+\b")
+
+
+def _skeleton_texts(r: Rule) -> list[str]:
+    sk = r.skeleton
+    assert sk is not None
+    return [sk.when, sk.then, *(b.text for b in sk.then_bullets),
+            *(b.text for b in sk.excepts),
+            *(b.text for b in sk.precedence)]
+
+
+def named_id_findings(rules: list[Rule]) -> list[str]:
+    """Every rule ID a rule names that no rule has: the advisory
+    ``interacts:`` of a block rule, and for a skeleton rule (which has
+    no ``interacts:``) the IDs written in its When, Then, Then
+    bullets, Except and Precedence. A rule's own ID is not a
+    citation of another."""
     ids = {r.rule_id for r in rules}
-    missing = [f"{r.rule_id} -> {t}" for r in rules
-               for t in r.interacts if t not in ids]
+    out = []
+    for r in rules:
+        named = (_skeleton_texts(r) if r.skeleton is not None else [])
+        found = {t for t in r.interacts}
+        for text in named:
+            found |= set(_ID_RE.findall(text)) - {r.rule_id}
+        out += [f"{r.rule_id} -> {t}" for t in sorted(found)
+                if t not in ids]
+    return out
+
+
+def test_interacts_ids_exist() -> None:
+    missing = named_id_findings(parse_rules_doc(read_rules_text()))
     assert not missing, f"advisory interacts: cite unknown IDs: {missing}"
+
+
+def _skeleton_doc(*, signal: str = "a shape", then: str = "",
+                  bullets: tuple[str, ...] = (), excepts: tuple[str, ...] = (),
+                  precedence: tuple[str, ...] = (),
+                  others: tuple[str, ...] = ("X2",)) -> str:
+    """A synthetic skeleton rule X1, then a block-format rule for each
+    of ``others`` (each under its own heading, which ends the footer)."""
+    out = ('# X1 — one\n\n**When:** a name ends in a thing.\n\n'
+           f'**Then:** {then or "the thing is read."}\n\n')
+    out += "".join(f"- {b}\n" for b in bullets)
+    out += "\n**Because:** it is how it is written.\n\n"
+    out += '```\n"John Smith III"  →  suffix="III"\n```\n\n'
+    if excepts:
+        out += "**Except:**\n\n" + "".join(
+            f'- {b}\n  ```\n  "John V"  →  family="V"  · boundary\n  ```\n'
+            for b in excepts) + "\n"
+    if precedence:
+        out += "**Precedence:**\n\n" + "".join(
+            f"- {b}\n" for b in precedence) + "\n"
+    out += (f"---\n**Signal:** {signal}\n"
+            "**history:** decisions/P2 · **implemented:** "
+            "nameparser/_parser.py\n\n")
+    return out + "".join(f"# {o} — other\n\n{o}. Other.\n" for o in others)
+
+
+def test_ids_a_skeleton_rule_names_exist() -> None:
+    doc = _skeleton_doc(precedence=("X9 decides first.",))
+    assert named_id_findings(parse_rules_doc(doc)) == ["X1 -> X9"]
+    # its own ID, and an ID that exists, are fine
+    doc = _skeleton_doc(precedence=("X1 and X2 agree.",))
+    assert named_id_findings(parse_rules_doc(doc)) == []
+    # the block format's interacts: still reports
+    block = ("X1. S.\n      \"a\"  →  given=\"a\"\n"
+             "    no-boundary: synthetic.\n"
+             "    interacts: X9 · implemented: nameparser/_parser.py\n")
+    assert named_id_findings(parse_rules_doc(block)) == ["X1 -> X9"]
+
+
+def _skeleton_hub_findings(r: Rule, ids: set[str]) -> list[str]:
+    """A skeleton hub's map is the bullet list under its Then: the
+    union of the rule IDs the bullets name. Each hub rule must be in
+    it, each ID in it must be a hub rule, and each bullet must name
+    a rule. There is no ``interacts:`` to check."""
+    assert r.skeleton is not None
+    problems = []
+    bullets = r.skeleton.then_bullets
+    mapped = set().union(*(set(_ID_RE.findall(b.text)) for b in bullets))
+    for rid in r.hub:
+        where = f"{r.rule_id}'s Signal: hub of ... {rid}"
+        if rid not in ids or rid == r.rule_id:
+            problems.append(f"{where}: names no other rule")
+        elif rid not in mapped:
+            problems.append(f"{where}: its statement's map omits it")
+    for rid in sorted(mapped & ids - set(r.hub) - {r.rule_id}):
+        problems.append(f"{r.rule_id}'s map names {rid}, which its "
+                        f"Signal: hub of ... leaves off")
+    for b in bullets:
+        # a bullet naming a rule off the hub list is the "leaves off"
+        # finding above; this one is a bullet naming no rule at all
+        if not set(_ID_RE.findall(b.text)) & ((ids | set(r.hub)) - {r.rule_id}):
+            problems.append(f"{r.rule_id}'s map bullet names no rule of "
+                            f"its hub: {b.text!r}")
+    return problems
 
 
 def hub_findings(rules: list[Rule], prose: dict[str, list[str]]) -> list[str]:
@@ -356,6 +446,9 @@ def hub_findings(rules: list[Rule], prose: dict[str, list[str]]) -> list[str]:
     problems = []
     for r in rules:
         if not r.hub:
+            continue
+        if r.skeleton is not None:
+            problems += _skeleton_hub_findings(r, ids)
             continue
         statement, _ = split_accepted(prose.get(r.rule_id, []))
         sentences = re.split(r"(?<=[.?!])[\"')\]\u201d\u2019]*\s+(?=[A-Z])",
@@ -425,6 +518,49 @@ def test_hub_findings_catch_each_gap(signal: str, interacts: str,
         assert got == []
     else:
         assert len(got) == 1 and finding in got[0], got
+
+
+@pytest.mark.parametrize("signal, bullets, excepts, finding", [
+    ("hub of X2, X3", ("**Reach:** X2 first.", "**Then:** X3 next."),
+     (), None),
+    # the map omits X3
+    ("hub of X2, X3", ("**Reach:** X2 first.",), (),
+     "its statement's map omits it"),
+    # a map bullet names X4, which the hub list leaves off
+    ("hub of X2, X3", ("X2 first.", "X3 next.", "X4 last."), (),
+     "which its Signal: hub of ... leaves off"),
+    # a map bullet naming no rule of the hub
+    ("hub of X2, X3", ("X2 first.", "X3 next.", "Only the last one."), (),
+     "names no rule of its hub"),
+    # X2 named only in an Except bullet is not in the map
+    ("hub of X2, X3", ("X3 next.",), ("X2 is an exception.",),
+     "its statement's map omits it"),
+    ("hub of X9", ("X9 first.",), (), "names no other rule"),
+])
+def test_skeleton_hub_findings_catch_each_gap(
+        signal: str, bullets: tuple[str, ...], excepts: tuple[str, ...],
+        finding: str | None) -> None:
+    doc = _skeleton_doc(signal=signal, bullets=bullets, excepts=excepts,
+                        others=("X2", "X3", "X4"))
+    rules = parse_rules_doc(doc)
+    got = hub_findings(rules, prose_blocks(doc))
+    # a skeleton rule has no interacts:, so that is never a finding
+    assert not any("interacts:" in g for g in got), got
+    if finding is None:
+        assert got == []
+    else:
+        assert len(got) == 1 and finding in got[0], got
+
+
+def test_a_quote_of_a_bold_lead_matches_and_a_fenced_example_does_not(
+        ) -> None:
+    doc = _skeleton_doc(
+        bullets=("**One letter needs a word to spare** when it is last.",))
+    text = _norm(" ".join(prose_blocks(doc)["X1"]))
+    assert _is_excerpt(_norm("One letter needs a word to spare"), text)
+    assert _is_excerpt(_norm("spare when it is last"), text)
+    # "Smith III" occurs only in the fence
+    assert not _is_excerpt(_norm("John Smith III"), text)
 
 
 def test_doc_internal_anchors_resolve() -> None:
