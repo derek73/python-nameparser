@@ -1,6 +1,18 @@
 schema = 1
 
 [[word]]
+text = "gospodin"
+salutation = { issue = 606, gender = "m" }
+
+[[word]]
+text = "gospođa"
+salutation = { issue = 606, gender = "f" }
+
+[[word]]
+text = "gospođica"
+salutation = { issue = 606, gender = "f" }
+
+[[word]]
 text = "mlađa"
 generation = { issue = 661 }
 

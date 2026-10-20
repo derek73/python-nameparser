@@ -1,6 +1,22 @@
 schema = 1
 
 [[word]]
+text = "גב'"
+salutation = { gender = "f", issue = 269, expands = "Mrs., the abbreviation", note = "the ASCII-quote spelling: the quote sits mid-word, so delimiter extraction leaves it as text (probed 2026-07-17)" }
+
+[[word]]
+text = "גב׳"
+salutation = { gender = "f", issue = 269, same_as = "גב'", expands = "the U+05F3 geresh spelling" }
+
+[[word]]
+text = "גברת"
+salutation = { gender = "f", issue = 269, expands = "Mrs., Ms., the full form" }
+
+[[word]]
+text = "מר"
+salutation = { gender = "m", issue = 269, expands = "Mr." }
+
+[[word]]
 text = "ג'וניור"
 generation = { issue = 679, note = "ASCII apostrophe" }
 

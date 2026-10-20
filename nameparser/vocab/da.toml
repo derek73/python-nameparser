@@ -1,5 +1,29 @@
 schema = 1
 
 [[word]]
+text = "familie"
+salutation = { issue = 606, expands = "the family addressed, 'Familie Hansen'" }
+
+[[word]]
+text = "fru"
+salutation = { gender = "f" }
+
+[[word]]
+text = "frøken"
+salutation = { gender = "f" }
+
+[[word]]
+text = "frk"
+salutation = { gender = "f", same_as = "frøken" }
+
+[[word]]
+text = "herr"
+salutation = { gender = "m" }
+
+[[word]]
+text = "hr"
+salutation = { gender = "m", same_as = "herr" }
+
+[[word]]
 text = "af"
 preposition = { may_be_given = false, expands = "of, nobiliary" }

@@ -1,6 +1,14 @@
 schema = 1
 
 [[word]]
+text = "г-жа"
+salutation = { gender = "f", issue = 269, expands = "госпожа, Mrs." }
+
+[[word]]
+text = "г-н"
+salutation = { gender = "m", issue = 269, expands = "господин, Mr." }
+
+[[word]]
 text = "мл"
 [word.generation]
 issue = 679

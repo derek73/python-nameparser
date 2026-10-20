@@ -1,6 +1,30 @@
 schema = 1
 
 [[word]]
+text = "madame"
+salutation = { gender = "f" }
+
+[[word]]
+text = "mme"
+salutation = { gender = "f", same_as = "madame" }
+
+[[word]]
+text = "mademoiselle"
+salutation = { gender = "f" }
+
+[[word]]
+text = "mlle"
+salutation = { gender = "f", same_as = "mademoiselle" }
+
+[[word]]
+text = "monsieur"
+salutation = { gender = "m" }
+
+[[word]]
+text = "cheikh"
+style = { addresses = "given", gender = "m", same_as = "sheikh", expands = "the French transliteration, 'Cheikh Anta Diop'" }
+
+[[word]]
 text = "fils"
 family = { us_census_2010 = 767, wikidata = 5, as_of = 2026-10-16 }
 [word.excluded.generation]

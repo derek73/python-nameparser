@@ -156,6 +156,16 @@ SCHEMA = 1
 #: category's classification, in a core PR, as one row here.
 CATEGORY: dict[str, str] = {
     "title": "title",
+    "salutation": "title",
+    "style": "title",
+    "academic": "title",
+    "religious": "title",
+    "nobility": "title",
+    "military": "title",
+    "office": "title",
+    "occupation": "title",
+    "kinship": "title",
+    "modifier": "title",
     "suffix": "suffix",
     "generation": "suffix",
     "credential": "suffix",

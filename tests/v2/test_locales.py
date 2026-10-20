@@ -1328,8 +1328,8 @@ def test_non_interference_all_packs_combined() -> None:
     ("মি. রহমান", "title", "মি."),
     ("মি. রহমান", "family", "রহমান"),
     # The exclusion holds: ঠাকুর is Tagore, a surname, and is
-    # deliberately not a title (decisions/vocabulary-exclusions,
-    # Excluded (TITLES)).
+    # deliberately not a title (its `excluded` entry in
+    # nameparser/vocab/bn.toml).
     # LEADING position is where the exclusion is load-bearing --
     # TITLES is leading-only, so the trailing spelling reads the same
     # whether or not the word ships and cannot guard anything.

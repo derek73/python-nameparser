@@ -1,6 +1,122 @@
 schema = 1
 
 [[word]]
+text = "goodman"
+salutation = { gender = "m", expands = "the archaic Mr., 'Goodman Brown'" }
+
+[[word]]
+text = "goodwife"
+salutation = { gender = "f", expands = "the archaic Mrs., 'Goodwife Proctor'" }
+
+[[word]]
+text = "madam"
+salutation = { gender = "f" }
+
+[[word]]
+text = "madame"
+salutation = { gender = "f" }
+
+[[word]]
+text = "master"
+salutation = { addresses = "given", gender = "m", expands = "the style for a boy, 'Master Harry'" }
+
+[[word]]
+text = "miss"
+salutation = { gender = "f" }
+
+[[word]]
+text = "misses"
+salutation = { gender = "f", expands = "the plural of miss, 'the Misses Smith'" }
+
+[[word]]
+text = "mr"
+salutation = { gender = "m" }
+
+[[word]]
+text = "mister"
+salutation = { gender = "m", same_as = "mr" }
+
+[[word]]
+text = "mrs"
+salutation = { gender = "f" }
+
+[[word]]
+text = "ms"
+salutation = { gender = "f" }
+
+[[word]]
+text = "mx"
+salutation = { gender = "n" }
+
+[[word]]
+text = "brother"
+religious = { addresses = "given", gender = "m", expands = "a member of a religious order, 'Brother Roger'" }
+
+[[word]]
+text = "father"
+religious = { addresses = "given", gender = "m", expands = "a priest, 'Father Brown'" }
+
+[[word]]
+text = "mother"
+religious = { addresses = "given", gender = "f", expands = "a mother superior, 'Mother Teresa'" }
+
+[[word]]
+text = "pope"
+religious = { addresses = "given" }
+
+[[word]]
+text = "sister"
+religious = { addresses = "given", gender = "f", expands = "a nun or religious sister, 'Sister Mary'" }
+
+[[word]]
+text = "dame"
+nobility = { addresses = "given", gender = "f", expands = "the female knighthood, 'Dame Judi Dench'" }
+
+[[word]]
+text = "king"
+nobility = { addresses = "given", gender = "m" }
+
+[[word]]
+text = "prince"
+nobility = { addresses = "given", gender = "m", issue = 519, note = "addresses by the GIVEN name ('Prince Harry', 'Princess Anne'); membership decides only which field the one word behind it takes, and 'Prince Fielder' is #348's collision either way" }
+
+[[word]]
+text = "princess"
+nobility = { addresses = "given", gender = "f", issue = 519, note = "addresses by the GIVEN name ('Prince Harry', 'Princess Anne'); membership decides only which field the one word behind it takes, and 'Prince Fielder' is #348's collision either way" }
+
+[[word]]
+text = "queen"
+nobility = { addresses = "given", gender = "f" }
+
+[[word]]
+text = "sir"
+nobility = { addresses = "given", gender = "m", expands = "a knight or baronet, 'Sir John'" }
+
+[[word]]
+text = "marshal"
+excluded = { military = { reason = "a given name (Marshal Yanda); the accepted cost is that 'Field Marshal Bernard Montgomery' reads title Field, given Marshal", issue = 606, decided = 2026-10-04 } }
+
+[[word]]
+text = "justice"
+excluded = { office = { reason = "a given name (Justice Smith); the accepted cost is that 'Chief Justice John Roberts' reads title Chief, given Justice", issue = 606, decided = 2026-10-04 } }
+
+[[word]]
+text = "maid"
+occupation = { addresses = "given", gender = "f", expands = "'Maid Marian'" }
+
+[[word]]
+text = "aunt"
+kinship = { addresses = "given", gender = "f" }
+
+[[word]]
+text = "auntie"
+kinship = { addresses = "given", gender = "f", same_as = "aunt" }
+
+[[word]]
+text = "uncle"
+kinship = { addresses = "given", gender = "m" }
+
+[[word]]
 text = "jr"
 generation = {}
 

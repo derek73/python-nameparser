@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "gróf"
+excluded = { nobility = { reason = "Hungarian Count: possibly a surname in a surname-first culture; unverified, and under uncertainty the answer is do not ship", issue = 606, decided = 2026-10-04 } }
+
+[[word]]
 text = "id"
 [word.excluded.generation]
 reason = "written before the name, and a bare id would make any trailing ID a suffix"

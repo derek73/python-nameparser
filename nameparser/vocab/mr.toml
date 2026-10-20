@@ -1,6 +1,18 @@
 schema = 1
 
 [[word]]
+text = "श्री"
+salutation = { gender = "m", issue = 269, expands = "Shri, Mr." }
+
+[[word]]
+text = "श्रीमती"
+salutation = { gender = "f", issue = 269, expands = "Shrimati, Mrs." }
+
+[[word]]
+text = "सौ"
+salutation = { gender = "f", issue = 344, expands = "Sau., Mrs." }
+
+[[word]]
 text = "क"
 [word.excluded.generation]
 reason = "the abbreviation क. is the single-letter initial shape"

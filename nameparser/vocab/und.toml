@@ -10,257 +10,6 @@
 
 schema = 1
 
-# ---- titles addressing by the given name (addresses = "given") ----
-
-[[word]]
-text = "aunt"
-title = { addresses = "given" }
-
-[[word]]
-text = "auntie"
-title = { addresses = "given" }
-
-# #346: the renunciate class -- 'baba' here, and 'guru', 'lama',
-# 'swami' in their own alphabetical places below. All four were in
-# the TITLES-only block until 2026-09-06. Two separate criteria
-# both say yes (rules/H Background): the title addresses by the
-# GIVEN name, which is what membership here means, and the
-# traditions renounce the surname, which is what makes the empty
-# family the right output for "Swami Vivekananda". 'rabbi' and
-# 'imam' address by TITLE rather than by given name ('Rabbi
-# Cohen'), so they fail the first criterion and stay out, and the
-# second agrees, those traditions keeping surnames;
-# 'venerable' stays in TITLES only, because the traditions using it
-# split on surname retention (Buddhist monastics drop the family
-# name, Anglican archdeacons keep it) and this set has no way to
-# say "sometimes".
-[[word]]
-text = "baba"
-title = { addresses = "given" }
-
-[[word]]
-text = "brother"
-title = { addresses = "given" }
-
-[[word]]
-text = "dame"
-title = { addresses = "given" }
-
-[[word]]
-text = "father"
-title = { addresses = "given" }
-
-[[word]]
-text = "guru"
-title = { addresses = "given" }
-
-[[word]]
-text = "king"
-title = { addresses = "given" }
-
-[[word]]
-text = "lama"
-title = { addresses = "given" }
-
-[[word]]
-text = "maid"
-title = { addresses = "given" }
-
-[[word]]
-text = "master"
-title = { addresses = "given" }
-
-[[word]]
-text = "mother"
-title = { addresses = "given" }
-
-[[word]]
-text = "pope"
-title = { addresses = "given" }
-
-# #519: prince and princess address by the GIVEN name ("Prince
-# Harry", "Princess Anne"), which is what membership here means
-# (rules/H Background); both were in the TITLES-only block
-# until 2026-09-10. 'lord' and 'lady' stay there, decided rather
-# than deferred: both split by the bearer's rank, which the text
-# does not carry -- the given-name form is a courtesy style for
-# children of the senior ranks alone ("Lord Peter", "Lady Diana"),
-# and every peer and every wife takes the title or surname ("Lord
-# Byron", "Lady Thatcher") -- and this set has no way to say
-# "sometimes" (the 'venerable' reasoning above). Membership decides only which field the one word
-# behind the title takes: "Prince Fielder" is #348's collision
-# either way.
-[[word]]
-text = "prince"
-title = { addresses = "given" }
-
-[[word]]
-text = "princess"
-title = { addresses = "given" }
-
-[[word]]
-text = "queen"
-title = { addresses = "given" }
-
-[[word]]
-text = "sir"
-title = { addresses = "given" }
-
-[[word]]
-text = "sister"
-title = { addresses = "given" }
-
-[[word]]
-text = "swami"
-title = { addresses = "given" }
-
-[[word]]
-text = "uncle"
-title = { addresses = "given" }
-
-[[word]]
-text = "sheikh"
-title = { addresses = "given" }
-
-[[word]]
-text = "sheik"
-title = { addresses = "given" }
-
-[[word]]
-text = "shaik"
-title = { addresses = "given" }
-
-[[word]]
-text = "shayk"
-title = { addresses = "given" }
-
-[[word]]
-text = "shaykh"
-title = { addresses = "given" }
-
-[[word]]
-text = "shaikh"
-title = { addresses = "given" }
-
-[[word]]
-text = "cheikh"
-title = { addresses = "given" }
-
-[[word]]
-text = "shekh"
-title = { addresses = "given" }
-
-# #269: Arabic -- "الشيخ" ("the sheikh") is the native-script form of
-# the transliterated sheikh/sheik/... cluster above; same
-# single-first-name-follows convention ("Sheikh Mohammed").
-[[word]]
-text = "الشيخ"
-title = { addresses = "given" }
-
-# #269 follow-up: Arabic honorifics precede the GIVEN name, so all
-# belong here rather than in plain TITLES. Article forms are never
-# given names; the bare doctor/professor/engineer forms are not
-# used as given names either. Deferred under the collision rule
-# (as мл/ст, the junior/senior words, were deferred at the time): bare سيد (Sayyid is a common given
-# name), bare شيخ (Shaikha is a common female given name), أمير
-# and سلطان (Amir/Sultan, common given names), and the 'د.'
-# abbreviation -- edge-period normalization would leave bare 'د',
-# which swallows single-letter initials (the bare-κ trap below).
-[[word]]
-text = "الدكتور"
-title = { addresses = "given", note = "\"the doctor\" (m)" }
-
-[[word]]
-text = "الدكتورة"
-title = { addresses = "given", note = "\"the doctor\" (f)" }
-
-[[word]]
-text = "دكتور"
-title = { addresses = "given", note = "doctor (m), article-less" }
-
-[[word]]
-text = "دكتورة"
-title = { addresses = "given", note = "doctor (f), article-less" }
-
-[[word]]
-text = "الأستاذ"
-title = { addresses = "given", note = "\"the professor\"/Mr. honorific (m)" }
-
-[[word]]
-text = "الأستاذة"
-title = { addresses = "given", note = "professor/Mrs. honorific (f)" }
-
-[[word]]
-text = "أستاذ"
-title = { addresses = "given", note = "professor (m), article-less" }
-
-[[word]]
-text = "أستاذة"
-title = { addresses = "given", note = "professor (f), article-less" }
-
-[[word]]
-text = "الحاج"
-title = { addresses = "given", note = "hajj honorific (m)" }
-
-[[word]]
-text = "الحاجة"
-title = { addresses = "given", note = "hajj honorific (f)" }
-
-[[word]]
-text = "الشيخة"
-title = { addresses = "given", note = "female counterpart of الشيخ" }
-
-[[word]]
-text = "مهندس"
-title = { addresses = "given", note = "engineer (a genuine title in Egyptian usage)" }
-
-# #344: Devanagari renunciate titles, the native-script twins of
-# baba/guru/swami above. NO Latin twins for संत on purpose. No NEW
-# Latin transliterations here: Sri and Sant collide with real
-# given names (and Pandit, in the civil block below, with a
-# surname) where the native script cannot (the sri/shri
-# precedent in the TITLES block below); baba/guru/swami/lama are
-# the pre-existing Latin entries above. A title reading with
-# addresses = "given" puts a word in both GIVEN_NAME_TITLES and TITLES,
-# which is what makes them titles at all -- Lexicon does not validate
-# one set against the other.
-[[word]]
-text = "स्वामी"
-title = { addresses = "given", note = "Swami" }
-
-[[word]]
-text = "गुरु"
-title = { addresses = "given", note = "Guru" }
-
-[[word]]
-text = "बाबा"
-title = { addresses = "given", note = "Baba" }
-
-[[word]]
-text = "संत"
-title = { addresses = "given", note = "Sant" }
-
-# #343: Bengali renunciate titles. Same two criteria as the Latin
-# and Devanagari sets (rules/H Background), and no NEW Latin
-# transliterations -- srila has none; baba/guru/swami already ship
-# above. শ্রীল is the Vaishnava honorific (শ্রীল প্রভুপাদ);
-# unprefixed শ্রী is civil and sits in TITLES below.
-[[word]]
-text = "স্বামী"
-title = { addresses = "given", note = "Swami" }
-
-[[word]]
-text = "শ্রীল"
-title = { addresses = "given", note = "Srila" }
-
-[[word]]
-text = "গুরু"
-title = { addresses = "given", note = "Guru" }
-
-[[word]]
-text = "বাবা"
-title = { addresses = "given", note = "Baba" }
-
 # ---- titles ----
 
 [[word]]
@@ -716,10 +465,6 @@ text = "businesswoman"
 title = {}
 
 [[word]]
-text = "bwana"
-title = {}
-
-[[word]]
 text = "canon"
 title = {}
 
@@ -1064,10 +809,6 @@ text = "developer"
 title = {}
 
 [[word]]
-text = "dhr"
-title = {}
-
-[[word]]
 text = "dipl.-ing"
 title = {}
 
@@ -1313,14 +1054,6 @@ text = "fr"
 title = {}
 
 [[word]]
-text = "frau"
-title = {}
-
-[[word]]
-text = "fräulein"
-title = {}
-
-[[word]]
 text = "freifrau"
 title = {}
 
@@ -1330,18 +1063,6 @@ title = {}
 
 [[word]]
 text = "friar"
-title = {}
-
-[[word]]
-text = "frk"
-title = {}
-
-[[word]]
-text = "frøken"
-title = {}
-
-[[word]]
-text = "fru"
 title = {}
 
 [[word]]
@@ -1374,14 +1095,6 @@ title = {}
 
 [[word]]
 text = "giani"
-title = {}
-
-[[word]]
-text = "goodman"
-title = {}
-
-[[word]]
-text = "goodwife"
 title = {}
 
 [[word]]
@@ -1449,23 +1162,7 @@ text = "hereditary"
 title = {}
 
 [[word]]
-text = "heren"
-title = {}
-
-[[word]]
-text = "herr"
-title = {}
-
-[[word]]
 text = "herzog"
-title = {}
-
-[[word]]
-text = "herren"
-title = {}
-
-[[word]]
-text = "herrn"
 title = {}
 
 [[word]]
@@ -1513,16 +1210,12 @@ text = "host"
 title = {}
 
 [[word]]
-text = "hr"
-title = {}
-
-[[word]]
 text = "illustrator"
 title = {}
 
 [[word]]
 text = "imam"
-title = {}
+title = { note = "addresses by the TITLE, not the given name, and the tradition keeps surnames, so it stays out of GIVEN_NAME_TITLES (#346)" }
 
 [[word]]
 text = "industrialist"
@@ -1590,7 +1283,7 @@ title = {}
 
 [[word]]
 text = "lady"
-title = {}
+title = { note = "stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lady Diana') is a courtesy style for the daughters of the senior ranks alone, while every wife takes the title or surname ('Lady Thatcher'), and the text does not carry the rank (#519)" }
 
 [[word]]
 text = "lamido"
@@ -1642,7 +1335,7 @@ title = {}
 
 [[word]]
 text = "lord"
-title = {}
+title = { note = "stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lord Peter') is a courtesy style for the children of the senior ranks alone, while every peer takes the title or surname ('Lord Byron'), and the text does not carry the rank (#519)" }
 
 [[word]]
 text = "lt"
@@ -1671,18 +1364,6 @@ title = {}
 
 [[word]]
 text = "lyricist"
-title = {}
-
-[[word]]
-text = "madam"
-title = {}
-
-[[word]]
-text = "madame"
-title = {}
-
-[[word]]
-text = "mademoiselle"
 title = {}
 
 [[word]]
@@ -1807,18 +1488,6 @@ text = "metropolitan"
 title = {}
 
 [[word]]
-text = "mevr"
-title = {}
-
-[[word]]
-text = "mevrouw"
-title = {}
-
-[[word]]
-text = "mevrouwe"
-title = {}
-
-[[word]]
 text = "mg"
 title = {}
 
@@ -1839,27 +1508,7 @@ text = "minister"
 title = {}
 
 [[word]]
-text = "miss"
-title = {}
-
-[[word]]
-text = "misses"
-title = {}
-
-[[word]]
 text = "missionary"
-title = {}
-
-[[word]]
-text = "mister"
-title = {}
-
-[[word]]
-text = "mlle"
-title = {}
-
-[[word]]
-text = "mme"
 title = {}
 
 [[word]]
@@ -1879,10 +1528,6 @@ text = "monseigneur"
 title = {}
 
 [[word]]
-text = "monsieur"
-title = {}
-
-[[word]]
 text = "monsignor"
 title = {}
 
@@ -1899,16 +1544,7 @@ text = "mpco-cg"
 title = {}
 
 [[word]]
-text = "mr"
-title = {}
-
-[[word]]
-text = "mrs"
-title = {}
-
-[[word]]
 text = "ms"
-title = {}
 [word.credential]
 note = "NOT may_be_name, though #296's audit table put it there for the leading-title collision: the gate is position-blind and the collision is not (gated, 'John Smith, MS' read title 'MS'); a title/credential dual that position decides (decisions/C8)"
 
@@ -1942,10 +1578,6 @@ title = {}
 
 [[word]]
 text = "musicologist"
-title = {}
-
-[[word]]
-text = "mx"
 title = {}
 
 [[word]]
@@ -2247,7 +1879,7 @@ credential = {}
 
 [[word]]
 text = "rabbi"
-title = {}
+title = { note = "addresses by the TITLE, not the given name ('Rabbi Cohen'), and the tradition keeps surnames, so it stays out of GIVEN_NAME_TITLES (#346)" }
 
 [[word]]
 text = "radio"
@@ -2399,39 +2031,7 @@ text = "senator"
 title = {}
 
 [[word]]
-text = "senhor"
-title = {}
-
-[[word]]
-text = "senhora"
-title = {}
-
-[[word]]
-text = "senhorita"
-title = {}
-
-[[word]]
 text = "senior"
-title = {}
-
-[[word]]
-text = "señor"
-title = {}
-
-[[word]]
-text = "señora"
-title = {}
-
-[[word]]
-text = "señores"
-title = {}
-
-[[word]]
-text = "señorita"
-title = {}
-
-[[word]]
-text = "señoritas"
 title = {}
 
 [[word]]
@@ -2473,22 +2073,6 @@ title = {}
 
 [[word]]
 text = "siddha"
-title = {}
-
-[[word]]
-text = "signor"
-title = {}
-
-[[word]]
-text = "signora"
-title = {}
-
-[[word]]
-text = "signore"
-title = {}
-
-[[word]]
-text = "signorina"
 title = {}
 
 [[word]]
@@ -2549,26 +2133,6 @@ title = {}
 
 [[word]]
 text = "special"
-title = {}
-
-[[word]]
-text = "sr"
-title = {}
-
-[[word]]
-text = "sra"
-title = {}
-
-[[word]]
-text = "srta"
-title = {}
-
-[[word]]
-text = "srtas"
-title = {}
-
-[[word]]
-text = "sres"
 title = {}
 
 [[word]]
@@ -2742,7 +2306,7 @@ credential = {}
 
 [[word]]
 text = "venerable"
-title = {}
+title = { note = "stays out of GIVEN_NAME_TITLES: its traditions split on surname retention (Buddhist monastics drop the family name, Anglican archdeacons keep it), and addresses cannot say 'sometimes' (#346)" }
 
 [[word]]
 text = "verderer"
@@ -2832,23 +2396,14 @@ title = {}
 text = "zoologist"
 title = {}
 
-# #606: salutations and offices for the languages the block above
-# had none for, so "Herra Väinö Johansson" stops reading given
-# 'Herra'. TITLES has no ambiguous subset, so a word ships only if
-# it is borne as no name in the LEADING position
-# (decisions/vocabulary-collisions C-i) -- with one recorded
-# exception. Those marked "borne" are names somewhere, but rarely
-# the FIRST word of one, mostly surnames written last, and ship
-# anyway on the 'graf' precedent above, paying the cost "Graf
-# Steffi" already pays: a name that begins with one gives it to
-# the title (rules/H1). That is a judgment on each word's
-# counts, scoped to these words, not a rule to sweep with. Counts
-# and sources are in
-# decisions/salutation-titles, and so are the words that failed:
-# among them Vietnamese ông/bà, Tamil thiru and pl/cs pan, all in
-# decisions/vocabulary-exclusions, Excluded (TITLES).
+# #606: offices and counts for the languages the block above had
+# none for; its salutations are in their language files. A word
+# whose note begins "borne" is a name somewhere, but rarely the
+# FIRST word of one, and ships on the 'graf' precedent above
+# (decisions/salutation-titles). The words that failed are
+# exclusions in their language files
+# (`uv run python tools/vocab/query.py --excluded title --issue 606`).
 # English offices, completing runs like "Police Commissioner".
-# 'marshal' and 'justice' stay out: both are given names.
 [[word]]
 text = "administrator"
 title = { issue = 606 }
@@ -2859,199 +2414,58 @@ title = { issue = 606 }
 
 [[word]]
 text = "counsel"
-title = { issue = 606, note = "borne" }
+title = { issue = 606, note = "borne: ~730 surnames (Australia, the US, England), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
 
-# Finnish: Mr, Mrs, Miss, Count.
-[[word]]
-text = "herra"
-title = { issue = 606, note = "borne" }
-
-[[word]]
-text = "rouva"
-title = { issue = 606 }
-
-[[word]]
-text = "neiti"
-title = { issue = 606 }
-
+# Finnish Count.
 [[word]]
 text = "kreivi"
-title = { issue = 606, note = "borne" }
+title = { issue = 606, note = "borne: ~270 surnames (Finland, where registers often write the surname first), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
 
-# Estonian: Mr, Mrs, Miss, Count.
-[[word]]
-text = "härra"
-title = { issue = 606 }
-
-[[word]]
-text = "proua"
-title = { issue = 606 }
-
-[[word]]
-text = "preili"
-title = { issue = 606 }
-
+# Estonian Count.
 [[word]]
 text = "krahv"
 title = { issue = 606 }
 
-# Romanian: Mr, Mrs (with and without the breve), Miss.
-[[word]]
-text = "domnul"
-title = { issue = 606 }
-
-[[word]]
-text = "doamna"
-title = { issue = 606 }
-
-[[word]]
-text = "doamnă"
-title = { issue = 606 }
-
-[[word]]
-text = "domnișoara"
-title = { issue = 606 }
-
-# Croatian/Serbian/Bosnian, Latin script: Mr, Mrs, Miss.
-[[word]]
-text = "gospodin"
-title = { issue = 606 }
-
-[[word]]
-text = "gospođa"
-title = { issue = 606 }
-
-[[word]]
-text = "gospođica"
-title = { issue = 606 }
-
-# Icelandic: Mrs, Miss, Count ('herra', Mr, is the Finnish entry).
-[[word]]
-text = "frú"
-title = { issue = 606 }
-
-[[word]]
-text = "ungfrú"
-title = { issue = 606 }
-
+# Icelandic Count.
 [[word]]
 text = "greifi"
 title = { issue = 606 }
 
-# Dutch: Mr, Miss, Count ('mevrouw' is above).
-[[word]]
-text = "meneer"
-title = { issue = 606 }
-
-[[word]]
-text = "juffrouw"
-title = { issue = 606 }
-
+# Dutch Count.
 [[word]]
 text = "graaf"
-title = { issue = 606, note = "borne" }
+title = { issue = 606, note = "borne; one of the three words #606 proposed the graf class for" }
 
-# Scandinavian Count ('fru' and 'herr' are above), Swedish Miss.
+# Scandinavian Count.
 [[word]]
 text = "greve"
-title = { issue = 606, note = "borne" }
+title = { issue = 606, note = "borne, so 'Greve Anna' reads title Greve; one of the three words #606 proposed the graf class for" }
 
-[[word]]
-text = "fröken"
-title = { issue = 606 }
-
-# Czech: Mrs, Miss. Mr is 'pan', the Chinese surname Pan, so out;
-# 'paní' keeps its accent, so the Indian name Pani is untouched.
-[[word]]
-text = "paní"
-title = { issue = 606 }
-
-[[word]]
-text = "slečna"
-title = { issue = 606 }
-
-# Polish: Count.
+# Polish Count.
 [[word]]
 text = "hrabia"
-title = { issue = 606, note = "borne" }
+title = { issue = 606, note = "borne: ~750 surnames (Poland, where registers often write the surname first), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
 
-# Lithuanian: Mr, Mrs, Count.
-[[word]]
-text = "ponas"
-title = { issue = 606, note = "borne" }
-
-[[word]]
-text = "ponia"
-title = { issue = 606, note = "borne" }
-
+# Lithuanian Count.
 [[word]]
 text = "grafas"
 title = { issue = 606 }
 
-# Malay: Mr. Mrs is 'puan', a given name (Puan Maharani), so out.
-[[word]]
-text = "encik"
-title = { issue = 606 }
-
-# Filipino: Mr, Mrs, Miss.
-[[word]]
-text = "ginoo"
-title = { issue = 606, note = "borne" }
-
-[[word]]
-text = "ginang"
-title = { issue = 606, note = "borne" }
-
-[[word]]
-text = "binibini"
-title = { issue = 606, note = "borne" }
-
-# Georgian, Latin script: Mr, Mrs, Count.
-[[word]]
-text = "batoni"
-title = { issue = 606, note = "borne" }
-
-[[word]]
-text = "kalbatoni"
-title = { issue = 606 }
-
+# Georgian Count, Latin script.
 [[word]]
 text = "grafi"
-title = { issue = 606 }
-
-# Danish/Norwegian/German "Familie Hansen", the family addressed.
-[[word]]
-text = "familie"
 title = { issue = 606 }
 
 # English Knight, the rank the post-nominal 'knt' names.
 [[word]]
 text = "knight"
-title = { issue = 606, note = "borne" }
+title = { issue = 606, note = "borne (Gladys Knight, who keeps family Knight in the forms she writes); one of the three words #606 proposed the graf class for" }
 
-# #662: Akan and Indonesian Mr.; under 100 census bearers each and
-# none found on Wikidata. Hausa malam and Turkish bay are excluded
-# (decisions/vocabulary-exclusions, Excluded (TITLES)).
-[[word]]
-text = "owura"
-title = { issue = 662 }
-
-[[word]]
-text = "bapak"
-title = { issue = 662 }
-
-# #269: Cyrillic (ru/uk) -- mr/mrs/dr/prof/academician/pan(i)
-# honorifics, same title-then-family convention as 'mr'/'dr'/'prof'
-# above (not GIVEN_NAME_TITLES: "г-н Петров" families the surname
-# just like "Mr. Smith" does).
-[[word]]
-text = "г-н"
-title = {}
-
-[[word]]
-text = "г-жа"
-title = {}
-
+# #269: Cyrillic (ru/uk) -- dr/prof/academician honorifics (the
+# salutations are in ru.toml, bg.toml and uk.toml), same
+# title-then-family convention as 'dr'/'prof' above (not
+# GIVEN_NAME_TITLES: "д-р Петров" families the surname just like
+# "Dr. Smith" does).
 [[word]]
 text = "д-р"
 title = {}
@@ -3064,29 +2478,9 @@ title = {}
 text = "акад"
 title = {}
 
-[[word]]
-text = "пан"
-title = {}
-
-[[word]]
-text = "пані"
-title = {}
-
-# #269: Greek -- kyria/kyrios(abbr)/doctor/professor abbreviations;
-# same plain-title convention as above.
-# #269: bare κ deferred -- collides with the initial+surname shape
-# ('Κ. Παπαδόπουλος' would parse as title 'Κ.' with an empty given;
-# _normalize strips the edge period, so the entry matches the
-# initial). Latin TITLES deliberately has no bare single-letter
-# entries for the same reason.
-[[word]]
-text = "κα"
-title = {}
-
-[[word]]
-text = "κος"
-title = {}
-
+# #269: Greek -- doctor/professor abbreviations (the salutations,
+# and the refused bare κ, are in el.toml); same plain-title
+# convention as above.
 [[word]]
 text = "δρ"
 title = {}
@@ -3095,34 +2489,21 @@ title = {}
 text = "καθ"
 title = {}
 
-# #269: Hebrew -- "מר" ("Mr."), plain title like its Latin analog.
-# Geresh/gershayim forms of "doctor"/"Mrs." -- both the ASCII-quote
-# spelling ('ד"ר', "גב'") and the typographic Unicode spelling
-# ('ד״ר' U+05F4 gershayim, 'גב׳' U+05F3 geresh) ship: probed live
+# #269: Hebrew (the salutations are in he.toml). Geresh/gershayim
+# forms of "doctor" -- both the ASCII-quote spelling ('ד"ר') and the
+# typographic Unicode spelling ('ד״ר' U+05F4 gershayim) ship: probed live
 # against extract_delimited's _open_ok/_close_ok boundary rules
 # (2026-07-17) -- the quote chars sit mid-word (no preceding
 # whitespace before the internal quote and, for the closing "'" one,
 # no following boundary), so both fail the open/close boundary test
 # and are left untouched as literal text. Extraction is provably
-# inert on these two ASCII spellings; no delimiter-interaction risk.
-[[word]]
-text = "מר"
-title = {}
-
+# inert on the ASCII spellings; no delimiter-interaction risk.
 [[word]]
 text = "ד\"ר"
 title = {}
 
 [[word]]
-text = "גב'"
-title = {}
-
-[[word]]
 text = "ד״ר"
-title = {}
-
-[[word]]
-text = "גב׳"
 title = {}
 
 # #269 follow-up: the rest of the common Israeli honorifics, same
@@ -3130,10 +2511,6 @@ title = {}
 # gershayim spelling rule as above. Deferred under the collision
 # rule: bare 'רב' (also the ordinary word "many"). The 'בר'
 # particle is refused by an exclusion in he.toml.
-[[word]]
-text = "גברת"
-title = { note = "Mrs./Ms., full form" }
-
 [[word]]
 text = "פרופ'"
 title = { note = "professor abbreviation, ASCII apostrophe" }
@@ -3158,28 +2535,17 @@ title = { note = "advocate/lawyer, U+05F4 gershayim" }
 text = "הרב"
 title = { note = "\"the rabbi\" (article form; bare רב deferred)" }
 
-# #269 follow-up: Devanagari (hi/mr). NO Latin twins on purpose:
-# transliterated sri/shri collide with real given names (Sri
-# Mulyani); the native-script forms cannot. "डॉ." matches via the
-# edge-period normalization, like Latin "Dr.".
-[[word]]
-text = "श्री"
-title = { note = "Shri (Mr.)" }
-
-[[word]]
-text = "श्रीमती"
-title = { note = "Shrimati (Mrs.)" }
-
+# #269 follow-up: Devanagari (hi/mr; the salutations are in hi.toml
+# and mr.toml). NO Latin twins on purpose, the sri/shri exclusions in
+# hi.toml. "डॉ." matches via the edge-period normalization, like
+# Latin "Dr.".
 [[word]]
 text = "डॉ"
 title = { note = "Dr. abbreviation" }
 
 # #344: the civil set, same no-NEW-Latin-transliterations rule as
-# the three above.
-# Excluded under the collision rule and recorded here so a sweep
-# does not ship them -- ठाकुर (Tagore, the surname), कुमारी, बेगम,
-# शेख, आचार्य, राजा/रानी are all borne as ordinary names. Full
-# argument: decisions/vocabulary-exclusions, Excluded (TITLES).
+# the three above. The words refused under the collision rule are
+# exclusions in hi.toml.
 [[word]]
 text = "डॉक्टर"
 title = { note = "Doctor, full form" }
@@ -3218,27 +2584,6 @@ text = "सरदार"
 title = { note = "Sardar" }
 
 [[word]]
-text = "सुश्री"
-title = { note = "Ms." }
-
-[[word]]
-text = "श्रीयुत"
-title = { note = "Shriyut (Mr.)" }
-
-[[word]]
-text = "श्रीमान"
-title = { note = "Shriman (Mr.)" }
-
-[[word]]
-text = "सौ"
-title = { note = "Marathi Sau. (Mrs.)" }
-
-[[word]]
-text = "बाबू"
-[word.title]
-note = "Babu -- LEADING in Hindi; Bengali বাবু is trailing, a suffix word in bn.toml. Different codepoints."
-
-[[word]]
 text = "महात्मा"
 [word.title]
 note = "Mahatma -- civil, not renunciate: it addresses by surname (\"महात्मा गांधी\"), so TITLES only"
@@ -3250,10 +2595,6 @@ title = { note = "Justice" }
 [[word]]
 text = "मौलाना"
 title = { note = "Maulana" }
-
-[[word]]
-text = "जनाब"
-title = { note = "Janab (Mr.)" }
 
 [[word]]
 text = "महाराजा"
@@ -3269,14 +2610,12 @@ title = { note = "Maharaja, LEADING (trailing महाराज is a suffix wor
 # physician's. Abbreviation marks are spelled as written -- the
 # visarga ঃ (U+0983) is a spacing combining mark, and the lookup
 # fold strips only edge periods and whitespace, so it reaches the
-# lexicon intact -- while period spellings (মো., ডা.) match the
+# lexicon intact -- while period spellings (ডা., and মো. in bn.toml) match the
 # bare stem through the edge-period normalization, which is why
 # each stem is listed once and the dotted form is not listed at
 # all.
-# Excluded under the collision rule and recorded here so a sweep
-# does not ship them -- ঠাকুর (Tagore, the surname), কুমারী, বেগম
-# and শেখ are all borne as ordinary names. Full argument:
-# decisions/vocabulary-exclusions, Excluded (TITLES).
+# The salutations are in bn.toml, and so are the words refused
+# under the collision rule, as exclusions.
 [[word]]
 text = "ড"
 title = { note = "Dr. abbreviation (PhD)" }
@@ -3300,18 +2639,6 @@ title = { note = "Dr. abbreviation (physician)" }
 [[word]]
 text = "ডাক্তার"
 title = { note = "Doctor, full form (physician)" }
-
-[[word]]
-text = "শ্রী"
-title = { note = "Shri (Mr.)" }
-
-[[word]]
-text = "শ্রীমতী"
-title = { note = "Shrimati (Mrs.)" }
-
-[[word]]
-text = "জনাব"
-title = { note = "Janab (Mr.)" }
 
 [[word]]
 text = "অধ্যাপক"
@@ -3341,48 +2668,11 @@ title = { note = "Alhaj" }
 text = "আলহাজ"
 title = { note = "Alhaj, the spelling without the ব-phala" }
 
-[[word]]
-text = "মিঃ"
-title = { note = "Mr., borrowed" }
-
-[[word]]
-text = "মি"
-title = { note = "the same, period spelling মি." }
-
-[[word]]
-text = "মিসেস"
-title = { note = "Mrs., borrowed" }
-
-[[word]]
-text = "মোঃ"
-[word.title]
-note = "Md. (Mohammad) -- a name PREFIX, not a title semantically; TITLES is the functional home because `given` must stay the name the person is addressed by (decisions/indic-honorifics)"
-
-[[word]]
-text = "মো"
-title = { note = "the same, period spelling মো." }
-
-[[word]]
-text = "মোসাঃ"
-title = { note = "Mst. (Mosammat), the women's counterpart" }
-
-[[word]]
-text = "মোসা"
-title = { note = "the same, period spelling মোসা." }
-
-[[word]]
-text = "মোছাঃ"
-title = { note = "the same, ছ spelling" }
-
-[[word]]
-text = "মোছা"
-title = { note = "the same, period spelling মোছা." }
 
 # ---- the other readings of words whose particle reading has a language ----
 # (#749 moved each particle reading to the files of the languages whose
 # names it occurs in; `uv run python tools/vocab/query.py --word <text>`
 # shows both halves)
-
 [[word]]
 text = "mc"
 [word.credential]

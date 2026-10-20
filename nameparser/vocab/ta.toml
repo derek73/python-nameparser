@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "thiru"
+excluded = { salutation = { reason = "Tamil Mr., and a Tamil given name", issue = 606, decided = 2026-10-04 } }
+
+[[word]]
 text = "இளையவர்"
 generation = { issue = 679 }
 

@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "lama"
+religious = { addresses = "given", issue = 346, note = "#346's renunciate class (baba, guru, lama, swami): it addresses by the GIVEN name, and the tradition renounces the surname, which is what makes the empty family right for 'Swami Vivekananda' (rules/H Background)" }
+
+[[word]]
 text = "rinpoche"
 [word.courtesy]
 issue = [346, 344, 343]

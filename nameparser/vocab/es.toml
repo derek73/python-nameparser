@@ -1,6 +1,46 @@
 schema = 1
 
 [[word]]
+text = "señor"
+salutation = { gender = "m" }
+
+[[word]]
+text = "sr"
+salutation = { gender = "m", same_as = "señor" }
+
+[[word]]
+text = "señora"
+salutation = { gender = "f" }
+
+[[word]]
+text = "sra"
+salutation = { gender = "f", same_as = "señora" }
+
+[[word]]
+text = "señores"
+salutation = { expands = "the plural of señor" }
+
+[[word]]
+text = "sres"
+salutation = { same_as = "señores" }
+
+[[word]]
+text = "señorita"
+salutation = { gender = "f" }
+
+[[word]]
+text = "srta"
+salutation = { gender = "f", same_as = "señorita" }
+
+[[word]]
+text = "señoritas"
+salutation = { gender = "f" }
+
+[[word]]
+text = "srtas"
+salutation = { gender = "f", same_as = "señoritas" }
+
+[[word]]
 text = "de"
 preposition = { may_be_given = false, expands = "of" }
 

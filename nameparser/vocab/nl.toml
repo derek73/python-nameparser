@@ -1,6 +1,34 @@
 schema = 1
 
 [[word]]
+text = "dhr"
+salutation = { gender = "m", expands = "de heer, Mr." }
+
+[[word]]
+text = "heren"
+salutation = { gender = "m", expands = "the plural of heer, 'de heren'" }
+
+[[word]]
+text = "juffrouw"
+salutation = { issue = 606, gender = "f" }
+
+[[word]]
+text = "meneer"
+salutation = { issue = 606, gender = "m" }
+
+[[word]]
+text = "mevrouw"
+salutation = { gender = "f" }
+
+[[word]]
+text = "mevr"
+salutation = { gender = "f", same_as = "mevrouw" }
+
+[[word]]
+text = "mevrouwe"
+salutation = { gender = "f", same_as = "mevrouw", expands = "the archaic spelling of mevrouw" }
+
+[[word]]
 text = "aan"
 preposition = { may_be_given = true, issue = 18, expands = "on, at: \"aan den Toorn\"" }
 

@@ -1,6 +1,11 @@
 schema = 1
 
 [[word]]
+text = "bay"
+family = { us_census_2010 = 6350, wikidata = 120, as_of = 2026-10-17, note = "11 of the Wikidata bearers Hungarian" }
+excluded = { salutation = { reason = "Turkish Mr., and a surname borne in Hungary, which writes the surname first, where the title claim acts, so it fails C-i", issue = 662, decided = 2026-10-17 } }
+
+[[word]]
 text = "baba"
 [word.excluded.generation]
 reason = "collides inside Turkish, and Turkish puts the junior word before the name"

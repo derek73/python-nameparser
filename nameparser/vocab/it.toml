@@ -1,6 +1,22 @@
 schema = 1
 
 [[word]]
+text = "signora"
+salutation = { gender = "f" }
+
+[[word]]
+text = "signore"
+salutation = { gender = "m" }
+
+[[word]]
+text = "signor"
+salutation = { gender = "m", same_as = "signore" }
+
+[[word]]
+text = "signorina"
+salutation = { gender = "f" }
+
+[[word]]
 text = "d'"
 preposition = { may_be_given = false, issue = 700, expands = "of, elided di" }
 

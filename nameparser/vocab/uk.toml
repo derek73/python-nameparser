@@ -1,6 +1,14 @@
 schema = 1
 
 [[word]]
+text = "пан"
+salutation = { gender = "m", issue = 269, expands = "Mr." }
+
+[[word]]
+text = "пані"
+salutation = { gender = "f", issue = 269, expands = "Mrs." }
+
+[[word]]
 text = "молодша"
 generation = { issue = 661 }
 

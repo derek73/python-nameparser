@@ -1,6 +1,106 @@
 schema = 1
 
 [[word]]
+text = "shri"
+excluded = { salutation = { reason = "the transliteration of श्री collides with real given names where the native script cannot" } }
+
+[[word]]
+text = "sri"
+excluded = { salutation = { reason = "a given name (Sri Mulyani); the native श्री cannot collide" } }
+
+[[word]]
+text = "कुमारी"
+excluded = { salutation = { reason = "Kumari is a given name and a family name in this script, so the leading claim fails C-i (decisions/vocabulary-collisions)", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "जनाब"
+salutation = { gender = "m", issue = 344, expands = "Janab, Mr." }
+
+[[word]]
+text = "बाबू"
+salutation = { gender = "m", issue = 344, expands = "Babu", note = "leading in Hindi; the Bengali বাবু is trailing, a suffix word in bn.toml, a different codepoint sequence" }
+
+[[word]]
+text = "बेगम"
+excluded = { salutation = { reason = "Begum is a trailing name element far more often than a leading title", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "श्री"
+salutation = { gender = "m", issue = 269, expands = "Shri, Mr.", note = "no Latin twin: Latin sri and shri are given names (their exclusions in hi.toml)" }
+
+[[word]]
+text = "श्रीमती"
+salutation = { gender = "f", issue = 269, expands = "Shrimati, Mrs." }
+
+[[word]]
+text = "श्रीमान"
+salutation = { gender = "m", issue = 344, expands = "Shriman, Mr." }
+
+[[word]]
+text = "श्रीयुत"
+salutation = { gender = "m", issue = 344, expands = "Shriyut, Mr." }
+
+[[word]]
+text = "सुश्री"
+salutation = { gender = "f", issue = 344, expands = "Sushri, Ms." }
+
+[[word]]
+text = "ठाकुर"
+excluded = { style = { reason = "Tagore, the surname, as with the Bengali ঠাকুর", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "शेख"
+excluded = { style = { reason = "a clan name and a family name; the Latin sheikh cluster ships for the Arabic addressing form, while the Indic spellings name the family", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "pandit"
+excluded = { academic = { reason = "a common surname (Vijaya Lakshmi Pandit); the native पंडित ships", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "baba"
+religious = { addresses = "given", issue = 346, note = "#346's renunciate class (baba, guru, lama, swami): it addresses by the GIVEN name, and the tradition renounces the surname, which is what makes the empty family right for 'Swami Vivekananda' (rules/H Background)" }
+
+[[word]]
+text = "guru"
+religious = { addresses = "given", issue = 346, note = "#346's renunciate class (baba, guru, lama, swami): it addresses by the GIVEN name, and the tradition renounces the surname, which is what makes the empty family right for 'Swami Vivekananda' (rules/H Background)" }
+
+[[word]]
+text = "sant"
+excluded = { religious = { reason = "a Punjabi given name (Sant Singh); the native संत ships", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "swami"
+religious = { addresses = "given", issue = 346, note = "#346's renunciate class (baba, guru, lama, swami): it addresses by the GIVEN name, and the tradition renounces the surname, which is what makes the empty family right for 'Swami Vivekananda' (rules/H Background)" }
+
+[[word]]
+text = "आचार्य"
+excluded = { religious = { reason = "Acharya is a Brahmin surname", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "गुरु"
+religious = { addresses = "given", issue = 344, expands = "Guru" }
+
+[[word]]
+text = "बाबा"
+religious = { addresses = "given", issue = 344, expands = "Baba" }
+
+[[word]]
+text = "संत"
+religious = { addresses = "given", issue = 344, expands = "Sant", note = "no Latin twin: Latin sant is a Punjabi given name (its exclusion in this file)" }
+
+[[word]]
+text = "स्वामी"
+religious = { addresses = "given", issue = 344, expands = "Swami" }
+
+[[word]]
+text = "राजा"
+excluded = { nobility = { reason = "Raja is a common given name", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "रानी"
+excluded = { nobility = { reason = "Rani is a common given name", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
 text = "जुनियर"
 generation = { issue = 661, note = "junior, one of its two u spellings" }
 

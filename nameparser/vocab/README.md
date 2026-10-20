@@ -12,7 +12,7 @@ A file is named for a BCP 47 language tag in canonical case: `fr.toml`, `pt-BR.t
 
 Two tags are not languages:
 
-- **`und`** (undetermined) holds the words not yet assigned a language. Most of the vocabulary is still here (1,544 of 1,784 entries on 2026-10-19), converted mechanically from the Python lists it used to be; assigning a word to a language means moving its entry to that language's file. The comments above an entry here are the vetting notes that stood above the word in the Python module, in their old order; classifying a category is what turns them into fields.
+- **`und`** (undetermined) holds the words not yet assigned a language. Most of the vocabulary is still here (1,287 of 1,900 entries on 2026-10-19, after the first part of #750), converted mechanically from the Python lists it used to be; assigning a word to a language means moving its entry to that language's file. The comments above an entry here are the vetting notes that stood above the word in the Python module, in their old order; classifying a category is what turns them into fields.
 - **`mul`** (multiple) holds words shared on purpose, such as the Roman numerals.
 
 The script is read from the word, not from the file: `sr.toml` holds `mlađi` and `млађи` side by side. A script subtag (`zh-Hant`) is for a difference the text cannot show.
@@ -95,11 +95,21 @@ The build checks the order and never rewrites a file, because a comment above an
 
 ## Kinds
 
-A reading's key is its **kind**. The table lists the kinds in their canonical order, which is the [word order](#word-order)'s first key and `CATEGORY`'s order in `tools/vocab/build.py`. Each kind belongs to one **category**, and the category decides which compiled set the reading feeds. For title, suffix, particle and conjunction the category's own name is also a kind (`title = {}`: a title not yet classified), so classifying a word later is a data edit that moves no compiled set. The one exception: a generic `suffix = {}` classified as `credential` moves from `SUFFIX_WORDS` to `SUFFIX_ACRONYMS`, because a credential's `acronym` is true unwritten; write `acronym = false` to keep it where it was. The suffix and particle categories are classified (two particles of unrecorded origin, `bon` and `dí`, keep the generic kind in `und.toml`); the others carry their generic kind.
+A reading's key is its **kind**. The table lists the kinds in their canonical order, which is the [word order](#word-order)'s first key and `CATEGORY`'s order in `tools/vocab/build.py`. Each kind belongs to one **category**, and the category decides which compiled set the reading feeds. For title, suffix, particle and conjunction the category's own name is also a kind (`title = {}`: a title not yet classified), so classifying a word later is a data edit that moves no compiled set. The one exception: a generic `suffix = {}` classified as `credential` moves from `SUFFIX_WORDS` to `SUFFIX_ACRONYMS`, because a credential's `acronym` is true unwritten; write `acronym = false` to keep it where it was. The suffix and particle categories are classified (two particles of unrecorded origin, `bon` and `dí`, keep the generic kind in `und.toml`); the titles are being classified (#750), the salutations and the titles that address by the given name first, the rest still generic in `und.toml`; the others carry their generic kind.
 
 | Kind | Category | Compiled into |
 |---|---|---|
 | `title` | `title` | `TITLES` |
+| `salutation` | `title` | `TITLES` |
+| `style` | `title` | `TITLES` |
+| `academic` | `title` | `TITLES` |
+| `religious` | `title` | `TITLES` |
+| `nobility` | `title` | `TITLES` |
+| `military` | `title` | `TITLES` |
+| `office` | `title` | `TITLES` |
+| `occupation` | `title` | `TITLES` |
+| `kinship` | `title` | `TITLES` |
+| `modifier` | `title` | `TITLES` |
 | `suffix` | `suffix` | `SUFFIX_WORDS` |
 | `generation` | `suffix` | `SUFFIX_WORDS` |
 | `credential` | `suffix` | `SUFFIX_ACRONYMS` |
@@ -123,6 +133,21 @@ A reading's key is its **kind**. The table lists the kinds in their canonical or
 | `family` | `name` | nothing |
 
 A suffix reading goes to `SUFFIX_ACRONYMS` when its `acronym` property is true and to `SUFFIX_WORDS` otherwise; the column shows where each kind goes with `acronym` unwritten. A word has at most one suffix kind (check 4).
+
+The title kinds say what the title is:
+
+- `salutation`: a language's everyday form of address, its "Mr" and "Mrs" (`mr`, `mrs`, `mx`, `herr`, `señora`, `г-н`, `श्री`), and the English `master` for a boy;
+- `style`: an honorific style or dignity rather than an office (`hon`, `excellency`, `highness`, `sheikh`);
+- `academic`: an academic or professional form of ADDRESS (`dr`, `prof`, `docent`, the Egyptian `مهندس`, engineer);
+- `religious`: a clergy, monastic, saintly or religious-scholar title (`rev`, `rabbi`, `swami`, `saint`), and a kinship word used as one (`father`, `sister`);
+- `nobility`: a royal, noble, chiefly or chivalric rank (`king`, `prince`, `graf`, `sultan`, `sir`, `dame`, `knight`);
+- `military`: a military or police rank and its abbreviations (`gen`, `capt`, `sgt`);
+- `office`: a public, judicial, civic, corporate or court office held (`president`, `judge`, `mayor`, `ceo`);
+- `occupation`: a job DESCRIBED before a name, as bylines and captions write it, household service included (`actor`, `novelist`, `guitarist`, `maid`);
+- `kinship`: a family word written as a title (`aunt`, `uncle`);
+- `modifier`: a word that is a title only inside a phrase with a head title (`vice`, `grand`, `assistant`, `his`, `1st`), the class decision 10 of [decisions/vocabulary-model](../../docs/design/decisions/vocabulary-model.md) parks. Today it is a title wherever it stands, like every other kind.
+
+`academic` and `occupation` are told apart by what the word does, not its subject: `Dr` addresses the person, `chemist` describes them. A title takes one kind per file, as a particle does, and check 5 holds every title reading of a word to the same `addresses` whatever its kind. `gender` is recorded on a title marked for one sex (a feminine form, `actress`, `señora`, or one half of a fixed pair, `mr` and `mrs`, `king` and `queen`), and on `mx` as `"n"`; an unmarked noun (`actor`, `doctor`) records none.
 
 The particle kinds say what the word does in the names of the file's language:
 

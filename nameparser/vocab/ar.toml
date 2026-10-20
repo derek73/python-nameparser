@@ -1,6 +1,110 @@
 schema = 1
 
 [[word]]
+text = "sheikh"
+style = { addresses = "given", gender = "m" }
+
+[[word]]
+text = "cheikh"
+style = { addresses = "given", gender = "m", same_as = "sheikh", expands = "the French transliteration, 'Cheikh Anta Diop'" }
+
+[[word]]
+text = "shaik"
+style = { addresses = "given", gender = "m", same_as = "sheikh" }
+
+[[word]]
+text = "shaikh"
+style = { addresses = "given", gender = "m", same_as = "sheikh" }
+
+[[word]]
+text = "shayk"
+style = { addresses = "given", gender = "m", same_as = "sheikh" }
+
+[[word]]
+text = "shaykh"
+style = { addresses = "given", gender = "m", same_as = "sheikh" }
+
+[[word]]
+text = "sheik"
+style = { addresses = "given", gender = "m", same_as = "sheikh" }
+
+[[word]]
+text = "shekh"
+style = { addresses = "given", gender = "m", same_as = "sheikh" }
+
+[[word]]
+text = "الشيخ"
+style = { addresses = "given", gender = "m", issue = 269, expands = "the sheikh", note = "the native spelling of the Latin sheikh cluster, the same convention ('Sheikh Mohammed')" }
+
+[[word]]
+text = "الشيخة"
+style = { addresses = "given", gender = "f", issue = 269, expands = "the sheikha" }
+
+[[word]]
+text = "سيد"
+excluded = { style = { reason = "Sayyid is a common given name; the honorific is not shipped bare", issue = 269 } }
+
+[[word]]
+text = "شيخ"
+excluded = { style = { reason = "bare, it collides with the common female given name Shaikha; الشيخ, with the article, ships", issue = 269 } }
+
+[[word]]
+text = "أستاذ"
+academic = { addresses = "given", gender = "m", issue = 269, expands = "professor" }
+
+[[word]]
+text = "أستاذة"
+academic = { addresses = "given", gender = "f", issue = 269, expands = "professor" }
+
+[[word]]
+text = "الأستاذ"
+academic = { addresses = "given", gender = "m", issue = 269, expands = "the professor; also an honorific, Mr." }
+
+[[word]]
+text = "الأستاذة"
+academic = { addresses = "given", gender = "f", issue = 269, expands = "the professor; also an honorific, Mrs." }
+
+[[word]]
+text = "الدكتور"
+academic = { addresses = "given", gender = "m", issue = 269, expands = "the doctor", note = "#269: Arabic honorifics precede the GIVEN name; the article forms are never given names, nor are the bare doctor, professor and engineer forms" }
+
+[[word]]
+text = "الدكتورة"
+academic = { addresses = "given", gender = "f", issue = 269, expands = "the doctor" }
+
+[[word]]
+text = "د"
+excluded = { academic = { reason = "the abbreviation د.: the edge-period fold leaves bare د, a single letter that would swallow initials (the bare-κ trap)", issue = 269 } }
+
+[[word]]
+text = "دكتور"
+academic = { addresses = "given", gender = "m", issue = 269, expands = "doctor" }
+
+[[word]]
+text = "دكتورة"
+academic = { addresses = "given", gender = "f", issue = 269, expands = "doctor" }
+
+[[word]]
+text = "مهندس"
+academic = { addresses = "given", gender = "m", issue = 269, expands = "engineer", note = "a genuine title in Egyptian usage" }
+
+[[word]]
+text = "الحاج"
+religious = { addresses = "given", gender = "m", issue = 269, expands = "the hajji, one who has made the hajj" }
+
+[[word]]
+text = "الحاجة"
+religious = { addresses = "given", gender = "f", issue = 269, expands = "the hajja, one who has made the hajj" }
+
+[[word]]
+text = "أمير"
+excluded = { nobility = { reason = "Amir is a common given name", issue = 269 } }
+
+[[word]]
+text = "سلطان"
+excluded = { nobility = { reason = "Sultan is a common given name", issue = 269 } }
+
+[[word]]
 text = "الأب"
 generation = { issue = 679, note = "the father" }
 
