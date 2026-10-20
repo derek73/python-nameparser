@@ -5,16 +5,14 @@ section, mechanism or
 decisions entry that exists; every quote a citation carries -- in any
 of the shapes _LEAD_RE accepts, chained quotes included -- is a
 normalized verbatim excerpt of what it cites ("[...]" eliding, in
-order): a rule's statement and Accepted: clauses, a section's
-Background, a mechanism's Contract statement, a decisions entry's
+order): a rule's quotable prose, a section's Background, a mechanism's Contract statement, a decisions entry's
 text. Normalized means whitespace, case, "--" for the em dash and '
 for a nested ", so emphasis in capitals is not checked. A quote
 standing more than four words from its ID and chained to nothing is
 prose to this module and is NOT checked: the reader cannot tell it
 from a name written in double quotes, which is the common case;
 ``implemented:`` lists match the set of modules actually citing the
-rule; ``interacts:`` IDs exist (existence only -- the field is
-advisory). The legacy-pattern check (armed) keeps gitignored-spec
+rule; every rule ID a rule's prose names exists. The legacy-pattern check (armed) keeps gitignored-spec
 citation forms out of the committed tree.
 """
 from __future__ import annotations
@@ -29,8 +27,7 @@ import pytest
 from tests.v2.design_docs import (
     DECISIONS_DIR, MECHANISMS_DOC, MENTION_RE, RULES_DIR,
     read_decision_files, read_rules_text)
-from tests.v2.rules_doc import (
-    Rule, parse_rules_doc, prose_blocks, split_accepted)
+from tests.v2.rules_doc import Rule, parse_rules_doc, prose_blocks
 from tests.v2.rules_skeleton import skeleton_prose
 
 REPO = Path(__file__).resolve().parents[2]
@@ -97,10 +94,8 @@ def _norm(s: str) -> str:
 
 
 def _statements() -> dict[str, str]:
-    """What a citation may quote: for a rule, its prose. In a block
-    rule that is the statement and its Accepted: clauses, everything in
-    the block but example, pointer, marker and Signal: lines; in a
-    skeleton rule (#761) it is the text of its fields -- When,
+    """What a citation may quote: for a rule, the text of its fields
+    (#761) -- When,
     Tolerated, Then and its bullets, Because, and the Except,
     Precedence and Accepted bullets -- with the labels, the fences and
     the footer below `---` left out (rules_skeleton.skeleton_prose);
@@ -304,6 +299,41 @@ _RETIRED_EXCERPTS = (
 )
 
 
+_BULLET_LEAD_RE = re.compile(r"^- \*\*(?P<lead>[^*]+)\*\*", re.M)
+
+
+def _bullet_leads(rule_id: str, label: str) -> list[str]:
+    """The bold leads of a rule's bullets under one label, normalized."""
+    (path,) = RULES_DIR.glob(f"{rule_id}-*.md")
+    text = path.read_text(encoding="utf-8")
+    m = re.search(rf"^\*\*{label}:\*\*\n(?P<body>.*?)(?=^\*\*\w+:\*\*|^---$)",
+                  text, re.S | re.M)
+    body = m.group("body") if m else ""
+    return [_norm(lm.group("lead")).rstrip(".:") for lm in
+            _BULLET_LEAD_RE.finditer(body)]
+
+
+def test_a_citation_naming_a_bullet_quotes_its_bold_lead() -> None:
+    """A comment that names a rule's Except or Precedence bullet quotes
+    the bullet's bold lead, which is the bullet's name; a description
+    of the bullet can drift from it unseen, and the excerpt check holds
+    a quote only to the rule's text, so another sentence of the rule
+    would pass it (#768's review: S10's comment named "its one-letter
+    Except" by what it does)."""
+    found = 0
+    for c in _citations():
+        lm = re.search(r"\b(Except|Precedence) bullet", c.lead)
+        if lm is None or c.doc != "rules" or not c.excerpts:
+            continue
+        found += 1
+        leads = _bullet_leads(c.cid, lm.group(1))
+        assert any(c.excerpts[0].startswith(lead) for lead in leads), (
+            f"{c.path.name}:{c.line} quotes rules/{c.cid}'s "
+            f"{lm.group(1)} bullet as {c.excerpts[0]!r}; quote the "
+            f"bullet's bold lead, one of {leads}")
+    assert found >= 2, "no citation names a bullet; the check reads nothing"
+
+
 def test_retired_excerpts_stay_rejected() -> None:
     statements = _statements()
     for cid, old in _RETIRED_EXCERPTS:
@@ -348,26 +378,24 @@ def _skeleton_texts(r: Rule) -> list[str]:
 
 
 def named_id_findings(rules: list[Rule]) -> list[str]:
-    """Every rule ID a rule names that no rule has: the advisory
-    ``interacts:`` of a block rule, and for a skeleton rule (which has
-    no ``interacts:``) the IDs written anywhere in its quotable prose,
-    every field's text as rules_skeleton.skeleton_prose lists it. A
-    rule's own ID is not a citation of another."""
+    """Every rule ID a rule names that no rule has: the IDs written
+    anywhere in its quotable prose, every field's text as
+    rules_skeleton.skeleton_prose lists it. A rule's own ID is not a
+    citation of another."""
     ids = {r.rule_id for r in rules}
     out = []
     for r in rules:
-        named = (_skeleton_texts(r) if r.skeleton is not None else [])
-        found = {t for t in r.interacts}
-        for text in named:
+        found: set[str] = set()
+        for text in _skeleton_texts(r):
             found |= set(_ID_RE.findall(text)) - {r.rule_id}
         out += [f"{r.rule_id} -> {t}" for t in sorted(found)
                 if t not in ids]
     return out
 
 
-def test_interacts_ids_exist() -> None:
+def test_the_rule_ids_a_rule_names_exist() -> None:
     missing = named_id_findings(parse_rules_doc(read_rules_text()))
-    assert not missing, f"advisory interacts: cite unknown IDs: {missing}"
+    assert not missing, f"rules name unknown rule IDs: {missing}"
 
 
 def _skeleton_doc(*, signal: str = "a shape", then: str = "",
@@ -378,8 +406,8 @@ def _skeleton_doc(*, signal: str = "a shape", then: str = "",
                   tolerated: str = "",
                   because: str = "it is how it is written.",
                   others: tuple[str, ...] = ("X2",)) -> str:
-    """A synthetic skeleton rule X1, then a block-format rule for each
-    of ``others`` (each under its own heading, which ends the footer)."""
+    """A synthetic rule X1, then a minimal rule for each of ``others``
+    (each under its own heading, which ends the footer)."""
     out = f'# X1 — one\n\n**When:** {when}\n\n'
     if tolerated:
         out += f"**Tolerated:** {tolerated}\n\n"
@@ -400,7 +428,15 @@ def _skeleton_doc(*, signal: str = "a shape", then: str = "",
     out += (f"---\n**Signal:** {signal}\n"
             "**history:** decisions/P2 · **implemented:** "
             "nameparser/_parser.py\n\n")
-    return out + "".join(f"# {o} — other\n\n{o}. Other.\n" for o in others)
+    return out + "".join(_minimal_rule(o) for o in others)
+
+
+def _minimal_rule(rid: str) -> str:
+    return (f"# {rid} — other\n\n**When:** w.\n\n**Then:** t.\n\n"
+            "**Because:** b.\n\n```\n\"a\"  →  given=\"a\"  · boundary\n"
+            "```\n\n---\n**Signal:** a shape\n"
+            "**history:** decisions/P2 · **implemented:** "
+            "nameparser/_parser.py\n\n")
 
 
 def test_ids_a_skeleton_rule_names_exist() -> None:
@@ -409,11 +445,6 @@ def test_ids_a_skeleton_rule_names_exist() -> None:
     # its own ID, and an ID that exists, are fine
     doc = _skeleton_doc(precedence=("X1 and X2 agree.",))
     assert named_id_findings(parse_rules_doc(doc)) == []
-    # the block format's interacts: still reports
-    block = ("X1. S.\n      \"a\"  →  given=\"a\"\n"
-             "    no-boundary: synthetic.\n"
-             "    interacts: X9 · implemented: nameparser/_parser.py\n")
-    assert named_id_findings(parse_rules_doc(block)) == ["X1 -> X9"]
 
 
 @pytest.mark.parametrize("field", [
@@ -433,7 +464,7 @@ def _skeleton_hub_findings(r: Rule, ids: set[str]) -> list[str]:
     """A skeleton hub's map is the bullet list under its Then: the
     union of the rule IDs the bullets name. Each hub rule must be in
     it, each ID in it must be a hub rule, and each bullet must name
-    a rule. There is no ``interacts:`` to check."""
+    a rule."""
     assert r.skeleton is not None
     problems = []
     bullets = r.skeleton.then_bullets
@@ -456,97 +487,27 @@ def _skeleton_hub_findings(r: Rule, ids: set[str]) -> list[str]:
     return problems
 
 
-def hub_findings(rules: list[Rule], prose: dict[str, list[str]]) -> list[str]:
-    """A hub's ``Signal: ... hub of ...`` names the rules stating the
-    signals it combines; each must be another rule, listed in the
-    hub's ``interacts:``, and named in ONE sentence of its statement
-    (the Accepted clauses aside) -- the one-line map -- so the map
-    cannot leave one out while the rule names it elsewhere. The map is
-    the sentence naming the most of them, and the check runs both
-    ways: a rule the map names that the Signal: line leaves off is a
-    finding too, which is the half of S2's lost S9 (named in neither
-    its map nor its interacts: before PR #745) the first direction
-    alone would miss. A sentence ends at a full stop, ?, or !, past
-    any closing quote or bracket, before a capital -- an
-    approximation: an abbreviation before a capital ("e.g. C4") splits
-    one, which can only make the check stricter. ``prose`` is
-    rules_doc.prose_blocks'."""
+def hub_findings(rules: list[Rule]) -> list[str]:
+    """A hub's ``**Signal:** ... hub of ...`` names the rules stating
+    the signals it combines, and its map is the bullet list under its
+    Then; each rule on the list must be another rule and named by a
+    bullet, and the check runs both ways: a rule a bullet names that
+    the Signal: line leaves off is a finding too, which is the half of
+    S2's lost S9 (named in neither its map nor its pointer line before
+    PR #745) the first direction alone would miss."""
     ids = {r.rule_id for r in rules}
     problems = []
     for r in rules:
-        if not r.hub:
-            continue
-        if r.skeleton is not None:
+        if r.hub:
             problems += _skeleton_hub_findings(r, ids)
-            continue
-        statement, _ = split_accepted(prose.get(r.rule_id, []))
-        sentences = re.split(r"(?<=[.?!])[\"')\]\u201d\u2019]*\s+(?=[A-Z])",
-                             " ".join(" ".join(statement).split()))
-        def named(rid: str, text: str) -> bool:
-            return re.search(rf"\b{rid}\b", text) is not None
-        best = max(sentences, key=lambda t: sum(named(i, t) for i in r.hub))
-        for rid in r.hub:
-            where = f"{r.rule_id}'s Signal: hub of ... {rid}"
-            if rid not in ids or rid == r.rule_id:
-                problems.append(f"{where}: names no other rule")
-                continue
-            if rid not in r.interacts:
-                problems.append(f"{where}: missing from its interacts:")
-            if not named(rid, best):
-                problems.append(f"{where}: its statement's map omits it")
-        for rid in sorted(set(re.findall(r"\b[A-Z]\d+\b", best)) & ids
-                          - set(r.hub) - {r.rule_id}):
-            problems.append(f"{r.rule_id}'s map names {rid}, which its "
-                            f"Signal: hub of ... leaves off")
     return problems
 
 
 def test_a_hub_names_each_rule_its_map_names() -> None:
     rules = parse_rules_doc(read_rules_text())
     assert [r.rule_id for r in rules if r.hub], "no hub to check"
-    problems = hub_findings(rules, prose_blocks(read_rules_text()))
+    problems = hub_findings(rules)
     assert not problems, "\n".join(problems)
-
-
-@pytest.mark.parametrize("signal, interacts, statement, finding", [
-    ("hub of X2", "X2", "read by X2.", None),
-    ("hub of X9", "X2", "read by X9.", "names no other rule"),
-    ("hub of X1", "X1", "read by X1.", "names no other rule"),
-    ("hub of X2", "X3", "read by X2.", "missing from its interacts:"),
-    ("hub of X2", "X2", "read by nothing.", "its statement's map omits it"),
-    # X2 is not named merely because X21 is (no rule, so no reverse
-    # finding beside it)
-    ("hub of X2", "X2", "read by X21.", "its statement's map omits it"),
-    # named, but outside the sentence mapping the others
-    ("hub of X2, X3", "X2, X3", "Reads X2 here. Mapped: X3.",
-     "its statement's map omits it"),
-    # named only in an Accepted clause
-    ("hub of X2", "X2", "No map.\n    Accepted: X2.",
-     "its statement's map omits it"),
-    ("a shape: x; hub of X2, X3", "X2, X3", "Read by X2 and X3.", None),
-    # the map is the sentence naming the most, not the first
-    ("hub of X2, X3", "X2, X3", "Reads X2 here. Mapped: X2 and X3.", None),
-    # a sentence ending in a closing bracket still ends
-    ("hub of X2, X3", "X2, X3", "Read by X2 (see X2.) Mapped X3.",
-     "its statement's map omits it"),
-    # the reverse: the map names a rule the Signal: line leaves off
-    ("hub of X2", "X2", "Read by X2 and X3.",
-     "which its Signal: hub of ... leaves off"),
-])
-def test_hub_findings_catch_each_gap(signal: str, interacts: str,
-                                     statement: str,
-                                     finding: str | None) -> None:
-    doc = (f"X1. {statement}\n      \"a\"  →  given=\"a\"\n"
-           f"    no-boundary: synthetic.\n    Signal: {signal}\n"
-           f"    interacts: {interacts} · "
-           f"implemented: nameparser/_parser.py\n"
-           f"X2. Other.\nX3. Other.\nX20. Other.\n")
-    rules = parse_rules_doc(doc)
-    got = hub_findings(rules, prose_blocks(doc))
-    if finding is None:
-        assert got == []
-    else:
-        assert len(got) == 1 and finding in got[0], got
 
 
 @pytest.mark.parametrize("signal, bullets, excepts, finding", [
@@ -565,16 +526,17 @@ def test_hub_findings_catch_each_gap(signal: str, interacts: str,
     ("hub of X2, X3", ("X3 next.",), ("X2 is an exception.",),
      "its statement's map omits it"),
     ("hub of X9", ("X9 first.",), (), "names no other rule"),
+    # a hub naming itself names no other rule
+    ("hub of X1, X2", ("X1 and X2.",), (), "names no other rule"),
+    # X2 is not named merely because X21 is
+    ("hub of X2, X3", ("X21 and X3.",), (), "its statement's map omits it"),
 ])
 def test_skeleton_hub_findings_catch_each_gap(
         signal: str, bullets: tuple[str, ...], excepts: tuple[str, ...],
         finding: str | None) -> None:
     doc = _skeleton_doc(signal=signal, bullets=bullets, excepts=excepts,
                         others=("X2", "X3", "X4"))
-    rules = parse_rules_doc(doc)
-    got = hub_findings(rules, prose_blocks(doc))
-    # a skeleton rule has no interacts:, so that is never a finding
-    assert not any("interacts:" in g for g in got), got
+    got = hub_findings(parse_rules_doc(doc))
     if finding is None:
         assert got == []
     else:

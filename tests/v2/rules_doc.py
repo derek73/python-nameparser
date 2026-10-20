@@ -1,85 +1,43 @@
 """Parser and annotation registry for docs/design/rules/ example lines.
 
-Two rule formats are read, chosen per block (a heading `# ID — name` up
-to the next markdown heading): the BLOCK format described below, and the
-SKELETON format. A block is dispatched to the skeleton parser only
-under a `# ID — name` heading, and only when it holds a line opening
-at column 0 with When, Then or Because and a colon, in any spelling:
-any case, the word bold or otherwise wrapped in `*` or `_`, a space
-before the colon allowed (rules_skeleton.is_skeleton_block). Matching
-the near misses is deliberate: a misspelled label still reaches the
-skeleton parser, which raises on it, rather than this one, which would
-skip it. Its fields, fences and footer are defined and parsed by
-``rules_skeleton.py`` (``Rule.skeleton`` is set for those rules only).
-Both give the same ``Rule`` and the same ``prose_blocks`` shape, so
-every consumer reads either.
+Every rule is written in the skeleton format (#761): a heading
+`# ID — name`, bold-labelled fields, fenced examples and a footer, up
+to the next markdown heading. ``rules_skeleton.py`` defines and parses
+the format; this module splits the rules text into rule blocks and
+section Backgrounds, and owns what both formats once shared: the
+example-line grammar, the ``Example`` and ``Rule`` records, and the
+registries an example's annotation resolves through.
 
-The block grammar (described for humans in the rules README's preamble;
+The example-line grammar (described for humans in the rules README;
 this module is its executable definition):
 
     "INPUT" [annotation] →  field=VALUE  [· boundary]
                             [deviates: #N (today: field=VALUE)]
 
-plus per-rule ``no-boundary: reason`` lines and the trailing pointer
-line ``history: ... · interacts: A1, B2 · implemented: path, path``.
-A rule nothing implements yet carries ``tracked: #N, #M`` in place of
-``implemented:`` — the issues that would ship it. Exactly one of the
-two is required, so a normative rule always points either at the code
-that honors it or at the work that will.
+or, for a D-section subject, ``[subject]`` in place of the quoted
+input. A line that looks like an example but does not parse is a hard
+error naming the rule: a silent skip would un-execute a claim.
 
-A rule may also carry ``tolerated: <reason>``, which takes it out of
-the document's normative reading: its statement DESCRIBES what the
-parser does with input no writing convention produces (W3: a comma
-between a CJK family name and given name), and does not promise it.
-The line changes nothing a test or tool does with the rule: the
-examples parse, test_rules_doc.py still executes them, and
-tools/differential/build_rules_corpus.py harvests them like any
-other's, so the snapshot still shows their reading move (#664). What
-it changes is the promise, for the reader. The reason is free text,
-but it must be there: a marker with no reason is a hard error, the
-same way a malformed example is. A near miss on the spelling —
-``Tolerated:``, ``tolerated :``, a bare ``tolerated:`` — fails loudly
-too: read as prose, it would leave the rule reading as a promise its
-author meant to withdraw, and put the line into the statement a
-citation quotes and the size budget counts.
-
-Every rule also states its ``Signal:`` -- what in the written name it
-reads, for example a count, a case contrast, a shape, a neighbor, a
-position, or ``none in the name: ...`` for a rule reading configuration
-or the parsed words; the kinds are not a closed set. The line is one
-line, never wrapped, and stands directly above the rule's pointer line;
-the parser refuses one that does not, because a wrapped continuation
-would read as statement prose, quotable by a citation. A hub, a rule
-deciding by several signals each stated by a rule of its own, writes
-``Signal: hub of C3, C4, ...``, naming those rules, after any signal
-it reads itself (``Signal: <own signals>; hub of C3, C4``); the doc
-tests hold each named rule to the hub's ``interacts:`` and to one
-sentence of its statement, so the hub's map cannot leave one out. A
-line naming two signals joins them with `` + ``, which marks the rule
-a split candidate (docs/design/AGENTS.md, "One rule per piece of
-evidence"). A condition the rule cites to the rule stating it stays
-off the line, and a gate on the name's size ("exactly three name
-words", "a word to spare") is part of the signal it gates.
-The line is metadata, not statement prose: a citation cannot quote it
-and the size budget (tests/v2/rules_budget.py) does not count it.
-
-Inside a rule block, any line whose first non-space character is a
-double quote (or an opening bracket, the D-section subject form) is an
-example line and MUST parse — a silent skip would un-execute a claim,
-so a malformed example is a hard error naming the rule.
+The block format the rules were written in before #761 is retired: a
+line opening ``ID.`` at the start of a line, outside a rule's heading
+or as the first line under it, is refused rather than skipped, since
+read as nothing its examples would never run.
 """
 from __future__ import annotations
 
 import ast
 import re
 from dataclasses import dataclass, field as dc_field
+from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from tests.v2.rules_skeleton import Skeleton
 
 
-_RULE_RE = re.compile(r"^([A-Z])(\d+)\.\s")
+#: The opening line of a block-format rule (``X1. Statement.``), the
+#: format #761 retired.
+_RETIRED_RULE_RE = re.compile(r"^[A-Z]\d+\.\s")
 _VALUE = r"\"[^\"]*\"|\([^)]*\)|\[(?:[^\[\]]|\[[^\]]*\])*\]"
 _EXAMPLE_RE = re.compile(
     r'^\s*(?:"(?P<text>[^"]*)"|\[(?P<subject>[a-z][a-z0-9_+-]*)\])'
@@ -90,47 +48,12 @@ _EXAMPLE_RE = re.compile(
     r"(?:\s+deviates:\s+#(?P<issue>\d+)\s+\(today:\s+"
     rf"(?P<tfield>[a-z_]+)=(?P<today>{_VALUE})\))?"
     r"\s*$")
-_NO_BOUNDARY_RE = re.compile(r"^\s*no-boundary:\s+(?P<reason>\S.*)$")
-_TOLERATED_RE = re.compile(r"^\s*tolerated:\s+(?P<reason>\S.*)$")
-#: A line that was MEANT to be the marker above. Everything the strict
-#: form rejects -- any casing of the word, a space before the colon, a
-#: reason that is empty or all whitespace -- lands here and raises,
-#: because the silent alternative is the dangerous one (see the raise
-#: below). Case-insensitive rather than just `[Tt]`: an author
-#: shouting the word is making the same mistake as one capitalizing
-#: it, and no line in a rule block legitimately opens with it.
-_NEAR_TOLERATED_RE = re.compile(r"^\s*tolerated\b", re.IGNORECASE)
-_SIGNAL_RE = re.compile(r"^\s*Signal:\s+(?P<text>\S.*?)\s*$")
-#: Any line meant to be the signal line, the strict form's near misses
-#: included (``signal:``, ``Signal :``, an empty one): a near miss read
-#: as prose would leave the rule with no signal and put the line into
-#: the quotable statement.
+#: Any line meant to be a signal line, in any spelling (``signal:``,
+#: ``Signal :``, bold or not): above a rule's footer, or outside any
+#: rule, it would be read as prose or as nothing, leaving the rule with
+#: no signal.
 NEAR_SIGNAL_RE = re.compile(r"^\s*[*_]*signals?[*_]*\s*[:\uff1a]",
                             re.IGNORECASE)
-#: A hub's signal: the rules it maps, after any signal it reads itself.
-_HUB_RE = re.compile(
-    r"(?:(?P<own>\S.*?); )?hub of (?P<ids>[A-Z]\d+(?:, [A-Z]\d+)*)")
-#: A signal line meant as a hub's: one that does not fullmatch _HUB_RE
-#: raises rather than reading as a plain signal, which would leave the
-#: hub's rules unchecked. A plain word holding the letters ("Hubert",
-#: "a hub-like word") is not one.
-_NEAR_HUB_RE = re.compile(r"\bhubs?\b(?!-)", re.IGNORECASE)
-#: The line opening an Accepted clause, in either spelling the rules
-#: write ("Accepted:", "Accepted, and the reason ...:"); a line that
-#: merely begins with the word ("Accepted rather than repaired:",
-#: mid-clause in P8) is not one.
-ACCEPTED_RE = re.compile(r"^\s*Accepted[:,]")
-#: A line meant to open an Accepted clause but spelled otherwise
-#: (``Accepted :``, ``Accepted --``, ``Accepted (2026):``, lowercase):
-#: read as statement, its words would land in the wrong measure and a
-#: hub's map sentence could hide in it. "Accepted" followed by a word
-#: is prose and passes.
-_NEAR_ACCEPTED_RE = re.compile(r"^\s*accepted\s*(?:[:,(]|--|—)",
-                               re.IGNORECASE)
-_POINTER_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
-_POINTER_PART_RE = re.compile(
-    r"(history|interacts|implemented|tracked):\s*([^·]+)")
-
 ASSERTABLE_FIELDS = frozenset({
     "title", "given", "middle", "family", "suffix", "nickname", "maiden",
     "family_base", "family_particles", "surnames", "given_names",
@@ -155,26 +78,25 @@ class Rule:
     rule_id: str
     examples: list[Example] = dc_field(default_factory=list)
     no_boundary: str | None = None
-    interacts: tuple[str, ...] = ()
     implemented: tuple[str, ...] = ()
     #: Issues that would ship a rule nothing implements yet. Mutually
     #: exclusive with ``implemented:`` -- a rule points at code or at
     #: the issues that will produce it, never at neither.
     tracked: tuple[str, ...] = ()
-    #: The ``tolerated:`` line's reason, or None for a normative rule.
+    #: The ``**Tolerated:**`` field's reason, or None for a normative rule.
     #: A tolerated rule's examples illustrate what the parser does
     #: today rather than promise it; no tool treats them differently.
     tolerated: str | None = None
-    #: The ``Signal:`` line's text: what in the written name the rule
-    #: reads. None only where the line is missing, which the doc tests
-    #: refuse for the real rules.
+    #: The ``**Signal:**`` line's text: what in the written name the
+    #: rule reads. None only where the line is missing, which the doc
+    #: tests refuse for the real rules.
     signal: str | None = None
-    #: For a hub (``Signal: [<own signals>; ]hub of C3, C4``), the
+    #: For a hub (``**Signal:** [<own signals>; ]hub of C3, C4``), the
     #: rules whose signals it combines; () for a rule that is no hub.
     hub: tuple[str, ...] = ()
-    #: The parsed fields of a rule written in the skeleton format
-    #: (rules_skeleton.py); None for a block-format rule. ``examples``
-    #: above stays the list that runs, in either format; a skeleton's
+    #: The rule's parsed fields (rules_skeleton.py), None only while
+    #: parse_skeleton is building it. ``examples`` above is the list
+    #: that runs; a skeleton's
     #: ``Bullet.examples`` is a placement view of the same objects (which
     #: bullet's fence an example stands in), not a second set, and an
     #: example sits under one bullet at most.
@@ -301,197 +223,79 @@ def parse_example_line(line: str, rule_id: str,
     return None
 
 
+def _walk(text: str) -> Iterator[
+        tuple[int, str, tuple[str, list[tuple[int, str]], int] | None]]:
+    """Each line outside a rule, as (line number, line, None), and each
+    rule's heading as (line number, line, its block), the block's lines
+    then skipped (rules_skeleton.skeleton_block_at)."""
+    from tests.v2 import rules_skeleton
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        block = rules_skeleton.skeleton_block_at(lines, i)
+        yield i + 1, lines[i], block
+        i = block[2] if block is not None else i + 1
+
+
+def _retired(rid: str, lineno: int, line: str) -> ValueError:
+    return ValueError(
+        f"{rid}: line {lineno} opens a rule in the block format, which "
+        f"#761 retired: {line.strip()!r}. Write the rule as a skeleton "
+        f"(docs/design/rules/README.md): a `# ID — name` heading, then "
+        f"**When:**, **Then:** and **Because:**, examples in fences and "
+        f"a `---` footer")
+
+
 def parse_rules_doc(text: str) -> list[Rule]:
     from tests.v2 import rules_skeleton
     rules: list[Rule] = []
-    current: Rule | None = None
-    signal_at: int | None = None    # the line a pointer must follow
-    all_lines = text.splitlines()
-    skip_to = 0                     # lines up to here are a skeleton block
-    for lineno, line in enumerate(all_lines, 1):
-        if lineno <= skip_to:
-            continue
-        if signal_at is not None and not _POINTER_RE.match(line):
-            raise ValueError(
-                f"{current.rule_id if current else '?'}: line {signal_at}: "
-                f"a `Signal:` line must stand directly above the rule's "
-                f"pointer line, on one line; the next line is "
-                f"{line.strip()!r}")
-        signal_at = None
-        if line.startswith("#"):        # a heading ends any rule block
-            current = None
-            block = rules_skeleton.skeleton_block_at(all_lines, lineno - 1)
-            if block is not None:
-                rid, numbered, skip_to = block
-                if any(r.rule_id == rid for r in rules):
-                    raise ValueError(
-                        f"duplicate rule ID {rid} at line {lineno}")
-                rules.append(rules_skeleton.parse_skeleton(rid, numbered))
-            continue
-        m = _RULE_RE.match(line)
-        if m:
-            rid = m.group(1) + m.group(2)
-            if any(r.rule_id == rid for r in rules):
-                raise ValueError(f"duplicate rule ID {rid} at line {lineno}")
-            current = Rule(rule_id=rid)
-            rules.append(current)
-            continue
-        if current is None:
+    for lineno, line, block in _walk(text):
+        if block is None:
+            if _RETIRED_RULE_RE.match(line):
+                raise _retired(line.split(".")[0], lineno, line)
             if NEAR_SIGNAL_RE.match(line):
                 after = rules[-1].rule_id if rules else "the start"
                 raise ValueError(
-                    f"line {lineno}, after {after}: a `Signal:` line "
-                    f"outside any rule block; it belongs directly above "
-                    f"its rule's pointer line: {line.strip()!r}")
+                    f"line {lineno}, after {after}: a signal line outside "
+                    f"any rule; it belongs in its rule's footer, directly "
+                    f"above the pointer line: {line.strip()!r}")
             continue
-        stripped = line.lstrip()
-        ex = parse_example_line(line, current.rule_id, lineno)
-        if ex is not None:
-            current.examples.append(ex)
-            continue
-        nb = _NO_BOUNDARY_RE.match(line)
-        if nb:
-            current.no_boundary = nb.group("reason")
-            continue
-        tol = _TOLERATED_RE.match(line)
-        if tol:
-            current.tolerated = tol.group("reason")
-            continue
-        if _NEAR_TOLERATED_RE.match(line):
-            raise ValueError(
-                f"{current.rule_id}: line {lineno} looks like a "
-                f"`tolerated:` marker but does not parse: {stripped!r}. "
-                f"The spelling is `tolerated: <reason>` -- lowercase, "
-                f"no space before the colon, and a reason that is not "
-                f"empty. Read as prose, a near miss would leave the "
-                f"rule reading as a PROMISE -- the opposite of what the "
-                f"line was written to say, and green in every suite -- "
-                f"and put the line into the statement a citation quotes "
-                f"and the size budget counts. The reason is unvalidated "
-                f"free text but required, because a demotion nobody had "
-                f"to justify is the one nobody reviews")
-        sig = _SIGNAL_RE.match(line)
-        if sig:
-            if current.signal is not None:
-                raise ValueError(
-                    f"{current.rule_id}: line {lineno}: a second "
-                    f"`Signal:` line; a rule states one")
-            current.signal = sig.group("text")
-            hub = _HUB_RE.fullmatch(current.signal)
-            if hub is None and _NEAR_HUB_RE.search(current.signal):
-                raise ValueError(
-                    f"{current.rule_id}: line {lineno}: a hub's signal "
-                    f"line is `Signal: hub of C3, C4`, or `Signal: <its own "
-                    f"signals>; hub of C3, C4` -- rule IDs joined by a "
-                    f"comma and a space; read as a plain signal, "
-                    f"its rules would go unchecked: {stripped!r}")
-            current.hub = tuple(hub.group("ids").split(", ")) if hub else ()
-            signal_at = lineno
-            continue
-        if NEAR_SIGNAL_RE.match(line):
-            raise ValueError(
-                f"{current.rule_id}: line {lineno} looks like a `Signal:` "
-                f"line but does not parse: {stripped!r}. The spelling is "
-                f"`Signal: <what the rule reads>` -- capitalized, no "
-                f"space before the colon, and not empty")
-        if _POINTER_RE.match(line):
-            for key, val in _POINTER_PART_RE.findall(line):
-                items = tuple(v.strip() for v in val.split(",") if v.strip())
-                if key == "interacts":
-                    current.interacts = items
-                elif key == "implemented":
-                    current.implemented = items
-                elif key == "tracked":
-                    current.tracked = items
-            continue
-        if _NEAR_ACCEPTED_RE.match(line) and not ACCEPTED_RE.match(line):
-            raise ValueError(
-                f"{current.rule_id}: line {lineno} looks like an Accepted "
-                f"clause but does not open one: {stripped!r}. The "
-                f"spelling is `Accepted:` or `Accepted, and ...:`")
-        if line.strip() and not (line.startswith("    ")
-                                 and line[4] != " "):
-            # Neither example, marker, pointer nor 4-space prose: read
-            # as nothing, it would fall out of the statement a citation
-            # quotes and the size budget counts without a word.
-            raise ValueError(
-                f"{current.rule_id}: line {lineno} is no line a rule block "
-                f"holds -- statement and Accepted prose is indented four "
-                f"spaces, an example six: {line!r}")
-    if signal_at is not None:
-        raise ValueError(
-            f"{current.rule_id if current else '?'}: line {signal_at}: a "
-            f"`Signal:` line must stand directly above the rule's pointer "
-            f"line; the text ends after it")
+        rid, numbered, _ = block
+        if any(r.rule_id == rid for r in rules):
+            raise ValueError(f"duplicate rule ID {rid} at line {lineno}")
+        first = next(((n, ln) for n, ln in numbered if ln.strip()), None)
+        if first is not None and _RETIRED_RULE_RE.match(first[1]):
+            raise _retired(rid, *first)
+        rules.append(rules_skeleton.parse_skeleton(rid, numbered))
     return rules
 
 
 def prose_blocks(text: str) -> dict[str, list[str]]:
-    """The prose lines of each rule and section Background, unjoined:
-    for a rule, its statement and Accepted: clauses -- everything in
-    the block but example, pointer, marker and Signal: lines, the
-    rule's ID stripped from its first line; for a section letter, its
-    Background paragraph. What a citation may quote
-    (test_doc_citations.py) and what the size budget counts
-    (rules_budget.py), read by one function so the two cannot
-    disagree about where a statement ends."""
+    """The quotable lines of each rule, keyed by its ID, and of each
+    section's Background paragraph, keyed by the section letter: for a
+    rule, the text of its fields (rules_skeleton.skeleton_prose); for a
+    section, the Background paragraph's lines, unjoined. What a citation
+    may quote (test_doc_citations.py), read by one function."""
     from tests.v2 import rules_skeleton
     out: dict[str, list[str]] = {}
-    current: list[str] | None = None
+    section: str | None = None
     background: list[str] | None = None
-    section = None
-    marker = False          # inside a wrapped no-boundary: marker
-    all_lines = text.splitlines()
-    skip_to = 0             # lines up to here are a skeleton block
-    for lineno, line in enumerate(all_lines, 1):
-        if lineno <= skip_to:
+    for _lineno, line, block in _walk(text):
+        if block is not None:
+            section = background = None
+            parsed = rules_skeleton.parse_skeleton(block[0], block[1])
+            assert parsed.skeleton is not None
+            out[block[0]] = rules_skeleton.skeleton_prose(parsed.skeleton)
             continue
-        m = _RULE_RE.match(line)
-        hm = re.match(r"## .*\(([A-Z])\)\s*$", line)
         if background is not None:
             if line.strip():
                 background.append(line)
                 continue
             background = None
+        hm = re.match(r"## .*\(([A-Z])\)\s*$", line)
         if hm:
             section = hm.group(1)
         elif section and line.startswith("Background:"):
             background = out[section] = [line]
             section = None
-            continue
-        if NEAR_SIGNAL_RE.match(line):  # metadata: not quotable
-            continue
-        if re.match(r"\s*(no-boundary|tolerated):", line):
-            marker = True
-            continue
-        if marker and (_POINTER_RE.match(line) or not line.strip()
-                       or line.startswith("      ") or m):
-            marker = False
-        if m:
-            current = out.setdefault(m.group(1) + m.group(2), [])
-            current.append(line[m.end():])
-        elif line.startswith("#"):
-            current = None
-            block = rules_skeleton.skeleton_block_at(all_lines, lineno - 1)
-            if block is not None:
-                rid, numbered, skip_to = block
-                parsed = rules_skeleton.parse_skeleton(rid, numbered)
-                assert parsed.skeleton is not None
-                out[rid] = rules_skeleton.skeleton_prose(parsed.skeleton)
-        elif current is not None and line.startswith("    ") and not (
-                marker or line.startswith("      ")
-                or _POINTER_RE.match(line)):
-            current.append(line)
     return out
-
-
-def split_accepted(lines: list[str]) -> tuple[list[str], list[list[str]]]:
-    """A rule's prose lines (prose_blocks) as its statement -- the
-    Rationale included -- and its Accepted clauses, each clause running
-    to the next."""
-    starts = [i for i, ln in enumerate(lines) if ACCEPTED_RE.match(ln)]
-    if not starts:
-        return list(lines), []
-    bounds = [*starts, len(lines)]
-    return (lines[:starts[0]],
-            [lines[a:b] for a, b in zip(bounds, bounds[1:])])

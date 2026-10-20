@@ -259,8 +259,9 @@ ROMAN = _ROMAN
 # vocabulary lists, and those up to X it does not, by their shape
 # alone" -- its Then clause, the `_ROMAN` test; and rules/S10's Except
 # bullet "An initial in front makes it a name word too", the two
-# is_initial_shaped tests on `preceding`. Its one-letter Except, the
-# words-to-spare count, is the callers'. decisions/S10 (#718, #721)
+# is_initial_shaped tests on `preceding`. The words-to-spare count,
+# rules/S10's Except bullet "A numeral of one letter needs words to
+# spare", is the callers'. decisions/S10 (#718, #721)
 def is_trailing_numeral_suffix(text: str, preceding: str,
                                one_case: bool | None) -> bool:
     """The trailing walk's roman-numeral fork: a FINAL single-token

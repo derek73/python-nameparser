@@ -59,30 +59,27 @@ def test_every_rule_points_at_code_or_at_the_work(rule: Rule) -> None:
 
 @pytest.mark.parametrize("rule", RULES, ids=lambda r: r.rule_id)
 def test_every_rule_states_its_signal(rule: Rule) -> None:
-    """What in the written name the rule reads, on its ``Signal:`` line
+    """What in the written name the rule reads, on its ``**Signal:**`` line
     (docs/design/AGENTS.md, "One rule per piece of evidence"). A hub
     also names the rules stating the signals it combines, after any
     signal it reads itself, which
     test_doc_citations.py::test_a_hub_names_each_rule_its_map_names
     holds to its map."""
     assert rule.signal is not None, (
-        f"{rule.rule_id}: add a `Signal: <what it reads>` line directly "
-        f"above its pointer line -- for example a count, a case "
-        f"contrast, a shape, a neighbor, a position -- or `Signal: hub of "
-        f"X1, X2` (after any signal of its own: `Signal: <its own>; hub "
-        f"of X1, X2`) for a hub. In a skeleton rule the same line is "
-        f"spelled `**Signal:** <tag>` and stands in the footer below "
-        f"`---`, directly above the pointer line")
+        f"{rule.rule_id}: add a `**Signal:** <what it reads>` line in "
+        f"the footer below `---`, directly above the pointer line -- for "
+        f"example a count, a case contrast, a shape, a neighbor, a "
+        f"position -- or `**Signal:** hub of X1, X2` (after any signal of "
+        f"its own: `**Signal:** <its own>; hub of X1, X2`) for a hub")
 
 
 #: The README's recipe for the split candidates, verbatim; in grep's
 #: basic syntax "+" is a literal plus.
-_SPLIT_GREP = (
-    r"grep -lE '^(    Signal:|\*\*Signal:\*\*).* \+ ' docs/design/rules/*.md")
+_SPLIT_GREP = r"grep -lE '^\*\*Signal:\*\*.* \+ ' docs/design/rules/*.md"
 
 
-#: _SPLIT_GREP's pattern in Python's syntax: either format's Signal line.
-_SPLIT_PATTERN = r"^(    Signal:|\*\*Signal:\*\*).* \+ "
+#: _SPLIT_GREP's pattern in Python's syntax.
+_SPLIT_PATTERN = r"^\*\*Signal:\*\*.* \+ "
 
 
 def test_the_readmes_worked_example_is_the_rule_it_copies() -> None:
@@ -113,14 +110,6 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
     # so the two halves are also held to a synthetic rule of each kind.
     for signal, candidate in (("a shape: x + a count: y", True),
                               ("a shape: x", False)):
-        doc = ("X1. Rationale: r.\n    Statement.\n"
-               '      "A B"                       →  given="A"  · boundary\n'
-               f"    Signal: {signal}\n"
-               "    history: decisions/P2 · implemented: nameparser/_parser.py\n")
-        (rule,) = parse_rules_doc(doc)
-        assert rule.signal == signal
-        assert (" + " in rule.signal) is candidate
-        assert bool(re.search(_SPLIT_PATTERN, doc, re.M)) is candidate
         skeleton = ("# X1 — one\n\n**When:** w.\n\n**Then:** t.\n\n"
                     "**Because:** b.\n\n---\n"
                     f"**Signal:** {signal}\n"
@@ -128,7 +117,29 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
                     "nameparser/_parser.py\n")
         (rule,) = parse_rules_doc(skeleton)
         assert rule.signal == signal
+        assert (" + " in rule.signal) is candidate
         assert bool(re.search(_SPLIT_PATTERN, skeleton, re.M)) is candidate
+
+
+def test_the_readme_lists_every_signal_tag_the_rules_use() -> None:
+    """The README's tag list against the footers, both ways: a tag a
+    rule writes that the list leaves out, and a listed tag no rule
+    writes. A tag is a signal's text before its colon, each side of a
+    ` + `, a hub's list left off (#761 found `character`, `separator`
+    and `edge full stop` missing)."""
+    readme = (RULES_DIR / "README.md").read_text(encoding="utf-8")
+    m = re.search(r"The tags the rules use are (?P<list>[^.]+)\. Two kinds "
+                  r"of rule carry none of them: (?P<rest>.+?)\.(?= )", readme)
+    assert m is not None, "rules/README.md lost its signal tag list"
+    listed = set(re.split(r", | and ", m.group("list")))
+    listed |= set(re.findall(r"`([^`]+)`", m.group("rest")))
+    used = set()
+    for r in RULES:
+        assert r.signal is not None
+        own = re.sub(r"(?:^|; )hub of .*$", "", r.signal)
+        used |= {part.split(":")[0] for part in own.split(" + ") if part}
+    assert used - listed == set(), "add these tags to rules/README.md"
+    assert listed - used == set(), "no rule writes these listed tags"
 
 
 def _check_diagnostic(example: Example) -> None:
