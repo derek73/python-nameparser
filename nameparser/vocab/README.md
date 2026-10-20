@@ -81,17 +81,17 @@ Two rules about the `text`:
 
 ## Word order
 
-Every file but `und.toml` lists its words in one order, and the build refuses a file that does not (check 10), naming the entry and the word it belongs after:
+Every file but `und.toml` lists its words in one order, and the build refuses a file that does not (check 10), naming the entry to move and the word it belongs after:
 
 1. **By kind**, in the order of the table under [Kinds](#kinds), which lists the categories in turn and each category's kinds together. A word with several readings sorts under its first kind in that order. A word whose only vocabulary reading is a refusal (`fils`, `senior`) sorts under the kind it refuses, a refused category counting as its first kind, and a name reading places a word only when it has nothing else.
-2. **Then by the word it is a spelling of**: a reading's `same_as`, or the word's own text when it has none. A head comes first and its spellings follow it, so `jr` is followed by `jnr` and `junior`, and `sr` by `snr`. A spelling that has spellings of its own heads a group inside its head's: in `ar.toml`, `el-` follows the other spellings of `al-` with its own assimilated forms after it.
+2. **Then by the word it is a spelling of**: a reading's `same_as`, or the word's own text when it has none. A head comes first and its spellings follow it, so `jr` is followed by `jnr` and `junior`, and `sr` by `snr`. A spelling that has spellings of its own heads a group inside its head's: in `ar.toml`, `el-` follows the `a…-` spellings of `al-` with its own assimilated forms after it, and `ul-` comes last. Only the file's own entries are followed, so a word that is a head in one file and a spelling in another is placed in each file by that file alone.
 3. **Then by the word's text.**
 
-Text is compared by codepoint. The texts are already normalized, so this is the order of the normalized text, whatever the script: Latin before Cyrillic before Arabic, and within a script an accented letter after `z` (`aḍ-` follows `az-`). It is defined for every script and the same on every machine, and it is no one language's collation. A traditional and a simplified spelling with no `same_as` between them sort apart (`課長` and `课长` in `zh.toml`).
+Text is compared by codepoint. The texts are already normalized, so this is the order of the normalized text, whatever the script: Latin before Cyrillic before Arabic, and within a script an accented letter after `z` (`aḍ-` follows `az-` and `aš-`). It is defined for every script and the same on every machine, and it is no one language's collation. A traditional and a simplified spelling with no `same_as` between them sort apart (`課長` and `课长` in `zh.toml`).
 
-The build checks the order and never rewrites a file, because a comment above an entry belongs to it and must move with it, which a TOML reader cannot see. When the build says an entry belongs somewhere else, move it with its comment.
+The build checks the order and never rewrites a file, because a comment above an entry belongs to it and must move with it, which a TOML reader cannot see. When the build says an entry belongs somewhere else, move it with its comment. The order is checked last, so any other refusal (an exclusion's reason, a `same_as` naming no word) is reported first. The same check refuses a `same_as` chain that loops, in every file.
 
-`und.toml` is exempt. Its entries keep the order of the Python lists they were converted from, and its vetting comments still point at their neighbours ("the bare-κ trap above"); a word leaving it for a language file takes its place in that file's order.
+`und.toml` is exempt. Its entries keep the order of the Python lists they were converted from, and its vetting comments still point at their neighbours ("the TITLES block below"); a word leaving it for a language file takes its place in that file's order.
 
 ## Kinds
 

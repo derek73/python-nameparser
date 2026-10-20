@@ -130,7 +130,9 @@ def test_moving_a_word_between_files_changes_nothing(shipped: dict[str, str]) ->
 def test_an_exclusion_in_one_file_refuses_the_reading_in_another(
         shipped: dict[str, str]) -> None:
     files = dict(shipped)
-    files["und.toml"] += '\n[[word]]\ntext = "fils"\ngeneration = {}\n'
+    # appended to an ordered file, out of place: the reason still comes
+    # first, check 10 running last
+    files["en.toml"] += '\n[[word]]\ntext = "fils"\ngeneration = {}\n'
     with pytest.raises(build.VocabError, match="767 US Census"):
         _compile(files)
 
@@ -279,11 +281,30 @@ MUTATIONS = [
     ("same-as-variant-away-from-its-head", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "younger"\ngeneration = { same_as = "jr" }')}, "'sr' \\(generation\\) belongs after 'younger'"),
     # an entry recording only a refusal sorts under the kind it refuses
     ("refusal-out-of-its-kind", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "esq"\ncourtesy = {}\n\n[[word]]\ntext = "senior"\nexcluded = { generation = "x" }')}, "'esq' \\(courtesy\\) belongs after 'senior'"),
-    ("refusal-first-in-the-file", {"en.toml": _w('[[word]]\ntext = "senior"\nexcluded = { generation = "x" }\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'senior' \\(generation\\) belongs after 'jr'"),
+    ("refusal-first-in-the-file", {"en.toml": _w('[[word]]\ntext = "senior"\nexcluded = { generation = "x" }\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'senior' \\(sorted as generation, the kind it refuses\\) belongs after 'jr'"),
+    # the entry named is the one to move: a word appended at the end,
+    # not the neighbours it displaced
+    ("appended-word-out-of-place", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "aa"\ngeneration = {}')}, "'aa' \\(generation\\) belongs first, before 'jr'"),
+    ("appended-word-mid-file", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "ta"\ngeneration = {}\n\n[[word]]\ntext = "tb"\ngeneration = {}\n\n[[word]]\ntext = "ka"\ngeneration = {}')}, "'ka' \\(generation\\) belongs after 'jr'"),
+    # a refused category sorts as its first kind
+    ("refused-category-out-of-place", {"en.toml": _w('[[word]]\ntext = "zzz"\nexcluded = { relation = "x" }\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'zzz' \\(sorted as birth_marker, the kind it refuses\\) belongs after 'jr'"),
+    # the file's own chains decide its order, not another file's: de
+    # makes jr a spelling of aa, and en must still put its jr first
+    ("other-files-chain-does-not-place-a-head", {"de.toml": _w('[[word]]\ntext = "aa"\ngeneration = {}\n\n[[word]]\ntext = "jr"\ngeneration = { same_as = "aa" }'), "en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "en.toml: 'jnr' \\(generation\\) belongs after 'jr'"),
+    # every other refusal is seen before the order's: a same_as typo
+    ("same-as-typo-before-the-order", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "younger"\ngeneration = { same_as = "jrx" }')}, "same_as 'jrx' has no suffix reading"),
     # a chain must end for the key to exist; und.toml's too, though
     # its order is not checked
-    ("same-as-cycle", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "returns to its start"),
-    ("same-as-cycle-in-und", {"und.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "jr -> jnr -> jr returns to its start"),
+    ("same-as-cycle", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "same_as loops, jnr -> jr -> jnr;"),
+    ("same-as-cycle-in-und", {"und.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "same_as loops, jnr -> jr -> jnr;"),
+    # over every same_as written: a loop across files, one another file's
+    # head for the same word would hide, and one through an entry's
+    # second kind of a category
+    ("same-as-cycle-across-files", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }'), "fr.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }')}, "same_as loops"),
+    ("same-as-cycle-behind-another-files-head", {"de.toml": _w('[[word]]\ntext = "x"\ngeneration = {}\n\n[[word]]\ntext = "jr"\ngeneration = { same_as = "x" }'), "en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }\n\n[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }')}, "same_as loops, jnr -> jr -> jnr;"),
+    ("same-as-cycle-through-a-second-kind", {"nl.toml": _w('[[word]]\ntext = "c"\npreposition = { may_be_given = true }\n\n[[word]]\ntext = "a"\npreposition = { may_be_given = true, same_as = "c" }\narticle = { may_be_given = true, same_as = "b" }\n\n[[word]]\ntext = "b"\narticle = { may_be_given = true, same_as = "a" }')}, "same_as loops, a -> b -> a;"),
+    # a chain running INTO a loop: the loop is named, not the chain
+    ("same-as-chain-into-a-loop", {"en.toml": _w('[[word]]\ntext = "xa"\ngeneration = { same_as = "xb" }\n\n[[word]]\ntext = "xb"\ngeneration = { same_as = "xc" }\n\n[[word]]\ntext = "xc"\ngeneration = { same_as = "xb" }')}, "same_as loops, xb -> xc -> xb;"),
 ]
 
 
@@ -358,6 +379,19 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
                        '[[word]]\ntext = "el-"\narticle = { may_be_given = false, same_as = "al-" }\n\n'
                        '[[word]]\ntext = "ed-"\narticle = { may_be_given = false, same_as = "el-" }\n\n'
                        '[[word]]\ntext = "ul-"\narticle = { may_be_given = false, same_as = "al-" }')},
+        # a word sorts under its EARLIEST kind, not its first written;
+        # a vocabulary reading outranks a refusal beside it; a refused
+        # category sorts as its first kind
+        {"en.toml": _w('[[word]]\ntext = "dr"\ntitle = {}\n\n'
+                       '[[word]]\ntext = "md"\ncredential = {}\ntitle = {}\n\n'
+                       '[[word]]\ntext = "jr"\ngeneration = {}\n\n'
+                       '[[word]]\ntext = "aaa"\ncredential = {}\nexcluded = { generation = "x" }\n\n'
+                       '[[word]]\ntext = "zzz"\nexcluded = { relation = "x" }')},
+        # another file's chain does not place this file's head
+        {"de.toml": _w('[[word]]\ntext = "aa"\ngeneration = {}\n\n'
+                       '[[word]]\ntext = "jr"\ngeneration = { same_as = "aa" }'),
+         "en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n'
+                       '[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')},
         # texts compare by codepoint, script by script
         {"sr.toml": _w('[[word]]\ntext = "mlađi"\ngeneration = {}\n\n'
                        '[[word]]\ntext = "млађи"\ngeneration = {}')},

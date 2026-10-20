@@ -165,7 +165,7 @@ title = { addresses = "given" }
 # name), bare شيخ (Shaikha is a common female given name), أمير
 # and سلطان (Amir/Sultan, common given names), and the 'د.'
 # abbreviation -- edge-period normalization would leave bare 'د',
-# which swallows single-letter initials (the bare-κ trap above).
+# which swallows single-letter initials (the bare-κ trap below).
 [[word]]
 text = "الدكتور"
 title = { addresses = "given", note = "\"the doctor\" (m)" }
