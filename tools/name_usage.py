@@ -52,19 +52,23 @@ What a number means depends on its source, and the report says so:
   above, and blind to people whose name has no item at all.
 
 - nam_dict given names (Jörg Michael, 2008; GNU FDL 1.2), the
-  dictionary shipped in the gender-guesser 0.4.0 sdist: about 48,000
-  given names, each with a frequency band per country for 55 countries
-  (the order its own legend gives), 1 = rare up to D = extremely common,
-  each step about a factor of two. It is the non-US given-name evidence
+  dictionary shipped in the gender-guesser 0.4.0 sdist: 45,371 given-name
+  spellings (counted 2026-10-19; the file is pinned), each with a
+  frequency band in 55 columns, 54 countries and "other countries" in
+  the order its own legend gives, 1 = rare up to D = extremely common.
+  The scale is logarithmic, a factor of two a step only where a
+  country's statistics are good. It is the non-US given-name evidence
   the other sources lack (Korean `In` is band A in Korea, Vietnamese
   `Bay` band 6 in Vietnam). A band is not a count, so the row's given
   cell shows the peak band and the bands go in `given_bands`. A
   SELECTION, not a census, and written in Latin letters only: a missing
   name proves nothing (`Shehu` has no entry), and a non-Latin word is
-  unrepresentable. Matched ignoring case, with a `+` in a listed name
-  (`Jun+Wei`, Arabic, Chinese and Korean names) standing for a hyphen,
-  a space or nothing. Downloaded once into the cache, pinned by the
-  sdist's sha256; only that one file is kept, and never in the tree.
+  unrepresentable. Matched ignoring case (`Ilker` finds `İlker`), with
+  a `+` in a listed name (`Jun+Wei`; the header says Arabic, Chinese and
+  Korean names only) standing for a hyphen, a space or nothing. Umlauts
+  are matched as written: `Käte` is listed, `Kaete` is not. Downloaded
+  once into the cache, pinned by the sdist's sha256; only that one file
+  is kept, and never in the tree.
 
 Both US sources spell names in ASCII letters only, without spaces or
 punctuation (O'Brien is OBRIEN), so a word is folded the same way
@@ -97,6 +101,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+import zlib
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
@@ -379,22 +384,40 @@ def ssa_usage(word: str, table: dict[str, Counter[str]] | None) -> Usage:
 #
 # Fixed-width lines, 0-based: a gender code in [0:2] (M, F, ?M, ...,
 # which this tool does not report), the name from [3] to the sort flag at
-# [29], then one hexadecimal band per country from [30], in the order
-# the comment legend gives. Lines opening with "=" are nickname
-# equivalences ("=  Al Albert"). A "+" sort flag marks a copy of a line
-# re-sorted with expanded umlauts; the header says to skip those.
+# [29], one hexadecimal band per country from [30], in the order the
+# comment legend gives, and " $" to end the line. Lines opening with "="
+# are nickname equivalences ("=  Al Albert"). A "+" sort flag marks the
+# lines re-sorted with expanded umlauts, which the header says to ignore;
+# most repeat a "-" line, and the handful that do not (Saša) are skipped
+# with them.
 
 _NAME_START, _SORT_FLAG, _BANDS_START = 3, 29, 30
+_LINE_END = " $"
+#: Name lines (not "=" lines, not "+" re-sorts) the file must yield; the
+#: pinned file yields 46,445 (counted 2026-10-19). A cache file cut at a
+#: line boundary still parses, and would report every name it lost as
+#: not listed, so a short read is refused instead.
+NAMDICT_MIN_NAMES = 40_000
 
 
 @dataclass(slots=True)
 class NamDict:
     countries: list[str]
-    #: Casefolded spelling -> (spelling as listed, {country: band}), one
-    #: per listing line: Dean has an M line and a ? line.
+    #: Folded spelling -> a list of (spelling as listed, {country: band}),
+    #: one per listing line and per "+" expansion: `dean` holds the M and
+    #: ? lines of Dean and the ? line of De+An.
     names: dict[str, list[tuple[str, dict[str, int]]]]
-    #: Casefolded short form -> the long forms it is listed as short for.
+    #: Folded short form -> the long forms it is listed as short for.
     short_for: dict[str, list[str]]
+    #: Name lines read, for the NAMDICT_MIN_NAMES floor.
+    lines: int
+
+
+def namdict_key(word: str) -> str:
+    """The fold the dictionary is matched under, for stored names and
+    looked-up words alike: case dropped, and the dot casefold leaves on
+    a Turkish İ (i + U+0307) dropped with it, so Ilker finds İlker."""
+    return word.casefold().replace("i\u0307", "i")
 
 
 def _legend(comments: list[str]) -> list[str]:
@@ -427,24 +450,38 @@ def expand_plus(name: str) -> list[str]:
     return forms
 
 
+def _fixed_width(line: str, countries: int) -> bool:
+    # A line shifted by a column keeps its length, so the gaps around
+    # the name are checked too: read shifted, In's Korea band lands
+    # under Vietnam and the name gains a leading space.
+    return (len(line) == _BANDS_START + countries + len(_LINE_END)
+            and line.endswith(_LINE_END) and line[2] == " "
+            and line[_NAME_START] != " " and line[_SORT_FLAG - 1] == " ")
+
+
 def read_namdict(text: str) -> NamDict:
     lines = text.splitlines()
     countries = _legend([line for line in lines if line.startswith("#")])
     names: dict[str, list[tuple[str, dict[str, int]]]] = {}
     short_for: dict[str, list[str]] = {}
+    read = 0
     for number, line in enumerate(lines, 1):
         if not line or line.startswith("#"):
             continue
-        if len(line) < _BANDS_START + len(countries) or line[_SORT_FLAG - 1] != " ":
+        if not _fixed_width(line, len(countries)):
             raise ValueError(f"nam_dict line {number} is not fixed-width: "
                              f"{line!r}")
         if line[_SORT_FLAG] == "+":
             continue
         name = line[_NAME_START:_SORT_FLAG].rstrip()
         if line.startswith("="):
-            short, long = name.split()
-            short_for.setdefault(short.casefold(), []).append(long)
+            pair = name.split()
+            if len(pair) != 2:
+                raise ValueError(f"nam_dict line {number} is not "
+                                 f"'=  short long': {line!r}")
+            short_for.setdefault(namdict_key(pair[0]), []).append(pair[1])
             continue
+        read += 1
         bands = {}
         for country, digit in zip(
                 countries, line[_BANDS_START:_BANDS_START + len(countries)]):
@@ -454,15 +491,19 @@ def read_namdict(text: str) -> NamDict:
                 except ValueError:
                     raise ValueError(f"nam_dict line {number} has band "
                                      f"{digit!r} for {country}") from None
-        for form in expand_plus(name):
-            names.setdefault(form.casefold(), []).append((name, bands))
-    return NamDict(countries, names, short_for)
+        # The name as listed is filed too, so Jun+Wei copied from the
+        # file finds itself.
+        for form in dict.fromkeys([name, *expand_plus(name)]):
+            names.setdefault(namdict_key(form), []).append((name, bands))
+    return NamDict(countries, names, short_for, read)
 
 
 def _fetch_namdict(path: Path) -> None:
     """Download the sdist, check it against NAMDICT_SHA256, and cache the
     one member. The archive is read in memory and never unpacked to
-    disk."""
+    disk. Raises ValueError when the pinned constants do not describe
+    the archive (a hash or member left stale by an edit), so the other
+    sources still answer."""
     request = urllib.request.Request(NAMDICT_URL,
                                      headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=120) as response:
@@ -471,11 +512,15 @@ def _fetch_namdict(path: Path) -> None:
     if digest != NAMDICT_SHA256:
         raise ValueError(f"{NAMDICT_URL} has sha256 {digest}, not the "
                          f"pinned {NAMDICT_SHA256}")
-    with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as tf:
-        member = tf.extractfile(NAMDICT_MEMBER)
-        if member is None:
-            raise ValueError(f"{NAMDICT_MEMBER} in {NAMDICT_URL} is not a file")
-        text = member.read()
+    try:
+        with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as tf:
+            member = tf.extractfile(NAMDICT_MEMBER)
+            if member is None:
+                raise ValueError("it is not a file")
+            text = member.read()
+    except (tarfile.TarError, KeyError, EOFError, zlib.error) as exc:
+        raise ValueError(f"cannot read {NAMDICT_MEMBER} from {NAMDICT_URL} "
+                         f"({exc})") from exc
     tmp = path.with_suffix(".part")
     tmp.write_bytes(text)
     tmp.replace(path)
@@ -483,8 +528,9 @@ def _fetch_namdict(path: Path) -> None:
 
 def load_namdict(download: bool) -> NamDict | None:
     """The cached dictionary; None when it is not cached and `download`
-    is off. Raises ValueError naming the cache file when it is
-    unusable."""
+    is off. Raises ValueError naming the cache file when it is unusable,
+    and lets a failed download through as raised (OSError, or ValueError
+    from _fetch_namdict)."""
     path = cache_dir() / NAMDICT_FILE
     if not path.exists():
         if not download:
@@ -492,10 +538,14 @@ def load_namdict(download: bool) -> NamDict | None:
         print(f"downloading {NAMDICT_CREDIT} ...", file=sys.stderr)
         _fetch_namdict(path)
     try:
-        return read_namdict(path.read_text(encoding="utf-8"))
-    except (UnicodeDecodeError, ValueError) as exc:
+        table = read_namdict(path.read_text(encoding="utf-8"))
+        if table.lines < NAMDICT_MIN_NAMES:
+            raise ValueError(f"it holds {table.lines:,} name lines; the "
+                             f"pinned file holds over {NAMDICT_MIN_NAMES:,}")
+    except ValueError as exc:  # UnicodeDecodeError included
         raise ValueError(f"{path} is unusable ({exc}); delete it and run "
                          "again to re-download") from exc
+    return table
 
 
 def _latin_only(word: str) -> bool:
@@ -513,13 +563,14 @@ def namdict_usage(word: str, table: NamDict | None, top: int) -> Usage:
         usage.status = "unrepresentable"
         usage.note = "the dictionary spells names in Latin letters only"
         return usage
-    key = word.casefold()
+    key = namdict_key(word)
     entries = table.names.get(key, [])
     short = ", ".join(table.short_for.get(key, []))
     short_note = f"listed as a short form of {short}" if short else ""
     if not entries:
         usage.note = _join("not listed, which proves nothing: the dictionary "
-                           "is a selection", short_note)
+                           "is a selection, and umlauts are matched as "
+                           "written (Käte, not Kaete)", short_note)
         return usage
     peak: dict[str, int] = {}
     for _, bands in entries:
@@ -535,7 +586,8 @@ def namdict_usage(word: str, table: NamDict | None, top: int) -> Usage:
         f"banded in {len(ranked)} "
         + ("country" if len(ranked) == 1 else "countries") + (
             f", the top {top} shown" if more > 0 else ""),
-        "1 rare to D extremely common, each step about x2",
+        "1 rare to D extremely common, logarithmic: x2 a step where the "
+        "statistics are good",
         short_note)
     return usage
 
@@ -1238,6 +1290,15 @@ def render(word: str, usages: list[Usage]) -> str:
     return "\n".join(lines)
 
 
+def _positive(text: str) -> int:
+    # 0 would empty nam_dict's band list, and its given cell would then
+    # show the "-" a name that is not listed shows.
+    n = int(text)
+    if n < 1:
+        raise argparse.ArgumentTypeError(f"must be 1 or more, not {n}")
+    return n
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Count how often words are borne as given and family names.",
@@ -1248,7 +1309,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("words", nargs="+")
     parser.add_argument("--no-wikidata", action="store_true",
                         help="offline: cached sources only, nothing downloaded")
-    parser.add_argument("--countries", type=int, default=5, metavar="N",
+    parser.add_argument("--countries", type=_positive, default=5, metavar="N",
                         help="countries to list per role (citizenship, "
                              "or nam_dict's bands)")
     parser.add_argument("--json", action="store_true")
