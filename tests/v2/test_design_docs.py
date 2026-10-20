@@ -8,7 +8,8 @@ import pytest
 
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
-    read_rules_text, resolve, slugify, standing_findings, stem_for)
+    read_rules_text, read_standing_exempt, resolve, slugify,
+    standing_findings, standing_roster_findings, stem_for)
 from tests.v2.rules_doc import parse_rules_doc
 
 _FIXTURE_FILES = ("S-suffixes.md", "S1-x.md",
@@ -200,3 +201,25 @@ def test_every_standing_line_points_at_a_live_entry() -> None:
     assert with_standing, "no decisions file has a Standing block"
     for key in with_standing:
         assert standing_findings(files[key]) == [], key
+
+
+@pytest.mark.parametrize("files, exempt, finding", [
+    ({"C1": "## Standing", "P2": "log"}, {"P2"}, None),
+    ({"C1": "## Standing", "C14": "log"}, set(), "C14 has no Standing"),
+    ({"C1": "## Standing", "P2": "## Standing"}, {"P2"},
+     "P2 has a Standing block: take it off"),
+    ({"C1": "## Standing"}, {"P2"}, "P2 is listed"),
+], ids=["clean", "new-file-without", "listed-file-gained-one",
+        "listed-file-gone"])
+def test_standing_roster_findings_name_each_break(
+        files: dict[str, str], exempt: set[str], finding: str | None) -> None:
+    found = standing_roster_findings(files, exempt)
+    if finding is None:
+        assert found == []
+    else:
+        assert len(found) == 1 and finding in found[0], found
+
+
+def test_a_decisions_file_off_the_list_opens_with_standing() -> None:
+    assert standing_roster_findings(read_decision_files(),
+                                    read_standing_exempt()) == []

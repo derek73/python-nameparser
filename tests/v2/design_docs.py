@@ -14,6 +14,7 @@ renaming a file never breaks one.
 """
 from __future__ import annotations
 
+import json
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -177,4 +178,34 @@ def standing_findings(text: str) -> list[str]:
                     findings.append(
                         f"not-standing names no entry {m['date']} "
                         f"#{m['num']}")
+    return findings
+
+
+#: The decisions files allowed to lack a Standing block: every file
+#: older than the 2026-10-19 rule that new files open with one. The
+#: list only shrinks (decisions/README.md, `## Standing`).
+STANDING_EXEMPT = Path(__file__).with_name("decisions_without_standing.json")
+
+
+def read_standing_exempt(path: Path = STANDING_EXEMPT) -> set[str]:
+    return set(json.loads(path.read_text(encoding="utf-8"))["exempt"])
+
+
+def standing_roster_findings(files: dict[str, str],
+                             exempt: set[str]) -> list[str]:
+    """What breaks the Standing ratchet: a file off the exempt list with
+    no Standing block, a listed file that has gained one (take it off
+    the list), and a listed key no file carries any more."""
+    findings = []
+    for key, text in sorted(files.items()):
+        has = "## Standing" in text
+        if key in exempt and has:
+            findings.append(f"{key} has a Standing block: take it off "
+                            f"{STANDING_EXEMPT.name}")
+        elif key not in exempt and not has:
+            findings.append(f"{key} has no Standing block: a new decisions "
+                            "file opens with ## Standing and ## Log")
+    for key in sorted(exempt - files.keys()):
+        findings.append(f"{key} is listed in {STANDING_EXEMPT.name} "
+                        "but no decisions file carries it")
     return findings
