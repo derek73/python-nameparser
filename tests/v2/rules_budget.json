@@ -57,7 +57,7 @@
   "S7": {"words": 374, "exceptions": 0, "accepted": 1, "accepted_words": 149},
   "S8": {"words": 268, "exceptions": 2, "accepted": 0, "accepted_words": 0},
   "S9": {"words": 291, "exceptions": 2, "accepted": 0, "accepted_words": 0},
-  "S10": {"then_words": 119, "because_sentences": 3, "except": 4, "precedence": 2, "accepted": 2, "accepted_words": 73},
+  "S10": {"then_words": 140, "because_sentences": 3, "except": 4, "precedence": 2, "accepted": 2, "accepted_words": 73},
   "T1": {"words": 47, "exceptions": 1, "accepted": 0, "accepted_words": 0},
   "T2": {"words": 30, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "T3": {"words": 48, "exceptions": 0, "accepted": 0, "accepted_words": 0},

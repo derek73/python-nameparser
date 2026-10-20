@@ -4,8 +4,10 @@
 
 **Then:** the numeral reads as the generation: the numerals the vocabulary lists, and those up to X it does not, by their shape alone.
 
-- **What reports.** A numeral read by its shape alone reports, as a one-letter numeral does; a numeral the vocabulary lists in two or more letters is not in question and reports nothing.
+- **What reports.** A numeral of one letter reports whichever way the words-to-spare count reads it: either reading is reported, as either reading of an ambiguous acronym is. A numeral read by its shape alone reports too; a numeral the vocabulary lists in two or more letters is not in question and reports nothing.
   ```
+  "John Smith V"              →  ambiguities=("suffix-or-name",)
+  "John V"                    →  ambiguities=("suffix-or-name",)
   "John Smith VI"             →  ambiguities=("suffix-or-name",)
   "John Smith III"            →  ambiguities=()
   ```
@@ -31,7 +33,6 @@
 
 ```
 "John Smith V"              →  suffix="V"
-"John Smith V"              →  ambiguities=("suffix-or-name",)
 "John W. Ingram V"          →  suffix="V"
 "John W Ingram V"           →  suffix="V"
 "John Ingram V"             →  suffix="V"
@@ -41,10 +42,9 @@
 
 **Except:**
 
-- **A numeral of one letter needs words to spare**, as a bare ambiguous acronym does (S4): as the second of two name words it is the family name, a title in front being no word to spare, and either reading is reported, as either reading of an ambiguous acronym is.
+- **A numeral of one letter needs words to spare**, as a bare ambiguous acronym does (S4): as the second of two name words it is the family name, a title in front being no word to spare.
   ```
   "John V"                    →  family="V"
-  "John V"                    →  ambiguities=("suffix-or-name",)
   "Malcolm X"                 →  family="X"
   "Dr Smith V"                →  family="V"
   "John V, Dr."               →  family="V"
