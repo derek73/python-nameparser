@@ -79,9 +79,23 @@ Two rules about the `text`:
 - It is written already normalized: lowercase, NFC, no edge periods, single-spaced. The build refuses any other spelling and prints the one to write.
 - It is one word, except for a `birth_marker` or a title with `addresses = "given"`, the two readings matched as a whole run (`z domu`).
 
+## Word order
+
+Every file but `und.toml` lists its words in one order, and the build refuses a file that does not (check 10), naming the entry to move and where it belongs:
+
+1. **By kind**, in the order of the table under [Kinds](#kinds), which lists the categories in turn and each category's kinds together. A word with several readings sorts under its first kind in that order. A word whose only vocabulary reading is a refusal (`fils`, `senior`) sorts under the kind it refuses, a refused category counting as its first kind, and a name reading places a word only when it has nothing else.
+2. **Then by the word it is a spelling of**: a reading's `same_as`, or the word's own text when it has none. A head comes first and its spellings follow it, so `jr` is followed by `jnr` and `junior`, and `sr` by `snr`. A spelling that has spellings of its own heads a group inside its head's: in `ar.toml`, `el-` follows the `a…-` spellings of `al-` with its own assimilated forms after it, and `ul-` comes last. Only the file's own entries are followed, so a word that is a head in one file and a spelling in another is placed in each file by that file alone.
+3. **Then by the word's text.**
+
+Text is compared by codepoint. The texts are already normalized, so this is the order of the normalized text, whatever the script: Latin before Cyrillic before Arabic, and within a script an accented letter after `z` (`aḍ-` follows `az-` and `aš-`). It is defined for every script and the same on every machine, and it is no one language's collation. A traditional and a simplified spelling with no `same_as` between them sort apart (`課長` and `课长` in `zh.toml`).
+
+The build checks the order and never rewrites a file, because a comment above an entry belongs to it and must move with it, which a TOML reader cannot see. When the build says an entry belongs somewhere else, move it with its comment. The order is checked last, so any other refusal (an exclusion's reason, a `same_as` naming no word) is reported first. The same check refuses a `same_as` chain that loops, in every file.
+
+`und.toml` is exempt. Its entries keep the order of the Python lists they were converted from, and its vetting comments still point at their neighbours ("the TITLES block below"); a word leaving it for a language file takes its place in that file's order.
+
 ## Kinds
 
-A reading's key is its **kind**. Each kind belongs to one **category**, and the category decides which compiled set the reading feeds. For title, suffix, particle and conjunction the category's own name is also a kind (`title = {}`: a title not yet classified), so classifying a word later is a data edit that moves no compiled set. The one exception: a generic `suffix = {}` classified as `credential` moves from `SUFFIX_WORDS` to `SUFFIX_ACRONYMS`, because a credential's `acronym` is true unwritten; write `acronym = false` to keep it where it was. The suffix and particle categories are classified (two particles of unrecorded origin, `bon` and `dí`, keep the generic kind in `und.toml`); the others carry their generic kind.
+A reading's key is its **kind**. The table lists the kinds in their canonical order, which is the [word order](#word-order)'s first key and `CATEGORY`'s order in `tools/vocab/build.py`. Each kind belongs to one **category**, and the category decides which compiled set the reading feeds. For title, suffix, particle and conjunction the category's own name is also a kind (`title = {}`: a title not yet classified), so classifying a word later is a data edit that moves no compiled set. The one exception: a generic `suffix = {}` classified as `credential` moves from `SUFFIX_WORDS` to `SUFFIX_ACRONYMS`, because a credential's `acronym` is true unwritten; write `acronym = false` to keep it where it was. The suffix and particle categories are classified (two particles of unrecorded origin, `bon` and `dí`, keep the generic kind in `und.toml`); the others carry their generic kind.
 
 | Kind | Category | Compiled into |
 |---|---|---|
@@ -188,7 +202,7 @@ Record a count on the word as a `given` or `family` reading, with the date you t
 
 1. **Look up the word's other readings.** `uv run python tools/vocab/query.py --word <word>` lists every reading and exclusion of it in every file. An exclusion there is a decision already made; a reading in another category is a clash you are about to create, which is fine when position settles it (`do`) and needs an argument when it does not.
 2. **Check it against real names, not memory.** `uv run python tools/name_usage.py <word>` gives the counts, and [decisions/vocabulary-collisions](../../docs/design/decisions/vocabulary-collisions.md) is the criterion they are read against: a word that is a real name in the position the reading acts on needs the matching flag (`may_be_given`, `may_be_name`) or should stay out. The root `AGENTS.md`'s "Adding a word to the vocabulary" lists the traps that have bitten before.
-3. **Write the entry** in the file of the language whose names it occurs in (`und.toml` when that is not known), with what the check found on it: `note`, `issue`, a dated name reading, or an `excluded` entry if you decided against it.
+3. **Write the entry** in the file of the language whose names it occurs in (`und.toml` when that is not known), in its place in the [word order](#word-order), with what the check found on it: `note`, `issue`, a dated name reading, or an `excluded` entry if you decided against it.
 4. **Rebuild**: `uv run python tools/vocab/build.py`. It refuses what it can detect, naming the word and, where one file is at fault, the file, and rewrites `nameparser/config/_compiled.py`. Commit both.
 5. **Run the tests**: `uv run pytest tests/v2/test_vocab.py` for the build, then the full suite, and read what `tests/v2/test_snapshot.py` reports as moved (the root `AGENTS.md`, "Validating a new parsing rule").
 

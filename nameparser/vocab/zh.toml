@@ -1,11 +1,44 @@
 schema = 1
 
 [[word]]
-text = "先生"
-[word.professional_honorific]
+text = "二世"
+[word.generation]
+issue = 671
+note = "the generational numeral \"II\""
+[word.generation.attached]
+side = "after"
+issue = 707
+note = "#707's one ends-with hit, 厄德二世, is the given name Odo with a regnal numeral in its label"
+
+[[word]]
+text = "医学博士"
+[word.credential]
+acronym = false
+issue = 671
+note = "Doctor of Medicine"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "博士"
+[word.credential]
+acronym = false
 issue = [307, 308]
-note = "zh Mr. / ja teacher-master, an honorific in both"
-attached = { side = "after", issue = 308 }
+note = "doctorate holder, shared Han; an attested Japanese given name (ひろし, Hiroshi), but the doctorate reading vastly dominates the spaced trailing position"
+excluded = { attached = "glued 田中博士 IS Tanaka Hiroshi, an attested given name" }
+
+[[word]]
+text = "醫學博士"
+[word.credential]
+acronym = false
+issue = 671
+note = "Doctor of Medicine"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "君"
+[word.excluded.honorific]
+reason = "王君 is a complete Chinese name, 君 being a common given-name final; its kana spelling くん ships"
+issue = 308
 
 [[word]]
 text = "女士"
@@ -22,43 +55,11 @@ note = "Miss"
 attached = { side = "after", issue = 308 }
 
 [[word]]
-text = "博士"
-[word.credential]
-acronym = false
-issue = [307, 308]
-note = "doctorate holder, shared Han; an attested Japanese given name (ひろし, Hiroshi), but the doctorate reading vastly dominates the spaced trailing position"
-excluded = { attached = "glued 田中博士 IS Tanaka Hiroshi, an attested given name" }
-
-[[word]]
-text = "教授"
+text = "先生"
 [word.professional_honorific]
 issue = [307, 308]
-note = "professor, shared Han"
+note = "zh Mr. / ja teacher-master, an honorific in both"
 attached = { side = "after", issue = 308 }
-
-[[word]]
-text = "二世"
-[word.generation]
-issue = 671
-note = "the generational numeral \"II\""
-[word.generation.attached]
-side = "after"
-issue = 707
-note = "#707's one ends-with hit, 厄德二世, is the given name Odo with a regnal numeral in its label"
-
-[[word]]
-text = "議員"
-[word.professional_honorific]
-issue = 671
-note = "legislator"
-attached = { side = "after", issue = 707 }
-
-[[word]]
-text = "议员"
-[word.professional_honorific]
-issue = 671
-note = "legislator"
-attached = { side = "after", issue = 707 }
 
 [[word]]
 text = "國會議員"
@@ -82,26 +83,52 @@ note = "Justice of the Peace (Hong Kong)"
 attached = { side = "after", issue = 707 }
 
 [[word]]
-text = "医学博士"
-[word.credential]
-acronym = false
-issue = 671
-note = "Doctor of Medicine"
-attached = { side = "after", issue = 707 }
-
-[[word]]
-text = "醫學博士"
-[word.credential]
-acronym = false
-issue = 671
-note = "Doctor of Medicine"
-attached = { side = "after", issue = 707 }
+text = "教授"
+[word.professional_honorific]
+issue = [307, 308]
+note = "professor, shared Han"
+attached = { side = "after", issue = 308 }
 
 [[word]]
 text = "社長"
 [word.professional_honorific]
 issue = 671
 note = "president (ja), society head (zh); a job title used as a form of address after a name, the same slot as 先生"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "社长"
+[word.professional_honorific]
+issue = 671
+note = "simplified; 长 never occurs in Japanese text, so the entry touches no Japanese name"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "課長"
+[word.professional_honorific]
+issue = 671
+note = "section chief; a form of address after a name"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "議員"
+[word.professional_honorific]
+issue = 671
+note = "legislator"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "议员"
+[word.professional_honorific]
+issue = 671
+note = "legislator"
+attached = { side = "after", issue = 707 }
+
+[[word]]
+text = "课长"
+[word.professional_honorific]
+issue = 671
+note = "simplified twin of 課長"
 attached = { side = "after", issue = 707 }
 
 [[word]]
@@ -113,35 +140,8 @@ note = "department head (ja), minister (zh); a form of address after a name"
 attached = "長 alone is a borne given name, so 阿部長 can be 阿部 + 長 (#707). The measurement found no such bearer, as it found none for the words that shipped; the refusal rests on the argument, which a lower-bound zero does not refute, so a re-measure that again comes back zero is no reason to lift it"
 
 [[word]]
-text = "課長"
-[word.professional_honorific]
-issue = 671
-note = "section chief; a form of address after a name"
-attached = { side = "after", issue = 707 }
-
-[[word]]
-text = "社长"
-[word.professional_honorific]
-issue = 671
-note = "simplified; 长 never occurs in Japanese text, so the entry touches no Japanese name"
-attached = { side = "after", issue = 707 }
-
-[[word]]
 text = "部长"
 [word.professional_honorific]
 issue = 671
 note = "simplified twin of 部長"
 excluded = { attached = "the simplified twin of 部長, declined with it (#707)" }
-
-[[word]]
-text = "课长"
-[word.professional_honorific]
-issue = 671
-note = "simplified twin of 課長"
-attached = { side = "after", issue = 707 }
-
-[[word]]
-text = "君"
-[word.excluded.honorific]
-reason = "王君 is a complete Chinese name, 君 being a common given-name final; its kana spelling くん ships"
-issue = 308

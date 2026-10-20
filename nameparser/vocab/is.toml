@@ -1,9 +1,9 @@
 schema = 1
 
 [[word]]
-text = "yngri"
+text = "eldri"
 generation = { issue = 679 }
 
 [[word]]
-text = "eldri"
+text = "yngri"
 generation = { issue = 679 }

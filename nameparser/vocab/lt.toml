@@ -1,15 +1,17 @@
 schema = 1
 
 [[word]]
-text = "jaunesnysis"
-generation = { issue = 661 }
+text = "jaun"
+[word.excluded.generation]
+reason = "the abbreviation jaun., refused with the full words shipping"
+issue = 679
 
 [[word]]
 text = "jaunesnioji"
 generation = { issue = 661 }
 
 [[word]]
-text = "vyresnysis"
+text = "jaunesnysis"
 generation = { issue = 661 }
 
 [[word]]
@@ -17,7 +19,5 @@ text = "vyresnioji"
 generation = { issue = 661 }
 
 [[word]]
-text = "jaun"
-[word.excluded.generation]
-reason = "the abbreviation jaun., refused with the full words shipping"
-issue = 679
+text = "vyresnysis"
+generation = { issue = 661 }

@@ -1,15 +1,11 @@
 schema = 1
 
 [[word]]
-text = "mlađi"
-generation = { issue = 661 }
-
-[[word]]
 text = "mlađa"
 generation = { issue = 661 }
 
 [[word]]
-text = "stariji"
+text = "mlađi"
 generation = { issue = 661 }
 
 [[word]]
@@ -17,19 +13,7 @@ text = "starija"
 generation = { issue = 661 }
 
 [[word]]
-text = "млађи"
-generation = { issue = 661 }
-
-[[word]]
-text = "млађа"
-generation = { issue = 661 }
-
-[[word]]
-text = "старији"
-generation = { issue = 661 }
-
-[[word]]
-text = "старија"
+text = "stariji"
 generation = { issue = 661 }
 
 [[word]]
@@ -37,3 +21,19 @@ text = "мл"
 [word.generation]
 issue = 679
 note = "мл.; #679 found nothing it collides with in Cyrillic"
+
+[[word]]
+text = "млађа"
+generation = { issue = 661 }
+
+[[word]]
+text = "млађи"
+generation = { issue = 661 }
+
+[[word]]
+text = "старија"
+generation = { issue = 661 }
+
+[[word]]
+text = "старији"
+generation = { issue = 661 }

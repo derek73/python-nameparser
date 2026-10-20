@@ -1,16 +1,16 @@
 schema = 1
 
 [[word]]
-text = "الابن"
-generation = { issue = 679, note = "the son" }
+text = "الأب"
+generation = { issue = 679, note = "the father" }
 
 [[word]]
 text = "الإبن"
 generation = { issue = 679, note = "the son" }
 
 [[word]]
-text = "الأب"
-generation = { issue = 679, note = "the father" }
+text = "الابن"
+generation = { issue = 679, note = "the son" }
 
 [[word]]
 text = "جونيور"
@@ -21,8 +21,11 @@ text = "سينيور"
 generation = { issue = 679 }
 
 [[word]]
-text = "bint"
-patronymic = { may_be_given = false, expands = "daughter of; native-script بنت", gender = "f" }
+text = "al"
+[word.article]
+may_be_given = true
+expands = "the"
+note = "Al Gore: 'Al' is an ordinary English given name. Also the Arabic definite article, which is the particle reading"
 
 [[word]]
 text = "al-"
@@ -33,51 +36,11 @@ expands = "the"
 note = "the Arabic article as an index form writes it, hyphen attached and set behind the given name (\"Rashid, Harun al-\", \"Zaʿīm, Ḥusnī az-\"). Written apart with its hyphen the word is the article and nothing else, so it and its assimilated spellings are never-given where the bare 'al' (Al Gore) may be given. A closed list rather than a shape rule, by decision on #700; ASCII hyphen-minus only"
 
 [[word]]
-text = "ul-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, after a case ending: \"Zia ul-Haq\""
-same_as = "al-"
-
-[[word]]
-text = "at-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, assimilated before ت"
-same_as = "al-"
-
-[[word]]
-text = "aṯ-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, assimilated before ث, DMG"
-same_as = "al-"
-
-[[word]]
-text = "ath-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, assimilated before ث"
-same_as = "al-"
-
-[[word]]
 text = "ad-"
 [word.article]
 may_be_given = false
 issue = 700
 expands = "the, assimilated before د"
-same_as = "al-"
-
-[[word]]
-text = "aḏ-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, assimilated before ذ, DMG"
 same_as = "al-"
 
 [[word]]
@@ -89,19 +52,19 @@ expands = "the, assimilated before ذ"
 same_as = "al-"
 
 [[word]]
+text = "an-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, assimilated before ن"
+same_as = "al-"
+
+[[word]]
 text = "ar-"
 [word.article]
 may_be_given = false
 issue = 700
 expands = "the, assimilated before ر"
-same_as = "al-"
-
-[[word]]
-text = "az-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, assimilated before ز"
 same_as = "al-"
 
 [[word]]
@@ -113,14 +76,6 @@ expands = "the, assimilated before س"
 same_as = "al-"
 
 [[word]]
-text = "aš-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, assimilated before ش, DMG"
-same_as = "al-"
-
-[[word]]
 text = "ash-"
 [word.article]
 may_be_given = false
@@ -129,11 +84,35 @@ expands = "the, assimilated before ش"
 same_as = "al-"
 
 [[word]]
-text = "aṣ-"
+text = "at-"
 [word.article]
 may_be_given = false
 issue = 700
-expands = "the, assimilated before ص, DMG"
+expands = "the, assimilated before ت"
+same_as = "al-"
+
+[[word]]
+text = "ath-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, assimilated before ث"
+same_as = "al-"
+
+[[word]]
+text = "az-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, assimilated before ز"
+same_as = "al-"
+
+[[word]]
+text = "aš-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, assimilated before ش, DMG"
 same_as = "al-"
 
 [[word]]
@@ -145,11 +124,35 @@ expands = "the, assimilated before ض, DMG"
 same_as = "al-"
 
 [[word]]
+text = "aḏ-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, assimilated before ذ, DMG"
+same_as = "al-"
+
+[[word]]
+text = "aṣ-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, assimilated before ص, DMG"
+same_as = "al-"
+
+[[word]]
 text = "aṭ-"
 [word.article]
 may_be_given = false
 issue = 700
 expands = "the, assimilated before ط, DMG"
+same_as = "al-"
+
+[[word]]
+text = "aṯ-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, assimilated before ث, DMG"
 same_as = "al-"
 
 [[word]]
@@ -161,32 +164,8 @@ expands = "the, assimilated before ظ, DMG"
 same_as = "al-"
 
 [[word]]
-text = "an-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, assimilated before ن"
-same_as = "al-"
-
-[[word]]
 text = "el-"
 article = { may_be_given = false, issue = 700, expands = "the, Egyptian spelling", same_as = "al-" }
-
-[[word]]
-text = "et-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, Egyptian spelling assimilated before ت"
-same_as = "el-"
-
-[[word]]
-text = "eth-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, Egyptian spelling assimilated before ث"
-same_as = "el-"
 
 [[word]]
 text = "ed-"
@@ -205,19 +184,19 @@ expands = "the, Egyptian spelling assimilated before ذ"
 same_as = "el-"
 
 [[word]]
+text = "en-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, Egyptian spelling assimilated before ن"
+same_as = "el-"
+
+[[word]]
 text = "er-"
 [word.article]
 may_be_given = false
 issue = 700
 expands = "the, Egyptian spelling assimilated before ر"
-same_as = "el-"
-
-[[word]]
-text = "ez-"
-[word.article]
-may_be_given = false
-issue = 700
-expands = "the, Egyptian spelling assimilated before ز"
 same_as = "el-"
 
 [[word]]
@@ -237,16 +216,72 @@ expands = "the, Egyptian spelling assimilated before ش"
 same_as = "el-"
 
 [[word]]
-text = "en-"
+text = "et-"
 [word.article]
 may_be_given = false
 issue = 700
-expands = "the, Egyptian spelling assimilated before ن"
+expands = "the, Egyptian spelling assimilated before ت"
 same_as = "el-"
+
+[[word]]
+text = "eth-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, Egyptian spelling assimilated before ث"
+same_as = "el-"
+
+[[word]]
+text = "ez-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, Egyptian spelling assimilated before ز"
+same_as = "el-"
+
+[[word]]
+text = "ul-"
+[word.article]
+may_be_given = false
+issue = 700
+expands = "the, after a case ending: \"Zia ul-Haq\""
+same_as = "al-"
+
+[[word]]
+text = "ال"
+[word.excluded.article]
+reason = "normally attached to the word it determines, and too ambiguous standing alone (#269)"
+issue = 269
+
+[[word]]
+text = "ben"
+[word.excluded.patronymic]
+reason = "Ben is a common given name standing exactly where a forward-joining particle claim acts: \"Ahmad Ben Husain\" reads middle 'Ben', and admitting it would take that token into the family. Removed in v0.2.5 and re-affirmed 2026-09-01 (decisions/v1-xfail-triage); a caller who needs the patronymic reading adds it to their own Lexicon. The pressure to re-add is real and recurring: 'Ahmad ben Husain' wants family 'ben Husain', the v1 suite carried that as an xfail for years, and a sweep of Arabic and Hebrew patronymic particles is exactly how it comes back"
+
+[[word]]
+text = "bin"
+[word.patronymic]
+may_be_given = true
+expands = "son of"
+gender = "m"
+note = "Kept ambiguous deliberately: #269 judged the Latin transliteration separately from the native-script بن, which IS never-given"
+
+[[word]]
+text = "bint"
+patronymic = { may_be_given = false, expands = "daughter of; native-script بنت", gender = "f" }
 
 [[word]]
 text = "ibn"
 patronymic = { may_be_given = false, expands = "son of; native-script ابن", gender = "m" }
+
+[[word]]
+text = "ابن"
+[word.patronymic]
+may_be_given = false
+issue = 269
+expands = "son of: ibn, alternate spelling"
+gender = "m"
+note = "never a bare given name, like بن; mirrors Latin 'ibn'"
 
 [[word]]
 text = "بن"
@@ -267,23 +302,6 @@ gender = "f"
 note = "never a bare given name, like بن; mirrors Latin 'bint'"
 
 [[word]]
-text = "ابن"
-[word.patronymic]
-may_be_given = false
-issue = 269
-expands = "son of: ibn, alternate spelling"
-gender = "m"
-note = "never a bare given name, like بن; mirrors Latin 'ibn'"
-
-[[word]]
-text = "آل"
-[word.clan]
-may_be_given = false
-issue = 269
-expands = "family of: \"Al Saud\""
-note = "Distinct from the article ال, excluded in this file; a clan prefix, never a bare given name."
-
-[[word]]
 text = "abu"
 [word.teknonymic]
 may_be_given = true
@@ -291,21 +309,6 @@ issue = 269
 expands = "father of"
 gender = "m"
 note = "\"Abu Bakr\" -- Abu reads as the given name; also a bound given-name word, so it joins forward (P5)"
-
-[[word]]
-text = "al"
-[word.article]
-may_be_given = true
-expands = "the"
-note = "Al Gore: 'Al' is an ordinary English given name. Also the Arabic definite article, which is the particle reading"
-
-[[word]]
-text = "bin"
-[word.patronymic]
-may_be_given = true
-expands = "son of"
-gender = "m"
-note = "Kept ambiguous deliberately: #269 judged the Latin transliteration separately from the native-script بن, which IS never-given"
 
 [[word]]
 text = "أبو"
@@ -327,12 +330,9 @@ gender = "m"
 note = "left ambiguous as أبو is, both spellings vetted together (#269)"
 
 [[word]]
-text = "ben"
-[word.excluded.patronymic]
-reason = "Ben is a common given name standing exactly where a forward-joining particle claim acts: \"Ahmad Ben Husain\" reads middle 'Ben', and admitting it would take that token into the family. Removed in v0.2.5 and re-affirmed 2026-09-01 (decisions/v1-xfail-triage); a caller who needs the patronymic reading adds it to their own Lexicon. The pressure to re-add is real and recurring: 'Ahmad ben Husain' wants family 'ben Husain', the v1 suite carried that as an xfail for years, and a sweep of Arabic and Hebrew patronymic particles is exactly how it comes back"
-
-[[word]]
-text = "ال"
-[word.excluded.article]
-reason = "normally attached to the word it determines, and too ambiguous standing alone (#269)"
+text = "آل"
+[word.clan]
+may_be_given = false
 issue = 269
+expands = "family of: \"Al Saud\""
+note = "Distinct from the article ال, excluded in this file; a clan prefix, never a bare given name."

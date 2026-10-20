@@ -1,30 +1,6 @@
 schema = 1
 
 [[word]]
-text = "младши"
-generation = { issue = 661 }
-
-[[word]]
-text = "младша"
-generation = { issue = 661 }
-
-[[word]]
-text = "старши"
-generation = { issue = 661 }
-
-[[word]]
-text = "старша"
-generation = { issue = 661 }
-
-[[word]]
-text = "млади"
-generation = { issue = 661, note = "the Younger" }
-
-[[word]]
-text = "стари"
-generation = { issue = 661, note = "the Elder" }
-
-[[word]]
 text = "мл"
 [word.generation]
 issue = 679
@@ -35,3 +11,27 @@ text = "млада"
 [word.excluded.generation]
 reason = "Mlada is a borne given name, and under a family-first order the given name is the trailing word"
 issue = 661
+
+[[word]]
+text = "млади"
+generation = { issue = 661, note = "the Younger" }
+
+[[word]]
+text = "младша"
+generation = { issue = 661 }
+
+[[word]]
+text = "младши"
+generation = { issue = 661 }
+
+[[word]]
+text = "стари"
+generation = { issue = 661, note = "the Elder" }
+
+[[word]]
+text = "старша"
+generation = { issue = 661 }
+
+[[word]]
+text = "старши"
+generation = { issue = 661 }

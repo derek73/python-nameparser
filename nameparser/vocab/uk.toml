@@ -1,7 +1,7 @@
 schema = 1
 
 [[word]]
-text = "старша"
+text = "молодша"
 generation = { issue = 661 }
 
 [[word]]
@@ -9,5 +9,5 @@ text = "молодший"
 generation = { issue = 661 }
 
 [[word]]
-text = "молодша"
+text = "старша"
 generation = { issue = 661 }

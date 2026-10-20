@@ -1,11 +1,11 @@
 schema = 1
 
 [[word]]
-text = "जूनियर"
+text = "जुनियर"
 generation = { issue = 661, note = "junior, one of its two u spellings" }
 
 [[word]]
-text = "जुनियर"
+text = "जूनियर"
 generation = { issue = 661, note = "junior, one of its two u spellings" }
 
 [[word]]

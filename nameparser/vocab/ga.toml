@@ -1,20 +1,30 @@
 schema = 1
 
 [[word]]
-text = "sóisearach"
-[word.excluded.generation]
-reason = "a rank word, not a generation; Irish writes Óg and Mór"
-issue = 661
-
-[[word]]
 text = "sinsearach"
 [word.excluded.generation]
 reason = "a rank word, not a generation; Irish writes Óg and Mór"
 issue = 661
 
 [[word]]
+text = "sóisearach"
+[word.excluded.generation]
+reason = "a rank word, not a generation; Irish writes Óg and Mór"
+issue = 661
+
+[[word]]
+text = "mac"
+clan = { may_be_given = true, expands = "son of" }
+
+[[word]]
 text = "mc"
 clan = { may_be_given = false, issue = 360, expands = "son of, Mac contracted", same_as = "mac" }
+
+[[word]]
+text = "nic"
+[word.excluded.clan]
+reason = "the Irish \"daughter of\" beside 'ní', but also an abbreviation of Nicolas and Nicole and a given name of its own (Nic Cage): a leading Nic would be marked ambiguous at best, and its home is an opt-in Irish pack"
+issue = 604
 
 [[word]]
 text = "ní"
@@ -27,6 +37,12 @@ cased = "Ní"
 note = "The female form beside 'ó'; never a given name (#604). Its sibling 'nic' is excluded, in this file. The mask is the word's own title case: Irish writes these capitalized, and a mask outranks the particle lowercase (rules/R4), so the dotted 'n.í.' repairs to 'N.Í.'."
 
 [[word]]
+text = "o"
+[word.excluded.clan]
+reason = "bare O is a common periodless initial, so a particle reading would turn the middle initial of 'Liam O Murchú', and of every 'John O Smith', into a surname; the anglicized form is glued (O'Neil) and needs no particle"
+issue = 604
+
+[[word]]
 text = "ó"
 [word.clan]
 may_be_given = false
@@ -37,10 +53,6 @@ cased = "Ó"
 note = "Never a given name (#604). The one ONE-LETTER particle, so the letter written with its period is still the initial it spells -- 'Juan Ó. Pérez' is Óscar, not a surname (rules/P7). Unaccented 'o' is excluded, in this file. The mask is the word's own title case, as on 'ní'."
 
 [[word]]
-text = "mac"
-clan = { may_be_given = true, expands = "son of" }
-
-[[word]]
 text = "ua"
 [word.clan]
 may_be_given = true
@@ -49,15 +61,3 @@ expands = "descendant of, the older spelling: \"Seán Ua Buachalla\""
 same_as = "ó"
 cased = "Ua"
 note = "No given-name use found, but searched less thoroughly than 'ó' and 'ní', and C-i defaults to AMBIGUOUS under uncertainty -- so the leading \"Ua Buachalla\" keeps the given reading and reports it, while mid-name the chain is the same either way (#604). The mask is the word's own title case, as on 'ní': the dotted 'u.a.' repairs to 'U.A.'"
-
-[[word]]
-text = "nic"
-[word.excluded.clan]
-reason = "the Irish \"daughter of\" beside 'ní', but also an abbreviation of Nicolas and Nicole and a given name of its own (Nic Cage): a leading Nic would be marked ambiguous at best, and its home is an opt-in Irish pack"
-issue = 604
-
-[[word]]
-text = "o"
-[word.excluded.clan]
-reason = "bare O is a common periodless initial, so a particle reading would turn the middle initial of 'Liam O Murchú', and of every 'John O Smith', into a surname; the anglicized form is glued (O'Neil) and needs no particle"
-issue = 604
