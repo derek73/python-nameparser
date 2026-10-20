@@ -61,7 +61,7 @@ text = "heer"
 may_be_given = true
 issue = 18
 expands = "lord, the nobiliary 'heer van'"
-note = "added from #18's test \"Johan de heer Van Kampen\" (family 'de heer Van Kampen'), which appears to be two real names run together (Johannes de Heer, a Dutch Protestant figure, and the surname Van Kampen): the string occurs elsewhere only in another name parser's test data (hex.pm full_name_splitter 1.0.3). No real name supports the rank reading; removing it moves PARTICLES, so it is left to a change of its own"
+note = "added from #18's test \"Johan de heer Van Kampen\" (family 'de heer Van Kampen'), which appears to be two real names run together (Johannes de Heer, a Dutch Protestant figure, and the surname Van Kampen): the string occurs elsewhere only in another name parser's test data (hex.pm full_name_splitter 1.0.3). No real name supports the rank reading; removing it moves PARTICLES, so it is left to #766"
 
 [[word]]
 text = "te"
