@@ -108,10 +108,10 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
                            f.read_text(encoding="utf-8"), re.M)}
     assert listed == {r.rule_id for r in RULES
                       if r.signal and " + " in r.signal}
-    # The tree holds no candidate since T4's split (2026-10-19), which
-    # leaves the comparison above true of an empty set
-    # however the recipe reads, so the two halves are also held to a
-    # synthetic rule of each kind.
+    # The tree's one candidate is W3 (comma + edge full stop), so the
+    # comparison above could pass of a recipe that only ever lists one
+    # rule; the two halves are also held to a synthetic rule of each
+    # kind.
     for signal, candidate in (("a shape: x + a count: y", True),
                               ("a shape: x", False)):
         doc = ("X1. Rationale: r.\n    Statement.\n"

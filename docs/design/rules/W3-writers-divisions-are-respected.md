@@ -46,5 +46,5 @@
 - **The honorific split-off against the comma** ("田中さん, PhD"): only the honorific split-off (W2) crosses the comma, an honorific being no part of the name on either side.
 
 ---
-**Signal:** a comma: a family comma around a name the division or the honorific peel acts on
+**Signal:** comma + edge full stop
 **history:** decisions/W3 · **implemented:** nameparser/_pipeline/_script_segment.py
