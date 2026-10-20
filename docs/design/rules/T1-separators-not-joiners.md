@@ -1,13 +1,22 @@
 # T1 — separators, not joiners
 
-T1. Rationale: a character that carries no name content (emoji, an
-    invisible directionality control) stands between words, not
-    inside them.
-    A name splits at whitespace and — unless the caller opts to
-    keep them — at ignorable characters: an ignorable character
-    separates its neighbors and never joins them.
-      "John😀Smith"                →  family="Smith"
-      "John😀Smith"  keep-emoji    →  given="John😀Smith"  · boundary
-    Signal: a character: whitespace, and characters that carry no name content
-    history: decisions/T1 · implemented: nameparser/_pipeline/_tokenize.py
+**When:** a name holds whitespace or an ignorable character, one that carries no name content, such as an emoji or an invisible directionality control, as in "John😀Smith".
 
+**Then:** the name splits at each of them, so an ignorable character separates its neighbors and never joins them.
+
+**Because:** a character that carries no name content stands between words, not inside them.
+
+```
+"John😀Smith"                →  family="Smith"
+```
+
+**Except:**
+
+- **Where the caller opts to keep a kind of ignorable character** (emoji, or directionality controls), the name does not split at that kind, and a kept character stays in the word it is written in.
+  ```
+  "John😀Smith"  keep-emoji    →  given="John😀Smith"  · boundary
+  ```
+
+---
+**Signal:** character: whitespace, and characters that carry no name content
+**history:** decisions/T1 · **implemented:** nameparser/_pipeline/_tokenize.py
