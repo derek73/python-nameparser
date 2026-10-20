@@ -4,6 +4,12 @@
 
 **Then:** initials take the first letter of each given, middle, and base family word; titles, suffixes, particles and nicknames contribute nothing.
 
+- **A word is a particle only where its position makes it one**, not because the vocabulary lists it: where it stands as a name word it is a name word and initials.
+  ```
+  "Anh Do"                    →  initials="A. D."
+  "Nguyen, Van Le"            →  initials="V. L. N."
+  ```
+
 - **A connective contributes nothing where it is joining** (P3). A part holding another name word for it to join — the part's working particles set aside — is a part where the connective is doing a connective's work and is no name word of its own. This is one rule for every group: a connective written among given names is a connective there too and contributes nothing where it joins. The question is asked of the WHOLE PART, never of a word count: a part of two words where one is the connective is still a part where it joins — the base of "Jon Dough and" is "Dough and" and its initials are "J. D." — and a part of three is no different. A connective with nothing in its part to join initials. A part holding nothing else is a part where it is joining nothing, and there it initials like any other name word, agreeing with the base. The part's working particles are set aside here too, so the "y" of "Juan de y" initials.
   ```
   "John and Jane Smith"       →  initials="J. J. S."
@@ -26,8 +32,6 @@
 
 ```
 "Dr. Juan Q. Xavier de la Vega III"  →  initials="J. Q. X. V."
-"Anh Do"                    →  initials="A. D."
-"Nguyen, Van Le"            →  initials="V. L. N."
 "Sean O'Connor"             →  initials="S. O."  · boundary
 ```
 

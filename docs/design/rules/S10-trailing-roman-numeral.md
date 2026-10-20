@@ -29,7 +29,7 @@
   "john i dr."                →  ambiguities=("suffix-or-name",)
   ```
 
-**Because:** a roman numeral ending a name is its generation. But one letter is also how an initial is written, and the generation it would name is rare. A name of two words has no word to spare for it.
+**Because:** a roman numeral ending a name is its generation. But one letter is also how an initial is written. A name of two words has no word to spare for it.
 
 ```
 "John Smith V"              →  suffix="V"
@@ -65,7 +65,11 @@
 
 **Precedence:**
 
-- **Before a suffix comma** ("John Smith V, PhD"): the part before a suffix comma is read as the same name written without the comma (C1).
+- **Before a suffix comma** ("John Smith V, PhD"): a numeral ending the part before the comma is read by this rule, and C12 says when it makes the comma a suffix comma. Written case is asked of the whole name, the credential after the comma included, so a part written in lower case before a capitalized credential belongs to a name of mixed case: its lower-case numeral is the generation and reports nothing, and a bare lower-case letter in front of it is no initial (T4).
+  ```
+  "john smith v, PhD"         →  ambiguities=()
+  "john j v, PhD"             →  family="j"
+  ```
 - **In the given part after a family comma** ("Smith, John V"): the given part is not counted, the comma having settled the count there (S5).
 
 **Accepted:**
