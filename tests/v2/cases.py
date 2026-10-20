@@ -8729,8 +8729,9 @@ CASES: tuple[Case, ...] = (
          "Dr King Jr", {"title": "Dr", "family": "King", "suffix": "Jr"},
          ambiguities=("title-or-name",), classification="fix(#489)",
          notes="v1 wanted exactly this reading and the 2026-09-01 "
-               "triage pinned the old one as NOT FIXED; rules/S2's "
-               "descriptive note said a change toward S2's prediction "
+               "triage pinned the old one as NOT FIXED; the "
+               "descriptive note rules/S2 then carried (decisions/S2, "
+               "2026-10-20) said a change toward S2's prediction "
                "would be an improvement, and this is it"),
     Case("title_run_floor_gives_back_a_given_name_title",
          "Dr Jr", {"given": "Dr", "suffix": "Jr"},
@@ -8739,8 +8740,9 @@ CASES: tuple[Case, ...] = (
                "peeled as the suffix, no title is left to make the "
                "reading H1's, so the lone name word is H4's -- "
                "`dr` is title vocabulary and the word standing is it. "
-               "This shape is what rules/S2's descriptive note "
-               "named, in its `Sir Jr` spelling, as the reading it "
+               "This shape is what the descriptive note rules/S2 "
+               "then carried (decisions/S2, 2026-10-20) named, in its "
+               "`Sir Jr` spelling, as the reading it "
                "predicted and did not get; once the floor empties the "
                "run no branch reads `vocab:given-title` at all, so "
                "`Sir Jr` is this row in every part -- same roles, same "
