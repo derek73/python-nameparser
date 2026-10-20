@@ -136,3 +136,9 @@ issue = 671
 note = "department head (ja), minister (zh); a form of address after a name"
 [word.professional_honorific.excluded]
 attached = "長 alone is a borne given name, so 阿部長 can be 阿部 + 長 (#707). The measurement found no such bearer, as it found none for the words that shipped; the refusal rests on the argument, which a lower-bound zero does not refute, so a re-measure that again comes back zero is no reason to lift it"
+
+[[word]]
+text = "旧姓"
+[word.birth_marker]
+issue = 309
+note = "native script, so it cannot collide with a Latin-script name, and it is in no other shipped vocabulary"

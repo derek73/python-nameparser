@@ -11,3 +11,14 @@ nobility = { gender = "m", expands = "count", issue = 606, note = "borne: ~750 s
 [[word]]
 text = "vel"
 alias = { may_be_given = true, expands = "or, between two surnames: \"Kowalski vel Nowak\"" }
+
+[[word]]
+text = "i"
+conjunction = { may_be_initial = true }
+
+[[word]]
+text = "z domu"
+[word.birth_marker]
+issue = 434
+expands = "of the house"
+note = "a phrase matched whole: z and domu alone are an ordinary preposition and noun"

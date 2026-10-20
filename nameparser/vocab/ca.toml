@@ -1,0 +1,8 @@
+schema = 1
+
+[[word]]
+text = "i"
+[word.conjunction]
+may_be_initial = true
+issue = [397, 721]
+note = "the Catalan and Polish surname link (Carod i Rovira, Kowalski i Nowak); a bare I initial is as common as a bare E, so marked like e. Also the Roman numeral I, so it joins only with a name word on each side (rules/P3)"

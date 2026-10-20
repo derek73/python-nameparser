@@ -88,3 +88,9 @@ note = "San San Chiou: a given-name element in Burmese and Chinese naming"
 [[word]]
 text = "santa"
 saint = { may_be_given = true, expands = "Saint, fem." }
+
+[[word]]
+text = "y"
+[word.conjunction]
+[word.conjunction.excluded]
+may_be_initial = { reason = "the commonest Hispanic double-surname link and this library's oldest fixture, 'Velasquez y Garcia': marking it would read the link of every one-case Hispanic record as a middle initial; a caller who wants the Dutch reading adds it", issue = [383, 479] }

@@ -165,3 +165,19 @@ may_be_given = false
 issue = 360
 expands = "Sainte, contracted"
 note = "Has a vowel, which is why the criterion is \"abbreviation of a word that is never itself a name\" rather than the vowel shape #360 first proposed. Measured misparse: \"Ste Marie\" gave given='Ste'."
+
+[[word]]
+text = "et"
+conjunction = {}
+
+[[word]]
+text = "né"
+birth_marker = { issue = 274, gender = "m" }
+
+[[word]]
+text = "née"
+birth_marker = { issue = 274, gender = "f" }
+
+[[word]]
+text = "nee"
+birth_marker = { same_as = "née", gender = "f" }

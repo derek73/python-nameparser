@@ -54,3 +54,10 @@ preposition = { may_be_given = false, expands = "of the, masc. pl." }
 [[word]]
 text = "santa"
 saint = { may_be_given = true, expands = "Saint, fem." }
+
+[[word]]
+text = "e"
+[word.conjunction]
+may_be_initial = true
+issue = [383, 479]
+note = "a bare E initial is common (Edward, Elizabeth) and an 'e' between two surnames is rare outside couple listings, so a name written wholly in one case reads it as an initial and reports the fork (decisions/P8)"

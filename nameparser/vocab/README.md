@@ -12,7 +12,7 @@ A file is named for a BCP 47 language tag in canonical case: `fr.toml`, `pt-BR.t
 
 Two tags are not languages:
 
-- **`und`** (undetermined) holds the words not yet assigned a language. A few are still here (46 of 1,931 on 2026-10-20, after #751 gave the credentials their languages): the conjunctions, the bound given names, the birth markers and two particles, converted mechanically from the Python lists they used to be; assigning a word to a language means moving its entry to that language's file. The comments above an entry here are the vetting notes that stood above the word in the Python module, in their old order; classifying a category is what turns them into fields.
+- **`und`** (undetermined) holds the words no language file fits: two particles of unrecorded origin, `bon` and `dí` (since 2026-10-20, when #751 finished what #749 and #750 began, giving every other word its languages). The comment at the top of the file says why they are there; a word whose language is found moves to that language's file.
 - **`mul`** (multiple) holds words shared on purpose, such as the Roman numerals.
 
 The script is read from the word, not from the file: `sr.toml` holds `mlađi` and `млађи` side by side. A script subtag (`zh-Hant`) is for a difference the text cannot show.
@@ -91,7 +91,7 @@ Text is compared by codepoint. The texts are already normalized, so this is the 
 
 The build checks the order and never rewrites a file, because a comment above an entry belongs to it and must move with it, which a TOML reader cannot see. When the build says an entry belongs somewhere else, move it with its comment. The order is checked last, so any other refusal (an exclusion's reason, a `same_as` naming no word) is reported first. The same check refuses a `same_as` chain that loops, in every file.
 
-`und.toml` is exempt. Its entries keep the order of the Python lists they were converted from, and its vetting comments still point at their neighbours ("Same word as عبد below"); a word leaving it for a language file takes its place in that file's order. After moving entries out, re-read every comment that stays behind: a pointer to a neighbour ("above", "below", "the three above") may now name a block that left, and nothing checks it. #769's reviews found two such pointers in comments the PR had already rewritten ("the three above" over the Devanagari civil set, "the reason the Devanagari block above gives" over the Bengali one).
+`und.toml` is exempt, holding no language's words; a word leaving it for a language file takes its place in that file's order.
 
 ## Kinds
 

@@ -445,6 +445,7 @@ issue = 269
 expands = "father of"
 gender = "m"
 note = "\"Abu Bakr\" -- Abu reads as the given name; also a bound given-name word, so it joins forward (P5)"
+[word.bound_given]
 
 [[word]]
 text = "أبو"
@@ -454,6 +455,8 @@ issue = 269
 expands = "father of: abu, hamza spelling"
 gender = "m"
 note = "Left ambiguous like its Latin transliteration 'abu': \"Abu Bakr\" reads Abu as a given name"
+[word.bound_given]
+issue = 269
 
 [[word]]
 text = "ابو"
@@ -464,6 +467,9 @@ expands = "father of: abu, hamza-less spelling"
 same_as = "أبو"
 gender = "m"
 note = "left ambiguous as أبو is, both spellings vetted together (#269)"
+[word.bound_given]
+issue = 269
+same_as = "أبو"
 
 [[word]]
 text = "آل"
@@ -472,3 +478,49 @@ may_be_given = false
 issue = 269
 expands = "family of: \"Al Saud\""
 note = "Distinct from the article ال, excluded in this file; a clan prefix, never a bare given name."
+
+[[word]]
+text = "و"
+[word.conjunction]
+issue = 269
+note = "formal script attaches و to the following word (وفاطمة), so a standalone و is informal spacing, common in real data; single-character, so the single-letter carve-out protects short names"
+
+[[word]]
+text = "abd"
+[word.bound_given]
+expands = "servant of"
+note = "the bare transliteration, which abdul/abdel/abdal do not match: 'abd Allah Smith' and 'Abd al-Rahman Smith' read given 'abd Allah' and 'Abd al-Rahman'; the three-token 'abd al rahman smith' is not joined, al being a particle that chains forward. Also the credential ABD in en.toml; position decides at the two ends but not in a family comma's given slot (decisions/P5)"
+
+[[word]]
+text = "abdul"
+bound_given = { expands = "servant of the" }
+
+[[word]]
+text = "abdal"
+bound_given = { expands = "servant of the", same_as = "abdul" }
+
+[[word]]
+text = "abdel"
+bound_given = { expands = "servant of the", same_as = "abdul" }
+
+[[word]]
+text = "abou"
+bound_given = { expands = "father of", same_as = "abu" }
+
+[[word]]
+text = "umm"
+bound_given = { expands = "mother of" }
+
+[[word]]
+text = "أم"
+bound_given = { note = "\"umm\" (mother of), hamza spelling", issue = 269 }
+
+[[word]]
+text = "ام"
+bound_given = { note = "\"umm\", hamza-less spelling", issue = 269, same_as = "أم" }
+
+[[word]]
+text = "عبد"
+[word.bound_given]
+note = "\"abd\" (servant of): the script writes Abdul Rahman as two words, عبد + الرحمن, the article attaching to the word after it, so عبد alone covers the abdul/abdel/abdal spellings -- عبد الرحمن -> given \"عبد الرحمن\""
+issue = 269

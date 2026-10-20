@@ -27,3 +27,7 @@ generation = { issue = 679 }
 [[word]]
 text = "τζούνιορ"
 generation = { issue = 679 }
+
+[[word]]
+text = "και"
+conjunction = { issue = 269 }

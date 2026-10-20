@@ -31,3 +31,11 @@ nobility = { gender = "m", expands = "count", issue = 606 }
 [[word]]
 text = "af"
 preposition = { may_be_given = false, expands = "of, nobiliary" }
+
+[[word]]
+text = "f"
+excluded = { birth_marker = "the abbreviation of født collides with the initial F., so only the full participles født, fødd and född are safe" }
+
+[[word]]
+text = "født"
+birth_marker = { issue = 274 }

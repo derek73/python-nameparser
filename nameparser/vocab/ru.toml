@@ -55,3 +55,34 @@ generation = { issue = 661 }
 [[word]]
 text = "старший"
 generation = { issue = 661 }
+
+[[word]]
+text = "и"
+[word.conjunction]
+issue = 269
+[word.conjunction.excluded]
+may_be_initial = { reason = "#267 blessed the Cyrillic joining, and marking it would break that reading in the one-case spellings where nothing else decides", issue = [383, 479] }
+
+[[word]]
+text = "урожд"
+birth_marker = { issue = 274 }
+
+[[word]]
+text = "урождённая"
+birth_marker = { issue = 274, gender = "f" }
+
+[[word]]
+text = "урожденная"
+[word.birth_marker]
+issue = 274
+gender = "f"
+same_as = "урождённая"
+note = "the е spelling: case normalization does not fold ё, and running text routinely writes е"
+
+[[word]]
+text = "урождённый"
+birth_marker = { issue = 274, gender = "m" }
+
+[[word]]
+text = "урожденный"
+birth_marker = { issue = 274, gender = "m", same_as = "урождённый" }
