@@ -572,7 +572,10 @@ def test_doc_internal_anchors_resolve() -> None:
              *sorted(DECISIONS_DIR.glob("*.md")), MECH_DOC]
     docs = {str(p.relative_to(REPO)): p.read_text(encoding="utf-8")
             for p in paths}
-    rule_ids = set(re.findall(r"^([A-Z]\d+)\.\s", read_rules_text(), re.M))
+    # a block rule opens `S4. Rationale:`, a skeleton rule its heading
+    # `# S10 — name` (#761)
+    rule_ids = set(re.findall(r"^(?:# )?([A-Z]\d+)(?:\.\s| — )",
+                              read_rules_text(), re.M))
     dec_keys = set(read_decision_files())
     mech_slugs = set(re.findall(r"^#{2,3} ([A-Z][A-Z0-9_-]+)",
                                 docs[str(MECH_DOC.relative_to(REPO))], re.M))
