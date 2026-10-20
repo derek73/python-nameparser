@@ -151,8 +151,8 @@ class BoundJoin(IntEnum):
 # maiden name, and is itself dropped" -- where a marker counts, and up
 # to what, are `_maiden_take`'s (history: decisions/M2)
 #
-# A marker piece is a LONE marker -- M2's own "standing as a word of
-# its own". The consumer runs before every join but the Ph. D. merge
+# A marker piece is a LONE marker -- M2's When ("a recognized maiden
+# marker stands as a word in a name"). The consumer runs before every join but the Ph. D. merge
 # (see _group_segment), so a marker inside a wider piece is one the
 # consumer left there: declined ("Jane van der Berg née" reads family
 # 'van der Berg née'), or never examined (a leading marker, or a second
@@ -1334,11 +1334,11 @@ def group(state: ParseState) -> ParseState:
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
         all_reads.append(seg_reads[0] if len(seg_reads) == 1 else None)
-    # rules/M1: "a leading recognized marker being dropped where
-    # the clause holds a word past it; a clause of nothing but its
-    # marker keeps its words" — a marker inside EXTRACTED maiden
-    # content (#329).
-    # classify tags
+    # rules/M1: "a leading recognized marker is dropped where the
+    # clause holds a word past it" and "a clause of nothing but its
+    # marker keeps its words" — Then's marker drop and the Then bullet
+    # on a marker-only clause, for a marker inside EXTRACTED maiden
+    # content (decisions/M1, #329). Classify tags
     # such a marker like any other token -- what the #274 rule above
     # lacks is not the TAG but the token: extract claims a delimited
     # clause and tokenize gives its tokens Role.MAIDEN up front, so

@@ -339,8 +339,8 @@ def _assign_main(seg_idx: int, state: ParseState,
     # reads that word as the family name" (history: decisions/N3)
     # -- v1's p_len == 1 counted
     # the WHOLE segment before any title peeling -- 'Xyz. (Bud) Smith'
-    # has two pieces, so the title peel wins and Smith stays the given
-    # name (pinned live 2026-07-17)
+    # has two pieces, so the title peel wins and this rule declines;
+    # H1 then names Smith the family (rules/N3's title bullet)
     # The nickname scan sits LAST in the test: it is a generator, which
     # every interpreter resumes once per token (seven call events on
     # the reference name), and only a one-piece segment ever reads its
