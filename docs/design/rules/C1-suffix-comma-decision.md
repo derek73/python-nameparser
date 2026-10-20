@@ -31,10 +31,11 @@
 - **The count against written case** ("Smith, MA", "Smith Jr., Ma"): C4 counts the name words before the comma first and asks written case (S6) second, only where the count has left the word a name.
 - **Paired initials against the count** ("García Márquez, G.J."): C5 is the stated exception to C4's count, since two words before the comma may be one surname written in two.
 - **An unlisted all-caps word** ("John Smith, XYZ"): C6 decides whether it joins C4's class at all, only where the name carries a case contrast, and once it has joined, C4's count reads it.
-- **A listed generation word ending the name before the comma against paired initials after it** ("John Smith Jr., M.J."): written dotted, the initials keep C5's reading and are the given name, the generation staying the suffix; written undotted as two capitals, they are C12's credential, read as the credential they look like.
+- **A generation ending the name before the comma against paired initials after it** ("John Smith Jr., M.J."): written dotted, the initials keep C5's reading and are the given name, the generation staying the suffix; written undotted as two capitals, they are C12's credential, read as the credential they look like.
   ```
   "John Smith Jr., M.J."      →  given="M.J."
   "John Smith Jr., MJ"        →  suffix="Jr., MJ"
+  "John Smith V, M.J."        →  suffix="V"  deviates: #774 (today: suffix="")
   ```
 
 **Accepted:**
