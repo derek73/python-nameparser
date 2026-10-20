@@ -49,7 +49,7 @@
   "R2": {"words": 143, "then_words": 19, "because_sentences": 1, "except": 1, "precedence": 0, "accepted": 2, "accepted_words": 85},
   "R3": {"words": 445, "then_words": 369, "because_sentences": 2, "except": 1, "precedence": 0, "accepted": 3, "accepted_words": 409},
   "R4": {"words": 898, "then_words": 636, "because_sentences": 1, "except": 4, "precedence": 0, "accepted": 3, "accepted_words": 552},
-  "R5": {"words": 239, "exceptions": 1, "accepted": 0, "accepted_words": 0},
+  "R5": {"words": 250, "then_words": 154, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "S1": {"words": 48, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "S2": {"words": 357, "exceptions": 0, "accepted": 3, "accepted_words": 290},
   "S3": {"words": 424, "exceptions": 3, "accepted": 1, "accepted_words": 88},
