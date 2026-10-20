@@ -112,9 +112,10 @@ def _tokenize_region(state: ParseState, start: int, end: int,
     for i in range(start, end):
         ch = text[i]
         # rules/N1: "a comma inside the clause is kept as written: the
-        # comma divides nothing there" -- a comma separates only where it
-        # records a segmentation offset, the main stream; inside an
-        # extracted region it is the clause's text, like ';' (#653)
+        # comma divides nothing there" -- the Then bullet on a comma: a
+        # comma separates only where it records a segmentation offset,
+        # the main stream; inside an extracted region it is the clause's
+        # text, like ';' (decisions/N1, #653)
         is_separator = ((record_offsets and ch in COMMA_CHARS)
                         or _ignorable(ch, state))
         if ch == _INTERPUNCT:
