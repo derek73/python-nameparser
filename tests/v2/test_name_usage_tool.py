@@ -13,6 +13,7 @@ tools/ is not a package, so the module is loaded by path, as
 _differential_fixtures.py loads compare.py.
 """
 import importlib.util
+import hashlib
 import http.client
 import io
 import json
@@ -1207,6 +1208,11 @@ _DICT = _namdict_text(
     _line("?", "De+An", {"Country 2": "2", "Country 50": "2"}),
     _line("?", "Jun+Wei", {"Country 50": "3"}),
     _line("M", "İlker", {"Country 47": "5"}),
+    _line("F", "Işıl", {"Country 47": "6"}),
+    _line("M", "Isa", {"Country 46": "4"}),
+    _line("M", "İsa", {"Country 47": "7"}),
+    _line("M", "Kasim", {"Country 46": "3"}),
+    _line("M", "Kasım", {"Country 47": "5"}),
     # Tied bands, the later line naming the earlier legend country.
     _line("M", "Ali", {"Country 5": "3"}),
     _line("?", "Ali", {"Country 1": "3"}),
@@ -1215,6 +1221,9 @@ _DICT = _namdict_text(
     _line("F", "Käte", {"Country 11": "D"}, flag="+"),
     _line("=", "Al Albert", {"Country 0": "1"}),
 )
+
+
+_DICT_SHA256 = hashlib.sha256(_DICT.encode()).hexdigest()
 
 
 def test_read_namdict_reads_the_countries_from_the_legend() -> None:
@@ -1306,13 +1315,41 @@ def test_namdict_usage_breaks_a_tie_in_legend_order() -> None:
     assert usage.given_bands == [("Country 1", 3), ("Country 5", 3)]
 
 
-@pytest.mark.parametrize("word", ["Ilker", "ilker", "ILKER", "İlker"])
-def test_namdict_usage_finds_a_turkish_dotted_capital_from_a_plain_i(
-        word: str) -> None:
+@pytest.mark.parametrize(("word", "bands"), [
     # casefold() turns İ into i + U+0307, so a plain fold missed every
     # name listed only under İ (24 in the real file, measured 2026-10-19).
+    ("Ilker", [("Country 47", 5)]),
+    ("ilker", [("Country 47", 5)]),
+    ("ILKER", [("Country 47", 5)]),
+    ("İlker", [("Country 47", 5)]),   # as listed: the plain fold had it
+    # Turkish lowers I to dotless ı, so a Turkish speaker's lowercase and
+    # capitals of Işıl miss under the default fold, which lowers I to i.
+    ("ışıl", [("Country 47", 6)]),
+    ("IŞIL", [("Country 47", 6)]),
+    ("Işıl", [("Country 47", 6)]),    # as listed: the plain fold had it
+    ("işıl", [("Country 47", 6)]),    # the default fold of Işıl: had it too
+    # Isa and İsa are one name with two capitals, so both answer both.
+    ("Isa", [("Country 47", 7), ("Country 46", 4)]),
+    ("İsa", [("Country 47", 7), ("Country 46", 4)]),
+    # ...but dotless ı is a letter, not a case: Kasim is not Kasım,
+    # though KASIM, written in capitals, may be either.
+    ("Kasim", [("Country 46", 3)]),
+    ("Kasım", [("Country 47", 5)]),
+    ("KASIM", [("Country 47", 5), ("Country 46", 3)]),
+])
+def test_namdict_usage_matches_turkish_capitals_in_both_folds(
+        word: str, bands: list[tuple[str, int]]) -> None:
     usage = tool.namdict_usage(word, tool.read_namdict(_DICT), top=5)
-    assert usage.given_bands == [("Country 47", 5)]
+    assert usage.given_bands == bands
+
+
+@pytest.mark.parametrize("word", ["Isil", "isil", "ISIL", "Işil"])
+def test_namdict_usage_does_not_fold_a_dotless_i_into_a_dotted_one(
+        word: str) -> None:
+    # The Turkish fold must not turn ı into i: Işıl is not Isil, as Käte
+    # is not Kaete.
+    usage = tool.namdict_usage(word, tool.read_namdict(_DICT), top=5)
+    assert usage.given_bands == []
 
 
 def test_namdict_usage_matches_ignoring_case_and_reads_a_plus_name() -> None:
@@ -1393,11 +1430,10 @@ def _serve(monkeypatch: pytest.MonkeyPatch, data: bytes) -> None:
 
 def test_load_namdict_caches_only_the_dictionary_from_a_pinned_sdist(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    import hashlib
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     sdist = _sdist(_DICT.encode())
     monkeypatch.setattr(tool, "NAMDICT_SHA256", hashlib.sha256(sdist).hexdigest())
-    monkeypatch.setattr(tool, "NAMDICT_MIN_NAMES", 1)
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
     _serve(monkeypatch, sdist)
     table = _LOAD_NAMDICT(download=True)
     assert table is not None and table.names["in"] == [("In", {"Korea": 10})]
@@ -1424,7 +1460,7 @@ def test_main_reads_a_cached_dictionary_offline(
         capsys: pytest.CaptureFixture[str]) -> None:
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     monkeypatch.setattr(tool, "load_namdict", _LOAD_NAMDICT)
-    monkeypatch.setattr(tool, "NAMDICT_MIN_NAMES", 1)
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
     (tmp_path / tool.NAMDICT_FILE).write_text(_DICT, encoding="utf-8")
     assert tool.main(["--no-wikidata", "--json", "In", "Shehu"]) == 0
     report = json.loads(capsys.readouterr().out)
@@ -1456,7 +1492,6 @@ def test_load_namdict_reports_an_archive_the_pin_does_not_describe(
     # A hash bumped without the member path, or an archive of another
     # layout: tarfile raises KeyError, ReadError or EOFError, none of them
     # an OSError, which escaped _attempt and took every source down.
-    import hashlib
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     data = sdist()
     monkeypatch.setattr(tool, "NAMDICT_SHA256", hashlib.sha256(data).hexdigest())
@@ -1466,14 +1501,48 @@ def test_load_namdict_reports_an_archive_the_pin_does_not_describe(
     assert list(tmp_path.iterdir()) == []
 
 
-def test_load_namdict_refuses_a_cache_file_that_lost_its_names(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def _legend_only() -> str:
+    return _DICT.split("\r\n?  In")[0] + "\r\n"
+
+
+@pytest.mark.parametrize("cut", [
+    _legend_only,                                 # every name gone
+    lambda: _DICT[:_DICT.rindex("\r\n", 0, -2) + 2],  # the last line gone
+    lambda: _DICT[:-20],                          # cut inside a line
+])
+def test_load_namdict_refuses_a_cache_file_cut_short(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        cut: Callable[[], str]) -> None:
     # Cut at a line boundary, the file still parses, and every name it
-    # lost would read "not listed" -- the SSA zip's false zero again.
+    # lost would read "not listed" -- the SSA zip's false zero again. A
+    # floor on the names read refused the first and not the second.
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
-    (tmp_path / tool.NAMDICT_FILE).write_text(_DICT, encoding="utf-8")
-    with pytest.raises(ValueError, match="name lines; the pinned file holds"):
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
+    (tmp_path / tool.NAMDICT_FILE).write_bytes(cut().encode())
+    with pytest.raises(ValueError, match="unusable"):
         _LOAD_NAMDICT(download=False)
+
+
+def test_load_namdict_accepts_the_pinned_file(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
+    (tmp_path / tool.NAMDICT_FILE).write_bytes(_DICT.encode())
+    table = _LOAD_NAMDICT(download=False)
+    assert table is not None and table.lookup("In") == [("In", {"Korea": 10})]
+
+
+def test_load_namdict_does_not_cache_a_member_the_pin_does_not_describe(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # The sdist matches its pin but the member does not match its own:
+    # caching it would leave a file every later load refuses.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    sdist = _sdist(_DICT.encode())
+    monkeypatch.setattr(tool, "NAMDICT_SHA256", hashlib.sha256(sdist).hexdigest())
+    _serve(monkeypatch, sdist)
+    with pytest.raises(ValueError, match="not the pinned"):
+        _LOAD_NAMDICT(download=True)
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_main_does_not_download_the_dictionary_under_no_wikidata(
@@ -1491,11 +1560,10 @@ def test_main_does_not_download_the_dictionary_under_no_wikidata(
 def test_main_downloads_the_dictionary_when_online(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
         capsys: pytest.CaptureFixture[str]) -> None:
-    import hashlib
     monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
     monkeypatch.setattr(tool, "load_namdict", _LOAD_NAMDICT)
     monkeypatch.setattr(tool, "load_census", lambda download: None)
-    monkeypatch.setattr(tool, "NAMDICT_MIN_NAMES", 1)
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
     sdist = _sdist(_DICT.encode())
     monkeypatch.setattr(tool, "NAMDICT_SHA256", hashlib.sha256(sdist).hexdigest())
     _serve(monkeypatch, sdist)

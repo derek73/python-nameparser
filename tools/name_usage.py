@@ -63,10 +63,12 @@ What a number means depends on its source, and the report says so:
   cell shows the peak band and the bands go in `given_bands`. A
   SELECTION, not a census, and written in Latin letters only: a missing
   name proves nothing (`Shehu` has no entry), and a non-Latin word is
-  unrepresentable. Matched ignoring case (`Ilker` finds `İlker`), with
+  unrepresentable. Matched ignoring case, in the Turkish fold too
+  (`Ilker` finds `İlker`, `ışıl` finds `Işıl`), with
   a `+` in a listed name (`Jun+Wei`; the header says Arabic, Chinese and
-  Korean names only) standing for a hyphen, a space or nothing. Umlauts
-  are matched as written: `Käte` is listed, `Kaete` is not. Downloaded
+  Korean names only) standing for a hyphen, a space or nothing. Other
+  letters are matched as written: `Käte` and `Işıl` are listed, `Kaete`
+  and `Isil` are not. Downloaded
   once into the cache, pinned by the sdist's sha256; only that one file
   is kept, and never in the tree.
 
@@ -393,11 +395,11 @@ def ssa_usage(word: str, table: dict[str, Counter[str]] | None) -> Usage:
 
 _NAME_START, _SORT_FLAG, _BANDS_START = 3, 29, 30
 _LINE_END = " $"
-#: Name lines (not "=" lines, not "+" re-sorts) the file must yield; the
-#: pinned file yields 46,445 (counted 2026-10-19). A cache file cut at a
-#: line boundary still parses, and would report every name it lost as
-#: not listed, so a short read is refused instead.
-NAMDICT_MIN_NAMES = 40_000
+#: The cached file's own sha256, checked at every load. A file cut at a
+#: line boundary still parses and reports every name it lost as not
+#: listed; a floor on the names read missed a cut that kept most of
+#: them, and the file is pinned, so only its exact bytes are accepted.
+NAMDICT_FILE_SHA256 = ("bfe79b1f3533d188333c36d7b0722868b873b2d366bb15bed3ed9a4f85db3c8c")
 
 
 @dataclass(slots=True)
@@ -409,15 +411,27 @@ class NamDict:
     names: dict[str, list[tuple[str, dict[str, int]]]]
     #: Folded short form -> the long forms it is listed as short for.
     short_for: dict[str, list[str]]
-    #: Name lines read, for the NAMDICT_MIN_NAMES floor.
-    lines: int
+
+    def lookup(self, word: str) -> list[tuple[str, dict[str, int]]]:
+        found = {id(e): e for key in namdict_keys(word)
+                 for e in self.names.get(key, [])}
+        return list(found.values())
+
+    def short_forms(self, word: str) -> list[str]:
+        return list(dict.fromkeys(long for key in namdict_keys(word)
+                                  for long in self.short_for.get(key, [])))
 
 
-def namdict_key(word: str) -> str:
-    """The fold the dictionary is matched under, for stored names and
-    looked-up words alike: case dropped, and the dot casefold leaves on
-    a Turkish İ (i + U+0307) dropped with it, so Ilker finds İlker."""
-    return word.casefold().replace("i\u0307", "i")
+def namdict_keys(word: str) -> list[str]:
+    """The folds the dictionary is matched under, for stored names and
+    looked-up words alike: the default case fold, with the dot it leaves
+    on a Turkish İ (i + U+0307) dropped so Ilker finds İlker, and the
+    Turkish one, where I lowers to dotless ı, so ışıl and IŞIL find
+    Işıl. The dotless ı itself is a letter, not a case: Isil does not
+    find Işıl, as Kaete does not find Käte."""
+    turkish = word.replace("I", "ı").replace("İ", "i").lower()
+    return list(dict.fromkeys([
+        word.casefold().replace("i\u0307", "i"), turkish]))
 
 
 def _legend(comments: list[str]) -> list[str]:
@@ -464,7 +478,6 @@ def read_namdict(text: str) -> NamDict:
     countries = _legend([line for line in lines if line.startswith("#")])
     names: dict[str, list[tuple[str, dict[str, int]]]] = {}
     short_for: dict[str, list[str]] = {}
-    read = 0
     for number, line in enumerate(lines, 1):
         if not line or line.startswith("#"):
             continue
@@ -479,9 +492,9 @@ def read_namdict(text: str) -> NamDict:
             if len(pair) != 2:
                 raise ValueError(f"nam_dict line {number} is not "
                                  f"'=  short long': {line!r}")
-            short_for.setdefault(namdict_key(pair[0]), []).append(pair[1])
+            for key in namdict_keys(pair[0]):
+                short_for.setdefault(key, []).append(pair[1])
             continue
-        read += 1
         bands = {}
         for country, digit in zip(
                 countries, line[_BANDS_START:_BANDS_START + len(countries)]):
@@ -493,9 +506,11 @@ def read_namdict(text: str) -> NamDict:
                                      f"{digit!r} for {country}") from None
         # The name as listed is filed too, so Jun+Wei copied from the
         # file finds itself.
-        for form in dict.fromkeys([name, *expand_plus(name)]):
-            names.setdefault(namdict_key(form), []).append((name, bands))
-    return NamDict(countries, names, short_for, read)
+        entry = (name, bands)
+        for key in dict.fromkeys(k for form in [name, *expand_plus(name)]
+                                 for k in namdict_keys(form)):
+            names.setdefault(key, []).append(entry)
+    return NamDict(countries, names, short_for)
 
 
 def _fetch_namdict(path: Path) -> None:
@@ -521,6 +536,10 @@ def _fetch_namdict(path: Path) -> None:
     except (tarfile.TarError, KeyError, EOFError, zlib.error) as exc:
         raise ValueError(f"cannot read {NAMDICT_MEMBER} from {NAMDICT_URL} "
                          f"({exc})") from exc
+    digest = hashlib.sha256(text).hexdigest()
+    if digest != NAMDICT_FILE_SHA256:
+        raise ValueError(f"{NAMDICT_MEMBER} in {NAMDICT_URL} has sha256 "
+                         f"{digest}, not the pinned {NAMDICT_FILE_SHA256}")
     tmp = path.with_suffix(".part")
     tmp.write_bytes(text)
     tmp.replace(path)
@@ -538,14 +557,15 @@ def load_namdict(download: bool) -> NamDict | None:
         print(f"downloading {NAMDICT_CREDIT} ...", file=sys.stderr)
         _fetch_namdict(path)
     try:
-        table = read_namdict(path.read_text(encoding="utf-8"))
-        if table.lines < NAMDICT_MIN_NAMES:
-            raise ValueError(f"it holds {table.lines:,} name lines; the "
-                             f"pinned file holds over {NAMDICT_MIN_NAMES:,}")
+        data = path.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        if digest != NAMDICT_FILE_SHA256:
+            raise ValueError(f"sha256 {digest}, not the pinned file's "
+                             f"{NAMDICT_FILE_SHA256}")
+        return read_namdict(data.decode("utf-8"))
     except ValueError as exc:  # UnicodeDecodeError included
         raise ValueError(f"{path} is unusable ({exc}); delete it and run "
                          "again to re-download") from exc
-    return table
 
 
 def _latin_only(word: str) -> bool:
@@ -563,14 +583,14 @@ def namdict_usage(word: str, table: NamDict | None, top: int) -> Usage:
         usage.status = "unrepresentable"
         usage.note = "the dictionary spells names in Latin letters only"
         return usage
-    key = namdict_key(word)
-    entries = table.names.get(key, [])
-    short = ", ".join(table.short_for.get(key, []))
+    entries = table.lookup(word)
+    short = ", ".join(table.short_forms(word))
     short_note = f"listed as a short form of {short}" if short else ""
     if not entries:
         usage.note = _join("not listed, which proves nothing: the dictionary "
-                           "is a selection, and umlauts are matched as "
-                           "written (Käte, not Kaete)", short_note)
+                           "is a selection, and letters are matched as "
+                           "written (Käte, not Kaete; Işıl, not Isil)",
+                           short_note)
         return usage
     peak: dict[str, int] = {}
     for _, bands in entries:
