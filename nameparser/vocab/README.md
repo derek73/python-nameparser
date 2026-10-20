@@ -12,7 +12,7 @@ A file is named for a BCP 47 language tag in canonical case: `fr.toml`, `pt-BR.t
 
 Two tags are not languages:
 
-- **`und`** (undetermined) holds the words no language file fits: two particles of unrecorded origin, `bon` and `dí` (2 of 1,935 entries on 2026-10-20, after #749, #750 and #751 gave every other word its languages). The comment at the top of the file says why they are there; a word whose language is found moves to that language's file.
+- **`und`** (undetermined) holds the words no language file fits: two particles of unrecorded origin, `bon` and `dí` (since 2026-10-20, when #751 finished what #749 and #750 began, giving every other word its languages). The comment at the top of the file says why they are there; a word whose language is found moves to that language's file.
 - **`mul`** (multiple) holds words shared on purpose, such as the Roman numerals.
 
 The script is read from the word, not from the file: `sr.toml` holds `mlađi` and `млађи` side by side. A script subtag (`zh-Hant`) is for a difference the text cannot show.
