@@ -13,14 +13,6 @@ text = "सौ"
 salutation = { gender = "f", issue = 344, expands = "Sau., Mrs." }
 
 [[word]]
-text = "पंडित"
-style = { issue = 344, expands = "Pandit" }
-
-[[word]]
-text = "पं"
-style = { issue = 344, same_as = "पंडित", expands = "Pandit, abbreviated" }
-
-[[word]]
 text = "महात्मा"
 style = { issue = 344, expands = "Mahatma" }
 
@@ -35,6 +27,14 @@ academic = { issue = 269, expands = "Dr., abbreviated" }
 [[word]]
 text = "डॉक्टर"
 academic = { issue = 344, expands = "doctor, full form" }
+
+[[word]]
+text = "पंडित"
+academic = { issue = 344, expands = "Pandit, a scholar's title" }
+
+[[word]]
+text = "पं"
+academic = { issue = 344, same_as = "पंडित", expands = "Pandit, abbreviated" }
 
 [[word]]
 text = "प्रा"

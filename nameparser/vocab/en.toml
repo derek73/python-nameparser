@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "wm"
+title = { issue = 68, note = "William, abbreviated, and no title of any kind: added for #68, where 'Wm. Scott Magargee III' read first name 'Wm.', so 'Wm. Smith' reads title Wm. and no given name" }
+
+[[word]]
 text = "goodman"
 salutation = { gender = "m", expands = "the archaic Mr., 'Goodman Brown'" }
 
@@ -74,7 +78,7 @@ style = {}
 
 [[word]]
 text = "hon"
-style = { same_as = "honorable", note = "sorry Hon Solo, but judges seem more common." }
+style = { same_as = "honorable", note = "kept though Hon is a given name: the judges' Hon. was judged the commoner reading" }
 
 [[word]]
 text = "honourable"
@@ -91,10 +95,6 @@ academic = { expands = "the address of an advocate, 'Adv. Smith' in South Africa
 [[word]]
 text = "attorney"
 academic = { expands = "the address of a lawyer, 'Atty. Cruz'" }
-
-[[word]]
-text = "doctor"
-academic = {}
 
 [[word]]
 text = "engineer"
@@ -352,7 +352,7 @@ nobility = { addresses = "given", gender = "f", expands = "the female knighthood
 text = "duke"
 given = { us_ssa = 11595, wikidata = 151, as_of = 2026-10-19, note = "male births only" }
 family = { us_census_2010 = 35053, wikidata = 315, as_of = 2026-10-19 }
-excluded = { nobility = "a common given name (Duke Ellington), and a surname besides" }
+excluded = { nobility = "a common given name (Duke Kahanamoku), and a surname besides" }
 
 [[word]]
 text = "dutchess"
@@ -696,7 +696,7 @@ military = { expands = "Master Gunnery Sergeant" }
 
 [[word]]
 text = "mpco-cg"
-military = { note = "as shipped; the rank is MCPO-CG, Master Chief Petty Officer of the Coast Guard, already listed as mcpoc" }
+military = { note = "as shipped; the rank is MCPOCG, Master Chief Petty Officer of the Coast Guard, already listed as mcpoc" }
 
 [[word]]
 text = "msg"
@@ -840,7 +840,7 @@ military = { expands = "Warrant Officer 5" }
 
 [[word]]
 text = "administrator"
-office = { issue = 606 }
+office = { issue = 606, note = "one of #606's English offices, completing runs like 'Police Commissioner'" }
 
 [[word]]
 text = "alderman"
@@ -916,7 +916,7 @@ office = { same_as = "co-chair" }
 
 [[word]]
 text = "commissioner"
-office = { issue = 606 }
+office = { issue = 606, note = "one of #606's English offices, completing runs like 'Police Commissioner'" }
 
 [[word]]
 text = "comptroller"
@@ -1048,7 +1048,7 @@ office = {}
 
 [[word]]
 text = "pslc"
-office = { expands = "Pro Se Law Clerk (#9)" }
+office = { issue = 9, expands = "Pro Se Law Clerk" }
 
 [[word]]
 text = "pursuivant"
@@ -1105,10 +1105,6 @@ office = {}
 [[word]]
 text = "warden"
 office = {}
-
-[[word]]
-text = "wm"
-office = { note = "added for #68 with no expansion recorded; Wm. also abbreviates William" }
 
 [[word]]
 text = "abolitionist"
@@ -1900,11 +1896,11 @@ modifier = { expands = "the second word of chargé d'affaires" }
 
 [[word]]
 text = "designated"
-modifier = { expands = "Designated Judge (#9)" }
+modifier = { issue = 9, expands = "Designated Judge" }
 
 [[word]]
 text = "discovery"
-modifier = { expands = "a US court word, from #9's list of federal judges' titles" }
+modifier = { issue = 9 }
 
 [[word]]
 text = "district"
@@ -1916,11 +1912,11 @@ modifier = {}
 
 [[word]]
 text = "docket"
-modifier = { expands = "Docket Clerk (#9)" }
+modifier = { issue = 9, expands = "Docket Clerk" }
 
 [[word]]
 text = "edmi"
-modifier = { note = "from #9's list of federal judges' titles, its meaning unrecorded there (a court's initials, perhaps the Eastern District of Michigan)" }
+modifier = { issue = 9, note = "from #9's list of federal judges' titles; its meaning is not recorded there" }
 
 [[word]]
 text = "english"
@@ -1940,7 +1936,7 @@ modifier = { same_as = "executive" }
 
 [[word]]
 text = "family"
-modifier = { expands = "Family Court (#9)" }
+modifier = { issue = 9, note = "added with #9's judicial titles (0c2596c7); the phrase it was for is not recorded" }
 
 [[word]]
 text = "federal"
@@ -2104,7 +2100,7 @@ modifier = {}
 
 [[word]]
 text = "pro"
-modifier = { expands = "Pro Se Law Clerk (#9)" }
+modifier = { issue = 9, expands = "Pro Se Law Clerk" }
 
 [[word]]
 text = "queen's"

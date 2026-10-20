@@ -7,6 +7,10 @@ text = "docent"
 academic = { expands = "the academic rank, spelled alike in Dutch, Swedish, Danish, Norwegian, Polish and Czech" }
 
 [[word]]
+text = "doctor"
+academic = { expands = "spelled alike in English, Spanish, Catalan and Romanian" }
+
+[[word]]
 text = "dr"
 academic = { expands = "Doctor, abbreviated alike across the European languages" }
 

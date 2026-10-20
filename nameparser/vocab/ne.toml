@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "डा"
-academic = { issue = 344, expands = "Dr., the डा. abbreviation (Nepali and older Hindi)" }
+academic = { issue = 344, expands = "Dr., the डा. abbreviation (Nepali and older Hindi), matched through the edge-period normalization" }
 
 [[word]]
 text = "जेआर"

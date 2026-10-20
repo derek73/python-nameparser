@@ -2,7 +2,7 @@ schema = 1
 
 [[word]]
 text = "giani"
-religious = { expands = "a learned Sikh, ਗਿਆਨੀ" }
+religious = { expands = "a learned Sikh", native = "ਗਿਆਨੀ" }
 
 [[word]]
 text = "gyani"

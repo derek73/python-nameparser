@@ -49,14 +49,6 @@ text = "ठाकुर"
 excluded = { style = { reason = "Tagore, the surname, as with the Bengali ঠাকুর", issue = 344, decided = 2026-09-06 } }
 
 [[word]]
-text = "पंडित"
-style = { issue = 344, expands = "Pandit" }
-
-[[word]]
-text = "पं"
-style = { issue = 344, same_as = "पंडित", expands = "Pandit, abbreviated" }
-
-[[word]]
 text = "महात्मा"
 style = { issue = 344, expands = "Mahatma", note = "civil, not renunciate: it addresses by surname ('महात्मा गांधी'), so TITLES only" }
 
@@ -74,7 +66,7 @@ excluded = { academic = { reason = "a common surname (Vijaya Lakshmi Pandit); th
 
 [[word]]
 text = "डा"
-academic = { issue = 344, expands = "Dr., the डा. abbreviation (Nepali and older Hindi)" }
+academic = { issue = 344, expands = "Dr., the डा. abbreviation (Nepali and older Hindi), matched through the edge-period normalization" }
 
 [[word]]
 text = "डॉ"
@@ -83,6 +75,14 @@ academic = { issue = 269, expands = "Dr., abbreviated", note = "डॉ. matches 
 [[word]]
 text = "डॉक्टर"
 academic = { issue = 344, expands = "doctor, full form" }
+
+[[word]]
+text = "पंडित"
+academic = { issue = 344, expands = "Pandit, a scholar's title" }
+
+[[word]]
+text = "पं"
+academic = { issue = 344, same_as = "पंडित", expands = "Pandit, abbreviated" }
 
 [[word]]
 text = "प्राध्यापक"
@@ -162,7 +162,7 @@ military = {}
 
 [[word]]
 text = "न्यायमूर्ति"
-office = { issue = 344, expands = "Justice" }
+office = { issue = 344, expands = "Justice", note = "#344's civil set ships in native script only, with no new Latin transliteration; the words it refused under the collision rule are exclusions in this file" }
 
 [[word]]
 text = "जुनियर"

@@ -12,7 +12,7 @@ schema = 1
 
 # ---- the other readings of words whose title reading has a language ----
 # (#750 moved each title reading to the files of the languages whose
-# names it occurs in; `uv run python tools/vocab/query.py --word <text>`
+# names it occurs in, or to mul.toml; `uv run python tools/vocab/query.py --word <text>`
 # shows both halves)
 [[word]]
 text = "ms"
