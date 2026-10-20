@@ -4,12 +4,13 @@
 
 **Then:** initials take the first letter of each given, middle, and base family word; titles, suffixes, particles and nicknames contribute nothing.
 
-- **A connective contributes nothing where it is joining** (P3). A part holding another name word for it to join — the part's working particles set aside — is a part where the connective is doing a connective's work and is no name word of its own. This is one rule for every group: a connective written among given names is a connective there too and contributes nothing where it joins. The question is asked of the WHOLE PART, never of a word count: a part of two words where one is the connective is still a part where it joins — the base of "Jon Dough and" is "Dough and" and its initials are "J. D." — and a part of three is no different.
+- **A connective contributes nothing where it is joining** (P3). A part holding another name word for it to join — the part's working particles set aside — is a part where the connective is doing a connective's work and is no name word of its own. This is one rule for every group: a connective written among given names is a connective there too and contributes nothing where it joins. The question is asked of the WHOLE PART, never of a word count: a part of two words where one is the connective is still a part where it joins — the base of "Jon Dough and" is "Dough and" and its initials are "J. D." — and a part of three is no different. A connective with nothing in its part to join initials. A part holding nothing else is a part where it is joining nothing, and there it initials like any other name word, agreeing with the base. The part's working particles are set aside here too, so the "y" of "Juan de y" initials.
   ```
   "John and Jane Smith"       →  initials="J. J. S."
   "Duke of Edinburgh"         →  initials="D. E."
   "Juan Velasquez y Garcia"   →  initials="J. V. G."
   "Jon Dough and"             →  initials="J. D."
+  "Juan de y"                 →  initials="J. y."
   ```
 - **The first letter is the one the word's composed spelling begins with**, written in the form the writer used: a letter written as a base letter followed by its combining accent initials whole, and so does a syllable written as its separate parts.
   ```
@@ -35,10 +36,6 @@
 - **A part whose every word is a particle initials those particles**: they are not acting as particles there but are the part's base (R2), and initial like any other name word, so a family that is all particles contributes its words rather than nothing.
   ```
   "Juan van der"              →  initials="J. v. d."
-  ```
-- **A connective with nothing in its part to join initials.** A part holding nothing else is a part where it is joining nothing, and there it initials like any other name word, agreeing with the base. The part's working particles are set aside here too, so the "y" of "Juan de y" initials.
-  ```
-  "Juan de y"                 →  initials="J. y."
   ```
 
 **Accepted:**
