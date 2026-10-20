@@ -99,7 +99,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - **words to spare** — enough name words that reading one as a suffix still leaves the name its family word. As the second of two name words a bare ambiguous acronym has none to spare and stays the family name (S4); S10's one-letter numeral needs the same.
 - **credential run** — a run of words read as post-nominals: a comma part made wholly of suffix words (C1, C8), or the run an unambiguous credential starts after the name core, taking every later word of its part (S8).
 - **listing form** — the family name, a comma, then the given name, as in "Smith, John" (C1).
-- **the fold** — P1's: a never-given particle opening the name claims the family for itself, the particles after it and the name words it attaches to (P1). O3's fold, which joins every middle word to the family under compound-family handling, is a different one; R1's folded family words, which render before the rest of the family, are O3's and P6's attached particles.
+- **the fold** — P1's: a never-given particle opening the name claims the family for itself, the particles after it and the name words it attaches to (P1). O3's fold, which joins every middle word to the family under compound-family handling, is a different one; R1's folded family words, which render before the rest of the family, are O3's folded middle words and the trailing particle P6 attaches (its tussenvoegsel).
 
 ## Not in scope
 
