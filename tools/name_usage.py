@@ -15,6 +15,7 @@ This answers the question with counts instead.
     uv run python tools/name_usage.py --no-wikidata knight   # offline
     uv run python tools/name_usage.py --json justice         # machine-readable
     uv run python tools/name_usage.py 殿 議員 二世           # CJK: ends-with too
+    uv run python tools/name_usage.py In Bay Bin   # non-US given names
 
 It reports; it does not decide. Read the counts against the rule's
 position qualifier: given-name bearers threaten a title or a leading
@@ -50,6 +51,27 @@ What a number means depends on its source, and the report says so:
   family ending 部 + given 長 for 部長. A lower bound, like the row
   above, and blind to people whose name has no item at all.
 
+- nam_dict given names (Jörg Michael, 2008; GNU FDL 1.2), the
+  dictionary shipped in the gender-guesser 0.4.0 sdist: 45,371 given-name
+  spellings (counted 2026-10-19; the file is pinned), each with a
+  frequency band in 55 columns, 54 countries and "other countries" in
+  the order its own legend gives, 1 = rare up to D = extremely common.
+  The scale is logarithmic, a factor of two a step only where a
+  country's statistics are good. It is the non-US given-name evidence
+  the other sources lack (Korean `In` is band A in Korea, Vietnamese
+  `Bay` band 6 in Vietnam). A band is not a count, so the row's given
+  cell shows the peak band and the bands go in `given_bands`. A
+  SELECTION, not a census, and written in Latin letters only: a missing
+  name proves nothing (`Shehu` has no entry), and a non-Latin word is
+  unrepresentable. Matched ignoring case, in the Turkish fold too
+  (`Ilker` finds `İlker`, `ışıl` finds `Işıl`), with
+  a `+` in a listed name (`Jun+Wei`; the header says Arabic, Chinese and
+  Korean names only) standing for a hyphen, a space or nothing. Other
+  letters are matched as written: `Käte` and `Işıl` are listed, `Kaete`
+  and `Isil` are not. Downloaded
+  once into the cache, pinned by the sdist's sha256; only that one file
+  is kept, and never in the tree.
+
 Both US sources spell names in ASCII letters only, without spaces or
 punctuation (O'Brien is OBRIEN), so a word is folded the same way
 before lookup. A letter the fold cannot carry over (any non-Latin
@@ -74,12 +96,14 @@ import os
 import re
 import shutil
 import sys
+import tarfile
 import time
 import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+import zlib
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
@@ -98,6 +122,18 @@ SSA_FILE = "ssa_names.zip"
 #: this many is a partial or wrong download (the state-level zip holds
 #: AK.TXT and so on, none of them yob files).
 SSA_MIN_YEARS = 100
+NAMDICT_URL = ("https://files.pythonhosted.org/packages/a8/dc/"
+               "69939b7af56b7adf3aa2736771b7c3e7191f7cd36fbc80b0727570c275fa/"
+               "gender-guesser-0.4.0.tar.gz")
+NAMDICT_SHA256 = ("1591c14592805ca7da06a46d5f7202511f7cb87547049a68dfccbeedb879f31b")
+NAMDICT_MEMBER = "gender-guesser-0.4.0/gender_guesser/data/nam_dict.txt"
+NAMDICT_FILE = "nam_dict.txt"
+NAMDICT_SOURCE = "nam_dict given names"
+NAMDICT_CREDIT = ("nam_dict.txt by Jörg Michael (2008), GNU Free Documentation "
+                  "License 1.2, from the gender-guesser 0.4.0 sdist")
+#: Countries the legend must name; a file giving another number is not
+#: the one the column reading was written for.
+NAMDICT_COUNTRIES = 55
 WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql"
 USER_AGENT = ("nameparser-name-usage/0.1 "
               "(https://github.com/derek73/python-nameparser)")
@@ -159,6 +195,10 @@ class Usage:
     #: about which culture bears the name.
     given_stateless: int = 0
     family_stateless: int = 0
+    #: Frequency band per country as a given name, nam_dict only: 1
+    #: (rare) to 13 (extremely common), highest first. Not a count, so
+    #: `given` stays None beside it.
+    given_bands: list[tuple[str, int]] = field(default_factory=list)
     note: str = ""
     #: Where the word can end a name across the family/given boundary,
     #: the ends-with row only.
@@ -339,6 +379,236 @@ def ssa_usage(word: str, table: dict[str, Counter[str]] | None) -> Usage:
     usage.given = sum(sexes.values())
     usage.note = _join(", ".join(f"{sex} {n:,}" for sex, n in sorted(sexes.items())),
                        _lookup_note(word, key))
+    return usage
+
+
+# -- nam_dict given names --------------------------------------------------
+#
+# Fixed-width lines, 0-based: a gender code in [0:2] (M, F, ?M, ...,
+# which this tool does not report), the name from [3] to the sort flag at
+# [29], one hexadecimal band per country from [30], in the order the
+# comment legend gives, and " $" to end the line. Lines opening with "="
+# are nickname equivalences ("=  Al Albert"). A "+" sort flag marks the
+# lines re-sorted with expanded umlauts, which the header says to ignore;
+# most repeat a "-" line, and the handful that do not (Saša) are skipped
+# with them.
+
+_NAME_START, _SORT_FLAG, _BANDS_START = 3, 29, 30
+_LINE_END = " $"
+#: The cached file's own sha256, checked at every load. A file cut at a
+#: line boundary still parses and reports every name it lost as not
+#: listed; a floor on the names read missed a cut that kept most of
+#: them, and the file is pinned, so only its exact bytes are accepted.
+NAMDICT_FILE_SHA256 = ("bfe79b1f3533d188333c36d7b0722868b873b2d366bb15bed3ed9a4f85db3c8c")
+
+
+@dataclass(slots=True)
+class NamDict:
+    countries: list[str]
+    #: Folded spelling -> a list of (spelling as listed, {country: band}),
+    #: one per listing line and per "+" expansion: `dean` holds the M and
+    #: ? lines of Dean and the ? line of De+An.
+    names: dict[str, list[tuple[str, dict[str, int]]]]
+    #: Folded short form -> the long forms it is listed as short for.
+    short_for: dict[str, list[str]]
+
+    def lookup(self, word: str) -> list[tuple[str, dict[str, int]]]:
+        found = {id(e): e for key in namdict_keys(word)
+                 for e in self.names.get(key, [])}
+        return list(found.values())
+
+    def short_forms(self, word: str) -> list[str]:
+        return list(dict.fromkeys(long for key in namdict_keys(word)
+                                  for long in self.short_for.get(key, [])))
+
+
+def namdict_keys(word: str) -> list[str]:
+    """The folds the dictionary is matched under, for stored names and
+    looked-up words alike: the default case fold, with the dot it leaves
+    on a Turkish İ (i + U+0307) dropped so Ilker finds İlker, and the
+    Turkish one, where I lowers to dotless ı, so ışıl and IŞIL find
+    Işıl. The dotless ı itself is a letter, not a case: Isil does not
+    find Işıl, as Kaete does not find Käte."""
+    turkish = word.replace("I", "ı").replace("İ", "i").lower()
+    return list(dict.fromkeys([
+        word.casefold().replace("i\u0307", "i"), turkish]))
+
+
+def _legend(comments: list[str]) -> list[str]:
+    """The countries in column order, read from the legend: each label
+    line is followed by a line holding only a "|" in that country's
+    column. Raises ValueError unless the bars fill NAMDICT_COUNTRIES
+    consecutive columns from _BANDS_START."""
+    countries, columns = [], []
+    for above, line in zip(comments, comments[1:]):
+        if line.strip("# $") == "|":
+            countries.append(above.strip("# $"))
+            columns.append(line.index("|"))
+    expected = list(range(_BANDS_START, _BANDS_START + NAMDICT_COUNTRIES))
+    if columns != expected:
+        raise ValueError(f"nam_dict legend marks columns {columns}, not the "
+                         f"{NAMDICT_COUNTRIES} from {_BANDS_START} this tool "
+                         "reads")
+    return countries
+
+
+def expand_plus(name: str) -> list[str]:
+    """The spellings a listed name stands for. A "+" is a hyphen, a space
+    or nothing, the last joining lower-case as the header's example
+    does: Jun+Wei is Jun-Wei, Jun Wei and Junwei."""
+    first, *rest = name.split("+")
+    forms = [first]
+    for part in rest:
+        forms = [f + joined for f in forms for joined in (
+            "-" + part, " " + part, part[:1].lower() + part[1:])]
+    return forms
+
+
+def _fixed_width(line: str, countries: int) -> bool:
+    # A line shifted by a column keeps its length, so the gaps around
+    # the name are checked too: read shifted, In's Korea band lands
+    # under Vietnam and the name gains a leading space.
+    return (len(line) == _BANDS_START + countries + len(_LINE_END)
+            and line.endswith(_LINE_END) and line[2] == " "
+            and line[_NAME_START] != " " and line[_SORT_FLAG - 1] == " ")
+
+
+def read_namdict(text: str) -> NamDict:
+    lines = text.splitlines()
+    countries = _legend([line for line in lines if line.startswith("#")])
+    names: dict[str, list[tuple[str, dict[str, int]]]] = {}
+    short_for: dict[str, list[str]] = {}
+    for number, line in enumerate(lines, 1):
+        if not line or line.startswith("#"):
+            continue
+        if not _fixed_width(line, len(countries)):
+            raise ValueError(f"nam_dict line {number} is not fixed-width: "
+                             f"{line!r}")
+        if line[_SORT_FLAG] == "+":
+            continue
+        name = line[_NAME_START:_SORT_FLAG].rstrip()
+        if line.startswith("="):
+            pair = name.split()
+            if len(pair) != 2:
+                raise ValueError(f"nam_dict line {number} is not "
+                                 f"'=  short long': {line!r}")
+            for key in namdict_keys(pair[0]):
+                short_for.setdefault(key, []).append(pair[1])
+            continue
+        bands = {}
+        for country, digit in zip(
+                countries, line[_BANDS_START:_BANDS_START + len(countries)]):
+            if digit != " ":
+                try:
+                    bands[country] = int(digit, 16)
+                except ValueError:
+                    raise ValueError(f"nam_dict line {number} has band "
+                                     f"{digit!r} for {country}") from None
+        # The name as listed is filed too, so Jun+Wei copied from the
+        # file finds itself.
+        entry = (name, bands)
+        for key in dict.fromkeys(k for form in [name, *expand_plus(name)]
+                                 for k in namdict_keys(form)):
+            names.setdefault(key, []).append(entry)
+    return NamDict(countries, names, short_for)
+
+
+def _fetch_namdict(path: Path) -> None:
+    """Download the sdist, check it against NAMDICT_SHA256, and cache the
+    one member. The archive is read in memory and never unpacked to
+    disk. Raises ValueError when the pinned constants do not describe
+    the archive (a hash or member left stale by an edit), so the other
+    sources still answer."""
+    request = urllib.request.Request(NAMDICT_URL,
+                                     headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(request, timeout=120) as response:
+        data = response.read()
+    digest = hashlib.sha256(data).hexdigest()
+    if digest != NAMDICT_SHA256:
+        raise ValueError(f"{NAMDICT_URL} has sha256 {digest}, not the "
+                         f"pinned {NAMDICT_SHA256}")
+    try:
+        with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as tf:
+            member = tf.extractfile(NAMDICT_MEMBER)
+            if member is None:
+                raise ValueError("it is not a file")
+            text = member.read()
+    except (tarfile.TarError, KeyError, EOFError, zlib.error) as exc:
+        raise ValueError(f"cannot read {NAMDICT_MEMBER} from {NAMDICT_URL} "
+                         f"({exc})") from exc
+    digest = hashlib.sha256(text).hexdigest()
+    if digest != NAMDICT_FILE_SHA256:
+        raise ValueError(f"{NAMDICT_MEMBER} in {NAMDICT_URL} has sha256 "
+                         f"{digest}, not the pinned {NAMDICT_FILE_SHA256}")
+    tmp = path.with_suffix(".part")
+    tmp.write_bytes(text)
+    tmp.replace(path)
+
+
+def load_namdict(download: bool) -> NamDict | None:
+    """The cached dictionary; None when it is not cached and `download`
+    is off. Raises ValueError naming the cache file when it is unusable,
+    and lets a failed download through as raised (OSError, or ValueError
+    from _fetch_namdict)."""
+    path = cache_dir() / NAMDICT_FILE
+    if not path.exists():
+        if not download:
+            return None
+        print(f"downloading {NAMDICT_CREDIT} ...", file=sys.stderr)
+        _fetch_namdict(path)
+    try:
+        data = path.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        if digest != NAMDICT_FILE_SHA256:
+            raise ValueError(f"sha256 {digest}, not the pinned file's "
+                             f"{NAMDICT_FILE_SHA256}")
+        return read_namdict(data.decode("utf-8"))
+    except ValueError as exc:  # UnicodeDecodeError included
+        raise ValueError(f"{path} is unusable ({exc}); delete it and run "
+                         "again to re-download") from exc
+
+
+def _latin_only(word: str) -> bool:
+    return all(not ch.isalpha() or unicodedata.name(ch, "").startswith("LATIN")
+               for ch in word)
+
+
+def namdict_usage(word: str, table: NamDict | None, top: int) -> Usage:
+    usage = Usage(NAMDICT_SOURCE, lower_bound=True)
+    if table is None:
+        usage.status = "not downloaded"
+        usage.note = "not cached, and --no-wikidata does not download"
+        return usage
+    if not _latin_only(word):
+        usage.status = "unrepresentable"
+        usage.note = "the dictionary spells names in Latin letters only"
+        return usage
+    entries = table.lookup(word)
+    short = ", ".join(table.short_forms(word))
+    short_note = f"listed as a short form of {short}" if short else ""
+    if not entries:
+        usage.note = _join("not listed, which proves nothing: the dictionary "
+                           "is a selection, and letters are matched as "
+                           "written (Käte, not Kaete; Işıl, not Isil)",
+                           short_note)
+        return usage
+    peak: dict[str, int] = {}
+    for _, bands in entries:
+        for country, band in bands.items():
+            peak[country] = max(band, peak.get(country, 0))
+    order = {c: i for i, c in enumerate(table.countries)}
+    ranked = sorted(peak.items(), key=lambda cb: (-cb[1], order[cb[0]]))
+    usage.given_bands = ranked[:top]
+    listed = ", ".join(dict.fromkeys(name for name, _ in entries))
+    more = len(ranked) - top
+    usage.note = _join(
+        f"listed as {listed}",
+        f"banded in {len(ranked)} "
+        + ("country" if len(ranked) == 1 else "countries") + (
+            f", the top {top} shown" if more > 0 else ""),
+        "1 rare to D extremely common, logarithmic: x2 a step where the "
+        "statistics are good",
+        short_note)
     return usage
 
 
@@ -1009,7 +1279,9 @@ def render(word: str, usages: list[Usage]) -> str:
     width = max(len(u.source) for u in usages)
     lines.append(f"  {'source':<{width}}  {'given':>9}  {'family':>9}")
     for u in usages:
-        lines.append(f"  {u.source:<{width}}  {_count(u.given, u):>9}  "
+        given = (f"band {u.given_bands[0][1]:X}" if u.given_bands
+                 else _count(u.given, u))
+        lines.append(f"  {u.source:<{width}}  {given:>9}  "
                      f"{_count(u.family, u):>9}")
         note = u.note if u.status == "ok" else _join(u.status, u.note)
         if note:
@@ -1023,6 +1295,9 @@ def render(word: str, usages: list[Usage]) -> str:
                     parts.append(f"{stateless} with no citizenship stated")
                 lines.append(f"  {'':<{width}}    {role} by citizenship: "
                              + ", ".join(parts))
+        if u.given_bands:
+            lines.append(f"  {'':<{width}}    given band by country: "
+                         + ", ".join(f"{c} {b:X}" for c, b in u.given_bands))
         for split in u.splits:
             example = "; ".join(
                 split.family_examples
@@ -1035,14 +1310,28 @@ def render(word: str, usages: list[Usage]) -> str:
     return "\n".join(lines)
 
 
+def _positive(text: str) -> int:
+    # 0 would empty nam_dict's band list, and its given cell would then
+    # show the "-" a name that is not listed shows.
+    n = int(text)
+    if n < 1:
+        raise argparse.ArgumentTypeError(f"must be 1 or more, not {n}")
+    return n
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Count how often words are borne as given and family names.")
+        description="Count how often words are borne as given and family names.",
+        epilog="Sources: US Census 2010 surnames (public domain); US SSA "
+               "given names (CC0); Wikidata (CC0); " + NAMDICT_CREDIT
+               + ". Downloads are cached in $NAMEPARSER_TOOLS_CACHE or "
+               "~/.cache/nameparser-tools, never in the repository.")
     parser.add_argument("words", nargs="+")
     parser.add_argument("--no-wikidata", action="store_true",
                         help="offline: cached sources only, nothing downloaded")
-    parser.add_argument("--countries", type=int, default=5, metavar="N",
-                        help="countries of citizenship to list per role")
+    parser.add_argument("--countries", type=_positive, default=5, metavar="N",
+                        help="countries to list per role (citizenship, "
+                             "or nam_dict's bands)")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--refresh-index", action="store_true",
                         help="fetch the CJK name index again")
@@ -1051,6 +1340,8 @@ def main(argv: list[str] | None = None) -> int:
     census, census_error = _attempt(
         lambda: load_census(download=not args.no_wikidata))
     ssa, ssa_error = _attempt(load_ssa)
+    namdict, namdict_error = _attempt(
+        lambda: load_namdict(download=not args.no_wikidata))
     # Wikidata labels are NFC: a decomposed word (hangul as conjoining
     # jamo, an accent as a combining mark) would match no label at all.
     words = [unicodedata.normalize("NFC", word) for word in args.words]
@@ -1064,10 +1355,12 @@ def main(argv: list[str] | None = None) -> int:
     report = {}
     for word in words:
         census_row, ssa_row = census_usage(word, census), ssa_usage(word, ssa)
-        for row, error in ((census_row, census_error), (ssa_row, ssa_error)):
+        namdict_row = namdict_usage(word, namdict, args.countries)
+        for row, error in ((census_row, census_error), (ssa_row, ssa_error),
+                           (namdict_row, namdict_error)):
             if error:
                 row.status, row.note = "failed", error
-        usages = [census_row, ssa_row]
+        usages = [census_row, ssa_row, namdict_row]
         if not args.no_wikidata:
             usages.append(wikidata_usage(word, args.countries))
             if is_cjk(word):

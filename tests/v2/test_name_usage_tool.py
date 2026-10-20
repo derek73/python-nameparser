@@ -13,6 +13,7 @@ tools/ is not a package, so the module is loaded by path, as
 _differential_fixtures.py loads compare.py.
 """
 import importlib.util
+import hashlib
 import http.client
 import io
 import json
@@ -23,6 +24,7 @@ import urllib.parse
 import urllib.request
 import zipfile
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Protocol
@@ -56,6 +58,17 @@ def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
     def refuse(*args: object, **kwargs: object) -> None:
         raise _NetworkUsed("a test reached the network")
     monkeypatch.setattr(urllib.request, "urlopen", refuse)
+
+
+#: The real loader, for the tests that read a cached dictionary through
+#: main; every other test sees no dictionary, as an empty cache under
+#: --no-wikidata would, since an online main would otherwise download it.
+_LOAD_NAMDICT = tool.load_namdict
+
+
+@pytest.fixture(autouse=True)
+def _no_namdict(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tool, "load_namdict", lambda download: None)
 
 
 def test_the_network_guard_bites() -> None:
@@ -285,7 +298,8 @@ def test_main_reports_json_offline_without_downloading(
     assert status == 0
     assert list(report) == ["O'Brien", "关"]
     assert [u["source"] for u in report["关"]] == [
-        "US Census 2010 surnames", "US SSA given names 1880-"]
+        "US Census 2010 surnames", "US SSA given names 1880-",
+        tool.NAMDICT_SOURCE]
     assert report["O'Brien"][0]["family"] == 118557
     assert report["关"][0]["family"] is None  # null, not 0
     assert "SSA given names not downloaded" in err
@@ -322,7 +336,7 @@ def test_main_reports_a_bad_ssa_zip_without_losing_the_other_sources(
         zf.writestr("AK.TXT", "AK,F,1910,Mary,14\n")
     assert tool.main(["--no-wikidata", "--json", "shehu"]) == 2
     out, err = capsys.readouterr()
-    census, ssa = json.loads(out)["shehu"]
+    census, ssa, _ = json.loads(out)["shehu"]
     assert census["family"] == 561
     assert (ssa["status"], ssa["given"]) == ("failed", None)
     assert "not downloaded" not in err  # the file exists; it is just wrong
@@ -1154,3 +1168,415 @@ def test_main_reports_a_refresh_that_failed_for_a_latin_word(
     _stub_sparql(monkeypatch, [[], []])
     assert tool.main(["--refresh-index", "knight"]) == 2
     assert "CJK name index: OSError: down" in capsys.readouterr().err
+
+
+# -- nam_dict given names ----------------------------------------------------
+#
+# A dictionary built here in the file's own layout: the 55-country legend,
+# each label above a line holding only a bar in its column, then
+# fixed-width lines. The real file is GFDL and is never in the tree.
+
+_COUNTRIES = ([f"Country {i}" for i in range(52)]
+              + ["Korea", "Vietnam", "other countries"])
+
+
+def _legend_lines(columns: list[int]) -> list[str]:
+    lines = []
+    for country, column in zip(_COUNTRIES, columns):
+        lines.append(f"#{country:>{column}} $")
+        lines.append("#" + " " * (column - 1) + "|" + " " * (86 - column - 1) + "$")
+    return lines
+
+
+def _line(code: str, name: str, bands: dict[str, str], flag: str = " ") -> str:
+    digits = "".join(bands.get(c, " ") for c in _COUNTRIES)
+    return f"{code:<2} {name:<26}{flag}{digits} $"
+
+
+def _namdict_text(*lines: str, columns: list[int] | None = None) -> str:
+    header = ["# nam_dict.txt", "#"] + _legend_lines(
+        columns or list(range(30, 85))) + ["#"]
+    return "\r\n".join(header + list(lines)) + "\r\n"
+
+
+_DICT = _namdict_text(
+    _line("?", "In", {"Korea": "A"}),
+    _line("M", "Dean", {"Country 0": "5", "Country 2": "5"}),
+    _line("?", "Dean", {"Country 2": "6", "Country 30": "1"}),
+    # Joined, De+An spells Dean too; its lower Country 2 band comes after
+    # Dean's 6, so a last-wins merge would show.
+    _line("?", "De+An", {"Country 2": "2", "Country 50": "2"}),
+    _line("?", "Jun+Wei", {"Country 50": "3"}),
+    _line("M", "İlker", {"Country 47": "5"}),
+    _line("F", "Işıl", {"Country 47": "6"}),
+    _line("M", "Isa", {"Country 46": "4"}),
+    _line("M", "İsa", {"Country 47": "7"}),
+    _line("M", "Kasim", {"Country 46": "3"}),
+    _line("M", "Kasım", {"Country 47": "5"}),
+    # Tied bands, the later line naming the earlier legend country.
+    _line("M", "Ali", {"Country 5": "3"}),
+    _line("?", "Ali", {"Country 1": "3"}),
+    # An expanded-umlaut copy: skipped, so its band never shows.
+    _line("F", "Käte", {"Country 11": "4"}, flag="-"),
+    _line("F", "Käte", {"Country 11": "D"}, flag="+"),
+    _line("=", "Al Albert", {"Country 0": "1"}),
+)
+
+
+_DICT_SHA256 = hashlib.sha256(_DICT.encode()).hexdigest()
+
+
+def test_read_namdict_reads_the_countries_from_the_legend() -> None:
+    table = tool.read_namdict(_DICT)
+    assert table.countries == _COUNTRIES
+    assert table.names["in"] == [("In", {"Korea": 10})]
+
+
+def test_read_namdict_keeps_every_listing_line_of_a_name() -> None:
+    table = tool.read_namdict(_DICT)
+    assert table.names["dean"] == [
+        ("Dean", {"Country 0": 5, "Country 2": 5}),
+        ("Dean", {"Country 2": 6, "Country 30": 1}),
+        ("De+An", {"Country 2": 2, "Country 50": 2}),
+    ]
+
+
+def test_read_namdict_skips_the_expanded_umlaut_copies() -> None:
+    assert tool.read_namdict(_DICT).names["käte"] == [("Käte", {"Country 11": 4})]
+
+
+def test_read_namdict_reads_equivalences_as_short_forms_not_names() -> None:
+    table = tool.read_namdict(_DICT)
+    assert "al" not in table.names and "al albert" not in table.names
+    assert table.short_for["al"] == ["Albert"]
+
+
+@pytest.mark.parametrize(("name", "forms"), [
+    ("Dean", ["Dean"]),
+    ("Jun+Wei", ["Jun-Wei", "Jun Wei", "Junwei"]),
+    ("Maria+da+Glória", [
+        "Maria-da-Glória", "Maria-da Glória", "Maria-daglória",
+        "Maria da-Glória", "Maria da Glória", "Maria daglória",
+        "Mariada-Glória", "Mariada Glória", "Mariadaglória"]),
+])
+def test_expand_plus_reads_a_plus_as_hyphen_space_or_nothing(
+        name: str, forms: list[str]) -> None:
+    assert tool.expand_plus(name) == forms
+
+
+def test_read_namdict_files_every_expansion_of_a_plus_name() -> None:
+    table = tool.read_namdict(_DICT)
+    # The listed spelling too, so a name copied from the file finds itself.
+    for form in ("jun+wei", "jun-wei", "jun wei", "junwei"):
+        assert table.names[form] == [("Jun+Wei", {"Country 50": 3})]
+
+
+@pytest.mark.parametrize("columns", [
+    list(range(31, 86)),           # shifted a column
+    list(range(30, 84)) + [86],    # a gap before the last country
+])
+def test_read_namdict_refuses_a_legend_it_was_not_written_for(
+        columns: list[int]) -> None:
+    with pytest.raises(ValueError, match="legend marks columns"):
+        tool.read_namdict(_namdict_text(_line("?", "In", {}), columns=columns))
+
+
+@pytest.mark.parametrize("line", [
+    "?  In A",                                          # short
+    " " + _line("?", "In", {"Korea": "A"})[:-3] + " $",  # shifted, same length
+    _line("?", "In", {"Korea": "A"})[:28] + "x" + _line("?", "In", {})[29:],
+    _line("?", "In", {"Korea": "A"})[:-2] + "  ",        # no " $" end
+])
+def test_read_namdict_refuses_a_line_that_is_not_fixed_width(line: str) -> None:
+    # A shifted line keeps its length: read as written, In's Korea band
+    # would land under Vietnam, filed under " in".
+    with pytest.raises(ValueError, match="line .* is not fixed-width"):
+        tool.read_namdict(_namdict_text(line))
+
+
+@pytest.mark.parametrize("pair", ["Al", "Al Albert Bert"])
+def test_read_namdict_names_the_line_of_a_malformed_equivalence(pair: str) -> None:
+    with pytest.raises(ValueError, match=r"line \d+ is not '=  short long'"):
+        tool.read_namdict(_namdict_text(_line("=", pair, {})))
+
+
+def test_namdict_usage_reports_bands_highest_first_never_as_a_count() -> None:
+    usage = tool.namdict_usage("Dean", tool.read_namdict(_DICT), top=5)
+    assert usage.given is None and usage.lower_bound
+    # Peak per country across the M and ? lines, then legend order.
+    assert usage.given_bands == [("Country 2", 6), ("Country 0", 5),
+                                 ("Country 50", 2), ("Country 30", 1)]
+    assert "banded in 4 countries" in usage.note
+    assert "listed as Dean, De+An" in usage.note
+
+
+def test_namdict_usage_breaks_a_tie_in_legend_order() -> None:
+    usage = tool.namdict_usage("Ali", tool.read_namdict(_DICT), top=5)
+    assert usage.given_bands == [("Country 1", 3), ("Country 5", 3)]
+
+
+@pytest.mark.parametrize(("word", "bands"), [
+    # casefold() turns İ into i + U+0307, so a plain fold missed every
+    # name listed only under İ (24 in the real file, measured 2026-10-19).
+    ("Ilker", [("Country 47", 5)]),
+    ("ilker", [("Country 47", 5)]),
+    ("ILKER", [("Country 47", 5)]),
+    ("İlker", [("Country 47", 5)]),   # as listed: the plain fold had it
+    # Turkish lowers I to dotless ı, so a Turkish speaker's lowercase and
+    # capitals of Işıl miss under the default fold, which lowers I to i.
+    ("ışıl", [("Country 47", 6)]),
+    ("IŞIL", [("Country 47", 6)]),
+    ("Işıl", [("Country 47", 6)]),    # as listed: the plain fold had it
+    ("işıl", [("Country 47", 6)]),    # the default fold of Işıl: had it too
+    # Isa and İsa are one name with two capitals, so both answer both.
+    ("Isa", [("Country 47", 7), ("Country 46", 4)]),
+    ("İsa", [("Country 47", 7), ("Country 46", 4)]),
+    # ...but dotless ı is a letter, not a case: Kasim is not Kasım,
+    # though KASIM, written in capitals, may be either.
+    ("Kasim", [("Country 46", 3)]),
+    ("Kasım", [("Country 47", 5)]),
+    ("KASIM", [("Country 47", 5), ("Country 46", 3)]),
+])
+def test_namdict_usage_matches_turkish_capitals_in_both_folds(
+        word: str, bands: list[tuple[str, int]]) -> None:
+    usage = tool.namdict_usage(word, tool.read_namdict(_DICT), top=5)
+    assert usage.given_bands == bands
+
+
+@pytest.mark.parametrize("word", ["Isil", "isil", "ISIL", "Işil"])
+def test_namdict_usage_does_not_fold_a_dotless_i_into_a_dotted_one(
+        word: str) -> None:
+    # The Turkish fold must not turn ı into i: Işıl is not Isil, as Käte
+    # is not Kaete.
+    usage = tool.namdict_usage(word, tool.read_namdict(_DICT), top=5)
+    assert usage.given_bands == []
+
+
+def test_namdict_usage_matches_ignoring_case_and_reads_a_plus_name() -> None:
+    table = tool.read_namdict(_DICT)
+    assert tool.namdict_usage("IN", table, top=5).given_bands == [("Korea", 10)]
+    for word in ("Jun Wei", "Jun+Wei"):
+        usage = tool.namdict_usage(word, table, top=5)
+        assert usage.given_bands == [("Country 50", 3)]
+        assert "listed as Jun+Wei" in usage.note
+
+
+def test_namdict_usage_shows_the_top_countries_and_says_so() -> None:
+    usage = tool.namdict_usage("Dean", tool.read_namdict(_DICT), top=1)
+    assert usage.given_bands == [("Country 2", 6)]
+    assert "banded in 4 countries, the top 1 shown" in usage.note
+
+
+def test_namdict_usage_reports_a_missing_name_as_no_answer() -> None:
+    # The dictionary is a selection (Shehu has no entry): a miss must not
+    # read as a zero anywhere, in the row or in the JSON.
+    usage = tool.namdict_usage("Shehu", tool.read_namdict(_DICT), top=5)
+    assert (usage.status, usage.given, usage.given_bands) == ("ok", None, [])
+    assert "proves nothing" in usage.note
+    assert tool.render("Shehu", [usage]).splitlines()[2].split()[-2:] == ["-", "-"]
+
+
+def test_namdict_usage_names_a_short_form() -> None:
+    usage = tool.namdict_usage("Al", tool.read_namdict(_DICT), top=5)
+    assert usage.given is None
+    assert "short form of Albert" in usage.note
+
+
+def test_namdict_usage_calls_a_non_latin_word_unrepresentable() -> None:
+    table = tool.read_namdict(_DICT)
+    for word in ("关", "Иван"):
+        usage = tool.namdict_usage(word, table, top=5)
+        assert (usage.status, usage.given) == ("unrepresentable", None)
+
+
+def test_namdict_usage_reports_a_missing_download_without_an_answer() -> None:
+    usage = tool.namdict_usage("Dean", None, top=5)
+    assert (usage.status, usage.given) == ("not downloaded", None)
+
+
+def test_render_shows_the_peak_band_and_the_bands_by_country() -> None:
+    usage = tool.namdict_usage("Dean", tool.read_namdict(_DICT), top=5)
+    text = tool.render("Dean", [usage])
+    assert text.splitlines()[2].split()[-3:] == ["band", "6", "-"]
+    assert ("given band by country: Country 2 6, Country 0 5, Country 50 2, "
+            "Country 30 1") in text
+
+
+def test_render_writes_a_band_in_hex_as_the_note_does() -> None:
+    usage = tool.namdict_usage("In", tool.read_namdict(_DICT), top=5)
+    text = tool.render("In", [usage])
+    assert text.splitlines()[2].split()[-3:] == ["band", "A", "-"]
+    assert "given band by country: Korea A" in text
+
+
+def _sdist(member_text: bytes, member: str = tool.NAMDICT_MEMBER) -> bytes:
+    import tarfile
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w:gz") as tf:
+        for name, data in ((member, member_text),
+                           ("gender-guesser-0.4.0/setup.py", b"print('no')")):
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            tf.addfile(info, io.BytesIO(data))
+    return buffer.getvalue()
+
+
+def _serve(monkeypatch: pytest.MonkeyPatch, data: bytes) -> None:
+    def answer(request: urllib.request.Request, timeout: float) -> io.BytesIO:
+        assert request.full_url == tool.NAMDICT_URL
+        return io.BytesIO(data)
+    monkeypatch.setattr(urllib.request, "urlopen", answer)
+
+
+def test_load_namdict_caches_only_the_dictionary_from_a_pinned_sdist(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    sdist = _sdist(_DICT.encode())
+    monkeypatch.setattr(tool, "NAMDICT_SHA256", hashlib.sha256(sdist).hexdigest())
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
+    _serve(monkeypatch, sdist)
+    table = _LOAD_NAMDICT(download=True)
+    assert table is not None and table.names["in"] == [("In", {"Korea": 10})]
+    assert sorted(p.name for p in tmp_path.iterdir()) == [tool.NAMDICT_FILE]
+
+
+def test_load_namdict_refuses_an_sdist_that_is_not_the_pinned_one(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    _serve(monkeypatch, _sdist(_DICT.encode()))
+    with pytest.raises(ValueError, match="not the pinned"):
+        _LOAD_NAMDICT(download=True)
+    assert list(tmp_path.iterdir()) == []  # nothing cached
+
+
+def test_load_namdict_does_not_download_when_told_not_to(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    assert _LOAD_NAMDICT(download=False) is None
+
+
+def test_main_reads_a_cached_dictionary_offline(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_namdict", _LOAD_NAMDICT)
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
+    (tmp_path / tool.NAMDICT_FILE).write_text(_DICT, encoding="utf-8")
+    assert tool.main(["--no-wikidata", "--json", "In", "Shehu"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["In"][2]["given_bands"] == [["Korea", 10]]
+    assert report["Shehu"][2]["given"] is None  # null, not 0
+
+
+def test_main_exits_2_on_an_unusable_cached_dictionary(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_namdict", _LOAD_NAMDICT)
+    (tmp_path / tool.NAMDICT_FILE).write_text("<html>error</html>")
+    assert tool.main(["--no-wikidata", "--json", "In"]) == 2
+    row = json.loads(capsys.readouterr().out)["In"][2]
+    assert (row["status"], row["given"]) == ("failed", None)
+    assert "delete it and run again" in row["note"]
+
+
+
+@pytest.mark.parametrize(("sdist", "why"), [
+    (lambda: _sdist(_DICT.encode(), member="elsewhere/nam_dict.txt"), "not found"),
+    (lambda: b"not a gzip at all", ""),
+    (lambda: _sdist(_DICT.encode())[:200], ""),  # truncated
+])
+def test_load_namdict_reports_an_archive_the_pin_does_not_describe(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        sdist: Callable[[], bytes], why: str) -> None:
+    # A hash bumped without the member path, or an archive of another
+    # layout: tarfile raises KeyError, ReadError or EOFError, none of them
+    # an OSError, which escaped _attempt and took every source down.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    data = sdist()
+    monkeypatch.setattr(tool, "NAMDICT_SHA256", hashlib.sha256(data).hexdigest())
+    _serve(monkeypatch, data)
+    with pytest.raises(ValueError, match=f"cannot read .*{why}"):
+        _LOAD_NAMDICT(download=True)
+    assert list(tmp_path.iterdir()) == []
+
+
+def _legend_only() -> str:
+    return _DICT.split("\r\n?  In")[0] + "\r\n"
+
+
+@pytest.mark.parametrize("cut", [
+    _legend_only,                                 # every name gone
+    lambda: _DICT[:_DICT.rindex("\r\n", 0, -2) + 2],  # the last line gone
+    lambda: _DICT[:-20],                          # cut inside a line
+])
+def test_load_namdict_refuses_a_cache_file_cut_short(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        cut: Callable[[], str]) -> None:
+    # Cut at a line boundary, the file still parses, and every name it
+    # lost would read "not listed" -- the SSA zip's false zero again. A
+    # floor on the names read refused the first and not the second.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
+    (tmp_path / tool.NAMDICT_FILE).write_bytes(cut().encode())
+    with pytest.raises(ValueError, match="unusable"):
+        _LOAD_NAMDICT(download=False)
+
+
+def test_load_namdict_accepts_the_pinned_file(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
+    (tmp_path / tool.NAMDICT_FILE).write_bytes(_DICT.encode())
+    table = _LOAD_NAMDICT(download=False)
+    assert table is not None and table.lookup("In") == [("In", {"Korea": 10})]
+
+
+def test_load_namdict_does_not_cache_a_member_the_pin_does_not_describe(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # The sdist matches its pin but the member does not match its own:
+    # caching it would leave a file every later load refuses.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    sdist = _sdist(_DICT.encode())
+    monkeypatch.setattr(tool, "NAMDICT_SHA256", hashlib.sha256(sdist).hexdigest())
+    _serve(monkeypatch, sdist)
+    with pytest.raises(ValueError, match="not the pinned"):
+        _LOAD_NAMDICT(download=True)
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_main_does_not_download_the_dictionary_under_no_wikidata(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # With the flag ignored, the download would reach the network guard,
+    # whose AssertionError _attempt does not catch.
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_namdict", _LOAD_NAMDICT)
+    assert tool.main(["--no-wikidata", "--json", "In"]) == 0
+    row = json.loads(capsys.readouterr().out)["In"][2]
+    assert (row["status"], row["given"]) == ("not downloaded", None)
+
+
+def test_main_downloads_the_dictionary_when_online(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("NAMEPARSER_TOOLS_CACHE", str(tmp_path))
+    monkeypatch.setattr(tool, "load_namdict", _LOAD_NAMDICT)
+    monkeypatch.setattr(tool, "load_census", lambda download: None)
+    monkeypatch.setattr(tool, "NAMDICT_FILE_SHA256", _DICT_SHA256)
+    sdist = _sdist(_DICT.encode())
+    monkeypatch.setattr(tool, "NAMDICT_SHA256", hashlib.sha256(sdist).hexdigest())
+    _serve(monkeypatch, sdist)
+    _stub_sparql(monkeypatch, [[], []])
+    assert tool.main(["--json", "In"]) == 0
+    row = json.loads(capsys.readouterr().out)["In"][2]
+    assert row["given_bands"] == [["Korea", 10]]
+
+
+def test_main_refuses_fewer_than_one_country(
+        capsys: pytest.CaptureFixture[str]) -> None:
+    # --countries 0 emptied the band list, and a listed name's given cell
+    # then showed the "-" of a name that is not listed.
+    with pytest.raises(SystemExit):
+        tool.main(["--countries", "0", "In"])
+    assert "must be 1 or more" in capsys.readouterr().err
