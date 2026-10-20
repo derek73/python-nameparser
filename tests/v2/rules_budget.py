@@ -29,9 +29,12 @@ lines are not counted):
 - ``accepted_words``: their words, so a sentence added inside an
   existing Accepted clause moves the record too.
 
-A skeleton-format rule (#761, rules_skeleton.py) has its own six,
+A skeleton-format rule (#761, rules_skeleton.py) has its own seven,
 read from the parsed fields rather than counted over prose:
-``then_words`` (Then and its bullets), ``because_sentences``,
+``words`` (every quotable field but the Accepted bullets: When,
+Tolerated, Then and its bullets, Because, Except and Precedence, so a
+word added anywhere in them moves the record), ``then_words`` (Then
+and its bullets), ``because_sentences``,
 ``except``, ``precedence`` and ``accepted`` (bullet counts) and
 ``accepted_words`` (the Accepted bullets' words). A rule that changes
 format shows as one ``format changed`` line, not a line per measure.
@@ -51,7 +54,7 @@ from tests.v2.rules_skeleton import count_sentences
 RECORD = Path(__file__).with_name("rules_budget.json")
 RECORD_COMMAND = "uv run python -m tests.v2.rules_budget --record"
 BLOCK_MEASURES = ("words", "exceptions", "accepted", "accepted_words")
-SKELETON_MEASURES = ("then_words", "because_sentences", "except",
+SKELETON_MEASURES = ("words", "then_words", "because_sentences", "except",
                      "precedence", "accepted", "accepted_words")
 
 _RULE_ID_RE = re.compile(r"[A-Z]\d+")
@@ -61,7 +64,12 @@ _EXCEPTION_RE = re.compile(r"\b(?:except|unless)\b", re.IGNORECASE)
 def _skeleton_row(rule: Rule) -> dict[str, int]:
     sk = rule.skeleton
     assert sk is not None
+    quotable = [sk.when, *([sk.tolerated] if sk.tolerated else []),
+                sk.then, *(b.text for b in sk.then_bullets), sk.because,
+                *(b.text for b in sk.excepts),
+                *(b.text for b in sk.precedence)]
     return {
+        "words": len(" ".join(quotable).split()),
         "then_words": len(" ".join(
             [sk.then, *(b.text for b in sk.then_bullets)]).split()),
         "because_sentences": count_sentences(sk.because),

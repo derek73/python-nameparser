@@ -172,15 +172,35 @@ _SKELETON_DOC = """\
 
 def test_the_measure_reads_a_skeleton_rule() -> None:
     assert rules_budget.measure(_SKELETON_DOC) == {
-        "X1": {"then_words": 10, "because_sentences": 2, "except": 2,
-               "precedence": 1, "accepted": 1, "accepted_words": 5}}
+        "X1": {"words": 27, "then_words": 10, "because_sentences": 2,
+               "except": 2, "precedence": 1, "accepted": 1,
+               "accepted_words": 5}}
+
+
+@pytest.mark.parametrize("old, new", [
+    ("- **First.**", "- **First.** And three more words."),
+    ("**When:** a name ends in a thing.",
+     "**When:** a name ends in a thing, written so."),
+    ("**Because:** Because one.", "**Because:** Because one more."),
+    ("- **Before a comma**: C1 decides.",
+     "- **Before a comma**: C1 decides it."),
+    ("**Then:**", "**Tolerated:** no convention writes it.\n\n**Then:**"),
+])
+def test_words_added_to_any_quotable_field_move_the_row(
+        old: str, new: str) -> None:
+    assert old in _SKELETON_DOC
+    before = rules_budget.measure(_SKELETON_DOC)
+    after = rules_budget.measure(_SKELETON_DOC.replace(old, new, 1))
+    assert rules_budget.changes(before, after)
+    assert after["X1"]["words"] > before["X1"]["words"]
 
 
 def test_a_format_change_is_one_line() -> None:
     block_row = {"words": 9, "exceptions": 1, "accepted": 2,
                  "accepted_words": 19}
-    skeleton_row = {"then_words": 10, "because_sentences": 2, "except": 2,
-                    "precedence": 1, "accepted": 1, "accepted_words": 5}
+    skeleton_row = {"words": 27, "then_words": 10, "because_sentences": 2,
+                    "except": 2, "precedence": 1, "accepted": 1,
+                    "accepted_words": 5}
     expected = [f"X1: format changed: {block_row} -> {skeleton_row}"]
     assert rules_budget.changes(
         {"X1": block_row}, {"X1": skeleton_row}) == expected
