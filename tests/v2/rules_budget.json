@@ -1,5 +1,5 @@
 {
-  "A1": {"words": 141, "exceptions": 0, "accepted": 1, "accepted_words": 33},
+  "A1": {"then_words": 120, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 32},
   "A2": {"words": 48, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "C1": {"words": 267, "exceptions": 1, "accepted": 1, "accepted_words": 115},
   "C2": {"words": 479, "exceptions": 2, "accepted": 1, "accepted_words": 81},
