@@ -4,7 +4,7 @@
 
 - In a name written in more than one case, a bare Latin capital connective reads as an initial and a Cyrillic capital joins where P3's word count lets a connective join at all (`Иван Сергей И Петров`; at three words it stays a middle name) — 2026-07-30 #267; 2026-09-13 #383.
 - In a name written wholly in one case, a member of `conjunctions_ambiguous` reads as an initial and reports `conjunction-or-initial`, and any other single-letter connective joins where P3's count lets it; the default members are `e`, decided here, and `i`, added with the conjunction itself by decisions/P3's #397 entry as this log foresaw — 2026-09-13 #383.
-- Both questions are asked over the name's own words, those before a maiden marker's run and outside a delimited clause; the one-case member's `initial` tag is given per token at every name length, three words included (`john e smith` gives initials `j. e. s.`), though no role moves there — 2026-09-13 #383.
+- Both questions are asked over the name's own words, those before a maiden marker's run and outside a delimited clause; the one-case member's `initial` tag is given per token at every name length, three words included, though no role moves there: `john e smith` capitalizes to `John E Smith` and reports `conjunction-or-initial`, where with `e` removed from the subset it gives `John e Smith` and no report — 2026-09-13 #383.
 - The subset is the knob, with no switch beside it; that a locale pack cannot remove a member is accepted — 2026-09-13 #383.
 - The facade's `initials()` follows the parse's tags as the core does (the #528 amendment inside the entry) — 2026-09-13 #383.
 - An orphan `conjunctions_ambiguous` entry is inert and nothing checks it — 2026-09-13 #383.

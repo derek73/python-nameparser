@@ -156,7 +156,10 @@ def test_standing_needs_a_log_after_it() -> None:
         "## Standing without a ## Log after it"]
     assert standing_findings(
         "# C1 — x\n\n" + _LOG + "\n## Standing\n\n- a — 2026-10-06 #613.\n"
-    ) == ["## Standing without a ## Log after it"]
+    ) == ["## Log before ## Standing: the block opens the file"]
+    assert standing_findings(
+        "# C1 — x\n\n" + _LOG + "\n## Standing\n\n- a — 2026-10-06 #613.\n\n"
+        + _LOG) == ["## Log before ## Standing: the block opens the file"]
 
 
 def test_standing_findings_leave_an_absent_block_to_the_roster() -> None:
@@ -233,11 +236,16 @@ _ORIGINAL = frozenset({"P2", "A1"})
      "P2 is listed in decisions_without_standing.json but no decisions"),
     ({"P2": "log", "A1": "log", "Z9": "log"}, {"P2", "A1", "Z9"},
      "was not on it when the rule landed"),
+    ({"C1": "## Standing", "P2": "log", "A1": "## Standing \n- a"},
+     {"P2", "A1"}, "'## Standing ' is not the heading"),
+    ({"C1": "## Standing", "P2": "log", "A1": "### Standing\n- a"},
+     {"P2", "A1"}, "'### Standing' is not the heading"),
     ({"P2": "log", "A1": "## Standing", "Z9": "log"}, {"P2", "Z9"},
      "was not on it when the rule landed"),
 ], ids=["clean", "prose-mention-is-no-block", "listed-file-left",
         "new-file-without",
         "listed-file-gained-one", "listed-file-gone", "new-file-listed",
+        "misspelled-heading-trailing-space", "misspelled-heading-level",
         "new-file-swapped-in"])
 def test_standing_roster_findings_name_each_break(
         files: dict[str, str], exempt: set[str], finding: str | None) -> None:

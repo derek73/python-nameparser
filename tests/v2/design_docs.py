@@ -146,6 +146,15 @@ def _names(head: str, date: str, num: str | None) -> bool:
 
 _STANDING_HEADING = re.compile(r"^## Standing$", re.M)
 _LOG_HEADING = re.compile(r"^## Log$", re.M)
+# A line that means the heading and misspells it: the exact match would
+# miss it and switch every Standing check off for the file.
+_NEAR_STANDING = re.compile(r"^#{1,6}[ \t]*standing\b.*$", re.M | re.I)
+
+
+def misspelled_standing(text: str) -> list[str]:
+    """The lines that try to be the Standing heading and are not it."""
+    return [m.group(0) for m in _NEAR_STANDING.finditer(text)
+            if m.group(0) != "## Standing"]
 
 
 def has_standing(text: str) -> bool:
@@ -165,6 +174,8 @@ def standing_findings(text: str) -> list[str]:
     head = _STANDING_HEADING.search(text)
     if head is None:
         return []
+    if _LOG_HEADING.search(text, 0, head.start()):
+        return ["## Log before ## Standing: the block opens the file"]
     log_head = _LOG_HEADING.search(text, head.end())
     if log_head is None:
         return ["## Standing without a ## Log after it"]
@@ -232,9 +243,14 @@ def standing_roster_findings(
         original: frozenset[str] = STANDING_EXEMPT_ORIGINAL) -> list[str]:
     """What breaks the Standing ratchet: a file off the exempt list with
     no Standing block, a listed file that has gained one (take it off
-    the list), a listed key no file carries any more, and a listed key
-    the list did not hold when the rule landed."""
+    the list), a listed key no file carries any more, a listed key the
+    list did not hold when the rule landed, and a heading that misspells
+    `## Standing`."""
     findings = []
+    for key, text in sorted(files.items()):
+        for line in misspelled_standing(text):
+            findings.append(f"{key}: {line!r} is not the heading "
+                            "'## Standing'")
     for key in sorted(exempt - original):
         findings.append(f"{key} is listed in {STANDING_EXEMPT.name} but "
                         "was not on it when the rule landed: a new "
