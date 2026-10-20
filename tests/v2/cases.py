@@ -8985,9 +8985,9 @@ CASES: tuple[Case, ...] = (
     Case("lone_joined_unit_behind_a_peeled_title", "Dr. Smith and Prince",
          {"title": "Dr.", "family": "Smith and Prince"},
          ambiguities=("title-or-name",), classification="parity",
-         notes="the join clause is H4's and asks whether a WORD is a "
-               "title, so a title peeled in FRONT of the unit does not "
-               "answer it -- which is why the clause sits beside H4's "
+         notes="the join clause (rules/H7, split from H4) asks whether "
+               "a WORD is a title, so a title peeled in FRONT of the unit "
+               "does not answer it -- which is why the clause sits beside H4's "
                "peel half rather than under O5's field-deciding "
                "leg (#449 review round). 'Lord Chancellor née Jones' "
                "is the same hoist on the maiden clause. Roles parity; "
@@ -10318,8 +10318,8 @@ CASES: tuple[Case, ...] = (
          "John of Prince Prof.",
          {"title": "Prof.", "family": "John of Prince"},
          ambiguities=("title-or-name",), classification="fix(#316)",
-         notes="H4's join clause, reached through the trailing walk: "
-               "the unit left standing is the one H4 already reports "
+         notes="H7's join clause, reached through the trailing walk: "
+               "the unit left standing is the one H7 already reports "
                "for on its own ('John of Prince'), and the walk is "
                "what makes it the only one. The single-word half of "
                "H4 cannot be reached this way -- a lone title-"
