@@ -2,7 +2,7 @@
 
 **When:** a never-given particle opens the name and has another name word behind it to attach to, as in "de Mesnil".
 
-**Then:** the particle run heads the family, under every name order; how many name words it takes depends on the order (below).
+**Then:** the particle run and the name words it takes are family, under every name order; how many it takes depends on the order or a family comma (below).
 
 - **The run is every particle in sequence**, never-given and ambiguous alike: "de la Vega" is one group, not "de" plus a separate "la Vega". An ambiguous particle keeps whatever reading its position gives it.
   ```

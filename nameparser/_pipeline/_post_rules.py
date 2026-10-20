@@ -388,11 +388,11 @@ def post_rules(state: ParseState) -> ParseState:
         middles = _idx(tokens, Role.MIDDLE)
         families = _idx(tokens, Role.FAMILY)
 
-    # rules/P1: "the particle run heads the family, under every name
-    # order" -- its Then clause, for a never-given particle opening
-    # the name; how many name words the run takes is the order's, in
-    # P1's bullets and below (v1 handle_non_first_name_prefix;
-    # decisions/P1)
+    # rules/P1: "the particle run and the name words it takes are
+    # family, under every name order" -- its Then clause, for a
+    # never-given particle opening the name; how many words the run
+    # takes is set by the order or a family comma, in P1's bullets and
+    # below (v1 handle_non_first_name_prefix; decisions/P1)
     # How far the fold reaches depends on the order the name was READ
     # under (#395; decisions/P1, 2026-08-17): declaring a
     # family-first order asserts that what follows the family is not
