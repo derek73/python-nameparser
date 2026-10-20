@@ -15,7 +15,7 @@
   "C12": {"words": 222, "exceptions": 0, "accepted": 1, "accepted_words": 60},
   "C13": {"words": 236, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "D1": {"words": 54, "exceptions": 0, "accepted": 0, "accepted_words": 0},
-  "D2": {"words": 51, "exceptions": 0, "accepted": 0, "accepted_words": 0},
+  "D2": {"then_words": 37, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "H1": {"words": 351, "exceptions": 1, "accepted": 4, "accepted_words": 413},
   "H2": {"words": 196, "exceptions": 1, "accepted": 4, "accepted_words": 241},
   "H3": {"words": 131, "exceptions": 0, "accepted": 3, "accepted_words": 116},

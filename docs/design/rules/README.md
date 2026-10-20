@@ -26,16 +26,16 @@ A line holding exactly `---` ends the fields. Below it stand only an optional `n
 
 What a citation may quote is every field's prose, bold markers stripped: When, Tolerated, Then and its bullets, Because, and the Except, Precedence and Accepted bullets — never a fence or the footer. Sentences are counted with quoted text and backtick spans removed, `e.g.` and `i.e.` ending none, a sentence ending at `.`, `?` or `!` followed by a space and a capital. The parser refuses, naming the rule and the line: a label spelled any other way than `**Label:**` (`When:`, `**When**:`), an unknown label, a field out of order or repeated, a missing or empty When, Then or Because, a Then paragraph of more than one sentence or a Because of more than three, an Except bullet with no example, an unclosed fence, a line outside any field, `interacts:` on the pointer line, and below the `---` anything but those three lines.
 
-D2, sketched as a skeleton (the migrated file may word it differently):
+D2, as a skeleton:
 
 ````markdown
 # D2 — construction raises, parse never does
 
-**When:** a configuration is built, or a name is parsed.
+**When:** a configuration is built from a value it cannot accept.
 
-**Then:** a broken configuration raises at construction, naming the offending field and value, and parsing never raises.
+**Then:** configuration validation raises at construction with the offending field and value named.
 
-- A locale pack applying a broken configuration wraps the error with the locale's code, so a stacked configuration names which layer broke.
+- **A locale pack names itself:** applying a locale pack wraps any such error with the locale's code, so a stacked configuration names which layer broke.
 
 **Because:** whatever a name contains, parsing answers. Only a broken configuration may raise, and it must name the field.
 
