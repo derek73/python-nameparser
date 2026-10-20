@@ -13,7 +13,7 @@
   "C10": {"words": 147, "then_words": 62, "because_sentences": 1, "except": 1, "precedence": 0, "accepted": 2, "accepted_words": 134},
   "C11": {"words": 372, "then_words": 247, "because_sentences": 1, "except": 1, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "C12": {"words": 269, "then_words": 107, "because_sentences": 2, "except": 1, "precedence": 1, "accepted": 2, "accepted_words": 59},
-  "C13": {"words": 223, "exceptions": 0, "accepted": 0, "accepted_words": 0},
+  "C13": {"words": 259, "then_words": 74, "because_sentences": 1, "except": 1, "precedence": 1, "accepted": 0, "accepted_words": 0},
   "C14": {"words": 195, "then_words": 81, "because_sentences": 3, "except": 1, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "D1": {"words": 54, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "D2": {"words": 65, "then_words": 37, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
