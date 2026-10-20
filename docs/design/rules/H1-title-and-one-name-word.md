@@ -12,7 +12,7 @@
   "Dr. Smith II, Sir"  family-first  →  family="Smith"  · boundary
   ```
 - **Which side a title is on is decided by the name word** and by nothing else standing beside it, so a run written around a nickname is one run: the name Dr. 'Smitty' Sir John reads as Dr. Sir John does.
-- **A comma with nothing but titles after it** names no given part, so it says nothing about which field the word before it fills: a comma with no given name after it does not decide the field, nor does a declared order, which places only a word nothing else decided (O5), and the title decides there as it does with no comma.
+- **Neither a comma with nothing but titles after it nor a declared order decides the field.** A comma with nothing but titles after it names no given part, so it says nothing about which field the word before it fills: a comma with no given name after it does not decide the field, nor does a declared order, which places only a word nothing else decided (O5), and the title decides there as it does with no comma.
   ```
   "Elizabeth II, Queen"       →  given="Elizabeth"
   "John III, Sir"             →  given="John"
@@ -37,7 +37,7 @@
 
 **Except:**
 
-- **A particle surname keeps the family.** A particle surname standing alone before the comma stays the family, the comma being the evidence that the part is a surname (C3), and so does a never-given particle with a word behind it and no comma (P1's fold); an ambiguous particle no comma settled, or a bare one, is a word the order placed, and reads given.
+- **A particle surname a comma or P1's fold settled keeps the family.** A particle surname standing alone before the comma stays the family, the comma being the evidence that the part is a surname (C3), and so does a never-given particle with a word behind it and no comma (P1's fold); an ambiguous particle no comma settled, or a bare one, is a word the order placed, and reads given.
   ```
   "van der Berg, Sir"         →  family="van der Berg"  · boundary
   "van Gogh, Sir"             →  family="van Gogh"  · boundary
