@@ -2,7 +2,7 @@
 
 - 2026-07-30 #298 — codepoint scope, chosen over a blanket
   "dot = transcription" rule that would have flipped 高橋・一郎, a
-  correct and deliberately pinned #272 reading: U+00B7 records the transcription fact and suppresses division; U+30FB/U+FF65 stay pure separators whose pieces the script license reads (rule W4's Accepted pair demonstrates both). Cross-convention input reads by the codepoint it was actually typed with — a chosen limitation, recorded in #298's comments.
+  correct and deliberately pinned #272 reading: U+00B7 records the transcription fact and suppresses division; U+30FB/U+FF65 stay pure separators whose pieces the script license reads (rule W4's interpunct Except and its katakana-middle-dot Then bullet demonstrate both). Cross-convention input reads by the codepoint it was actually typed with — a chosen limitation, recorded in #298's comments.
 
 Declined:
 

@@ -677,7 +677,8 @@ def test_an_nfd_authored_entry_is_stored_composed() -> None:
     # the storage fold composes NFC (#322), so a caller who authors a
     # surname in NFD gets the NFC entry -- and raw NFD input, which
     # segmentation matches without folding, then finds no entry and
-    # goes unsplit (rules/W1's accepted degradation). Pinned
+    # goes unsplit (decisions/W1's 2026-07-29 NFD bullet, ja amendment 1a: NFD
+    # degrades to no-split, never to a wrong split). Pinned
     # because the surname site's comment relies on it.
     nfd = unicodedata.normalize("NFD", "김")
     lex = Lexicon(surnames=frozenset({nfd}))
