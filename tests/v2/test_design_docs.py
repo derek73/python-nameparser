@@ -8,7 +8,9 @@ import pytest
 
 from tests.v2.design_docs import (
     DECISIONS_DIR, MENTION_RE, RULES_DIR, read_decision_files, read_index,
-    read_rules_text, resolve, slugify, standing_findings, stem_for)
+    STANDING_EXEMPT_ORIGINAL, has_standing, read_rules_text,
+    read_standing_exempt, resolve, slugify, standing_findings,
+    standing_roster_findings, stem_for)
 from tests.v2.rules_doc import parse_rules_doc
 
 _FIXTURE_FILES = ("S-suffixes.md", "S1-x.md",
@@ -149,10 +151,25 @@ def test_standing_findings_name_each_broken_pointer(
         assert len(found) == 1 and finding in found[0], found
 
 
-def test_standing_needs_a_log_and_is_optional() -> None:
+def test_standing_needs_a_log_after_it() -> None:
     assert standing_findings("# C1 — x\n\n## Standing\n\n- a\n") == [
         "## Standing without a ## Log after it"]
+    assert standing_findings(
+        "# C1 — x\n\n" + _LOG + "\n## Standing\n\n- a — 2026-10-06 #613.\n"
+    ) == ["## Log before ## Standing: the block opens the file"]
+    assert standing_findings(
+        "# C1 — x\n\n" + _LOG + "\n## Standing\n\n- a — 2026-10-06 #613.\n\n"
+        + _LOG) == ["## Log before ## Standing: the block opens the file"]
+
+
+def test_standing_findings_leave_an_absent_block_to_the_roster() -> None:
     assert standing_findings("# C1 — x\n\n" + _LOG) == []
+
+
+def test_a_prose_mention_of_the_heading_is_no_block() -> None:
+    assert not has_standing("- 2026-10-20 — follows the `## Standing` rule.")
+    assert not has_standing("### Standing\n")
+    assert has_standing("# C1 — x\n\n## Standing\n")
 
 
 # -- the real tree ---------------------------------------------------------
@@ -196,7 +213,59 @@ def test_the_folders_are_not_empty() -> None:
 
 def test_every_standing_line_points_at_a_live_entry() -> None:
     files = read_decision_files()
-    with_standing = [k for k, t in files.items() if "## Standing" in t]
+    with_standing = [k for k, t in files.items() if has_standing(t)]
     assert with_standing, "no decisions file has a Standing block"
     for key in with_standing:
         assert standing_findings(files[key]) == [], key
+
+
+_ORIGINAL = frozenset({"P2", "A1"})
+
+
+@pytest.mark.parametrize("files, exempt, finding", [
+    ({"C1": "## Standing", "P2": "log", "A1": "log"}, {"P2", "A1"}, None),
+    ({"C1": "## Standing", "C14": "- 2026-10-20 — the `## Standing` rule.",
+      "P2": "log", "A1": "log"}, {"P2", "A1"}, "C14 has no Standing"),
+    ({"C1": "## Standing", "P2": "log", "A1": "## Standing"}, {"P2"},
+     None),
+    ({"C1": "## Standing", "C14": "log", "P2": "log", "A1": "log"},
+     {"P2", "A1"}, "C14 has no Standing"),
+    ({"C1": "## Standing", "P2": "## Standing", "A1": "log"}, {"P2", "A1"},
+     "P2 has a Standing block: take it off"),
+    ({"C1": "## Standing", "A1": "log"}, {"P2", "A1"},
+     "P2 is listed in decisions_without_standing.json but no decisions"),
+    ({"P2": "log", "A1": "log", "Z9": "log"}, {"P2", "A1", "Z9"},
+     "was not on it when the rule landed"),
+    ({"C1": "## Standing", "P2": "log", "A1": "## Standing \n- a"},
+     {"P2", "A1"}, "'## Standing ' is not the heading"),
+    ({"C1": "## Standing", "P2": "log", "A1": "### Standing\n- a"},
+     {"P2", "A1"}, "'### Standing' is not the heading"),
+    ({"C1": "## Standing", "P2": "log", "A1": "  ## Standing\n- a"},
+     {"P2", "A1"}, "'  ## Standing' is not the heading"),
+    ({"P2": "log", "A1": "## Standing", "Z9": "log"}, {"P2", "Z9"},
+     "was not on it when the rule landed"),
+], ids=["clean", "prose-mention-is-no-block", "listed-file-left",
+        "new-file-without",
+        "listed-file-gained-one", "listed-file-gone", "new-file-listed",
+        "misspelled-heading-trailing-space", "misspelled-heading-level",
+        "misspelled-heading-indented",
+        "new-file-swapped-in"])
+def test_standing_roster_findings_name_each_break(
+        files: dict[str, str], exempt: set[str], finding: str | None) -> None:
+    found = standing_roster_findings(files, exempt, _ORIGINAL)
+    if finding is None:
+        assert found == []
+    else:
+        assert len(found) == 1 and finding in found[0], found
+
+
+def test_a_decisions_file_off_the_list_opens_with_standing() -> None:
+    assert standing_roster_findings(read_decision_files(),
+                                    read_standing_exempt()) == []
+
+
+def test_the_original_exempt_set_is_never_edited() -> None:
+    # The list the rule landed with: 88 decisions files created before
+    # C1's block. A key added here would let a new file skip its block,
+    # so the size is asserted rather than trusted to the comment.
+    assert len(STANDING_EXEMPT_ORIGINAL) == 88

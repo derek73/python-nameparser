@@ -1,5 +1,20 @@
 # P8 — a single-letter connective against the initial it spells
 
+## Standing
+
+- In a name written in more than one case, a bare Latin capital connective reads as an initial and a Cyrillic capital joins where P3's word count lets a connective join at all (`Иван Сергей И Петров`; at three words it stays a middle name) — 2026-07-30 #267; 2026-09-13 #383.
+- In a name written wholly in one case, a member of `conjunctions_ambiguous` reads as an initial and reports `conjunction-or-initial`, and any other single-letter connective joins where P3's count lets it; the default members are `e`, decided here, and `i`, added with the conjunction itself by decisions/P3's #397 entry as this log foresaw — 2026-09-13 #383.
+- Both questions are asked over the name's own words, those before a maiden marker's run and outside a delimited clause; the one-case member's `initial` tag is given per token at every name length, three words included, though no role moves there: `john e smith` capitalizes to `John E Smith` and reports `conjunction-or-initial`, where with `e` removed from the subset it gives `John e Smith` and no report — 2026-09-13 #383.
+- The subset is the knob, with no switch beside it; that a locale pack cannot remove a member is accepted — 2026-09-13 #383.
+- The facade's `initials()` follows the parse's tags as the core does (the #528 amendment inside the entry) — 2026-09-13 #383.
+- An orphan `conjunctions_ambiguous` entry is inert and nothing checks it — 2026-09-13 #383.
+- The `initial` tag is not purely a shape claim: a marked connective in a one-case name carries it (amends decisions/M4) — 2026-09-13 #383.
+- Inside a hyphenated word the connective keeps its lowercase in case repair, decided in decisions/R4 — 2026-09-24 #478.
+
+Open: none in this file.
+
+## Log
+
 - 2026-07-30 #267 — the four-word single-letter asymmetry: a bare Latin capital connective is vetoed as an initial while a Cyrillic capital joins. #267's closure ("v2.0 behaves this way by default … verify it was the right call") showed only the Cyrillic half; the Latin-capital veto was never separately adjudicated, which rules/P8 records as an Accepted consequence (rules/P3 until the 2026-10-19 split).
 
 - 2026-09-13 #383 + #479 — BLESSED for the mixed-case half, and DECIDED BY VOCABULARY for the one-case half, which is the half the question never reached. A single-letter connective joins only on positive evidence. Where a name is written in more than one case the writing is that evidence and nothing moves: a bare LATIN capital reads as an initial ("Jose E Maria Santos" → middle "E Maria"), which is #383 answered with "bless". The shape is still LATIN and the phrase "Latin-capital veto" does not retire with this change — `_INITIAL` is ASCII-only, so a Cyrillic capital is never initial-shaped, joins, and #267's reading above is untouched. An earlier draft of this work claimed the phrase retires; it was overstated, and what became evidence-based is the one-case half alone.

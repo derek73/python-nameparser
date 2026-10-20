@@ -14,6 +14,7 @@ renaming a file never breaks one.
 """
 from __future__ import annotations
 
+import json
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -107,8 +108,9 @@ def resolve(doc: str, cid: str, folder: Path | None = None) -> Path | None:
     return hits[0] if len(hits) == 1 else None
 
 
-# A decisions file may open with `## Standing`, an index of the
-# decisions in force, before its entries under `## Log`. Each Standing
+# A decisions file carries `## Standing`, an index of the decisions in
+# force, ahead of its entries under `## Log` -- every file but those
+# listed in decisions_without_standing.json (below). Each Standing
 # bullet ends its claim with the entry that decided it, by date and
 # issue (`— 2026-10-06 #613`); a `Not standing:` line names entries a
 # later one answered. An entry is a log bullet whose head
@@ -142,18 +144,43 @@ def _names(head: str, date: str, num: str | None) -> bool:
             and (first.group(1) if first else None) == num)
 
 
+_STANDING_HEADING = re.compile(r"^## Standing$", re.M)
+_LOG_HEADING = re.compile(r"^## Log$", re.M)
+# A line that means the heading and misspells it: the exact match would
+# miss it and switch every Standing check off for the file.
+_NEAR_STANDING = re.compile(r"^[ \t]*#{1,6}[ \t]*standing\b.*$",
+                            re.M | re.I)
+
+
+def misspelled_standing(text: str) -> list[str]:
+    """The lines that try to be the Standing heading and are not it."""
+    return [m.group(0) for m in _NEAR_STANDING.finditer(text)
+            if m.group(0) != "## Standing"]
+
+
+def has_standing(text: str) -> bool:
+    """Whether a decisions file carries a Standing block: the heading on
+    a line of its own, not the words quoted in prose."""
+    return _STANDING_HEADING.search(text) is not None
+
+
 def standing_findings(text: str) -> list[str]:
     """What is wrong with a decisions file's Standing block: a bullet
     with no `— <date>` pointer, any date-and-issue pointer from there
     to the line's end naming no entry (dates match exactly) or
     to one only `SUPERSEDED by` a later entry, a
-    Not-standing pointer to no entry, a Standing with no Log. Empty
-    for a file with no Standing block."""
-    if "## Standing" not in text:
+    Not-standing pointer to no entry, a Standing with no Log after it.
+    Empty for a file with no Standing block, whose absence is
+    standing_roster_findings' question."""
+    head = _STANDING_HEADING.search(text)
+    if head is None:
         return []
-    if "\n## Log\n" not in text:
+    if _LOG_HEADING.search(text, 0, head.start()):
+        return ["## Log before ## Standing: the block opens the file"]
+    log_head = _LOG_HEADING.search(text, head.end())
+    if log_head is None:
         return ["## Standing without a ## Log after it"]
-    standing, log = text.split("## Standing", 1)[1].split("\n## Log\n", 1)
+    standing, log = text[head.end():log_head.start()], text[log_head.end():]
     entries = _entries(log)
     findings = []
     for line in standing.splitlines():
@@ -177,4 +204,67 @@ def standing_findings(text: str) -> list[str]:
                     findings.append(
                         f"not-standing names no entry {m['date']} "
                         f"#{m['num']}")
+    return findings
+
+
+#: The decisions files allowed to lack a Standing block: every file
+#: created before the rule, C1's block landing on 2026-10-19
+#: (decisions/README.md, `## Standing`). It never holds a key it did not
+#: hold when the rule landed.
+STANDING_EXEMPT = Path(__file__).with_name("decisions_without_standing.json")
+#: The list as recorded when the rule landed. Never edited: the list
+#: must stay inside it, so a new file cannot join the list, alone or in
+#: exchange for one that leaves it.
+STANDING_EXEMPT_ORIGINAL = frozenset({
+    '3-0-reevaluations', 'A1', 'A2', 'C10', 'C11', 'C12', 'C3', 'C4',
+    'C5', 'C6', 'C7', 'C8', 'C9', 'D1', 'D2', 'H1', 'H2', 'H3', 'H4',
+    'H5', 'H6', 'M1', 'M2', 'M3', 'M4', 'N1', 'N2', 'N3', 'O1', 'O2',
+    'O4', 'O5', 'P1', 'P2', 'P3', 'P5', 'P6', 'P7', 'R1', 'R2', 'R3',
+    'R4', 'R5', 'S10', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9',
+    'T1', 'T3', 'T4', 'W1', 'W2', 'W3', 'W4', 'api-churn-declines',
+    'cjk-comma-demotion', 'cjk-full-stops', 'comma-suffix-arc',
+    'comparison-surface', 'deviates-registry', 'differential-ledger',
+    'generational-words', 'given-name-titles', 'indic-honorifics',
+    'initials-repertoire', 'legacy-rule-numbers', 'ma-do', 'nfd-shapes',
+    'normalization-fold', 'parse-cost', 'phd-merge',
+    'removed-v1-surface', 'render-default',
+    'review-agent-single-source', 'salutation-titles',
+    'script-table-placement', 'suffix-acronym-collisions',
+    'suffix-field-composition', 'two-input-invariants',
+    'v1-xfail-triage', 'vocabulary-collisions', 'vocabulary-exclusions',
+    'vocabulary-model'})
+
+
+def read_standing_exempt(path: Path = STANDING_EXEMPT) -> set[str]:
+    return set(json.loads(path.read_text(encoding="utf-8"))["exempt"])
+
+
+def standing_roster_findings(
+        files: dict[str, str], exempt: set[str],
+        original: frozenset[str] = STANDING_EXEMPT_ORIGINAL) -> list[str]:
+    """What breaks the Standing ratchet: a file off the exempt list with
+    no Standing block, a listed file that has gained one (take it off
+    the list), a listed key no file carries any more, a listed key the
+    list did not hold when the rule landed, and a heading that misspells
+    `## Standing`."""
+    findings = []
+    for key, text in sorted(files.items()):
+        for line in misspelled_standing(text):
+            findings.append(f"{key}: {line!r} is not the heading "
+                            "'## Standing'")
+    for key in sorted(exempt - original):
+        findings.append(f"{key} is listed in {STANDING_EXEMPT.name} but "
+                        "was not on it when the rule landed: a new "
+                        "decisions file opens with ## Standing instead")
+    for key, text in sorted(files.items()):
+        has = has_standing(text)
+        if key in exempt and has:
+            findings.append(f"{key} has a Standing block: take it off "
+                            f"{STANDING_EXEMPT.name}")
+        elif key not in exempt and not has:
+            findings.append(f"{key} has no Standing block: a new decisions "
+                            "file opens with ## Standing and ## Log")
+    for key in sorted(exempt - files.keys()):
+        findings.append(f"{key} is listed in {STANDING_EXEMPT.name} "
+                        "but no decisions file carries it")
     return findings
