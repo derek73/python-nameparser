@@ -4,7 +4,6 @@
 
 **Then:** a bracketed clause whose content opens with a recognized marker and carries a word after it reads as the maiden name, whichever bucket the enclosing pair sits in, the marker itself dropped as M1 drops it.
 
-- **Where the pair is already configured for maiden names M1 governs** and this adds nothing.
 - **Being keyed on the content rather than on the pair, this reaches a nickname pair's clause too** (N1), and M1's independence then governs what it produces: where a marker-led clause stands beside another marker-led clause, both read as maiden and join into one maiden name, leaving no nickname.
 
 **Because:** an enclosure says nothing about whether it means maiden, but a recognized marker word inside it does. The clause announces itself, so the caller does not have to declare the pair.
@@ -30,6 +29,7 @@
 
 **Precedence:**
 
+- **A pair already configured for maiden names** ("Jane Smith (née Jones)" under a maiden pair): M1 governs and this adds nothing.
 - **Suffix-shaped content** ("Jane Smith (née Jr.)"): S1 takes it first, and the clause is no maiden name.
   ```
   "Jane Smith (née Jr.)"      →  suffix="Jr."

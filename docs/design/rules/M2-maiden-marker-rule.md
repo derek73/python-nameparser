@@ -1,6 +1,6 @@
 # M2 — the maiden-marker rule
 
-**When:** a recognized maiden marker stands as a word in a name, outside any bracketed clause, as in "Jane Smith née Jones".
+**When:** a recognized maiden marker stands as a word in a name, as in "Jane Smith née Jones".
 
 **Then:** a marker that counts takes the words after it as the maiden name, and is itself dropped.
 
@@ -89,14 +89,10 @@
   ```
   "Doe nee Smith Jr. Prof., Jane"  →  family="Doe Prof."  · boundary
   ```
-- **Bracketed content ending in a period** never reaches this rule as a delimited clause: a trailing period makes the content suffix-shaped (M3 states this), so the brackets are dropped (S1) and the clause is read as if written bare — the delimiter precedence below does not reach it.
-  ```
-  "Jane Doe (nee Smith Prof.)"  →  title="Prof."
-  ```
 
 **Precedence:**
 
-- **A marker inside a delimited clause** ("Jane Doe (nee Smith MA)"): delimiters outrank every reading inside them. The whole span is the maiden name whatever its last word is, and whether or not the pair is a configured maiden delimiter (M1, M3): the writer drew the boundary, so no fork is called and nothing is reported. A word the writer left OUTSIDE the span is outside the clause and reads as it would anywhere else.
+- **A marker inside a delimited clause** ("Jane Doe (nee Smith MA)"): delimiters outrank every reading inside them. The whole span is the maiden name whatever its last word is, and whether or not the pair is a configured maiden delimiter (M1, M3): the writer drew the boundary, so no fork is called and nothing is reported. A word the writer left OUTSIDE the span is outside the clause and reads as it would anywhere else. Bracketed content ending in a period is the exception, because it never reaches this rule as a delimited clause: a trailing period makes the content suffix-shaped (M3 states this), so the brackets are dropped (S1) and the clause is read as if written bare.
   ```
   "Jane Doe (nee Smith MA)"     →  maiden="Smith MA"
   "Jane Doe (nee Smith Ma)"     →  maiden="Smith Ma"
@@ -120,6 +116,10 @@
 - The first word after the marker is the maiden name whatever it is unless it is a suffix word, and a lone roman numeral is not one — it is shaped like an initial — so it is the maiden name where the clause-free name would read it as the suffix.
   ```
   "Jane Smith née V"            →  maiden="V"  · boundary
+  ```
+- Bracket content ending in a period is suffix-shaped (M3), so the brackets are dropped (S1) and the clause is read as if written bare — the delimiter precedence does not reach it.
+  ```
+  "Jane Doe (nee Smith Prof.)"  →  title="Prof."
   ```
 - A marker behind a credential is an ordinary word, and the credential's run (S8) takes it in with everything after it.
   ```

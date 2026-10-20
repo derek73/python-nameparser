@@ -23,7 +23,7 @@
   "Jane Smith (Nee)"  maiden-parens        →  maiden="Nee"  · boundary
   "Maria Kowalska (z domu)"  maiden-parens  →  maiden="z domu"  · boundary
   ```
-- **A marker followed by a comma is no marker** (M3), so the clause keeps it.
+- **A phrase marker the writer divided with a comma is not that marker**, so the clause keeps all its words.
   ```
   "Maria Kowalska (z, domu Nowak)"  maiden-parens  →  maiden="z, domu Nowak"  · boundary
   ```

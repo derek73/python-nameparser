@@ -8,6 +8,10 @@
   ```
   "Jane (Janey, Jo) Smith"    →  nickname="Janey, Jo"
   ```
+- **An empty enclosure is simply dropped**, there being no clause to read.
+  ```
+  "Anna () Smith"             →  nickname=""  · boundary
+  ```
 
 **Because:** a quoted or bracketed clause beside a name is an informal alias, not part of the name.
 
@@ -16,13 +20,6 @@
 "Jean 'JD' Smith"           →  nickname="JD"
 "John ｢Jack｣ Smith"         →  nickname="Jack"
 ```
-
-**Except:**
-
-- **An empty enclosure is simply dropped**, there being no clause to read.
-  ```
-  "Anna () Smith"             →  nickname=""  · boundary
-  ```
 
 ---
 **Signal:** neighbor
