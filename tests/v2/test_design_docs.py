@@ -240,12 +240,15 @@ _ORIGINAL = frozenset({"P2", "A1"})
      {"P2", "A1"}, "'## Standing ' is not the heading"),
     ({"C1": "## Standing", "P2": "log", "A1": "### Standing\n- a"},
      {"P2", "A1"}, "'### Standing' is not the heading"),
+    ({"C1": "## Standing", "P2": "log", "A1": "  ## Standing\n- a"},
+     {"P2", "A1"}, "'  ## Standing' is not the heading"),
     ({"P2": "log", "A1": "## Standing", "Z9": "log"}, {"P2", "Z9"},
      "was not on it when the rule landed"),
 ], ids=["clean", "prose-mention-is-no-block", "listed-file-left",
         "new-file-without",
         "listed-file-gained-one", "listed-file-gone", "new-file-listed",
         "misspelled-heading-trailing-space", "misspelled-heading-level",
+        "misspelled-heading-indented",
         "new-file-swapped-in"])
 def test_standing_roster_findings_name_each_break(
         files: dict[str, str], exempt: set[str], finding: str | None) -> None:

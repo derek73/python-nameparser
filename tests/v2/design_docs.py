@@ -148,7 +148,8 @@ _STANDING_HEADING = re.compile(r"^## Standing$", re.M)
 _LOG_HEADING = re.compile(r"^## Log$", re.M)
 # A line that means the heading and misspells it: the exact match would
 # miss it and switch every Standing check off for the file.
-_NEAR_STANDING = re.compile(r"^#{1,6}[ \t]*standing\b.*$", re.M | re.I)
+_NEAR_STANDING = re.compile(r"^[ \t]*#{1,6}[ \t]*standing\b.*$",
+                            re.M | re.I)
 
 
 def misspelled_standing(text: str) -> list[str]:
