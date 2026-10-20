@@ -9,6 +9,10 @@ text = "tikin"
 excluded = { salutation = { reason = "Armenian Mrs. in Latin script: unverified, so not shipped", issue = 606, decided = 2026-10-04 } }
 
 [[word]]
+text = "vardapet"
+religious = { expands = "an Armenian celibate priest and doctor of the church" }
+
+[[word]]
 text = "ավագ"
 [word.excluded.generation]
 reason = "an Armenian given name, in lists that write the surname first"

@@ -5,5 +5,9 @@ text = "pan"
 excluded = { salutation = { reason = "Polish and Czech Mr., and the Chinese surname Pan, which leads", issue = 606, decided = 2026-10-04 } }
 
 [[word]]
+text = "hrabia"
+nobility = { gender = "m", expands = "count", issue = 606, note = "borne: ~750 surnames (Poland, where registers often write the surname first), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
+
+[[word]]
 text = "vel"
 alias = { may_be_given = true, expands = "or, between two surnames: \"Kowalski vel Nowak\"" }

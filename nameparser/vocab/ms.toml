@@ -13,6 +13,10 @@ text = "puan"
 excluded = { salutation = { reason = "Malay Mrs., and an Indonesian given name (Puan Maharani)", issue = 606, decided = 2026-10-04 } }
 
 [[word]]
+text = "sultan"
+nobility = {}
+
+[[word]]
 text = "bin"
 patronymic = { may_be_given = true, expands = "son of: \"Ahmad bin Ismail\"", gender = "m" }
 

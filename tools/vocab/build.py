@@ -200,7 +200,7 @@ _RUNS = [c for i, c in enumerate(CATEGORY.values())
 assert len(_RUNS) == len(set(_RUNS)), "a category's kinds are listed apart in CATEGORY"
 #: The file exempt from check 10: its entries keep the order of the
 #: Python lists they were converted from, which the vetting comments
-#: above them still refer to ("the TITLES block below").
+#: above them still refer to ("Same word as عبد below").
 UNORDERED = "und.toml"
 
 #: Behavioral properties per category: each compiles into a field, and

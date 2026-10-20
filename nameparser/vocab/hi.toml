@@ -49,12 +49,52 @@ text = "ठाकुर"
 excluded = { style = { reason = "Tagore, the surname, as with the Bengali ঠাকুর", issue = 344, decided = 2026-09-06 } }
 
 [[word]]
+text = "महात्मा"
+style = { issue = 344, expands = "Mahatma", note = "civil, not renunciate: it addresses by surname ('महात्मा गांधी'), so TITLES only" }
+
+[[word]]
 text = "शेख"
 excluded = { style = { reason = "a clan name and a family name; the Latin sheikh cluster ships for the Arabic addressing form, while the Indic spellings name the family", issue = 344, decided = 2026-09-06 } }
 
 [[word]]
+text = "सरदार"
+style = { issue = 344, expands = "Sardar" }
+
+[[word]]
 text = "pandit"
 excluded = { academic = { reason = "a common surname (Vijaya Lakshmi Pandit); the native पंडित ships", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "डा"
+academic = { issue = 344, expands = "Dr., the डा. abbreviation (Nepali and older Hindi)", note = "डा. matches through the edge-period normalization" }
+
+[[word]]
+text = "डॉ"
+academic = { issue = 269, expands = "Dr., abbreviated", note = "डॉ. matches through the edge-period normalization, as Latin Dr. does; no Latin twins, for the reason the sri/shri exclusions in hi.toml give" }
+
+[[word]]
+text = "डॉक्टर"
+academic = { issue = 344, expands = "doctor, full form" }
+
+[[word]]
+text = "पंडित"
+academic = { issue = 344, expands = "Pandit, a scholar's title" }
+
+[[word]]
+text = "पं"
+academic = { issue = 344, same_as = "पंडित", expands = "Pandit, abbreviated" }
+
+[[word]]
+text = "प्राध्यापक"
+academic = { issue = 344, expands = "professor, the Sanskritic form" }
+
+[[word]]
+text = "प्रो"
+academic = { issue = 344, expands = "Prof., abbreviated" }
+
+[[word]]
+text = "प्रोफेसर"
+academic = { issue = 344, expands = "professor, full form" }
 
 [[word]]
 text = "baba"
@@ -85,6 +125,10 @@ text = "बाबा"
 religious = { addresses = "given", issue = 344, expands = "Baba" }
 
 [[word]]
+text = "मौलाना"
+religious = { issue = 344, expands = "Maulana" }
+
+[[word]]
 text = "संत"
 religious = { addresses = "given", issue = 344, expands = "Sant", note = "no Latin twin: Latin sant is a Punjabi given name (its exclusion in this file)" }
 
@@ -93,12 +137,32 @@ text = "स्वामी"
 religious = { addresses = "given", issue = 344, expands = "Swami" }
 
 [[word]]
+text = "maharajah"
+nobility = { gender = "m" }
+
+[[word]]
+text = "maharani"
+nobility = { gender = "f" }
+
+[[word]]
+text = "महाराजा"
+nobility = { issue = 344, gender = "m", expands = "Maharaja", note = "LEADING; the trailing महाराज is a suffix word" }
+
+[[word]]
 text = "राजा"
 excluded = { nobility = { reason = "Raja is a common given name", issue = 344, decided = 2026-09-06 } }
 
 [[word]]
 text = "रानी"
 excluded = { nobility = { reason = "Rani is a common given name", issue = 344, decided = 2026-09-06 } }
+
+[[word]]
+text = "subedar"
+military = {}
+
+[[word]]
+text = "न्यायमूर्ति"
+office = { issue = 344, expands = "Justice", note = "#344's civil set ships in native script only, with no new Latin transliteration; the words it refused under the collision rule are exclusions in this file" }
 
 [[word]]
 text = "जुनियर"

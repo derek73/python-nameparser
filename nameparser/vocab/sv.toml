@@ -21,6 +21,10 @@ text = "hr"
 salutation = { gender = "m", same_as = "herr" }
 
 [[word]]
+text = "greve"
+nobility = { gender = "m", expands = "count", issue = 606, note = "borne, so 'Greve Anna' reads title Greve; one of the three words #606 proposed the graf class for" }
+
+[[word]]
 text = "af"
 preposition = { may_be_given = false, expands = "of, nobiliary" }
 

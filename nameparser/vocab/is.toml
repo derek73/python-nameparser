@@ -13,6 +13,10 @@ text = "ungfrú"
 salutation = { issue = 606, gender = "f" }
 
 [[word]]
+text = "greifi"
+nobility = { gender = "m", expands = "count", issue = 606 }
+
+[[word]]
 text = "eldri"
 generation = { issue = 679 }
 

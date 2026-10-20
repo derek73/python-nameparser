@@ -9,6 +9,10 @@ text = "kalbatoni"
 salutation = { issue = 606, gender = "f" }
 
 [[word]]
+text = "grafi"
+nobility = { gender = "m", expands = "count, in Latin script", issue = 606 }
+
+[[word]]
 text = "უმცროსი"
 generation = { issue = 679 }
 

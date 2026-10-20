@@ -9,6 +9,26 @@ text = "г-н"
 salutation = { gender = "m", issue = 269, expands = "господин, Mr." }
 
 [[word]]
+text = "акад"
+academic = { issue = 269, expands = "academician" }
+
+[[word]]
+text = "д-р"
+academic = { issue = 269, expands = "doctor", note = "a plain title, the family name following it as after 'dr' (not GIVEN_NAME_TITLES: 'д-р Петров' families the surname just as 'Dr. Smith' does)" }
+
+[[word]]
+text = "проф"
+academic = { issue = 269, expands = "professor" }
+
+[[word]]
+text = "tsar"
+nobility = { gender = "m", expands = "the Russian emperor", native = "царь" }
+
+[[word]]
+text = "tsarina"
+nobility = { gender = "f", native = "царица" }
+
+[[word]]
 text = "мл"
 [word.generation]
 issue = 679

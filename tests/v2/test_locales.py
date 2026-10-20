@@ -1236,7 +1236,7 @@ def test_non_interference_all_packs_combined() -> None:
     # mid-word (no preceding whitespace before '"', and for the
     # trailing "'" no following word boundary), so it never satisfies
     # the boundary-valid open/close test and is left as literal text.
-    # Both spellings are shipped; see their notes in nameparser/vocab/und.toml.
+    # Both spellings are shipped; see their notes in nameparser/vocab/he.toml.
     ('ד"ר דוד לוי', "title", 'ד"ר'),
     ("גב' דוד לוי", "title", "גב'"),
     ("ד״ר דוד לוי", "title", "ד״ר"),

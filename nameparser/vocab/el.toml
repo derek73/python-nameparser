@@ -13,6 +13,14 @@ text = "κος"
 salutation = { gender = "m", issue = 269, expands = "κύριος, Mr." }
 
 [[word]]
+text = "δρ"
+academic = { issue = 269, expands = "doctor" }
+
+[[word]]
+text = "καθ"
+academic = { issue = 269, expands = "professor" }
+
+[[word]]
 text = "σίνιορ"
 generation = { issue = 679 }
 
