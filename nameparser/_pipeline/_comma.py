@@ -483,10 +483,11 @@ def decide(state: ParseState) -> ParseState:
             tokens[i] = copy_with(tokens[i], role=role, tags=tags)
     # rules/C11: "A decision either way at the comma C1 reads is reported;
     # for a run of words the decision is the flip to the credential
-    # run, reported once over the whole part. A flip in which no listed
-    # word of the ambiguous credential class (C4) takes part is the exception and is made in
-    # silence" -- "unless what said so is nothing but other paired
-    # initials". A run whose every class word is listed and settled by
+    # run, reported once over the whole part" -- "A flip in which no
+    # listed word of the ambiguous credential class (C4) takes part is
+    # the exception and is made in silence" -- "unless what said so is
+    # nothing but other paired initials". This implements its Then and
+    # its Except bullet (decisions/C11). A run whose every class word is listed and settled by
     # its capitals is read on that evidence, not flipped by the count.
     # A caps word bound above carries the class tags now, so membership
     # is the tag alone; a part with no word of the class has none, and
