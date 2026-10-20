@@ -28,6 +28,7 @@
 ```
 "John Smith Msc.Ed."        →  suffix="Msc.Ed."
 "Doe, John Msc.Ed."         →  suffix="Msc.Ed."
+"John Smith Msc.Ed."  unlisted_dotted_suffixes-off  →  suffix="Msc.Ed."
 "Jack Ma."                  →  family="Ma."  · boundary
 "John Smith Xyz."           →  family="Xyz."  · boundary
 ```
@@ -41,7 +42,6 @@
 - **The position reading is a caller switch, ON by default**, and the example lines name it; turned off, such a word is name material and the chunk rule still decides the rest.
   ```
   "John Smith X.Y.Z."  unlisted_dotted_suffixes-off  →  family="X.Y.Z."
-  "John Smith Msc.Ed."  unlisted_dotted_suffixes-off  →  suffix="Msc.Ed."
   ```
 
 **Precedence:**

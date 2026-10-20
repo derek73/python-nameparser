@@ -1,6 +1,6 @@
 # S1 — a bracketed credential is not a nickname
 
-**When:** a bracketed clause follows a name, as in "Andrew Perkins (MBA)".
+**When:** a bracketed clause stands in a name, as in "Andrew Perkins (MBA)".
 
 **Then:** a bracketed clause whose content is suffix-shaped is not a nickname: the brackets are dropped and the content reads exactly as if written bare.
 

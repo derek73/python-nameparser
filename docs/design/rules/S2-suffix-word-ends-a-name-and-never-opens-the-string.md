@@ -51,7 +51,7 @@
 
 **Accepted:**
 
-- A title before the credential keeps it a credential, and the name loses its surname exactly as it did before this clause — `Sir Ph. D. Van Johnson` reads given `Van Johnson` with an empty family. That is 1.4.0's reading, and the clause cannot reach it: the first piece of the NAME is not computable before this decision, since the abbreviation test H2 uses is true of `Ph.` itself, so a scan that stepped over titles would step over the very piece being judged.
+- A title before the credential keeps it a credential, and the name loses its surname exactly as it did before the clause that a suffix never opens the string — `Sir Ph. D. Van Johnson` reads given `Van Johnson` with an empty family. That is 1.4.0's reading, and that clause cannot reach it: the first piece of the NAME is not computable before this decision, since the abbreviation test H2 uses is true of `Ph.` itself, so a scan that stepped over titles would step over the very piece being judged.
 - An unambiguous suffix is consumed even when that leaves no family name at all.
   ```
   "Smith Jr."                 →  family=""
