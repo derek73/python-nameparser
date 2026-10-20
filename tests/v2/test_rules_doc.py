@@ -108,10 +108,9 @@ def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
                            f.read_text(encoding="utf-8"), re.M)}
     assert listed == {r.rule_id for r in RULES
                       if r.signal and " + " in r.signal}
-    # The tree's one candidate is W3 (comma + edge full stop), so the
-    # comparison above could pass of a recipe that only ever lists one
-    # rule; the two halves are also held to a synthetic rule of each
-    # kind.
+    # The tree may hold a single candidate, and the comparison above
+    # would then pass for a recipe that only ever lists that one rule,
+    # so the two halves are also held to a synthetic rule of each kind.
     for signal, candidate in (("a shape: x + a count: y", True),
                               ("a shape: x", False)):
         doc = ("X1. Rationale: r.\n    Statement.\n"
