@@ -21,7 +21,7 @@
   "H2": {"words": 233, "then_words": 155, "because_sentences": 1, "except": 1, "precedence": 0, "accepted": 3, "accepted_words": 203},
   "H3": {"words": 142, "then_words": 72, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 3, "accepted_words": 113},
   "H4": {"words": 356, "then_words": 149, "because_sentences": 3, "except": 1, "precedence": 1, "accepted": 2, "accepted_words": 411},
-  "H5": {"words": 230, "exceptions": 0, "accepted": 6, "accepted_words": 515},
+  "H5": {"words": 701, "then_words": 289, "because_sentences": 2, "except": 0, "precedence": 4, "accepted": 1, "accepted_words": 117},
   "H6": {"words": 197, "exceptions": 0, "accepted": 2, "accepted_words": 133},
   "M1": {"words": 231, "then_words": 120, "because_sentences": 2, "except": 1, "precedence": 2, "accepted": 0, "accepted_words": 0},
   "M2": {"words": 689, "then_words": 410, "because_sentences": 1, "except": 4, "precedence": 1, "accepted": 6, "accepted_words": 205},
