@@ -1,7 +1,7 @@
 {
   "A1": {"words": 144, "then_words": 120, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 32},
   "A2": {"words": 48, "exceptions": 0, "accepted": 0, "accepted_words": 0},
-  "C1": {"words": 267, "exceptions": 1, "accepted": 1, "accepted_words": 115},
+  "C1": {"words": 246, "exceptions": 1, "accepted": 1, "accepted_words": 115},
   "C2": {"words": 479, "exceptions": 2, "accepted": 1, "accepted_words": 81},
   "C3": {"words": 270, "exceptions": 0, "accepted": 1, "accepted_words": 140},
   "C4": {"words": 464, "exceptions": 1, "accepted": 0, "accepted_words": 0},
@@ -13,7 +13,8 @@
   "C10": {"words": 126, "exceptions": 1, "accepted": 2, "accepted_words": 136},
   "C11": {"words": 354, "exceptions": 2, "accepted": 0, "accepted_words": 0},
   "C12": {"words": 222, "exceptions": 0, "accepted": 1, "accepted_words": 60},
-  "C13": {"words": 236, "exceptions": 0, "accepted": 0, "accepted_words": 0},
+  "C13": {"words": 223, "exceptions": 0, "accepted": 0, "accepted_words": 0},
+  "C14": {"words": 195, "then_words": 81, "because_sentences": 3, "except": 1, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "D1": {"words": 54, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "D2": {"words": 65, "then_words": 37, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "H1": {"words": 351, "exceptions": 1, "accepted": 4, "accepted_words": 413},
@@ -65,6 +66,6 @@
   "T5": {"words": 127, "exceptions": 0, "accepted": 1, "accepted_words": 43},
   "W1": {"words": 135, "exceptions": 0, "accepted": 1, "accepted_words": 26},
   "W2": {"words": 97, "exceptions": 0, "accepted": 2, "accepted_words": 194},
-  "W3": {"words": 608, "then_words": 348, "because_sentences": 1, "except": 1, "precedence": 2, "accepted": 0, "accepted_words": 0},
+  "W3": {"words": 651, "then_words": 348, "because_sentences": 1, "except": 1, "precedence": 3, "accepted": 0, "accepted_words": 0},
   "W4": {"words": 80, "exceptions": 0, "accepted": 1, "accepted_words": 70}
 }

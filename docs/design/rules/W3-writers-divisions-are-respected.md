@@ -43,6 +43,7 @@
 **Precedence:**
 
 - **A title run opening the pre-comma text** ("Dr. 김민준, 지훈"): the title run is H6's title, not family text.
+- **Under the strict comma-suffix switch** ("田中さん, V."): the vocabulary question is asked with C14's veto, so a suffix word written as an initial after the comma is name text, that part is the name's end, and the honorific before the comma stays glued.
 - **The honorific split-off against the comma** ("田中さん, PhD"): only the honorific split-off (W2) crosses the comma, an honorific being no part of the name on either side.
 
 ---

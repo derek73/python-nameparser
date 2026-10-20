@@ -23,16 +23,13 @@ C1. Rationale: a credential run after the comma means the name is in
     (C10); what the decision reports (C11); and a suffix word ending
     the name before the comma (C12).
     By default a recognized suffix word counts
-    even written like an initial ("V."), while strict mode vetoes
-    a word read as an initial — in a name written in one case a
-    bare lower-case letter as well, as its capital is (T4).
+    even written like an initial ("V."); C14 states what the strict
+    switch does instead.
       "Smith, John"               →  family="Smith"
       "سلمان، محمد"               →  family="سلمان"
       "田中、太郎"                 →  family=""
       "John Smith, PhD"           →  suffix="PhD"
       "John Smith, V."            →  suffix="V."
-      "John Smith, V."  strict-comma-suffixes  →  family="John Smith"
-      "john smith, v"  strict-comma-suffixes  →  family="john smith"
       "Smith, PhD"                →  family="Smith"  · boundary
       "John Smith, Jones"         →  family="John Smith"
     Accepted: the vocabulary question above — is the part after the
@@ -46,4 +43,4 @@ C1. Rationale: a credential run after the comma means the name is in
     script cannot witness, nothing there being glued to the end of a
     name — which is why this clause carries no example of its own.
     Signal: hub of C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13
-    history: decisions/C1 · interacts: C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, H6, T4, W3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py
+    history: decisions/C1 · interacts: C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, H6, W3 · implemented: nameparser/_pipeline/_assign.py, nameparser/_pipeline/_comma.py

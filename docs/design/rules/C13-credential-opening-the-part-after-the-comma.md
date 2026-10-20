@@ -10,16 +10,14 @@ C13. Rationale: a credential is written after the name it belongs
     word of the part, with only titles in front of it, is one that
     starts S8's run, which S8 bounds (the split 'Ph. D.' among them),
     every word after it reads as that run reads, a title word as a
-    title and any other word as a suffix, under strict mode too,
-    whose veto refuses a word the suffix reading and not the run
-    ('Smith, PSM I.'). The comma has then fixed nothing, as with a
+    title and any other word as a suffix, under the strict switch
+    too (C14). The comma has then fixed nothing, as with a
     part of no name word (C8), and a part before it holding one name
     word is the family ('John Smith, PhD Jones', 'Doe, PhD Jones'). A word of both the title and the
     suffix vocabulary opens nothing, and nor does a credential behind
     one: in front of a given name it is the listing form's title
     ('Smith, Ms Jane'), and no count of the words before the comma
     tells a surname of two words from a given name and a family name.
-      "Smith, PSM I."  strict-comma-suffixes  →  suffix="PSM I."
       "John Smith, PhD Jones"     →  given="John"
       "John Smith, PhD Jones"     →  suffix="PhD Jones"
       "Doe, PhD Jones"            →  suffix="PhD Jones"
@@ -28,4 +26,4 @@ C13. Rationale: a credential is written after the name it belongs
       "John Smith, MD Jones"      →  given="Jones"  · boundary
       "Smith, Ms Jane"            →  title="Ms"  · boundary
     Signal: a neighbor: a credential opening the part after a family comma
-    history: decisions/C13 · interacts: C1, C3, C8, C9, C11, S8, H6 · implemented: nameparser/_pipeline/_comma.py
+    history: decisions/C13 · interacts: C1, C3, C8, C9, C11, C14, S8, H6 · implemented: nameparser/_pipeline/_comma.py

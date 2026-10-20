@@ -175,6 +175,7 @@ Terms the rules use without defining them each time, each with the rule that def
 - [C11 — what the comma decision reports](C11-what-the-comma-decision-reports.md)
 - [C12 — a suffix word ending the name before the comma](C12-suffix-word-ending-the-name-before-the-comma.md)
 - [C13 — a credential opening the part after the comma](C13-credential-opening-the-part-after-the-comma.md)
+- [C14 — strict mode: a suffix word written as an initial](C14-strict-mode-a-suffix-word-written-as-an-initial.md)
 
 ## [Name order (O)](O-name-order.md)
 

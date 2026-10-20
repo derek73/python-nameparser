@@ -18,7 +18,7 @@ C9. Rationale: one letter is the shape a middle initial is written
     after the comma that is nothing but suffix words is the
     credential run, and a letter in it continues that run up to the
     further comma. Longer suffix words are not in question either
-    way, and the strict knob (C1) still vetoes the initial-shaped
+    way, and the strict knob (C14) still vetoes the initial-shaped
     ones, so the run ends at them there unless a credential opened
     the part (C13).
       "Smith, PSM I"              →  suffix="PSM I"
@@ -40,4 +40,4 @@ C9. Rationale: one letter is the shape a middle initial is written
     while adding a suffix comma after either turns that same letter
     into the middle initial.
     Signal: a neighbor: what stands before a one-character suffix word inside a comma part
-    history: decisions/C9 · interacts: C1, C2, C8, C13, S5, S10, T4, T5 · implemented: nameparser/_pipeline/_assign.py
+    history: decisions/C9 · interacts: C1, C2, C8, C13, C14, S5, S10, T4, T5 · implemented: nameparser/_pipeline/_assign.py

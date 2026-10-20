@@ -800,9 +800,10 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     title to read by).
 
     `lenient` is Policy.lenient_comma_suffixes, and only the numeral
-    continuation consults it. C1: "while strict mode vetoes a word read
-    as an initial" -- so under strict the veto stands and the run ends
-    where it always did; the walk reads the token's `initial` tag, so a
+    continuation consults it, implementing C14's run bullet:
+    rules/C14: "a suffix run inside a comma part ends at such a word"
+    -- so under strict the veto stands and the run ends where it always
+    did (decisions/C14, #761); the walk reads the token's `initial` tag, so a
     one-case lowercase letter is vetoed as its capital is (rules/T4). Reading no policy here silently
     overrode the one knob a caller sets to prevent exactly this.
 
