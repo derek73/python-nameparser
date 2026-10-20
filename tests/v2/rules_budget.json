@@ -20,7 +20,7 @@
   "H1": {"words": 424, "then_words": 254, "because_sentences": 3, "except": 1, "precedence": 0, "accepted": 4, "accepted_words": 351},
   "H2": {"words": 233, "then_words": 155, "because_sentences": 1, "except": 1, "precedence": 0, "accepted": 3, "accepted_words": 203},
   "H3": {"words": 142, "then_words": 72, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 3, "accepted_words": 113},
-  "H4": {"words": 168, "exceptions": 0, "accepted": 5, "accepted_words": 590},
+  "H4": {"words": 356, "then_words": 149, "because_sentences": 3, "except": 1, "precedence": 1, "accepted": 2, "accepted_words": 411},
   "H5": {"words": 230, "exceptions": 0, "accepted": 6, "accepted_words": 515},
   "H6": {"words": 197, "exceptions": 0, "accepted": 2, "accepted_words": 133},
   "M1": {"words": 231, "then_words": 120, "because_sentences": 2, "except": 1, "precedence": 2, "accepted": 0, "accepted_words": 0},
