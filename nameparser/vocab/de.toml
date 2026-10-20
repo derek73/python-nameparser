@@ -127,18 +127,6 @@ text = "bsc"
 credential = { cased = "BSc", issue = 18 }
 
 [[word]]
-text = "llm"
-credential = { issue = 18 }
-
-[[word]]
-text = "ma"
-credential = { may_be_name = true, issue = 18 }
-
-[[word]]
-text = "mba"
-credential = { issue = 18 }
-
-[[word]]
 text = "mda"
 credential = { issue = 18, expands = "Mitglied des Abgeordnetenhauses" }
 
@@ -165,10 +153,6 @@ credential = { issue = 18, expands = "Mitglied des Landtages" }
 [[word]]
 text = "meng"
 credential = { may_be_name = true, issue = 18 }
-
-[[word]]
-text = "msc"
-credential = { cased = "MSc", issue = 18 }
 
 [[word]]
 text = "stb"
