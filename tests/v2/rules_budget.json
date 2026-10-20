@@ -5,7 +5,7 @@
   "C2": {"words": 492, "then_words": 399, "because_sentences": 1, "except": 2, "precedence": 0, "accepted": 1, "accepted_words": 81},
   "C3": {"words": 260, "then_words": 228, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 1, "accepted_words": 139},
   "C4": {"words": 498, "then_words": 371, "because_sentences": 1, "except": 0, "precedence": 2, "accepted": 0, "accepted_words": 0},
-  "C5": {"words": 274, "exceptions": 0, "accepted": 1, "accepted_words": 55},
+  "C5": {"words": 305, "then_words": 79, "because_sentences": 1, "except": 2, "precedence": 1, "accepted": 1, "accepted_words": 54},
   "C6": {"words": 182, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "C7": {"words": 107, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "C8": {"words": 151, "exceptions": 1, "accepted": 1, "accepted_words": 37},
