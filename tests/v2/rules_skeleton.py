@@ -27,9 +27,12 @@ Rules the parser holds, all hard errors naming the rule and line: a
 label is exactly `**Name:**` at the start of a line (a near miss would
 leave its words as unlabelled prose, so it raises); When, Then and
 Because are required and the fields stand in the order above, each at
-most once; every non-blank line inside a fence is an example
-(rules_doc.parse_example_line); every Except bullet carries one;
-Because is three sentences at most and Then's paragraph one; below the
+most once; a fence is a bare ``` line (a language tag or a ~~~ fence
+raises); every non-blank line inside a fence is an example
+(rules_doc.parse_example_line), and a line outside one that parses as
+an example or opens with a quote raises, since prose there would never
+run; every Except bullet carries an example; a Tolerated field is not
+empty; Because is three sentences at most and Then's paragraph one; below the
 `---` only Signal, the pointer line and `no-boundary:` may appear, and
 `interacts:` is retired. Everything outside a fence, the footer and
 `no-boundary:` is quotable (``skeleton_prose``).
@@ -40,8 +43,8 @@ import re
 from dataclasses import dataclass
 
 from tests.v2.rules_doc import (
-    _HUB_RE, _NEAR_HUB_RE, _NO_BOUNDARY_RE, _POINTER_PART_RE, Example,
-    Rule, parse_example_line)
+    _EXAMPLE_RE, _HUB_RE, _NEAR_HUB_RE, _NO_BOUNDARY_RE, _POINTER_PART_RE,
+    Example, Rule, parse_example_line)
 
 HEADING_RE = re.compile(r"^# ([A-Z]\d+) — ")
 
@@ -60,6 +63,13 @@ _POINTER_LINE_RE = re.compile(r"^\s*(history|interacts|implemented|tracked):")
 _QUOTED_RE = re.compile(r'"[^"]*"')
 _CODE_RE = re.compile(r"`[^`]*`")
 _SENTENCE_END_RE = re.compile(r"[.?!]\s+[A-Z]")
+#: What parse_example_line treats as an attempted example: a line that
+#: parses as one, or one opening with a quote or a bracket.
+_EXAMPLE_LEADS = ('"', "[", "“", "”", "„", "‘", "’", "«")
+
+
+def _looks_like_example(s: str) -> bool:
+    return bool(_EXAMPLE_RE.match(s)) or s.lstrip().startswith(_EXAMPLE_LEADS)
 
 
 @dataclass(frozen=True)
@@ -248,6 +258,14 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
                       f"spelled `**Label:**` (bold, capitalized, colon "
                       f"inside the bold): {line.strip()!r}")
 
+        inner = line.strip()
+        if _looks_like_example(inner):
+            raise err(lineno, "an example line outside a fence: examples "
+                      "stand inside a bare ``` fence, where they run; "
+                      f"outside one they would be read as prose: {inner!r}")
+        if inner.startswith(("```", "~~~")) and inner != "```":
+            raise err(lineno, "a fence is a bare ``` line, no language "
+                      f"tag and no ~~~: {inner!r}")
         if line.rstrip() == "```":
             if cur is None:
                 raise err(lineno, "a fence outside any field")
@@ -304,6 +322,9 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
     if count_sentences(because) > 3:
         raise ValueError(
             f"{rule_id}: Because is three sentences at most: {because!r}")
+    if "Tolerated" in seen and not texts["Tolerated"]:
+        raise ValueError(f"{rule_id}: the **Tolerated:** field is empty; "
+                         "a tolerated rule states why")
     for b in bullets.get("Except", []):
         if not b.examples:
             raise err(b.lineno, "an Except bullet carries an example "

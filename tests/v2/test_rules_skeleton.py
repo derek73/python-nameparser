@@ -147,6 +147,17 @@ def test_count_sentences(text: str, n: int) -> None:
     assert count_sentences(text) == n
 
 
+def test_a_column_0_fence_after_a_bullet_list_belongs_to_the_field(
+) -> None:
+    doc = _sub("- **Reach:** only the last one.\n",
+               "- **Reach:** only the last one.\n\n```\n"
+               '"John Smith IV"  →  suffix="IV"\n```\n')
+    r = parse_rules_doc(doc)[0]
+    assert r.skeleton is not None
+    assert r.skeleton.then_bullets[0].examples == ()
+    assert "John Smith IV" in [e.text for e in r.examples]
+
+
 def _sub(old: str, new: str) -> str:
     assert old in HEAD
     return HEAD.replace(old, new, 1)
@@ -196,6 +207,31 @@ BAD = {
         _sub("**Precedence:**\n\n- **Before a comma**: C1 decides.\n",
              "**Precedence:**\n\n- **Before a comma**: C1 decides.\n\n"
              "loose words\n"), "outside a field"),
+    "an example line after Because, outside a fence": (
+        _sub("It is rare otherwise.\n",
+             'It is rare otherwise.\n"John Smith IV"  →  suffix="IV"\n'),
+        "outside a fence"),
+    "an example line under a bullet, outside a fence": (
+        _sub("- **Before a comma**: C1 decides.\n",
+             "- **Before a comma**: C1 decides.\n"
+             '  "John Smith IV"  →  suffix="IV"\n'), "outside a fence"),
+    "a malformed example line outside a fence": (
+        _sub("It is rare otherwise.\n",
+             'It is rare otherwise.\n"John Smith IV"  →  suffix=IV\n'),
+        "outside a fence"),
+    "a tilde fence": (
+        _sub('```\n"John Smith III"  →  suffix="III"\n```\n',
+             '~~~\n"John Smith III"  →  suffix="III"\n~~~\n'),
+        "bare"),
+    "a fence with a language tag": (
+        _sub('```\n"John Smith III"  →  suffix="III"\n```\n',
+             '```text\n"John Smith III"  →  suffix="III"\n```\n'),
+        "bare"),
+    "a tagged fence under a bullet": (
+        _sub('  ```\n  "John V"', '  ```text\n  "John V"'), "bare"),
+    "an empty Tolerated": (
+        _sub("**Then:**", "**Tolerated:**\n\n**Then:**"), "Tolerated"),
+    "colon outside the bold": (_sub("**When:**", "**When**:"), "label"),
 }
 
 
