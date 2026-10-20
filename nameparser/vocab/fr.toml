@@ -177,3 +177,7 @@ birth_marker = { issue = 274, gender = "m" }
 [[word]]
 text = "née"
 birth_marker = { issue = 274, gender = "f" }
+
+[[word]]
+text = "nee"
+birth_marker = { same_as = "née", gender = "f" }

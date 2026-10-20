@@ -4716,12 +4716,12 @@ conjunction = {}
 
 [[word]]
 text = "né"
-birth_marker = {}
+birth_marker = { gender = "m" }
 
 [[word]]
 text = "née"
-birth_marker = {}
+birth_marker = { gender = "f" }
 
 [[word]]
 text = "nee"
-birth_marker = { issue = 274, same_as = "née", note = "née typed without its accent" }
+birth_marker = { issue = 274, same_as = "née", gender = "f", note = "née typed without its accent" }
