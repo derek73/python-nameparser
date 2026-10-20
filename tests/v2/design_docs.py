@@ -184,31 +184,48 @@ def standing_findings(text: str) -> list[str]:
 
 
 #: The decisions files allowed to lack a Standing block: every file
-#: older than the 2026-10-19 rule that new files open with one. The
-#: list only shrinks (decisions/README.md, `## Standing`).
+#: created before the rule, C1's block landing on 2026-10-19
+#: (decisions/README.md, `## Standing`). The list only shrinks.
 STANDING_EXEMPT = Path(__file__).with_name("decisions_without_standing.json")
-#: The list's length, recorded so that it only shrinks: a file leaving
-#: the list lowers it, and a file joining the list has to raise it.
-STANDING_EXEMPT_CEILING = 88
+#: The list as recorded when the rule landed. Never edited: the list
+#: must stay inside it, so a new file cannot join the list, alone or in
+#: exchange for one that leaves it.
+STANDING_EXEMPT_ORIGINAL = frozenset({
+    '3-0-reevaluations', 'A1', 'A2', 'C10', 'C11', 'C12', 'C3', 'C4',
+    'C5', 'C6', 'C7', 'C8', 'C9', 'D1', 'D2', 'H1', 'H2', 'H3', 'H4',
+    'H5', 'H6', 'M1', 'M2', 'M3', 'M4', 'N1', 'N2', 'N3', 'O1', 'O2',
+    'O4', 'O5', 'P1', 'P2', 'P3', 'P5', 'P6', 'P7', 'R1', 'R2', 'R3',
+    'R4', 'R5', 'S10', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9',
+    'T1', 'T3', 'T4', 'W1', 'W2', 'W3', 'W4', 'api-churn-declines',
+    'cjk-comma-demotion', 'cjk-full-stops', 'comma-suffix-arc',
+    'comparison-surface', 'deviates-registry', 'differential-ledger',
+    'generational-words', 'given-name-titles', 'indic-honorifics',
+    'initials-repertoire', 'legacy-rule-numbers', 'ma-do', 'nfd-shapes',
+    'normalization-fold', 'parse-cost', 'phd-merge',
+    'removed-v1-surface', 'render-default',
+    'review-agent-single-source', 'salutation-titles',
+    'script-table-placement', 'suffix-acronym-collisions',
+    'suffix-field-composition', 'two-input-invariants',
+    'v1-xfail-triage', 'vocabulary-collisions', 'vocabulary-exclusions',
+    'vocabulary-model'})
 
 
 def read_standing_exempt(path: Path = STANDING_EXEMPT) -> set[str]:
     return set(json.loads(path.read_text(encoding="utf-8"))["exempt"])
 
 
-def standing_roster_findings(files: dict[str, str], exempt: set[str],
-                             ceiling: int = STANDING_EXEMPT_CEILING
-                             ) -> list[str]:
+def standing_roster_findings(
+        files: dict[str, str], exempt: set[str],
+        original: frozenset[str] = STANDING_EXEMPT_ORIGINAL) -> list[str]:
     """What breaks the Standing ratchet: a file off the exempt list with
     no Standing block, a listed file that has gained one (take it off
-    the list), a listed key no file carries any more, and a list whose
-    length is not the recorded ceiling."""
+    the list), a listed key no file carries any more, and a listed key
+    the list did not hold when the rule landed."""
     findings = []
-    if len(exempt) != ceiling:
-        findings.append(f"{STANDING_EXEMPT.name} lists {len(exempt)} "
-                        f"files, not {ceiling}: set STANDING_EXEMPT_CEILING "
-                        "to the new length when a file leaves the list; a "
-                        "new file never joins it")
+    for key in sorted(exempt - original):
+        findings.append(f"{key} is listed in {STANDING_EXEMPT.name} but "
+                        "was not on it when the rule landed: a new "
+                        "decisions file opens with ## Standing instead")
     for key, text in sorted(files.items()):
         has = "## Standing" in text
         if key in exempt and has:
