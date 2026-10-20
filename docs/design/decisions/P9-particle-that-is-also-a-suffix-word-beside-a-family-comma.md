@@ -4,7 +4,8 @@
 
 - A particle that is also an unambiguous suffix word, with a name piece behind it in the part before a family comma, heads that name and stays family in any case (`SMITH VD MA, JOHN`) — 2026-10-02 #573.
 - Such a word standing between post-nominals after a family comma keeps the post-nominal reading in any case and reports the fork it decided (`suffix-or-name`); with nothing behind it, it ends the name and attaches by P6 — 2026-10-02 #573.
-- A never-given particle opening the given part makes the member behind it a name rather than a credential; this site is rules/S5's — 2026-10-02 #573.
+
+Elsewhere: #573's third site, a never-given particle opening the given part, stands in decisions/S5's 2026-10-02 #573 entry.
 
 Open: none in this file. The mixed-case `Doe, Jane PhD vd Ma`, which #573 left aside, was decided silent the same day (decisions/S5's #578) and that was reversed by #602 (decisions/S8's 2026-10-04 entry): it reads suffix 'PhD vd Ma'.
 

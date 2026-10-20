@@ -7,7 +7,7 @@
 - A title/suffix dual opens nothing, nor does a member of the ambiguous class or a suffix word S8's run start refuses — 2026-10-04 #603.
 - The split credential `Ph. D.` starts the run as `PhD` does — 2026-10-04 #603.
 - Under strict mode the veto refuses an initial-shaped word the suffix reading, not the opened run (`Smith, PSM I.`), stated in rules/C14 since its split — 2026-10-04 #603.
-- A title word past the second comma that is not also suffix vocabulary is a title; this is rules/C2's decision, recorded here with #603 — 2026-10-04 #603.
+- A title word past the second comma that is not also suffix vocabulary is a title. This is rules/C2's decision, indexed here because #603's entry is its only record (no decisions file is keyed C2) — 2026-10-04 #603.
 
 Open: none in this file.
 

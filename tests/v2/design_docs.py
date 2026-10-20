@@ -108,8 +108,8 @@ def resolve(doc: str, cid: str, folder: Path | None = None) -> Path | None:
     return hits[0] if len(hits) == 1 else None
 
 
-# A decisions file opens with `## Standing`, an index of the decisions
-# in force, before its entries under `## Log` -- every file but those
+# A decisions file carries `## Standing`, an index of the decisions in
+# force, ahead of its entries under `## Log` -- every file but those
 # listed in decisions_without_standing.json (below). Each Standing
 # bullet ends its claim with the entry that decided it, by date and
 # issue (`— 2026-10-06 #613`); a `Not standing:` line names entries a
@@ -144,19 +144,31 @@ def _names(head: str, date: str, num: str | None) -> bool:
             and (first.group(1) if first else None) == num)
 
 
+_STANDING_HEADING = re.compile(r"^## Standing$", re.M)
+_LOG_HEADING = re.compile(r"^## Log$", re.M)
+
+
+def has_standing(text: str) -> bool:
+    """Whether a decisions file carries a Standing block: the heading on
+    a line of its own, not the words quoted in prose."""
+    return _STANDING_HEADING.search(text) is not None
+
+
 def standing_findings(text: str) -> list[str]:
     """What is wrong with a decisions file's Standing block: a bullet
     with no `— <date>` pointer, any date-and-issue pointer from there
     to the line's end naming no entry (dates match exactly) or
     to one only `SUPERSEDED by` a later entry, a
-    Not-standing pointer to no entry, a Standing with no Log. Empty
-    for a file with no Standing block, whose absence is
+    Not-standing pointer to no entry, a Standing with no Log after it.
+    Empty for a file with no Standing block, whose absence is
     standing_roster_findings' question."""
-    if "## Standing" not in text:
+    head = _STANDING_HEADING.search(text)
+    if head is None:
         return []
-    if "\n## Log\n" not in text:
+    log_head = _LOG_HEADING.search(text, head.end())
+    if log_head is None:
         return ["## Standing without a ## Log after it"]
-    standing, log = text.split("## Standing", 1)[1].split("\n## Log\n", 1)
+    standing, log = text[head.end():log_head.start()], text[log_head.end():]
     entries = _entries(log)
     findings = []
     for line in standing.splitlines():
@@ -185,7 +197,8 @@ def standing_findings(text: str) -> list[str]:
 
 #: The decisions files allowed to lack a Standing block: every file
 #: created before the rule, C1's block landing on 2026-10-19
-#: (decisions/README.md, `## Standing`). The list only shrinks.
+#: (decisions/README.md, `## Standing`). It never holds a key it did not
+#: hold when the rule landed.
 STANDING_EXEMPT = Path(__file__).with_name("decisions_without_standing.json")
 #: The list as recorded when the rule landed. Never edited: the list
 #: must stay inside it, so a new file cannot join the list, alone or in
@@ -227,7 +240,7 @@ def standing_roster_findings(
                         "was not on it when the rule landed: a new "
                         "decisions file opens with ## Standing instead")
     for key, text in sorted(files.items()):
-        has = "## Standing" in text
+        has = has_standing(text)
         if key in exempt and has:
             findings.append(f"{key} has a Standing block: take it off "
                             f"{STANDING_EXEMPT.name}")

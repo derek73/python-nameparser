@@ -2,7 +2,7 @@
 
 ## Standing
 
-- Strict mode is a rule of its own: the switch reads only the caller's configuration, and it vetoes an initial-shaped suffix word in the comma's decision and in a part after the comma that is nothing but suffix words, while the given part's walk after a family comma is strict-blind — 2026-10-19 #761.
+- Strict mode is a rule of its own: the switch reads only the caller's configuration, and it vetoes an initial-shaped suffix word in the comma's decision and in a part after the comma that is nothing but suffix words, except in a run a credential opens, which takes the vetoed word (`Smith, PSM I.`, decisions/C13's #603), while the given part's walk after a family comma is strict-blind — 2026-10-19 #761.
 
 Open: none in this file; the switch's reach into the count before the comma (`Smith V., Ma`) stays decisions/S4's 2026-09-18 rough edge.
 
