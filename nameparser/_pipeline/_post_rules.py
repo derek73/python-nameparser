@@ -388,10 +388,11 @@ def post_rules(state: ParseState) -> ParseState:
         middles = _idx(tokens, Role.MIDDLE)
         families = _idx(tokens, Role.FAMILY)
 
-    # rules/P1: "A never-given particle opening the name marks the
-    # name as surname-only: the particle run and the name words it
-    # attaches to are the family." (v1 handle_non_first_name_prefix;
-    # history: decisions/P1)
+    # rules/P1: "the name is surname-only: the particle run and the
+    # name words it attaches to are the family, under every name
+    # order" -- its Then clause, for a never-given particle opening
+    # the name (v1 handle_non_first_name_prefix; history:
+    # decisions/P1)
     # How far the fold reaches depends on the order the name was READ
     # under (#395; decisions/P1, 2026-08-17): declaring a
     # family-first order asserts that what follows the family is not
