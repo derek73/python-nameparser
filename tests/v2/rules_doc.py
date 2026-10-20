@@ -19,9 +19,9 @@ input. A line that looks like an example but does not parse is a hard
 error naming the rule: a silent skip would un-execute a claim.
 
 The block format the rules were written in before #761 is retired: a
-line opening ``ID.`` at the start of a line, outside a rule's heading
-or as the first line under it, is refused rather than skipped, since
-read as nothing its examples would never run.
+line opening ``ID.`` at the start of a line is refused wherever it
+stands, outside any rule here and inside one by parse_skeleton, rather
+than skipped or read as prose, since its examples would never run.
 """
 from __future__ import annotations
 
@@ -190,8 +190,8 @@ def parse_example_line(line: str, rule_id: str,
                        lineno: int) -> Example | None:
     """The example a line holds, None for a line that is no example,
     and a ValueError for one that looks like an example but does not
-    parse (a silent skip would un-execute a claim). Shared by the block
-    parser and the skeleton parser's fences."""
+    parse (a silent skip would un-execute a claim). Called for each
+    line in a rule's fences (rules_skeleton.py)."""
     em = _EXAMPLE_RE.match(line)
     if em:
         fieldname = em.group("field")
@@ -263,9 +263,6 @@ def parse_rules_doc(text: str) -> list[Rule]:
         rid, numbered, _ = block
         if any(r.rule_id == rid for r in rules):
             raise ValueError(f"duplicate rule ID {rid} at line {lineno}")
-        first = next(((n, ln) for n, ln in numbered if ln.strip()), None)
-        if first is not None and _RETIRED_RULE_RE.match(first[1]):
-            raise _retired(rid, *first)
         rules.append(rules_skeleton.parse_skeleton(rid, numbered))
     return rules
 

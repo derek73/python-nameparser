@@ -356,6 +356,19 @@ BAD = {
         _sub("- **Before a comma**: C1 decides.\n",
              "- **Before a comma**: C1 decides.\n  - nested.\n"),
         "nested list"),
+    # the other markers a nested list may wear (review)
+    "a nested star list under a bullet": (
+        _sub("- **Before a comma**: C1 decides.\n",
+             "- **Before a comma**: C1 decides.\n  * nested.\n"),
+        "nested list"),
+    "a nested plus list under a bullet": (
+        _sub("- **Before a comma**: C1 decides.\n",
+             "- **Before a comma**: C1 decides.\n  + nested.\n"),
+        "nested list"),
+    "a nested numbered list under a bullet": (
+        _sub("- **Before a comma**: C1 decides.\n",
+             "- **Before a comma**: C1 decides.\n  1. nested.\n"),
+        "nested list"),
     "a heading under a bullet": (
         _sub("- **Before a comma**: C1 decides.\n",
              "- **Before a comma**: C1 decides.\n  ## Heading\n"),

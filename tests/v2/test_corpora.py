@@ -84,16 +84,15 @@ def test_rules_corpus_matches_the_rules_doc() -> None:
         "`uv run python tools/differential/build_rules_corpus.py`")
 
     # The equality cannot see a generator that silently selects LESS:
-    # regenerating then agrees with the degraded selection. A rule
-    # whose ID line stops matching, or that gains a heading mid-block,
-    # loses its examples to the previous rule or to nothing.
+    # regenerating then agrees with the degraded selection. The parser
+    # refuses a malformed rule outright, so what the floor still sees is
+    # a rule deleted, or its examples moved out of its fences.
     from .design_docs import read_rules_text
     from .rules_doc import parse_rules_doc
     rules = parse_rules_doc(read_rules_text())
     assert len(rules) >= 38, (
         f"docs/design/rules/ parsed to {len(rules)} rules, fewer than the 38 this "
-        f"corpus was built from. A rule block that stops parsing hands "
-        f"its examples to its neighbour and shrinks the corpus "
+        f"corpus was built from. A deleted rule shrinks the corpus "
         f"silently. Ratchet this floor up when rules are added")
     empty = [r.rule_id for r in rules
              if not any(e.text for e in r.examples)]

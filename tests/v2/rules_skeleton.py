@@ -54,8 +54,8 @@ import re
 from dataclasses import dataclass
 
 from tests.v2.rules_doc import (
-    _EXAMPLE_RE, ASSERTABLE_FIELDS, NEAR_SIGNAL_RE, Example, Rule,
-    parse_example_line)
+    _EXAMPLE_RE, _RETIRED_RULE_RE, ASSERTABLE_FIELDS, NEAR_SIGNAL_RE,
+    Example, Rule, _retired, parse_example_line)
 
 HEADING_RE = re.compile(r"^# ([A-Z]\d+) — ")
 #: What ends a rule's block: a markdown heading, a `#` run and a space.
@@ -95,6 +95,9 @@ _ARROW_FIELD_RE = re.compile(r"\s→\s+(?P<field>[a-z_]+)=")
 #: A bullet marker other than `- ` then text: `* `, `+ `, or a hyphen
 #: glued to its text.
 _MALFORMED_BULLET_RE = re.compile(r"^(?:[*+](?:\s|$)|-(?! ))")
+#: A list item in any markdown marker, as a bullet's continuation would
+#: hold a nested list: `- `, `* `, `+ ` or a number and `.` or `)`.
+_NESTED_ITEM_RE = re.compile(r"^(?:[-*+]|\d+[.)])\s")
 _QUOTED_RE = re.compile(r'"[^"]*"')
 _CODE_RE = re.compile(r"`[^`]*`")
 _SENTENCE_END_RE = re.compile(r"[.?!]\s+[A-Z]")
@@ -293,6 +296,8 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
             footer = True
             cur = None
             continue
+        if _RETIRED_RULE_RE.match(line):
+            raise _retired(rule_id, lineno, line)
         if NEAR_SIGNAL_RE.match(line) or _NEAR_NO_BOUNDARY_RE.match(line):
             raise err(lineno, "a `**Signal:**` or `no-boundary:` line "
                       "belongs below the `---` footer; above it, it "
@@ -377,7 +382,7 @@ def parse_skeleton(rule_id: str, lines: list[tuple[int, str]]) -> Rule:
                 fence, fence_at = last.examples, lineno
                 fence_len = len(fence)
                 continue
-            if inner.startswith("- "):
+            if _NESTED_ITEM_RE.match(inner):
                 raise err(lineno, f"a nested list is not part of the "
                           f"grammar: {inner!r}")
             if _ANY_HEADING_RE.match(inner):

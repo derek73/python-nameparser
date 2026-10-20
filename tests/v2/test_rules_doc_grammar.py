@@ -118,6 +118,13 @@ def test_a_duplicate_rule_id_is_an_error() -> None:
                  id="after-a-background"),
     pytest.param('# X1 — one\n\nX1. Statement.\n      "a b"  →  family="b"\n',
                  id="under-a-rule-heading"),
+    # inside a field, where it would have joined the prose (review)
+    pytest.param(_rule("X1").replace("**Because:** b.\n",
+                                     "**Because:** b.\n\nX2. Rationale: r.\n"),
+                 id="inside-a-field"),
+    pytest.param(_rule("X1").replace("**When:** w.\n",
+                                     "**When:** w.\nX2. Rationale: r.\n"),
+                 id="glued-to-a-field"),
 ])
 def test_a_block_format_rule_is_refused(doc: str) -> None:
     with pytest.raises(ValueError, match="block format, which #761 retired"):
