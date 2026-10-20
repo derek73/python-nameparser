@@ -130,7 +130,7 @@ def test_moving_a_word_between_files_changes_nothing(shipped: dict[str, str]) ->
 def test_an_exclusion_in_one_file_refuses_the_reading_in_another(
         shipped: dict[str, str]) -> None:
     files = dict(shipped)
-    files["en.toml"] += '\n[[word]]\ntext = "fils"\ngeneration = {}\n'
+    files["und.toml"] += '\n[[word]]\ntext = "fils"\ngeneration = {}\n'
     with pytest.raises(build.VocabError, match="767 US Census"):
         _compile(files)
 
@@ -267,6 +267,23 @@ MUTATIONS = [
     ("elided-particle-without-its-twin", {"und.toml": _w('[[word]]\ntext = "d\'"\nparticle = { may_be_given = false }')}, "U\\+2019 spelling"),
     ("elided-particle-kind-without-its-twin", {"fr.toml": _w('[[word]]\ntext = "l\'"\narticle = { may_be_given = false }')}, "U\\+2019 spelling"),
     ("one-kind-acronym-and-word", {"en.toml": _w('[[word]]\ntext = "abc"\ncourtesy = {}'), "und.toml": _w('[[word]]\ntext = "abc"\ncourtesy = { acronym = true }')}, "acronym is"),
+    # 10: canonical word order. A swapped pair, within a kind and across
+    # kinds and categories
+    ("words-out-of-order", {"en.toml": _w('[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'sr' \\(generation\\) belongs after 'jr'"),
+    ("kinds-out-of-order", {"en.toml": _w('[[word]]\ntext = "esq"\ncourtesy = {}\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'esq' \\(courtesy\\) belongs after 'jr'"),
+    ("categories-out-of-order", {"de.toml": _w('[[word]]\ntext = "von"\npreposition = { may_be_given = false }\n\n[[word]]\ntext = "dr"\ntitle = {}')}, "'von' \\(preposition\\) belongs after 'dr'"),
+    # a same_as variant sorts after its head, not by its own text: in
+    # plain alphabetical order jnr would come first
+    ("same-as-variant-before-its-head", {"en.toml": _w('[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'jnr' \\(generation\\) belongs after 'jr'"),
+    # and beside it: alphabetically 'younger' would follow 'sr'
+    ("same-as-variant-away-from-its-head", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "younger"\ngeneration = { same_as = "jr" }')}, "'sr' \\(generation\\) belongs after 'younger'"),
+    # an entry recording only a refusal sorts under the kind it refuses
+    ("refusal-out-of-its-kind", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "esq"\ncourtesy = {}\n\n[[word]]\ntext = "senior"\nexcluded = { generation = "x" }')}, "'esq' \\(courtesy\\) belongs after 'senior'"),
+    ("refusal-first-in-the-file", {"en.toml": _w('[[word]]\ntext = "senior"\nexcluded = { generation = "x" }\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'senior' \\(generation\\) belongs after 'jr'"),
+    # a chain must end for the key to exist; und.toml's too, though
+    # its order is not checked
+    ("same-as-cycle", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "returns to its start"),
+    ("same-as-cycle-in-und", {"und.toml": _w('[[word]]\ntext = "jr"\ngeneration = { same_as = "jnr" }\n\n[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }')}, "jr -> jnr -> jr returns to its start"),
 ]
 
 
@@ -319,6 +336,31 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
          "und.toml": _w('[[word]]\ntext = "fils"\ncredential = {}')},
         {"pt-BR.toml": OK, "zh-Hant.toml": _w('[[word]]\ntext = "社長"\nprofessional_honorific = {}'),
          "es-419.toml": _w('[[word]]\ntext = "sr"\ngeneration = {}')},
+        # check 10's order, met: kinds in CATEGORY order, a head before
+        # its spellings, a refusal under the kind it refuses, a name
+        # reading placing nothing beside a refusal, a comment moving with
+        # its entry; und.toml is exempt, so its reverse order passes
+        {"en.toml": _w('[[word]]\ntext = "dr"\ntitle = {}\n\n'
+                       '[[word]]\ntext = "jr"\ngeneration = {}\n\n'
+                       '[[word]]\ntext = "jnr"\ngeneration = { same_as = "jr" }\n\n'
+                       '[[word]]\ntext = "junior"\ngeneration = { same_as = "jr" }\n\n'
+                       '[[word]]\ntext = "senior"\nfamily = { us_census_2010 = 3864, as_of = 2026-10-16 }\n'
+                       'excluded = { generation = "x" }\n\n'
+                       '# a comment above an entry belongs to it\n'
+                       '[[word]]\ntext = "sr"\ngeneration = {}\n\n'
+                       '[[word]]\ntext = "esq"\ncourtesy = {}'),
+         "und.toml": _w('[[word]]\ntext = "von"\nparticle = { may_be_given = false }\n\n'
+                        '[[word]]\ntext = "sir"\ntitle = {}')},
+        # a spelling's own spellings follow it, under the root head: by
+        # the direct same_as alone, ed- would sort after ul-, under el-
+        {"ar.toml": _w('[[word]]\ntext = "al-"\narticle = { may_be_given = false }\n\n'
+                       '[[word]]\ntext = "ad-"\narticle = { may_be_given = false, same_as = "al-" }\n\n'
+                       '[[word]]\ntext = "el-"\narticle = { may_be_given = false, same_as = "al-" }\n\n'
+                       '[[word]]\ntext = "ed-"\narticle = { may_be_given = false, same_as = "el-" }\n\n'
+                       '[[word]]\ntext = "ul-"\narticle = { may_be_given = false, same_as = "al-" }')},
+        # texts compare by codepoint, script by script
+        {"sr.toml": _w('[[word]]\ntext = "mlađi"\ngeneration = {}\n\n'
+                       '[[word]]\ntext = "млађи"\ngeneration = {}')},
     ):
         _compile(files)
 
@@ -630,8 +672,8 @@ _REQUIRED = {"may_be_given"}
 
 def test_the_readme_lists_every_kind_with_its_category_and_set() -> None:
     rows = _readme_table("## Kinds")
-    assert {_code(r[0])[0]: _code(r[1])[0] for r in rows} == build.CATEGORY
-    assert len(rows) == len(build.CATEGORY)  # a kind listed twice
+    # in CATEGORY's order, which is check 10's canonical order of the kinds
+    assert [(_code(r[0])[0], _code(r[1])[0]) for r in rows] == list(build.CATEGORY.items())
     for kind, _, fed in rows:
         assert set(_code(fed)) == _sets_fed(_code(kind)[0]), kind
 

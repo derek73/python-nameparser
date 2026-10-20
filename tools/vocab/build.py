@@ -49,14 +49,17 @@ at fault:
    its category (`cased`: of the word);
    run before 4 and 5, so the recorded reason is what a contributor sees;
 7. `same_as` names another word of the same category, `cased` spells
-   its word's letters (#459), at most one `cased` per word;
+   its word's letters (#459), at most one `cased` per word; a chain of
+   same_as returning to its start is refused by 10, which follows them;
 8. a phrase only as a birth_marker or an addresses = "given" title, and
    never with a `cased`, which is looked up per word;
 9. a bound given name that is also a particle has may_be_given;
+10. the words of every file but und.toml in canonical order (_order_key):
+    by kind, then by the word a spelling is the same_as of, then by text;
 
 numbered by subject, not by when they run: 1-3, 8 and 7's case mask
-run per entry as each file loads, and 4-7 and 9 over the whole pool in
-check_pool, 6 first;
+run per entry as each file loads, 10 once every file has loaded, and
+4-7 and 9 over the whole pool in check_pool, 6 first;
 
 plus the data invariants that were asserts: may_be_initial only on a
 cased single letter, and an elided particle in both apostrophes (#700).
@@ -177,6 +180,19 @@ CATEGORY: dict[str, str] = {
 }
 #: The categories a word-level `excluded` may name besides the kinds.
 CATEGORIES = frozenset(CATEGORY.values())
+#: CATEGORY's order is the canonical order of the kinds, and of the
+#: categories by their first kind: check 10 sorts a file's words by it,
+#: and the README's kind table lists the kinds in it. A category's kinds
+#: are contiguous, so ordering by kind orders by category first.
+KIND_ORDER = {kind: i for i, kind in enumerate(CATEGORY)}
+_RUNS = [c for i, c in enumerate(CATEGORY.values())
+         if i == 0 or c != list(CATEGORY.values())[i - 1]]
+assert len(_RUNS) == len(set(_RUNS)), "a category's kinds are listed apart in CATEGORY"
+#: The file exempt from check 10: its entries keep the order of the
+#: Python lists they were converted from, which the vetting comments
+#: above them still refer to ("the bare-κ trap above", "the TITLES
+#: block below").
+UNORDERED = "und.toml"
 
 #: Behavioral properties per category: each compiles into a field, and
 #: its allowed values are exactly what today's pipeline does.
@@ -358,9 +374,11 @@ def check_file_names(names: Iterable[str]) -> None:
 
 
 def load(files: Mapping[str, str]) -> Pool:
-    """Parse {file name: TOML text} and run the per-entry checks (1-3, 8)."""
+    """Parse {file name: TOML text} and run the per-entry checks (1-3, 8)
+    and the per-file order check (10)."""
     check_file_names(files)
     pool = Pool()
+    entries: dict[str, list[dict[str, Any]]] = {}
     for name in sorted(files):
         try:
             data = tomllib.loads(files[name])
@@ -390,7 +408,101 @@ def load(files: Mapping[str, str]) -> Pool:
             if not isinstance(entry, dict):
                 raise VocabError(f"{name}: `word` must be an array of tables ([[word]])")
             _load_entry(name, entry, seen, pool)
+        entries[name] = words
+    check_order(entries)
     return pool
+
+
+# ------------------------------------------------------------ word order
+def _sort_kind(e: Mapping[str, Any]) -> str:
+    """The kind an entry sorts under: its first vocabulary reading in
+    canonical order; else, for an entry that records only a refusal
+    (`fils`, `senior`), the first kind it excludes, a category counting
+    as its first kind; else its first name reading. A name reading is
+    evidence for something else, so it places the entry only alone."""
+    kinds = [k for k in e if k in CATEGORY]
+    vocabulary = [k for k in kinds if CATEGORY[k] != "name"]
+    if vocabulary:
+        return min(vocabulary, key=KIND_ORDER.__getitem__)
+    refused = [k if k in CATEGORY else next(c for c in CATEGORY if CATEGORY[c] == k)
+               for k in e.get("excluded", ())]
+    return min(refused or kinds, key=KIND_ORDER.__getitem__)
+
+
+def _order_key(e: Mapping[str, Any],
+               same_as: Mapping[tuple[str, str], str]) -> tuple[int, tuple[str, ...]]:
+    """Check 10's sort key: the entry's kind (_sort_kind), then its
+    same_as PATH -- the word it is a spelling of, that word's own head,
+    and so on to the root, written root first and ending in the entry's
+    text. So a head sorts before its spellings (`jr`, then `jnr` and
+    `junior`), a spelling's own spellings follow it (`el-` under `al-`,
+    then el-'s assimilated forms), and an entry with no same_as is a
+    path of one, sorted by its text. Texts compare by codepoint: they
+    are already normalized (check 2), so this is the codepoint order of
+    the normalized text, whatever the script -- defined everywhere,
+    stable across Python versions and locales, and never a collation
+    one language would dispute."""
+    kind = _sort_kind(e)
+    text: str = e["text"]
+    category = CATEGORY[kind]
+    path = [text]
+    reading = e.get(kind)
+    head = reading.get("same_as") if isinstance(reading, dict) else None
+    # a same_as naming the word itself is check 7's to refuse, and
+    # check_order has refused every longer cycle before this runs
+    while isinstance(head, str) and head != path[-1]:
+        path.append(head)
+        head = same_as.get((category, head))
+    return KIND_ORDER[kind], tuple(reversed(path))
+
+
+def check_order(entries: Mapping[str, list[dict[str, Any]]]) -> None:
+    """Build check 10: every file but und.toml lists its words in
+    _order_key's order. Checked, never rewritten: a comment above an
+    entry belongs to it and must move with it, which a TOML reader
+    cannot see. Run on entries that passed checks 1-3, so every key it
+    reads is known to be well formed."""
+    # a word's same_as in each category, for following a chain; a word
+    # with readings in several files takes the first file's
+    same_as: dict[tuple[str, str], str] = {}
+    for name in sorted(entries):
+        for e in entries[name]:
+            for k, v in e.items():
+                if k in CATEGORY and isinstance(v.get("same_as"), str):
+                    same_as.setdefault((CATEGORY[k], e["text"]), v["same_as"])
+    # every chain ends, und.toml's included: _order_key follows them
+    for (category, text), first in same_as.items():
+        chain: list[str] = [text]
+        head: str | None = first
+        while head is not None and head != chain[-1]:
+            if head in chain:
+                raise VocabError(
+                    f"{text!r} {category}: same_as chain "
+                    f"{' -> '.join(chain + [head])} returns to its start; a "
+                    f"spelling names the word it is a spelling of, which "
+                    f"does not name it back")
+            chain.append(head)
+            head = same_as.get((category, head))
+    for name, words in sorted(entries.items()):
+        if name == UNORDERED:
+            continue
+        keys = [_order_key(e, same_as) for e in words]
+        ordered = sorted(range(len(words)), key=keys.__getitem__)
+        for i, j in enumerate(ordered):
+            if i == j:
+                continue
+            # the entry in a place not its own, and the place it belongs
+            text = words[i]["text"]
+            at = ordered.index(i)
+            kind = _sort_kind(words[i])
+            place = (f"after {words[ordered[at - 1]]['text']!r}" if at
+                     else f"first, before {words[ordered[1]]['text']!r}")
+            raise VocabError(
+                f"{name}: {text!r} ({kind}) belongs {place}. A file lists its "
+                f"words by kind in the README's table order, then by the word "
+                f"a spelling is the same_as of, head first, then by text; "
+                f"move the entry with any comment above it ({UNORDERED} is "
+                f"exempt)")
 
 
 #: Hand copies of what the tokenizer divides or strips at under the
