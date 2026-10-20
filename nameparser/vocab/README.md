@@ -81,7 +81,7 @@ Two rules about the `text`:
 
 ## Word order
 
-Every file but `und.toml` lists its words in one order, and the build refuses a file that does not (check 10), naming the entry to move and the word it belongs after:
+Every file but `und.toml` lists its words in one order, and the build refuses a file that does not (check 10), naming the entry to move and where it belongs:
 
 1. **By kind**, in the order of the table under [Kinds](#kinds), which lists the categories in turn and each category's kinds together. A word with several readings sorts under its first kind in that order. A word whose only vocabulary reading is a refusal (`fils`, `senior`) sorts under the kind it refuses, a refused category counting as its first kind, and a name reading places a word only when it has nothing else.
 2. **Then by the word it is a spelling of**: a reading's `same_as`, or the word's own text when it has none. A head comes first and its spellings follow it, so `jr` is followed by `jnr` and `junior`, and `sr` by `snr`. A spelling that has spellings of its own heads a group inside its head's: in `ar.toml`, `el-` follows the `a…-` spellings of `al-` with its own assimilated forms after it, and `ul-` comes last. Only the file's own entries are followed, so a word that is a head in one file and a spelling in another is placed in each file by that file alone.

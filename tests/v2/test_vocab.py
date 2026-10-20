@@ -284,7 +284,10 @@ MUTATIONS = [
     ("refusal-first-in-the-file", {"en.toml": _w('[[word]]\ntext = "senior"\nexcluded = { generation = "x" }\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'senior' \\(sorted as generation, the kind it refuses\\) belongs after 'jr'"),
     # the entry named is the one to move: a word appended at the end,
     # not the neighbours it displaced
-    ("appended-word-out-of-place", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "aa"\ngeneration = {}')}, "'aa' \\(generation\\) belongs first, before 'jr'"),
+    ("appended-word-out-of-place", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "aa"\ngeneration = {}')}, "'aa' \\(generation\\) belongs before 'jr'"),
+    # placed against the run kept in order, not beside a neighbour that
+    # is out of place itself: of c d b a, b goes before c, not after a
+    ("place-named-against-the-kept-run", {"en.toml": _w('[[word]]\ntext = "c"\ngeneration = {}\n\n[[word]]\ntext = "d"\ngeneration = {}\n\n[[word]]\ntext = "b"\ngeneration = {}\n\n[[word]]\ntext = "a"\ngeneration = {}')}, "'b' \\(generation\\) belongs before 'c'"),
     ("appended-word-mid-file", {"en.toml": _w('[[word]]\ntext = "jr"\ngeneration = {}\n\n[[word]]\ntext = "sr"\ngeneration = {}\n\n[[word]]\ntext = "ta"\ngeneration = {}\n\n[[word]]\ntext = "tb"\ngeneration = {}\n\n[[word]]\ntext = "ka"\ngeneration = {}')}, "'ka' \\(generation\\) belongs after 'jr'"),
     # a refused category sorts as its first kind
     ("refused-category-out-of-place", {"en.toml": _w('[[word]]\ntext = "zzz"\nexcluded = { relation = "x" }\n\n[[word]]\ntext = "jr"\ngeneration = {}')}, "'zzz' \\(sorted as birth_marker, the kind it refuses\\) belongs after 'jr'"),
@@ -397,6 +400,50 @@ def test_every_mutation_starts_from_a_pool_the_checks_accept() -> None:
                        '[[word]]\ntext = "млађи"\ngeneration = {}')},
     ):
         _compile(files)
+
+
+def _apply_order_messages(texts: list[str]) -> int:
+    """Move entries as check 10's messages say until it passes; the moves."""
+    moves = 0
+    while True:
+        words: list[dict[str, Any]] = [{"text": t, "generation": {}} for t in texts]
+        try:
+            build.check_order({"en.toml": words})
+            return moves
+        except build.VocabError as e:
+            m = re.search(r"'(\w+)' \(generation\) belongs (after|before) '(\w+)'", str(e))
+            assert m, str(e)
+            word, side, other = m.groups()
+            texts.remove(word)
+            texts.insert(texts.index(other) + (side == "after"), word)
+            moves += 1
+
+
+def test_following_the_order_messages_takes_the_fewest_moves() -> None:
+    # every order of six words: the fewest moves that sort a list is its
+    # length less its longest run already in order, and following the
+    # messages takes exactly that many (#767's second review found the
+    # first version taking up to 22 moves where 10 would do)
+    from itertools import permutations
+    for order in permutations("abcdef"):
+        ranks = [ord(c) - ord("a") for c in order]
+        longest = [1] * 6
+        for i in range(6):
+            for j in range(i):
+                if ranks[j] < ranks[i]:
+                    longest[i] = max(longest[i], longest[j] + 1)
+        assert _apply_order_messages(list(order)) == 6 - max(longest), order
+
+
+def test_the_order_check_ends_on_its_own() -> None:
+    # check_order called alone, without check 7 having refused a
+    # self-reference first, and on a chain longer than Python's
+    # recursion limit: it returns, it does not hang or recurse out
+    build.check_order({"en.toml": [{"text": "a", "preposition": {"same_as": "a"}},
+                                   {"text": "b", "preposition": {}}]})
+    chain = [{"text": f"w{i:04d}", "generation": {"same_as": f"w{i + 1:04d}"}}
+             for i in range(sys.getrecursionlimit() + 100)]
+    build.check_order({"und.toml": chain})
 
 
 def test_every_character_the_tokenizer_ignores_is_refused() -> None:

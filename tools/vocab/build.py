@@ -430,12 +430,13 @@ def _sort_kind(e: Mapping[str, Any]) -> str:
 
 def _heads(words: Iterable[Mapping[str, Any]]) -> dict[tuple[str, str], str]:
     """Each word's same_as in each category, from one file's entries:
-    the same_as of the word's earliest reading of that category, the
-    reading _sort_kind picks when the category is the entry's own."""
+    the same_as of the word's earliest reading of that category that
+    carries one. A same_as naming its own word is left out, for check 7
+    to refuse, so following these always ends."""
     heads: dict[tuple[str, str], str] = {}
     for e in words:
         for k in sorted((k for k in e if k in CATEGORY), key=KIND_ORDER.__getitem__):
-            if "same_as" in e[k]:
+            if e[k].get("same_as") not in (None, e["text"]):
                 heads.setdefault((CATEGORY[k], e["text"]), e[k]["same_as"])
     return heads
 
@@ -459,8 +460,10 @@ def _order_key(e: Mapping[str, Any],
     category = CATEGORY[kind]
     path = [e["text"]]
     head = e[kind].get("same_as") if kind in e else None
-    # check 7 has refused a same_as naming its own word, and
-    # _check_same_as_cycles every longer loop, so this ends
+    if head == path[0]:
+        head = None  # check 7's to refuse
+    # _heads holds no self-reference and _check_same_as_cycles has
+    # refused every longer loop, so this ends
     while head is not None:
         path.append(head)
         head = heads.get((category, head))
@@ -479,35 +482,39 @@ def _check_same_as_cycles(entries: Mapping[str, list[dict[str, Any]]]) -> None:
                 if k in CATEGORY and "same_as" in v and v["same_as"] != e["text"]:
                     edges.setdefault((CATEGORY[k], e["text"]), set()).add(v["same_as"])
     done: set[tuple[str, str]] = set()
-
-    def visit(node: tuple[str, str], path: list[tuple[str, str]]) -> None:
-        # depth first: meeting a word already on the path is a loop, and
-        # the loop is the path from that word on (a chain may run INTO a
-        # loop its first word is not part of)
-        if node in path:
-            loop = [t for _, t in path[path.index(node):]] + [node[1]]
-            raise VocabError(f"{node[1]!r} {node[0]}: same_as loops, "
-                             f"{' -> '.join(loop)}; a spelling names the word "
-                             f"it is a spelling of, which does not name it back")
-        if node in done:
-            return
-        path.append(node)
-        for head in sorted(edges.get(node, ())):
-            visit((node[0], head), path)
-        path.pop()
-        done.add(node)
-
     for start in sorted(edges):
-        visit(start, [])
+        # depth first, iteratively (a chain can be longer than Python's
+        # recursion limit): meeting a word already on the open path is a
+        # loop, and the loop is the path from that word on, since a
+        # chain may run INTO a loop its first word is not part of
+        path = [start]
+        todo = [iter(sorted(edges[start]))]
+        while path:
+            head = next(todo[-1], None)
+            if head is None:
+                done.add(path.pop())
+                todo.pop()
+                continue
+            node = (start[0], head)
+            if node in path:
+                loop = [t for _, t in path[path.index(node):]] + [head]
+                raise VocabError(f"{head!r} {start[0]}: same_as loops, "
+                                 f"{' -> '.join(loop)}; a spelling names the "
+                                 f"word it is a spelling of, which does not "
+                                 f"name it back")
+            if node not in done:
+                path.append(node)
+                todo.append(iter(sorted(edges.get(node, ()))))
 
 
-def _misplaced(ranks: list[int]) -> int:
-    """The index of the entry to move: the first one outside a longest
-    run of entries already in their relative order, so moving each
-    entry the check names is the fewest moves (a word appended at the
-    end of a file is the one named, not the neighbours it displaced).
-    Ties keep the later entries, so of two swapped words the first is
-    named."""
+def _misplaced(ranks: list[int]) -> tuple[int, set[int]]:
+    """The entry to move and the entries to keep: the first entry
+    outside a longest run of entries already in their relative order,
+    and that run. Placed against the run, each move the check names
+    lengthens it by one, so following the messages takes the fewest
+    moves, and a word appended at the end of a file is the one named,
+    not the neighbours it displaced. Ties keep the later entries, so of
+    two swapped words the first is named."""
     best = [1] * len(ranks)
     prev = [-1] * len(ranks)
     for i in range(len(ranks)):
@@ -519,7 +526,7 @@ def _misplaced(ranks: list[int]) -> int:
     while i != -1:
         kept.add(i)
         i = prev[i]
-    return min(set(range(len(ranks))) - kept)
+    return min(set(range(len(ranks))) - kept), kept
 
 
 def check_order(entries: Mapping[str, list[dict[str, Any]]]) -> None:
@@ -542,12 +549,16 @@ def check_order(entries: Mapping[str, list[dict[str, Any]]]) -> None:
         ranks = [0] * len(words)
         for at, i in enumerate(ordered):
             ranks[i] = at
-        m = _misplaced(ranks)
-        at = ranks[m]
+        m, kept = _misplaced(ranks)
+        # its place among the kept entries, which are in order already
+        below = [i for i in kept if ranks[i] < ranks[m]]
         kind = _sort_kind(words[m])
         what = kind if kind in words[m] else f"sorted as {kind}, the kind it refuses"
-        place = (f"after {words[ordered[at - 1]]['text']!r}" if at
-                 else f"first, before {words[ordered[1]]['text']!r}")
+        if below:
+            place = f"after {words[max(below, key=ranks.__getitem__)]['text']!r}"
+        else:
+            above = min(kept, key=ranks.__getitem__)
+            place = f"before {words[above]['text']!r}"
         raise VocabError(
             f"{name}: {words[m]['text']!r} ({what}) belongs {place}. A file "
             f"lists its words by kind in the README's table order, then by "
