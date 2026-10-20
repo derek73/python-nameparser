@@ -65,6 +65,6 @@
   "T5": {"words": 127, "exceptions": 0, "accepted": 1, "accepted_words": 43},
   "W1": {"words": 135, "exceptions": 0, "accepted": 1, "accepted_words": 26},
   "W2": {"words": 97, "exceptions": 0, "accepted": 2, "accepted_words": 194},
-  "W3": {"words": 607, "exceptions": 0, "accepted": 0, "accepted_words": 0},
+  "W3": {"then_words": 348, "because_sentences": 1, "except": 1, "precedence": 2, "accepted": 0, "accepted_words": 0},
   "W4": {"words": 80, "exceptions": 0, "accepted": 1, "accepted_words": 70}
 }
