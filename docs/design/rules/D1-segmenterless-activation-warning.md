@@ -11,6 +11,6 @@
 ```
 
 ---
-no-boundary: any covering surname vocabulary, configured segmenter, or deactivation silences it — the default parser and the zh pack never warn, which every other example in this document exercises.
+no-boundary: any covering surname vocabulary, configured segmenter, or deactivation silences it — the default parser and the zh pack never warn, which every other rule's examples exercise.
 **Signal:** none in the name: the configuration's activated scripts against its surnames and segmenter
 **history:** decisions/D1 · **implemented:** nameparser/_parser.py

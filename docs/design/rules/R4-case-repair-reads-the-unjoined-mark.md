@@ -55,6 +55,7 @@
   "john smith mba"            →  capitalized="John Smith MBA"
   "john smith mcse"           →  capitalized="John Smith MCSE"
   "john smith jr"             →  capitalized="John Smith Jr"  · boundary
+  "Md Abdul Karim"            →  capitalized_forced="Md Abdul Karim"
   ```
 - **Inside a hyphenated word, a part that is connective vocabulary with a worded part on each side of it keeps its lowercase**, the hyphens being the writer joining the name around it (Ortega-y-Gasset); at either end of the hyphenated word it is repaired as ordinary name text. A single letter marked with a period is read as an initial there, as the parse reads it, never as the connective. A bare letter is not: the hyphen is the writer's join, so the interior connective is read as one even in a name written wholly in one case, where the same letter spaced reads as an initial if the vocabulary marks it as reading both ways (P8).
   ```
@@ -95,7 +96,6 @@
   ```
   "qc mp"                     →  capitalized="Qc MP"  · boundary
   "Jack X.Y.Z."               →  capitalized_forced="Jack X.y.z."  · boundary
-  "Md Abdul Karim"            →  capitalized_forced="Md Abdul Karim"
   "john smith xi"             →  capitalized="John Smith Xi"  · boundary
   "john smith, vi"            →  capitalized="Vi John Smith"  · boundary
   ```
