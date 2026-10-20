@@ -17,6 +17,10 @@ text = "signorina"
 salutation = { gender = "f" }
 
 [[word]]
+text = "gentiluomo"
+nobility = { gender = "m", expands = "gentleman" }
+
+[[word]]
 text = "d'"
 preposition = { may_be_given = false, issue = 700, expands = "of, elided di" }
 

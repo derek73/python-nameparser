@@ -1,6 +1,14 @@
 schema = 1
 
 [[word]]
+text = "elerunwon"
+nobility = { expands = "the ruler of Erunwon" }
+
+[[word]]
+text = "timi"
+nobility = { expands = "the ruler of Ede" }
+
+[[word]]
 text = "ajala"
 [word.excluded.generation]
 reason = "a Yoruba surname"

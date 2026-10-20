@@ -17,6 +17,42 @@ text = "מר"
 salutation = { gender = "m", issue = 269, expands = "Mr." }
 
 [[word]]
+text = "ד\"ר"
+academic = { issue = 269, expands = "doctor, ASCII quote", note = "the quote sits mid-word, with no whitespace before it and a letter after it, so it fails both extract_delimited's open and close boundary tests (_open_ok/_close_ok, probed 2026-07-17) and stays literal text; the gershayim spelling is no delimiter at all" }
+
+[[word]]
+text = "ד״ר"
+academic = { issue = 269, same_as = "ד\"ר", expands = "doctor, U+05F4 gershayim" }
+
+[[word]]
+text = "עו\"ד"
+academic = { issue = 269, expands = "advocate, ASCII quote" }
+
+[[word]]
+text = "עו״ד"
+academic = { issue = 269, same_as = "עו\"ד", expands = "advocate, U+05F4 gershayim" }
+
+[[word]]
+text = "פרופסור"
+academic = { issue = 269, expands = "professor, full form" }
+
+[[word]]
+text = "פרופ'"
+academic = { issue = 269, same_as = "פרופסור", expands = "professor abbreviation, ASCII apostrophe" }
+
+[[word]]
+text = "פרופ׳"
+academic = { issue = 269, same_as = "פרופסור", expands = "professor abbreviation, U+05F3 geresh" }
+
+[[word]]
+text = "rabbi"
+religious = { note = "addresses by the TITLE, not the given name ('Rabbi Cohen'), and the tradition keeps surnames, so it stays out of GIVEN_NAME_TITLES (#346)" }
+
+[[word]]
+text = "הרב"
+religious = { issue = 269, expands = "the rabbi", note = "the article form; bare רב is deferred under the collision rule, being also the ordinary word 'many'" }
+
+[[word]]
 text = "ג'וניור"
 generation = { issue = 679, note = "ASCII apostrophe" }
 

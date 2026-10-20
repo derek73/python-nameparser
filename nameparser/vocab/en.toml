@@ -1,6 +1,10 @@
 schema = 1
 
 [[word]]
+text = "wm"
+title = { issue = 68, note = "William, abbreviated, and no title of any kind: added for #68, where 'Wm. Scott Magargee III' read first name 'Wm.'; a bare 'Wm Smith' reads title Wm and no given name, while the dotted 'Wm.' is taken by the leading period-abbreviation shape rule whether listed or not" }
+
+[[word]]
 text = "goodman"
 salutation = { gender = "m", expands = "the archaic Mr., 'Goodman Brown'" }
 
@@ -49,32 +53,366 @@ text = "mx"
 salutation = { gender = "n" }
 
 [[word]]
+text = "doyen"
+style = {}
+
+[[word]]
+text = "eminence"
+style = {}
+
+[[word]]
+text = "excellency"
+style = {}
+
+[[word]]
+text = "highness"
+style = {}
+
+[[word]]
+text = "holiness"
+style = {}
+
+[[word]]
+text = "honorable"
+style = {}
+
+[[word]]
+text = "hon"
+style = { same_as = "honorable", note = "kept though Hon is a given name: the judges' Hon. was judged the commoner reading" }
+
+[[word]]
+text = "honourable"
+style = { same_as = "honorable" }
+
+[[word]]
+text = "majesty"
+style = {}
+
+[[word]]
+text = "advocate"
+academic = { expands = "the address of an advocate, 'Adv. Smith' in South Africa and India" }
+
+[[word]]
+text = "attorney"
+academic = { expands = "the address of a lawyer, 'Atty. Cruz'" }
+
+[[word]]
+text = "engineer"
+academic = { expands = "the address of an engineer, 'Engr. Cruz' in the Philippines and Nigeria" }
+
+[[word]]
+text = "md"
+academic = { note = "the medical degree written before the name (#32); a leading Md. abbreviating Muhammad lands in the same field (decisions/indic-honorifics)" }
+
+[[word]]
+text = "nurse"
+academic = { expands = "the address of a nurse, 'Nurse Smith'" }
+
+[[word]]
+text = "abbess"
+religious = { gender = "f" }
+
+[[word]]
+text = "abbot"
+religious = { gender = "m" }
+
+[[word]]
+text = "acolyte"
+religious = {}
+
+[[word]]
+text = "adept"
+religious = {}
+
+[[word]]
+text = "archbishop"
+religious = {}
+
+[[word]]
+text = "archdeacon"
+religious = {}
+
+[[word]]
+text = "archdruid"
+religious = {}
+
+[[word]]
+text = "arhat"
+religious = {}
+
+[[word]]
+text = "bishop"
+religious = {}
+
+[[word]]
+text = "bp"
+religious = { same_as = "bishop" }
+
+[[word]]
+text = "blessed"
+religious = { expands = "beatified, 'Blessed Teresa'" }
+
+[[word]]
+text = "bodhisattva"
+religious = {}
+
+[[word]]
 text = "brother"
 religious = { addresses = "given", gender = "m", expands = "a member of a religious order, 'Brother Roger'" }
+
+[[word]]
+text = "buddha"
+religious = {}
+
+[[word]]
+text = "canon"
+religious = {}
+
+[[word]]
+text = "cardinal"
+religious = {}
+
+[[word]]
+text = "catholicos"
+religious = {}
+
+[[word]]
+text = "chaplain"
+religious = {}
+
+[[word]]
+text = "deacon"
+religious = {}
+
+[[word]]
+text = "dcn"
+religious = { same_as = "deacon" }
+
+[[word]]
+text = "druid"
+religious = {}
+
+[[word]]
+text = "evangelist"
+religious = {}
 
 [[word]]
 text = "father"
 religious = { addresses = "given", gender = "m", expands = "a priest, 'Father Brown'" }
 
 [[word]]
+text = "fr"
+religious = { expands = "Father, Friar" }
+
+[[word]]
+text = "friar"
+religious = {}
+
+[[word]]
+text = "metropolitan"
+religious = {}
+
+[[word]]
+text = "met"
+religious = { same_as = "metropolitan" }
+
+[[word]]
+text = "mgr"
+religious = { expands = "Monsignor, Monseigneur" }
+
+[[word]]
+text = "monk"
+religious = {}
+
+[[word]]
+text = "monsignor"
+religious = {}
+
+[[word]]
 text = "mother"
 religious = { addresses = "given", gender = "f", expands = "a mother superior, 'Mother Teresa'" }
+
+[[word]]
+text = "pastor"
+religious = {}
+
+[[word]]
+text = "patriarch"
+religious = {}
 
 [[word]]
 text = "pope"
 religious = { addresses = "given" }
 
 [[word]]
+text = "prelate"
+religious = {}
+
+[[word]]
+text = "presbyter"
+religious = {}
+
+[[word]]
+text = "priest"
+religious = {}
+
+[[word]]
+text = "priestess"
+religious = { gender = "f" }
+
+[[word]]
+text = "primate"
+religious = {}
+
+[[word]]
+text = "prior"
+religious = {}
+
+[[word]]
+text = "reverend"
+religious = {}
+
+[[word]]
+text = "rev"
+religious = { same_as = "reverend" }
+
+[[word]]
+text = "saint"
+religious = {}
+
+[[word]]
+text = "saoshyant"
+religious = {}
+
+[[word]]
+text = "siddha"
+religious = {}
+
+[[word]]
 text = "sister"
 religious = { addresses = "given", gender = "f", expands = "a nun or religious sister, 'Sister Mary'" }
+
+[[word]]
+text = "st"
+religious = { expands = "Saint, abbreviated" }
+[word.saint]
+may_be_given = true
+expands = "Saint, abbreviated"
+note = "Also in TITLES and consumed there before particle logic runs, so moving it between the may-be-given and never-given halves changes nothing; kept for the load-bearing TITLES intersection"
+
+[[word]]
+text = "tirthankar"
+religious = {}
+
+[[word]]
+text = "venerable"
+religious = { note = "stays out of GIVEN_NAME_TITLES: its traditions split on surname retention (Buddhist monastics drop the family name, Anglican archdeacons keep it), and addresses cannot say 'sometimes' (#346)" }
+
+[[word]]
+text = "vicar"
+religious = {}
+
+[[word]]
+text = "archduchess"
+nobility = { gender = "f" }
+
+[[word]]
+text = "archduke"
+nobility = { gender = "m" }
+
+[[word]]
+text = "baron"
+nobility = { gender = "m" }
+
+[[word]]
+text = "baroness"
+nobility = { gender = "f" }
+
+[[word]]
+text = "chief"
+nobility = { expands = "a chief of a people or clan, 'Chief Obafemi Awolowo'" }
+
+[[word]]
+text = "chieftain"
+nobility = {}
+
+[[word]]
+text = "count"
+nobility = { gender = "m" }
+
+[[word]]
+text = "countess"
+nobility = { gender = "f" }
 
 [[word]]
 text = "dame"
 nobility = { addresses = "given", gender = "f", expands = "the female knighthood, 'Dame Judi Dench'" }
 
 [[word]]
+text = "duke"
+given = { us_ssa = 11595, wikidata = 151, as_of = 2026-10-19, note = "male births only" }
+family = { us_census_2010 = 35053, wikidata = 315, as_of = 2026-10-19 }
+excluded = { nobility = "a common given name (Duke Kahanamoku), and a surname besides" }
+
+[[word]]
+text = "dutchess"
+nobility = { gender = "f", note = "a misspelling of duchess, shipped as written; duchess itself is not in the vocabulary" }
+
+[[word]]
+text = "emperor"
+nobility = { gender = "m" }
+
+[[word]]
+text = "empress"
+nobility = { gender = "f" }
+
+[[word]]
+text = "heir"
+nobility = {}
+
+[[word]]
+text = "heiress"
+nobility = { gender = "f" }
+
+[[word]]
 text = "king"
 nobility = { addresses = "given", gender = "m" }
+
+[[word]]
+text = "knight"
+nobility = { gender = "m", expands = "the rank the post-nominal knt names", issue = 606, note = "borne (Gladys Knight, who keeps family Knight in the forms she writes); one of the three words #606 proposed the graf class for" }
+
+[[word]]
+text = "lady"
+nobility = { gender = "f", note = "stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lady Diana') is a courtesy style for the daughters of the senior ranks alone, while every wife takes the title or surname ('Lady Thatcher'), and the text does not carry the rank (#519)" }
+
+[[word]]
+text = "lord"
+nobility = { gender = "m", note = "stays out of GIVEN_NAME_TITLES, decided: the given-name form ('Lord Peter') is a courtesy style for the children of the senior ranks alone, while every peer takes the title or surname ('Lord Byron'), and the text does not carry the rank (#519)" }
+
+[[word]]
+text = "marchess"
+nobility = { gender = "f" }
+
+[[word]]
+text = "marchioness"
+nobility = { gender = "f" }
+
+[[word]]
+text = "marquess"
+nobility = { gender = "m" }
+
+[[word]]
+text = "marquis"
+nobility = { gender = "m" }
+
+[[word]]
+text = "marquise"
+nobility = { gender = "f" }
+
+[[word]]
+text = "pharaoh"
+nobility = {}
 
 [[word]]
 text = "prince"
@@ -93,16 +431,1296 @@ text = "sir"
 nobility = { addresses = "given", gender = "m", expands = "a knight or baronet, 'Sir John'" }
 
 [[word]]
+text = "viscount"
+nobility = { gender = "m" }
+
+[[word]]
+text = "1lt"
+military = { expands = "First Lieutenant" }
+
+[[word]]
+text = "1stlt"
+military = { same_as = "1lt" }
+
+[[word]]
+text = "1sgt"
+military = { expands = "First Sergeant" }
+
+[[word]]
+text = "1stsgt"
+military = { same_as = "1sgt" }
+
+[[word]]
+text = "2lt"
+military = { expands = "Second Lieutenant" }
+
+[[word]]
+text = "2ndlt"
+military = { same_as = "2lt" }
+
+[[word]]
+text = "a1c"
+military = { expands = "Airman First Class" }
+
+[[word]]
+text = "ab"
+military = { expands = "Airman Basic" }
+
+[[word]]
+text = "adjutant"
+military = {}
+
+[[word]]
+text = "admiral"
+military = {}
+
+[[word]]
+text = "adm"
+military = { same_as = "admiral" }
+
+[[word]]
+text = "amn"
+military = { expands = "Airman" }
+
+[[word]]
+text = "bg"
+military = { expands = "Brigadier General" }
+
+[[word]]
+text = "bgen"
+military = { same_as = "bg" }
+
+[[word]]
+text = "briggen"
+military = { same_as = "bg" }
+
+[[word]]
+text = "brigadier"
+military = {}
+
+[[word]]
+text = "captain"
+military = {}
+
+[[word]]
+text = "capt"
+military = { same_as = "captain" }
+
+[[word]]
+text = "cpt"
+military = { same_as = "captain" }
+
+[[word]]
+text = "ccmsgt"
+military = { expands = "Command Chief Master Sergeant" }
+
+[[word]]
+text = "cmsaf"
+military = { expands = "Chief Master Sergeant of the Air Force" }
+
+[[word]]
+text = "cmsgt"
+military = { expands = "Chief Master Sergeant" }
+
+[[word]]
+text = "colonel"
+military = {}
+
+[[word]]
+text = "col"
+military = { same_as = "colonel" }
+
+[[word]]
+text = "commander"
+military = {}
+
+[[word]]
+text = "cdr"
+military = { same_as = "commander" }
+
+[[word]]
+text = "commander-in-chief"
+military = {}
+
+[[word]]
+text = "commodore"
+military = {}
+
+[[word]]
+text = "corporal"
+military = {}
+
+[[word]]
+text = "cpl"
+military = { same_as = "corporal" }
+
+[[word]]
+text = "cpo"
+military = { expands = "Chief Petty Officer" }
+
+[[word]]
+text = "csm"
+military = { expands = "Command Sergeant Major" }
+
+[[word]]
+text = "cwo2"
+military = { expands = "Chief Warrant Officer 2" }
+
+[[word]]
+text = "cwo-2"
+military = { same_as = "cwo2" }
+
+[[word]]
+text = "cwo3"
+military = { expands = "Chief Warrant Officer 3" }
+
+[[word]]
+text = "cwo-3"
+military = { same_as = "cwo3" }
+
+[[word]]
+text = "cwo4"
+military = { expands = "Chief Warrant Officer 4" }
+
+[[word]]
+text = "cwo-4"
+military = { same_as = "cwo4" }
+
+[[word]]
+text = "cwo5"
+military = { expands = "Chief Warrant Officer 5" }
+
+[[word]]
+text = "cwo-5"
+military = { same_as = "cwo5" }
+
+[[word]]
+text = "detective"
+military = { expands = "the police rank, 'Detective Smith'" }
+
+[[word]]
+text = "ens"
+military = { expands = "Ensign" }
+
+[[word]]
+text = "fadm"
+military = { expands = "Fleet Admiral" }
+
+[[word]]
+text = "gaf"
+military = { expands = "General of the Air Force" }
+
+[[word]]
+text = "general"
+military = {}
+
+[[word]]
+text = "gen"
+military = { same_as = "general" }
+
+[[word]]
+text = "generalissimo"
+military = {}
+
+[[word]]
+text = "gysgt"
+military = { expands = "Gunnery Sergeant" }
+
+[[word]]
+text = "lcdr"
+military = { expands = "Lieutenant Commander" }
+
+[[word]]
+text = "lcpl"
+military = { expands = "Lance Corporal" }
+
+[[word]]
+text = "lieutenant"
+military = {}
+
+[[word]]
+text = "lt"
+military = { same_as = "lieutenant" }
+
+[[word]]
+text = "ltc"
+military = { expands = "Lieutenant Colonel" }
+
+[[word]]
+text = "ltcol"
+military = { same_as = "ltc" }
+
+[[word]]
+text = "ltg"
+military = { expands = "Lieutenant General" }
+
+[[word]]
+text = "ltgen"
+military = { same_as = "ltg" }
+
+[[word]]
+text = "ltjg"
+military = { expands = "Lieutenant (junior grade)" }
+
+[[word]]
+text = "maj"
+military = { expands = "Major" }
+
+[[word]]
 text = "marshal"
 excluded = { military = { reason = "a given name (Marshal Yanda); the accepted cost is that 'Field Marshal Bernard Montgomery' reads title Field, given Marshal", issue = 606, decided = 2026-10-04 } }
+
+[[word]]
+text = "mcpo"
+military = { expands = "Master Chief Petty Officer" }
+
+[[word]]
+text = "mcpoc"
+military = { expands = "Master Chief Petty Officer of the Coast Guard" }
+
+[[word]]
+text = "mcpon"
+military = { expands = "Master Chief Petty Officer of the Navy" }
+
+[[word]]
+text = "mg"
+military = { expands = "Major General" }
+
+[[word]]
+text = "majgen"
+military = { same_as = "mg" }
+
+[[word]]
+text = "mgysgt"
+military = { expands = "Master Gunnery Sergeant" }
+
+[[word]]
+text = "mpco-cg"
+military = { note = "as shipped; the rank is MCPOCG, Master Chief Petty Officer of the Coast Guard, already listed as mcpoc" }
+
+[[word]]
+text = "msg"
+military = { expands = "Master Sergeant" }
+
+[[word]]
+text = "msgt"
+military = { same_as = "msg" }
+
+[[word]]
+text = "officer"
+military = { expands = "the police rank, 'Officer Smith'" }
+
+[[word]]
+text = "pfc"
+military = { expands = "Private First Class" }
+
+[[word]]
+text = "po1"
+military = { expands = "Petty Officer First Class" }
+
+[[word]]
+text = "po2"
+military = { expands = "Petty Officer Second Class" }
+
+[[word]]
+text = "po3"
+military = { expands = "Petty Officer Third Class" }
+
+[[word]]
+text = "private"
+military = {}
+
+[[word]]
+text = "pvt"
+military = { same_as = "private" }
+
+[[word]]
+text = "pv2"
+military = { expands = "Private (E-2)" }
+
+[[word]]
+text = "radm"
+military = { expands = "Rear Admiral" }
+
+[[word]]
+text = "rdml"
+military = { same_as = "radm" }
+
+[[word]]
+text = "sa"
+military = { expands = "Seaman Apprentice" }
+
+[[word]]
+text = "scpo"
+military = { expands = "Senior Chief Petty Officer" }
+
+[[word]]
+text = "sergeant"
+military = {}
+
+[[word]]
+text = "sgt"
+military = { same_as = "sergeant" }
+
+[[word]]
+text = "sfc"
+military = { expands = "Sergeant First Class" }
+
+[[word]]
+text = "sgm"
+military = { expands = "Sergeant Major" }
+
+[[word]]
+text = "sgtmaj"
+military = { same_as = "sgm" }
+
+[[word]]
+text = "sgtmajmc"
+military = { expands = "Sergeant Major of the Marine Corps" }
+
+[[word]]
+text = "sma"
+military = { expands = "Sergeant Major of the Army" }
+
+[[word]]
+text = "smsgt"
+military = { expands = "Senior Master Sergeant" }
+
+[[word]]
+text = "sn"
+military = { expands = "Seaman" }
+
+[[word]]
+text = "spc"
+military = { expands = "Specialist" }
+
+[[word]]
+text = "ssg"
+military = { expands = "Staff Sergeant" }
+
+[[word]]
+text = "ssgt"
+military = { same_as = "ssg" }
+
+[[word]]
+text = "subaltern"
+military = {}
+
+[[word]]
+text = "tsgt"
+military = { expands = "Technical Sergeant" }
+
+[[word]]
+text = "vadm"
+military = { expands = "Vice Admiral" }
+
+[[word]]
+text = "wo1"
+military = { expands = "Warrant Officer 1" }
+
+[[word]]
+text = "wo-1"
+military = { same_as = "wo1" }
+
+[[word]]
+text = "wo2"
+military = { expands = "Warrant Officer 2" }
+
+[[word]]
+text = "wo3"
+military = { expands = "Warrant Officer 3" }
+
+[[word]]
+text = "wo4"
+military = { expands = "Warrant Officer 4" }
+
+[[word]]
+text = "wo5"
+military = { expands = "Warrant Officer 5" }
+
+[[word]]
+text = "administrator"
+office = { issue = 606, note = "one of #606's English offices, completing runs like 'Police Commissioner'" }
+
+[[word]]
+text = "alderman"
+office = {}
+
+[[word]]
+text = "almoner"
+office = {}
+
+[[word]]
+text = "ambassador"
+office = {}
+
+[[word]]
+text = "arbitrator"
+office = {}
+
+[[word]]
+text = "attaché"
+office = {}
+
+[[word]]
+text = "attache"
+office = { same_as = "attaché" }
+
+[[word]]
+text = "bailiff"
+office = {}
+
+[[word]]
+text = "burgess"
+office = {}
+
+[[word]]
+text = "ceo"
+office = {}
+
+[[word]]
+text = "cfo"
+office = {}
+
+[[word]]
+text = "chair"
+office = {}
+
+[[word]]
+text = "chairs"
+office = { same_as = "chair" }
+
+[[word]]
+text = "chancellor"
+office = {}
+
+[[word]]
+text = "chargé"
+office = { expands = "chargé d'affaires, the head of a mission below an ambassador" }
+
+[[word]]
+text = "charge"
+office = { same_as = "chargé", note = "unaccented 'chargé', like attaché/'attache'" }
+
+[[word]]
+text = "clerk"
+office = {}
+
+[[word]]
+text = "co-chair"
+office = {}
+
+[[word]]
+text = "co-chairs"
+office = { same_as = "co-chair" }
+
+[[word]]
+text = "commissioner"
+office = { issue = 606, note = "one of #606's English offices, completing runs like 'Police Commissioner'" }
+
+[[word]]
+text = "comptroller"
+office = {}
+
+[[word]]
+text = "controller"
+office = {}
+
+[[word]]
+text = "councillor"
+office = {}
+
+[[word]]
+text = "counsel"
+office = { issue = 606, note = "borne: ~730 surnames (Australia, the US, England), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
+
+[[word]]
+text = "courtier"
+office = {}
+
+[[word]]
+text = "delegate"
+office = {}
+
+[[word]]
+text = "deputy"
+office = {}
+
+[[word]]
+text = "dpty"
+office = { same_as = "deputy" }
+
+[[word]]
+text = "director"
+office = {}
+
+[[word]]
+text = "dir"
+office = { same_as = "director" }
+
+[[word]]
+text = "envoy"
+office = {}
+
+[[word]]
+text = "governor"
+office = {}
+
+[[word]]
+text = "gov"
+office = { same_as = "governor" }
+
+[[word]]
+text = "headman"
+office = {}
+
+[[word]]
+text = "intendant"
+office = {}
+
+[[word]]
+text = "judge"
+office = {}
 
 [[word]]
 text = "justice"
 excluded = { office = { reason = "a given name (Justice Smith); the accepted cost is that 'Chief Justice John Roberts' reads title Chief, given Justice", issue = 606, decided = 2026-10-04 } }
 
 [[word]]
+text = "leader"
+office = {}
+
+[[word]]
+text = "magistrate"
+office = {}
+
+[[word]]
+text = "mag"
+office = { same_as = "magistrate" }
+
+[[word]]
+text = "magistrate-judge"
+office = {}
+
+[[word]]
+text = "mag-judge"
+office = { same_as = "magistrate-judge" }
+
+[[word]]
+text = "mag/judge"
+office = { same_as = "magistrate-judge" }
+
+[[word]]
+text = "mayor"
+office = {}
+
+[[word]]
+text = "minister"
+office = {}
+
+[[word]]
+text = "prefect"
+office = {}
+
+[[word]]
+text = "premier"
+office = {}
+
+[[word]]
+text = "president"
+office = {}
+
+[[word]]
+text = "pres"
+office = { same_as = "president" }
+
+[[word]]
+text = "principal"
+office = {}
+
+[[word]]
+text = "prin"
+office = { same_as = "principal" }
+
+[[word]]
+text = "provost"
+office = {}
+
+[[word]]
+text = "pslc"
+office = { issue = 9, expands = "Pro Se Law Clerk" }
+
+[[word]]
+text = "pursuivant"
+office = {}
+
+[[word]]
+text = "registrar"
+office = {}
+
+[[word]]
+text = "representative"
+office = {}
+
+[[word]]
+text = "rep"
+office = { same_as = "representative" }
+
+[[word]]
+text = "secretary"
+office = {}
+
+[[word]]
+text = "senator"
+office = {}
+
+[[word]]
+text = "senior-judge"
+office = {}
+
+[[word]]
+text = "sheriff"
+office = {}
+
+[[word]]
+text = "speaker"
+office = {}
+
+[[word]]
+text = "swordbearer"
+office = {}
+
+[[word]]
+text = "treasurer"
+office = {}
+
+[[word]]
+text = "vc"
+office = { expands = "Vice-Chancellor" }
+
+[[word]]
+text = "verderer"
+office = {}
+
+[[word]]
+text = "warden"
+office = {}
+
+[[word]]
+text = "abolitionist"
+occupation = {}
+
+[[word]]
+text = "academic"
+occupation = {}
+
+[[word]]
+text = "activist"
+occupation = {}
+
+[[word]]
+text = "actor"
+occupation = {}
+
+[[word]]
+text = "actress"
+occupation = { gender = "f" }
+
+[[word]]
+text = "adviser"
+occupation = {}
+
+[[word]]
+text = "anarchist"
+occupation = {}
+
+[[word]]
+text = "animator"
+occupation = {}
+
+[[word]]
+text = "anthropologist"
+occupation = {}
+
+[[word]]
+text = "apprentice"
+occupation = {}
+
+[[word]]
+text = "archeologist"
+occupation = {}
+
+[[word]]
+text = "architect"
+occupation = {}
+
+[[word]]
+text = "arranger"
+occupation = {}
+
+[[word]]
+text = "astronomer"
+occupation = {}
+
+[[word]]
+text = "author"
+occupation = {}
+
+[[word]]
+text = "bandleader"
+occupation = {}
+
+[[word]]
+text = "banker"
+occupation = {}
+
+[[word]]
+text = "bard"
+occupation = {}
+
+[[word]]
+text = "barrister"
+occupation = {}
+
+[[word]]
+text = "bibliographer"
+occupation = {}
+
+[[word]]
+text = "biochemist"
+occupation = {}
+
+[[word]]
+text = "biographer"
+occupation = {}
+
+[[word]]
+text = "biologist"
+occupation = {}
+
+[[word]]
+text = "blogger"
+occupation = {}
+
+[[word]]
+text = "bookseller"
+occupation = {}
+
+[[word]]
+text = "botanist"
+occupation = {}
+
+[[word]]
+text = "broadcaster"
+occupation = {}
+
+[[word]]
+text = "businessman"
+occupation = { gender = "m" }
+
+[[word]]
+text = "businesswoman"
+occupation = { gender = "f" }
+
+[[word]]
+text = "cartographer"
+occupation = {}
+
+[[word]]
+text = "cartoonist"
+occupation = {}
+
+[[word]]
+text = "celebrity"
+occupation = {}
+
+[[word]]
+text = "chef"
+occupation = {}
+
+[[word]]
+text = "chemist"
+occupation = {}
+
+[[word]]
+text = "choreographer"
+occupation = {}
+
+[[word]]
+text = "clergyman"
+occupation = {}
+
+[[word]]
+text = "co-founder"
+occupation = {}
+
+[[word]]
+text = "coach"
+occupation = {}
+
+[[word]]
+text = "collector"
+occupation = {}
+
+[[word]]
+text = "comedian"
+occupation = {}
+
+[[word]]
+text = "comedienne"
+occupation = { gender = "f" }
+
+[[word]]
+text = "comic"
+occupation = {}
+
+[[word]]
+text = "composer"
+occupation = {}
+
+[[word]]
+text = "conductor"
+occupation = {}
+
+[[word]]
+text = "consultant"
+occupation = {}
+
+[[word]]
+text = "correspondent"
+occupation = {}
+
+[[word]]
+text = "counselor"
+occupation = {}
+
+[[word]]
+text = "criminologist"
+occupation = {}
+
+[[word]]
+text = "critic"
+occupation = {}
+
+[[word]]
+text = "curator"
+occupation = {}
+
+[[word]]
+text = "cyclist"
+occupation = {}
+
+[[word]]
+text = "dancer"
+occupation = {}
+
+[[word]]
+text = "designer"
+occupation = {}
+
+[[word]]
+text = "developer"
+occupation = {}
+
+[[word]]
+text = "diplomat"
+occupation = {}
+
+[[word]]
+text = "dissident"
+occupation = {}
+
+[[word]]
+text = "dramatist"
+occupation = {}
+
+[[word]]
+text = "drummer"
+occupation = {}
+
+[[word]]
+text = "ecologist"
+occupation = {}
+
+[[word]]
+text = "economist"
+occupation = {}
+
+[[word]]
+text = "editor"
+occupation = {}
+
+[[word]]
+text = "educator"
+occupation = {}
+
+[[word]]
+text = "entertainer"
+occupation = {}
+
+[[word]]
+text = "entrepreneur"
+occupation = {}
+
+[[word]]
+text = "essayist"
+occupation = {}
+
+[[word]]
+text = "expert"
+occupation = {}
+
+[[word]]
+text = "forester"
+occupation = {}
+
+[[word]]
+text = "founder"
+occupation = {}
+
+[[word]]
+text = "guitarist"
+occupation = {}
+
+[[word]]
+text = "historian"
+occupation = {}
+
+[[word]]
+text = "host"
+occupation = {}
+
+[[word]]
+text = "illustrator"
+occupation = {}
+
+[[word]]
+text = "industrialist"
+occupation = {}
+
+[[word]]
+text = "instructor"
+occupation = {}
+
+[[word]]
+text = "inventor"
+occupation = {}
+
+[[word]]
+text = "investigator"
+occupation = {}
+
+[[word]]
+text = "investor"
+occupation = {}
+
+[[word]]
+text = "journalist"
+occupation = {}
+
+[[word]]
+text = "journeyman"
+occupation = {}
+
+[[word]]
+text = "jurist"
+occupation = {}
+
+[[word]]
+text = "keyboardist"
+occupation = {}
+
+[[word]]
+text = "lawyer"
+occupation = {}
+
+[[word]]
+text = "lecturer"
+occupation = {}
+
+[[word]]
+text = "librarian"
+occupation = {}
+
+[[word]]
+text = "linguist"
+occupation = {}
+
+[[word]]
+text = "lyricist"
+occupation = {}
+
+[[word]]
+text = "magnate"
+occupation = {}
+
+[[word]]
 text = "maid"
 occupation = { addresses = "given", gender = "f", expands = "'Maid Marian'" }
+
+[[word]]
+text = "manager"
+occupation = {}
+
+[[word]]
+text = "mathematician"
+occupation = {}
+
+[[word]]
+text = "memoirist"
+occupation = {}
+
+[[word]]
+text = "merchant"
+occupation = {}
+
+[[word]]
+text = "missionary"
+occupation = {}
+
+[[word]]
+text = "mobster"
+occupation = {}
+
+[[word]]
+text = "model"
+occupation = {}
+
+[[word]]
+text = "mountaineer"
+occupation = {}
+
+[[word]]
+text = "musician"
+occupation = {}
+
+[[word]]
+text = "musicologist"
+occupation = {}
+
+[[word]]
+text = "nanny"
+occupation = {}
+
+[[word]]
+text = "narrator"
+occupation = {}
+
+[[word]]
+text = "naturalist"
+occupation = {}
+
+[[word]]
+text = "neuroscientist"
+occupation = {}
+
+[[word]]
+text = "novelist"
+occupation = {}
+
+[[word]]
+text = "obstetritian"
+occupation = { note = "a misspelling of obstetrician, shipped as written" }
+
+[[word]]
+text = "ornithologist"
+occupation = {}
+
+[[word]]
+text = "painter"
+occupation = {}
+
+[[word]]
+text = "paleontologist"
+occupation = {}
+
+[[word]]
+text = "pediatrician"
+occupation = {}
+
+[[word]]
+text = "personality"
+occupation = {}
+
+[[word]]
+text = "philantropist"
+occupation = { note = "a misspelling of philanthropist, shipped as written" }
+
+[[word]]
+text = "philosopher"
+occupation = {}
+
+[[word]]
+text = "photographer"
+occupation = {}
+
+[[word]]
+text = "physician"
+occupation = {}
+
+[[word]]
+text = "physicist"
+occupation = {}
+
+[[word]]
+text = "pianist"
+occupation = {}
+
+[[word]]
+text = "pilot"
+occupation = {}
+
+[[word]]
+text = "pioneer"
+occupation = {}
+
+[[word]]
+text = "player"
+occupation = {}
+
+[[word]]
+text = "playwright"
+occupation = {}
+
+[[word]]
+text = "poet"
+occupation = {}
+
+[[word]]
+text = "politician"
+occupation = {}
+
+[[word]]
+text = "printer"
+occupation = {}
+
+[[word]]
+text = "printmaker"
+occupation = {}
+
+[[word]]
+text = "producer"
+occupation = {}
+
+[[word]]
+text = "psychiatrist"
+occupation = {}
+
+[[word]]
+text = "psychologist"
+occupation = {}
+
+[[word]]
+text = "publisher"
+occupation = {}
+
+[[word]]
+text = "ranger"
+occupation = {}
+
+[[word]]
+text = "researcher"
+occupation = {}
+
+[[word]]
+text = "sailor"
+occupation = {}
+
+[[word]]
+text = "satirist"
+occupation = {}
+
+[[word]]
+text = "scholar"
+occupation = {}
+
+[[word]]
+text = "schoolmaster"
+occupation = {}
+
+[[word]]
+text = "scientist"
+occupation = {}
+
+[[word]]
+text = "screenwriter"
+occupation = {}
+
+[[word]]
+text = "servant"
+occupation = {}
+
+[[word]]
+text = "singer"
+occupation = {}
+
+[[word]]
+text = "singer-songwriter"
+occupation = {}
+
+[[word]]
+text = "sociologist"
+occupation = {}
+
+[[word]]
+text = "soldier"
+occupation = {}
+
+[[word]]
+text = "solicitor"
+occupation = {}
+
+[[word]]
+text = "soprano"
+occupation = {}
+
+[[word]]
+text = "suffragist"
+occupation = {}
+
+[[word]]
+text = "surgeon"
+occupation = {}
+
+[[word]]
+text = "teacher"
+occupation = {}
+
+[[word]]
+text = "technologist"
+occupation = {}
+
+[[word]]
+text = "tenor"
+occupation = {}
+
+[[word]]
+text = "theologian"
+occupation = {}
+
+[[word]]
+text = "theorist"
+occupation = {}
+
+[[word]]
+text = "translator"
+occupation = {}
+
+[[word]]
+text = "vocalist"
+occupation = {}
+
+[[word]]
+text = "woodman"
+occupation = {}
+
+[[word]]
+text = "writer"
+occupation = {}
+
+[[word]]
+text = "zoologist"
+occupation = {}
 
 [[word]]
 text = "aunt"
@@ -113,8 +1731,518 @@ text = "auntie"
 kinship = { addresses = "given", gender = "f", same_as = "aunt" }
 
 [[word]]
+text = "matriarch"
+kinship = { gender = "f" }
+
+[[word]]
 text = "uncle"
 kinship = { addresses = "given", gender = "m" }
+
+[[word]]
+text = "10th"
+modifier = {}
+
+[[word]]
+text = "1st"
+modifier = {}
+
+[[word]]
+text = "2nd"
+modifier = {}
+
+[[word]]
+text = "3rd"
+modifier = {}
+
+[[word]]
+text = "4th"
+modifier = {}
+
+[[word]]
+text = "5th"
+modifier = {}
+
+[[word]]
+text = "6th"
+modifier = {}
+
+[[word]]
+text = "7th"
+modifier = {}
+
+[[word]]
+text = "8th"
+modifier = {}
+
+[[word]]
+text = "9th"
+modifier = {}
+
+[[word]]
+text = "advertising"
+modifier = {}
+
+[[word]]
+text = "air"
+modifier = {}
+
+[[word]]
+text = "analytics"
+modifier = {}
+
+[[word]]
+text = "appellate"
+modifier = {}
+
+[[word]]
+text = "army"
+modifier = {}
+
+[[word]]
+text = "assistant"
+modifier = {}
+
+[[word]]
+text = "asst"
+modifier = { same_as = "assistant" }
+
+[[word]]
+text = "associate"
+modifier = {}
+
+[[word]]
+text = "assoc"
+modifier = { same_as = "associate" }
+
+[[word]]
+text = "award-winning"
+modifier = {}
+
+[[word]]
+text = "ballet"
+modifier = {}
+
+[[word]]
+text = "banner"
+modifier = {}
+
+[[word]]
+text = "baseball"
+modifier = {}
+
+[[word]]
+text = "bearer"
+modifier = { expands = "Standard Bearer, Sword Bearer" }
+
+[[word]]
+text = "behavioral"
+modifier = {}
+
+[[word]]
+text = "bench"
+modifier = {}
+
+[[word]]
+text = "biblical"
+modifier = {}
+
+[[word]]
+text = "blues"
+modifier = {}
+
+[[word]]
+text = "british"
+modifier = {}
+
+[[word]]
+text = "burlesque"
+modifier = {}
+
+[[word]]
+text = "business"
+modifier = {}
+
+[[word]]
+text = "civil"
+modifier = {}
+
+[[word]]
+text = "classical"
+modifier = {}
+
+[[word]]
+text = "computer"
+modifier = {}
+
+[[word]]
+text = "corporate"
+modifier = {}
+
+[[word]]
+text = "credit"
+modifier = {}
+
+[[word]]
+text = "criminal"
+modifier = {}
+
+[[word]]
+text = "customs"
+modifier = {}
+
+[[word]]
+text = "d'affaires"
+modifier = { expands = "the second word of chargé d'affaires" }
+
+[[word]]
+text = "designated"
+modifier = { issue = 9, expands = "Designated Judge" }
+
+[[word]]
+text = "discovery"
+modifier = { issue = 9 }
+
+[[word]]
+text = "district"
+modifier = {}
+
+[[word]]
+text = "division"
+modifier = {}
+
+[[word]]
+text = "docket"
+modifier = { issue = 9, expands = "Docket Clerk" }
+
+[[word]]
+text = "edmi"
+modifier = { issue = 9, note = "from #9's list of federal judges' titles; its meaning is not recorded there" }
+
+[[word]]
+text = "english"
+modifier = {}
+
+[[word]]
+text = "excellent"
+modifier = { expands = "'His Most Excellent Majesty'" }
+
+[[word]]
+text = "executive"
+modifier = {}
+
+[[word]]
+text = "exec"
+modifier = { same_as = "executive" }
+
+[[word]]
+text = "family"
+modifier = { issue = 9, note = "added with #9's judicial titles (0c2596c7); the phrase it was for is not recorded" }
+
+[[word]]
+text = "federal"
+modifier = {}
+
+[[word]]
+text = "field"
+modifier = {}
+
+[[word]]
+text = "film"
+modifier = {}
+
+[[word]]
+text = "financial"
+modifier = {}
+
+[[word]]
+text = "first"
+modifier = {}
+
+[[word]]
+text = "flag"
+modifier = {}
+
+[[word]]
+text = "flying"
+modifier = {}
+
+[[word]]
+text = "foreign"
+modifier = {}
+
+[[word]]
+text = "grand"
+modifier = {}
+
+[[word]]
+text = "group"
+modifier = {}
+
+[[word]]
+text = "her"
+modifier = { gender = "f", expands = "'Her Majesty'" }
+
+[[word]]
+text = "hereditary"
+modifier = {}
+
+[[word]]
+text = "high"
+modifier = {}
+
+[[word]]
+text = "his"
+modifier = { gender = "m", expands = "'His Holiness'" }
+
+[[word]]
+text = "information"
+modifier = {}
+
+[[word]]
+text = "intelligence"
+modifier = {}
+
+[[word]]
+text = "judicial"
+modifier = {}
+
+[[word]]
+text = "king's"
+modifier = { expands = "King's Counsel" }
+
+[[word]]
+text = "kingdom"
+modifier = {}
+
+[[word]]
+text = "knowledge"
+modifier = {}
+
+[[word]]
+text = "law"
+modifier = {}
+
+[[word]]
+text = "legal"
+modifier = {}
+
+[[word]]
+text = "literary"
+modifier = {}
+
+[[word]]
+text = "marcher"
+modifier = { expands = "Marcher Lord" }
+
+[[word]]
+text = "marketing"
+modifier = {}
+
+[[word]]
+text = "mathematics"
+modifier = {}
+
+[[word]]
+text = "member"
+modifier = {}
+
+[[word]]
+text = "military"
+modifier = {}
+
+[[word]]
+text = "most"
+modifier = { expands = "'Most Reverend'" }
+
+[[word]]
+text = "municipal"
+modifier = {}
+
+[[word]]
+text = "mystery"
+modifier = {}
+
+[[word]]
+text = "national"
+modifier = {}
+
+[[word]]
+text = "navy"
+modifier = {}
+
+[[word]]
+text = "opera"
+modifier = {}
+
+[[word]]
+text = "operating"
+modifier = {}
+
+[[word]]
+text = "petty"
+modifier = {}
+
+[[word]]
+text = "police"
+modifier = {}
+
+[[word]]
+text = "political"
+modifier = {}
+
+[[word]]
+text = "presiding"
+modifier = {}
+
+[[word]]
+text = "prime"
+modifier = {}
+
+[[word]]
+text = "pro"
+modifier = { issue = 9, expands = "Pro Se Law Clerk" }
+
+[[word]]
+text = "queen's"
+modifier = { expands = "Queen's Counsel" }
+
+[[word]]
+text = "radio"
+modifier = {}
+
+[[word]]
+text = "rear"
+modifier = {}
+
+[[word]]
+text = "resident"
+modifier = {}
+
+[[word]]
+text = "revenue"
+modifier = {}
+
+[[word]]
+text = "right"
+modifier = { expands = "'Right Honourable', 'Right Reverend'" }
+
+[[word]]
+text = "rt"
+modifier = { same_as = "right" }
+
+[[word]]
+text = "risk"
+modifier = {}
+
+[[word]]
+text = "rock"
+modifier = {}
+
+[[word]]
+text = "royal"
+modifier = {}
+
+[[word]]
+text = "security"
+modifier = {}
+
+[[word]]
+text = "senior"
+modifier = {}
+[word.excluded]
+generation = { reason = "Senior is a surname (3,864 US Census bearers)", issue = 679 }
+
+[[word]]
+text = "soccer"
+modifier = {}
+
+[[word]]
+text = "social"
+modifier = {}
+
+[[word]]
+text = "software"
+modifier = {}
+
+[[word]]
+text = "special"
+modifier = {}
+
+[[word]]
+text = "staff"
+modifier = {}
+
+[[word]]
+text = "state"
+modifier = {}
+
+[[word]]
+text = "states"
+modifier = {}
+
+[[word]]
+text = "strategy"
+modifier = {}
+
+[[word]]
+text = "superior"
+modifier = { expands = "'Mother Superior'" }
+
+[[word]]
+text = "supreme"
+modifier = {}
+
+[[word]]
+text = "tax"
+modifier = {}
+
+[[word]]
+text = "technical"
+modifier = {}
+
+[[word]]
+text = "television"
+modifier = {}
+
+[[word]]
+text = "theater"
+modifier = {}
+
+[[word]]
+text = "theatre"
+modifier = { same_as = "theater" }
+
+[[word]]
+text = "travel"
+modifier = {}
+
+[[word]]
+text = "uk"
+modifier = {}
+
+[[word]]
+text = "united"
+modifier = {}
+
+[[word]]
+text = "us"
+modifier = {}
+
+[[word]]
+text = "vice"
+modifier = {}
+
+[[word]]
+text = "voice"
+modifier = {}
+
+[[word]]
+text = "warrant"
+modifier = {}
+
+[[word]]
+text = "wing"
+modifier = {}
 
 [[word]]
 text = "jr"
@@ -127,11 +2255,6 @@ generation = { same_as = "jr" }
 [[word]]
 text = "junior"
 generation = { same_as = "jr" }
-
-[[word]]
-text = "senior"
-[word.excluded]
-generation = { reason = "Senior is a surname (3,864 US Census bearers)", issue = 679 }
 
 [[word]]
 text = "sr"
@@ -174,10 +2297,3 @@ issue = 360
 expands = "son of, Mac contracted"
 same_as = "mac"
 note = "Unlike 'mac' (Mac Miller) it is not a standalone given name. Measured misparse: \"Mc Donald\" gave given='Mc'. Also in SUFFIX_ACRONYMS as Master of Ceremonies, but that is trailing position and unaffected -- \"John Smith MC\" still reads suffix (#360)."
-
-[[word]]
-text = "st"
-[word.saint]
-may_be_given = true
-expands = "Saint, abbreviated"
-note = "Also in TITLES and consumed there before particle logic runs, so moving it between the may-be-given and never-given halves changes nothing; kept for the load-bearing TITLES intersection"

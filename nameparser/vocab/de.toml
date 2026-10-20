@@ -29,6 +29,96 @@ text = "herren"
 salutation = { gender = "m", expands = "the plural of Herr" }
 
 [[word]]
+text = "dipl.-ing"
+academic = { expands = "Diplom-Ingenieur" }
+
+[[word]]
+text = "fh-prof"
+academic = { expands = "Fachhochschul-Professor" }
+
+[[word]]
+text = "priv.-doz"
+academic = { expands = "Privatdozent" }
+
+[[word]]
+text = "pd"
+academic = { same_as = "priv.-doz" }
+
+[[word]]
+text = "ra"
+academic = { expands = "Rechtsanwalt, the address of a lawyer, 'RA Müller'" }
+
+[[word]]
+text = "univ.prof"
+academic = { expands = "Universitätsprofessor" }
+
+[[word]]
+text = "wp"
+academic = { expands = "Wirtschaftsprüfer, the address of an auditor" }
+
+[[word]]
+text = "erzbischof"
+religious = { expands = "archbishop" }
+
+[[word]]
+text = "fürsterzbischof"
+religious = { expands = "prince-archbishop" }
+
+[[word]]
+text = "baron"
+nobility = { gender = "m" }
+
+[[word]]
+text = "edler"
+nobility = { gender = "m", expands = "the lowest German noble rank, 'Edler von'" }
+
+[[word]]
+text = "freifrau"
+nobility = { gender = "f", expands = "baroness" }
+
+[[word]]
+text = "freiherr"
+nobility = { gender = "m", expands = "baron" }
+[word.rank]
+may_be_given = true
+issue = 18
+expands = "baron"
+gender = "m"
+note = "Since 1919 a former noble title is part of the legal surname, written before the particle (\"Karl-Theodor Freiherr von und zu Guttenberg\"), so it chains like one. Also in TITLES, load-bearing"
+
+[[word]]
+text = "fürst"
+nobility = { gender = "m", expands = "prince" }
+
+[[word]]
+text = "graf"
+nobility = { gender = "m", expands = "count" }
+
+[[word]]
+text = "großfürst"
+nobility = { gender = "m", expands = "grand prince, grand duke" }
+
+[[word]]
+text = "gräfin"
+nobility = { gender = "f", expands = "countess" }
+
+[[word]]
+text = "herzog"
+nobility = { gender = "m", expands = "duke" }
+
+[[word]]
+text = "prinz"
+nobility = { gender = "m", expands = "prince" }
+
+[[word]]
+text = "reichsgraf"
+nobility = { gender = "m", expands = "imperial count" }
+
+[[word]]
+text = "ritter"
+nobility = { gender = "m", expands = "knight" }
+
+[[word]]
 text = "auf"
 preposition = { may_be_given = false, issue = 18, expands = "upon: \"auf der Heide\"" }
 
@@ -62,15 +152,6 @@ article = { may_be_given = true, expands = "the: \"von den Steinen\"" }
 [[word]]
 text = "der"
 article = { may_be_given = false, expands = "the: \"von der Leyen\"" }
-
-[[word]]
-text = "freiherr"
-[word.rank]
-may_be_given = true
-issue = 18
-expands = "baron"
-gender = "m"
-note = "Since 1919 a former noble title is part of the legal surname, written before the particle (\"Karl-Theodor Freiherr von und zu Guttenberg\"), so it chains like one. Also in TITLES, load-bearing"
 
 [[word]]
 text = "freiherrin"

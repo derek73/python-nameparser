@@ -25,6 +25,14 @@ text = "hr"
 salutation = { gender = "m", same_as = "herr" }
 
 [[word]]
+text = "greve"
+nobility = { gender = "m", expands = "count", issue = 606 }
+
+[[word]]
+text = "sysselmann"
+office = { expands = "the governor of Svalbard" }
+
+[[word]]
 text = "af"
 preposition = { may_be_given = false, expands = "of, nobiliary" }
 

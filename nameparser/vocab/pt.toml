@@ -21,6 +21,10 @@ text = "senhorita"
 salutation = { gender = "f" }
 
 [[word]]
+text = "dra"
+academic = { gender = "f", expands = "Doctora, Doutora" }
+
+[[word]]
 text = "da"
 preposition = { may_be_given = true, expands = "of the, fem. sg." }
 

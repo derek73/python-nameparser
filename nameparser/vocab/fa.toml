@@ -1,6 +1,22 @@
 schema = 1
 
 [[word]]
+text = "akhoond"
+religious = { expands = "akhund, a Shia cleric" }
+
+[[word]]
+text = "ayatollah"
+religious = {}
+
+[[word]]
+text = "mullah"
+religious = {}
+
+[[word]]
+text = "pir"
+religious = { expands = "a Sufi master" }
+
+[[word]]
 text = "جونیور"
 generation = { issue = 679 }
 

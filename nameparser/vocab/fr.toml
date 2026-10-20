@@ -25,6 +25,75 @@ text = "cheikh"
 style = { addresses = "given", gender = "m", same_as = "sheikh", expands = "the French transliteration, 'Cheikh Anta Diop'" }
 
 [[word]]
+text = "me"
+academic = { expands = "Maître, the address of a lawyer or notary" }
+
+[[word]]
+text = "mgr"
+religious = { expands = "Monsignor, Monseigneur" }
+
+[[word]]
+text = "monseigneur"
+religious = {}
+
+[[word]]
+text = "saint"
+religious = {}
+
+[[word]]
+text = "sainte"
+religious = { gender = "f" }
+
+[[word]]
+text = "st"
+religious = { expands = "Saint, abbreviated" }
+saint = { may_be_given = true, expands = "Saint, abbreviated" }
+
+[[word]]
+text = "baron"
+nobility = { gender = "m" }
+
+[[word]]
+text = "comtesse"
+nobility = { gender = "f" }
+
+[[word]]
+text = "duchesse"
+nobility = { gender = "f" }
+
+[[word]]
+text = "marquis"
+nobility = { gender = "m" }
+
+[[word]]
+text = "marquise"
+nobility = { gender = "f" }
+
+[[word]]
+text = "seigneur"
+nobility = {}
+
+[[word]]
+text = "attaché"
+office = {}
+
+[[word]]
+text = "chargé"
+office = { expands = "chargé d'affaires, the head of a mission below an ambassador" }
+
+[[word]]
+text = "compositeur"
+occupation = {}
+
+[[word]]
+text = "historien"
+occupation = {}
+
+[[word]]
+text = "d'affaires"
+modifier = { expands = "the second word of chargé d'affaires" }
+
+[[word]]
 text = "fils"
 family = { us_census_2010 = 767, wikidata = 5, as_of = 2026-10-16 }
 [word.excluded.generation]
@@ -88,10 +157,6 @@ text = "le"
 may_be_given = true
 expands = "the, masc. sg."
 note = "Lê is among the most common Vietnamese surnames and leads under a family-first reading"
-
-[[word]]
-text = "st"
-saint = { may_be_given = true, expands = "Saint, abbreviated" }
 
 [[word]]
 text = "ste"

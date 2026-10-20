@@ -13,6 +13,10 @@ text = "rouva"
 salutation = { issue = 606, gender = "f" }
 
 [[word]]
+text = "kreivi"
+nobility = { gender = "m", expands = "count", issue = 606, note = "borne: ~270 surnames (Finland, where registers often write the surname first), forebears.io, worldwide, rounded, 2026-10-04; shipped under the graf class (decisions/salutation-titles)" }
+
+[[word]]
 text = "nuorempi"
 generation = { issue = 661 }
 
