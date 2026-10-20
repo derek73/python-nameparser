@@ -2,9 +2,13 @@
 
 Two rule formats are read, chosen per block (a heading `# ID — name` up
 to the next heading): the BLOCK format described below, and the SKELETON
-format, a block holding a bold `**When:**` line, whose fields, fences and
-footer are defined and parsed by ``rules_skeleton.py`` (``Rule.skeleton``
-is set for those rules only). Both give the same ``Rule`` and the same
+format, a block holding a line that opens at column 0 with When, Then
+or Because and a colon, in any spelling: any case, the word bold or
+otherwise wrapped in `*` or `_`, a space before the colon allowed
+(rules_skeleton.is_skeleton_block). A near miss so reaches the skeleton
+parser and raises there rather than being skipped by this one. Its
+fields, fences and footer are defined and parsed by
+``rules_skeleton.py`` (``Rule.skeleton`` is set for those rules only). Both give the same ``Rule`` and the same
 ``prose_blocks`` shape, so every consumer reads either.
 
 The block grammar (described for humans in the rules README's preamble;

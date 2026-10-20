@@ -96,9 +96,14 @@ def _norm(s: str) -> str:
 
 
 def _statements() -> dict[str, str]:
-    """What a citation may quote: for a rule, its prose -- the
-    statement and its Accepted: clauses, everything in the block but
-    example, pointer, marker and Signal: lines; for a section letter
+    """What a citation may quote: for a rule, its prose. In a block
+    rule that is the statement and its Accepted: clauses, everything in
+    the block but example, pointer, marker and Signal: lines; in a
+    skeleton rule (#761) it is the text of its fields -- When,
+    Tolerated, Then and its bullets, Because, and the Except,
+    Precedence and Accepted bullets -- with the labels, the fences and
+    the footer below `---` left out (rules_skeleton.skeleton_prose);
+    for a section letter
     (`rules/H Background`), the section's Background paragraph; for
     a mechanism, its Contract statement."""
     out = prose_blocks(read_rules_text())
@@ -274,6 +279,10 @@ def test_the_quotable_text_is_the_prose_and_only_the_prose() -> None:
     assert not _is_excerpt(_norm("Smith Jr."), stmts["S2"])
     assert not _is_excerpt(_norm("its boundaries are the other rules"),
                            stmts["O4"])
+    # a skeleton rule: an Except bullet is quotable, its fenced example not
+    assert _is_excerpt(_norm("A numeral past X is a name word"),
+                       stmts["S10"])
+    assert not _is_excerpt(_norm("John Smith XI"), stmts["S10"])
 
 
 # The recorded negative control: excerpts that stood stale in the tree
@@ -572,10 +581,8 @@ def test_doc_internal_anchors_resolve() -> None:
              *sorted(DECISIONS_DIR.glob("*.md")), MECH_DOC]
     docs = {str(p.relative_to(REPO)): p.read_text(encoding="utf-8")
             for p in paths}
-    # a block rule opens `S4. Rationale:`, a skeleton rule its heading
-    # `# S10 — name` (#761)
-    rule_ids = set(re.findall(r"^(?:# )?([A-Z]\d+)(?:\.\s| — )",
-                              read_rules_text(), re.M))
+    # the parser's own reading, so a new rule format needs no copy here
+    rule_ids = {r.rule_id for r in parse_rules_doc(read_rules_text())}
     dec_keys = set(read_decision_files())
     mech_slugs = set(re.findall(r"^#{2,3} ([A-Z][A-Z0-9_-]+)",
                                 docs[str(MECH_DOC.relative_to(REPO))], re.M))

@@ -70,7 +70,9 @@ def test_every_rule_states_its_signal(rule: Rule) -> None:
         f"above its pointer line -- for example a count, a case "
         f"contrast, a shape, a neighbor, a position -- or `Signal: hub of "
         f"X1, X2` (after any signal of its own: `Signal: <its own>; hub "
-        f"of X1, X2`) for a hub")
+        f"of X1, X2`) for a hub. In a skeleton rule the same line is "
+        f"spelled `**Signal:** <tag>` and stands in the footer below "
+        f"`---`, directly above the pointer line")
 
 
 #: The README's recipe for the split candidates, verbatim; in grep's
@@ -81,6 +83,19 @@ _SPLIT_GREP = (
 
 #: _SPLIT_GREP's pattern in Python's syntax: either format's Signal line.
 _SPLIT_PATTERN = r"^(    Signal:|\*\*Signal:\*\*).* \+ "
+
+
+def test_the_readmes_worked_example_is_the_rule_it_copies() -> None:
+    """The README shows rules/D2 whole as the skeleton format's worked
+    example (its first ````markdown block); a copy nothing holds to the
+    file drifts the first time D2 is edited."""
+    readme = (RULES_DIR / "README.md").read_text(encoding="utf-8")
+    m = re.search(r"^````markdown\n(.*?)^````$", readme, re.S | re.M)
+    assert m is not None, "rules/README.md lost its ````markdown example"
+    (d2,) = RULES_DIR.glob("D2-*.md")
+    assert m.group(1) == d2.read_text(encoding="utf-8"), (
+        "rules/README.md's worked example differs from rules/D2; "
+        "copy the file into the README again")
 
 
 def test_the_split_candidate_recipe_lists_the_two_signal_rules() -> None:
