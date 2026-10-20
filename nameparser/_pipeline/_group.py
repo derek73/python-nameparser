@@ -1334,8 +1334,8 @@ def group(state: ParseState) -> ParseState:
         all_pieces.append(tuple(tuple(p) for p in pieces))
         all_ptags.append(tuple(frozenset(t) for t in ptags))
         all_reads.append(seg_reads[0] if len(seg_reads) == 1 else None)
-    # rules/M1: "a leading recognized marker being dropped where
-    # the clause holds a word past it; a clause of nothing but its
+    # rules/M1: "a leading recognized marker is dropped where the
+    # clause holds a word past it" and "a clause of nothing but its
     # marker keeps its words" — a marker inside EXTRACTED maiden
     # content (#329).
     # classify tags

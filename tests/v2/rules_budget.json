@@ -22,7 +22,7 @@
   "H4": {"words": 168, "exceptions": 0, "accepted": 5, "accepted_words": 590},
   "H5": {"words": 230, "exceptions": 0, "accepted": 6, "accepted_words": 515},
   "H6": {"words": 197, "exceptions": 0, "accepted": 2, "accepted_words": 133},
-  "M1": {"words": 180, "exceptions": 1, "accepted": 0, "accepted_words": 0},
+  "M1": {"words": 216, "then_words": 103, "because_sentences": 2, "except": 2, "precedence": 2, "accepted": 0, "accepted_words": 0},
   "M2": {"words": 659, "exceptions": 1, "accepted": 6, "accepted_words": 217},
   "M3": {"words": 209, "exceptions": 1, "accepted": 1, "accepted_words": 80},
   "M4": {"words": 333, "exceptions": 0, "accepted": 0, "accepted_words": 0},
