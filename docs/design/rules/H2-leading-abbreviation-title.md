@@ -2,7 +2,7 @@
 
 **When:** a period-marked word opens the part of the name that carries the given name, as in "Rev. John Smith".
 
-**Then:** an abbreviation opening the part of the name that carries the given name — the whole name, or the part after a family comma — reads as a title even when unlisted, provided it is an unbroken run of two or more letters ending in its one period, the shape outranking vocabulary where it fires, so that a period-marked opening word is a title even when the word is suffix vocabulary.
+**Then:** an abbreviation opening the part of the name that carries the given name — the whole name, or the part after a family comma — reads as a title even when unlisted, provided it is an unbroken run of two or more letters ending in its one period, the shape outranking vocabulary where it fires, so that a period-marked opening word is a title even when the word is suffix vocabulary, save a credential opening the part after a family comma (C13).
 
 - **A single-letter initial does not** (T5), and neither does anything with interior periods, hyphens or digits.
   ```
@@ -28,6 +28,15 @@
 - **After a family comma, a part that is nothing but suffix words** is the credential run (C8), which the abbreviation does not open: the vocabulary decides, and "Esq." is the postnominal it is.
   ```
   "Smith, Esq."               →  suffix="Esq."
+  ```
+
+**Precedence:**
+
+- **A credential opening the part after a family comma** ("Smith, Esq. John"): C13 wins, and the part is postnominal: a suffix word that starts S8's run makes the part its postnominals however it goes on. The shape still reads as a title there an abbreviation that starts no such run — an unlisted one, or a listed suffix word C13 does not open with, such as a word of the ambiguous class.
+  ```
+  "Smith, Esq. John"          →  suffix="Esq. John"
+  "Smith, Insp. John"         →  title="Insp."
+  "Smith, Ma. John"           →  title="Ma."
   ```
 
 **Accepted:**

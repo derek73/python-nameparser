@@ -2872,7 +2872,9 @@
 {"name": "Smith, E.S.Q.", "given": "E.S.Q.", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. S."}
 {"name": "Smith, E.T., Jr.", "given": "E.T.", "family": "Smith", "suffix": "Jr.", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "E. S."}
 {"name": "Smith, Esq.", "family": "Smith", "suffix": "Esq.", "initials": "S."}
+{"name": "Smith, Esq. John", "family": "Smith", "suffix": "Esq. John", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "S."}
 {"name": "Smith, I.", "given": "I.", "family": "Smith", "initials": "I. S."}
+{"name": "Smith, Insp. John", "title": "Insp.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, J. R.", "given": "J.", "middle": "R.", "family": "Smith", "initials": "J. R. S."}
 {"name": "Smith, J.R.", "given": "J.R.", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "Smith, Jan van Prof.", "title": "Prof.", "given": "Jan", "family": "van Smith", "ambiguities": ["PARTICLE_OR_GIVEN"], "initials": "J. S."}
@@ -2908,6 +2910,7 @@
 {"name": "Smith, MD PhD Ma", "title": "MD", "given": "PhD", "middle": "Ma", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "P. M. S."}
 {"name": "Smith, MEng", "given": "MEng", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. S."}
 {"name": "Smith, Ma", "given": "Ma", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "M. S."}
+{"name": "Smith, Ma. John", "title": "Ma.", "given": "John", "family": "Smith", "ambiguities": ["SUFFIX_OR_NAME"], "initials": "J. S."}
 {"name": "Smith, Major. John", "title": "Major.", "given": "John", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, Ms Jane", "title": "Ms", "given": "Jane", "family": "Smith", "initials": "J. S."}
 {"name": "Smith, Ms MD Ma", "title": "Ms MD", "given": "Ma", "family": "Smith", "initials": "M. S."}
