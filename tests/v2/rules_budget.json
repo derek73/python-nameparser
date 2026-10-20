@@ -17,7 +17,7 @@
   "C14": {"words": 231, "then_words": 111, "because_sentences": 3, "except": 1, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "D1": {"words": 54, "exceptions": 0, "accepted": 0, "accepted_words": 0},
   "D2": {"words": 65, "then_words": 37, "because_sentences": 2, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
-  "H1": {"words": 351, "exceptions": 1, "accepted": 4, "accepted_words": 413},
+  "H1": {"words": 424, "then_words": 254, "because_sentences": 3, "except": 1, "precedence": 0, "accepted": 4, "accepted_words": 351},
   "H2": {"words": 196, "exceptions": 1, "accepted": 4, "accepted_words": 241},
   "H3": {"words": 131, "exceptions": 0, "accepted": 3, "accepted_words": 116},
   "H4": {"words": 168, "exceptions": 0, "accepted": 5, "accepted_words": 590},
