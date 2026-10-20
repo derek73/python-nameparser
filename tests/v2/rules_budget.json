@@ -62,7 +62,7 @@
   "S10": {"words": 401, "then_words": 140, "because_sentences": 3, "except": 4, "precedence": 2, "accepted": 2, "accepted_words": 73},
   "T1": {"words": 92, "then_words": 18, "because_sentences": 1, "except": 1, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "T2": {"words": 43, "then_words": 14, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
-  "T3": {"words": 48, "exceptions": 0, "accepted": 0, "accepted_words": 0},
+  "T3": {"words": 56, "then_words": 23, "because_sentences": 1, "except": 0, "precedence": 0, "accepted": 0, "accepted_words": 0},
   "T4": {"words": 333, "exceptions": 0, "accepted": 1, "accepted_words": 57},
   "T5": {"words": 127, "exceptions": 0, "accepted": 1, "accepted_words": 43},
   "W1": {"words": 135, "exceptions": 0, "accepted": 1, "accepted_words": 26},
