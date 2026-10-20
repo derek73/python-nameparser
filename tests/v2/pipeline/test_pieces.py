@@ -123,7 +123,7 @@ def test_the_reading_is_positional_and_total() -> None:
 
 
 def test_strict_ends_the_run_at_the_initial_shaped_numeral() -> None:
-    """C1's strict knob, at the predicate rather than through a parse.
+    """C14's strict knob, at the predicate rather than through a parse.
 
     Lenient continues the credential run through a one-character
     suffix word; strict vetoes initial-shaped words, so the run is no

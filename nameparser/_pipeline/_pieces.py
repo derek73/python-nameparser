@@ -800,11 +800,18 @@ def segment_suffix_reading(pieces: Sequence[Sequence[int]],
     title to read by).
 
     `lenient` is Policy.lenient_comma_suffixes, and only the numeral
-    continuation consults it. C1: "while strict mode vetoes a word read
-    as an initial" -- so under strict the veto stands and the run ends
-    where it always did; the walk reads the token's `initial` tag, so a
-    one-case lowercase letter is vetoed as its capital is (rules/T4). Reading no policy here silently
-    overrode the one knob a caller sets to prevent exactly this.
+    continuation consults it. A part after the comma that is nothing
+    but suffix words, rules/C14: "stops being a credential run at such a word"
+    -- such a word being a suffix word written as an initial. Under
+    strict the numeral gets no suffix reading behind a suffix word, so
+    a part no credential opened is no run and the reading is None
+    ('Smith, MD I'); a part a credential opened (C13, C14's Except)
+    still takes the word in through `opened` below and hands it to
+    `absorbed` ('Smith, PSM I.'). The walk reads the token's `initial`
+    tag, so a one-case lowercase letter is vetoed as its capital is
+    (rules/T4). Reading no policy here silently overrode the one knob a
+    caller sets to prevent exactly this (#430). History:
+    decisions/C14 (#761), decisions/C13 (#603).
 
     The FAMILY_COMMA rule that segment 0 is the family name rests
     on the writer having said where the family name ends. A comma

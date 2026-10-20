@@ -14,7 +14,7 @@ T4. Rationale: a bare letter written in lower case beside capitals
     given-name reading, O5 reports no convention for one, P3's
     count passes over one, S10 reads a numeral written as one
     as the capital numeral it is, and a suffix test that vetoes an
-    initial vetoes it — C1's strict mode, and the scan-back of W2's
+    initial vetoes it — C14's strict mode, and the scan-back of W2's
     peel. A letter whose capital is not an initial
     by T5 — é, ж — is no initial in either spelling, and in a
     name of mixed case a bare lower-case letter is no initial. As
@@ -50,4 +50,4 @@ T4. Rationale: a bare letter written in lower case beside capitals
       "john smith nee x x"        →  suffix="x"
       "JOHN SMITH NEE X X"        →  maiden="X X"
     Signal: a case contrast: a bare letter's case against the name's own words
-    history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P8, S10, T5, R3, R4, C1, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py
+    history: decisions/T4 · interacts: M2, M4, O5, P2, P3, P8, S10, T5, R3, R4, C14, W2 · implemented: nameparser/_pipeline/_classify.py, nameparser/_pipeline/_vocab.py

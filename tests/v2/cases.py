@@ -10031,7 +10031,7 @@ CASES: tuple[Case, ...] = (
          ambiguities=("suffix-or-name",),
          policy=Policy(lenient_comma_suffixes=False),
          classification="fix(#603)",
-         notes="C1's strict knob (C13 for the opened run) still vetoes initial-shaped words as "
+         notes="C14's strict knob (C13 for the opened run) still vetoes initial-shaped words as "
                "SUFFIX words, so the numeral does not continue the run "
                "as a suffix word (#430's first draft read no policy at "
                "all and silently overrode the knob; "
