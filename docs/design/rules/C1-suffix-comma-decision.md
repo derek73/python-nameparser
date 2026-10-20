@@ -36,6 +36,7 @@
   "John Smith Jr., M.J."      →  given="M.J."
   "John Smith Jr., MJ"        →  suffix="Jr., MJ"
   "John Smith V, M.J."        →  suffix="V"  deviates: #774 (today: suffix="")
+  "John Smith VI, M.J."       →  suffix="VI"  deviates: #774 (today: suffix="")
   ```
 
 **Accepted:**
