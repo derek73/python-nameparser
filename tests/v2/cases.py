@@ -277,7 +277,7 @@ class Case:
                 f"composed forms belong under tolerated=True, not a "
                 f"shape tag")
         # U+00B7 (间隔号) marks a name transcription in SOURCE order
-        # (W1 Accepted) -- shape 7's ground, not shape 6's family-
+        # (W1's interpunct Except) -- shape 7's ground, not shape 6's family-
         # first one. The fullwidth nakaguro U+30FB is NOT a source-
         # order marker on its own: decisions/T3 scopes that reading
         # to the codepoint, so U+30FB on non-katakana text is an

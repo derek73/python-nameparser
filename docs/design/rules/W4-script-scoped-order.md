@@ -21,9 +21,9 @@
 "ア゙イ タロウ"                 →  given="ア\u3099イ"  · boundary
 ```
 
-**Accepted:**
+**Except:**
 
-- A name the interpunct divides keeps the declared order — the divider itself marks a transcription (T3) — so the override stands down there, and the name reads as a wholly-katakana one does: in its written order by default, reversed by a declared family-first order like any other name.
+- **A name the interpunct divides** keeps the declared order — the divider itself marks a transcription (T3) — so the override stands down there, and the name reads as a wholly-katakana one does: in its written order by default, reversed by a declared family-first order like any other name.
   ```
   "毛·泽东"                   →  given="毛"
   "威廉·莎士比亚"  family-first  →  family="威廉"
